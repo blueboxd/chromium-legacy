@@ -38,9 +38,11 @@ enum class OptimizationTypeDecision {
   kHadHintButNotLoadedInTime,
   // No hints were available in the cache that matched the page load.
   kNoHintAvailable,
+  // The OptimizationGuideDecider was not initialized yet.
+  kDeciderNotInitialized,
 
   // Add new values above this line.
-  kMaxValue = kNoHintAvailable,
+  kMaxValue = kDeciderNotInitialized,
 };
 
 // The types of decisions that can be made for an optimization target.
@@ -59,8 +61,11 @@ enum class OptimizationTargetDecision {
   // will return |OptimizationGuideDecision::kFalse| in an attempt to not taint
   // the data for understanding the production recall of the model.
   kModelPredictionHoldback,
+  // The OptimizationGuideDecider was not initialized yet.
+  kDeciderNotInitialized,
+
   // Add new values above this line.
-  kMaxValue = kModelPredictionHoldback,
+  kMaxValue = kDeciderNotInitialized,
 };
 
 }  // namespace optimization_guide

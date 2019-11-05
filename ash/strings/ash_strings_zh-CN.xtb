@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">“勿扰”模式已开启。</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{显示通知设置。针对 1 个应用关闭通知}other{显示通知设置。针对 # 个应用关闭通知}}</translation>
 <translation id="1525508553941733066">关闭</translation>
-<translation id="1537254971476575106">全屏放大镜</translation>
 <translation id="15373452373711364">大号鼠标光标</translation>
 <translation id="1546492247443594934">桌面 2</translation>
 <translation id="1550523713251050646">点击即可查看更多选项</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">按 <ph name="KEYBOARD_SHORTCUT" />键可切换键盘布局。</translation>
 <translation id="2501920221385095727">粘滞键</translation>
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
-<translation id="2532589005999780174">高反差模式</translation>
 <translation id="2542089167727451762">请点按您的个人资料图片</translation>
 <translation id="255671100581129685">无法在公用自助终端使用 Google 助理。</translation>
 <translation id="256712445991462162">停靠的放大镜</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">语言</translation>
 <translation id="5313326810920013265">蓝牙设置</translation>
 <translation id="5331975486040154427">USB-C 设备（左侧后端端口）</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">尝试次数过多</translation>
 <translation id="5397578532367286026">管理员 (<ph name="MANAGER_EMAIL" />) 可在 chrome.com 上查看该用户的使用情况和历史记录。</translation>
 <translation id="5430931332414098647">即时网络共享</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">当前用户帐号无法使用 Google 助理。</translation>
 <translation id="5691772641933328258">无法识别指纹</translation>
 <translation id="5710450975648804523">“请勿打扰”模式已开启</translation>
+<translation id="573413375004481890">此设备无法支持您的所有显示屏，因此断开了与其中一个显示屏的连接</translation>
 <translation id="574392208103952083">中</translation>
 <translation id="5744083938413354016">点按拖动</translation>
 <translation id="5750765938512549687">蓝牙已关闭</translation>
@@ -481,7 +481,6 @@
 <translation id="7984197416080286869">指纹尝试次数过多</translation>
 <translation id="7994370417837006925">多帐号登录</translation>
 <translation id="8000066093800657092">未连接任何网络</translation>
-<translation id="8029241286966751120">已启用全屏放大镜。再按一次 Ctrl+搜索键+M 组合键即可将其停用。</translation>
 <translation id="8030169304546394654">连接已断开</translation>
 <translation id="8054466585765276473">正在计算续航时间。</translation>
 <translation id="8061464966246066292">高对比度</translation>
@@ -506,7 +505,6 @@
 <translation id="8388750414311082622">无法移除最后一个桌面。</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的“选项”菜单</translation>
 <translation id="8394567579869570560">您的家长锁定了此设备</translation>
-<translation id="8406981827175133772">全屏放大镜</translation>
 <translation id="8425213833346101688">更改</translation>
 <translation id="8427213022735114808">语音输入功能会将您的语音内容发送给 Google，以便能在任何文本字段中进行语音输入。</translation>
 <translation id="8428213095426709021">设置</translation>

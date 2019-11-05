@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Kopírovať webovú adresu</translation>
 <translation id="2156074688469523661">Zostávajúce weby (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Ak chcete niečo zo svojho telefónu zdieľať s iným zariadením, zapnite v oboch synchronizáciu v nastaveniach Chromu</translation>
-<translation id="2170088579611075216">Povoliť a vstúpiť do VR</translation>
 <translation id="2175927920773552910">QR kód</translation>
 <translation id="218608176142494674">Zdieľanie</translation>
 <translation id="2227444325776770048">Pokračovať ako <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4135200667068010335">Zoznam zariadení, s ktorými sa má zdieľať karta, je zavretý.</translation>
 <translation id="4149994727733219643">Jednoduché zobrazenie webových stránok</translation>
 <translation id="4165986682804962316">Nastavenia webu</translation>
-<translation id="4169535189173047238">Nepovoliť</translation>
 <translation id="4170011742729630528">Služba nie je k dispozícii. Skúste to znova neskôr.</translation>
 <translation id="4179980317383591987">Využité: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Jazyky</translation>
@@ -534,10 +532,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5011311129201317034"><ph name="SITE" /> žiada o pripojenie</translation>
 <translation id="5013696553129441713">Žiadne nové návrhy</translation>
 <translation id="5016205925109358554">Pätkové</translation>
-<translation id="5033865233969348410">V režime VR môže tento web získať nasledujúce informácie:
-– vaše fyzické vlastnosti, ako je výška.
-
-Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="5040262127954254034">Ochrana súkromia</translation>
 <translation id="5048398596102334565">Povoliť webom prístup k senzorom pohybu (odporúčané)</translation>
@@ -611,11 +605,6 @@ Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5527082711130173040">Na to, aby mohol Chrome hľadať zariadenia, musí mať prístup k polohe. <ph name="BEGIN_LINK1" />Aktualizujte povolenia<ph name="END_LINK1" />. Prístup k polohe je <ph name="BEGIN_LINK2" />vypnutý aj v tomto zariadení<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Pýtať sa, či chcete povoliť webu čítať text a obrázky v schránke (odporúčané)</translation>
 <translation id="5530766185686772672">Zavrieť karty inkognito</translation>
-<translation id="5534334044554683961">V režime VR môže tento web získať nasledujúce informácie:
-– vaše fyzické vlastnosti, ako je výška;
-– rozloženie vašej miestnosti.
-
-Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5534640966246046842">Web bol skopírovaný</translation>
 <translation id="5556459405103347317">Znova načítať</translation>
 <translation id="5561549206367097665">Čaká sa na sieť…</translation>
@@ -906,7 +895,6 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="7665369617277396874">Pridať účet</translation>
 <translation id="766587987807204883">Tu sa zobrazia články, ktoré môžete čítať dokonca aj offline</translation>
 <translation id="7682724950699840886">Skúste tieto tipy: Uistite sa, že máte v zariadení dosť miesta, a potom skúste znova spustiť exportovanie.</translation>
-<translation id="7685301384041462804">Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="7698359219371678927">Vytvorte správu v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Automaticky dopĺňať vyhľadávania a webové adresy</translation>
 <translation id="7725024127233776428">Tu sa zobrazia vaše stránky uložené ako záložky</translation>
@@ -1082,7 +1070,6 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="8998729206196772491">Prihlasujete sa pomocou účtu spravovaného doménou <ph name="MANAGED_DOMAIN" /> a jej správcovi tým dávate kontrolu nad svojimi údajmi Chromu. Vaše údaje budú natrvalo prepojené s týmto účtom. Odhlásením z Chromu odstránite údaje z príslušného zariadenia, avšak naďalej zostanú uložené vo vašom účte Google.</translation>
 <translation id="9019902583201351841">Spravované vašimi rodičmi</translation>
 <translation id="9028914725102941583">Zapnite synchronizáciu a zdieľajte medzi zariadeniami</translation>
-<translation id="9029323097866369874">Povoliť webu <ph name="DOMAIN" /> prejsť do VR?</translation>
 <translation id="9040142327097499898">Upozornenia sú povolené. Poloha je v tomto zariadení vypnutá.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}few{# videá}many{# Videos}other{# videí}}</translation>
 <translation id="9050666287014529139">Prístupová fráza</translation>

@@ -24,7 +24,7 @@ struct ParsingResult {
 struct PasswordAndMetadata {
   base::string16 password;
   std::string realm;
-  bool uses_account_store;
+  bool uses_account_store = false;
 };
 
 // Structure used for autofilling password forms. Note that the realms in this

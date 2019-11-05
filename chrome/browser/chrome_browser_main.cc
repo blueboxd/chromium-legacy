@@ -452,7 +452,8 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 }
 #endif  // defined(OS_MACOSX)
 
-void RegisterComponentsForUpdate(PrefService* profile_prefs) {
+void RegisterComponentsForUpdate(bool is_off_the_record_profile,
+                                 PrefService* profile_prefs) {
   auto* const cus = g_browser_process->component_updater();
 
 #if defined(OS_WIN)
@@ -489,7 +490,8 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
   RegisterSubresourceFilterComponent(cus);
   RegisterOnDeviceHeadSuggestComponent(
       cus, g_browser_process->GetApplicationLocale());
-  RegisterOptimizationHintsComponent(cus, profile_prefs);
+  RegisterOptimizationHintsComponent(cus, is_off_the_record_profile,
+                                     profile_prefs);
 
   base::FilePath path;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &path)) {
@@ -1702,7 +1704,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   PreBrowserStart();
 
   if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate))
-    RegisterComponentsForUpdate(profile_->GetPrefs());
+    RegisterComponentsForUpdate(profile_->IsOffTheRecord(),
+                                profile_->GetPrefs());
 
   variations::VariationsService* variations_service =
       browser_process_->variations_service();

@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="2156074688469523661">Baki tapak (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Untuk berkongsi sesuatu daripada telefon anda kepada peranti lain, hidupkan penyegerakan dalam tetapan Chrome pada kedua-dua peranti</translation>
-<translation id="2170088579611075216">Benarkan &amp; masuk ke VR</translation>
 <translation id="2175927920773552910">Kod QR</translation>
 <translation id="218608176142494674">Perkongsian</translation>
 <translation id="2227444325776770048">Teruskan sebagai <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4135200667068010335">Senarai peranti untuk berkongsi tab ditutup.</translation>
 <translation id="4149994727733219643">Paparan ringkas bagi halaman web</translation>
 <translation id="4165986682804962316">Tetapan tapak</translation>
-<translation id="4169535189173047238">Jangan benarkan</translation>
 <translation id="4170011742729630528">Perkhidmatan tidak tersedia; cuba lagi kemudian.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> digunakan</translation>
 <translation id="4181841719683918333">Bahasa</translation>
@@ -534,10 +532,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5011311129201317034"><ph name="SITE" /> ingin menyambung</translation>
 <translation id="5013696553129441713">Tiada cadangan baharu</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Semasa anda berada dalam VR, tapak ini mungkin dapat mengetahui tentang:
-  -  ciri fizikal anda, seperti ketinggian
-
-Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="5039804452771397117">Benarkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
 <translation id="5048398596102334565">Benarkan tapak mengakses penderia gerakan (disyorkan)</translation>
@@ -611,11 +605,6 @@ Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="5527082711130173040">Chrome memerlukan akses lokasi untuk mengimbas peranti. <ph name="BEGIN_LINK1" />Kemas kini kebenaran<ph name="END_LINK1" />. Akses lokasi turut <ph name="BEGIN_LINK2" />dimatikan untuk peranti ini<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Tanya sebelum membenarkan tapak membaca teks dan imej daripada papan keratan (disyorkan)</translation>
 <translation id="5530766185686772672">Tutup tab inkognito</translation>
-<translation id="5534334044554683961">Semasa anda berada dalam VR, tapak ini mungkin dapat mengetahui tentang:
-  -   ciri fizikal anda, seperti ketinggian
-  -   susun atur bilik anda
-
-Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="5534640966246046842">Tapak disalin</translation>
 <translation id="5556459405103347317">Muat Semula</translation>
 <translation id="5561549206367097665">Menunggu rangkaian…</translation>
@@ -906,7 +895,6 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="7665369617277396874">Tambah akaun</translation>
 <translation id="766587987807204883">Artikel dipaparkan di sini, yang boleh anda baca walaupun semasa anda luar talian</translation>
 <translation id="7682724950699840886">Cuba petua berikut: pastikan ruang pada peranti anda mencukupi, cuba eksport sekali lagi.</translation>
-<translation id="7685301384041462804">Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="7698359219371678927">Buat e-mel dalam <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autolengkap carian dan URL</translation>
 <translation id="7725024127233776428">Halaman yang anda tandai halaman dipaparkan di sini</translation>
@@ -1082,7 +1070,6 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="8998729206196772491">Anda log masuk dengan akaun yang diurus oleh <ph name="MANAGED_DOMAIN" /> dan memberikan kawalan terhadap data Chrome anda kepada pentadbirnya. Data anda akan terikat secara kekal kepada akaun ini. Tindakan log keluar daripada Chrome akan memadamkan data anda daripada peranti ini, tetapi data itu akan kekal disimpan dalam Akaun Google anda.</translation>
 <translation id="9019902583201351841">Diurus oleh ibu bapa anda</translation>
 <translation id="9028914725102941583">Hidupkan penyegerakan untuk berkongsi merentas peranti</translation>
-<translation id="9029323097866369874">Benarkan <ph name="DOMAIN" /> untuk memasuki VR?</translation>
 <translation id="9040142327097499898">Pemberitahuan dibenarkan. Lokasi dimatikan untuk peranti ini.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Video}}</translation>
 <translation id="9050666287014529139">Frasa laluan</translation>

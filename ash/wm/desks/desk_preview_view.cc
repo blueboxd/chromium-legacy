@@ -20,6 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/border.h"
 
@@ -292,9 +293,12 @@ void DeskPreviewView::Layout() {
   // The desk's contents mirrored layer needs to be scaled down so that it fits
   // exactly in the center of the view.
   const auto root_size = mini_view_->root_window()->layer()->size();
+  const gfx::Vector2dF scale{
+      static_cast<float>(bounds.width()) / root_size.width(),
+      static_cast<float>(bounds.height()) / root_size.height()};
+  wallpaper_preview_->set_centered_layout_image_scale(scale);
   gfx::Transform transform;
-  transform.Scale(static_cast<float>(bounds.width()) / root_size.width(),
-                  static_cast<float>(bounds.height()) / root_size.height());
+  transform.Scale(scale.x(), scale.y());
   ui::Layer* desk_mirrored_contents_layer =
       desk_mirrored_contents_layer_tree_owner_->root();
   DCHECK(desk_mirrored_contents_layer);

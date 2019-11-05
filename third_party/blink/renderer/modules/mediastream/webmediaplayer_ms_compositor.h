@@ -20,6 +20,7 @@
 #include "media/base/media_util.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace base {
@@ -52,7 +53,7 @@ struct WebMediaPlayerMSCompositorTraits;
 // smoothness, if REFERENCE_TIMEs are populated for incoming VideoFrames.
 // Otherwise, WebMediaPlayerMSCompositor will simply store the most recent
 // frame, and submit it whenever asked by the compositor.
-class BLINK_MODULES_EXPORT WebMediaPlayerMSCompositor
+class MODULES_EXPORT WebMediaPlayerMSCompositor
     : public cc::VideoFrameProvider,
       public WTF::ThreadSafeRefCounted<WebMediaPlayerMSCompositor,
                                        WebMediaPlayerMSCompositorTraits> {

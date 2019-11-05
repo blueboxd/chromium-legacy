@@ -403,8 +403,8 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
     EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
               drag_controller()->current_drag_behavior());
     ASSERT_TRUE(drag_indicators());
-    EXPECT_EQ(IndicatorState::kDragAreaBoth,
-              drag_indicators()->current_indicator_state());
+    EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+              drag_indicators()->current_window_dragging_state());
     // Note that it's ok to use screen bounds here since we only have a single
     // primary display.
     EXPECT_EQ(GetExpectedDesksBarShiftAmount(),
@@ -449,16 +449,16 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
   auto* event_generator = GetEventGenerator();
   event_generator->MoveMouseTo(GetScreenInPixelsPoint(300, 800));
   ASSERT_TRUE(drag_indicators());
-  EXPECT_EQ(IndicatorState::kPreviewAreaRight,
-            drag_indicators()->current_indicator_state());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapRight,
+            drag_indicators()->current_window_dragging_state());
   EXPECT_EQ(overview_grid()->bounds().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 
   // Drag back to the middle, the desks bar should be shifted again.
   event_generator->MoveMouseTo(GetScreenInPixelsPoint(300, 400));
   ASSERT_TRUE(drag_indicators());
-  EXPECT_EQ(IndicatorState::kDragAreaBoth,
-            drag_indicators()->current_indicator_state());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+            drag_indicators()->current_window_dragging_state());
   EXPECT_EQ(GetExpectedDesksBarShiftAmount(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 
@@ -466,8 +466,8 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest,
   // widget is no longer shifted.
   event_generator->MoveMouseTo(GetScreenInPixelsPoint(300, 0));
   ASSERT_TRUE(drag_indicators());
-  EXPECT_EQ(IndicatorState::kPreviewAreaLeft,
-            drag_indicators()->current_indicator_state());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
+            drag_indicators()->current_window_dragging_state());
   EXPECT_EQ(overview_grid()->bounds().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 
@@ -502,8 +502,8 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
   event_generator->MoveMouseTo(
       GetScreenInPixelsPoint(mini_view_location.x(), mini_view_location.y()));
   ASSERT_TRUE(drag_indicators());
-  EXPECT_EQ(IndicatorState::kDragAreaBoth,
-            drag_indicators()->current_indicator_state());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+            drag_indicators()->current_window_dragging_state());
   EXPECT_EQ(GetExpectedDesksBarShiftAmount(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
 
@@ -515,8 +515,8 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_EQ(overview_grid()->bounds().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());
-  EXPECT_EQ(IndicatorState::kNone,
-            drag_indicators()->current_indicator_state());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+            drag_indicators()->current_window_dragging_state());
 }
 
 INSTANTIATE_TEST_SUITE_P(,

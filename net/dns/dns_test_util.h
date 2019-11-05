@@ -180,6 +180,22 @@ static const char* const kT4IpAddresses[] = {"172.217.6.195"};
 static const int kT4TTL = 0x0000012b;
 static const unsigned kT4RecordCount = base::size(kT0IpAddresses);
 
+//--------------------------------------------------------------------
+// A well-formed ESNI (TLS 1.3 Encrypted Server Name Indication,
+// draft 4) keys object ("ESNIKeys" member of the ESNIRecord struct from
+// the spec).
+//
+// (This is cribbed from boringssl SSLTest.ESNIKeysDeserialize (CL 37704/13).)
+extern const char kWellFormedEsniKeys[];
+extern const size_t kWellFormedEsniKeysSize;
+
+// Returns a well-formed ESNI keys object identical to kWellFormedEsniKeys,
+// except that the first 0x22 bytes of |custom_data| are written over
+// fields of the keys object in a manner that leaves length prefixes
+// correct and enum members valid, and so that distinct values of
+// |custom_data| result in distinct returned keys.
+std::string GenerateWellFormedEsniKeys(base::StringPiece custom_data = "");
+
 class AddressSorter;
 class DnsClient;
 class IPAddress;
@@ -217,6 +233,11 @@ struct TestServiceRecord {
 std::unique_ptr<DnsResponse> BuildTestDnsServiceResponse(
     std::string name,
     std::vector<TestServiceRecord> service_records,
+    std::string answer_name = "");
+
+std::unique_ptr<DnsResponse> BuildTestDnsEsniResponse(
+    std::string hostname,
+    std::vector<EsniContent> esni_records,
     std::string answer_name = "");
 
 struct MockDnsClientRule {
@@ -293,6 +314,10 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
   DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override;
 
   void CompleteDelayedTransactions();
+  // If there are any pending transactions of the given type,
+  // completes one and returns true. Otherwise, returns false.
+  bool CompleteOneDelayedTransactionOfType(DnsQueryType type)
+      WARN_UNUSED_RESULT;
 
   bool doh_probes_running() { return doh_probes_running_; }
 
@@ -337,6 +362,10 @@ class MockDnsClient : public DnsClient {
 
   // Completes all DnsTransactions that were delayed by a rule.
   void CompleteDelayedTransactions();
+  // If there are any pending transactions of the given type,
+  // completes one and returns true. Otherwise, returns false.
+  bool CompleteOneDelayedTransactionOfType(DnsQueryType type)
+      WARN_UNUSED_RESULT;
 
   void set_max_fallback_failures(int max_fallback_failures) {
     max_fallback_failures_ = max_fallback_failures;

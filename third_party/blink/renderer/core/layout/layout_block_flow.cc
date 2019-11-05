@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
@@ -2577,6 +2578,12 @@ void LayoutBlockFlow::SetPaintFragment(
     const NGBlockBreakToken*,
     scoped_refptr<const NGPhysicalFragment>) {}
 
+const NGFragmentItems* LayoutBlockFlow::FragmentItems() const {
+  if (const NGPhysicalBoxFragment* box_fragment = CurrentFragment())
+    return box_fragment->Items();
+  return nullptr;
+}
+
 void LayoutBlockFlow::ComputeVisualOverflow(
     bool recompute_floats) {
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
@@ -4618,6 +4625,16 @@ void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
   if (const NGPaintFragment* paint_fragment = PaintFragment()) {
     paint_fragment->RecalcInlineChildrenInkOverflow();
     return;
+  }
+
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
+    if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+      if (const NGFragmentItems* items = fragment->Items()) {
+        NGInlineCursor cursor(*items);
+        NGFragmentItem::RecalcInkOverflowAll(&cursor);
+        return;
+      }
+    }
   }
 
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();

@@ -35,8 +35,6 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerBase {
   ~PaintedOverlayScrollbarLayer() override;
 
  private:
-  gfx::Rect OriginThumbRectForPainting() const;
-
   template <typename T>
   bool UpdateProperty(T value, T* prop) {
     if (*prop == value)
@@ -51,11 +49,8 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerBase {
 
   scoped_refptr<Scrollbar> scrollbar_;
 
-  int thumb_thickness_;
-  int thumb_length_;
-  gfx::Point location_;
+  gfx::Size thumb_size_;
   gfx::Rect track_rect_;
-
   gfx::Rect aperture_;
 
   const ScrollbarOrientation orientation_;

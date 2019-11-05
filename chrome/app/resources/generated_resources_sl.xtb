@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Podpisnik potrdila</translation>
 <translation id="1145292499998999162">Vtičnik je blokiran</translation>
 <translation id="1145532888383813076">Iščite v napravi, aplikacijah in spletu.</translation>
+<translation id="1146678959555564648">V navidezno resničnost</translation>
 <translation id="114721135501989771">Prejmite Googlove pametne rešitve v Chromu</translation>
 <translation id="1149401351239820326">Mesec poteka</translation>
 <translation id="1150565364351027703">Sončna očala</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Shranjevanje podatkov v računu za Google Drive</translation>
 <translation id="1288037062697528143">Nočna svetloba se bo samodejno vklopila ob sončnem zahodu.</translation>
 <translation id="1288300545283011870">Lastnosti govora</translation>
-<translation id="1289513325360489062">Do podatkov tega spletnega mesta ni mogoče dostopati</translation>
 <translation id="1293264513303784526">Naprava USB-C (leva vrata)</translation>
 <translation id="1293556467332435079">Datoteke</translation>
 <translation id="1296911687402551044">Pripni izbrani zavihek</translation>
@@ -813,7 +813,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2165421703844373933">Dostopajte do Pomočnika, ko izgovorite »Ok Google«. Zaradi varčevanja z energijo akumulatorja izberite »Vklopljeno (priporočeno)«. Pomočnik se bo odzval samo, ko je naprava priklopljena ali se polni njen akumulator.</translation>
 <translation id="2166369534954157698">Hitra rjava lisica preskoči lenega psa</translation>
 <translation id="2169062631698640254">Kljub temu se želim prijaviti</translation>
-<translation id="2170088579611075216">Omogoči in zaženi VR</translation>
 <translation id="2172784515318616985">Naprej</translation>
 <translation id="2173302385160625112">Preverite internetno povezavo</translation>
 <translation id="2173801458090845390">Dodajanje ID-ja zahteve tej napravi</translation>
@@ -1006,7 +1005,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2439545803278355377">Vnesite novo kodo PIN. Koda PIN mora biti dolga vsaj štiri znake in lahko vsebuje črke, števke in druge znake.</translation>
 <translation id="2440604414813129000">Ogled v&amp;ira</translation>
 <translation id="2442916515643169563">Senčenje besedila</translation>
-<translation id="2444119669991608829">Stran ni v jeziku <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">Potreben je korenski imenik razširitve.</translation>
 <translation id="2445484935443597917">Ustvari nov profil</translation>
 <translation id="2446585455334014596">Aplikacija <ph name="APP_NAME" /> želi preveriti vašo identiteto</translation>
@@ -1427,7 +1425,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3020183492814296499">Bližnjice</translation>
 <translation id="3020990233660977256">Serijska številka: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Metulj</translation>
-<translation id="3021426244864538700">Dostopanje do podatkov tega spletnega mesta</translation>
 <translation id="3021678814754966447">&amp;Prikaz izvorne kode okvirja</translation>
 <translation id="3022978424994383087">Ni bilo razumljivo.</translation>
 <translation id="3023464535986383522">Izberite in poslušajte</translation>
@@ -2218,7 +2215,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4159681666905192102">To je račun za otroke, ki ga upravljata <ph name="CUSTODIAN_EMAIL" /> in <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Neznana tipkovnica.</translation>
 <translation id="4168015872538332605">Nekatere nastavitve, ki se nanašajo na uporabnika <ph name="PRIMARY_EMAIL" />, so deljene z vami. Te nastavitve vplivajo na vaš račun samo pri uporabi prijave z več računi.</translation>
-<translation id="4169535189173047238">Ne dovoli</translation>
 <translation id="4170314459383239649">Izbriši ob izhodu</translation>
 <translation id="4172051516777682613">Vedno pokaži</translation>
 <translation id="4175137578744761569">Svetlo vijolična in bela</translation>
@@ -2304,6 +2300,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4316850752623536204">Spletno mesto razvijalca</translation>
 <translation id="4320177379694898372">Ni internetne povezave</translation>
 <translation id="4321442524549817090">P&amp;okaži URL</translation>
+<translation id="4322394346347055525">Zapri druge zavihke</translation>
 <translation id="4324577459193912240">Datoteka je nedokončana</translation>
 <translation id="4325237902968425115">Odmeščanje aplikacije <ph name="LINUX_APP_NAME" /> …</translation>
 <translation id="4330191372652740264">Voda z ledom</translation>
@@ -2757,10 +2754,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5029568752722684782">Počisti kopijo</translation>
 <translation id="5030338702439866405">Izdajatelj</translation>
 <translation id="5033266061063942743">Geometrijske oblike</translation>
-<translation id="5033865233969348410">Med uporabo VR lahko to spletno mesto o vas izve to:
-  –  vaše fizične lastnosti, kot je telesna višina
-
-Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> želi uporabiti kamero in mikrofon</translation>
 <translation id="5036662165765606524">Nobenemu spletnemu mestu ne dovoli samodejnega prenosa več datotek</translation>
 <translation id="5037676449506322593">Izberi vse</translation>
@@ -3034,7 +3027,6 @@ Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translat
 <translation id="5449588825071916739">Dodaj vse zavihke med zaznamke</translation>
 <translation id="5449716055534515760">Zapri &amp;okno</translation>
 <translation id="5454166040603940656">pri ponudniku <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Jezik prevoda</translation>
 <translation id="5457113250005438886">Neveljavno</translation>
 <translation id="5457459357461771897">Branje in izbris fotografij, glasbe in drugih predstavnosti v računalniku</translation>
 <translation id="5457599981699367932">Brskajte kot gost</translation>
@@ -3094,11 +3086,6 @@ Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translat
 <translation id="5532223876348815659">Globalno</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> želi</translation>
 <translation id="5534304873398226603">Zavrzi fotografijo ali videoposnetek</translation>
-<translation id="5534334044554683961">Med uporabo VR lahko to spletno mesto o vas izve to:
-  –   vaše fizične lastnosti, kot je telesna višina
-  –   postavitev vaše sobe
-
-Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translation>
 <translation id="5535941515421698170">Odstranite tudi obstoječe podatke iz te naprave</translation>
 <translation id="5539221284352502426">Vneseno geslo je zavrnil strežnik. Možni razlogi za to so: Geslo je prekratko. Geslo mora vsebovati številke ali simbole. Geslo se mora razlikovati od prejšnjih gesel.</translation>
 <translation id="5541694225089836610">Dejanje je onemogočil skrbnik</translation>
@@ -3998,6 +3985,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6850286078059909152">Barva besedila</translation>
 <translation id="6851497530878285708">Aplikacija omogočena</translation>
 <translation id="6853388645642883916">Orodje za posodabljanje je v stanju pripravljenosti</translation>
+<translation id="68541483639528434">Zapri druge zavihke</translation>
 <translation id="6856623341093082836">Nastavitev in prilagajanje natančnosti zaslona na dotik</translation>
 <translation id="6857699260879628349">Pridobitev podatkov o konfiguraciji</translation>
 <translation id="6860097299815761905">Nastavitve proxyja ...</translation>
@@ -4110,7 +4098,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7019805045859631636">Hitro</translation>
 <translation id="7022562585984256452">Domača stran je nastavljena.</translation>
 <translation id="7025190659207909717">Upravljanje mobilne podatkovne storitve</translation>
-<translation id="7027891519253193555">Stran ni v jeziku <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Gesla</translation>
 <translation id="703001695939087067">Izbran je način pregleda okna. Za pomikanje pritiskajte tabulatorko.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – povezana so serijska vrata</translation>
@@ -4555,7 +4542,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7684718995427157417">Če želite ustvarjati in preizkušati aplikacije, omogočite most za odpravljanje težav s sistemom Android (ADB). Upoštevajte, da to dejanje omogoča namestitev aplikacij za Android, ki jih ni preveril Google, če želite orodje onemogočiti, pa je potrebna tovarniško ponastavitev.</translation>
 <translation id="7685049629764448582">Pomnilnik za JavaScript</translation>
 <translation id="7685087414635069102">Zahtevana je koda PIN</translation>
-<translation id="7685301384041462804">Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translation>
 <translation id="768549422429443215">Dodajte jezike ali preuredite seznam.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Potrdite novo geslo</translation>
@@ -4954,11 +4940,9 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Poteka prenos}one{Poteka prenos}two{Potekata prenosa}few{Potekajo prenosi}other{Potekajo prenosi}}</translation>
 <translation id="8213449224684199188">Izbran je način za fotografije</translation>
 <translation id="8213577208796878755">Ena druga razpoložljiva naprava.</translation>
-<translation id="8213996900880218548">Zahteva dostop do podatkov tega spletnega mesta</translation>
 <translation id="8214489666383623925">Odpri datoteko ...</translation>
 <translation id="8214962590150211830">Odstrani to osebo</translation>
 <translation id="8217399928341212914">Še naprej blokiraj samodejni prenos več datotek</translation>
-<translation id="822519928942492333">Jezik strani za prevajanje</translation>
 <translation id="8225265270453771718">Deljenje okna aplikacije</translation>
 <translation id="8225753906568652947">Izkoristite ponudbe</translation>
 <translation id="8226222018808695353">Prepovedano</translation>
@@ -5530,7 +5514,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9026731007018893674">prenos</translation>
 <translation id="9026852570893462412">To lahko traja nekaj minut. Prenašanje navideznega računalnika.</translation>
 <translation id="9027459031423301635">Povezavo odpri v novem &amp;zavihku</translation>
-<translation id="9029323097866369874">Dovolite spletnemu mestu <ph name="DOMAIN" />, da zažene VR?</translation>
 <translation id="9030515284705930323">Organizacija za vaš račun ni omogočila Trgovine Google Play. Če želite več informacij, se obrnite na skrbnika.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Prilepi</translation>
@@ -5574,7 +5557,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9094038138851891550">Neveljavno uporabniško ime</translation>
 <translation id="9094982973264386462">Odstrani</translation>
 <translation id="9095253524804455615">Odstrani</translation>
-<translation id="9095388113577226029">Več jezikov …</translation>
 <translation id="9100610230175265781">Zahtevano je geslo</translation>
 <translation id="9100765901046053179">Dodatne nastavitve</translation>
 <translation id="9101691533782776290">Zažene aplikacijo</translation>

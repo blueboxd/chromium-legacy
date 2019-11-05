@@ -71,11 +71,10 @@ void UpdateRequiredScreen::Show() {
       view_->SetUIState(UpdateRequiredView::UPDATE_REQUIRED_MESSAGE);
       view_->Show();
     }
-
-    version_updater_->GetEolStatus(
-        base::BindOnce(&UpdateRequiredScreen::OnGetEndOfLifeStatus,
-                       weak_factory_.GetWeakPtr()));
   }
+
+  // TODO(crbug/1020616): Get end-of-life information and update the UI based on
+  // that.
 }
 
 void UpdateRequiredScreen::Hide() {
@@ -280,15 +279,6 @@ void UpdateRequiredScreen::HideErrorMessage() {
   if (view_)
     view_->Show();
   histogram_helper_->OnErrorHide();
-}
-
-void UpdateRequiredScreen::OnGetEndOfLifeStatus(
-    update_engine::EndOfLifeStatus status) {
-  if (status == update_engine::EndOfLifeStatus::kEol) {
-    EnsureScreenIsShown();
-    if (view_)
-      view_->SetUIState(UpdateRequiredView::EOL);
-  }
 }
 
 void UpdateRequiredScreen::OnConnectRequested() {

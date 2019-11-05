@@ -29,6 +29,7 @@ class CONTENT_EXPORT ContactsManagerImpl
               bool include_emails,
               bool include_tel,
               bool include_addresses,
+              bool include_icons,
               SelectCallback mojom_callback) override;
 
  private:

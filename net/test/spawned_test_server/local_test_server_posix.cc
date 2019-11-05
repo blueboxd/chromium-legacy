@@ -19,7 +19,6 @@
 #include "base/process/process_iterator.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/test/test_timeouts.h"
 #include "net/test/python_utils.h"
 
 namespace {
@@ -59,13 +58,9 @@ class OrphanedTestServerFilter : public base::ProcessFilter {
 
 // Given a file descriptor, reads into |buffer| until |bytes_max|
 // bytes has been read or an error has been encountered.  Returns true
-// if the read was successful.  |remaining_time| is used as a timeout.
-bool ReadData(int fd,
-              ssize_t bytes_max,
-              uint8_t* buffer,
-              base::TimeDelta* remaining_time) {
+// if the read was successful.
+bool ReadData(int fd, ssize_t bytes_max, uint8_t* buffer) {
   ssize_t bytes_read = 0;
-  base::TimeTicks previous_time = base::TimeTicks::Now();
   while (bytes_read < bytes_max) {
     struct pollfd poll_fds[1];
 
@@ -73,8 +68,8 @@ bool ReadData(int fd,
     poll_fds[0].events = POLLIN | POLLPRI;
     poll_fds[0].revents = 0;
 
-    int rv = HANDLE_EINTR(poll(poll_fds, 1,
-                               remaining_time->InMilliseconds()));
+    // Each test itself has its own timeout, so no need to use one here.
+    int rv = HANDLE_EINTR(poll(poll_fds, 1, -1));
     if (rv == 0) {
       LOG(ERROR) << "poll() timed out; bytes_read=" << bytes_read;
       return false;
@@ -83,12 +78,6 @@ bool ReadData(int fd,
                   << bytes_read;
       return false;
     }
-
-    base::TimeTicks current_time = base::TimeTicks::Now();
-    base::TimeDelta elapsed_time_cycle = current_time - previous_time;
-    DCHECK_GE(elapsed_time_cycle.InMilliseconds(), 0);
-    *remaining_time -= elapsed_time_cycle;
-    previous_time = current_time;
 
     ssize_t num_bytes = HANDLE_EINTR(read(fd, buffer + bytes_read,
                                           bytes_max - bytes_read));
@@ -163,18 +152,15 @@ bool LocalTestServer::LaunchPython(
 bool LocalTestServer::WaitToStart() {
   base::ScopedFD our_fd(child_fd_.release());
 
-  base::TimeDelta remaining_time = TestTimeouts::action_timeout();
-
   uint32_t server_data_len = 0;
   if (!ReadData(our_fd.get(), sizeof(server_data_len),
-                reinterpret_cast<uint8_t*>(&server_data_len),
-                &remaining_time)) {
+                reinterpret_cast<uint8_t*>(&server_data_len))) {
     LOG(ERROR) << "Could not read server_data_len";
     return false;
   }
   std::string server_data(server_data_len, '\0');
   if (!ReadData(our_fd.get(), server_data_len,
-                reinterpret_cast<uint8_t*>(&server_data[0]), &remaining_time)) {
+                reinterpret_cast<uint8_t*>(&server_data[0]))) {
     LOG(ERROR) << "Could not read server_data (" << server_data_len
                << " bytes)";
     return false;

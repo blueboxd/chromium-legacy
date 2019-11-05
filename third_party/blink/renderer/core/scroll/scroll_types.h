@@ -178,13 +178,13 @@ enum ScrollbarControlStateMask {
 enum ScrollbarPart {
   kNoPart = 0,
   kBackButtonStartPart = 1,
-  kForwardButtonStartPart = 1 << 1,
+  kForwardButtonStartPart = 1 << 1,  // For custom scrollbars only.
   kBackTrackPart = 1 << 2,
   kThumbPart = 1 << 3,
   kForwardTrackPart = 1 << 4,
-  kBackButtonEndPart = 1 << 5,
+  kBackButtonEndPart = 1 << 5,  // For custom scrollbars only.
   kForwardButtonEndPart = 1 << 6,
-  kScrollbarBGPart = 1 << 7,
+  kScrollbarBGPart = 1 << 7,  // For custom scrollbars only.
   kTrackBGPart = 1 << 8,
   kAllParts = 0xffffffff
 };

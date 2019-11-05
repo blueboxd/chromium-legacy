@@ -373,6 +373,7 @@
 
       この設定を無効にした場合または設定しない場合、企業ユーザーは ARC を
       使用できません。</translation>
+<translation id="1553956579506604198">外部拡張機能のインストールをブロックする</translation>
 <translation id="1559980755219453326">このポリシーでは、拡張機能とプラグインの情報について、レポートを作成するかどうかを管理します。
 
       このポリシーが未設定または True に設定されている場合、拡張機能とプラグインのデータが収集されます。
@@ -500,6 +501,19 @@
       このポリシーが有効な URL に設定されている場合、<ph name="PRODUCT_NAME" /> はその URL からサイトリストをダウンロードし、<ph name="SITELIST_POLICY_NAME" /> ポリシーで設定されているものとしてルールを適用します。
 
       Internet Explorer の <ph name="IEEM_SITELIST_POLICY" /> ポリシーについて詳しくは、https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode をご覧ください。</translation>
+<translation id="1839278886947586809">
+      WebDriver が既存のポリシーのすべてに対応するようになったため、
+      このポリシーは不要になり、M80 で削除されました。
+
+      このポリシーを使用すると、WebDriver 機能のユーザーは
+      動作を妨げる可能性のあるポリシーをオーバーライドできます。
+
+      現在、このポリシーによって SitePerProcess ポリシーと IsolateOrigins ポリシーが無効になります。
+
+      このポリシーが有効な場合、WebDriver では互換性のないポリシーを
+      オーバーライドできます。
+      このポリシーが無効または未設定の場合、WebDriver では互換性のないポリシーを
+      オーバーライドできません。</translation>
 <translation id="1843117931376765605">ユーザー ポリシーの更新間隔</translation>
 <translation id="1844620919405873871">ロックのクイック解除に関するポリシーを設定します。</translation>
 <translation id="1845405905602899692">キオスクの設定</translation>
@@ -652,6 +666,7 @@
           このポリシーが未設定の場合、4 つのスキームのすべてが使用されます。</translation>
 <translation id="2067011586099792101">コンテンツ パック外部のサイトへのアクセスをブロックする</translation>
 <translation id="2073552873076775140"><ph name="PRODUCT_NAME" /> へのログインを許可する</translation>
+<translation id="2075732129949889165">Crostini Ansible プレイブック</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2077273864382355561">画面がオフになるまでの時間（バッテリー電源での実行時）</translation>
 <translation id="2082205219176343977">デバイスでの使用を許可する Chrome の最小バージョンを設定する。</translation>
@@ -662,6 +677,17 @@
 <translation id="2107601598727098402">
         このポリシーは M72 でサポート終了となりました。代わりに CloudManagementEnrollmentToken を使用してください。
         </translation>
+<translation id="2108169571875569435">このポリシーでは、URL を代替ブラウザで開くために使用するコマンドを管理します。
+
+      このポリシーを設定しない場合は、プラットフォーム固有のデフォルト、つまり Windows の場合は Internet Explorer、Mac OS X の場合は Safari が使用されます。Linux については、このポリシーを設定しない場合、代替ブラウザは起動できません。
+
+      このポリシーを <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />、<ph name="FIREFOX_VALUE_PLACEHOLDER" />、<ph name="SAFARI_VALUE_PLACEHOLDER" />、
+      <ph name="OPERA_VALUE_PLACEHOLDER" /> のいずれかに設定した場合、そのブラウザはインストールされていれば起動します。
+      <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> は Windows でのみ、<ph name="SAFARI_VALUE_PLACEHOLDER" /> は Windows と Mac OS X でのみ
+      使用できます。
+
+      このポリシーをファイルパスに設定した場合、そのファイルは
+      実行可能なファイルとして使用されます。</translation>
 <translation id="2111016292707172233"><ph name="PRODUCT_NAME" /> のコンテンツ ビューで「タップして検索」を使用できるかどうかを制御します。
 
       この設定を有効にした場合、ユーザーは「タップして検索」を使用でき、この機能のオンとオフを切り替えることができます。
@@ -748,6 +774,9 @@
       このポリシーが無効の場合、ユーザーに確認メッセージは表示されず、AudioCaptureAllowedUrls で指定されている URL でのみ動画キャプチャが可能になります。
 
       このポリシーは、搭載カメラだけでなく、すべてのタイプの動画入力に適用されます。</translation>
+<translation id="2197625019569762163">このポリシーを True に設定した場合、ログイン画面ではパスワード入力用に数字キーボードがデフォルトで表示されます。ユーザーはそこから通常のキーボードに切り替えることができます。
+
+      このポリシーを設定した場合、ユーザーは設定を変更できません。このポリシーを未設定のままにするか False に設定した場合、このポリシーによる影響はありません。</translation>
 <translation id="2201555246697292490">ネイティブ メッセージングのホワイトリストを設定する</translation>
 <translation id="220280840901385239">ブロック可能な混合コンテンツを許可する例外をユーザーが追加できるようにする</translation>
 <translation id="2204753382813641270">シェルフの自動非表示を指定する</translation>
@@ -930,6 +959,17 @@
 
        このポリシーが False に設定されている場合、ネットワーク設定メッセージではなくエラー メッセージが表示されます。</translation>
 <translation id="2498238926436517902">常にシェルフを自動的に非表示にする</translation>
+<translation id="2505805702054675476">このポリシーでは、代替ブラウザに渡して呼び出すコマンドライン パラメータを管理します。
+
+      このポリシーを設定しない場合は、URL のみがコマンドライン パラメータとして渡されます。
+
+      このポリシーを文字列のリストに設定した場合は、それぞれの文字列が別個のコマンドライン パラメータとして代替ブラウザに渡されます。Windows の場合、パラメータはスペースで結合されます。Mac OS X と Linux の場合は、1 つのパラメータ内にスペースが含まれることがありますが、それらは 1 つのパラメータとして適切に扱われます。
+
+      要素に <ph name="URL_PLACEHOLDER" /> が含まれる場合は、その部分が開くページの URL に置き換えられます。
+
+      要素に <ph name="URL_PLACEHOLDER" /> が含まれない場合、URL はコマンドラインの末尾に追加されます。
+
+      環境変数は展開されます。Windows の場合は <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> が <ph name="ENV_VARIABLE_VALUE" /> 環境変数の値と置き換えられ、Mac OS X と Linux の場合は <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> が <ph name="ENV_VARIABLE" /> 環境変数の値と置き換えられます。</translation>
 <translation id="250670737672448119">「テキストカーソルによるハイライト表示」のユーザー補助機能を有効にします。
 
           この機能は、編集時にテキストカーソルの周辺領域をハイライト表示します。
@@ -950,6 +990,11 @@
 <translation id="2517466659416174529">バックグラウンド タブの凍結を許可する</translation>
 <translation id="2518231489509538392">音声の再生を許可する</translation>
 <translation id="2521581787935130926">ブックマーク バーでアプリのショートカットを表示する</translation>
+<translation id="2526082146909867346">サイトから証明書をリクエストされた場合に、どのサイトであれば <ph name="PRODUCT_NAME" /> でクライアント証明書を自動的に選択するかを URL パターンのリストで指定できます。
+
+          値は文字列に変換した JSON 辞書の配列とする必要があります。各辞書は <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> の形式とし、<ph name="URL_PATTERN_PLACEHOLDER" /> にはコンテンツ設定のパターン、<ph name="FILTER_PLACEHOLDER" /> には、ブラウザが自動的に選択するクライアント証明書の条件を指定します。フィルタの設定に関係なく、サーバーの証明書リクエストに一致する証明書のみが選択されます。たとえば <ph name="FILTER_PLACEHOLDER" /> を <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> の形式で指定した場合は、発行元の CommonName が <ph name="ISSUER_CN_PLACEHOLDER" /> のクライアント証明書のみが選択されます。<ph name="FILTER_PLACEHOLDER" /> に <ph name="ISSUER_STRING_VALUE" /> と <ph name="SUBJECT_STRING_VALUE" /> のセクションを含めた場合は、両方の条件を満たすクライアント証明書が選択されます。<ph name="FILTER_PLACEHOLDER" /> で組織（"O"）を指定した場合は、指定した値に一致する組織を少なくとも 1 つ含む証明書が選択されます。<ph name="FILTER_PLACEHOLDER" /> で組織部門（"OU"）を指定した場合は、指定した値に一致する組織部門を少なくとも 1 つ含む証明書が選択されます。<ph name="FILTER_PLACEHOLDER" /> が空の辞書「<ph name="EMPTY_DICTIONARY" />」の場合、クライアント証明書の選択に追加の条件は適用されません。
+
+          このポリシーを設定しない場合、どのサイトに対しても自動選択は行われません。</translation>
 <translation id="2529659024053332711">起動時の動作を指定できます。
 
           [新しいタブページを開く] を選択すると、<ph name="PRODUCT_NAME" /> の起動時に常に新しいタブページが開きます。
@@ -1365,6 +1410,13 @@
 <translation id="3236046242843493070">拡張機能、アプリ、ユーザー スクリプトのインストールを許可する URL パターン</translation>
 <translation id="3240609035816615922">プリンタの設定へのアクセス ポリシー</translation>
 <translation id="3240655340884151271">ホルダーの組み込みの NIC MAC アドレス</translation>
+<translation id="3242756958360374888"><ph name="PRODUCT_NAME" /> でのアカウント表示の制御に使用するパターンのリストを指定します。
+
+      デバイス上の各 Google アカウントは、このポリシーで指定されているパターンと照合され、<ph name="PRODUCT_NAME" /> で表示するかどうかが決定されます。アカウントの名前がリストのパターンと一致すれば、そのアカウントは表示されます。それ以外の場合、アカウントは非表示になります。
+
+      ワイルドカード文字「*」を使用すると、0 文字以上の任意の文字列を表すことができます。エスケープ文字は「\」です。「*」または「\」の文字そのものを指定するには、その直前に「\」を挿入します。
+      
+このポリシーを設定しない場合、デバイス上のすべての Google アカウントは <ph name="PRODUCT_NAME" /> で表示されます。</translation>
 <translation id="3251500716404598358">ブラウザ切り替えのポリシーを設定します。
 
       設定したウェブサイトは、<ph name="PRODUCT_NAME" /> ではなく別のブラウザで自動的に表示されるようになります。</translation>
@@ -1415,6 +1467,19 @@
 
       このポリシーについては推奨設定しかできません。このポリシーを使って推奨言語 / 地域を最上位に移動することは可能ですが、ユーザーは <ph name="PRODUCT_OS_NAME" /> でサポートされた言語 / 地域であればどれでもセッションで使用することができます。
       </translation>
+<translation id="3378482432905539452">このポリシーはサポートを終了しました。Flash プラグインを使用できるかどうかを管理するには <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> を使用してください。また、PDF ファイルを開く際に組み込みの PDF ビューアを使用するかどうかを管理するには <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> を使用してください。
+
+      <ph name="PRODUCT_NAME" /> でユーザーが有効または無効にできるプラグインのリストを指定します。
+
+      ワイルドカード文字「*」と「?」を、任意の文字列に一致するものとして使用できます。「*」は任意の数の文字、「?」は 0 または 1 文字に対応します。エスケープ文字は「\」です。「*」、「?」、「\」の文字そのものを指定するには、その直前に「\」を挿入します。
+
+      この設定を有効にした場合は、リストで指定したプラグインを <ph name="PRODUCT_NAME" /> で使用できます。ユーザーは「about:plugins」でプラグインを有効または無効にできます。DisabledPlugins で指定されたパターンにプラグインが一致する場合でも、あるいは DisabledPlugins、DisabledPluginsExceptions、EnabledPlugins で指定されたパターンのいずれにもプラグインが一致しない場合でも、有効化または無効化が可能です。
+
+      このポリシーでは、プラグインのブラックリストを細かく指定できます。たとえば「DisabledPlugins」リストで、すべてのプラグインを無効にする「*」や、すべての Java プラグインを無効にする「*Java*」のようなワイルドカードによる指定を行っているけれども、管理者が特定のバージョン（「IcedTea Java 2.3」など）を有効にする必要がある場合に、このポリシーを使用してその特定のバージョンを指定できます。
+
+      プラグインを除外する場合は、プラグイン名とプラグインのグループ名の両方を除外する必要があります。各プラグイン グループは about:plugins で別々のセクションとして表示され、各セクションには 1 つ以上のプラグインが含まれます。たとえば、「Shockwave Flash」プラグインは「Adobe Flash Player」グループに含まれており、ブラックリストから除外するにはプラグインとグループの両方の名前を例外リスト内のパターンに一致させる必要があります。
+
+      このポリシーを設定しない場合、「DisabledPlugins」のパターンに一致するプラグインは常に無効となり、ユーザーが有効にすることはできません。</translation>
 <translation id="3381968327636295719">ホスト ブラウザをデフォルトで使用する</translation>
 <translation id="3388153794103186066">指定したベンダー ID と製品 ID の USB デバイスへのアクセスを自動的に許可するサイトを、URL のリストで設定します。このポリシーが有効になるためには、リストの各項目でデバイスと URL の両方を指定する必要があります。デバイスの各項目にはベンダー ID と製品 ID を指定できます。指定されていない ID はワイルドカードとして扱われますが、例外として、製品 ID を指定するのであればベンダー ID も指定する必要があります。ベンダー ID の指定なしで製品 ID のみを指定した場合、このポリシーは無効となり、無視されます。
 
@@ -2127,6 +2192,15 @@
 <translation id="445270821089253489">レポートを送信するユーザーとデバイスの情報の種類を制御します。</translation>
 <translation id="4453913621209182880">背景のグラフィックありの印刷のみを許可する</translation>
 <translation id="4454820008017317557"><ph name="PRODUCT_NAME" /> ツールバー アイコンを表示する</translation>
+<translation id="4458977366860064210">新しい <ph name="CORS" /> の実装ではなく以前の <ph name="CORS" /> の実装を使用します。
+
+      True に設定した場合は、以前のバージョンと互換性のある以前の実装が使用されます。
+
+      False または未設定のままにした場合は新しい実装が使用されますが、その場合、互換性に関する企業特有の問題が発生する可能性があります。
+
+      このポリシーは数回のマイルストーンを経て削除される予定です。
+
+      <ph name="CORS" /> の詳細については、<ph name="CORS_HELP_URL" /> をご覧ください。</translation>
 <translation id="4467952432486360968">サードパーティの Cookie をブロックする</translation>
 <translation id="4474167089968829729">パスワード マネージャへのパスワード保存を有効にする</translation>
 <translation id="4476769083125004742">このポリシーを <ph name="BLOCK_GEOLOCATION_SETTING" /> に設定した場合、Android アプリは位置情報にアクセスできません。このポリシーを他の値に設定するか未設定のままにした場合、Android アプリで位置情報へのアクセスが必要になったときには、ユーザーに同意が求められます。</translation>
@@ -2164,6 +2238,17 @@
 <translation id="4534500438517478692">Android の制限名:</translation>
 <translation id="4541530620466526913">デバイスのローカル アカウント</translation>
 <translation id="4543502256674577024">デバイスの更新設定</translation>
+<translation id="4548555985107150628">このポリシーはサポートを終了しました。Flash プラグインを使用できるかどうかを管理するには <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> を使用してください。また、PDF ファイルを開く際に組み込みの PDF ビューアを使用するかどうかを管理するには <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> を使用してください。
+
+      <ph name="PRODUCT_NAME" /> で有効にするプラグインのリストを指定し、ユーザーがこの設定を変更できないようにします。
+
+      ワイルドカード文字「*」と「?」を、任意の文字列に一致するものとして使用できます。「*」は任意の数の文字、「?」は 0 または 1 文字に対応します。エスケープ文字は「\」です。「*」、「?」、「\」の文字そのものを指定するには、その直前に「\」を挿入します。
+
+      リストで指定したプラグインは、インストールされている場合は <ph name="PRODUCT_NAME" /> で常に使用されます。これらのプラグインは「about:plugins」で有効であることが示され、ユーザーが無効にすることはできません。
+
+      このポリシーは DisabledPlugins と DisabledPluginsExceptions のどちらよりも優先されます。
+
+      このポリシーを設定しない場合、ユーザーはシステムにインストールされたどのプラグインも無効にできます。</translation>
 <translation id="4554651132977135445">ユーザー ポリシーのループバック処理モード</translation>
 <translation id="4554841826517980623"><ph name="PRODUCT_NAME" /> のネットワーク ファイル共有の機能で、ネットワーク上の共有場所の検出に <ph name="NETBIOS_PROTOCOL" /> を使用するかどうかを設定します。
       このポリシーが True に設定されている場合、共有場所の検出処理ではネットワーク上の共有場所の検出に <ph name="NETBIOS_PROTOCOL" /> プロトコルが使用されます。
@@ -2929,6 +3014,19 @@
 
       URL（https://example.com/some/path など）は U2F の appID としてのみ照合され、ドメイン（example.com など）は webauthn の RP ID としてのみ照合されます。つまり、サイトの U2F と webauthn の両方の API に対応するには、appID URL とドメインを列挙する必要があります。</translation>
 <translation id="5836064773277134605">リモート アクセス ホストが使用する UDP ポートの範囲を制限する</translation>
+<translation id="5855010364142818361">このポリシーでは、Internet Explorer から Chrome に渡すコマンドライン パラメータを管理します。
+
+      Internet Explorer 用の「従来のブラウザのサポート」アドインがインストールされていない場合、このポリシーは無視されます。
+
+      このポリシーを設定しない場合は、Internet Explorer からコマンドライン パラメータとして URL のみが Chrome に渡されます。
+
+      このポリシーに文字列のリストを設定した場合は、各文字列の間に空白文字を挿入して結合したものがコマンドライン パラメータとして Chrome に渡されます。
+
+      要素に <ph name="URL_PLACEHOLDER" /> が含まれる場合は、その部分が開くページの URL に置き換えられます。
+
+      要素に <ph name="URL_PLACEHOLDER" /> が含まれない場合、URL はコマンドラインの末尾に追加されます。
+
+      環境変数は展開されます。Windows の場合は <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> が環境変数 ABC の値に置き換えられます。</translation>
 <translation id="5861856285460256766">保護者のアクセスコードの設定</translation>
 <translation id="5868414965372171132">ユーザー レベルのネットワーク設定</translation>
 <translation id="5879014913445067283">ネットワーク ファイル共有の検出の際に <ph name="NETBIOS_NAME" /> を有効にするかどうかを設定する</translation>
@@ -3246,6 +3344,15 @@
 
       この設定が無効に設定されているか未設定の場合、他のソースからの Flash コンテンツや小さなコンテンツはブロックされる可能性があります。</translation>
 <translation id="6532769014584932288">起動ロックを許可する</translation>
+<translation id="653645667373317432">このポリシーでは、Internet Explorer から <ph name="PRODUCT_NAME" /> に切り替えて URL を開くときに使用するコマンドを管理します。
+
+      Internet Explorer 用の「従来のブラウザのサポート」アドインがインストールされていない場合、このポリシーは無視されます。
+
+      このポリシーを設定しない場合は、Internet Explorer から <ph name="PRODUCT_NAME" /> を起動する際、Internet Explorer で <ph name="PRODUCT_NAME" /> の実行パスが自動検出されます。
+
+      このポリシーを設定した場合は、Internet Explorer から <ph name="PRODUCT_NAME" /> を起動する際、このポリシーを使用して <ph name="PRODUCT_NAME" /> を起動します。
+
+      このポリシーは、実行ファイルのパスに設定するか、Chrome のインストール場所を自動検出するには <ph name="PRODUCT_NAME_PLACEHOLDER" /> に設定できます。</translation>
 <translation id="6536600139108165863">デバイスのシャットダウン時に自動的に再起動する</translation>
 <translation id="6539246272469751178">このポリシーは Android アプリには適用されません。Android アプリは、常にデフォルトのダウンロード ディレクトリを使用し、<ph name="PRODUCT_OS_NAME" /> によってデフォルト以外のダウンロード ディレクトリにダウンロードされたファイルにはアクセスできません。</translation>
 <translation id="654303922206238013">ecryptfs の移行方法</translation>
@@ -3259,6 +3366,17 @@
 <translation id="6559057113164934677">カメラやマイクへのアクセスをどのサイトにも許可しない</translation>
 <translation id="6561396069801924653">システム トレイ メニューにユーザー補助オプションを表示</translation>
 <translation id="6563458316362153786">802.11r 高速切り替えを有効にする</translation>
+<translation id="6568977718979857253">このポリシーはサポートを終了しました。Flash プラグインを使用できるかどうかを管理するには <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> を使用してください。また、PDF ファイルを開く際に組み込みの PDF ビューアを使用するかどうかを管理するには <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> を使用してください。
+
+      <ph name="PRODUCT_NAME" /> で無効にするプラグインのリストを指定し、ユーザーがこの設定を変更できないようにします。
+
+      ワイルドカード文字「*」と「?」を、任意の文字列に一致するものとして使用できます。「*」は任意の数の文字、「?」は 0 または 1 文字に対応します。エスケープ文字は「\」です。「*」、「?」、「\」の文字そのものを指定するには、その直前に「\」を挿入します。
+
+      この設定を有効にした場合、リストで指定したプラグインは <ph name="PRODUCT_NAME" /> で使用されません。これらのプラグインは「about:plugins」で無効であることが示され、ユーザーが有効にすることはできません。
+
+      このポリシーよりも EnabledPlugins と DisabledPluginsExceptions が優先されます。
+
+      このポリシーを設定しない場合、ユーザーはシステムにインストールされたどのプラグインも使用できます（互換性のないハードコードされたプラグイン、古いプラグイン、危険なプラグインは除く）。</translation>
 <translation id="6573305661369899995">URL に関する制限の外部ソースを設定</translation>
 <translation id="6583851521569686409">プリンタのリストを設定します。
 
@@ -3341,6 +3459,11 @@
       この設定を使って、「ようこそ」ページに、<ph name="PRODUCT_NAME" /> へのログインを促すメッセージやデフォルトのブラウザとして選択するリンク、あるいはサービスの機能に関する情報を表示するかどうかを制御できます。</translation>
 <translation id="6766216162565713893">サイトによる近くの Bluetooth デバイスへのアクセスをユーザーに確認する</translation>
 <translation id="6770454900105963262">有効なキオスク セッションの情報を報告する</translation>
+<translation id="6780908086869332493">SAML フローをホストするログイン画面のフレームで、サイトから証明書をリクエストされた場合に、どのサイトであればクライアント証明書を自動的に選択するかを URL パターンのリストで指定できます。使用例としては、SAML IdP に提示するデバイス全体の証明書を設定するケースが挙げられます。
+
+      値は文字列に変換した JSON 辞書の配列とする必要があります。各辞書は <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> の形式とし、<ph name="URL_PATTERN_PLACEHOLDER" /> にはコンテンツ設定のパターン、<ph name="FILTER_PLACEHOLDER" /> には、ブラウザが自動的に選択するクライアント証明書の条件を指定します。フィルタの設定に関係なく、サーバーの証明書リクエストに一致する証明書のみが選択されます。<ph name="FILTER_PLACEHOLDER" /> を <ph name="JSON_DICTIONARY_EXAMPLE" /> の形式で指定した場合は、発行元の CommonName が <ph name="ISSUER_CN_PLACEHOLDER" /> のクライアント証明書のみが選択されます。<ph name="FILTER_PLACEHOLDER" /> が空の辞書「{}」の場合、クライアント証明書の選択に追加の条件は適用されません。
+
+      このポリシーを設定しない場合、どのサイトに対しても自動選択は行われません。</translation>
 <translation id="6786747875388722282">拡張機能</translation>
 <translation id="6786967369487349613">ローミング プロフィール ディレクトリの設定</translation>
 <translation id="6795485990775913659">PIN なしの印刷のみを許可します</translation>
@@ -3550,6 +3673,15 @@
       このポリシーが未設定の場合、ログインを許可するユーザーに制限は適用されません。ただし、新しいユーザーの作成には、<ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> ポリシーを適切に設定する必要があります。</translation>
 <translation id="7126716959063786004">タスク マネージャでプロセスを終了できるようにする</translation>
 <translation id="7127892035367404455">対象バージョンへのロールバック</translation>
+<translation id="712963038874313213">デフォルトの Crostini コンテナで実行する Ansible プレイブックを指定します。
+
+      Crostini が対象デバイスで利用可能で、ポリシーで許可されている場合は、このポリシーを使用して、デフォルトの Crostini コンテナに適用する Ansible プレイブックを指定できます。
+
+      データはサイズ 1 MB（1,000,000 バイト）以内で、YAML でエンコードされている必要があります。ファイルが完全にダウンロードされたかどうかの確認には、暗号化ハッシュが使用されます。
+
+      設定はダウンロードされてキャッシュに保存され、URL またはハッシュに変更があった場合は再度ダウンロードされます。
+
+      このポリシーを設定した場合、ユーザーは設定を変更できません。このポリシーを設定しない場合、Crostini がポリシーで許可されているのであれば、ユーザーは現在の設定で引き続きデフォルトの Crostini コンテナを使用できます。</translation>
 <translation id="713121532817834879">このポリシーは、Internet Explorer の <ph name="IEEM_SITELIST_POLICY" /> ポリシーと同じ形式の XML ファイルを指す URL です。XML ファイルからルールを読み込みますが、それらのルールは Internet Explorer と共有されません。
 
       この XML ファイルのルールは、<ph name="GREYLIST_POLICY_NAME" /> と同じように適用されます。つまり、これらのルールにより、<ph name="PRODUCT_NAME" /> から代替ブラウザを開くことも、代替ブラウザから <ph name="PRODUCT_NAME" /> を開くこともできなくなります。
@@ -3750,8 +3882,16 @@
       このポリシーを「アップロードとダウンロードを遅らせる」に設定した場合、<ph name="PRODUCT_NAME" /> は「ダウンロードを遅らせる」と「アップロードを遅らせる」のルールに従って動作します。
       </translation>
 <translation id="7372831798009983116">「自動クリック」のユーザー補助機能を有効にする</translation>
+<translation id="7373200034079131670">Android または VM が起動している場合、ユーザーのログアウト時に再起動する。</translation>
 <translation id="737655323154569539">印刷ページサイズを制限します。ポリシーが未設定または空白に設定されている場合は、制限なしとして扱われます。</translation>
 <translation id="7382191643394429934">背景のグラフィックありの印刷となしの印刷を両方許可する</translation>
+<translation id="7383445181072113521">DHCP リクエストで使用するデバイスのホスト名を指定します。
+
+      このポリシーを空白以外の文字列に設定した場合は、その文字列が DHCP リクエストの際にデバイスのホスト名として使用されます。
+
+      この文字列には変数 <ph name="ASSET_ID_PLACEHOLDER" />、<ph name="SERIAL_NUM_PLACEHOLDER" />、<ph name="MAC_ADDR_PLACEHOLDER" />、<ph name="MACHINE_NAME_PLACEHOLDER" /> を含めることができます。文字列がホスト名として使用される前に、これらの変数はデバイスの値に置き換えられます。変数の解決後の名前は、RFC 1035 の 3.1 項に準拠した有効なホスト名となる必要があります。
+
+      このポリシーを設定しない場合、または変数の解決後の名前が有効なホスト名ではない場合、DHCP リクエストにホスト名は設定されません。 </translation>
 <translation id="7389872682701720082">この設定が有効の場合、新しいプラグインが常に実行されます。
 
       この設定が無効または未設定の場合、承認を必要とするプラグインの実行許可を求めるメッセージがユーザーに表示されます。これらのプラグインはセキュリティを脅かす可能性があります。</translation>
@@ -3835,6 +3975,14 @@
           ここで指定したパターンに一致しないドメインの Cookie（またはこのポリシーが未設定の場合はすべての Cookie）には、グローバルなデフォルト値（<ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
 
           ここで指定するパターンは URL ではなくドメインとして扱われるため、スキームやポートは指定しないでください。</translation>
+<translation id="7590188804371204512">外部拡張機能のインストールを管理します。
+
+      この設定を有効にした場合、外部拡張機能のインストールはブロックされます。
+
+      この設定を無効にするか未設定のままにした場合、外部拡張機能のインストールは許可されます。
+
+      外部拡張機能とそのインストール方法については、https://developer.chrome.com/apps/external_extensions をご覧ください。
+      </translation>
 <translation id="7593523670408385997"><ph name="PRODUCT_NAME" /> がディスク上にキャッシュ ファイルを保存するときのキャッシュ サイズを設定します。
 
       このポリシーを設定した場合、ユーザーが「--disk-cache-size」フラグを指定したかどうかに関係なく、<ph name="PRODUCT_NAME" /> は指定のキャッシュ サイズを使用します。このポリシーで指定される値は、絶対的な上限値や下限値ではなく、キャッシュ システムに対する推奨値になります。数メガバイト小さいと判断された値は、適正な最小値に引き上げられて処理されます。
@@ -3887,6 +4035,13 @@
           「CookiesAllowedForUrls」ポリシーと「CookiesBlockedForUrls」ポリシーも参照してください。これら 3 つのポリシーの URL パターンが競合しないようにする必要があります。競合する場合にどのポリシーが優先されるかは決まっていません。
 
           「RestoreOnStartup」ポリシーで前のセッションの URL を復元するように設定されている場合、このポリシーは無視され、該当するサイトの Cookie は恒久的に保存されます。</translation>
+<translation id="7677220829878081413">
+      このポリシーを「ArcSession」に設定すると、ユーザーのログアウト時に Android が起動していた場合に、デバイスの再起動が行われます。
+      「ArcSessionOrVMStart」に設定すると、ユーザーのログアウト時に Android または VM が起動していた場合に、デバイスの再起動が行われます。
+      「Always」に設定すると、ユーザーがログアウトするたびにデバイスの再起動が行われます。
+      このポリシーを設定しない場合、ユーザーのログアウト時に再起動は行われません。「Never」に設定した場合も同様です。
+      このポリシーは外部のユーザーにのみ適用されます。
+      </translation>
 <translation id="7683777542468165012">動的なポリシーの更新</translation>
 <translation id="7687943045976362719">このポリシーが設定されている場合、指定されたコンテンツ タイプは <ph name="PRODUCT_FRAME_NAME" /> で処理されます。
 
@@ -3995,6 +4150,7 @@
 
           このポリシーが無効に設定されている場合、ユーザーは Kerberos アカウントを追加できません。アカウントは「Kerberos アカウントを設定する」ポリシーからのみ追加できます。アカウントをロックするにはこの方法が便利です。</translation>
 <translation id="7895553628261067384">リモート アクセス</translation>
+<translation id="7902040092815978832">パスワード入力用に数字キーボードを表示する</translation>
 <translation id="7902255855035461275">このリストに指定されているパターンが、リクエスト元 URL の
       セキュリティ オリジンと照合されます。一致するものが見つかった場合は、
       動画キャプチャ デバイスへのアクセスが許可されます。その際、確認のメッセージは表示されません。
@@ -4071,6 +4227,11 @@
       これらのブックマークは、ユーザーが変更できないフォルダに保存されます（ただし、ユーザーはブックマーク バーでこのフォルダを非表示にすることを選択できます）。デフォルトでは、フォルダ名は「管理対象のブックマーク」ですが、フォルダ名は、ブックマークのリストに、希望するフォルダ名を値とする「<ph name="TOPLEVEL_NAME" />」キーを含むディクショナリを追加することでカスタマイズできます。
 
       管理対象のブックマークは、ユーザー アカウントと同期されず、拡張機能で変更することもできません。</translation>
+<translation id="8077245272412229388">入力済みの Kerberos アカウントを追加します。Kerberos 認証情報とログイン認証情報が一致している場合、アカウントでログイン認証情報を再使用するように設定できます。手順は、「<ph name="LOGIN_EMAIL_PLACEHOLDER" />」と「<ph name="PASSWORD_PLACEHOLDER" />」でプリンシパルとパスワードをそれぞれ指定します。これにより、2 段階認証プロセスが設定されている場合以外は Kerberos チケットを自動的に取得できます。ユーザーは、このポリシーで追加されたアカウントを変更できません。
+
+          このポリシーを有効に設定した場合は、ポリシーで定義されたアカウントのリストが Kerberos アカウント設定に追加されます。
+
+          このポリシーを無効または未設定のままにした場合、アカウントは Kerberos アカウント設定に追加されず、以前にこのポリシーで追加されたアカウントもすべて削除されます。「ユーザーに Kerberos アカウントの追加を許可する」ポリシーが有効であれば、ユーザーは手動でアカウントを追加できます。</translation>
 <translation id="8078366200175825572">Cookie の設定を許可しないサイトの URL パターンリストを設定します。
 
           このポリシーが未設定の場合は、すべてのサイトでグローバルなデフォルト値（「DefaultCookiesSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。

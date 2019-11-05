@@ -32,12 +32,12 @@ __gCrWeb['suggestion'] = __gCrWeb.suggestion;
  * @param {string} name The name of the desired element.
  * @return {Element} The element if found, otherwise null;
  */
-var getElementByNameWithParent_ = function(parent, name) {
+var getElementByNameWithParent = function(parent, name) {
   if (parent.name === name) return parent;
 
   var el;
   for (var i = 0; i < parent.children.length; i++) {
-    el = getElementByNameWithParent_(parent.children[i], name);
+    el = getElementByNameWithParent(parent.children[i], name);
     if (el) return el;
   }
   return null;
@@ -285,7 +285,7 @@ __gCrWeb.suggestion.getTabOrder = function(element) {
 __gCrWeb.suggestion.getFormElement = function(formName, fieldName) {
   var form = __gCrWeb.form.getFormElementFromIdentifier(formName);
   if (!form) return null;
-  return getElementByNameWithParent_(form, fieldName);
+  return getElementByNameWithParent(form, fieldName);
 };
 
 /**

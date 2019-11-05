@@ -153,6 +153,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Semantisk tolkning inaktiverad</translation>
 <translation id="2086961585857038472">Nästa ord</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">se</translation>
 <translation id="2091933974477985526">Föregående redigerbara textområde</translation>
 <translation id="2100350898815792233">Alla skiljetecken</translation>
@@ -193,6 +194,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="2416512023405990736">En omarkerad kryssruta</translation>
 <translation id="2417569100218200841">Innehållsinformation</translation>
 <translation id="2417948780551741035">Slutnoter</translation>
+<translation id="2419852971200420169">Beskrivningslista</translation>
 <translation id="2421113964388408478">Borttagning</translation>
 <translation id="2422937916923936891">Kryssruta för menyalternativ</translation>
 <translation id="2428534162001909979">Kommandomenyer</translation>
@@ -371,6 +373,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="3497063866483065785">{COUNT,plural, =1{frågetecken}other{# frågetecken}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{cirkumflex}other{# cirkumflextecken}}</translation>
 <translation id="352577523970648069">Ett redigerbart textfält</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">klipp ut <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Stoppa uppläsningen tillfälligt genom att trycka med två fingrar</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, omarkerad kryssruta</translation>
@@ -779,6 +782,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="6378394210114975876">Tistellila</translation>
 <translation id="6385591741672306837">kolumn</translation>
 <translation id="6387719785439924554">sidoruta</translation>
+<translation id="6393014464788431702">Inaktivera alla händelsefilter</translation>
 <translation id="6411426777058107714">Det finns ingen föregående alternativknapp.</translation>
 <translation id="6414968628640960377">Föregående element av annan typ.</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -914,6 +918,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="7332592614823088566">Rad <ph name="ROWINDEX" /> av <ph name="ROWTOTAL" />, kolumn <ph name="COLINDEX" /> av <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">med popup</translation>
 <translation id="7356165926712028380">Byt till punktskrift med åtta punkter</translation>
+<translation id="7356610683936413584">Detalj i beskrivningslista</translation>
 <translation id="7362871137496673139">Det finns ingen föregående rubrik på nivå 2.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{et-tecken}other{# et-tecken}}</translation>
 <translation id="737396357417333429">klickbart</translation>
@@ -1092,6 +1097,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8096975275316362544">Ljust mintgrön</translation>
 <translation id="8098587210054821856">Skiffergrå</translation>
 <translation id="8110647606445335195">Det finns inga ARIA-landmärken.</translation>
+<translation id="8121539003537428024">Aktivera alla händelsefilter</translation>
 <translation id="812886159861361726">Nedladdningen stoppades <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Trycka</translation>
 <translation id="8153880621934657047">Inte i tabellen.</translation>

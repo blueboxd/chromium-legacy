@@ -13,6 +13,7 @@ recordActionTaken:
     ConsoleEvaluated : 8
     CoverageReportFiltered : 34
     CoverageStarted : 28
+    CoverageStartedPerBlock : 35
     CpuProfileNodeExcluded : 23
     CpuProfileNodeFocused : 22
     CpuThrottlingEnabled : 21

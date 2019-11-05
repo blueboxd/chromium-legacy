@@ -357,26 +357,31 @@ customize.onThemeChange = function() {
 customize.setAttribution = function(
     attributionLine1, attributionLine2, attributionActionUrl) {
   const attributionBox = $(customize.IDS.ATTRIBUTIONS);
-  const attr1 = document.createElement('a');
+  const hasActionUrl = attributionActionUrl !== '';
+
+  const attr1 = document.createElement(hasActionUrl ? 'a' : 'span');
   attr1.id = customize.IDS.ATTR1;
-  const attr2 = document.createElement('a');
+  const attr2 = document.createElement(hasActionUrl ? 'a' : 'span');
   attr2.id = customize.IDS.ATTR2;
 
   if (attributionLine1 !== '') {
     // Shouldn't be changed from textContent for security assurances.
     attr1.textContent = attributionLine1;
-    attr1.href = attributionActionUrl || '';
+    if (hasActionUrl) {
+      attr1.href = attributionActionUrl;
+    }
     $(customize.IDS.ATTRIBUTIONS).appendChild(attr1);
   }
 
   if (attributionLine2 !== '') {
     // Shouldn't be changed from textContent for security assurances.
     attr2.textContent = attributionLine2;
-    attr2.href = attributionActionUrl || '';
+    if (hasActionUrl) {
+      attr2.href = attributionActionUrl;
+    }
     attributionBox.appendChild(attr2);
   }
 
-  const hasActionUrl = attributionActionUrl !== '';
   if (hasActionUrl) {
     const attr = (attributionLine2 !== '' ? attr2 : attr1);
     attr.classList.add(customize.CLASSES.ATTR_LINK);

@@ -55,6 +55,10 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
   void ComputeNameFromContents(const AccessibilityNodeInfoDataWrapper* data,
                                std::vector<std::string>* names) const;
 
+  bool IsFocusableNativeWeb(ax::mojom::Role role) const;
+
+  bool IsInterestingLeaf() const;
+
   mojom::AccessibilityNodeInfoData* node_ptr_ = nullptr;
 
   bool is_clickable_leaf_;

@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">คำจารึก</translation>
 <translation id="207477615537953741">ปิดความหมาย</translation>
 <translation id="2086961585857038472">คำถัดไป</translation>
+<translation id="2087981446621639008">รายละเอียดรายการคำอธิบาย</translation>
 <translation id="2089387485033699258">th</translation>
 <translation id="2091933974477985526">พื้นที่ข้อความที่สามารถแก้ไขได้ก่อนหน้า</translation>
 <translation id="2100350898815792233">เครื่องหมายวรรคตอนทั้งหมด</translation>
@@ -192,6 +193,7 @@
 <translation id="2416512023405990736">ช่องทำเครื่องหมายที่ไม่ได้ทำเครื่องหมาย</translation>
 <translation id="2417569100218200841">ข้อมูลเนื้อหา</translation>
 <translation id="2417948780551741035">อ้างอิงท้ายเรื่อง</translation>
+<translation id="2419852971200420169">รายการคำอธิบาย</translation>
 <translation id="2421113964388408478">การลบ</translation>
 <translation id="2422937916923936891">ช่องทำเครื่องหมายรายการเมนู</translation>
 <translation id="2428534162001909979">เมนูคำสั่ง</translation>
@@ -370,6 +372,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{เครื่องหมายคำถาม}other{# เครื่องหมายคำถาม}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{เครื่องหมาย caret}other{# เครื่องหมาย caret}}</translation>
 <translation id="352577523970648069">ช่องข้อความที่แก้ไขได้</translation>
+<translation id="3538907380453898475">รายการคำอธิบาย</translation>
 <translation id="3549141990712742152">ตัด <ph name="TEXT" /></translation>
 <translation id="3549680091535286226">ใช้ 2 นิ้วแตะเพื่อหยุดเสียงพูดชั่วคราว</translation>
 <translation id="3568702578574425662">ไม่ได้เลือกช่องทำเครื่องหมาย <ph name="NAME" /></translation>
@@ -778,6 +781,7 @@
 <translation id="6378394210114975876">สีม่วงธิสเซิล</translation>
 <translation id="6385591741672306837">คอลัมน์</translation>
 <translation id="6387719785439924554">ส่วนที่ไม่เกี่ยวข้อง</translation>
+<translation id="6393014464788431702">ปิดใช้ตัวกรองเหตุการณ์ทั้งหมด</translation>
 <translation id="6411426777058107714">ไม่มีปุ่มตัวเลือกก่อนหน้า</translation>
 <translation id="6414968628640960377">เอลิเมนต์ที่ต่างกันก่อนหน้า</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -913,6 +917,7 @@
 <translation id="7332592614823088566">แถว <ph name="ROWINDEX" /> จาก <ph name="ROWTOTAL" />, คอลัมน์ <ph name="COLINDEX" /> จาก <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">มีป๊อปอัป</translation>
 <translation id="7356165926712028380">เปลี่ยนเป็นเบรลล์แบบ 8 จุด</translation>
+<translation id="7356610683936413584">รายละเอียดรายการคำอธิบาย</translation>
 <translation id="7362871137496673139">ไม่มีส่วนหัวระดับ 2 ก่อนหน้า</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{เครื่องหมายแอมเปอร์แซนด์}other{# เครื่องหมายแอมเปอร์แซนด์}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1091,6 +1096,7 @@
 <translation id="8096975275316362544">สีเขียวมิ้นต์ครีม</translation>
 <translation id="8098587210054821856">สีเทาอมฟ้า</translation>
 <translation id="8110647606445335195">ไม่มีจุดสังเกต ARIA</translation>
+<translation id="8121539003537428024">เปิดใช้ตัวกรองเหตุการณ์ทั้งหมด</translation>
 <translation id="812886159861361726">หยุดดาวน์โหลด <ph name="FILE_NAME" /> แล้ว</translation>
 <translation id="8138880386467279117">การแตะ</translation>
 <translation id="8153880621934657047">ไม่ได้อยู่ในตาราง</translation>

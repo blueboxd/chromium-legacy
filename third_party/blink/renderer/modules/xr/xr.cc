@@ -462,8 +462,8 @@ XR::XR(LocalFrame& frame, int64_t ukm_source_id)
   frame.GetBrowserInterfaceBroker().GetInterface(
       service_.BindNewPipeAndPassReceiver(
           frame.GetTaskRunner(TaskType::kMiscPlatformAPI)));
-  service_.set_disconnect_handler(
-      WTF::Bind(&XR::Dispose, WrapWeakPersistent(this)));
+  service_.set_disconnect_handler(WTF::Bind(
+      &XR::Dispose, WrapWeakPersistent(this), DisposeType::kDisconnected));
 }
 
 void XR::FocusedFrameChanged() {
@@ -507,9 +507,14 @@ void XR::AddEnvironmentProviderErrorHandler(
   environment_provider_error_callbacks_.push_back(std::move(callback));
 }
 
-void XR::ExitPresent() {
-  DCHECK(service_);
-  service_->ExitPresent();
+void XR::ExitPresent(base::OnceClosure on_exited) {
+  DVLOG(1) << __func__;
+  if (service_) {
+    service_->ExitPresent(std::move(on_exited));
+  } else {
+    // The service was already shut down, run the callback immediately.
+    std::move(on_exited).Run();
+  }
 
   // If the document was potentially being shown in a DOM overlay via
   // fullscreened elements, make sure to clear any fullscreen states on exiting
@@ -637,6 +642,7 @@ void XR::RequestImmersiveSession(LocalFrame* frame,
                                  Document* doc,
                                  PendingRequestSessionQuery* query,
                                  ExceptionState* exception_state) {
+  DVLOG(2) << __func__;
   // Log an immersive session request if we haven't already
   if (!did_log_request_immersive_session_) {
     ukm::builders::XR_WebXR(GetSourceId())
@@ -692,6 +698,7 @@ void XR::RequestImmersiveSession(LocalFrame* frame,
 void XR::RequestInlineSession(LocalFrame* frame,
                               PendingRequestSessionQuery* query,
                               ExceptionState* exception_state) {
+  DVLOG(2) << __func__;
   // Make sure the inline session request was allowed
   auto* inline_session_request_error =
       CheckInlineSessionRequestAllowed(frame, *query);
@@ -785,6 +792,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
                                  const String& mode,
                                  XRSessionInit* session_init,
                                  ExceptionState& exception_state) {
+  DVLOG(2) << __func__;
   // TODO(https://crbug.com/968622): Make sure we don't forget to call
   // metrics-related methods when the promise gets resolved/rejected.
   LocalFrame* frame = GetFrame();
@@ -1064,7 +1072,7 @@ void XR::AddedEventListener(const AtomicString& event_type,
 }
 
 void XR::ContextDestroyed(ExecutionContext*) {
-  Dispose();
+  Dispose(DisposeType::kContextDestroyed);
 }
 
 // A session is always created and returned.
@@ -1097,7 +1105,16 @@ XRSession* XR::CreateSensorlessInlineSession() {
                        true /* sensorless_session */);
 }
 
-void XR::Dispose() {
+void XR::Dispose(DisposeType dispose_type) {
+  switch (dispose_type) {
+    case DisposeType::kContextDestroyed:
+      is_context_destroyed_ = true;
+      break;
+    case DisposeType::kDisconnected:
+      // nothing to do
+      break;
+  }
+
   // If the document context was destroyed, shut down the client connection
   // and never call the mojo service again.
   service_.reset();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$, quoteString} from 'chrome://resources/js/util.m.js';
+import {$, listenForPrivilegedLinkClicks, quoteString} from 'chrome://resources/js/util.m.js';
 
 suite('UtilModuleTest', function() {
   test('quote string', function() {
@@ -24,6 +24,7 @@ suite('UtilModuleTest', function() {
   });
 
   test('click handler', function() {
+    listenForPrivilegedLinkClicks();
     document.body.innerHTML = `
       <a id="file" href="file:///path/to/file">File</a>
       <a id="chrome" href="about:chrome">Chrome</a>

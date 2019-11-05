@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace blink {
@@ -24,7 +25,7 @@ namespace {
 // Having a refcounted helper class allows multiple DummyWebRTCRtpSender to
 // share the same internal states.
 class DummyRtpSenderInternal
-    : public base::RefCountedThreadSafe<DummyRtpSenderInternal> {
+    : public WTF::ThreadSafeRefCounted<DummyRtpSenderInternal> {
  private:
   static uintptr_t last_id_;
 
@@ -46,7 +47,8 @@ uintptr_t DummyRtpSenderInternal::last_id_ = 0;
 class DummyWebRTCRtpSender : public WebRTCRtpSender {
  public:
   explicit DummyWebRTCRtpSender(WebMediaStreamTrack track)
-      : internal_(new DummyRtpSenderInternal(std::move(track))) {}
+      : internal_(
+            base::MakeRefCounted<DummyRtpSenderInternal>(std::move(track))) {}
   DummyWebRTCRtpSender(const DummyWebRTCRtpSender& other)
       : internal_(other.internal_) {}
   ~DummyWebRTCRtpSender() override {}
@@ -154,7 +156,7 @@ uintptr_t DummyWebRTCRtpReceiver::last_id_ = 0;
 // Having a refcounted helper class allows multiple DummyWebRTCRtpTransceivers
 // to share the same internal states.
 class DummyTransceiverInternal
-    : public base::RefCountedThreadSafe<DummyTransceiverInternal> {
+    : public WTF::ThreadSafeRefCounted<DummyTransceiverInternal> {
  private:
   static uintptr_t last_id_;
 
@@ -199,7 +201,8 @@ class MockWebRTCPeerConnectionHandler::DummyWebRTCRtpTransceiver
  public:
   DummyWebRTCRtpTransceiver(WebMediaStreamSource::Type type,
                             WebMediaStreamTrack track)
-      : internal_(new DummyTransceiverInternal(type, track)) {}
+      : internal_(base::MakeRefCounted<DummyTransceiverInternal>(type, track)) {
+  }
   DummyWebRTCRtpTransceiver(const DummyWebRTCRtpTransceiver& other)
       : internal_(other.internal_) {}
   ~DummyWebRTCRtpTransceiver() override {}
@@ -267,7 +270,7 @@ void MockWebRTCPeerConnectionHandler::CreateAnswer(
 
 void MockWebRTCPeerConnectionHandler::CreateAnswer(
     const WebRTCSessionDescriptionRequest&,
-    const WebRTCAnswerOptions&) {}
+    RTCAnswerOptionsPlatform*) {}
 
 void MockWebRTCPeerConnectionHandler::SetLocalDescription(
     const WebRTCVoidRequest&) {}

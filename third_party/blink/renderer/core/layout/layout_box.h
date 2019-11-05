@@ -1060,8 +1060,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                                 : IntrinsicSize().Width();
   }
   virtual LayoutUnit IntrinsicContentLogicalHeight() const {
-    // TODO(crbug.com/1016328): Set the override at the setter callsite instead,
-    // with tests.
     return HasOverrideIntrinsicContentLogicalHeight()
                ? OverrideIntrinsicContentLogicalHeight()
                : intrinsic_content_logical_height_;

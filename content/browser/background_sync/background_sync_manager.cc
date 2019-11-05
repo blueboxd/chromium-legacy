@@ -407,6 +407,7 @@ void BackgroundSyncManager::Register(
     op_scheduler_.ScheduleOperation(
         id, CacheStorageSchedulerMode::kExclusive,
         CacheStorageSchedulerOp::kBackgroundSync,
+        CacheStorageSchedulerPriority::kNormal,
         base::BindOnce(
             &BackgroundSyncManager::RegisterCheckIfHasMainFrame,
             weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
@@ -420,6 +421,7 @@ void BackgroundSyncManager::Register(
     op_scheduler_.ScheduleOperation(
         id, CacheStorageSchedulerMode::kExclusive,
         CacheStorageSchedulerOp::kBackgroundSync,
+        CacheStorageSchedulerPriority::kNormal,
         base::BindOnce(
             &BackgroundSyncManager::RegisterImpl,
             weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
@@ -445,6 +447,7 @@ void BackgroundSyncManager::UnregisterPeriodicSync(
   op_scheduler_.ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &BackgroundSyncManager::UnregisterPeriodicSyncImpl,
           weak_ptr_factory_.GetWeakPtr(), sw_registration_id, tag,
@@ -461,6 +464,7 @@ void BackgroundSyncManager::DidResolveRegistration(
   op_scheduler_.ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::DidResolveRegistrationImpl,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(registration_info), id));
@@ -499,6 +503,7 @@ void BackgroundSyncManager::GetRegistrations(
   op_scheduler_.ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &BackgroundSyncManager::GetRegistrationsImpl,
           weak_ptr_factory_.GetWeakPtr(), sync_type, sw_registration_id,
@@ -516,6 +521,7 @@ void BackgroundSyncManager::OnRegistrationDeleted(int64_t sw_registration_id,
   op_scheduler_.ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::OnRegistrationDeletedImpl,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
                      MakeEmptyCompletion(id)));
@@ -531,6 +537,7 @@ void BackgroundSyncManager::OnStorageWiped() {
   op_scheduler_.ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::OnStorageWipedImpl,
                      weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion(id)));
 }
@@ -621,6 +628,7 @@ void BackgroundSyncManager::Init() {
   op_scheduler_.ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::InitImpl,
                      weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion(id)));
 }
@@ -1690,6 +1698,7 @@ void BackgroundSyncManager::RevivePeriodicSyncRegistrations(
   op_scheduler_.ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::ReviveOriginImpl,
                      weak_ptr_factory_.GetWeakPtr(), std::move(origin),
                      MakeEmptyCompletion(id)));
@@ -1859,6 +1868,7 @@ void BackgroundSyncManager::FireReadyEvents(
   op_scheduler_.ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&BackgroundSyncManager::FireReadyEventsImpl,
                      weak_ptr_factory_.GetWeakPtr(), sync_type, reschedule, id,
                      std::move(callback), std::move(keepalive)));
@@ -2089,6 +2099,7 @@ void BackgroundSyncManager::EventComplete(
   op_scheduler_.ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &BackgroundSyncManager::EventCompleteImpl,
           weak_ptr_factory_.GetWeakPtr(), std::move(registration_info),

@@ -416,7 +416,7 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_ACCESSIBILITY_FEATURE_SHORTCUT_DISABLED_MSG"
                desc="The message used to indicate that, the corresponding shortcut for that accessibility feature has been disabled.">
-        <ph name="ORGANIZATION_NAME">$1<ex>google.com</ex></ph> has <ph name="FEATURE_STATE">$2<ex>activated</ex></ph> <ph name="FEATURE_NAME">$3<ex>Fullscreen magnifier</ex></ph>.
+        <ph name="ORGANIZATION_NAME">$1<ex>google.com</ex></ph> has <ph name="FEATURE_STATE">$2<ex>activated</ex></ph> <ph name="FEATURE_NAME">$3<ex>Full-screen magnifier</ex></ph>.
       </message>
       <message name="IDS_ASH_HIGH_CONTRAST_SHORTCUT_DISABLED"
                desc="The label used in the notification used to indicate that, the shortcut for high contrast feature has been disabled.">
@@ -427,7 +427,7 @@ This file contains the strings for ash.
         the docked magnifier
       </message>
       <message name="IDS_ASH_FULLSCREEN_MAGNIFIER_SHORTCUT_DISABLED"
-               desc="The label used in the notification used to indicate that, the shortcut for fullscreen magnifier feature has been disabled.">
+               desc="The label used in the notification used to indicate that, the shortcut for full-screen magnifier feature has been disabled.">
         the full-screen magnifier
       </message>
       <message name="IDS_ASH_SPOKEN_FEEDBACK_SHORTCUT_DISABLED"
@@ -511,10 +511,10 @@ This file contains the strings for ash.
         Dictation sends your voice to Google to allow voice typing in any text field.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE" desc="The label used in the accessibility menu of the system tray to toggle on/off high contrast feature.">
-        High contrast mode
+        High-contrast mode
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER" desc="The label used in the accessibility menu of the system tray to toggle on/off a magnifier that magnifies the entire screen.">
-        Fullscreen magnifier
+        Full-screen magnifier
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DOCKED_MAGNIFIER" desc="The label used in the accessibility menu of the system tray to toggle on/off a magnifier that shows a magnified copy of the screen in a docked viewport at the top of the screen.">
         Docked magnifier
@@ -1564,12 +1564,12 @@ This file contains the strings for ash.
 
       <!-- Notification that an accelerator was pressed, so the user knows how to toggle it back -->
       <message name="IDS_FULLSCREEN_MAGNIFIER_ACCEL_TITLE"
-               desc="Notification title to tell users that they just pressed the Ctrl+Search+M shortcut to toggle Fullscreen Magnifier, and that pressing it again will toggle it off.">
-        Fullscreen Magnifier
+               desc="Notification title to tell users that they just pressed the Ctrl+Search+M shortcut to toggle Full-screen Magnifier, and that pressing it again will toggle it off.">
+        Full-screen Magnifier
       </message>
       <message name="IDS_FULLSCREEN_MAGNIFIER_ACCEL_MSG"
-               desc="Notification message to tell users that they just pressed the Ctrl+Search+M shortcut to toggle Fullscreen Magnifier, and that pressing it again will toggle it off.">
-        Fullscreen Magnifier enabled. Press Ctrl+Search+M again to toggle it off.
+               desc="Notification message to tell users that they just pressed the Ctrl+Search+M shortcut to toggle Full-screen Magnifier, and that pressing it again will toggle it off.">
+        Full-screen Magnifier enabled. Press Ctrl+Search+M again to toggle it off.
       </message>
 
       <!-- Tray scale strings -->

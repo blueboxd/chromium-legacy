@@ -103,8 +103,8 @@ VideoCaptureHost::~VideoCaptureHost() {
   }
 
   NotifyAllStreamsRemoved();
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
-                            render_process_host_delegate_.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::UI},
+                   render_process_host_delegate_.release());
 }
 
 void VideoCaptureHost::OnError(const VideoCaptureControllerID& controller_id,

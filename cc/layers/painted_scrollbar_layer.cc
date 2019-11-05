@@ -28,8 +28,6 @@ scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
 PaintedScrollbarLayer::PaintedScrollbarLayer(scoped_refptr<Scrollbar> scrollbar)
     : scrollbar_(std::move(scrollbar)),
       internal_contents_scale_(1.f),
-      thumb_thickness_(scrollbar_->ThumbThickness()),
-      thumb_length_(scrollbar_->ThumbLength()),
       thumb_opacity_(scrollbar_->ThumbOpacity()),
       has_thumb_(scrollbar_->HasThumb()),
       supports_drag_snap_back_(scrollbar_->SupportsDragSnapBack()),
@@ -54,16 +52,15 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
       internal_contents_scale_, internal_content_bounds_);
 
   scrollbar_layer->SetSupportsDragSnapBack(supports_drag_snap_back_);
-  scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetBackButtonRect(back_button_rect_);
   scrollbar_layer->SetForwardButtonRect(forward_button_rect_);
-  scrollbar_layer->SetThumbLength(thumb_length_);
+  scrollbar_layer->SetTrackRect(track_rect_);
   if (orientation_ == HORIZONTAL) {
-    scrollbar_layer->SetTrackStart(track_rect_.x());
-    scrollbar_layer->SetTrackLength(track_rect_.width());
+    scrollbar_layer->SetThumbThickness(thumb_size_.height());
+    scrollbar_layer->SetThumbLength(thumb_size_.width());
   } else {
-    scrollbar_layer->SetTrackStart(track_rect_.y());
-    scrollbar_layer->SetTrackLength(track_rect_.height());
+    scrollbar_layer->SetThumbThickness(thumb_size_.width());
+    scrollbar_layer->SetThumbLength(thumb_size_.height());
   }
 
   if (track_resource_.get())
@@ -91,23 +88,13 @@ void PaintedScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
   ScrollbarLayerBase::SetLayerTreeHost(host);
 }
 
-gfx::Rect PaintedScrollbarLayer::ScrollbarLayerRectToContentRect(
-    const gfx::Rect& layer_rect) const {
-  // Don't intersect with the bounds as in LayerRectToContentRect() because
-  // layer_rect here might be in coordinates of the containing layer.
-  gfx::Rect expanded_rect = gfx::ScaleToEnclosingRectSafe(
-      layer_rect, internal_contents_scale_, internal_contents_scale_);
+gfx::Size PaintedScrollbarLayer::LayerSizeToContentSize(
+    const gfx::Size& layer_size) const {
+  gfx::Size content_size =
+      gfx::ScaleToCeiledSize(layer_size, internal_contents_scale_);
   // We should never return a rect bigger than the content bounds.
-  gfx::Size clamped_size = expanded_rect.size();
-  clamped_size.SetToMin(internal_content_bounds_);
-  expanded_rect.set_size(clamped_size);
-  return expanded_rect;
-}
-
-gfx::Rect PaintedScrollbarLayer::OriginThumbRect() const {
-  return orientation_ == HORIZONTAL
-             ? gfx::Rect(thumb_length_, thumb_thickness_)
-             : gfx::Rect(thumb_thickness_, thumb_length_);
+  content_size.SetToMin(internal_content_bounds_);
+  return content_size;
 }
 
 void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
@@ -121,14 +108,13 @@ void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
   UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
   UpdateProperty(scrollbar_->BackButtonRect(), &back_button_rect_);
   UpdateProperty(scrollbar_->ForwardButtonRect(), &forward_button_rect_);
-  UpdateProperty(scrollbar_->Location(), &location_);
   UpdateProperty(scrollbar_->HasThumb(), &has_thumb_);
   if (has_thumb_) {
-    UpdateProperty(scrollbar_->ThumbThickness(), &thumb_thickness_);
-    UpdateProperty(scrollbar_->ThumbLength(), &thumb_length_);
+    // Ignore ThumbRect's location because the PaintedScrollbarLayerImpl will
+    // compute it from scroll offset.
+    UpdateProperty(scrollbar_->ThumbRect().size(), &thumb_size_);
   } else {
-    UpdateProperty(0, &thumb_thickness_);
-    UpdateProperty(0, &thumb_length_);
+    UpdateProperty(gfx::Size(), &thumb_size_);
   }
 }
 
@@ -161,13 +147,12 @@ bool PaintedScrollbarLayer::Update() {
 
   UpdateThumbAndTrackGeometry();
 
-  gfx::Rect track_layer_rect = gfx::Rect(location_, bounds());
-  gfx::Rect scaled_track_rect = ScrollbarLayerRectToContentRect(
-      track_layer_rect);
+  gfx::Size size = bounds();
+  gfx::Size scaled_size = internal_content_bounds_;
 
   bool updated = false;
 
-  if (scaled_track_rect.IsEmpty()) {
+  if (scaled_size.IsEmpty()) {
     if (track_resource_) {
       track_resource_ = nullptr;
       thumb_resource_ = nullptr;
@@ -186,22 +171,20 @@ bool PaintedScrollbarLayer::Update() {
   if (update_rect().IsEmpty() && track_resource_)
     return updated;
 
-  if (!track_resource_ || scrollbar_->NeedsPaintPart(TRACK)) {
+  if (!track_resource_ ||
+      scrollbar_->NeedsRepaintPart(TRACK_BUTTONS_TICKMARKS)) {
     track_resource_ = ScopedUIResource::Create(
         layer_tree_host()->GetUIResourceManager(),
-        RasterizeScrollbarPart(track_layer_rect, scaled_track_rect, TRACK));
+        RasterizeScrollbarPart(size, scaled_size, TRACK_BUTTONS_TICKMARKS));
   }
 
-  gfx::Rect thumb_layer_rect = OriginThumbRect();
-  gfx::Rect scaled_thumb_rect =
-      ScrollbarLayerRectToContentRect(thumb_layer_rect);
-  if (has_thumb_ && !scaled_thumb_rect.IsEmpty()) {
-    if (!thumb_resource_ || scrollbar_->NeedsPaintPart(THUMB) ||
-        scaled_thumb_rect.size() !=
-            thumb_resource_->GetBitmap(0, false).GetSize()) {
+  gfx::Size scaled_thumb_size = LayerSizeToContentSize(thumb_size_);
+  if (has_thumb_ && !scaled_thumb_size.IsEmpty()) {
+    if (!thumb_resource_ || scrollbar_->NeedsRepaintPart(THUMB) ||
+        scaled_thumb_size != thumb_resource_->GetBitmap(0, false).GetSize()) {
       thumb_resource_ = ScopedUIResource::Create(
           layer_tree_host()->GetUIResourceManager(),
-          RasterizeScrollbarPart(thumb_layer_rect, scaled_thumb_rect, THUMB));
+          RasterizeScrollbarPart(thumb_size_, scaled_thumb_size, THUMB));
     }
     thumb_opacity_ = scrollbar_->ThumbOpacity();
   }
@@ -213,28 +196,26 @@ bool PaintedScrollbarLayer::Update() {
 }
 
 UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
-    const gfx::Rect& layer_rect,
-    const gfx::Rect& requested_content_rect,
+    const gfx::Size& size,
+    const gfx::Size& requested_content_size,
     ScrollbarPart part) {
-  DCHECK(!requested_content_rect.size().IsEmpty());
-  DCHECK(!layer_rect.size().IsEmpty());
+  DCHECK(!requested_content_size.IsEmpty());
+  DCHECK(!size.IsEmpty());
 
-  gfx::Rect content_rect = requested_content_rect;
+  gfx::Size content_size = requested_content_size;
 
   // Pages can end up requesting arbitrarily large scrollbars.  Prevent this
   // from crashing due to OOM and try something smaller.
   SkBitmap skbitmap;
   bool allocation_succeeded =
-      skbitmap.tryAllocN32Pixels(content_rect.width(), content_rect.height());
+      skbitmap.tryAllocN32Pixels(content_size.width(), content_size.height());
   // Assuming 4bpp, caps at 4M.
   constexpr int kMinScrollbarDimension = 1024;
-  int dimension = std::max(content_rect.width(), content_rect.height()) / 2;
+  int dimension = std::max(content_size.width(), content_size.height()) / 2;
   while (!allocation_succeeded && dimension >= kMinScrollbarDimension) {
-    content_rect.Intersect(gfx::Rect(requested_content_rect.x(),
-                                     requested_content_rect.y(), dimension,
-                                     dimension));
+    content_size.SetToMin(gfx::Size(dimension, dimension));
     allocation_succeeded =
-        skbitmap.tryAllocN32Pixels(content_rect.width(), content_rect.height());
+        skbitmap.tryAllocN32Pixels(content_size.width(), content_size.height());
     if (!allocation_succeeded)
       dimension = dimension / 2;
   }
@@ -244,13 +225,11 @@ UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
   SkiaPaintCanvas canvas(skbitmap);
   canvas.clear(SK_ColorTRANSPARENT);
 
-  float scale_x =
-      content_rect.width() / static_cast<float>(layer_rect.width());
-  float scale_y =
-      content_rect.height() / static_cast<float>(layer_rect.height());
+  float scale_x = content_size.width() / static_cast<float>(size.width());
+  float scale_y = content_size.height() / static_cast<float>(size.height());
   canvas.scale(SkFloatToScalar(scale_x), SkFloatToScalar(scale_y));
 
-  scrollbar_->PaintPart(&canvas, part);
+  scrollbar_->PaintPart(&canvas, part, gfx::Rect(size));
   // Make sure that the pixels are no longer mutable to unavoid unnecessary
   // allocation and copying.
   skbitmap.setImmutable();

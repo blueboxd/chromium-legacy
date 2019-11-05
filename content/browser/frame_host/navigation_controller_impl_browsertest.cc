@@ -8535,6 +8535,51 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_NE(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
 }
 
+// Checks that a browser initiated error page navigation in a frame pending
+// deletion is ignored and does not result in a crash. See
+// https://crbug.com/1019180.
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL url(embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHost* frame = shell()->web_contents()->GetMainFrame();
+
+  // Create an unload handler and force the browser process to wait before
+  // deleting |frame|.
+  EXPECT_TRUE(ExecJs(frame, R"(
+             window.onunload=function(e){
+               window.domAutomationController.send('done');
+             };)"));
+
+  // Navigate the main frame cross-process and wait for the unload event to
+  // fire.
+  DOMMessageQueue dom_message_queue(frame);
+  GURL cross_process_url(
+      embedded_test_server()->GetURL("b.com", "/page_with_iframe.html"));
+  shell()->LoadURL(cross_process_url);
+
+  std::string message;
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+  EXPECT_EQ("\"done\"", message);
+
+  // |frame| is now pending deletion.
+  EXPECT_FALSE(static_cast<RenderFrameHostImpl*>(frame)->is_active());
+
+  std::string error_html = "Error page";
+  DidStartNavigationObserver did_start_navigation_observer(
+      shell()->web_contents());
+  controller.LoadPostCommitErrorPage(frame, url, error_html,
+                                     net::ERR_BLOCKED_BY_CLIENT);
+
+  // The error page navigation was ignored.
+  EXPECT_FALSE(did_start_navigation_observer.observed());
+}
+
 // Test to verify that LoadPostCommitErrorPage works correctly when supplied
 // with an about:blank url for the error page.
 IN_PROC_BROWSER_TEST_F(

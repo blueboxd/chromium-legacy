@@ -40,7 +40,6 @@ class HostedAppBrowserController : public web_app::AppBrowserController {
   ~HostedAppBrowserController() override;
 
   // web_app::AppBrowserController:
-  base::Optional<std::string> GetAppId() const override;
   bool CreatedForInstalledPwa() const override;
   bool HasMinimalUiButtons() const override;
   gfx::ImageSkia GetWindowAppIcon() const override;
@@ -67,7 +66,6 @@ class HostedAppBrowserController : public web_app::AppBrowserController {
   // Will return nullptr if the extension has been uninstalled.
   const Extension* GetExtension() const;
 
-  const std::string extension_id_;
   const bool created_for_installed_pwa_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppBrowserController);

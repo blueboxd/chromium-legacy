@@ -65,6 +65,27 @@ suite('cr-focus-row-behavior-test', function() {
     await test_util.waitAfterNextRender(testElement);
   });
 
+  test('ID is not overriden when index is set', function() {
+    assertFalse(testElement.hasAttribute('id'));
+    assertFalse(testElement.hasAttribute('aria-rowindex'));
+    testElement.id = 'test-id';
+    assertTrue(testElement.hasAttribute('id'));
+    assertEquals('test-id', testElement.id);
+    assertFalse(testElement.hasAttribute('aria-rowindex'));
+    testElement.focusRowIndex = 5;  // Arbitrary index.
+    assertTrue(testElement.hasAttribute('id'));
+    assertEquals('test-id', testElement.id);
+    assertTrue(testElement.hasAttribute('aria-rowindex'));
+  });
+
+  test('ID and aria-rowindex are only set when index is set', function() {
+    assertFalse(testElement.hasAttribute('id'));
+    assertFalse(testElement.hasAttribute('aria-rowindex'));
+    testElement.focusRowIndex = 5;  // Arbitrary index.
+    assertTrue(testElement.hasAttribute('id'));
+    assertTrue(testElement.hasAttribute('aria-rowindex'));
+  });
+
   test('item passes focus to first focusable child', function() {
     let focused = false;
     testElement.$.control.addEventListener('focus', function() {

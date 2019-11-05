@@ -4,39 +4,6 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
-
-<iron-iconset-svg name="oobe-reset-32" size="32">
-  <svg>
-    <defs>
-      <g id="alert" fill-rule="evenodd">
-        <defs>
-          <path id="a" d="M14.667 20h2.666v2.667h-2.666V20zm0-10.667h2.666v8h-2.666v-8zm1.32-6.666C8.627 2.667 2.667 8.64 2.667 16s5.96 13.333 13.32 13.333c7.373 0 13.346-5.973 13.346-13.333S23.36 2.667 15.987 2.667zm.013 24c-5.893 0-10.667-4.774-10.667-10.667S10.107 5.333 16 5.333 26.667 10.107 26.667 16 21.893 26.667 16 26.667z"></path>
-        </defs>
-        <g fill="none" fill-rule="evenodd">
-          <path d="M0 0h32v32H0z"></path>
-          <use fill="#1A73E8" fill-rule="nonzero" xlink:href="#a"></use>
-        </g>
-      </g>
-    </defs>
-  </svg>
-</iron-iconset-svg>
-
-<iron-iconset-svg name="oobe-reset-64" size="64">
-  <svg>
-    <defs>
-      <g id="alert" fill-rule="evenodd">
-        <defs>
-          <path id="a" d="M29.333 40h5.334v5.333h-5.334V40zm0-21.333h5.334v16h-5.334v-16zm2.64-13.334C17.253 5.333 5.333 17.28 5.333 32c0 14.72 11.92 26.667 26.64 26.667C46.72 58.667 58.667 46.72 58.667 32c0-14.72-11.947-26.667-26.694-26.667zm.027 48c-11.787 0-21.333-9.546-21.333-21.333 0-11.787 9.546-21.333 21.333-21.333 11.787 0 21.333 9.546 21.333 21.333 0 11.787-9.546 21.333-21.333 21.333z"></path>
-        </defs>
-        <g fill="none" fill-rule="evenodd">
-          <path d="M0 0h64v64H0z"></path>
-          <use fill="#1A73E8" fill-rule="nonzero" xlink:href="#a"></use>
-        </g>
-      </g>
-    </defs>
-  </svg>
-</iron-iconset-svg>
 
 <dom-module id="oobe-reset-md">
   <template>
@@ -47,7 +14,7 @@
     <oobe-dialog id="resetDialog" role="dialog"
         i18n-values="aria-label:resetScreenAccessibleTitle" has-buttons>
       <hd-iron-icon slot="oobe-icon"
-          icon1x="oobe-reset-32:alert" icon2x="oobe-reset-64:alert">
+          icon1x="oobe-32:alert" icon2x="oobe-64:alert">
       </hd-iron-icon>
       <h1 slot="title" i18n-content="resetWarningTitle"></h1>
       <div slot="subtitle" class="powerwash-warning">

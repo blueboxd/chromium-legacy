@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Podpisovateľ certifikátu</translation>
 <translation id="1145292499998999162">Doplnok je blokovaný</translation>
 <translation id="1145532888383813076">Prehľadať zariadenie, aplikácie, internet.</translation>
+<translation id="1146678959555564648">Zadať VR</translation>
 <translation id="114721135501989771">Získajte inteligentné doplnky Googlu v Chrome</translation>
 <translation id="1149401351239820326">Mesiac vypršania platnosti</translation>
 <translation id="1150565364351027703">Slnečné okuliare</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Ukladať údaje v účte na Disku Google</translation>
 <translation id="1288037062697528143">Nočný režim sa automaticky zapne pri západe slnka</translation>
 <translation id="1288300545283011870">Vlastnosti hlasovej odozvy</translation>
-<translation id="1289513325360489062">Rozšírenia bez prístupu k údajom tohto webu</translation>
 <translation id="1293264513303784526">Zariadenie USB-C (port vľavo)</translation>
 <translation id="1293556467332435079">Súbory</translation>
 <translation id="1296911687402551044">Pripnúť vybranú kartu</translation>
@@ -813,7 +813,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2165421703844373933">Aktivujte svojho Asistenta vyslovením výrazu „OK Google“. Ak chcete šetriť batériu, vyberte Zapnutý (odporúčané). Váš Asistent bude reagovať iba vtedy, keď bude zariadenie pripojené do zásuvky alebo sa bude nabíjať.</translation>
 <translation id="2166369534954157698">Kŕdeľ ďateľov učí koňa žrať kôru</translation>
 <translation id="2169062631698640254">Napriek tomu sa prihlásiť</translation>
-<translation id="2170088579611075216">Povoliť a vstúpiť do VR</translation>
 <translation id="2172784515318616985">Pokračovať</translation>
 <translation id="2173302385160625112">Skontrolujte svoje internetové pripojenie</translation>
 <translation id="2173801458090845390">Pridať do tohto zariadenia ID rekvizície</translation>
@@ -1005,7 +1004,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2439545803278355377">Zadajte nový PIN. PIN musí mať aspoň štyri znaky a môže obsahovať písmená, čísla a ďalšie znaky.</translation>
 <translation id="2440604414813129000">&amp;Zobraziť zdrojový kód</translation>
 <translation id="2442916515643169563">Tieň textu</translation>
-<translation id="2444119669991608829">Stránka nie je v jazyku <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">Požaduje sa koreňový adresár rozšírenia.</translation>
 <translation id="2445484935443597917">Vytvoriť nový profil</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> chce overiť vašu totožnosť</translation>
@@ -1426,7 +1424,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3020183492814296499">Skratky</translation>
 <translation id="3020990233660977256">Sériové číslo: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Motýľ</translation>
-<translation id="3021426244864538700">Rozšírenia s prístupom k údajom tohto webu</translation>
 <translation id="3021678814754966447">&amp;Zobraziť zdrojový kód rámca</translation>
 <translation id="3022978424994383087">Nebolo rozumieť.</translation>
 <translation id="3023464535986383522">Počúvanie vybraného textu</translation>
@@ -2217,7 +2214,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4159681666905192102">Toto je detský účet spravovaný používateľmi <ph name="CUSTODIAN_EMAIL" /> a <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Neznáma klávesnica</translation>
 <translation id="4168015872538332605">Používateľ <ph name="PRIMARY_EMAIL" /> s vami zdieľa niektoré svoje nastavenia. Tieto nastavenia váš účet ovplyvnia iba počas používania viacnásobného prihlásenia.</translation>
-<translation id="4169535189173047238">Nepovoliť</translation>
 <translation id="4170314459383239649">Vymazať po ukončení</translation>
 <translation id="4172051516777682613">Vždy zobraziť</translation>
 <translation id="4175137578744761569">Svetlofialová a biela</translation>
@@ -2303,6 +2299,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4316850752623536204">Webové stránky vývojára</translation>
 <translation id="4320177379694898372">Žiadne internetové pripojenie</translation>
 <translation id="4321442524549817090">Zo&amp;braziť webovú adresu</translation>
+<translation id="4322394346347055525">Zatvoriť ostatné karty</translation>
 <translation id="4324577459193912240">Súbor nie je úplný</translation>
 <translation id="4325237902968425115">Prebieha odinštalovanie aplikácie <ph name="LINUX_APP_NAME" />…</translation>
 <translation id="4330191372652740264">Voda s ľadom</translation>
@@ -2756,10 +2753,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5029568752722684782">Vymazať kópiu</translation>
 <translation id="5030338702439866405">Vydavateľ</translation>
 <translation id="5033266061063942743">Geometrické tvary</translation>
-<translation id="5033865233969348410">V režime VR môže tento web získať nasledujúce informácie:
-– vaše fyzické vlastnosti, ako je výška.
-
-Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> chce použiť váš fotoaparát a mikrofón</translation>
 <translation id="5036662165765606524">Nepovoliť žiadnym stránkam automaticky sťahovať viacero súborov súčasne</translation>
 <translation id="5037676449506322593">Vybrať všetko</translation>
@@ -3033,7 +3026,6 @@ Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5449588825071916739">Všetky karty uložiť ako záložky</translation>
 <translation id="5449716055534515760">Zavrieť o&amp;kno</translation>
 <translation id="5454166040603940656">s poskytovateľom <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Jazyk, do ktorého chcete prekladať</translation>
 <translation id="5457113250005438886">Neplatné</translation>
 <translation id="5457459357461771897">Čítať a odstraňovať fotky, hudbu a ďalšie médiá z tohto počítača</translation>
 <translation id="5457599981699367932">Prehliadať ako hosť</translation>
@@ -3093,11 +3085,6 @@ Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5532223876348815659">Globálne</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> vyžaduje</translation>
 <translation id="5534304873398226603">Zahodiť fotku alebo video</translation>
-<translation id="5534334044554683961">V režime VR môže tento web získať nasledujúce informácie:
-– vaše fyzické vlastnosti, ako je výška;
-– rozloženie vašej miestnosti.
-
-Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="5535941515421698170">Zároveň z tohto zariadenia odstrániť existujúce dáta</translation>
 <translation id="5539221284352502426">Zadané heslo bolo zamietnuté serverom. Možné dôvody: Heslo je príliš krátke. Heslo musí obsahovať čísla alebo symboly. Heslo sa musí odlišovať od predchádzajúcich hesiel.</translation>
 <translation id="5541694225089836610">Správca akciu zakázal</translation>
@@ -3995,6 +3982,7 @@ Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="6850286078059909152">Farba textu</translation>
 <translation id="6851497530878285708">Aplikácia je povolená</translation>
 <translation id="6853388645642883916">Služba Updater je v režime spánku</translation>
+<translation id="68541483639528434">Zatvoriť ostatné karty</translation>
 <translation id="6856623341093082836">Nastaviť a upraviť presnosť dotykovej obrazovky</translation>
 <translation id="6857699260879628349">Získať informácie o konfigurácii</translation>
 <translation id="6860097299815761905">Nastavenia servera proxy...</translation>
@@ -4107,7 +4095,6 @@ Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="7019805045859631636">Rýchle</translation>
 <translation id="7022562585984256452">Vaša domovská stránka bola nastavená.</translation>
 <translation id="7025190659207909717">Správa mobilnej dátovej služby</translation>
-<translation id="7027891519253193555">Stránka nie je v jazyku <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Heslá</translation>
 <translation id="703001695939087067">Vstúpili ste do režimu prehľadu okien. Môžete ich prechádzať pomocou klávesa Tab.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – sériový port je pripojený</translation>
@@ -4552,7 +4539,6 @@ Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="7684718995427157417">Ak chcete vytvárať a testovať aplikácie, aktivujte Android Debug Bridge (ADB). Upozorňujeme, že touto akciou umožníte inštalácie aplikácií pre Android, ktoré Google neoveril, a deaktivácia vyžaduje obnovenie výrobných nastavení.</translation>
 <translation id="7685049629764448582">Pamäť jazyka JavaScript</translation>
 <translation id="7685087414635069102">Vyžaduje sa kód PIN</translation>
-<translation id="7685301384041462804">Pred prechodom do VR skontrolujte, či tomuto webu dôverujete.</translation>
 <translation id="768549422429443215">Pridajte jazyky alebo upravte poradie zoznamu.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Potvrďte nové heslo</translation>
@@ -4950,11 +4936,9 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Sťahuje sa}few{Sťahujú sa}many{Sťahujú sa}other{Sťahujú sa}}</translation>
 <translation id="8213449224684199188">Bol aktivovaný fotografický režim</translation>
 <translation id="8213577208796878755">Jedno ďalšie dostupné zariadenie.</translation>
-<translation id="8213996900880218548">Rozšírenia požadujúce prístup k údajom tohto webu</translation>
 <translation id="8214489666383623925">Otvoriť súbor...</translation>
 <translation id="8214962590150211830">Odstrániť túto osobu</translation>
 <translation id="8217399928341212914">Naďalej blokovať automatické sťahovanie viacerých súborov súčasne</translation>
-<translation id="822519928942492333">Jazyk stránok, ktorý chcete prekladať</translation>
 <translation id="8225265270453771718">Zdieľanie okna aplikácie</translation>
 <translation id="8225753906568652947">Uplatniť ponuky</translation>
 <translation id="8226222018808695353">Zakázané</translation>
@@ -5526,7 +5510,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9026731007018893674">stiahnuť</translation>
 <translation id="9026852570893462412">Tento proces môže trvať niekoľko minút. Sťahuje sa virtuálny počítač.</translation>
 <translation id="9027459031423301635">Otvoriť odkaz na novej &amp;karte</translation>
-<translation id="9029323097866369874">Povoliť webu <ph name="DOMAIN" /> prejsť do VR?</translation>
 <translation id="9030515284705930323">Vaša organizácia nepovoľuje vo vašom účte Obchod Google Play. Ak chcete získať ďalšie informácie, kontaktujte svojho správcu.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Prilepiť</translation>
@@ -5570,7 +5553,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9094038138851891550">Neplatné používateľské meno</translation>
 <translation id="9094982973264386462">Odstrániť</translation>
 <translation id="9095253524804455615">Odstrániť</translation>
-<translation id="9095388113577226029">Ďalšie jazyky…</translation>
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9100765901046053179">Rozšírené nastavenia</translation>
 <translation id="9101691533782776290">Spustiť aplikáciu</translation>

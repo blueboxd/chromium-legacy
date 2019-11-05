@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Certifikatunderskriver</translation>
 <translation id="1145292499998999162">Pluginnet blev blokeret</translation>
 <translation id="1145532888383813076">Søg på din enhed, i apps og på nettet.</translation>
+<translation id="1146678959555564648">Angiv VR</translation>
 <translation id="114721135501989771">Få Googles smarte funktioner i Chrome</translation>
 <translation id="1149401351239820326">Udløbsmåned</translation>
 <translation id="1150565364351027703">Solbriller</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Gemme data på din Google Drev-konto</translation>
 <translation id="1288037062697528143">Nattelys tændes automatisk ved solnedgang</translation>
 <translation id="1288300545283011870">Taleegenskaber</translation>
-<translation id="1289513325360489062">Der er ikke adgang til websitets data</translation>
 <translation id="1293264513303784526">USB-C-enhed (venstre port)</translation>
 <translation id="1293556467332435079">Filer</translation>
 <translation id="1296911687402551044">Fastgør den valgte fane</translation>
@@ -813,7 +813,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2165421703844373933">Få adgang til din Google-assistent, når du siger "Ok Google". Du kan spare på batteriet ved at vælge "Til (anbefales)". Google-assistenten svarer kun, når din enhed oplader eller er sluttet til en strømkilde.</translation>
 <translation id="2166369534954157698">Quizdeltagerne spiste jordbær med fløde, mens cirkusklovnen Walther spillede på xylofon</translation>
 <translation id="2169062631698640254">Log ind alligevel</translation>
-<translation id="2170088579611075216">Tillad og start VR</translation>
 <translation id="2172784515318616985">Fortsæt</translation>
 <translation id="2173302385160625112">Tjek din internetforbindelse</translation>
 <translation id="2173801458090845390">Føj rekvisitions-id til denne enhed</translation>
@@ -1006,7 +1005,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2439545803278355377">Angiv din nye pinkode. En pinkode skal bestå af mindst fire tegn og kan indeholde bogstaver, tal og andre tegn.</translation>
 <translation id="2440604414813129000">Vis &amp;kilde</translation>
 <translation id="2442916515643169563">Tekstskygge</translation>
-<translation id="2444119669991608829">Er siden ikke på <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">Udvidelsens rodmappe er påkrævet.</translation>
 <translation id="2445484935443597917">Opret en ny profil</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> vil bekræfte din identitet</translation>
@@ -1427,7 +1425,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3020183492814296499">Genveje</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Sommerfugl</translation>
-<translation id="3021426244864538700">Adgang til dette websites data</translation>
 <translation id="3021678814754966447">&amp;Vis rammens kilde</translation>
 <translation id="3022978424994383087">Det er ikke forstået.</translation>
 <translation id="3023464535986383522">Tekstoplæsning</translation>
@@ -2218,7 +2215,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4159681666905192102">Dette er en børnekonto, der administreres af <ph name="CUSTODIAN_EMAIL" /> og <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Ukendt tastatur</translation>
 <translation id="4168015872538332605">Nogle af de indstillinger, der tilhører <ph name="PRIMARY_EMAIL" />, deles med dig. Disse indstillinger påvirker kun din konto ved brug af samlet login fra flere konti.</translation>
-<translation id="4169535189173047238">Tillad ikke</translation>
 <translation id="4170314459383239649">Ryd ved lukning</translation>
 <translation id="4172051516777682613">Vis altid</translation>
 <translation id="4175137578744761569">Lyslilla og hvid</translation>
@@ -2304,6 +2300,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4316850752623536204">Udviklers website</translation>
 <translation id="4320177379694898372">Ingen internetforbindelse</translation>
 <translation id="4321442524549817090">V&amp;is webadresse</translation>
+<translation id="4322394346347055525">Luk alle andre faner</translation>
 <translation id="4324577459193912240">Filen er ufuldstændig</translation>
 <translation id="4325237902968425115">Afinstallerer <ph name="LINUX_APP_NAME" />...</translation>
 <translation id="4330191372652740264">Isvand</translation>
@@ -2757,10 +2754,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5029568752722684782">Slet kopi</translation>
 <translation id="5030338702439866405">Udstedt af</translation>
 <translation id="5033266061063942743">Geometriske former</translation>
-<translation id="5033865233969348410">Mens du er i VR, kan dette website muligvis få oplysninger om:
-  –  Dine fysiske træk som f.eks. højde
-
-Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> anmoder om at bruge dit kamera og din mikrofon</translation>
 <translation id="5036662165765606524">Tillad ikke, at nogen websites kan downloade flere filer automatisk</translation>
 <translation id="5037676449506322593">Vælg alle</translation>
@@ -3034,7 +3027,6 @@ Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="5449588825071916739">Tilføj alle faner som bogmærker</translation>
 <translation id="5449716055534515760">Luk vin&amp;due</translation>
 <translation id="5454166040603940656">med <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Sprog, der skal oversættes til</translation>
 <translation id="5457113250005438886">Ugyldig</translation>
 <translation id="5457459357461771897">Læs og slet billeder, musik og andre medier på din computer</translation>
 <translation id="5457599981699367932">Anvend som gæst</translation>
@@ -3094,11 +3086,6 @@ Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> vil gerne</translation>
 <translation id="5534304873398226603">Slet billede eller video</translation>
-<translation id="5534334044554683961">Mens du er i VR, kan dette website muligvis få oplysninger om:
-  –   Dine fysiske træk som f.eks. højde
-  –   Layoutet i det rum, du befinder dig i
-
-Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="5535941515421698170">Fjern også dine eksisterende data fra denne enhed</translation>
 <translation id="5539221284352502426">Den angivne adgangskode blev afvist af serveren. Mulige årsager: Adgangskoden er for kort. Adgangskoden skal indeholde tal eller symboler. Adgangskoden skal være forskellig fra tidligere adgangskoder.</translation>
 <translation id="5541694225089836610">Handlingen er deaktiveret af din administrator</translation>
@@ -3997,6 +3984,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6850286078059909152">Tekstfarve</translation>
 <translation id="6851497530878285708">Appen er aktiveret</translation>
 <translation id="6853388645642883916">Opdateringsprogrammet er i dvale</translation>
+<translation id="68541483639528434">Luk alle andre faner</translation>
 <translation id="6856623341093082836">Konfigurer og juster nøjagtigheden af din touchskærm</translation>
 <translation id="6857699260879628349">Hent konfigurationsoplysninger</translation>
 <translation id="6860097299815761905">Indstillinger for proxy...</translation>
@@ -4109,7 +4097,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7019805045859631636">Hurtig</translation>
 <translation id="7022562585984256452">Din startside er blevet konfigureret.</translation>
 <translation id="7025190659207909717">Administration af mobildatatjeneste</translation>
-<translation id="7027891519253193555">Er siden ikke på <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Adgangskoder</translation>
 <translation id="703001695939087067">Tilstanden for vinduesoversigt blev åbnet. Tryk på fanen for at navigere.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – tilsluttet en serieport</translation>
@@ -4554,7 +4541,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7684718995427157417">Hvis du vil oprette og teste dine apps, skal du aktivere Android Debug Bridge (ADB). Bemærk! Denne handling tillader, at Android-apps, der ikke er blevet bekræftet af Google, kan installeres. Du skal gendanne fabriksindstillingerne for at deaktivere dette.</translation>
 <translation id="7685049629764448582">JavaScript-hukommelse</translation>
 <translation id="7685087414635069102">Der skal angives en pinkode</translation>
-<translation id="7685301384041462804">Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="768549422429443215">Tilføj sprog, eller omorganiser listen.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Bekræft den nye adgangskode</translation>
@@ -4952,11 +4938,9 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Downloaden er i gang}one{Downloaden er i gang}other{Downloadene er i gang}}</translation>
 <translation id="8213449224684199188">Fototilstand er aktiveret</translation>
 <translation id="8213577208796878755">Én anden tilgængelig enhed.</translation>
-<translation id="8213996900880218548">Anmoder om adgang til dette websites data</translation>
 <translation id="8214489666383623925">Åbn fil...</translation>
 <translation id="8214962590150211830">Fjern denne person</translation>
 <translation id="8217399928341212914">Fortsæt med at blokere automatiske downloads af flere filer</translation>
-<translation id="822519928942492333">Sidens sprog, som skal oversættes</translation>
 <translation id="8225265270453771718">Del et appvindue</translation>
 <translation id="8225753906568652947">Indløs dine tilbud</translation>
 <translation id="8226222018808695353">Forbudt</translation>
@@ -5529,7 +5513,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9026731007018893674">download</translation>
 <translation id="9026852570893462412">Denne proces kan tage et par minutter. Den virtuelle maskine downloades.</translation>
 <translation id="9027459031423301635">Åbn link på ny &amp;fane</translation>
-<translation id="9029323097866369874">Vil du tillade, at <ph name="DOMAIN" /> starter VR?</translation>
 <translation id="9030515284705930323">Din organisation har ikke aktiveret Google Play Butik for din konto. Kontakt din administrator for at få yderligere oplysninger.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Indsæt</translation>
@@ -5573,7 +5556,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9094038138851891550">Brugernavnet er ugyldigt</translation>
 <translation id="9094982973264386462">Fjern</translation>
 <translation id="9095253524804455615">Fjern</translation>
-<translation id="9095388113577226029">Flere sprog...</translation>
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9100765901046053179">Avancerede indstillinger</translation>
 <translation id="9101691533782776290">Åbn appen</translation>

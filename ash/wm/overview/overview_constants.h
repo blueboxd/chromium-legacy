@@ -35,11 +35,6 @@ constexpr float kShieldOpacity = 0.4f;
 constexpr float kWallpaperBlurSigma = 10.f;
 constexpr float kWallpaperClearBlurSigma = 0.f;
 
-// Amount of time we wait to unpause the occlusion tracker after a overview item
-// is finished dragging. Waits a bit longer than the overview item animation.
-constexpr base::TimeDelta kOcclusionPauseDurationForDrag =
-    base::TimeDelta::FromMilliseconds(300);
-
 }  // namespace ash
 
 #endif  // ASH_WM_OVERVIEW_OVERVIEW_CONSTANTS_H_

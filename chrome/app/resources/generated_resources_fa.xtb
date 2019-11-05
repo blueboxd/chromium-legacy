@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">امضا کننده گواهی</translation>
 <translation id="1145292499998999162">افزایه مسدود شد</translation>
 <translation id="1145532888383813076">دستگاه، برنامه‌ها و وب را جستجو کنید.</translation>
+<translation id="1146678959555564648">‏VR را وارد کنید</translation>
 <translation id="114721135501989771">‏هوشمندی‌های Google را در Chrome دریافت کنید</translation>
 <translation id="1149401351239820326">ماه انقضا</translation>
 <translation id="1150565364351027703">عینک آفتابی</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">‏ذخیره کردن داده‌‌ها در حساب Google Drive شما</translation>
 <translation id="1288037062697528143">«نور شب» هنگام غروب آفتاب به‌طور خودکار روشن می‌شود</translation>
 <translation id="1288300545283011870">مشخصات گفتار</translation>
-<translation id="1289513325360489062">نمی‌توان به داده‌های این سایت دسترسی داشت</translation>
 <translation id="1293264513303784526">‏دستگاه USB-C (درگاه سمت چپ)</translation>
 <translation id="1293556467332435079">فایل‌ها</translation>
 <translation id="1296911687402551044">پین کردن برگه انتخاب‌شده</translation>
@@ -810,7 +810,6 @@
 <translation id="2165421703844373933">‏با گفتن «OK Google» به «دستیار» دسترسی پیدا کنید. برای صرفه‌جویی در مصرف باتری، «روشن (توصیه می‌شود)» را انتخاب کنید. «دستیار» تنها زمانی پاسخ می‌دهد که دستگاه شما به برق متصل باشد یا درحال شارژ باشد.</translation>
 <translation id="2166369534954157698">روباه قهوه‌ای چالاک از روی سگ تنبل پرید</translation>
 <translation id="2169062631698640254">در هر صورت وارد سیستم شود</translation>
-<translation id="2170088579611075216">‏اجازه دادن و وارد شدن به VR</translation>
 <translation id="2172784515318616985">ادامه</translation>
 <translation id="2173302385160625112">اتصال اینترنت را بررسی کنید</translation>
 <translation id="2173801458090845390">افزودن شناسه درخواست به این دستگاه</translation>
@@ -1003,7 +1002,6 @@
 <translation id="2439545803278355377">پین جدید را وارد کنید. پین باید حداقل چهار نویسه داشته باشد و می‌تواند حاوی حروف، اعداد، و سایر نویسه‌ها باشد.</translation>
 <translation id="2440604414813129000">مشاهده م&amp;نبع</translation>
 <translation id="2442916515643169563">سایه نوشتار</translation>
-<translation id="2444119669991608829">صفحه به زبان <ph name="LANGUAGE" /> وجود ندارد؟</translation>
 <translation id="2445081178310039857">دایرکتوری ریشه برنامهٔ افزودنی لازم است.</translation>
 <translation id="2445484935443597917">ایجاد نمایه جدید</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> می‌خواهد هویتتان را به تأیید برساند</translation>
@@ -1424,7 +1422,6 @@
 <translation id="3020183492814296499">میان‌برها</translation>
 <translation id="3020990233660977256">شمارهٔ سریال: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">پروانه</translation>
-<translation id="3021426244864538700">درحال دسترسی به داده‌های این سایت</translation>
 <translation id="3021678814754966447">&amp;نمای منبع قاب</translation>
 <translation id="3022978424994383087">متوجه نشدم.</translation>
 <translation id="3023464535986383522">انتخاب برای شنیدن</translation>
@@ -2215,7 +2212,6 @@
 <translation id="4159681666905192102">این یک حساب مخصوص بچه‌ها است که توسط <ph name="CUSTODIAN_EMAIL" /> و <ph name="SECOND_CUSTODIAN_EMAIL" /> مدیریت می‌شود.</translation>
 <translation id="4163560723127662357">صفحه‌کلید ناشناس</translation>
 <translation id="4168015872538332605">برخی از تنظیمات متعلق به <ph name="PRIMARY_EMAIL" /> با شما به اشتراک گذاشته می‌شود. این تنظیمات وقتی از ورود چندگانه به سیستم استفاده شود، فقط در حساب شما اعمال می‌شود.</translation>
-<translation id="4169535189173047238">اجازه داده نشود</translation>
 <translation id="4170314459383239649">پاک کردن هنگام خروج</translation>
 <translation id="4172051516777682613">همیشه نشان داده شود</translation>
 <translation id="4175137578744761569">بنفش روشن و سفید</translation>
@@ -2301,6 +2297,7 @@
 <translation id="4316850752623536204">وب‌سایت برنامه‌نویس</translation>
 <translation id="4320177379694898372">اتصال اینترنتی ندارید</translation>
 <translation id="4321442524549817090">نمایش&amp; نشانی وب</translation>
+<translation id="4322394346347055525">بستن برگه‌های دیگر</translation>
 <translation id="4324577459193912240">فایل ناقص</translation>
 <translation id="4325237902968425115">درحال حذف نصب <ph name="LINUX_APP_NAME" />…</translation>
 <translation id="4330191372652740264">آب یخ</translation>
@@ -2754,10 +2751,6 @@
 <translation id="5029568752722684782">پاک کردن نسخه کپی</translation>
 <translation id="5030338702439866405">صدور توسط</translation>
 <translation id="5033266061063942743">شکل‌های هندسی</translation>
-<translation id="5033865233969348410">‏درمدتی که در حالت VR هستید، این سایت می‌تواند به این‌ها پی‌ببرد:
-  -  ویژگی‌های فیزیکی، مانند قد شما
-
-پیش از وارد شدن به VR، مطمئن شوید به این سایت اعتماد دارید.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> می‌خواهد از دوربین و میکروفن شما استفاده کند</translation>
 <translation id="5036662165765606524">به هیچ سایتی اجازه داده نشود چند فایل را به‌طور خودکار بارگیری کند</translation>
 <translation id="5037676449506322593">انتخاب همه</translation>
@@ -3031,7 +3024,6 @@
 <translation id="5449588825071916739">نشانک‌گذاری همه برگه‌ها...</translation>
 <translation id="5449716055534515760">بستن &amp;پنجره</translation>
 <translation id="5454166040603940656">با <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">زبانی که می‌خواهید به آن ترجمه کنید</translation>
 <translation id="5457113250005438886">نامعتبر</translation>
 <translation id="5457459357461771897">خواندن و حذف عکس‌ها، موسیقی، و سایر رسانه‌ها از رایانه‌تان</translation>
 <translation id="5457599981699367932">مرور کردن به‌عنوان یک مهمان</translation>
@@ -3091,11 +3083,6 @@
 <translation id="5532223876348815659">سراسری</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> می‌خواهد</translation>
 <translation id="5534304873398226603">صرف‌نظر کردن از عکس یا ویدیو</translation>
-<translation id="5534334044554683961">‏درمدتی که در حالت VR هستید، این سایت می‌تواند به این‌ها پی‌ببرد:
-  -   ویژگی‌های فیزیکی، مانند قد شما
-  -   چیدمان اتاقتان
-
-پیش از وارد شدن به VR، مطمئن شوید به این سایت اعتماد دارید.</translation>
 <translation id="5535941515421698170">همچنین داده‌های موجودتان را در این دستگاه پاک کنید</translation>
 <translation id="5539221284352502426">سرور گذرواژه‌ای را که وارد کرده‌اید نپذیرفته است. دلایل احتمالی عبارت‌ است از: گذرواژه خیلی کوتاه است. گذرواژه باید حاوی اعداد یا نمادها باشد. گذرواژه باید با گذرواژه‌های قبلی متفاوت باشد.</translation>
 <translation id="5541694225089836610">سرپرستتان کنش را غیرفعال کرده است</translation>
@@ -3993,6 +3980,7 @@
 <translation id="6850286078059909152">رنگ نوشتار</translation>
 <translation id="6851497530878285708">برنامه فعال شد</translation>
 <translation id="6853388645642883916">به‌روزرسان در حالت خواب</translation>
+<translation id="68541483639528434">بستن برگه‌های دیگر</translation>
 <translation id="6856623341093082836">راه‌اندازی و تنظیم دقت صفحه لمسی</translation>
 <translation id="6857699260879628349">دریافت اطلاعات پیکربندی</translation>
 <translation id="6860097299815761905">تنظیمات پراکسی...</translation>
@@ -4105,7 +4093,6 @@
 <translation id="7019805045859631636">سریع</translation>
 <translation id="7022562585984256452">صفحه اصلی شما تنظیم شد.</translation>
 <translation id="7025190659207909717">مدیریت خدمات داده‌های تلفن همراه</translation>
-<translation id="7027891519253193555">صفحه به زبان <ph name="LANGUAGE" /> وجود ندارد؟</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
 <translation id="703001695939087067">‏وارد حالت مرور کلی پنجره شدید. برای پیمایش، Tab را فشار دهید.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - متصل به درگاه سریال</translation>
@@ -4550,7 +4537,6 @@
 <translation id="7684718995427157417">‏برای ایجاد و آزمایش برنامه‌ها، پل اشکال‌زدایی Android‏ (ADB) را فعال کنید. توجه داشته باشید که این کنش نصب برنامه‌های Android را که Google تأیید نکرده است مجاز می‌کند و برای غیرفعال شدن به بازنشانی کارخانه‌ای نیاز دارد.</translation>
 <translation id="7685049629764448582">حافطه جاوا اسکریپت</translation>
 <translation id="7685087414635069102">پین موردنیاز است</translation>
-<translation id="7685301384041462804">‏پیش از وارد شدن به حالت VR، مطمئن شوید به این سایت اعتماد دارید.</translation>
 <translation id="768549422429443215">افزودن زبان یا مرتب‌سازی مجدد فهرست.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> <ph name="DEVICE_PATH" /></translation>
 <translation id="7690294790491645610">تأیید گذرواژه جدید</translation>
@@ -4949,11 +4935,9 @@
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{بارگیری درحال انجام است}one{بارگیری درحال انجام است}other{بارگیری درحال انجام است}}</translation>
 <translation id="8213449224684199188">به حالت عکس‌برداری وارد شد</translation>
 <translation id="8213577208796878755">یک دستگاه دیگر در دسترس است.</translation>
-<translation id="8213996900880218548">می‌خواهد به داده‌های این سایت دسترسی داشته باشد</translation>
 <translation id="8214489666383623925">باز کردن فایل...</translation>
 <translation id="8214962590150211830">حذف این شخص</translation>
 <translation id="8217399928341212914">ادامه مسدود کردن بارگیری خودکار چندین فایل</translation>
-<translation id="822519928942492333">زبان صفحه موردنظر برای ترجمه</translation>
 <translation id="8225265270453771718">هم‌رسانی پنجره برنامه</translation>
 <translation id="8225753906568652947">استفاده از پیشنهادها</translation>
 <translation id="8226222018808695353">ممنوع</translation>
@@ -5525,7 +5509,6 @@
 <translation id="9026731007018893674">بارگیری</translation>
 <translation id="9026852570893462412">این فرایند ممکن است چند دقیقه طول بکشد. درحال بارگیری دستگاه مجازی.</translation>
 <translation id="9027459031423301635">باز کردن پیوند در &amp;برگه جدید</translation>
-<translation id="9029323097866369874">‏به <ph name="DOMAIN" /> اجازه می‌دهید به حالت VR وارد شود؟</translation>
 <translation id="9030515284705930323">‏سازمان شما فروشگاه Google Play را برای حسابتان فعال نکرده است. برای اطلاعات بیشتر با سرپرستتان تماس بگیرید.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;جای‌گذاری</translation>
@@ -5569,7 +5552,6 @@
 <translation id="9094038138851891550">نام کاربری نامعتبر است</translation>
 <translation id="9094982973264386462">پاک کردن</translation>
 <translation id="9095253524804455615">پاک کردن</translation>
-<translation id="9095388113577226029">زبان‌های بیشتر...</translation>
 <translation id="9100610230175265781">عبارت عبور لازم است</translation>
 <translation id="9100765901046053179">تنظیمات پیشرفته</translation>
 <translation id="9101691533782776290">راه‌اندازی برنامه</translation>

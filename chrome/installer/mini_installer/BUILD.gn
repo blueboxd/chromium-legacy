@@ -182,6 +182,7 @@ template("generate_mini_installer") {
       ":setup_runtime_deps",
       "//chrome",
       "//chrome/browser/extensions/default_extensions",
+      "//chrome/common/win:eventlog_provider",
       "//chrome/installer/setup",
       "//third_party/icu:icudata",
       chrome_dll_target,

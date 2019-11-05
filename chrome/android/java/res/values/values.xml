@@ -48,7 +48,6 @@
     <string name="help_context_protected_content">protected_content</string>
     <string name="help_context_data_reduction">reduce_data_usage</string>
     <string name="help_context_incognito_learn_more">chrome_incognito</string>
-    <string name="help_context_usage_reports">send_crash_report</string>
     <string name="help_context_sad_tab">mobile_awsnap</string>
     <string name="help_context_clear_browsing_data">clear_browsing_data</string>
     <string name="help_context_change_sync_passphrase">change_sync_passphrase</string>

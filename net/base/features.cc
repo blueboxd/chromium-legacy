@@ -45,6 +45,19 @@ const base::Feature kTLS13KeyUpdate{"TLS13KeyUpdate",
 const base::Feature kNetUnusedIdleSocketTimeout{
     "NetUnusedIdleSocketTimeout", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kRequestEsniDnsRecords{"RequestEsniDnsRecords",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+base::TimeDelta EsniDnsMaxAbsoluteAdditionalWait() {
+  DCHECK(base::FeatureList::IsEnabled(kRequestEsniDnsRecords));
+  return base::TimeDelta::FromMilliseconds(
+      kEsniDnsMaxAbsoluteAdditionalWaitMilliseconds.Get());
+}
+const base::FeatureParam<int> kEsniDnsMaxAbsoluteAdditionalWaitMilliseconds{
+    &kRequestEsniDnsRecords, "EsniDnsMaxAbsoluteAdditionalWaitMilliseconds",
+    10};
+const base::FeatureParam<int> kEsniDnsMaxRelativeAdditionalWaitPercent{
+    &kRequestEsniDnsRecords, "EsniDnsMaxRelativeAdditionalWaitPercent", 5};
+
 const base::Feature kSameSiteByDefaultCookies{
     "SameSiteByDefaultCookies", base::FEATURE_DISABLED_BY_DEFAULT};
 

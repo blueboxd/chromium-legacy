@@ -1285,6 +1285,13 @@ const char kProfileAvatarTutorialShown[] =
 // mode is on, recommending high-contrast extensions and themes.
 const char kInvertNotificationShown[] = "invert_notification_version_2_shown";
 
+// A pref holding the list of printer types to be disabled.
+const char kPrinterTypeBlacklist[] = "printing.printer_type_blacklist";
+
+// The default value for the 'Headers and footers' checkbox, in Print Preview.
+// Takes priority over kPrintPreviewStickySettings if set.
+const char kPrintHeaderFooter[] = "printing.print_header_footer";
+
 // Boolean controlling whether printing is enabled.
 const char kPrintingEnabled[] = "printing.enabled";
 
@@ -1295,10 +1302,6 @@ const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
 // selection in the Print Preview. See DefaultPrinterSelection policy.
 const char kPrintPreviewDefaultDestinationSelectionRules[] =
     "printing.default_destination_selection_rules";
-
-// The default value for the 'Headers and footers' checkbox, in Print Preview.
-// Takes priority over kPrintPreviewStickySettings if set.
-const char kPrintHeaderFooter[] = "printing.print_header_footer";
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 // A pref that sets the default destination in Print Preview to always be the

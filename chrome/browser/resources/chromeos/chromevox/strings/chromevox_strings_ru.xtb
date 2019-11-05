@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">Эпиграф</translation>
 <translation id="207477615537953741">Семантический метод отключен.</translation>
 <translation id="2086961585857038472">Следующее слово</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">ru</translation>
 <translation id="2091933974477985526">Перейти к предыдущей редактируемой области текста</translation>
 <translation id="2100350898815792233">Со всеми знаками препинания.</translation>
@@ -193,6 +194,7 @@
 <translation id="2416512023405990736">Снятый флажок</translation>
 <translation id="2417569100218200841">Сведения о контенте</translation>
 <translation id="2417948780551741035">Концевые сноски</translation>
+<translation id="2419852971200420169">Список определений</translation>
 <translation id="2421113964388408478">Удаление</translation>
 <translation id="2422937916923936891">Элемент меню: флажок</translation>
 <translation id="2428534162001909979">Меню</translation>
@@ -371,6 +373,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{вопросительный знак}one{# вопросительный знак}few{# вопросительных знака}many{# вопросительных знаков}other{# question marks}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{циркумфлекс}one{# циркумфлекс}few{# циркумфлекса}many{# циркумфлексов}other{# carets}}</translation>
 <translation id="352577523970648069">Редактируемое текстовое поле</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">вырезать <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Чтобы приостановить озвучивание текста, коснитесь экрана двумя пальцами.</translation>
 <translation id="3568702578574425662">Флажок "<ph name="NAME" />", не установлен</translation>
@@ -779,6 +782,7 @@
 <translation id="6378394210114975876">Чертополох</translation>
 <translation id="6385591741672306837">стлбц</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">Отключить все фильтры событий</translation>
 <translation id="6411426777058107714">Предыдущего переключателя нет.</translation>
 <translation id="6414968628640960377">Перейти к предыдущему отличающемуся элементу</translation>
 <translation id="6417265370957905582">Google Ассистент</translation>
@@ -914,6 +918,7 @@
 <translation id="7332592614823088566">Строка <ph name="ROWINDEX" /> из <ph name="ROWTOTAL" />, столбец <ph name="COLINDEX" /> из <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">has popup</translation>
 <translation id="7356165926712028380">Переключиться на 8-точечный шрифт</translation>
+<translation id="7356610683936413584">Определение списка определений</translation>
 <translation id="7362871137496673139">Предыдущего заголовка второго уровня нет.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{амперсанд}one{# амперсанд}few{# амперсанда}many{# амперсандов}other{# ampersands}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@
 <translation id="8096975275316362544">Мятные сливки</translation>
 <translation id="8098587210054821856">Аспидно-серый</translation>
 <translation id="8110647606445335195">Ориентиров ARIA нет.</translation>
+<translation id="8121539003537428024">Включить все фильтры событий</translation>
 <translation id="812886159861361726">Скачивание файла <ph name="FILE_NAME" /> остановлено</translation>
 <translation id="8138880386467279117">Нажмите</translation>
 <translation id="8153880621934657047">Ошибка. Перейдите в таблицу.</translation>

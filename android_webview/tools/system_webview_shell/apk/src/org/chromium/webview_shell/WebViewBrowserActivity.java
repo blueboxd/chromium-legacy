@@ -13,6 +13,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -579,6 +580,9 @@ public class WebViewBrowserActivity extends AppCompatActivity {
                 about();
                 hideKeyboard(mUrlBar);
                 return true;
+            case R.id.menu_devui:
+                launchWebViewDevUI();
+                return true;
             default:
                 break;
         }
@@ -633,6 +637,31 @@ public class WebViewBrowserActivity extends AppCompatActivity {
                 .create();
         dialog.show();
         dialog.getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+    }
+
+    private void launchWebViewDevUI() {
+        PackageInfo currentWebViewPackage = WebViewPackageHelper.getCurrentWebViewPackage(this);
+        if (currentWebViewPackage == null) {
+            Log.e(TAG, "Couldn't find current WebView package");
+            Toast.makeText(this, "WebView package isn't found", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String currentWebViewPackageName = currentWebViewPackage.packageName;
+        Intent intent = new Intent("com.android.webview.SHOW_DEV_UI");
+        intent.setPackage(currentWebViewPackageName);
+
+        // Check if the intent is resolved, i.e current WebView package has a developer UI that
+        // responds to "com.android.webview.SHOW_DEV_UI" action.
+        List<ResolveInfo> intentResolveInfo = getPackageManager().queryIntentActivities(intent, 0);
+        if (intentResolveInfo.size() > 0) {
+            startActivity(intent);
+        } else {
+            Log.e(TAG,
+                    "Couldn't launch developer UI from current WebView package: "
+                            + currentWebViewPackage);
+            Toast.makeText(this, "No DevTools in " + currentWebViewPackageName, Toast.LENGTH_LONG)
+                    .show();
+        }
     }
 
     // Returns true is a method has no arguments and returns either a boolean or a String.

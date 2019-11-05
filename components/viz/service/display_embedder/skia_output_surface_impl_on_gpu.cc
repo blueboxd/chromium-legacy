@@ -651,6 +651,8 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   }
 
   if (copier_) {
+    context_provider_->FinishQueries();
+
     copier_ = nullptr;
     texture_deleter_ = nullptr;
     context_provider_ = nullptr;

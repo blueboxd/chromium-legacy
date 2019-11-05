@@ -294,28 +294,28 @@ public class NFCTest {
         assertEquals(LANG_EN_US, utf16TextMojoNdefMessage.data[0].lang);
         assertEquals(TEST_TEXT, new String(utf16TextMojoNdefMessage.data[0].data, "UTF-16"));
 
-        // Test MIME record conversion.
+        // Test mime record conversion with "text/plain" mime type.
         android.nfc.NdefMessage mimeNdefMessage =
                 new android.nfc.NdefMessage(android.nfc.NdefRecord.createMime(
                         TEXT_MIME, ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT)));
         NdefMessage mimeMojoNdefMessage = NdefMessageUtils.toNdefMessage(mimeNdefMessage);
         assertNull(mimeMojoNdefMessage.url);
         assertEquals(1, mimeMojoNdefMessage.data.length);
-        assertEquals(NdefMessageUtils.RECORD_TYPE_OPAQUE, mimeMojoNdefMessage.data[0].recordType);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_MIME, mimeMojoNdefMessage.data[0].recordType);
         assertEquals(TEXT_MIME, mimeMojoNdefMessage.data[0].mediaType);
         assertEquals(true, mimeMojoNdefMessage.data[0].id.isEmpty());
         assertNull(mimeMojoNdefMessage.data[0].encoding);
         assertNull(mimeMojoNdefMessage.data[0].lang);
         assertEquals(TEST_TEXT, new String(mimeMojoNdefMessage.data[0].data));
 
-        // Test JSON record conversion.
+        // Test mime record conversion with "application/json" mime type.
         android.nfc.NdefMessage jsonNdefMessage =
                 new android.nfc.NdefMessage(android.nfc.NdefRecord.createMime(
                         JSON_MIME, ApiCompatibilityUtils.getBytesUtf8(TEST_JSON)));
         NdefMessage jsonMojoNdefMessage = NdefMessageUtils.toNdefMessage(jsonNdefMessage);
         assertNull(jsonMojoNdefMessage.url);
         assertEquals(1, jsonMojoNdefMessage.data.length);
-        assertEquals(NdefMessageUtils.RECORD_TYPE_JSON, jsonMojoNdefMessage.data[0].recordType);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_MIME, jsonMojoNdefMessage.data[0].recordType);
         assertEquals(JSON_MIME, jsonMojoNdefMessage.data[0].mediaType);
         assertEquals(true, jsonMojoNdefMessage.data[0].id.isEmpty());
         assertNull(jsonMojoNdefMessage.data[0].encoding);
@@ -363,7 +363,7 @@ public class NFCTest {
         NdefMessage webMojoNdefMessage = NdefMessageUtils.toNdefMessage(webNdefMessage);
         assertEquals(TEST_URL, webMojoNdefMessage.url);
         assertEquals(1, webMojoNdefMessage.data.length);
-        assertEquals(NdefMessageUtils.RECORD_TYPE_JSON, webMojoNdefMessage.data[0].recordType);
+        assertEquals(NdefMessageUtils.RECORD_TYPE_MIME, webMojoNdefMessage.data[0].recordType);
         assertEquals(JSON_MIME, webMojoNdefMessage.data[0].mediaType);
         assertNull(webMojoNdefMessage.data[0].encoding);
         assertNull(webMojoNdefMessage.data[0].lang);
@@ -468,9 +468,9 @@ public class NFCTest {
         assertEquals(android.nfc.NdefRecord.TNF_EXTERNAL_TYPE,
                 utf16TextNdefMessage.getRecords()[1].getTnf());
 
-        // Test MIME record conversion.
+        // Test mime record conversion with "text/plain" mime type.
         NdefRecord mimeMojoNdefRecord = new NdefRecord();
-        mimeMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_OPAQUE;
+        mimeMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_MIME;
         mimeMojoNdefRecord.mediaType = TEXT_MIME;
         mimeMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
         NdefMessage mimeMojoNdefMessage = createMojoNdefMessage(TEST_URL, mimeMojoNdefRecord);
@@ -484,9 +484,9 @@ public class NFCTest {
         assertEquals(
                 android.nfc.NdefRecord.TNF_EXTERNAL_TYPE, mimeNdefMessage.getRecords()[1].getTnf());
 
-        // Test JSON record conversion.
+        // Test mime record conversion with "application/json" mime type.
         NdefRecord jsonMojoNdefRecord = new NdefRecord();
-        jsonMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_OPAQUE;
+        jsonMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_MIME;
         jsonMojoNdefRecord.mediaType = JSON_MIME;
         jsonMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_JSON);
         NdefMessage jsonMojoNdefMessage = createMojoNdefMessage(TEST_URL, jsonMojoNdefRecord);

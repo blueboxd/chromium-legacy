@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">A Ne zavarjanak funkció be van kapcsolva.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Értesítési beállítások megjelenítése. Az értesítések egyetlen alkalmazásnál vannak kikapcsolva}other{Értesítési beállítások megjelenítése. Az értesítések # alkalmazásnál ki vannak kapcsolva}}</translation>
 <translation id="1525508553941733066">ELVETÉS</translation>
-<translation id="1537254971476575106">Teljes képernyős nagyító</translation>
 <translation id="15373452373711364">Nagy egérmutató</translation>
 <translation id="1546492247443594934">2. asztal</translation>
 <translation id="1550523713251050646">Kattintson további lehetőségekért</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">A billentyűzetkiosztás átváltásához nyomja meg a(z) <ph name="KEYBOARD_SHORTCUT" /> billentyűparancsot.</translation>
 <translation id="2501920221385095727">Beragadó billentyűk</translation>
 <translation id="2509468283778169019">A CAPS LOCK be van kapcsolva</translation>
-<translation id="2532589005999780174">Nagy kontrasztú mód</translation>
 <translation id="2542089167727451762">Koppintson a profilképre</translation>
 <translation id="255671100581129685">A Google Segéd nem áll rendelkezésre nyilvános munkamenetben.</translation>
 <translation id="256712445991462162">dokkolt nagyító</translation>
@@ -484,7 +482,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7984197416080286869">Túl sok próbálkozás ujjlenyomattal</translation>
 <translation id="7994370417837006925">Többfiókos bejelentkezés</translation>
 <translation id="8000066093800657092">Nincs hálózat</translation>
-<translation id="8029241286966751120">Teljes képernyős nagyító bekapcsolva. A kikapcsoláshoz nyomja le ismét a Ctrl+Keresés+M billentyűparancsot.</translation>
 <translation id="8030169304546394654">Nincs kapcsolat</translation>
 <translation id="8054466585765276473">Akkumulátor-időtartam kiszámítása.</translation>
 <translation id="8061464966246066292">Kontrasztos megjelenítés</translation>
@@ -509,7 +506,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8388750414311082622">Nem lehetséges a legutóbbi asztal eltávolítása.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> beállításainak menüje</translation>
 <translation id="8394567579869570560">A szülőd zárolta az eszközt</translation>
-<translation id="8406981827175133772">Teljes képernyős nagyító</translation>
 <translation id="8425213833346101688">Módosítás</translation>
 <translation id="8427213022735114808">A diktálás elküldi a hangját a Google számára, hogy bármely szövegmezőbe írhasson hangvezérléssel.</translation>
 <translation id="8428213095426709021">Beállítások</translation>

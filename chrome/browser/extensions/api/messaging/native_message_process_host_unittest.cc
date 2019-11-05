@@ -26,6 +26,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -39,6 +40,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
@@ -122,8 +124,8 @@ class NativeMessagingTest : public ::testing::Test,
 
   void TearDown() override {
     if (native_message_host_) {
-      BrowserThread::DeleteSoon(
-          BrowserThread::IO, FROM_HERE, native_message_host_.release());
+      base::DeleteSoon(FROM_HERE, {BrowserThread::IO},
+                       native_message_host_.release());
     }
     base::RunLoop().RunUntilIdle();
   }

@@ -22,6 +22,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/print_job_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -135,7 +136,10 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
                            MANUAL_DummyTest);
   friend class PrintPreviewHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, GetPrinters);
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, GetNoBlacklistedPrinters);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, GetPrinterCapabilities);
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
+                           GetNoBlacklistedPrinterCapabilities);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, Print);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, GetPreview);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, SendPreviewUpdates);
@@ -152,6 +156,10 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   PrintPreviewUI* print_preview_ui() const;
 
   PrefService* GetPrefs() const;
+
+  // Checks policy preferences for a blacklist of printer types and initializes
+  // the set that stores them.
+  void ReadPrinterTypeBlacklistFromPrefs();
 
   // Whether the the handler should be receiving messages from the renderer to
   // forward to the Print Preview JS in response to preview request with id
@@ -349,6 +357,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // Set of preview request ids for failed previews.
   std::set<int> preview_failures_;
+
+  // Set of blacklisted printer types.
+  std::set<PrinterType> printer_type_blacklist_;
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_{this};
 

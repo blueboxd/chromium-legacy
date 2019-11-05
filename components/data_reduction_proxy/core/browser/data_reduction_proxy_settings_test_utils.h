@@ -29,8 +29,7 @@ class DataReductionProxyTestContext;
 template <class C>
 class MockDataReductionProxySettings : public C {
  public:
-  MockDataReductionProxySettings<C>() : C() {
-  }
+  MockDataReductionProxySettings<C>() : C(false) {}
   MOCK_CONST_METHOD0(GetOriginalProfilePrefs, PrefService*());
   MOCK_METHOD0(GetLocalStatePrefs, PrefService*());
   MOCK_CONST_METHOD1(RecordStartupState, void(ProxyStartupState state));

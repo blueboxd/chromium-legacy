@@ -51,6 +51,11 @@ enum class CacheStorageSchedulerOp {
   kWriteSideData = 15,
 };
 
+enum class CacheStorageSchedulerPriority {
+  kNormal = 0,
+  kHigh = 1,
+};
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_SCHEDULER_TYPES_H_

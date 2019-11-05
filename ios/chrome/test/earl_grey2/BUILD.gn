@@ -16,6 +16,7 @@ group("all_tests") {
     ":ios_chrome_smoke_eg2tests_module",
     ":ios_chrome_ui_eg2tests_module",
     ":ios_chrome_web_eg2tests_module",
+    ":ios_showcase_core_eg2tests_module",
   ]
 }
 
@@ -95,6 +96,14 @@ chrome_ios_eg2_test("ios_chrome_web_eg2tests_module") {
 
   deps = [
     "//ios/chrome/browser/web:eg2_tests",
+  ]
+}
+
+chrome_ios_eg2_test("ios_showcase_core_eg2tests_module") {
+  xcode_test_application_name = "ios_chrome_eg2tests"
+
+  deps = [
+    "//ios/showcase/core:eg2_tests",
   ]
 }
 

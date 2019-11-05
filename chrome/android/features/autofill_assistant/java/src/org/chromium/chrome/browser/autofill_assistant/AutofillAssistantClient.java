@@ -22,6 +22,8 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -169,12 +171,13 @@ class AutofillAssistantClient {
     }
 
     /** Lists available direct actions. */
-    public String[] getDirectActions() {
+    public List<AutofillAssistantDirectAction> getDirectActions() {
         if (mNativeClientAndroid == 0) {
-            return null;
+            return Collections.emptyList();
         }
-        return AutofillAssistantClientJni.get().getDirectActions(
+        AutofillAssistantDirectAction[] actions = AutofillAssistantClientJni.get().getDirectActions(
                 mNativeClientAndroid, AutofillAssistantClient.this);
+        return Arrays.asList(actions);
     }
 
     /**
@@ -373,7 +376,8 @@ class AutofillAssistantClient {
                 Object callback);
         boolean hasRunFirstCheck(long nativeClientAndroid, AutofillAssistantClient caller);
 
-        String[] getDirectActions(long nativeClientAndroid, AutofillAssistantClient caller);
+        AutofillAssistantDirectAction[] getDirectActions(
+                long nativeClientAndroid, AutofillAssistantClient caller);
 
         boolean performDirectAction(long nativeClientAndroid, AutofillAssistantClient caller,
                 String actionId, String experimentId, String[] argumentNames,

@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">零打擾模式已開啟。</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{顯示通知設定。已關閉一個應用程式的通知}other{顯示通知設定。已關閉 # 個應用程式的通知}}</translation>
 <translation id="1525508553941733066">關閉</translation>
-<translation id="1537254971476575106">全螢幕放大鏡</translation>
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1546492247443594934">桌面 2</translation>
 <translation id="1550523713251050646">按一下即可查看更多選項</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">按下 <ph name="KEYBOARD_SHORTCUT" />可切換鍵盤配置。</translation>
 <translation id="2501920221385095727">相黏鍵</translation>
 <translation id="2509468283778169019">大寫鍵已啟用</translation>
-<translation id="2532589005999780174">高反差模式</translation>
 <translation id="2542089167727451762">輕觸你的個人資料圖片</translation>
 <translation id="255671100581129685">Google 助理不適用於公開工作階段。</translation>
 <translation id="256712445991462162">停駐放大鏡</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">語言</translation>
 <translation id="5313326810920013265">藍牙設定</translation>
 <translation id="5331975486040154427">USB-C 裝置 (左後方連接埠)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">嘗試次數過多</translation>
 <translation id="5397578532367286026">管理員 (<ph name="MANAGER_EMAIL" />) 可以在 chrome.com 瞭解這名使用者的使用情形和記錄。</translation>
 <translation id="5430931332414098647">即時網路共用</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">Google 助理不支援目前的使用者帳戶。</translation>
 <translation id="5691772641933328258">指紋辨識失敗</translation>
 <translation id="5710450975648804523">「零打擾」模式已開啟</translation>
+<translation id="573413375004481890">這部裝置無法支援你的所有螢幕，因此其中一個畫面已中斷連線</translation>
 <translation id="574392208103952083">中</translation>
 <translation id="5744083938413354016">輕觸拖曳</translation>
 <translation id="5750765938512549687">藍牙已關閉</translation>
@@ -481,7 +481,6 @@
 <translation id="7984197416080286869">指紋辨識失敗的次數過多</translation>
 <translation id="7994370417837006925">多帳戶登入</translation>
 <translation id="8000066093800657092">沒有網路</translation>
-<translation id="8029241286966751120">全螢幕放大鏡已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + M 鍵即可停用。</translation>
 <translation id="8030169304546394654">已中斷連線</translation>
 <translation id="8054466585765276473">正在計算電池使用時間。</translation>
 <translation id="8061464966246066292">高對比模式</translation>
@@ -506,7 +505,6 @@
 <translation id="8388750414311082622">無法移除最後一個桌面。</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的選項選單</translation>
 <translation id="8394567579869570560">你的家長已鎖定這部裝置</translation>
-<translation id="8406981827175133772">全螢幕放大鏡</translation>
 <translation id="8425213833346101688">變更</translation>
 <translation id="8427213022735114808">語音輸入功能會將你的語音資料傳送給 Google，讓你使用自己的語音在任何文字欄位中輸入內容。</translation>
 <translation id="8428213095426709021">設定</translation>

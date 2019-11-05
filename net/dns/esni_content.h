@@ -24,7 +24,7 @@ namespace net {
 // (2) A collection of IP addresses, each of which is associated
 // with one or more of the key objects. (Each key will likely also
 // be associated with several destination addresses.)
-class NET_EXPORT_PRIVATE EsniContent {
+class NET_EXPORT EsniContent {
  public:
   EsniContent();
   EsniContent(const EsniContent& other);

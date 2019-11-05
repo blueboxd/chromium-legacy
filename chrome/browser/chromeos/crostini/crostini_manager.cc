@@ -66,6 +66,15 @@ namespace crostini {
 
 namespace {
 
+enum class ContainerOsVersion {
+  kUnkown = 0,
+  kDebianStretch = 1,
+  kDebianBuster = 2,
+  kDebianOther = 3,
+  kOtherOs = 4,
+  kMaxValue = kOtherOs,
+};
+
 chromeos::CiceroneClient* GetCiceroneClient() {
   return chromeos::DBusThreadManager::Get()->GetCiceroneClient();
 }
@@ -619,6 +628,24 @@ void CrostiniManager::SetContainerOsRelease(
   VLOG(1) << "os_release.version_id " << os_release.version_id();
   VLOG(1) << "os_release.id " << os_release.id();
   container_os_releases_.emplace(std::move(container_id), os_release);
+  EmitContainerVersionMetric(os_release);
+}
+
+void CrostiniManager::EmitContainerVersionMetric(
+    const vm_tools::cicerone::OsRelease& os_release) {
+  ContainerOsVersion version;
+  if (os_release.id() == "debian") {
+    if (os_release.version_id() == "9") {
+      version = ContainerOsVersion::kDebianStretch;
+    } else if (os_release.version_id() == "10") {
+      version = ContainerOsVersion::kDebianBuster;
+    } else {
+      version = ContainerOsVersion::kDebianOther;
+    }
+  } else {
+    version = ContainerOsVersion::kOtherOs;
+  }
+  base::UmaHistogramEnumeration("Crostini.ContainerOsVersion", version);
 }
 
 const vm_tools::cicerone::OsRelease* CrostiniManager::GetContainerOsRelease(

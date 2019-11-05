@@ -586,6 +586,43 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
   }
 }
 
+// Validates the 'printing.printer_type_blacklist' pref by blacklisting the
+// extension and privet printer types. A 'getPrinters' Web UI message is then
+// called for all three fetchable printer types; only local printers should be
+// successfully fetched.
+TEST_F(PrintPreviewHandlerTest, GetNoBlacklistedPrinters) {
+  base::Value::ListStorage blacklist;
+  blacklist.push_back(base::Value("extension"));
+  blacklist.push_back(base::Value("privet"));
+  prefs()->Set(prefs::kPrinterTypeBlacklist, base::Value(std::move(blacklist)));
+  Initialize();
+
+  size_t expected_callbacks = 1;
+  for (size_t i = 0; i < base::size(kFetchableTypes); i++) {
+    PrinterType type = kFetchableTypes[i];
+    std::string callback_id_in =
+        "test-callback-id-" + base::NumberToString(i + 1);
+    handler()->reset_calls();
+    SendGetPrinters(type, callback_id_in);
+
+    // Start with 1 call from initial settings, then add 2 more for each printer
+    // type that isn't blacklisted (one for printers-added, and one for the
+    // response), and only 1 more for each blacklisted type (just for response).
+    const bool is_allowed_type = type == kLocalPrinter;
+    EXPECT_EQ(is_allowed_type, handler()->CalledOnlyForType(type));
+    expected_callbacks += is_allowed_type ? 2 : 1;
+    ASSERT_EQ(expected_callbacks, web_ui()->call_data().size());
+
+    if (is_allowed_type) {
+      ValidatePrinterTypeAdded(type);
+    }
+
+    // Verify getPrinters promise was resolved successfully.
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    CheckWebUIResponse(data, callback_id_in, true);
+  }
+}
+
 TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
   // Add an empty printer to the handler.
   printers().push_back(GetEmptyPrinterInfo());
@@ -629,6 +666,38 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
               web_ui()->call_data().size());
 
     ValidatePrinterCapabilities(callback_id_in, /*expect_resolved=*/false);
+  }
+}
+
+// Validates the 'printing.printer_type_blacklist' pref by blacklisting the
+// local and PDF printer types. A 'getPrinterCapabilities' Web UI message is
+// then called for all supported printer types; only privet and extension
+// printer capabilties should be successfully fetched.
+TEST_F(PrintPreviewHandlerTest, GetNoBlacklistedPrinterCapabilities) {
+  base::Value::ListStorage blacklist;
+  blacklist.push_back(base::Value("local"));
+  blacklist.push_back(base::Value("pdf"));
+  prefs()->Set(prefs::kPrinterTypeBlacklist, base::Value(std::move(blacklist)));
+  Initialize();
+
+  // Check all four printer types that implement
+  // PrinterHandler::StartGetCapability().
+  for (size_t i = 0; i < base::size(kAllSupportedTypes); i++) {
+    PrinterType type = kAllSupportedTypes[i];
+    std::string callback_id_in =
+        "test-callback-id-" + base::NumberToString(i + 1);
+    handler()->reset_calls();
+    SendGetPrinterCapabilities(type, callback_id_in, kDummyPrinterName);
+
+    const bool is_allowed_type =
+        type == kPrivetPrinter || type == kExtensionPrinter;
+    EXPECT_EQ(is_allowed_type, handler()->CalledOnlyForType(type));
+
+    // Start with 1 call from initial settings, then add 1 more for each loop
+    // iteration.
+    ASSERT_EQ(1u + (i + 1), web_ui()->call_data().size());
+
+    ValidatePrinterCapabilities(callback_id_in, is_allowed_type);
   }
 }
 

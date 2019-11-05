@@ -95,7 +95,8 @@ SubresourceLoadingPageLoadMetricsObserver::OnCommit(
     return STOP_OBSERVING;
 
   data_saver_enabled_at_commit_ = data_reduction_proxy::
-      DataReductionProxySettings::IsDataSaverEnabledByUser(profile->GetPrefs());
+      DataReductionProxySettings::IsDataSaverEnabledByUser(
+          profile->IsOffTheRecord(), profile->GetPrefs());
 
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfileIfExists(

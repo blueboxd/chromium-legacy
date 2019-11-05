@@ -40,17 +40,17 @@ class CookieControlsHandler : public content::WebUIMessageHandler {
   // Whether cookie controls UI should be hidden in incognito ntp.
   static bool ShouldHideCookieControlsUI(const Profile* profile);
 
+  // Whether cookie controls should appear enforced.
+  static bool ShouldEnforceCookieControls(const Profile* profile);
+
   static bool GetToggleCheckedValue(const Profile* profile);
 
  private:
   friend class CookieControlsHandlerTest;
 
-  // Updates cookie controls UI when underlying setting has changed.
-  void OnCookieControlsChanged();
-
   // Updates cookie controls UI when third-party cookie blocking setting has
   // changed.
-  void OnThirdPartyCookieBlockingChanged();
+  void SendCookieControlsUIChanges();
 
   void OnThirdPartyCookieBlockingPolicyChanged(const base::Value* previous,
                                                const base::Value* current);

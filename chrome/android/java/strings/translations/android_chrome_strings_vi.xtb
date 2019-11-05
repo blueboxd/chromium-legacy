@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="2156074688469523661">Số trang web còn lại (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Để chia sẻ nội dung trên điện thoại của bạn với một thiết bị khác, hãy bật tính năng đồng bộ hóa trong phần Cài đặt của Chrome trên cả hai thiết bị</translation>
-<translation id="2170088579611075216">Cho phép và chuyển sang thực tế ảo</translation>
 <translation id="2175927920773552910">Mã QR</translation>
 <translation id="218608176142494674">Chia sẻ</translation>
 <translation id="2227444325776770048">Tiếp tục bằng <ph name="USER_FULL_NAME" /></translation>
@@ -183,6 +182,7 @@
 <translation id="2321958826496381788">Kéo thanh trượt cho đến khi bạn có thể đọc nội dung này thoải mái. Chữ tối thiểu phải to như này sau khi bấm đúp vào một đoạn.</translation>
 <translation id="2323763861024343754">Bộ nhớ trang web</translation>
 <translation id="2328985652426384049">Không thể đăng nhập</translation>
+<translation id="2330129964253841015">Cảnh báo bạn nếu mật khẩu bị lộ</translation>
 <translation id="2349710944427398404">Tổng số dữ liệu mà Chrome sử dụng, bao gồm tài khoản, dấu trang và cài đặt đã lưu</translation>
 <translation id="2353636109065292463">Kiểm tra kết nối Internet</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
@@ -190,6 +190,7 @@
 <translation id="2387895666653383613">Chia tỷ lệ văn bản</translation>
 <translation id="2394602618534698961">Các tệp bạn tải xuống sẽ xuất hiện ở đây</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2407481962792080328">Khi bạn đăng nhập vào Tài khoản Google của mình, tính năng này sẽ được bật</translation>
 <translation id="2410754283952462441">Chọn một tài khoản</translation>
 <translation id="2414886740292270097">Tối</translation>
 <translation id="2416359993254398973">Chrome cần có quyền truy cập máy ảnh của bạn cho trang web này.</translation>
@@ -198,6 +199,7 @@
 <translation id="2434158240863470628">Quá trình tải xuống hoàn tất <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Truy cập vị trí</translation>
 <translation id="2450083983707403292">Bạn có muốn bắt đầu tải xuống <ph name="FILE_NAME" /> lần nữa không?</translation>
+<translation id="246532703174860178">Chia sẻ</translation>
 <translation id="2482878487686419369">Thông báo</translation>
 <translation id="2490684707762498678">Do <ph name="APP_NAME" /> quản lý</translation>
 <translation id="2494974097748878569">Trợ lý Google trong Chrome</translation>
@@ -412,7 +414,6 @@
 <translation id="4135200667068010335">Danh sách các thiết bị mà bạn có thể chia sẻ một tab đã đóng.</translation>
 <translation id="4149994727733219643">Chế độ xem đơn giản cho trang web</translation>
 <translation id="4165986682804962316">Cài đặt trang web</translation>
-<translation id="4169535189173047238">Không cho phép</translation>
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
 <translation id="4179980317383591987">Đã dùng <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
@@ -531,10 +532,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5011311129201317034"><ph name="SITE" /> muốn kết nối</translation>
 <translation id="5013696553129441713">Không có nội dung đề xuất mới</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Khi bạn ở chế độ thực tế ảo, trang web này có thể tìm hiểu về:
-  –  đặc điểm ngoại hình của bạn, chẳng hạn như chiều cao
-
-Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế độ thực tế ảo.</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5040262127954254034">Quyền riêng tư</translation>
 <translation id="5048398596102334565">Cho phép trang web sử dụng cảm biến chuyển động (nên dùng)</translation>
@@ -608,11 +605,6 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="5527082711130173040">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK1" />Cập nhật quyền<ph name="END_LINK1" />. Tính năng truy cập vị trí cũng bị <ph name="BEGIN_LINK2" />tắt cho thiết bị này<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Hỏi trước khi cho phép các trang web đọc văn bản và hình ảnh từ khay nhớ tạm (khuyên dùng)</translation>
 <translation id="5530766185686772672">Đóng tab ẩn danh</translation>
-<translation id="5534334044554683961">Khi bạn ở chế độ thực tế ảo, trang web này có thể tìm hiểu về:
-  –   đặc điểm ngoại hình của bạn, chẳng hạn như chiều cao
-  –   cách bài trí phòng của bạn
-
-Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế độ thực tế ảo.</translation>
 <translation id="5534640966246046842">Đã sao chép trang web</translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5561549206367097665">Đang chờ mạng…</translation>
@@ -903,7 +895,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="7665369617277396874">Thêm tài khoản</translation>
 <translation id="766587987807204883">Các bài viết xuất hiện ở đây và bạn có thể đọc ngay cả khi không có kết nối mạng</translation>
 <translation id="7682724950699840886">Thử các mẹo sau: đảm bảo thiết bị của bạn có đủ dung lượng, sau đó thử xuất lại.</translation>
-<translation id="7685301384041462804">Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế độ thực tế ảo.</translation>
 <translation id="7698359219371678927">Tạo email trong <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Tự động hoàn thành cụm từ tìm kiếm và URL</translation>
 <translation id="7725024127233776428">Các trang mà bạn đánh dấu sẽ xuất hiện tại đây</translation>
@@ -1079,7 +1070,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8998729206196772491">Bạn đang đăng nhập bằng tài khoản do <ph name="MANAGED_DOMAIN" /> quản lý và cấp cho quản trị viên quyền kiểm soát dữ liệu Chrome của bạn. Dữ liệu của bạn sẽ được liên kết vĩnh viễn với tài khoản này. Việc đăng xuất khỏi Chrome sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
 <translation id="9019902583201351841">Do cha mẹ của bạn quản lý</translation>
 <translation id="9028914725102941583">Bật tính năng đồng bộ hóa để chia sẻ giữa các thiết bị</translation>
-<translation id="9029323097866369874">Cho phép <ph name="DOMAIN" /> vào chế độ thực tế ảo?</translation>
 <translation id="9040142327097499898">Cho phép thông báo. Đã tắt vị trí đối với thiết bị này.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video}}</translation>
 <translation id="9050666287014529139">Cụm mật khẩu</translation>

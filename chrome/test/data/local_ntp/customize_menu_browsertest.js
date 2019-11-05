@@ -351,21 +351,41 @@ test.customizeMenu.testMenu_BackgroundPreviewApplied = function() {
 
   // Select a background and check that correct styling and attributes are
   // applied to the page.
-  const image_tile = $('coll_0_img_tile_0');
-  image_tile.click();
+  const imageTile = $('coll_0_img_tile_0');
+  imageTile.click();
   assertTrue(document.body.classList.contains('alternate-logo'));
-  assertEquals(
-      image_tile.dataset.attributionLine1,
-      $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE1).innerText);
-  assertEquals(
-      image_tile.dataset.attributionLine2,
-      $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE2).innerText);
-  assertEquals(
-      image_tile.dataset.attributionActionUrl,
-      $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE1).href);
-  assertEquals(
-      image_tile.dataset.attributionActionUrl,
-      $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE2).href);
+
+  const attr1 = $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE1);
+  assertEquals(attr1.tagName, 'A');
+  assertEquals(imageTile.dataset.attributionLine1, attr1.innerText);
+  assertEquals(imageTile.dataset.attributionActionUrl, attr1.href);
+
+  const attr2 = $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE2);
+  assertEquals(attr2.tagName, 'A');
+  assertEquals(imageTile.dataset.attributionLine2, attr2.innerText);
+  assertEquals(imageTile.dataset.attributionActionUrl, attr2.href);
+};
+
+/** Tests that attributions without action URL render correctly. */
+test.customizeMenu.testAttributionWithoutActionUrl = function() {
+  setupFakeAsyncCollectionLoad();
+  init();
+
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+
+  setupFakeAsyncImageLoad('coll_tile_0');
+  $('coll_tile_0').click();
+
+  const imageTile = $('coll_0_img_tile_3');
+  imageTile.click();
+
+  const attr1 = $(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE1);
+  assertEquals(attr1.tagName, 'SPAN');
+  assertFalse(attr1.hasAttribute('href'));
+  assertEquals(imageTile.dataset.attributionLine1, attr1.innerText);
+  assertEquals($(test.customizeMenu.IDS.CUSTOM_BG_ATTR_LINE2), null);
+  assertEquals(imageTile.dataset.attributionLine2, '');
+  assertEquals(imageTile.dataset.attributionActionUrl, '');
 };
 
 /**
@@ -1251,8 +1271,8 @@ setupFakeAsyncImageLoad = function(tile_id) {
         thumbnailImageUrl: 'chrome-search://local-ntp/background_thumbnail.jpg3'
       },
       {
-        attributionActionUrl: 'https://www.google.com/',
-        attributions: ['test4', 'attribution4'],
+        attributionActionUrl: '',
+        attributions: ['test4'],
         collectionId: 'collection1',
         imageUrl: 'chrome-search://local-ntp/background4.jpg',
         thumbnailImageUrl: 'chrome-search://local-ntp/background_thumbnail.jpg4'

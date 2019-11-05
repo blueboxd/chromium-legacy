@@ -40,6 +40,7 @@ class WebAppInstallManager final : public InstallManager,
   bool CanInstallWebApp(content::WebContents* web_contents) override;
   void LoadWebAppAndCheckInstallability(
       const GURL& web_app_url,
+      WebappInstallSource install_source,
       WebAppInstallabilityCheckCallback callback) override;
   void InstallWebAppFromManifest(content::WebContents* contents,
                                  WebappInstallSource install_source,

@@ -840,6 +840,7 @@ void XRSession::ProcessHitTestData(
 
 ScriptPromise XRSession::end(ScriptState* script_state,
                              ExceptionState& exception_state) {
+  DVLOG(2) << __func__;
   // Don't allow a session to end twice.
   if (ended_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -847,24 +848,43 @@ ScriptPromise XRSession::end(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  ForceEnd();
+  ForceEnd(ShutdownPolicy::kWaitForResponse);
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+  end_session_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = end_session_resolver_->Promise();
 
-  // TODO(bajones): If there's any work that needs to be done asynchronously on
-  // session end it should be completed before this promise is resolved.
-
-  resolver->Resolve();
+  DVLOG(1) << __func__ << ": returning promise";
   return promise;
 }
 
-void XRSession::ForceEnd() {
+void XRSession::ForceEnd(ShutdownPolicy shutdown_policy) {
+  bool wait_for_response;
+  switch (shutdown_policy) {
+    case ShutdownPolicy::kWaitForResponse:
+      wait_for_response = true;
+      break;
+    case ShutdownPolicy::kImmediate:
+      wait_for_response = false;
+      break;
+  }
+
+  DVLOG(3) << __func__ << ": wait_for_response=" << wait_for_response
+           << " ended_=" << ended_
+           << " waiting_for_shutdown_=" << waiting_for_shutdown_;
+
   // If we've already ended, then just abort.  Since this is called only by C++
   // code, and predominantly just to ensure that the session is shut down, this
   // is fine.
-  if (ended_)
+  if (ended_) {
+    // If we're currently waiting for an OnExitPresent, but are told not
+    // to expect that anymore (i.e. due to a connection error), proceed
+    // to full shutdown now.
+    if (!wait_for_response && waiting_for_shutdown_) {
+      HandleShutdown();
+    }
     return;
+  }
 
   // Detach this session from the XR system.
   ended_ = true;
@@ -882,10 +902,46 @@ void XRSession::ForceEnd() {
     canvas_input_provider_ = nullptr;
   }
 
+  xr_->ExitPresent(
+      WTF::Bind(&XRSession::OnExitPresent, WrapWeakPersistent(this)));
+
+  if (wait_for_response) {
+    waiting_for_shutdown_ = true;
+  } else {
+    HandleShutdown();
+  }
+}
+
+void XRSession::HandleShutdown() {
+  DVLOG(2) << __func__;
+  DCHECK(ended_);
+  waiting_for_shutdown_ = false;
+
+  if (xr_->IsContextDestroyed()) {
+    // If this is being called due to the context being destroyed,
+    // it's illegal to run JavaScript code, so we cannot emit an
+    // end event or resolve the stored promise. Don't bother calling
+    // the frame provider's OnSessionEnded, that's being disposed of
+    // also.
+    DVLOG(3) << __func__ << ": Context destroyed";
+    if (end_session_resolver_) {
+      end_session_resolver_->Detach();
+      end_session_resolver_ = nullptr;
+    }
+    return;
+  }
+
   // Notify the frame provider that we've ended
   xr_->frameProvider()->OnSessionEnded(this);
 
+  if (end_session_resolver_) {
+    DVLOG(3) << __func__ << ": Resolving end_session_resolver_";
+    end_session_resolver_->Resolve();
+    end_session_resolver_ = nullptr;
+  }
+
   DispatchEvent(*XRSessionEvent::Create(event_type_names::kEnd, this));
+  DVLOG(3) << __func__ << ": session end event dispatched";
 }
 
 double XRSession::NativeFramebufferScale() const {
@@ -1391,8 +1447,12 @@ void XRSession::OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) {
 }
 
 void XRSession::OnExitPresent() {
+  DVLOG(2) << __func__ << ": immersive()=" << immersive()
+           << " waiting_for_shutdown_=" << waiting_for_shutdown_;
   if (immersive()) {
-    ForceEnd();
+    ForceEnd(ShutdownPolicy::kImmediate);
+  } else if (waiting_for_shutdown_) {
+    HandleShutdown();
   }
 }
 
@@ -1509,6 +1569,7 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(world_tracking_state_);
   visitor->Trace(world_information_);
   visitor->Trace(pending_render_state_);
+  visitor->Trace(end_session_resolver_);
   visitor->Trace(input_sources_);
   visitor->Trace(resize_observer_);
   visitor->Trace(canvas_input_provider_);

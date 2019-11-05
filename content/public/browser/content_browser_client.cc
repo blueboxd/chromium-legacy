@@ -1018,4 +1018,9 @@ bool ContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
   return false;
 }
 
+void ContentBrowserClient::FetchRemoteSms(
+    content::BrowserContext* browser_context,
+    const url::Origin& origin,
+    base::OnceCallback<void(base::Optional<std::string>)> callback) {}
+
 }  // namespace content

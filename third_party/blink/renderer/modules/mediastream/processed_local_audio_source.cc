@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
+#include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 
 #include <algorithm>
 #include <utility>
@@ -20,10 +20,10 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_audio_processor.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
 #include "third_party/blink/renderer/platform/mediastream/audio_service_audio_processor_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"

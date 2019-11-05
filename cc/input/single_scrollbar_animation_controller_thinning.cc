@@ -173,8 +173,9 @@ void SingleScrollbarAnimationControllerThinning::DidMouseMove(
   if (!scrollbar)
     return;
 
-  float distance_to_scrollbar_track = DistanceToScrollbarPart(
-      device_viewport_point, *scrollbar, ScrollbarPart::TRACK);
+  float distance_to_scrollbar_track =
+      DistanceToScrollbarPart(device_viewport_point, *scrollbar,
+                              ScrollbarPart::TRACK_BUTTONS_TICKMARKS);
   float distance_to_scrollbar_thumb = DistanceToScrollbarPart(
       device_viewport_point, *scrollbar, ScrollbarPart::THUMB);
 

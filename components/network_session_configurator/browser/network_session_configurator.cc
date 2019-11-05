@@ -135,8 +135,9 @@ void ConfigureHttp2Params(const base::CommandLine& command_line,
   // identifier to "grease" settings, see
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
   params->http2_settings = GetHttp2Settings(http2_trial_params);
-  if (GetVariationParam(http2_trial_params, "http2_grease_settings") ==
-      "true") {
+  if (command_line.HasSwitch(switches::kHttp2GreaseSettings) ||
+      GetVariationParam(http2_trial_params, "http2_grease_settings") ==
+          "true") {
     spdy::SpdySettingsId id = 0x0a0a + 0x1000 * base::RandGenerator(0xf + 1) +
                               0x0010 * base::RandGenerator(0xf + 1);
     uint32_t value = base::RandGenerator(
@@ -146,8 +147,9 @@ void ConfigureHttp2Params(const base::CommandLine& command_line,
 
   // Optionally define a frame of reserved type to "grease" frame types, see
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
-  if (GetVariationParam(http2_trial_params, "http2_grease_frame_type") ==
-      "true") {
+  if (command_line.HasSwitch(switches::kHttp2GreaseFrameType) ||
+      GetVariationParam(http2_trial_params, "http2_grease_frame_type") ==
+          "true") {
     const uint8_t type = 0x0b + 0x1f * base::RandGenerator(8);
     const uint8_t flags =
         base::RandGenerator(std::numeric_limits<uint8_t>::max() + 1);

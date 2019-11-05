@@ -171,6 +171,7 @@
 <translation id="173080396488393970">इस तरह का कार्ड काम नहीं करता</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">सिस्टम व्यवस्थापक से संपर्क करने का प्रयास करें.</translation>
+<translation id="1739107442478692187">आप जो साइट या ऐप्लिकेशन इस्तेमाल करते हैं उसमें डेटा का उल्लंघन हुआ है. Chrome सुझाव देता है कि आप अपने सेव किए हुए पासवर्ड की जांच करते रहें और अब उसे <ph name="ORIGIN" /> पर बदलते रहें.</translation>
 <translation id="1740951997222943430">खत्म होने का मान्य महीना डालें</translation>
 <translation id="1743520634839655729">अगली बार तेज़ी से भुगतान करने के लिए, अपने कार्ड, नाम और बिलिंग पते को अपने 'Google खाते' में और इस डिवाइस में सेव करें.</translation>
 <translation id="1743570585616704562">उंगली की पहचान नहीं हो सकी</translation>
@@ -233,6 +234,7 @@
 <translation id="2094505752054353250">डोमेन का गलत-मिलान</translation>
 <translation id="2096368010154057602">विभाग</translation>
 <translation id="2099652385553570808">बाईं ओर ट्रिपल स्टेपल</translation>
+<translation id="2100280972184758440">आपका पासवर्ड गलत तरीके से इस्तेमाल किया गया</translation>
 <translation id="2102134110707549001">मज़बूत पासवर्ड सुझाएं…</translation>
 <translation id="2108755909498034140">अपना कंप्यूटर फिर से चालू करें</translation>
 <translation id="2111256659903765347">सुपर-ए</translation>
@@ -240,6 +242,7 @@
 <translation id="2114841414352855701">ध्यान नहीं दिया गया क्योंकि यह <ph name="POLICY_NAME" /> द्वारा ओवरराइड की गई थी.</translation>
 <translation id="2119505898009119320">इसको जारी: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">नीचे दाईं ओर पंच</translation>
+<translation id="2124528555835617522">आप जो साइट या ऐप्लिकेशन इस्तेमाल करते हैं उसमें डेटा का उल्लंघन हुआ है. Chrome सुझाव देता है कि आप अपने सेव किए हुए पासवर्ड की अभी जांच करें.</translation>
 <translation id="2129079103035905234">हलचल पकड़ने वाले सेंसर</translation>
 <translation id="213826338245044447">मोबाइल बुकमार्क</translation>
 <translation id="214556005048008348">भुगतान न करें</translation>
@@ -475,11 +478,13 @@
 <translation id="3282497668470633863">कार्ड पर नाम जोड़ें</translation>
 <translation id="3287510313208355388">ऑनलाइन होने पर डाउनलोड करें</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> नीति के बारे में ज़्यादा जानें</translation>
+<translation id="3295439534709115864">आप जो साइट या ऐप्लिकेशन इस्तेमाल करते हैं उसमें डेटा का उल्लंघन हुआ है. Chrome सुझाव देता है कि आप <ph name="ORIGIN" /> पर अभी अपना पासवर्ड बदलें.</translation>
 <translation id="3303855915957856445">कोई खोज नतीजे नहीं मिले</translation>
 <translation id="3320021301628644560">बिलिंग पता जोड़ें</translation>
 <translation id="3324983252691184275">गहरा लाल</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
 <translation id="3355823806454867987">प्रॉक्सी सेटिंग बदलें...</translation>
+<translation id="3360103848165129075">पैसे चुकाने की हैंडलर शीट</translation>
 <translation id="3362968246557010467">इस नीति को हटाई गई <ph name="OLD_POLICY" /> नीति से अपने आप कॉपी किया गया था. आपको इसके बजाय, इस नीति का इस्तेमाल करना चाहिए.</translation>
 <translation id="3366477098757335611">कार्ड देखें</translation>
 <translation id="3369192424181595722">घड़ी गड़बड़ी</translation>
@@ -599,6 +604,7 @@
 <translation id="3949601375789751990">आपका ब्राउज़िंग इतिहास यहां दिखाई देता है</translation>
 <translation id="3949870428812919180">भुगतान का कोई तरीका सेव नहीं किया गया</translation>
 <translation id="3950820424414687140">साइन इन करें</translation>
+<translation id="3961148744525529027">पैसे चुकाने की हैंडलर शीट आधी खुली है</translation>
 <translation id="3962859241508114581">पिछला ट्रैक</translation>
 <translation id="3963837677003247395">क्या आप मैन्युअल तरीके से जारी रखना चाहते हैं?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{कुछ नहीं}=1{1 साइट से }one{# साइटों से }other{# साइटों से }}</translation>
@@ -1324,6 +1330,7 @@
 <translation id="7637571805876720304">क्रोमियम से क्रेडिट कार्ड निकालें?</translation>
 <translation id="7638605456503525968">सीरियल पोर्ट</translation>
 <translation id="7639968568612851608">गहरा धूसर</translation>
+<translation id="7653957176542370971">पैसे चुकाने की हैंडलर शीट बंद है</translation>
 <translation id="765676359832457558">बेहतर सेटिंग छिपाएं...</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7662298039739062396">सेटिंग किसी एक्सटेंशन से नियंत्रित है</translation>
@@ -1452,6 +1459,7 @@
 <translation id="8261506727792406068">मिटाएं</translation>
 <translation id="8262952874573525464">नीचे की ओर एज़ स्टिच</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" /> के रूप में प्रवेश करना</translation>
+<translation id="8277900682056760511">पैसे चुकाने की हैंडलर शीट खुली है</translation>
 <translation id="8281084378435768645">बड़े आकार वाली फ़ोटो</translation>
 <translation id="8286036467436129157">साइन इन करें</translation>
 <translation id="8288807391153049143">प्रमाणपत्र दिखाएं</translation>

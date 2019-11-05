@@ -49,8 +49,7 @@ bool StyleColor::IsColorKeyword(CSSValueID id) {
 
 bool StyleColor::IsSystemColor(CSSValueID id) {
   return (id >= CSSValueID::kActiveborder && id <= CSSValueID::kWindowtext) ||
-         id == CSSValueID::kMenu || id == CSSValueID::kLinktext ||
-         id == CSSValueID::kVisitedtext;
+         id == CSSValueID::kMenu;
 }
 
 }  // namespace blink

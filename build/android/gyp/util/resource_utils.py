@@ -675,12 +675,13 @@ class _ResourceBuildContext(object):
     temp_dir: Optional root build directory path. If None, a temporary
       directory will be created, and removed in Close().
   """
-  def __init__(self, temp_dir=None):
+
+  def __init__(self, temp_dir=None, keep_files=False):
     """Initialized the context."""
     # The top-level temporary directory.
     if temp_dir:
       self.temp_dir = temp_dir
-      self.remove_on_exit = False
+      self.remove_on_exit = not keep_files
     else:
       self.temp_dir = tempfile.mkdtemp()
       self.remove_on_exit = True
@@ -714,10 +715,10 @@ class _ResourceBuildContext(object):
 
 
 @contextlib.contextmanager
-def BuildContext(temp_dir=None):
+def BuildContext(temp_dir=None, keep_files=False):
   """Generator for a _ResourceBuildContext instance."""
   try:
-    context = _ResourceBuildContext(temp_dir)
+    context = _ResourceBuildContext(temp_dir, keep_files)
     yield context
   finally:
     context.Close()

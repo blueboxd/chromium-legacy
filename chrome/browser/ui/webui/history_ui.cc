@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/browser/ui/webui/navigation_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -181,6 +182,7 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   ManagedUIHandler::Initialize(web_ui, data_source);
   content::WebUIDataSource::Add(profile, data_source);
 
+  web_ui->AddMessageHandler(std::make_unique<webui::NavigationHandler>());
   web_ui->AddMessageHandler(std::make_unique<BrowsingHistoryHandler>());
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 

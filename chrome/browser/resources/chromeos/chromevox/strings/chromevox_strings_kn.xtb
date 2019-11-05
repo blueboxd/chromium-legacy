@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">ಶಿಲಾಶಾಸನ</translation>
 <translation id="207477615537953741">ಶಬ್ದಾರ್ಥಗಳು ಆಫ್ ಆಗಿದೆ</translation>
 <translation id="2086961585857038472">ಮುಂದಿನ ಪದ</translation>
+<translation id="2087981446621639008">ವಿವರಣೆ ಪಟ್ಟಿ ವಿವರ</translation>
 <translation id="2089387485033699258">kn</translation>
 <translation id="2091933974477985526">ಹಿಂದಿನದನ್ನು ಸಂಪಾದಿಸಬಹುದಾದ ಪಠ್ಯ ಪ್ರದೇಶ</translation>
 <translation id="2100350898815792233">ಎಲ್ಲ ವಿರಾಮಚಿಹ್ನೆಗಳು</translation>
@@ -193,6 +194,7 @@
 <translation id="2416512023405990736">ಗುರುತಿಸದೆ ಇರುವ ಚೆಕ್‌ಬಾಕ್ಸ್</translation>
 <translation id="2417569100218200841">ವಿಷಯ ಮಾಹಿತಿ</translation>
 <translation id="2417948780551741035">ಅಂತಿಮ ಟಿಪ್ಪಣಿಗಳು</translation>
+<translation id="2419852971200420169">ವಿವರಣೆ ಪಟ್ಟಿ</translation>
 <translation id="2421113964388408478">ಅಳಿಸುವಿಕೆ</translation>
 <translation id="2422937916923936891">ಮೆನು ಐಟಂ ಚೆಕ್‌ಬಾಕ್ಸ್</translation>
 <translation id="2428534162001909979">ಕಮಾಂಡ್ ಮೆನುಗಳು</translation>
@@ -371,6 +373,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆ}one{# ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಗಳು}other{# ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{ಕ್ಯಾರೆಟ್}one{# ಕ್ಯಾರೆಟ್‌‌ಗಳು}other{# ಕ್ಯಾರೆಟ್‌‌ಗಳು}}</translation>
 <translation id="352577523970648069">ಎಡಿಟ್ ಮಾಡಬಹುದಾದ ಪಠ್ಯ ಕ್ಷೇತ್ರ</translation>
+<translation id="3538907380453898475">ವಿವರಣೆ ಪಟ್ಟಿ</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> ಅನ್ನು ಕತ್ತರಿಸಿ.</translation>
 <translation id="3549680091535286226">ತಾತ್ಕಾಲಿಕವಾಗಿ ಮಾತನ್ನು ನಿಲ್ಲಿಸಲು 2 ಬೆರಳುಗಳ ಮೂಲಕ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, ಚೆಕ್‌ಬಾಕ್ಸ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿಲ್ಲ</translation>
@@ -779,6 +782,7 @@
 <translation id="6378394210114975876">ಥಿಸಲ್</translation>
 <translation id="6385591741672306837">ಕಾಲಮ್</translation>
 <translation id="6387719785439924554">ಪಕ್ಕದಲ್ಲಿ</translation>
+<translation id="6393014464788431702">ಎಲ್ಲಾ ಈವೆಂಟ್ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6411426777058107714">ಹಿಂದಿನ ರೇಡಿಯೊ ಬಟನ್ ಇಲ್ಲ.</translation>
 <translation id="6414968628640960377">ಹಿಂದಿನ ವಿಭಿನ್ನ ಅಂಶ.</translation>
 <translation id="6417265370957905582">Google ಸಹಾಯಕ</translation>
@@ -914,6 +918,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="7332592614823088566"><ph name="ROWINDEX" /> / <ph name="ROWTOTAL" /> ಸಾಲು, <ph name="COLINDEX" /> / <ph name="COLTOTAL" /> ಕಾಲಮ್‌</translation>
 <translation id="7336596009609913925">ಪಾಪ್ಅಪ್ ಹೊಂದಿದೆ</translation>
 <translation id="7356165926712028380">8 ಡಾಟ್‌ ಬ್ರೈಲಿಗೆ ಬದಲಿಸಿ</translation>
+<translation id="7356610683936413584">ವಿವರಣೆ ಪಟ್ಟಿ ವಿವರ</translation>
 <translation id="7362871137496673139">ಯಾವುದೇ ಹಿಂದಿನ ಮಟ್ಟದ 2 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ಮತ್ತು}one{# ಮತ್ತು ಚಿಹ್ನೆಗಳು}other{# ಮತ್ತು ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8096975275316362544">ಮಿಂಟ್ ಕ್ರೀಮ್</translation>
 <translation id="8098587210054821856">ಸ್ಲೇಟ್ ಬೂದು</translation>
 <translation id="8110647606445335195">ಯಾವುದೇ ARIA ಹೆಗ್ಗುರುತುಗಳಿಲ್ಲ.</translation>
+<translation id="8121539003537428024">ಎಲ್ಲಾ ಈವೆಂಟ್ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="812886159861361726">ಡೌನ್‌ಲೋಡ್ ಸ್ಥಗಿತಗೊಂಡಿದೆ <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">ಸ್ಪರ್ಶಿಸಿ</translation>
 <translation id="8153880621934657047">ಕೋಷ್ಟಕದ ಒಳಗೆ ಇಲ್ಲ.</translation>

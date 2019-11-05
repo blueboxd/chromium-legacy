@@ -45,7 +45,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
@@ -207,11 +206,11 @@ RTCOfferOptionsPlatform* ConvertToRTCOfferOptionsPlatform(
       options->hasIceRestart() ? options->iceRestart() : false);
 }
 
-WebRTCAnswerOptions ConvertToWebRTCAnswerOptions(
+RTCAnswerOptionsPlatform* ConvertToRTCAnswerOptionsPlatform(
     const RTCAnswerOptions* options) {
-  return WebRTCAnswerOptions(MakeGarbageCollected<RTCAnswerOptionsPlatform>(
+  return MakeGarbageCollected<RTCAnswerOptionsPlatform>(
       options->hasVoiceActivityDetection() ? options->voiceActivityDetection()
-                                           : true));
+                                           : true);
 }
 
 scoped_refptr<WebRTCICECandidate> ConvertToWebRTCIceCandidate(
@@ -949,7 +948,8 @@ ScriptPromise RTCPeerConnection::createAnswer(ScriptState* script_state,
       RTCSessionDescriptionRequestPromiseImpl::Create(
           RTCCreateSessionDescriptionOperation::kCreateAnswer, this, resolver,
           "RTCPeerConnection", "createAnswer");
-  peer_handler_->CreateAnswer(request, ConvertToWebRTCAnswerOptions(options));
+  peer_handler_->CreateAnswer(request,
+                              ConvertToRTCAnswerOptionsPlatform(options));
   return promise;
 }
 

@@ -25,6 +25,7 @@ android_library("java") {
   java_files = [
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
     "org/chromium/weblayer_private/BrowserFragmentControllerImpl.java",
+    "org/chromium/weblayer_private/BrowserFragmentViewController.java",
     "org/chromium/weblayer_private/BrowserFragmentImpl.java",
     "org/chromium/weblayer_private/BrowserCallbackProxy.java",
     "org/chromium/weblayer_private/ChildProcessServiceImpl.java",

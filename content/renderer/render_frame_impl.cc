@@ -364,8 +364,7 @@ ui::PageTransition GetTransitionType(ui::PageTransition default_transition,
 // Calculates transition type for the specific document loaded using
 // WebDocumentLoader. Used while loading subresources.
 ui::PageTransition GetTransitionType(blink::WebDocumentLoader* document_loader,
-                                     bool is_main_frame,
-                                     bool loading) {
+                                     bool is_main_frame) {
   NavigationState* navigation_state =
       NavigationState::FromDocumentLoader(document_loader);
   ui::PageTransition default_transition =
@@ -374,12 +373,9 @@ ui::PageTransition GetTransitionType(blink::WebDocumentLoader* document_loader,
           : navigation_state->common_params().transition;
   if (navigation_state->WasWithinSameDocument())
     return default_transition;
-  if (loading || document_loader->GetResponse().IsNull()) {
-    return GetTransitionType(
-        default_transition, document_loader->ReplacesCurrentHistoryItem(),
-        is_main_frame, document_loader->GetNavigationType());
-  }
-  return default_transition;
+  return GetTransitionType(default_transition,
+                           document_loader->ReplacesCurrentHistoryItem(),
+                           is_main_frame, document_loader->GetNavigationType());
 }
 
 void GetRedirectChain(WebDocumentLoader* document_loader,
@@ -4667,8 +4663,8 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
         blink::mojom::CommitResult::Ok);
   }
 
-  ui::PageTransition transition = GetTransitionType(
-      frame_->GetDocumentLoader(), IsMainFrame(), true /* loading */);
+  ui::PageTransition transition =
+      GetTransitionType(frame_->GetDocumentLoader(), IsMainFrame());
 
   DidCommitNavigationInternal(
       item, commit_type, false /* was_within_same_document */, transition,
@@ -4925,13 +4921,17 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
     data->set_navigation_state(NavigationState::CreateContentInitiated());
   data->navigation_state()->set_was_within_same_document(true);
 
-  ui::PageTransition transition = GetTransitionType(
-      frame_->GetDocumentLoader(), IsMainFrame(), true /* loading */);
+  ui::PageTransition transition =
+      GetTransitionType(frame_->GetDocumentLoader(), IsMainFrame());
   DidCommitNavigationInternal(item, commit_type,
                               // was_within_same_document
                               true, transition,
                               // interface_params
                               nullptr);
+
+  // If we end up reusing this WebRequest (for example, due to a #ref click),
+  // we don't want the transition type to persist.  Just clear it.
+  data->navigation_state()->set_transition_type(ui::PAGE_TRANSITION_LINK);
 }
 
 void RenderFrameImpl::DidUpdateCurrentHistoryItem() {
@@ -5120,10 +5120,10 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
-  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
-  WillSendRequestInternal(
-      request, WebURLRequestToResourceType(request),
-      GetTransitionType(document_loader, IsMainFrame(), false /* loading */));
+  // This method is called for subresources, while transition type is
+  // a navigation concept. We pass ui::PAGE_TRANSITION_LINK as default one.
+  WillSendRequestInternal(request, WebURLRequestToResourceType(request),
+                          ui::PAGE_TRANSITION_LINK);
 }
 
 void RenderFrameImpl::WillSendRequestInternal(
@@ -5268,9 +5268,6 @@ void RenderFrameImpl::DidRunInsecureContent(
     const blink::WebURL& target) {
   Send(new FrameHostMsg_DidRunInsecureContent(
       routing_id_, GURL(origin.ToString().Utf8()), target));
-  GetContentClient()->renderer()->RecordRapporURL(
-      "ContentSettings.MixedScript.RanMixedScript",
-      GURL(origin.ToString().Utf8()));
 }
 
 void RenderFrameImpl::DidDisplayContentWithCertificateErrors() {

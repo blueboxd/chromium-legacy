@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Режимът „Не безпокойте“ е включен.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Показване на настройките за известия. Известията са изключени за едно приложение}other{Показване на настройките за известия. Известията са изключени за # приложения}}</translation>
 <translation id="1525508553941733066">ОТХВЪРЛЯНЕ</translation>
-<translation id="1537254971476575106">Лупа за увеличаване на целия екран</translation>
 <translation id="15373452373711364">Голям курсор на мишката</translation>
 <translation id="1546492247443594934">Работен кът 2</translation>
 <translation id="1550523713251050646">Кликнете за още опции</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Натиснете <ph name="KEYBOARD_SHORTCUT" /> за превключване на клавиатурната подредба.</translation>
 <translation id="2501920221385095727">Оставащи клавиши</translation>
 <translation id="2509468283778169019">„CAPS LOCK“ е включен</translation>
-<translation id="2532589005999780174">Режим на висок контраст</translation>
 <translation id="2542089167727451762">Докоснете изображението на потребителския си профил</translation>
 <translation id="255671100581129685">Google Асистент не е налице по време на публична сесия.</translation>
 <translation id="256712445991462162">лупата в прикрепен режим</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">Език</translation>
 <translation id="5313326810920013265">Настройки за Bluetooth</translation>
 <translation id="5331975486040154427">Устройство с USB-C (задният ляв порт)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Твърде много опити</translation>
 <translation id="5397578532367286026">Данните за употребата и историята на този потребител могат да се преглеждат от мениджъра (<ph name="MANAGER_EMAIL" />) на адрес chrome.com.</translation>
 <translation id="5430931332414098647">Незабавен тетъринг</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">Google Асистент не се поддържа за текущия профил на потребител.</translation>
 <translation id="5691772641933328258">Отпечатъкът не бе разпознат</translation>
 <translation id="5710450975648804523">Режимът „Не безпокойте“ е включен</translation>
+<translation id="573413375004481890">Това устройство не може да поддържа всичките ви екрани, затова връзката на един от тях бе прекратена</translation>
 <translation id="574392208103952083">Среден</translation>
 <translation id="5744083938413354016">Преместване чрез докосване</translation>
 <translation id="5750765938512549687">Функцията за Bluetooth е изключена</translation>
@@ -481,7 +481,6 @@
 <translation id="7984197416080286869">Твърде много опити за отключване с отпечатък</translation>
 <translation id="7994370417837006925">Централизиран вход</translation>
 <translation id="8000066093800657092">Няма мрежа</translation>
-<translation id="8029241286966751120">Лупата за увеличаване на целия екран е активирана. За да я изключите, натиснете отново Ctrl + клавиш „Търсене“ + M.</translation>
 <translation id="8030169304546394654">Няма връзка</translation>
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
 <translation id="8061464966246066292">Висок контраст</translation>
@@ -506,7 +505,6 @@
 <translation id="8388750414311082622">Последният работен кът не може да бъде премахнат.</translation>
 <translation id="8392451568018454956">Меню с опции за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Родителят ви заключи това устройство</translation>
-<translation id="8406981827175133772">Лупа за увеличаване на целия екран</translation>
 <translation id="8425213833346101688">Промяна</translation>
 <translation id="8427213022735114808">Функцията за диктуване изпраща гласа ви до Google, за да даде възможност за гласово въвеждане във всяко текстово поле.</translation>
 <translation id="8428213095426709021">Настройки</translation>

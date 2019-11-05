@@ -14,6 +14,7 @@
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_observer.h"
 #include "ash/wm/window_state.h"
 #include "base/containers/flat_set.h"
@@ -141,8 +142,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Updates overview bounds and hides the drop target when a preview area is
   // shown.
-  void RearrangeDuringDrag(aura::Window* dragged_window,
-                           IndicatorState indicator_state);
+  void RearrangeDuringDrag(
+      aura::Window* dragged_window,
+      SplitViewDragIndicators::WindowDraggingState window_dragging_state);
 
   // Updates the desks bar widget bounds if necessary.
   // Returns true if the desks widget's bounds have been updated.
@@ -165,9 +167,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Called when a window (either it's browser window or an app window)
   // start/continue/end being dragged in tablet mode.
   void OnWindowDragStarted(aura::Window* dragged_window, bool animate);
-  void OnWindowDragContinued(aura::Window* dragged_window,
-                             const gfx::PointF& location_in_screen,
-                             IndicatorState indicator_state);
+  void OnWindowDragContinued(
+      aura::Window* dragged_window,
+      const gfx::PointF& location_in_screen,
+      SplitViewDragIndicators::WindowDraggingState window_dragging_state);
   void OnWindowDragEnded(aura::Window* dragged_window,
                          const gfx::PointF& location_in_screen,
                          bool should_drop_window_into_overview,

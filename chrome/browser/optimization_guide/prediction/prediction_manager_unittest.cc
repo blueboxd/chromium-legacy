@@ -106,6 +106,8 @@ class FakeTopHostProvider : public TopHostProvider {
     return top_hosts_;
   }
 
+  int num_top_hosts_called() const { return num_top_hosts_called_; }
+
  private:
   std::vector<std::string> top_hosts_;
   int num_top_hosts_called_ = 0;
@@ -186,9 +188,13 @@ class TestPredictionModelFetcher : public PredictionModelFetcher {
 class TestPredictionManager : public PredictionManager {
  public:
   TestPredictionManager(
+      const std::vector<optimization_guide::proto::OptimizationTarget>&
+          optimization_targets_at_initialization,
       TopHostProvider* top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      : PredictionManager(top_host_provider, url_loader_factory) {}
+      : PredictionManager(optimization_targets_at_initialization,
+                          top_host_provider,
+                          url_loader_factory) {}
   ~TestPredictionManager() override = default;
 
   std::unique_ptr<PredictionModel> CreatePredictionModel(
@@ -232,7 +238,19 @@ class PredictionManagerTest
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
     prediction_manager_ = std::make_unique<TestPredictionManager>(
-        static_cast<TopHostProvider*>(top_host_provider_.get()),
+        std::vector<optimization_guide::proto::OptimizationTarget>({}),
+        top_host_provider_.get(), url_loader_factory_);
+  }
+
+  void CreatePredictionManager(
+      const std::vector<optimization_guide::proto::OptimizationTarget>&
+          optimization_targets_at_initialization) {
+    if (prediction_manager_) {
+      prediction_manager_.reset();
+    }
+
+    prediction_manager_ = std::make_unique<TestPredictionManager>(
+        optimization_targets_at_initialization, top_host_provider_.get(),
         url_loader_factory_);
   }
 
@@ -245,6 +263,10 @@ class PredictionManagerTest
   }
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
+
+  FakeTopHostProvider* top_host_provider() const {
+    return top_host_provider_.get();
+  }
 
   std::unique_ptr<TestPredictionModelFetcher> BuildTestPredictionModelFetcher(
       PredictionModelFetcherEndState end_state) {
@@ -267,6 +289,19 @@ class PredictionManagerTest
 
   DISALLOW_COPY_AND_ASSIGN(PredictionManagerTest);
 };
+
+TEST_F(PredictionManagerTest,
+       OptimizationTargetProvidedAtInitializationHasModelFetched) {
+  std::vector<optimization_guide::proto::OptimizationTarget>
+      optimization_targets_at_initialization = {
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD};
+  CreatePredictionManager(optimization_targets_at_initialization);
+
+  // Given that we cannot inject a fetcher at initialization unless we create a
+  // constructor just for testing, we will just simulate this with a call to
+  // the top host provider.
+  EXPECT_EQ(1, top_host_provider()->num_top_hosts_called());
+}
 
 TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
   content::MockNavigationHandle navigation_handle;

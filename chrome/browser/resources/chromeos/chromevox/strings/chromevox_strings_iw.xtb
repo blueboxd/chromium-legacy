@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">רשומת</translation>
 <translation id="207477615537953741">סמנטי כבוי</translation>
 <translation id="2086961585857038472">המילה הבאה</translation>
+<translation id="2087981446621639008">פרטי רשימת תיאורים</translation>
 <translation id="2089387485033699258">en</translation>
 <translation id="2091933974477985526">אזור טקסט קודם הניתן לעריכה</translation>
 <translation id="2100350898815792233">כל סימני הפיסוק</translation>
@@ -193,6 +194,7 @@
 <translation id="2416512023405990736">תיבת סימון שלא סומנה</translation>
 <translation id="2417569100218200841">פרטי תוכן</translation>
 <translation id="2417948780551741035">הערות סיום</translation>
+<translation id="2419852971200420169">רשימת תיאורים</translation>
 <translation id="2421113964388408478">מחיקה</translation>
 <translation id="2422937916923936891">תיבת סימון של פריט תפריט</translation>
 <translation id="2428534162001909979">תפריטי פקודות</translation>
@@ -371,6 +373,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{סימן שאלה}two{# סימני שאלה}many{# סימני שאלה}other{# סימני שאלה}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{סימן קארה (^)}two{# סימני קארה (^)}many{# סימני קארה (^)}other{# סימני קארה (^)}}</translation>
 <translation id="352577523970648069">שדה טקסט שניתן לעריכה</translation>
+<translation id="3538907380453898475">רשימת תיאורים</translation>
 <translation id="3549141990712742152">גזירה של <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">מקישים עם 2 אצבעות כדי להפסיק את הדיבור באופן זמני</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, תיבת הסימון לא מסומנת</translation>
@@ -779,6 +782,7 @@
 <translation id="6378394210114975876">קוץ</translation>
 <translation id="6385591741672306837">עמודה</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">השבתת כל מסנני האירועים</translation>
 <translation id="6411426777058107714">אין לחצן בחירה קודם.</translation>
 <translation id="6414968628640960377">הרכיב השונה הקודם.</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -914,6 +918,7 @@
 <translation id="7332592614823088566">שורה <ph name="ROWINDEX" /> מתוך <ph name="ROWTOTAL" />, עמודה <ph name="COLINDEX" /> מתוך <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">has popup</translation>
 <translation id="7356165926712028380">עבור לברייל 8 נקודות</translation>
+<translation id="7356610683936413584">פרטי רשימת תיאורים</translation>
 <translation id="7362871137496673139">אין כותרת קודמת של רמה 2.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{אמפרסנד (&amp;)}two{# סימני אמפרסנד (&amp;)}many{# סימני אמפרסנד (&amp;)}other{# סימני אמפרסנד (&amp;)}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@
 <translation id="8096975275316362544">מנטה בהיר</translation>
 <translation id="8098587210054821856">אפור תכלת</translation>
 <translation id="8110647606445335195">‏אין ציוני דרך מסוג ARIA.</translation>
+<translation id="8121539003537428024">הפעלת כל מסנני האירועים</translation>
 <translation id="812886159861361726">ההורדה של <ph name="FILE_NAME" /> נפסקה</translation>
 <translation id="8138880386467279117">מגע</translation>
 <translation id="8153880621934657047">לא בתוך טבלה.</translation>

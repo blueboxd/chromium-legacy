@@ -29,13 +29,14 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   explicit VRDeviceBase(mojom::XRDeviceId id);
   ~VRDeviceBase() override;
 
-  // VRDevice Implementation
+  // XRRuntime implementation
   void ListenToDeviceChanges(
       mojo::PendingAssociatedRemote<mojom::XRRuntimeEventListener> listener,
       mojom::XRRuntime::ListenToDeviceChangesCallback callback) final;
   void SetListeningForActivate(bool is_listening) override;
   void EnsureInitialized(EnsureInitializedCallback callback) override;
   void SetInlinePosesEnabled(bool enable) override;
+  void ShutdownSession(mojom::XRRuntime::ShutdownSessionCallback) override;
 
   virtual void RequestHitTest(
       mojom::XRRayPtr ray,

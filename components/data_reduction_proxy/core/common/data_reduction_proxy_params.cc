@@ -235,11 +235,6 @@ GURL GetPingbackURL() {
   return GURL(kPingbackURL);
 }
 
-bool ShouldForceEnableDataReductionProxy() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxy);
-}
-
 int LitePageVersion() {
   return GetFieldTrialParameterAsInteger(kLitePageFieldTrial,
                                          kLitePageBlackListVersion, 0, 0);

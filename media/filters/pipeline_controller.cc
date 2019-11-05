@@ -11,21 +11,18 @@ namespace media {
 
 PipelineController::PipelineController(
     std::unique_ptr<Pipeline> pipeline,
-    const RendererFactoryCB& renderer_factory_cb,
     const SeekedCB& seeked_cb,
     const SuspendedCB& suspended_cb,
     const BeforeResumeCB& before_resume_cb,
     const ResumedCB& resumed_cb,
     const PipelineStatusCB& error_cb)
     : pipeline_(std::move(pipeline)),
-      renderer_factory_cb_(renderer_factory_cb),
       seeked_cb_(seeked_cb),
       suspended_cb_(suspended_cb),
       before_resume_cb_(before_resume_cb),
       resumed_cb_(resumed_cb),
       error_cb_(error_cb) {
   DCHECK(pipeline_);
-  DCHECK(renderer_factory_cb_);
   DCHECK(seeked_cb_);
   DCHECK(suspended_cb_);
   DCHECK(before_resume_cb_);
@@ -55,7 +52,7 @@ void PipelineController::Start(Pipeline::StartType start_type,
   demuxer_ = demuxer;
   is_streaming_ = is_streaming;
   is_static_ = is_static;
-  pipeline_->Start(start_type, demuxer, renderer_factory_cb_.Run(), client,
+  pipeline_->Start(start_type, demuxer, client,
                    base::Bind(&PipelineController::OnPipelineStatus,
                               weak_factory_.GetWeakPtr(),
                               start_type == Pipeline::StartType::kNormal
@@ -257,7 +254,7 @@ void PipelineController::Dispatch() {
     pending_resume_ = false;
     state_ = State::RESUMING;
     before_resume_cb_.Run();
-    pipeline_->Resume(renderer_factory_cb_.Run(), seek_time_,
+    pipeline_->Resume(seek_time_,
                       base::Bind(&PipelineController::OnPipelineStatus,
                                  weak_factory_.GetWeakPtr(), State::PLAYING));
     return;

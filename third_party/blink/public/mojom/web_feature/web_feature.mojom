@@ -2462,6 +2462,7 @@ enum WebFeature {
   kUpgradeInsecureRequestsUpgradedRequestWebsocket = 3078,
   kUpgradeInsecureRequestsUpgradedRequestForm = 3079,
   kUpgradeInsecureRequestsUpgradedRequestUnknown = 3080,
+  kHasGlyphRelativeUnits = 3081,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

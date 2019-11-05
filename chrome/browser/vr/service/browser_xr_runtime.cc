@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "content/public/browser/render_frame_host.h"
@@ -243,7 +243,7 @@ void BrowserXRRuntime::ExitActiveImmersiveSession() {
   DVLOG(2) << __func__;
   auto* service = GetServiceWithActiveImmersiveSession();
   if (service) {
-    service->ExitPresent();
+    service->ExitPresent(base::DoNothing());
   }
 }
 
@@ -371,18 +371,25 @@ void BrowserXRRuntime::OnDisplayInfoChanged(
   }
 }
 
-void BrowserXRRuntime::StopImmersiveSession() {
+void BrowserXRRuntime::StopImmersiveSession(
+    VRServiceImpl::ExitPresentCallback on_exited) {
+  DVLOG(2) << __func__;
   if (immersive_session_controller_) {
     immersive_session_controller_.reset();
-    presenting_service_ = nullptr;
+    if (presenting_service_) {
+      presenting_service_->OnExitPresent();
+      presenting_service_ = nullptr;
+    }
 
     for (BrowserXRRuntimeObserver& observer : observers_) {
       observer.SetWebXRWebContents(nullptr);
     }
   }
+  std::move(on_exited).Run();
 }
 
 void BrowserXRRuntime::OnExitPresent() {
+  DVLOG(2) << __func__;
   if (presenting_service_) {
     presenting_service_->OnExitPresent();
     presenting_service_ = nullptr;
@@ -432,8 +439,7 @@ void BrowserXRRuntime::OnServiceRemoved(VRServiceImpl* service) {
   DCHECK(service);
   services_.erase(service);
   if (service == presenting_service_) {
-    ExitPresent(service);
-    DCHECK(presenting_service_ == nullptr);
+    ExitPresent(service, base::DoNothing());
   }
   if (service == listening_for_activation_service_) {
     // Not listening for activation.
@@ -442,10 +448,15 @@ void BrowserXRRuntime::OnServiceRemoved(VRServiceImpl* service) {
   }
 }
 
-void BrowserXRRuntime::ExitPresent(VRServiceImpl* service) {
-  DVLOG(2) << __func__ << ": id=" << id_;
+void BrowserXRRuntime::ExitPresent(
+    VRServiceImpl* service,
+    VRServiceImpl::ExitPresentCallback on_exited) {
+  DVLOG(2) << __func__ << ": id=" << id_ << " service=" << service
+           << " presenting_service_=" << presenting_service_;
   if (service == presenting_service_) {
-    StopImmersiveSession();
+    runtime_->ShutdownSession(
+        base::BindOnce(&BrowserXRRuntime::StopImmersiveSession,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(on_exited)));
   }
 }
 
@@ -503,14 +514,14 @@ void BrowserXRRuntime::OnRequestSessionResult(
       // sure to clean up this weird state.
       immersive_session_controller_.Bind(
           std::move(immersive_session_controller));
-      StopImmersiveSession();
+      StopImmersiveSession(base::DoNothing());
     }
   }
 }
 
 void BrowserXRRuntime::OnImmersiveSessionError() {
   DVLOG(2) << __func__ << ": id=" << id_;
-  StopImmersiveSession();
+  StopImmersiveSession(base::DoNothing());
 }
 
 void BrowserXRRuntime::UpdateListeningForActivate(VRServiceImpl* service) {

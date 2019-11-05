@@ -251,6 +251,15 @@ bool ArcDefaultAppList::HasPackage(const std::string& package_name) const {
   return false;
 }
 
+bool ArcDefaultAppList::HasHiddenPackage(
+    const std::string& package_name) const {
+  for (const auto& it : hidden_apps_) {
+    if (it.second->package_name == package_name)
+      return true;
+  }
+  return false;
+}
+
 void ArcDefaultAppList::SetAppHidden(const std::string& app_id, bool hidden) {
   AppInfoMap& active_map = hidden ? visible_apps_ : hidden_apps_;
   AppInfoMap& inactive_map = hidden ? hidden_apps_ : visible_apps_;

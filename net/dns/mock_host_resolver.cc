@@ -135,6 +135,12 @@ class MockHostResolverBase::RequestImpl
     return *nullopt_result;
   }
 
+  const base::Optional<EsniContent>& GetEsniResults() const override {
+    DCHECK(complete_);
+    static const base::NoDestructor<base::Optional<EsniContent>> nullopt_result;
+    return *nullopt_result;
+  }
+
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
     DCHECK(complete_);
@@ -297,6 +303,7 @@ void MockHostResolverBase::OnShutdown() {
 std::unique_ptr<HostResolver::ResolveHostRequest>
 MockHostResolverBase::CreateRequest(
     const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   return std::make_unique<RequestImpl>(host, optional_parameters, AsWeakPtr());
@@ -917,6 +924,10 @@ class HangingHostResolver::RequestImpl
     IMMEDIATE_CRASH();
   }
 
+  const base::Optional<EsniContent>& GetEsniResults() const override {
+    IMMEDIATE_CRASH();
+  }
+
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
     IMMEDIATE_CRASH();
@@ -944,6 +955,7 @@ void HangingHostResolver::OnShutdown() {
 std::unique_ptr<HostResolver::ResolveHostRequest>
 HangingHostResolver::CreateRequest(
     const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   if (shutting_down_)

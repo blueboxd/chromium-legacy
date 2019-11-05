@@ -41,6 +41,8 @@ class PredictionManager
     : public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
  public:
   PredictionManager(
+      const std::vector<optimization_guide::proto::OptimizationTarget>&
+          optimization_targets_at_initialization,
       TopHostProvider* top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~PredictionManager() override;

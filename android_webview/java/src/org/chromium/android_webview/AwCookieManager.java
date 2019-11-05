@@ -159,7 +159,7 @@ public final class AwCookieManager {
      * Whether cookies are accepted for file scheme URLs.
      */
     public boolean allowFileSchemeCookies() {
-        return AwCookieManagerJni.get().allowFileSchemeCookies(
+        return AwCookieManagerJni.get().getAllowFileSchemeCookies(
                 mNativeCookieManager, AwCookieManager.this);
     }
 
@@ -173,7 +173,7 @@ public final class AwCookieManager {
      * instance has been created.
      */
     public void setAcceptFileSchemeCookies(boolean accept) {
-        AwCookieManagerJni.get().setAcceptFileSchemeCookies(
+        AwCookieManagerJni.get().setAllowFileSchemeCookies(
                 mNativeCookieManager, AwCookieManager.this, accept);
     }
 
@@ -267,8 +267,8 @@ public final class AwCookieManager {
         void removeExpiredCookies(long nativeCookieManager, AwCookieManager caller);
         void flushCookieStore(long nativeCookieManager, AwCookieManager caller);
         boolean hasCookies(long nativeCookieManager, AwCookieManager caller);
-        boolean allowFileSchemeCookies(long nativeCookieManager, AwCookieManager caller);
-        void setAcceptFileSchemeCookies(
-                long nativeCookieManager, AwCookieManager caller, boolean accept);
+        boolean getAllowFileSchemeCookies(long nativeCookieManager, AwCookieManager caller);
+        void setAllowFileSchemeCookies(
+                long nativeCookieManager, AwCookieManager caller, boolean allow);
     }
 }

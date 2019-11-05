@@ -19,6 +19,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
@@ -496,6 +497,23 @@ public class ShortcutHelper {
         canvas.drawBitmap(webIcon, null, innerBounds, paint);
 
         return bitmap;
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    public static Bitmap generateAdaptiveIconBitmap(Bitmap bitmap) {
+        Bitmap padded = ShortcutHelper.createHomeScreenIconFromWebIcon(bitmap, true);
+        Icon adaptiveIcon = Icon.createWithAdaptiveBitmap(padded);
+        AdaptiveIconDrawable adaptiveIconDrawable =
+                (AdaptiveIconDrawable) adaptiveIcon.loadDrawable(
+                        ContextUtils.getApplicationContext());
+
+        Bitmap result = Bitmap.createBitmap(adaptiveIconDrawable.getIntrinsicWidth(),
+                adaptiveIconDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(result);
+        adaptiveIconDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        adaptiveIconDrawable.draw(canvas);
+
+        return result;
     }
 
     /**

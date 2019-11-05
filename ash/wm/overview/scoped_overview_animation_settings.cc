@@ -158,10 +158,14 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
-      // Add animation delay when entering from home launcher using slide
-      // animation (which is the case if homerview gesture is not enabled, in
-      // which case overview will fade in without sliding).
-      if (!features::IsHomerviewGestureEnabled()) {
+      // Add animation delay when entering from home launcher.
+      // Delay transform only when using slide animation (which is used
+      // if kHomerviewGesture is not enabled), as otherwise the overview item
+      // will only fade in.
+      if (features::IsHomerviewGestureEnabled()) {
+        animator->SchedulePauseForProperties(
+            kFromHomeLauncherDelay, ui::LayerAnimationElement::OPACITY);
+      } else {
         animator->SchedulePauseForProperties(
             kFromHomeLauncherDelay, ui::LayerAnimationElement::OPACITY |
                                         ui::LayerAnimationElement::TRANSFORM);

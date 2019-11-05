@@ -87,8 +87,13 @@ class CC_EXPORT TileManagerClient {
   // rasterized with missing images need to be invalidated.
   virtual void RequestImplSideInvalidationForCheckerImagedTiles() = 0;
 
+  // Returns the frame index to display for the given image on the given tree.
   virtual size_t GetFrameIndexForImage(const PaintImage& paint_image,
                                        WhichTree tree) const = 0;
+
+  // Returns the sample count to use if MSAA is enabled for a tile.
+  virtual int GetMSAASampleCountForRaster(
+      const scoped_refptr<DisplayItemList>& display_list) = 0;
 
  protected:
   virtual ~TileManagerClient() {}
@@ -399,7 +404,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   ScheduledTasksStateAsValue() const;
 
-  bool UsePartialRaster() const;
+  bool UsePartialRaster(int msaa_sample_count) const;
 
   void FlushAndIssueSignals();
   void CheckPendingGpuWorkAndIssueSignals();

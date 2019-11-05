@@ -155,6 +155,11 @@ class CacheStorageDispatcherHost::CacheImpl
             UMA_HISTOGRAM_LONG_TIMES(
                 "ServiceWorkerCache.Cache.Browser.Match.Initialized", elapsed);
           }
+          if (in_related_fetch_event) {
+            UMA_HISTOGRAM_LONG_TIMES(
+                "ServiceWorkerCache.Cache.Browser.Match.RelatedFetchEvent",
+                elapsed);
+          }
           if (error == CacheStorageError::kErrorNotFound) {
             UMA_HISTOGRAM_LONG_TIMES(
                 "ServiceWorkerCache.Cache.Browser.Match.Miss", elapsed);
@@ -197,8 +202,16 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
 
-    cache->Match(std::move(request), std::move(match_options), trace_id,
-                 std::move(cb));
+    CacheStorageSchedulerPriority priority =
+        CacheStorageSchedulerPriority::kNormal;
+    if (in_related_fetch_event &&
+        base::FeatureList::IsEnabled(
+            features::kCacheStorageHighPriorityMatch)) {
+      priority = CacheStorageSchedulerPriority::kHigh;
+    }
+
+    cache->Match(std::move(request), std::move(match_options), priority,
+                 trace_id, std::move(cb));
   }
 
   void MatchAll(blink::mojom::FetchAPIRequestPtr request,
@@ -584,16 +597,20 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
       return;
     }
 
+    CacheStorageSchedulerPriority priority =
+        in_related_fetch_event ? CacheStorageSchedulerPriority::kHigh
+                               : CacheStorageSchedulerPriority::kNormal;
+
     if (!match_options->cache_name) {
       cache_storage->MatchAllCaches(std::move(request),
                                     std::move(match_options->query_options),
-                                    trace_id, std::move(cb));
+                                    priority, trace_id, std::move(cb));
       return;
     }
     std::string cache_name = base::UTF16ToUTF8(*match_options->cache_name);
     cache_storage->MatchCache(std::move(cache_name), std::move(request),
-                              std::move(match_options->query_options), trace_id,
-                              std::move(cb));
+                              std::move(match_options->query_options), priority,
+                              trace_id, std::move(cb));
   }
 
   void Open(const base::string16& cache_name,

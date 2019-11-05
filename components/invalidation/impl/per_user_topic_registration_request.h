@@ -42,18 +42,16 @@ class PerUserTopicRegistrationRequest {
     // Builds a Request object in order to perform the registration.
     std::unique_ptr<PerUserTopicRegistrationRequest> Build() const;
 
-    Builder& SetToken(const std::string& token);
+    Builder& SetInstanceIdToken(const std::string& token);
     Builder& SetScope(const std::string& scope);
     Builder& SetAuthenticationHeader(const std::string& auth_header);
 
-    Builder& SetPublicTopicName(const std::string& topic);
+    Builder& SetPublicTopicName(const Topic& topic);
     Builder& SetProjectId(const std::string& project_id);
 
     Builder& SetType(RequestType type);
 
     Builder& SetTopicIsPublic(bool topic_is_public);
-
-    enum RegistrationState { REGISTERED, UNREGISTERED };
 
    private:
     net::HttpRequestHeaders BuildHeaders() const;
@@ -64,8 +62,8 @@ class PerUserTopicRegistrationRequest {
         const GURL& url) const;
 
     // GCM subscription token obtained from GCM driver (instanceID::getToken()).
-    std::string token_;
-    std::string topic_;
+    std::string instance_id_token_;
+    Topic topic_;
     std::string project_id_;
 
     std::string scope_;
@@ -83,9 +81,9 @@ class PerUserTopicRegistrationRequest {
   void Start(CompletedCallback callback,
              network::mojom::URLLoaderFactory* loader_factory);
 
- private:
-  friend class PerUserTopicRegistrationRequestTest;
+  GURL GetUrlForTesting() const { return url_; }
 
+ private:
   PerUserTopicRegistrationRequest();
   void OnURLFetchComplete(std::unique_ptr<std::string> response_body);
   void OnURLFetchCompleteInternal(int net_error,
@@ -93,9 +91,6 @@ class PerUserTopicRegistrationRequest {
                                   std::unique_ptr<std::string> response_body);
 
   void OnJsonParse(data_decoder::DataDecoder::ValueOrError result);
-
-  // For tests only. Returns the full URL of the request.
-  GURL getUrl() const { return url_; }
 
   // The fetcher for subscribing.
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;

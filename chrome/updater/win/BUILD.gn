@@ -64,6 +64,8 @@ source_set("base") {
 
   deps = [
     "//base",
+    "//chrome/updater:common",
+    "//chrome/updater:version_header",
   ]
 
   libs = [
@@ -97,7 +99,6 @@ source_set("core") {
     "//base",
     "//chrome/installer/util:with_no_strings",
     "//chrome/updater:common",
-    "//chrome/updater:updater_constants",
     "//components/update_client",
     "//url:url",
   ]
@@ -132,7 +133,6 @@ source_set("install_app") {
     "//base",
     "//base:i18n",
     "//chrome/updater:common",
-    "//chrome/updater:updater_constants",
     "//chrome/updater/win/ui",
     "//components/prefs",
     "//components/update_client",

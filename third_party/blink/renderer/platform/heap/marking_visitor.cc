@@ -152,7 +152,6 @@ bool MarkingVisitor::WriteBarrierSlow(void* value) {
     LargeObjectPage* large_page = static_cast<LargeObjectPage*>(base_page);
     header = large_page->ObjectHeader();
   }
-  DCHECK(header->IsValid());
 
   if (!header->TryMark<HeapObjectHeader::AccessMode::kAtomic>())
     return false;

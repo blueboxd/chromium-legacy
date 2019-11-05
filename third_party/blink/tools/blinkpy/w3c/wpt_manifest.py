@@ -64,6 +64,7 @@ class WPTManifest(object):
     def __init__(self, json_content):
         self.raw_dict = json.loads(json_content)
         self.test_types = ('manual', 'reftest', 'testharness')
+        self.test_name_to_file = {}
 
     def _items_for_file_path(self, path_in_wpt):
         """Finds manifest items for the given WPT path.
@@ -122,9 +123,11 @@ class WPTManifest(object):
         for test_type in self.test_types:
             if test_type not in items:
                 continue
-            for records in items[test_type].itervalues():
+            for filename, records in items[test_type].iteritems():
                 for item in filter(self._is_not_jsshell, records):
-                    url_items[self._get_url_from_item(item)] = item
+                    url_for_item = self._get_url_from_item(item)
+                    url_items[url_for_item] = item
+                    self.test_name_to_file[url_for_item] = filename
         return url_items
 
     @memoized
@@ -180,6 +183,19 @@ class WPTManifest(object):
                     ref_path_in_wpt = '/' + ref_path_in_wpt
                 reftest_list.append((expectation, ref_path_in_wpt))
         return reftest_list
+
+    def file_path_for_test_url(self, url):
+        """Finds the file path for the given test URL.
+
+        Args:
+            url: a WPT test URL.
+
+        Returns:
+            The path to the file containing this test URL, or None if not found.
+        """
+        # Call all_url_items to ensure the test to file mapping is populated.
+        self.all_url_items()
+        return self.test_name_to_file.get(url)
 
     @staticmethod
     def ensure_manifest(port, path=None):

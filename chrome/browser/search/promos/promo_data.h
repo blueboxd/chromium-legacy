@@ -28,6 +28,9 @@ struct PromoData {
 
   // The unique identifier for this promo. May be empty.
   std::string promo_id;
+
+  // Allow the promo to open chrome:// links
+  bool can_open_privileged_links = false;
 };
 
 bool operator==(const PromoData& lhs, const PromoData& rhs);

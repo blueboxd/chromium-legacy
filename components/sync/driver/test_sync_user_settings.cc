@@ -6,6 +6,7 @@
 
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -94,6 +95,45 @@ UserSelectableTypeSet TestSyncUserSettings::GetRegisteredSelectableTypes()
 UserSelectableTypeSet TestSyncUserSettings::GetForcedTypes() const {
   return {};
 }
+
+#if defined(OS_CHROMEOS)
+bool TestSyncUserSettings::IsSyncAllOsTypesEnabled() const {
+  return sync_all_os_types_enabled_;
+}
+
+UserSelectableOsTypeSet TestSyncUserSettings::GetSelectedOsTypes() const {
+  ModelTypeSet preferred_types = service_->GetPreferredDataTypes();
+  UserSelectableOsTypeSet selected_types;
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    if (preferred_types.Has(UserSelectableOsTypeToCanonicalModelType(type))) {
+      selected_types.Put(type);
+    }
+  }
+  return selected_types;
+}
+
+void TestSyncUserSettings::SetSelectedOsTypes(bool sync_all_os_types,
+                                              UserSelectableOsTypeSet types) {
+  sync_all_os_types_enabled_ = sync_all_os_types;
+
+  syncer::ModelTypeSet preferred_types;
+  if (sync_all_os_types_enabled_) {
+    for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+      preferred_types.PutAll(UserSelectableOsTypeToAllModelTypes(type));
+    }
+  } else {
+    for (UserSelectableOsType type : types) {
+      preferred_types.PutAll(UserSelectableOsTypeToAllModelTypes(type));
+    }
+  }
+  service_->SetPreferredDataTypes(preferred_types);
+}
+
+UserSelectableOsTypeSet TestSyncUserSettings::GetRegisteredSelectableOsTypes()
+    const {
+  return UserSelectableOsTypeSet::All();
+}
+#endif
 
 bool TestSyncUserSettings::IsEncryptEverythingAllowed() const {
   return true;

@@ -550,12 +550,20 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, StoragePartitionUpdated) {
   test::OobeJS().CreateWaiter(partition_valid_and_changed_condition)->Wait();
 }
 
+// Flaky in debug builds - crbug.com/1021191
+#if defined(DEBUG)
+#define MAYBE_TestActiveDirectoryEnrollment_Success \
+  DISABLED_TestActiveDirectoryEnrollment_Success
+#else
+#define MAYBE_TestActiveDirectoryEnrollment_Success \
+  TestActiveDirectoryEnrollment_Success
+#endif
 // Shows the enrollment screen and mocks the enrollment helper to show Active
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory credentials. Verifies that the AuthpolicyClient
 // calls us back with the correct realm.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_Success) {
+                       MAYBE_TestActiveDirectoryEnrollment_Success) {
   ShowEnrollmentScreen();
   enrollment_helper_.DisableAttributePromptUpdate();
   enrollment_helper_.SetupActiveDirectoryJoin(
@@ -581,10 +589,18 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
+// Flaky in debug builds - crbug.com/1021191
+#if defined(DEBUG)
+#define MAYBE_TestActiveDirectoryEnrollment_DistinguishedName \
+  DISABLED_TestActiveDirectoryEnrollment_DistinguishedName
+#else
+#define MAYBE_TestActiveDirectoryEnrollment_DistinguishedName \
+  TestActiveDirectoryEnrollment_DistinguishedName
+#endif
 // Verifies that the distinguished name specified on the Active Directory join
 // domain screen correctly parsed and passed into AuthPolicyClient.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_DistinguishedName) {
+                       MAYBE_TestActiveDirectoryEnrollment_DistinguishedName) {
   ShowEnrollmentScreen();
   enrollment_helper_.DisableAttributePromptUpdate();
   enrollment_helper_.SetupActiveDirectoryJoin(
@@ -614,12 +630,20 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
 }
 
+// Flaky in debug builds - crbug.com/1021191
+#if defined(DEBUG)
+#define MAYBE_TestActiveDirectoryEnrollment_UIErrors \
+  DISABLED_TestActiveDirectoryEnrollment_UIErrors
+#else
+#define MAYBE_TestActiveDirectoryEnrollment_UIErrors \
+  TestActiveDirectoryEnrollment_UIErrors
+#endif
 // Shows the enrollment screen and mocks the enrollment helper to show Active
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory different incorrect credentials. Verifies that the
 // correct error is displayed.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_UIErrors) {
+                       MAYBE_TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
   enrollment_helper_.SetupActiveDirectoryJoin(
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
@@ -661,10 +685,18 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   ExpectElementValid(kAdPasswordInput, true);
 }
 
+// Flaky in debug builds - crbug.com/1021191
+#if defined(DEBUG)
+#define MAYBE_TestActiveDirectoryEnrollment_ErrorCard \
+  DISABLED_TestActiveDirectoryEnrollment_ErrorCard
+#else
+#define MAYBE_TestActiveDirectoryEnrollment_ErrorCard \
+  TestActiveDirectoryEnrollment_ErrorCard
+#endif
 // Check that correct error card is shown (Active Directory one). Also checks
 // that hitting retry shows Active Directory screen again.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_ErrorCard) {
+                       MAYBE_TestActiveDirectoryEnrollment_ErrorCard) {
   ShowEnrollmentScreen();
   enrollment_helper_.SetupActiveDirectoryJoin(
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
@@ -683,10 +715,18 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoin);
 }
 
+// Flaky in debug builds - crbug.com/1021191
+#if defined(DEBUG)
+#define MAYBE_TestActiveDirectoryEnrollment_Streamline \
+  DISABLED_TestActiveDirectoryEnrollment_Streamline
+#else
+#define MAYBE_TestActiveDirectoryEnrollment_Streamline \
+  TestActiveDirectoryEnrollment_Streamline
+#endif
 // Check that configuration for the streamline Active Directory domain join
 // propagates correctly to the Domain Join UI.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_Streamline) {
+                       MAYBE_TestActiveDirectoryEnrollment_Streamline) {
   ShowEnrollmentScreen();
   std::string binary_config;
   EXPECT_TRUE(base::Base64Decode(kAdDomainJoinEncryptedConfig, &binary_config));

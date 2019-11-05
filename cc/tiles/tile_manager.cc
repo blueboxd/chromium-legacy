@@ -1129,11 +1129,14 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "TileManager::CreateRasterTask", "Tile", tile->id());
 
+  const int msaa_sample_count = client_->GetMSAASampleCountForRaster(
+      prioritized_tile.raster_source()->GetDisplayItemList());
+
   // Get the resource.
   ResourcePool::InUsePoolResource resource;
   uint64_t resource_content_id = 0;
   gfx::Rect invalidated_rect = tile->invalidated_content_rect();
-  if (UsePartialRaster() && tile->invalidated_id()) {
+  if (UsePartialRaster(msaa_sample_count) && tile->invalidated_id()) {
     resource = resource_pool_->TryAcquireResourceForPartialRaster(
         tile->id(), tile->invalidated_content_rect(), tile->invalidated_id(),
         &invalidated_rect);
@@ -1156,6 +1159,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   const bool skip_images =
       prioritized_tile.priority().resolution == LOW_RESOLUTION;
   playback_settings.use_lcd_text = tile->can_use_lcd_text();
+  playback_settings.msaa_sample_count = msaa_sample_count;
 
   // Create and queue all image decode tasks that this tile depends on. Note
   // that we need to store the images for decode tasks in
@@ -1605,9 +1609,13 @@ TileManager::ScheduledTasksStateAsValue() const {
   return std::move(state);
 }
 
-bool TileManager::UsePartialRaster() const {
+bool TileManager::UsePartialRaster(int msaa_sample_count) const {
+  // Partial raster doesn't support MSAA, as the MSAA resolve is unaware of clip
+  // rects.
+  // TODO(crbug.com/629683): See if we can work around this limitation.
   return tile_manager_settings_.use_partial_raster &&
-         raster_buffer_provider_->CanPartialRasterIntoProvidedResource();
+         raster_buffer_provider_->CanPartialRasterIntoProvidedResource() &&
+         msaa_sample_count == 0;
 }
 
 void TileManager::CheckPendingGpuWorkAndIssueSignals() {

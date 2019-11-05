@@ -36,6 +36,8 @@ _READY_TO_RUN_FILTER = [
     'PageLoadingTest.testEagerStrategyShouldNotWaitForResourcesOnRefresh',
     'PageLoadingTest.testEagerStrategyShouldWaitForDocumentToBeLoaded',
     'WindowSwitchingTest.canOpenANewWindow',
+    'LocationContextTest.testShouldSetAndGetLatitude',
+    'LocationContextTest.testShouldSetAndGetLongitude',
 ]
 
 _OS_NEGATIVE_FILTER = {}

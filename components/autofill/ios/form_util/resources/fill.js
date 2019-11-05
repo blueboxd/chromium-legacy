@@ -168,27 +168,27 @@ __gCrWeb.fill.autoComplete = function(element) {
  *
  * @param {string} value The value the input element will be set.
  * @param {Element} input The input element of which the value is set.
- **/
+ */
 function setInputElementAngularValue_(value, input) {
   if (!input || !window['angular']) {
     return;
   }
-  var angular_element =
+  var angularElement =
       window['angular'].element && window['angular'].element(input);
-  if (!angular_element) {
+  if (!angularElement) {
     return;
   }
-  angular_element.val(value);
-  var angular_model = angular_element.data && angular_element.data('ngModel');
-  var angular_scope = angular_element.scope();
-  if (!angular_model || !angular_scope) {
+  angularElement.val(value);
+  var angularModel = angularElement.data && angularElement.data('ngModel');
+  var angularScope = angularElement.scope();
+  if (!angularModel || !angularScope) {
     return;
   }
-  angular_element.injector().invoke([
+  angularElement.injector().invoke([
     '$parse',
     function(parse) {
-      var setter = parse(angular_model);
-      setter.assign(angular_scope, value);
+      var setter = parse(angularModel);
+      setter.assign(angularScope, value);
     }
   ]);
 }
@@ -1911,9 +1911,9 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
   field['id_attribute'] = element.getAttribute('id') || '';
 
   field['form_control_type'] = element.type;
-  var autocomplete_attribute = element.getAttribute('autocomplete');
-  if (autocomplete_attribute) {
-    field['autocomplete_attribute'] = autocomplete_attribute;
+  var autocompleteAttribute = element.getAttribute('autocomplete');
+  if (autocompleteAttribute) {
+    field['autocomplete_attribute'] = autocompleteAttribute;
   }
   if (field['autocomplete_attribute'] != null &&
       field['autocomplete_attribute'].length > __gCrWeb.fill.MAX_DATA_LENGTH) {
@@ -1923,8 +1923,8 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
     field['autocomplete_attribute'] = 'x-max-data-length-exceeded';
   }
 
-  var role_attribute = element.getAttribute('role');
-  if (role_attribute && role_attribute.toLowerCase() == 'presentation') {
+  var roleAttribute = element.getAttribute('role');
+  if (roleAttribute && roleAttribute.toLowerCase() == 'presentation') {
     field['role'] = __gCrWeb.fill.ROLE_ATTRIBUTE_PRESENTATION;
   }
 

@@ -1739,6 +1739,12 @@ bool ArcAppListPrefs::IsUnknownPackage(const std::string& package_name) const {
   return true;
 }
 
+bool ArcAppListPrefs::IsDefaultPackage(const std::string& package_name) const {
+  DCHECK(default_apps_ready_);
+  return default_apps_->HasPackage(package_name) ||
+         default_apps_->HasHiddenPackage(package_name);
+}
+
 void ArcAppListPrefs::OnPackageAdded(
     arc::mojom::ArcPackageInfoPtr package_info) {
   DCHECK(IsArcAndroidEnabledForProfile(profile_));

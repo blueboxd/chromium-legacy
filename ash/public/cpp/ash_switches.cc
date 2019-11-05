@@ -97,6 +97,9 @@ const char kAshSideVolumeButtonPosition[] = "ash-side-volume-button-position";
 // instead of displaying an interactive animation.
 const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 
+// Enables Shelf Dimming for ChromeOS.
+const char kEnableDimShelf[] = "enable-dim-shelf";
+
 // If set, tablet-like power button behavior (i.e. tapping the button turns the
 // screen off) is used even if the device is in laptop mode.
 const char kForceTabletPowerButton[] = "force-tablet-power-button";
@@ -128,6 +131,10 @@ const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
 
 bool IsUsingViewsLock() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLock);
+}
+
+bool IsUsingShelfAutoDim() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableDimShelf);
 }
 
 }  // namespace switches

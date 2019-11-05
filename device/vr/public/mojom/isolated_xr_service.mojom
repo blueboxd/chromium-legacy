@@ -75,6 +75,10 @@ interface XRRuntime {
                      XRSession? session,
                      pending_remote<XRSessionController>? controller);
 
+  // Initiate shutdown of a session, and call the callback once the runtime
+  // is ready for starting a new session.
+  ShutdownSession() => ();
+
   // The browser may register for changes to a device. Initial VRDisplayInfo
   // will immediately be returned to the listener to prevent races.
   ListenToDeviceChanges(

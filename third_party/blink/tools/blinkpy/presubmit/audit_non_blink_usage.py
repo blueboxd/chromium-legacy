@@ -251,6 +251,7 @@ _CONFIG = [
 
             # cc::Layers.
             'cc::Layer',
+            'cc::LayerClient',
             'cc::PictureLayer',
             'cc::SurfaceLayer',
 
@@ -270,8 +271,7 @@ _CONFIG = [
             'cc::HORIZONTAL',
             'cc::VERTICAL',
             'cc::THUMB',
-            'cc::TRACK',
-            'cc::TICKMARKS',
+            'cc::TRACK_BUTTONS_TICKMARKS',
             'cc::BrowserControlsState',
             'cc::EventListenerClass',
             'cc::EventListenerProperties',
@@ -580,6 +580,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/scroll/scrollbar_theme_mac.mm'],
+        'allowed': [
+            'gfx::CocoaScrollbarPainter',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/workers/worker_thread.cc'],
         'allowed': [
             'base::ScopedAllowBaseSyncPrimitives',
@@ -730,6 +736,7 @@ _CONFIG = [
             'webrtc::EchoCanceller3Factory',
             'webrtc::ExperimentalAgc',
             'webrtc::MediaStreamTrackInterface',
+            'webrtc::ObserverInterface',
             'webrtc::StreamConfig',
             'webrtc::TypingDetection',
             'webrtc::VideoTrackInterface',

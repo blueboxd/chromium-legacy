@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video_capture_types.h"
@@ -44,7 +43,7 @@ void ResetCallback(
 // is disabled, a black frame is instead forwarded to the sinks at the same
 // frame rate.
 class MediaStreamVideoTrack::FrameDeliverer
-    : public base::RefCountedThreadSafe<FrameDeliverer> {
+    : public WTF::ThreadSafeRefCounted<FrameDeliverer> {
  public:
   using VideoSinkId = WebMediaStreamSink*;
 
@@ -70,7 +69,7 @@ class MediaStreamVideoTrack::FrameDeliverer
                         base::TimeTicks estimated_capture_time);
 
  private:
-  friend class base::RefCountedThreadSafe<FrameDeliverer>;
+  friend class WTF::ThreadSafeRefCounted<FrameDeliverer>;
   virtual ~FrameDeliverer();
   void AddCallbackOnIO(VideoSinkId id,
                        VideoCaptureDeliverFrameInternalCallback callback);

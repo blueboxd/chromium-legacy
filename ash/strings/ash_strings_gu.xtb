@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">ખલેલ પાડશો નહીં ચાલુ છે.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{નોટિફિકેશનની સેટિંગ બતાવો. ઍપ માટે નોટિફિકેશન બંધ છે}one{નોટિફિકેશનની સેટિંગ બતાવો. # ઍપ માટે નોટિફિકેશન બંધ છે}other{નોટિફિકેશનની સેટિંગ બતાવો. # ઍપ માટે નોટિફિકેશન બંધ છે}}</translation>
 <translation id="1525508553941733066">છોડી દો</translation>
-<translation id="1537254971476575106">પૂર્ણસ્ક્રીન મૅગ્નિફાયર</translation>
 <translation id="15373452373711364">મોટું માઉસ કર્સર</translation>
 <translation id="1546492247443594934">ડેસ્ક 2</translation>
 <translation id="1550523713251050646">વધુ વિકલ્પો માટે ક્લિક કરો</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">કીબોર્ડ લેઆઉટ સ્વિચ કરવા માટે <ph name="KEYBOARD_SHORTCUT" />ને દબાવો.</translation>
 <translation id="2501920221385095727">સ્ટિકી કી</translation>
 <translation id="2509468283778169019">CAPS LOCK ચાલુ છે</translation>
-<translation id="2532589005999780174">ઉચ્ચ કોન્ટ્રાસ્ટ મોડ</translation>
 <translation id="2542089167727451762">તમારા પ્રોફાઇલ ફોટા પર ટૅપ કરો</translation>
 <translation id="255671100581129685">જાહેર સત્રમાં Google આસિસ્ટંટ ઉપલબ્ધ હોતું નથી.</translation>
 <translation id="256712445991462162">ડૉક કરેલું મૅગ્નિફાયર</translation>
@@ -481,7 +479,6 @@
 <translation id="7984197416080286869">ફિંગરપ્રિન્ટ માટેના ઘણા બધા પ્રયત્નો</translation>
 <translation id="7994370417837006925">બહુવિધ સાઇન-ઇન</translation>
 <translation id="8000066093800657092">નેટવર્ક નથી</translation>
-<translation id="8029241286966751120">પૂર્ણસ્ક્રીન મૅગ્નિફાયર ચાલુ કર્યું. ટૉગલ બંધ કરવા માટે ફરીથી Ctrl+Search+M દબાવો.</translation>
 <translation id="8030169304546394654">ડિસ્કનેક્ટેડ</translation>
 <translation id="8054466585765276473">બેટરી સમયની ગણના કરે છે.</translation>
 <translation id="8061464966246066292">ઉચ્ચ કોન્ટ્રાસ્ટ</translation>
@@ -506,7 +503,6 @@
 <translation id="8388750414311082622">છેલ્લું ડેસ્ક કાઢી નાખી શકાતું નથી.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> માટે વિકલ્પો મેનૂ</translation>
 <translation id="8394567579869570560">તમારા માતાપિતાએ આ ડિવાઇસને લૉક કર્યું છે</translation>
-<translation id="8406981827175133772">પૂર્ણસ્ક્રીન મૅગ્નિફાયર</translation>
 <translation id="8425213833346101688">બદલો</translation>
 <translation id="8427213022735114808">કોઈપણ ટેક્સ્ટ ફીલ્ડમાં અવાજ ટાઇપ કરવાને મંજૂરી આપવા માટે, શ્રુતલેખન Googleને તમારો અવાજ મોકલે છે.</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>

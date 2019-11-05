@@ -975,14 +975,14 @@ INSTANTIATE_TEST_SUITE_P(
 // See https://crbug.com/782322 for detail.
 // Also occasional flakes on win7 (https://crbug.com/789542).
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsTriggering)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsTriggering)) {
   // TODO(crbug.com/874150): Use ExpectUniqueSample in these tests.
   // The histograms in these tests can only be checked by the expected bucket,
   // and not by a unique sample. This is because each navigation to a preview
@@ -1174,7 +1174,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsOriginProbe_Success)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsOriginProbe_Success)) {
   set_origin_probe_success(true);
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1184,7 +1184,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsOriginProbe_Fail)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsOriginProbe_Fail)) {
   set_origin_probe_success(false);
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1194,7 +1194,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsReloadSoftOptOut)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsReloadSoftOptOut)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
 
@@ -1204,7 +1204,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsNoChromeProxyHeader)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsNoChromeProxyHeader)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
 
@@ -1242,13 +1242,13 @@ class PreviewsLitePageRedirectServerBrowserTestWithAlwaysHoldback
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTestWithAlwaysHoldback,
-    DISABLE_ON_WIN_MAC_CHROMESOS(CoinFlipHoldbackTriggering)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(CoinFlipHoldbackTriggering)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(PredictorShownAndHidden)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(PredictorShownAndHidden)) {
   base::HistogramTester histogram_tester;
   GetWebContents()->WasHidden();
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1267,7 +1267,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsLoadOriginal)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsLoadOriginal)) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
@@ -1287,7 +1287,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsRedirect)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsRedirect)) {
   {
     // Verify the preview is triggered when an HTTP page redirects to HTTPS.
     base::HistogramTester histogram_tester;
@@ -1333,7 +1333,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsResponse)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsResponse)) {
   {
     // Verify the preview is not triggered when the server responds with bypass
     // 307.
@@ -1388,7 +1388,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsAuthFailure)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsAuthFailure)) {
   // Verify the preview is not triggered when the server responds with 403.
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kAuthFailure));
@@ -1408,7 +1408,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsLoadshed)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsLoadshed)) {
   PreviewsService* previews_service =
       PreviewsServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(previews_service);
@@ -1454,7 +1454,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePageURLNotReportedToHistory)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePageURLNotReportedToHistory)) {
   base::CancelableTaskTracker tracker_;
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(browser()->profile(),
@@ -1512,7 +1512,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsReportSavings)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsReportSavings)) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
                     true);
@@ -1535,7 +1535,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsClientRedirect)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsClientRedirect)) {
   // Navigate to a non-preview first.
   ui_test_utils::NavigateToURL(browser(), https_media_url());
   VerifyPreviewNotLoaded();
@@ -1550,7 +1550,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsNavigation)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsNavigation)) {
   {
     SCOPED_TRACE("First preview load");
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1589,7 +1589,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePageSendsInterventionReport)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePageSendsInterventionReport)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
   WaitForInterventionReport();
@@ -1638,7 +1638,7 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::Bool(), ::testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerTimeoutBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsTimeout)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsTimeout)) {
   {
     // Ensure that a hung previews navigation doesn't wind up at the previews
     // server.
@@ -1665,7 +1665,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerTimeoutBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerTimeoutBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         LitePagePreviewsOriginProbe_ExternalFailureReported)) {
   set_origin_probe_success(true);
 
@@ -1704,9 +1704,8 @@ INSTANTIATE_TEST_SUITE_P(
     PreviewsLitePageRedirectServerBadServerBrowserTest,
     ::testing::Combine(::testing::Bool(), ::testing::Bool()));
 
-IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageRedirectServerBadServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsBadServer)) {
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBadServerBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsBadServer)) {
   // TODO(crbug.com/874150): Use ExpectUniqueSample in this tests.
   // The histograms in this tests can only be checked by the expected bucket,
   // and not by a unique sample. This is because each navigation to a preview
@@ -1754,7 +1753,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerDataSaverBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsDSTriggering)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsDSTriggering)) {
   // Verify the preview is not triggered on HTTPS pageloads without DataSaver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1792,7 +1791,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsDSNoHeaderTriggering)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsDSNoHeaderTriggering)) {
   // Verify the preview is not triggered on HTTPS pageloads without data saver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1834,7 +1833,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectNotificationDSEnabledBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsInfoBarDataSaverUser)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsInfoBarDataSaverUser)) {
   // Ensure the preview is not shown the first time before the infobar is shown
   // for users who have DRP enabled.
   base::HistogramTester histogram_tester;
@@ -1895,7 +1894,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectDSDisabledBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsInfoBarNonDataSaverUser)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsInfoBarNonDataSaverUser)) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1928,7 +1927,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectControlBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsControlGroup)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsControlGroup)) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1987,7 +1986,7 @@ class PreviewsLitePageRedirectServerNetworkIsolationBrowserTest
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerNetworkIsolationBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(PreconnectToPreviewsServer)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(PreconnectToPreviewsServer)) {
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), https_media_url());
@@ -2066,7 +2065,7 @@ INSTANTIATE_TEST_SUITE_P(
 // Regression test for crbug.com/954554.
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectAndPageHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(PreviewsServerIsInBloomFilter)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(PreviewsServerIsInBloomFilter)) {
   optimization_guide::BloomFilter blacklist_bloom_filter(7, 511);
   blacklist_bloom_filter.Add(previews_server_url().host());
   blacklist_bloom_filter.Add("subdomain." + previews_server_url().host());
@@ -2101,7 +2100,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectAndPageHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsDoesNotOverridePageHints)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsDoesNotOverridePageHints)) {
   base::HistogramTester histogram_tester;
 
   // Whitelist test URL for resource loading hints.
@@ -2323,7 +2322,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
-    DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_NoCoinFlip)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoPreviews_NoCoinFlip)) {
   // Set ECT so that we are sure to not trigger any preview.
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(
@@ -2340,7 +2339,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
-    DISABLE_ON_WIN_MAC_CHROMESOS(BothPreviewsAllowedWantLPR_NoCoinFlip)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(BothPreviewsAllowedWantLPR_NoCoinFlip)) {
   RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
 
@@ -2352,7 +2351,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LPRAllowed_NoCoinFlip)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LPRAllowed_NoCoinFlip)) {
   RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           false /* allow_resource_loading*/);
 
@@ -2364,7 +2363,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
-    DISABLE_ON_WIN_MAC_CHROMESOS(RLHAllowed_NoCoinFlip)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(RLHAllowed_NoCoinFlip)) {
   RunTest(false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
 
@@ -2376,7 +2375,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
-    DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_WithRedirect_NoCoinFlip)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoPreviews_WithRedirect_NoCoinFlip)) {
   // Set ECT so that we are sure to not trigger any preview.
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(
@@ -2393,7 +2392,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         BothPreviewsAllowedWantLPR_WithRedirect_NoCoinFlip)) {
   RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
@@ -2406,7 +2405,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LPRAllowed_WithRedirect_NoCoinFlip)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LPRAllowed_WithRedirect_NoCoinFlip)) {
   RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           false /* allow_resource_loading */);
 
@@ -2418,7 +2417,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
-    DISABLE_ON_WIN_MAC_CHROMESOS(RLHAllowed_WithRedirect_NoCoinFlip)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(RLHAllowed_WithRedirect_NoCoinFlip)) {
   RunTest(true /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
 
@@ -2430,7 +2429,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_CoinFlipEnabled_Allowed)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoPreviews_CoinFlipEnabled_Allowed)) {
   // Set ECT so that we are sure to not trigger any preview.
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(
@@ -2447,7 +2446,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         BothPreviewsAllowedWantLPR_CoinFlipEnabled_Allowed)) {
   RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
@@ -2460,7 +2459,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LPRAllowed_CoinFlipEnabled_Allowed)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LPRAllowed_CoinFlipEnabled_Allowed)) {
   RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           false /* allow_resource_loading*/);
 
@@ -2472,7 +2471,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(RLHAllowed_CoinFlipEnabled_Allowed)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(RLHAllowed_CoinFlipEnabled_Allowed)) {
   RunTest(false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
 
@@ -2484,7 +2483,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         NoPreviews_WithRedirect_CoinFlipEnabled_Allowed)) {
   // Set ECT so that we are sure to not trigger any preview.
   g_browser_process->network_quality_tracker()
@@ -2502,7 +2501,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         BothPreviewsAllowedWantLPR_WithRedirect_CoinFlipEnabled_Allowed)) {
   RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
@@ -2515,7 +2514,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         LPRAllowed_WithRedirect_CoinFlipEnabled_Allowed)) {
   RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           false /* allow_resource_loading */);
@@ -2528,7 +2527,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         RLHAllowed_WithRedirect_CoinFlipEnabled_Allowed)) {
   RunTest(true /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
@@ -2541,7 +2540,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_CoinFlipEnabled_Holdback)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoPreviews_CoinFlipEnabled_Holdback)) {
   // Set ECT so that we are sure to not trigger any preview.
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(
@@ -2558,7 +2557,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         BothPreviewsAllowedWantLPR_CoinFlipEnabled_Holdback)) {
   RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
@@ -2571,7 +2570,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(LPRAllowed_CoinFlipEnabled_Holdback)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(LPRAllowed_CoinFlipEnabled_Holdback)) {
   RunTest(false /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           false /* allow_resource_loading*/);
 
@@ -2583,7 +2582,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(RLHAllowed_CoinFlipEnabled_Holdback)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(RLHAllowed_CoinFlipEnabled_Holdback)) {
   RunTest(false /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
 
@@ -2595,7 +2594,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         BothPreviewsAllowedWantLPR_WithRedirect_CoinFlipEnabled_Holdback)) {
   RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);
@@ -2608,7 +2607,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         LPRAllowed_WithRedirect_CoinFlipEnabled_Holdback)) {
   RunTest(true /* redirect_navigation*/, true /* allow_lite_page_redirect*/,
           false /* allow_resource_loading */);
@@ -2621,7 +2620,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         RLHAllowed_WithRedirect_CoinFlipEnabled_Holdback)) {
   RunTest(true /* redirect_navigation*/, false /* allow_lite_page_redirect*/,
           true /* allow_resource_loading*/);

@@ -6,7 +6,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/fullscreen_keyboard_browsertest_base.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -79,14 +78,17 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_FALSE(IsInBrowserFullscreen());
 }
 
+#if defined(OS_MACOSX)
+// https://crbug.com/850594
+#define MAYBE_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForEsc \
+  DISABLED_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForEsc
+#else
+#define MAYBE_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForEsc \
+  KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForEsc
+#endif
 IN_PROC_BROWSER_TEST_F(
     BrowserCommandControllerInteractiveTest,
-    KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForEsc) {
-#if defined(OS_MACOSX)
-  // https://crbug.com/850594
-  if (!views_mode_controller::IsViewsBrowserCocoa())
-    return;
-#endif
+    MAYBE_KeyEventsShouldBeConsumedByWebPageInJsFullscreenExceptForEsc) {
   ASSERT_NO_FATAL_FAILURE(StartFullscreenLockPage());
 
   ASSERT_NO_FATAL_FAILURE(SendJsFullscreenShortcutAndWait());

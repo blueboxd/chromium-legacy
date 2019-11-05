@@ -455,7 +455,7 @@
       },
       {
         "name": "installReplacementWebApp",
-        "description": "Prompts the user to install the replacement web app from the manifest.",
+        "description": "Launches the replacement_web_app specified in the manifest. Prompts the user to install if not already installed.",
         "parameters": [
           {
             "name": "callback",

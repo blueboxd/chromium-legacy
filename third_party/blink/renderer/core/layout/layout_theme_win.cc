@@ -49,10 +49,12 @@ Color LayoutThemeWin::SystemColor(CSSValueID css_value_id,
       theme_color = blink::WebThemeEngine::SystemThemeColor::kHighlightText;
       break;
     case CSSValueID::kWindow:
+    case CSSValueID::kCanvas:
     case CSSValueID::kField:
       theme_color = blink::WebThemeEngine::SystemThemeColor::kWindow;
       break;
     case CSSValueID::kWindowtext:
+    case CSSValueID::kCanvastext:
     case CSSValueID::kFieldtext:
       theme_color = blink::WebThemeEngine::SystemThemeColor::kWindowText;
       break;

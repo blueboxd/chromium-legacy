@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Signaturgeber des Zertifikats</translation>
 <translation id="1145292499998999162">Plug-in blockiert</translation>
 <translation id="1145532888383813076">Durchsuchen Sie Ihr Gerät, Ihre Apps und das Web.</translation>
+<translation id="1146678959555564648">VR aktivieren</translation>
 <translation id="114721135501989771">Chrome cleverer nutzen – dank Google</translation>
 <translation id="1149401351239820326">Ablaufmonat</translation>
 <translation id="1150565364351027703">Sonnenbrille</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Daten in meinem Google Drive-Konto speichern</translation>
 <translation id="1288037062697528143">Das Nachtlicht wird bei Sonnenuntergang automatisch aktiviert</translation>
 <translation id="1288300545283011870">Sprecheigenschaften</translation>
-<translation id="1289513325360489062">Kein Zugriff auf die Daten dieser Website</translation>
 <translation id="1293264513303784526">USB-C-Gerät (Port links)</translation>
 <translation id="1293556467332435079">Dateien</translation>
 <translation id="1296911687402551044">Ausgewählten Tab anpinnen</translation>
@@ -810,7 +810,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2165421703844373933">Mit "Ok Google" können Sie auf Ihren Assistant zugreifen. Damit der Akku geschont wird, sollten Sie die Option "An (empfohlen)" auswählen. So reagiert Ihr Assistant nur, wenn Ihr Gerät an eine Stromquelle angeschlossen ist oder auflädt.</translation>
 <translation id="2166369534954157698">Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich</translation>
 <translation id="2169062631698640254">Trotzdem anmelden</translation>
-<translation id="2170088579611075216">Zulassen und VR starten</translation>
 <translation id="2172784515318616985">Weiter</translation>
 <translation id="2173302385160625112">Bitte überprüfen Sie Ihre Internetverbindung</translation>
 <translation id="2173801458090845390">Diesem Gerät eine Anforderungs-ID hinzufügen</translation>
@@ -1002,7 +1001,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2439545803278355377">Geben Sie Ihre neue PIN ein. Eine PIN muss aus mindestens vier Zeichen bestehen und kann Buchstaben, Zahlen und andere Zeichen enthalten.</translation>
 <translation id="2440604414813129000">Quelltext an&amp;zeigen</translation>
 <translation id="2442916515643169563">Textschatten</translation>
-<translation id="2444119669991608829">Diese Seite ist nicht auf <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">Stammverzeichnis der Erweiterung ist erforderlich.</translation>
 <translation id="2445484935443597917">Neues Profil erstellen</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> möchte Ihre Identität überprüfen</translation>
@@ -1423,7 +1421,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3020183492814296499">Tastenkombinationen</translation>
 <translation id="3020990233660977256">Seriennummer: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Schmetterling</translation>
-<translation id="3021426244864538700">Zugriff auf die Daten dieser Website</translation>
 <translation id="3021678814754966447">Frame-Quelltext &amp;anzeigen</translation>
 <translation id="3022978424994383087">Nicht verstanden.</translation>
 <translation id="3023464535986383522">Vorlesen</translation>
@@ -2214,7 +2211,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4159681666905192102">Dies ist ein Konto für Kinder, das von <ph name="CUSTODIAN_EMAIL" /> und <ph name="SECOND_CUSTODIAN_EMAIL" /> verwaltet wird.</translation>
 <translation id="4163560723127662357">Unbekannte Tastatur</translation>
 <translation id="4168015872538332605">Einige Einstellungen, die <ph name="PRIMARY_EMAIL" /> gehören, werden mit Ihnen geteilt. Diese Einstellungen wirken sich nur dann auf Ihr Konto aus, wenn die Mehrfachanmeldung verwendet wird.</translation>
-<translation id="4169535189173047238">Nicht zulassen</translation>
 <translation id="4170314459383239649">Beim Beenden löschen</translation>
 <translation id="4172051516777682613">Immer anzeigen</translation>
 <translation id="4175137578744761569">Hellviolett und Weiß</translation>
@@ -2300,6 +2296,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4316850752623536204">Website des Entwicklers</translation>
 <translation id="4320177379694898372">Keine Internetverbindung</translation>
 <translation id="4321442524549817090">U&amp;RL zeigen</translation>
+<translation id="4322394346347055525">Andere Tabs schließen</translation>
 <translation id="4324577459193912240">Datei unvollständig</translation>
 <translation id="4325237902968425115">"<ph name="LINUX_APP_NAME" />" wird deinstalliert...</translation>
 <translation id="4330191372652740264">Wasser mit Eis</translation>
@@ -2753,10 +2750,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5029568752722684782">Kopie löschen</translation>
 <translation id="5030338702439866405">Ausgestellt von</translation>
 <translation id="5033266061063942743">Geometrische Formen</translation>
-<translation id="5033865233969348410">Während Sie sich im VR-Modus befinden, erhält die Website möglicherweise bestimmte Informationen über Sie. Dazu gehören:
-– physische Merkmale wie Ihre Größe
-
-Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> möchte Ihre Kamera und Ihr Mikrofon verwenden</translation>
 <translation id="5036662165765606524">Keiner Website gestatten, automatisch mehrere Dateien herunterzuladen</translation>
 <translation id="5037676449506322593">Alle auswählen</translation>
@@ -3030,7 +3023,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="5449588825071916739">Alle Tabs als Lesezeichen speichern</translation>
 <translation id="5449716055534515760">Fen&amp;ster schließen</translation>
 <translation id="5454166040603940656">mit <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Sprache, in die übersetzt wird</translation>
 <translation id="5457113250005438886">Ungültig</translation>
 <translation id="5457459357461771897">Fotos, Musik und andere Medien auf Ihrem Computer lesen und löschen</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>
@@ -3090,11 +3082,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> möchte:</translation>
 <translation id="5534304873398226603">Foto oder Video verwerfen</translation>
-<translation id="5534334044554683961">Während Sie sich im VR-Modus befinden, erhält die Website möglicherweise bestimmte Informationen über Sie. Dazu gehören:
-– physische Merkmale wie Ihre Größe und
-– der Grundriss Ihres Zimmers
-
-Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translation>
 <translation id="5535941515421698170">Auch vorhandene Daten von diesem Gerät entfernen</translation>
 <translation id="5539221284352502426">Das eingegebene Passwort wurde vom Server zurückgewiesen. Mögliche Ursachen: Das Passwort ist zu kurz. Das Passwort muss Zahlen oder Symbole enthalten. Das Passwort muss sich von vorherigen Passwörtern unterscheiden.</translation>
 <translation id="5541694225089836610">Die Aktion wurde von Ihrem Administrator deaktiviert</translation>
@@ -3992,6 +3979,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="6850286078059909152">Schriftfarbe</translation>
 <translation id="6851497530878285708">App aktiviert</translation>
 <translation id="6853388645642883916">Updater im Ruhemodus</translation>
+<translation id="68541483639528434">Andere Tabs schließen</translation>
 <translation id="6856623341093082836">Touchscreen einrichten und Genauigkeit anpassen</translation>
 <translation id="6857699260879628349">Konfigurationsinformationen abrufen</translation>
 <translation id="6860097299815761905">Proxy-Einstellungen...</translation>
@@ -4104,7 +4092,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7019805045859631636">Schnell</translation>
 <translation id="7022562585984256452">Ihre Startseite wurde eingerichtet.</translation>
 <translation id="7025190659207909717">Verwaltung mobiler Datendienste</translation>
-<translation id="7027891519253193555">Diese Seite ist nicht auf <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Passwörter</translation>
 <translation id="703001695939087067">Sie befinden sich jetzt im Modus "Fensterübersicht". Drücken Sie zum Navigieren auf den Tab.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" />: serielle Schnittstelle verbunden</translation>
@@ -4549,7 +4536,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7684718995427157417">Aktivieren Sie zum Erstellen und Testen Ihrer Apps Android Debug Bridge (ADB). Durch diese Aktion können Android-Apps installiert werden, die nicht von Google geprüft wurden. Zum Deaktivieren ist das Zurücksetzen auf die Werkseinstellungen erforderlich.</translation>
 <translation id="7685049629764448582">JavaScript-Speicher</translation>
 <translation id="7685087414635069102">PIN erforderlich</translation>
-<translation id="7685301384041462804">Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translation>
 <translation id="768549422429443215">Sie können Sprachen hinzufügen oder die Liste neu anordnen.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Neues Passwort bestätigen</translation>
@@ -4947,11 +4933,9 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Download wird ausgeführt}other{Downloads werden ausgeführt}}</translation>
 <translation id="8213449224684199188">Fotomodus aktiviert</translation>
 <translation id="8213577208796878755">Ein weiteres Gerät ist vorhanden.</translation>
-<translation id="8213996900880218548">Zugriffsanfrage für Daten dieser Website</translation>
 <translation id="8214489666383623925">Datei öffnen...</translation>
 <translation id="8214962590150211830">Diese Person entfernen</translation>
 <translation id="8217399928341212914">Weiterhin automatisches Herunterladen mehrerer Dateien blockieren</translation>
-<translation id="822519928942492333">Sprache der Seite, die übersetzt wird</translation>
 <translation id="8225265270453771718">Anwendungsfenster freigeben</translation>
 <translation id="8225753906568652947">Meine Angebote einlösen</translation>
 <translation id="8226222018808695353">Unzulässig</translation>
@@ -5523,7 +5507,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9026731007018893674">Download</translation>
 <translation id="9026852570893462412">Der Vorgang kann einige Minuten dauern. Virtuelle Maschine wird heruntergeladen.</translation>
 <translation id="9027459031423301635">Link in neuem Tab öffnen</translation>
-<translation id="9029323097866369874"><ph name="DOMAIN" /> erlauben, VR zu starten?</translation>
 <translation id="9030515284705930323">Ihre Organisation hat den Google Play Store für Ihr Konto nicht aktiviert. Weitere Informationen erhalten Sie von Ihrem Administrator.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Einfügen</translation>
@@ -5567,7 +5550,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9094038138851891550">Nutzername ungültig</translation>
 <translation id="9094982973264386462">Entfernen</translation>
 <translation id="9095253524804455615">Entfernen</translation>
-<translation id="9095388113577226029">Weitere Sprachen...</translation>
 <translation id="9100610230175265781">Passphrase erforderlich</translation>
 <translation id="9100765901046053179">Erweiterte Einstellungen</translation>
 <translation id="9101691533782776290">App starten</translation>

@@ -3219,16 +3219,19 @@ class HotseatShelfLayoutManagerTest
 };
 
 // Records HotseatState transitions.
-class HotseatStateWatcher : public HotseatWidget::Observer {
+class HotseatStateWatcher : public ShelfLayoutManagerObserver {
  public:
-  explicit HotseatStateWatcher(HotseatWidget* widget) : widget_(widget) {
-    widget_->AddObserver(this);
+  HotseatStateWatcher(ShelfLayoutManager* shelf_layout_manager)
+      : shelf_layout_manager_(shelf_layout_manager) {
+    shelf_layout_manager_->AddObserver(this);
   }
-  ~HotseatStateWatcher() override { widget_->RemoveObserver(this); }
+  ~HotseatStateWatcher() override {
+    shelf_layout_manager_->RemoveObserver(this);
+  }
 
-  void OnHotseatStateChanged() override {
+  void OnHotseatStateChanged(HotseatState state) override {
     run_loop_.QuitWhenIdle();
-    state_changes_.push_back(widget_->state());
+    state_changes_.push_back(state);
   }
 
   void CheckEqual(std::vector<HotseatState> state_changes) {
@@ -3238,7 +3241,7 @@ class HotseatStateWatcher : public HotseatWidget::Observer {
   void WaitUntilStateChanged() { run_loop_.Run(); }
 
  private:
-  HotseatWidget* const widget_;
+  ShelfLayoutManager* shelf_layout_manager_;
   std::vector<HotseatState> state_changes_;
   base::RunLoop run_loop_;
   DISALLOW_COPY_AND_ASSIGN(HotseatStateWatcher);
@@ -3536,8 +3539,8 @@ TEST_F(HotseatShelfLayoutManagerTest, ReleasingSlowDragBelowThreshold) {
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
 }
 
-// Tests that releasing the hotseat gesture above the threshold results in an
-// extended hotseat.
+// Tests that releasing the hotseat gesture above the threshold results in a
+// kExtended hotseat.
 TEST_P(HotseatShelfLayoutManagerTest, ReleasingSlowDragAboveThreshold) {
   GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
   TabletModeControllerTestApi().EnterTabletMode();
@@ -3574,8 +3577,7 @@ TEST_P(HotseatShelfLayoutManagerTest, ShowingOverviewFromShownAnimatesOnce) {
   wm::ActivateWindow(window.get());
 
   std::unique_ptr<HotseatStateWatcher> state_watcher_ =
-      std::make_unique<HotseatStateWatcher>(
-          GetPrimaryShelf()->shelf_widget()->hotseat_widget());
+      std::make_unique<HotseatStateWatcher>(GetShelfLayoutManager());
   SwipeUpOnShelf();
   ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 
@@ -3779,8 +3781,7 @@ TEST_P(HotseatShelfLayoutManagerTest, HomeToOverviewChangesStateOnce) {
                                                 .CenterPoint();
 
   {
-    HotseatStateWatcher watcher(
-        GetPrimaryShelf()->shelf_widget()->hotseat_widget());
+    HotseatStateWatcher watcher(GetShelfLayoutManager());
     OverviewAnimationWaiter waiter;
     GetEventGenerator()->GestureTapAt(overview_button_center);
     waiter.Wait();
@@ -3799,8 +3800,7 @@ TEST_P(HotseatShelfLayoutManagerTest, HomeToOverviewChangesStateOnce) {
   GetAppListTestHelper()->CheckVisibility(true);
   // Activate overview and expect the hotseat only changes state to extended.
   {
-    HotseatStateWatcher watcher(
-        GetPrimaryShelf()->shelf_widget()->hotseat_widget());
+    HotseatStateWatcher watcher(GetShelfLayoutManager());
     OverviewAnimationWaiter waiter;
     GetEventGenerator()->GestureTapAt(overview_button_center);
     waiter.Wait();
@@ -3815,8 +3815,7 @@ TEST_P(HotseatShelfLayoutManagerTest, HomeToInAppChangesStateOnce) {
   TabletModeControllerTestApi().EnterTabletMode();
 
   // Go to in-app, the hotseat should hide.
-  HotseatStateWatcher watcher(
-      GetPrimaryShelf()->shelf_widget()->hotseat_widget());
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
@@ -3840,8 +3839,7 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
   // Press the HomeLauncher button, the hotseat should transition directly to
   // kShown.
   {
-    HotseatStateWatcher watcher(
-        GetPrimaryShelf()->shelf_widget()->hotseat_widget());
+    HotseatStateWatcher watcher(GetShelfLayoutManager());
     views::View* home_button =
         GetPrimaryShelf()->shelf_widget()->GetHomeButton();
     GetEventGenerator()->GestureTapAt(
@@ -3859,8 +3857,7 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
   {
     ui::ScopedAnimationDurationScaleMode regular_animations(
         ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-    HotseatStateWatcher watcher(
-        GetPrimaryShelf()->shelf_widget()->hotseat_widget());
+    HotseatStateWatcher watcher(GetShelfLayoutManager());
     FlingUpOnShelf();
     watcher.WaitUntilStateChanged();
     watcher.CheckEqual({HotseatState::kShown});
@@ -3877,8 +3874,7 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
   // Press the HomeLauncher button, the hotseat should transition directly to
   // kShown.
   {
-    HotseatStateWatcher watcher(
-        GetPrimaryShelf()->shelf_widget()->hotseat_widget());
+    HotseatStateWatcher watcher(GetShelfLayoutManager());
     views::View* home_button =
         GetPrimaryShelf()->shelf_widget()->GetHomeButton();
     GetEventGenerator()->GestureTapAt(
@@ -3901,8 +3897,7 @@ TEST_F(HotseatShelfLayoutManagerTest,
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
   {
-    HotseatStateWatcher watcher(
-        GetPrimaryShelf()->shelf_widget()->hotseat_widget());
+    HotseatStateWatcher watcher(GetShelfLayoutManager());
     // Enter overview by using the controller.
     OverviewAnimationWaiter waiter;
     Shell::Get()->overview_controller()->StartOverview();
@@ -3922,8 +3917,7 @@ TEST_F(HotseatShelfLayoutManagerTest,
             GetShelfLayoutManager()->auto_hide_state());
   SwipeUpOnShelf();
   {
-    HotseatStateWatcher watcher(
-        GetPrimaryShelf()->shelf_widget()->hotseat_widget());
+    HotseatStateWatcher watcher(GetShelfLayoutManager());
     // Enter overview by using the controller.
     OverviewAnimationWaiter waiter;
     Shell::Get()->overview_controller()->StartOverview();

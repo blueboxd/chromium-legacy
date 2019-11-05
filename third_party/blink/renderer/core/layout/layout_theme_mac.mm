@@ -445,12 +445,14 @@ Color LayoutThemeMac::SystemColor(CSSValueID css_value_id,
       color = GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
       break;
     case CSSValueID::kWindow:
+    case CSSValueID::kCanvas:
       color = GetSystemColor(MacSystemColorID::kWindowBackground);
       break;
     case CSSValueID::kWindowframe:
       color = GetSystemColor(MacSystemColorID::kWindowFrame);
       break;
     case CSSValueID::kWindowtext:
+    case CSSValueID::kCanvastext:
       color = GetSystemColor(MacSystemColorID::kWindowFrameText);
       break;
     default:

@@ -797,7 +797,7 @@ public class BottomSheet
     }
 
     /** @return Whether the peeking state for the sheet's content is enabled. */
-    private boolean isPeekStateEnabled() {
+    boolean isPeekStateEnabled() {
         return mSheetContent != null && mSheetContent.getPeekHeight() != HeightMode.DISABLED;
     }
 

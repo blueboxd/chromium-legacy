@@ -931,7 +931,7 @@
   {
     "name": "enable-assistant-app-support",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "enable-assistant-dsp",

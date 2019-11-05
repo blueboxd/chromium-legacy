@@ -489,7 +489,7 @@ class BackgroundFetchDataManagerTest
     match_options->ignore_search = true;
     cache_storage.value()->MatchCache(
         kExampleUniqueId, BackgroundFetchSettledFetch::CloneRequest(request),
-        std::move(match_options),
+        std::move(match_options), CacheStorageSchedulerPriority::kNormal,
         /* trace_id= */ 0,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
                        base::Unretained(this), run_loop.QuitClosure(),

@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
@@ -79,9 +78,6 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // Returns the desired snap position on |location_in_screen| during dragging.
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::Point& location_in_screen) const;
-
-  // Returns the desired indicator state on |location_in_screen|.
-  IndicatorState GetIndicatorState(const gfx::Point& location_in_screen) const;
 
   // Returns true if the dragged window should restore to its original bounds
   // after drag ends. Happens when |location_in_screen| is within

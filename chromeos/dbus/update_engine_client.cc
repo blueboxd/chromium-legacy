@@ -188,17 +188,6 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void GetEolStatus(GetEolStatusCallback callback) override {
-    dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
-                                 update_engine::kGetEolStatus);
-
-    VLOG(1) << "Requesting to get end of life status";
-    update_engine_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&UpdateEngineClientImpl::OnGetEolStatus,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
   void GetEolInfo(GetEolInfoCallback callback) override {
     dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
                                  update_engine::kGetStatusAdvanced);
@@ -412,38 +401,8 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     callback.Run(channel);
   }
 
-  // TODO(crbug.com/1005511): Deprecate with GetEolStatus().
-  // Called when a response for GetEolStatus() is received.
-  void OnGetEolStatus(GetEolStatusCallback callback, dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Failed to request getting eol status";
-      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
-      return;
-    }
-    dbus::MessageReader reader(response);
-    int status;
-    if (!reader.PopInt32(&status)) {
-      LOG(ERROR) << "Incorrect response: " << response->ToString();
-      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
-      return;
-    }
-
-    // Validate the value of status
-    if (status > update_engine::EndOfLifeStatus::kEol ||
-        status < update_engine::EndOfLifeStatus::kSupported) {
-      LOG(ERROR) << "Incorrect status value: " << status;
-      std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
-      return;
-    }
-
-    VLOG(1) << "Eol status received: " << status;
-    std::move(callback).Run(
-        static_cast<update_engine::EndOfLifeStatus>(status));
-  }
-
-  // TODO(crbug.com/1005511): Called when a response for GetStatusAdvanced() is
-  // received instead of a response from GetEolStatus(). A transition is being
-  // made to handle the deprecation of GetEolStatus() within update_engine.
+  // Called when a response for GetStatusAdvanced() is
+  // received.
   void OnGetEolInfo(GetEolInfoCallback callback, dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to request getting eol info.";
@@ -623,11 +582,6 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
       callback.Run(current_channel_);
     else
       callback.Run(target_channel_);
-  }
-
-  // TODO(crbug.com/1005511): Deprecate with GetEolStatus().
-  void GetEolStatus(GetEolStatusCallback callback) override {
-    std::move(callback).Run(update_engine::EndOfLifeStatus::kSupported);
   }
 
   void GetEolInfo(GetEolInfoCallback callback) override {

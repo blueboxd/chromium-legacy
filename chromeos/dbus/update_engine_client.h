@@ -116,16 +116,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
   virtual void GetChannel(bool get_current_channel,
                           const GetChannelCallback& callback) = 0;
 
-  // TODO(crbug.com/1005511): Deprecate with GetEolStatus().
-  // Called once GetEolStatus() is complete. Takes one parameter;
-  // - EndOfLife Status: the end of life status of the device.
-  using GetEolStatusCallback =
-      base::OnceCallback<void(update_engine::EndOfLifeStatus status)>;
-
-  // TODO(crbug.com/1005511): Deprecate GetEolStatus() use GetEolInfo().
-  // Get EndOfLife status of the device and calls |callback| when completed.
-  virtual void GetEolStatus(GetEolStatusCallback callback) = 0;
-
   // Called once GetStatusAdvanced() is complete. Takes one parameter;
   // - EolInfo: Please look at EolInfo for param details, all params related to
   //            end-of-life will be place within this struct.

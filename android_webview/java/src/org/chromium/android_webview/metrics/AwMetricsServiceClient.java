@@ -48,8 +48,10 @@ public class AwMetricsServiceClient {
         }
     }
 
-    private static boolean shouldRecordPackageName(Context ctx) {
+    @CalledByNative
+    private static boolean canRecordPackageName() {
         // Only record if it's a system app or it was installed from Play Store.
+        Context ctx = ContextUtils.getApplicationContext();
         String packageName = ctx.getPackageName();
         String installerPackageName = ctx.getPackageManager().getInstallerPackageName(packageName);
         return (ctx.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) != 0
@@ -68,8 +70,10 @@ public class AwMetricsServiceClient {
 
     @CalledByNative
     private static String getAppPackageName() {
+        // Return this unconditionally; let native code enforce whether or not it's OK to include
+        // this in the logs.
         Context ctx = ContextUtils.getApplicationContext();
-        return shouldRecordPackageName(ctx) ? ctx.getPackageName() : null;
+        return ctx.getPackageName();
     }
 
     /**

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/remote_media_stream_track_adapter.h"
+#include "third_party/blink/renderer/modules/mediastream/remote_media_stream_track_adapter.h"
 
 #include "base/single_thread_task_runner.h"
 #include "media/base/limits.h"

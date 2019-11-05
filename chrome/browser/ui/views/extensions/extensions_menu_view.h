@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "ui/gfx/geometry/size.h"
@@ -83,6 +84,14 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   views::Button* manage_extensions_button_for_testing() {
     return manage_extensions_button_for_testing_;
   }
+  // Returns a scoped object allowing test dialogs to be created (i.e.,
+  // instances of the ExtensionsMenuView that are not created through
+  // ShowBubble()).
+  // We don't just use ShowBubble() in tests because a) there can be more than
+  // one instance of the menu, and b) the menu, when shown, is dismissed by
+  // changes in focus, which isn't always desirable. Additionally, constructing
+  // the view directly is more friendly to unit test setups.
+  static base::AutoReset<bool> AllowInstancesForTesting();
 
  private:
   class ButtonListener : public views::ButtonListener {

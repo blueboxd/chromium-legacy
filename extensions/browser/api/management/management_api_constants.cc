@@ -47,8 +47,6 @@ const char kGenerateAppForLinkInstallError[] =
 const char kNotAllowedInKioskError[] = "Not allowed in kiosk.";
 const char kCannotChangePrimaryKioskAppError[] =
     "Cannot change the primary kiosk app state.";
-const char kInstallReplacementWebAppAlreadyInstalledError[] =
-    "Web app is already installed.";
 const char kInstallReplacementWebAppInvalidWebAppError[] =
     "Web app is not a valid installable web app.";
 const char kInstallReplacementWebAppInvalidContextError[] =

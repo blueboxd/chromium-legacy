@@ -29,6 +29,7 @@ class WPTMetadataBuilder(object):
         """
         self.expectations = expectations
         self.port = port
+        self.wpt_manifest = self.port.wpt_manifest("external/wpt")
         self.metadata_output_dir = ""
 
     def run(self, args=None):
@@ -83,7 +84,9 @@ class WPTMetadataBuilder(object):
         # Write the contents to the file name
         if not os.path.exists(os.path.dirname(filename)):
             os.makedirs(os.path.dirname(filename))
-        with open(filename, "w") as metadata_file:
+        # Note that we append to the metadata file in order to allow multiple
+        # tests to be present in the same .ini file (ie: for multi-global tests)
+        with open(filename, "a") as metadata_file:
             metadata_file.write(file_contents)
 
     def get_test_names_to_skip(self):
@@ -118,7 +121,7 @@ class WPTMetadataBuilder(object):
                 _log.error("Test %s has a non-FAIL baseline" % test)
         return failing_baseline_tests
 
-    def get_metadata_filename_and_contents(self, test_name, test_status):
+    def get_metadata_filename_and_contents(self, chromium_test_name, test_status):
         """Determines the metadata filename and contents for the specified test.
 
         The metadata filename is derived from the test name but will differ if
@@ -126,7 +129,8 @@ class WPTMetadataBuilder(object):
         contents of the metadata file will also differ for those two cases.
 
         Args:
-            test_name: A test name from the expectation file.
+            chromium_test_name: A Chromium test name from the expectation file,
+                which starts with `external/wpt`.
             test_status: The expected status of this test. Possible values:
                 'SKIP' - skip this test (or directory).
                 'FAIL' - the test is expected to fail, not applicable to dirs.
@@ -139,23 +143,26 @@ class WPTMetadataBuilder(object):
         assert test_status in ('SKIP', 'FAIL')
 
         # Ignore expectations for non-WPT tests
-        if not test_name or not test_name.startswith('external/wpt'):
+        if not chromium_test_name or not chromium_test_name.startswith('external/wpt'):
             return None, None
 
         # Split the test name by directory. We omit the first 2 entries because
         # they are 'external' and 'wpt' and these don't exist in the WPT's test
         # names.
-        test_name_parts = test_name.split("/")[2:]
+        wpt_test_name_parts = chromium_test_name.split("/")[2:]
+        # The WPT test name differs from the Chromium test name in that the WPT
+        # name omits `external/wpt`.
+        wpt_test_name = "/".join(wpt_test_name_parts)
 
         # Check if this is a test file or a test directory
-        is_test_dir = test_name.endswith("/")
+        is_test_dir = chromium_test_name.endswith("/")
         metadata_filename = None
         metadata_file_contents = None
         if is_test_dir:
             # A test directory gets one metadata file called __dir__.ini and all
             # tests in that dir are skipped.
             metadata_filename = os.path.join(self.metadata_output_dir,
-                                             *test_name_parts)
+                                             *wpt_test_name_parts)
             metadata_filename = os.path.join(metadata_filename, "__dir__.ini")
             _log.debug("Creating a dir-wide ini file %s", metadata_filename)
 
@@ -163,38 +170,38 @@ class WPTMetadataBuilder(object):
         else:
             # For individual tests, we create one file per test, with the name
             # of the test in the file as well. This name can contain variants.
-            test_name = test_name_parts[-1]
-
-            # If the test name uses variants, we want to omit them from the
-            # filename.
-            if "?" in test_name:
-                # Update test_name_parts so the created metadata file doesn't
-                # include any variants
-                test_name_parts[-1] = test_name.split("?")[0]
+            test_file_path = self.wpt_manifest.file_path_for_test_url(wpt_test_name)
+            if not test_file_path:
+                _log.info("Could not find file for test %s, skipping" % wpt_test_name)
+                return None, None
+            test_file_parts = test_file_path.split("/")
 
             # Append `.ini` to the test filename to indicate it's the metadata
-            # file.
-            test_name_parts[-1] += ".ini"
+            # file. The `test_filename` can differ from the `wpt_test_name` for
+            # multi-global tests.
+            test_file_parts[-1] += ".ini"
             metadata_filename = os.path.join(self.metadata_output_dir,
-                                             *test_name_parts)
+                                             *test_file_parts)
             _log.debug("Creating a test ini file %s with status %s",
                        metadata_filename, test_status)
 
             # The contents of the metadata file is two lines:
-            # 1. the test name inside square brackets
+            # 1. the last part of the WPT test path (ie the filename) inside
+            #    square brackets - this could differ from the metadata filename.
             # 2. an indented line with the test status and reason
+            wpt_test_file_name_part = wpt_test_name_parts[-1]
             if test_status == 'SKIP':
-                metadata_file_contents = self._get_test_disabled_string(test_name)
+                metadata_file_contents = self._get_test_disabled_string(wpt_test_file_name_part)
             elif test_status == 'FAIL':
-                metadata_file_contents = self._get_test_failed_string(test_name)
+                metadata_file_contents = self._get_test_failed_string(wpt_test_file_name_part)
 
         return metadata_filename, metadata_file_contents
 
     def _get_dir_disabled_string(self):
-        return "disabled: wpt_metadata_builder.py"
+        return "disabled: wpt_metadata_builder.py\n"
 
     def _get_test_disabled_string(self, test_name):
-        return "[%s]\n  disabled: wpt_metadata_builder.py" % test_name
+        return "[%s]\n  disabled: wpt_metadata_builder.py\n" % test_name
 
     def _get_test_failed_string(self, test_name):
-        return "[%s]\n  expected: FAIL # wpt_metadata_builder.py" % test_name
+        return "[%s]\n  expected: FAIL # wpt_metadata_builder.py\n" % test_name

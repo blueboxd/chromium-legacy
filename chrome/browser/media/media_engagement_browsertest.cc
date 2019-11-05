@@ -369,8 +369,16 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(1, 0, 1, 0);
 }
 
+// Flaky tests on CrOS: http://crbug.com/1019671.
+#if defined(OS_CHROMEOS)
+#define MAYBE_DoNotRecordEngagement_NotTime_AudioOnly \
+  DISABLED_DoNotRecordEngagement_NotTime_AudioOnly
+#else
+#define MAYBE_DoNotRecordEngagement_NotTime_AudioOnly \
+  DoNotRecordEngagement_NotTime_AudioOnly
+#endif
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
-                       DoNotRecordEngagement_NotTime_AudioOnly) {
+                       MAYBE_DoNotRecordEngagement_NotTime_AudioOnly) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html", false);
   Advance(base::TimeDelta::FromSeconds(1));
   CloseTab();
@@ -385,8 +393,16 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(1, 0, 1, 0);
 }
 
+// Flaky tests on CrOS: http://crbug.com/1019671.
+#if defined(OS_CHROMEOS)
+#define MAYBE_DoNotRecordEngagement_TabMuted_AudioOnly \
+  DISABLED_DoNotRecordEngagement_TabMuted_AudioOnly
+#else
+#define MAYBE_DoNotRecordEngagement_TabMuted_AudioOnly \
+  DoNotRecordEngagement_TabMuted_AudioOnly
+#endif
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
-                       DoNotRecordEngagement_TabMuted_AudioOnly) {
+                       MAYBE_DoNotRecordEngagement_TabMuted_AudioOnly) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html", true);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
@@ -421,8 +437,16 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(1, 0, 1, 0);
 }
 
+// Flaky tests on CrOS: http://crbug.com/1019671.
+#if defined(OS_CHROMEOS)
+#define MAYBE_DoNotRecordEngagement_PlaybackStopped_AudioOnly \
+  DISABLED_DoNotRecordEngagement_PlaybackStopped_AudioOnly
+#else
+#define MAYBE_DoNotRecordEngagement_PlaybackStopped_AudioOnly \
+  DoNotRecordEngagement_PlaybackStopped_AudioOnly
+#endif
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
-                       DoNotRecordEngagement_PlaybackStopped_AudioOnly) {
+                       MAYBE_DoNotRecordEngagement_PlaybackStopped_AudioOnly) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html", false);
   Advance(base::TimeDelta::FromSeconds(1));
   ExecuteScript("document.getElementById(\"media\").pause();");
@@ -440,8 +464,16 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(1, 1, 1, 1);
 }
 
+// Flaky tests on CrOS: http://crbug.com/1019671.
+#if defined(OS_CHROMEOS)
+#define MAYBE_RecordEngagement_NotVisible_AudioOnly \
+  DISABLED_RecordEngagement_NotVisible_AudioOnly
+#else
+#define MAYBE_RecordEngagement_NotVisible_AudioOnly \
+  RecordEngagement_NotVisible_AudioOnly
+#endif
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
-                       RecordEngagement_NotVisible_AudioOnly) {
+                       MAYBE_RecordEngagement_NotVisible_AudioOnly) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html", false);
   OpenTabAsLink();
   AdvanceMeaningfulPlaybackTime();
@@ -516,8 +548,16 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordVisitOnNewOrigin) {
   ExpectScores(1, 0, 1, 0);
 }
 
+// Flaky tests on CrOS: http://crbug.com/1019671.
+#if defined(OS_CHROMEOS)
+#define MAYBE_DoNotRecordEngagement_SilentAudioTrack_AudioOnly \
+  DISABLED_DoNotRecordEngagement_SilentAudioTrack_AudioOnly
+#else
+#define MAYBE_DoNotRecordEngagement_SilentAudioTrack_AudioOnly \
+  DoNotRecordEngagement_SilentAudioTrack_AudioOnly
+#endif
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
-                       DoNotRecordEngagement_SilentAudioTrack_AudioOnly) {
+                       MAYBE_DoNotRecordEngagement_SilentAudioTrack_AudioOnly) {
   LoadTestPageAndWaitForPlay(
       http_server().GetURL("/engagement_test_silent_audio_track_audio.html"),
       false);
@@ -563,7 +603,13 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(1, 1, 1, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, MultipleElements) {
+// Flaky tests on CrOS: http://crbug.com/1019671.
+#if defined(OS_CHROMEOS)
+#define MAYBE_MultipleElements DISABLED_MultipleElements
+#else
+#define MAYBE_MultipleElements MultipleElements
+#endif
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, MAYBE_MultipleElements) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_multiple.html", false);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();

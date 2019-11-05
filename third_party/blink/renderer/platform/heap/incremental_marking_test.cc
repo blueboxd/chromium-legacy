@@ -37,7 +37,6 @@ class BackingVisitor : public Visitor {
   ~BackingVisitor() final {}
 
   void ProcessBackingStore(HeapObjectHeader* header) {
-    EXPECT_TRUE(header->IsValid());
     EXPECT_TRUE(header->IsMarked());
     header->Unmark();
     GCInfoTable::Get()
@@ -1626,15 +1625,12 @@ TEST_F(IncrementalMarkingTest, StepDuringObjectConstruction) {
             // Publish not-fully-constructed object |thiz| by triggering write
             // barrier for the object.
             holder->set_value(thiz);
-            CHECK(HeapObjectHeader::FromPayload(holder->value())->IsValid());
             // Finish call incremental steps.
             driver->FinishSteps(BlinkGC::StackState::kHeapPointersOnStack);
           },
           &driver, holder.Get()),
       MakeGarbageCollected<Object>());
   driver.FinishGC();
-  CHECK(HeapObjectHeader::FromPayload(holder->value())->IsValid());
-  CHECK(HeapObjectHeader::FromPayload(holder->value()->value())->IsValid());
   PreciselyCollectGarbage();
 }
 
@@ -1662,8 +1658,6 @@ TEST_F(IncrementalMarkingTest, StepDuringMixinObjectConstruction) {
           &driver, holder.Get()),
       MakeGarbageCollected<Object>());
   driver.FinishGC();
-  CHECK(holder->value()->GetHeapObjectHeader()->IsValid());
-  CHECK(HeapObjectHeader::FromPayload(holder->value()->value())->IsValid());
   PreciselyCollectGarbage();
 }
 

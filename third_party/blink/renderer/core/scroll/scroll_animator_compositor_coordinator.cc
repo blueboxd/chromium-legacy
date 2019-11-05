@@ -256,8 +256,8 @@ CompositorElementId ScrollAnimatorCompositorCoordinator::GetScrollElementId()
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return GetScrollableArea()->GetCompositorElementId();
 
-  GraphicsLayer* layer = GetScrollableArea()->LayerForScrolling();
-  return layer ? layer->CcLayer()->element_id() : CompositorElementId();
+  cc::Layer* layer = GetScrollableArea()->LayerForScrolling();
+  return layer ? layer->element_id() : CompositorElementId();
 }
 
 void ScrollAnimatorCompositorCoordinator::UpdateImplOnlyCompositorAnimations() {

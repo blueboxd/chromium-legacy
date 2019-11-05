@@ -17,6 +17,7 @@
 
 namespace arc {
 
+using AXActionType = mojom::AccessibilityActionType;
 using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXCollectionInfoData = mojom::AccessibilityCollectionInfoData;
 using AXCollectionItemInfoData = mojom::AccessibilityCollectionItemInfoData;
@@ -938,6 +939,50 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
       "        id=3 genericContainer INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled name=some text\n");
   EXPECT_EQ(1U, tree()->GetFromId(10)->GetUnignoredChildCount());
+}
+
+TEST_F(AXTreeSourceArcTest, SerializeWebView) {
+  auto event = AXEventData::New();
+  event->source_id = 10;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->emplace_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* root = event->node_data.back().get();
+  root->id = 10;
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
+  SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
+
+  // node1 is a webView
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node1 = event->node_data.back().get();
+  node1->id = 1;
+  SetProperty(node1, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({2}));
+  SetProperty(node1, AXStringProperty::CHROME_ROLE, "rootWebArea");
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node2 = event->node_data.back().get();
+  node2->id = 2;
+  SetProperty(
+      node2, AXIntListProperty::STANDARD_ACTION_IDS,
+      std::vector<int>({static_cast<int>(AXActionType::NEXT_HTML_ELEMENT),
+                        static_cast<int>(AXActionType::FOCUS)}));
+
+  CallNotifyAccessibilityEvent(event.get());
+
+  std::unique_ptr<ui::AXNodeData> data;
+  CallSerializeNode(node1, &data);
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, data->role);
+
+  // Node inside a WebView is not ignored even if it's not set importance.
+  CallSerializeNode(node2, &data);
+  ASSERT_FALSE(data->HasState(ax::mojom::State::kIgnored));
 }
 
 }  // namespace arc

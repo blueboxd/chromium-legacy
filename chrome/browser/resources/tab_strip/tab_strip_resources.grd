@@ -61,6 +61,11 @@
           file="tab_strip_options.js"
           type="chrome_html"
           compress="gzip"/>
+      <structure
+          name="IDR_TAB_STRIP_TAB_SWIPER_JS"
+          file="tab_swiper.js"
+          type="chrome_html"
+          compress="gzip"/>
     </structures>
 
     <includes>

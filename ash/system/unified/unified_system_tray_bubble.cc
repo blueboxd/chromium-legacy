@@ -362,6 +362,9 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
   bubble_view_->SetMaxHeight(max_height);
   bubble_view_->ChangeAnchorAlignment(tray_->shelf()->alignment());
   bubble_view_->ChangeAnchorRect(tray_->shelf()->GetSystemTrayAnchorRect());
+
+  if (tray_->IsMessageCenterBubbleShown())
+    tray_->message_center_bubble()->UpdatePosition();
 }
 
 void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {

@@ -25,8 +25,6 @@ chrome_elf.dll: %(VersionDir)s\
 chrome_watcher.dll: %(VersionDir)s\
 d3dcompiler_47.dll: %(VersionDir)s\
 eventlog_provider.dll: %(VersionDir)s\
-ffmpeg.dll: %(VersionDir)s\
-icudt.dll: %(VersionDir)s\
 icudtl.dat: %(VersionDir)s\
 libEGL.dll: %(VersionDir)s\
 libGLESv2.dll: %(VersionDir)s\
@@ -39,26 +37,17 @@ v8_context_snapshot.bin: %(VersionDir)s\
 #
 # Sub directories living in the version dir
 #
-default_apps\*.crx: %(VersionDir)s\default_apps\
-default_apps\external_extensions.json: %(VersionDir)s\default_apps\
 Extensions\*.*: %(VersionDir)s\Extensions\
-locales\*.dll: %(VersionDir)s\Locales
 locales\*.pak: %(VersionDir)s\Locales
 
 #
 # VisualElements sub-dir.
 #
-# All or none of the following files need to be present as the creation of
+# All or none of the *Logo*.png files need to be present as the creation of
 # VisualElementsManifest.xml is based on the existence of
 # %(VersionDir)\VisualElements.
 Logo.png: %(VersionDir)s\VisualElements\
-LogoBeta.png: %(VersionDir)s\VisualElements\
-LogoCanary.png: %(VersionDir)s\VisualElements\
-LogoDev.png: %(VersionDir)s\VisualElements\
 SmallLogo.png: %(VersionDir)s\VisualElements\
-SmallLogoBeta.png: %(VersionDir)s\VisualElements\
-SmallLogoCanary.png: %(VersionDir)s\VisualElements\
-SmallLogoDev.png: %(VersionDir)s\VisualElements\
 
 #
 # SwiftShader sub-dir
@@ -80,6 +69,22 @@ chrome_200_percent.pak: %(VersionDir)s\
 [GOOGLE_CHROME]
 # The elevation service is only installed for Google Chrome builds.
 elevation_service.exe: %(VersionDir)s\
+
+#
+# Sub directories living in the version dir
+#
+default_apps\*.crx: %(VersionDir)s\default_apps\
+default_apps\external_extensions.json: %(VersionDir)s\default_apps\
+
+#
+# VisualElements sub-dir.
+#
+LogoBeta.png: %(VersionDir)s\VisualElements\
+LogoCanary.png: %(VersionDir)s\VisualElements\
+LogoDev.png: %(VersionDir)s\VisualElements\
+SmallLogoBeta.png: %(VersionDir)s\VisualElements\
+SmallLogoCanary.png: %(VersionDir)s\VisualElements\
+SmallLogoDev.png: %(VersionDir)s\VisualElements\
 
 #
 # Widevine CDM sub-dir

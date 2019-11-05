@@ -81,6 +81,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_observer.h"
@@ -1256,6 +1257,12 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
         !is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())]);
     is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
         true;
+    scroll_peak_gpu_mem_tracker_ =
+        PeakGpuMemoryTracker::Create(base::BindOnce([](uint64_t peak_memory) {
+          // Converting Bytes to Kilobytes.
+          UMA_HISTOGRAM_MEMORY_KB("Memory.GPU.PeakMemoryUsage.Scroll",
+                                  peak_memory / 1024u);
+        }));
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureScrollEnd) {
     DCHECK(
@@ -1263,6 +1270,16 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
         false;
     is_in_touchpad_gesture_fling_ = false;
+    if (scroll_peak_gpu_mem_tracker_ &&
+        !view_->is_currently_scrolling_viewport()) {
+      // We start tracking peak gpu-memory usage when the initial scroll-begin
+      // is dispatched. However, it is possible that the scroll-begin did not
+      // trigger any scrolls (e.g. the page is not scrollable). In such cases,
+      // we do not want to report the peak-memory usage metric. So it is
+      // canceled here.
+      scroll_peak_gpu_mem_tracker_->Cancel();
+    }
+    scroll_peak_gpu_mem_tracker_ = nullptr;
     if (view_)
       view_->set_is_currently_scrolling_viewport(false);
   } else if (gesture_event.GetType() ==

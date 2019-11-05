@@ -6,8 +6,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_registry.h"
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_media_stream_registry.h"
+#include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 

@@ -45,11 +45,10 @@ extern const char kNullAudioHash[];
 
 class PipelineTestRendererFactory {
  public:
-  virtual ~PipelineTestRendererFactory() {}
+  virtual ~PipelineTestRendererFactory() = default;
+
   // Creates and returns a Renderer.
-  virtual std::unique_ptr<Renderer> CreateRenderer(
-      CreateVideoDecodersCB prepend_video_decoders_cb,
-      CreateAudioDecodersCB prepend_audio_decoders_cb) = 0;
+  virtual std::unique_ptr<Renderer> CreateRenderer() = 0;
 };
 
 // Integration tests for Pipeline. Real demuxers, real decoders, and
@@ -145,9 +144,8 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     audio_play_delay_cb_ = std::move(cb);
   }
 
-  std::unique_ptr<Renderer> CreateRenderer(
-      CreateVideoDecodersCB prepend_video_decoders_cb,
-      CreateAudioDecodersCB prepend_audio_decoders_cb);
+  std::unique_ptr<Renderer> CreateRenderer();
+  void CreateRendererAsync(RendererCreatedCB renderer_created_cb);
 
  protected:
   NiceMock<MockMediaLog> media_log_;
@@ -256,6 +254,9 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   // Configures |on_ended_closure_| to quit |run_loop| and then calls
   // RunUntilQuitOrError() on it.
   void RunUntilQuitOrEndedOrError(base::RunLoop* run_loop);
+
+  CreateVideoDecodersCB prepend_video_decoders_cb_;
+  CreateAudioDecodersCB prepend_audio_decoders_cb_;
 
   base::OnceClosure on_ended_closure_;
   base::OnceClosure on_error_closure_;

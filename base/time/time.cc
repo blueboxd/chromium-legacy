@@ -266,8 +266,17 @@ Time Time::Midnight(bool is_local) const {
   exploded.second = 0;
   exploded.millisecond = 0;
   Time out_time;
-  if (FromExploded(is_local, exploded, &out_time))
+  if (FromExploded(is_local, exploded, &out_time)) {
     return out_time;
+  } else if (is_local) {
+    // Hitting this branch means 00:00:00am of the current day
+    // does not exist (due to Daylight Saving Time in some countries
+    // where clocks are shifted at midnight). In this case, midnight
+    // should be defined as 01:00:00am.
+    exploded.hour = 1;
+    if (FromExploded(is_local, exploded, &out_time))
+      return out_time;
+  }
   // This function must not fail.
   NOTREACHED();
   return Time();

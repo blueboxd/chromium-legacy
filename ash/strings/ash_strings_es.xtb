@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">El modo No molestar está activado.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Muestra la configuración de notificaciones. Las notificaciones están desactivadas para una aplicación.}other{Muestra la configuración de notificaciones. Las notificaciones están desactivadas para # aplicaciones.}}</translation>
 <translation id="1525508553941733066">CERRAR</translation>
-<translation id="1537254971476575106">Lupa de pantalla completa</translation>
 <translation id="15373452373711364">Cursor del ratón grande</translation>
 <translation id="1546492247443594934">Escritorio 2</translation>
 <translation id="1550523713251050646">Haz clic aquí para obtener más opciones</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Pulsa <ph name="KEYBOARD_SHORTCUT" /> para cambiar el diseño del teclado.</translation>
 <translation id="2501920221385095727">Teclas persistentes</translation>
 <translation id="2509468283778169019">Bloqueo de mayúsculas activado</translation>
-<translation id="2532589005999780174">Modo de contraste alto</translation>
 <translation id="2542089167727451762">Toca tu imagen de perfil</translation>
 <translation id="255671100581129685">El Asistente de Google no está disponible en las sesiones públicas.</translation>
 <translation id="256712445991462162">la lupa fijada</translation>
@@ -484,7 +482,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7984197416080286869">Demasiados intentos con huella digital</translation>
 <translation id="7994370417837006925">Inicio de sesión múltiple</translation>
 <translation id="8000066093800657092">Ninguna red</translation>
-<translation id="8029241286966751120">Se ha habilitado la lupa de pantalla completa. Pulsa Ctrl + tecla de búsqueda + M de nuevo para desactivarla.</translation>
 <translation id="8030169304546394654">Desconectado</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
@@ -509,7 +506,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8388750414311082622">No se puede quitar el último escritorio.</translation>
 <translation id="8392451568018454956">Menú de opciones de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Tu padre, madre o tutor han bloqueado este dispositivo</translation>
-<translation id="8406981827175133772">Lupa de pantalla completa</translation>
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8427213022735114808">Dictado envía tu voz a Google para que puedas usar el dictado por voz en cualquier campo de texto.</translation>
 <translation id="8428213095426709021">Configuración</translation>

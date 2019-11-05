@@ -31,6 +31,8 @@ specific_include_rules = {
         "+base/test/bind_test_util.h",
         "+base/test/test_timeouts.h",
         "+base/threading/thread.h",
+        "+media/audio/audio_sink_parameters.h",
+        "+media/audio/audio_source_parameters.h",
         "+ui/gfx/color_space.h",
     ],
 }

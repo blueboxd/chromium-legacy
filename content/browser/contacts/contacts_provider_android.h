@@ -27,6 +27,7 @@ class ContactsProviderAndroid : public ContactsProvider {
               bool include_emails,
               bool include_tel,
               bool include_addresses,
+              bool include_icons,
               ContactsSelectedCallback callback) override;
 
   // Adds one contact to the list of contacts selected. Note, EndContactsList

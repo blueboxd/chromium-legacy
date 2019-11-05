@@ -56,6 +56,11 @@ constexpr float kMinimumDragDistanceAlreadyInSnapRegionDp = 48.f;
 constexpr float kFlingToCloseVelocityThreshold = 2000.f;
 constexpr float kItemMinOpacity = 0.4f;
 
+// Amount of time we wait to unpause the occlusion tracker after a overview item
+// is finished dragging. Waits a bit longer than the overview item animation.
+constexpr base::TimeDelta kOcclusionPauseDurationForDrag =
+    base::TimeDelta::FromMilliseconds(300);
+
 // The UMA histogram that records presentation time for window dragging
 // operation in overview mode.
 constexpr char kOverviewWindowDragHistogram[] =
@@ -237,8 +242,9 @@ void OverviewWindowDragController::StartNormalDragMode(
   if (should_allow_split_view_) {
     overview_session_->SetSplitViewDragIndicatorsDraggedWindow(
         item_->GetWindow());
-    overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-        IndicatorState::kDragAreaBoth, gfx::ToRoundedPoint(location_in_screen));
+    overview_session_->SetSplitViewDragIndicatorsWindowDraggingState(
+        SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+        gfx::ToRoundedPoint(location_in_screen));
     item_->HideCannotSnapWarning();
 
     // Update the split view divider bar status if necessary. If splitview is
@@ -331,8 +337,8 @@ void OverviewWindowDragController::ResetGesture() {
     }
     item_->overview_grid()->RemoveDropTarget();
     if (should_allow_split_view_) {
-      overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-          IndicatorState::kNone, gfx::Point());
+      overview_session_->SetSplitViewDragIndicatorsWindowDraggingState(
+          SplitViewDragIndicators::WindowDraggingState::kNoDrag, gfx::Point());
       item_->UpdateCannotSnapWarningVisibility();
     }
   }
@@ -518,8 +524,9 @@ OverviewWindowDragController::CompleteNormalDrag(
     // Update window grid bounds and |snap_position_| in case the screen
     // orientation was changed.
     UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
-    overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-        IndicatorState::kNone, rounded_screen_point);
+    overview_session_->SetSplitViewDragIndicatorsWindowDraggingState(
+        SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+        rounded_screen_point);
     item_->UpdateCannotSnapWarningVisibility();
   }
 
@@ -578,11 +585,15 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
     return;
 
   snap_position_ = GetSnapPosition(location_in_screen);
-  IndicatorState indicator_state = GetIndicatorState(snap_position_);
-  overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-      indicator_state, gfx::ToRoundedPoint(location_in_screen));
+  SplitViewDragIndicators::WindowDraggingState window_dragging_state =
+      SplitViewDragIndicators::ComputeWindowDraggingState(
+          /*is_dragging=*/true,
+          SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+          snap_position_);
+  overview_session_->SetSplitViewDragIndicatorsWindowDraggingState(
+      window_dragging_state, gfx::ToRoundedPoint(location_in_screen));
   item_->overview_grid()->RearrangeDuringDrag(item_->GetWindow(),
-                                              indicator_state);
+                                              window_dragging_state);
 }
 
 gfx::Rect OverviewWindowDragController::GetWorkAreaOfDisplayBeingDraggedIn()

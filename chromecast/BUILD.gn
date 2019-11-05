@@ -25,7 +25,9 @@ declare_args() {
 # Depends on all non-test targets that should be built by the Chromecast
 # internal build infrastructure.
 group("all") {
-  deps = []
+  deps = [
+    "//chromecast/build:archive",
+  ]
   if (is_android && chromecast_branding == "public") {
     deps += [ ":cast_shell_apk" ]
   }

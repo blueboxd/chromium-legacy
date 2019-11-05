@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">“更多”菜单</translation>
 <translation id="2316709634732130529">使用建议的密码</translation>
 <translation id="2320166752086256636">隐藏键盘</translation>
+<translation id="2330129964253841015">在密码泄露时向您发出警告</translation>
 <translation id="2339560363438331454">同步功能和 Google 服务</translation>
 <translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="2359043044084662842">翻译</translation>
@@ -252,6 +253,7 @@
 <translation id="4620246317052452550">您浏览过的网页</translation>
 <translation id="4630540211544979320">翻译网页</translation>
 <translation id="4636930964841734540">信息</translation>
+<translation id="4659126640776004816">当您登录自己的 Google 帐号后，系统即会启用此功能。</translation>
 <translation id="4659667755519643272">进入标签页切换器</translation>
 <translation id="4666531726415300315">目前登录的帐号是 <ph name="EMAIL" />。
 

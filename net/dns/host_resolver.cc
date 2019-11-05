@@ -52,6 +52,11 @@ class FailingRequestImpl : public HostResolver::ResolveHostRequest {
     return *nullopt_result;
   }
 
+  const base::Optional<EsniContent>& GetEsniResults() const override {
+    static const base::NoDestructor<base::Optional<EsniContent>> nullopt_result;
+    return *nullopt_result;
+  }
+
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
     static const base::NoDestructor<base::Optional<HostCache::EntryStaleness>>
@@ -93,6 +98,14 @@ HostResolver::ResolveHostParameters::ResolveHostParameters(
     const ResolveHostParameters& other) = default;
 
 HostResolver::~HostResolver() = default;
+
+std::unique_ptr<HostResolver::ResolveHostRequest> HostResolver::CreateRequest(
+    const HostPortPair& host,
+    const NetLogWithSource& net_log,
+    const base::Optional<ResolveHostParameters>& optional_parameters) {
+  return CreateRequest(host, NetworkIsolationKey(), net_log,
+                       optional_parameters);
+}
 
 std::unique_ptr<HostResolver::MdnsListener> HostResolver::CreateMdnsListener(
     const HostPortPair& host,

@@ -1862,6 +1862,21 @@ size_t LayerTreeHostImpl::GetFrameIndexForImage(const PaintImage& paint_image,
       paint_image.stable_id(), tree);
 }
 
+int LayerTreeHostImpl::GetMSAASampleCountForRaster(
+    const scoped_refptr<DisplayItemList>& display_list) {
+  constexpr int kMinNumberOfSlowPathsForMSAA = 6;
+  if (display_list->NumSlowPaths() < kMinNumberOfSlowPathsForMSAA)
+    return 0;
+
+  if (!can_use_msaa_)
+    return 0;
+
+  if (display_list->HasNonAAPaint() && !supports_disable_msaa_)
+    return 0;
+
+  return RequestedMSAASampleCount();
+}
+
 void LayerTreeHostImpl::NotifyReadyToActivate() {
   // The TileManager may call this method while the pending tree is still being
   // painted, as it isn't aware of the ongoing paint. We shouldn't tell the
@@ -2432,20 +2447,6 @@ int LayerTreeHostImpl::RequestedMSAASampleCount() const {
   return settings_.gpu_rasterization_msaa_sample_count;
 }
 
-void LayerTreeHostImpl::SetContentHasSlowPaths(bool flag) {
-  if (content_has_slow_paths_ != flag) {
-    content_has_slow_paths_ = flag;
-    need_update_gpu_rasterization_status_ = true;
-  }
-}
-
-void LayerTreeHostImpl::SetContentHasNonAAPaint(bool flag) {
-  if (content_has_non_aa_paint_ != flag) {
-    content_has_non_aa_paint_ = flag;
-    need_update_gpu_rasterization_status_ = true;
-  }
-}
-
 void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
     bool* gpu_rasterization_enabled,
     bool* gpu_rasterization_supported,
@@ -2536,23 +2537,14 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
                                   &max_msaa_samples, &supports_disable_msaa);
 
   bool use_gpu = false;
-  bool use_msaa = false;
-  bool using_msaa_for_slow_paths =
-      requested_msaa_samples > 0 &&
-      max_msaa_samples >= requested_msaa_samples &&
-      (!content_has_non_aa_paint_ || supports_disable_msaa);
+  bool can_use_msaa =
+      requested_msaa_samples > 0 && max_msaa_samples >= requested_msaa_samples;
+
   if (settings_.gpu_rasterization_forced) {
     use_gpu = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::ON_FORCED;
-    use_msaa = content_has_slow_paths_ && using_msaa_for_slow_paths;
-    if (use_msaa) {
-      gpu_rasterization_status_ = GpuRasterizationStatus::MSAA_CONTENT;
-    }
   } else if (!gpu_rasterization_enabled) {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
-  } else if (content_has_slow_paths_ && using_msaa_for_slow_paths) {
-    use_gpu = use_msaa = true;
-    gpu_rasterization_status_ = GpuRasterizationStatus::MSAA_CONTENT;
   } else {
     use_gpu = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::ON;
@@ -2564,18 +2556,24 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
       // be created due to losing the GL context, force use of software
       // raster.
       use_gpu = false;
-      use_msaa = false;
+      can_use_msaa_ = false;
+      supports_disable_msaa_ = false;
       gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
     }
   }
 
-  if (use_gpu == use_gpu_rasterization_ && use_msaa == use_msaa_)
+  // Changes in MSAA settings require that we re-raster resources for the
+  // settings to take effect. But we don't need to trigger any raster
+  // invalidation in this case since these settings change only if the context
+  // changed. In this case we already re-allocate and re-raster all resources.
+  if (use_gpu == use_gpu_rasterization_ && can_use_msaa == can_use_msaa_ &&
+      supports_disable_msaa == supports_disable_msaa_) {
     return false;
+  }
 
-  // Note that this must happen first, in case the rest of the calls want to
-  // query the new state of |use_gpu_rasterization_|.
   use_gpu_rasterization_ = use_gpu;
-  use_msaa_ = use_msaa;
+  can_use_msaa_ = can_use_msaa;
+  supports_disable_msaa_ = supports_disable_msaa;
   return true;
 }
 
@@ -3243,11 +3241,10 @@ LayerTreeHostImpl::CreateRasterBufferProvider() {
   if (use_gpu_rasterization_) {
     DCHECK(worker_context_provider);
 
-    int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
     return std::make_unique<GpuRasterBufferProvider>(
         compositor_context_provider, worker_context_provider,
         settings_.resource_settings.use_gpu_memory_buffer_resources,
-        msaa_sample_count, tile_format, settings_.max_gpu_raster_tile_size,
+        tile_format, settings_.max_gpu_raster_tile_size,
         settings_.unpremultiply_and_dither_low_bit_depth_tiles,
         use_oop_rasterization_);
   }
@@ -3478,9 +3475,9 @@ bool LayerTreeHostImpl::InitializeFrameSink(
     use_oop_rasterization_ = false;
   }
 
-  // Since the new context may be capable of MSAA, update status here. We don't
-  // need to check the return value since we are recreating all resources
-  // already.
+  // Since the new context may support GPU raster or be capable of MSAA, update
+  // status here. We don't need to check the return value since we are
+  // recreating all resources already.
   SetNeedUpdateGpuRasterizationStatus();
   UpdateGpuRasterizationStatus();
 

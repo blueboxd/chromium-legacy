@@ -153,6 +153,19 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
   info->SetInteger("process_host_id", version.process_id);
   info->SetInteger("thread_id", version.thread_id);
   info->SetInteger("devtools_agent_route_id", version.devtools_agent_route_id);
+
+  auto clients = ListValue();
+  for (auto& it : version.clients) {
+    auto client = DictionaryValue();
+    client.SetStringPath("client_id", it.first);
+    if (it.second.web_contents_getter) {
+      WebContents* web_contents = it.second.web_contents_getter.Run();
+      if (web_contents)
+        client.SetStringPath("url", web_contents->GetURL().spec());
+    }
+    clients.Append(std::move(client));
+  }
+  info->SetPath("clients", std::move(clients));
 }
 
 std::unique_ptr<ListValue> GetRegistrationListValue(

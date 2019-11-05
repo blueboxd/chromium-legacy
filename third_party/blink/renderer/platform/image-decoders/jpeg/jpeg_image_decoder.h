@@ -81,6 +81,10 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   cc::YUVSubsampling GetYUVSubsampling() const override;
   cc::ImageHeaderMetadata MakeMetadataForDecodeAcceleration() const override;
 
+  // Attempts to calculate the coded size of the JPEG image. Returns a zero
+  // initialized gfx::Size upon failure.
+  gfx::Size GetImageCodedSize() const;
+
   // Decodes the image.  If |only_size| is true, stops decoding after
   // calculating the image size.  If decoding fails but there is no more
   // data coming, sets the "decode failure" flag.

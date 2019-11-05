@@ -376,6 +376,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si ce paramètre est désactivé ou s'il n'est pas configuré, les utilisateurs d'entreprise
       ne peuvent pas utiliser ARC.</translation>
+<translation id="1553956579506604198">Empêche que des extensions externes soient installées</translation>
 <translation id="1559980755219453326">Cette règle détermine si les informations des extensions et des plug-ins doivent être enregistrées.
 
       Si cette règle n'est pas définie, ou si elle est définie sur "True", les données des extensions et des plug-ins sont collectées.
@@ -505,6 +506,19 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie sur une URL valide, <ph name="PRODUCT_NAME" /> télécharge la liste des sites à partir de cette URL, puis applique les instructions comme si elles avaient été configurées avec la règle <ph name="SITELIST_POLICY_NAME" />.
 
       Pour en savoir plus sur la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer, rendez-vous sur https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode.</translation>
+<translation id="1839278886947586809">
+      Cette règle a été retirée de la version M80, car elle n'est plus nécessaire
+      depuis que WebDriver est compatible avec toutes les règles existantes.
+
+      Cette règle permet aux utilisateurs de la fonctionnalité WebDriver d'ignorer
+      les règles pouvant affecter son fonctionnement.
+
+      Actuellement, cette règle désactive les règles SitePerProcess et IsolateOrigins.
+
+      Si elle est activée, WebDriver pourra ignorer les règles
+      incompatibles.
+      Si elle est désactivée ou n'est pas configurée, la fonctionnalité WebDriver ne sera pas autorisée
+      à ignorer les règles incompatibles.</translation>
 <translation id="1843117931376765605">Fréquence d'actualisation des règles relatives aux utilisateurs</translation>
 <translation id="1844620919405873871">Permet de configurer les règles associées au déverrouillage rapide.</translation>
 <translation id="1845405905602899692">Paramètres de kiosque</translation>
@@ -663,6 +677,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
           Si cette règle n'est pas définie, les quatre modèles seront utilisés.</translation>
 <translation id="2067011586099792101">Bloquer l'accès aux sites en dehors des packs de contenu</translation>
 <translation id="2073552873076775140">Autoriser la connexion à <ph name="PRODUCT_NAME" /></translation>
+<translation id="2075732129949889165">Playbook Crostini Ansible</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle si disponible</translation>
 <translation id="2077273864382355561">Délai d'arrêt de l'écran (batterie)</translation>
 <translation id="2082205219176343977">Configurer la version Chrome minimale autorisée de l'appareil.</translation>
@@ -673,6 +688,17 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
 <translation id="2107601598727098402">
         Cette règle a été abandonnée dans la version M72. Veuillez utiliser la règle CloudManagementEnrollmentToken à la place.
         </translation>
+<translation id="2108169571875569435">Cette règle contrôle la commande à utiliser pour ouvrir les URL dans un navigateur secondaire.
+
+      Si cette règle n'est pas définie, l'URL s'ouvre par défaut dans un navigateur spécifique à la plate-forme : Internet Explorer sur Windows ou Safari sur Mac OS X. Sur Linux, l'ouverture d'un navigateur secondaire provoquera une erreur en l'absence d'une règle.
+
+      Si cette règle est définie sur <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" /> ou
+      <ph name="OPERA_VALUE_PLACEHOLDER" />, ce navigateur se lancera s'il est installé. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> n'est disponible
+      que sur Windows, et <ph name="SAFARI_VALUE_PLACEHOLDER" /> n'est disponible que sur Windows et Mac
+      OS X.
+
+      Si elle est définie sur un chemin d'accès à un fichier, ce dernier est utilisé comme fichier
+      exécutable.</translation>
 <translation id="2111016292707172233">Active la fonctionnalité "Appuyer pour rechercher" dans l'affichage du contenu de <ph name="PRODUCT_NAME" />.
 
       Si vous activez ce paramètre, l'utilisateur sera en mesure d'activer ou de désactiver la fonctionnalité "Appuyer pour rechercher".
@@ -771,6 +797,9 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
       Lorsque cette règle est désactivée, l'utilisateur ne reçoit pas de message d'invitation, et la capture vidéo n'est disponible que pour les URL configurées dans VideoCaptureAllowedUrls.
 
       Cette règle a une incidence sur tous les types d'entrée vidéo, et pas uniquement sur la caméra intégrée.</translation>
+<translation id="2197625019569762163">Définissez cette règle sur "True" pour afficher le clavier numérique par défaut lors de la saisie du mot de passe sur l'écran de connexion. Les utilisateurs pourront toujours revenir au clavier normal.
+
+      Si vous définissez cette règle, les utilisateurs ne peuvent pas modifier la configuration. Si vous ne la définissez pas ou si vous la définissez sur "False", elle est sans effet.</translation>
 <translation id="2201555246697292490">Configurer la liste blanche de messagerie native</translation>
 <translation id="220280840901385239">Autoriser les utilisateurs à ajouter des exceptions afin de permettre l'affichage de contenu mixte blocable</translation>
 <translation id="2204753382813641270">Règle pour masquer automatiquement l'étagère</translation>
@@ -957,6 +986,17 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si cette règle est définie sur "false", un message d'erreur s'affiche au lieu de l'invite de configuration réseau.</translation>
 <translation id="2498238926436517902">Toujours masquer automatiquement l'étagère</translation>
+<translation id="2505805702054675476">Cette règle contrôle les paramètres de ligne de commande pour lancer le navigateur secondaire.
+
+      Si cette règle n'est pas définie, seule l'URL est transmise comme paramètre de ligne de commande.
+
+      Si cette règle est définie sur une liste de chaînes, chaque chaîne est transmise au navigateur secondaire comme paramètre de ligne de commande distinct. Pour Windows, les paramètres sont séparés par des espaces. Pour Mac OS X et Linux, un paramètre peut contenir des espaces et être quand même traité comme un seul et même paramètre.
+
+      Si un élément contient <ph name="URL_PLACEHOLDER" />, il est remplacé par l'URL de la page à ouvrir.
+
+      Si aucun élément ne contient <ph name="URL_PLACEHOLDER" />, l'URL est ajoutée à la fin de la ligne de commande.
+
+      Les variables d'environnement sont développées. Pour Windows, la variable <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> est remplacée par la valeur de la variable d'environnement <ph name="ENV_VARIABLE_VALUE" />. Pour Mac OS X et Linux, la variable <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> est remplacée par la valeur de la variable d'environnement <ph name="ENV_VARIABLE" />.</translation>
 <translation id="250670737672448119">Active la fonctionnalité d'accessibilité de mise en surbrillance du curseur de saisie.
 
           Cette fonctionnalité permet de mettre en surbrillance la zone autour du curseur de saisie lorsque l'utilisateur effectue une modification.
@@ -981,6 +1021,11 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2517466659416174529">Figer les onglets en arrière-plan</translation>
 <translation id="2518231489509538392">Autoriser la lecture audio</translation>
 <translation id="2521581787935130926">Afficher le raccourci des applications dans la barre de favoris</translation>
+<translation id="2526082146909867346">Vous permet de spécifier une liste de formats d'URL indiquant les sites pour lesquels <ph name="PRODUCT_NAME" /> doit sélectionner automatiquement un certificat client, si le site demande un certificat.
+
+          Cette valeur doit correspondre à un ensemble de dictionnaires convertis au format JSON à l'aide de la méthode JSON.stringify(). Chaque dictionnaire doit avoir le format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, où <ph name="URL_PATTERN_PLACEHOLDER" /> correspond à un schéma de paramètre de contenu. La valeur <ph name="FILTER_PLACEHOLDER" /> limite les certificats client à partir desquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificats du serveur sont sélectionnés. Par exemple, si <ph name="FILTER_PLACEHOLDER" /> a le format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, seuls les certificats clients émis par un certificat dont la valeur CommonName est <ph name="ISSUER_CN_PLACEHOLDER" /> sont sélectionnés. Si <ph name="FILTER_PLACEHOLDER" /> contient une section <ph name="ISSUER_STRING_VALUE" /> et <ph name="SUBJECT_STRING_VALUE" />, le certificat client doit satisfaire les deux conditions pour être sélectionné. Si <ph name="FILTER_PLACEHOLDER" /> spécifie une organisation ("O"), le certificat doit contenir au moins une organisation correspondant à la valeur spécifiée pour être sélectionné. Si <ph name="FILTER_PLACEHOLDER" /> spécifie une unité organisationnelle ("UO"), le certificat doit contenir au moins une unité organisationnelle correspondant à la valeur spécifiée pour être sélectionné. Si <ph name="FILTER_PLACEHOLDER" /> correspond à la valeur <ph name="EMPTY_DICTIONARY" /> vide du dictionnaire, la sélection de certificats clients ne fait pas l'objet de restrictions supplémentaires.
+
+          Si cette règle n'est pas définie, la sélection automatique n'est effectuée pour aucun site.</translation>
 <translation id="2529659024053332711">Permet de spécifier le comportement du navigateur au démarrage.
 
           Si vous sélectionnez l'option "Ouvrir la page Nouvel onglet", celle-ci s'affiche chaque fois que vous lancez <ph name="PRODUCT_NAME" />.
@@ -1411,6 +1456,13 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3236046242843493070">Formats d'URL à partir desquelles autoriser les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="3240609035816615922">Règle d'accès à la configuration des imprimantes.</translation>
 <translation id="3240655340884151271">Adresse MAC de la carte d'interface réseau intégrée de la station d'accueil</translation>
+<translation id="3242756958360374888">Contient une liste de schémas utilisés pour contrôler la visibilité des comptes dans <ph name="PRODUCT_NAME" />.
+
+      Chaque compte Google sur l'appareil sera comparé aux schémas enregistrés dans cette règle pour déterminer la visibilité du compte dans <ph name="PRODUCT_NAME" />. Le compte sera visible si son nom correspond à l'un des schémas de la liste. Sinon, il sera masqué.
+
+      Utilisez le caractère générique "*" pour remplacer des caractères arbitraires (zéro ou plus). Le caractère d'échappement est "\". Pour représenter les caractères "*", ou "\", le caractère d'échappement "\" doit donc être placé devant eux.
+
+      Si cette règle n'est pas configurée, tous les comptes Google présents sur l'appareil seront visibles dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3251500716404598358">Configurer les règles pour passer d'un navigateur à l'autre.
 
       Les sites Web configurés s'ouvrent automatiquement dans un navigateur autre que <ph name="PRODUCT_NAME" />.</translation>
@@ -1461,6 +1513,19 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
       Cette règle permet uniquement de définir des langues recommandées. Vous pouvez l'utiliser pour placer un ensemble de langues recommandées en haut de la liste, mais les utilisateurs auront toujours la possibilité de choisir n'importe quelle langue compatible avec <ph name="PRODUCT_OS_NAME" /> pour leur session.
       </translation>
+<translation id="3378482432905539452">Cette règle est obsolète. Veuillez utiliser la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> pour contrôler la disponibilité du plug-in Flash et la règle <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> pour définir si la visionneuse de documents PDF intégrée doit être utilisée pour ouvrir les fichiers PDF.
+
+      Répertorie les plug-ins qu'un utilisateur peut activer ou désactiver dans <ph name="PRODUCT_NAME" />.
+
+      Les caractères génériques "*" et "?" peuvent être utilisés pour représenter des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères, tandis que "?" représente un caractère unique facultatif. C'est-à-dire qu'il correspond soit à un seul caractère, soit à aucun caractère. Pour représenter les caractères "*", "?" ou "\" eux-mêmes, le caractère d'échappement "\" doit être placé devant eux.
+
+      Si vous activez ce paramètre, la liste des plug-ins spécifiée peut être utilisée dans <ph name="PRODUCT_NAME" />. Les utilisateurs peuvent activer ou désactiver les plug-ins concernés dans "about:plugins", même s'ils correspondent à un format indiqué dans DisabledPlugins. Les utilisateurs peuvent aussi activer et désactiver des plug-ins qui ne correspondent à aucun format dans DisabledPlugins, DisabledPluginsExceptions et EnabledPlugins.
+
+      Cette règle permet à l'administrateur de définir des exceptions pour les plug-ins répertoriés dans la liste noire "DisabledPlugins" lorsque les entrées correspondantes contiennent des caractères génériques (par exemple, "*" qui permet de désactiver tous les plug-ins ou "*Java*" qui permet de désactiver tous les plug-ins Java). Si l'administrateur souhaite activer des versions spécifiques de ces plug-ins ("IcedTea Java 2.3", par exemple), cette règle le permet.
+
+      Sachez que l'exclusion doit viser à la fois le nom du plug-in et son nom de groupe. Chaque groupe de plug-ins s'affiche dans une section séparée dans "about:plugins", et chaque section peut contenir un plug-in ou plus. Par exemple, le plug-in "Shockwave Flash" fait partie du groupe "Adobe Flash Player". Ces deux noms doivent donc être indiqués dans la liste d'exceptions pour que le plug-in soit exclu de la liste noire.
+
+      Si cette règle n'est pas configurée, tous les plug-ins qui sont détectés par "DisabledPlugins" sont verrouillés/désactivés, et les utilisateurs ne sont pas en mesure de les activer</translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
 <translation id="3388153794103186066">Vous permet de définir une liste d'URL indiquant les sites automatiquement autorisés à accéder à un appareil USB correspondant aux ID de fournisseur et de produit indiqués. Chaque élément de la liste doit contenir à la fois les appareils et les URL pour que la règle soit valide. Chaque élément des appareils peut contenir un champ d'ID de produit et d'ID de fournisseur. Les ID non renseignés sont traités comme des caractères génériques, à une exception près : un ID de produit ne peut pas être spécifié si un ID de fournisseur n'est pas aussi spécifié. Sans cela, la règle n'est pas valide et est ignorée.
 
@@ -2184,6 +2249,15 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="445270821089253489">Contrôle le type d'informations figurant dans les rapports sur les utilisateurs et les appareils.</translation>
 <translation id="4453913621209182880">Autoriser l'impression uniquement avec des images de fond</translation>
 <translation id="4454820008017317557">Afficher l'icône de la barre d'outils de <ph name="PRODUCT_NAME" /></translation>
+<translation id="4458977366860064210">Permet d'utiliser l'ancienne mise en œuvre de <ph name="CORS" /> plutôt que la nouvelle mise en œuvre de <ph name="CORS" />.
+
+      Si cette règle est définie sur "True", l'ancienne mise en œuvre doit être compatible avec les versions précédentes.
+
+      Si cette règle est définie sur "False" ou si elle n'est pas configurée, la nouvelle mise en œuvre utilisée peut causer des problèmes de compatibilité spécifiques à l'entreprise.
+
+      Cette règle sera supprimée après quelques jalons.
+
+      Pour en savoir plus sur <ph name="CORS" />, consultez la page <ph name="CORS_HELP_URL" />.</translation>
 <translation id="4467952432486360968">Bloquer les cookies tiers</translation>
 <translation id="4474167089968829729">Activer l'enregistrement des mots de passe dans le gestionnaire de mots de passe</translation>
 <translation id="4476769083125004742">Si cette règle est définie sur "<ph name="BLOCK_GEOLOCATION_SETTING" />", les applications Android n'ont pas accès aux informations de localisation. Si vous la définissez sur une autre valeur ou si vous ne la modifiez pas, l'utilisateur est invité à donner son autorisation lorsqu'une application Android requiert ces informations.</translation>
@@ -2229,6 +2303,17 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4534500438517478692">Nom de la restriction Android :</translation>
 <translation id="4541530620466526913">Comptes locaux de l'appareil</translation>
 <translation id="4543502256674577024">Paramètres de mise à jour de l'appareil</translation>
+<translation id="4548555985107150628">Cette règle est obsolète. Veuillez utiliser la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> pour contrôler la disponibilité du plug-in Flash et la règle <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> pour définir si la visionneuse de documents PDF intégrée doit être utilisée pour ouvrir les fichiers PDF.
+
+      Cette règle définit une liste des plug-ins activés dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
+
+      Les caractères génériques "*" et "?" peuvent être utilisés pour représenter des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères, tandis que "?" représente un caractère unique facultatif. C'est-à-dire qu'il correspond soit à un seul caractère, soit à aucun caractère. Pour représenter les caractères "*", "?" ou "\" eux-mêmes, le caractère d'échappement "\" doit être placé devant eux.
+
+      La liste des plug-ins définie est toujours utilisée dans <ph name="PRODUCT_NAME" /> s'ils sont installés. Les plug-ins sont marqués comme activés dans "about:plugins", et les utilisateurs ne peuvent pas les désactiver.
+
+      Notez que cette règle ignore les règles DisabledPlugins et DisabledPluginsExceptions.
+
+      Si cette règle n'est pas configurée, l'utilisateur peut désactiver n'importe quel plug-in installé sur le système.</translation>
 <translation id="4554651132977135445">Mode de traitement du bouclage pour les règles relatives aux utilisateurs</translation>
 <translation id="4554841826517980623">Cette règle permet de déterminer si la fonctionnalité Partages de fichiers en réseau pour <ph name="PRODUCT_NAME" /> doit détecter les partages sur le réseau via le protocole <ph name="NETBIOS_PROTOCOL" />.
       Lorsque cette règle est définie sur "True", la détection des partages sur le réseau s'effectue via le protocole <ph name="NETBIOS_PROTOCOL" />.
@@ -3016,6 +3101,19 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Les URL (comme https://example.com/ce/chemin) ne sont reconnues que comme des identifiants d'application U2F. Les domaines (comme example.com) ne sont reconnus que comme des identifiants RP WebAuthn. Ainsi, pour couvrir à la fois les API U2F et WebAuthn d'un site donné, vous devez préciser l'URL et le domaine de l'identifiant d'application.</translation>
 <translation id="5836064773277134605">Restreindre la plage de ports UDP utilisés par l'hôte d'accès à distance</translation>
+<translation id="5855010364142818361">Cette règle contrôle les paramètres de ligne de commande pour basculer vers Chrome à partir d'Internet Explorer.
+
+      Si le module complémentaire Legacy Browser Support pour Internet Explorer n'est pas installé, cette règle n'a aucun effet.
+
+      Si cette règle n'est pas définie, Internet Explorer transmet seulement l'URL à Chrome comme paramètre de ligne de commande.
+
+      Si cette règle est définie sur une liste de chaînes, les chaînes sont reliées par des espaces avant d'être transmises à Chrome comme paramètres de ligne de commande.
+
+      Si un élément contient <ph name="URL_PLACEHOLDER" />, il est remplacé par l'URL de la page à ouvrir.
+
+      Si aucun élément ne contient <ph name="URL_PLACEHOLDER" />, l'URL est ajoutée à la fin de la ligne de commande.
+
+      Les variables d'environnement sont développées. Sous Windows, la variable <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> est remplacée par la valeur de la variable d'environnement ABC.</translation>
 <translation id="5861856285460256766">Configuration du code d'accès parental</translation>
 <translation id="5868414965372171132">Configuration réseau au niveau de l'utilisateur</translation>
 <translation id="5879014913445067283">Contrôler la détection des partages de fichiers sur le réseau via <ph name="NETBIOS_NAME" /></translation>
@@ -3343,6 +3441,15 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       Si ce paramètre est désactivé ou s'il n'est pas défini, le contenu Flash provenant d'autres sources ou de petite taille risque d'être bloqué.</translation>
 <translation id="6532769014584932288">Autoriser les wakelocks</translation>
+<translation id="653645667373317432">Cette règle contrôle la commande qui permet d'ouvrir les URL dans <ph name="PRODUCT_NAME" /> à partir d'Internet Explorer.
+
+      Si le module complémentaire Legacy Browser Support pour Internet Explorer n'est pas installé, cette règle n'a aucun effet.
+
+      Si cette règle n'est pas définie, Internet Explorer détecte automatiquement le chemin d'accès au fichier exécutable de <ph name="PRODUCT_NAME" /> lors du lancement de <ph name="PRODUCT_NAME" /> à partir de ce navigateur.
+
+      Si cette règle est définie, elle s'applique pour ouvrir <ph name="PRODUCT_NAME" /> lors du lancement de <ph name="PRODUCT_NAME" /> à partir d'Internet Explorer.
+
+      Cette règle peut être définie sur le chemin d'accès à un fichier exécutable ou sur <ph name="PRODUCT_NAME_PLACEHOLDER" /> pour détecter automatiquement l'emplacement d'installation de Chrome.</translation>
 <translation id="6536600139108165863">Redémarrer automatiquement à l'arrêt de l'appareil</translation>
 <translation id="6539246272469751178">Cette règle n'a aucun effet sur les applications Android. Celles-ci se servent toujours du répertoire de téléchargements par défaut. Elles ne peuvent pas accéder aux fichiers téléchargés par <ph name="PRODUCT_OS_NAME" /> dans un autre répertoire de téléchargements.</translation>
 <translation id="654303922206238013">Stratégie de migration pour eCryptfs</translation>
@@ -3356,6 +3463,17 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6559057113164934677">Interdire à tous les sites d'accéder à la caméra et au microphone</translation>
 <translation id="6561396069801924653">Afficher les options d'accessibilité dans le menu de la barre système</translation>
 <translation id="6563458316362153786">Activer la transition rapide 802.11r</translation>
+<translation id="6568977718979857253">Cette règle est obsolète. Veuillez utiliser la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> pour contrôler la disponibilité du plug-in Flash et la règle <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> pour définir si la visionneuse de documents PDF intégrée doit être utilisée pour ouvrir les fichiers PDF.
+
+      Cette règle définit une liste des plug-ins désactivés dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
+
+      Les caractères génériques "*" et "?" peuvent être utilisés pour représenter des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères, tandis que "?" représente un caractère unique facultatif. C'est-à-dire qu'il correspond soit à un seul caractère, soit à aucun caractère. Pour représenter les caractères "*", "?" ou "\" eux-mêmes, le caractère d'échappement "\" doit être placé devant eux.
+
+      Si vous activez ce paramètre, la liste des plug-ins spécifiée n'est jamais utilisée dans <ph name="PRODUCT_NAME" />. Les plug-ins sont indiqués comme étant désactivés sur la page accessible par la commande "about:plugins", et les utilisateurs ne peuvent pas les activer.
+
+      Cette règle peut être ignorée par EnabledPlugins et DisabledPluginsExceptions.
+
+      Si cette règle n'est pas configurée, l'utilisateur peut utiliser n'importe quel plug-in installé sur le système, à l'exception des plug-ins codés en dur incompatibles, et des plug-ins obsolètes ou dangereux.</translation>
 <translation id="6573305661369899995">Définir une source externe pour les restrictions d'URL</translation>
 <translation id="6583851521569686409">Permet de configurer une liste d'imprimantes.
 
@@ -3437,6 +3555,11 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Ce paramètre permet de contrôler la présentation des pages de bienvenue qui aident les utilisateurs à se connecter à <ph name="PRODUCT_NAME" /> ou à en faire leur navigateur par défaut, et les informent des fonctionnalités du produit.</translation>
 <translation id="6766216162565713893">Autoriser les sites à demander à l'utilisateur d'accorder l'accès à un appareil Bluetooth à proximité</translation>
 <translation id="6770454900105963262">Envoyer des rapports sur les sessions Kiosque actives</translation>
+<translation id="6780908086869332493">Vous permet de spécifier une liste de formats d'URL indiquant les sites pour lesquels un certificat client est sélectionné automatiquement sur l'écran de connexion (dans le cadre où se trouve le flux SAML), lorsque le site nécessite un certificat. Par exemple, vous pouvez configurer un certificat applicable à l'intégralité de l'appareil afin de le présenter au fournisseur d'identité SAML.
+
+      Cette valeur doit correspondre à un ensemble de dictionnaires convertis au format JSON à l'aide de la méthode JSON.stringify(). Chaque dictionnaire doit avoir le format <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, où <ph name="URL_PATTERN_PLACEHOLDER" /> correspond à un schéma de paramètre de contenu. La valeur <ph name="FILTER_PLACEHOLDER" /> limite les certificats client à partir desquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificats du serveur sont sélectionnés. Par exemple, si <ph name="FILTER_PLACEHOLDER" /> a le format <ph name="JSON_DICTIONARY_EXAMPLE" />, seuls les certificats clients émis par un certificat dont la valeur CommonName est <ph name="ISSUER_CN_PLACEHOLDER" /> sont sélectionnés. Si <ph name="FILTER_PLACEHOLDER" /> correspond à la valeur {} vide du dictionnaire, la sélection de certificats clients ne fait pas l'objet de restrictions supplémentaires.
+
+      Si cette règle n'est pas définie, la sélection automatique n'est effectuée pour aucun site.</translation>
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="6786967369487349613">Définir le répertoire des profils itinérants</translation>
 <translation id="6795485990775913659">Autoriser l'impression sans code uniquement</translation>
@@ -3654,6 +3777,15 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 En cas de non-configuration de cette règle, aucune restriction ne s'applique quant aux utilisateurs autorisés à se connecter. Notez que la création d'utilisateurs nécessite toujours une configuration correcte de la règle <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
 <translation id="7126716959063786004">Mettre fin aux processus dans le gestionnaire des tâches</translation>
 <translation id="7127892035367404455">Rétablir la version cible</translation>
+<translation id="712963038874313213">Communique un playbook Ansible à exécuter dans le conteneur Crostini par défaut.
+
+      Cette règle permet de communiquer un playbook Ansible qui s'appliquera au conteneur Crostini par défaut si ce dernier est disponible sur l'appareil concerné, et si aucune règle ne l'interdit.
+
+      La taille du fichier ne doit pas dépasser 1 Mo (1 000 000 octets), et le fichier doit être au format YAML. Le hachage chiffré permet de confirmer l’authenticité du fichier téléchargé.
+
+      Le fichier de configuration est téléchargé et mis en cache. Il sera de nouveau téléchargé à chaque modification de l'URL ou du hachage.
+
+      Si vous définissez cette règle, les utilisateurs ne peuvent pas modifier la configuration. Si vous ne la définissez pas, les utilisateurs peuvent continuer à utiliser la configuration actuelle du conteneur Crostini par défaut, si aucune règle ne l'interdit.</translation>
 <translation id="713121532817834879">Cette règle se rapporte à une URL, qui renvoie vers un fichier XML au même format que celui de la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer. Les instructions sont ainsi chargées à partir d'un fichier XML, sans être partagées avec Internet Explorer.
 
       Les règles de ce fichier XML s'appliquent de la même manière que pour la règle <ph name="GREYLIST_POLICY_NAME" />. C'est-à-dire que ces règles empêchent <ph name="PRODUCT_NAME" /> d'ouvrir le navigateur secondaire et empêchent le navigateur secondaire d'ouvrir <ph name="PRODUCT_NAME" />.
@@ -3859,8 +3991,16 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Si cette règle est définie sur "Retarder les importations et les téléchargements", <ph name="PRODUCT_NAME" /> se comporte conformément aux règles indiquées sous "Retarder les téléchargements" et "Retarder les importations".
       </translation>
 <translation id="7372831798009983116">Activer la fonctionnalité d'accessibilité de clic automatique</translation>
+<translation id="7373200034079131670">Redémarrer en cas de déconnexion de l'utilisateur si Android ou une VM sont lancés.</translation>
 <translation id="737655323154569539">Limite le format de la page d'impression. Si la règle n'est pas définie ou qu'elle est vide, on considère qu'il n'y a aucune restriction.</translation>
 <translation id="7382191643394429934">Autoriser l'impression à la fois avec et sans images de fond</translation>
+<translation id="7383445181072113521">Détermine le nom d'hôte de l'appareil utilisé pour les requêtes DHCP.
+
+      Si cette règle est définie sur une chaîne non vide, la chaîne servira de nom d'hôte de l'appareil lors de la requête DHCP.
+
+      La chaîne peut contenir les variables <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" /> et <ph name="MACHINE_NAME_PLACEHOLDER" /> qui seront remplacées par des valeurs sur l'appareil avant l'utilisation comme nom d'hôte. Le résultat de cette substitution doit former un nom d'hôte valide (conformément à la RFC 1035, section 3.1).
+
+      Si cette règle n'est pas définie ou si la valeur après substitution ne constitue pas un nom d'hôte valide, aucun nom d'hôte ne sera défini dans la requête DHCP. </translation>
 <translation id="7389872682701720082">Si vous activez ce paramètre, les plug-ins non obsolètes sont toujours exécutés.
 
       Si ce paramètre est désactivé ou n'est pas configuré, les utilisateurs doivent donner leur permission pour l'exécution des plug-ins qui nécessitent une autorisation. Ceux-ci présentent un risque de sécurité.</translation>
@@ -3947,6 +4087,14 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Pour les cookies sur des domaines autres que ceux représentés par les formats spécifiés ici, ou pour tous les cookies si cette règle n'est pas configurée, la valeur par défaut globale est utilisée à partir de la règle <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
 
           Notez que les formats que vous répertoriez ici sont traités comme des domaines et non des URL. Vous ne devez donc pas spécifier de schéma ni de port.</translation>
+<translation id="7590188804371204512">Permet de contrôler l'installation d'extensions externes.
+
+      Lorsque ce paramètre est activé, l'installation d'extensions externes est bloquée.
+
+      Lorsque ce paramètre est désactivé ou non défini, l'installation d'extensions externes est permise.
+
+      Le fonctionnement des extensions externes ainsi que leur installation sont décrits sur la page https://developer.chrome.com/apps/external_extensions.
+      </translation>
 <translation id="7593523670408385997">Cette règle permet de définir la taille du cache utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers en cache sur le disque.
 
       Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le cache en fonction de la taille indiquée, que l'utilisateur ait spécifié l'indicateur "--disk-cache-size" ou non. La valeur définie dans cette règle ne constitue pas une limite absolue, il s'agit plutôt d'une suggestion pour le système de mise en cache. En effet, toute valeur inférieure à quelques mégaoctets est trop faible et est arrondie pour atteindre un minimum acceptable.
@@ -4010,6 +4158,13 @@ Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT
           Reportez-vous également aux règles "CookiesAllowedForUrls" et "CookiesBlockedForUrls". Remarque : les formats d'URL ne doivent pas être en conflit entre ces trois règles. En outre, il n'est pas spécifié quelle règle prévaut.
 
           Si la règle "RestoreOnStartup" est définie pour restaurer les URL des sessions précédentes, la règle CookiesSessionOnlyForUrls n'est pas appliquée et les cookies issus de ces sites sont alors stockés définitivement.</translation>
+<translation id="7677220829878081413">
+      Si la règle est définie sur "ArcSession", elle contraint l'appareil à redémarrer lorsqu'un utilisateur se déconnecte si Android est en cours d'exécution.
+      Si la règle est définie sur "ArcSessionOrVMStart", elle contraint l'appareil à redémarrer lorsqu'un utilisateur se déconnecte si Android ou une VM sont en cours d'exécution.
+      Si elle est définie sur "Always", elle imposera un redémarrage de l'appareil à chaque déconnexion d'utilisateur.
+      Si aucun paramètre n'est défini, la règle est sans effet, et aucun redémarrage n'est imposé en cas de déconnexion d'utilisateur. Il en va de même lorsqu'elle est définie sur "Never".
+      Cette règle n'a d'incidence que sur les utilisateurs non affiliés.
+      </translation>
 <translation id="7683777542468165012">Actualisation dynamique des stratégies</translation>
 <translation id="7687943045976362719">Si cette règle est configurée, les types de contenus spécifiés sont traités par <ph name="PRODUCT_FRAME_NAME" />.
 
@@ -4120,6 +4275,7 @@ au maximum si un utilisateur se sert de l'appareil.
 
           Si cette règle est désactivée, les utilisateurs ne peuvent pas ajouter de comptes Kerberos. Ces derniers ne peuvent être ajoutés qu'avec la règle KerberosAccounts. C'est un moyen efficace de verrouiller des comptes.</translation>
 <translation id="7895553628261067384">Accès à distance</translation>
+<translation id="7902040092815978832">Afficher le clavier numérique pour la saisie du mot de passe</translation>
 <translation id="7902255855035461275">Les modèles de cette liste sont rapprochés de la source de sécurité
       de l'URL à l'origine de la demande. En cas de correspondance, l'accès
       aux appareils d'enregistrement vidéo est autorisé sans confirmation requise.
@@ -4201,6 +4357,11 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'utilisateur. Ce dernier peut toutefois choisir de le masquer dans la barre des favoris. Le nom du dossier par défaut est "Favoris gérés", mais il peut être personnalisé en ajoutant à la liste des favoris un dictionnaire contenant la clé "<ph name="TOPLEVEL_NAME" />" avec le nom de dossier souhaité comme valeur.
 
       Les favoris gérés ne sont pas synchronisés avec le compte de l'utilisateur et ne peuvent pas être modifiés par des extensions.</translation>
+<translation id="8077245272412229388">Permet d'ajouter des comptes Kerberos préremplis. Si les identifiants Kerberos et de connexion sont les mêmes, un compte peut être configuré pour réutiliser les identifiants de connexion en définissant respectivement "<ph name="LOGIN_EMAIL_PLACEHOLDER" />" et "<ph name="PASSWORD_PLACEHOLDER" />" comme compte principal et mot de passe, afin que le ticket Kerberos puisse être récupéré automatiquement, sauf si l’authentification à deux facteurs est configurée. Les utilisateurs ne peuvent pas modifier de comptes avec cette règle.
+
+          Si cette règle est activée, la liste des comptes qu'elle définit est ajoutée aux paramètres de comptes Kerberos.
+
+          Si cette règle est désactivée ou si elle n'est pas définie, aucun compte n'est ajouté aux paramètres de comptes Kerberos, et tous ceux déjà ajoutés avec cette règle sont supprimés. Les utilisateurs peuvent toujours ajouter des comptes manuellement si la règle KerberosAddAccountsAllowed est activée.</translation>
 <translation id="8078366200175825572">Permet de définir une liste de formats d'URL spécifiant les sites non autorisés à utiliser des cookies.
 
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultCookiesSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.

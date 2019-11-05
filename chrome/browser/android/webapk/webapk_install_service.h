@@ -96,6 +96,7 @@ class WebApkInstallService : public KeyedService {
   void OnFinishedInstall(std::unique_ptr<LifetimeObserver> observer,
                          const ShortcutInfo& shortcut_info,
                          const SkBitmap& primary_icon,
+                         bool is_priamry_icon_maskable,
                          WebApkInstallResult result,
                          bool relax_updates,
                          const std::string& webapk_package_name);
@@ -103,11 +104,13 @@ class WebApkInstallService : public KeyedService {
   // Shows a notification that an install is in progress.
   static void ShowInstallInProgressNotification(
       const ShortcutInfo& shortcut_info,
-      const SkBitmap& primary_icon);
+      const SkBitmap& primary_icon,
+      bool is_primary_icon_maskable);
 
   // Shows a notification that an install is completed.
   static void ShowInstalledNotification(const ShortcutInfo& shortcut_info,
                                         const SkBitmap& primary_icon,
+                                        bool is_primary_icon_maskable,
                                         const std::string& webapk_package_name);
 
   content::BrowserContext* browser_context_;

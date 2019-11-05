@@ -66,6 +66,7 @@ class PreviewsOptimizationGuideImpl
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       const base::FilePath& profile_path,
       PrefService* pref_service,
+      bool is_off_the_record_profile,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
       optimization_guide::TopHostProvider* top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -211,6 +212,9 @@ class PreviewsOptimizationGuideImpl
   // The current estimate of the effective connection type.
   net::EffectiveConnectionType current_effective_connection_type_ =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+
+  // True if |this| was constructed for an off-the-record profile.
+  const bool is_off_the_record_profile_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<PreviewsOptimizationGuideImpl> ui_weak_ptr_factory_{

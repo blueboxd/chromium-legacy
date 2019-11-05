@@ -26,6 +26,13 @@
 
 namespace {
 
+// Returns true if the Data Reduction Proxy is forced to be enabled from the
+// command line.
+bool ShouldForceEnableDataReductionProxy() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxy);
+}
+
 // Key of the UMA DataReductionProxy.StartupState histogram.
 const char kUMAProxyStartupStateHistogram[] =
     "DataReductionProxy.StartupState";
@@ -48,11 +55,15 @@ void RecordDaysSinceEnabledMetric(int days_since_enabled) {
 
 namespace data_reduction_proxy {
 
-DataReductionProxySettings::DataReductionProxySettings()
+DataReductionProxySettings::DataReductionProxySettings(
+    bool is_off_the_record_profile)
     : unreachable_(false),
       prefs_(nullptr),
       config_(nullptr),
-      clock_(base::DefaultClock::GetInstance()) {}
+      clock_(base::DefaultClock::GetInstance()),
+      is_off_the_record_profile_(is_off_the_record_profile) {
+  DCHECK(!is_off_the_record_profile_);
+}
 
 DataReductionProxySettings::~DataReductionProxySettings() = default;
 
@@ -75,7 +86,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
                           base::Unretained(this)));
 
 #if defined(OS_ANDROID)
-  if (IsDataSaverEnabledByUser(prefs_)) {
+  if (IsDataSaverEnabledByUser(is_off_the_record_profile_, prefs_)) {
     data_reduction_proxy_service_->compression_stats()
         ->SetDataUsageReportingEnabled(true);
   }
@@ -99,8 +110,12 @@ void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
 }
 
 // static
-bool DataReductionProxySettings::IsDataSaverEnabledByUser(PrefService* prefs) {
-  if (params::ShouldForceEnableDataReductionProxy())
+bool DataReductionProxySettings::IsDataSaverEnabledByUser(
+    bool is_off_the_record_profile,
+    PrefService* prefs) {
+  if (is_off_the_record_profile)
+    return false;
+  if (ShouldForceEnableDataReductionProxy())
     return true;
 
 #if defined(OS_ANDROID)
@@ -131,7 +146,8 @@ bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
   if (!params::IsEnabledWithNetworkService()) {
     return false;
   }
-  return IsDataSaverEnabledByUser(GetOriginalProfilePrefs());
+  return IsDataSaverEnabledByUser(is_off_the_record_profile_,
+                                  GetOriginalProfilePrefs());
 }
 
 bool DataReductionProxySettings::CanUseDataReductionProxy(
@@ -231,7 +247,7 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
   if (!prefs)
     return;
 
-  bool enabled = IsDataSaverEnabledByUser(prefs);
+  bool enabled = IsDataSaverEnabledByUser(is_off_the_record_profile_, prefs);
 
   if (enabled && at_startup) {
     // Record the number of days since data reduction proxy has been enabled.

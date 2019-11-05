@@ -47,8 +47,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
   void UpdateThumbAndTrackGeometry();
 
  private:
-  gfx::Rect ScrollbarLayerRectToContentRect(const gfx::Rect& layer_rect) const;
-  gfx::Rect OriginThumbRect() const;
+  gfx::Size LayerSizeToContentSize(const gfx::Size& layer_size) const;
 
   template <typename T>
   bool UpdateProperty(T value, T* prop) {
@@ -59,9 +58,10 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
     return true;
   }
 
-  UIResourceBitmap RasterizeScrollbarPart(const gfx::Rect& layer_rect,
-                                          const gfx::Rect& content_rect,
-                                          ScrollbarPart part);
+  UIResourceBitmap RasterizeScrollbarPart(
+      const gfx::Size& size,
+      const gfx::Size& requested_content_size,
+      ScrollbarPart part);
 
   scoped_refptr<Scrollbar> scrollbar_;
   ElementId scroll_element_id_;
@@ -71,9 +71,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
 
   // Snapshot of properties taken in UpdateThumbAndTrackGeometry and used in
   // PushPropertiesTo.
-  int thumb_thickness_;
-  int thumb_length_;
-  gfx::Point location_;
+  gfx::Size thumb_size_;
   gfx::Rect track_rect_;
   gfx::Rect back_button_rect_;
   gfx::Rect forward_button_rect_;

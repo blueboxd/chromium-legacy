@@ -1,4 +1,5 @@
 include_rules = [
+  "+chromeos/constants",
   "+components/invalidation",
   "+components/os_crypt",
   "+components/pref_registry",

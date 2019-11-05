@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Tanúsítvány aláírója</translation>
 <translation id="1145292499998999162">Letiltott beépülő modul</translation>
 <translation id="1145532888383813076">Kereshet az eszközén, az alkalmazások között és az interneten.</translation>
+<translation id="1146678959555564648">Virtuális valóság – belépés</translation>
 <translation id="114721135501989771">Google-funkciók a Chrome-ban</translation>
 <translation id="1149401351239820326">Lejárat hónapja</translation>
 <translation id="1150565364351027703">Napszemüveg</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Adattárolás a Google Drive-fiókban</translation>
 <translation id="1288037062697528143">Az Éjszakai fény automatikusan bekapcsol naplementekor.</translation>
 <translation id="1288300545283011870">Beszéd tulajdonságai</translation>
-<translation id="1289513325360489062">Ezek a bővítmények nem férnek hozzá a jelenlegi webhely adataihoz</translation>
 <translation id="1293264513303784526">C típusú USB-vel kompatibilis eszköz (bal oldali port)</translation>
 <translation id="1293556467332435079">Fájlok</translation>
 <translation id="1296911687402551044">Kiválasztott lap rögzítése</translation>
@@ -813,7 +813,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2165421703844373933">Az „Ok Google” parancsszó kimondásával hozzáférhet Segédjéhez. Ha a „Be (javasolt)” beállítást választja ki, akkor az akkumulátor üzemidejének növelése érdekében Segédje csak akkor reagál, amikor az eszköz áramforrásra csatlakozik.</translation>
 <translation id="2166369534954157698">Árvíztűrő tükörfúrógép</translation>
 <translation id="2169062631698640254">Bejelentkezés mindenképp</translation>
-<translation id="2170088579611075216">Engedélyezés, és belépés VR-módba</translation>
 <translation id="2172784515318616985">Tovább</translation>
 <translation id="2173302385160625112">Ellenőrizze az internetkapcsolatot</translation>
 <translation id="2173801458090845390">Igénylésazonosító hozzáadása ehhez az eszközhöz</translation>
@@ -1006,7 +1005,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2439545803278355377">Írja be az új PIN-kódot. A PIN-kódnak legalább négy karakterből kell állnia, és tartalmazhat betűket, számokat és egyéb karaktereket is.</translation>
 <translation id="2440604414813129000">F&amp;orrás megtekintése</translation>
 <translation id="2442916515643169563">Szövegárnyék</translation>
-<translation id="2444119669991608829">Az oldal nem <ph name="LANGUAGE" /> nyelvű?</translation>
 <translation id="2445081178310039857">A bővítmény gyökérkönyvtárát kötelező megadni.</translation>
 <translation id="2445484935443597917">Új profil létrehozása</translation>
 <translation id="2446585455334014596">A(z) <ph name="APP_NAME" /> ellenőrizni szeretné az Ön személyazonosságát</translation>
@@ -1427,7 +1425,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3020183492814296499">Billentyűparancsok</translation>
 <translation id="3020990233660977256">Sorozatszám: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Pillangó</translation>
-<translation id="3021426244864538700">Ezek a bővítmények hozzáférnek a jelenlegi webhely adataihoz</translation>
 <translation id="3021678814754966447">&amp;Keret forrásának megtekintése</translation>
 <translation id="3022978424994383087">Nem értettem.</translation>
 <translation id="3023464535986383522">Felolvasás</translation>
@@ -2217,7 +2214,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4159681666905192102">Ez a fiók gyerekeknek készült; <ph name="CUSTODIAN_EMAIL" /> és <ph name="SECOND_CUSTODIAN_EMAIL" /> felügyelete mellett.</translation>
 <translation id="4163560723127662357">Ismeretlen billentyűzet</translation>
 <translation id="4168015872538332605">A(z) <ph name="PRIMARY_EMAIL" /> fiókhoz tartozó egyes beállítások meg vannak osztva Önnel. E beállítások csak a többfiókos bejelentkezés használata során érintik az Ön fiókját.</translation>
-<translation id="4169535189173047238">Tiltás</translation>
 <translation id="4170314459383239649">Törlés kilépéskor</translation>
 <translation id="4172051516777682613">Mindig mutassa</translation>
 <translation id="4175137578744761569">Világoslila-fehér</translation>
@@ -2303,6 +2299,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4316850752623536204">Fejlesztő webhelye</translation>
 <translation id="4320177379694898372">Nincs internetkapcsolat</translation>
 <translation id="4321442524549817090">&amp;URL megjelenítése</translation>
+<translation id="4322394346347055525">Egyéb lapok bezárása</translation>
 <translation id="4324577459193912240">A fájl hiányos</translation>
 <translation id="4325237902968425115"><ph name="LINUX_APP_NAME" /> eltávolítása…</translation>
 <translation id="4330191372652740264">Jeges víz</translation>
@@ -2756,10 +2753,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5029568752722684782">Példány törlése</translation>
 <translation id="5030338702439866405">Kiállította:</translation>
 <translation id="5033266061063942743">Geometriai alakzatok</translation>
-<translation id="5033865233969348410">Amíg VR-módban van, a webhely megtudhat Önről bizonyos információkat:
-  –  fizikai jellemzőit, például a magasságát.
-
-A VR-mód aktiválása előtt győződjön meg a webhely megbízhatóságáról.</translation>
 <translation id="503498442187459473">A(z) <ph name="HOST" /> webhely használni szeretné a kamerát és a mikrofont</translation>
 <translation id="5036662165765606524">Ne engedélyezze a webhelyeknek több fájl automatikus letöltését</translation>
 <translation id="5037676449506322593">Összes kiválasztása</translation>
@@ -3034,7 +3027,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5449588825071916739">Összes lap hozzáadása a könyvjelzőkhöz</translation>
 <translation id="5449716055534515760">A&amp;blak bezárása</translation>
 <translation id="5454166040603940656"><ph name="PROVIDER" /> szolgáltatóval</translation>
-<translation id="545426320101607695">Fordítás célnyelve</translation>
 <translation id="5457113250005438886">Érvénytelen</translation>
 <translation id="5457459357461771897">Fotók, zeneszámok és más médiatartalmak olvasása és törlése a számítógépről</translation>
 <translation id="5457599981699367932">Böngészés vendégként</translation>
@@ -3094,11 +3086,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5532223876348815659">Általános</translation>
 <translation id="5533001281916885985">A(z) <ph name="SITE_NAME" /> a következőket szeretné tenni:</translation>
 <translation id="5534304873398226603">Kép vagy videó elvetése</translation>
-<translation id="5534334044554683961">Amíg VR-módban van, a webhely megtudhat Önről bizonyos információkat:
-  –   fizikai jellemzőit, például a magasságát;
-  –   a szobája elrendezését.
-
-A VR-mód aktiválása előtt győződjön meg a webhely megbízhatóságáról.</translation>
 <translation id="5535941515421698170">Továbbá a meglévő adatok eltávolítása az eszközről</translation>
 <translation id="5539221284352502426">A szerver elutasította a megadott jelszót. Lehetséges okok: Túl rövid a jelszó. A jelszónak tartalmaznia kell számokat és szimbólumokat. A jelszó nem egyezhet meg korábbi jelszavakkal.</translation>
 <translation id="5541694225089836610">A rendszergazda letiltotta a műveletet.</translation>
@@ -3997,6 +3984,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6850286078059909152">Szöveg színe</translation>
 <translation id="6851497530878285708">Alkalmazás engedélyezve</translation>
 <translation id="6853388645642883916">A frissítő alvó módba került</translation>
+<translation id="68541483639528434">A többi lap bezárása</translation>
 <translation id="6856623341093082836">Az érintőképernyő pontosságának beállítása és módosítása</translation>
 <translation id="6857699260879628349">Konfigurációs információk kérése</translation>
 <translation id="6860097299815761905">Proxy-beállítások...</translation>
@@ -4109,7 +4097,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7019805045859631636">Gyors</translation>
 <translation id="7022562585984256452">Beállítottuk kezdőoldalát.</translation>
 <translation id="7025190659207909717">Mobil adatátviteli szolgáltatás kezelése</translation>
-<translation id="7027891519253193555">Az oldal nem <ph name="LANGUAGE" /> nyelvű?</translation>
 <translation id="7029809446516969842">Jelszavak</translation>
 <translation id="703001695939087067">Ablakáttekintési módba lépett. A navigáláshoz válassza ki az egyik lapot.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – soros port csatlakoztatva</translation>
@@ -4554,7 +4541,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7684718995427157417">Alkalmazások létrehozásához és teszteléséhez engedélyezze az Android Debug Bridge (ADB) eszközt. Ne feledje, hogy ez a művelet engedélyezi a Google által nem jóváhagyott Android-alkalmazások telepítését, és az eszköz letiltásához szükség van az eszköz gyári beállításainak visszaállítására.</translation>
 <translation id="7685049629764448582">JavaScript memória</translation>
 <translation id="7685087414635069102">PIN-kód megadása kötelező</translation>
-<translation id="7685301384041462804">A VR-mód aktiválása előtt győződjön meg a webhely megbízhatóságáról.</translation>
 <translation id="768549422429443215">Hozzáadhat nyelveket és átrendezheti a listát.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Új jelszó megerősítése</translation>
@@ -4953,11 +4939,9 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Letöltés folyamatban}other{Letöltések folyamatban}}</translation>
 <translation id="8213449224684199188">Fotó mód bekapcsolva</translation>
 <translation id="8213577208796878755">Egy további elérhető eszköz.</translation>
-<translation id="8213996900880218548">Ezek a bővítmények hozzá szeretnének férni a jelenlegi webhely adataihoz</translation>
 <translation id="8214489666383623925">Fájl megnyitása...</translation>
 <translation id="8214962590150211830">Személy eltávolítása</translation>
 <translation id="8217399928341212914">Továbbra is tiltsa le több fájl automatikus letöltését</translation>
-<translation id="822519928942492333">Fordítani kívánt oldalnyelv</translation>
 <translation id="8225265270453771718">Alkalmazásablak megosztása</translation>
 <translation id="8225753906568652947">Ajánlatok beváltása</translation>
 <translation id="8226222018808695353">Tiltott</translation>
@@ -5529,7 +5513,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="9026731007018893674">letöltés</translation>
 <translation id="9026852570893462412">Ez a folyamat néhány percet is igénybe vehet. A virtuális gép letöltése folyamatban van.</translation>
 <translation id="9027459031423301635">Link megnyitása új &amp;lapon</translation>
-<translation id="9029323097866369874">Engedélyezi a(z) <ph name="DOMAIN" /> számára a VR-mód aktiválását?</translation>
 <translation id="9030515284705930323">Szervezete még nem engedélyezte a Google Play Áruház szolgáltatást a fiókjánál. További tájékoztatásért forduljon rendszergazdájához.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Beillesztés</translation>
@@ -5573,7 +5556,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="9094038138851891550">Érvénytelen felhasználónév</translation>
 <translation id="9094982973264386462">Eltávolítás</translation>
 <translation id="9095253524804455615">Eltávolítás</translation>
-<translation id="9095388113577226029">További nyelvek…</translation>
 <translation id="9100610230175265781">Összetett jelszó szükséges</translation>
 <translation id="9100765901046053179">Speciális beállítások</translation>
 <translation id="9101691533782776290">Alkalmazás indítása</translation>

@@ -2178,9 +2178,6 @@ extern const char kReleaseNotesDescription[];
 extern const char kReleaseNotesNotificationName[];
 extern const char kReleaseNotesNotificationDescription[];
 
-extern const char kShelfDimmingName[];
-extern const char kShelfDimmingDescription[];
-
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];

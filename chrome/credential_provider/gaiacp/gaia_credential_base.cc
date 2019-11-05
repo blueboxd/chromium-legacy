@@ -1909,7 +1909,8 @@ HRESULT CGaiaCredentialBase::ReportResult(
     // handle. Token handle is saved as empty here, so that if for any reason
     // forked process fails to save association, it will enforce re-auth due to
     // invalid token handle.
-    HRESULT hr = RegisterAssociation(OLE2CW(user_sid_), gaia_id, email, L"");
+    base::string16 sid = OLE2CW(user_sid_);
+    HRESULT hr = RegisterAssociation(sid, gaia_id, email, L"");
     if (FAILED(hr))
       return hr;
 
@@ -2010,6 +2011,27 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
     if (FAILED(hr)) {
       LOGFN(ERROR) << "ValidateExistingUser hr=" << putHR(hr);
       return hr;
+    }
+
+    // Update the name on the OS account if authenticated user has a different
+    // name.
+    base::string16 os_account_fullname;
+    hr = OSUserManager::Get()->GetUserFullname(found_domain, found_username,
+                                               &os_account_fullname);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "GetUserFullname hr=" << putHR(hr);
+      return hr;
+    }
+
+    base::string16 profile_fullname = GetDictString(result, kKeyFullname);
+    if (SUCCEEDED(hr) &&
+        os_account_fullname.compare(profile_fullname.c_str()) != 0) {
+      hr = OSUserManager::Get()->SetUserFullname(found_domain, found_username,
+                                                 profile_fullname.c_str());
+      if (FAILED(hr)) {
+        LOGFN(ERROR) << "SetUserFullname hr=" << putHR(hr);
+        return hr;
+      }
     }
 
     *username = ::SysAllocString(found_username);
@@ -2117,6 +2139,10 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
 
     base::IgnoreResult(zero_dict_on_exit.Release());
     authentication_results_ = std::move(properties);
+    // Update the info whether the user is an AD joined user or local user.
+    base::string16 sid = OLE2CW(user_sid_);
+    authentication_results_->SetBoolKey(
+        kKeyIsAdJoinedUser, OSUserManager::Get()->IsUserDomainJoined(sid));
   }
 
   base::string16 local_password =

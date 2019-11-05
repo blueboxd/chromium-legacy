@@ -795,10 +795,12 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kVisitedtext:
       return 0xFF551A8B;
     case CSSValueID::kWindow:
+    case CSSValueID::kCanvas:
       return color_scheme == WebColorScheme::kDark ? 0xFF000000 : 0xFFFFFFFF;
     case CSSValueID::kWindowframe:
       return 0xFFCCCCCC;
     case CSSValueID::kWindowtext:
+    case CSSValueID::kCanvastext:
       return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kInternalActiveListBoxSelection:
       return ActiveListBoxSelectionBackgroundColor(color_scheme);

@@ -49,13 +49,7 @@ class CORE_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
   IntRect TrackRect(const Scrollbar&) override;
   int MinimumThumbLength(const Scrollbar&) override;
 
-  void PaintTrackBackground(GraphicsContext&,
-                            const Scrollbar&,
-                            const IntRect&) override;
-  void PaintTrackPiece(GraphicsContext&,
-                       const Scrollbar&,
-                       const IntRect&,
-                       ScrollbarPart) override;
+  void PaintTrack(GraphicsContext&, const Scrollbar&, const IntRect&) override;
   void PaintButton(GraphicsContext&,
                    const Scrollbar&,
                    const IntRect&,

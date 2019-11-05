@@ -280,19 +280,34 @@ public class VrBrowserTransitionTest {
     public void testWebXrReEntryFromVrBrowser() {
         reEntryFromVrBrowserImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
                                          "test_webxr_reentry_from_vr_browser"),
-                mWebXrVrTestFramework);
+                mWebXrVrTestFramework, false);
     }
 
-    private void reEntryFromVrBrowserImpl(String url, WebXrVrTestFramework framework) {
+    @Test
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
+    @MediumTest
+    public void testWebXrReEntryFromVrBrowserViaEndSession() {
+        reEntryFromVrBrowserImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
+                                         "test_webxr_reentry_from_vr_browser"),
+                mWebXrVrTestFramework, true);
+    }
+
+    private void reEntryFromVrBrowserImpl(
+            String url, WebXrVrTestFramework framework, boolean useEndSession) {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
 
         framework.executeStepAndWait("stepVerifyFirstPresent()");
-        // The bug did not reproduce with vrDisplay.exitPresent(), so it might not reproduce with
-        // session.end(). Instead, use the controller to exit.
-        NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
+        if (useEndSession) {
+            // Exit presentation through JavaScript.
+            framework.endSession();
+        } else {
+            // The bug did not reproduce with vrDisplay.exitPresent(), so it might not reproduce
+            // with session.end(). Instead, use the controller to exit.
+            NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
+        }
         framework.executeStepAndWait("stepVerifyMagicWindow()");
 
         framework.enterSessionWithUserGestureOrFail();

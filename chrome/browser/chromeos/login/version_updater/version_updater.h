@@ -95,10 +95,6 @@ class VersionUpdater : public UpdateEngineClient::Observer,
     virtual void DelayErrorMessage() = 0;
   };
 
-  // Callback type for |GetEolStatus|.
-  using EolStatusCallback =
-      base::OnceCallback<void(update_engine::EndOfLifeStatus status)>;
-
   explicit VersionUpdater(VersionUpdater::Delegate* delegate);
   ~VersionUpdater() override;
 
@@ -116,9 +112,6 @@ class VersionUpdater : public UpdateEngineClient::Observer,
 
   const UpdateInfo& update_info() { return update_info_; }
 
-  // Has the device already reached its End of Life (Auto Update Expiration)?
-  void GetEolStatus(EolStatusCallback callback);
-
   void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
   }
@@ -132,10 +125,6 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   void UpdateStatusChangedForTesting(const update_engine::StatusResult& status);
 
  private:
-  // Callback from UpdateEngineClient::GetEolStatus().
-  void OnGetEolStatus(EolStatusCallback callback,
-                      update_engine::EndOfLifeStatus status);
-
   void RequestUpdateCheck();
 
   // UpdateEngineClient::Observer implementation:

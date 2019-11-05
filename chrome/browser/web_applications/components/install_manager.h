@@ -51,9 +51,18 @@ class InstallManager {
       ForInstallableSite for_installable_site,
       WebAppInstallationAcceptanceCallback acceptance_callback)>;
 
-  using WebAppInstallabilityCheckCallback =
-      base::OnceCallback<void(std::unique_ptr<content::WebContents>,
-                              bool is_installable)>;
+  enum class InstallableCheckResult {
+    kNotInstallable,
+    kInstallable,
+    kAlreadyInstalled,
+  };
+  // Callback with the result of an installability check.
+  // |web_contents| owns the WebContents that was used to check installability.
+  // |app_id| will be present iff already installed.
+  using WebAppInstallabilityCheckCallback = base::OnceCallback<void(
+      std::unique_ptr<content::WebContents> web_contents,
+      InstallableCheckResult result,
+      base::Optional<AppId> app_id)>;
 
   // Returns true if a web app can be installed for a given |web_contents|.
   virtual bool CanInstallWebApp(content::WebContents* web_contents) = 0;
@@ -130,13 +139,12 @@ class InstallManager {
                      AppShortcutManager* shortcut_manager,
                      InstallFinalizer* finalizer);
 
-  // Loads |web_app_url| in a new WebContents and determines if it is
-  // installable.
-  // Calls back with a unique_ptr owning the WebContents used to check
-  // installability, and whether the app is installable.
+  // Loads |web_app_url| in a new WebContents and determines whether it is
+  // installable. Calls |callback| with results.
   virtual void LoadWebAppAndCheckInstallability(
       const GURL& web_app_url,
-      WebAppInstallabilityCheckCallback) = 0;
+      WebappInstallSource install_source,
+      WebAppInstallabilityCheckCallback callback) = 0;
 
  protected:
   Profile* profile() { return profile_; }

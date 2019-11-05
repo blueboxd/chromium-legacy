@@ -116,6 +116,7 @@ class MockHostResolverBase
   void OnShutdown() override;
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;
@@ -159,6 +160,9 @@ class MockHostResolverBase
 
   // Returns the priority of the request with the given id.
   RequestPriority request_priority(size_t id);
+
+  // Returns NetworkIsolationKey of the request with the given id.
+  const NetworkIsolationKey& network_isolation_key(size_t id);
 
   // Like ResolveNow, but doesn't take an ID. DCHECKs if there's more than one
   // pending request.
@@ -451,6 +455,7 @@ class HangingHostResolver : public HostResolver {
   void OnShutdown() override;
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;

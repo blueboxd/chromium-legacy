@@ -119,14 +119,6 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="ContentSettings.MixedScript.RanMixedScript"
-    type="ETLD_PLUS_ONE">
-  <owner>estark@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that when mixed script actually ran.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="ContentSettings.Plugins.AddedAllowException"
     type="ETLD_PLUS_ONE">
   <owner>tommycli@chromium.org</owner>

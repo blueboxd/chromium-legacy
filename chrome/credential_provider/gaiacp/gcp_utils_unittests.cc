@@ -448,8 +448,10 @@ TEST(Enroll, EnrollToGoogleMdmIfNeeded_NotEnabled) {
 // 6. Domain.
 // 7. Serial Number.
 // 8. Machine Guid.
+// 9. Is ADJoined User.
 class GcpEnrollmentArgsTest
     : public ::testing::TestWithParam<std::tuple<const char*,
+                                                 const char*,
                                                  const char*,
                                                  const char*,
                                                  const char*,
@@ -479,12 +481,15 @@ TEST_P(GcpEnrollmentArgsTest, EnrollToGoogleMdmIfNeeded_MissingArgs) {
   const char* machine_guid = std::get<7>(GetParam());
   base::string16 machine_guid16 =
       base::UTF8ToUTF16(base::StringPrintf("%s", machine_guid));
+  const char* is_user_ad_joined = std::get<8>(GetParam());
+  FakeOSUserManager fake_os_user_manager;
 
   bool should_succeed = (email && email[0]) && (id_token && id_token[0]) &&
                         (access_token && access_token[0]) && (sid && sid[0]) &&
                         (username && username[0]) && (domain && domain[0]) &&
                         (machine_guid && machine_guid[0]) &&
-                        (serial_number && serial_number[0]);
+                        (serial_number && serial_number[0]) &&
+                        (is_user_ad_joined && is_user_ad_joined[0]);
 
   base::Value properties(base::Value::Type::DICTIONARY);
   if (email)
@@ -499,9 +504,13 @@ TEST_P(GcpEnrollmentArgsTest, EnrollToGoogleMdmIfNeeded_MissingArgs) {
     properties.SetStringKey(kKeyUsername, username);
   if (domain)
     properties.SetStringKey(kKeyDomain, domain);
+  if (sid)
+    properties.SetStringKey(kKeySID, sid);
+  if (is_user_ad_joined)
+    properties.SetStringKey(kKeyIsAdJoinedUser, is_user_ad_joined);
 
   SetMachineGuidForTesting(machine_guid16);
-  GoogleSerialNumberForTesting g_serial_number(serial_number16);
+  GoogleRegistrationDataForTesting g_registration_data(serial_number16);
 
   // EnrollToGoogleMdmIfNeeded() should fail if any field is missing.
   if (should_succeed) {
@@ -521,7 +530,8 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Values("username", "", nullptr),
                        ::testing::Values("domain", "", nullptr),
                        ::testing::Values("serial_number"),
-                       ::testing::Values("machine_guid")));
+                       ::testing::Values("machine_guid"),
+                       ::testing::Values("0", "1")));
 
 INSTANTIATE_TEST_SUITE_P(
     GcpRegistrationHardwareIds,
@@ -533,6 +543,7 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Values("username"),
                        ::testing::Values("domain"),
                        ::testing::Values("serial_number", ""),
-                       ::testing::Values("machine_guid", "")));
+                       ::testing::Values("machine_guid", ""),
+                       ::testing::Values("1")));
 
 }  // namespace credential_provider

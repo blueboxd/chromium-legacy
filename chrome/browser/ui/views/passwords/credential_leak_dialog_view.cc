@@ -24,7 +24,7 @@ using views::BoxLayout;
 namespace {
 
 // Fixed height of the illustration shown on the top of the dialog.
-constexpr int kIllustrationHeight = 120;
+constexpr int kIllustrationHeight = 148;
 
 // Fixed background color of the illustration shown on the top of the dialog in
 // normal mode.

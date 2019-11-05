@@ -129,6 +129,9 @@ class ToolbarButton : public views::LabelButton,
   // Function to show the dropdown menu.
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type);
 
+  // Sets |layout_insets_|, see comment there.
+  void OverrideLayoutInsets(const gfx::Insets& insets);
+
   // Sets |layout_inset_delta_|, see comment there.
   void SetLayoutInsetDelta(const gfx::Insets& insets);
 
@@ -224,6 +227,12 @@ class ToolbarButton : public views::LabelButton,
 
   // Menu runner to display drop down menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;
+
+  // Layout insets to use. This is used when the ToolbarButton is not actually
+  // hosted inside the toolbar. If not supplied,
+  // |GetLayoutInsets(TOOLBAR_BUTTON)| is used instead which is not appropriate
+  // outside the toolbar.
+  base::Optional<gfx::Insets> layout_insets_;
 
   // Delta from regular toolbar-button insets. This is necessary for buttons
   // that use smaller or larger icons than regular ToolbarButton instances.

@@ -26,6 +26,7 @@ void MappedHostResolver::OnShutdown() {
 std::unique_ptr<HostResolver::ResolveHostRequest>
 MappedHostResolver::CreateRequest(
     const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   HostPortPair rewritten = host;
@@ -34,7 +35,8 @@ MappedHostResolver::CreateRequest(
   if (rewritten.host() == "~NOTFOUND")
     return CreateFailingRequest(ERR_NAME_NOT_RESOLVED);
 
-  return impl_->CreateRequest(rewritten, source_net_log, optional_parameters);
+  return impl_->CreateRequest(rewritten, network_isolation_key, source_net_log,
+                              optional_parameters);
 }
 
 HostCache* MappedHostResolver::GetHostCache() {

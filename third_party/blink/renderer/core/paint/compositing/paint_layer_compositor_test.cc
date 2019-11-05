@@ -86,28 +86,6 @@ TEST_F(PaintLayerCompositorTest,
             otherBoxAnimations.front()->CompositorGroup());
 }
 
-TEST_F(PaintLayerCompositorTest, UpdateDoesNotOrphanMainGraphicsLayer) {
-  SetHtmlInnerHTML(R"HTML(
-    <style> * { margin: 0 } </style>
-    <div id='box'></div>
-  )HTML");
-
-  auto* main_graphics_layer = GetDocument()
-                                  .GetLayoutView()
-                                  ->Layer()
-                                  ->GetCompositedLayerMapping()
-                                  ->MainGraphicsLayer();
-  auto* main_graphics_layer_parent = main_graphics_layer->Parent();
-  EXPECT_NE(nullptr, main_graphics_layer_parent);
-
-  // Force CompositedLayerMapping to update the internal layer hierarchy.
-  auto* box = GetDocument().getElementById("box");
-  box->setAttribute(html_names::kStyleAttr, "height: 1000px;");
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(main_graphics_layer_parent, main_graphics_layer->Parent());
-}
-
 TEST_F(PaintLayerCompositorTest, CompositingInputsUpdateStopsContainStrict) {
   SetHtmlInnerHTML(R"HTML(
     <style>

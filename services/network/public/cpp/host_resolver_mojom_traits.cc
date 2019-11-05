@@ -282,6 +282,9 @@ DnsQueryType EnumTraits<DnsQueryType, net::DnsQueryType>::ToMojom(
       return DnsQueryType::PTR;
     case net::DnsQueryType::SRV:
       return DnsQueryType::SRV;
+    case net::DnsQueryType::ESNI:
+      NOTIMPLEMENTED();
+      return DnsQueryType::UNSPECIFIED;
   }
 }
 

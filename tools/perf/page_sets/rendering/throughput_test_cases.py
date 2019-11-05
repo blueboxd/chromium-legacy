@@ -36,3 +36,24 @@ class MainSixtyImplSixty(ThroughputMetricStory):
   URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
          'main-impl-animations-throughput.html#60')
 
+
+class MainFifteenImplZero(ThroughputMetricStory):
+  BASE_NAME = 'main_15fps_impl_0fps'
+  SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'main-animations-throughput.html#15')
+
+
+class MainThirtyImplZero(ThroughputMetricStory):
+  BASE_NAME = 'main_30fps_impl_0fps'
+  SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'main-animations-throughput.html#30')
+
+
+class MainSixtyImplZero(ThroughputMetricStory):
+  BASE_NAME = 'main_60fps_impl_0fps'
+  SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'main-animations-throughput.html#60')
+

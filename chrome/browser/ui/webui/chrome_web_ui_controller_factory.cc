@@ -564,7 +564,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 
   if (url.host_piece() == chrome::kChromeUIArcGraphicsTracingHost)
-    return &NewWebUI<chromeos::ArcGraphicsTracingUI>;
+    return &NewWebUI<chromeos::ArcGraphicsTracingUI<
+        chromeos::ArcGraphicsTracingMode::kFull>>;
+  if (url.host_piece() == chrome::kChromeUIArcOverviewTracingHost)
+    return &NewWebUI<chromeos::ArcGraphicsTracingUI<
+        chromeos::ArcGraphicsTracingMode::kOverview>>;
 
 #if !defined(OFFICIAL_BUILD)
   if (!base::SysInfo::IsRunningOnChromeOS()) {

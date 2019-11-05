@@ -48,7 +48,8 @@ TEST(MappedHostResolverTest, Inclusion) {
   TestCompletionCallback callback;
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("www.google.com", 80),
-                              NetLogWithSource(), base::nullopt);
+                              NetworkIsolationKey(), NetLogWithSource(),
+                              base::nullopt);
   int rv = request->Start(callback.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -61,7 +62,8 @@ TEST(MappedHostResolverTest, Inclusion) {
 
   // Try resolving "www.google.com:80". Should be remapped to "baz.com:80".
   request = resolver->CreateRequest(HostPortPair("www.google.com", 80),
-                                    NetLogWithSource(), base::nullopt);
+                                    NetworkIsolationKey(), NetLogWithSource(),
+                                    base::nullopt);
   rv = request->Start(callback.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -73,7 +75,8 @@ TEST(MappedHostResolverTest, Inclusion) {
   // Try resolving "foo.com:77". This will NOT be remapped, so result
   // is "foo.com:77".
   request = resolver->CreateRequest(HostPortPair("foo.com", 77),
-                                    NetLogWithSource(), base::nullopt);
+                                    NetworkIsolationKey(), NetLogWithSource(),
+                                    base::nullopt);
   rv = request->Start(callback.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -87,7 +90,8 @@ TEST(MappedHostResolverTest, Inclusion) {
 
   // Try resolving "chromium.org:61". Should be remapped to "proxy:99".
   request = resolver->CreateRequest(HostPortPair("chromium.org", 61),
-                                    NetLogWithSource(), base::nullopt);
+                                    NetworkIsolationKey(), NetLogWithSource(),
+                                    base::nullopt);
   rv = request->Start(callback.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -120,7 +124,8 @@ TEST(MappedHostResolverTest, Exclusion) {
   // Try resolving "www.google.com". Should not be remapped due to exclusion).
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("www.google.com", 80),
-                              NetLogWithSource(), base::nullopt);
+                              NetworkIsolationKey(), NetLogWithSource(),
+                              base::nullopt);
   int rv = request->Start(callback.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -131,7 +136,8 @@ TEST(MappedHostResolverTest, Exclusion) {
 
   // Try resolving "chrome.com:80". Should be remapped to "baz:80".
   request = resolver->CreateRequest(HostPortPair("chrome.com", 80),
-                                    NetLogWithSource(), base::nullopt);
+                                    NetworkIsolationKey(), NetLogWithSource(),
+                                    base::nullopt);
   rv = request->Start(callback.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -160,7 +166,8 @@ TEST(MappedHostResolverTest, SetRulesFromString) {
   // Try resolving "www.google.com". Should be remapped to "baz".
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("www.google.com", 80),
-                              NetLogWithSource(), base::nullopt);
+                              NetworkIsolationKey(), NetLogWithSource(),
+                              base::nullopt);
   int rv = request->Start(callback.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -171,7 +178,8 @@ TEST(MappedHostResolverTest, SetRulesFromString) {
 
   // Try resolving "chrome.net:80". Should be remapped to "bar:60".
   request = resolver->CreateRequest(HostPortPair("chrome.net", 80),
-                                    NetLogWithSource(), base::nullopt);
+                                    NetworkIsolationKey(), NetLogWithSource(),
+                                    base::nullopt);
   rv = request->Start(callback.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -215,7 +223,8 @@ TEST(MappedHostResolverTest, MapToError) {
   TestCompletionCallback callback1;
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("www.google.com", 80),
-                              NetLogWithSource(), base::nullopt);
+                              NetworkIsolationKey(), NetLogWithSource(),
+                              base::nullopt);
   int rv = request->Start(callback1.callback());
   EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
   request.reset();
@@ -223,7 +232,8 @@ TEST(MappedHostResolverTest, MapToError) {
   // Try resolving www.foo.com --> Should succeed.
   TestCompletionCallback callback2;
   request = resolver->CreateRequest(HostPortPair("www.foo.com", 80),
-                                    NetLogWithSource(), base::nullopt);
+                                    NetworkIsolationKey(), NetLogWithSource(),
+                                    base::nullopt);
   rv = request->Start(callback2.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback2.WaitForResult();

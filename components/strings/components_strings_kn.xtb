@@ -171,6 +171,7 @@
 <translation id="173080396488393970">ಈ ರೀತಿಯ ಕಾರ್ಡ್‌ಗೆ ಬೆಂಬಲವಿಲ್ಲ</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="1739107442478692187">ನೀವು ಬಳಸುವ ಸೈಟ್ ಅಥವಾ ಆ್ಯಪ್‌ನಲ್ಲಿ ಡೇಟಾ ಉಲ್ಲಂಘನೆಯಾಗಿದೆ. ನೀವು <ph name="ORIGIN" /> ನಲ್ಲಿ ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ತಕ್ಷಣ ಪರಿಶೀಲಿಸಲು ಮತ್ತು ಬದಲಾಯಿಸಲು Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="1740951997222943430">ಮಾನ್ಯವಾದ ಅವಧಿ-ಮುಕ್ತಾಯ ತಿಂಗಳನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="1743520634839655729">ಮುಂದಿನ ಬಾರಿ ವೇಗವಾಗಿ ಪಾವತಿಸಲು, ನಿಮ್ಮ ಕಾರ್ಡ್‌, ಹೆಸರು ಮತ್ತು ನಿಮ್ಮ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು Google ಖಾತೆಯಲ್ಲಿ ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಿ.</translation>
 <translation id="1743570585616704562">ಗುರುತಿಸಲಾಗಿಲ್ಲ</translation>
@@ -233,6 +234,7 @@
 <translation id="2094505752054353250">ಡೊಮೇನ್ ಹೊಂದುತ್ತಿಲ್ಲ</translation>
 <translation id="2096368010154057602">ವಿಭಾಗ</translation>
 <translation id="2099652385553570808">ಎಡಭಾಗದಲ್ಲಿ ಮೂರು ಸ್ಟೇಪಲ್ ಹಾಕಿ</translation>
+<translation id="2100280972184758440">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಹ್ಯಾಕ್‌ ಆಗಿದೆ</translation>
 <translation id="2102134110707549001">ಸದೃಢವಾದ ಪಾಸ್‌ವರ್ಡ್ ಸೂಚಿಸಿ…</translation>
 <translation id="2108755909498034140">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -240,6 +242,7 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> ರಿಂದ ಅತಿಕ್ರಮಿಸಲಾಗಿರುವ ಕಾರಣ ಇದನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="2119505898009119320">ಇವರಿಗೆ ನೀಡಲಾಗಿದೆ: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">ಕೆಳಗಿನ ಬಲಭಾಗದಲ್ಲಿ ತೂತು ಮಾಡಿ</translation>
+<translation id="2124528555835617522">ನೀವು ಬಳಸುವ ಸೈಟ್ ಅಥವಾ ಆ್ಯಪ್‌ನಲ್ಲಿ ಡೇಟಾ ಉಲ್ಲಂಘನೆಯಾಗಿದೆ. ನಿಮ್ಮ ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತಕ್ಷಣ ಪರಿಶೀಲಿಸುವಂತೆ Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="2129079103035905234">ಚಲನಾ ಸೆನ್ಸರ್‌ಗಳು</translation>
 <translation id="213826338245044447">ಮೊಬೈಲ್ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="214556005048008348">ಪಾವತಿಯನ್ನು ರದ್ದುಮಾಡಿ</translation>
@@ -467,11 +470,13 @@
 <translation id="3282497668470633863">ಕಾರ್ಡ್‌ನಲ್ಲಿರುವ ಹೆಸರನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="3287510313208355388">ಆನ್‌ಲೈನ್‌ನಲ್ಲಿರುವಾಗ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> ಕಾರ್ಯನೀತಿಯ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳಿ</translation>
+<translation id="3295439534709115864">ನೀವು ಬಳಸುವ ಸೈಟ್ ಅಥವಾ ಆ್ಯಪ್‌ನಲ್ಲಿ ಡೇಟಾ ಉಲ್ಲಂಘನೆಯಾಗಿದೆ. ನೀವು <ph name="ORIGIN" /> ನಲ್ಲಿ ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ತಕ್ಷಣ ಬದಲಾಯಿಸಲು Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="3303855915957856445">ಯಾವುದೇ ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳು ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="3320021301628644560">ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="3324983252691184275">ಕಡುಗೆಂಪು</translation>
 <translation id="3338095232262050444">ಸುರಕ್ಷಿತ</translation>
 <translation id="3355823806454867987">ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಿಸಿ...</translation>
+<translation id="3360103848165129075">ಪಾವತಿ ಹ್ಯಾಂಡ್‌ಲರ್ ಶೀಟ್</translation>
 <translation id="3362968246557010467">ತಡೆಹಿಡಿಯಲಾಗಿರುವ <ph name="OLD_POLICY" /> ಕಾರ್ಯನೀತಿಯಿಂದ, ಈ ಕಾರ್ಯನೀತಿಯನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ನಕಲಿಸಲಾಗಿದೆ. ಅದರ ಬದಲಿಗೆ, ನೀವು ಇದನ್ನು ಬಳಸಬೇಕು.</translation>
 <translation id="3366477098757335611">ಕಾರ್ಡ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="3369192424181595722">ಗಡಿಯಾರ ದೋಷ</translation>
@@ -585,6 +590,7 @@
 <translation id="3949601375789751990">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್  ಇತಿಹಾಸ ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತದೆ</translation>
 <translation id="3949870428812919180">ಉಳಿಸಲಾದ ಯಾವುದೇ ಪಾವತಿ ವಿಧಾನಗಳಿಲ್ಲ</translation>
 <translation id="3950820424414687140">ಸೈನ್ ಇನ್</translation>
+<translation id="3961148744525529027">ಪಾವತಿ ಹ್ಯಾಂಡ್‌ಲರ್ ಶೀಟ್ ಅರ್ಧ ತೆರೆದಿದೆ</translation>
 <translation id="3962859241508114581">ಹಿಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
 <translation id="3963837677003247395">ಹಸ್ತಚಾಲಿತವಾಗಿ ಮುಂದುವರಿಸಬೇಕೆ?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{ಯಾವುದೂ ಇಲ್ಲ}=1{1 ಸೈಟ್‌ನಿಂದ }one{# ಸೈಟ್‌ಗಳಿಂದ }other{# ಸೈಟ್‌ಗಳಿಂದ }}</translation>
@@ -1314,6 +1320,7 @@
 <translation id="7637571805876720304">Chromium ನಿಂದ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ತೆಗೆದುಹಾಕುವುದೇ?</translation>
 <translation id="7638605456503525968">ಸೀರಿಯಲ್ ಪೋರ್ಟ್‌ಗಳು</translation>
 <translation id="7639968568612851608">ಕಡು ಬೂದು</translation>
+<translation id="7653957176542370971">ಪಾವತಿ ಹ್ಯಾಂಡ್‌ಲರ್ ಶೀಟ್ ಅನ್ನು ಮುಚ್ಚಿದೆ</translation>
 <translation id="765676359832457558">ಸುಧಾರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರೆಮಾಡು...</translation>
 <translation id="7658239707568436148">ರದ್ದುಮಾಡಿ</translation>
 <translation id="7662298039739062396">ವಿಸ್ತರಣೆಯ ಮೂಲಕ ಸೆಟ್ಟಿಂಗ್ ನಿಯಂತ್ರಿಸಲ್ಪಟ್ಟಿದೆ</translation>
@@ -1443,6 +1450,7 @@
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
 <translation id="8262952874573525464">ಕೆಳಭಾಗದ ಅಂಚನ್ನು ಹೊಲಿಯಿರಿ</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" /> ನಂತೆ ಸೈನ್ ಇನ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
+<translation id="8277900682056760511">ಪಾವತಿ ಹ್ಯಾಂಡ್‌ಲರ್ ಶೀಟ್ ಅನ್ನು ತೆರೆಯಲಾಗಿದೆ</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">ಸೈನ್ ಇನ್</translation>
 <translation id="8288807391153049143">ಪ್ರಮಾಣಪತ್ರವನ್ನು ತೋರಿಸಿ</translation>

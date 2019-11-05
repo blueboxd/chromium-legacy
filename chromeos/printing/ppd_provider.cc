@@ -862,10 +862,9 @@ class PpdProviderImpl : public PpdProvider {
       FailQueuedMetadataResolutions(PpdProvider::SERVER_ERROR);
       return;
     }
-    auto top_list =
-        base::ListValue::From(base::JSONReader::ReadDeprecated(contents));
 
-    if (top_list.get() == nullptr) {
+    base::Optional<base::Value> top_list = base::JSONReader::Read(contents);
+    if (!top_list.has_value() || !top_list.value().is_list()) {
       // We got something malformed back.
       FailQueuedMetadataResolutions(PpdProvider::INTERNAL_ERROR);
       return;
@@ -874,7 +873,7 @@ class PpdProviderImpl : public PpdProvider {
     // This should just be a simple list of locale strings.
     std::vector<std::string> available_locales;
     bool found_en = false;
-    for (const base::Value& entry : *top_list) {
+    for (const base::Value& entry : top_list.value().GetList()) {
       std::string tmp;
       // Locales should have at *least* a two-character country code.  100 is an
       // arbitrary upper bound for length to protect against extreme bogosity.
@@ -1076,17 +1075,15 @@ class PpdProviderImpl : public PpdProvider {
       //  [0x5926, "some othercanonical name"]
       // ]
       // So we scan through the response looking for our desired device id.
-      auto top_list =
-          base::ListValue::From(base::JSONReader::ReadDeprecated(buffer));
-
-      if (top_list.get() == nullptr) {
+      base::Optional<base::Value> top_list = base::JSONReader::Read(buffer);
+      if (!top_list.has_value() || !top_list.value().is_list()) {
         // We got something malformed back.
         LOG(ERROR) << "Malformed top list";
         result = PpdProvider::INTERNAL_ERROR;
       } else {
         // We'll set result to SUCCESS if we do find the device.
         result = PpdProvider::NOT_FOUND;
-        for (const auto& entry : *top_list) {
+        for (const auto& entry : top_list.value().GetList()) {
           int device_id;
           const base::ListValue* sub_list;
 
@@ -1280,13 +1277,12 @@ class PpdProviderImpl : public PpdProvider {
       return fetch_result;
     }
 
-    auto ret_list =
-        base::ListValue::From(base::JSONReader::ReadDeprecated(buffer));
-    if (ret_list == nullptr) {
+    base::Optional<base::Value> ret_list = base::JSONReader::Read(buffer);
+    if (!ret_list.has_value() || !ret_list.value().is_list()) {
       return PpdProvider::INTERNAL_ERROR;
     }
-    *top_list = std::move(ret_list->GetList());
 
+    *top_list = std::move(ret_list.value().GetList());
     for (const auto& entry : *top_list) {
       if (!entry.is_list()) {
         return PpdProvider::INTERNAL_ERROR;

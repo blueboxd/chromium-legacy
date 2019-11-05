@@ -281,8 +281,7 @@ void ToolbarView::Init() {
   if (browser_view_->webui_tab_strip()) {
     webui_new_tab_button_ =
         AddChildView(browser_view_->webui_tab_strip()->CreateNewTabButton());
-    webui_toggle_button_ =
-        AddChildView(browser_view_->webui_tab_strip()->CreateToggleButton());
+    AddChildView(browser_view_->webui_tab_strip()->CreateTabCounter());
   }
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
@@ -900,9 +899,6 @@ void ToolbarView::LoadImages() {
     webui_new_tab_button_->SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kAddIcon, normal_color));
-    webui_toggle_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kCaretUpIcon, normal_color));
   }
 
   if (avatar_)

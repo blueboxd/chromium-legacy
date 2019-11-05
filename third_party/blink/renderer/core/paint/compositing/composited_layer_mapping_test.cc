@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
 
@@ -1251,10 +1252,22 @@ TEST_F(CompositedLayerMappingTest,
   // the sticky element.
   EXPECT_EQ(PhysicalOffset(0, 100), sticky->StickyPositionOffset());
 
-  // On the CompositedLayerMapping side however, the offset should have been
-  // removed so that the compositor can take care of it.
-  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().x());
-  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().y());
+  GraphicsLayer* root_scrolling_layer =
+      GetDocument().GetLayoutView()->Layer()->GraphicsLayerBacking();
+  const PropertyTreeState& root_layer_state =
+      root_scrolling_layer->GetPropertyTreeState();
+  const PropertyTreeState& sticky_layer_state =
+      main_graphics_layer->GetPropertyTreeState();
+  auto transform_from_sticky_to_root =
+      GeometryMapper::SourceToDestinationProjection(
+          sticky_layer_state.Transform(), root_layer_state.Transform());
+  // Irrespective of if the ancestor scroller is composited or not, the sticky
+  // position element should be at the same location.
+  auto sticky_position_relative_to_root =
+      transform_from_sticky_to_root.MapPoint(
+          FloatPoint(main_graphics_layer->GetOffsetFromTransformNode()));
+  EXPECT_FLOAT_EQ(8, sticky_position_relative_to_root.X());
+  EXPECT_FLOAT_EQ(8, sticky_position_relative_to_root.Y());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -1287,8 +1300,22 @@ TEST_F(CompositedLayerMappingTest,
       FloatPoint(scrollable_area->ScrollPosition().Y(), 100));
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().x());
-  EXPECT_FLOAT_EQ(100, main_graphics_layer->GetPosition().y());
+  GraphicsLayer* root_scrolling_layer =
+      GetDocument().GetLayoutView()->Layer()->GraphicsLayerBacking();
+  const PropertyTreeState& root_layer_state =
+      root_scrolling_layer->GetPropertyTreeState();
+  const PropertyTreeState& sticky_layer_state =
+      main_graphics_layer->GetPropertyTreeState();
+  auto transform_from_sticky_to_root =
+      GeometryMapper::SourceToDestinationProjection(
+          sticky_layer_state.Transform(), root_layer_state.Transform());
+  // Irrespective of if the ancestor scroller is composited or not, the sticky
+  // position element should be at the same location.
+  auto sticky_position_relative_to_root =
+      transform_from_sticky_to_root.MapPoint(
+          FloatPoint(main_graphics_layer->GetOffsetFromTransformNode()));
+  EXPECT_FLOAT_EQ(8, sticky_position_relative_to_root.X());
+  EXPECT_FLOAT_EQ(8, sticky_position_relative_to_root.Y());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -1381,7 +1408,7 @@ TEST_F(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
 
-  cc::Layer* scrolling_layer = scrollable_area->LayerForScrolling()->CcLayer();
+  cc::Layer* scrolling_layer = scrollable_area->LayerForScrolling();
   EXPECT_EQ(0, scrolling_layer->CurrentScrollOffset().y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
   EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
@@ -1565,8 +1592,8 @@ TEST_F(CompositedLayerMappingTest,
   UpdateAllLifecyclePhasesForTest();
 
   // 100px down from squashing's main graphics layer.
-  EXPECT_EQ(FloatPoint(0, 100),
-            squashed->GraphicsLayerBacking()->GetPosition());
+  EXPECT_EQ(IntPoint(0, 100),
+            squashed->GraphicsLayerBacking()->GetOffsetFromTransformNode());
 }
 
 TEST_F(CompositedLayerMappingTest, ContentsNotOpaqueWithForegroundLayer) {

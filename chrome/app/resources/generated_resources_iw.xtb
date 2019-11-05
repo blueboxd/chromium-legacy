@@ -26,6 +26,7 @@
 <translation id="1031362278801463162">טוען תצוגה מקדימה</translation>
 <translation id="103279545524624934">‏עליך לפנות שטח אחסון כדי להפעיל אפליקציות Android.</translation>
 <translation id="1033780634303702874">גישה להתקנים הסיריאליים שלך</translation>
+<translation id="1034942643314881546">‏המערכת מפעילה את ADB ליצירת איור של אפליקציות</translation>
 <translation id="1036348656032585052">כבה</translation>
 <translation id="1036511912703768636">‏גש לכל אחד מהתקני ה-USB האלה</translation>
 <translation id="1036982837258183574">לחץ על |<ph name="ACCELERATOR" />| כדי לצאת ממסך מלא</translation>
@@ -102,6 +103,7 @@
 <translation id="1143142264369994168">חותם על אישור </translation>
 <translation id="1145292499998999162">הפלאגין חסום</translation>
 <translation id="1145532888383813076">אפשר לחפש במכשיר, באפליקציות ובאינטרנט.</translation>
+<translation id="1146678959555564648">‏כניסה למצב VR</translation>
 <translation id="114721135501989771">‏תכונות חכמות של Google</translation>
 <translation id="1149401351239820326">חודש פקיעת התוקף</translation>
 <translation id="1150565364351027703">משקפי שמש</translation>
@@ -201,7 +203,6 @@
 <translation id="1285484354230578868">‏אחסן נתונים בחשבון Google Drive</translation>
 <translation id="1288037062697528143">תאורת הלילה תידלק באופן אוטומטי בשעת השקיעה</translation>
 <translation id="1288300545283011870">תכונות דיבור</translation>
-<translation id="1289513325360489062">ללא גישה לנתוני האתר הזה</translation>
 <translation id="1293264513303784526">‏מכשיר עם יציאת USB-C (יציאה שמאלית)</translation>
 <translation id="1293556467332435079">קבצים</translation>
 <translation id="1296911687402551044">הצמדה של הכרטיסייה שנבחרה</translation>
@@ -284,6 +285,7 @@
 <translation id="1415708812149920388">גישת הקריאה אל הלוח נדחתה</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (מזהה תוסף "<ph name="EXTENSION_ID" />") אסור בסוג ההפעלה הזה.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="1418954524306642206">‏חיפוש במחשב לציון ה-PPD של המדפסת באופן ידני</translation>
 <translation id="1420834118113404499">רישיונות מדיה</translation>
 <translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" /> כדי לאפשר התאמה</translation>
 <translation id="1422159345171879700">טעינת סקריפטים לא בטוחים</translation>
@@ -552,6 +554,7 @@
 <translation id="1782196717298160133">מחפש את הטלפון שלך</translation>
 <translation id="1784707308176068866">הפעלה ברקע כשהדבר מתבקש על-ידי אפליקציה מקורית הפועלת בשיתוף פעולה</translation>
 <translation id="1784849162047402014">חסר שטח אחסון בדיסק של המכשיר</translation>
+<translation id="1787350673646245458">תמונת המשתמש</translation>
 <translation id="1790194216133135334">שליחת הקישור אל <ph name="DEVICE_NAME" /></translation>
 <translation id="1790976235243700817">הסרת הגישה</translation>
 <translation id="1792619191750875668">תצוגה מורחבת</translation>
@@ -682,6 +685,7 @@
 <translation id="1976150099241323601">היכנס אל התקן אבטחה</translation>
 <translation id="1976323404609382849">‏קובצי Cookie מאתרים מרובים חסומים.</translation>
 <translation id="1977965994116744507">יש לקרב את הטלפון כדי לבטל את הנעילה של <ph name="DEVICE_TYPE" />.</translation>
+<translation id="1978006917103730774">עדכוני תוכנה ואבטחה עתידיים יותקנו באופן אוטומטי.</translation>
 <translation id="1979280758666859181">אתה עובר לערוץ עם גרסה ישנה יותר של <ph name="PRODUCT_NAME" />. שינוי הערוץ יוחל כאשר גרסת הערוץ תתאים לגרסה המותקנת כעת במכשיר שלך.</translation>
 <translation id="197989455406964291">‏KDC לא תומך בסוג ההצפנה</translation>
 <translation id="1981544341227357861">יש להסיר את מפתח האבטחה מהמכשיר, ולאחר מכן להכניס אותו שוב ולגעת בו.</translation>
@@ -806,12 +810,12 @@
 <translation id="2165421703844373933">‏כשאומרים "Ok Google", מתבצעת גישה ל-Assistant. כדי לחסוך בצריכת הסוללה, אפשר לבחור באפשרות "מופעל (מומלץ)". מערכת Assistant תגיב רק כשהמכשיר מחובר למקור מתח או נמצא בטעינה.</translation>
 <translation id="2166369534954157698">דג סקרן שט בים זך ולפתע מצא חבורה נחמדה</translation>
 <translation id="2169062631698640254">היכנס בכל זאת</translation>
-<translation id="2170088579611075216">‏הפעלת VR וכניסה ל-VR</translation>
 <translation id="2172784515318616985">המשך</translation>
 <translation id="2173302385160625112">יש לבדוק את החיבור לאינטרנט</translation>
 <translation id="2173801458090845390">הוספת מזהה דרישה למכשיר זה</translation>
 <translation id="2175042898143291048">עשה זאת תמיד</translation>
 <translation id="2175607476662778685">סרגל הפעלה מהירה</translation>
+<translation id="217576141146192373">לא ניתן להוסיף מדפסת. יש לבדוק את הגדרת המדפסת ולנסות שוב.</translation>
 <translation id="2177950615300672361">כרטיסיית גלישה בסתר: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> ב-<ph name="PEPPER_PLUGIN_DOMAIN" /> רוצה גישה למחשב שלך</translation>
 <translation id="2178614541317717477">‏רשות האישורים (CA) בסכנה</translation>
@@ -924,6 +928,7 @@
 <translation id="2326931316514688470">&amp;טען אפליקציה מחדש</translation>
 <translation id="2327492829706409234">הפעל יישום</translation>
 <translation id="2329597144923131178">יש להיכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך.</translation>
+<translation id="2330129964253841015">הצגת אזהרות כשסיסמאות בסיכון</translation>
 <translation id="2332131598580221120">הצג בחנות</translation>
 <translation id="2332192922827071008">פתיחת ההעדפות</translation>
 <translation id="2332742915001411729">אפס לברירת המחדל</translation>
@@ -972,6 +977,7 @@
 <translation id="2395616325548404795">רישום המכשיר שלך <ph name="DEVICE_TYPE" /> לניהול ארגוני הסתיים בהצלחה, אך השליחה של פרטי הנכס והמיקום שלו נכשלה. יש להזין את המידע הזה ידנית במסוף הניהול של המכשיר.</translation>
 <translation id="2396783860772170191">יש להזין קוד אימות בן 4 ספרות (0000-9999)</translation>
 <translation id="2399939490305346086">נתוני כניסה במפתח אבטחה</translation>
+<translation id="2407481962792080328">‏התכונה הזו מופעלת בעת הכניסה לחשבון Google</translation>
 <translation id="2408955596600435184">‏הזן את מספר ה-PIN</translation>
 <translation id="241082044617551207">פלאגין לא ידוע</translation>
 <translation id="2412593942846481727">יש עדכון זמין</translation>
@@ -996,7 +1002,6 @@
 <translation id="2439545803278355377">יש להזין את קוד האימות החדש. קוד אימות חייב להיות באורך ארבעה תווים לפחות, ויכול לכלול אותיות, מספרים ותווים אחרים.</translation>
 <translation id="2440604414813129000">צפה &amp;במקור</translation>
 <translation id="2442916515643169563">צללית טקסט</translation>
-<translation id="2444119669991608829">הדף לא ב<ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">ספריית הבסיס של ההרחבה נחוצה.</translation>
 <translation id="2445484935443597917">יצירת פרופיל חדש</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> רוצה לאמת את הזהות שלך</translation>
@@ -1413,10 +1418,10 @@
 <translation id="3016641847947582299">הרכיב עודכן</translation>
 <translation id="3016780570757425217">לדעת מה המיקום שלך</translation>
 <translation id="3017079585324758401">רקע</translation>
+<translation id="3019285239893817657">לחצן למעבר אל דף משנה</translation>
 <translation id="3020183492814296499">קיצורים</translation>
 <translation id="3020990233660977256">מספר סידורי: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">פרפר</translation>
-<translation id="3021426244864538700">גישה לנתוני האתר הזה</translation>
 <translation id="3021678814754966447">&amp;הצג את מקור המסגרת</translation>
 <translation id="3022978424994383087">ההודעה שלך לא ברורה.</translation>
 <translation id="3023464535986383522">הקראה</translation>
@@ -1428,6 +1433,7 @@
 <translation id="3038612606416062604">הוספה ידנית של מדפסת</translation>
 <translation id="3038675903128704560">אל תאפשר לאף אתר להשתמש בפלאגין כדי לגשת למחשב שלך</translation>
 <translation id="3039491566278747710">התקנת המדיניות הלא מקוונת במכשיר נכשלה.</translation>
+<translation id="3043581297103810752">מ-<ph name="ORIGIN" /></translation>
 <translation id="3045447014237878114">האתר הזה הוריד קבצים מרובים באופן אוטומטי</translation>
 <translation id="3046910703532196514">דף אינטרנט, שלם</translation>
 <translation id="304747341537320566">מנועי דיבור</translation>
@@ -1809,6 +1815,7 @@
 <translation id="3629631988386925734">‏כדי להפעיל את Smart Lock צריך להזין סיסמה. בפעם הבאה, הטלפון יבטל את הנעילה של <ph name="DEVICE_TYPE" />. אפשר להשבית את Smart Lock דרך ההגדרות.</translation>
 <translation id="3630132874740063857">הטלפון שלך</translation>
 <translation id="3630995161997703415">כדי שניתן יהיה תמיד להשתמש באתר הזה יש להוסיף אותו למדף</translation>
+<translation id="3635353578505343390">‏שליחת משוב ל-Google</translation>
 <translation id="3636096452488277381">אהלן, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684">‏‎‎‎%‎‏‎‎‏‎‏‎<ph name="PERCENTAGE" />‌ - נותרו <ph name="TIME" /></translation>
 <translation id="3637561406135221044">המערכת סורקת את הקבצים לאיתור מידע אישי רגיש...</translation>
@@ -1889,6 +1896,7 @@
 <translation id="3732530910372558017">קוד האימות יכול להיות באורך של 63 תווים לכל היותר</translation>
 <translation id="3733127536501031542">‏שרת SSL עם הגברה</translation>
 <translation id="3735740477244556633">מיון לפי</translation>
+<translation id="3736016243818847857">להמשיך?</translation>
 <translation id="3737274407993947948">‏קרתה שגיאה בהתקנת Linux...</translation>
 <translation id="3737536731758327622">ההורדות שלך מופיעות כאן</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2204,7 +2212,6 @@
 <translation id="4159681666905192102">זהו חשבון לילדים המנוהל על-ידי <ph name="CUSTODIAN_EMAIL" /> ועל-ידי <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">מקלדת לא ידועה</translation>
 <translation id="4168015872538332605">חלק מההגדרות השייכות ל-<ph name="PRIMARY_EMAIL" /> משותפות איתך. ההגדרות האלה משפיעות על החשבון שלך רק בעת שימוש בכניסה עם מספר חשבונות.</translation>
-<translation id="4169535189173047238">לא לאפשר</translation>
 <translation id="4170314459383239649">מחיקה ביציאה</translation>
 <translation id="4172051516777682613">הצג תמיד</translation>
 <translation id="4175137578744761569">סגול בהיר ולבן</translation>
@@ -2290,6 +2297,7 @@
 <translation id="4316850752623536204">אתר המפתח</translation>
 <translation id="4320177379694898372">אין חיבור לאינטרנט</translation>
 <translation id="4321442524549817090">‏ה&amp;צגת כתובת URL</translation>
+<translation id="4322394346347055525">סגור כרטיסיות אחרות</translation>
 <translation id="4324577459193912240">הקובץ לא הושלם</translation>
 <translation id="4325237902968425115">מסיר את ההתקנה של <ph name="LINUX_APP_NAME" />…</translation>
 <translation id="4330191372652740264">מים עם קרח</translation>
@@ -2398,6 +2406,7 @@
 <translation id="4501530680793980440">אשר הסרה</translation>
 <translation id="4502423230170890588">הסרה מהמכשיר הזה</translation>
 <translation id="4504940961672722399">השתמש בתוסף זה על ידי לחיצה על סמל זה או על ידי הקשה על <ph name="EXTENSION_SHORTCUT" />.</translation>
+<translation id="4506379069541445709">‏בחירה להמשיך תאפשר ל-ADB ליצור ולבדוק אפליקציות ל-Android. הערה: ADB מתיר התקנה של אפליקציות ניסיוניות שלא אומתו על-ידי Google.</translation>
 <translation id="4508051413094283164">פתח הכול בחלון גלישה בסתר</translation>
 <translation id="4508265954913339219">ההפעלה נכשלה</translation>
 <translation id="4508765956121923607">הצג מ&amp;קור</translation>
@@ -2742,10 +2751,6 @@
 <translation id="5029568752722684782">מחיקת העותק</translation>
 <translation id="5030338702439866405">הונפק על ידי</translation>
 <translation id="5033266061063942743">צורות גיאומטריות</translation>
-<translation id="5033865233969348410">‏בזמן השימוש ב-VR, ייתכן שלאתר הזה תהיה אפשרות ללמוד על:
-  -  התכונות הפיזיות שלך, כמו הגובה
-
-חשוב לוודא שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> רוצה להשתמש במצלמה ובמיקרופון שלך</translation>
 <translation id="5036662165765606524">אל תאפשר לאף אתר להוריד קבצים מרובים באופן אוטומטי</translation>
 <translation id="5037676449506322593">בחר הכל</translation>
@@ -2957,6 +2962,7 @@
 <translation id="5363109466694494651">‏בצע Powerwash וחזור לגרסה הקודמת</translation>
 <translation id="5365881113273618889">התיקייה שבחרת מכילה קבצים רגישים. האפליקציה <ph name="APP_NAME" /> תקבל הרשאת כתיבה קבועה לתיקייה הזו. להמשיך?</translation>
 <translation id="5367091008316207019">קורא את הקובץ..</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">הטלפון שלך נעול. בטל את הנעילה כדי להיכנס.</translation>
 <translation id="5368779022775404937">כניסה אל <ph name="REALM" /></translation>
 <translation id="5369491905435686894">הפעלת האצה של עכבר</translation>
@@ -3018,7 +3024,6 @@
 <translation id="5449588825071916739">צור סימניה לכל הכרטיסיות</translation>
 <translation id="5449716055534515760">סגור ח&amp;לון</translation>
 <translation id="5454166040603940656">עם <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">שפת היעד של התרגום</translation>
 <translation id="5457113250005438886">לא חוקי</translation>
 <translation id="5457459357461771897">קריאה ומחיקה של קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
 <translation id="5457599981699367932">גלוש כאורח</translation>
@@ -3078,11 +3083,6 @@
 <translation id="5532223876348815659">גלובלי</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> מבקש</translation>
 <translation id="5534304873398226603">מחיקת תמונה או סרטון</translation>
-<translation id="5534334044554683961">‏בזמן השימוש ב-VR, ייתכן שלאתר הזה תהיה אפשרות ללמוד על:
-  -   התכונות הפיזיות שלך, כמו הגובה
-  -   הצורה שבה החדר שלך מסודר
-
-חשוב לוודא שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="5535941515421698170">הסר גם את הנתונים הקיימים שלך ממכשיר זה</translation>
 <translation id="5539221284352502426">השרת דחה את הסיסמה שהזנת. סיבות אפשריות לכך: הסיסמה קצרה מדי; הסיסמה חייבת לכלול ספרות או סמלים; הסיסמה לא יכולה להיות זהה לסיסמה שכבר השתמשת בה בעבר.</translation>
 <translation id="5541694225089836610">האפשרות לבצע את הפעולה הזו הושבתה על-ידי מנהל המערכת</translation>
@@ -3173,6 +3173,7 @@
 <translation id="5646558797914161501">איש עסקים</translation>
 <translation id="5648166631817621825">מהשבוע האחרון</translation>
 <translation id="5649053991847567735">הורדות אוטומטיות</translation>
+<translation id="5656845498778518563">‏שליחת משוב ל-Google</translation>
 <translation id="5657667036353380798">‏על מנת להתקין את התוסף החיצוני, על Chrome להיות מגרסה <ph name="MINIMUM_CHROME_VERSION" /> ומעלה.</translation>
 <translation id="5658415415603568799">‏לשיפור האבטחה, אחרי 20 שעות תוצג לך בקשה מ-Smart Lock להזין את הסיסמה שלך.</translation>
 <translation id="5659593005791499971">אימייל</translation>
@@ -3302,6 +3303,7 @@
 <translation id="5851868085455377790">מנפיק</translation>
 <translation id="5852112051279473187">אופס! משהו השתבש בעת הרשמת התקן זה. נסה שוב או פנה לנציג תמיכה.</translation>
 <translation id="5852137567692933493">‏הפעל מחדש ובצע פעולת Powerwash</translation>
+<translation id="5852360662347412211">‏יש לעבור אל הגדרות Linux ולנסות שוב</translation>
 <translation id="5854912040170951372">משולש</translation>
 <translation id="5855643921295613558">0.6 שניות</translation>
 <translation id="5856721540245522153">הפעל תכונות לניפוי באגים</translation>
@@ -3370,6 +3372,7 @@
 <translation id="5941153596444580863">הוספת משתמש...</translation>
 <translation id="5941343993301164315">היכנס ל-<ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">מזער</translation>
+<translation id="5942964813783878922">ה-<ph name="DEVICE_TYPE" /> יופעל מחדש אחרי העדכון הזה. עדכוני תוכנה ואבטחה עתידיים יותקנו באופן אוטומטי.</translation>
 <translation id="5944869793365969636">‏סריקת קוד QR</translation>
 <translation id="5945188205370098537">‏שליחה של נתוני אבחון ונתונים על השימוש. אפשר לעזור בשיפור החוויה ב-Android. לשם כך יש לשלוח אל Google באופן אוטומטי נתוני אבחון ונתונים לגבי השימוש במכשיר ובאפליקציות. נתונים אלה יעזרו לשמור על יציבות המערכת והאפליקציות, כמו גם לביצוע שיפורים אחרים. חלק מהנתונים הנצברים יעזרו גם לאפליקציות ולשותפים של Google, כמו מפתחי Android. אם הופעלה האפשרות 'פעילות באתרי אינטרנט ובאפליקציות נוספים', ייתכן שהנתונים יישמרו בחשבון Google שלך. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">מזהה דיווח <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
@@ -3771,6 +3774,7 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">התחברת אל רשת <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">שיתוף</translation>
+<translation id="6528189551082329571">יש תמיד לפתוח קישורים מהסוג הזה באפליקציה המשויכת להם</translation>
 <translation id="6528513914570774834">אפשר למשתמשים האחרים במכשיר הזה להשתמש ברשת הזו</translation>
 <translation id="652948702951888897">‏היסטוריה של Chrome</translation>
 <translation id="6530186581263215931">את ההגדרות האלה אוכף מנהל המערכת</translation>
@@ -3976,6 +3980,7 @@
 <translation id="6850286078059909152">צבע טקסט</translation>
 <translation id="6851497530878285708">האפליקציה הופעלה</translation>
 <translation id="6853388645642883916">המעדכן במצב שינה</translation>
+<translation id="68541483639528434">סגור כרטיסיות אחרות</translation>
 <translation id="6856623341093082836">הגדר והתאם את דיוק מסך המגע</translation>
 <translation id="6857699260879628349">קבלת פרטי תצורה</translation>
 <translation id="6860097299815761905">‏הגדרות שרת proxy...</translation>
@@ -4088,7 +4093,6 @@
 <translation id="7019805045859631636">מהיר</translation>
 <translation id="7022562585984256452">דף הבית שלך הוגדר.</translation>
 <translation id="7025190659207909717">ניהול שירות של נתונים סלולריים</translation>
-<translation id="7027891519253193555">הדף לא ב<ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="703001695939087067">‏נכנסת למצב סקירה כללית של חלון. כדי לנווט, יש להקיש על Tab.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - מחובר ליציאה טורית</translation>
@@ -4533,7 +4537,6 @@
 <translation id="7684718995427157417">‏כדי ליצור ולבדוק אפליקציות, יש להפעיל את ממשק הגישור של Android‏ (ADB). הערה: לאחר ביצוע הפעולה הזו יתאפשר להתקין אפליקציות ל-Android שלא אומתו על-ידי Google. כמו כן, כדי להשבית את התכונה, יש לאפס את המכשיר להגדרות היצרן.</translation>
 <translation id="7685049629764448582">‏זיכרון JavaScript</translation>
 <translation id="7685087414635069102">נדרש קוד אימות</translation>
-<translation id="7685301384041462804">‏חשוב לוודא שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="768549422429443215">הוספת שפות או שינוי סדר הרשימה.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">אישור הסיסמה החדשה</translation>
@@ -4933,11 +4936,9 @@
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{הורדה מתבצעת}two{הורדות מתבצעות}many{הורדות מתבצעות}other{הורדות מתבצעות}}</translation>
 <translation id="8213449224684199188">עברת למצב תמונות</translation>
 <translation id="8213577208796878755">מכשיר זמין נוסף אחד.</translation>
-<translation id="8213996900880218548">קיים צורך בגישה לנתוני האתר הזה</translation>
 <translation id="8214489666383623925">פתח קובץ...</translation>
 <translation id="8214962590150211830">הסרת משתמש זה</translation>
 <translation id="8217399928341212914">המשך לחסום הורדות אוטומטיות של קבצים מרובים</translation>
-<translation id="822519928942492333">שפת הדף שיש לתרגם</translation>
 <translation id="8225265270453771718">שיתוף חלון של אפליקציה</translation>
 <translation id="8225753906568652947">מימוש המבצעים שלך</translation>
 <translation id="8226222018808695353">אסור</translation>
@@ -5094,6 +5095,7 @@
 <translation id="8449008133205184768">הדבק והתאם סגנון</translation>
 <translation id="8449036207308062757">נהל אחסון</translation>
 <translation id="8452135315243592079">‏כרטיס SIM חסר</translation>
+<translation id="8455026683977728932">‏ההפעלה של איור ADB נכשלה</translation>
 <translation id="845702320058262034">‏לא ניתן להתחבר. יש לוודא שה-Bluetooth של הטלפון מופעל.</translation>
 <translation id="8457451314607652708">יבא סימניות</translation>
 <translation id="8460336040822756677">‏אם תשבית את Smart Lock‏ ב-<ph name="DEVICE_TYPE" />, לא תוכל לבטל את נעילת מכשירי ה-Chrome שלך באמצעות הטלפון, ותצטרך להזין את הסיסמה.</translation>
@@ -5508,7 +5510,6 @@
 <translation id="9026731007018893674">הורדה</translation>
 <translation id="9026852570893462412">הפעולה עשויה להימשך מספר דקות. מתבצעת הורדה של המכונה הווירטואלית.</translation>
 <translation id="9027459031423301635">פתיחת קישור בכרטיסייה &amp;חדשה</translation>
-<translation id="9029323097866369874">‏לאפשר ל-<ph name="DOMAIN" /> להפעיל VR?</translation>
 <translation id="9030515284705930323">‏הארגון שלך לא הפעיל את חנות Google Play בחשבון שלך. למידע נוסף, פנה למנהל המערכת.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;הדבק</translation>
@@ -5552,7 +5553,6 @@
 <translation id="9094038138851891550">שם משתמש לא חוקי</translation>
 <translation id="9094982973264386462">הסר</translation>
 <translation id="9095253524804455615">הסר</translation>
-<translation id="9095388113577226029">שפות נוספות...</translation>
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9100765901046053179">הגדרות מתקדמות</translation>
 <translation id="9101691533782776290">הפעל את היישום</translation>
@@ -5571,6 +5571,7 @@
 <translation id="9116799625073598554">יישום לרישום הערות</translation>
 <translation id="9117030152748022724">ניהול האפליקציות שלך</translation>
 <translation id="9121814364785106365">פתח ככרטיסייה מוצמדת</translation>
+<translation id="9122074588095746047">‏לא ניתן היה להפעיל את ADB</translation>
 <translation id="9124003689441359348">כאן יופיעו הסיסמאות ששמרת</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (נותרו <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">לא ניתן היה להשלים את ההגדרה</translation>

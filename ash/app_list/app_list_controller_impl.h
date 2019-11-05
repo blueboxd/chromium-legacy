@@ -20,7 +20,6 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
@@ -64,7 +63,6 @@ class ASH_EXPORT AppListControllerImpl
       public ash::MruWindowTracker::Observer,
       public AssistantControllerObserver,
       public AssistantUiModelObserver,
-      public HomeLauncherGestureHandlerObserver,
       public HomeScreenDelegate {
  public:
   AppListControllerImpl();
@@ -270,10 +268,6 @@ class ASH_EXPORT AppListControllerImpl
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
-  // HomeLauncherGestureHandlerObserver:
-  void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
-  void OnHomeLauncherTargetPositionChanged(bool showing,
-                                           int64_t display_id) override;
 
   // HomeScreenDelegate:
   void ShowHomeScreenView() override;
@@ -290,6 +284,9 @@ class ASH_EXPORT AppListControllerImpl
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
   void NotifyHomeLauncherAnimationTransition(AnimationTrigger trigger,
                                              bool launcher_will_show) override;
+  void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
+  void OnHomeLauncherTargetPositionChanged(bool showing,
+                                           int64_t display_id) override;
   bool IsHomeScreenVisible() override;
   gfx::Rect GetInitialAppListItemScreenBoundsForWindow(
       aura::Window* window) override;
@@ -327,8 +324,13 @@ class ASH_EXPORT AppListControllerImpl
   using StateTransitionAnimationCallback =
       base::RepeatingCallback<void(ash::AppListViewState)>;
 
-  void SetStateTransitionAnimationCallback(
+  void SetStateTransitionAnimationCallbackForTesting(
       StateTransitionAnimationCallback callback);
+
+  using HomeLauncherAnimationCallback =
+      base::RepeatingCallback<void(bool shown)>;
+  void SetHomeLauncherAnimationCallbackForTesting(
+      HomeLauncherAnimationCallback callback);
 
   void RecordShelfAppLaunched(
       base::Optional<AppListViewState> recorded_app_list_view_state,
@@ -423,7 +425,13 @@ class ASH_EXPORT AppListControllerImpl
   // each profile has its own AppListModelUpdater to manipulate app list items.
   int profile_id_ = kAppListInvalidProfileID;
 
+  // A callback that can be registered by a test to wait for the app list state
+  // transition animation to finish.
   StateTransitionAnimationCallback state_transition_animation_callback_;
+
+  // A callback that can be registered by a test to wait for the home launcher
+  // visibility animation to finish. Should only be used in tablet mode.
+  HomeLauncherAnimationCallback home_launcher_animation_callback_;
 
   // Used to prevent ShelfLayoutManager updating visibility state when overview
   // is showing over the AppList.

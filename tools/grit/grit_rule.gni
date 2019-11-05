@@ -314,13 +314,11 @@ template("grit") {
       get_path_info(rebase_path(invoker.outputs, ".", output_dir), "abspath")
 
   # Add .info output for all pak files
-  set_sources_assignment_filter([ "*.pak" ])
-  sources = grit_outputs
-  pak_grit_outputs = grit_outputs - sources
-  sources = []
   pak_info_outputs = []
-  foreach(output, pak_grit_outputs) {
-    pak_info_outputs += [ "${output}.info" ]
+  foreach(output, grit_outputs) {
+    if (get_path_info(output, "extension") == "pak") {
+      pak_info_outputs += [ output + ".info" ]
+    }
   }
 
   grit_custom_target = target_name + "_grit"
@@ -391,16 +389,18 @@ template("grit") {
     args += define_args + grit_flags + assert_files_flags
 
     if (enable_resource_whitelist_generation) {
-      set_sources_assignment_filter([ "*.rc" ])
-      sources = grit_outputs
-      rc_grit_outputs = grit_outputs - sources
-      sources = []
+      rc_grit_outputs = []
+      foreach(output, grit_outputs) {
+        if (get_path_info(output, "extension") == "rc") {
+          rc_grit_outputs += [ output ]
+        }
+      }
 
       if (rc_grit_outputs != []) {
         # Resource whitelisting cannot be used with .rc files.
         # Make sure that there aren't any .pak outputs which would require
         # whitelist annotations.
-        assert(pak_grit_outputs == [], "can't combine .pak and .rc outputs")
+        assert(pak_info_outputs == [], "can't combine .pak and .rc outputs")
       } else {
         args += [ "--whitelist-support" ]
       }
@@ -474,13 +474,13 @@ template("grit") {
 
     # Since we generate a file, we need to be run before the targets that
     # depend on us.
-    set_sources_assignment_filter([
-                                    "*.json",
-                                    "*.pak",
-                                    "*.xml",
-                                  ])
-    sources = grit_outputs
-    set_sources_assignment_filter(sources_assignment_filter)
+    sources = []
+    foreach(output, grit_outputs) {
+      extension = get_path_info(output, "extension")
+      if (extension != "json" && extension != "pak" && extension != "xml") {
+        sources += [ output ]
+      }
+    }
 
     # Deps set on the template invocation will go on the action that runs
     # grit above rather than this library. This target needs to depend on the

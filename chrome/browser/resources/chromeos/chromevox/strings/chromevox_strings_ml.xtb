@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">ശിലാലേഖ</translation>
 <translation id="207477615537953741">സെമാന്റിക്കുകൾ ഓഫാണ്</translation>
 <translation id="2086961585857038472">അടുത്ത വാക്ക്</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">ml</translation>
 <translation id="2091933974477985526">എഡിറ്റ് ചെയ്യാൻ കഴിയുന്ന മുമ്പത്തെ വാചക ഏരിയ</translation>
 <translation id="2100350898815792233">എല്ലാ വിരാമചിഹ്നങ്ങളും</translation>
@@ -192,6 +193,7 @@
 <translation id="2416512023405990736">അൺചെക്ക് ചെയ്‌ത ഒരു ചെക്ക്‌ ബോക്‌സ്</translation>
 <translation id="2417569100218200841">ഉള്ളടക്ക വിവരം</translation>
 <translation id="2417948780551741035">അന്തിമ കുറിപ്പുകൾ</translation>
+<translation id="2419852971200420169">വിവരണ ലിസ്റ്റ്</translation>
 <translation id="2421113964388408478">ഇല്ലാതാക്കൽ</translation>
 <translation id="2422937916923936891">മെനു ഇനം ചെക്ക് ബോക്‌സ്</translation>
 <translation id="2428534162001909979">കമാൻഡ് മെനുകൾ</translation>
@@ -370,6 +372,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{ചോദ്യചിഹ്നം}other{# ചോദ്യചിഹ്നങ്ങൾ}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{കാരറ്റ്}other{# കാരറ്റുകൾ}}</translation>
 <translation id="352577523970648069">എഡിറ്റ് ചെയ്യാവുന്ന ഒരു ടെക്‌സ്‌റ്റ് ഫീൽഡ്</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> മുറിക്കുക.</translation>
 <translation id="3549680091535286226">സംസാരിക്കുന്നത് താൽക്കാലികമായി നിർത്താൻ രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് ടാപ്പ് ചെയ്യുക</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, ചെക്ക്‌ബോക്സ് ചെക്ക് ചെയ്‌തിട്ടില്ല</translation>
@@ -778,6 +781,7 @@
 <translation id="6378394210114975876">തിസിൽ</translation>
 <translation id="6385591741672306837">കോളം</translation>
 <translation id="6387719785439924554">അരികിൽ</translation>
+<translation id="6393014464788431702">എല്ലാ ഇവന്റ് ഫിൽട്ടറുകളും പ്രവർത്തനരഹിതമാക്കുക</translation>
 <translation id="6411426777058107714">മുൻ റേഡിയോ ബട്ടൺ ഒന്നുമില്ല.</translation>
 <translation id="6414968628640960377">വ്യത്യസ്‌തമായ മുൻ ഘടകം.</translation>
 <translation id="6417265370957905582">Google അസിസ്‌റ്റന്റ്</translation>
@@ -913,6 +917,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="7332592614823088566">വരി <ph name="ROWINDEX" /> / <ph name="ROWTOTAL" />, നിര <ph name="COLINDEX" /> / <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">പോപ്പ്അപ്പ് ഉണ്ട്</translation>
 <translation id="7356165926712028380">8 ഡോട്ട് ബ്രെയ്‌ലിയിലേക്ക് മാറുക</translation>
+<translation id="7356610683936413584">വിവരണ ലിസ്റ്റിന്റെ വിശദംശങ്ങൾ</translation>
 <translation id="7362871137496673139">മുൻ നില 2 ശീർഷകം ഒന്നുമില്ല.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{സമുച്ചയം}other{# സമുച്ചയങ്ങൾ}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1091,6 +1096,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8096975275316362544">മിൻ്റ് ക്രീം</translation>
 <translation id="8098587210054821856">സ്ലേറ്റ് ഗ്രേ</translation>
 <translation id="8110647606445335195">ARIA ലാൻഡ്‌മാർക്കുകൾ ഒന്നുമില്ല.</translation>
+<translation id="8121539003537428024">എല്ലാ ഇവന്റ് ഫിൽട്ടറുകളും പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="812886159861361726"><ph name="FILE_NAME" /> ഡൗൺലോഡ് നിർത്തി</translation>
 <translation id="8138880386467279117">സ്‌പർശിക്കുക</translation>
 <translation id="8153880621934657047">പട്ടികയ്‌ക്കുള്ളിലല്ല.</translation>

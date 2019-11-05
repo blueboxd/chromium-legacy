@@ -160,5 +160,9 @@
           <ph name="LIST_ITEM">&lt;li&gt;</ph>Your internet service provider
         <ph name="END_LIST">&lt;/ul&gt;</ph>
       </message>
+      <message name="IDS_NEW_TAB_OTR_COOKIE_CONTROLS_CONTROLLED_TOOLTIP_TEXT"
+               desc="Text displayed in the settings tooltip when third-party cookie blocking is managed or turned on by the user.">
+        This setting is enforced by &quot;<ph name="ENFORCING_SETTING">$1<ex>Block third-party cookies</ex></ph>&quot; in &quot;<ph name="SETTINGS_PAGE">$2<ex>Cookies and site data</ex></ph>&quot;
+      </message>
 
 </grit-part>

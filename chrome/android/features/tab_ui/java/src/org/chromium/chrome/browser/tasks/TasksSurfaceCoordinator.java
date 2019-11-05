@@ -41,8 +41,7 @@ public class TasksSurfaceCoordinator implements TasksSurface {
                     activity, mView.getBodyViewContainer());
         }
 
-        mMediator =
-                new TasksSurfaceMediator(activity, propertyModel, fakeboxDelegate, isTabCarousel);
+        mMediator = new TasksSurfaceMediator(propertyModel, fakeboxDelegate, isTabCarousel);
 
         LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
         mMostVisitedList = new MostVisitedListCoordinator(activity, mvTilesLayout, propertyModel);

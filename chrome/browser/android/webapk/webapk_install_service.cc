@@ -47,7 +47,8 @@ void WebApkInstallService::InstallAsync(content::WebContents* web_contents,
   installs_.insert(shortcut_info.manifest_url);
   InstallableMetrics::TrackInstallEvent(install_source);
 
-  ShowInstallInProgressNotification(shortcut_info, primary_icon);
+  ShowInstallInProgressNotification(shortcut_info, primary_icon,
+                                    is_primary_icon_maskable);
 
   // We pass an observer which wraps the WebContents to the callback, since the
   // installation may take more than 10 seconds so there is a chance that the
@@ -58,7 +59,7 @@ void WebApkInstallService::InstallAsync(content::WebContents* web_contents,
       badge_icon,
       base::Bind(&WebApkInstallService::OnFinishedInstall,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&observer),
-                 shortcut_info, primary_icon));
+                 shortcut_info, primary_icon, is_primary_icon_maskable));
 }
 
 void WebApkInstallService::UpdateAsync(
@@ -72,13 +73,15 @@ void WebApkInstallService::OnFinishedInstall(
     std::unique_ptr<LifetimeObserver> observer,
     const ShortcutInfo& shortcut_info,
     const SkBitmap& primary_icon,
+    bool is_primary_icon_maskable,
     WebApkInstallResult result,
     bool relax_updates,
     const std::string& webapk_package_name) {
   installs_.erase(shortcut_info.manifest_url);
 
   if (result == WebApkInstallResult::SUCCESS) {
-    ShowInstalledNotification(shortcut_info, primary_icon, webapk_package_name);
+    ShowInstalledNotification(shortcut_info, primary_icon,
+                              is_primary_icon_maskable, webapk_package_name);
     return;
   }
 
@@ -106,7 +109,8 @@ void WebApkInstallService::OnFinishedInstall(
 // static
 void WebApkInstallService::ShowInstallInProgressNotification(
     const ShortcutInfo& shortcut_info,
-    const SkBitmap& primary_icon) {
+    const SkBitmap& primary_icon,
+    bool is_primary_icon_maskable) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> java_manifest_url =
       base::android::ConvertUTF8ToJavaString(env,
@@ -119,13 +123,15 @@ void WebApkInstallService::ShowInstallInProgressNotification(
       gfx::ConvertToJavaBitmap(&primary_icon);
 
   Java_WebApkInstallService_showInstallInProgressNotification(
-      env, java_manifest_url, java_short_name, java_url, java_primary_icon);
+      env, java_manifest_url, java_short_name, java_url, java_primary_icon,
+      is_primary_icon_maskable);
 }
 
 // static
 void WebApkInstallService::ShowInstalledNotification(
     const ShortcutInfo& shortcut_info,
     const SkBitmap& primary_icon,
+    bool is_primary_icon_maskable,
     const std::string& webapk_package_name) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> java_webapk_package =
@@ -142,5 +148,5 @@ void WebApkInstallService::ShowInstalledNotification(
 
   Java_WebApkInstallService_showInstalledNotification(
       env, java_webapk_package, java_manifest_url, java_short_name, java_url,
-      java_primary_icon);
+      java_primary_icon, is_primary_icon_maskable);
 }

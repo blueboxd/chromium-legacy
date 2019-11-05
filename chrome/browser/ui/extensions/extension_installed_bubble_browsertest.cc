@@ -77,7 +77,6 @@ ExtensionInstalledBubbleBrowserTest::MakeBubble(
   extension_service()->AddExtension(extension.get());
   auto bubble = std::make_unique<ExtensionInstalledBubble>(
       extension.get(), browser(), SkBitmap());
-  bubble->Initialize();
   return bubble;
 }
 

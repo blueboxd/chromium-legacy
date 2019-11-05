@@ -7,7 +7,6 @@
   --subtitle-font-size: --oobe-default-font-size;
   --subtitle-font-distance-to-baseline: 3px;
   --subtitle-line-height: 18px;
-  --offline-gaia-dialog-width: 768px;
   @apply --oobe-default-font;
 }
 

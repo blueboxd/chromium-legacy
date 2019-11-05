@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">وضع "عدم الإزعاج" مُفعَّل.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لتطبيق واحد}zero{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لـ # تطبيق}two{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لتطبيقين (#)}few{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لـ # تطبيقات}many{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لـ # تطبيقًا}other{عرض إعدادات الإشعارات. تم إيقاف الإشعارات لـ # تطبيق}}</translation>
 <translation id="1525508553941733066">رفض</translation>
-<translation id="1537254971476575106">مكبّر بملء الشاشة</translation>
 <translation id="15373452373711364">مؤشر الماوس الكبير</translation>
 <translation id="1546492247443594934">مكتب 2</translation>
 <translation id="1550523713251050646">انقر للحصول على المزيد من الخيارات</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">انقر على <ph name="KEYBOARD_SHORTCUT" /> لتبديل تنسيق لوحة المفاتيح.</translation>
 <translation id="2501920221385095727">مفاتيح الثبات</translation>
 <translation id="2509468283778169019">‏مفتاح CAPS LOCK قيد التشغيل</translation>
-<translation id="2532589005999780174">وضع التباين العالي</translation>
 <translation id="2542089167727451762">انقر على صورة الملف الشخصي.</translation>
 <translation id="255671100581129685">‏لا يتوفَّر "مساعد Google" في جلسة عامة.</translation>
 <translation id="256712445991462162">المكبِّر الذي تم إرساؤه</translation>
@@ -484,7 +482,6 @@
 <translation id="7984197416080286869">أُجريت محاولات كثيرة جدًا لاستخدام بصمة الإصبع</translation>
 <translation id="7994370417837006925">الدخول المتعدد</translation>
 <translation id="8000066093800657092">لا شبكة</translation>
-<translation id="8029241286966751120">‏تم تفعيل المكبّر بوضع ملء الشاشة. يمكنك إيقافه بالضغط على Ctrl+Search+M مرة أخرى.</translation>
 <translation id="8030169304546394654">غير متصل</translation>
 <translation id="8054466585765276473">يجري حساب وقت البطارية.</translation>
 <translation id="8061464966246066292">تباين عالٍ</translation>
@@ -509,7 +506,6 @@
 <translation id="8388750414311082622">تتعذّر إزالة سطح المكتب الأخير.</translation>
 <translation id="8392451568018454956">قائمة الخيارات لـ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">قفّل أحد الوالدين هذا الجهاز</translation>
-<translation id="8406981827175133772">مُكبِّر بوضع ملء الشاشة</translation>
 <translation id="8425213833346101688">تغيير</translation>
 <translation id="8427213022735114808">‏ترسل ميزة "الإملاء" صوتك إلى Google للسماح بالكتابة بالصوت في أي حقل نصي.</translation>
 <translation id="8428213095426709021">الإعدادات</translation>

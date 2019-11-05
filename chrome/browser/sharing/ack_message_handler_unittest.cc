@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/sharing/sharing_message_sender.h"
 #include "components/sync/protocol/sharing_message.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,20 +15,20 @@
 namespace {
 constexpr char kTestMessageId[] = "test_message_id";
 
-class MockResponseCallbackHelper : public ResponseCallbackHelper {
+class MockSharingMessageSender : public SharingMessageSender {
  public:
-  MockResponseCallbackHelper() = default;
-  ~MockResponseCallbackHelper() override = default;
+  MockSharingMessageSender()
+      : SharingMessageSender(nullptr, nullptr, nullptr) {}
+  ~MockSharingMessageSender() override = default;
 
   MOCK_METHOD3(
-      OnFCMAckReceived,
+      OnAckReceived,
       void(chrome_browser_sharing::MessageType message_type,
            const std::string& fcm_message_id,
-           std::unique_ptr<ResponseCallbackHelper::SharingResponseMessage>
-               response));
+           std::unique_ptr<chrome_browser_sharing::ResponseMessage> response));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockResponseCallbackHelper);
+  DISALLOW_COPY_AND_ASSIGN(MockSharingMessageSender);
 };
 
 class AckMessageHandlerTest : public testing::Test {
@@ -35,7 +36,7 @@ class AckMessageHandlerTest : public testing::Test {
   AckMessageHandlerTest()
       : ack_message_handler_(&mock_response_callback_helper_) {}
 
-  testing::NiceMock<MockResponseCallbackHelper> mock_response_callback_helper_;
+  testing::NiceMock<MockSharingMessageSender> mock_response_callback_helper_;
   AckMessageHandler ack_message_handler_;
 };
 
@@ -61,10 +62,10 @@ TEST_F(AckMessageHandlerTest, OnMessageNoResponse) {
   base::MockCallback<SharingMessageHandler::DoneCallback> done_callback;
   EXPECT_CALL(done_callback, Run(testing::Eq(nullptr)));
 
-  EXPECT_CALL(mock_response_callback_helper_,
-              OnFCMAckReceived(
-                  testing::Eq(chrome_browser_sharing::CLICK_TO_CALL_MESSAGE),
-                  testing::Eq(kTestMessageId), testing::Eq(nullptr)));
+  EXPECT_CALL(
+      mock_response_callback_helper_,
+      OnAckReceived(testing::Eq(chrome_browser_sharing::CLICK_TO_CALL_MESSAGE),
+                    testing::Eq(kTestMessageId), testing::Eq(nullptr)));
 
   ack_message_handler_.OnMessage(std::move(sharing_message),
                                  done_callback.Get());
@@ -86,9 +87,9 @@ TEST_F(AckMessageHandlerTest, OnMessageWithResponse) {
 
   EXPECT_CALL(
       mock_response_callback_helper_,
-      OnFCMAckReceived(
-          testing::Eq(chrome_browser_sharing::CLICK_TO_CALL_MESSAGE),
-          testing::Eq(kTestMessageId), ProtoEquals(response_message_copy)));
+      OnAckReceived(testing::Eq(chrome_browser_sharing::CLICK_TO_CALL_MESSAGE),
+                    testing::Eq(kTestMessageId),
+                    ProtoEquals(response_message_copy)));
 
   ack_message_handler_.OnMessage(std::move(sharing_message),
                                  done_callback.Get());

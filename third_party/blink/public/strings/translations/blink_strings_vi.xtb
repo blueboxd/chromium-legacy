@@ -106,6 +106,7 @@
 <translation id="4661075872484491155">cây</translation>
 <translation id="4664250907885839816">Phần đứng sau '<ph name="ATSIGN" />' không được chứa biểu tượng '<ph name="INVALIDCHARACTER" />'.</translation>
 <translation id="4668956016107839909">phụ lục</translation>
+<translation id="4698212723196775569">mã</translation>
 <translation id="4718048029184481307">Đang phát ở chế độ hình trong hình</translation>
 <translation id="4742539557769756338">trang bìa</translation>
 <translation id="4748357248530471599">bật/tắt chế độ toàn màn hình có vết cắt</translation>
@@ -191,6 +192,7 @@
 <translation id="7118469954320184356">Không có nội dung mô tả.</translation>
 <translation id="7139483182332611405">lời nói đầu</translation>
 <translation id="7214187073215825913">thông tin về nội dung</translation>
+<translation id="7238347055216017155">nhấn mạnh</translation>
 <translation id="7263440858009898357">Vui lòng chọn một mục trong danh sách.</translation>
 <translation id="727747134524199931">tiêu đề cột</translation>
 <translation id="7320576522385648310">lưu vào bộ đệm</translation>
@@ -217,6 +219,7 @@
 <translation id="7888071071722539607">Vui lòng bao gồm '<ph name="ATSIGN" />' trong địa chỉ email. '<ph name="INVALIDADDRESS" />' bị thiếu '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">bộ chia</translation>
 <translation id="795667975304826397">Không có tệp nào được chọn</translation>
+<translation id="8034303206267677282">mạnh</translation>
 <translation id="8053789581856978548">trường văn bản tìm kiếm</translation>
 <translation id="8057695513531652401">lưu ý</translation>
 <translation id="8105797009065549151">tham chiếu chú thích</translation>

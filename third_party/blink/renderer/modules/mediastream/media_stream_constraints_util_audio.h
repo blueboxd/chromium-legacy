@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
 
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -145,7 +145,7 @@ using AudioDeviceCaptureCapabilities = Vector<AudioDeviceCaptureCapability>;
 // settings on an open audio track.
 // TODO(crbug.com/796964): remove |is_reconfiguration_allowed| when both
 // getUserMedia and applyConstraints code paths allow for reconfiguration.
-BLINK_MODULES_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
+MODULES_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
     const AudioDeviceCaptureCapabilities& capabilities,
     const blink::WebMediaConstraints& constraints,
     bool should_disable_hardware_noise_suppression,
@@ -158,18 +158,17 @@ BLINK_MODULES_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
 // different from those of |source| because it is currently not possible to
 // reconfigure audio tracks or sources.
 // TODO(guidou): Allow reconfiguring audio tracks. https://crbug.com/796964
-BLINK_MODULES_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
+MODULES_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
     blink::MediaStreamAudioSource* source,
     const blink::WebMediaConstraints& constraints);
 
 // Return a tuple with <min,max> representing the min and max buffer sizes or
 // latencies that can be provided by the given AudioParameters. The min and max
 // are guaranteed to be > 0 and with max >= min.
-BLINK_MODULES_EXPORT std::tuple<int, int>
-GetMinMaxBufferSizesForAudioParameters(
+MODULES_EXPORT std::tuple<int, int> GetMinMaxBufferSizesForAudioParameters(
     const media::AudioParameters& parameters);
-BLINK_MODULES_EXPORT std::tuple<double, double>
-GetMinMaxLatenciesForAudioParameters(const media::AudioParameters& parameters);
+MODULES_EXPORT std::tuple<double, double> GetMinMaxLatenciesForAudioParameters(
+    const media::AudioParameters& parameters);
 
 }  // namespace blink
 

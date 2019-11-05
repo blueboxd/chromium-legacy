@@ -72,6 +72,16 @@ class SyncUserSettings {
   // not guaranteed to be registered.
   virtual UserSelectableTypeSet GetForcedTypes() const = 0;
 
+#if defined(OS_CHROMEOS)
+  // As above, but for Chrome OS-specific data types. These are controlled by
+  // toggles in the OS Settings UI.
+  virtual bool IsSyncAllOsTypesEnabled() const = 0;
+  virtual UserSelectableOsTypeSet GetSelectedOsTypes() const = 0;
+  virtual void SetSelectedOsTypes(bool sync_all_os_types,
+                                  UserSelectableOsTypeSet types) = 0;
+  virtual UserSelectableOsTypeSet GetRegisteredSelectableOsTypes() const = 0;
+#endif  // defined(OS_CHROMEOS)
+
   // Encryption state.
   // Note that all of this state may only be queried or modified if the Sync
   // engine is initialized.

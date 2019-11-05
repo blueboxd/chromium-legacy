@@ -38,3 +38,6 @@
 # Expect the swapped out RenderFrameHost to have a replacement proxy. This won't
 # happen when the BackForwardCache is used to store the old document.
 -RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill
+
+# https://crbug.com/1020884
+-ServiceWorkerVersionBrowserTest.ReadResourceFailure_WaitingWorker

@@ -6,18 +6,18 @@
 <style type="text/css" media="screen">
     #parent {
         -webkit-transform-style: preserve-3d;
-        transform: translateZ(0);
+        will-change: transform;
     }
     #child {
         width: 200px;
         height: 200px;
-        transform: translateZ(0px);
+        will-change: transform;
         background: blue;
     }
     #child > div {
         width: 100px;
         height: 100px;
-        transform: translateZ(0px);
+        will-change: transform;
         background: green;
     }
 </style>

@@ -58,14 +58,14 @@ suite('Tab', function() {
     await animationPromise;
     // After animation completes
     assertEquals('1', window.getComputedStyle(tabElement).opacity);
-    assertEquals('280px', window.getComputedStyle(tabElement).maxWidth);
+    assertEquals('none', window.getComputedStyle(tabElement).maxWidth);
   });
 
   test('slideOut animates out the element', async () => {
     const animationPromise = tabElement.slideOut();
     // Before animation completes
     assertEquals('1', window.getComputedStyle(tabElement).opacity);
-    assertEquals('280px', window.getComputedStyle(tabElement).maxWidth);
+    assertEquals('none', window.getComputedStyle(tabElement).maxWidth);
     await animationPromise;
     // After animation completes
     assertFalse(document.body.contains(tabElement));

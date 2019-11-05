@@ -100,17 +100,6 @@
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
-namespace {
-bool IsNeutralWithinTable(blink::AXObject* obj) {
-  if (!obj)
-    return false;
-  ax::mojom::Role role = obj->RoleValue();
-  return role == ax::mojom::Role::kGroup ||
-         role == ax::mojom::Role::kGenericContainer ||
-         role == ax::mojom::Role::kIgnored;
-}
-}  // namespace
-
 namespace blink {
 
 AXLayoutObject::AXLayoutObject(LayoutObject* layout_object,
@@ -203,14 +192,18 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kLineBreak;
   if (layout_object_->IsText())
     return ax::mojom::Role::kStaticText;
-  if (layout_object_->IsTable() && node) {
-    return IsDataTable() ? ax::mojom::Role::kTable
-                         : ax::mojom::Role::kLayoutTable;
-  }
+
+  // Chrome exposes both table markup and table CSS as a tables, letting
+  // the screen reader determine what to do for CSS tables. If this line
+  // is reached, then it is not an HTML table, and therefore will only be
+  // considered a data table if ARIA markup indicates it is a table.
+  if (layout_object_->IsTable() && node)
+    return ax::mojom::Role::kLayoutTable;
   if (layout_object_->IsTableRow() && node)
     return DetermineTableRowRole();
   if (layout_object_->IsTableCell() && node)
     return DetermineTableCellRole();
+
   if (css_box && IsImageOrAltText(css_box, node)) {
     if (node && node->IsLink())
       return ax::mojom::Role::kImageMap;
@@ -2791,119 +2784,6 @@ ax::mojom::SortDirection AXLayoutObject::GetSortDirection() const {
   // Technically, illegal values should be exposed as is, but this does
   // not seem to be worth the implementation effort at this time.
   return ax::mojom::SortDirection::kOther;
-}
-
-static bool IsNonEmptyNonHeaderCell(const LayoutNGTableCellInterface* cell) {
-  if (!cell)
-    return false;
-
-  if (Node* node = cell->ToLayoutObject()->GetNode())
-    return node->hasChildren() && node->HasTagName(html_names::kTdTag);
-
-  return false;
-}
-
-static bool IsHeaderCell(const LayoutNGTableCellInterface* cell) {
-  if (!cell)
-    return false;
-
-  if (Node* node = cell->ToLayoutObject()->GetNode())
-    return node->HasTagName(html_names::kThTag);
-
-  return false;
-}
-
-static ax::mojom::Role DecideRoleFromSiblings(
-    LayoutNGTableCellInterface* cell) {
-  if (!IsHeaderCell(cell))
-    return ax::mojom::Role::kCell;
-
-  // If this header is only cell in its row, it is a column header.
-  // It is also a column header if it has a header on either side of it.
-  // If instead it has a non-empty td element next to it, it is a row header.
-
-  const LayoutNGTableCellInterface* next_cell = cell->NextCellInterface();
-  const LayoutNGTableCellInterface* previous_cell =
-      cell->PreviousCellInterface();
-  if (!next_cell && !previous_cell)
-    return ax::mojom::Role::kColumnHeader;
-  if (IsHeaderCell(next_cell) && IsHeaderCell(previous_cell))
-    return ax::mojom::Role::kColumnHeader;
-  if (IsNonEmptyNonHeaderCell(next_cell) ||
-      IsNonEmptyNonHeaderCell(previous_cell))
-    return ax::mojom::Role::kRowHeader;
-
-  const LayoutNGTableRowInterface* layout_row = cell->RowInterface();
-  DCHECK(layout_row);
-
-  // If this row's first or last cell is a non-empty td, this is a row header.
-  // Do the same check for the second and second-to-last cells because tables
-  // often have an empty cell at the intersection of the row and column headers.
-  const LayoutNGTableCellInterface* first_cell =
-      layout_row->FirstCellInterface();
-  DCHECK(first_cell);
-
-  const LayoutNGTableCellInterface* last_cell = layout_row->LastCellInterface();
-  DCHECK(last_cell);
-
-  if (IsNonEmptyNonHeaderCell(first_cell) || IsNonEmptyNonHeaderCell(last_cell))
-    return ax::mojom::Role::kRowHeader;
-
-  if (IsNonEmptyNonHeaderCell(first_cell->NextCellInterface()) ||
-      IsNonEmptyNonHeaderCell(last_cell->PreviousCellInterface()))
-    return ax::mojom::Role::kRowHeader;
-
-  // We have no evidence that this is not a column header.
-  return ax::mojom::Role::kColumnHeader;
-}
-
-ax::mojom::Role AXLayoutObject::DetermineTableRowRole() const {
-  AXObject* parent = ParentObject();
-  while (IsNeutralWithinTable(parent))
-    parent = parent->ParentObject();
-
-  if (!parent || !parent->IsTableLikeRole())
-    return ax::mojom::Role::kGenericContainer;
-
-  if (parent->RoleValue() == ax::mojom::Role::kLayoutTable)
-    return ax::mojom::Role::kLayoutTableRow;
-
-  if (parent->IsTableLikeRole())
-    return ax::mojom::Role::kRow;
-
-  return ax::mojom::Role::kGenericContainer;
-}
-
-ax::mojom::Role AXLayoutObject::DetermineTableCellRole() const {
-  DCHECK(layout_object_);
-
-  AXObject* parent = ParentObject();
-  if (!parent || !parent->IsTableRowLikeRole())
-    return ax::mojom::Role::kGenericContainer;
-
-  // Ensure table container.
-  AXObject* grandparent = parent->ParentObject();
-  while (IsNeutralWithinTable(grandparent))
-    grandparent = grandparent->ParentObject();
-  if (!grandparent || !grandparent->IsTableLikeRole())
-    return ax::mojom::Role::kGenericContainer;
-
-  if (parent->RoleValue() == ax::mojom::Role::kLayoutTableRow)
-    return ax::mojom::Role::kLayoutTableCell;
-
-  if (!GetNode() || !GetNode()->HasTagName(html_names::kThTag))
-    return ax::mojom::Role::kCell;
-
-  const AtomicString& scope = GetAttribute(html_names::kScopeAttr);
-  if (EqualIgnoringASCIICase(scope, "row") ||
-      EqualIgnoringASCIICase(scope, "rowgroup"))
-    return ax::mojom::Role::kRowHeader;
-  if (EqualIgnoringASCIICase(scope, "col") ||
-      EqualIgnoringASCIICase(scope, "colgroup"))
-    return ax::mojom::Role::kColumnHeader;
-
-  return DecideRoleFromSiblings(
-      ToInterface<LayoutNGTableCellInterface>(layout_object_));
 }
 
 AXObject* AXLayoutObject::CellForColumnAndRow(unsigned target_column_index,

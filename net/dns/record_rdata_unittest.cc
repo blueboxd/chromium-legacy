@@ -9,6 +9,7 @@
 
 #include "base/big_endian.h"
 #include "net/dns/dns_response.h"
+#include "net/dns/dns_test_util.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,14 +130,6 @@ TEST(RecordRdataTest, ParseCnameRecord) {
   ASSERT_TRUE(record_obj->IsEqual(record_obj.get()));
 }
 
-// Cribbed from boringssl SSLTest.ESNIKeysDeserialize (CL 37704/13)
-const char kWellFormedEsniKeys[] = {
-    0xff, 0x3,  0x0,  0x0,  0x0,  0x24, 0x0,  0x1d, 0x0,  0x20,
-    0xed, 0xed, 0xc8, 0x68, 0xc1, 0x71, 0xd6, 0x9e, 0xa9, 0xf0,
-    0xa2, 0xc9, 0xf5, 0xa9, 0xdc, 0xcf, 0xf9, 0xb8, 0xed, 0x15,
-    0x5c, 0xc4, 0x5a, 0xec, 0x6f, 0xb2, 0x86, 0x14, 0xb7, 0x71,
-    0x1b, 0x7c, 0x0,  0x2,  0x13, 0x1,  0x1,  0x4,  0x0,  0x0};
-
 // Appends a well-formed ESNIKeys struct to the stream owned by "writer".
 // Returns the length, in bytes, of this struct, or 0 on error.
 //
@@ -144,7 +137,7 @@ const char kWellFormedEsniKeys[] = {
 // ESNIKeys struct has positive length.)
 void AppendWellFormedEsniKeys(base::BigEndianWriter* writer) {
   CHECK(writer);
-  writer->WriteBytes(kWellFormedEsniKeys, sizeof(kWellFormedEsniKeys));
+  writer->WriteBytes(kWellFormedEsniKeys, kWellFormedEsniKeysSize);
 }
 
 // This helper checks |keys| against the well-formed sample ESNIKeys
@@ -152,8 +145,8 @@ void AppendWellFormedEsniKeys(base::BigEndianWriter* writer) {
 // kWellFormedEsniKeys to a StringPiece (it's a byte array, not a
 // null-terminated string).
 void ExpectMatchesSampleKeys(base::StringPiece keys) {
-  EXPECT_EQ(keys, base::StringPiece(kWellFormedEsniKeys,
-                                    sizeof(kWellFormedEsniKeys)));
+  EXPECT_EQ(keys,
+            base::StringPiece(kWellFormedEsniKeys, kWellFormedEsniKeysSize));
 }
 
 // Appends an IP address in network byte order, prepended by one byte
@@ -217,7 +210,7 @@ TEST(RecordRdataTest, ParseEsniRecordNoExtensions) {
   ASSERT_THAT(record_obj, NotNull());
   EXPECT_TRUE(record_obj->IsEqual(record_obj.get()));
   EXPECT_EQ(record_obj->esni_keys(),
-            std::string(kWellFormedEsniKeys, sizeof(kWellFormedEsniKeys)));
+            std::string(kWellFormedEsniKeys, kWellFormedEsniKeysSize));
   EXPECT_EQ(record_obj->Type(), dns_protocol::kExperimentalTypeEsniDraft4);
 }
 

@@ -11,7 +11,6 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CA
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
 
-import android.content.Context;
 import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -31,8 +30,8 @@ class TasksSurfaceMediator {
     private final FakeboxDelegate mFakeboxDelegate;
     private final PropertyModel mModel;
 
-    TasksSurfaceMediator(Context context, PropertyModel model, FakeboxDelegate fakeboxDelegate,
-            boolean isTabCarousel) {
+    TasksSurfaceMediator(
+            PropertyModel model, FakeboxDelegate fakeboxDelegate, boolean isTabCarousel) {
         mFakeboxDelegate = fakeboxDelegate;
         assert mFakeboxDelegate != null;
 

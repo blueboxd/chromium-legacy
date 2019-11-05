@@ -26,7 +26,7 @@ class TestClipboard : public Clipboard {
   // Creates and associates a TestClipboard with the current thread. When no
   // longer needed, the returned clipboard must be freed by calling
   // Clipboard::DestroyClipboardForCurrentThread() on the same thread.
-  static Clipboard* CreateForCurrentThread();
+  static TestClipboard* CreateForCurrentThread();
 
   // Sets the time to be returned by GetLastModifiedTime();
   void SetLastModifiedTime(const base::Time& time);

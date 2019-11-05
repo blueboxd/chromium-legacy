@@ -12,22 +12,27 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/download/DownloadFileProvider.java",
     "java/src/org/chromium/chrome/browser/download/DownloadInfo.java",
     "java/src/org/chromium/chrome/browser/download/MediaStoreHelper.java",
+    "java/src/org/chromium/chrome/browser/download/DownloadStartupUtils.java",
     "java/src/org/chromium/chrome/browser/download/MimeUtils.java",
   ]
 
   deps = [
     "//base:base_java",
+    "//base:jni_java",
     "//chrome/browser/util:java",
     "//components/download/public/common:public_java",
     "//components/offline_items_collection/core:core_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
   ]
+
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/download/DownloadInfo.java",
+    "java/src/org/chromium/chrome/browser/download/DownloadStartupUtils.java",
     "java/src/org/chromium/chrome/browser/download/MimeUtils.java",
   ]
 }

@@ -9,7 +9,6 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_M
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 
 import android.os.Build;
-import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -96,10 +95,7 @@ public class WebXrVrConsentTest {
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
                 PAGE_LOAD_TIMEOUT_S);
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
-        mWebXrVrConsentTestFramework.endSessionOrFail();
-
-        // TODO(https://crbug.com/998307): Remove this once root cause of entering VRB is found.
-        SystemClock.sleep(1000);
+        mWebXrVrConsentTestFramework.endSession();
 
         mWebXrVrConsentTestFramework.setConsentDialogExpected(false);
 
@@ -142,10 +138,7 @@ public class WebXrVrConsentTest {
         mWebXrVrConsentTestFramework.runJavaScriptOrFail(
                 "setupImmersiveSessionToRequestHeight()", POLL_TIMEOUT_SHORT_MS);
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
-        mWebXrVrConsentTestFramework.endSessionOrFail();
-
-        // TODO(https://crbug.com/998307): Remove this once root cause of entering VRB is found.
-        SystemClock.sleep(1000);
+        mWebXrVrConsentTestFramework.endSession();
 
         // Now set up to request the lower level of consent. The session should be entered without
         // the consent prompt.
@@ -170,10 +163,7 @@ public class WebXrVrConsentTest {
         mWebXrVrConsentTestFramework.runJavaScriptOrFail(
                 "setupImmersiveSessionToRequestDefault()", POLL_TIMEOUT_SHORT_MS);
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
-        mWebXrVrConsentTestFramework.endSessionOrFail();
-
-        // TODO(https://crbug.com/998307): Remove this once root cause of entering VRB is found.
-        SystemClock.sleep(1000);
+        mWebXrVrConsentTestFramework.endSession();
 
         // Now request a session that requires a higher level of consent. It should still be
         // prompted for consent and the session should enter.
@@ -194,7 +184,7 @@ public class WebXrVrConsentTest {
                 PAGE_LOAD_TIMEOUT_S);
 
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
-        mWebXrVrConsentTestFramework.endSessionOrFail();
+        mWebXrVrConsentTestFramework.endSession();
 
         mWebXrVrConsentTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),

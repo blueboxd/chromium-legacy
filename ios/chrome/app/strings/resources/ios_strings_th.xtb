@@ -99,6 +99,7 @@
 <translation id="2273327106802955778">เมนูเพิ่มเติม</translation>
 <translation id="2316709634732130529">ใช้รหัสผ่านที่แนะนำ</translation>
 <translation id="2320166752086256636">ซ่อนแป้นพิมพ์</translation>
+<translation id="2330129964253841015">เตือนคุณหากรหัสผ่านถูกบุกรุก</translation>
 <translation id="2339560363438331454">การซิงค์และบริการของ Google</translation>
 <translation id="2351097562818989364">รีเซ็ตการตั้งค่าการแปลภาษาของคุณแล้ว</translation>
 <translation id="2359043044084662842">แปล</translation>
@@ -252,6 +253,7 @@
 <translation id="4620246317052452550">หน้าที่คุณอ่านแล้ว</translation>
 <translation id="4630540211544979320">แปลหน้าเว็บ</translation>
 <translation id="4636930964841734540">ข้อมูล</translation>
+<translation id="4659126640776004816">ฟีเจอร์นี้จะเปิดเมื่อคุณลงชื่อเข้าใช้บัญชี Google</translation>
 <translation id="4659667755519643272">เข้าสู่มุมมองตัวสลับแท็บ</translation>
 <translation id="4666531726415300315">ลงชื่อเข้าใช้ด้วย <ph name="EMAIL" />
 

@@ -37,12 +37,28 @@ const base::FeatureParam<int> kCacheStorageMaxSharedOps{
     &features::kCacheStorageParallelOps, "max_shared_ops",
     kDefaultMaxSharedOps};
 
+bool OpPointerLessThan(const std::unique_ptr<CacheStorageOperation>& left,
+                       const std::unique_ptr<CacheStorageOperation>& right) {
+  DCHECK(left);
+  DCHECK(right);
+  // We want to prioritize high priority operations, but otherwise sort
+  // by creation order.  Since the first created operations will have a lower
+  // identifier value we reverse the logic of the id comparison.
+  //
+  // Note, there might be a slight mis-ordering when the 64-bit id values
+  // rollover, but this should not be critical and will happen very rarely.
+  return left->priority() < right->priority() || left->id() > right->id();
+}
+
 }  // namespace
 
 CacheStorageScheduler::CacheStorageScheduler(
     CacheStorageSchedulerClient client_type,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)), client_type_(client_type) {}
+    : task_runner_(std::move(task_runner)), client_type_(client_type) {
+  std::make_heap(pending_operations_.begin(), pending_operations_.end(),
+                 &OpPointerLessThan);
+}
 
 CacheStorageScheduler::~CacheStorageScheduler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -53,17 +69,22 @@ CacheStorageSchedulerId CacheStorageScheduler::CreateId() {
   return next_id_++;
 }
 
-void CacheStorageScheduler::ScheduleOperation(CacheStorageSchedulerId id,
-                                              CacheStorageSchedulerMode mode,
-                                              CacheStorageSchedulerOp op_type,
-                                              base::OnceClosure closure) {
+void CacheStorageScheduler::ScheduleOperation(
+    CacheStorageSchedulerId id,
+    CacheStorageSchedulerMode mode,
+    CacheStorageSchedulerOp op_type,
+    CacheStorageSchedulerPriority priority,
+    base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordCacheStorageSchedulerUMA(CacheStorageSchedulerUMA::kQueueLength,
                                  client_type_, op_type,
                                  pending_operations_.size());
 
   pending_operations_.push_back(std::make_unique<CacheStorageOperation>(
-      std::move(closure), id, client_type_, mode, op_type, task_runner_));
+      std::move(closure), id, client_type_, mode, op_type, priority,
+      task_runner_));
+  std::push_heap(pending_operations_.begin(), pending_operations_.end(),
+                 &OpPointerLessThan);
   MaybeRunOperation();
 }
 
@@ -137,7 +158,9 @@ void CacheStorageScheduler::MaybeRunOperation() {
 
   running_operations_.emplace(next_operation->id(),
                               std::move(pending_operations_.front()));
-  pending_operations_.pop_front();
+  std::pop_heap(pending_operations_.begin(), pending_operations_.end(),
+                &OpPointerLessThan);
+  pending_operations_.pop_back();
 
   RecordCacheStorageSchedulerUMA(
       CacheStorageSchedulerUMA::kQueueDuration, client_type_,

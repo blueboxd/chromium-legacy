@@ -89,7 +89,10 @@ class ClickToCallUtilsTest : public testing::Test {
         /* vapid_key_manager= */ nullptr,
         std::make_unique<MockSharingDeviceRegistration>(),
         /* fcm_sender= */ nullptr,
-        std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr),
+        std::make_unique<SharingFCMHandler>(
+            /*gcm_driver=*/nullptr, /*sharing_fcm_sender=*/nullptr,
+            /*sync_preference=nullptr*/ nullptr),
+        /*message_sender_=*/nullptr,
         /* gcm_driver= */ nullptr,
         /* device_info_tracker= */ nullptr,
         /* local_device_info_provider= */ nullptr,

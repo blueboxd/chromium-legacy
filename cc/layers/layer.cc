@@ -1436,14 +1436,6 @@ bool Layer::Update() {
   return false;
 }
 
-bool Layer::HasSlowPaths() const {
-  return false;
-}
-
-bool Layer::HasNonAAPaint() const {
-  return false;
-}
-
 void Layer::UpdateDebugInfo() {
   DCHECK(frame_viewer_instrumentation::IsTracingLayerTreeSnapshots());
   if (inputs_.client)

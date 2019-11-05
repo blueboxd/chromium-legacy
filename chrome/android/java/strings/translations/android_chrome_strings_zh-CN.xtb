@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="2156074688469523661">其余的网站（<ph name="NUMBER_OF_SITES" /> 个）</translation>
 <translation id="2157851137955077194">如果想将您手机上的内容分享到另一部设备，那么对于这两部设备，您都需在 Chrome 设置中开启同步功能</translation>
-<translation id="2170088579611075216">允许并进入 VR</translation>
 <translation id="2175927920773552910">二维码</translation>
 <translation id="218608176142494674">共享</translation>
 <translation id="2227444325776770048">以“<ph name="USER_FULL_NAME" />”的身份继续</translation>
@@ -183,6 +182,7 @@
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
 <translation id="2323763861024343754">网站存储数据</translation>
 <translation id="2328985652426384049">无法登录</translation>
+<translation id="2330129964253841015">在密码泄露时向您发出警告</translation>
 <translation id="2349710944427398404">Chrome 所使用的数据总量，包括帐号、书签和已保存的设置</translation>
 <translation id="2353636109065292463">检查互联网连接状况</translation>
 <translation id="2359808026110333948">继续</translation>
@@ -190,6 +190,7 @@
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2394602618534698961">您下载的文件会显示在此处</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2407481962792080328">当您登录自己的 Google 帐号后，系统即会启用此功能</translation>
 <translation id="2410754283952462441">选择帐号</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2416359993254398973">Chrome 需要获得相应权限，才能允许此网站使用您的摄像头。</translation>
@@ -198,6 +199,7 @@
 <translation id="2434158240863470628">下载完成 <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">位置信息使用权</translation>
 <translation id="2450083983707403292">要重新开始下载 <ph name="FILE_NAME" /> 吗？</translation>
+<translation id="246532703174860178">分享</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2490684707762498678">由 <ph name="APP_NAME" /> 管理</translation>
 <translation id="2494974097748878569">Chrome 中的 Google 助理</translation>
@@ -412,7 +414,6 @@
 <translation id="4135200667068010335">要与之分享标签页的设备的列表已关闭。</translation>
 <translation id="4149994727733219643">使用简化版视图查看网页</translation>
 <translation id="4165986682804962316">网站设置</translation>
-<translation id="4169535189173047238">不允许</translation>
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="4179980317383591987">已使用 <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">语言</translation>
@@ -531,10 +532,6 @@
 <translation id="5011311129201317034"><ph name="SITE" /> 希望连接到以下所选设备：</translation>
 <translation id="5013696553129441713">没有新建议</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">当您处于 VR 环境时，此网站或许能够得知：
-  -  您的身体特征，例如身高
-
-请确保您信任此网站，然后再进入 VR 环境。</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5048398596102334565">允许网站使用动态传感器（推荐）</translation>
@@ -608,11 +605,6 @@
 <translation id="5527082711130173040">Chrome 需要拥有位置信息使用权才能扫描设备。请<ph name="BEGIN_LINK1" />更新权限<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />此设备的位置信息使用权也已被停用<ph name="END_LINK2" />。</translation>
 <translation id="5527111080432883924">网站需先询问并得到许可才能读取剪贴板中的文字和图片（推荐）</translation>
 <translation id="5530766185686772672">关闭隐身标签页</translation>
-<translation id="5534334044554683961">当您处于 VR 环境时，此网站或许能够得知：
-  -   您的身体特征，例如身高
-  -   您房间的布局
-
-请确保您信任此网站，然后再进入 VR 环境。</translation>
 <translation id="5534640966246046842">已复制网站</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5561549206367097665">正在等待连接到网络…</translation>
@@ -903,7 +895,6 @@
 <translation id="7665369617277396874">添加帐号</translation>
 <translation id="766587987807204883">报道会显示在此处，即使在离线状态下也可以阅读</translation>
 <translation id="7682724950699840886">请尝试按以下提示操作：确保您的设备上有足够的空间，然后重新尝试导出。</translation>
-<translation id="7685301384041462804">请确保您信任此网站，然后再进入 VR 环境。</translation>
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
 <translation id="7704317875155739195">自动填充搜索字词和网址</translation>
 <translation id="7725024127233776428">您添加书签的网页会显示在此处</translation>
@@ -1079,7 +1070,6 @@
 <translation id="8998729206196772491">您正要登录由 <ph name="MANAGED_DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐号永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="9019902583201351841">由您父母管理</translation>
 <translation id="9028914725102941583">开启同步功能以跨设备分享内容</translation>
-<translation id="9029323097866369874">允许 <ph name="DOMAIN" /> 进入 VR 环境？</translation>
 <translation id="9040142327097499898">允许显示通知。但此设备的位置信息功能已关闭。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 个视频}other{# 个视频}}</translation>
 <translation id="9050666287014529139">密码</translation>

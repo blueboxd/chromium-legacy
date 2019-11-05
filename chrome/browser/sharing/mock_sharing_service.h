@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SHARING_MOCK_SHARING_SERVICE_H_
 #define CHROME_BROWSER_SHARING_MOCK_SHARING_SERVICE_H_
 
+#include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_service.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,7 +24,7 @@ class MockSharingService : public SharingService {
                void(const std::string& device_guid,
                     base::TimeDelta response_timeout,
                     chrome_browser_sharing::SharingMessage message,
-                    ResponseCallbackHelper::ResponseCallback callback));
+                    SharingMessageSender::ResponseCallback callback));
 
   MOCK_CONST_METHOD1(
       GetDeviceByGuid,

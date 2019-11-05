@@ -4,9 +4,19 @@
 
 package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
-import java.util.List;
-
 /**
  * Interface for the Tab Suggestions framework.
  */
-public interface TabSuggestions { List<TabSuggestion> getSuggestions(TabContext tabContext); }
+public interface TabSuggestions {
+    /**
+     * Adds an observer
+     * @param tabSuggestionsObserver observer which is notified when new suggestions are available
+     */
+    void addObserver(TabSuggestionsObserver tabSuggestionsObserver);
+
+    /**
+     * Removes an observer
+     * @param tabSuggestionsObserver observer which is notified when new suggestions are available
+     */
+    void removeObserver(TabSuggestionsObserver tabSuggestionsObserver);
+}

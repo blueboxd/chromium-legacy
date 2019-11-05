@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -312,16 +313,16 @@ INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
                          testing::Bool());
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
 
 // Loads a webpage that has both script and noscript tags and also requests
 // a script resource. Verifies that the noscript tag is evaluated and the
 // script resource is not loaded.
 IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabled)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabled)) {
   GURL url = https_url();
 
   // Whitelist NoScript for https_hint_setup_url()'s' host.
@@ -341,7 +342,27 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledButHttpRequest)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabled_Incognito)) {
+  GURL url = https_url();
+
+  // Whitelist NoScript for https_hint_setup_url()'s' host.
+  SetUpNoScriptWhitelist(https_hint_setup_url());
+
+  base::HistogramTester histogram_tester;
+  Browser* incognito = CreateIncognitoBrowser();
+  ASSERT_FALSE(PreviewsServiceFactory::GetForProfile(incognito->profile()));
+  ASSERT_TRUE(PreviewsServiceFactory::GetForProfile(browser()->profile()));
+
+  ui_test_utils::NavigateToURL(incognito, url);
+
+  // Verify JS was loaded indicating that NoScript preview was not triggered.
+  EXPECT_FALSE(noscript_css_requested());
+  EXPECT_TRUE(noscript_js_requested());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabledButHttpRequest)) {
   GURL url = http_url();
 
   // Whitelist NoScript for http_hint_setup_url() host.
@@ -355,7 +376,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(
+                       DISABLE_ON_WIN_MAC_CHROMEOS(
                            NoScriptPreviewsEnabledButNoTransformDirective)) {
   GURL url = https_no_transform_url();
 
@@ -375,7 +396,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledHttpRedirectToHttps)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabledHttpRedirectToHttps)) {
   GURL url = redirect_url();
 
   // Whitelist NoScript for http_hint_setup_url() host.
@@ -395,7 +416,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsRecordsOptOut)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsRecordsOptOut)) {
   GURL url = redirect_url();
 
   // Whitelist NoScript for http_hint_setup_url()'s' host.
@@ -422,7 +443,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledByWhitelist)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabledByWhitelist)) {
   GURL url = https_url();
 
   // Whitelist NoScript for https_hint_setup_url()'s' host.
@@ -437,7 +458,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsNotEnabledByWhitelist)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsNotEnabledByWhitelist)) {
   GURL url = https_url();
 
   // Whitelist random site for NoScript.

@@ -1378,6 +1378,25 @@ TEST_P(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
   EXPECT_FALSE(GetDropTarget(1));
 }
 
+// Tests that the drop target is removed if a window is destroyed while being
+// dragged from the top.
+TEST_P(OverviewSessionTest,
+       DropTargetRemovedIfWindowDraggedFromTopIsDestroyed) {
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(AppType::BROWSER));
+  std::unique_ptr<WindowResizer> resizer =
+      CreateWindowResizer(window.get(), gfx::Point(400, 0), HTCAPTION,
+                          ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+  ASSERT_TRUE(InOverviewSession());
+  EXPECT_TRUE(GetDropTarget(0));
+  resizer.reset();
+  window.reset();
+  ASSERT_TRUE(InOverviewSession());
+  EXPECT_FALSE(GetDropTarget(0));
+}
+
 namespace {
 
 // A simple window delegate that returns the specified hit-test code when
@@ -4074,10 +4093,10 @@ TEST_P(SplitViewOverviewSessionTest, Clipping) {
     // snapped in splitview. The window clipping should match this, but the
     // windows regular bounds remain unchanged (maximized).
     overview_session()->Drag(item1, gfx::PointF());
-    EXPECT_EQ(IndicatorState::kPreviewAreaLeft,
+    EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
               overview_session()
                   ->split_view_drag_indicators()
-                  ->current_indicator_state());
+                  ->current_window_dragging_state());
     EXPECT_FALSE(window2->layer()->clip_rect().IsEmpty());
     EXPECT_TRUE(aspect_ratio_near(window2->layer()->clip_rect(),
                                   split_view_bounds_right));
@@ -5666,8 +5685,8 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly, Dragging) {
                                    /*is_touch_dragging=*/false);
   const gfx::PointF right_snap_point(1599.f, 300.f);
   overview_session()->Drag(item1, right_snap_point);
-  EXPECT_EQ(IndicatorState::kPreviewAreaRight,
-            indicators->current_indicator_state());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapRight,
+            indicators->current_window_dragging_state());
   EXPECT_EQ(
       SplitViewController::Get(root_windows[1])
           ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT,
@@ -5682,8 +5701,8 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly, Dragging) {
                                    /*is_touch_dragging=*/false);
   const gfx::PointF left_of_middle(1150.f, 300.f);
   overview_session()->Drag(item2, left_of_middle);
-  EXPECT_EQ(IndicatorState::kDragAreaBoth,
-            indicators->current_indicator_state());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
+            indicators->current_window_dragging_state());
   overview_session()->CompleteDrag(item2, left_of_middle);
   EXPECT_EQ(SplitViewController::State::kRightSnapped,
             split_view_controller->state());
@@ -5693,8 +5712,8 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly, Dragging) {
                                    /*is_touch_dragging=*/false);
   const gfx::PointF left_snap_point(810.f, 300.f);
   overview_session()->Drag(item2, left_snap_point);
-  EXPECT_EQ(IndicatorState::kPreviewAreaLeft,
-            indicators->current_indicator_state());
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
+            indicators->current_window_dragging_state());
   overview_session()->CompleteDrag(item2, left_snap_point);
   EXPECT_EQ(SplitViewController::State::kNoSnap,
             split_view_controller->state());

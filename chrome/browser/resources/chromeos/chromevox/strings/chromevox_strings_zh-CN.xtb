@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">题词</translation>
 <translation id="207477615537953741">关闭语义解释</translation>
 <translation id="2086961585857038472">下一个字词</translation>
+<translation id="2087981446621639008">说明表详情</translation>
 <translation id="2089387485033699258">zh-CN</translation>
 <translation id="2091933974477985526">上一个可编辑的文本区域</translation>
 <translation id="2100350898815792233">读出所有标点符号</translation>
@@ -192,6 +193,7 @@
 <translation id="2416512023405990736">未选中的复选框</translation>
 <translation id="2417569100218200841">内容信息</translation>
 <translation id="2417948780551741035">尾注</translation>
+<translation id="2419852971200420169">说明列表</translation>
 <translation id="2421113964388408478">删除</translation>
 <translation id="2422937916923936891">菜单项复选框</translation>
 <translation id="2428534162001909979">命令菜单</translation>
@@ -370,6 +372,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{1个问号}other{#个问号}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{1个插入符号}other{#个插入符号}}</translation>
 <translation id="352577523970648069">可编辑的文本字段</translation>
+<translation id="3538907380453898475">说明表</translation>
 <translation id="3549141990712742152">剪切<ph name="TEXT" />。</translation>
 <translation id="3549680091535286226">用 2 根手指点按即可暂时关闭语音</translation>
 <translation id="3568702578574425662"><ph name="NAME" />，未选中的复选框</translation>
@@ -778,6 +781,7 @@
 <translation id="6378394210114975876">蓟紫色</translation>
 <translation id="6385591741672306837">列</translation>
 <translation id="6387719785439924554">边栏内容标记</translation>
+<translation id="6393014464788431702">停用所有事件过滤条件</translation>
 <translation id="6411426777058107714">不存在上一个单选按钮。</translation>
 <translation id="6414968628640960377">上一个不同元素。</translation>
 <translation id="6417265370957905582">Google 助理</translation>
@@ -913,6 +917,7 @@
 <translation id="7332592614823088566">第<ph name="ROWINDEX" />行，共<ph name="ROWTOTAL" />行；第<ph name="COLINDEX" />列，共<ph name="COLTOTAL" />列</translation>
 <translation id="7336596009609913925">带有弹出式组件</translation>
 <translation id="7356165926712028380">切换到8点式盲文</translation>
+<translation id="7356610683936413584">说明列表详情</translation>
 <translation id="7362871137496673139">不存在上一个2级标题。</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{1个&amp;号}other{#个&amp;号}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1091,6 +1096,7 @@
 <translation id="8096975275316362544">薄荷奶油色</translation>
 <translation id="8098587210054821856">岩灰色</translation>
 <translation id="8110647606445335195">无ARIA地标。</translation>
+<translation id="8121539003537428024">启用所有事件过滤条件</translation>
 <translation id="812886159861361726">“<ph name="FILE_NAME" />”已停止下载</translation>
 <translation id="8138880386467279117">触摸</translation>
 <translation id="8153880621934657047">不在表格内。</translation>

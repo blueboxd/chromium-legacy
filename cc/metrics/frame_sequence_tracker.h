@@ -182,6 +182,12 @@ class CC_EXPORT FrameSequenceTracker {
     termination_status_ = TerminationStatus::kScheduledForTermination;
   }
 
+  inline void LogFrameSequenceTrace(unsigned char letter) {
+#if DCHECK_IS_ON()
+    frame_sequence_trace_.push_back(letter);
+#endif
+  }
+
   struct TrackedFrameData {
     // Represents the |BeginFrameArgs::source_id| and
     // |BeginFrameArgs::sequence_number| fields of the last processed
@@ -284,6 +290,18 @@ class CC_EXPORT FrameSequenceTracker {
 
   // Report the throughput metrics every 5 seconds.
   const base::TimeDelta time_delta_to_report_ = base::TimeDelta::FromSeconds(5);
+
+#if DCHECK_IS_ON()
+  // This string represents a sequence of frame reporting activities on the
+  // current tracker. Each letter can be one of the following:
+  // {'B', 'N', 'b', 'n', 'S', 'P'}, where
+  // 'B' = ReportBeginMainFrame(), 'N' = ReportMainFrameCausedNoDamage(),
+  // 'b' = ReportBeginImplFrame(), 'n' = ReportMainFrameCausedNoDamage(),
+  // 'S' = ReportSubmitFrame() and 'P' = ReportFramePresented().
+  // Note that |frame_sequence_trace_| is only defined and populated
+  // when DCHECK is on.
+  std::string frame_sequence_trace_;
+#endif
 };
 
 }  // namespace cc

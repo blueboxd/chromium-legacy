@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">サイレント モードはオンです。</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{通知設定を表示します。1 件のアプリで通知がオフになっています}other{通知設定を表示します。# 件のアプリで通知がオフになっています}}</translation>
 <translation id="1525508553941733066">閉じる</translation>
-<translation id="1537254971476575106">拡大鏡（全画面）</translation>
 <translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="1546492247443594934">デスク 2</translation>
 <translation id="1550523713251050646">クリックするとその他のオプションが表示されます</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">キーボード レイアウトを切り替えるには <ph name="KEYBOARD_SHORTCUT" /> キーを押します。</translation>
 <translation id="2501920221385095727">固定キー</translation>
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
-<translation id="2532589005999780174">ハイコントラスト モード</translation>
 <translation id="2542089167727451762">プロフィール画像をタップしてください</translation>
 <translation id="255671100581129685">Google アシスタントは、公開セッションではご利用いただけません。</translation>
 <translation id="256712445991462162">拡大鏡（ドッキング）</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">言語</translation>
 <translation id="5313326810920013265">Bluetooth 設定</translation>
 <translation id="5331975486040154427">USB-C デバイス（左奥のポート）</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">試行回数が上限を超えました</translation>
 <translation id="5397578532367286026">このユーザーの利用状況や履歴は、chrome.com で管理者（<ph name="MANAGER_EMAIL" />）によって確認されます。</translation>
 <translation id="5430931332414098647">インスタント テザリング</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">Google アシスタントは、現在のユーザー アカウントではご利用いただけません。</translation>
 <translation id="5691772641933328258">指紋を認識できません</translation>
 <translation id="5710450975648804523">サイレント モードがオンになっています</translation>
+<translation id="573413375004481890">このデバイスでサポートされるディスプレイの上限数を超えたため、一部のディスプレイが切断されました</translation>
 <translation id="574392208103952083">中</translation>
 <translation id="5744083938413354016">タップによるドラッグ</translation>
 <translation id="5750765938512549687">Bluetooth がオフです</translation>
@@ -482,7 +482,6 @@
 <translation id="7984197416080286869">指紋認証の試行回数が上限を超えています</translation>
 <translation id="7994370417837006925">マルチ ログイン</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
-<translation id="8029241286966751120">拡大鏡（全画面）がオンになっています。オフにするには Ctrl+検索+M キーをもう一度押します。</translation>
 <translation id="8030169304546394654">切断済み</translation>
 <translation id="8054466585765276473">バッテリーの残り時間を計算しています。</translation>
 <translation id="8061464966246066292">ハイコントラスト</translation>
@@ -507,7 +506,6 @@
 <translation id="8388750414311082622">最後のデスクは削除できません。</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> のオプション メニュー</translation>
 <translation id="8394567579869570560">保護者の方がこのデバイスをロックしました</translation>
-<translation id="8406981827175133772">拡大鏡（全画面）</translation>
 <translation id="8425213833346101688">変更</translation>
 <translation id="8427213022735114808">音声入力では、テキスト欄で音声入力できるように Google に音声を送信します。</translation>
 <translation id="8428213095426709021">設定</translation>

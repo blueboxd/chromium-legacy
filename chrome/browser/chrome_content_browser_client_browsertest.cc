@@ -70,6 +70,10 @@
 #include "url/url_constants.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/test/base/launchservices_utils_mac.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -909,6 +913,9 @@ class ProtocolHandlerTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, CustomHandler) {
+#if defined(OS_MACOSX)
+  ASSERT_TRUE(test::RegisterAppWithLaunchServices());
+#endif
   AddProtocolHandler("news", "https://abc.xyz/?url=%s");
 
   ui_test_utils::NavigateToURL(browser(), GURL("news:something"));

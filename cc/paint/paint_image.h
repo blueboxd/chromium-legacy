@@ -51,6 +51,7 @@ struct CC_PAINT_EXPORT ImageHeaderMetadata {
   // The size of the area containing coded data, if known. For example, if the
   // |image_size| for a 4:2:0 JPEG is 12x31, its coded size should be 16x32
   // because the size of a minimum-coded unit for 4:2:0 is 16x16.
+  // A zero-initialized |coded_size| indicates an invalid image.
   base::Optional<gfx::Size> coded_size;
 
   // Whether the image embeds an ICC color profile.

@@ -580,11 +580,6 @@ GetProtocolBlockedSetCookieReason(
           net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)) {
     blockedReasons->push_back(Network::SetCookieBlockedReasonEnum::SameSiteLax);
   }
-  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
-                                    EXCLUDE_SAMESITE_EXTENDED)) {
-    blockedReasons->push_back(
-        Network::SetCookieBlockedReasonEnum::SameSiteExtended);
-  }
   if (status.HasExclusionReason(
           net::CanonicalCookie::CookieInclusionStatus::
               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX)) {
@@ -659,11 +654,6 @@ GetProtocolBlockedCookieReason(
   if (status.HasExclusionReason(
           net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)) {
     blockedReasons->push_back(Network::CookieBlockedReasonEnum::SameSiteLax);
-  }
-  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
-                                    EXCLUDE_SAMESITE_EXTENDED)) {
-    blockedReasons->push_back(
-        Network::CookieBlockedReasonEnum::SameSiteExtended);
   }
   if (status.HasExclusionReason(
           net::CanonicalCookie::CookieInclusionStatus::

@@ -53,6 +53,9 @@ extern const char kKeyUsername[];
 extern const char kKeyDomain[];
 extern const char kKeyExitCode[];
 
+// AD attributes related to the device.
+extern const char kKeyIsAdJoinedUser[];
+
 // Name of registry value that holds user properties.
 extern const wchar_t kUserTokenHandle[];
 extern const wchar_t kUserEmail[];

@@ -419,8 +419,7 @@ void ManagedDisplayInfo::UpdateDisplaySize() {
   size_in_pixel_ = GetSizeInPixelWithPanelOrientation();
 
   if (!overscan_insets_in_dip_.IsEmpty()) {
-    gfx::Insets insets_in_pixel =
-        overscan_insets_in_dip_.Scale(device_scale_factor_);
+    gfx::Insets insets_in_pixel = GetOverscanInsetsInPixel();
     size_in_pixel_.Enlarge(-insets_in_pixel.width(), -insets_in_pixel.height());
   } else {
     overscan_insets_in_dip_.Set(0, 0, 0, 0);
@@ -437,7 +436,7 @@ void ManagedDisplayInfo::SetOverscanInsets(const gfx::Insets& insets_in_dip) {
 }
 
 gfx::Insets ManagedDisplayInfo::GetOverscanInsetsInPixel() const {
-  return overscan_insets_in_dip_.Scale(device_scale_factor_ * zoom_factor_);
+  return overscan_insets_in_dip_.Scale(device_scale_factor_);
 }
 
 void ManagedDisplayInfo::SetManagedDisplayModes(

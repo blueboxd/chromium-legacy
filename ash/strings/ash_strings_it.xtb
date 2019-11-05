@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">La modalità Non disturbare è attiva.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostra impostazioni di notifica. Le notifiche sono disattivate per un'app}other{Mostra impostazioni di notifica. Le notifiche sono disattivate per # app}}</translation>
 <translation id="1525508553941733066">IGNORA</translation>
-<translation id="1537254971476575106">Lente d'ingrandimento a schermo intero</translation>
 <translation id="15373452373711364">Puntatore del mouse grande</translation>
 <translation id="1546492247443594934">Scrivania 2</translation>
 <translation id="1550523713251050646">Fai clic per visualizzare altre opzioni</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Premi <ph name="KEYBOARD_SHORTCUT" /> per cambiare il layout della tastiera.</translation>
 <translation id="2501920221385095727">Tasti permanenti</translation>
 <translation id="2509468283778169019">BLOC MAIUSC è attivo</translation>
-<translation id="2532589005999780174">Modalità ad alto contrasto</translation>
 <translation id="2542089167727451762">Tocca la tua immagine del profilo</translation>
 <translation id="255671100581129685">L'Assistente Google non è disponibile in una sessione pubblica.</translation>
 <translation id="256712445991462162">la lente d'ingrandimento ancorata</translation>
@@ -484,7 +482,6 @@
 <translation id="7984197416080286869">Troppi tentativi di sblocco con l'impronta</translation>
 <translation id="7994370417837006925">Accesso simultaneo</translation>
 <translation id="8000066093800657092">Nessuna rete</translation>
-<translation id="8029241286966751120">Lente d'ingrandimento a schermo intero attivata. Premi di nuovo CTRL + tasto per la ricerca + M per disattivarla.</translation>
 <translation id="8030169304546394654">Disconnessa</translation>
 <translation id="8054466585765276473">Calcolo della durata della batteria.</translation>
 <translation id="8061464966246066292">Contrasto elevato</translation>
@@ -509,7 +506,6 @@
 <translation id="8388750414311082622">Impossibile rimuovere l'ultimo desktop.</translation>
 <translation id="8392451568018454956">Menu Opzioni per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Uno dei tuoi genitori ha bloccato questo dispositivo</translation>
-<translation id="8406981827175133772">Lente d'ingrandimento a schermo intero</translation>
 <translation id="8425213833346101688">Cambia</translation>
 <translation id="8427213022735114808">La dettatura invia i tuoi dati audio a Google per consentire la digitazione vocale in tutti i campi di testo.</translation>
 <translation id="8428213095426709021">Impostazioni</translation>

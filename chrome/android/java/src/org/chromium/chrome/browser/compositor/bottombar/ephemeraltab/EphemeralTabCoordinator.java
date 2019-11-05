@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -132,8 +133,11 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     }
 
     private void onToolbarClick() {
-        if (mBottomSheetController.getSheetState() == BottomSheetController.SheetState.PEEK) {
+        int state = mBottomSheetController.getSheetState();
+        if (state == SheetState.PEEK) {
             mBottomSheetController.expandSheet();
+        } else if (state == SheetState.FULL) {
+            mBottomSheetController.peekSheet(true);
         }
     }
 

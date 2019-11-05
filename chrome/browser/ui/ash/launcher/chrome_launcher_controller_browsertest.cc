@@ -300,8 +300,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
 
   // Flush mojo calls to allow async callbacks to run.
   void FlushMojoCallsForAppService() {
-    if (!base::FeatureList::IsEnabled(features::kAppServiceAsh) ||
-        !base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
+    if (!base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
       return;
     }
     apps::AppServiceProxy* proxy =

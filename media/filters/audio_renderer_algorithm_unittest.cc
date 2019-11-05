@@ -260,6 +260,53 @@ class AudioRendererAlgorithmTest : public testing::Test {
     EXPECT_NEAR(playback_rate, actual_playback_rate, playback_rate / 100.0);
   }
 
+  void TestPlaybackRateWithUnderflow(double playback_rate, bool end_of_stream) {
+    if (playback_rate > AudioRendererAlgorithm::kUpperResampleThreshold ||
+        playback_rate < AudioRendererAlgorithm::kLowerResampleThreshold) {
+      // This test is only used for the range in which we resample data instead
+      // of using WSOLA.
+      return;
+    }
+
+    if (end_of_stream) {
+      algorithm_.MarkEndOfStream();
+    } else {
+      algorithm_.FlushBuffers();
+    }
+
+    const int buffer_size_in_frames = algorithm_.samples_per_second() / 10;
+    const int initial_frames_enqueued = frames_enqueued_;
+
+    std::unique_ptr<AudioBus> bus =
+        AudioBus::Create(channels_, buffer_size_in_frames);
+
+    FillAlgorithmQueue();
+
+    int frames_written;
+    int total_frames_written = 0;
+    do {
+      frames_written = algorithm_.FillBuffer(
+          bus.get(), 0, buffer_size_in_frames, playback_rate);
+
+      total_frames_written += frames_written;
+    } while (frames_written && algorithm_.frames_buffered() > 0);
+
+    int input_frames_enqueued = frames_enqueued_ - initial_frames_enqueued;
+
+    int ouput_frames_available =
+        static_cast<int>(input_frames_enqueued / playback_rate + 0.5);
+
+    if (end_of_stream) {
+      // If we marked the EOS, all data should we played out, possibly with some
+      // extra silence.
+      EXPECT_GE(total_frames_written, ouput_frames_available);
+    } else {
+      // If we don't mark the EOS, we expect to have lost some frames because
+      // we don't partially handle requests.
+      EXPECT_LE(total_frames_written, ouput_frames_available);
+    }
+  }
+
   void WsolaTest(double playback_rate) {
     const int kSampleRateHz = 48000;
     const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
@@ -383,11 +430,11 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_NearlyNormalSlowerRate) {
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_ResamplingRates) {
   Initialize();
   TestPlaybackRate(0.94);  // WSOLA.
-  TestPlaybackRate(0.95);  // Lower limit of resampling.
+  TestPlaybackRate(AudioRendererAlgorithm::kLowerResampleThreshold);
   TestPlaybackRate(0.97);
   TestPlaybackRate(1.00);
   TestPlaybackRate(1.04);
-  TestPlaybackRate(1.06);  // Upper limit of resampling.
+  TestPlaybackRate(AudioRendererAlgorithm::kUpperResampleThreshold);
   TestPlaybackRate(1.07);  // WSOLA.
 }
 
@@ -406,6 +453,18 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_WithOffset) {
 
   // WSOLA based time-strech.
   TestPlaybackRate(1.25, kBufferSize, kFramesRequested, kOffset);
+}
+
+TEST_F(AudioRendererAlgorithmTest, FillBuffer_UnderFlow) {
+  Initialize();
+  TestPlaybackRateWithUnderflow(AudioRendererAlgorithm::kLowerResampleThreshold,
+                                true);
+  TestPlaybackRateWithUnderflow(AudioRendererAlgorithm::kLowerResampleThreshold,
+                                false);
+  TestPlaybackRateWithUnderflow(AudioRendererAlgorithm::kUpperResampleThreshold,
+                                true);
+  TestPlaybackRateWithUnderflow(AudioRendererAlgorithm::kUpperResampleThreshold,
+                                false);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_OneAndAQuarterRate) {

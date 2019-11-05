@@ -34,7 +34,7 @@ uLongf GZipExpectedCompressedSize(uLongf input_size) {
 
 // The expected decompressed size is stored in the last
 // 4 bytes of |input| in LE.
-uint32_t GetUncompressedSize(Bytef* compressed_data, size_t length) {
+uint32_t GetUncompressedSize(const Bytef* compressed_data, size_t length) {
   uint32_t size;
   if (length < sizeof(size))
     return 0;

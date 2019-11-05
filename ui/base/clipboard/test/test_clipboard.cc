@@ -20,9 +20,9 @@ TestClipboard::TestClipboard()
 
 TestClipboard::~TestClipboard() = default;
 
-Clipboard* TestClipboard::CreateForCurrentThread() {
+TestClipboard* TestClipboard::CreateForCurrentThread() {
   base::AutoLock lock(Clipboard::ClipboardMapLock());
-  Clipboard* clipboard = new TestClipboard;
+  auto* clipboard = new TestClipboard;
   (*Clipboard::ClipboardMapPtr())[base::PlatformThread::CurrentId()] =
       base::WrapUnique(clipboard);
   return clipboard;

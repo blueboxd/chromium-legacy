@@ -181,7 +181,7 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   if args.bundle:
     # if merging a bundle we must ignore the bundle specific
     # proto files as they will always be different.
-    ignores += ['BundleConfig.pb', 'native.pb', 'resources.pb']
+    ignores += ['BundleConfig.pb', 'native.pb']
 
   dcmp = filecmp.dircmp(
       tmp_dir_64,

@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Режим Не узнемиравај је укључен.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Прегледајте подешавања обавештења. Обавештења су искључена за једну апликацију}one{Прегледајте подешавања обавештења. Обавештења су искључена за # апликацију}few{Прегледајте подешавања обавештења. Обавештења су искључена за # апликације}other{Прегледајте подешавања обавештења. Обавештења су искључена за # апликација}}</translation>
 <translation id="1525508553941733066">ОДБАЦИ</translation>
-<translation id="1537254971476575106">Лупа за цео екран</translation>
 <translation id="15373452373711364">Велики курсор</translation>
 <translation id="1546492247443594934">Радна површина 2</translation>
 <translation id="1550523713251050646">Кликните за више опција</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Притисните <ph name="KEYBOARD_SHORTCUT" /> да бисте променили распоред тастатуре.</translation>
 <translation id="2501920221385095727">Лепљиви тастери</translation>
 <translation id="2509468283778169019">CAPS LOCK је укључен</translation>
-<translation id="2532589005999780174">Режим високог контраста</translation>
 <translation id="2542089167727451762">Додирните слику профила</translation>
 <translation id="255671100581129685">Google помоћник није доступан у јавној сесији.</translation>
 <translation id="256712445991462162">монтирана лупа екрана</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Превише покушаја откључавања помоћу отиска прста</translation>
 <translation id="7994370417837006925">Вишеструко пријављивање</translation>
 <translation id="8000066093800657092">Нема мреже</translation>
-<translation id="8029241286966751120">Лупа за цео екран је омогућена. Притисните Ctrl + тастер за претрагу + M поново да бисте је искључили.</translation>
 <translation id="8030169304546394654">Веза је прекинута</translation>
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
 <translation id="8061464966246066292">Високи контраст</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Не можемо да уклонимо последњу радну површину.</translation>
 <translation id="8392451568018454956">Мени са опцијама за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Родитељ је закључао овај уређај</translation>
-<translation id="8406981827175133772">Лупа за цео екран</translation>
 <translation id="8425213833346101688">Промени</translation>
 <translation id="8427213022735114808">Диктирање шаље глас Google-у да би се омогућило писање гласом у пољима за текст.</translation>
 <translation id="8428213095426709021">Подешавања</translation>

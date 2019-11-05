@@ -7,6 +7,11 @@
 #include <type_traits>
 
 #include "base/logging.h"
+#include "components/sync/base/model_type.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
 
 namespace syncer {
 
@@ -24,11 +29,16 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
   switch (type) {
     case UserSelectableType::kBookmarks:
       return {"bookmarks", BOOKMARKS, {BOOKMARKS}};
-    case UserSelectableType::kPreferences:
-      return {"preferences",
-              PREFERENCES,
-              {PREFERENCES, DICTIONARY, PRIORITY_PREFERENCES, SEARCH_ENGINES,
-               PRINTERS}};
+    case UserSelectableType::kPreferences: {
+      ModelTypeSet model_types = {PREFERENCES, DICTIONARY, PRIORITY_PREFERENCES,
+                                  SEARCH_ENGINES};
+#if defined(OS_CHROMEOS)
+      // SplitSettingsSync makes Printers a separate OS setting.
+      if (!chromeos::features::IsSplitSettingsSyncEnabled())
+        model_types.Put(PRINTERS);
+#endif
+      return {"preferences", PREFERENCES, model_types};
+    }
     case UserSelectableType::kPasswords:
       return {"passwords", PASSWORDS, {PASSWORDS}};
     case UserSelectableType::kAutofill:
@@ -64,6 +74,21 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
   return {nullptr, UNSPECIFIED};
 }
 
+#if defined(OS_CHROMEOS)
+UserSelectableTypeInfo GetUserSelectableOsTypeInfo(UserSelectableOsType type) {
+  // UserSelectableTypeInfo::type_name is used in js code and shouldn't be
+  // changed without updating js part.
+  switch (type) {
+    case UserSelectableOsType::kOsPreferences:
+      return {"osPreferences",
+              OS_PREFERENCES,
+              {OS_PREFERENCES, OS_PRIORITY_PREFERENCES}};
+    case UserSelectableOsType::kPrinters:
+      return {"printers", PRINTERS, {PRINTERS}};
+  }
+}
+#endif
+
 }  // namespace
 
 const char* GetUserSelectableTypeName(UserSelectableType type) {
@@ -84,5 +109,19 @@ int UserSelectableTypeToHistogramInt(UserSelectableType type) {
   return static_cast<int>(
       ModelTypeHistogramValue(UserSelectableTypeToCanonicalModelType(type)));
 }
+
+#if defined(OS_CHROMEOS)
+const char* GetUserSelectableOsTypeName(UserSelectableOsType type) {
+  return GetUserSelectableOsTypeInfo(type).type_name;
+}
+
+ModelTypeSet UserSelectableOsTypeToAllModelTypes(UserSelectableOsType type) {
+  return GetUserSelectableOsTypeInfo(type).model_type_group;
+}
+
+ModelType UserSelectableOsTypeToCanonicalModelType(UserSelectableOsType type) {
+  return GetUserSelectableOsTypeInfo(type).canonical_model_type;
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace syncer

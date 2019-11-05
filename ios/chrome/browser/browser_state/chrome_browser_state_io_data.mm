@@ -391,7 +391,7 @@ void ChromeBrowserStateIOData::ShutdownOnUIThread(
     }
   }
 
-  bool posted = web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE, this);
+  bool posted = base::DeleteSoon(FROM_HERE, {web::WebThread::IO}, this);
   if (!posted)
     delete this;
 }

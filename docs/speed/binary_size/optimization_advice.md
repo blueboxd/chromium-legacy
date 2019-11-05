@@ -144,12 +144,14 @@ Practical advice:
    * Add `@CheckDiscard` to methods or classes that you expect R8 to inline.
    * Add `@RemovableInRelease` to force a method to be a no-op in when DCHECKs
      are disabled.
-   
-[size-trybot]: //tools/binary_size/README.md#Binary-Size-Trybot-android_binary_size
-[diagnose_bloat]: //tools/binary_size/README.md#diagnose_bloat_py
-[relocations]: //docs/native_relocations.md
+   * See [here][proguard-build-doc] for more info on how Chrome uses ProGuard.
+
+[proguard-build-doc]: /build/android/docs/java_optimization.md
+[size-trybot]: /tools/binary_size/README.md#Binary-Size-Trybot-android_binary_size
+[diagnose_bloat]: /tools/binary_size/README.md#diagnose_bloat_py
+[relocations]: /docs/native_relocations.md
 [template_bloat]: https://bugs.chromium.org/p/chromium/issues/detail?id=716393
-[supersize-console]: //tools/binary_size/README.md#Usage_console
+[supersize-console]: /tools/binary_size/README.md#Usage_console
 
 ## Optimizing Third-Party Android Dependencies
 

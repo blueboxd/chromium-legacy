@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Režiim Mitte segada on sees.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Kuvab märguandeseaded. Märguanded on rakenduse jaoks välja lülitatud}other{Kuvab märguandeseaded. Märguanded on # rakenduse jaoks välja lülitatud}}</translation>
 <translation id="1525508553941733066">LOOBU</translation>
-<translation id="1537254971476575106">Täisekraani luup</translation>
 <translation id="15373452373711364">Suur hiirekursor</translation>
 <translation id="1546492247443594934">Töölaud 2</translation>
 <translation id="1550523713251050646">Klõpsake lisavalikute nägemiseks</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Klaviatuuripaigutuse muutmiseks vajutage klahvikombinatsiooni <ph name="KEYBOARD_SHORTCUT" />.</translation>
 <translation id="2501920221385095727">Nakkeklahvid</translation>
 <translation id="2509468283778169019">SUURTÄHELUKK on sisse lülitatud</translation>
-<translation id="2532589005999780174">Suure kontrastsusega režiim</translation>
 <translation id="2542089167727451762">Puudutage oma profiilipilti</translation>
 <translation id="255671100581129685">Google'i assistent ei ole avalikus seansis saadaval.</translation>
 <translation id="256712445991462162">dokitud luup</translation>
@@ -484,7 +482,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7984197416080286869">Liiga palju sõrmejäljega avamise katseid</translation>
 <translation id="7994370417837006925">Mitmele kontole sisselogimine</translation>
 <translation id="8000066093800657092">Võrku pole</translation>
-<translation id="8029241286966751120">Täisekraani luup on lubatud. Vajutage selle väljalülitamiseks klahvikombinatsiooni Ctrl + otsinguklahv + M.</translation>
 <translation id="8030169304546394654">Ühendus katkestatud</translation>
 <translation id="8054466585765276473">Aku tööaja arvutamine.</translation>
 <translation id="8061464966246066292">Kõrge kontrast</translation>
@@ -509,7 +506,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8388750414311082622">Viimast töölauda ei saa eemaldada.</translation>
 <translation id="8392451568018454956">Konto <ph name="USER_EMAIL_ADDRESS" /> valikute menüü</translation>
 <translation id="8394567579869570560">Vanem lukustas selle seadme</translation>
-<translation id="8406981827175133772">Täisekraani luup</translation>
 <translation id="8425213833346101688">Muuda</translation>
 <translation id="8427213022735114808">Dikteerimisel saadetakse teie hääl Google'ile, et lubada häälsisestus kõigil tekstiväljadel.</translation>
 <translation id="8428213095426709021">Seaded</translation>

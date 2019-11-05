@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Bu kart türü desteklenmiyor</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Sistem yöneticisiyle iletişime geçmeyi deneyin.</translation>
+<translation id="1739107442478692187">Kullandığınız bir site veya uygulamada veri ihlali oluştu. Chrome, kayıtlı şifrelerinizi hemen kontrol etmenizi ve <ph name="ORIGIN" /> şifrenizi değiştirmenizi öneriyor.</translation>
 <translation id="1740951997222943430">Geçerli bir son kullanma ayı girin</translation>
 <translation id="1743520634839655729">Gelecek sefer daha hızlı ödeme yapabilmek için kartınızı, adınızı ve fatura adresinizi Google hesabınıza kaydedin.</translation>
 <translation id="1743570585616704562">Tanınmadı</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Alan adı uyuşmazlığı</translation>
 <translation id="2096368010154057602">Bölüm</translation>
 <translation id="2099652385553570808">Solda üçlü tel zımba</translation>
+<translation id="2100280972184758440">Şifrenizin güvenliği ihlal edildi</translation>
 <translation id="2102134110707549001">Güçlü Şifre Öner…</translation>
 <translation id="2108755909498034140">Bilgisayarınızı yeniden başlatın</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> tarafından geçersiz kılındığı için yoksayıldı.</translation>
 <translation id="2119505898009119320">Verildiği kuruluş: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Sağ altta delik</translation>
+<translation id="2124528555835617522">Kullandığınız bir site veya uygulamada veri ihlali oluştu. Chrome, kayıtlı şifrelerinizi hemen kontrol etmenizi öneriyor.</translation>
 <translation id="2129079103035905234">Hareket Sensörleri</translation>
 <translation id="213826338245044447">Mobil Yer İşaretleri</translation>
 <translation id="214556005048008348">Ödemeyi iptal et</translation>
@@ -476,11 +479,13 @@
 <translation id="3282497668470633863">Kart üzerindeki ismi ekle</translation>
 <translation id="3287510313208355388">Çevrimiçi olduğunda indir</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> politikası ile ilgili daha fazla bilgi edinin</translation>
+<translation id="3295439534709115864">Kullandığınız bir site veya uygulamada veri ihlali oluştu. Chrome, <ph name="ORIGIN" /> şifrenizi hemen değiştirmenizi öneriyor.</translation>
 <translation id="3303855915957856445">Arama sonucu bulunamadı</translation>
 <translation id="3320021301628644560">Fatura adresi ekle</translation>
 <translation id="3324983252691184275">Kızıl</translation>
 <translation id="3338095232262050444">Güvenli</translation>
 <translation id="3355823806454867987">Proxy ayarlarını değiştir...</translation>
+<translation id="3360103848165129075">Ödeme işleyici sayfası</translation>
 <translation id="3362968246557010467">Bu politika, kullanımdan kaldırılmış <ph name="OLD_POLICY" /> politikasından otomatik olarak kopyalanmıştır. Onun yerine bu politikayı kullanmalısınız.</translation>
 <translation id="3366477098757335611">Kartları göster</translation>
 <translation id="3369192424181595722">Saat hatası</translation>
@@ -599,6 +604,7 @@
 <translation id="3949601375789751990">Göz atma geçmişiniz burada görünür</translation>
 <translation id="3949870428812919180">Kayıtlı ödeme yöntemi yok</translation>
 <translation id="3950820424414687140">Oturum açın</translation>
+<translation id="3961148744525529027">Ödeme işleyici sayfası yarım olarak açıldı</translation>
 <translation id="3962859241508114581">Önceki Parça</translation>
 <translation id="3963837677003247395">Manuel olarak devam edilsin mi?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Yok}=1{1 siteden }other{# siteden }}</translation>
@@ -1331,6 +1337,7 @@ Ek ayrıntılar:
 <translation id="7637571805876720304">Kredi kartı Chromium'dan kaldırılsın mı?</translation>
 <translation id="7638605456503525968">Seri bağlantı noktaları</translation>
 <translation id="7639968568612851608">Koyu Gri</translation>
+<translation id="7653957176542370971">Ödeme işleyici sayfası kapatıldı</translation>
 <translation id="765676359832457558">Gelişmiş ayarları gizle...</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7662298039739062396">Ayar bir uzantının kontrolü altında</translation>
@@ -1460,6 +1467,7 @@ Ek ayrıntılar:
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8262952874573525464">Altta kenar dikişi</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" /> olarak oturum açılıyor</translation>
+<translation id="8277900682056760511">Ödeme işleyici sayfası açıldı</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Oturum Aç</translation>
 <translation id="8288807391153049143">Sertifikayı göster</translation>

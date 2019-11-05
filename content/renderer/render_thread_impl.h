@@ -691,7 +691,7 @@ class CONTENT_EXPORT RenderThreadImpl
   mojo::Remote<mojom::FrameSinkProvider> frame_sink_provider_;
 
   // A mojo connection to the CompositingModeReporter service.
-  viz::mojom::CompositingModeReporterPtr compositing_mode_reporter_;
+  mojo::Remote<viz::mojom::CompositingModeReporter> compositing_mode_reporter_;
   // The class is a CompositingModeWatcher, which is bound to mojo through
   // this member.
   mojo::Receiver<viz::mojom::CompositingModeWatcher>

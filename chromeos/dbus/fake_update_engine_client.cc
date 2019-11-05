@@ -79,12 +79,6 @@ void FakeUpdateEngineClient::GetChannel(bool get_current_channel,
       FROM_HERE, base::BindOnce(callback, std::string()));
 }
 
-void FakeUpdateEngineClient::GetEolStatus(GetEolStatusCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback),
-                                update_engine::EndOfLifeStatus::kSupported));
-}
-
 void FakeUpdateEngineClient::GetEolInfo(GetEolInfoCallback callback) {
   UpdateEngineClient::EolInfo eol_info;
   eol_info.eol_date = eol_date_;

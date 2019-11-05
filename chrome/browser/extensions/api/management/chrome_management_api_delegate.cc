@@ -28,11 +28,13 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
@@ -74,10 +76,11 @@ using InstallAndroidAppCallback =
     extensions::ManagementAPIDelegate::InstallAndroidAppCallback;
 using AndroidAppInstallStatusCallback =
     extensions::ManagementAPIDelegate::AndroidAppInstallStatusCallback;
-using InstallWebAppCallback =
-    extensions::ManagementAPIDelegate::InstallWebAppCallback;
-using InstallWebAppResult =
-    extensions::ManagementAPIDelegate::InstallWebAppResult;
+using InstallOrLaunchWebAppCallback =
+    extensions::ManagementAPIDelegate::InstallOrLaunchWebAppCallback;
+using InstallOrLaunchWebAppResult =
+    extensions::ManagementAPIDelegate::InstallOrLaunchWebAppResult;
+using InstallableCheckResult = web_app::InstallManager::InstallableCheckResult;
 
 #if defined(OS_CHROMEOS)
 void OnDidCheckForIntentToPlayStore(const std::string& intent,
@@ -253,40 +256,60 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
   DISALLOW_COPY_AND_ASSIGN(ChromeAppForLinkDelegate);
 };
 
-void OnWebAppInstallCompleted(InstallWebAppCallback callback,
+void LaunchWebApp(const web_app::AppId& app_id, Profile* profile) {
+  // Look at prefs to find the right launch container. If the user has not set a
+  // preference, the default launch value will be returned.
+  // TODO(crbug.com/1003602): Make AppLaunchParams launch container Optional or
+  // add a "default" launch container enum value.
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  DCHECK(provider);
+  blink::mojom::DisplayMode display_mode =
+      provider->registrar().GetAppUserDisplayMode(app_id);
+  auto launch_container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
+  if (display_mode == blink::mojom::DisplayMode::kBrowser)
+    launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
+
+  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
+      app_id, launch_container, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      apps::mojom::AppLaunchSource::kSourceManagementApi));
+}
+
+void OnWebAppInstallCompleted(InstallOrLaunchWebAppCallback callback,
                               const web_app::AppId& app_id,
                               web_app::InstallResultCode code) {
-  InstallWebAppResult result;
-  // TODO(loyso): Update this when more of the web_app::InstallResultCodes are
-  // actually set.
-  switch (code) {
-    case web_app::InstallResultCode::kSuccessNewInstall:
-      result = InstallWebAppResult::kSuccess;
-      break;
-    default:
-      result = InstallWebAppResult::kUnknownError;
-  }
+  InstallOrLaunchWebAppResult result =
+      IsSuccess(code) ? InstallOrLaunchWebAppResult::kSuccess
+                      : InstallOrLaunchWebAppResult::kUnknownError;
   std::move(callback).Run(result);
 }
 
-void OnDidInstallWebAppInstallableCheck(
+void OnWebAppInstallabilityChecked(
     Profile* profile,
-    InstallWebAppCallback callback,
+    InstallOrLaunchWebAppCallback callback,
     std::unique_ptr<content::WebContents> web_contents,
-    bool is_installable) {
-  if (!is_installable) {
-    std::move(callback).Run(InstallWebAppResult::kInvalidWebApp);
-    return;
+    InstallableCheckResult result,
+    base::Optional<web_app::AppId> app_id) {
+  switch (result) {
+    case InstallableCheckResult::kAlreadyInstalled:
+      DCHECK(app_id);
+      LaunchWebApp(*app_id, profile);
+      std::move(callback).Run(InstallOrLaunchWebAppResult::kSuccess);
+      return;
+    case InstallableCheckResult::kNotInstallable:
+      std::move(callback).Run(InstallOrLaunchWebAppResult::kInvalidWebApp);
+      return;
+    case InstallableCheckResult::kInstallable:
+      content::WebContents* containing_contents = web_contents.get();
+      chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+      chrome::AddWebContents(
+          displayer.browser(), nullptr, std::move(web_contents),
+          WindowOpenDisposition::NEW_FOREGROUND_TAB, gfx::Rect());
+      web_app::CreateWebAppFromManifest(
+          containing_contents, WebappInstallSource::MANAGEMENT_API,
+          base::BindOnce(&OnWebAppInstallCompleted, std::move(callback)));
+      return;
   }
-
-  content::WebContents* containing_contents = web_contents.get();
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
-  chrome::AddWebContents(displayer.browser(), nullptr, std::move(web_contents),
-                         WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                         gfx::Rect());
-  web_app::CreateWebAppFromManifest(
-      containing_contents, WebappInstallSource::MANAGEMENT_API,
-      base::BindOnce(&OnWebAppInstallCompleted, std::move(callback)));
+  NOTREACHED();
 }
 
 }  // namespace
@@ -303,6 +326,8 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   // Look at prefs to find the right launch container.
   // If the user has not set a preference, the default launch value will be
   // returned.
+  // TODO(crbug.com/1003602): Make AppLaunchParams launch container Optional or
+  // add a "default" launch container enum value.
   extensions::LaunchContainer launch_container =
       GetLaunchContainer(extensions::ExtensionPrefs::Get(context), extension);
   Profile* profile = Profile::FromBrowserContext(context);
@@ -408,32 +433,32 @@ ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
   return std::unique_ptr<extensions::AppForLinkDelegate>(delegate);
 }
 
-bool ChromeManagementAPIDelegate::IsWebAppInstalled(
-    content::BrowserContext* context,
-    const GURL& web_app_url) const {
-  auto* provider = web_app::WebAppProviderBase::GetProviderBase(
-      Profile::FromBrowserContext(context));
-  DCHECK(provider);
-  return provider->registrar().IsLocallyInstalled(web_app_url);
-}
-
 bool ChromeManagementAPIDelegate::CanContextInstallWebApps(
     content::BrowserContext* context) const {
   return web_app::AreWebAppsUserInstallable(
       Profile::FromBrowserContext(context));
 }
 
-void ChromeManagementAPIDelegate::InstallReplacementWebApp(
+void ChromeManagementAPIDelegate::InstallOrLaunchReplacementWebApp(
     content::BrowserContext* context,
     const GURL& web_app_url,
-    InstallWebAppCallback callback) const {
+    InstallOrLaunchWebAppCallback callback) const {
   Profile* profile = Profile::FromBrowserContext(context);
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
   DCHECK(provider);
 
+  // Launch the app if web_app_url happens to match start_url. If not, the app
+  // could still be installed with different start_url.
+  if (provider->registrar().IsLocallyInstalled(web_app_url)) {
+    LaunchWebApp(web_app::GenerateAppIdFromURL(web_app_url), profile);
+    std::move(callback).Run(InstallOrLaunchWebAppResult::kSuccess);
+    return;
+  }
+
   provider->install_manager().LoadWebAppAndCheckInstallability(
-      web_app_url, base::BindOnce(&OnDidInstallWebAppInstallableCheck, profile,
-                                  std::move(callback)));
+      web_app_url, WebappInstallSource::MANAGEMENT_API,
+      base::BindOnce(&OnWebAppInstallabilityChecked, profile,
+                     std::move(callback)));
 }
 
 bool ChromeManagementAPIDelegate::CanContextInstallAndroidApps(

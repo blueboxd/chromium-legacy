@@ -70,6 +70,8 @@ Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
                                             Document*,
                                             ExceptionState&);
 
+String TrustedTypesCheckForJavascriptURLinNavigation(const String&, Document*);
+
 // Determine whether a Trusted Types check is needed in this execution context.
 //
 // Note: All methods above handle this internally and will return success if a

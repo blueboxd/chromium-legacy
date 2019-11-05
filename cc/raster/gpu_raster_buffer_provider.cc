@@ -128,8 +128,7 @@ static void RasterizeSourceOOP(
     const gfx::Rect& playback_rect,
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
-    viz::RasterContextProvider* context_provider,
-    int msaa_sample_count) {
+    viz::RasterContextProvider* context_provider) {
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
   if (mailbox->IsZero()) {
     DCHECK(!sync_token.HasData());
@@ -146,9 +145,9 @@ static void RasterizeSourceOOP(
     ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 
-  ri->BeginRasterCHROMIUM(raster_source->background_color(), msaa_sample_count,
-                          playback_settings.use_lcd_text, color_space,
-                          mailbox->name);
+  ri->BeginRasterCHROMIUM(
+      raster_source->background_color(), playback_settings.msaa_sample_count,
+      playback_settings.use_lcd_text, color_space, mailbox->name);
   float recording_to_raster_scale =
       transform.scale() / raster_source->recording_scale_factor();
   gfx::Size content_size = raster_source->GetContentSize(transform.scale());
@@ -183,7 +182,6 @@ static void RasterizeSource(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     viz::RasterContextProvider* context_provider,
-    int msaa_sample_count,
     bool unpremultiply_and_dither,
     const gfx::Size& max_tile_size) {
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
@@ -215,13 +213,13 @@ static void RasterizeSource(
       scoped_surface.emplace(context_provider->GrContext(), sk_color_space,
                              texture_id, texture_target, resource_size,
                              resource_format, playback_settings.use_lcd_text,
-                             msaa_sample_count);
+                             playback_settings.msaa_sample_count);
       surface = scoped_surface->surface();
     } else {
       scoped_dither_surface.emplace(
           context_provider, sk_color_space, playback_rect, raster_full_rect,
           max_tile_size, texture_id, resource_size,
-          playback_settings.use_lcd_text, msaa_sample_count);
+          playback_settings.use_lcd_text, playback_settings.msaa_sample_count);
       surface = scoped_dither_surface->surface();
     }
 
@@ -346,7 +344,6 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     viz::ContextProvider* compositor_context_provider,
     viz::RasterContextProvider* worker_context_provider,
     bool use_gpu_memory_buffer_resources,
-    int gpu_rasterization_msaa_sample_count,
     viz::ResourceFormat tile_format,
     const gfx::Size& max_tile_size,
     bool unpremultiply_and_dither_low_bit_depth_tiles,
@@ -355,7 +352,6 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
-      msaa_sample_count_(gpu_rasterization_msaa_sample_count),
       tile_format_(tile_format),
       max_tile_size_(max_tile_size),
       unpremultiply_and_dither_low_bit_depth_tiles_(
@@ -402,13 +398,6 @@ bool GpuRasterBufferProvider::IsResourcePremultiplied() const {
   return !ShouldUnpremultiplyAndDitherResource(GetResourceFormat());
 }
 
-bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
-  // Partial raster doesn't support MSAA, as the MSAA resolve is unaware of clip
-  // rects.
-  // TODO(crbug.com/629683): See if we can work around this limitation.
-  return msaa_sample_count_ == 0;
-}
-
 bool GpuRasterBufferProvider::IsResourceReadyToDraw(
     const ResourcePool::InUsePoolResource& resource) const {
   const gpu::SyncToken& sync_token = resource.gpu_backing()->mailbox_sync_token;
@@ -419,6 +408,10 @@ bool GpuRasterBufferProvider::IsResourceReadyToDraw(
   // IsSyncTokenSignaled is thread-safe, no need for worker context lock.
   return worker_context_provider_->ContextSupport()->IsSyncTokenSignaled(
       sync_token);
+}
+
+bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
+  return true;
 }
 
 uint64_t GpuRasterBufferProvider::SetReadyToDrawCallback(
@@ -566,19 +559,17 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
     if (measure_raster_metric)
       timer.emplace();
     if (enable_oop_rasterization_) {
-      RasterizeSourceOOP(raster_source, resource_has_previous_content, mailbox,
-                         sync_token, texture_target,
-                         texture_is_overlay_candidate, resource_size,
-                         resource_format, color_space, raster_full_rect,
-                         playback_rect, transform, playback_settings,
-                         worker_context_provider_, msaa_sample_count_);
+      RasterizeSourceOOP(
+          raster_source, resource_has_previous_content, mailbox, sync_token,
+          texture_target, texture_is_overlay_candidate, resource_size,
+          resource_format, color_space, raster_full_rect, playback_rect,
+          transform, playback_settings, worker_context_provider_);
     } else {
       RasterizeSource(raster_source, resource_has_previous_content, mailbox,
                       sync_token, texture_target, texture_is_overlay_candidate,
                       resource_size, resource_format, color_space,
                       raster_full_rect, playback_rect, transform,
                       playback_settings, worker_context_provider_,
-                      msaa_sample_count_,
                       ShouldUnpremultiplyAndDitherResource(resource_format),
                       max_tile_size_);
     }

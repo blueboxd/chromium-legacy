@@ -169,6 +169,8 @@ class PreviewsLitePageRedirectDecider
   // what looked like a valid chrome-proxy header.
   bool drp_headers_valid_;
 
+  content::BrowserContext* browser_context_;
+
   // Probes the litepages service to establish that it is reachable before
   // attempting a preview.
   std::unique_ptr<AvailabilityProber> litepages_service_prober_;

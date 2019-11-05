@@ -3,7 +3,7 @@
 <!-- Tests that overflow controls are repainted after compositing is disabled. There should be three green squares and no visible overflow controls -->
 <style>
 .composited {
-transform:translateZ(0);
+will-change:transform;
 }
 
 .container {

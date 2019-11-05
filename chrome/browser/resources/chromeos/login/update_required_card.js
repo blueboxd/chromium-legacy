@@ -5,6 +5,8 @@
 Polymer({
   is: 'update-required-card',
 
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+
   properties: {
     /**
      * Is device connected to network?
@@ -27,6 +29,11 @@ Polymer({
     },
 
     ui_state: {type: String},
+  },
+
+  /** Called after resources are updated. */
+  updateLocalizedContent: function() {
+    this.i18nUpdateLocale();
   },
 
   /**

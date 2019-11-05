@@ -112,10 +112,10 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     std::vector<std::string> data =
         FromPrefs(prefs::kRecommendedNativePrinters);
     for (const auto& printer_json : data) {
-      std::unique_ptr<base::DictionaryValue> printer_dictionary =
-          base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
-              printer_json, base::JSON_ALLOW_TRAILING_COMMAS));
-      if (!printer_dictionary) {
+      base::Optional<base::Value> printer_dictionary = base::JSONReader::Read(
+          printer_json, base::JSON_ALLOW_TRAILING_COMMAS);
+      if (!printer_dictionary.has_value() ||
+          !printer_dictionary.value().is_dict()) {
         LOG(WARNING) << "Ignoring invalid printer.  Invalid JSON object: "
                      << printer_json;
         continue;
@@ -125,15 +125,17 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
       // unique so we'll hash the record.  This will not collide with the
       // UUIDs generated for user entries.
       std::string id = base::MD5String(printer_json);
-      printer_dictionary->SetString(kPrinterId, id);
+      printer_dictionary.value().SetStringKey(kPrinterId, id);
 
-      auto new_printer = RecommendedPrinterToPrinter(*printer_dictionary);
+      auto new_printer = RecommendedPrinterToPrinter(
+          base::Value::AsDictionaryValue(printer_dictionary.value()));
       if (!new_printer) {
         LOG(WARNING) << "Recommended printer is malformed.";
         continue;
       }
 
-      if (!recommended_printers_.insert({id, *new_printer}).second) {
+      bool inserted = recommended_printers_.insert({id, *new_printer}).second;
+      if (!inserted) {
         // Printer is already in the list.
         LOG(WARNING) << "Duplicate printer ignored: " << id;
         continue;

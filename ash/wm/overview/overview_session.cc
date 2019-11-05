@@ -32,7 +32,6 @@
 #include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_state.h"
@@ -328,12 +327,12 @@ void OverviewSession::SetSplitViewDragIndicatorsDraggedWindow(
   split_view_drag_indicators_->SetDraggedWindow(dragged_window);
 }
 
-void OverviewSession::SetSplitViewDragIndicatorsIndicatorState(
-    IndicatorState indicator_state,
+void OverviewSession::SetSplitViewDragIndicatorsWindowDraggingState(
+    SplitViewDragIndicators::WindowDraggingState window_dragging_state,
     const gfx::Point& event_location) {
   DCHECK(split_view_drag_indicators_);
-  split_view_drag_indicators_->SetIndicatorState(indicator_state,
-                                                 event_location);
+  split_view_drag_indicators_->SetWindowDraggingState(window_dragging_state,
+                                                      event_location);
 }
 
 OverviewGrid* OverviewSession::GetGridWithRootWindow(
@@ -482,13 +481,13 @@ void OverviewSession::OnWindowDragStarted(aura::Window* dragged_window,
 void OverviewSession::OnWindowDragContinued(
     aura::Window* dragged_window,
     const gfx::PointF& location_in_screen,
-    IndicatorState indicator_state) {
+    SplitViewDragIndicators::WindowDraggingState window_dragging_state) {
   OverviewGrid* target_grid =
       GetGridWithRootWindow(dragged_window->GetRootWindow());
   if (!target_grid)
     return;
   target_grid->OnWindowDragContinued(dragged_window, location_in_screen,
-                                     indicator_state);
+                                     window_dragging_state);
 }
 
 void OverviewSession::OnWindowDragEnded(aura::Window* dragged_window,

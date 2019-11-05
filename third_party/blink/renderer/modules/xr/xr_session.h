@@ -142,7 +142,11 @@ class XRSession final
 
   // Called when the session is ended, either via calling the "end" function or
   // when the presentation service connection is closed.
-  void ForceEnd();
+  enum class ShutdownPolicy {
+    kWaitForResponse,  // expect a future OnExitPresent call
+    kImmediate,        // do all cleanup immediately
+  };
+  void ForceEnd(ShutdownPolicy);
 
   // Describes the scalar to be applied to the default framebuffer dimensions
   // which gives 1:1 pixel ratio at the center of the user's view.
@@ -304,6 +308,8 @@ class XRSession final
       const device::mojom::blink::XRHitTestSubscriptionResultsDataPtr&
           hit_test_data);
 
+  void HandleShutdown();
+
   const Member<XR> xr_;
   const SessionMode mode_;
   const bool environment_integration_;
@@ -315,6 +321,17 @@ class XRSession final
   Member<XRWorldTrackingState> world_tracking_state_;
   Member<XRWorldInformation> world_information_;
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;
+
+  // Handle delayed events and promises for session shutdown. A JS-initiated
+  // end() call call marks the session as ended, but doesn't resolve the end
+  // promise or trigger the 'end' event until the device side reports
+  // OnExitPresent is complete. If the session end was initiated from the device
+  // side, or in case of connection errors, proceed to shutdown_complete_ state
+  // immediately.
+  Member<ScriptPromiseResolver> end_session_resolver_;
+  // "ended_" becomes true as soon as session shutdown is initiated.
+  bool ended_ = false;
+  bool waiting_for_shutdown_ = false;
 
   XRSessionFeatureSet enabled_features_;
 
@@ -357,7 +374,6 @@ class XRSession final
   // Viewer pose in mojo space.
   std::unique_ptr<TransformationMatrix> mojo_from_viewer_;
 
-  bool ended_ = false;
   bool pending_frame_ = false;
   bool resolving_frame_ = false;
   bool update_views_next_frame_ = false;

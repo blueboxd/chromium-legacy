@@ -297,6 +297,12 @@ public class ChromePreferenceManager {
      */
     public static final String OFFLINE_INDICATOR_V2_ENABLED_KEY = "offline_indicator_v2_enabled";
 
+    /**
+     * Previously used to migrate {@link PrefServiceBridge} preferences to current version.
+     */
+    @Deprecated
+    private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
+
     private static class LazyHolder {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
     }

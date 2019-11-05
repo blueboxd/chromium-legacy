@@ -154,18 +154,18 @@ __gCrWeb.form.getFieldIdentifier = function(element) {
     ancestor = ancestor.parentNode;
   }
   var query = element.tagName;
-  var ancestor_id = '';
+  var ancestorId = '';
   if (!ancestor || ancestor.nodeType != Node.ELEMENT_NODE) {
     ancestor = document.body;
   }
   if (ancestor.hasAttribute('id')) {
-    ancestor_id = '#' + __gCrWeb.common.trim(ancestor.id);
+    ancestorId = '#' + __gCrWeb.common.trim(ancestor.id);
   }
   var descendants = ancestor.querySelectorAll(element.tagName);
   var i = 0;
   for (i = 0; i < descendants.length; i++) {
     if (descendants[i] === element) {
-      return __gCrWeb.form.kNamelessFieldIDPrefix + ancestor_id + '~' +
+      return __gCrWeb.form.kNamelessFieldIDPrefix + ancestorId + '~' +
           element.tagName + '~' + i;
     }
   }

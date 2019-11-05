@@ -71,6 +71,8 @@ class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
 
   explicit ThumbnailImage(Delegate* delegate);
 
+  bool has_data() const { return data_.get(); }
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   bool HasObserver(const Observer* observer) const;

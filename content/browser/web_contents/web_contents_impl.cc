@@ -86,7 +86,6 @@
 #include "content/browser/web_contents/javascript_dialog_navigation_deferrer.h"
 #include "content/browser/web_contents/web_contents_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
-#include "content/browser/webui/generic_handler.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
@@ -6822,7 +6821,6 @@ std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(const GURL& url) {
       WebUIControllerFactoryRegistry::GetInstance()
           ->CreateWebUIControllerForURL(web_ui.get(), url));
   if (controller) {
-    web_ui->AddMessageHandler(std::make_unique<GenericHandler>());
     web_ui->SetController(std::move(controller));
     return web_ui;
   }

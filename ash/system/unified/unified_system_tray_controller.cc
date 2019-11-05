@@ -168,9 +168,13 @@ void UnifiedSystemTrayController::ToggleExpanded() {
     if (bubble_)
       bubble_->ExpandMessageCenter();
   } else {
-    // Collapse the message center if screen height is limited.
+    // Collapse the message center if screen height is limited after expanding
+    // the quick settings to its full height.
+    // Note: This calculaton should be the same as
+    // UnifiedMessageCenterBubble::CalculateAvailableHeight().
     if (bubble_ && bubble_->CalculateMaxHeight() -
-                           unified_view_->GetExpandedSystemTrayHeight() <=
+                           unified_view_->GetExpandedSystemTrayHeight() -
+                           kUnifiedMessageCenterBubbleSpacing <
                        kMessageCenterCollapseThreshold) {
       bubble_->CollapseMessageCenter();
     }

@@ -341,6 +341,10 @@
       status: {"Android": "experimental", "default": "test"},
     },
     {
+      name: "ContactsManagerIcons",
+      status: {"Android": "experimental", "default": "test"},
+    },
+    {
       name: "ContentIndex",
       status: "experimental",
     },
@@ -1181,12 +1185,10 @@
     {
       name: "PageFreezeOptIn",
       origin_trial_feature_name: "PageFreezeOptIn",
-      status: "experimental",
     },
     {
       name: "PageFreezeOptOut",
       origin_trial_feature_name: "PageFreezeOptOut",
-      status: "experimental",
     },
     {
       name: "PagePopup",

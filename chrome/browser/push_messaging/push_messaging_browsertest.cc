@@ -1429,8 +1429,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPermission) {
       1);
 }
 
+// https://crbug.com/458160 test is flaky on all platforms; but mostly linux.
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
-                       PushEventEnforcesUserVisibleNotification) {
+                       DISABLED_PushEventEnforcesUserVisibleNotification) {
   std::string script_result;
 
   ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());

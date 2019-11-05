@@ -69,10 +69,12 @@
                 i18n-content="assistantVoiceMatchAlreadySetupTitle"></div>
             <div class="content"
                 i18n-content="assistantVoiceMatchAlreadySetupMessage"></div>
-            <div id="already-setup-video-container">
-              <video id="already-setup-video" muted autoplay loop>
-                <source src="voice_already_setup.webm" type="video/webm">
-              </video>
+            <div id="already-setup-animation-container">
+              <div id="already-setup-animation">
+                <cr-lottie id="already-setup-lottie"
+                    animation-url="voice_match_already_setup_animation.json">
+                </cr-lottie>
+              </div>
             </div>
           </div>
         </div>

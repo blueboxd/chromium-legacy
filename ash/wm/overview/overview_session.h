@@ -15,6 +15,7 @@
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/scoped_overview_hide_windows.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_observer.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -45,9 +46,6 @@ class OverviewHighlightController;
 class OverviewItem;
 class OverviewWindowDragController;
 class RoundedLabelWidget;
-class SplitViewDragIndicators;
-
-enum class IndicatorState;
 
 // The Overview shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
@@ -138,8 +136,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Called to show or hide the split view drag indicators. This will do
   // nothing if split view is not enabled. |event_location| is used to reparent
   // |split_view_drag_indicators_|'s widget, if necessary.
-  void SetSplitViewDragIndicatorsIndicatorState(
-      IndicatorState indicator_state,
+  void SetSplitViewDragIndicatorsWindowDraggingState(
+      SplitViewDragIndicators::WindowDraggingState window_dragging_state,
       const gfx::Point& event_location);
 
   // Retrieves the window grid whose root window matches |root_window|. Returns
@@ -186,9 +184,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // bottom .
   // TODO(xdai): Currently it doesn't work for multi-display scenario.
   void OnWindowDragStarted(aura::Window* dragged_window, bool animate);
-  void OnWindowDragContinued(aura::Window* dragged_window,
-                             const gfx::PointF& location_in_screen,
-                             IndicatorState indicator_state);
+  void OnWindowDragContinued(
+      aura::Window* dragged_window,
+      const gfx::PointF& location_in_screen,
+      SplitViewDragIndicators::WindowDraggingState window_dragging_state);
   void OnWindowDragEnded(aura::Window* dragged_window,
                          const gfx::PointF& location_in_screen,
                          bool should_drop_window_into_overview,

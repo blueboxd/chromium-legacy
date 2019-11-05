@@ -38,30 +38,41 @@ base::string16 XrSessionRequestConsentDialogDelegate::GetTitle() {
 }
 
 base::string16 XrSessionRequestConsentDialogDelegate::GetDialogMessage() {
+  DCHECK_NE(consent_level_, XrConsentPromptLevel::kNone);
+  if (consent_level_ == XrConsentPromptLevel::kDefault) {
+    return base::string16();
+  }
+
+  base::string16 dialog =
+      l10n_util::GetStringUTF16(IDS_XR_CONSENT_DIALOG_DESCRIPTION_DEFAULT);
+
   switch (consent_level_) {
-    case XrConsentPromptLevel::kDefault:
-      return l10n_util::GetStringUTF16(
-          IDS_XR_CONSENT_DIALOG_DESCRIPTION_DEFAULT);
     case XrConsentPromptLevel::kVRFeatures:
-      return l10n_util::GetStringUTF16(
+      dialog += l10n_util::GetStringUTF16(
           IDS_XR_CONSENT_DIALOG_DESCRIPTION_PHYSICAL_FEATURES);
+      break;
     case XrConsentPromptLevel::kVRFloorPlan:
-      return l10n_util::GetStringUTF16(
-          IDS_XR_CONSENT_DIALOG_DESCRIPTION_FLOOR_PLAN);
+      dialog += l10n_util::GetStringUTF16(
+                    IDS_XR_CONSENT_DIALOG_DESCRIPTION_PHYSICAL_FEATURES) +
+                l10n_util::GetStringUTF16(
+                    IDS_XR_CONSENT_DIALOG_DESCRIPTION_FLOOR_PLAN);
+      break;
+    // kDefault and kNone should both be handled by earlier checks, but the
+    // compiler doesn't know that. These are listed here explicltly rather than
+    // a "default" clause to ensure that we get compiler errors if new enum
+    // values are added and not handled.
+    case XrConsentPromptLevel::kDefault:
     case XrConsentPromptLevel::kNone:
       NOTREACHED();
-      return l10n_util::GetStringUTF16(
-          IDS_XR_CONSENT_DIALOG_DESCRIPTION_DEFAULT);
+      return base::string16();
   }
+
+  return dialog;
 }
 
 base::string16 XrSessionRequestConsentDialogDelegate::GetAcceptButtonTitle() {
   return l10n_util::GetStringUTF16(
       IDS_XR_CONSENT_DIALOG_BUTTON_ALLOW_AND_ENTER_VR);
-}
-
-base::string16 XrSessionRequestConsentDialogDelegate::GetCancelButtonTitle() {
-  return l10n_util::GetStringUTF16(IDS_XR_CONSENT_DIALOG_BUTTON_DENY_VR);
 }
 
 void XrSessionRequestConsentDialogDelegate::OnAccepted() {

@@ -556,12 +556,15 @@ void VRServiceImpl::SupportsSession(
   runtime_manager_->SupportsSession(std::move(options), std::move(callback));
 }
 
-void VRServiceImpl::ExitPresent() {
+void VRServiceImpl::ExitPresent(ExitPresentCallback on_exited) {
   BrowserXRRuntime* immersive_runtime =
       runtime_manager_->GetCurrentlyPresentingImmersiveRuntime();
   DVLOG(2) << __func__ << ": !!immersive_runtime=" << !!immersive_runtime;
-  if (immersive_runtime)
-    immersive_runtime->ExitPresent(this);
+  if (immersive_runtime) {
+    immersive_runtime->ExitPresent(this, std::move(on_exited));
+  } else {
+    std::move(on_exited).Run();
+  }
 }
 
 void VRServiceImpl::SetFramesThrottled(bool throttled) {

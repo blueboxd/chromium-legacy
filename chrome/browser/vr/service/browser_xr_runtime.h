@@ -10,6 +10,7 @@
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "chrome/browser/vr/service/vr_service_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -23,8 +24,6 @@ class WebContents;
 }
 
 namespace vr {
-
-class VRServiceImpl;
 
 // This interface is implemented by classes that wish to observer the state of
 // the XR service for a particular runtime.  In particular, observers may
@@ -71,7 +70,8 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   // Methods called by VRServiceImpl to interact with the runtime's device.
   void OnServiceAdded(VRServiceImpl* service);
   void OnServiceRemoved(VRServiceImpl* service);
-  void ExitPresent(VRServiceImpl* service);
+  void ExitPresent(VRServiceImpl* service,
+                   VRServiceImpl::ExitPresentCallback on_exited);
   void SetFramesThrottled(const VRServiceImpl* service, bool throttled);
   void RequestSession(VRServiceImpl* service,
                       const device::mojom::XRRuntimeSessionOptionsPtr& options,
@@ -109,7 +109,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void OnVisibilityStateChanged(
       device::mojom::XRVisibilityState visibility_state) override;
 
-  void StopImmersiveSession();
+  void StopImmersiveSession(VRServiceImpl::ExitPresentCallback on_exited);
   void OnListeningForActivate(bool is_listening);
   void OnRequestSessionResult(
       base::WeakPtr<VRServiceImpl> service,

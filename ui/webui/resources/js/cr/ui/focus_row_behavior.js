@@ -94,6 +94,18 @@ cr.define('cr.ui', function() {
       /** @private {boolean} */
       mouseFocused_: Boolean,
 
+      /** Will be updated when |index| is set, unless specified elsewhere. */
+      id: {
+        type: String,
+        reflectToAttribute: true,
+      },
+
+      /** Should be bound to the index of the item from the iron-list */
+      focusRowIndex: {
+        type: Number,
+        observer: 'focusRowIndexChanged',
+      },
+
       /** @type {Element} */
       lastFocused: {
         type: Object,
@@ -116,6 +128,33 @@ cr.define('cr.ui', function() {
         type: Boolean,
         notify: true,
       },
+    },
+
+    /**
+     * Returns an ID based on the index that was passed in.
+     * @param {?number} index
+     * @return {?string}
+     */
+    computeId_: function(index) {
+      if (index !== undefined) {
+        return `frb${index}`;
+      }
+    },
+
+    /**
+     * Sets |id| if it hasn't been set elsewhere. Also sets |aria-rowindex|.
+     * @param {number} newIndex
+     * @param {number} oldIndex
+     */
+    focusRowIndexChanged: function(newIndex, oldIndex) {
+      // focusRowIndex is 0-based where aria-rowindex is 1-based.
+      this.setAttribute('aria-rowindex', newIndex + 1);
+
+      // Only set ID if it matches what was previously set. This prevents
+      // overriding the ID value if it's set elsewhere.
+      if (this.id === this.computeId_(oldIndex)) {
+        this.id = this.computeId_(newIndex);
+      }
     },
 
     /** @private {?Element} */

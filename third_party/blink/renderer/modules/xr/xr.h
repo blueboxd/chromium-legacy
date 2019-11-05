@@ -87,11 +87,13 @@ class XR final : public EventTargetWithInlineData,
   void AddEnvironmentProviderErrorHandler(
       EnvironmentProviderErrorCallback callback);
 
-  void ExitPresent();
+  void ExitPresent(base::OnceClosure on_exited);
 
   void SetFramesThrottled(const XRSession* session, bool throttled);
 
   base::TimeTicks NavigationStart() const { return navigation_start_; }
+
+  bool IsContextDestroyed() const { return is_context_destroyed_; }
 
  private:
   enum SensorRequirement {
@@ -287,7 +289,11 @@ class XR final : public EventTargetWithInlineData,
 
   XRSession* CreateSensorlessInlineSession();
 
-  void Dispose();
+  enum class DisposeType {
+    kContextDestroyed = 0,
+    kDisconnected = 1,
+  };
+  void Dispose(DisposeType);
 
   void OnEnvironmentProviderDisconnect();
 
@@ -322,6 +328,8 @@ class XR final : public EventTargetWithInlineData,
 
   // In DOM overlay mode, save and restore the FrameView background color.
   Color original_base_background_color_;
+
+  bool is_context_destroyed_ = false;
 };
 
 }  // namespace blink

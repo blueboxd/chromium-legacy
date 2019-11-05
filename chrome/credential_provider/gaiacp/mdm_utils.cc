@@ -155,13 +155,15 @@ HRESULT ExtractRegistrationData(const base::Value& registration_data,
                                 base::string16* out_access_token,
                                 base::string16* out_sid,
                                 base::string16* out_username,
-                                base::string16* out_domain) {
+                                base::string16* out_domain,
+                                bool* out_is_ad_user_joined) {
   DCHECK(out_email);
   DCHECK(out_id_token);
   DCHECK(out_access_token);
   DCHECK(out_sid);
   DCHECK(out_username);
   DCHECK(out_domain);
+  DCHECK(out_is_ad_user_joined);
   if (!registration_data.is_dict()) {
     LOGFN(ERROR) << "Registration data is not a dictionary";
     return E_INVALIDARG;
@@ -204,6 +206,13 @@ HRESULT ExtractRegistrationData(const base::Value& registration_data,
     return E_INVALIDARG;
   }
 
+  if (GetDictString(registration_data, kKeyIsAdJoinedUser).empty()) {
+    LOGFN(ERROR) << "is_ad_user_joined is empty";
+    return E_INVALIDARG;
+  }
+
+  *out_is_ad_user_joined =
+      (GetDictString(registration_data, kKeyIsAdJoinedUser).compare(L"1") == 0);
   return S_OK;
 }
 
@@ -249,9 +258,11 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   base::string16 sid;
   base::string16 username;
   base::string16 domain;
+  bool is_ad_joined_user;
 
-  HRESULT hr = ExtractRegistrationData(properties, &email, &id_token,
-                                       &access_token, &sid, &username, &domain);
+  HRESULT hr =
+      ExtractRegistrationData(properties, &email, &id_token, &access_token,
+                              &sid, &username, &domain, &is_ad_joined_user);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "ExtractRegistrationData hr=" << putHR(hr);
@@ -306,6 +317,7 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
                                  local_administrators_group_name);
   registration_data.SetStringKey("builtin_administrator_name",
                                  builtin_administrator_name);
+  registration_data.SetBoolKey(kKeyIsAdJoinedUser, is_ad_joined_user);
 
   std::string registration_data_str;
   if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
@@ -431,15 +443,15 @@ GoogleMdmEnrolledStatusForTesting::~GoogleMdmEnrolledStatusForTesting() {
 
 // GoogleMdmEnrolledStatusForTesting //////////////////////////////////////////
 
-// GoogleSerialNumberForTesting //////////////////////////////////////////
+// GoogleRegistrationDataForTesting //////////////////////////////////////////
 
-GoogleSerialNumberForTesting::GoogleSerialNumberForTesting(
+GoogleRegistrationDataForTesting::GoogleRegistrationDataForTesting(
     base::string16 serial_number) {
   g_use_test_serial_number = true;
   g_test_serial_number = serial_number;
 }
 
-GoogleSerialNumberForTesting::~GoogleSerialNumberForTesting() {
+GoogleRegistrationDataForTesting::~GoogleRegistrationDataForTesting() {
   g_use_test_serial_number = false;
   g_test_serial_number = L"";
 }

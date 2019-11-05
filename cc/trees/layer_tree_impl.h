@@ -151,6 +151,8 @@ class CC_EXPORT LayerTreeImpl {
       base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
           decoding_mode_map);
   bool IsActivelyScrolling() const;
+  int GetMSAASampleCountForRaster(
+      const scoped_refptr<DisplayItemList>& display_list);
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

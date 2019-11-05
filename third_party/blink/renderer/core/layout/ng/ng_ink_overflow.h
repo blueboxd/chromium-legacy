@@ -21,10 +21,11 @@ struct CORE_EXPORT NGInkOverflow {
   NGInkOverflow(const PhysicalRect& self_ink_overflow)
       : self_ink_overflow(self_ink_overflow) {}
 
-  static std::unique_ptr<NGInkOverflow> TextInkOverflow(
+  static void ComputeTextInkOverflow(
       const NGTextFragmentPaintInfo& text_info,
       const ComputedStyle& style,
-      const PhysicalSize& size);
+      const PhysicalSize& size,
+      std::unique_ptr<NGInkOverflow>* ink_overflow_out);
 
   PhysicalRect self_ink_overflow;
 };
@@ -39,6 +40,10 @@ struct CORE_EXPORT NGContainerInkOverflow : NGInkOverflow {
                          const PhysicalRect& contents_ink_overflow)
       : NGInkOverflow(self_ink_overflow),
         contents_ink_overflow(contents_ink_overflow) {}
+
+  PhysicalRect SelfAndContentsInkOverflow() const {
+    return UnionRect(self_ink_overflow, contents_ink_overflow);
+  }
 
   PhysicalRect contents_ink_overflow;
 };

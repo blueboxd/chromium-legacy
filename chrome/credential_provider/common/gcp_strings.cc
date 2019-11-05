@@ -25,6 +25,9 @@ const char kKeyUsername[] = "user_name";
 const char kKeyDomain[] = "domain";
 const char kKeyExitCode[] = "exit_code";
 
+// AD attributes related to the device.
+const char kKeyIsAdJoinedUser[] = "is_ad_joined_user";
+
 // Name of registry value that holds user properties.
 const wchar_t kUserTokenHandle[] = L"th";
 const wchar_t kUserEmail[] = L"email";

@@ -87,14 +87,6 @@
 
 namespace blink {
 
-#if DCHECK_IS_ON() && defined(ARCH_CPU_64_BITS)
-NO_SANITIZE_ADDRESS
-void HeapObjectHeader::ZapMagic() {
-  CheckHeader();
-  magic_ = kZappedMagic;
-}
-#endif
-
 void HeapObjectHeader::Finalize(Address object, size_t object_size) {
   HeapAllocHooks::FreeHookIfEnabled(object);
   const GCInfo* gc_info = GCInfoTable::Get().GCInfoFromIndex(GcInfoIndex());
@@ -1300,8 +1292,7 @@ void FreeList::CollectStatistics(
 }
 
 BasePage::BasePage(PageMemory* storage, BaseArena* arena, PageType page_type)
-    : magic_(GetMagic()),
-      storage_(storage),
+    : storage_(storage),
       arena_(arena),
       thread_state_(arena->GetThreadState()),
       page_type_(page_type) {
@@ -1659,7 +1650,6 @@ void NormalPage::VerifyObjectStartBitmapIsConsistentWithPayload() {
     const HeapObjectHeader* object_header =
         reinterpret_cast<HeapObjectHeader*>(object_address);
     DCHECK_EQ(object_header, current_header);
-    DCHECK(object_header->IsValidOrZapped());
     current_header = reinterpret_cast<HeapObjectHeader*>(object_address +
                                                          object_header->size());
     // Skip over allocation area.
@@ -1720,7 +1710,6 @@ HeapObjectHeader* NormalPage::ConservativelyFindHeaderFromAddress(
     return nullptr;
   HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(
       object_start_bit_map()->FindHeader(address));
-  DCHECK(header->IsValidOrZapped());
   if (header->IsFree())
     return nullptr;
   DCHECK_LT(0u, header->GcInfoIndex());
@@ -1733,7 +1722,6 @@ HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
   DCHECK(!ArenaForNormalPage()->IsInCurrentAllocationPointRegion(address));
   HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(
       object_start_bit_map()->FindHeader(address));
-  DCHECK(header->IsValid());
   DCHECK_LT(0u, header->GcInfoIndex());
   DCHECK_GT(header->PayloadEnd(), address);
   return header;
@@ -1854,77 +1842,5 @@ bool LargeObjectPage::Contains(Address object) {
          object < RoundToBlinkPageEnd(GetAddress() + size());
 }
 #endif
-
-ALWAYS_INLINE uint32_t RotateLeft16(uint32_t x) {
-#if defined(COMPILER_MSVC)
-  return _lrotr(x, 16);
-#else
-  // http://blog.regehr.org/archives/1063
-  return (x << 16) | (x >> (-16 & 31));
-#endif
-}
-
-uint32_t ComputeRandomMagic() {
-// Ignore C4319: It is OK to 0-extend into the high-order bits of the uintptr_t
-// on 64-bit, in this case.
-#if defined(COMPILER_MSVC)
-#pragma warning(push)
-#pragma warning(disable : 4319)
-#endif
-
-  // Get an ASLR'd address from one of our own DLLs/.sos, and then another from
-  // a system DLL/.so:
-
-  const uint32_t random1 =
-      ~(RotateLeft16(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(
-          base::trace_event::MemoryAllocatorDump::kNameSize))));
-
-#if defined(OS_WIN)
-  uintptr_t random2 = reinterpret_cast<uintptr_t>(::ReadFile);
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  uintptr_t random2 = reinterpret_cast<uintptr_t>(::read);
-#else
-#error platform not supported
-#endif
-
-#if defined(ARCH_CPU_64_BITS)
-  static_assert(sizeof(uintptr_t) == sizeof(uint64_t),
-                "uintptr_t is not uint64_t");
-  // Shift in some high-order bits.
-  random2 = random2 >> 16;
-#elif defined(ARCH_CPU_32_BITS)
-  // Although we don't use heap metadata canaries on 32-bit due to memory
-  // pressure, keep this code around just in case we do, someday.
-  static_assert(sizeof(uintptr_t) == sizeof(uint32_t),
-                "uintptr_t is not uint32_t");
-#else
-#error architecture not supported
-#endif
-
-  random2 = ~(RotateLeft16(static_cast<uint32_t>(random2)));
-
-  // Combine the 2 values:
-  const uint32_t random = (random1 & 0x0000FFFFUL) |
-                          (static_cast<uint32_t>(random2) & 0xFFFF0000UL);
-
-#if defined(COMPILER_MSVC)
-#pragma warning(pop)
-#endif
-
-  return random;
-}
-
-#if defined(ARCH_CPU_64_BITS)
-// Returns a random magic value.
-uint32_t HeapObjectHeader::GetMagic() {
-  static const uint32_t magic = ComputeRandomMagic() ^ 0x6e0b6ead;
-  return magic;
-}
-#endif  // defined(ARCH_CPU_64_BITS)
-
-uint32_t BasePage::GetMagic() {
-  static const uint32_t magic = ComputeRandomMagic() ^ 0xba5e4a9e;
-  return magic;
-}
 
 }  // namespace blink

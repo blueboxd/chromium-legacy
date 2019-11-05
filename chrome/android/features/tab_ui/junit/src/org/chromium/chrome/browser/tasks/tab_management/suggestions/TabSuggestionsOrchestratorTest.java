@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -87,9 +88,18 @@ public class TabSuggestionsOrchestratorTest {
         }
         TabSuggestionsOrchestrator tabSuggestionsOrchestrator =
                 new TabSuggestionsOrchestrator(mTabModelSelector, mDispatcher);
+        List<TabSuggestion> suggestions = new LinkedList<>();
+        TabSuggestionsObserver tabSuggestionsObserver = new TabSuggestionsObserver() {
+            @Override
+            public void onNewSuggestion(List<TabSuggestion> tabSuggestions) {
+                suggestions.addAll(tabSuggestions);
+            }
+
+            @Override
+            public void onTabSuggestionInvalidated() {}
+        };
+        tabSuggestionsOrchestrator.addObserver(tabSuggestionsObserver);
         tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(null, 0);
-        List<TabSuggestion> suggestions = tabSuggestionsOrchestrator.getSuggestions(
-                TabContext.createCurrentContext(mTabModelSelector));
         Assert.assertEquals(1, suggestions.size());
         Assert.assertEquals(TAB_IDS.length, suggestions.get(0).getTabsInfo().size());
         for (int idx = 0; idx < TAB_IDS.length; idx++) {
@@ -112,9 +122,17 @@ public class TabSuggestionsOrchestratorTest {
         doReturn(sTabs[0]).when(mTabModelFilter).getTabAt(eq(0));
         TabSuggestionsOrchestrator tabSuggestionsOrchestrator =
                 new TabSuggestionsOrchestrator(mTabModelSelector, mDispatcher);
+        List<TabSuggestion> suggestions = new LinkedList<>();
+        TabSuggestionsObserver tabSuggestionsObserver = new TabSuggestionsObserver() {
+            @Override
+            public void onNewSuggestion(List<TabSuggestion> tabSuggestions) {
+                suggestions.addAll(tabSuggestions);
+            }
+
+            @Override
+            public void onTabSuggestionInvalidated() {}
+        };
         tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(null, 0);
-        List<TabSuggestion> suggestions = tabSuggestionsOrchestrator.getSuggestions(
-                TabContext.createCurrentContext(mTabModelSelector));
         Assert.assertEquals(0, suggestions.size());
     }
 }

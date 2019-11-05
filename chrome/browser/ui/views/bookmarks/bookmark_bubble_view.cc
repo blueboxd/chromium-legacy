@@ -147,31 +147,6 @@ void BookmarkBubbleView::WindowClosing() {
 
 // views::DialogDelegate -------------------------------------------------------
 
-std::unique_ptr<views::View> BookmarkBubbleView::CreateFootnoteView() {
-#if defined(OS_CHROMEOS)
-  // ChromeOS does not show the signin promo.
-  return nullptr;
-#else
-  if (!SyncPromoUI::ShouldShowSyncPromo(profile_))
-    return nullptr;
-
-  BubbleSyncPromoViewParams params;
-  params.link_text_resource_id = IDS_BOOKMARK_SYNC_PROMO_LINK;
-  params.message_text_resource_id = IDS_BOOKMARK_SYNC_PROMO_MESSAGE;
-  params.dice_no_accounts_promo_message_resource_id =
-      IDS_BOOKMARK_DICE_PROMO_SIGNIN_MESSAGE;
-  params.dice_accounts_promo_message_resource_id =
-      IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE;
-  params.dice_signin_button_prominent = false;
-
-  auto footnote_view = CreateBubbleSyncPromoView(
-      profile_, delegate_.get(),
-      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, params);
-  footnote_view_ = footnote_view.get();
-  return footnote_view;
-#endif
-}
-
 bool BookmarkBubbleView::Cancel() {
   base::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
   // Set this so we remove the bookmark after the window closes.
@@ -270,6 +245,7 @@ BookmarkBubbleView::BookmarkBubbleView(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
   DialogDelegate::SetExtraView(CreateEditButton(this));
+  DialogDelegate::SetFootnoteView(CreateSigninPromoView());
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -323,4 +299,27 @@ void BookmarkBubbleView::ApplyEdits() {
     folder_model()->MaybeChangeParent(node,
                                       parent_combobox_->GetSelectedIndex());
   }
+}
+
+std::unique_ptr<views::View> BookmarkBubbleView::CreateSigninPromoView() {
+#if defined(OS_CHROMEOS)
+  // ChromeOS does not show the signin promo.
+  return nullptr;
+#else
+  if (!SyncPromoUI::ShouldShowSyncPromo(profile_))
+    return nullptr;
+
+  BubbleSyncPromoViewParams params;
+  params.link_text_resource_id = IDS_BOOKMARK_SYNC_PROMO_LINK;
+  params.message_text_resource_id = IDS_BOOKMARK_SYNC_PROMO_MESSAGE;
+  params.dice_no_accounts_promo_message_resource_id =
+      IDS_BOOKMARK_DICE_PROMO_SIGNIN_MESSAGE;
+  params.dice_accounts_promo_message_resource_id =
+      IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE;
+  params.dice_signin_button_prominent = false;
+
+  return CreateBubbleSyncPromoView(
+      profile_, delegate_.get(),
+      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE, params);
+#endif
 }

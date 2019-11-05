@@ -11,6 +11,8 @@
 #include <set>
 #include <vector>
 
+#include "base/strings/string_piece.h"
+
 namespace base {
 
 class Base {
@@ -204,7 +206,7 @@ void WontCompile() {
   span<uint8_t> bytes = as_writable_bytes(make_span(v));
 }
 
-#elif defined(NCTEST_MAKE_SPAN_FROM_SET_CONVERSION_DISALLOWED)  // [r"fatal error: no matching function for call to 'make_span'"]
+#elif defined(NCTEST_MAKE_SPAN_FROM_SET_CONVERSION_DISALLOWED)  // [r"fatal error: no matching function for call to 'data'"]
 
 // A std::set() should not satisfy the requirements for conversion to a span.
 void WontCompile() {
@@ -249,11 +251,21 @@ int WontCompile() {
   return std::get<0>(s);
 }
 
-#elif defined(NCTEST_CONST_VECTOR_DEDUCES_AS_CONST_SPAN)  // [r"fatal error: no viable conversion from 'span<const int>' to 'span<int>'"]
+#elif defined(NCTEST_CONST_VECTOR_DEDUCES_AS_CONST_SPAN)  // [r"fatal error: no viable conversion from 'span<const int, \[...\]>' to 'span<int, \[...\]>'"]
 
 int WontCompile() {
   const std::vector<int> v;
   span<int> s = make_span(v);
+}
+
+#elif defined(NCTEST_STATIC_MAKE_SPAN_CHECKS_SIZE)  // [r"constexpr variable 'made_span' must be initialized by a constant expression"]
+
+// The static make_span<N>(cont) should CHECK whether N matches size(cont). This
+// should result in compilation failures when evaluated at compile time.
+int WontCompile() {
+  constexpr StringPiece str = "Foo";
+  // Intentional extent mismatch causing CHECK failure.
+  constexpr auto made_span = make_span<2>(str);
 }
 
 #endif

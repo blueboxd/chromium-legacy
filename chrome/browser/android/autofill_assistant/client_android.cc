@@ -18,6 +18,7 @@
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantClient_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantDirectActionImpl_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -262,10 +263,63 @@ ClientAndroid::GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const {
       env, std::vector<std::string>(names.begin(), names.end()));
 }
 
+base::android::ScopedJavaLocalRef<jobject>
+ClientAndroid::ToJavaAutofillAssistantDirectAction(
+    JNIEnv* env,
+    const DirectAction& direct_action) const {
+  std::set<std::string> names;
+  for (const std::string& name : direct_action.names)
+    names.insert(name);
+  auto jnames = base::android::ToJavaArrayOfStrings(
+      env, std::vector<std::string>(names.begin(), names.end()));
+
+  std::vector<std::string> required_arguments;
+  for (const std::string& arg : direct_action.required_arguments)
+    required_arguments.emplace_back(arg);
+  auto jrequired_arguments =
+      base::android::ToJavaArrayOfStrings(env, required_arguments);
+
+  std::vector<std::string> optional_arguments;
+  for (const std::string& arg : direct_action.optional_arguments)
+    optional_arguments.emplace_back(arg);
+  auto joptional_arguments =
+      base::android::ToJavaArrayOfStrings(env, std::move(optional_arguments));
+
+  return Java_AutofillAssistantDirectActionImpl_Constructor(
+      env, jnames, jrequired_arguments, joptional_arguments);
+}
+
 base::android::ScopedJavaLocalRef<jobjectArray> ClientAndroid::GetDirectActions(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
-  return GetDirectActionsAsJavaArrayOfStrings(env);
+  DCHECK(controller_ != nullptr);
+  size_t actions_count = 0;
+  for (const UserAction& user_action : controller_->GetUserActions()) {
+    if (!user_action.enabled())
+      continue;
+    ++actions_count;
+  }
+
+  // Prepare the java array to hold the direct actions.
+  base::android::ScopedJavaLocalRef<jclass> directaction_array_class =
+      base::android::GetClass(env,
+                              "org/chromium/chrome/browser/autofill_assistant/"
+                              "AutofillAssistantDirectActionImpl");
+
+  jobjectArray joa = env->NewObjectArray(
+      actions_count, directaction_array_class.obj(), nullptr);
+  jni_generator::CheckException(env);
+
+  actions_count = 0;
+  for (const UserAction& user_action : controller_->GetUserActions()) {
+    if (!user_action.enabled())
+      continue;
+
+    auto jdirect_action =
+        ToJavaAutofillAssistantDirectAction(env, user_action.direct_action());
+    env->SetObjectArrayElement(joa, actions_count++, jdirect_action.obj());
+  }
+  return base::android::ScopedJavaLocalRef<jobjectArray>(env, joa);
 }
 
 void ClientAndroid::OnFetchWebsiteActions(

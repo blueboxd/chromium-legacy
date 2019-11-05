@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.home;
 import android.app.Activity;
 import android.content.ComponentName;
 
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -25,7 +26,8 @@ public class DownloadManagerCoordinatorFactory {
     public static DownloadManagerCoordinator create(Activity activity,
             DownloadManagerUiConfig config, SnackbarManager snackbarManager,
             ComponentName parentComponent, ModalDialogManager modalDialogManager) {
-        return new DownloadManagerCoordinatorImpl(Profile.getLastUsedProfile(), activity, config,
-                snackbarManager, modalDialogManager);
+        Profile profile = Profile.getLastUsedProfile();
+        return new DownloadManagerCoordinatorImpl(activity, config, snackbarManager,
+                modalDialogManager, TrackerFactory.getTrackerForProfile(profile));
     }
 }

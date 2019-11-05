@@ -53,7 +53,7 @@ void ScrollbarThemeOverlayMobile::PaintThumb(GraphicsContext& context,
     return;
 
   DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb);
-  context.FillRect(ThumbPaintRect(scrollbar, rect), color_);
+  context.FillRect(rect, color_);
 }
 
 }  // namespace blink

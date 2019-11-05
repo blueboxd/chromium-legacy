@@ -557,8 +557,6 @@ LayerTreeHost::CreateLayerTreeHostImpl(
     ukm_recorder_factory_.reset();
   }
 
-  host_impl->SetContentHasSlowPaths(content_has_slow_paths_);
-  host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
   task_graph_runner_ = nullptr;
   input_handler_weak_ptr_ = host_impl->AsWeakPtr();
   return host_impl;
@@ -778,13 +776,6 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
   // mostly used for debugging purposes.
   UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationEnabled",
                         gpu_rasterization_enabled);
-  if (gpu_rasterization_enabled) {
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationSuitableContent",
-                          !content_has_slow_paths_);
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationSlowPathsWithNonAAPaint",
-                          content_has_slow_paths_ && content_has_non_aa_paint_);
-  }
-
   gpu_rasterization_histogram_recorded_ = true;
 }
 
@@ -862,31 +853,7 @@ bool LayerTreeHost::DoUpdateLayers() {
 
   LayerList update_layer_list;
   draw_property_utils::FindLayersThatNeedUpdates(this, &update_layer_list);
-
-  bool painted_content_has_slow_paths = false;
-  bool painted_content_has_non_aa_paint = false;
-  bool did_paint_content =
-      PaintContent(update_layer_list, &painted_content_has_slow_paths,
-                   &painted_content_has_non_aa_paint);
-
-  // |painted_content_has_non_aa_paint| is a correctness (not performance)
-  // modifier, if it changes we immediately update. To prevent churn, this flag
-  // is sticky.
-  content_has_non_aa_paint_ |= painted_content_has_non_aa_paint;
-
-  // If no slow-path content has appeared for a required number of frames,
-  // update the flag.
-  if (!painted_content_has_slow_paths) {
-    ++num_consecutive_frames_without_slow_paths_;
-    if (num_consecutive_frames_without_slow_paths_ >=
-        kNumFramesToConsiderBeforeRemovingSlowPathFlag) {
-      content_has_slow_paths_ = false;
-    }
-  } else {
-    num_consecutive_frames_without_slow_paths_ = 0;
-    content_has_slow_paths_ = true;
-  }
-
+  bool did_paint_content = PaintContent(update_layer_list);
   return did_paint_content;
 }
 
@@ -1095,8 +1062,6 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
 
   // Reset gpu rasterization tracking.
   // This flag is sticky until a new tree comes along.
-  content_has_slow_paths_ = false;
-  content_has_non_aa_paint_ = false;
   gpu_rasterization_histogram_recorded_ = false;
 
   force_use_property_tree_builder_ = false;
@@ -1442,15 +1407,11 @@ Layer* LayerTreeHost::LayerById(int id) const {
   return iter != layer_id_map_.end() ? iter->second : nullptr;
 }
 
-bool LayerTreeHost::PaintContent(const LayerList& update_layer_list,
-                                 bool* content_has_slow_paths,
-                                 bool* content_has_non_aa_paint) {
+bool LayerTreeHost::PaintContent(const LayerList& update_layer_list) {
   base::AutoReset<bool> painting(&in_paint_layer_contents_, true);
   bool did_paint_content = false;
   for (const auto& layer : update_layer_list) {
     did_paint_content |= layer->Update();
-    *content_has_slow_paths |= layer->HasSlowPaths();
-    *content_has_non_aa_paint |= layer->HasNonAAPaint();
   }
   return did_paint_content;
 }
@@ -1624,8 +1585,6 @@ void LayerTreeHost::PushSurfaceRangesTo(LayerTreeImpl* tree_impl) {
 
 void LayerTreeHost::PushLayerTreeHostPropertiesTo(
     LayerTreeHostImpl* host_impl) {
-  host_impl->SetContentHasSlowPaths(content_has_slow_paths_);
-  host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
   host_impl->set_external_pinch_gesture_active(
       is_external_pinch_gesture_active_);
   RecordGpuRasterizationHistogram(host_impl);

@@ -1236,9 +1236,12 @@ chrome_common_shared_library("libchromefortest") {
     deps += [ "//chrome/browser/android/vr:test_support" ]
   }
 
-  # TODO(http://crbug.com/1008123): Include module native code by enumerating
-  # module descriptors.
-  deps += [ "//chrome/android/modules/test_dummy/internal:native" ]
+  # Make this a partitioned library, since some partitioned code is linked in
+  # (otherwise, the library will warn at build time that it contains multiple
+  # symbol tables). However, do not create the partitions, as they are not
+  # required or packaged into the APK. This can be removed if LLD starts
+  # supporting a "no partitions" argument (https://crbug.com/1021108).
+  module_descs = []
 }
 
 # Ensure that .pak files are built only once (build them in the default
@@ -2622,7 +2625,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/download/DownloadManagerService.java",
     "java/src/org/chromium/chrome/browser/download/DownloadMediaData.java",
     "java/src/org/chromium/chrome/browser/download/DownloadMediaParserBridge.java",
-    "java/src/org/chromium/chrome/browser/download/DownloadStartupUtils.java",
     "java/src/org/chromium/chrome/browser/download/DownloadUtils.java",
     "java/src/org/chromium/chrome/browser/download/home/rename/RenameUtils.java",
     "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorFactory.java",

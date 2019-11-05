@@ -844,13 +844,6 @@ Your Google account may have other forms of browsing history like searches and a
         <ph name="NUMBER_OF_ITEMS">%1$s<ex>3</ex></ph> items deleted
       </message>
 
-      <message name="IDS_USAGE_AND_CRASH_REPORTS_TITLE_LEGACY" desc="Title for 'Usage and crash reports' preference">
-        Usage and crash reports
-      </message>
-      <message name="IDS_USAGE_AND_CRASH_REPORTS_DESCRIPTION_LEGACY" desc="Description for 'Usage and crash reports' preference">
-        Automatically send usage statistics and crash reports to Google
-      </message>
-
       <!-- Accessibility preferences -->
       <message name="IDS_PREFS_ACCESSIBILITY" desc="Title of Accessibility settings, which allows the user to change webpage font sizes. [CHAR-LIMIT=32]">
         Accessibility

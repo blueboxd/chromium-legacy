@@ -51,10 +51,12 @@ class CrossSequenceCacheStorage
   void MatchCache(const std::string& cache_name,
                   blink::mojom::FetchAPIRequestPtr request,
                   blink::mojom::CacheQueryOptionsPtr match_options,
+                  CacheStorageSchedulerPriority priority,
                   int64_t trace_id,
                   CacheStorageCache::ResponseCallback callback) override;
   void MatchAllCaches(blink::mojom::FetchAPIRequestPtr request,
                       blink::mojom::CacheQueryOptionsPtr match_options,
+                      CacheStorageSchedulerPriority priority,
                       int64_t trace_id,
                       CacheStorageCache::ResponseCallback callback) override;
   void WriteToCache(const std::string& cache_name,

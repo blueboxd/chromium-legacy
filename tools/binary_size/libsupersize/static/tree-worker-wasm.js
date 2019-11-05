@@ -229,7 +229,9 @@ function parseOptions(options) {
   const excludeRegex = params.get('exclude');
 
   let includeSections = params.get('type');
-  if (includeSections === null) {
+  if (methodCountMode) {
+    includeSections = _DEX_METHOD_SYMBOL_TYPE;
+  } else if (includeSections === null) {
     // Exclude native symbols by default.
     let includeSectionsSet = new Set(_SYMBOL_TYPE_SET);
     includeSectionsSet.delete('b');
@@ -244,7 +246,6 @@ function parseOptions(options) {
     minSymbolSize,
     flagToFilter,
     url,
-    methodCountMode
   };
 }
 
@@ -259,7 +260,6 @@ const actions = {
       minSymbolSize,
       flagToFilter,
       url,
-      methodCountMode
     } = parseOptions(options);
     if (input === 'from-url://' && url) {
       // Display the data from the `load_url` query parameter
@@ -272,7 +272,7 @@ const actions = {
 
     return buildTree(
         groupBy, includeRegex, excludeRegex, includeSections, minSymbolSize,
-        flagToFilter, methodCountMode, progress => {
+        flagToFilter, progress => {
           // @ts-ignore
           self.postMessage(progress);
         });

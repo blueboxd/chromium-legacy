@@ -49,6 +49,9 @@ class APP_LIST_EXPORT AppListPresenterDelegate {
   // Returns whether the on-screen keyboard is shown.
   virtual bool GetOnScreenKeyboardShown() = 0;
 
+  // Returns the container parent of the given window.
+  virtual aura::Window* GetContainerForWindow(aura::Window* window) = 0;
+
   // Returns the root Window for the given display id. If there is no display
   // for |display_id| null is returned.
   virtual aura::Window* GetRootWindowForDisplayId(int64_t display_id) = 0;

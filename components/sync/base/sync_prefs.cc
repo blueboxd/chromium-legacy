@@ -19,6 +19,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_buildflags.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync/base/user_selectable_type.h"
 
 namespace syncer {
 
@@ -124,6 +125,19 @@ const char* GetPrefNameForType(UserSelectableType type) {
   NOTREACHED();
   return nullptr;
 }
+
+#if defined(OS_CHROMEOS)
+const char* GetPrefNameForOsType(UserSelectableOsType type) {
+  switch (type) {
+    case UserSelectableOsType::kOsPreferences:
+      return prefs::kSyncOsPreferences;
+    case UserSelectableOsType::kPrinters:
+      return prefs::kSyncPrinters;
+  }
+  NOTREACHED();
+  return nullptr;
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Gets an offset to add noise to the birth year. If not present in prefs, the
 // offset will be randomly generated within the offset range and cached in
@@ -270,6 +284,12 @@ void SyncPrefs::RegisterProfilePrefs(
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
     RegisterTypeSelectedPref(registry, type);
   }
+#if defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(prefs::kSyncAllOsTypes, true);
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    registry->RegisterBooleanPref(GetPrefNameForOsType(type), false);
+  }
+#endif
 
   // Internal or bookkeeping prefs.
   registry->RegisterStringPref(prefs::kSyncCacheGuid, std::string());
@@ -466,6 +486,44 @@ void SyncPrefs::SetSelectedTypes(bool keep_everything_synced,
     observer.OnPreferredDataTypesPrefChange();
   }
 }
+
+#if defined(OS_CHROMEOS)
+bool SyncPrefs::IsSyncAllOsTypesEnabled() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return pref_service_->GetBoolean(prefs::kSyncAllOsTypes);
+}
+
+UserSelectableOsTypeSet SyncPrefs::GetSelectedOsTypes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (IsSyncAllOsTypesEnabled()) {
+    return UserSelectableOsTypeSet::All();
+  }
+  UserSelectableOsTypeSet selected_types;
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    const char* pref_name = GetPrefNameForOsType(type);
+    DCHECK(pref_name);
+    if (pref_service_->GetBoolean(pref_name)) {
+      selected_types.Put(type);
+    }
+  }
+  return selected_types;
+}
+
+void SyncPrefs::SetSelectedOsTypes(bool sync_all_os_types,
+                                   UserSelectableOsTypeSet registered_types,
+                                   UserSelectableOsTypeSet selected_types) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->SetBoolean(prefs::kSyncAllOsTypes, sync_all_os_types);
+  for (UserSelectableOsType type : registered_types) {
+    const char* pref_name = GetPrefNameForOsType(type);
+    DCHECK(pref_name);
+    pref_service_->SetBoolean(pref_name, selected_types.Has(type));
+  }
+  for (SyncPrefObserver& observer : sync_pref_observers_) {
+    observer.OnPreferredDataTypesPrefChange();
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 bool SyncPrefs::IsManaged() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

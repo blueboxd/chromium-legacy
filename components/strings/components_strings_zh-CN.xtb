@@ -172,6 +172,7 @@
 <translation id="173080396488393970">此信用卡类型不受支持</translation>
 <translation id="1734864079702812349">美国运通卡</translation>
 <translation id="1734878702283171397">请尝试联系系统管理员。</translation>
+<translation id="1739107442478692187">您使用的某个网站或应用发生了数据泄露。Chrome 建议您立即检查并更改您在<ph name="ORIGIN" />上保存的密码。</translation>
 <translation id="1740951997222943430">请输入有效的失效月份</translation>
 <translation id="1743520634839655729">若想在下次购物时更快捷地付款，请将您的付款卡信息、姓名和帐单邮寄地址保存到您的 Google 帐号名下以及这台设备中。</translation>
 <translation id="1743570585616704562">无法识别</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">网域不匹配</translation>
 <translation id="2096368010154057602">省</translation>
 <translation id="2099652385553570808">三钉（左侧）</translation>
+<translation id="2100280972184758440">您的密码已被泄露</translation>
 <translation id="2102134110707549001">建议安全系数高的密码…</translation>
 <translation id="2108755909498034140">重新启动计算机</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">由于已被 <ph name="POLICY_NAME" /> 替换，该政策已忽略。</translation>
 <translation id="2119505898009119320">颁发对象：<ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">打孔（右下角）</translation>
+<translation id="2124528555835617522">您使用的某个网站或应用发生了数据泄露。Chrome 建议您立即检查已保存的密码。</translation>
 <translation id="2129079103035905234">动态传感器</translation>
 <translation id="213826338245044447">移动设备书签</translation>
 <translation id="214556005048008348">取消付款</translation>
@@ -468,11 +471,13 @@
 <translation id="3282497668470633863">添加持卡人姓名</translation>
 <translation id="3287510313208355388">联网时下载</translation>
 <translation id="3293642807462928945">详细了解“<ph name="POLICY_NAME" />”政策</translation>
+<translation id="3295439534709115864">您使用的某个网站或应用发生了数据泄露。Chrome 建议您立即更改您在<ph name="ORIGIN" />上保存的密码。</translation>
 <translation id="3303855915957856445">未找到任何搜索结果</translation>
 <translation id="3320021301628644560">添加账单邮寄地址</translation>
 <translation id="3324983252691184275">深红色</translation>
 <translation id="3338095232262050444">安全</translation>
 <translation id="3355823806454867987">更改代理服务器设置...</translation>
+<translation id="3360103848165129075">付款处理程序工作表</translation>
 <translation id="3362968246557010467">此政策的值是系统从已弃用的 <ph name="OLD_POLICY" /> 政策中自动复制而来的。您应改用此政策。</translation>
 <translation id="3366477098757335611">查看您的卡</translation>
 <translation id="3369192424181595722">时钟错误</translation>
@@ -585,6 +590,7 @@
 <translation id="3949601375789751990">您的浏览记录会显示在此处</translation>
 <translation id="3949870428812919180">尚未保存任何付款方式</translation>
 <translation id="3950820424414687140">登录</translation>
+<translation id="3961148744525529027">付款处理程序工作表已在下半屏中打开</translation>
 <translation id="3962859241508114581">上一曲</translation>
 <translation id="3963837677003247395">以手动方式继续？</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{无}=1{来自 1 个网站}other{来自 # 个网站}}</translation>
@@ -1315,6 +1321,7 @@
 <translation id="7637571805876720304">要从 Chromium 中移除信用卡吗？</translation>
 <translation id="7638605456503525968">串行端口</translation>
 <translation id="7639968568612851608">深灰色</translation>
+<translation id="7653957176542370971">付款处理程序工作表已关闭</translation>
 <translation id="765676359832457558">隐藏高级设置...</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7662298039739062396">设置由某款扩展程序控制</translation>
@@ -1444,6 +1451,7 @@
 <translation id="8261506727792406068">删除</translation>
 <translation id="8262952874573525464">边缘装订（底部）</translation>
 <translation id="8267698848189296333">目前登录的帐号是 <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">付款处理程序工作表已打开</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">登录</translation>
 <translation id="8288807391153049143">显示证书</translation>

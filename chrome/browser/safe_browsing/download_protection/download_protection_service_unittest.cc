@@ -2683,10 +2683,9 @@ class DownloadProtectionServiceFlagTest : public DownloadProtectionServiceTest {
             "b") {}
 
   void SetUp() override {
-    std::vector<uint8_t> bytes;
-    ASSERT_TRUE(base::HexStringToBytes(blacklisted_hash_hex_, &bytes) &&
-                bytes.size() == 32);
-    blacklisted_hash_ = std::string(bytes.begin(), bytes.end());
+    ASSERT_TRUE(
+        base::HexStringToString(blacklisted_hash_hex_, &blacklisted_hash_) &&
+        blacklisted_hash_.size() == 32);
 
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         safe_browsing::switches::kSbManualDownloadBlacklist,

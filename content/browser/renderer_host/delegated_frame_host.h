@@ -69,6 +69,19 @@ class CONTENT_EXPORT DelegatedFrameHost
       public viz::mojom::CompositorFrameSinkClient,
       public viz::HostFrameSinkClient {
  public:
+  enum class FrameEvictionState {
+    kNotStarted = 0,          // Frame eviction is ready.
+    kPendingEvictionRequests  // Frame eviction is paused with pending requests.
+  };
+
+  class Observer {
+   public:
+    virtual void OnFrameEvictionStateChanged(FrameEvictionState new_state) = 0;
+
+   protected:
+    virtual ~Observer() = default;
+  };
+
   // |should_register_frame_sink_id| flag indicates whether DelegatedFrameHost
   // is responsible for registering the associated FrameSinkId with the
   // compositor or not. This is set only on non-aura platforms, since aura is
@@ -77,6 +90,9 @@ class CONTENT_EXPORT DelegatedFrameHost
                      DelegatedFrameHostClient* client,
                      bool should_register_frame_sink_id);
   ~DelegatedFrameHost() override;
+
+  void AddObserverForTesting(Observer* observer);
+  void RemoveObserverForTesting(Observer* observer);
 
   // ui::CompositorObserver implementation.
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
@@ -180,6 +196,14 @@ class CONTENT_EXPORT DelegatedFrameHost
     return weak_factory_.GetWeakPtr();
   }
 
+  const ui::Layer* stale_content_layer() const {
+    return stale_content_layer_.get();
+  }
+
+  FrameEvictionState frame_eviction_state() const {
+    return frame_eviction_state_;
+  }
+
  private:
   friend class DelegatedFrameHostClient;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraBrowserTest,
@@ -206,6 +230,9 @@ class CONTENT_EXPORT DelegatedFrameHost
       const gfx::Size& output_size,
       viz::CopyOutputRequest::ResultFormat format,
       viz::CopyOutputRequest::CopyOutputRequestCallback callback);
+
+  void SetFrameEvictionStateAndNotifyObservers(
+      FrameEvictionState frame_eviction_state);
 
   const viz::FrameSinkId frame_sink_id_;
   DelegatedFrameHostClient* const client_;
@@ -238,11 +265,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
 
-  enum class FrameEvictionState {
-    kNotStarted = 0,          // Frame eviction is ready.
-    kPendingEvictionRequests  // Frame eviction is paused with pending requests.
-  };
-
   FrameEvictionState frame_eviction_state_ = FrameEvictionState::kNotStarted;
 
   // Layer responsible for displaying the stale content for the DFHC when the
@@ -251,6 +273,8 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<ui::Layer> stale_content_layer_;
 
   TabSwitchTimeRecorder tab_switch_time_recorder_;
+
+  base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<DelegatedFrameHost> weak_factory_{this};
 

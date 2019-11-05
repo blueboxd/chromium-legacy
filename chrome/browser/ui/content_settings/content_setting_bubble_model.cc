@@ -52,8 +52,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -366,10 +364,6 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
 
   content_settings::RecordMixedScriptAction(
       content_settings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW);
-
-  rappor::SampleDomainAndRegistryFromGURL(
-      rappor_service(), "ContentSettings.MixedScript.UserClickedAllow",
-      web_contents()->GetLastCommittedURL());
 }
 
 // Don't set any manage text since none is displayed.

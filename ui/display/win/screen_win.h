@@ -16,6 +16,7 @@
 #include "ui/display/screen.h"
 #include "ui/display/win/color_profile_reader.h"
 #include "ui/display/win/uwp_text_scale_factor.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
@@ -95,6 +96,10 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   // Converts a DIP size to a physical size.
   // The DPI scale is performed relative to the display nearest to |hwnd|.
   static gfx::Size DIPToScreenSize(HWND hwnd, const gfx::Size& dip_size);
+
+  // Returns the number of physical pixels per inch for a display associated
+  // with the point.
+  static gfx::Vector2dF GetPixelsPerInch(const gfx::PointF& point);
 
   // Returns the result of GetSystemMetrics for |metric| scaled to |monitor|'s
   // DPI. Use this function if you're already working with screen pixels, as

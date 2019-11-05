@@ -101,7 +101,7 @@ void CastRunner::StartComponent(
   pending_component->startup_context =
       std::make_unique<base::fuchsia::StartupContext>(std::move(startup_info));
   pending_component->agent_manager = std::make_unique<cr_fuchsia::AgentManager>(
-      pending_component->startup_context->incoming_services());
+      pending_component->startup_context->component_context()->svc().get());
   pending_component->controller_request = std::move(controller_request);
 
   // Get binding details from the Agent.

@@ -60,6 +60,7 @@ class LayoutMultiColumnSpannerPlaceholder;
 class LayoutRubyRun;
 class MarginInfo;
 class NGBlockBreakToken;
+class NGFragmentItems;
 class NGOffsetMapping;
 class NGPhysicalFragment;
 
@@ -465,6 +466,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   virtual const NGPhysicalBoxFragment* CurrentFragment() const {
     return nullptr;
   }
+  const NGFragmentItems* FragmentItems() const;
 
 #if DCHECK_IS_ON()
   void ShowLineTreeAndMark(const InlineBox* = nullptr,

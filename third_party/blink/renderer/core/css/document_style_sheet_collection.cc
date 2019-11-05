@@ -50,11 +50,8 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(
 void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
     StyleEngine& master_engine,
     DocumentStyleSheetCollector& collector) {
-  // TODO(keishi) Check added for crbug.com/699269 diagnosis. Remove once done.
-  CHECK(HeapObjectHeader::FromPayload(this)->IsValid());
   CHECK(ThreadState::Current()->IsOnThreadHeap(this));
   for (Node* n : style_sheet_candidate_nodes_) {
-    CHECK(HeapObjectHeader::FromPayload(n)->IsValid());
     CHECK(ThreadState::Current()->IsOnThreadHeap(n));
     StyleSheetCandidate candidate(*n);
 

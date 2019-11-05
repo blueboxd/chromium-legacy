@@ -73,14 +73,14 @@ QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 QUIC_FLAG(int32_t, FLAGS_quic_anti_amplification_factor, 3)
 
 // Enables 3 new connection options to make PROBE_RTT more aggressive
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, true)
 
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_99, true)
 
 // When true, set the initial congestion control window from connection options
 // in QuicSentPacketManager rather than TcpCubicSenderBytes.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, true)
 
 // Number of packets that the pacing sender allows in bursts during pacing.
 QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 2)
@@ -109,18 +109,18 @@ QUIC_FLAG(int32_t, FLAGS_quic_ietf_draft_version, 0)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_donot_reset_ideal_next_packet_send_time,
-    false)
+    true)
 
 // If true, enable experiment for testing PCC congestion-control.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc3, false)
 
 // When true, ensure BBR allows at least one MSS to be sent in response to an
 // ACK in packet conservation.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_one_mss_conservation, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_one_mss_conservation, true)
 
 // Enables the BBQ5 connection option, which forces saved aggregation values to
 // expire when the bandwidth increases more than 25% in QUIC BBR STARTUP.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, true)
 
 // When true and the BBR9 connection option is present, BBR only considers
 // bandwidth samples app-limited if they're not filling the pipe.
@@ -130,31 +130,31 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_flexible_app_limited, false)
 // will cause the sequencer to discard future data.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_stop_reading_when_level_triggered,
-          false)
+          true)
 
 // When the STMP connection option is sent by the client, timestamps in the QUIC
 // ACK frame are sent and processed.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, true)
 
 // When in STARTUP and recovery, do not add bytes_acked to QUIC BBR's CWND in
 // CalculateCongestionWindow()
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr_no_bytes_acked_in_startup_recovery,
-    false)
+    true)
 
 // If true, use common code for checking whether a new stream ID may be
 // allocated.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, true)
 
 // If true, QuicEpollClock::Now() will monotonically increase.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, true)
 
 // If true, enables the BBS4 and BBS5 connection options, which reduce BBR's
 // pacing rate in STARTUP as more losses occur as a fraction of CWND.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
-          false)
+          true)
 
 // If true and using Leto for QUIC shared-key calculations, GFE will react to a
 // failure to contact Leto by sending a REJ containing a fallback ServerConfig,
@@ -177,7 +177,7 @@ QUIC_FLAG(bool,
 // it's received.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_do_not_accept_stop_waiting,
-          false)
+          true)
 
 // If true, set burst token to 2 in cwnd bootstrapping experiment.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
@@ -223,7 +223,7 @@ QUIC_FLAG(bool,
           false)
 
 // If true, will negotiate the ACK delay time.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, true)
 
 // If true, QuicFramer::WriteClientVersionNegotiationProbePacket uses
 // length-prefixed connection IDs.
@@ -269,17 +269,6 @@ QUIC_FLAG(bool,
 // If true, enable IETF style probe timeout.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, true)
 
-// When true, QuicFramer will use QueueUndecryptablePacket on all QUIC versions.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_framer_uses_undecryptable_upcall,
-          true)
-
-// When true, QuicUtils::GenerateStatelessResetToken will hash connection IDs
-// instead of XORing the bytes
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_use_hashed_stateless_reset_tokens,
-          true)
-
 // The maximum amount of CRYPTO frame data that can be buffered.
 QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
 
@@ -320,7 +309,7 @@ QUIC_FLAG(bool,
 // If true, treat queued QUIC packets as sent.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_treat_queued_packets_as_sent,
-          false)
+          true)
 
 // Call NeuterHandshakePackets() at most once per connection.
 QUIC_FLAG(bool,
@@ -334,7 +323,7 @@ QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_50, true)
 
 // If true, enable QUIC MTU discovery version 2.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_mtu_discovery_v2, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_mtu_discovery_v2, true)
 
 // If true, QUIC connection close packet will be sent at all available
 // encryption levels.
@@ -362,7 +351,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_coalesce_stream_frames, false)
 // If true, populate nonretransmittable frames in SerializedPacket.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_populate_nonretransmittable_frames,
-          false)
+          true)
 
 // If true, a stream will be reset if it receives fin that has offset less than
 // its highest offset.

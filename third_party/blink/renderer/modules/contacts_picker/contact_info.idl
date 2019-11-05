@@ -9,4 +9,5 @@ dictionary ContactInfo {
     sequence<USVString> email;
     sequence<USVString> tel;
     sequence<ContactAddress> address;
+    sequence<Blob> icon;
 };

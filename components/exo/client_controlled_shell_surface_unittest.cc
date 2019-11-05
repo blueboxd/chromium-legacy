@@ -503,6 +503,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
           widget->non_client_view()->frame_view());
 
   // Normal state.
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(normal_window_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(client_bounds,
@@ -513,6 +514,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   shell_surface->SetGeometry(gfx::Rect(0, 0, 800, 568));
   surface->Commit();
 
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(
@@ -523,6 +525,8 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
   shell_surface->SetGeometry(fullscreen_bounds);
   surface->Commit();
+
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(fullscreen_bounds,
@@ -531,6 +535,8 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   // Fullscreen state.
   shell_surface->SetFullscreen(true);
   surface->Commit();
+
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(fullscreen_bounds,
@@ -539,10 +545,14 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   // Updating frame, then window state should still update the frame state.
   surface->SetFrame(SurfaceFrameType::NORMAL);
   surface->Commit();
+
+  widget->LayoutRootViewIfNecessary();
   EXPECT_FALSE(frame_view->GetHeaderView()->GetVisible());
 
   shell_surface->SetMaximized();
   surface->Commit();
+
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(frame_view->GetHeaderView()->GetVisible());
 
   // Restore to normal state.
@@ -550,6 +560,8 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   shell_surface->SetGeometry(client_bounds);
   surface->SetFrame(SurfaceFrameType::NORMAL);
   surface->Commit();
+
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(normal_window_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(client_bounds,
@@ -560,6 +572,8 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   shell_surface->SetGeometry(client_bounds);
   surface->SetFrame(SurfaceFrameType::NONE);
   surface->Commit();
+
+  widget->LayoutRootViewIfNecessary();
   EXPECT_FALSE(frame_view->GetVisible());
   EXPECT_EQ(client_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(client_bounds,
@@ -570,10 +584,15 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   shell_surface->SetGeometry(fullscreen_bounds);
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
   surface->Commit();
+
+  widget->LayoutRootViewIfNecessary();
   EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_TRUE(frame_view->GetHeaderView()->in_immersive_mode());
+
   surface->SetFrame(SurfaceFrameType::NONE);
   surface->Commit();
+
+  widget->LayoutRootViewIfNecessary();
   EXPECT_FALSE(frame_view->GetVisible());
   EXPECT_FALSE(frame_view->GetHeaderView()->in_immersive_mode());
 }

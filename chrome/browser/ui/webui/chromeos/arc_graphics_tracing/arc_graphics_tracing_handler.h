@@ -11,6 +11,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
+#include "chrome/browser/ui/webui/chromeos/arc_graphics_tracing/arc_graphics_tracing.h"
 #include "components/exo/surface_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/aura/window_observer.h"
@@ -39,7 +41,7 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
                                   public ui::EventHandler,
                                   public exo::SurfaceObserver {
  public:
-  ArcGraphicsTracingHandler();
+  explicit ArcGraphicsTracingHandler(ArcGraphicsTracingMode mode);
   ~ArcGraphicsTracingHandler() override;
 
   // content::WebUIMessageHandler:
@@ -67,6 +69,7 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   void Activate();
   void StartTracing();
   void StopTracing();
+  void StopTracingAndActivate();
   void SetStatus(const std::string& status);
 
   void OnTracingStarted();
@@ -80,6 +83,7 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   // Handlers for calls from JS.
   void HandleReady(const base::ListValue* args);
   void HandleSetStopOnJank(const base::ListValue* args);
+  void HandleSetMaxTime(const base::ListValue* args);
   void HandleLoadFromText(const base::ListValue* args);
 
   // Updates title and icon for the active ARC window.
@@ -91,13 +95,26 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   // Called in case jank is detected in active ARC window.
   void OnJankDetected(const base::Time& timestamp);
 
+  // Returns max sampling interval to display.
+  base::TimeDelta GetMaxInterval() const;
+
   // Indicates that tracing was initiated by this handler.
   bool tracing_active_ = false;
 
   // Determines if tracing should stop in case jank is detected runtime.
+  // Works only in |ArcGraphicsTracingMode::kFull| mode.
   bool stop_on_jank_ = true;
 
+  // Determines the maximum tracing time.
+  // Works only in |ArcGraphicsTracingMode::kOverview| mode.
+  base::TimeDelta max_tracing_time_ = base::TimeDelta::FromSeconds(5);
+
+  base::OneShotTimer stop_tracing_timer_;
+
   exo::WMHelper* const wm_helper_;
+
+  const ArcGraphicsTracingMode mode_;
+
   aura::Window* arc_active_window_ = nullptr;
 
   // Time filter for tracing, since ARC++ window was activated last until
@@ -105,8 +122,9 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   base::TimeTicks tracing_time_min_;
   base::TimeTicks tracing_time_max_;
 
-  // Task id for current ARC window.
+  // Task id and title for current ARC window.
   int active_task_id_ = -1;
+  std::string active_task_title_;
 
   // Used to detect janks for the currently active ARC++ window.
   std::unique_ptr<arc::ArcGraphicsJankDetector> jank_detector_;

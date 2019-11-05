@@ -19,7 +19,7 @@ namespace zlib_internal {
 
 uLongf GZipExpectedCompressedSize(uLongf input_size);
 
-uint32_t GetUncompressedSize(Bytef* compressed_data, size_t length);
+uint32_t GetUncompressedSize(const Bytef* compressed_data, size_t length);
 
 int GzipCompressHelper(Bytef* dest,
                        uLongf* dest_length,

@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Този тип карта не се поддържа</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Свържете се със системния администратор.</translation>
+<translation id="1739107442478692187">Сигурността на данните в сайт или приложение, които използвате, е била нарушена. Chrome препоръчва да проверите запазените си пароли и да промените паролата си за <ph name="ORIGIN" /> сега.</translation>
 <translation id="1740951997222943430">Въведете валиден месец на изтичане</translation>
 <translation id="1743520634839655729">За да платите по-бързо следващия път, запазете картата, името и адреса си за фактуриране в профила си в Google и на това устройство.</translation>
 <translation id="1743570585616704562">Не е разпознато</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Несъответствие в домейна</translation>
 <translation id="2096368010154057602">Департамент</translation>
 <translation id="2099652385553570808">Триточково телбодиране отляво</translation>
+<translation id="2100280972184758440">Паролата ви е компрометирана</translation>
 <translation id="2102134110707549001">Предложение за надеждна парола…</translation>
 <translation id="2108755909498034140">Рестартирайте компютъра си.</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Бе пренебрегнато, защото бе отменено от <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Издаден на: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Перфориране долу вдясно</translation>
+<translation id="2124528555835617522">Сигурността на данните в сайт или приложение, които използвате, е била нарушена. Chrome препоръчва да проверите запазените си пароли сега.</translation>
 <translation id="2129079103035905234">Сензори за движение</translation>
 <translation id="213826338245044447">Мобилни отметки</translation>
 <translation id="214556005048008348">Анулиране на плащането</translation>
@@ -478,11 +481,13 @@
 <translation id="3282497668470633863">Добавяне на името на картодържателя</translation>
 <translation id="3287510313208355388">Изтегляне, когато съм онлайн</translation>
 <translation id="3293642807462928945">Научете повече за правилото <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Сигурността на данните в сайт или приложение, които използвате, е била нарушена. Chrome препоръчва да промените паролата си за <ph name="ORIGIN" /> сега.</translation>
 <translation id="3303855915957856445">Няма намерени резултати от търсенето</translation>
 <translation id="3320021301628644560">Добавяне на адреса за фактуриране</translation>
 <translation id="3324983252691184275">пурпурно</translation>
 <translation id="3338095232262050444">Има защита</translation>
 <translation id="3355823806454867987">Промяна на настройките на прокси сървъра...</translation>
+<translation id="3360103848165129075">Лист на инструмента за обработване на плащания</translation>
 <translation id="3362968246557010467">Това правило е копирано автоматично от оттегленото <ph name="OLD_POLICY" />. Препоръчваме ви да използвате него.</translation>
 <translation id="3366477098757335611">Преглед на картите</translation>
 <translation id="3369192424181595722">Грешка в часовника</translation>
@@ -602,6 +607,7 @@
 <translation id="3949601375789751990">Тук се показва историята ви на сърфиране</translation>
 <translation id="3949870428812919180">Няма запазени начини на плащане</translation>
 <translation id="3950820424414687140">Вход</translation>
+<translation id="3961148744525529027">Листът на инструмента за обработване на плащания е наполовина отворен</translation>
 <translation id="3962859241508114581">Предишен запис</translation>
 <translation id="3963837677003247395">Искате ли да продължите ръчно?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Няма}=1{От 1 сайт }other{От # сайта }}</translation>
@@ -1334,6 +1340,7 @@
 <translation id="7637571805876720304">Кредитната карта да се премахне ли от Chromium?</translation>
 <translation id="7638605456503525968">Серийни портове</translation>
 <translation id="7639968568612851608">тъмносиво</translation>
+<translation id="7653957176542370971">Листът на инструмента за обработване на плащания е затворен</translation>
 <translation id="765676359832457558">Скриване на разширените настройки...</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7662298039739062396">Настройката се контролира от разширение</translation>
@@ -1463,6 +1470,7 @@
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8262952874573525464">Зашиване на долния ръб</translation>
 <translation id="8267698848189296333">Влизате като <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Листът на инструмента за обработване на плащания е отворен</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Вход</translation>
 <translation id="8288807391153049143">Показване на сертификата</translation>

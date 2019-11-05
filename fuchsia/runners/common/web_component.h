@@ -95,12 +95,6 @@ class WebComponent : public fuchsia::sys::ComponentController,
   // If running as a Mod then these are used to e.g. RemoveSelfFromStory().
   fuchsia::modular::ModuleContextPtr module_context_;
 
-  // Incoming services provided at component creation.
-  std::unique_ptr<base::fuchsia::ServiceDirectoryClient> additional_services_;
-
-  // The names of services provided at component creation.
-  std::vector<std::string> additional_service_names_;
-
   // Objects used for binding and exporting the ViewProvider service.
   std::unique_ptr<
       base::fuchsia::ScopedServiceBinding<fuchsia::ui::app::ViewProvider>>

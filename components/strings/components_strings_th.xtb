@@ -172,6 +172,7 @@
 <translation id="173080396488393970">ไม่รองรับบัตรประเภทนี้</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">ลองติดต่อผู้ดูแลระบบ</translation>
+<translation id="1739107442478692187">มีการละเมิดข้อมูลในเว็บไซต์หรือแอปที่คุณใช้ Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้และเปลี่ยนรหัสผ่านที่ใช้ใน <ph name="ORIGIN" /> โดยทันที</translation>
 <translation id="1740951997222943430">ป้อนเดือนที่หมดอายุที่ถูกต้อง</translation>
 <translation id="1743520634839655729">เพื่อความรวดเร็วในการชำระเงินครั้งถัดไป โปรดบันทึกบัตร ชื่อ และที่อยู่สำหรับการเรียกเก็บเงินไว้ในบัญชี Google และในอุปกรณ์นี้</translation>
 <translation id="1743570585616704562">ไม่รู้จัก</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">โดเมนไม่ตรง</translation>
 <translation id="2096368010154057602">แผนก</translation>
 <translation id="2099652385553570808">เย็บด้วยลวดเย็บกระดาษด้านซ้าย 3 ครั้ง</translation>
+<translation id="2100280972184758440">รหัสผ่านของคุณถูกบุกรุก</translation>
 <translation id="2102134110707549001">แนะนำรหัสผ่านที่รัดกุม…</translation>
 <translation id="2108755909498034140">รีสตาร์ทคอมพิวเตอร์</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">ไม่สนใจเพราะถูกแทนที่โดย <ph name="POLICY_NAME" /></translation>
 <translation id="2119505898009119320">ออกให้แก่: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">เจาะรูด้านขวาล่าง</translation>
+<translation id="2124528555835617522">มีการละเมิดข้อมูลในเว็บไซต์หรือแอปที่คุณใช้ Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้โดยทันที</translation>
 <translation id="2129079103035905234">เซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
 <translation id="213826338245044447">บุ๊กมาร์กบนอุปกรณ์เคลื่อนที่</translation>
 <translation id="214556005048008348">ยกเลิกการชำระเงิน</translation>
@@ -470,11 +473,13 @@
 <translation id="3282497668470633863">เพิ่มชื่อบนบัตร</translation>
 <translation id="3287510313208355388">ดาวน์โหลดเมื่อออนไลน์</translation>
 <translation id="3293642807462928945">ดูข้อมูลเพิ่มเติมเกี่ยวกับนโยบาย <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">มีการละเมิดข้อมูลในเว็บไซต์หรือแอปที่คุณใช้ Chrome ขอแนะนำให้คุณเปลี่ยนรหัสผ่านที่ใช้ใน <ph name="ORIGIN" /> โดยทันที</translation>
 <translation id="3303855915957856445">ไม่พบผลการค้นหา</translation>
 <translation id="3320021301628644560">เพิ่มที่อยู่สำหรับการเรียกเก็บเงิน</translation>
 <translation id="3324983252691184275">แดงเข้ม</translation>
 <translation id="3338095232262050444">ปลอดภัย</translation>
 <translation id="3355823806454867987">เปลี่ยนการตั้งค่าพร็อกซี...</translation>
+<translation id="3360103848165129075">แผ่นงานของเครื่องจัดการการชำระเงิน</translation>
 <translation id="3362968246557010467">เราคัดลอกนโยบายนี้มาโดยอัตโนมัติจากนโยบาย <ph name="OLD_POLICY" /> ที่เลิกใช้งานแล้ว คุณควรใช้นโยบายนี้แทน</translation>
 <translation id="3366477098757335611">ดูบัตร</translation>
 <translation id="3369192424181595722">ข้อผิดพลาดของนาฬิกา</translation>
@@ -588,6 +593,7 @@
 <translation id="3949601375789751990">ประวัติการท่องเว็บของคุณจะปรากฏที่นี่</translation>
 <translation id="3949870428812919180">ไม่มีวิธีการชำระเงินที่บันทึกไว้</translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
+<translation id="3961148744525529027">แผ่นงานของเครื่องจัดการการชำระเงินเปิดอยู่ครึ่งเดียว</translation>
 <translation id="3962859241508114581">แทร็กก่อนหน้า</translation>
 <translation id="3963837677003247395">ดำเนินการต่อด้วยตนเองไหม</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{ไม่มี}=1{จากเว็บไซต์ 1 แห่ง }other{จากเว็บไซต์ #  แห่ง }}</translation>
@@ -1319,6 +1325,7 @@
 <translation id="7637571805876720304">ต้องการนำบัตรเครดิตออกจาก Chromium ใช่ไหม</translation>
 <translation id="7638605456503525968">พอร์ตอนุกรม</translation>
 <translation id="7639968568612851608">เทาเข้ม</translation>
+<translation id="7653957176542370971">แผ่นงานของเครื่องจัดการการชำระเงินปิดอยู่</translation>
 <translation id="765676359832457558">ซ่อนการตั้งค่าขั้นสูง...</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7662298039739062396">การตั้งค่าควบคุมโดยส่วนขยาย</translation>
@@ -1448,6 +1455,7 @@
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8262952874573525464">เย็บขอบด้านล่าง</translation>
 <translation id="8267698848189296333">ลงชื่อเข้าใช้ด้วย <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">แผ่นงานของเครื่องจัดการการชำระเงินเปิดอยู่</translation>
 <translation id="8281084378435768645">รูปภาพขนาดใหญ่</translation>
 <translation id="8286036467436129157">ลงชื่อเข้าใช้</translation>
 <translation id="8288807391153049143">แสดงใบรับรอง</translation>

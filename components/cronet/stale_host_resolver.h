@@ -80,6 +80,7 @@ class StaleHostResolver : public net::HostResolver {
   // request to continue in order to repopulate the cache.
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const net::HostPortPair& host,
+      const net::NetworkIsolationKey& network_isolation_key,
       const net::NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;

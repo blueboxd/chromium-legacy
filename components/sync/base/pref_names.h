@@ -17,6 +17,10 @@ extern const char kSyncPollIntervalSeconds[];
 extern const char kSyncFirstSetupComplete[];
 extern const char kSyncKeepEverythingSynced[];
 
+#if defined(OS_CHROMEOS)
+extern const char kSyncAllOsTypes[];
+#endif
+
 extern const char kSyncAppList[];
 extern const char kSyncAppNotifications[];
 extern const char kSyncAppSettings[];
@@ -36,6 +40,7 @@ extern const char kSyncFaviconImages[];
 extern const char kSyncFaviconTracking[];
 extern const char kSyncHistoryDeleteDirectives[];
 extern const char kSyncMountainShares[];
+extern const char kSyncOsPreferences[];
 extern const char kSyncPasswords[];
 extern const char kSyncPreferences[];
 extern const char kSyncPriorityPreferences[];

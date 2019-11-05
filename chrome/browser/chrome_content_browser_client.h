@@ -646,6 +646,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle);
 
+#if !defined(OS_ANDROID)
+  void FetchRemoteSms(
+      content::BrowserContext* browser_context,
+      const url::Origin& origin,
+      base::OnceCallback<void(base::Optional<std::string>)> callback) override;
+#endif
+
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
   static bool HandleWebUIReverse(GURL* url,

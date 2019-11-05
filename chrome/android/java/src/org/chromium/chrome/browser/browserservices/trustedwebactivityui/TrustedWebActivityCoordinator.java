@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui;
 
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.ClientPackageNameProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
@@ -12,15 +15,18 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaRegistrar;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.VerifierDelegate;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
+import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 
 import javax.inject.Inject;
 
@@ -48,6 +54,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             TrustedWebActivityDisclosureView disclosureView,
             TrustedWebActivityOpenTimeRecorder openTimeRecorder,
             Verifier verifier,
+            VerifierDelegate verifierDelegate,
             CustomTabActivityNavigationController navigationController,
             Lazy<TwaSplashController> splashController,
             CustomTabIntentDataProvider intentDataProvider,
@@ -57,7 +64,8 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             TrustedWebActivityBrowserControlsVisibilityManager browserControlsVisibilityManager,
             Lazy<ImmersiveModeController> immersiveModeController,
             TwaRegistrar twaRegistrar,
-            ClientPackageNameProvider clientPackageNameProvider) {
+            ClientPackageNameProvider clientPackageNameProvider,
+            CustomTabsConnection customTabsConnection) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
         // so they start working.
         mVerifier = verifier;
@@ -67,11 +75,14 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         mTwaRegistrar = twaRegistrar;
         mClientPackageNameProvider = clientPackageNameProvider;
 
-        navigationController.setLandingPageOnCloseCriterion(verifier::isPageOnVerifiedOrigin);
+        navigationController.setLandingPageOnCloseCriterion(
+                verifierDelegate::wasPreviouslyVerified);
         initSplashScreen(splashController, intentDataProvider, umaRecorder);
 
         verifier.addVerificationObserver(this::onVerificationUpdate);
         lifecycleDispatcher.register(this);
+        lifecycleDispatcher.register(
+                new PostMessageDisabler(customTabsConnection, intentDataProvider));
     }
 
     @Override
@@ -110,7 +121,8 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         // want to register the clients once the state reaches SUCCESS, however we are happy to
         // show the TWA UI while the state is null or pending.
         if (state != null && state.status == VerificationStatus.SUCCESS) {
-            mTwaRegistrar.registerClient(mClientPackageNameProvider.get(), state.origin);
+            mTwaRegistrar.registerClient(mClientPackageNameProvider.get(),
+                    Origin.create(state.scope));
         }
 
         boolean inTwaMode = state == null || state.status != VerificationStatus.FAILURE;
@@ -127,5 +139,26 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
 
     private void updateImmersiveMode(boolean inTwaMode) {
         // TODO(pshmakov): implement this once we can depend on tip-of-tree of androidx-browser.
+    }
+
+    // This doesn't belong here, but doesn't deserve a separate class. Do extract it if more
+    // PostMessage-related code appears.
+    private static class PostMessageDisabler implements NativeInitObserver {
+        private final CustomTabsConnection mCustomTabsConnection;
+        private final BrowserServicesIntentDataProvider mIntentDataProvider;
+
+        PostMessageDisabler(CustomTabsConnection connection,
+                BrowserServicesIntentDataProvider intentDataProvider) {
+            mCustomTabsConnection = connection;
+            mIntentDataProvider = intentDataProvider;
+        }
+
+        @Override
+        public void onFinishNativeInitialization() {
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_POST_MESSAGE)) {
+                mCustomTabsConnection.resetPostMessageHandlerForSession(
+                        mIntentDataProvider.getSession(), null);
+            }
+        }
     }
 }

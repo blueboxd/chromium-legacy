@@ -41,7 +41,6 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_divider.h"
-#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_util.h"
@@ -700,23 +699,26 @@ void OverviewGrid::SetBoundsAndUpdatePositions(
   PositionWindows(animate, ignored_items);
 }
 
-void OverviewGrid::RearrangeDuringDrag(aura::Window* dragged_window,
-                                       IndicatorState indicator_state) {
+void OverviewGrid::RearrangeDuringDrag(
+    aura::Window* dragged_window,
+    SplitViewDragIndicators::WindowDraggingState window_dragging_state) {
   OverviewItem* drop_target = GetDropTarget();
 
-  // Update the drop target visibility according to |indicator_state|.
+  // Update the drop target visibility according to |window_dragging_state|.
   if (drop_target) {
-    const bool wanted_drop_target_visibility =
-        !SplitViewDragIndicators::IsPreviewAreaState(indicator_state);
     ScopedOverviewAnimationSettings settings(
         OVERVIEW_ANIMATION_DROP_TARGET_FADE,
         drop_target_widget_->GetNativeWindow());
-    drop_target->SetOpacity(wanted_drop_target_visibility ? 1.f : 0.f);
+    drop_target->SetOpacity(
+        SplitViewDragIndicators::GetSnapPosition(window_dragging_state) ==
+                SplitViewController::NONE
+            ? 1.f
+            : 0.f);
   }
 
   // Update the grid's bounds.
   const gfx::Rect wanted_grid_bounds = GetGridBoundsInScreenForSplitview(
-      dragged_window, base::make_optional(indicator_state));
+      dragged_window, base::make_optional(window_dragging_state));
   if (bounds_ != wanted_grid_bounds) {
     SetBoundsAndUpdatePositions(wanted_grid_bounds,
                                 {GetOverviewItemContaining(dragged_window)},
@@ -780,20 +782,21 @@ void OverviewGrid::OnWindowDragStarted(aura::Window* dragged_window,
   OnSelectorItemDragStarted(/*item=*/nullptr);
 }
 
-void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
-                                         const gfx::PointF& location_in_screen,
-                                         IndicatorState indicator_state) {
+void OverviewGrid::OnWindowDragContinued(
+    aura::Window* dragged_window,
+    const gfx::PointF& location_in_screen,
+    SplitViewDragIndicators::WindowDraggingState window_dragging_state) {
   DCHECK_EQ(dragged_window_, dragged_window);
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
 
-  RearrangeDuringDrag(dragged_window, indicator_state);
+  RearrangeDuringDrag(dragged_window, window_dragging_state);
   UpdateDropTargetBackgroundVisibility(nullptr, location_in_screen);
 
   aura::Window* target_window =
       GetTargetWindowOnLocation(location_in_screen, /*ignored_item=*/nullptr);
 
-  if (indicator_state == IndicatorState::kPreviewAreaLeft ||
-      indicator_state == IndicatorState::kPreviewAreaRight) {
+  if (SplitViewDragIndicators::GetSnapPosition(window_dragging_state) !=
+      SplitViewController::NONE) {
     // If the dragged window is currently dragged into preview window area,
     // hide the highlight.
     overview_session_->highlight_controller()->ClearTabDragHighlight();
@@ -1902,8 +1905,8 @@ gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
   auto* split_view_drag_indicators =
       overview_session_->split_view_drag_indicators();
   if (split_view_drag_indicators &&
-      split_view_drag_indicators->current_indicator_state() ==
-          IndicatorState::kDragAreaBoth &&
+      split_view_drag_indicators->current_window_dragging_state() ==
+          SplitViewDragIndicators::WindowDraggingState::kFromOverview &&
       !IsCurrentScreenOrientationLandscape() &&
       !SplitViewController::Get(root_window_)->InSplitViewMode()) {
     desks_widget_root_bounds.Offset(

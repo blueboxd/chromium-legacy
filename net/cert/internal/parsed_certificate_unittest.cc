@@ -135,8 +135,6 @@ TEST(ParsedCertificateTest, ExtensionsDuplicateKeyUsage) {
 
 // Parses a certificate with a bad key usage extension (BIT STRING with zero
 // elements).
-//
-// TODO(eroman): This should be a verification failure not a parsing failure.
 TEST(ParsedCertificateTest, BadKeyUsage) {
   ASSERT_FALSE(ParseCertificateFromFile("bad_key_usage.pem", {}));
 }

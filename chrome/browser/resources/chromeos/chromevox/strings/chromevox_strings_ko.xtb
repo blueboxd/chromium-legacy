@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">제명</translation>
 <translation id="207477615537953741">의미 해석 사용 안함</translation>
 <translation id="2086961585857038472">다음 단어</translation>
+<translation id="2087981446621639008">설명목록 세부정보</translation>
 <translation id="2089387485033699258">ko</translation>
 <translation id="2091933974477985526">이전 수정 가능 텍스트 영역</translation>
 <translation id="2100350898815792233">모든 구두점을 읽음</translation>
@@ -193,6 +194,7 @@
 <translation id="2416512023405990736">선택 취소된 체크박스</translation>
 <translation id="2417569100218200841">콘텐츠 정보</translation>
 <translation id="2417948780551741035">미주</translation>
+<translation id="2419852971200420169">설명 목록</translation>
 <translation id="2421113964388408478">삭제</translation>
 <translation id="2422937916923936891">메뉴 항목 체크박스</translation>
 <translation id="2428534162001909979">명령 메뉴</translation>
@@ -371,6 +373,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{물음표}other{물음표 #개}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{탈자 기호}other{탈자 기호 #개}}</translation>
 <translation id="352577523970648069">수정할 수 있는 텍스트 입력란</translation>
+<translation id="3538907380453898475">설명목록</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> 잘라내기</translation>
 <translation id="3549680091535286226">일시적으로 음성을 중지하려면 두 손가락으로 탭하세요.</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, 체크박스 선택 안 됨</translation>
@@ -779,6 +782,7 @@
 <translation id="6378394210114975876">시슬</translation>
 <translation id="6385591741672306837">열</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">모든 이벤트 필터 사용 중지</translation>
 <translation id="6411426777058107714">이전 라디오 버튼이 없습니다.</translation>
 <translation id="6414968628640960377">이전 다른 요소</translation>
 <translation id="6417265370957905582">Google 어시스턴트</translation>
@@ -914,6 +918,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7332592614823088566"><ph name="ROWTOTAL" />개 중 <ph name="ROWINDEX" />번째 행, <ph name="COLTOTAL" />개 중 <ph name="COLINDEX" />번째 열</translation>
 <translation id="7336596009609913925">팝업있음</translation>
 <translation id="7356165926712028380">8점 점자로 전환</translation>
+<translation id="7356610683936413584">설명 목록 세부정보</translation>
 <translation id="7362871137496673139">이전 수준 2 제목이 없습니다.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{앰퍼샌드}other{앰퍼샌드 #개}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8096975275316362544">민트 크림</translation>
 <translation id="8098587210054821856">슬레이트 그레이</translation>
 <translation id="8110647606445335195">ARIA 랜드마크가 없습니다.</translation>
+<translation id="8121539003537428024">모든 이벤트 필터 사용 설정</translation>
 <translation id="812886159861361726"><ph name="FILE_NAME" /> 다운로드가 중지되었습니다</translation>
 <translation id="8138880386467279117">터치</translation>
 <translation id="8153880621934657047">표 내부가 아닙니다.</translation>

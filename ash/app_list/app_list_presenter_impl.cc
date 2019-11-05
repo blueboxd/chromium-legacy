@@ -14,6 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
@@ -58,6 +59,12 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
 }
 
 }  // namespace
+
+constexpr std::array<int, 6> kIdsOfContainersThatWontHideAppList = {
+    kShellWindowId_AppListContainer,     kShellWindowId_HomeScreenContainer,
+    kShellWindowId_MenuContainer,        kShellWindowId_SettingBubbleContainer,
+    kShellWindowId_ShelfBubbleContainer, kShellWindowId_ShelfContainer,
+};
 
 AppListPresenterImpl::AppListPresenterImpl(
     std::unique_ptr<AppListPresenterDelegate> delegate)
@@ -404,12 +411,27 @@ void AppListPresenterImpl::OnVisibilityWillChange(bool visible,
 void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
                                            aura::Window* lost_focus) {
   if (view_ && is_target_visibility_show_) {
+    int gained_focus_container_id = kShellWindowId_Invalid;
+    if (gained_focus) {
+      gained_focus_container_id = gained_focus->id();
+      const aura::Window* container =
+          delegate_->GetContainerForWindow(gained_focus);
+      if (container)
+        gained_focus_container_id = container->id();
+    }
     aura::Window* applist_window = view_->GetWidget()->GetNativeView();
-    aura::Window* applist_container = applist_window->parent();
-    // An AppList dialog window may take focus from the AppList window. Don't
-    // consider this a visibility change.
+    const aura::Window* applist_container = applist_window->parent();
+
+    // An AppList dialog window, or a child window of the system tray, may
+    // take focus from the AppList window. Don't consider this a visibility
+    // change since the app list is still visible for the most part.
+    const bool gained_focus_hides_app_list =
+        gained_focus_container_id != kShellWindowId_Invalid &&
+        !base::Contains(kIdsOfContainersThatWontHideAppList,
+                        gained_focus_container_id);
+
     const bool app_list_lost_focus =
-        gained_focus ? !applist_container->Contains(gained_focus)
+        gained_focus ? gained_focus_hides_app_list
                      : (lost_focus && applist_container->Contains(lost_focus));
 
     if (delegate_->IsTabletMode()) {

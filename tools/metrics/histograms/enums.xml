@@ -12108,6 +12108,14 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Registered App"/>
 </enum>
 
+<enum name="CrostiniContainerOsVersion">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Debian Stretch"/>
+  <int value="2" label="Debian Buster"/>
+  <int value="3" label="Other Debian Version"/>
+  <int value="4" label="Non-Debian OS"/>
+</enum>
+
 <enum name="CrostiniExportContainerResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed"/>
@@ -21243,6 +21251,14 @@ Called by update_net_error_codes.py.-->
   <int value="24" label="UPDATE_NON_EXISTING_EXTENSION"/>
 </enum>
 
+<enum name="ExtensionInstallationDownloadingCacheStatus">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="DISABLED"/>
+  <int value="2" label="MISS"/>
+  <int value="3" label="OUTDATED"/>
+  <int value="4" label="HIT"/>
+</enum>
+
 <enum name="ExtensionInstallationDownloadingStage">
   <int value="0" label="PENDING"/>
   <int value="1" label="QUEUED_FOR_MANIFEST"/>
@@ -25331,6 +25347,7 @@ Called by update_net_error_codes.py.-->
   <int value="3078" label="UpgradeInsecureRequestsUpgradedRequestWebsocket"/>
   <int value="3079" label="UpgradeInsecureRequestsUpgradedRequestForm"/>
   <int value="3080" label="UpgradeInsecureRequestsUpgradedRequestUnknown"/>
+  <int value="3081" label="HasGlyphRelativeUnits"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -46438,6 +46455,9 @@ Called by update_net_trust_anchors.py.-->
     will return false in an attempt to not taint the data in order to understand
     the production recall of the model.
   </int>
+  <int value="5" label="Optimization Guide Decider not initialized">
+    The OptimizationGuideDecider was not initialized yet.
+  </int>
 </enum>
 
 <enum name="OptimizationGuideOptimizationTypeDecision">
@@ -46478,6 +46498,9 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="8" label="No hint available for page load">
     There was no hint on the device that matched the page load.
+  </int>
+  <int value="9" label="Optimization Guide Decider not initialized">
+    The OptimizationGuideDecider was not initialized yet.
   </int>
 </enum>
 

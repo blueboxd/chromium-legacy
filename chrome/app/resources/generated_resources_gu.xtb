@@ -102,6 +102,7 @@
 <translation id="1143142264369994168">પ્રમાણપત્ર હસ્તાક્ષરકર્તા</translation>
 <translation id="1145292499998999162">પ્લગિન અવરોધિત</translation>
 <translation id="1145532888383813076">તમારું ઉપકરણ, ઍપ અને વેબ શોધો.</translation>
+<translation id="1146678959555564648">VR માં દાખલ થાઓ</translation>
 <translation id="114721135501989771">Chromeમાં Google સ્માર્ટ મેળવો</translation>
 <translation id="1149401351239820326">સમય સમાપ્તિ મહિનો</translation>
 <translation id="1150565364351027703">ગોગલ્સ</translation>
@@ -201,7 +202,6 @@
 <translation id="1285484354230578868">તમારા Google ડ્રાઇવ એકાઉન્ટમાં ડેટા સ્ટોર કરો</translation>
 <translation id="1288037062697528143">સૂર્યાસ્ત વખતે રાત્રિ પ્રકાશ આપમેળે ચાલુ થશે</translation>
 <translation id="1288300545283011870">વાણીના ઇનપુટ નિયંત્રણોનું વિવરણ</translation>
-<translation id="1289513325360489062">આ સાઇટનો ડેટા ઍક્સેસ કરી શકાતો નથી</translation>
 <translation id="1293264513303784526">USB-C ઉપકરણ (ડાબું પોર્ટ)</translation>
 <translation id="1293556467332435079">ફાઇલો</translation>
 <translation id="1296911687402551044">પસંદ કરેલી ટૅબને પિન કરો</translation>
@@ -805,7 +805,6 @@
 <translation id="2165421703844373933">તમે "ઓકે Google" બોલીને તમારા આસિસ્ટંટને ઍક્સેસ કરો. બૅટરીની બચત કરવા માટે, “ચાલુ (સુઝાવ આપ્યો છે પસંદ કરો)”. જ્યારે તમારું ડિવાઇસનો પ્લગ જોડેલો હશે અથવા ચાર્જ થઈ રહ્યું હશે ત્યારે જ આસિસ્ટંટ જવાબ આપશે.</translation>
 <translation id="2166369534954157698">The quick brown fox jumps over the lazy dog</translation>
 <translation id="2169062631698640254">કોઈપણ રીતે સાઇન ઇન કરો</translation>
-<translation id="2170088579611075216">VRને મંજૂરી આપો અને તેમાં પ્રવેશ કરો</translation>
 <translation id="2172784515318616985">આગળ વધો</translation>
 <translation id="2173302385160625112">તમારું ઇન્ટરનેટ કનેક્શન ચેક કરો</translation>
 <translation id="2173801458090845390">આ ઉપકરણમાં માગણી ID ઉમેરો</translation>
@@ -995,7 +994,6 @@
 <translation id="2439545803278355377">તમારો નવો પિન દાખલ કરો. પિન ઓછામાં ઓછા ચાર અક્ષરનો હોવો જોઈએ અને તેમાં અક્ષરો, સંખ્યા અને અન્ય વર્ણો શામેલ હોઈ શકે છે.</translation>
 <translation id="2440604414813129000">&amp;સ્રોત જુઓ</translation>
 <translation id="2442916515643169563">ટેક્સ્ટ શૅડો</translation>
-<translation id="2444119669991608829">પેજ <ph name="LANGUAGE" />માં નથી?</translation>
 <translation id="2445081178310039857">એક્સ્ટેંશન રૂટ ડિરેક્ટરી જરૂરી છે.</translation>
 <translation id="2445484935443597917">એક નવી પ્રોફાઇલ બનાવો</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" />ને તમારી ઓળખ ચકાસવી છે</translation>
@@ -1415,7 +1413,6 @@
 <translation id="3020183492814296499">શૉર્ટકટ</translation>
 <translation id="3020990233660977256">સીરિયલ નંબર: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">પતંગિયું</translation>
-<translation id="3021426244864538700">આ સાઇટનો ડેટા ઍક્સેસ કરવા વિશે</translation>
 <translation id="3021678814754966447">ફ્રેમ સ્રોત &amp;જુઓ</translation>
 <translation id="3022978424994383087">તે મળ્યો નથી.</translation>
 <translation id="3023464535986383522">સાંભળવા માટે પસંદ કરો</translation>
@@ -2203,7 +2200,6 @@
 <translation id="4159681666905192102">આ બાળકો માટેનું એકાઉન્ટ છે, જે <ph name="CUSTODIAN_EMAIL" /> અને <ph name="SECOND_CUSTODIAN_EMAIL" /> દ્વારા મેનેજ કરાય છે.</translation>
 <translation id="4163560723127662357">અજાણીતું કીબોર્ડ</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> ની કેટલીક સેટિંગ તમારી સાથે શેર કરવામાં આવી રહી છે. એકથી વધુ સાઇન ઇનનો ઉપયોગ કરવા પર જ આ સેટિંગ તમારા એકાઉન્ટને પ્રભાવિત કરે છે.</translation>
-<translation id="4169535189173047238">મંજૂરી આપશો નહીં</translation>
 <translation id="4170314459383239649">બહાર નીકળવા પર સાફ કરો</translation>
 <translation id="4172051516777682613">હંમેશા બતાવો</translation>
 <translation id="4175137578744761569">આછો જાંબલી અને સફેદ</translation>
@@ -2289,6 +2285,7 @@
 <translation id="4316850752623536204">વિકાસકર્તા વેબસાઇટ</translation>
 <translation id="4320177379694898372">કોઈ ઇન્ટરનેટ કનેક્શન નથી</translation>
 <translation id="4321442524549817090">URL બ&amp;તાવો</translation>
+<translation id="4322394346347055525">અન્ય ટૅબ્સને બંધ કરો</translation>
 <translation id="4324577459193912240">ફાઇલ અધૂરી છે</translation>
 <translation id="4325237902968425115"><ph name="LINUX_APP_NAME" />ને અનઇન્સ્ટૉલ કરી રહ્યાં છીએ...</translation>
 <translation id="4330191372652740264">બરફનું પાણી</translation>
@@ -2741,10 +2738,6 @@
 <translation id="5029568752722684782">કૉપિ સાફ કરો</translation>
 <translation id="5030338702439866405">આના દ્વારા રજૂ કરાયું</translation>
 <translation id="5033266061063942743">ભૌમિતિક આકાર</translation>
-<translation id="5033865233969348410">તમે VR મોડમાં હો, ત્યારે આ સાઇટ આ વિશેની જાણકારી મેળવી શકે:
-  -  તમારી શારીરિક લાક્ષણિકતાઓ, જેમ કે ઊંચાઈ
-
-VR મોડમાં દાખલ થતા પહેલા ખાતરી કરો કે તમે આ સાઇટ પર વિશ્વાસ કરો છો.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> તમારા કૅમેરા અને માઇક્રોફોનનો ઉપયોગ કરવા માગે છે</translation>
 <translation id="5036662165765606524">કોઈપણ સાઇટને આપમેળે બહુવિધ ફાઇલો ડાઉનલોડ કરવાની મંજૂરી આપશો નહીં</translation>
 <translation id="5037676449506322593">બધા પસંદ કરો</translation>
@@ -3017,7 +3010,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="5449588825071916739">તમામ ટૅબ્સ બુકમાર્ક કરો</translation>
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
 <translation id="5454166040603940656"><ph name="PROVIDER" /> સાથે</translation>
-<translation id="545426320101607695">જેમાં અનુવાદ કરવો છે તે ભાષા</translation>
 <translation id="5457113250005438886">અમાન્ય</translation>
 <translation id="5457459357461771897">વાંચો અને તમારા કમ્પ્યુટરમાંથી ફોટો, મ્યુઝિક અને બીજું મીડિયા ડિલીટ કરો</translation>
 <translation id="5457599981699367932">અતિથિ તરીકે બ્રાઉઝ કરો</translation>
@@ -3077,11 +3069,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="5532223876348815659">વૈશ્વિક</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> આ કરવા માંગે છે</translation>
 <translation id="5534304873398226603">ફોટો અથવા વીડિયો કાઢી નાખો</translation>
-<translation id="5534334044554683961">તમે VR મોડમાં હો, ત્યારે આ સાઇટ આ વિશેની જાણકારી મેળવી શકે:
-  -   તમારી શારીરિક લાક્ષણિકતાઓ, જેમ કે ઊંચાઈ
-  -   તમારા રૂમનું લેઆઉટ
-
-VR મોડમાં દાખલ થતા પહેલા ખાતરી કરો કે તમે આ સાઇટ પર વિશ્વાસ કરો છો.</translation>
 <translation id="5535941515421698170">આ ઉપકરણ પરથી તમારો અસ્તિત્વમાંનો ડેટા પણ દૂર કરો</translation>
 <translation id="5539221284352502426">તમે દાખલ કરેલો પાસવર્ડ સર્વર દ્વારા નકારવામાં આવ્યો હતો. આ શક્ય કારણો હોઈ શકે છે: પાસવર્ડ ખૂબ ટૂંકો છે. પાસવર્ડમાં સંખ્યાઓ અથવા પ્રતીકોનો સમાવેશ થવો જ જોઈએ. પાસવર્ડ પહેલાંના પાસવર્ડ કરતાં જુદો હોવો જોઈએ.</translation>
 <translation id="5541694225089836610">તમારા વ્યવસ્થાપકે ક્રિયા બંધ કરી છે</translation>
@@ -3977,6 +3964,7 @@ USB ડિવાઇસ</translation>
 <translation id="6850286078059909152">ટેક્સ્ટનો રંગ</translation>
 <translation id="6851497530878285708">ઍપ ચાલુ કરી</translation>
 <translation id="6853388645642883916">અપડેટકર્તા નિષ્ક્રિય છે</translation>
+<translation id="68541483639528434">અન્ય ટૅબ્સને બંધ કરો</translation>
 <translation id="6856623341093082836">તમારી ટચસ્ક્રીનની સચોટતાને સેટ કરો અને સમાયોજિત કરો</translation>
 <translation id="6857699260879628349">ગોઠવણીની માહિતી મેળવો</translation>
 <translation id="6860097299815761905">પ્રૉક્સી સેટિંગ...</translation>
@@ -4089,7 +4077,6 @@ USB ડિવાઇસ</translation>
 <translation id="7019805045859631636">ઝડપી</translation>
 <translation id="7022562585984256452">તમારું હોમ પેજ સેટ કરવામાં આવ્યું છે.</translation>
 <translation id="7025190659207909717">મોબાઇલ ડેટા સેવા મેનેજમેન્ટ</translation>
-<translation id="7027891519253193555">પેજ <ph name="LANGUAGE" />માં નથી?</translation>
 <translation id="7029809446516969842">પાસવર્ડ્સ</translation>
 <translation id="703001695939087067">વિંડો ઝલક મોડમાં દાખલ થયાં. નૅવિગેટ કરવા માટે tab દબાવો.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - સિરીઅલ પોર્ટ કનેક્ટ કર્યું</translation>
@@ -4534,7 +4521,6 @@ USB ડિવાઇસ</translation>
 <translation id="7684718995427157417">ઍપ બનાવવા અને તેનું પરીક્ષણ કરવા માટે, Android ડીબગ બ્રિજ (ADB) ચાલુ કરો. ધ્યાનમાં રાખો કે આ ક્રિયા દ્વારા ચકાસણી થઈ ન હોય એવી Android ઍપના ઇન્સ્ટૉલેશનની મંજૂરી આપે છે અને ફેક્ટરી રીસેટ બંધ કરવું જરૂરી છે.</translation>
 <translation id="7685049629764448582">JavaScript મેમરી</translation>
 <translation id="7685087414635069102">પિન જરૂરી છે</translation>
-<translation id="7685301384041462804">VR મોડમાં દાખલ થતા પહેલાં ખાતરી કરો કે તમે આ સાઇટ પર વિશ્વાસ કરો છો.</translation>
 <translation id="768549422429443215">ભાષાઓ ઉમેરો અથવા સૂચિને પુનઃક્રમાંકિત કરો.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">નવા પાસવર્ડની પુષ્ટિ કરો</translation>
@@ -4927,11 +4913,9 @@ USB ડિવાઇસ</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{ડાઉનલોડ ચાલુ છે}one{ડાઉનલોડ ચાલુ છે}other{ડાઉનલોડ ચાલુ છે}}</translation>
 <translation id="8213449224684199188">ફોટો મોડ પર સ્વિચ કર્યું</translation>
 <translation id="8213577208796878755">એક અન્ય ઉપલબ્ધ ઉપકરણ.</translation>
-<translation id="8213996900880218548">આ સાઇટનો ડેટા ઍક્સેસ કરવા માગે છે</translation>
 <translation id="8214489666383623925">ફાઇલ ખોલો...</translation>
 <translation id="8214962590150211830">આ વ્યક્તિને દૂર કરો</translation>
 <translation id="8217399928341212914">બહુવિધ ફાઇલો આપમેળે ડાઉનલોડ કરવું અવરોધિત કરવાનું ચાલુ રાખો</translation>
-<translation id="822519928942492333">અનુવાદ કરવા માટેની પેજ ભાષા</translation>
 <translation id="8225265270453771718">ઍપ્લિકેશન વિંડો શેર કરો</translation>
 <translation id="8225753906568652947">તમારી ઑફરો રિડિમ કરો</translation>
 <translation id="8226222018808695353">પ્રતિબંધિત</translation>
@@ -5502,7 +5486,6 @@ USB ડિવાઇસ</translation>
 <translation id="9026731007018893674">ડાઉનલોડ કરો</translation>
 <translation id="9026852570893462412">આ પ્રક્રિયામાં થોડો સમય લાગી શકે છે. વર્ચ્યુઅલ મશીન ડાઉનલોડ કરી રહ્યાં છીએ.</translation>
 <translation id="9027459031423301635">લિંક નવા &amp;ટૅબમાં ખોલો</translation>
-<translation id="9029323097866369874"><ph name="DOMAIN" />ને VR મોડમાં દાખલ થવાની મંજૂરી આપીએ?</translation>
 <translation id="9030515284705930323">તમારા એકાઉન્ટ માટે તમારી સંસ્થાએ Google Play સ્ટોર ચાલુ કરેલ નથી. વધુ માહિતી માટે તમારા એડમિનનો સંપર્ક કરો.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;પેસ્ટ કરો</translation>
@@ -5546,7 +5529,6 @@ USB ડિવાઇસ</translation>
 <translation id="9094038138851891550">વપરાશકર્તાનું નામ અમાન્ય છે</translation>
 <translation id="9094982973264386462">દૂર કરો</translation>
 <translation id="9095253524804455615">દૂર કરો</translation>
-<translation id="9095388113577226029">વધુ ભાષાઓ...</translation>
 <translation id="9100610230175265781">પાસફ્રેઝ આવશ્યક છે</translation>
 <translation id="9100765901046053179">વિગતવાર સેટિંગ્સ</translation>
 <translation id="9101691533782776290">ઍપ્લિકેશન લોન્ચ કરો</translation>

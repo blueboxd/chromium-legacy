@@ -106,6 +106,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER" />' চিহ্ন থাকা উচিত নয়৷</translation>
 <translation id="4668956016107839909">পরিশিষ্ট</translation>
+<translation id="4698212723196775569">কোড</translation>
 <translation id="4718048029184481307">ছবির-মধ্যে-ছবি মোডে চলছে</translation>
 <translation id="4742539557769756338">কভার</translation>
 <translation id="4748357248530471599">ডিসপ্লে কাট-আউট ফুল-স্ক্রিনে টগল করুন</translation>
@@ -191,6 +192,7 @@
 <translation id="7118469954320184356">কোনও বিবরণ নেই।</translation>
 <translation id="7139483182332611405">মুখবন্ধ</translation>
 <translation id="7214187073215825913">কন্টেন্টের তথ্য</translation>
+<translation id="7238347055216017155">জোর দেওয়া</translation>
 <translation id="7263440858009898357">তালিকা থেকে একটি আইটেম নির্বাচন করুন৷ </translation>
 <translation id="727747134524199931">কলাম শিরোলেখ</translation>
 <translation id="7320576522385648310">বাফার হচ্ছে</translation>
@@ -217,6 +219,7 @@
 <translation id="7888071071722539607">ইমেল আইডিতে অনুগ্রহ করে একটি '<ph name="ATSIGN" />' অন্তর্ভুক্ত করুন৷ '<ph name="INVALIDADDRESS" />'-তে একটি '<ph name="ATSIGN" />' অনুপস্থিত৷</translation>
 <translation id="7891486169920085145">স্প্লিটার</translation>
 <translation id="795667975304826397">কোনও ফাইল চয়ন করা হয় নি</translation>
+<translation id="8034303206267677282">প্রভাবশালী</translation>
 <translation id="8053789581856978548">সার্চ পাঠ্য ফিল্ড</translation>
 <translation id="8057695513531652401">বিজ্ঞপ্তি</translation>
 <translation id="8105797009065549151">নোটের রেফারেন্স</translation>

@@ -3656,10 +3656,6 @@ const char kReleaseNotesNotificationDescription[] =
     "Instructs OS to show notificationlogin after update that release notes "
     "are now available.";
 
-const char kShelfDimmingName[] = "Shelf Dimming.";
-const char kShelfDimmingDescription[] =
-    "Dims shelf when the user is not interacting with it.";
-
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =
     "Instructs the OS to use a specific scheduler configuration setting.";

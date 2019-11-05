@@ -5340,6 +5340,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Dark purple
       </message>
 
+      <!-- Extensions NTP Middle Slot Promo -->
+      <message name="IDS_EXTENSIONS_PROMO_PERFORMANCE">
+        Web browsing should be fast. Take a moment to <ph name="BEGIN_LINK">&lt;a href="chrome://extensions"&gt;</ph>check your extensions<ph name="END_LINK">&lt;/a&gt;</ph> now.
+      </message>
+      <message name="IDS_EXTENSIONS_PROMO_PRIVACY">
+        Safety matters. Take a moment and <ph name="BEGIN_LINK">&lt;a href="chrome://extensions"&gt;</ph>check your extensions now<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_EXTENSIONS_PROMO_NEUTRAL">
+        Got extensions? <ph name="BEGIN_LINK">&lt;a href="chrome://extensions"&gt;</ph>Manage your extensions<ph name="END_LINK">&lt;/a&gt;</ph> in one easy place.
+      </message>
+
       <if expr="is_android">
         <message name="IDS_NTP_EXPLORE_SITES_TILE_TITLE" desc="A label for a button that when clicked takes the user to a tab that contains categorized links to websites that are popular in their country. [CHAR_LIMIT=12]">
           Top sites
@@ -5409,8 +5420,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_FIND" desc="The tooltip for the find button">
         Find
       </message>
-      <message name="IDS_TOOLTIP_WEBUI_TAB_STRIP_TOGGLE_BUTTON" desc="The tooltip for toggling the tab strip">
-        Toggle tab strip
+      <message name="IDS_TOOLTIP_WEBUI_TAB_STRIP_TAB_COUNTER" desc="The tooltip for the button which toggles the tab strip. It counts the number of open tabs. [ICU Syntax]">
+        {NUM_OPEN_TABS, plural, =1 {# open tab, press to toggle tab strip} other {# open tabs, press to toggle tab strip}}
       </message>
 
       <!-- Strings for intent picker -->

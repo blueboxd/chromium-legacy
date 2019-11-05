@@ -137,7 +137,7 @@ class BottomToolbarNewTabButton extends ChromeImageButton
         if (mThemeColorProvider == null || mIncognitoStateProvider == null) return;
 
         mBackground.setColorFilter(
-                ToolbarColors.getTextBoxColorForToolbarBackground(mResources, false,
+                ToolbarColors.getTextBoxColorForToolbarBackgroundInNonNativePage(mResources,
                         mThemeColorProvider.getThemeColor(),
                         mThemeColorProvider.useLight()
                                 && mIncognitoStateProvider.isIncognitoSelected()),

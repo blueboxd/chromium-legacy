@@ -433,8 +433,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
      * @return The location bar color.
      */
     private int getLocationBarColorForToolbarColor(int toolbarColor) {
-        return ToolbarColors.getTextBoxColorForToolbarBackground(
-                getResources(), false, toolbarColor, isIncognito());
+        return ToolbarColors.getTextBoxColorForToolbarBackgroundInNonNativePage(
+                getResources(), toolbarColor, isIncognito());
     }
 
     private void inflateTabSwitchingResources() {

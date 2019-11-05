@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Netrukdymo režimas įjungtas.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Rodyti pranešimų nustatymus. Programos pranešimai išjungti}one{Rodyti pranešimų nustatymus. # programos pranešimai išjungti}few{Rodyti pranešimų nustatymus. # programų pranešimai išjungti}many{Rodyti pranešimų nustatymus. # programos pranešimai išjungti}other{Rodyti pranešimų nustatymus. # programų pranešimai išjungti}}</translation>
 <translation id="1525508553941733066">ATSISAKYTI</translation>
-<translation id="1537254971476575106">Viso ekrano didintuvas</translation>
 <translation id="15373452373711364">Didelis pelės žymeklis</translation>
 <translation id="1546492247443594934">2 pultas</translation>
 <translation id="1550523713251050646">Spustelėkite, jei reikia daugiau parinkčių</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Paspauskite <ph name="KEYBOARD_SHORTCUT" />, kad perjungtumėte klaviatūros išdėstymą.</translation>
 <translation id="2501920221385095727">Fiksuotos pozicijos klavišai</translation>
 <translation id="2509468283778169019">DIDŽIŲJŲ RAIDŽIŲ RAŠYMAS įjungtas</translation>
-<translation id="2532589005999780174">Didelio kontrasto režimas</translation>
 <translation id="2542089167727451762">Palieskite profilio vaizdą</translation>
 <translation id="255671100581129685">„Google“ padėjėjas nepasiekiamas viešoje sesijoje.</translation>
 <translation id="256712445991462162">prie doko prijungtas didintuvas</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Viršytas leistinas bandymų atrakinti naudojant kontrolinį kodą skaičius</translation>
 <translation id="7994370417837006925">Kelios paskyros</translation>
 <translation id="8000066093800657092">Tinklo nėra</translation>
-<translation id="8029241286966751120">Didelio kontrasto režimas įgalintas. Dar kartą paspauskite „Ctrl“ + paieškos klavišą + M, kad išjungtumėte režimą.</translation>
 <translation id="8030169304546394654">Atjungta</translation>
 <translation id="8054466585765276473">Apskaičiuojamas laikas, likęs iki akumuliatoriaus išsikrovimo.</translation>
 <translation id="8061464966246066292">Didelis kontrastas</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Negalima pašalinti paskutinio pulto.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> skirtų parinkčių meniu</translation>
 <translation id="8394567579869570560">Vienas iš tėvų užrakino šį įrenginį</translation>
-<translation id="8406981827175133772">Viso ekrano didintuvas</translation>
 <translation id="8425213833346101688">Keisti</translation>
 <translation id="8427213022735114808">Naudojant diktavimo funkciją balsas siunčiamas į sistemą „Google“, kad bet kuriame teksto lauke būtų galima rašyti balsu.</translation>
 <translation id="8428213095426709021">Nustatymai</translation>

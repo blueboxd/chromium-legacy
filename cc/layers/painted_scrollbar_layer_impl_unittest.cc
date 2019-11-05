@@ -49,7 +49,7 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
   scrollbar_layer_impl->SetDrawsContent(true);
   scrollbar_layer_impl->SetThumbThickness(layer_size.width());
   scrollbar_layer_impl->SetThumbLength(500);
-  scrollbar_layer_impl->SetTrackLength(layer_size.height());
+  scrollbar_layer_impl->SetTrackRect(gfx::Rect(0, 0, 15, layer_size.height()));
   scrollbar_layer_impl->SetCurrentPos(100.f / 4);
   scrollbar_layer_impl->SetClipLayerLength(100.f);
   scrollbar_layer_impl->SetScrollLayerLength(200.f);

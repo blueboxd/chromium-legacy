@@ -137,8 +137,8 @@ gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser) {
   if (!browser->app_controller())
     return gfx::Size();  // Not an app.
 
-  base::Optional<AppId> app_id = browser->app_controller()->GetAppId();
-  if (!app_id)
+  auto* app_controller = browser->app_controller();
+  if (!app_controller->HasAppId())
     return gfx::Size();
 
   auto* provider = WebAppProvider::Get(browser->profile());
@@ -146,7 +146,7 @@ gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser) {
     return gfx::Size();
 
   return provider->system_web_app_manager().GetMinimumWindowSize(
-      app_id.value());
+      app_controller->GetAppId());
 }
 
 void SetManifestRequestFilter(content::WebUIDataSource* source,

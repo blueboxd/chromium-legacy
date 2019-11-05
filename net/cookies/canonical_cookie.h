@@ -319,9 +319,8 @@ class NET_EXPORT CanonicalCookie::CookieInclusionStatus {
     EXCLUDE_NOT_ON_PATH = 4,
     EXCLUDE_SAMESITE_STRICT = 5,
     EXCLUDE_SAMESITE_LAX = 6,
-    // TODO(crbug.com/989171): Replace this with FirstPartyLax and
-    // FirstPartyStrict.
-    EXCLUDE_SAMESITE_EXTENDED = 7,
+    // Reserved 7, was EXCLUDE_SAMESITE_EXTENDED.
+
     // The following two are used for the SameSiteByDefaultCookies experiment,
     // where if the SameSite attribute is not specified, it will be treated as
     // SameSite=Lax by default.

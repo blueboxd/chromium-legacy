@@ -18,7 +18,4 @@
     readonly attribute USVString? encoding;
     readonly attribute USVString? lang;
     readonly attribute DataView? data;
-    USVString? text();
-    [NewObject] ArrayBuffer? arrayBuffer();
-    [CallWith=ScriptState, RaisesException] object? json();
 };

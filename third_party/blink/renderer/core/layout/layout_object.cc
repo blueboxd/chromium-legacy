@@ -849,11 +849,6 @@ LayoutFlowThread* LayoutObject::LocateFlowThreadContainingBlock() const {
 static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
   // FIXME: In future it may be possible to broaden these conditions in order to
   // improve performance.
-  if (object->IsTextControl())
-    return true;
-
-  if (object->IsSVGRoot())
-    return true;
 
   // LayoutInline can't be relayout roots since LayoutBlockFlow is responsible
   // for layouting them.
@@ -870,15 +865,21 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
       object->ShouldApplySizeContainment())
     return true;
 
-  if (!object->HasOverflowClip())
-    return false;
-
   // If either dimension is percent-based, intrinsic, or anything but fixed,
   // this object cannot form a re-layout boundary. A non-fixed computed logical
   // height will allow the object to grow and shrink based on the content
   // inside. The same goes for for logical width, if this objects is inside a
   // shrink-to-fit container, for instance.
   if (!style->Width().IsFixed() || !style->Height().IsFixed())
+    return false;
+
+  if (object->IsTextControl())
+    return true;
+
+  if (object->IsSVGRoot())
+    return true;
+
+  if (!object->HasOverflowClip())
     return false;
 
   // Scrollbar parts can be removed during layout. Avoid the complexity of

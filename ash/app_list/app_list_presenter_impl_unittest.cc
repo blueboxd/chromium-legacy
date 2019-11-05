@@ -12,6 +12,8 @@
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/container_finder.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/focus_client.h"
@@ -56,6 +58,9 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   void OnClosed() override {}
   bool IsTabletMode() const override { return false; }
   bool GetOnScreenKeyboardShown() override { return false; }
+  aura::Window* GetContainerForWindow(aura::Window* window) override {
+    return ash::GetContainerForWindow(window);
+  }
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override {
     return container_->GetRootWindow();
   }
@@ -106,7 +111,8 @@ AppListPresenterImplTest::~AppListPresenterImplTest() {}
 void AppListPresenterImplTest::SetUp() {
   AuraTestBase::SetUp();
   new wm::DefaultActivationClient(root_window());
-  container_.reset(CreateNormalWindow(0, root_window(), nullptr));
+  container_.reset(CreateNormalWindow(kShellWindowId_AppListContainer,
+                                      root_window(), nullptr));
   std::unique_ptr<AppListPresenterDelegateTest> presenter_delegate =
       std::make_unique<AppListPresenterDelegateTest>(container_.get());
   presenter_delegate_ = presenter_delegate.get();

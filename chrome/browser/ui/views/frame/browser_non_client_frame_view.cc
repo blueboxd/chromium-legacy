@@ -154,7 +154,7 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
   web_app::AppBrowserController* app_controller =
       browser_view_->browser()->app_controller();
   if (app_controller && app_controller->GetThemeColor() &&
-      !app_controller->HasTabStrip())
+      !app_controller->has_tab_strip())
     return *app_controller->GetThemeColor();
 
   return ThemeProperties::GetDefaultColor(color_id,

@@ -253,6 +253,26 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Input) {
       "Omnibox.LocalHistoryZeroSuggest.AsyncDeleteTime", 0);
 }
 
+// Tests that suggestions are returned only user is not in an off-the-record
+// context, regardless of the user's authentication state.
+TEST_F(LocalHistoryZeroSuggestProviderTest, Incognito) {
+  LoadURLs({
+      {default_search_provider(), "hello world", "&foo=bar", 1},
+  });
+
+  EXPECT_CALL(*client_.get(), IsAuthenticated()).Times(0);
+  EXPECT_CALL(*client_.get(), IsOffTheRecord())
+      .Times(2)
+      .WillOnce(testing::Return(true))
+      .WillOnce(testing::Return(false));
+
+  StartProviderAndWaitUntilDone();
+  ExpectMatches({});
+
+  StartProviderAndWaitUntilDone();
+  ExpectMatches({{"hello world", 500}});
+}
+
 // Tests that suggestions are returned only if ZeroSuggestVariant is configured
 // to return local history suggestions in the NTP.
 TEST_F(LocalHistoryZeroSuggestProviderTest, ZeroSuggestVariant) {

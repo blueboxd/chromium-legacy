@@ -23,13 +23,13 @@ const size_t kDefaultMaxMemoryCacheHints = 20;
 }  // namespace
 
 HintCache::HintCache(
-    std::unique_ptr<HintCacheStore> hint_store,
+    std::unique_ptr<OptimizationGuideStore> optimization_guide_store,
     base::Optional<int> max_memory_cache_hints /*= base::Optional<int>()*/)
-    : hint_store_(std::move(hint_store)),
+    : optimization_guide_store_(std::move(optimization_guide_store)),
       memory_cache_(
           std::max(max_memory_cache_hints.value_or(kDefaultMaxMemoryCacheHints),
                    1)) {
-  DCHECK(hint_store_);
+  DCHECK(optimization_guide_store_);
 }
 
 HintCache::~HintCache() = default;
@@ -37,7 +37,7 @@ HintCache::~HintCache() = default;
 void HintCache::Initialize(bool purge_existing_data,
                            base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  hint_store_->Initialize(
+  optimization_guide_store_->Initialize(
       purge_existing_data,
       base::BindOnce(&HintCache::OnStoreInitialized, base::Unretained(this),
                      std::move(callback)));
@@ -47,14 +47,16 @@ std::unique_ptr<StoreUpdateData>
 HintCache::MaybeCreateUpdateDataForComponentHints(
     const base::Version& version) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return hint_store_->MaybeCreateUpdateDataForComponentHints(version);
+  return optimization_guide_store_->MaybeCreateUpdateDataForComponentHints(
+      version);
 }
 
 std::unique_ptr<StoreUpdateData> HintCache::CreateUpdateDataForFetchedHints(
     base::Time update_time,
     base::Time expiry_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return hint_store_->CreateUpdateDataForFetchedHints(update_time, expiry_time);
+  return optimization_guide_store_->CreateUpdateDataForFetchedHints(
+      update_time, expiry_time);
 }
 
 void HintCache::UpdateComponentHints(
@@ -67,8 +69,8 @@ void HintCache::UpdateComponentHints(
   // data.
   memory_cache_.Clear();
 
-  hint_store_->UpdateComponentHints(std::move(component_data),
-                                    std::move(callback));
+  optimization_guide_store_->UpdateComponentHints(std::move(component_data),
+                                                  std::move(callback));
 }
 
 void HintCache::UpdateFetchedHints(
@@ -86,29 +88,29 @@ void HintCache::UpdateFetchedHints(
       CreateUpdateDataForFetchedHints(update_time, expiry_time);
   ProcessHints(get_hints_response.get()->mutable_hints(),
                fetched_hints_update_data.get());
-  hint_store_->UpdateFetchedHints(std::move(fetched_hints_update_data),
-                                  std::move(callback));
+  optimization_guide_store_->UpdateFetchedHints(
+      std::move(fetched_hints_update_data), std::move(callback));
 }
 
 void HintCache::ClearFetchedHints() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(hint_store_);
+  DCHECK(optimization_guide_store_);
   // TODO(mcrouse): Update to remove only fetched hints from |memory_cache_|.
   memory_cache_.Clear();
-  hint_store_->ClearFetchedHintsFromDatabase();
+  optimization_guide_store_->ClearFetchedHintsFromDatabase();
 }
 
 bool HintCache::HasHint(const std::string& host) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  HintCacheStore::EntryKey hint_entry_key;
-  return hint_store_->FindHintEntryKey(host, &hint_entry_key);
+  OptimizationGuideStore::EntryKey hint_entry_key;
+  return optimization_guide_store_->FindHintEntryKey(host, &hint_entry_key);
 }
 
 void HintCache::LoadHint(const std::string& host, HintLoadedCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  HintCacheStore::EntryKey hint_entry_key;
-  if (!hint_store_->FindHintEntryKey(host, &hint_entry_key)) {
+  OptimizationGuideStore::EntryKey hint_entry_key;
+  if (!optimization_guide_store_->FindHintEntryKey(host, &hint_entry_key)) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -117,7 +119,7 @@ void HintCache::LoadHint(const std::string& host, HintLoadedCallback callback) {
   // then asynchronously load it from the store and return.
   auto hint_it = memory_cache_.Get(hint_entry_key);
   if (hint_it == memory_cache_.end()) {
-    hint_store_->LoadHint(
+    optimization_guide_store_->LoadHint(
         hint_entry_key,
         base::BindOnce(&HintCache::OnLoadStoreHint, base::Unretained(this),
                        std::move(callback)));
@@ -133,8 +135,8 @@ const proto::Hint* HintCache::GetHintIfLoaded(const std::string& host) {
 
   // Try to retrieve the hint entry key for the host. If no hint exists for the
   // host, then simply return.
-  HintCacheStore::EntryKey hint_entry_key;
-  if (!hint_store_->FindHintEntryKey(host, &hint_entry_key)) {
+  OptimizationGuideStore::EntryKey hint_entry_key;
+  if (!optimization_guide_store_->FindHintEntryKey(host, &hint_entry_key)) {
     return nullptr;
   }
 
@@ -149,10 +151,10 @@ const proto::Hint* HintCache::GetHintIfLoaded(const std::string& host) {
 }
 
 base::Time HintCache::FetchedHintsUpdateTime() const {
-  if (!hint_store_) {
+  if (!optimization_guide_store_) {
     return base::Time();
   }
-  return hint_store_->FetchedHintsUpdateTime();
+  return optimization_guide_store_->FetchedHintsUpdateTime();
 }
 
 void HintCache::OnStoreInitialized(base::OnceClosure callback) {
@@ -160,9 +162,10 @@ void HintCache::OnStoreInitialized(base::OnceClosure callback) {
   std::move(callback).Run();
 }
 
-void HintCache::OnLoadStoreHint(HintLoadedCallback callback,
-                                const HintCacheStore::EntryKey& hint_entry_key,
-                                std::unique_ptr<proto::Hint> hint) {
+void HintCache::OnLoadStoreHint(
+    HintLoadedCallback callback,
+    const OptimizationGuideStore::EntryKey& hint_entry_key,
+    std::unique_ptr<proto::Hint> hint) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!hint) {
     std::move(callback).Run(nullptr);

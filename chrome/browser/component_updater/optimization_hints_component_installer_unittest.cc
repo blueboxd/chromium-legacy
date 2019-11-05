@@ -173,7 +173,7 @@ TEST_F(OptimizationHintsComponentInstallerTest,
   std::unique_ptr<OptimizationHintsMockComponentUpdateService> cus(
       new OptimizationHintsMockComponentUpdateService());
   EXPECT_CALL(*cus, RegisterComponent(testing::_)).Times(0);
-  RegisterOptimizationHintsComponent(cus.get(), profile_prefs());
+  RegisterOptimizationHintsComponent(cus.get(), false, profile_prefs());
   RunUntilIdle();
 }
 
@@ -186,7 +186,7 @@ TEST_F(OptimizationHintsComponentInstallerTest,
   std::unique_ptr<OptimizationHintsMockComponentUpdateService> cus(
       new OptimizationHintsMockComponentUpdateService());
   EXPECT_CALL(*cus, RegisterComponent(testing::_)).Times(0);
-  RegisterOptimizationHintsComponent(cus.get(), profile_prefs());
+  RegisterOptimizationHintsComponent(cus.get(), false, profile_prefs());
   RunUntilIdle();
 }
 
@@ -198,7 +198,7 @@ TEST_F(OptimizationHintsComponentInstallerTest,
   std::unique_ptr<OptimizationHintsMockComponentUpdateService> cus(
       new OptimizationHintsMockComponentUpdateService());
   EXPECT_CALL(*cus, RegisterComponent(testing::_)).Times(0);
-  RegisterOptimizationHintsComponent(cus.get(), nullptr);
+  RegisterOptimizationHintsComponent(cus.get(), false, nullptr);
   RunUntilIdle();
 }
 
@@ -213,7 +213,7 @@ TEST_F(OptimizationHintsComponentInstallerTest,
   EXPECT_CALL(*cus, RegisterComponent(testing::_))
       .Times(1)
       .WillOnce(testing::Return(true));
-  RegisterOptimizationHintsComponent(cus.get(), profile_prefs());
+  RegisterOptimizationHintsComponent(cus.get(), false, profile_prefs());
   RunUntilIdle();
 }
 

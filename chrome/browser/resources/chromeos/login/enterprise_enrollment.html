@@ -3,37 +3,8 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://oobe/custom_elements.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="stylesheet" href="gaia_card_parameters.css">
-
-<!-- Icons to use during enterprise enrollment -->
-
-<iron-iconset-svg name="oobe-enrollment-32" size="32">
-  <svg>
-    <defs>
-      <g id="briefcase" fill="none" fill-rule="evenodd">
-        <path d="M0 0h32v32H0z"></path>
-        <path d="M7 7h20v20H7z"></path>
-        <path fill="#1A73E8" fill-rule="nonzero"
-              d="M26.667 8h-5.334V5.333a2.657 2.657 0 0 0-2.666-2.666h-5.334a2.657 2.657 0 0 0-2.666 2.666V8H5.333a2.646 2.646 0 0 0-2.653 2.667l-.013 14.666A2.657 2.657 0 0 0 5.333 28h21.334a2.657 2.657 0 0 0 2.666-2.667V10.667A2.657 2.657 0 0 0 26.667 8zM16 20a2.675 2.675 0 0 1-2.667-2.667c0-1.466 1.2-2.666 2.667-2.666 1.467 0 2.667 1.2 2.667 2.666C18.667 18.8 17.467 20 16 20zm2.667-12h-5.334V5.333h5.334V8z"></path>
-      </g>
-    </defs>
-  </svg>
-</iron-iconset-svg>
-
-<iron-iconset-svg name="oobe-enrollment-64" size="64">
-  <svg>
-    <defs>
-      <g id="briefcase" fill="none" fill-rule="evenodd">
-        <path d="M0 0h64v64H0z"></path>
-        <path d="M14 14h40v40H14z"></path>
-        <path fill="#1A73E8" fill-rule="nonzero"
-              d="M53.333 16H42.667v-5.333a5.315 5.315 0 0 0-5.334-5.334H26.667a5.315 5.315 0 0 0-5.334 5.334V16H10.667c-2.96 0-5.307 2.373-5.307 5.333l-.027 29.334A5.315 5.315 0 0 0 10.667 56h42.666a5.315 5.315 0 0 0 5.334-5.333V21.333A5.315 5.315 0 0 0 53.333 16zM32 40c-2.933 0-5.333-2.4-5.333-5.333 0-2.934 2.4-5.334 5.333-5.334 2.933 0 5.333 2.4 5.333 5.334C37.333 37.6 34.933 40 32 40zm5.333-24H26.667v-5.333h10.666V16z"></path>
-      </g>
-    </defs>
-  </svg>
-</iron-iconset-svg>
 
 <dom-module id="enterprise-enrollment">
   <template>
@@ -60,8 +31,7 @@
       <div id="step-working" hidden$="[[!eq_(currentStep_, 'working')]]">
           <oobe-dialog id="oauth-enroll-working">
             <hd-iron-icon slot="oobe-icon"
-                          icon1x="oobe-enrollment-32:briefcase"
-                          icon2x="oobe-enrollment-64:briefcase">
+                icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
             </hd-iron-icon>
             <h1 slot="title" i18n-content="oauthEnrollScreenTitle"></h1>
             <paper-progress slot="progress" indeterminate>
@@ -99,8 +69,8 @@
           role="alert">
         <oobe-dialog id="oauth-enroll-success-card" has-buttons>
           <hd-iron-icon slot="oobe-icon"
-                        icon1x="oobe-enrollment-32:briefcase"
-                        icon2x="oobe-enrollment-64:briefcase"></hd-iron-icon>
+              icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
+          </hd-iron-icon>
           <h1 slot="title" i18n-content="oauthEnrollSuccessTitle"></h1>
           <div slot="subtitle">
             <div hidden="[[!isEmpty_(enrolledDomain_)]]">
@@ -132,8 +102,8 @@
           hidden$="[[!eq_(currentStep_, 'attribute-prompt')]]">
         <oobe-dialog id="oauth-enroll-attribute-prompt-card" has-buttons>
           <hd-iron-icon slot="oobe-icon"
-                        icon1x="oobe-enrollment-32:briefcase"
-                        icon2x="oobe-enrollment-64:briefcase"></hd-iron-icon>
+              icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
+          </hd-iron-icon>
           <h1 slot="title" i18n-content="oauthEnrollScreenTitle"></h1>
           <div slot="subtitle" i18n-content="oauthEnrollDeviceInformation">
           </div>

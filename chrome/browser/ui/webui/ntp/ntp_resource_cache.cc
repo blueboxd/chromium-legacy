@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -40,6 +42,8 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/google/core/common/google_util.h"
+#include "components/policy/core/common/policy_service.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -163,8 +167,18 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
                                      callback);
   profile_pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
   profile_pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
+  profile_pref_change_registrar_.Add(prefs::kCookieControlsMode, callback);
+  profile_pref_change_registrar_.Add(prefs::kBlockThirdPartyCookies, callback);
 
   theme_observer_.Add(ui::NativeTheme::GetInstanceForNativeUi());
+
+  policy_change_registrar_ = std::make_unique<policy::PolicyChangeRegistrar>(
+      profile->GetProfilePolicyConnector()->policy_service(),
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+  policy_change_registrar_->Observe(
+      policy::key::kBlockThirdPartyCookies,
+      base::BindRepeating(&NTPResourceCache::OnPolicyChanged,
+                          base::Unretained(this)));
 }
 
 NTPResourceCache::~NTPResourceCache() {}
@@ -295,8 +309,20 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       l10n_util::GetStringUTF8(IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE);
   replacements["cookieControlsDescription"] = l10n_util::GetStringUTF8(
       IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL);
+  // Ensure passing off-the-record profile; |profile_| might not be incognito.
+  DCHECK(profile_->HasOffTheRecordProfile());
   replacements["cookieControlsToggleChecked"] =
-      CookieControlsHandler::GetToggleCheckedValue(profile_) ? "checked" : "";
+      CookieControlsHandler::GetToggleCheckedValue(
+          profile_->GetOffTheRecordProfile())
+          ? "checked"
+          : "";
+  replacements["hideTooltipIcon"] =
+      CookieControlsHandler::ShouldEnforceCookieControls(profile_) ? ""
+                                                                   : "hidden";
+  replacements["cookieControlsTooltipText"] = l10n_util::GetStringFUTF8(
+      IDS_NEW_TAB_OTR_COOKIE_CONTROLS_CONTROLLED_TOOLTIP_TEXT,
+      l10n_util::GetStringUTF16(IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE),
+      l10n_util::GetStringUTF16(IDS_SETTINGS_SITE_SETTINGS_COOKIES));
 
   const ui::ThemeProvider& tp =
       ThemeService::GetThemeProviderForProfile(profile_);
@@ -606,4 +632,9 @@ void NTPResourceCache::CreateNewTabCSS() {
   std::string css_string =
       ReplaceTemplateExpressions(*new_tab_theme_css, substitutions);
   new_tab_css_ = base::RefCountedString::TakeString(&css_string);
+}
+
+void NTPResourceCache::OnPolicyChanged(const base::Value* previous,
+                                       const base::Value* current) {
+  new_tab_incognito_html_ = nullptr;
 }

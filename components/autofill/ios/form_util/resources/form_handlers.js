@@ -25,29 +25,29 @@ __gCrWeb.formHandlers = {};
 /**
  * The MutationObserver tracking form related changes.
  */
-var formMutationObserver_ = null;
+var formMutationObserver = null;
 
 /**
  * The form mutation message scheduled to be sent to browser.
  */
-var formMutationMessageToSend_ = null;
+var formMutationMessageToSend = null;
 
 /**
  * A message scheduled to be sent to host on the next runloop.
  */
-var messageToSend_ = null;
+var messageToSend = null;
 
 /**
  * The last HTML element that had focus.
  */
-var lastFocusedElement_ = null;
+var lastFocusedElement = null;
 
 /**
  * The original implementation of HTMLFormElement.submit that will be called by
  * the hook.
  * @private
  */
-var formSubmitOriginalFunction_ = null;
+var formSubmitOriginalFunction = null;
 
 /**
  * Schedule |mesg| to be sent on next runloop.
@@ -55,13 +55,13 @@ var formSubmitOriginalFunction_ = null;
  * sent.
  */
 function sendMessageOnNextLoop_(mesg) {
-  if (!messageToSend_) {
+  if (!messageToSend) {
     setTimeout(function() {
-      __gCrWeb.message.invokeOnHost(messageToSend_);
-      messageToSend_ = null;
+      __gCrWeb.message.invokeOnHost(messageToSend);
+      messageToSend = null;
     }, 0);
   }
-  messageToSend_ = mesg;
+  messageToSend = mesg;
 }
 
 /** @private
@@ -101,13 +101,13 @@ function formActivity_(evt) {
   var value = target.value || '';
   var fieldType = target.type || '';
   if (evt.type !== 'blur') {
-    lastFocusedElement_ = document.activeElement;
+    lastFocusedElement = document.activeElement;
   }
   if (['change', 'input'].includes(evt.type) &&
       __gCrWeb.form.wasEditedByUser !== null) {
     __gCrWeb.form.wasEditedByUser.set(target, evt.isTrusted);
   }
-  if (target != lastFocusedElement_) return;
+  if (target != lastFocusedElement) return;
   var msg = {
     'command': 'form.activity',
     'formName': __gCrWeb.form.getFormIdentifier(evt.target.form),
@@ -150,12 +150,12 @@ function formSubmitted_(form) {
  * to this function are ignored.
  */
 function sendFormMutationMessageAfterDelay_(msg, delay) {
-  if (formMutationMessageToSend_) return;
+  if (formMutationMessageToSend) return;
 
-  formMutationMessageToSend_ = msg;
+  formMutationMessageToSend = msg;
   setTimeout(function() {
-    __gCrWeb.message.invokeOnHost(formMutationMessageToSend_);
-    formMutationMessageToSend_ = null;
+    __gCrWeb.message.invokeOnHost(formMutationMessageToSend);
+    formMutationMessageToSend = null;
   }, delay);
 }
 
@@ -180,8 +180,8 @@ function attachListeners_() {
 
   // Per specification, SubmitEvent is not triggered when calling form.submit().
   // Hook the method to call the handler in that case.
-  if (formSubmitOriginalFunction_ === null) {
-    formSubmitOriginalFunction_ = HTMLFormElement.prototype.submit;
+  if (formSubmitOriginalFunction === null) {
+    formSubmitOriginalFunction = HTMLFormElement.prototype.submit;
     HTMLFormElement.prototype.submit = function() {
       // If an error happens in formSubmitted_, this will cancel the form
       // submission which can lead to usability issue for the user.
@@ -191,7 +191,7 @@ function attachListeners_() {
         formSubmitted_(this);
       } catch (e) {
       }
-      formSubmitOriginalFunction_.call(this);
+      formSubmitOriginalFunction.call(this);
     };
   }
 }
@@ -211,14 +211,14 @@ setTimeout(attachListeners_, 1000);
  * @suppress {checkTypes} Required for for...of loop on mutations.
  */
 __gCrWeb.formHandlers['trackFormMutations'] = function(delay) {
-  if (formMutationObserver_) {
-    formMutationObserver_.disconnect();
-    formMutationObserver_ = null;
+  if (formMutationObserver) {
+    formMutationObserver.disconnect();
+    formMutationObserver = null;
   }
 
   if (!delay) return;
 
-  formMutationObserver_ = new MutationObserver(function(mutations) {
+  formMutationObserver = new MutationObserver(function(mutations) {
     for (var i = 0; i < mutations.length; i++) {
       var mutation = mutations[i];
       // Only process mutations to the tree of nodes.
@@ -232,10 +232,10 @@ __gCrWeb.formHandlers['trackFormMutations'] = function(delay) {
         [].push.apply(
             addedElements, [].slice.call(node.getElementsByTagName('*')));
       }
-      var form_changed = addedElements.find(function(element) {
+      var formChanged = addedElements.find(function(element) {
         return element.tagName.match(/(FORM|INPUT|SELECT|OPTION|TEXTAREA)/);
       });
-      if (form_changed) {
+      if (formChanged) {
         var msg = {
           'command': 'form.activity',
           'formName': '',
@@ -249,7 +249,7 @@ __gCrWeb.formHandlers['trackFormMutations'] = function(delay) {
       }
     }
   });
-  formMutationObserver_.observe(document, {childList: true, subtree: true});
+  formMutationObserver.observe(document, {childList: true, subtree: true});
 };
 
 /**

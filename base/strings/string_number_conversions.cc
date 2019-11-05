@@ -496,7 +496,8 @@ bool HexStringToUInt64(StringPiece input, uint64_t* output) {
       input.begin(), input.end(), output);
 }
 
-bool HexStringToBytes(StringPiece input, std::vector<uint8_t>* output) {
+template <typename Container>
+static bool HexStringToByteContainer(StringPiece input, Container* output) {
   DCHECK_EQ(output->size(), 0u);
   size_t count = input.size();
   if (count == 0 || (count % 2) != 0)
@@ -509,6 +510,34 @@ bool HexStringToBytes(StringPiece input, std::vector<uint8_t>* output) {
       return false;
     }
     output->push_back((msb << 4) | lsb);
+  }
+  return true;
+}
+
+bool HexStringToBytes(StringPiece input, std::vector<uint8_t>* output) {
+  return HexStringToByteContainer(input, output);
+}
+
+bool HexStringToString(StringPiece input, std::string* output) {
+  return HexStringToByteContainer(input, output);
+}
+
+bool HexStringToSpan(StringPiece input, base::span<uint8_t> output) {
+  size_t count = input.size();
+  if (count == 0 || (count % 2) != 0)
+    return false;
+
+  if (count / 2 != output.size())
+    return false;
+
+  for (uintptr_t i = 0; i < count / 2; ++i) {
+    uint8_t msb = 0;  // most significant 4 bits
+    uint8_t lsb = 0;  // least significant 4 bits
+    if (!CharToDigit<16>(input[i * 2], &msb) ||
+        !CharToDigit<16>(input[i * 2 + 1], &lsb)) {
+      return false;
+    }
+    output[i] = (msb << 4) | lsb;
   }
   return true;
 }

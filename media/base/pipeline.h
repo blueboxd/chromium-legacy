@@ -27,7 +27,6 @@
 namespace media {
 
 class Demuxer;
-class Renderer;
 
 class MEDIA_EXPORT Pipeline {
  public:
@@ -95,17 +94,16 @@ class MEDIA_EXPORT Pipeline {
     kSuspendAfterMetadata,              // Always suspend after metadata.
   };
 
-  // Build a pipeline to using the given |demuxer| and |renderer| to construct
-  // a filter chain, executing |seek_cb| when the initial seek has completed.
-  // Methods on PipelineClient may be called up until Stop() has completed.
-  // It is an error to call this method after the pipeline has already started.
+  // Build a pipeline to using the given |demuxer| to construct a filter chain,
+  // executing |seek_cb| when the initial seek has completed. Methods on
+  // PipelineClient may be called up until Stop() has completed. It is an error
+  // to call this method after the pipeline has already started.
   //
   // If a |start_type| is specified which allows suspension, pipeline startup
   // will halt after metadata has been retrieved and the pipeline will be in a
   // suspended state.
   virtual void Start(StartType start_type,
                      Demuxer* demuxer,
-                     std::unique_ptr<Renderer> renderer,
                      Client* client,
                      const PipelineStatusCB& seek_cb) = 0;
 
@@ -175,12 +173,11 @@ class MEDIA_EXPORT Pipeline {
   // seeking.
   virtual void Suspend(const PipelineStatusCB& suspend_cb) = 0;
 
-  // Resume the pipeline with a new renderer, and initialize it with a seek.
+  // Resume the pipeline and seek to |timestamp|.
   //
   // It is an error to call this method if the pipeline has not finished
   // suspending.
-  virtual void Resume(std::unique_ptr<Renderer> renderer,
-                      base::TimeDelta timestamp,
+  virtual void Resume(base::TimeDelta timestamp,
                       const PipelineStatusCB& seek_cb) = 0;
 
   // Returns true if the pipeline has been started via Start().  If IsRunning()

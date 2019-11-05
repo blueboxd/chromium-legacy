@@ -81,6 +81,8 @@ class ArcSystemStatCollector {
              const base::TimeTicks& max_timestamp,
              ArcSystemModel* system_model);
 
+  base::TimeDelta max_interval() const { return max_interval_; }
+
  private:
   struct Sample;
   struct SystemReadersContext;
@@ -137,6 +139,10 @@ class ArcSystemStatCollector {
 
   // Used to calculate delta.
   RuntimeFrame previous_frame_;
+
+  // Defines the maximum interval and it is used for circle buffer size
+  // calculation.
+  base::TimeDelta max_interval_;
 
   std::unique_ptr<SystemReadersContext> context_;
 

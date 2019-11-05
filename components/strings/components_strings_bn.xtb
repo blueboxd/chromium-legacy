@@ -172,6 +172,7 @@
 <translation id="173080396488393970">এখানে এই ধরনের কার্ড কাজ করে না</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">সিস্টেম প্রশাসকের সাথে যোগাযোগ করে দেখুন।</translation>
+<translation id="1739107442478692187">আপনার ব্যবহার করা সাইট বা অ্যাপে ডেটার নিরাপত্তা লঙ্ঘন হয়েছে। Chrome <ph name="ORIGIN" />-এ এখনই আপনার সেভ করা পাসওয়ার্ড পরীক্ষা করা এবং পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="1740951997222943430">মেয়াদ শেষ হওয়ার মাসের সঠিক মান লিখুন</translation>
 <translation id="1743520634839655729">পরেরবার আরও দ্রুত পেমেন্ট করা জন্য আপনার কার্ড, নাম এবং বিলিং ঠিকানাটি Google অ্যাকাউন্টে এবং এই ডিভাইসে সেভ করে রাখুন।</translation>
 <translation id="1743570585616704562">শনাক্ত করা যায়নি</translation>
@@ -235,6 +236,7 @@
 <translation id="2094505752054353250">ডোমেন মেলেনি</translation>
 <translation id="2096368010154057602">বিভাগ</translation>
 <translation id="2099652385553570808">বাঁদিকে ট্রিপল স্টেপল</translation>
+<translation id="2100280972184758440">আপনার পাসওয়ার্ড হ্যাক করার চেষ্টা করা হয়েছে</translation>
 <translation id="2102134110707549001">শক্তিশালী পাসওয়ার্ড সাজেস্ট করুন…</translation>
 <translation id="2108755909498034140">আপনার কম্পিউটার পুনরায় চালু করুন</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -242,6 +244,7 @@
 <translation id="2114841414352855701">এড়িয়ে যাওয়া হয়েছে কারণ এটি <ph name="POLICY_NAME" />-দ্বারা ওভাররাইড করা হয়েছিল৷</translation>
 <translation id="2119505898009119320">এই সংস্থাকে ইস্যু করা হয়েছিল: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">নিচে ডানদিকে পাঞ্চ করুন</translation>
+<translation id="2124528555835617522">আপনার ব্যবহার করা সাইট বা অ্যাপে ডেটার নিরাপত্তা লঙ্ঘন হয়েছে। Chrome এখনই আপনার সেভ করা পাসওয়ার্ড পরীক্ষা করার জন্য সাজেস্ট করছে।</translation>
 <translation id="2129079103035905234">মোশন সেন্সর</translation>
 <translation id="213826338245044447">মোবাইল বুকমার্ক</translation>
 <translation id="214556005048008348">পেমেন্ট বাতিল করুন</translation>
@@ -481,11 +484,13 @@
 <translation id="3282497668470633863">কার্ডে থাকা নাম যোগ করুন</translation>
 <translation id="3287510313208355388">অনলাইন হয়ে ডাউনলোড করবেন</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> নীতি সম্পর্কে আরও জানুন</translation>
+<translation id="3295439534709115864">আপনার ব্যবহার করা সাইট বা অ্যাপে ডেটার নিরাপত্তা লঙ্ঘন হয়েছে। Chrome এখন <ph name="ORIGIN" />-এ আপনার পাসওয়ার্ড পরিবর্তন করার সাজেস্ট করছে।</translation>
 <translation id="3303855915957856445">কোনো সার্চ ফলাফল পাওয়া যায়নি</translation>
 <translation id="3320021301628644560">বিলিংয়ের ঠিকানা যোগ করুন</translation>
 <translation id="3324983252691184275">টকটকে লাল</translation>
 <translation id="3338095232262050444">সুরক্ষিত</translation>
 <translation id="3355823806454867987">প্রক্সি সেটিংস পরিবর্তন করুন...</translation>
+<translation id="3360103848165129075">পেমেন্ট হ্যান্ডলার শিট</translation>
 <translation id="3362968246557010467">শীঘ্রই বন্ধ হওয়া <ph name="OLD_POLICY" /> নীতি থেকে এই নীতি অটোমেটিক পদ্ধতিতে কপি করা হয়েছে। পরিবর্তে এই নীতি ব্যবহার করতে হবে।</translation>
 <translation id="3366477098757335611">কার্ড দেখুন</translation>
 <translation id="3369192424181595722">ঘড়ির ত্রুটি</translation>
@@ -605,6 +610,7 @@
 <translation id="3949601375789751990">আপনার ব্রাউজিং এর ইতিহাস এখানে দেখা যায়</translation>
 <translation id="3949870428812919180">কোনও পেমেন্টের পদ্ধতি সেভ করা নেই</translation>
 <translation id="3950820424414687140">সাইন-ইন করুন</translation>
+<translation id="3961148744525529027">পেমেন্ট হ্যান্ডলার শিট অর্ধেক খোলা আছে</translation>
 <translation id="3962859241508114581">আগের ট্র্যাক চালান</translation>
 <translation id="3963837677003247395">ম্যানুয়ালি চালিয়ে যেতে চান?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{কিছুই নয়}=1{১টি সাইট থেকে }one{#টি সাইট থেকে }other{#টি সাইট থেকে }}</translation>
@@ -1336,6 +1342,7 @@
 <translation id="7637571805876720304">Chromium থেকে ক্রেডিট কার্ড সরাবেন?</translation>
 <translation id="7638605456503525968">সিরিয়াল পোর্ট</translation>
 <translation id="7639968568612851608">গাঢ় ধূসর</translation>
+<translation id="7653957176542370971">পেমেন্ট হ্যান্ডলার শিট বন্ধ করা আছে</translation>
 <translation id="765676359832457558">উন্নত সেটিংস লুকান...</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7662298039739062396">সেটিংস একটি এক্সটেনশন দ্বারা নিয়ন্ত্রিত</translation>
@@ -1465,6 +1472,7 @@
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8262952874573525464">নিচে ধারের দিকে সেলাই</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" /> হিসেবে প্রবেশ করুন করছেন</translation>
+<translation id="8277900682056760511">পেমেন্ট হ্যান্ডলার শিট খোলা আছে</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">সাইন-ইন করুন</translation>
 <translation id="8288807391153049143">সার্টিফিকেট দেখান</translation>

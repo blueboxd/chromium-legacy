@@ -172,6 +172,7 @@
 <translation id="173080396488393970">இந்தக் கார்டு வகை ஆதரிக்கப்படவில்லை</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">கணினி நிர்வாகியைத் தொடர்புகொள்ளவும்</translation>
+<translation id="1739107442478692187">நீங்கள் பயன்படுத்தும் தளத்திலோ ஆப்ஸிலோ தரவு மீறல் நிகழ்ந்துள்ளது. இப்போது <ph name="ORIGIN" /> இல் நீங்கள் சேமித்த கடவுச்சொற்களைச் சரிபார்க்கவும் கடவுச்சொல்லை மாற்றவும் Chrome பரிந்துரைக்கிறது.</translation>
 <translation id="1740951997222943430">சரியான காலாவதி மாதத்தை உள்ளிடவும்</translation>
 <translation id="1743520634839655729">அடுத்த முறை விரைவாகப் பணம் செலுத்த, உங்கள் கார்டின் பெயரையும் பில்லிங் முகவரியையும் உங்கள் Google கணக்கிலும் இந்தச் சாதனத்திலும் சேமிக்கவும்.</translation>
 <translation id="1743570585616704562">அடையாளங்காண முடியவில்லை</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">டொமைன் பொருந்தவில்லை</translation>
 <translation id="2096368010154057602">துறை</translation>
 <translation id="2099652385553570808">டிரிப்பில் ஸ்டேப்பில் லெஃப்ட்</translation>
+<translation id="2100280972184758440">உங்கள் கடவுச்சொல் அபகரிக்கப்பட்டுள்ளது</translation>
 <translation id="2102134110707549001">வலுவான கடவுச்சொல்லைப் பரிந்துரைசெய்…</translation>
 <translation id="2108755909498034140">கம்ப்யூட்டரை மீண்டும் தொடங்கவும்</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> ஆல் கொள்கை மேலெழுதப்பட்டுள்ளதால் புறக்கணிக்கப்பட்டது.</translation>
 <translation id="2119505898009119320">வழங்கப்பட்ட நிறுவனம்: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">பஞ்ச் பாட்டம் ரைட்</translation>
+<translation id="2124528555835617522">நீங்கள் பயன்படுத்தும் தளத்திலோ ஆப்ஸிலோ தரவு மீறல் நிகழ்ந்துள்ளது. சேமிக்கப்பட்டுள்ள உங்கள் கடவுச்சொற்களை இப்போதே சரிபார்க்குமாறு Chrome பரிந்துரைக்கிறது.</translation>
 <translation id="2129079103035905234">மோஷன் சென்சார்கள்</translation>
 <translation id="213826338245044447">மொபைல் புக்மார்க்குகள்</translation>
 <translation id="214556005048008348">பேமண்ட்டை ரத்துசெய்</translation>
@@ -469,11 +472,13 @@
 <translation id="3282497668470633863">கார்டிலுள்ள பெயரைச் சேர்க்கவும்</translation>
 <translation id="3287510313208355388">ஆன்லைனில் இருக்கும் போது பதிவிறக்கு</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> கொள்கை குறித்து மேலும் அறிக</translation>
+<translation id="3295439534709115864">நீங்கள் பயன்படுத்தும் தளத்திலோ ஆப்ஸிலோ தரவு மீறல் நிகழ்ந்துள்ளது. உங்கள் கடவுச்சொல்லை <ph name="ORIGIN" /> என்பதில் இப்போதே மாற்றுமாறு Chrome பரிந்துரைக்கிறது.</translation>
 <translation id="3303855915957856445">தேடல் முடிவுகள் எதுவுமில்லை</translation>
 <translation id="3320021301628644560">பில்லிங் முகவரியைச் சேர்க்கவும்</translation>
 <translation id="3324983252691184275">அடர்சிவப்பு</translation>
 <translation id="3338095232262050444">பாதுகாப்பானது</translation>
 <translation id="3355823806454867987">ப்ராக்ஸி அமைப்புகளை மாற்றுக...</translation>
+<translation id="3360103848165129075">பேமெண்ட் ஹேண்ட்லர் ஷீட்</translation>
 <translation id="3362968246557010467">தடுக்கப்பட்டுள்ள <ph name="OLD_POLICY" /> கொள்கையில் இருந்து இது தானாகவே நகலெடுக்கப்பட்டது. மாறாக இந்தக் கொள்கையைப் பயன்படுத்த வேண்டும்.</translation>
 <translation id="3366477098757335611">கார்டுகளைக் காட்டு</translation>
 <translation id="3369192424181595722">கடிகாரப் பிழை</translation>
@@ -589,6 +594,7 @@
 <translation id="3949601375789751990">உலாவல் வரலாறு இங்கே தோன்றும்</translation>
 <translation id="3949870428812919180">கட்டண முறைகள் எதுவும் சேமிக்கப்படவில்லை</translation>
 <translation id="3950820424414687140">உள்நுழைக</translation>
+<translation id="3961148744525529027">பேமெண்ட் ஹேண்ட்லர் ஷீட் பாதியளவு திறந்துள்ளது</translation>
 <translation id="3962859241508114581">முந்தைய டிராக்</translation>
 <translation id="3963837677003247395">நீங்களே செய்கிறீர்களா?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{ஏதுமில்லை}=1{1 தளத்திலிருந்து }other{# தளங்களிலிருந்து }}</translation>
@@ -1319,6 +1325,7 @@
 <translation id="7637571805876720304">Chromium இலிருந்து கிரெடிட் கார்டை அகற்றவா?</translation>
 <translation id="7638605456503525968">சீரியல் போர்ட்டுகள்</translation>
 <translation id="7639968568612851608">அடர்ந்த சாம்பல்</translation>
+<translation id="7653957176542370971">பேமெண்ட் ஹேண்ட்லர் ஷீட் மூடியுள்ளது</translation>
 <translation id="765676359832457558">மேம்பட்ட அமைப்புகளை மறை...</translation>
 <translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7662298039739062396">அமைப்பை நீட்டிப்பு கட்டுப்படுத்துகிறது</translation>
@@ -1448,6 +1455,7 @@
 <translation id="8261506727792406068">நீக்கு</translation>
 <translation id="8262952874573525464">எட்ஜ் ஸ்டிட்ச் பாட்டம்</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" /> ஆக உள்நுழைகிறீர்கள்</translation>
+<translation id="8277900682056760511">பேமெண்ட் ஹேண்ட்லர் ஷீட் திறந்துள்ளது</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">உள்நுழை</translation>
 <translation id="8288807391153049143">சான்றிதழைக் காட்டும்</translation>

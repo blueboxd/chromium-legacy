@@ -83,6 +83,17 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
+namespace {
+bool IsNeutralWithinTable(blink::AXObject* obj) {
+  if (!obj)
+    return false;
+  ax::mojom::Role role = obj->RoleValue();
+  return role == ax::mojom::Role::kGroup ||
+         role == ax::mojom::Role::kGenericContainer ||
+         role == ax::mojom::Role::kIgnored;
+}
+}  // namespace
+
 namespace blink {
 
 using html_names::kAltAttr;
@@ -487,6 +498,100 @@ bool AXNodeObject::IsDescendantOfElementType(
   return false;
 }
 
+static bool IsNonEmptyNonHeaderCell(const Node* cell) {
+  return cell && cell->hasChildren() && cell->HasTagName(html_names::kTdTag);
+}
+
+static bool IsHeaderCell(const Node* cell) {
+  return cell && cell->HasTagName(html_names::kThTag);
+}
+
+static ax::mojom::Role DecideRoleFromSiblings(Element* cell) {
+  // If this header is only cell in its row, it is a column header.
+  // It is also a column header if it has a header on either side of it.
+  // If instead it has a non-empty td element next to it, it is a row header.
+
+  const Node* next_cell = LayoutTreeBuilderTraversal::NextSibling(*cell);
+  const Node* previous_cell =
+      LayoutTreeBuilderTraversal::PreviousSibling(*cell);
+  if (!next_cell && !previous_cell)
+    return ax::mojom::Role::kColumnHeader;
+  if (IsHeaderCell(next_cell) && IsHeaderCell(previous_cell))
+    return ax::mojom::Role::kColumnHeader;
+  if (IsNonEmptyNonHeaderCell(next_cell) ||
+      IsNonEmptyNonHeaderCell(previous_cell))
+    return ax::mojom::Role::kRowHeader;
+
+  const Element* row = ToElement(cell->parentNode());
+  if (!row || !row->HasTagName(html_names::kTrTag))
+    return ax::mojom::Role::kColumnHeader;
+
+  // If this row's first or last cell is a non-empty td, this is a row header.
+  // Do the same check for the second and second-to-last cells because tables
+  // often have an empty cell at the intersection of the row and column headers.
+  const Element* first_cell = ElementTraversal::FirstChild(*row);
+  DCHECK(first_cell);
+
+  const Element* last_cell = ElementTraversal::LastChild(*row);
+  DCHECK(last_cell);
+
+  if (IsNonEmptyNonHeaderCell(first_cell) || IsNonEmptyNonHeaderCell(last_cell))
+    return ax::mojom::Role::kRowHeader;
+
+  if (IsNonEmptyNonHeaderCell(ElementTraversal::NextSibling(*first_cell)) ||
+      IsNonEmptyNonHeaderCell(ElementTraversal::PreviousSibling(*last_cell)))
+    return ax::mojom::Role::kRowHeader;
+
+  // We have no evidence that this is not a column header.
+  return ax::mojom::Role::kColumnHeader;
+}
+
+ax::mojom::Role AXNodeObject::DetermineTableRowRole() const {
+  AXObject* parent = ParentObject();
+  while (IsNeutralWithinTable(parent))
+    parent = parent->ParentObject();
+
+  if (!parent || !parent->IsTableLikeRole())
+    return ax::mojom::Role::kGenericContainer;
+
+  if (parent->RoleValue() == ax::mojom::Role::kLayoutTable)
+    return ax::mojom::Role::kLayoutTableRow;
+
+  if (parent->IsTableLikeRole())
+    return ax::mojom::Role::kRow;
+
+  return ax::mojom::Role::kGenericContainer;
+}
+
+ax::mojom::Role AXNodeObject::DetermineTableCellRole() const {
+  AXObject* parent = ParentObject();
+  if (!parent || !parent->IsTableRowLikeRole())
+    return ax::mojom::Role::kGenericContainer;
+
+  // Ensure table container.
+  AXObject* grandparent = parent->ParentObject();
+  while (IsNeutralWithinTable(grandparent))
+    grandparent = grandparent->ParentObject();
+  if (!grandparent || !grandparent->IsTableLikeRole())
+    return ax::mojom::Role::kGenericContainer;
+
+  if (parent->RoleValue() == ax::mojom::Role::kLayoutTableRow)
+    return ax::mojom::Role::kLayoutTableCell;
+
+  if (!GetElement() || !GetNode()->HasTagName(html_names::kThTag))
+    return ax::mojom::Role::kCell;
+
+  const AtomicString& scope = GetAttribute(html_names::kScopeAttr);
+  if (EqualIgnoringASCIICase(scope, "row") ||
+      EqualIgnoringASCIICase(scope, "rowgroup"))
+    return ax::mojom::Role::kRowHeader;
+  if (EqualIgnoringASCIICase(scope, "col") ||
+      EqualIgnoringASCIICase(scope, "colgroup"))
+    return ax::mojom::Role::kColumnHeader;
+
+  return DecideRoleFromSiblings(GetElement());
+}
+
 // TODO(accessibility) Needs a new name as it does check ARIA, including
 // checking the @role for an iframe, and @aria-haspopup/aria-pressed via
 // ButtonType().
@@ -525,6 +630,17 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
       return ax::mojom::Role::kDisclosureTriangle;
     return ax::mojom::Role::kUnknown;
   }
+
+  // Chrome exposes both table markup and table CSS as a tables, letting
+  // the screen reader determine what to do for CSS tables.
+  if (IsHTMLTableElement(*GetNode())) {
+    return IsDataTable() ? ax::mojom::Role::kTable
+                         : ax::mojom::Role::kLayoutTable;
+  }
+  if (IsHTMLTableRowElement(*GetNode()))
+    return DetermineTableRowRole();
+  if (IsHTMLTableCellElement(*GetNode()))
+    return DetermineTableCellRole();
 
   if (const auto* input = ToHTMLInputElementOrNull(*GetNode())) {
     const AtomicString& type = input->type();

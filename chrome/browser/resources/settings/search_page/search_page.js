@@ -68,8 +68,7 @@ Polymer({
     // <if expr="chromeos">
     if (settings.routes.GOOGLE_ASSISTANT) {
       this.focusConfig_.set(
-          settings.routes.GOOGLE_ASSISTANT.path,
-          '#assistantSubpageTrigger .subpage-arrow');
+          settings.routes.GOOGLE_ASSISTANT.path, '#assistantSubpageTrigger');
     }
     // </if>
   },

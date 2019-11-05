@@ -172,8 +172,8 @@ def _CreateUncompressedPakSizeDeltas(symbols):
 
 
 def _CreateTestingSymbolsDeltas(symbols):
-  testing_symbols = symbols.WhereNameMatches('ForTest').WhereDiffStatusIs(
-      models.DIFF_STATUS_ADDED)
+  testing_symbols = symbols.WhereIsDex().WhereNameMatches(
+      'ForTest').WhereDiffStatusIs(models.DIFF_STATUS_ADDED)
   lines = None
   if len(testing_symbols):
     lines = list(describe.GenerateLines(testing_symbols, summarize=False))

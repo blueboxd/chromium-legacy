@@ -16,8 +16,6 @@ namespace fuchsia {
 FilteredServiceDirectory::FilteredServiceDirectory(
     sys::ServiceDirectory* directory)
     : directory_(std::move(directory)) {
-  outgoing_directory_.Serve(
-      outgoing_directory_client_.NewRequest().TakeChannel());
 }
 
 FilteredServiceDirectory::~FilteredServiceDirectory() {}

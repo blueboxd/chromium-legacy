@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Penandatangan Sijil</translation>
 <translation id="1145292499998999162">Pemalam disekat</translation>
 <translation id="1145532888383813076">Carian peranti anda, apl dan web.</translation>
+<translation id="1146678959555564648">Masukkan VR</translation>
 <translation id="114721135501989771">Google pintar di Chrome</translation>
 <translation id="1149401351239820326">Bulan tamat tempoh</translation>
 <translation id="1150565364351027703">Cermin mata hitam</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Simpan data dalam akaun Google Drive anda</translation>
 <translation id="1288037062697528143">Cahaya Malam akan dihidupkan secara automatik pada waktu matahari terbenam</translation>
 <translation id="1288300545283011870">Sifat Pertuturan</translation>
-<translation id="1289513325360489062">Tidak dapat mengakses data tapak ini</translation>
 <translation id="1293264513303784526">Peranti USB-C (port kiri)</translation>
 <translation id="1293556467332435079">Fail</translation>
 <translation id="1296911687402551044">Sematkan Tab yang Dipilih</translation>
@@ -813,7 +813,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2165421703844373933">Akses Assistant anda apabila anda menyebut "Ok Google". Untuk menjimatkan bateri, pilih “Hidup (Disyorkan)”. Assistant anda hanya akan memberikan respons apabila peranti anda dipasang palam atau mengecas.</translation>
 <translation id="2166369534954157698">The quick brown fox jumps over the lazy dog</translation>
 <translation id="2169062631698640254">Log masuk juga</translation>
-<translation id="2170088579611075216">Benarkan &amp; masuk ke VR</translation>
 <translation id="2172784515318616985">Teruskan</translation>
 <translation id="2173302385160625112">Periksa sambungan Internet anda</translation>
 <translation id="2173801458090845390">Tambahkan ID permintaan pada peranti ini</translation>
@@ -1006,7 +1005,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2439545803278355377">Masukkan PIN baharu anda. Panjang PIN mesti sekurang-kurangnya empat aksara dan boleh mengandungi huruf, nombor dan aksara lain.</translation>
 <translation id="2440604414813129000">Lihat s&amp;umber</translation>
 <translation id="2442916515643169563">Bayangan teks</translation>
-<translation id="2444119669991608829">Halaman Bukan Dalam <ph name="LANGUAGE" /> ?</translation>
 <translation id="2445081178310039857">Direktori akar sambungan adalah diperlukan.</translation>
 <translation id="2445484935443597917">Buat Profil Baharu</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> mahu mengesahkan identiti anda</translation>
@@ -1427,7 +1425,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3020183492814296499">Pintasan</translation>
 <translation id="3020990233660977256">Nombor Siri: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Rama-rama</translation>
-<translation id="3021426244864538700">Mengakses data tapak ini</translation>
 <translation id="3021678814754966447">&amp;Lihat Sumber Bingkai</translation>
 <translation id="3022978424994383087">Tidak faham.</translation>
 <translation id="3023464535986383522">Pilih untuk bercakap</translation>
@@ -2218,7 +2215,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4159681666905192102">Ini ialah akaun untuk kanak-kanak yang diurus oleh <ph name="CUSTODIAN_EMAIL" /> dan <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Papan kekunci yang tidak diketahui.</translation>
 <translation id="4168015872538332605">Beberapa tetapan milik <ph name="PRIMARY_EMAIL" /> sedang dikongsikan dengan anda. Tetapan ini hanya mempengaruhi akaun anda semasa menggunakan berbilang log masuk.</translation>
-<translation id="4169535189173047238">Jangan benarkan</translation>
 <translation id="4170314459383239649">Kosongkan Apabila Keluar</translation>
 <translation id="4172051516777682613">Sentiasa paparkan</translation>
 <translation id="4175137578744761569">Ungu cerah dan putih</translation>
@@ -2304,6 +2300,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4316850752623536204">Tapak Web Pembangun</translation>
 <translation id="4320177379694898372">Tiada sambungan Internet</translation>
 <translation id="4321442524549817090">T&amp;unjukkan URL</translation>
+<translation id="4322394346347055525">Tutup Tab Lain</translation>
 <translation id="4324577459193912240">Fail tidak lengkap</translation>
 <translation id="4325237902968425115">Menyahpasang <ph name="LINUX_APP_NAME" />...</translation>
 <translation id="4330191372652740264">Air ais</translation>
@@ -2412,7 +2409,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4501530680793980440">Sahkan Pengalihan Keluar</translation>
 <translation id="4502423230170890588">Alih keluar daripada peranti ini</translation>
 <translation id="4504940961672722399">Gunakan sambungan ini dengan mengklik pada ikon ini atau dengan menekan <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Apabila meneruskan akan membolehkan ADB untuk membuat dan menguji apl Android Harap maklum bahawa ADB membenarkan pemasangan apl ujian yang belum disahkan oleh Google.</translation>
+<translation id="4506379069541445709">Meneruskan persediaan akan mendayakan ADB yang membuat dan menguji apl Android. Harap maklum bahawa ADB membenarkan pemasangan apl ujian yang belum disahkan oleh Google.</translation>
 <translation id="4508051413094283164">Buka semua dalam tetingkap inkognito</translation>
 <translation id="4508265954913339219">Pengaktifan gagal</translation>
 <translation id="4508765956121923607">Paparkan S&amp;umber</translation>
@@ -2757,10 +2754,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5029568752722684782">Hapuskan salinan</translation>
 <translation id="5030338702439866405">Dikeluarkan Oleh</translation>
 <translation id="5033266061063942743">Bentuk geometri</translation>
-<translation id="5033865233969348410">Semasa anda berada dalam VR, tapak ini mungkin dapat mengetahui tentang:
-  -  ciri fizikal anda, seperti ketinggian
-
-Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> mahu menggunakan kamera dan mikrofon anda</translation>
 <translation id="5036662165765606524">Jangan benarkan mana-mana tapak memuat turun berbilang fail secara automatik</translation>
 <translation id="5037676449506322593">Pilih Semua</translation>
@@ -3034,7 +3027,6 @@ Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="5449588825071916739">Tanda Halaman Semua Tab</translation>
 <translation id="5449716055534515760">Tutup Te&amp;tingkap</translation>
 <translation id="5454166040603940656">dengan <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Bahasa Sasaran Terjemahan</translation>
 <translation id="5457113250005438886">Tidak sah</translation>
 <translation id="5457459357461771897">Baca dan padam foto, muzik dan media lain daripada komputer anda</translation>
 <translation id="5457599981699367932">Semak Imbas sebagai Tetamu</translation>
@@ -3094,11 +3086,6 @@ Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="5532223876348815659">Global</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> ingin</translation>
 <translation id="5534304873398226603">Buang foto atau video</translation>
-<translation id="5534334044554683961">Semasa anda berada dalam VR, tapak ini mungkin dapat mengetahui tentang:
-  -   ciri fizikal anda, seperti ketinggian
-  -   susun atur bilik anda
-
-Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="5535941515421698170">Turut mengalih keluar data sedia ada anda daripada peranti ini</translation>
 <translation id="5539221284352502426">Kata laluan yang anda masukkan telah ditolak oleh pelayan. Sebab yang mungkin termasuk: Kata laluan terlalu pendek. Kata laluan mesti merangkumi nombor atau simbol. Kata laluan mesti berbeza daripada kata laluan yang sebelumnya.</translation>
 <translation id="5541694225089836610">Tindakan dilumpuhkan oleh pentadbir anda</translation>
@@ -3996,6 +3983,7 @@ Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="6850286078059909152">Warna teks</translation>
 <translation id="6851497530878285708">Apl Didayakan</translation>
 <translation id="6853388645642883916">Pengemaskinian tidur</translation>
+<translation id="68541483639528434">Tutup tab lain</translation>
 <translation id="6856623341093082836">Sediakan dan laras ketepatan skrin sentuh anda</translation>
 <translation id="6857699260879628349">Dapatkan maklumat konfigurasi</translation>
 <translation id="6860097299815761905">Tetapan proksi...</translation>
@@ -4108,7 +4096,6 @@ Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="7019805045859631636">Cepat</translation>
 <translation id="7022562585984256452">Halaman utama anda telah ditetapkan.</translation>
 <translation id="7025190659207909717">Pengurusan perkhidmatan data mudah alih</translation>
-<translation id="7027891519253193555">Halaman bukan dalam <ph name="LANGUAGE" /> ?</translation>
 <translation id="7029809446516969842">Kata laluan</translation>
 <translation id="703001695939087067">Memasuki mod gambaran keseluruhan tetingkap. Tekan tab untuk menavigasi.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - Port bersiri disambungkan</translation>
@@ -4553,7 +4540,6 @@ Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="7684718995427157417">Untuk membuat dan menguji apl anda, dayakan Titi Nyahpepijat Android (ADB). Harap maklum bahawa tindakan ini membolehkan pemasangan apl Android yang belum disahkan oleh Google dan memerlukan tetapan semula kilang untuk melumpuhkannya.</translation>
 <translation id="7685049629764448582">Memori JavaScript</translation>
 <translation id="7685087414635069102">PIN diperlukan</translation>
-<translation id="7685301384041462804">Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="768549422429443215">Tambah bahasa dan susun semula senarai.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Sahkan kata laluan baharu</translation>
@@ -4952,11 +4938,9 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung}other{Muat turun sedang berlangsung}}</translation>
 <translation id="8213449224684199188">Mod foto dimasukkan</translation>
 <translation id="8213577208796878755">Satu peranti lain yang tersedia.</translation>
-<translation id="8213996900880218548">Mahu mengakses data tapak ini</translation>
 <translation id="8214489666383623925">Buka Fail...</translation>
 <translation id="8214962590150211830">Alih Keluar Orang Ini</translation>
 <translation id="8217399928341212914">Teruskan menyekat muat turun automatik berbilang fail</translation>
-<translation id="822519928942492333">Bahasa Halaman yang Hendak Diterjemahkan</translation>
 <translation id="8225265270453771718">Kongsi tetingkap aplikasi</translation>
 <translation id="8225753906568652947">Tebus tawaran anda</translation>
 <translation id="8226222018808695353">Dilarang</translation>
@@ -5529,7 +5513,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9026731007018893674">muat turun</translation>
 <translation id="9026852570893462412">Proses ini mungkin mengambil masa beberapa minit. Memuat turun mesin maya.</translation>
 <translation id="9027459031423301635">Buka Pautan dalam Tab &amp;Baharu</translation>
-<translation id="9029323097866369874">Benarkan <ph name="DOMAIN" /> untuk memasuki VR?</translation>
 <translation id="9030515284705930323">Organisasi anda belum mendayakan Gedung Google Play untuk akaun anda. Hubungi pentadbir anda untuk mendapatkan maklumat lanjut.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Tampal</translation>
@@ -5573,7 +5556,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9094038138851891550">Nama pengguna tidak sah</translation>
 <translation id="9094982973264386462">Alih keluar</translation>
 <translation id="9095253524804455615">Alih keluar</translation>
-<translation id="9095388113577226029">Lagi bahasa...</translation>
 <translation id="9100610230175265781">Frasa laluan diperlukan</translation>
 <translation id="9100765901046053179">Tetapan terperinci</translation>
 <translation id="9101691533782776290">Lancarkan apl</translation>

@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">'ಅಡಚಣೆ ಮಾಡಬೇಡಿ' ಆನ್ ಆಗಿದೆ.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ. ಒಂದು ಅಪ್ಲಿಕೇಶನ್‌ಗಾಗಿ ಅಧಿಸೂಚನೆಗಳನ್ನು ಆಫ್ ಮಾಡಲಾಗಿದೆ}one{ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ. # ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗಾಗಿ ಅಧಿಸೂಚನೆಗಳನ್ನು ಆಫ್ ಮಾಡಲಾಗಿದೆ}other{ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ. # ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗಾಗಿ ಅಧಿಸೂಚನೆಗಳನ್ನು ಆಫ್ ಮಾಡಲಾಗಿದೆ}}</translation>
 <translation id="1525508553941733066">ವಜಾಗೊಳಿಸಿ</translation>
-<translation id="1537254971476575106">ಪೂರ್ಣಪರದೆ ವರ್ಧಕ</translation>
 <translation id="15373452373711364">ದೊಡ್ಡ ಮೌಸ್ ಕರ್ಸರ್</translation>
 <translation id="1546492247443594934">ಡೆಸ್ಕ್ 2</translation>
 <translation id="1550523713251050646">ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳಿಗೆ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">ಕೀಬೋರ್ಡ್ ಲೇಔಟ್ ಬದಲಾಯಿಸಲು <ph name="KEYBOARD_SHORTCUT" /> ಒತ್ತಿರಿ.</translation>
 <translation id="2501920221385095727">ಸ್ಟಿಕಿ ಕೀಗಳು</translation>
 <translation id="2509468283778169019">CAPS LOCK ಆನ್ ಆಗಿದೆ</translation>
-<translation id="2532589005999780174">ಹೆಚ್ಚಿನ ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್</translation>
 <translation id="2542089167727451762">ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಚಿತ್ರದ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="255671100581129685">Google ಅಸಿಸ್ಟೆಂಟ್‌ ಸಾರ್ವಜನಿಕ ಸೆಶನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="256712445991462162">ಡಾಕ್ ಮಾಡಿರುವ ವರ್ಧಕ</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">ಭಾಷೆ</translation>
 <translation id="5313326810920013265">ಬ್ಲೂಟೂತ್‌‌ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="5331975486040154427">USB-C ಸಾಧನ (ಎಡ ಭಾಗದ ಹಿಂದಿನ ಪೋರ್ಟ್‌)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ</translation>
 <translation id="5397578532367286026">ಈ ಬಳಕೆದಾರರ ಬಳಕೆ ಮತ್ತು ಇತಿಹಾಸವನ್ನು chrome.com ನಲ್ಲಿ ನಿರ್ವಾಹಕರು (<ph name="MANAGER_EMAIL" />) ಪರಿಶೀಲಿಸಬಹುದು.</translation>
 <translation id="5430931332414098647">ತತ್‌ಕ್ಷಣದ ಟೆಥರಿಂಗ್‌</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">Google ಅಸಿಸ್ಟೆಂಟ್ ಪ್ರಸ್ತುತ ಬಳಕೆದಾರರ ಖಾತೆಗೆ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="5691772641933328258">ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಗುರುತಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="5710450975648804523">ಅಡಚಣೆ ಮಾಡಬೇಡಿ ಆನ್ ಆಗಿದೆ</translation>
+<translation id="573413375004481890">ಈ ಸಾಧನವು ನಿಮ್ಮ ಎಲ್ಲಾ ಡಿಸ್‌ಪ್ಲೇಗಳನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ, ಆದ್ದರಿಂದ ಒಂದರ ಕನೆಕ್ಷನ್ ಅನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="574392208103952083">ಮಧ್ಯಮ</translation>
 <translation id="5744083938413354016">ಟ್ಯಾಪ್ ಎಳೆಯುವಿಕೆ</translation>
 <translation id="5750765938512549687">ಬ್ಲೂಟೂತ್ ಆಫ್ ಆಗಿದೆ</translation>
@@ -482,7 +482,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7984197416080286869">ತೀರಾ ಹೆಚ್ಚು ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಪ್ರಯತ್ನಗಳು</translation>
 <translation id="7994370417837006925">ಬಹು ಸೈನ್-ಇನ್</translation>
 <translation id="8000066093800657092">ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲ</translation>
-<translation id="8029241286966751120">ಫುಲ್‌ಸ್ಕ್ರೀನ್ ವರ್ಧಕವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಅದನ್ನು ಟಾಗಲ್‌ ಆಫ್‌ ಮಾಡಲು Ctrl+Search+M ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="8030169304546394654">ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="8054466585765276473">ಬ್ಯಾಟರಿ ಸಮಯವನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="8061464966246066292">ಉನ್ನತ ಕಾಂಟ್ರಾಸ್ಟ್</translation>
@@ -507,7 +506,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8388750414311082622">ಕೊನೆಯ ಡೆಸ್ಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕುವಂತಿಲ್ಲ.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> ಅವರಿಗಾಗಿ ಆಯ್ಕೆಗಳ ಮೆನು</translation>
 <translation id="8394567579869570560">ನಿಮ್ಮ ಪೋಷಕರು ಈ ಸಾಧನವನ್ನು ಲಾಕ್ ಮಾಡಿದ್ದಾರೆ</translation>
-<translation id="8406981827175133772">ಫುಲ್‌ಸ್ಕ್ರೀನ್ ವರ್ಧಕ</translation>
 <translation id="8425213833346101688">ಬದಲಿಸಿ</translation>
 <translation id="8427213022735114808">ಯಾವುದೇ ಪಠ್ಯ ಕ್ಷೇತ್ರದಲ್ಲಿ ಧ್ವನಿ ಟೈಪಿಂಗ್ ಅನ್ನು ಅನುಮತಿಸಲು ಡಿಕ್ಟೇಷನ್ Google ಗೆ ನಿಮ್ಮ ಧ್ವನಿಯನ್ನು ಕಳುಹಿಸುತ್ತದೆ.</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>

@@ -459,14 +459,17 @@ TEST_F(DragWindowFromShelfControllerTest, NoDragToSnapIndicator) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   OverviewSession* overview_session = overview_controller->overview_session();
-  IndicatorState indicator_state =
-      overview_session->split_view_drag_indicators()->current_indicator_state();
-  EXPECT_EQ(indicator_state, IndicatorState::kNone);
+  SplitViewDragIndicators::WindowDraggingState window_dragging_state =
+      overview_session->split_view_drag_indicators()
+          ->current_window_dragging_state();
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+            window_dragging_state);
 
   Drag(gfx::Point(0, 200), 0.5f, 0.5f);
-  indicator_state =
-      overview_session->split_view_drag_indicators()->current_indicator_state();
-  EXPECT_EQ(indicator_state, IndicatorState::kPreviewAreaLeft);
+  window_dragging_state = overview_session->split_view_drag_indicators()
+                              ->current_window_dragging_state();
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
+            window_dragging_state);
 
   EndDrag(shelf_bounds.CenterPoint(),
           /*velocity_y=*/base::nullopt);

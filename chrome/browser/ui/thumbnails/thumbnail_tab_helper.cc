@@ -27,12 +27,34 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 
+namespace {
+
+// Minimum scale factor to capture thumbnail images at. At 1.0x we want to
+// slightly over-sample the image so that it looks good for multiple uses and
+// cropped to different dimensions.
+constexpr float kMinThumbnailScaleFactor = 1.5f;
+
+gfx::Size GetMinimumThumbnailSize() {
+  // Minimum thumbnail dimension (in DIP) for tablet tabstrip previews.
+  constexpr int kMinThumbnailDimensionForTablet = 175;
+
+  // Compute minimum sizes for multiple uses of the thumbnail - currently,
+  // tablet tabstrip previews and tab hover card preview images.
+  gfx::Size min_target_size = TabStyle::GetPreviewImageSize();
+  min_target_size.SetToMax(
+      {kMinThumbnailDimensionForTablet, kMinThumbnailDimensionForTablet});
+
+  return min_target_size;
+}
+
+}  // anonymous namespace
+
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
       last_visibility_(web_contents()->GetVisibility()) {}
 
 ThumbnailTabHelper::~ThumbnailTabHelper() {
-  DCHECK(!video_capturer_);
+  StopVideoCapture();
 }
 
 void ThumbnailTabHelper::ThumbnailImageBeingObservedChanged(
@@ -104,16 +126,25 @@ void ThumbnailTabHelper::StartVideoCapture() {
   if (video_capturer_)
     return;
 
+  // Increment the reference count now. This should (in theory) cause the
+  // creation of a host view, which we'll use below (but see crbug.com/1020782).
+  web_contents()->IncrementCapturerCount(gfx::ScaleToFlooredSize(
+      GetMinimumThumbnailSize(), kMinThumbnailScaleFactor));
+
   // Get the WebContents' main view.
   content::RenderWidgetHostView* const source_view = GetView();
-  if (!source_view)
+  if (!source_view) {
+    web_contents()->DecrementCapturerCount();
     return;
+  }
 
   // Get the source size and scale.
   const float scale_factor = source_view->GetDeviceScaleFactor();
   const gfx::Size source_size = source_view->GetViewBounds().size();
-  if (source_size.IsEmpty())
+  if (source_size.IsEmpty()) {
+    web_contents()->DecrementCapturerCount();
     return;
+  }
 
   // Figure out how large we want the capture target to be.
   last_frame_capture_info_ =
@@ -121,7 +152,6 @@ void ThumbnailTabHelper::StartVideoCapture() {
                             /* include_scrollbars_in_capture */ true);
 
   const gfx::Size& target_size = last_frame_capture_info_.target_size;
-  web_contents()->IncrementCapturerCount(target_size);
   constexpr int kMaxFrameRate = 5;
   video_capturer_ = source_view->CreateVideoCapturer();
   video_capturer_->SetResolutionConstraints(target_size, target_size, false);
@@ -136,14 +166,17 @@ void ThumbnailTabHelper::StartVideoCapture() {
 
 void ThumbnailTabHelper::StopVideoCapture() {
   if (video_capturer_) {
-    web_contents()->DecrementCapturerCount();
+    if (web_contents())
+      web_contents()->DecrementCapturerCount();
     video_capturer_->Stop();
     video_capturer_ = nullptr;
   }
 }
 
 content::RenderWidgetHostView* ThumbnailTabHelper::GetView() {
-  return web_contents()->GetRenderViewHost()->GetWidget()->GetView();
+  return web_contents()
+             ? web_contents()->GetRenderViewHost()->GetWidget()->GetView()
+             : nullptr;
 }
 
 void ThumbnailTabHelper::OnVisibilityChanged(content::Visibility visibility) {
@@ -256,19 +289,13 @@ ThumbnailTabHelper::GetInitialCaptureInfo(const gfx::Size& source_size,
   ThumbnailCaptureInfo capture_info;
   capture_info.source_size = source_size;
 
-  // Minimum scale factor to capture thumbnail images at. At 1.0x we want to
-  // slightly over-sample the image so that it looks good for multiple uses and
-  // cropped to different dimensions.
-  constexpr float kMinThumbnailScaleFactor = 1.5f;
   scale_factor = std::max(scale_factor, kMinThumbnailScaleFactor);
 
   // Minimum thumbnail dimension (in DIP) for tablet tabstrip previews.
-  constexpr int kMinThumbnailDimensionForTablet = 175;
-  const gfx::Size preview_size = TabStyle::GetPreviewImageSize();
+  const gfx::Size smallest_thumbnail = GetMinimumThumbnailSize();
   const int smallest_dimension =
       scale_factor *
-      std::max(kMinThumbnailDimensionForTablet,
-               std::min(preview_size.width(), preview_size.height()));
+      std::min(smallest_thumbnail.width(), smallest_thumbnail.height());
 
   // Clip the pixels that will commonly hold a scrollbar, which looks bad in
   // thumbnails - but only if that wouldn't make the thumbnail too small. We
@@ -295,10 +322,8 @@ ThumbnailTabHelper::GetInitialCaptureInfo(const gfx::Size& source_size,
 
   // Compute minimum sizes for multiple uses of the thumbnail - currently,
   // tablet tabstrip previews and tab hover card preview images.
-  gfx::Size min_target_size = TabStyle::GetPreviewImageSize();
-  min_target_size.SetToMax(
-      {kMinThumbnailDimensionForTablet, kMinThumbnailDimensionForTablet});
-  min_target_size = gfx::ScaleToFlooredSize(min_target_size, scale_factor);
+  const gfx::Size min_target_size =
+      gfx::ScaleToFlooredSize(smallest_thumbnail, scale_factor);
 
   // Calculate the target size to be the smallest size which meets the minimum
   // requirements but has the same aspect ratio as the source (with or without

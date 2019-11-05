@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/scenic/scenic_surface.h"
 
 #include <lib/ui/scenic/cpp/commands.h>
+#include <lib/ui/scenic/cpp/view_token_pair.h>
 #include <lib/zx/eventpair.h>
 
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -18,7 +19,6 @@ ScenicSurface::ScenicSurface(
     gfx::AcceleratedWidget window,
     scenic::SessionPtrAndListenerRequest sesion_and_listener_request)
     : scenic_session_(std::move(sesion_and_listener_request)),
-      parent_(&scenic_session_),
       shape_(&scenic_session_),
       material_(&scenic_session_),
       scenic_surface_factory_(scenic_surface_factory),
@@ -63,15 +63,21 @@ void ScenicSurface::SetTextureToImage(const scenic::Image& image) {
   material_.SetTexture(image);
 }
 
-mojo::ScopedHandle ScenicSurface::CreateExportToken() {
+mojo::ScopedHandle ScenicSurface::CreateView() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  zx::eventpair export_token;
-  parent_.BindAsRequest(&export_token);
-  parent_.AddChild(shape_);
+
+  // Scenic will associate the View and ViewHolder regardless of which it
+  // learns about first, so we don't need to synchronize View creation with
+  // attachment into the scene graph by the caller.
+  auto tokens = scenic::ViewTokenPair::New();
+  parent_ = std::make_unique<scenic::View>(
+      &scenic_session_, std::move(tokens.view_token), "chromium surface");
+  parent_->AddChild(shape_);
+
   scenic_session_.Present(
       /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
   return mojo::WrapPlatformHandle(
-      mojo::PlatformHandle(std::move(export_token)));
+      mojo::PlatformHandle(std::move(tokens.view_holder_token.value)));
 }
 
 }  // namespace ui

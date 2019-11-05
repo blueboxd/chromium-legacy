@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2156074688469523661">Tilbageværende websites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Hvis du vil dele noget på din telefon med en anden enhed, kan du aktivere synkronisering i Chrome-indstillingerne på begge enheder</translation>
-<translation id="2170088579611075216">Tillad og start VR</translation>
 <translation id="2175927920773552910">QR-kode</translation>
 <translation id="218608176142494674">Deling</translation>
 <translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4135200667068010335">Lukket liste over enheder, der skal deles en fane med.</translation>
 <translation id="4149994727733219643">Enkel visning af websider</translation>
 <translation id="4165986682804962316">Indstillinger for websites</translation>
-<translation id="4169535189173047238">Tillad ikke</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> er brugt</translation>
 <translation id="4181841719683918333">Sprog</translation>
@@ -534,10 +532,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5011311129201317034"><ph name="SITE" /> vil gerne oprette forbindelse</translation>
 <translation id="5013696553129441713">Der er ingen nye forslag</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Mens du er i VR, kan dette website muligvis få oplysninger om:
-  –  Dine fysiske træk som f.eks. højde
-
-Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5040262127954254034">Privatliv</translation>
 <translation id="5048398596102334565">Tillad, at websites kan få adgang til bevægelsessensorer (anbefales)</translation>
@@ -611,11 +605,6 @@ Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="5527082711130173040">Chrome skal have placeringsadgang for at kunne scanne efter enheder. <ph name="BEGIN_LINK1" />Opdater tilladelser<ph name="END_LINK1" />. Placeringsadgang er også <ph name="BEGIN_LINK2" />slået fra på denne enhed<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Spørg, før websites får adgang til at læse tekst og billeder fra udklipsholderen (anbefales)</translation>
 <translation id="5530766185686772672">Luk inkognitofaner</translation>
-<translation id="5534334044554683961">Mens du er i VR, kan dette website muligvis få oplysninger om:
-  –   Dine fysiske træk som f.eks. højde
-  –   Layoutet i det rum, du befinder dig i
-
-Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="5534640966246046842">Websitet er kopieret</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
 <translation id="5561549206367097665">Venter på netværk…</translation>
@@ -906,7 +895,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="7665369617277396874">Tilføj konto</translation>
 <translation id="766587987807204883">Her vises artikler, som du kan læse, selv når du er offline</translation>
 <translation id="7682724950699840886">Prøv følgende tips: Sørg for, at der er nok ledig plads på din enhed, og prøv at eksportere igen.</translation>
-<translation id="7685301384041462804">Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="7698359219371678927">Opret mail i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autofuldfør søgninger og webadresser</translation>
 <translation id="7725024127233776428">De sider, du føjer et bogmærke til, vises her</translation>
@@ -1082,7 +1070,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8998729206196772491">Du er ved at logge ind med en konto, der administreres af <ph name="MANAGED_DOMAIN" />, hvilket giver administratoren kontrol over dine Chrome-data. Dine data tilknyttes denne konto permanent. Hvis du logger ud af Chrome, slettes dine data fra denne enhed, men de forbliver gemt på din Google-konto.</translation>
 <translation id="9019902583201351841">Administreret af dine forældre</translation>
 <translation id="9028914725102941583">Aktivér synkronisering for at dele mellem enheder</translation>
-<translation id="9029323097866369874">Vil du tillade, at <ph name="DOMAIN" /> starter VR?</translation>
 <translation id="9040142327097499898">Notifikationer er tilladt. Placering er deaktiveret for denne enhed.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}one{# video}other{# videoer}}</translation>
 <translation id="9050666287014529139">Adgangssætning</translation>

@@ -4,13 +4,9 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.content.SharedPreferences;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -30,9 +26,6 @@ import java.util.List;
  * preferences.
  */
 public class PrefServiceBridge {
-    private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
-    private static final int MIGRATION_CURRENT_VERSION = 4;
-
     /** The android permissions associated with requesting location. */
     private static final String[] LOCATION_PERMISSIONS = {
             android.Manifest.permission.ACCESS_FINE_LOCATION,
@@ -158,26 +151,6 @@ public class PrefServiceBridge {
      */
     public boolean isManagedPreference(@Pref int preference) {
         return PrefServiceBridgeJni.get().isManagedPreference(preference);
-    }
-
-    /**
-     * Migrates (synchronously) the preferences to the most recent version.
-     */
-    public void migratePreferences() {
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        int currentVersion = preferences.getInt(MIGRATION_PREF_KEY, 0);
-        if (currentVersion == MIGRATION_CURRENT_VERSION) return;
-        if (currentVersion > MIGRATION_CURRENT_VERSION) {
-            Log.e(LOG_TAG, "Saved preferences version is newer than supported.  Attempting to "
-                    + "run an older version of Chrome without clearing data is unsupported and "
-                    + "the results may be unpredictable.");
-        }
-
-        if (currentVersion < 1) {
-            PrefServiceBridgeJni.get().migrateJavascriptPreference();
-        }
-        // Steps 2,3,4 intentionally skipped.
-        preferences.edit().putInt(MIGRATION_PREF_KEY, MIGRATION_CURRENT_VERSION).apply();
     }
 
     /**
@@ -861,7 +834,6 @@ public class PrefServiceBridge {
         boolean getSensorsEnabled();
         boolean getSoundEnabled();
         void setTranslateEnabled(boolean enabled);
-        void migrateJavascriptPreference();
         void setAutomaticDownloadsEnabled(boolean enabled);
         void setAutoplayEnabled(boolean enabled);
         void setAllowCookiesEnabled(boolean enabled);

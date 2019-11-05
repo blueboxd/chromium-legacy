@@ -31,6 +31,8 @@ constexpr char kLoadTimeStats[] = "Extensions.ForceInstalledLoadTime";
 constexpr char kTimedOutStats[] = "Extensions.ForceInstalledTimedOutCount";
 constexpr char kTimedOutNotInstalledStats[] =
     "Extensions.ForceInstalledTimedOutAndNotInstalledCount";
+constexpr char kInstallationFailureCacheStatus[] =
+    "Extensions.ForceInstalledFailureCacheStatus";
 constexpr char kFailureReasons[] = "Extensions.ForceInstalledFailureReason";
 constexpr char kInstallationStages[] = "Extensions.ForceInstalledStage";
 constexpr char kInstallationDownloadingStages[] =
@@ -233,6 +235,22 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, NoExtensionsConfigured) {
   histogram_tester_.ExpectTotalCount(kInstallationStages, 0);
   histogram_tester_.ExpectTotalCount(kFailureCrxInstallErrorStats, 0);
   histogram_tester_.ExpectTotalCount(kTotalCountStats, 0);
+}
+
+TEST_F(ForcedExtensionsInstallationTrackerTest, CachedExtensions) {
+  SetupForceList();
+  installation_reporter_->ReportDownloadingCacheStatus(
+      kExtensionId1, ExtensionDownloaderDelegate::CacheStatus::CACHE_HIT);
+  installation_reporter_->ReportDownloadingCacheStatus(
+      kExtensionId2, ExtensionDownloaderDelegate::CacheStatus::CACHE_MISS);
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  registry_->AddEnabled(ext1.get());
+  EXPECT_TRUE(fake_timer_->IsRunning());
+  fake_timer_->Fire();
+  // If an extension was installed successfully, don't mention it in statistics.
+  histogram_tester_.ExpectUniqueSample(
+      kInstallationFailureCacheStatus,
+      ExtensionDownloaderDelegate::CacheStatus::CACHE_MISS, 1);
 }
 
 }  // namespace extensions

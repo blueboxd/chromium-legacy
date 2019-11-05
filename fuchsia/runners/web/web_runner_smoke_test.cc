@@ -133,10 +133,8 @@ TEST_F(WebRunnerSmokeTest, LifecycleTerminate) {
   fuchsia::sys::ComponentControllerPtr controller;
   launcher->CreateComponent(std::move(launch_info), controller.NewRequest());
 
-  base::fuchsia::ServiceDirectoryClient component_services(
-      std::move(directory));
-  auto lifecycle =
-      component_services.ConnectToService<fuchsia::modular::Lifecycle>();
+  sys::ServiceDirectory component_services(std::move(directory));
+  auto lifecycle = component_services.Connect<fuchsia::modular::Lifecycle>();
   ASSERT_TRUE(lifecycle);
 
   // Terminate() the component, and expect that |controller| disconnects us.

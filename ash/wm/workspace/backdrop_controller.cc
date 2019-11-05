@@ -9,8 +9,6 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/home_screen/home_launcher_gesture_handler.h"
-#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
@@ -132,17 +130,10 @@ BackdropController::BackdropController(aura::Window* container)
   shell->accessibility_controller()->AddObserver(this);
   shell->wallpaper_controller()->AddObserver(this);
   shell->tablet_mode_controller()->AddObserver(this);
-  shell->home_screen_controller()->home_launcher_gesture_handler()->AddObserver(
-      this);
 }
 
 BackdropController::~BackdropController() {
   auto* shell = Shell::Get();
-  if (shell->home_screen_controller()) {
-    shell->home_screen_controller()
-        ->home_launcher_gesture_handler()
-        ->RemoveObserver(this);
-  }
   // Shell destroys the TabletModeController before destroying all root windows.
   if (shell->tablet_mode_controller())
     shell->tablet_mode_controller()->RemoveObserver(this);
@@ -231,6 +222,14 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
   return nullptr;
 }
 
+base::ScopedClosureRunner BackdropController::PauseUpdates() {
+  DCHECK(!pause_update_);
+
+  pause_update_ = true;
+  return base::ScopedClosureRunner(base::BindOnce(
+      &BackdropController::RestoreUpdates, weak_ptr_factory_.GetWeakPtr()));
+}
+
 void BackdropController::OnOverviewModeStarting() {
   // Don't destroy backdrops, just hide them so they don't show in the overview
   // grid, but keep the widget so that it can be mirrored into the mini_desk
@@ -281,14 +280,7 @@ void BackdropController::OnTabletModeEnded() {
   UpdateBackdrop();
 }
 
-void BackdropController::OnHomeLauncherTargetPositionChanged(
-    bool showing,
-    int64_t display_id) {
-  pause_update_ = true;
-}
-
-void BackdropController::OnHomeLauncherAnimationComplete(bool shown,
-                                                         int64_t display_id) {
+void BackdropController::RestoreUpdates() {
   pause_update_ = false;
   UpdateBackdrop();
 }

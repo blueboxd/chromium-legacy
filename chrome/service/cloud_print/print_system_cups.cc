@@ -530,10 +530,9 @@ bool PrintSystemCUPS::ValidatePrintTicket(
     const std::string& print_ticket_data,
     const std::string& print_ticket_mime_type) {
   DCHECK(initialized_);
-  std::unique_ptr<base::DictionaryValue> ticket_value(
-      base::DictionaryValue::From(
-          base::JSONReader::ReadDeprecated(print_ticket_data)));
-  return !!ticket_value;
+  base::Optional<base::Value> ticket =
+      base::JSONReader::Read(print_ticket_data);
+  return ticket.has_value() && ticket.value().is_dict();
 }
 
 // Print ticket on linux is a JSON string containing only one dictionary.
@@ -541,19 +540,15 @@ bool PrintSystemCUPS::ParsePrintTicket(
     const std::string& print_ticket,
     std::map<std::string, std::string>* options) {
   DCHECK(options);
-  std::unique_ptr<base::DictionaryValue> ticket_value(
-      base::DictionaryValue::From(
-          base::JSONReader::ReadDeprecated(print_ticket)));
-  if (!ticket_value)
+  base::Optional<base::Value> ticket = base::JSONReader::Read(print_ticket);
+  if (!ticket.has_value() || !ticket.value().is_dict())
     return false;
 
   options->clear();
-  for (const auto& it : *ticket_value) {
-    std::string value;
-    if (it.second->GetAsString(&value))
-      (*options)[it.first] = value;
+  for (const auto& it : ticket.value().DictItems()) {
+    if (it.second.is_string())
+      (*options)[it.first] = it.second.GetString();
   }
-
   return true;
 }
 

@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Para compartilhar conteúdo do seu smartphone com outro dispositivo, ative a sincronização nas configurações do Chrome nos dois dispositivos</translation>
-<translation id="2170088579611075216">Permitir e entrar na RV</translation>
 <translation id="2175927920773552910">Código QR</translation>
 <translation id="218608176142494674">Compartilhamento</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4135200667068010335">A lista de dispositivos com os quais é possível compartilhar uma guia está fechada.</translation>
 <translation id="4149994727733219643">Versão simplificada das páginas da Web</translation>
 <translation id="4165986682804962316">Configurações do site</translation>
-<translation id="4169535189173047238">Não permitir</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> usado(s)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -535,10 +533,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5011311129201317034"><ph name="SITE" /> deseja se conectar</translation>
 <translation id="5013696553129441713">Nenhuma nova sugestão</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Enquanto você estiver em RV, o site poderá receber dados sobre:
-  -  suas características físicas, como altura
-
-Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5048398596102334565">Permitir o acesso de sites aos seus sensores de movimento (recomendado)</translation>
@@ -612,11 +606,6 @@ Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5527082711130173040">O Chrome precisa ter acesso ao local para procurar dispositivos. <ph name="BEGIN_LINK1" />Atualize as permissões<ph name="END_LINK1" />. O acesso ao local também está <ph name="BEGIN_LINK2" />desativado neste dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Perguntar antes de permitir que sites leiam textos e imagens da área de transferência (recomendado)</translation>
 <translation id="5530766185686772672">Fechar guias anônimas</translation>
-<translation id="5534334044554683961">Enquanto você estiver em RV, este site poderá receber dados sobre:
-  -   suas características físicas, como altura
-  -   o layout da sua sala
-
-Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5534640966246046842">Site copiado</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5561549206367097665">Aguardando a rede…</translation>
@@ -907,7 +896,6 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="7665369617277396874">Adicionar conta</translation>
 <translation id="766587987807204883">Os artigos são exibidos aqui e podem ser lidos até quando você está off-line</translation>
 <translation id="7682724950699840886">Experimente as seguintes dicas: verifique se há espaço suficiente no dispositivo e tente exportar novamente.</translation>
-<translation id="7685301384041462804">Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="7698359219371678927">Criar e-mail no <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Preencher automaticamente pesquisas e URLs</translation>
 <translation id="7725024127233776428">As páginas favoritadas são exibidas aqui</translation>
@@ -1083,7 +1071,6 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8998729206196772491">Você está fazendo login com uma conta gerenciada por <ph name="MANAGED_DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chrome, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chrome, seus dados serão excluídos desse dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
 <translation id="9028914725102941583">Ative a sincronização para compartilhar entre dispositivos</translation>
-<translation id="9029323097866369874">Permitir que <ph name="DOMAIN" /> entre na RV?</translation>
 <translation id="9040142327097499898">As notificações são permitidas. A localização está desativada neste dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vídeo}one{# vídeo}other{# vídeos}}</translation>
 <translation id="9050666287014529139">Senha</translation>

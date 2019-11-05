@@ -28,7 +28,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
@@ -40,12 +39,13 @@
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
@@ -520,9 +520,9 @@ void ConvertOfferOptionsToWebrtcOfferOptions(
 }
 
 void ConvertAnswerOptionsToWebrtcAnswerOptions(
-    const blink::WebRTCAnswerOptions& options,
+    blink::RTCAnswerOptionsPlatform* options,
     webrtc::PeerConnectionInterface::RTCOfferAnswerOptions* output) {
-  output->voice_activity_detection = options.VoiceActivityDetection();
+  output->voice_activity_detection = options->VoiceActivityDetection();
 }
 
 void ConvertConstraintsToWebrtcOfferOptions(
@@ -1231,7 +1231,7 @@ void RTCPeerConnectionHandler::CreateAnswer(
 
 void RTCPeerConnectionHandler::CreateAnswer(
     const blink::WebRTCSessionDescriptionRequest& request,
-    const blink::WebRTCAnswerOptions& options) {
+    blink::RTCAnswerOptionsPlatform* options) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createAnswer");
   scoped_refptr<CreateSessionDescriptionRequest> description_request(

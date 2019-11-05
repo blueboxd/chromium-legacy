@@ -130,15 +130,15 @@ void XRFrameProvider::OnFocusChanged() {
 // Ends the immersive session when the presentation or immersive data provider
 // got disconnected.
 void XRFrameProvider::OnProviderConnectionError(XRSession* session) {
+  DVLOG(2) << __func__;
   // This will call into |OnSessionEnded|, unless it has already ended.
-  session->ForceEnd();
+  session->ForceEnd(XRSession::ShutdownPolicy::kImmediate);
 }
 
 void XRFrameProvider::OnSessionEnded(XRSession* session) {
+  DVLOG(2) << __func__;
   if (session->immersive()) {
     DCHECK(session == immersive_session_);
-
-    xr_->ExitPresent();
 
     immersive_session_ = nullptr;
     pending_immersive_vsync_ = false;
@@ -384,6 +384,12 @@ void XRFrameProvider::ProcessScheduledFrame(
   }
 
   if (immersive_session_) {
+    // Check if immersive session is still valid, it may have ended and be
+    // waiting for shutdown acknowledgement.
+    if (immersive_session_->ended()) {
+      return;
+    }
+
     // We need to ensure that pose data is valid for the duration of the frame,
     // because input events may call into |session.end()| which will destroy
     // this data otherwise. Move the data into local scope here so that it can't
@@ -408,7 +414,7 @@ void XRFrameProvider::ProcessScheduledFrame(
 
     // Check if immersive session is still set as OnInputStateChange may have
     // allowed a ForceEndSession to be triggered.
-    if (!immersive_session_)
+    if (!immersive_session_ || immersive_session_->ended())
       return;
 
     if (frame_pose && frame_pose->pose_reset) {
@@ -417,7 +423,7 @@ void XRFrameProvider::ProcessScheduledFrame(
 
     // Check if immersive session is still set as OnPoseReset may have allowed a
     // ForceEndSession to be triggered.
-    if (!immersive_session_) {
+    if (!immersive_session_ || immersive_session_->ended()) {
       return;
     }
 
@@ -600,8 +606,11 @@ void XRFrameProvider::UpdateWebGLLayerViewports(XRWebGLLayer* layer) {
 }
 
 void XRFrameProvider::Dispose() {
+  DVLOG(2) << __func__;
   immersive_presentation_provider_.reset();
   immersive_data_provider_.reset();
+  if (immersive_session_)
+    immersive_session_->ForceEnd(XRSession::ShutdownPolicy::kImmediate);
   // TODO(bajones): Do something for outstanding frame requests?
 }
 

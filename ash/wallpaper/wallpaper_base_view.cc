@@ -118,7 +118,9 @@ void WallpaperBaseView::OnPaint(gfx::Canvas* canvas) {
       const float image_scale = canvas->image_scale();
       // Simply centered and not scaled (but may be clipped).
       gfx::Rect wallpaper_rect = gfx::ScaleToRoundedRect(
-          gfx::Rect(wallpaper.size()), 1.f / image_scale);
+          gfx::Rect(wallpaper.size()),
+          centered_layout_image_scale_.x() / image_scale,
+          centered_layout_image_scale_.y() / image_scale);
       wallpaper_rect.set_x((width() - wallpaper_rect.width()) / 2);
       wallpaper_rect.set_y((height() - wallpaper_rect.height()) / 2);
       DrawWallpaper(wallpaper, gfx::Rect(wallpaper.size()), wallpaper_rect,

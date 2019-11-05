@@ -19,8 +19,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
-import java.util.Arrays;
-
 /**
  * A handler that provides just enough functionality to allow on-demand loading of the module
  * through direct actions. The actual implementation is in the module.
@@ -73,20 +71,24 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
                     .withParameter(USER_NAME, Type.STRING, /* required= */ false)
                     .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
                     .withResult(FETCH_WEBSITE_ACTIONS_RESULT, Type.BOOLEAN);
-        }
+        } else {
+            // Otherwise we are already done fetching scripts and can just return the ones we know
+            // about.
+            for (AutofillAssistantDirectAction action : mDelegate.getActions()) {
+                for (String name : action.getNames()) {
+                    Definition definition = reporter.addDirectAction(name)
+                                                    .withParameter(EXPERIMENT_IDS, Type.STRING,
+                                                            /* required= */ false)
+                                                    .withResult(AA_ACTION_RESULT, Type.BOOLEAN);
 
-        // Additionally report if there are dynamic actions.
-        if (mDelegate != null) {
-            for (String action : mDelegate.getActions()) {
-                Definition definition =
-                        reporter.addDirectAction(action)
-                                .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
-                                .withResult(AA_ACTION_RESULT, Type.BOOLEAN);
-
-                // TODO(b/138833619): For testing purposes only. Remove this when script
-                // parameters are properly supported.
-                if (action.equals("search")) {
-                    definition.withParameter("SEARCH_QUERY", Type.STRING, /* required= */ true);
+                    // TODO(b/138833619): Support non-string arguments. Requires updating the proto
+                    // definition.
+                    for (String required : action.getRequiredArguments()) {
+                        definition.withParameter(required, Type.STRING, /* required= */ true);
+                    }
+                    for (String optional : action.getOptionalArguments()) {
+                        definition.withParameter(optional, Type.STRING, /* required= */ false);
+                    }
                 }
             }
         }
@@ -95,7 +97,8 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
     @Override
     public boolean performDirectAction(
             String actionId, Bundle arguments, Callback<Bundle> callback) {
-        if (actionId.equals(FETCH_WEBSITE_ACTIONS)) {
+        if (actionId.equals(FETCH_WEBSITE_ACTIONS)
+                && AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
             fetchWebsiteActions(arguments, callback);
             return true;
         }
@@ -110,7 +113,10 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
 
     private boolean isActionAvailable(String actionId) {
         if (mDelegate == null) return false;
-        return Arrays.asList(mDelegate.getActions()).contains(actionId);
+        for (AutofillAssistantDirectAction action : mDelegate.getActions()) {
+            if (action.getNames().contains(actionId)) return true;
+        }
+        return false;
     }
 
     private void fetchWebsiteActions(Bundle arguments, Callback<Bundle> bundleCallback) {
@@ -174,7 +180,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
             }
 
             Callback<Boolean> successCallback = (success) -> {
-                booleanCallback.onResult(success && delegate.getActions().length != 0);
+                booleanCallback.onResult(success && !delegate.getActions().isEmpty());
             };
             delegate.performAction(name, experimentIds, arguments, successCallback);
         });

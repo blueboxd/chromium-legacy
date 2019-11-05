@@ -758,23 +758,6 @@ String ChromeClientImpl::AcceptLanguages() {
   return web_view_->Client()->AcceptLanguages();
 }
 
-void ChromeClientImpl::AttachRootGraphicsLayer(GraphicsLayer* root_layer,
-                                               LocalFrame* local_frame) {
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  // TODO(dcheng): This seems wrong. Non-local roots shouldn't be calling this
-  // function.
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(local_frame)->LocalRoot();
-  DCHECK(WebLocalFrameImpl::FromFrame(local_frame) == web_frame);
-
-  // This method can be called while the frame is being detached. In that
-  // case, the rootLayer is null, and the widget is already destroyed.
-  // TODO(dcheng): This should be called before the widget is gone...
-  DCHECK(web_frame->FrameWidgetImpl() || !root_layer);
-  if (web_frame->FrameWidgetImpl())
-    web_frame->FrameWidgetImpl()->SetRootGraphicsLayer(root_layer);
-}
-
 void ChromeClientImpl::AttachRootLayer(scoped_refptr<cc::Layer> root_layer,
                                        LocalFrame* local_frame) {
   // TODO(dcheng): This seems wrong. Non-local roots shouldn't be calling this

@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
@@ -100,19 +101,37 @@ bool NGFragmentItem::IsListMarker() const {
   return false;
 }
 
+bool NGFragmentItem::HasOverflowClip() const {
+  if (const NGPhysicalBoxFragment* fragment = BoxFragment())
+    return fragment->HasOverflowClip();
+  return false;
+}
+
+bool NGFragmentItem::HasSelfPaintingLayer() const {
+  if (const NGPhysicalBoxFragment* fragment = BoxFragment())
+    return fragment->HasSelfPaintingLayer();
+  return false;
+}
+
+PhysicalRect NGFragmentItem::SelfInkOverflow() const {
+  return ink_overflow_ ? ink_overflow_->self_ink_overflow : LocalRect();
+}
+
 PhysicalRect NGFragmentItem::InkOverflow() const {
-  // TODO(yosin): Implement.
-  return LocalRect();
+  if (!ink_overflow_)
+    return LocalRect();
+
+  if (!IsContainer() || HasOverflowClip())
+    return ink_overflow_->self_ink_overflow;
+
+  const NGContainerInkOverflow& container_ink_overflow =
+      static_cast<NGContainerInkOverflow&>(*ink_overflow_);
+  return container_ink_overflow.SelfAndContentsInkOverflow();
 }
 
 PositionWithAffinity NGFragmentItem::PositionForPoint(
     const PhysicalOffset&) const {
   return PositionWithAffinity();
-}
-
-PhysicalRect NGFragmentItem::SelfInkOverflow() const {
-  // TODO(kojii): Implement.
-  return LocalRect();
 }
 
 const ShapeResultView* NGFragmentItem::TextShapeResult() const {
@@ -197,6 +216,92 @@ PhysicalRect NGFragmentItem::LocalVisualRectFor(
     visual_rect.Unite(child_visual_rect);
   }
   return visual_rect;
+}
+
+PhysicalRect NGFragmentItem::RecalcInkOverflowAll(NGInlineCursor* cursor) {
+  DCHECK(cursor);
+  PhysicalRect contents_ink_overflow;
+  while (*cursor) {
+    const NGFragmentItem* item = cursor->CurrentItem();
+    DCHECK(item);
+    PhysicalRect child_rect;
+    item->GetMutableForPainting().RecalcInkOverflow(cursor, &child_rect);
+    if (item->HasSelfPaintingLayer())
+      continue;
+    if (!child_rect.IsEmpty()) {
+      child_rect.offset += item->Offset();
+      contents_ink_overflow.Unite(child_rect);
+    }
+  }
+  return contents_ink_overflow;
+}
+
+void NGFragmentItem::RecalcInkOverflow(
+    NGInlineCursor* cursor,
+    PhysicalRect* self_and_contents_rect_out) {
+  DCHECK_EQ(this, cursor->CurrentItem());
+
+  if (Type() == kText) {
+    cursor->MoveToNext();
+
+    // Re-computing text item is not necessary, because all changes that needs
+    // to re-compute ink overflow invalidate layout.
+    if (ink_overflow_) {
+      *self_and_contents_rect_out = ink_overflow_->self_ink_overflow;
+      return;
+    }
+
+    NGTextFragmentPaintInfo paint_info = TextPaintInfo(cursor->Items());
+    if (paint_info.shape_result) {
+      NGInkOverflow::ComputeTextInkOverflow(paint_info, Style(), Size(),
+                                            &ink_overflow_);
+      *self_and_contents_rect_out =
+          ink_overflow_ ? ink_overflow_->self_ink_overflow : LocalRect();
+      return;
+    }
+
+    DCHECK(!ink_overflow_);
+    *self_and_contents_rect_out = LocalRect();
+    return;
+  }
+
+  if (Type() == kGeneratedText) {
+    cursor->MoveToNext();
+    // TODO(kojii): Implement.
+    ink_overflow_ = nullptr;
+    *self_and_contents_rect_out = LocalRect();
+    return;
+  }
+
+  // Compute the contents ink overflow from descendants.
+  NGInlineCursor descendants_cursor = cursor->CursorForDescendants();
+  cursor->MoveToNextSibling();
+  PhysicalRect contents_rect = RecalcInkOverflowAll(&descendants_cursor);
+
+  // Compute the self ink overflow.
+  PhysicalRect self_rect;
+  if (Type() == kLine) {
+    // Line boxes don't have self overflow. Compute content overflow only.
+    *self_and_contents_rect_out = contents_rect;
+  } else if (const NGPhysicalBoxFragment* box_fragment = BoxFragment()) {
+    self_rect = box_fragment->ComputeSelfInkOverflow();
+    *self_and_contents_rect_out = UnionRect(self_rect, contents_rect);
+  } else {
+    NOTREACHED();
+  }
+
+  SECURITY_CHECK(IsContainer());
+  if (LocalRect().Contains(*self_and_contents_rect_out)) {
+    ink_overflow_ = nullptr;
+  } else if (!ink_overflow_) {
+    ink_overflow_ =
+        std::make_unique<NGContainerInkOverflow>(self_rect, contents_rect);
+  } else {
+    NGContainerInkOverflow* ink_overflow =
+        static_cast<NGContainerInkOverflow*>(ink_overflow_.get());
+    ink_overflow->self_ink_overflow = self_rect;
+    ink_overflow->contents_ink_overflow = contents_rect;
+  }
 }
 
 NGFragmentItem::ItemsForLayoutObject NGFragmentItem::ItemsFor(

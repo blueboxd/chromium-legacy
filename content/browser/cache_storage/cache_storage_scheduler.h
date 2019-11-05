@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_SCHEDULER_H_
 #define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_SCHEDULER_H_
 
-#include <list>
 #include <map>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -45,6 +45,7 @@ class CONTENT_EXPORT CacheStorageScheduler {
   void ScheduleOperation(CacheStorageSchedulerId id,
                          CacheStorageSchedulerMode mode,
                          CacheStorageSchedulerOp op_type,
+                         CacheStorageSchedulerPriority priority,
                          base::OnceClosure closure);
 
   // Call this after each operation completes. It cleans up the operation
@@ -95,7 +96,12 @@ class CONTENT_EXPORT CacheStorageScheduler {
   }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  std::list<std::unique_ptr<CacheStorageOperation>> pending_operations_;
+
+  // Managed as a heap using std::push_heap and std::pop_heap.  We do not
+  // use std::priority_queue since it does not support moving the contained
+  // unique_ptr out when the operation begins execution.
+  std::vector<std::unique_ptr<CacheStorageOperation>> pending_operations_;
+
   std::map<CacheStorageSchedulerId, std::unique_ptr<CacheStorageOperation>>
       running_operations_;
   const CacheStorageSchedulerClient client_type_;

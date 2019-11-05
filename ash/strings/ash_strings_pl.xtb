@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Tryb Nie przeszkadzać jest włączony.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Pokaż ustawienia powiadomień. Jedna aplikacja ma wyłączone powiadomienia.}few{Pokaż ustawienia powiadomień. # aplikacje mają wyłączone powiadomienia.}many{Pokaż ustawienia powiadomień. # aplikacji ma wyłączone powiadomienia.}other{Pokaż ustawienia powiadomień. # aplikacji ma wyłączone powiadomienia.}}</translation>
 <translation id="1525508553941733066">ZAMKNIJ</translation>
-<translation id="1537254971476575106">Lupa pełnego ekranu</translation>
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="1546492247443594934">Biurko 2</translation>
 <translation id="1550523713251050646">Kliknij, by wyświetlić więcej opcji</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Naciśnij <ph name="KEYBOARD_SHORTCUT" />, by przełączyć układ klawiatury.</translation>
 <translation id="2501920221385095727">Klawisze trwałe</translation>
 <translation id="2509468283778169019">CAPS LOCK jest włączony.</translation>
-<translation id="2532589005999780174">Tryb wysokiego kontrastu</translation>
 <translation id="2542089167727451762">Kliknij swoje zdjęcie profilowe</translation>
 <translation id="255671100581129685">Asystent Google jest niedostępny w sesji publicznej.</translation>
 <translation id="256712445991462162">Lupa zadokowana</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Zbyt wiele prób odblokowania odciskiem palca</translation>
 <translation id="7994370417837006925">Wielokrotne logowanie</translation>
 <translation id="8000066093800657092">Brak sieci</translation>
-<translation id="8029241286966751120">Lupa pełnego ekranu została włączona. Aby ją wyłączyć, naciśnij ponownie Ctrl+Search+M.</translation>
 <translation id="8030169304546394654">Rozłączone</translation>
 <translation id="8054466585765276473">Obliczanie czasu pracy na baterii.</translation>
 <translation id="8061464966246066292">Wysoki kontrast</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Ostatniego biurka nie można usunąć.</translation>
 <translation id="8392451568018454956">Menu opcji dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Twój rodzic zablokował urządzenie</translation>
-<translation id="8406981827175133772">Lupa pełnego ekranu</translation>
 <translation id="8425213833346101688">Zmień</translation>
 <translation id="8427213022735114808">Dyktowanie wysyła Twój głos do Google, by umożliwić pisanie głosowe w dowolnym polu tekstowym.</translation>
 <translation id="8428213095426709021">Ustawienia</translation>

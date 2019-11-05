@@ -399,13 +399,20 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
   }
 }
 
-void ExtensionUpdater::OnExtensionDownloadStageChanged(const std::string& id,
+void ExtensionUpdater::OnExtensionDownloadStageChanged(const ExtensionId& id,
                                                        Stage stage) {
   InstallationReporter::Get(profile_)->ReportDownloadingStage(id, stage);
 }
 
+void ExtensionUpdater::OnExtensionDownloadCacheStatusRetrieved(
+    const ExtensionId& id,
+    CacheStatus cache_status) {
+  InstallationReporter::Get(profile_)->ReportDownloadingCacheStatus(
+      id, cache_status);
+}
+
 void ExtensionUpdater::OnExtensionDownloadFailed(
-    const std::string& id,
+    const ExtensionId& id,
     Error error,
     const PingResult& ping,
     const std::set<int>& request_ids) {
@@ -496,7 +503,7 @@ void ExtensionUpdater::OnExtensionDownloadFinished(
 }
 
 bool ExtensionUpdater::GetPingDataForExtension(
-    const std::string& id,
+    const ExtensionId& id,
     ManifestFetchData::PingData* ping_data) {
   DCHECK(alive_);
   ping_data->rollcall_days =
@@ -510,17 +517,17 @@ bool ExtensionUpdater::GetPingDataForExtension(
   return true;
 }
 
-std::string ExtensionUpdater::GetUpdateUrlData(const std::string& id) {
+std::string ExtensionUpdater::GetUpdateUrlData(const ExtensionId& id) {
   DCHECK(alive_);
   return extension::GetUpdateURLData(extension_prefs_, id);
 }
 
-bool ExtensionUpdater::IsExtensionPending(const std::string& id) {
+bool ExtensionUpdater::IsExtensionPending(const ExtensionId& id) {
   DCHECK(alive_);
   return service_->pending_extension_manager()->IsIdPending(id);
 }
 
-bool ExtensionUpdater::GetExtensionExistingVersion(const std::string& id,
+bool ExtensionUpdater::GetExtensionExistingVersion(const ExtensionId& id,
                                                    std::string* version) {
   DCHECK(alive_);
   const Extension* extension = registry_->GetExtensionById(
@@ -535,7 +542,7 @@ bool ExtensionUpdater::GetExtensionExistingVersion(const std::string& id,
   return true;
 }
 
-void ExtensionUpdater::UpdatePingData(const std::string& id,
+void ExtensionUpdater::UpdatePingData(const ExtensionId& id,
                                       const PingResult& ping_result) {
   DCHECK(alive_);
   if (ping_result.did_ping)

@@ -970,7 +970,7 @@ void RenderThreadImpl::Init() {
   BindHostReceiver(frame_sink_provider_.BindNewPipeAndPassReceiver());
 
   if (!is_gpu_compositing_disabled_) {
-    BindHostReceiver(mojo::MakeRequest(&compositing_mode_reporter_));
+    BindHostReceiver(compositing_mode_reporter_.BindNewPipeAndPassReceiver());
 
     compositing_mode_reporter_->AddCompositingModeWatcher(
         compositing_mode_watcher_receiver_.BindNewPipeAndPassRemote());

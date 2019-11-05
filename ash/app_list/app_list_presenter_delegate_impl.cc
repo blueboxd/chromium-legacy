@@ -23,6 +23,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/container_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -148,6 +149,11 @@ AppListViewDelegate* AppListPresenterDelegateImpl::GetAppListViewDelegate() {
 
 bool AppListPresenterDelegateImpl::GetOnScreenKeyboardShown() {
   return controller_->onscreen_keyboard_shown();
+}
+
+aura::Window* AppListPresenterDelegateImpl::GetContainerForWindow(
+    aura::Window* window) {
+  return ash::GetContainerForWindow(window);
 }
 
 aura::Window* AppListPresenterDelegateImpl::GetRootWindowForDisplayId(

@@ -453,7 +453,7 @@ AwBrowserContext::GetNetworkContextParams(
   context_params->cookie_manager_params =
       network::mojom::CookieManagerParams::New();
   context_params->cookie_manager_params->allow_file_scheme_cookies =
-      GetCookieManager()->AllowFileSchemeCookies();
+      GetCookieManager()->GetAllowFileSchemeCookies();
   // Set all cookies to Legacy on Android WebView, for compatibility reasons.
   context_params->cookie_manager_params->cookie_access_delegate_type =
       network::mojom::CookieAccessDelegateType::ALWAYS_LEGACY;

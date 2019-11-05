@@ -315,17 +315,26 @@ bool AwMetricsServiceClient::ShouldStartUpFastForTesting() const {
 }
 
 std::string AwMetricsServiceClient::GetAppPackageName() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> j_app_name =
-      Java_AwMetricsServiceClient_getAppPackageName(env);
-  if (j_app_name)
-    return ConvertJavaStringToUTF8(env, j_app_name);
+  if (CanRecordPackageName()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    base::android::ScopedJavaLocalRef<jstring> j_app_name =
+        Java_AwMetricsServiceClient_getAppPackageName(env);
+    if (j_app_name)
+      return ConvertJavaStringToUTF8(env, j_app_name);
+  }
   return std::string();
 }
 
 bool AwMetricsServiceClient::IsInSample() {
   // Called in MaybeStartMetrics(), after metrics_service_ is created.
   return ::android_webview::IsInSample(metrics_service_->GetClientId());
+}
+
+bool AwMetricsServiceClient::CanRecordPackageName() {
+  // Check with Java side, to see if it's OK to log the package name for this
+  // type of app (see Java side for the specific requirements).
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_AwMetricsServiceClient_canRecordPackageName(env);
 }
 
 // static

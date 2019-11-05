@@ -111,6 +111,16 @@ bool GetAddress(const struct nlmsghdr* header,
   return true;
 }
 
+// SafelyCastNetlinkMsgData<T> performs a bounds check before casting |header|'s
+// data to a |T*|. When the bounds check fails, returns nullptr.
+template <typename T>
+T* SafelyCastNetlinkMsgData(const struct nlmsghdr* header, int length) {
+  DCHECK(NLMSG_OK(header, static_cast<__u32>(length)));
+  if (length <= 0 || static_cast<size_t>(length) < NLMSG_HDRLEN + sizeof(T))
+    return nullptr;
+  return reinterpret_cast<T*>(NLMSG_DATA(header));
+}
+
 }  // namespace
 
 // static
@@ -347,14 +357,18 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
         return;
       case NLMSG_ERROR: {
         const struct nlmsgerr* msg =
-            reinterpret_cast<struct nlmsgerr*>(NLMSG_DATA(header));
+            SafelyCastNetlinkMsgData<struct nlmsgerr>(header, length);
+        if (msg == nullptr)
+          return;
         LOG(ERROR) << "Unexpected netlink error " << msg->error << ".";
       } return;
       case RTM_NEWADDR: {
         IPAddress address;
         bool really_deprecated;
         struct ifaddrmsg* msg =
-            reinterpret_cast<struct ifaddrmsg*>(NLMSG_DATA(header));
+            SafelyCastNetlinkMsgData<struct ifaddrmsg>(header, length);
+        if (msg == nullptr)
+          return;
         if (IsInterfaceIgnored(msg->ifa_index))
           break;
         if (GetAddress(header, length, &address, &really_deprecated)) {
@@ -383,7 +397,9 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
       case RTM_DELADDR: {
         IPAddress address;
         const struct ifaddrmsg* msg =
-            reinterpret_cast<struct ifaddrmsg*>(NLMSG_DATA(header));
+            SafelyCastNetlinkMsgData<struct ifaddrmsg>(header, length);
+        if (msg == nullptr)
+          return;
         if (IsInterfaceIgnored(msg->ifa_index))
           break;
         if (GetAddress(header, length, &address, nullptr)) {
@@ -394,7 +410,9 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
       } break;
       case RTM_NEWLINK: {
         const struct ifinfomsg* msg =
-            reinterpret_cast<struct ifinfomsg*>(NLMSG_DATA(header));
+            SafelyCastNetlinkMsgData<struct ifinfomsg>(header, length);
+        if (msg == nullptr)
+          return;
         if (IsInterfaceIgnored(msg->ifi_index))
           break;
         if (IgnoreWirelessChange(msg, IFLA_PAYLOAD(header))) {
@@ -420,7 +438,9 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
       } break;
       case RTM_DELLINK: {
         const struct ifinfomsg* msg =
-            reinterpret_cast<struct ifinfomsg*>(NLMSG_DATA(header));
+            SafelyCastNetlinkMsgData<struct ifinfomsg>(header, length);
+        if (msg == nullptr)
+          return;
         if (IsInterfaceIgnored(msg->ifi_index))
           break;
         AddressTrackerAutoLock lock(*this, online_links_lock_);

@@ -47,6 +47,8 @@ class ArCoreDevice : public VRDeviceBase {
       mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
 
+  void ShutdownSession(mojom::XRRuntime::ShutdownSessionCallback) override;
+
   base::WeakPtr<ArCoreDevice> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }

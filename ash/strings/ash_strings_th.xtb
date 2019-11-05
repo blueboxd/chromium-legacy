@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">โหมดห้ามรบกวนเปิดอยู่</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{แสดงการตั้งค่าการแจ้งเตือน ปิดการแจ้งเตือนไว้สำหรับ 1 แอป}other{แสดงการตั้งค่าการแจ้งเตือน ปิดการแจ้งเตือนไว้สำหรับ # แอป}}</translation>
 <translation id="1525508553941733066">ปิด</translation>
-<translation id="1537254971476575106">แว่นขยายทั้งหน้าจอ</translation>
 <translation id="15373452373711364">เคอร์เซอร์เมาส์ขนาดใหญ่</translation>
 <translation id="1546492247443594934">โต๊ะที่ 2</translation>
 <translation id="1550523713251050646">คลิกเพื่อดูตัวเลือกเพิ่มเติม</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">กด <ph name="KEYBOARD_SHORTCUT" /> เพื่อสลับรูปแบบแป้นพิมพ์</translation>
 <translation id="2501920221385095727">คีย์ติดหนึบ</translation>
 <translation id="2509468283778169019">Caps Lock เปิดอยู่</translation>
-<translation id="2532589005999780174">โหมดคอนทราสต์สูง</translation>
 <translation id="2542089167727451762">แตะรูปโปรไฟล์</translation>
 <translation id="255671100581129685">Google Assistant ไม่พร้อมใช้งานในเซสชันสาธารณะ</translation>
 <translation id="256712445991462162">แว่นขยายหน้าจอบางส่วน</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">ภาษา </translation>
 <translation id="5313326810920013265">การตั้งค่าบลูทูธ</translation>
 <translation id="5331975486040154427">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">ลองหลายครั้งเกินไป</translation>
 <translation id="5397578532367286026">การใช้งานและประวัติของผู้ใช้รายนี้อาจถูกตรวจสอบโดยผู้จัดการ (<ph name="MANAGER_EMAIL" />) บน chrome.com</translation>
 <translation id="5430931332414098647">การเชื่อมต่อ Wi-Fi ฮอตสปอตจากมือถือโดยอัตโนมัติ</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">Google Assistant ไม่พร้อมใช้งานกับบัญชีผู้ใช้ปัจจุบัน</translation>
 <translation id="5691772641933328258">ระบบไม่รู้จักลายนิ้วมือนี้</translation>
 <translation id="5710450975648804523">โหมดห้ามรบกวนเปิดอยู่</translation>
+<translation id="573413375004481890">อุปกรณ์นี้รองรับจอแสดงผลทั้งหมดไม่ได้ ระบบจึงยกเลิกการเชื่อมต่อจอแสดงผลจอหนึ่ง</translation>
 <translation id="574392208103952083">ขนาดกลาง</translation>
 <translation id="5744083938413354016">การแตะลาก</translation>
 <translation id="5750765938512549687">ปิดบลูทูธแล้ว</translation>
@@ -481,7 +481,6 @@
 <translation id="7984197416080286869">พยายามปลดล็อกด้วยลายนิ้วมือหลายครั้งเกินไป</translation>
 <translation id="7994370417837006925">การลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
-<translation id="8029241286966751120">เปิดใช้แว่นขยายทั้งหน้าจอแล้ว กด Ctrl+Search+M อีกครั้งเพื่อสลับเป็นปิด</translation>
 <translation id="8030169304546394654">ยกเลิกการเชื่อมต่อแล้ว</translation>
 <translation id="8054466585765276473">กำลังคำนวณเวลาใช้งานแบตเตอรี่</translation>
 <translation id="8061464966246066292">ความคมชัดสูง</translation>
@@ -506,7 +505,6 @@
 <translation id="8388750414311082622">นำพื้นที่ทำงานสุดท้ายออกไม่ได้</translation>
 <translation id="8392451568018454956">เมนูตัวเลือกสำหรับ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">ผู้ปกครองของคุณล็อกอุปกรณ์นี้ไว้</translation>
-<translation id="8406981827175133772">แว่นขยายทั้งหน้าจอ</translation>
 <translation id="8425213833346101688">เปลี่ยน</translation>
 <translation id="8427213022735114808">การพิมพ์ตามคำบอกจะส่งเสียงของคุณไปยัง Google เพื่อให้พิมพ์ด้วยเสียงในช่องข้อความต่างๆ</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>

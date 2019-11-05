@@ -534,7 +534,6 @@ jumbo_component("platform") {
     "exported/web_prerender.cc",
     "exported/web_prerendering_support.cc",
     "exported/web_resource_timing_info.cc",
-    "exported/web_rtc_answer_options.cc",
     "exported/web_rtc_ice_candidate.cc",
     "exported/web_rtc_peer_connection_handler_client.cc",
     "exported/web_rtc_rtp_receiver.cc",
@@ -1429,9 +1428,12 @@ jumbo_component("platform") {
   sources += get_target_outputs(":character_data") +
              get_target_outputs(":color_data") +
              get_target_outputs(":font_family_names")
-  set_sources_assignment_filter([ "*.pickle" ])
-  sources += get_target_outputs(":runtime_enabled_features")
-  set_sources_assignment_filter(sources_assignment_filter)
+
+  foreach(_output, get_target_outputs(":runtime_enabled_features")) {
+    if (get_path_info(_output, "extension") != "pickle") {
+      sources += [ _output ]
+    }
+  }
 
   if (is_win) {
     jumbo_excluded_sources = [

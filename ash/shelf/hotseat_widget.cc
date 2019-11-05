@@ -6,6 +6,7 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
@@ -118,7 +119,10 @@ void HotseatWidget::DelegateView::UpdateOpaqueBackground() {
   if (opaque_background_.bounds() != background_bounds)
     opaque_background_.SetBounds(background_bounds);
 
-  opaque_background_.SetBackgroundBlur(ShelfConfig::Get()->shelf_blur_radius());
+  if (features::IsBackgroundBlurEnabled()) {
+    opaque_background_.SetBackgroundBlur(
+        ShelfConfig::Get()->shelf_blur_radius());
+  }
 }
 
 void HotseatWidget::DelegateView::OnTabletModeChanged() {
@@ -186,14 +190,6 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
   delegate_view_->Init(scrollable_shelf_view(), GetLayer());
 }
 
-void HotseatWidget::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void HotseatWidget::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void HotseatWidget::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
@@ -237,15 +233,6 @@ ShelfView* HotseatWidget::GetShelfView() {
 const ShelfView* HotseatWidget::GetShelfView() const {
   return const_cast<const ShelfView*>(
       const_cast<HotseatWidget*>(this)->GetShelfView());
-}
-
-void HotseatWidget::SetState(HotseatState state) {
-  if (state_ == state)
-    return;
-
-  state_ = state;
-  for (auto& observer : observers_)
-    observer.OnHotseatStateChanged();
 }
 
 bool HotseatWidget::IsShowingOverflowBubble() const {

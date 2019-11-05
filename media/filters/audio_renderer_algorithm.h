@@ -39,6 +39,11 @@ class MultiChannelResampler;
 
 class MEDIA_EXPORT AudioRendererAlgorithm {
  public:
+  // Upper and lower bounds at which we prefer to use a resampler rather than
+  // WSOLA, to prevent audio artifacts.
+  static constexpr double kUpperResampleThreshold = 1.06;
+  static constexpr double kLowerResampleThreshold = 0.95;
+
   AudioRendererAlgorithm();
   AudioRendererAlgorithm(AudioRendererAlgorithmParameters params);
   ~AudioRendererAlgorithm();
@@ -86,6 +91,9 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Increase the capacity of |audio_buffer_| if possible.
   void IncreaseQueueCapacity();
+
+  // Sets a flag to bypass underflow detection, to read out all remaining data.
+  void MarkEndOfStream();
 
   // Returns an estimate of the amount of memory (in bytes) used for frames.
   int64_t GetMemoryUsage() const;
@@ -156,14 +164,6 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Called by |resampler_| to get more audio data.
   void OnResamplerRead(int frame_delay, AudioBus* audio_bus);
 
-  // Calculate how many frames |resampler_| wrote to output, based off of
-  // |input_frames_read_or_buffered_| and |resampler_->BufferedFrames()|.
-  //
-  // NOTE: The return value is always <= |request_frames|. See comment in the
-  //       implementation file.
-  int CalculateOutputFramesResampled(double playback_rate,
-                                     int requested_frames);
-
   // Parameters.
   AudioRendererAlgorithmParameters audio_renderer_algorithm_params_;
 
@@ -217,13 +217,12 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // specifies the index where the next WSOLA window has to overlap-and-add.
   int num_complete_frames_;
 
+  bool reached_end_of_stream_ = false;
+
   // Used to replace WSOLA algorithm at playback speeds close to 1.0. This is to
   // prevent noticeable audio artifacts introduced by WSOLA, at the expense of
   // changing the pitch of the audio.
   std::unique_ptr<MultiChannelResampler> resampler_;
-
-  // Number of input frames read or buffered by |resampler_|.
-  double input_frames_read_or_buffered_ = 0;
 
   // This stores a part of the output that is created but couldn't be rendered.
   // Output is generated frame-by-frame which at some point might exceed the

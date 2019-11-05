@@ -34,8 +34,7 @@ enum ScrollbarOrientation { HORIZONTAL, VERTICAL };
 
 enum ScrollbarPart {
   THUMB,
-  TRACK,
-  TICKMARKS,
+  TRACK_BUTTONS_TICKMARKS,  // for PartNeedsRepaint() and PaintPart() only.
   BACK_BUTTON,
   FORWARD_BUTTON,
   BACK_TRACK,
@@ -47,31 +46,32 @@ class Scrollbar : public base::RefCounted<Scrollbar> {
  public:
   virtual ScrollbarOrientation Orientation() const = 0;
   virtual bool IsLeftSideVerticalScrollbar() const = 0;
-  virtual gfx::Point Location() const = 0;
   virtual bool IsOverlay() const = 0;
   virtual bool HasThumb() const = 0;
   virtual bool SupportsDragSnapBack() const = 0;
-  virtual int ThumbThickness() const = 0;
-  virtual int ThumbLength() const = 0;
 
-  // Returns the track rect relative to the scrollbar's origin.
+  // The following rects are all relative to the scrollbar's origin.
+  // The location of ThumbRect reflects scroll offset, but cc will ignore it
+  // because the compositor thread will compute thumb location from scroll
+  // offset.
+  virtual gfx::Rect ThumbRect() const = 0;
   virtual gfx::Rect TrackRect() const = 0;
-  // Returns the back button rect relative to the scrollbar's origin.
   virtual gfx::Rect BackButtonRect() const = 0;
-  // Returns the forward button rect relative to the scrollbar's origin.
   virtual gfx::Rect ForwardButtonRect() const = 0;
 
   virtual float ThumbOpacity() const = 0;
   virtual bool HasTickmarks() const = 0;
 
-  // Whether we need to repaint the part. Only THUMB and TRACK are supported.
-  // For TRACK, the return value means that the track, any buttons or tickmarks
-  // need repaint.
-  virtual bool NeedsPaintPart(ScrollbarPart part) const = 0;
-  // Paints the part. Only THUMB, TRACK and TICKMARKS are supported. When TRACK
-  // is specified, track, buttons and tickmarks will be painted. The canvas's
-  // coordinate space is relative to the part's origin.
-  virtual void PaintPart(PaintCanvas* canvas, ScrollbarPart part) = 0;
+  // Whether we need to repaint the part. Only THUMB and TRACK_BUTTONS_TICKMARKS
+  // are supported.
+  virtual bool NeedsRepaintPart(ScrollbarPart part) const = 0;
+
+  // Paints the part in the given rect. The implementation should paint
+  // relative to the rect, and doesn't need to know the current coordinate
+  // space of |canvas|. Only THUMB, TRACK_BUTTONS_TICKMARKS are supported.
+  virtual void PaintPart(PaintCanvas* canvas,
+                         ScrollbarPart part,
+                         const gfx::Rect& rect) = 0;
 
   virtual bool UsesNinePatchThumbResource() const = 0;
   virtual gfx::Size NinePatchThumbCanvasSize() const = 0;

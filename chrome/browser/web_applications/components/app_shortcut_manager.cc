@@ -11,25 +11,6 @@
 
 namespace web_app {
 
-namespace {
-
-void OnShortcutInfoRetrievedCreateShortcuts(
-    bool add_to_desktop,
-    CreateShortcutsCallback callback,
-    std::unique_ptr<ShortcutInfo> info) {
-  base::FilePath shortcut_data_dir = internals::GetShortcutDataDir(*info);
-
-  ShortcutLocations locations;
-  locations.on_desktop = add_to_desktop;
-  locations.applications_menu_location = APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
-
-  internals::ScheduleCreatePlatformShortcuts(
-      std::move(shortcut_data_dir), locations, SHORTCUT_CREATION_BY_USER,
-      std::move(info), std::move(callback));
-}
-
-}  // namespace
-
 AppShortcutManager::AppShortcutManager(Profile* profile) : profile_(profile) {}
 
 AppShortcutManager::~AppShortcutManager() {
@@ -57,17 +38,23 @@ bool AppShortcutManager::CanCreateShortcuts() const {
 #endif
 }
 
+void AppShortcutManager::SuppressShortcutsForTesting() {
+  suppress_shortcuts_for_testing_ = true;
+}
+
 void AppShortcutManager::CreateShortcuts(const AppId& app_id,
                                          bool add_to_desktop,
                                          CreateShortcutsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(CanCreateShortcuts());
+
   GetShortcutInfoForApp(
-      app_id,
-      base::BindOnce(&OnShortcutInfoRetrievedCreateShortcuts, add_to_desktop,
-                     base::BindOnce(&AppShortcutManager::OnShortcutsCreated,
-                                    weak_ptr_factory_.GetWeakPtr(), app_id,
-                                    std::move(callback))));
+      app_id, base::BindOnce(
+                  &AppShortcutManager::OnShortcutInfoRetrievedCreateShortcuts,
+                  weak_ptr_factory_.GetWeakPtr(), add_to_desktop,
+                  base::BindOnce(&AppShortcutManager::OnShortcutsCreated,
+                                 weak_ptr_factory_.GetWeakPtr(), app_id,
+                                 std::move(callback))));
 }
 
 void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,
@@ -79,6 +66,26 @@ void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,
       observer.OnShortcutsCreated(app_id);
   }
   std::move(callback).Run(success);
+}
+
+void AppShortcutManager::OnShortcutInfoRetrievedCreateShortcuts(
+    bool add_to_desktop,
+    CreateShortcutsCallback callback,
+    std::unique_ptr<ShortcutInfo> info) {
+  if (suppress_shortcuts_for_testing_) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  base::FilePath shortcut_data_dir = internals::GetShortcutDataDir(*info);
+
+  ShortcutLocations locations;
+  locations.on_desktop = add_to_desktop;
+  locations.applications_menu_location = APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+
+  internals::ScheduleCreatePlatformShortcuts(
+      std::move(shortcut_data_dir), locations, SHORTCUT_CREATION_BY_USER,
+      std::move(info), std::move(callback));
 }
 
 }  // namespace web_app

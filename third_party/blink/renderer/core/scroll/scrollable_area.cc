@@ -575,16 +575,12 @@ void ScrollableArea::RecalculateScrollbarOverlayColorTheme(
 void ScrollableArea::SetScrollbarNeedsPaintInvalidation(
     ScrollbarOrientation orientation) {
   if (orientation == kHorizontalScrollbar) {
-    if (GraphicsLayer* graphics_layer = LayerForHorizontalScrollbar()) {
-      graphics_layer->SetNeedsDisplay();
-      graphics_layer->SetContentsNeedsDisplay();
-    }
+    if (cc::Layer* layer = LayerForHorizontalScrollbar())
+      layer->SetNeedsDisplay();
     horizontal_scrollbar_needs_paint_invalidation_ = true;
   } else {
-    if (GraphicsLayer* graphics_layer = LayerForVerticalScrollbar()) {
-      graphics_layer->SetNeedsDisplay();
-      graphics_layer->SetContentsNeedsDisplay();
-    }
+    if (cc::Layer* layer = LayerForVerticalScrollbar())
+      layer->SetNeedsDisplay();
     vertical_scrollbar_needs_paint_invalidation_ = true;
   }
 
@@ -592,8 +588,8 @@ void ScrollableArea::SetScrollbarNeedsPaintInvalidation(
 }
 
 void ScrollableArea::SetScrollCornerNeedsPaintInvalidation() {
-  if (GraphicsLayer* graphics_layer = LayerForScrollCorner()) {
-    graphics_layer->SetNeedsDisplay();
+  if (cc::Layer* layer = LayerForScrollCorner()) {
+    layer->SetNeedsDisplay();
     return;
   }
   scroll_corner_needs_paint_invalidation_ = true;
@@ -657,27 +653,6 @@ void ScrollableArea::CancelProgrammaticScrollAnimation() {
   if (ProgrammaticScrollAnimator* programmatic_scroll_animator =
           ExistingProgrammaticScrollAnimator())
     programmatic_scroll_animator->CancelAnimation();
-}
-
-bool ScrollableArea::ShouldScrollOnMainThread() const {
-  return !!(GetMainThreadScrollingReasons() &
-            ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
-}
-
-MainThreadScrollingReasons ScrollableArea::GetMainThreadScrollingReasons()
-    const {
-  if (GraphicsLayer* layer = LayerForScrolling()) {
-    // Property tree state is not available until the PrePaint lifecycle stage.
-    DCHECK(GetDocument()->Lifecycle().GetState() >=
-           DocumentLifecycle::kPrePaintClean);
-    if (const auto* scroll = layer->GetPropertyTreeState()
-                                 .Transform()
-                                 .NearestScrollTranslationNode()
-                                 .ScrollNode()) {
-      return scroll->GetMainThreadScrollingReasons();
-    }
-  }
-  return true;
 }
 
 bool ScrollableArea::ScrollbarsHiddenIfOverlay() const {

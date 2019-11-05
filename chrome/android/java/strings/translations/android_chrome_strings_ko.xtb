@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">URL 복사</translation>
 <translation id="2156074688469523661">남은 사이트(<ph name="NUMBER_OF_SITES" />개)</translation>
 <translation id="2157851137955077194">스마트폰에서 다른 기기로 콘텐츠를 공유하려면 두 기기의 Chrome 설정에서 동기화를 사용 설정하세요.</translation>
-<translation id="2170088579611075216">허용 및 VR 시작</translation>
 <translation id="2175927920773552910">QR 코드</translation>
 <translation id="218608176142494674">공유</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" />(으)로 계속</translation>
@@ -183,6 +182,7 @@
 <translation id="2321958826496381788">편하게 읽을 수 있을 때까지 슬라이더를 드래그하세요. 단락을 두 번 탭하면 텍스트가 이 이상의 크기로 표시됩니다.</translation>
 <translation id="2323763861024343754">사이트 저장공간</translation>
 <translation id="2328985652426384049">로그인할 수 없음</translation>
+<translation id="2330129964253841015">비밀번호가 도용된 경우 알림</translation>
 <translation id="2349710944427398404">계정, 북마크, 저장된 설정 등 Chrome에서 사용한 전체 데이터</translation>
 <translation id="2353636109065292463">인터넷 연결 상태를 확인하세요.</translation>
 <translation id="2359808026110333948">계속</translation>
@@ -190,6 +190,7 @@
 <translation id="2387895666653383613">텍스트 크기 조정</translation>
 <translation id="2394602618534698961">다운로드한 파일이 여기 표시됩니다.</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" />MB</translation>
+<translation id="2407481962792080328">Google 계정에 로그인하면 이 기능이 사용 설정됩니다.</translation>
 <translation id="2410754283952462441">계정 선택</translation>
 <translation id="2414886740292270097">어둡게</translation>
 <translation id="2416359993254398973">Chrome이 이 사이트에서 카메라에 액세스하려면 권한이 필요합니다.</translation>
@@ -198,6 +199,7 @@
 <translation id="2434158240863470628">다운로드 완료: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">위치 정보 액세스</translation>
 <translation id="2450083983707403292"><ph name="FILE_NAME" />의 다운로드를 다시 시작하시겠습니까?</translation>
+<translation id="246532703174860178">공유</translation>
 <translation id="2482878487686419369">알림</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" />에서 관리함</translation>
 <translation id="2494974097748878569">Chrome의 Google 어시스턴트</translation>
@@ -412,7 +414,6 @@
 <translation id="4135200667068010335">탭을 공유할 기기 목록이 닫혔습니다.</translation>
 <translation id="4149994727733219643">웹페이지 간단히 보기</translation>
 <translation id="4165986682804962316">사이트 설정</translation>
-<translation id="4169535189173047238">허용 안함</translation>
 <translation id="4170011742729630528">서비스를 사용할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> 사용됨</translation>
 <translation id="4181841719683918333">언어</translation>
@@ -531,10 +532,6 @@
 <translation id="5011311129201317034"><ph name="SITE" />에서 연결하려고 함</translation>
 <translation id="5013696553129441713">새로운 추천 콘텐츠 없음</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">이 사이트에서는 VR 사용자에 대해 다음 내용을 학습할 수 있습니다.
-  -  키와 같은 신체적 특징
-
-VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세요.</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보 보호</translation>
 <translation id="5048398596102334565">사이트의 움직임 감지 센서 액세스 허용(권장)</translation>
@@ -608,11 +605,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5527082711130173040">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. <ph name="BEGIN_LINK1" />권한을 업데이트<ph name="END_LINK1" />하세요. 또한 <ph name="BEGIN_LINK2" />이 기기에서도 위치 정보 액세스 권한이 사용 중지<ph name="END_LINK2" />되어 있습니다.</translation>
 <translation id="5527111080432883924">사이트에서 클립보드의 텍스트 및 이미지에 액세스하도록 허용하기 전에 확인(권장)</translation>
 <translation id="5530766185686772672">시크릿 탭 닫기</translation>
-<translation id="5534334044554683961">이 사이트에서는 VR 사용자에 대해 다음 내용을 학습할 수 있습니다.
-  -   키와 같은 신체적 특징
-  -   공간의 레이아웃
-
-VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세요.</translation>
 <translation id="5534640966246046842">사이트 복사됨</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5561549206367097665">네트워크 대기 중…</translation>
@@ -903,7 +895,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="7665369617277396874">계정 추가</translation>
 <translation id="766587987807204883">기사가 여기 표시되며 오프라인 상태에서도 읽을 수 있습니다.</translation>
 <translation id="7682724950699840886">다음 방법을 시도해 보세요. 기기 저장용량이 충분한지 확인하고 다시 내보내 봅니다.</translation>
-<translation id="7685301384041462804">VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세요.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" />에서 이메일 만들기</translation>
 <translation id="7704317875155739195">검색어 및 URL 자동 완성</translation>
 <translation id="7725024127233776428">북마크한 페이지가 여기에 표시됩니다.</translation>
@@ -1079,7 +1070,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="9019902583201351841">부모님이 관리합니다.</translation>
 <translation id="9028914725102941583">동기화를 사용 설정하여 기기간 공유하기</translation>
-<translation id="9029323097866369874"><ph name="DOMAIN" />에서 VR로 들어가도록 허용하시겠습니까?</translation>
 <translation id="9040142327097499898">알림이 허용되었습니다. 이 기기에서 위치가 사용 중지되었습니다.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{동영상 #개}other{동영상 #개}}</translation>
 <translation id="9050666287014529139">암호</translation>

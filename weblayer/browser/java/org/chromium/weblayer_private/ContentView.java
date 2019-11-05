@@ -47,13 +47,11 @@ public class ContentView extends FrameLayout
     public static final int DEFAULT_MEASURE_SPEC =
             MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 
-    private final WebContents mWebContents;
+    private WebContents mWebContents;
     private final ObserverList<OnHierarchyChangeListener> mHierarchyChangeListeners =
             new ObserverList<>();
     private final ObserverList<OnSystemUiVisibilityChangeListener> mSystemUiChangeListeners =
             new ObserverList<>();
-    private ViewEventSink mViewEventSink;
-    private EventForwarder mEventForwarder;
 
     /**
      * The desired size of this view in {@link MeasureSpec}. Set by the host
@@ -72,11 +70,11 @@ public class ContentView extends FrameLayout
      * @return an instance of a ContentView.
      */
     public static ContentView createContentView(
-            Context context, WebContents webContents, EventOffsetHandler eventOffsetHandler) {
+            Context context, EventOffsetHandler eventOffsetHandler) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return new ContentViewApi23(context, webContents, eventOffsetHandler);
+            return new ContentViewApi23(context, eventOffsetHandler);
         }
-        return new ContentView(context, webContents, eventOffsetHandler);
+        return new ContentView(context, eventOffsetHandler);
     }
 
     /**
@@ -85,7 +83,7 @@ public class ContentView extends FrameLayout
      *                access the current theme, resources, etc.
      * @param webContents A pointer to the WebContents managing this content view.
      */
-    ContentView(Context context, WebContents webContents, EventOffsetHandler eventOffsetHandler) {
+    ContentView(Context context, EventOffsetHandler eventOffsetHandler) {
         super(context, null, android.R.attr.webViewStyle);
 
         if (getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
@@ -93,7 +91,6 @@ public class ContentView extends FrameLayout
             setVerticalScrollBarEnabled(false);
         }
 
-        mWebContents = webContents;
         mEventOffsetHandler = eventOffsetHandler;
 
         setFocusable(true);
@@ -108,8 +105,13 @@ public class ContentView extends FrameLayout
     }
 
     protected WebContentsAccessibility getWebContentsAccessibility() {
-        return !mWebContents.isDestroyed() ? WebContentsAccessibility.fromWebContents(mWebContents)
-                                           : null;
+        return mWebContents != null && !mWebContents.isDestroyed()
+                ? WebContentsAccessibility.fromWebContents(mWebContents)
+                : null;
+    }
+
+    public void setWebContents(WebContents webContents) {
+        mWebContents = webContents;
     }
 
     @Override
@@ -228,13 +230,13 @@ public class ContentView extends FrameLayout
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         // Calls may come while/after WebContents is destroyed. See https://crbug.com/821750#c8.
-        if (mWebContents.isDestroyed()) return null;
+        if (mWebContents != null && mWebContents.isDestroyed()) return null;
         return ImeAdapter.fromWebContents(mWebContents).onCreateInputConnection(outAttrs);
     }
 
     @Override
     public boolean onCheckIsTextEditor() {
-        if (mWebContents.isDestroyed()) return false;
+        if (mWebContents != null && mWebContents.isDestroyed()) return false;
         return ImeAdapter.fromWebContents(mWebContents).onCheckIsTextEditor();
     }
 
@@ -319,15 +321,11 @@ public class ContentView extends FrameLayout
     }
 
     private EventForwarder getEventForwarder() {
-        if (mEventForwarder == null) {
-            mEventForwarder = mWebContents.getEventForwarder();
-        }
-        return mEventForwarder;
+        return mWebContents != null ? mWebContents.getEventForwarder() : null;
     }
 
     private ViewEventSink getViewEventSink() {
-        if (mViewEventSink == null) mViewEventSink = ViewEventSink.from(mWebContents);
-        return mViewEventSink;
+        return mWebContents != null ? ViewEventSink.from(mWebContents) : null;
     }
 
     @Override
@@ -359,38 +357,42 @@ public class ContentView extends FrameLayout
 
     @Override
     protected int computeHorizontalScrollExtent() {
-        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        RenderCoordinates rc = getRenderCoordinates();
         return rc != null ? rc.getLastFrameViewportWidthPixInt() : 0;
     }
 
     @Override
     protected int computeHorizontalScrollOffset() {
-        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        RenderCoordinates rc = getRenderCoordinates();
         return rc != null ? rc.getScrollXPixInt() : 0;
     }
 
     @Override
     protected int computeHorizontalScrollRange() {
-        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        RenderCoordinates rc = getRenderCoordinates();
         return rc != null ? rc.getContentWidthPixInt() : 0;
     }
 
     @Override
     protected int computeVerticalScrollExtent() {
-        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        RenderCoordinates rc = getRenderCoordinates();
         return rc != null ? rc.getLastFrameViewportHeightPixInt() : 0;
     }
 
     @Override
     protected int computeVerticalScrollOffset() {
-        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        RenderCoordinates rc = getRenderCoordinates();
         return rc != null ? rc.getScrollYPixInt() : 0;
     }
 
     @Override
     protected int computeVerticalScrollRange() {
-        RenderCoordinates rc = RenderCoordinates.fromWebContents(mWebContents);
+        RenderCoordinates rc = getRenderCoordinates();
         return rc != null ? rc.getContentHeightPixInt() : 0;
+    }
+
+    private RenderCoordinates getRenderCoordinates() {
+        return mWebContents != null ? RenderCoordinates.fromWebContents(mWebContents) : null;
     }
 
     // End FrameLayout overrides.
@@ -419,13 +421,17 @@ public class ContentView extends FrameLayout
     // Implements SmartClipProvider
     @Override
     public void extractSmartClipData(int x, int y, int width, int height) {
-        mWebContents.requestSmartClipExtract(x, y, width, height);
+        if (mWebContents != null) {
+            mWebContents.requestSmartClipExtract(x, y, width, height);
+        }
     }
 
     // Implements SmartClipProvider
     @Override
     public void setSmartClipResultHandler(final Handler resultHandler) {
-        mWebContents.setSmartClipResultHandler(resultHandler);
+        if (mWebContents != null) {
+            mWebContents.setSmartClipResultHandler(resultHandler);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -452,9 +458,8 @@ public class ContentView extends FrameLayout
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     private static class ContentViewApi23 extends ContentView {
-        public ContentViewApi23(
-                Context context, WebContents webContents, EventOffsetHandler eventOffsetHandler) {
-            super(context, webContents, eventOffsetHandler);
+        public ContentViewApi23(Context context, EventOffsetHandler eventOffsetHandler) {
+            super(context, eventOffsetHandler);
         }
 
         @Override

@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/find_result_waiter.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -1102,16 +1101,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 // with the last search from the same tab rather than the last overall search.
 // The only exception is if there is a global pasteboard (for example on Mac).
 // http://crbug.com/30006
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
 #if defined(OS_MACOSX)
-  if (!views_mode_controller::IsViewsBrowserCocoa()) {
-    // TODO(http://crbug.com/843878): Remove the interactive UI test
-    // FindBarPlatformHelperMacInteractiveUITest.PreferPreviousSearch
-    // once http://crbug.com/843878 is fixed.
-    return;
-  }
+// https://crbug.com/845389
+#define MAYBE_PreferPreviousSearch DISABLED_PreferPreviousSearch
+#else
+#define MAYBE_PreferPreviousSearch PreferPreviousSearch
 #endif
-
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_PreferPreviousSearch) {
   // First we navigate to any page.
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1441,20 +1437,19 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
 // Verify that if there's a global pasteboard (for example on Mac) then doing
 // a search on one tab will clear the matches label on the other tabs.
+#if defined(OS_MACOSX)
+// TODO(http://crbug.com/843878): Remove the interactive UI test
+// FindBarPlatformHelperMacInteractiveUITest.GlobalPasteBoardClearMatches
+// once http://crbug.com/843878 is fixed.
+#define MAYBE_GlobalPasteBoardClearMatches DISABLED_GlobalPasteBoardClearMatches
+#else
+#define MAYBE_GlobalPasteBoardClearMatches GlobalPasteBoardClearMatches
+#endif
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       GlobalPasteBoardClearMatches) {
+                       MAYBE_GlobalPasteBoardClearMatches) {
   FindBar* find_bar = browser()->GetFindBarController()->find_bar();
   if (!find_bar->HasGlobalFindPasteboard())
     return;
-
-#if defined(OS_MACOSX)
-  if (!views_mode_controller::IsViewsBrowserCocoa()) {
-    // TODO(http://crbug.com/843878): Remove the interactive UI test
-    // FindBarPlatformHelperMacInteractiveUITest.GlobalPasteBoardClearMatches
-    // once http://crbug.com/843878 is fixed.
-    return;
-  }
-#endif
 
   // First we navigate to any page.
   GURL url = GetURL(kSimple);
@@ -1534,16 +1529,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextSecret) {
 
 // Find text in regular window, send IDC_FIND_NEXT to incognito. It should
 // search for the first phrase.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextShared) {
 #if defined(OS_MACOSX)
-  if (!views_mode_controller::IsViewsBrowserCocoa()) {
-    // TODO(http://crbug.com/843878): Remove the interactive UI test
-    // FindBarPlatformHelperMacInteractiveUITest.IncognitoFindNextShared
-    // once http://crbug.com/843878 is fixed.
-    return;
-  }
+#define MAYBE_IncognitoFindNextShared DISABLED_IncognitoFindNextShared
+#else
+#define MAYBE_IncognitoFindNextShared IncognitoFindNextShared
 #endif
-
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       MAYBE_IncognitoFindNextShared) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   // On Mac this updates the find pboard.

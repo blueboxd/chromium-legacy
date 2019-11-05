@@ -46,7 +46,7 @@ size_t MaxHostsForRecordingSuccessfullyCovered();
 double MinTopHostEngagementScoreThreshold();
 
 // The amount of time a fetched hint will be considered fresh enough
-// to be used and remain in the HintCacheStore.
+// to be used and remain in the OptimizationGuideStore.
 base::TimeDelta StoredFetchedHintsFreshnessDuration();
 
 // The duration of time after the blacklist initialization for which the low
@@ -101,7 +101,7 @@ base::TimeDelta GetHintsFetchRefreshDuration();
 bool IsOptimizationTargetPredictionEnabled();
 
 // The amount of time host model features will be considered fresh enough
-// to be used and remain in the HintCacheStore.
+// to be used and remain in the OptimizationGuideStore.
 base::TimeDelta StoredHostModelFeaturesFreshnessDuration();
 
 // Returns true if the optimization target decision for |optimization_target|

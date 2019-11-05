@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Режим "Не беспокоить" включен</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Показать настройки уведомлений. Уведомления отключены для одного приложения.}one{Показать настройки уведомлений. Уведомления отключены для # приложения.}few{Показать настройки уведомлений. Уведомления отключены для # приложений.}many{Показать настройки уведомлений. Уведомления отключены для # приложений.}other{Показать настройки уведомлений. Уведомления отключены для # приложения.}}</translation>
 <translation id="1525508553941733066">ЗАКРЫТЬ</translation>
-<translation id="1537254971476575106">Полноэкранная лупа</translation>
 <translation id="15373452373711364">Большой курсор мыши</translation>
 <translation id="1546492247443594934">Рабочий стол 2</translation>
 <translation id="1550523713251050646">Чтобы изменить источник питания, нажмите здесь.</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Чтобы переключить раскладку клавиатуры, нажмите клавиши <ph name="KEYBOARD_SHORTCUT" />.</translation>
 <translation id="2501920221385095727">Залипание клавиш</translation>
 <translation id="2509468283778169019">Включен режим CAPS LOCK</translation>
-<translation id="2532589005999780174">Режим высокой контрастности</translation>
 <translation id="2542089167727451762">Нажмите на фото профиля</translation>
 <translation id="255671100581129685">Google Ассистент не работает в сеансе общего доступа.</translation>
 <translation id="256712445991462162">Закрепленная лупа</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">Язык</translation>
 <translation id="5313326810920013265">Настройки Bluetooth</translation>
 <translation id="5331975486040154427">Устройство USB-C (дальний порт слева)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Слишком много попыток</translation>
 <translation id="5397578532367286026">Менеджер (<ph name="MANAGER_EMAIL" />) может просматривать данные об использовании и историю этого профиля на сайте chrome.com.</translation>
 <translation id="5430931332414098647">Мгновенная точка доступа</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">Google Ассистент недоступен в этом аккаунте.</translation>
 <translation id="5691772641933328258">Не удалось распознать отпечаток</translation>
 <translation id="5710450975648804523">Режим "Не беспокоить" включен</translation>
+<translation id="573413375004481890">Вы подключили к устройству больше дисплеев, чем оно может поддерживать, поэтому с одним из них пришлось разорвать соединение</translation>
 <translation id="574392208103952083">Средний</translation>
 <translation id="5744083938413354016">Перетаскивание нажатием</translation>
 <translation id="5750765938512549687">Bluetooth выключен</translation>
@@ -481,7 +481,6 @@
 <translation id="7984197416080286869">Вы сделали слишком много попыток</translation>
 <translation id="7994370417837006925">Множественный вход</translation>
 <translation id="8000066093800657092">Нет сети</translation>
-<translation id="8029241286966751120">Полноэкранная лупа включена. Чтобы отключить ее, нажмите Ctrl + Поиск + M.</translation>
 <translation id="8030169304546394654">Отключено</translation>
 <translation id="8054466585765276473">Подсчет оставшегося времени работы от батареи…</translation>
 <translation id="8061464966246066292">Высокая контрастность</translation>
@@ -506,7 +505,6 @@
 <translation id="8388750414311082622">Удалить единственный рабочий стол нельзя.</translation>
 <translation id="8392451568018454956">Меню параметров пользователя "<ph name="USER_EMAIL_ADDRESS" />"</translation>
 <translation id="8394567579869570560">Ваш родитель заблокировал это устройство.</translation>
-<translation id="8406981827175133772">Полноэкранная лупа</translation>
 <translation id="8425213833346101688">Изменить</translation>
 <translation id="8427213022735114808">Запись вашего голоса отправляется в Google. Это позволяет использовать голосовой набор для любого текстового поля.</translation>
 <translation id="8428213095426709021">Настройки</translation>

@@ -23,7 +23,7 @@
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
+#include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 

@@ -475,8 +475,12 @@ if (enable_java_templates) {
     }
 
     # Filter out .d files.
-    set_sources_assignment_filter([ "*.d" ])
-    sources = get_target_outputs(":$_apply_gcc_target_name")
+    sources = []
+    foreach(_output, get_target_outputs(":$_apply_gcc_target_name")) {
+      if (get_path_info(_output, "extension") != "d") {
+        sources += [ _output ]
+      }
+    }
 
     zip(target_name) {
       forward_variables_from(invoker, [ "visibility" ])

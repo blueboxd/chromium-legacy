@@ -34,15 +34,21 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
                                    public ToolbarActionView::Delegate,
                                    public views::WidgetObserver {
  public:
+  using ToolbarIconMap = std::map<ToolbarActionsModel::ActionId,
+                                  std::unique_ptr<ToolbarActionView>>;
+
   explicit ExtensionsToolbarContainer(Browser* browser);
   ~ExtensionsToolbarContainer() override;
 
   ExtensionsToolbarButton* extensions_button() const {
     return extensions_button_;
   }
-
   ToolbarActionsBarBubbleViews* action_bubble_public_for_testing() {
     return active_bubble_;
+  }
+  const ToolbarIconMap& icons_for_testing() const { return icons_; }
+  ToolbarActionViewController* popup_owner_for_testing() {
+    return popup_owner_;
   }
 
   // ToolbarIconContainerView:
@@ -154,8 +160,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // Actions for all extensions.
   std::vector<std::unique_ptr<ToolbarActionViewController>> actions_;
   // View for every action, does not imply pinned or currently shown.
-  std::map<ToolbarActionsModel::ActionId, std::unique_ptr<ToolbarActionView>>
-      icons_;
+  ToolbarIconMap icons_;
   // Popped-out extension, if any.
   ToolbarActionViewController* popped_out_action_ = nullptr;
   // The action that triggered the current popup, if any.

@@ -399,6 +399,12 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   if (!image_metadata_)
     image_metadata_ = metadata_decoder_->MakeMetadataForDecodeAcceleration();
 
+  // If the image contains a coded size with zero in either or both size
+  // dimensions, the image is invalid.
+  if (image_metadata_->coded_size.has_value() &&
+      image_metadata_->coded_size.value().IsEmpty())
+    return;
+
   ActivateLazyDecoding();
 
   const size_t previous_size = frame_data_.size();

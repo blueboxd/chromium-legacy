@@ -9,19 +9,27 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_checkup.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/system_connector.h"
+#include "extensions/common/extension_features.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -99,6 +107,7 @@ bool JsonToPromoData(const base::Value& value,
     if (!promos->GetString("id", &promo_id))
       net::GetValueForKeyInQuery(promo_log_url, "id", &promo_id);
   }
+
   // Emergency promos may not have IDs, which is OK. They also can't be
   // dismissed (because of this).
 
@@ -115,12 +124,16 @@ bool JsonToPromoData(const base::Value& value,
 
 PromoService::PromoService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    PrefService* pref_service)
-    : url_loader_factory_(url_loader_factory), pref_service_(pref_service) {}
+    Profile* profile)
+    : url_loader_factory_(url_loader_factory), profile_(profile) {}
 
 PromoService::~PromoService() = default;
 
 void PromoService::Refresh() {
+  if (extensions::ShouldShowExtensionsCheckupPromo(profile_)) {
+    ServeExtensionCheckupPromo();
+    return;
+  }
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("promo_service", R"(
         semantics {
@@ -156,6 +169,30 @@ void PromoService::Refresh() {
       url_loader_factory_.get(),
       base::BindOnce(&PromoService::OnLoadDone, base::Unretained(this)),
       1024 * 1024);
+}
+
+void PromoService::ServeExtensionCheckupPromo() {
+  const int checkup_message = base::GetFieldTrialParamByFeatureAsInt(
+      extensions_features::kExtensionsCheckupTool,
+      extensions_features::kExtensionsCheckupToolBannerMessageParameter, 2);
+  PromoData checkup_promo;
+  int promo_idr = -1;
+  switch (static_cast<extensions::CheckupMessage>(checkup_message)) {
+    case extensions::CheckupMessage::PERFORMANCE:
+      promo_idr = IDS_EXTENSIONS_PROMO_PERFORMANCE;
+      break;
+    case extensions::CheckupMessage::PRIVACY:
+      promo_idr = IDS_EXTENSIONS_PROMO_PRIVACY;
+      break;
+    default:
+      promo_idr = IDS_EXTENSIONS_PROMO_NEUTRAL;
+      break;
+  }
+  std::string promo_message = l10n_util::GetStringUTF8(promo_idr);
+  std::string promo_html = base::StrCat({"<div>", promo_message, "</div>"});
+  checkup_promo.promo_html = promo_html;
+  checkup_promo.can_open_privileged_links = true;
+  PromoDataLoaded(Status::OK_WITH_PROMO, checkup_promo);
 }
 
 void PromoService::OnLoadDone(std::unique_ptr<std::string> response_body) {
@@ -231,7 +268,7 @@ void PromoService::BlocklistPromo(const std::string& promo_id) {
     return;
   }
 
-  DictionaryPrefUpdate update(pref_service_, prefs::kNtpPromoBlocklist);
+  DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kNtpPromoBlocklist);
   double now = base::Time::Now().ToDeltaSinceWindowsEpoch().InSecondsF();
   update->SetDoubleKey(promo_id, now);
 
@@ -273,8 +310,9 @@ bool PromoService::IsBlockedAfterClearingExpired(
 
   std::vector<std::string> expired_ids;
 
-  for (const auto& blocked :
-       pref_service_->GetDictionary(prefs::kNtpPromoBlocklist)->DictItems()) {
+  for (const auto& blocked : profile_->GetPrefs()
+                                 ->GetDictionary(prefs::kNtpPromoBlocklist)
+                                 ->DictItems()) {
     if (!blocked.second.is_double() || blocked.second.GetDouble() < expired)
       expired_ids.emplace_back(blocked.first);
     else if (!found && blocked.first == promo_id)
@@ -282,7 +320,8 @@ bool PromoService::IsBlockedAfterClearingExpired(
   }
 
   if (!expired_ids.empty()) {
-    DictionaryPrefUpdate update(pref_service_, prefs::kNtpPromoBlocklist);
+    DictionaryPrefUpdate update(profile_->GetPrefs(),
+                                prefs::kNtpPromoBlocklist);
     for (const std::string& key : expired_ids)
       update->RemoveKey(key);
   }

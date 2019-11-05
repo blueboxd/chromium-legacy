@@ -119,6 +119,7 @@
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/sharing/sms/sms_remote_fetcher.h"
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
 #include "chrome/browser/signin/header_modification_delegate_impl.h"
@@ -2258,7 +2259,8 @@ bool ChromeContentBrowserClient::IsDataSaverEnabled(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return profile && data_reduction_proxy::DataReductionProxySettings::
-                        IsDataSaverEnabledByUser(profile->GetPrefs());
+                        IsDataSaverEnabledByUser(profile->IsOffTheRecord(),
+                                                 profile->GetPrefs());
 }
 
 void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
@@ -3130,7 +3132,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
         web_prefs->web_app_scope =
             web_app::WebAppProvider::Get(profile)
                 ->registrar()
-                .GetAppScope(*browser->app_controller()->GetAppId())
+                .GetAppScope(browser->app_controller()->GetAppId())
                 .value();
       }
     }
@@ -5404,3 +5406,12 @@ bool ChromeContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
              Profile::FromBrowserContext(browser_context))
       ->IsCookieAccessAllowed(url, site_for_cookies, top_frame_origin);
 }
+
+#if !defined(OS_ANDROID)
+void ChromeContentBrowserClient::FetchRemoteSms(
+    content::BrowserContext* browser_context,
+    const url::Origin& origin,
+    base::OnceCallback<void(base::Optional<std::string>)> callback) {
+  ::FetchRemoteSms(browser_context, origin, std::move(callback));
+}
+#endif

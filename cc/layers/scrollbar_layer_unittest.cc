@@ -225,7 +225,7 @@ TEST_F(ScrollbarLayerTest, RepaintOverlayWhenResourceDisposed) {
   // First call to update should create a resource. The scrollbar itself thinks
   // it needs a repaint.
   {
-    fake_scrollbar->set_needs_paint_thumb(true);
+    fake_scrollbar->set_needs_repaint_thumb(true);
     EXPECT_EQ(0u, fake_ui_resource_manager_->UIResourceCount());
     EXPECT_TRUE(scrollbar_layer->Update());
     EXPECT_EQ(1u, fake_ui_resource_manager_->UIResourceCount());
@@ -234,7 +234,7 @@ TEST_F(ScrollbarLayerTest, RepaintOverlayWhenResourceDisposed) {
   // Now the scrollbar has been painted and nothing else has changed, calling
   // Update() shouldn't have an effect.
   {
-    fake_scrollbar->set_needs_paint_thumb(false);
+    fake_scrollbar->set_needs_repaint_thumb(false);
     EXPECT_FALSE(scrollbar_layer->Update());
     EXPECT_EQ(1u, fake_ui_resource_manager_->UIResourceCount());
   }
@@ -422,10 +422,8 @@ TEST_F(ScrollbarLayerTest, UpdatePropertiesOfScrollBarWhenThumbRemoved) {
   scrollbar_layer->SetScrollElementId(root_layer->element_id());
 
   // The track_rect should be relative to the scrollbar's origin.
-  scrollbar_layer->fake_scrollbar()->set_location(gfx::Point(20, 10));
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(10, 10, 50, 10));
-  scrollbar_layer->fake_scrollbar()->set_thumb_thickness(10);
-  scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
+  scrollbar_layer->fake_scrollbar()->set_thumb_size(gfx::Size(4, 10));
 
   LayerImpl* root_layer_impl = nullptr;
   PaintedScrollbarLayerImpl* scrollbar_layer_impl = nullptr;
@@ -463,10 +461,8 @@ TEST_F(ScrollbarLayerTest, ThumbRect) {
   scrollbar_layer->SetScrollElementId(root_layer->element_id());
 
   // The track_rect should be relative to the scrollbar's origin.
-  scrollbar_layer->fake_scrollbar()->set_location(gfx::Point(20, 10));
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(10, 10, 50, 10));
-  scrollbar_layer->fake_scrollbar()->set_thumb_thickness(10);
-  scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
+  scrollbar_layer->fake_scrollbar()->set_thumb_size(gfx::Size(4, 10));
 
   layer_tree_host_->UpdateLayers();
   LayerImpl* root_layer_impl = nullptr;
@@ -495,8 +491,7 @@ TEST_F(ScrollbarLayerTest, ThumbRect) {
             scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
 
   // Change thumb thickness and length.
-  scrollbar_layer->fake_scrollbar()->set_thumb_thickness(4);
-  scrollbar_layer->fake_scrollbar()->set_thumb_length(6);
+  scrollbar_layer->fake_scrollbar()->set_thumb_size(gfx::Size(6, 4));
 
   UPDATE_AND_EXTRACT_LAYER_POINTERS();
   EXPECT_EQ(gfx::Rect(54, 0, 6, 4).ToString(),
@@ -504,7 +499,6 @@ TEST_F(ScrollbarLayerTest, ThumbRect) {
 
   // Shrink the scrollbar layer to cover only the track.
   scrollbar_layer->SetBounds(gfx::Size(50, 10));
-  scrollbar_layer->fake_scrollbar()->set_location(gfx::Point(30, 10));
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 10, 50, 10));
 
   UPDATE_AND_EXTRACT_LAYER_POINTERS();
@@ -537,8 +531,7 @@ TEST_F(ScrollbarLayerTest, ThumbRectForOverlayLeftSideVerticalScrollbar) {
   scrollbar_layer->SetBounds(gfx::Size(10, 20));
   scrollbar_layer->SetScrollElementId(root_layer->element_id());
   scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(0, 0, 10, 20));
-  scrollbar_layer->fake_scrollbar()->set_thumb_thickness(10);
-  scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
+  scrollbar_layer->fake_scrollbar()->set_thumb_size(gfx::Size(10, 4));
   layer_tree_host_->UpdateLayers();
   LayerImpl* root_layer_impl = nullptr;
   PaintedScrollbarLayerImpl* scrollbar_layer_impl = nullptr;
@@ -559,8 +552,7 @@ TEST_F(ScrollbarLayerTest, ThumbRectForOverlayLeftSideVerticalScrollbar) {
             scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
 
   // Change thumb thickness and length.
-  scrollbar_layer->fake_scrollbar()->set_thumb_thickness(4);
-  scrollbar_layer->fake_scrollbar()->set_thumb_length(6);
+  scrollbar_layer->fake_scrollbar()->set_thumb_size(gfx::Size(4, 6));
   UPDATE_AND_EXTRACT_LAYER_POINTERS();
   // For left side vertical scrollbars thumb_rect.x = bounds.width() -
   // thumb_thickness.
@@ -1341,7 +1333,6 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
 
     scrollbar_layer->SetBounds(scrollbar_rect.size());
     scrollbar_layer->SetPosition(gfx::PointF(scrollbar_rect.origin()));
-    scrollbar_layer->fake_scrollbar()->set_location(scrollbar_rect.origin());
     scrollbar_layer->fake_scrollbar()->set_track_rect(
         gfx::Rect(scrollbar_rect.size()));
 

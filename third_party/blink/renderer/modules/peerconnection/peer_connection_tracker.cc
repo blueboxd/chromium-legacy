@@ -20,13 +20,13 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -84,14 +84,13 @@ static String SerializeOfferOptions(blink::RTCOfferOptionsPlatform* options) {
   return result.ToString();
 }
 
-static String SerializeAnswerOptions(
-    const blink::WebRTCAnswerOptions& options) {
-  if (options.IsNull())
+static String SerializeAnswerOptions(blink::RTCAnswerOptionsPlatform* options) {
+  if (!options)
     return "null";
 
   StringBuilder result;
   result.Append(", voiceActivityDetection: ");
-  result.Append(SerializeBoolean(options.VoiceActivityDetection()));
+  result.Append(SerializeBoolean(options->VoiceActivityDetection()));
   return result.ToString();
 }
 
@@ -799,7 +798,7 @@ void PeerConnectionTracker::TrackCreateOffer(
 
 void PeerConnectionTracker::TrackCreateAnswer(
     RTCPeerConnectionHandler* pc_handler,
-    const blink::WebRTCAnswerOptions& options) {
+    blink::RTCAnswerOptionsPlatform* options) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)

@@ -106,8 +106,8 @@ void PrefetchedSignedExchangeCacheAdapter::StreamingBlobDone(
     storage::BlobBuilderFromStream* builder,
     std::unique_ptr<storage::BlobDataHandle> result) {
   blob_is_streaming_ = false;
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
-                            std::move(blob_builder_from_stream_));
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO},
+                   std::move(blob_builder_from_stream_));
   cached_exchange_->SetBlobDataHandle(std::move(result));
   MaybeCallOnSignedExchangeStored();
 }

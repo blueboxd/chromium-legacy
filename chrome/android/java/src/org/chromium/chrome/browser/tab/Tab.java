@@ -624,6 +624,7 @@ public class Tab {
      *         no current page or the current page is displayed using something besides
      *         {@link NativePage}.
      */
+    @Nullable
     public NativePage getNativePage() {
         return mNativePage;
     }

@@ -69,10 +69,10 @@ void HostedAppBrowserController::SetAppPrefsForWebContents(
     return;
 
   // All hosted apps should specify an app ID.
-  DCHECK(controller->GetAppId());
+  DCHECK(controller->HasAppId());
   extensions::TabHelper::FromWebContents(web_contents)
       ->SetExtensionApp(ExtensionRegistry::Get(controller->browser()->profile())
-                            ->GetExtensionById(*controller->GetAppId(),
+                            ->GetExtensionById(controller->GetAppId(),
                                                ExtensionRegistry::EVERYTHING));
 
   web_contents->NotifyPreferencesChanged();
@@ -91,19 +91,15 @@ void HostedAppBrowserController::ClearAppPrefsForWebContents(
 }
 
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
-    : AppBrowserController(browser),
-      extension_id_(web_app::GetAppIdFromApplicationName(browser->app_name())),
+    : AppBrowserController(
+          browser,
+          web_app::GetAppIdFromApplicationName(browser->app_name())),
       // If a bookmark app has a URL handler, then it is a PWA.
       // TODO(https://crbug.com/774918): Replace once there is a more explicit
       // indicator of a Bookmark App for an installable website.
-      created_for_installed_pwa_(
-          UrlHandlers::GetUrlHandlers(GetExtension())) {}
+      created_for_installed_pwa_(UrlHandlers::GetUrlHandlers(GetExtension())) {}
 
 HostedAppBrowserController::~HostedAppBrowserController() = default;
-
-base::Optional<std::string> HostedAppBrowserController::GetAppId() const {
-  return extension_id_;
-}
 
 bool HostedAppBrowserController::CreatedForInstalledPwa() const {
   return created_for_installed_pwa_;
@@ -120,7 +116,7 @@ bool HostedAppBrowserController::HasMinimalUiButtons() const {
 
   return web_app::WebAppProvider::Get(browser()->profile())
              ->registrar()
-             .GetAppEffectiveDisplayMode(extension_id_) ==
+             .GetAppEffectiveDisplayMode(GetAppId()) ==
          blink::mojom::DisplayMode::kMinimalUi;
 }
 
@@ -206,7 +202,7 @@ bool HostedAppBrowserController::IsUrlInAppScope(const GURL& url) const {
 
 const Extension* HostedAppBrowserController::GetExtension() const {
   return ExtensionRegistry::Get(browser()->profile())
-      ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
+      ->GetExtensionById(GetAppId(), ExtensionRegistry::EVERYTHING);
 }
 
 const Extension* HostedAppBrowserController::GetExtensionForTesting() const {
@@ -225,13 +221,13 @@ base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
 bool HostedAppBrowserController::CanUninstall() const {
   return web_app::WebAppUiManagerImpl::Get(browser()->profile())
       ->dialog_manager()
-      .CanUninstallWebApp(extension_id_);
+      .CanUninstallWebApp(GetAppId());
 }
 
 void HostedAppBrowserController::Uninstall() {
   web_app::WebAppUiManagerImpl::Get(browser()->profile())
       ->dialog_manager()
-      .UninstallWebApp(extension_id_,
+      .UninstallWebApp(GetAppId(),
                        web_app::WebAppDialogManager::UninstallSource::kAppMenu,
                        browser()->window(), base::DoNothing());
 }

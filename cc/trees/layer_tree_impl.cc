@@ -2369,6 +2369,11 @@ bool LayerTreeImpl::IsActivelyScrolling() const {
   return host_impl_->IsActivelyScrolling();
 }
 
+int LayerTreeImpl::GetMSAASampleCountForRaster(
+    const scoped_refptr<DisplayItemList>& display_list) {
+  return host_impl_->GetMSAASampleCountForRaster(display_list);
+}
+
 void LayerTreeImpl::SetPendingPageScaleAnimation(
     std::unique_ptr<PendingPageScaleAnimation> pending_animation) {
   pending_page_scale_animation_ = std::move(pending_animation);

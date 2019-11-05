@@ -15,15 +15,15 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * A handler that provides Autofill Assistant actions for a specific activity.
  */
 class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandler {
-    private static final String[] EMPTY_ARRAY = new String[0];
-
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
     private final ScrimView mScrimView;
@@ -62,10 +62,10 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
     }
 
     @Override
-    public String[] getActions() {
+    public List<AutofillAssistantDirectAction> getActions() {
         AutofillAssistantClient client = getOrCreateClient();
         if (client == null) {
-            return EMPTY_ARRAY;
+            return Collections.emptyList();
         }
         return client.getDirectActions();
     }

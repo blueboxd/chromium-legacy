@@ -255,6 +255,7 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
 
   void AnimationEnded(const gfx::Animation* animation) override {
     desired_anchor_view_ = nullptr;
+    bubble_delegate_->OnHoverCardLanded();
   }
 
   void AnimationCanceled(const gfx::Animation* animation) override {
@@ -411,6 +412,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
       !slide_animation_delegate_->is_animating()) {
     widget_->SetBounds(slide_animation_delegate_->CalculateTargetBounds(tab));
     slide_animation_delegate_->SetCurrentBounds();
+    OnHoverCardLanded();
     return;
   }
 
@@ -424,6 +426,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
       SetAnchorView(tab);
     widget_->SetBounds(slide_animation_delegate_->CalculateTargetBounds(tab));
     slide_animation_delegate_->SetCurrentBounds();
+    OnHoverCardLanded();
   }
 
   if (!widget_->IsVisible()) {
@@ -599,8 +602,6 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
 
   // If the preview image feature is not enabled, |preview_image_| will be null.
   if (preview_image_ && preview_image_->GetVisible()) {
-    if (tab->data().thumbnail != thumbnail_image_)
-      ClearPreviewImage();
     RegisterToThumbnailImageUpdates(tab->data().thumbnail);
   }
 }
@@ -609,11 +610,18 @@ void TabHoverCardBubbleView::RegisterToThumbnailImageUpdates(
     scoped_refptr<ThumbnailImage> thumbnail_image) {
   if (thumbnail_image_ == thumbnail_image)
     return;
+
   if (thumbnail_image_) {
     thumbnail_observer_.Remove(thumbnail_image_.get());
     thumbnail_image_.reset();
   }
+
   if (thumbnail_image) {
+    if (!thumbnail_image->has_data())
+      ClearPreviewImage();
+    else
+      waiting_for_decompress_ = true;
+
     thumbnail_image_ = thumbnail_image;
     thumbnail_observer_.Add(thumbnail_image_.get());
     thumbnail_image->RequestThumbnailImage();
@@ -645,6 +653,17 @@ void TabHoverCardBubbleView::ClearPreviewImage() {
     preview_image_->SetBackground(
         views::CreateSolidBackground(background_color));
   }
+
+  waiting_for_decompress_ = false;
+}
+
+void TabHoverCardBubbleView::OnHoverCardLanded() {
+  // If we were waiting for a preview image with data to load, we don't want to
+  // keep showing the old image while hovering on the new tab, so clear it. This
+  // shouldn't happen very often for slide animations, but could on slower
+  // computers.
+  if (waiting_for_decompress_)
+    ClearPreviewImage();
 }
 
 void TabHoverCardBubbleView::OnThumbnailImageAvailable(
@@ -654,6 +673,7 @@ void TabHoverCardBubbleView::OnThumbnailImageAvailable(
   preview_image_->SetImageSize(preview_size);
   preview_image_->SetPreferredSize(preview_size);
   preview_image_->SetBackground(nullptr);
+  waiting_for_decompress_ = false;
 }
 
 base::Optional<gfx::Size> TabHoverCardBubbleView::GetThumbnailSizeHint() const {

@@ -98,6 +98,7 @@ function sessionTypeWouldTriggerConsent(sessionType) {
 }
 
 function onRequestSession() {
+  console.log('onRequestSession');
   switch (sessionTypeToRequest) {
     case sessionTypes.IMMERSIVE:
       console.info('Requesting immersive VR session');
@@ -140,6 +141,7 @@ function onRequestSession() {
 }
 
 function onSessionStarted(session) {
+  console.info('onSessionStarted');
   // Record that we've started this session type so that we know not to expect
   // the consent dialog for it in the future.
   let sessionType = getSessionType(session);
@@ -177,6 +179,7 @@ function onSessionStarted(session) {
 }
 
 function onSessionEnded(event) {
+  console.info('onSessionEnded');
   sessionInfos[getSessionType(event.session)].clearSession();
 }
 
@@ -257,4 +260,9 @@ if (navigator.xr) {
   initializationSteps['magicWindowStarted'] = true;
 }
 
-webglCanvas.onclick = onRequestSession;
+var canvasClicked = false;
+webglCanvas.onclick = function(ev) {
+  console.log('canvas onclick');
+  canvasClicked = true;
+  onRequestSession();
+}

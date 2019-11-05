@@ -101,6 +101,14 @@ TabletModeWindowDragDelegate::TabletModeWindowDragDelegate()
 }
 
 TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() {
+  if (dragged_window_) {
+    OverviewGrid* overview_grid = GetOverviewGrid(dragged_window_);
+    if (overview_grid) {
+      overview_grid->RemoveDropTarget();
+      overview_grid->PositionWindows(/*animate=*/true);
+    }
+  }
+
   Shell::Get()->UpdateShelfVisibility();
 }
 
@@ -233,13 +241,18 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
   UpdateWindowDrag(location_in_screen);
 
   // Update drag indicators and preview window if necessary.
-  IndicatorState indicator_state = GetIndicatorState(location_in_screen);
-  split_view_drag_indicators_->SetIndicatorState(indicator_state,
-                                                 location_in_screen);
+  SplitViewDragIndicators::WindowDraggingState window_dragging_state =
+      SplitViewDragIndicators::ComputeWindowDraggingState(
+          is_window_considered_moved_,
+          SplitViewDragIndicators::WindowDraggingState::kFromTop,
+          GetSnapPosition(location_in_screen));
+  split_view_drag_indicators_->SetWindowDraggingState(window_dragging_state,
+                                                      location_in_screen);
 
   if (GetOverviewSession()) {
-    GetOverviewSession()->OnWindowDragContinued(
-        dragged_window_, gfx::PointF(location_in_screen), indicator_state);
+    GetOverviewSession()->OnWindowDragContinued(dragged_window_,
+                                                gfx::PointF(location_in_screen),
+                                                window_dragging_state);
   }
 }
 
@@ -266,8 +279,9 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   }
   split_view_controller_->OnWindowDragEnded(dragged_window_, snap_position,
                                             location_in_screen);
-  split_view_drag_indicators_->SetIndicatorState(IndicatorState::kNone,
-                                                 location_in_screen);
+  split_view_drag_indicators_->SetWindowDraggingState(
+      SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+      location_in_screen);
 
   // Reset the dragged window's window shadow elevation.
   ::wm::SetShadowElevation(dragged_window_, original_shadow_elevation_);
@@ -314,23 +328,6 @@ gfx::Point TabletModeWindowDragDelegate::GetEventLocationInScreen(
   ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
                              &location_in_screen);
   return location_in_screen;
-}
-
-IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
-    const gfx::Point& location_in_screen) const {
-  // Do not show the drag indicators if the window hasn't been considered as
-  // moved.
-  if (!is_window_considered_moved_)
-    return IndicatorState::kNone;
-
-  IndicatorState indicator_state =
-      ::ash::GetIndicatorState(GetSnapPosition(location_in_screen));
-  // In portrait screen orientation no top drag indicator since we're dragging
-  // from top.
-  return !IsCurrentScreenOrientationLandscape() &&
-                 indicator_state == IndicatorState::kDragAreaBoth
-             ? IndicatorState::kDragAreaRight
-             : indicator_state;
 }
 
 bool TabletModeWindowDragDelegate::ShouldOpenOverviewWhenDragStarts() {
@@ -438,7 +435,11 @@ bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
     return false;
 
   const gfx::Point location_in_screen = GetEventLocationInScreen(event);
-  const IndicatorState indicator_state = GetIndicatorState(location_in_screen);
+  const SplitViewDragIndicators::WindowDraggingState window_dragging_state =
+      SplitViewDragIndicators::ComputeWindowDraggingState(
+          is_window_considered_moved_,
+          SplitViewDragIndicators::WindowDraggingState::kFromTop,
+          GetSnapPosition(location_in_screen));
   const bool is_landscape = IsCurrentScreenOrientationLandscape();
   const float velocity = is_landscape ? event->details().velocity_x()
                                       : event->details().velocity_y();
@@ -446,15 +447,21 @@ bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
   // Drop the window into overview if fling with large enough velocity to the
   // opposite snap position when preview area is shown.
   if (IsCurrentScreenOrientationPrimary()) {
-    if (indicator_state == IndicatorState::kPreviewAreaLeft)
+    if (window_dragging_state ==
+        SplitViewDragIndicators::WindowDraggingState::kToSnapLeft) {
       return velocity > kFlingToOverviewFromSnappingAreaThreshold;
-    else if (indicator_state == IndicatorState::kPreviewAreaRight)
+    } else if (window_dragging_state ==
+               SplitViewDragIndicators::WindowDraggingState::kToSnapRight) {
       return -velocity > kFlingToOverviewFromSnappingAreaThreshold;
+    }
   } else {
-    if (indicator_state == IndicatorState::kPreviewAreaLeft)
+    if (window_dragging_state ==
+        SplitViewDragIndicators::WindowDraggingState::kToSnapLeft) {
       return -velocity > kFlingToOverviewFromSnappingAreaThreshold;
-    else if (indicator_state == IndicatorState::kPreviewAreaRight)
+    } else if (window_dragging_state ==
+               SplitViewDragIndicators::WindowDraggingState::kToSnapRight) {
       return velocity > kFlingToOverviewFromSnappingAreaThreshold;
+    }
   }
 
   // Consider only the velocity_y if no preview area is shown.

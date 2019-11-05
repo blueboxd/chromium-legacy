@@ -620,7 +620,7 @@ TEST_F(ArcTracingModelTest, InputEvents) {
   ASSERT_TRUE(model.Build(tracing_data));
 
   ArcTracingGraphicsModel graphics_model;
-  graphics_model.set_skip_structure_validation_for_testing();
+  graphics_model.set_skip_structure_validation();
   ASSERT_TRUE(graphics_model.Build(model));
 
   const std::vector<GraphicsEvents>& buffers =

@@ -116,6 +116,7 @@ IntRect CustomScrollbarTheme::ConstrainTrackRectToTrackPieces(
 
 void CustomScrollbarTheme::PaintScrollCorner(
     GraphicsContext& context,
+    const Scrollbar* vertical_scrollbar,
     const DisplayItemClient& display_item_client,
     const IntRect& corner_rect,
     WebColorScheme color_scheme) {
@@ -129,23 +130,43 @@ void CustomScrollbarTheme::PaintScrollCorner(
   context.FillRect(corner_rect, Color::kWhite);
 }
 
-void CustomScrollbarTheme::PaintScrollbarBackground(
-    GraphicsContext& context,
-    const Scrollbar& scrollbar) {
-  PaintPart(context, scrollbar, scrollbar.FrameRect(), kScrollbarBGPart);
-}
-
-void CustomScrollbarTheme::PaintTrackBackground(GraphicsContext& context,
+void CustomScrollbarTheme::PaintTrackAndButtons(GraphicsContext& context,
                                                 const Scrollbar& scrollbar,
-                                                const IntRect& rect) {
-  PaintPart(context, scrollbar, rect, kTrackBGPart);
-}
+                                                const IntPoint& offset) {
+  // Custom scrollbars are always painted in their original coordinate space,
+  // i.e. the space of Scrollbar::FrameRect() and ScrollbarTheme::XXXRect()
+  // which is |context|'s current space.
+  DCHECK_EQ(offset, IntPoint());
 
-void CustomScrollbarTheme::PaintTrackPiece(GraphicsContext& context,
-                                           const Scrollbar& scrollbar,
-                                           const IntRect& rect,
-                                           ScrollbarPart part) {
-  PaintPart(context, scrollbar, rect, part);
+  PaintPart(context, scrollbar, scrollbar.FrameRect(), kScrollbarBGPart);
+
+  if (HasButtons(scrollbar)) {
+    PaintButton(context, scrollbar,
+                BackButtonRect(scrollbar, kBackButtonStartPart),
+                kBackButtonStartPart);
+    PaintButton(context, scrollbar,
+                BackButtonRect(scrollbar, kBackButtonEndPart),
+                kBackButtonEndPart);
+    PaintButton(context, scrollbar,
+                ForwardButtonRect(scrollbar, kForwardButtonStartPart),
+                kForwardButtonStartPart);
+    PaintButton(context, scrollbar,
+                ForwardButtonRect(scrollbar, kForwardButtonEndPart),
+                kForwardButtonEndPart);
+  }
+
+  IntRect track_rect = TrackRect(scrollbar);
+  PaintPart(context, scrollbar, track_rect, kTrackBGPart);
+
+  if (HasThumb(scrollbar)) {
+    IntRect start_track_rect;
+    IntRect thumb_rect;
+    IntRect end_track_rect;
+    SplitTrack(scrollbar, track_rect, start_track_rect, thumb_rect,
+               end_track_rect);
+    PaintPart(context, scrollbar, start_track_rect, kBackTrackPart);
+    PaintPart(context, scrollbar, end_track_rect, kForwardTrackPart);
+  }
 }
 
 void CustomScrollbarTheme::PaintButton(GraphicsContext& context,

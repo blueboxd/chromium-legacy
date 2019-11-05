@@ -132,10 +132,9 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       uint32_t char_index,
       const gfx::RectF& page_bounds);
   ui::AXNodeData* CreateLinkNode(const ppapi::PdfAccessibilityLinkInfo& link,
-                                 const gfx::RectF& page_bounds,
                                  uint32_t page_index);
-  ui::AXNodeData* CreateImageNode(const ppapi::PdfAccessibilityImageInfo& image,
-                                  const gfx::RectF& page_bounds);
+  ui::AXNodeData* CreateImageNode(
+      const ppapi::PdfAccessibilityImageInfo& image);
   void AddTextToLinkNode(
       uint32_t start_text_run_index,
       uint32_t end_text_run_index,

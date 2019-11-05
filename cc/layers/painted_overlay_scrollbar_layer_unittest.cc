@@ -19,8 +19,8 @@ class MockScrollbar : public FakeScrollbar {
  public:
   MockScrollbar() : FakeScrollbar(true, true, true) {}
 
-  void PaintPart(PaintCanvas* canvas, ScrollbarPart part) override {
-    if (part == TICKMARKS)
+  void PaintPart(PaintCanvas*, ScrollbarPart part, const gfx::Rect&) override {
+    if (part == TRACK_BUTTONS_TICKMARKS)
       paint_tickmarks_called_ = true;
   }
 

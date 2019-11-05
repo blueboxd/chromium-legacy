@@ -21,7 +21,8 @@ class DISPLAY_EXPORT DisplayInfo final {
               float device_scale_factor,
               float sdr_white_level,
               Display::Rotation rotation,
-              int display_frequency);
+              int display_frequency,
+              const gfx::Vector2dF& pixels_per_inch);
   ~DisplayInfo();
 
   static int64_t DeviceIdFromDeviceName(const wchar_t* device_name);
@@ -33,6 +34,7 @@ class DISPLAY_EXPORT DisplayInfo final {
   float device_scale_factor() const { return device_scale_factor_; }
   float sdr_white_level() const { return sdr_white_level_; }
   int display_frequency() const { return display_frequency_; }
+  const gfx::Vector2dF& pixels_per_inch() const { return pixels_per_inch_; }
 
  private:
   int64_t id_;
@@ -42,6 +44,9 @@ class DISPLAY_EXPORT DisplayInfo final {
   float device_scale_factor_;
   float sdr_white_level_;
   int display_frequency_;
+  // Pixels per inch of a display. This value will only be set for touch
+  // monitors. In non-touch cases, it will be set to Zero.
+  gfx::Vector2dF pixels_per_inch_;
 };
 
 }  // namespace win

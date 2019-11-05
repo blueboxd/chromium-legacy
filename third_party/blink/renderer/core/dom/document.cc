@@ -3300,6 +3300,8 @@ void Document::Shutdown() {
         Timeline().CompositorTimeline(), GetFrame());
   }
 
+  if (frame_->IsLocalRoot())
+    GetPage()->GetChromeClient().AttachRootLayer(nullptr, frame_.Get());
   layout_view_->CleanUpCompositor();
 
   if (RegistrationContext())

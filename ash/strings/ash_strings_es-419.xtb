@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">No interrumpir está activado.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar la configuración de las notificaciones: Están desactivadas para una app}other{Mostrar la configuración de las notificaciones: Están desactivadas para # apps}}</translation>
 <translation id="1525508553941733066">IGNORAR</translation>
-<translation id="1537254971476575106">Lupa de pantalla completa</translation>
 <translation id="15373452373711364">Cursor del mouse grande</translation>
 <translation id="1546492247443594934">Escritorio 2</translation>
 <translation id="1550523713251050646">Haz clic para obtener más opciones</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Presiona <ph name="KEYBOARD_SHORTCUT" /> para cambiar de diseño de teclado.</translation>
 <translation id="2501920221385095727">Teclas especiales</translation>
 <translation id="2509468283778169019">BLOQ MAYÚS está activado.</translation>
-<translation id="2532589005999780174">Modo de contraste alto</translation>
 <translation id="2542089167727451762">Presiona tu imagen de perfil</translation>
 <translation id="255671100581129685">El Asistente de Google no está disponible en una sesión pública.</translation>
 <translation id="256712445991462162">la lupa con vista acoplada</translation>
@@ -301,6 +299,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configuración de Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (puerto lateral izquierdo trasero)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" />: <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Realizaste demasiados intentos</translation>
 <translation id="5397578532367286026">El administrador (<ph name="MANAGER_EMAIL" />) puede revisar el uso y el historial de este usuario en la página chrome.com.</translation>
 <translation id="5430931332414098647">Conexión instantánea mediante dispositivo móvil</translation>
@@ -323,6 +322,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5682642926269496722">El Asistente de Google no está disponible para la Cuenta de usuario actual.</translation>
 <translation id="5691772641933328258">No se reconoció la huella digital</translation>
 <translation id="5710450975648804523">"No interrumpir" activado</translation>
+<translation id="573413375004481890">Como este dispositivo no puede controlar todas las pantallas a la vez, se desconectó una de ellas</translation>
 <translation id="574392208103952083">Media</translation>
 <translation id="5744083938413354016">Función tocar y arrastrar</translation>
 <translation id="5750765938512549687">Se activó la conexión Bluetooth</translation>
@@ -482,7 +482,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7984197416080286869">Demasiados intentos con la huella digital</translation>
 <translation id="7994370417837006925">Acceso múltiple</translation>
 <translation id="8000066093800657092">Sin red</translation>
-<translation id="8029241286966751120">Se habilitó la lupa de pantalla completa. Presiona Ctrl+Buscar+M de nuevo para desactivarla.</translation>
 <translation id="8030169304546394654">Desconectado</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
@@ -507,7 +506,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8388750414311082622">No se puede quitar el último escritorio.</translation>
 <translation id="8392451568018454956">Menú de opciones para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Tus padres bloquearon este dispositivo</translation>
-<translation id="8406981827175133772">Lupa de pantalla completa</translation>
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8427213022735114808">Dictado envía tu voz a Google para habilitar el dictado por voz en cualquier campo de texto.</translation>
 <translation id="8428213095426709021">Configuración</translation>

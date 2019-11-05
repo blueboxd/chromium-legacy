@@ -31,10 +31,9 @@ Polymer({
   },
 
   /** @private */
-  getDialogA11yTitle_: function(isRemovingSupervision, locale) {
-    return isRemovingSupervision ?
-        this.i18nDynamic(locale, 'removingSupervisionTitle') :
-        this.i18nDynamic(locale, 'addingSupervisionTitle');
+  getDialogA11yTitle_: function(locale, isRemovingSupervision) {
+    return isRemovingSupervision ? this.i18n('removingSupervisionTitle') :
+                                   this.i18n('addingSupervisionTitle');
   },
 
   /** @private */

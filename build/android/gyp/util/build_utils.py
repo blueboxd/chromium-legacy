@@ -475,8 +475,6 @@ def MergeZips(output, input_zips, path_transform=None, compress=None):
   try:
     for in_file in input_zips:
       with zipfile.ZipFile(in_file, 'r') as in_zip:
-        # ijar creates zips with null CRCs.
-        in_zip._expected_crc = None
         for info in in_zip.infolist():
           # Ignore directories.
           if info.filename[-1] == '/':

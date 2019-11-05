@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Rahatsız Etmeyin modu açık.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Bildirim ayarlarını göster. Bildirimler bir uygulama için kapalı}other{Bildirim ayarlarını göster. Bildirimler # uygulama için kapalı}}</translation>
 <translation id="1525508553941733066">KAPAT</translation>
-<translation id="1537254971476575106">Tam ekran büyüteci</translation>
 <translation id="15373452373711364">Büyük fare imleci</translation>
 <translation id="1546492247443594934">Çalışma Masası 2</translation>
 <translation id="1550523713251050646">Daha fazla seçenek için tıklayın</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Klavye düzenini değiştirmek için <ph name="KEYBOARD_SHORTCUT" /> tuşlarına basın.</translation>
 <translation id="2501920221385095727">Yapışkan tuşlar</translation>
 <translation id="2509468283778169019">CAPS LOCK açık</translation>
-<translation id="2532589005999780174">Yüksek kontrast modu</translation>
 <translation id="2542089167727451762">Profil resminize dokunun</translation>
 <translation id="255671100581129685">Google Asistan, herkese açık oturumda kullanılamaz.</translation>
 <translation id="256712445991462162">yerleştirilmiş büyüteç</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">Dil</translation>
 <translation id="5313326810920013265">Bluetooth ayarları</translation>
 <translation id="5331975486040154427">USB-C cihaz (sol arka bağlantı noktası)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Çok fazla deneme yapıldı</translation>
 <translation id="5397578532367286026">Bu kullanıcıyla ilgili kullanım ve geçmiş bilgileri, yönetici (<ph name="MANAGER_EMAIL" />) tarafından chrome.com adresinden incelenebilir.</translation>
 <translation id="5430931332414098647">Anında Tethering</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">Google Asistan geçerli kullanıcı hesabı için kullanılamaz.</translation>
 <translation id="5691772641933328258">Parmak izi tanınmadı</translation>
 <translation id="5710450975648804523">Rahatsız Etmeyin modu açık</translation>
+<translation id="573413375004481890">Bu cihaz tüm ekranlarınızı destekleyemediği için bir tanesinin bağlantısı kesildi</translation>
 <translation id="574392208103952083">Orta</translation>
 <translation id="5744083938413354016">Dokunarak sürükleme</translation>
 <translation id="5750765938512549687">Bluetooth kapalı</translation>
@@ -482,7 +482,6 @@
 <translation id="7984197416080286869">Çok fazla parmak izi denemesi yapıldı</translation>
 <translation id="7994370417837006925">Çoklu oturum açma</translation>
 <translation id="8000066093800657092">Ağ yok</translation>
-<translation id="8029241286966751120">Tam Ekran Büyüteci etkinleştirildi. Kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
 <translation id="8030169304546394654">Bağlı değil</translation>
 <translation id="8054466585765276473">Pilin süresi hesaplanıyor.</translation>
 <translation id="8061464966246066292">Yüksek kontrast</translation>
@@ -507,7 +506,6 @@
 <translation id="8388750414311082622">Son masa kaldırılamaz.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> seçenekler menüsü</translation>
 <translation id="8394567579869570560">Ebeveyniniz bu cihazı kilitledi</translation>
-<translation id="8406981827175133772">Tam Ekran Büyüteci</translation>
 <translation id="8425213833346101688">Değiştir</translation>
 <translation id="8427213022735114808">Dikte özelliği, konuşarak herhangi bir metin alanına yazı yazabilmenizi sağlamak için sesinizi Google'a gönderir.</translation>
 <translation id="8428213095426709021">Ayarlar</translation>

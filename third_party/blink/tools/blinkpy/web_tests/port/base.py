@@ -266,17 +266,13 @@ class Port(object):
         best_match = None
         configs = self._flag_specific_configs()
         for name in configs:
-            # To match, the specified flags must contain all config args.
+            # To match the specified flags must start with all config args.
             args = configs[name]
-            if any(arg not in specified_flags for arg in args):
+            if specified_flags[:len(args)] != args:
                 continue
             # The first config matching the highest number of specified flags wins.
             if not best_match or len(configs[best_match]) < len(args):
                 best_match = name
-            else:
-                assert len(configs[best_match]) > len(args), (
-                    'Ambiguous flag-specific configs {} and {}: they match the same number of additional driver args.'
-                    .format(best_match, name))
 
         if best_match:
             return best_match
@@ -311,17 +307,14 @@ class Port(object):
     def _specified_additional_driver_flags(self):
         """Returns the list of additional driver flags specified by the user in
            the following ways, concatenated:
-           1. A single flag in web_tests/additional-driver-flag.setting. If present,
-              this flag will be the first flag.
+           1. Flags in web_tests/additional-driver-flag.setting.
            2. flags expanded from --flag-specific=<name> based on flag-specific config.
            3. Zero or more flags passed by --additional-driver-flag.
         """
         flags = []
         flag_file = self._filesystem.join(self.web_tests_dir(), 'additional-driver-flag.setting')
         if self._filesystem.exists(flag_file):
-            flag = self._filesystem.read_text_file(flag_file).strip()
-            if flag:
-                flags = [flag]
+            flags = self._filesystem.read_text_file(flag_file).split()
 
         flag_specific_option = self.get_option('flag_specific')
         if flag_specific_option:
@@ -782,7 +775,7 @@ class Port(object):
             return []
         wpt_path = match.group(1)
         path_in_wpt = match.group(2)
-        for expectation, ref_path_in_wpt in self._wpt_manifest(wpt_path).extract_reference_list(path_in_wpt):
+        for expectation, ref_path_in_wpt in self.wpt_manifest(wpt_path).extract_reference_list(path_in_wpt):
             ref_absolute_path = self._filesystem.join(self.web_tests_dir(), wpt_path + ref_path_in_wpt)
             reftest_list.append((expectation, ref_absolute_path))
         return reftest_list
@@ -811,7 +804,7 @@ class Port(object):
         else:
             tests.extend(self._all_virtual_tests())
             tests.extend([wpt_path + self.TEST_PATH_SEPARATOR + test for wpt_path in self.WPT_DIRS
-                          for test in self._wpt_manifest(wpt_path).all_urls()])
+                          for test in self.wpt_manifest(wpt_path).all_urls()])
 
         return tests
 
@@ -868,7 +861,7 @@ class Port(object):
                 not Port.is_reference_html_file(self._filesystem, dirname, filename))
 
     @memoized
-    def _wpt_manifest(self, path):
+    def wpt_manifest(self, path):
         assert path in self.WPT_DIRS
         # Convert '/' to the platform-specific separator.
         path = self._filesystem.normpath(path)
@@ -884,7 +877,7 @@ class Port(object):
             return False
         wpt_path = match.group(1)
         path_in_wpt = match.group(2)
-        return self._wpt_manifest(wpt_path).is_slow_test(path_in_wpt)
+        return self.wpt_manifest(wpt_path).is_slow_test(path_in_wpt)
 
     def test_key(self, test_name):
         """Turns a test name into a pair of sublists: the natural sort key of the
@@ -1707,7 +1700,7 @@ class Port(object):
 
     def _wpt_test_urls(self, wpt_path, paths):
         tests = []
-        for test_url_path in self._wpt_manifest(wpt_path).all_urls():
+        for test_url_path in self.wpt_manifest(wpt_path).all_urls():
             assert not test_url_path.startswith('/')
             full_test_url_path = wpt_path + '/' + test_url_path
 
@@ -1720,7 +1713,7 @@ class Port(object):
 
                 # When `test_url_path` is test.any.html etc., and `path_in_wpt` is test.any.js:
                 matches_any_js_test = (
-                    self._wpt_manifest(wpt_path).is_test_file(path_in_wpt)
+                    self.wpt_manifest(wpt_path).is_test_file(path_in_wpt)
                     and test_url_path.startswith(re.sub(r'\.js$', '', path_in_wpt))
                 )
 

@@ -405,4 +405,30 @@ TEST_F(NodeTest, SkipForceReattachDisplayNone) {
   EXPECT_FALSE(span->GetForceReattachLayoutTree());
 }
 
+TEST_F(NodeTest, UpdateChildDirtyAncestorsOnSlotAssignment) {
+  ScopedFlatTreeStyleRecalcForTest scope(true);
+
+  SetBodyContent("<div id=host><span></span></div>");
+  Element* host = GetDocument().getElementById("host");
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString(
+      "<div><slot></slot></div><div id='child-dirty'><slot "
+      "name='target'></slot></div>");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+
+  auto* span = To<Element>(host->firstChild());
+  auto* ancestor = shadow_root.getElementById("child-dirty");
+
+  // Make sure the span is dirty before the re-assignment.
+  span->setAttribute("style", "color:green");
+  EXPECT_FALSE(ancestor->ChildNeedsStyleRecalc());
+
+  // Re-assign to second slot.
+  span->setAttribute(html_names::kSlotAttr, "target");
+  GetDocument().GetSlotAssignmentEngine().RecalcSlotAssignments();
+  EXPECT_TRUE(ancestor->ChildNeedsStyleRecalc());
+}
+
 }  // namespace blink

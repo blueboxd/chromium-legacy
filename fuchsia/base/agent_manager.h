@@ -7,19 +7,19 @@
 
 #include <fuchsia/modular/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
+#include <lib/sys/cpp/component_context.h>
 
 #include "base/containers/flat_map.h"
-#include "base/fuchsia/service_directory_client.h"
+#include "base/fuchsia/default_context.h"
 #include "base/strings/string_piece.h"
 
 namespace cr_fuchsia {
 
-// Connects to the ComponentContext service from the supplied
-// ServiceDirectoryClient, and uses it to connect-to and manage one or more
-// Agents used by the caller.
+// Connects to the ComponentContext service from the supplied ServiceDirectory,
+// and uses it to connect-to and manage one or more Agents used by the caller.
 class BASE_EXPORT AgentManager {
  public:
-  explicit AgentManager(const base::fuchsia::ServiceDirectoryClient* incoming);
+  explicit AgentManager(const sys::ServiceDirectory* incoming);
   ~AgentManager();
 
   // Connects to |agent| so satisfying the specified |request|.

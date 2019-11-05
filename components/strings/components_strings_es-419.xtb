@@ -172,6 +172,7 @@
 <translation id="173080396488393970">No se acepta este tipo de tarjeta</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Intenta comunicarte con el administrador del sistema.</translation>
+<translation id="1739107442478692187">Se produjo una violación de la seguridad de los datos en un sitio o app que usas. Chrome te recomienda revisar las contraseñas guardadas y cambiar la contraseña que usas en <ph name="ORIGIN" /> ahora.</translation>
 <translation id="1740951997222943430">Ingresa una fecha de vencimiento válida</translation>
 <translation id="1743520634839655729">Para realizar pagos de forma más rápida la próxima vez, guarda tu tarjeta, nombre y dirección de facturación en tu cuenta de Google y en este dispositivo.</translation>
 <translation id="1743570585616704562">No se reconoció</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">El dominio no coincide.</translation>
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="2099652385553570808">Grapas triples a la izquierda</translation>
+<translation id="2100280972184758440">Se vulneró tu contraseña</translation>
 <translation id="2102134110707549001">Sugerir contraseña segura…</translation>
 <translation id="2108755909498034140">Reinicia la computadora.</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Se ignoró porque fue anulada por <ph name="POLICY_NAME" /> .</translation>
 <translation id="2119505898009119320">Emitida a: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Perforación en la esquina inferior derecha</translation>
+<translation id="2124528555835617522">Se produjo una violación de la seguridad de los datos en un sitio o app que usas. Chrome te recomienda revisar tus contraseñas guardadas ahora.</translation>
 <translation id="2129079103035905234">Sensores de movimiento</translation>
 <translation id="213826338245044447">Favoritos del celular</translation>
 <translation id="214556005048008348">Cancelar pago</translation>
@@ -479,11 +482,13 @@
 <translation id="3282497668470633863">Agregar el nombre en la tarjeta</translation>
 <translation id="3287510313208355388">Descargar cuando haya conexión</translation>
 <translation id="3293642807462928945">Más información sobre la política <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Se produjo una violación de la seguridad de los datos en un sitio o app que usas. Chrome te recomienda cambiar la contraseña que usas en <ph name="ORIGIN" /> ahora.</translation>
 <translation id="3303855915957856445">No se encontraron resultados en la búsqueda</translation>
 <translation id="3320021301628644560">Agregar dirección de facturación</translation>
 <translation id="3324983252691184275">Carmesí</translation>
 <translation id="3338095232262050444">Seguro</translation>
 <translation id="3355823806454867987">Cambiar la configuración del proxy...</translation>
+<translation id="3360103848165129075">Hoja del controlador de pagos</translation>
 <translation id="3362968246557010467">Se copió esta política de forma automática a partir de la política obsoleta <ph name="OLD_POLICY" />. En su lugar, debes usar esta política.</translation>
 <translation id="3366477098757335611">Ver tarjetas</translation>
 <translation id="3369192424181595722">Error de reloj</translation>
@@ -603,6 +608,7 @@
 <translation id="3949601375789751990">Tu historial de navegación aparece aquí</translation>
 <translation id="3949870428812919180">No hay formas de pago guardadas</translation>
 <translation id="3950820424414687140">Acceder</translation>
+<translation id="3961148744525529027">La hoja del controlador de pagos está abierta a la mitad</translation>
 <translation id="3962859241508114581">Pista anterior</translation>
 <translation id="3963837677003247395">¿Quieres continuar de forma manual?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ninguno}=1{De 1 sitio }other{De # sitios }}</translation>
@@ -1335,6 +1341,7 @@ Detalles adicionales:
 <translation id="7637571805876720304">¿Confirmas que quieres quitar la tarjeta de crédito de Chromium?</translation>
 <translation id="7638605456503525968">Puertos en serie</translation>
 <translation id="7639968568612851608">Gris oscuro</translation>
+<translation id="7653957176542370971">La hoja del controlador de pagos está cerrada</translation>
 <translation id="765676359832457558">Ocultar configuración avanzada...</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7662298039739062396">Configuración controlada por una extensión</translation>
@@ -1464,6 +1471,7 @@ Detalles adicionales:
 <translation id="8261506727792406068">Borrar</translation>
 <translation id="8262952874573525464">Costura del borde inferior</translation>
 <translation id="8267698848189296333">Acceder como <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">La hoja del controlador de pagos está abierta</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Iniciar sesión</translation>
 <translation id="8288807391153049143">Mostrar certificado</translation>

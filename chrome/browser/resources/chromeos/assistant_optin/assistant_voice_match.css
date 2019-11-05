@@ -32,12 +32,17 @@
   width: 255px;
 }
 
-#already-setup-video-container {
-  text-align: center;
+#already-setup-animation-container {
+  flex-grow: 1;
 }
 
-#already-setup-video {
-  height: 450px;
+#already-setup-animation {
+  height: 300px;
+  left: 50%;
+  position: relative;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px;
 }
 
 #intro-container,

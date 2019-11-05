@@ -76,6 +76,7 @@
           items="[[matchingExtensions_]]" preserve-focus risk-selection>
         <template>
           <settings-omnibox-extension-entry engine="[[item]]"
+              focus-row-index="[[index]]"
               tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"
               last-focused="{{omniboxExtensionlastFocused_}}"
               list-blurred="{{omniboxExtensionListBlurred_}}">

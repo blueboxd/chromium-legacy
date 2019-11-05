@@ -132,14 +132,24 @@ class CookieManager {
                         const base::android::JavaParamRef<jobject>& obj);
   jboolean HasCookies(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
-  bool AllowFileSchemeCookies();
-  jboolean AllowFileSchemeCookies(
+  bool GetAllowFileSchemeCookies();
+  jboolean GetAllowFileSchemeCookies(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void SetAcceptFileSchemeCookies(
+
+  // Configures whether CookieManager and WebView instances will honor requests
+  // to set cookies for file:// scheme URLs. This method must be called (and
+  // must finish execution) before calling any other WebView APIs which modify
+  // the cookie store (otherwise, this is not guaranteed to succeed).
+  //
+  // This blocks the calling thread until its work is done to achieve this
+  // guarantee (otherwise other mojo::Remote<network::mojom::CookieManager>
+  // instances might be able to modify the underlying net::CookieStore before
+  // this call finishes.
+  void SetAllowFileSchemeCookies(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jboolean accept);
+      jboolean allow);
 
   base::FilePath GetCookieStorePath();
 
@@ -201,24 +211,24 @@ class CookieManager {
                            bool* result,
                            const net::CookieList& cookies);
 
-  void AllowFileSchemeCookiesAsyncHelper(bool accept,
-                                         base::OnceClosure complete);
+  void SetAllowFileSchemeCookiesAsyncHelper(bool allow,
+                                            base::OnceClosure complete);
   // |can_change_schemes| indicates whether or not this call was successful,
-  // indicating whether we may update |accept_file_scheme_cookies_|.
-  void AllowFileSchemeCookiesCompleted(base::OnceClosure complete,
-                                       bool accept,
-                                       bool can_change_schemes);
+  // indicating whether we may update |allow_file_scheme_cookies_|.
+  void SetAllowFileSchemeCookiesCompleted(base::OnceClosure complete,
+                                          bool allow,
+                                          bool can_change_schemes);
   void MigrateCookieStorePath();
 
   base::FilePath cookie_store_path_;
 
   // This protects the following bool, as it's used on multiple threads.
-  base::Lock accept_file_scheme_cookies_lock_;
+  base::Lock allow_file_scheme_cookies_lock_;
   // True if cookies should be allowed for file URLs. Can only be changed prior
   // to creating the CookieStore.
-  bool accept_file_scheme_cookies_ GUARDED_BY(accept_file_scheme_cookies_lock_);
+  bool allow_file_scheme_cookies_ GUARDED_BY(allow_file_scheme_cookies_lock_);
   // True once the cookie store has been created. Just used to track when
-  // |accept_file_scheme_cookies_| can no longer be modified. Only accessed on
+  // |allow_file_scheme_cookies_| can no longer be modified. Only accessed on
   // |cookie_store_task_runner_|.
   bool cookie_store_created_;
 

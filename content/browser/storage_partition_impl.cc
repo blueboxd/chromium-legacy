@@ -382,7 +382,10 @@ void DeprecateSameSiteCookies(int process_id,
     }
 
     if (emit_messages) {
-      root_frame_host->AddSameSiteCookieDeprecationMessage(cookie_url, warning);
+      root_frame_host->AddSameSiteCookieDeprecationMessage(
+          cookie_url, warning,
+          net::cookie_util::IsSameSiteByDefaultCookiesEnabled(),
+          net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled());
     }
   }
 

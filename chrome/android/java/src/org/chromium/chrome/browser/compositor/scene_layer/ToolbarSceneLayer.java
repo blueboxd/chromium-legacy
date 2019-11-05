@@ -19,8 +19,6 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.ui.widget.ClipDrawableProgressBar.DrawingInfo;
@@ -105,24 +103,11 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         boolean showShadow = fullscreenManager.drawControlsAsTexture()
                 || forceHideAndroidBrowserControls;
 
-        boolean isLocationBarShownInNtp = false;
-        boolean isIncognito = false;
-        Tab currentTab = fullscreenManager.getTab();
-        if (currentTab != null) {
-            boolean isNtp =
-                    currentTab != null ? currentTab.getNativePage() instanceof NewTabPage : false;
-            if (isNtp) {
-                isLocationBarShownInNtp =
-                        ((NewTabPage) currentTab.getNativePage()).isLocationBarShownInNTP();
-            }
-            isIncognito = currentTab.isIncognito();
-        }
-
         int textBoxColor =
                 ToolbarColors.getTextBoxColorForToolbarBackground(mContext.getResources(),
-                        isLocationBarShownInNtp, browserControlsBackgroundColor, isIncognito);
-        int textBoxResourceId = R.drawable.modern_location_bar;
+                        fullscreenManager.getTab(), browserControlsBackgroundColor);
 
+        int textBoxResourceId = R.drawable.modern_location_bar;
         ToolbarSceneLayerJni.get().updateToolbarLayer(mNativePtr, ToolbarSceneLayer.this,
                 resourceManager, R.id.control_container, browserControlsBackgroundColor,
                 textBoxResourceId, browserControlsUrlBarAlpha, textBoxColor,

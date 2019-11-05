@@ -340,8 +340,8 @@ namespace autotestPrivate {
     DOMString name;
     AppWindowType windowType;
     WindowStateType stateType;
-    Bounds bounds_in_root;
-    Bounds target_bounds;
+    Bounds boundsInRoot;
+    Bounds targetBounds;
     DOMString displayId;
 
     DOMString title;

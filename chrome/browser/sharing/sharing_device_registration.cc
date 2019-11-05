@@ -202,6 +202,8 @@ SharingDeviceRegistration::GetEnabledFeatures() const {
     enabled_features.insert(SharingSpecificFields::SHARED_CLIPBOARD);
   if (IsSmsFetcherSupported())
     enabled_features.insert(SharingSpecificFields::SMS_FETCHER);
+  if (IsRemoteCopySupported())
+    enabled_features.insert(SharingSpecificFields::REMOTE_COPY);
 
   return enabled_features;
 }
@@ -229,6 +231,15 @@ bool SharingDeviceRegistration::IsSharedClipboardSupported() const {
 bool SharingDeviceRegistration::IsSmsFetcherSupported() const {
 #if defined(OS_ANDROID)
   return base::FeatureList::IsEnabled(kSmsFetchRequestHandler);
+#endif
+
+  return false;
+}
+
+bool SharingDeviceRegistration::IsRemoteCopySupported() const {
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+  return base::FeatureList::IsEnabled(kRemoteCopyReceiver);
 #endif
 
   return false;

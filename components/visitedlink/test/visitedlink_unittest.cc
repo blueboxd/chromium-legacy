@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
@@ -239,7 +240,10 @@ class VisitedLinkTest : public testing::Test {
     visited_file_ = history_dir_.Append(FILE_PATH_LITERAL("VisitedLinks"));
   }
 
-  void TearDown() override { ClearDB(); }
+  void TearDown() override {
+    ClearDB();
+    ASSERT_TRUE(temp_dir_.Delete());
+  }
 
   base::ScopedTempDir temp_dir_;
 

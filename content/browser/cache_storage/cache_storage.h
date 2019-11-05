@@ -78,6 +78,7 @@ class CONTENT_EXPORT CacheStorage {
   virtual void MatchCache(const std::string& cache_name,
                           blink::mojom::FetchAPIRequestPtr request,
                           blink::mojom::CacheQueryOptionsPtr match_options,
+                          CacheStorageSchedulerPriority priority,
                           int64_t trace_id,
                           CacheStorageCache::ResponseCallback callback) = 0;
 
@@ -87,6 +88,7 @@ class CONTENT_EXPORT CacheStorage {
   // blink::mojom::CacheStorageError::kErrorNotFound.
   virtual void MatchAllCaches(blink::mojom::FetchAPIRequestPtr request,
                               blink::mojom::CacheQueryOptionsPtr match_options,
+                              CacheStorageSchedulerPriority priority,
                               int64_t trace_id,
                               CacheStorageCache::ResponseCallback callback) = 0;
 

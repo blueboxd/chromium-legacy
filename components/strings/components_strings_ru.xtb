@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Этот тип карты не поддерживается.</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Обратитесь за помощью к системному администратору.</translation>
+<translation id="1739107442478692187">На сайте или в приложении, которые вы используете, произошла утечка данных. Рекомендуем проверить безопасность сохраненных паролей и сменить пароль для сайта <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Недопустимый формат месяца.</translation>
 <translation id="1743520634839655729">Чтобы ускорить процесс оплаты в будущем, сохраните карту, свое имя, а также платежный адрес в аккаунте Google и на этом устройстве.</translation>
 <translation id="1743570585616704562">Не распознано</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Несоответствие домена</translation>
 <translation id="2096368010154057602">Департамент</translation>
 <translation id="2099652385553570808">Три скобы слева</translation>
+<translation id="2100280972184758440">Ваш пароль стал известен посторонним</translation>
 <translation id="2102134110707549001">Сгенерировать надежный пароль</translation>
 <translation id="2108755909498034140">Перезагрузите компьютер.</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Игнорируется, так как правило <ph name="POLICY_NAME" /> имеет приоритет.</translation>
 <translation id="2119505898009119320">Кому выдан: <ph name="ORGANIZATION" /> (<ph name="JURISDICTION" />)</translation>
 <translation id="2119867082804433120">Отверстие в правом нижнем углу</translation>
+<translation id="2124528555835617522">На сайте или в приложении, которые вы используете, произошла утечка данных. Рекомендуем проверить безопасность сохраненных паролей.</translation>
 <translation id="2129079103035905234">Датчики движения</translation>
 <translation id="213826338245044447">Закладки на мобильном</translation>
 <translation id="214556005048008348">Отменить оплату</translation>
@@ -469,11 +472,13 @@
 <translation id="3282497668470633863">Укажите имя владельца карты</translation>
 <translation id="3287510313208355388">Скачать при подключении к Интернету</translation>
 <translation id="3293642807462928945">Подробнее о политике <ph name="POLICY_NAME" />…</translation>
+<translation id="3295439534709115864">На сайте или в приложении, которые вы используете, произошла утечка данных. Рекомендуем сменить пароль для сайта <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Ничего не найдено</translation>
 <translation id="3320021301628644560">Добавьте платежный адрес</translation>
 <translation id="3324983252691184275">Малиновый</translation>
 <translation id="3338095232262050444">Защищено</translation>
 <translation id="3355823806454867987">Изменить настройки прокси-сервера...</translation>
+<translation id="3360103848165129075">Лист с обработчиком платежа</translation>
 <translation id="3362968246557010467">Это значение было автоматически скопировано из устаревшего правила <ph name="OLD_POLICY" />. Воспользуйтесь этим правилом.</translation>
 <translation id="3366477098757335611">Список карт</translation>
 <translation id="3369192424181595722">Ошибка часов</translation>
@@ -588,6 +593,7 @@
 <translation id="3949601375789751990">История просмотров появится здесь</translation>
 <translation id="3949870428812919180">Нет сохраненных способов оплаты.</translation>
 <translation id="3950820424414687140">Вход</translation>
+<translation id="3961148744525529027">Лист с обработчиком платежа открыт на половину высоты</translation>
 <translation id="3962859241508114581">Предыдущий трек</translation>
 <translation id="3963837677003247395">Продолжить вручную?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Нет}=1{С 1 сайта }one{С # сайта }few{С # сайтов }many{С # сайтов }other{С # сайта }}</translation>
@@ -1319,6 +1325,7 @@
 <translation id="7637571805876720304">Удалить кредитную карту из Chromium?</translation>
 <translation id="7638605456503525968">Последовательные порты</translation>
 <translation id="7639968568612851608">Темно-серый</translation>
+<translation id="7653957176542370971">Лист с обработчиком платежа закрыт</translation>
 <translation id="765676359832457558">Скрыть дополнительные настройки</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7662298039739062396">Эта настройка управляется расширением</translation>
@@ -1448,6 +1455,7 @@
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8262952874573525464">Скобы по нижнему краю</translation>
 <translation id="8267698848189296333">Вход в аккаунт <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Лист с обработчиком платежа открыт</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Вход</translation>
 <translation id="8288807391153049143">Показать сертификат</translation>

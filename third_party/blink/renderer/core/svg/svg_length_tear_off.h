@@ -73,8 +73,6 @@ class SVGLengthTearOff final : public SVGPropertyTearOff<SVGLength> {
                               float value_in_specified_units,
                               ExceptionState&);
   void convertToSpecifiedUnits(uint16_t unit_type, ExceptionState&);
-
-  bool HasExposedLengthUnit();
 };
 
 }  // namespace blink

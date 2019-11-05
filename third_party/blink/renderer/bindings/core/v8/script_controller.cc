@@ -244,18 +244,26 @@ void ScriptController::ExecuteJavaScriptURL(
   bool should_bypass_main_world_content_security_policy =
       check_main_world_csp == kDoNotCheckContentSecurityPolicy ||
       ContentSecurityPolicy::ShouldBypassMainWorld(GetFrame()->GetDocument());
-  if (!GetFrame()->GetPage() ||
-      (!should_bypass_main_world_content_security_policy &&
-       !GetFrame()->GetDocument()->GetContentSecurityPolicy()->AllowInline(
-           ContentSecurityPolicy::InlineType::kNavigation, nullptr,
-           script_source, String() /* nonce */,
-           GetFrame()->GetDocument()->Url(), EventHandlerPosition().line_))) {
+  if (!GetFrame()->GetPage())
+    return;
+
+  if (!should_bypass_main_world_content_security_policy &&
+      !GetFrame()->GetDocument()->GetContentSecurityPolicy()->AllowInline(
+          ContentSecurityPolicy::InlineType::kNavigation, nullptr,
+          script_source, String() /* nonce */, GetFrame()->GetDocument()->Url(),
+          EventHandlerPosition().line_)) {
     return;
   }
 
-  bool had_navigation_before = GetFrame()->Loader().HasProvisionalNavigation();
-
   script_source = script_source.Substring(kJavascriptSchemeLength);
+  if (!should_bypass_main_world_content_security_policy) {
+    script_source = TrustedTypesCheckForJavascriptURLinNavigation(
+        script_source, GetFrame()->GetDocument());
+    if (script_source.IsEmpty())
+      return;
+  }
+
+  bool had_navigation_before = GetFrame()->Loader().HasProvisionalNavigation();
 
   v8::HandleScope handle_scope(GetIsolate());
 

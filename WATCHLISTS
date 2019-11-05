@@ -69,6 +69,9 @@
                   '|media/midi/*_android.*' \
                   '|media/video/capture/android'
     },
+    'android_omnibox': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/omnibox/'
+    },
     'android_search_widget': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/locale/' \
                   '|chrome/android/java/src/org/chromium/chrome/browser/searchwidget/'
@@ -82,8 +85,7 @@
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/Tab'
     },
     'android_uma_settings': {
-      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/UsageAndCrashReportsPreferenceFragment.java|'\
-                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManager.java|'\
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManager.java|'\
                   'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferences.java|'\
                   'chrome/android/java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java',
     },
@@ -1966,6 +1968,7 @@
                                      'ortuno+watch@chromium.org'],
     'android_lint': ['wnwen+watch@chromium.org'],
     'android_media': ['mlamouri+watch-media@chromium.org'],
+    'android_omnibox': ['ender+watch@chromium.org'],
     'android_search_widget': ['tedchoc+watch@chromium.org',
                               'yusufo+watch@chromium.org'],
     'android_studio': ['wnwen+watch@chromium.org',

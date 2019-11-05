@@ -14,6 +14,7 @@
 
 #include "base/containers/checked_iterators.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1140,6 +1141,50 @@ TEST(SpanTest, MakeStaticSpanFromContainer) {
   EXPECT_EQ(expected_span.data(), make_span<5>(vector).data());
   EXPECT_EQ(expected_span.size(), make_span<5>(vector).size());
   static_assert(decltype(make_span<5>(vector))::extent == 5, "");
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
+}
+
+TEST(SpanTest, MakeStaticSpanFromConstexprContainer) {
+  constexpr StringPiece str = "Hello, World";
+  constexpr auto made_span = make_span<12>(str);
+  static_assert(str.data() == made_span.data(), "Error: data() does not match");
+  static_assert(str.size() == made_span.size(), "Error: size() does not match");
+  static_assert(std::is_same<decltype(str)::value_type,
+                             decltype(made_span)::value_type>::value,
+                "Error: value_type does not match");
+  static_assert(str.size() == decltype(made_span)::extent,
+                "Error: extent does not match");
+}
+
+TEST(SpanTest, MakeSpanFromRValueContainer) {
+  std::vector<int> vector = {-1, -2, -3, -4, -5};
+  span<const int> expected_span(vector);
+  // Note: While static_cast<T&&>(foo) is effectively just a fancy spelling of
+  // std::move(foo), make_span does not actually take ownership of the passed in
+  // container. Writing it this way makes it more obvious that we simply care
+  // about the right behavour when passing rvalues.
+  auto made_span = make_span(static_cast<std::vector<int>&&>(vector));
+  EXPECT_EQ(expected_span.data(), made_span.data());
+  EXPECT_EQ(expected_span.size(), made_span.size());
+  static_assert(decltype(made_span)::extent == dynamic_extent, "");
+  static_assert(
+      std::is_same<decltype(expected_span), decltype(made_span)>::value,
+      "the type of made_span differs from expected_span!");
+}
+
+TEST(SpanTest, MakeStaticSpanFromRValueContainer) {
+  std::vector<int> vector = {-1, -2, -3, -4, -5};
+  span<const int, 5> expected_span(vector.data(), vector.size());
+  // Note: While static_cast<T&&>(foo) is effectively just a fancy spelling of
+  // std::move(foo), make_span does not actually take ownership of the passed in
+  // container. Writing it this way makes it more obvious that we simply care
+  // about the right behavour when passing rvalues.
+  auto made_span = make_span<5>(static_cast<std::vector<int>&&>(vector));
+  EXPECT_EQ(expected_span.data(), made_span.data());
+  EXPECT_EQ(expected_span.size(), made_span.size());
+  static_assert(decltype(made_span)::extent == 5, "");
   static_assert(
       std::is_same<decltype(expected_span), decltype(made_span)>::value,
       "the type of made_span differs from expected_span!");

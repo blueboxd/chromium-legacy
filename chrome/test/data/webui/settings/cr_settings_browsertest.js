@@ -1373,9 +1373,9 @@ CrSettingsSiteDetailsTest.prototype = {
   ]),
 };
 
-// Disabling on Windows debug due to flaky timeout on Win7 Tests (dbg)(1) bot.
-// https://crbug.com/825304
-GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+// Disabling on debug due to flaky timeout on Win7 Tests (dbg)(1) bot.
+// https://crbug.com/825304 - later for other platforms in crbug.com/1021219.
+GEN('#if !defined(NDEBUG)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
@@ -2274,7 +2274,14 @@ CrSettingsCrostiniPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsCrostiniPageTest', 'All', function() {
+// Disabling on debug due to timeout.  https://crbug.com/1020318
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_Crostini_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_Crostini_All All');
+GEN('#endif');
+
+TEST_F('CrSettingsCrostiniPageTest', 'MAYBE_Crostini_All', function() {
   mocha.run();
 });
 

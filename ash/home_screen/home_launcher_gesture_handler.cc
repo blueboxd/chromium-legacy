@@ -9,7 +9,6 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/drag_window_from_shelf_controller.h"
-#include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/swipe_home_to_overview_controller.h"
 #include "ash/root_window_controller.h"
@@ -355,6 +354,7 @@ bool HomeLauncherGestureHandler::ShowHomeLauncher(
   display_ = display;
   mode_ = Mode::kSlideUpToShow;
 
+  PauseBackdropUpdatesForActiveWindow();
   UpdateWindowsForSlideUpOrDown(0.0, /*animate=*/false);
   AnimateToFinalState(AnimationTrigger::kLauncherButton);
   return true;
@@ -377,6 +377,7 @@ bool HomeLauncherGestureHandler::HideHomeLauncherForWindow(
   display_ = display;
   mode_ = Mode::kSlideDownToHide;
 
+  PauseBackdropUpdatesForActiveWindow();
   UpdateWindowsForSlideUpOrDown(1.0, /*animate=*/false);
   AnimateToFinalState(AnimationTrigger::kHideForWindow);
   return true;
@@ -398,28 +399,17 @@ bool HomeLauncherGestureHandler::IsDragInProgress() const {
   return mode_ != Mode::kNone;
 }
 
-void HomeLauncherGestureHandler::AddObserver(
-    HomeLauncherGestureHandlerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void HomeLauncherGestureHandler::RemoveObserver(
-    HomeLauncherGestureHandlerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void HomeLauncherGestureHandler::NotifyHomeLauncherTargetPositionChanged(
     bool showing,
     int64_t display_id) {
-  for (auto& observer : observers_)
-    observer.OnHomeLauncherTargetPositionChanged(showing, display_id);
+  GetHomeScreenDelegate()->OnHomeLauncherTargetPositionChanged(showing,
+                                                               display_id);
 }
 
 void HomeLauncherGestureHandler::NotifyHomeLauncherAnimationComplete(
     bool shown,
     int64_t display_id) {
-  for (auto& observer : observers_)
-    observer.OnHomeLauncherAnimationComplete(shown, display_id);
+  GetHomeScreenDelegate()->OnHomeLauncherAnimationComplete(shown, display_id);
 }
 
 void HomeLauncherGestureHandler::OnWindowDestroying(aura::Window* window) {
@@ -712,6 +702,7 @@ void HomeLauncherGestureHandler::UpdateWindowsForSlideUpOrDown(double progress,
 void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
   display_.set_id(display::kInvalidDisplayId);
   backdrop_values_ = base::nullopt;
+  scoped_backdrop_update_pause_ = base::nullopt;
   divider_values_ = base::nullopt;
   last_event_location_ = base::nullopt;
   last_scroll_y_ = 0.f;
@@ -925,6 +916,7 @@ void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
     DCHECK(home_screen_delegate);
     home_screen_delegate->OnHomeLauncherDragStart();
 
+    PauseBackdropUpdatesForActiveWindow();
     UpdateWindowsForSlideUpOrDown(/*progress=*/0.0, /*animate=*/false);
   }
 }
@@ -990,6 +982,19 @@ void HomeLauncherGestureHandler::OnDragCancelled() {
 
     AnimateToFinalState(AnimationTrigger::kDragRelease);
   }
+}
+
+void HomeLauncherGestureHandler::PauseBackdropUpdatesForActiveWindow() {
+  if (scoped_backdrop_update_pause_.has_value())
+    return;
+  aura::Window* active_window = GetActiveWindow();
+  if (!active_window)
+    return;
+  scoped_backdrop_update_pause_ =
+      GetWorkspaceControllerForContext(active_window)
+          ->layout_manager()
+          ->backdrop_controller()
+          ->PauseUpdates();
 }
 
 }  // namespace ash

@@ -138,6 +138,7 @@
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
+#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
@@ -3219,29 +3220,23 @@ bool WebViewImpl::TabsToLinks() const {
   return tabs_to_links_;
 }
 
-void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
-  DCHECK(MainFrameImpl());
+void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
+  if (!MainFrameImpl()) {
+    DCHECK(!layer);
+    return;
+  }
 
-  // In CAP, SetRootLayer() is used instead.
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
-  visual_viewport.AttachLayerTree(graphics_layer);
-  if (graphics_layer) {
-    root_graphics_layer_ = visual_viewport.RootGraphicsLayer();
-    root_layer_ = root_graphics_layer_->CcLayer();
+  root_layer_ = std::move(layer);
+  WebWidgetClient* widget_client = MainFrameImpl()->FrameWidgetImpl()->Client();
+  if (root_layer_) {
     UpdateDeviceEmulationTransform();
-    MainFrameImpl()->FrameWidgetImpl()->Client()->SetRootLayer(root_layer_);
+    widget_client->SetRootLayer(root_layer_);
   } else {
-    root_graphics_layer_ = nullptr;
-    root_layer_ = nullptr;
-    WebWidgetClient* widget_client =
-        MainFrameImpl()->FrameWidgetImpl()->Client();
     widget_client->SetRootLayer(nullptr);
 
     // When the document in an already-attached main frame is being replaced by
-    // a navigation then SetRootGraphicsLayer(nullptr) will be called. Since we
-    // are navigating, defer BeginMainFrames until the new document is ready for
+    // a navigation then SetRootLayer(nullptr) will be called. Since we are
+    // navigating, defer BeginMainFrames until the new document is ready for
     // them.
     //
     // TODO(crbug.com/936696): This should not be needed once we always swap
@@ -3250,34 +3245,10 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
   }
 }
 
-void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  DCHECK(MainFrameImpl());
-  DCHECK(layer);
-
-  root_layer_ = std::move(layer);
-  MainFrameImpl()->FrameWidgetImpl()->Client()->SetRootLayer(root_layer_);
-}
-
 void WebViewImpl::InvalidateRect(const IntRect& rect) {
   // This is only for WebViewPlugin.
   if (!does_composite_ && AsView().client)
     AsView().client->DidInvalidateRect(rect);
-}
-
-PaintLayerCompositor* WebViewImpl::Compositor() const {
-  WebLocalFrameImpl* frame = MainFrameImpl();
-  if (!frame)
-    return nullptr;
-
-  Document* document = frame->GetFrame()->GetDocument();
-  if (!document || !document->GetLayoutView())
-    return nullptr;
-
-  return document->GetLayoutView()->Compositor();
-}
-
-GraphicsLayer* WebViewImpl::RootGraphicsLayer() {
-  return root_graphics_layer_;
 }
 
 void WebViewImpl::SetAnimationHost(cc::AnimationHost* animation_host) {

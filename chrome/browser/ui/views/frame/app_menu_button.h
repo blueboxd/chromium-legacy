@@ -32,9 +32,6 @@ class AppMenuButton : public ToolbarButton {
     return menu_button_controller_;
   }
 
-  // ToolbarButton:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-
   void AddObserver(AppMenuButtonObserver* observer);
   void RemoveObserver(AppMenuButtonObserver* observer);
 

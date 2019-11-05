@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">व्यत्यय आणू नका सुरू आहे.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{सूचना सेटिंग्ज दाखवा. ॲपसाठी सूचना बंद आहेत}other{सूचना सेटिंग्ज दाखवा. # ॲप्ससाठी सूचना बंद आहेत}}</translation>
 <translation id="1525508553941733066">डिसमिस करा</translation>
-<translation id="1537254971476575106">क्षेत्रे भिंग</translation>
 <translation id="15373452373711364">मोठा माउस कर्सर</translation>
 <translation id="1546492247443594934">डेस्‍क २</translation>
 <translation id="1550523713251050646">अधिक पर्यायांसाठी क्लिक करा</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">कीबोर्डचा लेआउट स्विच करण्यासाठी <ph name="KEYBOARD_SHORTCUT" /> दाबा.</translation>
 <translation id="2501920221385095727">स्टिकी की</translation>
 <translation id="2509468283778169019">CAPS LOCK सुरु आहे</translation>
-<translation id="2532589005999780174">उच्च तीव्रता मोड</translation>
 <translation id="2542089167727451762">तुमच्या प्रोफाइल इमेजवर टॅप करा</translation>
 <translation id="255671100581129685">सार्वजनिक सेशनमध्ये Google असिस्टंट उपलब्ध नाही.</translation>
 <translation id="256712445991462162">डॉक केलेले मॅग्निफायर</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">भाषा</translation>
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग्ज</translation>
 <translation id="5331975486040154427">USB-C डिव्‍हाइस (डाव्या बाजूचे मागील पोर्ट)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">खूप जास्त प्रयत्न</translation>
 <translation id="5397578532367286026">या वापरकर्त्याच्या वापर आणि इतिहासाचे chrome.com वरील व्यवस्थापकाद्वारे (<ph name="MANAGER_EMAIL" />) पुनरावलोकन केले जाऊ शकते.</translation>
 <translation id="5430931332414098647">झटपट टेदरिंग</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">सध्याच्या वापरकर्ता खात्यावर Google असिस्टंट उपलब्ध नाही.</translation>
 <translation id="5691772641933328258">फिंगरप्रिंट ओळखले नाही</translation>
 <translation id="5710450975648804523">व्यत्यय आणू नका सुरू आहे</translation>
+<translation id="573413375004481890">हे डिव्हाइस तुमच्या सर्व डिस्प्लेंना सपोर्ट करू शकले नाही, त्यामुळे एक डिस्प्ले डिस्कनेक्ट केला गेला</translation>
 <translation id="574392208103952083">मध्यम</translation>
 <translation id="5744083938413354016">टॅप ड्रॅगिंग</translation>
 <translation id="5750765938512549687">ब्लूटूथ बंद आहे</translation>
@@ -481,7 +481,6 @@
 <translation id="7984197416080286869">खूप जास्त फिंगरप्रिंट प्रयत्न</translation>
 <translation id="7994370417837006925">मल्टिपल साइन इन</translation>
 <translation id="8000066093800657092">कोणतेही नेटवर्क नाही</translation>
-<translation id="8029241286966751120">फुलस्क्रीन मॅग्निफायर सुरू केले आहे. ते टॉगल करून बंद करण्यासाठी पुन्हा Ctrl+Search+M दाबा.</translation>
 <translation id="8030169304546394654">डिस्कनेक्ट केलेले</translation>
 <translation id="8054466585765276473">बॅटरी वेळ गणना करत आहे.</translation>
 <translation id="8061464966246066292">उच्च रंगभेद</translation>
@@ -506,7 +505,6 @@
 <translation id="8388750414311082622">शेवटचा डेस्क काढून टाकू शकत नाही.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> साठी पर्याय मेनू</translation>
 <translation id="8394567579869570560">तुमच्या पालकाने हे डिव्हाइस लॉक केले</translation>
-<translation id="8406981827175133772">फुलस्क्रीन मॅग्निफायर</translation>
 <translation id="8425213833346101688">बदल करा</translation>
 <translation id="8427213022735114808">कोणत्याही मजकूर फील्डमध्ये व्हॉइस टायपिंगची अनुमती देण्यासाठी डिक्टेशन तुमचा व्हॉइस Google ला पाठवेल.</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>

@@ -373,6 +373,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, können
       Enterprise-Nutzer kein ARC verwenden.</translation>
+<translation id="1553956579506604198">Installation externer Erweiterungen blockieren</translation>
 <translation id="1559980755219453326">Mit dieser Richtlinie wird gesteuert, ob Daten von Erweiterungen und Plug-ins erfasst werden.
 
       Wenn die Richtlinie nicht festgelegt oder auf "True" gesetzt ist, werden Daten von Erweiterungen und Plug-ins erfasst.
@@ -501,6 +502,15 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Wenn für die Richtlinie eine gültige URL angegeben ist, lädt <ph name="PRODUCT_NAME" /> die Websiteliste von dieser URL herunter und wendet die Regeln so an, als wären sie mit der Richtlinie "<ph name="SITELIST_POLICY_NAME" />" konfiguriert worden.
 
       Weitere Informationen zur Richtlinie "<ph name="IEEM_SITELIST_POLICY" />" von Internet Explorer finden Sie unter https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
+<translation id="1839278886947586809">
+      Diese Richtlinie wurde in M80 entfernt, da WebDriver mittlerweile mit allen vorhandenen Richtlinien kompatibel ist und sie deshalb nicht mehr gebraucht wurde.
+
+      Diese Richtlinie erlaubt es Nutzern der WebDriver-Funktion, Richtlinien zu überschreiben, die die Verwendung von WebDriver beeinträchtigen können.
+
+      Sie deaktiviert aktuell die Richtlinien SitePerProcess und IsolateOrigins.
+
+      Wenn die Richtlinie aktiviert ist, kann WebDriver inkompatible Richtlinien überschreiben.
+      Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver inkompatible Richtlinien nicht überschreiben.</translation>
 <translation id="1843117931376765605">Aktualisierungsrate für Nutzerrichtlinien</translation>
 <translation id="1844620919405873871">Konfiguriert Richtlinien zum schnellen Entsperren.</translation>
 <translation id="1845405905602899692">Kioskeinstellungen</translation>
@@ -653,6 +663,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
           Wenn diese Richtlinie nicht konfiguriert ist, kommen alle vier Schemas zum Einsatz.</translation>
 <translation id="2067011586099792101">Zugriff auf Websites außerhalb von Inhaltspaketen blockieren</translation>
 <translation id="2073552873076775140">Anmeldung in <ph name="PRODUCT_NAME" /> erlauben</translation>
+<translation id="2075732129949889165">Crostini-Ansible-Playbook</translation>
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
 <translation id="2077273864382355561">Verzögerung für die Bildschirmabschaltung im Akkubetrieb</translation>
 <translation id="2082205219176343977">Konfigurieren Sie die für das Gerät erforderliche Mindestversion von Chrome.</translation>
@@ -663,6 +674,14 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="2107601598727098402">
         Diese Richtlinie wird in M72 eingestellt. Verwenden sie stattdessen CloudManagementEnrollmentToken.
         </translation>
+<translation id="2108169571875569435">Mit dieser Richtlinie wird festgelegt, welcher Befehl zum Öffnen von URLs in einem alternativen Browser verwendet werden soll.
+
+      Wenn die Richtlinie nicht festgelegt ist, wird eine plattformspezifische Standardeinstellung verwendet: Bei Windows wird Internet Explorer geöffnet und bei Mac OS X Safari. Unter Linux wird kein alternativer Browser geöffnet, wenn die Richtlinie nicht festgelegt ist.
+
+      Ist die Richtlinie auf <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" /> oder <ph name="OPERA_VALUE_PLACEHOLDER" /> festgelegt, wird der angegebene Browser geöffnet, sofern er installiert ist.
+      <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> ist nur unter Windows und <ph name="SAFARI_VALUE_PLACEHOLDER" /> nur unter Windows und Mac OS X verfügbar.
+
+      Wenn für die Richtlinie ein Dateipfad festgelegt ist, wird diese Datei als ausführbare Datei verwendet.</translation>
 <translation id="2111016292707172233">Durch diese Richtlinie wird die Verfügbarkeit von "Zum Suchen tippen" in der Inhaltsansicht von <ph name="PRODUCT_NAME" /> aktiviert.
 
       Wenn Sie diese Einstellung aktivieren, steht dem Nutzer "Zum Suchen tippen" zur Verfügung und er kann die Funktion aktivieren oder deaktivieren.
@@ -761,6 +780,9 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
       "VideoCaptureAllowedUrls" zur Verfügung.
 
       Diese Richtlinie gilt für jegliche Form der Videoeingabe, nicht nur für die integrierte Kamera.</translation>
+<translation id="2197625019569762163">Wenn diese Richtlinie auf "true" gesetzt ist, wird standardmäßig die numerische Tastatur zur Eingabe des Passworts auf dem Anmeldebildschirm angezeigt. Nutzer haben jedoch die Möglichkeit, zur normalen Tastatur zu wechseln.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern nicht geändert werden. Wird sie nicht konfiguriert oder auf "false" gesetzt, hat sie keine Auswirkung.</translation>
 <translation id="2201555246697292490">Weiße Liste für natives Messaging konfigurieren</translation>
 <translation id="220280840901385239">Nutzern erlauben, Ausnahmen hinzuzufügen, um blockierbare gemischte Inhalte zuzulassen</translation>
 <translation id="2204753382813641270">Automatisches Ausblenden der Ablage verwalten</translation>
@@ -943,6 +965,17 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
       Ist diese Richtlinie auf "False" gesetzt, wird anstelle der Eingabeaufforderung zur Netzwerkkonfiguration eine Fehlermeldung angezeigt.</translation>
 <translation id="2498238926436517902">Ablage immer automatisch ausblenden</translation>
+<translation id="2505805702054675476">Mit dieser Richtlinie werden Befehlszeilenparameter verwaltet, die das Starten des alternativen Browsers steuern.
+
+      Wenn die Richtlinie nicht festgelegt ist, wird nur die URL als Befehlszeilenparameter weitergegeben.
+
+      Wenn für die Richtlinie eine Liste von Strings festgelegt ist, wird jeder String als separater Befehlszeilenparameter an den alternativen Browser weitergegeben. Unter Windows werden die Parameter durch Leerzeichen verbunden. Unter Mac OS X und Linux werden auch Parameter mit Leerzeichen als einzelne Parameter behandelt.
+
+      Ist in einem Element der Platzhalter <ph name="URL_PLACEHOLDER" /> enthalten, wird er durch die URL der Seite ersetzt, die geöffnet werden soll.
+
+      Wenn kein Element <ph name="URL_PLACEHOLDER" /> enthält, wird die URL an das Ende der Befehlszeile angehängt.
+
+      Umgebungsvariablen werden erweitert. Unter Windows wird <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> durch die <ph name="ENV_VARIABLE_VALUE" />-Umgebungsvariable ersetzt. Unter Mac OS X und Linux wird <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> durch die <ph name="ENV_VARIABLE" />-Umgebungsvariable ersetzt.</translation>
 <translation id="250670737672448119">Mit dieser Richtlinie wird die Bedienungshilfe "Textcursor hervorheben" aktiviert.
 
           Dabei wird der Bereich um den Textcursor beim Bearbeiten hervorgehoben.
@@ -963,6 +996,11 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2517466659416174529">Deaktivieren von Tabs im Hintergrund zulassen</translation>
 <translation id="2518231489509538392">Wiedergabe von Audioinhalten zulassen</translation>
 <translation id="2521581787935130926">App-Verknüpfung in der Lesezeichenleiste anzeigen</translation>
+<translation id="2526082146909867346">Ermöglicht das Festlegen einer Liste von URL-Mustern, um anzugeben, für welche Websites <ph name="PRODUCT_NAME" /> Clientzertifikate automatisch auswählen soll, falls die Website ein Zertifikat anfordert.
+
+          Der Wert muss ein Array von String-JSON-Wörterbüchern sein. Jedes Wörterbuch muss das Format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> haben, wobei <ph name="URL_PATTERN_PLACEHOLDER" /> ein Muster zur Festlegung der Inhalte ist. <ph name="FILTER_PLACEHOLDER" /> schränkt ein, aus welchen Clientzertifikaten der Browser automatisch auswählt. Unabhängig vom Filter werden nur Zertifikate ausgewählt, die mit der Zertifikatanforderung des Servers übereinstimmen. Wenn <ph name="FILTER_PLACEHOLDER" /> beispielsweise das Format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> hat, werden außerdem nur Clientzertifikate ausgewählt, die über ein Zertifikat mit dem CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> ausgestellt werden. Enthält <ph name="FILTER_PLACEHOLDER" /> einen <ph name="ISSUER_STRING_VALUE" />- und einen <ph name="SUBJECT_STRING_VALUE" />-Abschnitt, müssen beide Bedingungen erfüllt sein, damit das Zertifikat ausgewählt wird. Wenn durch <ph name="FILTER_PLACEHOLDER" /> eine Organisation ("O") festgelegt wird, muss ein Zertifikat mindestens eine Organisation haben, die mit dem angegebenen Wert übereinstimmt, um ausgewählt zu werden. Wird durch <ph name="FILTER_PLACEHOLDER" /> eine Organisationseinheit ("OU") angegeben, muss ein Zertifikat mindestens eine Organisationseinheit haben, die mit dem angegebenen Wert übereinstimmt, um ausgewählt zu werden. Wenn <ph name="FILTER_PLACEHOLDER" /> das leere Wörterbuch <ph name="EMPTY_DICTIONARY" /> ist, wird die Auswahl der Clientzertifikate nicht zusätzlich eingeschränkt.
+
+          Ist diese Richtlinie nicht konfiguriert, erfolgt keine automatische Auswahl für Websites.</translation>
 <translation id="2529659024053332711">Ermöglicht die Konfiguration des Verhaltens beim Start.
 
           Wenn Sie "'Neuer Tab'-Seite öffnen" wählen, wird die "Neuer Tab"-Seite bei jedem Start von <ph name="PRODUCT_NAME" /> geöffnet.
@@ -1381,6 +1419,13 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="3236046242843493070">URL-Muster für die Installation von Erweiterungen, Apps und Nutzerskripten von</translation>
 <translation id="3240609035816615922">Richtlinie für den Zugriff auf die Konfiguration von Druckern.</translation>
 <translation id="3240655340884151271">MAC-Adresse der im Dock verbauten NIC</translation>
+<translation id="3242756958360374888">Diese Richtlinie enthält eine Liste von Mustern, mit denen die Sichtbarkeit von Konten in <ph name="PRODUCT_NAME" /> gesteuert wird.
+
+      Alle Google-Konten auf dem Gerät werden mit den in dieser Richtlinie gespeicherten Mustern abgeglichen, um zu ermitteln, welche Konten in <ph name="PRODUCT_NAME" /> angezeigt werden sollen. Konten sind sichtbar, wenn ihr Name mit einem Muster in der Liste übereinstimmt. Andernfalls werden sie ausgeblendet.
+
+      Mit dem Platzhalterzeichen "*" kann eine Übereinstimmung mit null oder mehr beliebigen Zeichen erzielt werden. Als Escape-Zeichen wird "\" verwendet. Dieses können Sie vor "*" oder "\" setzen, wenn diese Zeichen – also Sternchen oder umgekehrter Schrägstrich – gemeint sind.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, werden alle Google-Konten auf dem Gerät in <ph name="PRODUCT_NAME" /> angezeigt.</translation>
 <translation id="3251500716404598358">Konfigurieren Sie Richtlinien, um zwischen Browsern zu wechseln.
 
       Konfigurierte Websites werden automatisch in einem anderen Browser als <ph name="PRODUCT_NAME" /> geöffnet.</translation>
@@ -1431,6 +1476,19 @@ Für vorausgewählte Sprachen wird immer das beliebteste Tastaturlayout für die
 
 Diese Richtlinie kann nur als Empfehlung festgelegt werden. Mithilfe dieser Richtlinie können Sie eine Gruppe empfohlener Sprachen an den Anfang der Liste verschieben, Nutzer haben jedoch immer die Möglichkeit, eine beliebige Sprache für ihre Sitzung auszuwählen, die von <ph name="PRODUCT_OS_NAME" /> unterstützt wird.
       </translation>
+<translation id="3378482432905539452">Diese Richtlinie ist veraltet. Sie können mit <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> die Verfügbarkeit des Flash-Plug-ins definieren und über <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> festlegen, ob der integrierte PDF-Viewer zum Öffnen von PDF-Dateien verwendet werden soll.
+
+      Mit dieser Richtlinie wird eine Liste von Plug-ins angegeben, die der Nutzer in <ph name="PRODUCT_NAME" /> aktivieren oder deaktivieren kann.
+
+      Die Platzhalterzeichen "*" und "?" können für beliebige Zeichenfolgen stehen. "*" entspricht einer beliebigen Anzahl von Zeichen, während "?" ein optionales einzelnes Zeichen darstellt, d. h. kein oder ein Zeichen. Als Escape-Zeichen wird "\" verwendet. Dieses können Sie vor "*", "?" oder "\" setzen, wenn diese Zeichen – also Sternchen, Fragezeichen oder umgekehrter Schrägstrich – gemeint sind.
+
+      Wenn Sie diese Einstellung aktivieren, kann die angegebene Liste von Plug-ins in <ph name="PRODUCT_NAME" /> verwendet werden. Nutzer können diese in "about:plugins" aktivieren oder deaktivieren, selbst wenn das Plug-in mit einem Muster in DisabledPlugins übereinstimmt. Außerdem können Nutzer Plug-ins aktivieren oder deaktivieren, die mit keinem der Muster in DisabledPlugins, DisabledPluginsExceptions und EnabledPlugins übereinstimmen.
+
+      Diese Richtlinie soll einen konsequenten Ausschluss von Plug-ins ermöglichen, wenn die Liste DisabledPlugins Platzhaltereinträge wie "*" zur Deaktivierung aller Plug-ins oder "*Java*" zur Deaktivierung aller Java-Plug-ins enthält, der Administrator jedoch bestimmte Versionen wie "IcedTea Java 2.3" aktivieren möchte. Solche spezifischen Versionen können in dieser Richtlinie angegeben werden.
+
+      Beachten Sie, dass sowohl der Plug-in-Name als auch der Plug-in-Gruppenname ausgenommen werden müssen. Jede Plug-in-Gruppe wird in einem separaten Abschnitt unter "about:plugins" angezeigt, wobei jeder Abschnitt ein oder mehrere Plug-ins enthalten kann. So gehört beispielsweise das Plug-in "Shockwave Flash" der Gruppe "Adobe Flash Player" an. Wenn dieses Plug-in von der schwarzen Liste ausgenommen werden soll, muss in der Ausnahmeliste für beide Namen eine Übereinstimmung vorhanden sein.
+
+      Ist diese Richtlinie nicht konfiguriert, werden alle Plug-ins, die mit den Mustern in DisabledPlugins übereinstimmen, deaktiviert. Sie können dann nicht vom Nutzer aktiviert werden.</translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
 <translation id="3388153794103186066">Hiermit können Sie eine Liste mit URLs festlegen, deren Websites automatisch auf ein USB-Gerät mit der angegebenen Anbieter- und Produkt-ID zugreifen dürfen. Damit die Richtlinie gültig ist, muss jeder Eintrag in der Liste sowohl Geräte als auch URLs enthalten. Jeder Geräteeintrag kann je ein Feld für eine Anbieter-ID und eine Produkt-ID enthalten. Fehlende IDs werden als Platzhalter betrachtet, wobei als Ausnahme zu berücksichtigen ist, dass eine Produkt-ID nicht ohne zugehörige Anbieter-ID angegeben werden kann. Andernfalls ist die Richtlinie ungültig und wird ignoriert.
 
@@ -2140,6 +2198,15 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="445270821089253489">Legt fest, welche Art von Nutzer- und Geräteinformationen gesendet wird.</translation>
 <translation id="4453913621209182880">Drucken nur mit Hintergrundgrafiken zulassen</translation>
 <translation id="4454820008017317557">Symbol von <ph name="PRODUCT_NAME" /> in der Symbolleiste anzeigen</translation>
+<translation id="4458977366860064210">Hiermit kann die alte <ph name="CORS" />-Implementierung statt des neuen <ph name="CORS" /> verwendet werden.
+
+      Wenn diese Einstellung auf "true" festgelegt ist, wird die alte Implementierung verwendet, die kompatibel mit vorherigen Versionen sein sollte.
+
+      Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kommt die neue Implementierung zum Einsatz, die bei Enterprise-Nutzern zu Kompatibilitätsproblemen führen kann.
+
+      Die Richtlinie wird nach einigen Meilensteinen entfernt.
+
+      Details zu <ph name="CORS" /> erhalten Sie unter <ph name="CORS_HELP_URL" />.</translation>
 <translation id="4467952432486360968">Drittanbieter-Cookies blockieren</translation>
 <translation id="4474167089968829729">Aktiviert das Speichern von Passwörtern im Passwortmanager</translation>
 <translation id="4476769083125004742">Wenn diese Richtlinie auf <ph name="BLOCK_GEOLOCATION_SETTING" /> gesetzt ist, haben Android-Apps keinen Zugriff auf Standortdaten. Wenn Sie diese Richtlinie auf einen anderen Wert setzen oder sie nicht konfigurieren, wird der Nutzer um seine Zustimmung gebeten, wenn eine Android-App auf Standortdaten zugreifen möchte.</translation>
@@ -2177,6 +2244,17 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4534500438517478692">Name der Android-Einschränkung:</translation>
 <translation id="4541530620466526913">Lokale Gerätekonten</translation>
 <translation id="4543502256674577024">Einstellungen für die Geräteaktualisierung</translation>
+<translation id="4548555985107150628">Diese Richtlinie ist veraltet. Sie können mit <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> die Verfügbarkeit des Flash-Plug-ins definieren und über <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> festlegen, ob der integrierte PDF-Viewer zum Öffnen von PDF-Dateien verwendet werden soll.
+
+      Mit dieser Richtlinie wird eine Liste von Plug-ins angegeben, die in <ph name="PRODUCT_NAME" /> aktiviert sind, und verhindert, dass Nutzer diese Einstellung ändern.
+
+      Die Platzhalterzeichen "*" und "?" können für beliebige Zeichenfolgen stehen. "*" entspricht einer beliebigen Anzahl von Zeichen, während "?" ein optionales einzelnes Zeichen darstellt, d. h. kein oder ein Zeichen. Als Escape-Zeichen wird "\" verwendet. Dieses können Sie vor "*", "?" oder "\" setzen, wenn diese Zeichen – also Sternchen, Fragezeichen oder umgekehrter Schrägstrich – gemeint sind.
+
+      Die angegebene Liste von Plug-ins wird in <ph name="PRODUCT_NAME" /> immer verwendet, sofern sie installiert sind. Die Plug-ins sind in "about:plugins" als aktiviert gekennzeichnet und können vom Nutzer nicht deaktiviert werden.
+
+      Beachten Sie, dass mit dieser Richtlinie sowohl DisabledPlugins als auch DisabledPluginsExceptions überschrieben wird.
+
+      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer beliebige auf dem System installierte Plug-ins deaktivieren.</translation>
 <translation id="4554651132977135445">Loopback-Verarbeitungsmodus der Nutzerrichtlinien</translation>
 <translation id="4554841826517980623">Mit dieser Richtlinie wird gesteuert, ob die Funktion "Netzwerkfreigaben" für <ph name="PRODUCT_NAME" /> das <ph name="NETBIOS_PROTOCOL" /> nutzen sollte, um Inhaltsfreigaben im Netzwerk zu erkennen.
       Wenn diese Richtlinie auf "true" eingestellt ist, verwendet die Freigabeerkennung das Protokoll <ph name="NETBIOS_PROTOCOL" />, um Freigaben im Netzwerk zu erkennen.
@@ -2941,6 +3019,19 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
       URLs, wie z. B. https://example.com/some/path, werden nur durch U2F-AppIDs bestimmt. Domains, wie z. B. example.com, werden nur durch Webauthn-RP-IDs bestimmt. Um sowohl U2F- als auch Webauthn-APIs in eine bestimmte Website einzubeziehen, müssen deshalb sowohl die AppID-URL als auch die Domain aufgeführt werden.</translation>
 <translation id="5836064773277134605">Vom Host für den Remotezugriff verwendeten UDP-Portbereich einschränken</translation>
+<translation id="5855010364142818361">Mit dieser Richtlinie werden Befehlszeilenparameter für Chrome über Internet Explorer festgelegt.
+
+      Wenn das Add-in "Unterstützung älterer Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
+
+      Ist diese Richtlinie nicht konfiguriert, gibt Internet Explorer die URL nur als Befehlszeilenparameter an Chrome weiter.
+
+      Wenn für die Richtlinie eine Liste von Strings festgelegt ist, werden diese Strings mit Leerzeichen verbunden und als Befehlszeilenparameter an Chrome weitergegeben.
+
+      Ist in einem Element der Platzhalter <ph name="URL_PLACEHOLDER" /> enthalten, wird er durch die URL der Seite ersetzt, die geöffnet werden soll.
+
+      Wenn kein Element <ph name="URL_PLACEHOLDER" /> enthält, wird die URL an das Ende der Befehlszeile angehängt.
+
+      Umgebungsvariablen werden erweitert. Unter Windows wird <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> durch die ABC-Umgebungsvariable ersetzt.</translation>
 <translation id="5861856285460256766">Konfiguration von Elternzugriffscodes</translation>
 <translation id="5868414965372171132">Netzwerkkonfiguration auf Nutzerebene</translation>
 <translation id="5879014913445067283">Steuerung der Erkennung von Netzwerkfreigaben über <ph name="NETBIOS_NAME" /></translation>
@@ -3248,6 +3339,15 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, werden Flash-Inhalte aus anderen Quellen oder kleine Inhalte möglicherweise blockiert.</translation>
 <translation id="6532769014584932288">Wakelocks zulassen</translation>
+<translation id="653645667373317432">Mit dieser Richtlinie wird der Befehl konfiguriert, mit dem URLs in <ph name="PRODUCT_NAME" /> geöffnet werden, wenn von Internet Explorer dorthin gewechselt wird.
+
+      Wenn das Add-in "Unterstützung älterer Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
+
+      Ist diese Richtlinie nicht konfiguriert, erkennt Internet Explorer den Pfad zur ausführbaren Datei von <ph name="PRODUCT_NAME" /> automatisch, wenn <ph name="PRODUCT_NAME" /> über Internet Explorer geöffnet wird.
+
+      Ist sie konfiguriert, wird sie zum Öffnen von <ph name="PRODUCT_NAME" /> verwendet, wenn <ph name="PRODUCT_NAME" /> über Internet Explorer geöffnet wird.
+
+      Diese Richtlinie kann mit einem Pfad zur ausführbaren Datei oder <ph name="PRODUCT_NAME_PLACEHOLDER" /> konfiguriert werden, damit das Installationsverzeichnis von Chrome automatisch erkannt wird.</translation>
 <translation id="6536600139108165863">Automatischer Neustart nach Herunterfahren des Geräts</translation>
 <translation id="6539246272469751178">Diese Richtlinie hat keine Auswirkung auf Android-Apps. Android-Apps verwenden immer das Standardverzeichnis für Downloads und haben keinen Zugriff auf Dateien, die von <ph name="PRODUCT_OS_NAME" /> in ein anderes Verzeichnis als das Standardverzeichnis für Downloads heruntergeladen werden.</translation>
 <translation id="654303922206238013">Migrationsstrategie für eCryptfs</translation>
@@ -3261,6 +3361,17 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6559057113164934677">Keine Website darf auf meine Kamera oder mein Mikrofon zugreifen</translation>
 <translation id="6561396069801924653">Optionen für Bedienungshilfen im Taskleistenmenü anzeigen</translation>
 <translation id="6563458316362153786">802.11r Fast Transition aktivieren</translation>
+<translation id="6568977718979857253">Diese Richtlinie ist veraltet. Sie können mit <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> die Verfügbarkeit des Flash-Plug-ins definieren und über <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> festlegen, ob der integrierte PDF-Viewer zum Öffnen von PDF-Dateien verwendet werden soll.
+
+      Mit dieser Richtlinie wird eine Liste von Plug-ins angegeben, die in <ph name="PRODUCT_NAME" /> deaktiviert sind, und verhindert, dass Nutzer diese Einstellung ändern.
+
+      Die Platzhalterzeichen "*" und "?" können für beliebige Zeichenfolgen stehen. "*" entspricht einer beliebigen Anzahl von Zeichen, während "?" ein optionales einzelnes Zeichen darstellt, d. h. kein oder ein Zeichen. Als Escape-Zeichen wird "\" verwendet. Dieses können Sie vor "*", "?" oder "\" setzen, wenn diese Zeichen – also Sternchen, Fragezeichen oder umgekehrter Schrägstrich – gemeint sind.
+
+      Wenn Sie diese Einstellung aktivieren, wird die angegebene Liste von Plug-ins nie in <ph name="PRODUCT_NAME" /> verwendet. Die Plug-ins sind in "about:plugins" als deaktiviert gekennzeichnet und können vom Nutzer nicht aktiviert werden.
+
+      Beachten Sie, dass diese Richtlinie von EnabledPlugins und DisabledPluginsExceptions überschrieben werden kann.
+
+      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer beliebige auf dem System installierte Plug-ins verwenden, ausgenommen inkompatible, veraltete oder gefährliche Plug-ins, die hartcodiert sind.</translation>
 <translation id="6573305661369899995">Eine externe Quelle für URL-Einschränkungen festlegen</translation>
 <translation id="6583851521569686409">Hiermit wird eine Liste von Druckern konfiguriert.
 
@@ -3342,6 +3453,11 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
       Mit dieser Einstellung wird die Einblendung von Begrüßungsseiten konfiguriert, die Nutzern bei der Anmeldung in <ph name="PRODUCT_NAME" /> helfen, auf denen der Browser als Standardbrowser eingerichtet werden kann oder über die Nutzer über Produktfunktionen informiert werden.</translation>
 <translation id="6766216162565713893">Websites dürfen den Nutzer um Zugriff auf ein Bluetooth-Gerät in der Nähe bitten</translation>
 <translation id="6770454900105963262">Informationen zu aktiven Kiosksitzungen senden</translation>
+<translation id="6780908086869332493">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, für die auf dem Anmeldebildschirm im Frame, der die SAML-Abfolge hostet, automatisch ein Clientzertifikat ausgewählt wird, wenn die Website ein Zertifikat anfordert. Zum Beispiel kann damit ein geräteübergreifendes Zertifikat konfiguriert werden, das dem SAML-IdP präsentiert wird.
+
+      Der Wert muss ein Array von String-JSON-Wörterbüchern sein. Jedes Wörterbuch muss das Format <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> haben, wobei <ph name="URL_PATTERN_PLACEHOLDER" /> ein Muster zur Festlegung der Inhalte ist. <ph name="FILTER_PLACEHOLDER" /> schränkt ein, aus welchen Clientzertifikaten der Browser automatisch auswählt. Unabhängig vom Filter werden nur Zertifikate ausgewählt, die mit der Zertifikatanforderung des Servers übereinstimmen. Wenn <ph name="FILTER_PLACEHOLDER" /> das Format <ph name="JSON_DICTIONARY_EXAMPLE" /> hat, werden außerdem nur Clientzertifikate ausgewählt, die über ein Zertifikat mit dem CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> ausgestellt werden. Wenn <ph name="FILTER_PLACEHOLDER" /> das leere Wörterbuch {} ist, wird die Auswahl der Clientzertifikate nicht zusätzlich eingeschränkt.
+
+      Ist diese Richtlinie nicht konfiguriert, erfolgt keine automatische Auswahl für Websites.</translation>
 <translation id="6786747875388722282">Erweiterungen</translation>
 <translation id="6786967369487349613">Roaming-Profilverzeichnis festlegen</translation>
 <translation id="6795485990775913659">Drucken nur ohne PIN zulassen</translation>
@@ -3550,6 +3666,15 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Falls diese Richtlinie nicht konfiguriert ist, gibt es keine Einschränkungen im Hinblick auf die Nutzer, die sich anmelden dürfen. Zum Erstellen neuer Nutzer muss aber weiterhin die Richtlinie "<ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />" entsprechend konfiguriert werden.</translation>
 <translation id="7126716959063786004">Beenden von Prozessen im Task-Manager erlauben</translation>
 <translation id="7127892035367404455">Rollback auf die Zielversion</translation>
+<translation id="712963038874313213">Gibt ein Ansible-Playbook an, das im standardmäßigen Crostini-Container ausgeführt werden muss.
+
+      Diese Richtlinie ermöglicht die Bereitstellung eines Ansible-Playbooks, das auf den standardmäßigen Crostini-Container angewendet wird, sofern er auf dem jeweiligen Gerät verfügbar und gemäß den Richtlinien zulässig ist.
+
+      Die Größe der Daten darf 1 MB (1.000.000 Byte) nicht übersteigen. Außerdem müssen sie in YAML codiert sein. Anhand des kryptografischen Hashs wird die Integrität des Downloads verifiziert.
+
+      Die Konfiguration wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird sie noch einmal heruntergeladen.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern nicht geändert werden. Wird sie nicht konfiguriert, können Nutzer auch weiterhin den standardmäßigen Crostini-Container mit seiner fortlaufenden Konfiguration verwenden, sofern Crostini von allen Richtlinien zugelassen wird.</translation>
 <translation id="713121532817834879">Diese Richtlinie ist eine URL, die auf eine XML-Datei im selben Format wie die Richtlinie "<ph name="IEEM_SITELIST_POLICY" />" von Internet Explorer verweist. Dabei werden Regeln aus einer XML-Datei geladen, ohne diese Regeln mit Internet Explorer zu teilen.
 
       Die Regeln in dieser XML-Datei gelten genauso wie "<ph name="GREYLIST_POLICY_NAME" />". Das bedeutet: Diese Regeln verhindern, dass <ph name="PRODUCT_NAME" /> einen alternativen Browser öffnet und <ph name="PRODUCT_NAME" /> von einem alternativen Browser geöffnet wird.
@@ -3752,8 +3877,16 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
       Wenn "Uploads und Downloads hinauszögern, bis Scanergebnisse vorliegen" festgelegt ist, werden in <ph name="PRODUCT_NAME" /> die Regeln verwendet, die unter "Downloads hinauszögern, bis Scanergebnisse vorliegen" und "Uploads hinauszögern, bis Scanergebnisse vorliegen" beschrieben sind.
       </translation>
 <translation id="7372831798009983116">Bedienungshilfe "Automatisch klicken" aktivieren</translation>
+<translation id="7373200034079131670">Nach Nutzerabmeldung neu starten, wenn Android oder eine VM gestartet wurde.</translation>
 <translation id="737655323154569539">Dadurch wird die Druckseitengröße eingeschränkt. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
 <translation id="7382191643394429934">Drucken mit und ohne Hintergrundgrafiken zulassen</translation>
+<translation id="7383445181072113521">Damit kann der Hostname des in DHCP-Anfragen verwendeten Geräts festgelegt werden.
+
+      Wird für diese Richtlinie ein String definiert, der nicht leer ist, dann wird dieser String während der DHCP-Anfrage als Gerätehostname verwendet.
+
+      Der String kann die Variablen <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" /> und <ph name="MACHINE_NAME_PLACEHOLDER" /> enthalten, die im Gerät durch Werte ersetzt werden, bevor sie als Hostname zum Einsatz kommen. Das Ergebnis muss ein gültiger Hostname gemäß RFC 1035, Abschnitt 3.1 sein.
+
+      Wenn diese Richtlinie nicht konfiguriert oder der Wert nach dem Ersetzen kein gültiger Hostname ist, wird in der DHCP-Anfrage kein Hostname festgelegt. </translation>
 <translation id="7389872682701720082">Wenn Sie diese Einstellung aktivieren, werden nicht veraltete Plug-ins immer ausgeführt.
 
       Ist diese Einstellung deaktiviert oder nicht konfiguriert, müssen die Nutzer der Ausführung von Plug-ins zustimmen, die eine Autorisierung erfordern. Diese Plug-ins können ein Sicherheitsrisiko darstellen.</translation>
@@ -3838,6 +3971,14 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
           Für Cookies, die in Domains festgelegt sind, die diesen Mustern nicht entsprechen, oder für alle Cookies, falls diese Richtlinie nicht konfiguriert ist, kommt entweder der globale Standardwert der Richtlinie "<ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" />", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
 
           Beachten Sie, dass die Muster, die Sie hier eintragen, als Domains und nicht als URLs behandelt werden. Geben Sie deshalb kein Schema und keinen Port an.</translation>
+<translation id="7590188804371204512">Hiermit kann die Installation externer Erweiterungen verwaltet werden.
+
+      Wenn diese Einstellung aktiviert ist, wird die Installation externer Erweiterungen blockiert.
+
+      Ist sie deaktiviert oder nicht konfiguriert, können externe Erweiterungen installiert werden.
+
+      Informationen zu externen Erweiterungen und ihrer Installation sind unter https://developer.chrome.com/apps/external_extensions verfügbar.
+      </translation>
 <translation id="7593523670408385997">Konfiguriert die Cache-Größe, die <ph name="PRODUCT_NAME" /> zum Speichern von Dateien im Cache auf dem Datenträger verwendet.
 
       Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> die angegebene Cache-Größe unabhängig davon, ob der Nutzer den Parameter "--disk-cache-size" angegeben hat oder nicht. Der in dieser Richtlinie angegebene Wert ist keine feste Grenze, sondern mehr ein Richtwert für das Caching-System. Werte, die unter wenigen Megabytes liegen, sind zu klein und werden auf einen sinnvollen Minimalwert aufgerundet.
@@ -3897,6 +4038,13 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
           Bitte sehen Sie sich auch die Richtlinien "CookiesAllowedForUrls" und "CookiesBlockedForUrls" an. Beachten Sie, dass es keine in Konflikt stehenden URL-Muster zwischen diesen drei Richtlinien geben darf. Es ist nicht festgelegt, welche Richtlinie Vorrang hat.
 
           Falls die Richtlinie "RestoreOnStartup" zur Wiederherstellung von URLs aus vorherigen Sitzungen festgelegt ist, wird diese Richtlinie ignoriert und Cookies werden dauerhaft für die jeweiligen Websites gespeichert.</translation>
+<translation id="7677220829878081413">
+      Ist diese Richtlinie auf "ArcSession" gesetzt und wurde Android gestartet, wird nach einer Nutzerabmeldung ein Neustart des Geräts erzwungen.
+      Wenn sie auf "ArcSessionOrVMStart" gesetzt ist und Android oder eine VM gestartet wurde, wird nach einer Nutzerabmeldung ein Neustart des Geräts erzwungen.
+      Ist sie auf "Always" festgelegt, wird nach jeder Nutzerabmeldung ein Neustart des Geräts erzwungen.
+      Wenn die Richtlinie nicht konfiguriert ist, hat sie keine Auswirkung und es wird nach der Nutzerabmeldung kein Neustart erzwungen. Dasselbe gilt bei der Einstellung "Never".
+      Diese Richtlinie wirkt sich nur auf nicht verknüpfte Nutzer aus.
+      </translation>
 <translation id="7683777542468165012">Dynamische Richtlinienaktualisierung</translation>
 <translation id="7687943045976362719">Wenn diese Richtlinie konfiguriert ist, wird für alle angegebenen Inhaltstypen <ph name="PRODUCT_FRAME_NAME" /> verwendet.
 
@@ -4005,6 +4153,7 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 
           Wenn die Richtlinie deaktiviert ist, können Nutzer keine Kerberos-Konten hinzufügen. Dies ist dann nur über die Richtlinie "Kerberos-Konten konfigurieren" möglich. So lassen sich Konten effektiv sperren.</translation>
 <translation id="7895553628261067384">Remotezugriff</translation>
+<translation id="7902040092815978832">Numerische Tastatur für Passwort anzeigen</translation>
 <translation id="7902255855035461275">Muster in dieser Liste werden mit der Sicherheitsherkunft
       der anfragenden URL abgeglichen. Bei einer Übereinstimmung wird der
       Zugriff auf Videoaufnahmegeräte ohne Nachfrage gestattet.
@@ -4081,6 +4230,11 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
       Diese Lesezeichen werden in einem Ordner abgelegt, der vom Nutzer nicht bearbeitet werden kann. Der Nutzer kann aber festlegen, dass der Ordner nicht in der Lesezeichenleiste eingeblendet wird. Der Name des Ordners lautet standardmäßig "Verwaltete Lesezeichen", kann jedoch angepasst werden. Fügen Sie dazu der Liste von Lesezeichen ein Wörterbuch mit dem Schlüssel "<ph name="TOPLEVEL_NAME" />" und dem gewünschten Namen als Wert hinzu.
 
       Verwaltete Lesezeichen werden nicht mit dem Nutzerkonto synchronisiert und können nicht von Erweiterungen geändert werden.</translation>
+<translation id="8077245272412229388">Damit werden vorausgefüllte Kerberos-Konten hinzugefügt. Wenn die Kerberos-Anmeldedaten mit den für die Kontoanmeldung verwendeten Daten übereinstimmen, kann ein Konto so konfiguriert werden, dass die Anmeldedaten wiederverwendet werden. Dazu müssen <ph name="LOGIN_EMAIL_PLACEHOLDER" /> und <ph name="PASSWORD_PLACEHOLDER" /> jeweils als Hauptkonto und Passwort festgelegt werden, sodass das Kerberos-Ticket automatisch abgerufen werden kann. Das ist jedoch nicht möglich, wenn die Bestätigung in zwei Schritten konfiguriert ist. Nutzer können über diese Richtlinie hinzugefügte Konten nicht ändern.
+
+          Ist die Richtlinie aktiviert, wird die Liste der Konten, die durch die Richtlinie definiert ist, den Einstellungen für Kerberos-Konten hinzugefügt.
+
+          Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, werden den Einstellungen für Kerberos-Konten keine Konten hinzugefügt und alle zuvor über diese Richtlinie hinzugefügten Konten werden entfernt. Nutzer können jedoch trotzdem Konten manuell hinzufügen, wenn die Richtlinie "Nutzer können Kerberos-Konten hinzufügen" aktiviert ist.</translation>
 <translation id="8078366200175825572">Ermöglicht die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Speichern von Cookies nicht gestattet ist.
 
           Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultCookiesSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.

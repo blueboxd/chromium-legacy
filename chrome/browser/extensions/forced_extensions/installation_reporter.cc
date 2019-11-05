@@ -40,6 +40,12 @@ std::string InstallationReporter::GetFormattedInstallationData(
     str << "; downloading_stage: "
         << static_cast<int>(data.downloading_stage.value());
   }
+  // No extra check for stage: we may be interested in cache status even in case
+  // of successfull extension install.
+  if (data.downloading_cache_status) {
+    str << "; downloading_cache_status: "
+        << static_cast<int>(data.downloading_cache_status.value());
+  }
   return str.str();
 }
 
@@ -71,6 +77,18 @@ void InstallationReporter::ReportDownloadingStage(
     ExtensionDownloaderDelegate::Stage stage) {
   InstallationData& data = installation_data_map_[id];
   data.downloading_stage = stage;
+  if (g_test_observer) {
+    g_test_observer->OnExtensionDataChanged(id, browser_context_, data);
+  }
+}
+
+void InstallationReporter::ReportDownloadingCacheStatus(
+    const ExtensionId& id,
+    ExtensionDownloaderDelegate::CacheStatus cache_status) {
+  DCHECK_NE(cache_status,
+            ExtensionDownloaderDelegate::CacheStatus::CACHE_UNKNOWN);
+  InstallationData& data = installation_data_map_[id];
+  data.downloading_cache_status = cache_status;
   if (g_test_observer) {
     g_test_observer->OnExtensionDataChanged(id, browser_context_, data);
   }

@@ -359,6 +359,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, pengguna perusahaan
       tidak dapat menggunakan ARC.</translation>
+<translation id="1553956579506604198">Memblokir ekstensi eksternal sehingga tidak dapat diinstal</translation>
 <translation id="1559980755219453326">Kebijakan ini mengontrol apakah akan melaporkan informasi plugin dan ekstensi.
 
       Jika kebijakan ini tidak disetel atau disetel ke True, data ekstensi dan plugin akan dikumpulkan.
@@ -487,6 +488,19 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika kebijakan ini disetel ke URL yang valid, <ph name="PRODUCT_NAME" /> akan mendownload daftar situs dari URL tersebut, dan menerapkan aturan seolah-olah aturan tersebut dikonfigurasi dengan kebijakan <ph name="SITELIST_POLICY_NAME" />.
 
       Untuk informasi selengkapnya terkait kebijakan <ph name="IEEM_SITELIST_POLICY" /> Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
+<translation id="1839278886947586809">
+      Kebijakan ini telah dihapus di M80, karena tidak diperlukan lagi karena
+      WebDriver saat ini kompatibel dengan semua kebijakan yang sudah ada.
+
+      Kebijakan ini memungkinkan pengguna fitur WebDriver mengganti
+      kebijakan yang dapat mengganggu pengoperasiannya.
+
+      Saat ini kebijakan ini menonaktifkan kebijakan SitePerProcess dan IsolateOrigins.
+
+      Jika kebijakan tersebut diaktifkan, WebDriver akan dapat menggantikan kebijakan
+      yang tidak kompatibel.
+      Jika kebijakan tersebut dinonaktifkan atau tidak dikonfigurasi, WebDriver tidak akan diizinkan
+      untuk menggantikan kebijakan yang tidak kompatibel.</translation>
 <translation id="1843117931376765605">Segarkan peringkat untuk kebijakan pengguna</translation>
 <translation id="1844620919405873871">Mengonfigurasi kebijakan terkait buka kunci cepat.</translation>
 <translation id="1845405905602899692">Setelan Kios</translation>
@@ -639,6 +653,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
           Jika kebijakan ini dibiarkan tidak disetel, keempat skema akan digunakan seluruhnya.</translation>
 <translation id="2067011586099792101">Memblokir akses ke situs di luar paket konten</translation>
 <translation id="2073552873076775140">Izinkan login ke <ph name="PRODUCT_NAME" /></translation>
+<translation id="2075732129949889165">Playbook Crostini Ansible</translation>
 <translation id="2077129598763517140">Gunakan akselerasi hardware jika tersedia</translation>
 <translation id="2077273864382355561">Penundaan mematikan layar saat menggunakan daya baterai</translation>
 <translation id="2082205219176343977">Mengonfigurasi versi minimum Chrome yang diizinkan untuk perangkat.</translation>
@@ -649,6 +664,17 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 <translation id="2107601598727098402">
         Kebijakan ini tidak digunakan lagi di M72. Gunakan CloudManagementEnrollmentToken sebagai gantinya.
         </translation>
+<translation id="2108169571875569435">Kebijakan ini mengontrol perintah mana yang akan digunakan untuk membuka URL di browser alternatif.
+
+      Jika kebijakan ini tidak ditetapkan, kebijakan default khusus platform akan digunakan: Internet Explorer untuk Windows, atau Safari untuk Mac OS X. Di Linux, browser alternatif tidak akan dapat dibuka jika kebijakan ini tidak ditetapkan.
+
+      Jika kebijakan ini ditetapkan ke salah satu dari <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" />, atau
+      <ph name="OPERA_VALUE_PLACEHOLDER" />, browser tersebut akan dibuka jika sudah diinstal. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> hanya
+      tersedia di Windows, dan <ph name="SAFARI_VALUE_PLACEHOLDER" /> hanya tersedia di Windows dan Mac
+      OS X.
+
+      Jika kebijakan ini ditetapkan ke lokasi file, file tersebut akan digunakan sebagai file
+      executable.</translation>
 <translation id="2111016292707172233">Mengaktifkan ketersediaan Ketuk untuk Menelusuri di tampilan konten <ph name="PRODUCT_NAME" />.
 
 Jika Anda mengaktifkan setelan ini, Ketuk untuk Menelusuri akan tersedia untuk pengguna dan mereka dapat memilih untuk mengaktifkan atau menonaktifkannya.
@@ -741,6 +767,9 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika kebijakan ini dinonaktifkan, pengguna tidak akan dimintai akses dan perekaman video hanya tersedia untuk URL yang dikonfigurasi di VideoCaptureAllowedUrls.
 
       Kebijakan ini memengaruhi semua jenis input video, tidak hanya kamera bawaan.</translation>
+<translation id="2197625019569762163">Menetapkan kebijakan ke true akan menampilkan keyboard numerik secara default untuk memasukkan sandi pada layar login. Pengguna masih dapat beralih ke keyboard normal.
+
+      Jika Anda menetapkan kebijakan tersebut, pengguna tidak dapat mengubahnya. Jika tidak ditetapkan atau ditetapkan ke false, kebijakan tidak akan berpengaruh.</translation>
 <translation id="2201555246697292490">Konfigurasikan daftar putih perpesanan asli</translation>
 <translation id="220280840901385239">Izinkan pengguna menambahkan pengecualian untuk mengizinkan konten campuran yang dapat diblokir</translation>
 <translation id="2204753382813641270">Kontrol sembunyi otomatis rak</translation>
@@ -921,6 +950,17 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Jika kebijakan ini disetel ke False, pesan kesalahan akan muncul, bukan permintaan konfigurasi jaringan.</translation>
 <translation id="2498238926436517902">Selalu sembunyikan rak secara otomatis</translation>
+<translation id="2505805702054675476">Kebijakan ini akan mengontrol parameter command line untuk meluncurkan ke browser alternatif.
+
+      Jika kebijakan ini tidak ditetapkan, hanya URL yang diteruskan sebagai parameter command line.
+
+      Jika kebijakan ini ditetapkan ke daftar string, setiap string akan diteruskan ke browser alternatif sebagai parameter command line yang berbeda. Pada Windows, parameter digabungkan dengan spasi. Pada Mac OS X dan Linux, parameter dapat berisi spasi, dan masih diperlakukan sebagai parameter tunggal.
+
+      Jika elemen berisi <ph name="URL_PLACEHOLDER" />, elemen tersebut akan diganti dengan URL halaman yang akan dibuka.
+
+      Jika tidak ada elemen yang berisi <ph name="URL_PLACEHOLDER" />, URL akan ditambahkan di akhir command line.
+
+      Variabel lingkungan diperluas. Pada Windows, <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> akan diganti dengan nilai variabel lingkungan <ph name="ENV_VARIABLE_VALUE" />. Pada Mac OS X dan Linux, <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> akan diganti dengan nilai variabel lingkungan <ph name="ENV_VARIABLE" />.</translation>
 <translation id="250670737672448119">Mengaktifkan fitur aksesibilitas sorotan tanda sisipan.
 
           Fitur ini berfungsi untuk menyoroti area yang dikelilingi tanda sisipan selama mengedit.
@@ -941,6 +981,11 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2517466659416174529">Izinkan pembekuan tab di latar belakang</translation>
 <translation id="2518231489509538392">Mengizinkan pemutaran audio</translation>
 <translation id="2521581787935130926">Tampilkan pintasan aplikasi di bilah bookmark</translation>
+<translation id="2526082146909867346">Mengizinkan Anda menentukan daftar pola URL yang menetapkan situs tempat <ph name="PRODUCT_NAME" /> akan memilih sertifikat klien secara otomatis, jika situs meminta sertifikat.
+
+          Nilai harus berupa array kamus dengan string JSON. Setiap kamus harus memiliki bentuk <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dengan <ph name="URL_PATTERN_PLACEHOLDER" /> merupakan pola setelan konten. <ph name="FILTER_PLACEHOLDER" /> akan membatasi asal sertifikat klien yang akan dipilih secara otomatis oleh browser. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Contohnya, jika <ph name="FILTER_PLACEHOLDER" /> memiliki bentuk <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, hanya sertifikat klien yang akan diterbitkan oleh sertifikat dengan CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> yang akan dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> berisi bagian <ph name="ISSUER_STRING_VALUE" /> dan <ph name="SUBJECT_STRING_VALUE" />, sertifikat klien harus memenuhi kedua ketentuan yang dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> menentukan organisasi ("O"), sertifikat harus memiliki minimal satu organisasi yang cocok dengan nilai yang ditentukan untuk dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> menentukan unit organisasi ("OU"), sertifikat harus memiliki minimal satu unit organisasi yang cocok dengan nilai yang ditentukan untuk dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> berupa kamus kosong <ph name="EMPTY_DICTIONARY" />, pemilihan sertifikat klien tidak dibatasi lagi.
+
+          Jika kebijakan ini tidak ditetapkan, pemilihan otomatis tidak akan dilakukan untuk semua situs.</translation>
 <translation id="2529659024053332711">Memungkinkan Anda menentukan perilaku saat memulai.
 
           Jika Anda memilih 'Buka Halaman Tab Baru', Halaman Tab Baru akan selalu dibuka saat Anda memulai <ph name="PRODUCT_NAME" />.
@@ -1361,6 +1406,13 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="3236046242843493070">Pola URL untuk memungkinkan pemasangan skrip pengguna, aplikasi, dan ekstensi dari</translation>
 <translation id="3240609035816615922">Kebijakan akses konfigurasi untuk printer.</translation>
 <translation id="3240655340884151271">Alamat MAC NIC bawaan dok</translation>
+<translation id="3242756958360374888">Berisi daftar pola yang digunakan untuk mengontrol visibilitas akun di <ph name="PRODUCT_NAME" />.
+
+      Setiap akun Google pada perangkat akan dibandingkan dengan pola yang tersimpan di kebijakan ini untuk menentukan visibilitas akun di <ph name="PRODUCT_NAME" />. Akun tersebut akan terlihat jika namanya cocok dengan pola mana pun pada daftar. Jika tidak, akun akan disembunyikan.
+
+      Gunakan karakter pengganti '*' untuk mencocokkan karakter nol atau yang lebih arbitrer. Karakter escape adalah '\', sehingga agar cocok dengan karakter '*' atau '\', tempatkan '\' di depannya.
+
+      Jika kebijakan ini tidak ditetapkan, semua akun Google pada perangkat akan terlihat di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3251500716404598358">Konfigurasikan kebijakan untuk beralih ke browser lain.
 
       Situs yang dikonfigurasi akan otomatis terbuka di browser selain <ph name="PRODUCT_NAME" />.</translation>
@@ -1411,6 +1463,19 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Kebijakan ini hanya dapat ditetapkan seperti yang direkomendasikan. Anda tidak dapat menggunakan kebijakan ini untuk memindahkan sekumpulan lokal yang direkomendasikan ke bagian atas daftar, namun pengguna selalu diizinkan untuk memilih lokal apa pun yang didukung oleh <ph name="PRODUCT_OS_NAME" /> untuk sesi mereka.
       </translation>
+<translation id="3378482432905539452">Kebijakan ini tidak digunakan lagi. Gunakan kebijakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> untuk mengontrol ketersediaan plugin Flash dan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> untuk mengontrol apakah penampil PDF yang terintegrasi akan digunakan untuk membuka file PDF atau tidak.
+
+      Menentukan daftar plugin yang dapat diaktifkan dan dinonaktifkan di <ph name="PRODUCT_NAME" /> oleh pengguna.
+
+      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter arbitrer. Karakter '*' mencocokkan sembarang jumlah karakter, sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter escape adalah '\', jadi untuk mencocokkan karakter '*', '?', atau '\' yang sebenarnya, Anda dapat menempatkan '\' di depannya.
+
+      Jika Anda mengaktifkan setelan ini, daftar plugin yang ditentukan dapat digunakan di <ph name="PRODUCT_NAME" />. Pengguna dapat mengaktifkan atau menonaktifkannya pada 'about:plugins', meskipun plugin tersebut juga cocok dengan pola pada DisabledPlugins. Pengguna juga dapat mengaktifkan dan menonaktifkan plugin yang tidak cocok dengan pola apa pun pada DisabledPlugins, DisabledPluginsExceptions, dan EnabledPlugins.
+
+      Kebijakan ini dimaksudkan untuk memungkinkan penyusunan daftar plugin tidak diizinkan yang ketat, jika daftar 'DisabledPlugins' berisi entri berkarakter pengganti seperti nonaktifkan semua plugin '*' atau nonaktifkan semua plugin Java '*Java*', tetapi administrator ingin mengaktifkan beberapa versi tertentu seperti 'IcedTea Java 2.3'. Versi tertentu ini dapat ditetapkan dalam kebijakan ini.
+
+      Perlu diketahui bahwa nama plugin maupun nama grup plugin harus dikecualikan. Setiap grup plugin ditampilkan di bagian terpisah pada about:plugins; setiap bagian dapat memiliki satu atau beberapa plugin. Misalnya, plugin "Shockwave Flash" termasuk dalam grup "Adobe Flash Player", dan kedua nama tersebut perlu memiliki kecocokan dalam daftar pengecualian agar plugin tersebut dapat dikecualikan dari daftar tidak diizinkan.
+
+      Jika kebijakan ini tidak ditetapkan, semua plugin yang cocok dengan pola pada 'DisabledPlugins' akan dikunci sebagai nonaktif dan pengguna tidak akan dapat mengaktifkannya.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
 <translation id="3388153794103186066">Memungkinkan Anda menyetel daftar URL yang menentukan situs mana yang akan diberi izin secara otomatis untuk mengakses perangkat USB dengan ID produk dan vendor tertentu. Setiap item di daftar harus berisi URL dan perangkat agar kebijakan menjadi valid. Setiap item di perangkat dapat berisi kolom ID produk dan ID vendor. ID yang dihapus diperlakukan sebagai karakter pengganti dengan satu pengecualian, yaitu ID produk tidak dapat ditentukan jika ID vendor juga tidak ditentukan. Jika tidak, kebijakan akan menjadi tidak valid dan akan diabaikan.
 
@@ -2132,6 +2197,15 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="445270821089253489">Mengontrol jenis informasi perangkat dan pengguna yang dilaporkan.</translation>
 <translation id="4453913621209182880">Izinkan pencetakan hanya dengan grafis latar belakang</translation>
 <translation id="4454820008017317557">Tampilkan ikon toolbar <ph name="PRODUCT_NAME" /></translation>
+<translation id="4458977366860064210">Menggunakan implementasi <ph name="CORS" /> lama, bukan <ph name="CORS" /> baru.
+
+      Jika setelan ini ditetapkan ke True, implementasi lama yang digunakan seharusnya kompatibel dengan versi sebelumnya.
+
+      Jika setelan ini ditetapkan ke False atau tidak ditetapkan, implementasi baru yang digunakan dapat menyebabkan potensi masalah kompatibilitas khusus perusahaan.
+
+      Kebijakan ini akan dihapus setelah beberapa peristiwa penting.
+
+      Untuk mengetahui detail tentang <ph name="CORS" />, kunjungi: <ph name="CORS_HELP_URL" />.</translation>
 <translation id="4467952432486360968">Cekal cookie pihak ketiga</translation>
 <translation id="4474167089968829729">Aktifkan penyimpanan sandi di pengelola sandi</translation>
 <translation id="4476769083125004742">Jika kebijakan ini disetel ke <ph name="BLOCK_GEOLOCATION_SETTING" />, aplikasi Android tidak dapat mengakses informasi lokasi. Jika Anda menyetel kebijakan ini ke nilai lain atau tidak menyetel kebijakan, pengguna akan dimintai persetujuan ketika aplikasi Android ingin mengakses informasi lokasi.</translation>
@@ -2169,6 +2243,17 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4534500438517478692">Nama pembatasan Android:</translation>
 <translation id="4541530620466526913">Akun lokal perangkat</translation>
 <translation id="4543502256674577024">Setelan update perangkat</translation>
+<translation id="4548555985107150628">Kebijakan ini tidak digunakan lagi. Gunakan kebijakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> untuk mengontrol ketersediaan plugin Flash dan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> untuk mengontrol apakah penampil PDF yang terintegrasi akan digunakan untuk membuka file PDF atau tidak.
+
+      Menentukan daftar plugin yang diaktifkan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
+
+      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter arbitrer. Karakter '*' mencocokkan sembarang jumlah karakter, sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter escape adalah '\', jadi untuk mencocokkan karakter '*', '?', atau '\' yang sebenarnya, Anda dapat menempatkan '\' di depannya.
+
+      Daftar plugin yang ditentukan akan selalu digunakan di <ph name="PRODUCT_NAME" /> jika plugin tersebut diinstal. Plugin ditandai aktif di 'about:plugins' dan pengguna tidak dapat menonaktifkannya.
+
+      Perlu diketahui bahwa kebijakan ini menggantikan DisabledPlugins dan DisabledPluginsExceptions.
+
+      Jika kebijakan ini tidak ditetapkan, pengguna dapat menonaktifkan plugin apa pun yang diinstal pada sistem.</translation>
 <translation id="4554651132977135445">Mode pemrosesan loopback kebijakan pengguna</translation>
 <translation id="4554841826517980623">Kebijakan ini mengontrol apakah fitur Berbagi File Jaringan untuk <ph name="PRODUCT_NAME" /> harus menggunakan <ph name="NETBIOS_PROTOCOL" /> untuk menemukan file yang dibagikan di jaringan.
       Jika kebijakan ini disetel ke True, penemuan berbagi akan menggunakan protokol <ph name="NETBIOS_PROTOCOL" /> untuk menemukan file yang dibagikan di jaringan.
@@ -2936,6 +3021,19 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       URL (seperti https://example.com/some/path) hanya akan cocok sebagai U2F appID. Domain (seperti example.com) hanya akan cocok sebagai webauthn RP ID. Oleh karena itu, guna mencakup U2F dan webauthn API untuk situs tertentu, appID URL dan domain perlu dicantumkan.</translation>
 <translation id="5836064773277134605">Batasi jangkauan port UDP yang digunakan oleh hosting akses jarak jauh</translation>
+<translation id="5855010364142818361">Kebijakan ini mengontrol parameter command line untuk Chrome dari Internet Explorer.
+
+      Jika add-in 'Dukungan Browser Lama' untuk Internet Explorer tidak diinstal, kebijakan ini tidak akan berpengaruh.
+
+      Jika kebijakan ini tidak ditetapkan, Internet Explorer hanya akan meneruskan URL ke Chrome sebagai parameter command line.
+
+      Jika kebijakan ini ditetapkan ke daftar string, string tersebut akan digabungkan dengan spasi dan diteruskan ke Chrome sebagai parameter command line.
+
+      Jika elemen berisi <ph name="URL_PLACEHOLDER" />, elemen tersebut akan diganti dengan URL halaman yang akan dibuka.
+
+      Jika tidak ada elemen yang berisi <ph name="URL_PLACEHOLDER" />, URL akan ditambahkan di akhir command line.
+
+      Variabel lingkungan diperluas. Pada Windows, <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> akan diganti dengan nilai variabel lingkungan ABC.</translation>
 <translation id="5861856285460256766">Konfigurasi Kode Akses Orang Tua</translation>
 <translation id="5868414965372171132">Konfigurasi jaringan tingkat pengguna</translation>
 <translation id="5879014913445067283">Mengontrol penemuan Berbagi File Jaringan melalui <ph name="NETBIOS_NAME" /></translation>
@@ -3233,6 +3331,15 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika setelan ini dinonaktifkan atau tidak disetel, konten Flash dari asal lainnya atau konten kecil dapat diblokir.</translation>
 <translation id="6532769014584932288">Izinkan penguncian layar saat aktif</translation>
+<translation id="653645667373317432">Kebijakan ini mengontrol perintah yang akan digunakan untuk membuka URL di <ph name="PRODUCT_NAME" /> saat beralih dari Internet Explorer.
+
+      Jika add-in 'Dukungan Browser Lama' untuk Internet Explorer tidak diinstal, kebijakan ini tidak akan berpengaruh.
+
+      Jika kebijakan ini tidak ditetapkan, Internet Explorer akan otomatis mendeteksi jalur executable milik <ph name="PRODUCT_NAME" /> saat <ph name="PRODUCT_NAME" /> diluncurkan dari Internet Explorer.
+
+      Jika ditetapkan, kebijakan ini akan digunakan untuk meluncurkan <ph name="PRODUCT_NAME" /> saat <ph name="PRODUCT_NAME" /> diluncurkan dari Internet Explorer.
+
+      Kebijakan ini dapat ditetapkan ke jalur file executable, atau <ph name="PRODUCT_NAME_PLACEHOLDER" /> untuk otomatis mendeteksi lokasi penginstalan Chrome.</translation>
 <translation id="6536600139108165863">Booting ulang otomatis saat mematikan perangkat</translation>
 <translation id="6539246272469751178">Kebijakan ini tidak memengaruhi aplikasi Android. Aplikasi Android selalu menggunakan direktori download default dan tidak dapat mengakses file apa pun yang didownload oleh <ph name="PRODUCT_OS_NAME" /> ke direktori download non-default.</translation>
 <translation id="654303922206238013">Strategi migrasi untuk ecryptfs</translation>
@@ -3246,6 +3353,17 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6559057113164934677">Jangan izinkan situs apa pun mengakses kamera dan mikrofon</translation>
 <translation id="6561396069801924653">Tampilkan opsi aksesibilitas di menu baki sistem</translation>
 <translation id="6563458316362153786">Aktifkan Transisi Cepat 802.11r</translation>
+<translation id="6568977718979857253">Kebijakan ini tidak digunakan lagi. Gunakan kebijakan <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> untuk mengontrol ketersediaan plugin Flash dan <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> untuk mengontrol apakah penampil PDF yang terintegrasi akan digunakan untuk membuka file PDF atau tidak.
+
+      Menentukan daftar plugin yang dinonaktifkan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
+
+      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter arbitrer. Karakter '*' mencocokkan sembarang jumlah karakter, sedangkan '?' menentukan karakter tunggal opsional, misalnya, mencocokkan karakter nol atau satu. Karakter escape adalah '\', jadi untuk mencocokkan karakter '*', '?', atau '\' yang sebenarnya, Anda dapat menempatkan '\' di depannya.
+
+      Jika setelan ini diaktifkan, daftar plugin yang ditentukan tidak akan digunakan di <ph name="PRODUCT_NAME" />. Plugin ditandai nonaktif di 'about:plugins' dan pengguna tidak dapat mengaktifkannya.
+
+      Perlu diketahui bahwa kebijakan ini dapat diganti dengan EnabledPlugins dan DisabledPluginsExceptions.
+
+      Jika kebijakan ini tidak ditetapkan, pengguna dapat menggunakan plugin mana pun yang diinstal di sistem kecuali plugin yang tidak kompatibel saat dilakukan hard code, usang, atau berbahaya.</translation>
 <translation id="6573305661369899995">Setel sumber eksternal batasan URL</translation>
 <translation id="6583851521569686409">Mengonfigurasi daftar printer.
 
@@ -3328,6 +3446,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Setelan ini mengontrol penyajian halaman sambutan yang membantu pengguna login ke <ph name="PRODUCT_NAME" />, memilihnya sebagai browser default, atau memberi tahu pengguna tentang fitur produk.</translation>
 <translation id="6766216162565713893">Izinkan situs meminta pengguna memberikan akses ke perangkat Bluetooth di sekitar</translation>
 <translation id="6770454900105963262">Melaporkan informasi tentang sesi kios aktif</translation>
+<translation id="6780908086869332493">Mengizinkan Anda untuk menentukan daftar pola URL yang menetapkan situs tempat sertifikat klien dipilih secara otomatis di layar login dalam alur SAML hosting frame, jika situs tersebut meminta sertifikat. Contoh penggunaan adalah ketika mengonfigurasikan sertifikat di seluruh perangkat untuk ditampilkan ke SAML IdP.
+
+      Nilai harus berupa array kamus dengan string JSON. Setiap kamus harus memiliki bentuk <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dengan <ph name="URL_PATTERN_PLACEHOLDER" /> merupakan pola setelan konten. <ph name="FILTER_PLACEHOLDER" /> akan membatasi asal sertifikat klien yang akan dipilih secara otomatis oleh browser. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> memiliki bentuk <ph name="JSON_DICTIONARY_EXAMPLE" />, hanya sertifikat klien yang diterbitkan oleh sertifikat dengan CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> yang akan dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> berupa kamus kosong {}, pemilihan sertifikat klien tidak dibatasi lagi.
+
+      Jika kebijakan ini tidak ditetapkan, pemilihan otomatis tidak akan dilakukan untuk semua situs.</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
 <translation id="6786967369487349613">Menyetel direktori profil roaming</translation>
 <translation id="6795485990775913659">Hanya izinkan pencetakan tanpa PIN</translation>
@@ -3535,6 +3658,15 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Jika kebijakan ini tidak dikonfigurasi, semua pengguna diizinkan untuk login. Perhatikan bahwa pembuatan pengguna baru tetap mengharuskan kebijakan <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> dikonfigurasi dengan tepat.</translation>
 <translation id="7126716959063786004">Aktifkan proses diakhiri di Pengelola Tugas</translation>
 <translation id="7127892035367404455">Kembalikan ke versi target</translation>
+<translation id="712963038874313213">Menyediakan playbook Ansible yang harus dijalankan di penampung Crostini default.
+
+      Dengan kebijakan ini, playbook Ansible akan dapat diterapkan ke penampung Crostini default jika tersedia pada perangkat tertentu dan diizinkan oleh kebijakan.
+
+      Ukuran data tidak boleh lebih dari 1 MB (1000000 byte) dan harus dienkodekan dalam YAML. Hash kriptografi digunakan untuk memverifikasi integritas download.
+
+      Konfigurasi didownload dan disimpan di cache. Gambar akan didownload ulang setiap kali URL atau hash berubah.
+
+      Jika Anda menetapkan kebijakan tersebut, pengguna tidak dapat mengubahnya. Jika tidak ditetapkan, pengguna dapat terus menggunakan penampung Crostini default dalam konfigurasinya yang sedang berlangsung jika Crostini diizinkan oleh kebijakan.</translation>
 <translation id="713121532817834879">Kebijakan ini adalah URL, yang mengarah ke file XML dalam format yang sama seperti kebijakan <ph name="IEEM_SITELIST_POLICY" /> Internet Explorer. Kebijakan ini memuat aturan dari file XML, tanpa membagikan aturan tersebut kepada Internet Explorer.
 
       Aturan dalam file XML ini berlaku dengan cara yang sama seperti <ph name="GREYLIST_POLICY_NAME" />. Artinya, aturan ini mencegah <ph name="PRODUCT_NAME" /> membuka browser alternatif, dan juga mencegah browser alternatif membuka <ph name="PRODUCT_NAME" />.
@@ -3738,8 +3870,16 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
       Jika kebijakan ini ditetapkan ke 'Tunda upload dan download', <ph name="PRODUCT_NAME" /> akan berperilaku sesuai dengan aturan yang dijelaskan di 'Tunda download' dan 'Tunda upload'.
       </translation>
 <translation id="7372831798009983116">Mengaktifkan fitur aksesibilitas klik otomatis</translation>
+<translation id="7373200034079131670">Reboot saat pengguna logout jika Android atau VM telah dimulai.</translation>
 <translation id="737655323154569539">Membatasi ukuran halaman pencetakan. Kebijakan yang tidak disetel dan setelan kosong diperlakukan sebagai tidak ada batasan.</translation>
 <translation id="7382191643394429934">Izinkan pencetakan dengan dan tanpa grafis latar belakang</translation>
+<translation id="7383445181072113521">Menentukan hostname perangkat yang digunakan dalam permintaan DHCP.
+
+      Jika kebijakan ini ditetapkan ke string yang tidak kosong, string tersebut akan digunakan sebagai hostname perangkat selama proses permintaan DHCP.
+
+      String tersebut dapat berisi variabel <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" /> yang akan diganti dengan nilai pada perangkat sebelum digunakan sebagai hostname. Substitusi yang dihasilkan harus berupa hostname valid (sesuai dengan RFC 1035, bagian 3.1).
+
+      Jika kebijakan ini tidak ditetapkan, atau nilai setelah substitusi bukan merupakan hostname yang valid, tidak ada hostname yang akan disetel dalam permintaan DHCP. </translation>
 <translation id="7389872682701720082">Jika setelan ini diaktifkan, plugin yang masih berlaku selalu berjalan.
 
       Jika setelan ini dinonaktifkan atau tidak ditetapkan, pengguna akan dimintai izin untuk menjalankan plugin yang memerlukan otorisasi. Ini adalah plugin yang dapat membahayakan keamanan.</translation>
@@ -3824,6 +3964,14 @@ Nilai kebijakan harus ditentukan dalam persen di rentang 0-100.</translation>
           Untuk cookie pada domain yang tidak tercakup oleh pola yang ditentukan di sini, atau untuk semua cookie ketika kebijakan ini tidak ditetapkan, nilai default global akan digunakan dari kebijakan <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> jika ditetapkan, atau konfigurasi pribadi pengguna jika tidak ditetapkan.
 
           Perlu diingat bahwa pola yang Anda cantumkan di sini dianggap sebagai domain, bukan URL, jadi Anda tidak perlu menentukan skema atau port.</translation>
+<translation id="7590188804371204512">Mengontrol penginstalan ekstensi eksternal.
+
+      Jika setelan ini diaktifkan, ekstensi eksternal akan diblokir sehingga tidak dapat diinstal.
+
+      Jika setelan ini dinonaktifkan atau tidak ditetapkan, ekstensi eksternal akan dapat diinstal.
+
+      Ekstensi eksternal dan penginstalannya didokumentasikan di https://developer.chrome.com/apps/external_extensions.
+      </translation>
 <translation id="7593523670408385997">Mengonfigurasi ukuran cache yang akan digunakan <ph name="PRODUCT_NAME" /> untuk menyimpan file dalam cache di disk.
 
       Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran cache yang disediakan terlepas dari apakah pengguna menentukan tanda '--disk-cache-size' atau tidak. Nilai yang ditentukan dalam kebijakan ini bukan merupakan batas mutlak namun merupakan saran terhadap sistem penyimpanan dalam cache, nilai apa pun di bawah beberapa megabyte dianggap terlalu kecil dan akan dibulatkan ke nilai minimum yang lebih wajar.
@@ -3883,6 +4031,13 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
           Lihat juga kebijakan 'CookiesAllowedForUrls' dan 'CookiesBlockedForUrls'. Perlu diperhatikan bahwa pola URL di antara ketiga kebijakan ini tidak boleh bertentangan - tidak ditentukan kebijakan mana yang diprioritaskan.
 
           Jika kebijakan "RestoreOnStartup" disetel untuk memulihkan URL dari sesi sebelumnya, kebijakan ini tidak akan diterapkan dan cookie akan disimpan permanen untuk situs tersebut.</translation>
+<translation id="7677220829878081413">
+      Jika ditetapkan ke ArcSession, kebijakan ini akan memaksa perangkat untuk reboot saat pengguna logout jika Android telah dimulai.
+      Jika ditetapkan ke ArcSessionOrVMStart, kebijakan ini akan memaksa perangkat untuk reboot saat pengguna logout jika Android atau VM telah dimulai.
+      Jika ditetapkan ke Selalu, kebijakan ini akan memaksa perangkat untuk reboot setiap kali pengguna logout.
+      Jika tidak ditetapkan, kebijakan ini tidak akan berpengaruh dan tidak melakukan reboot paksa saat pengguna logout. Hal yang sama berlaku jika kebijakan ditetapkan ke Jangan pernah.
+      Kebijakan ini hanya memengaruhi pengguna yang tidak berafiliasi.
+      </translation>
 <translation id="7683777542468165012">Penyegaran Kebijakan Dinamis</translation>
 <translation id="7687943045976362719">Jika kebijakan ini ditetapkan, jenis konten yang ditentukan akan ditangani oleh <ph name="PRODUCT_FRAME_NAME" />.
 
@@ -3991,6 +4146,7 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
           Jika kebijakan ini dinonaktifkan, pengguna tidak dapat menambahkan akun Kerberos. Akun hanya dapat ditambahkan melalui kebijakan 'Konfigurasikan akun Kerberos'. Cara ini efektif untuk mengunci akun.</translation>
 <translation id="7895553628261067384">Akses jarak jauh</translation>
+<translation id="7902040092815978832">Menampilkan keyboard numerik untuk sandi</translation>
 <translation id="7902255855035461275">Pola dalam daftar ini akan dicocokkan dengan asal
       keamanan URL yang meminta.  Jika ditemukan kecocokan, akses ke perangkat
       yang merekam audio akan diberikan tanpa permintaan.
@@ -4063,6 +4219,11 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
       Bookmark ini ditempatkan di dalam sebuah folder yang tidak dapat diubah oleh pengguna (tetapi pengguna dapat memilih untuk menyembunyikannya dari kolom bookmark). Secara default, nama folder adalah "Bookmark terkelola" tetapi nama ini dapat disesuaikan dengan menambahkan ke daftar bookmark sebuah kamus yang berisi kunci "<ph name="TOPLEVEL_NAME" />" dengan nama folder yang diinginkan sebagai nilainya.
 
       Bookmark terkelola tidak disinkronkan dengan akun pengguna dan tidak dapat diubah oleh ekstensi.</translation>
+<translation id="8077245272412229388">Menambahkan akun Kerberos yang telah diisi. Jika kredensial Kerberos cocok dengan kredensial login, akun dapat dikonfigurasi untuk menggunakan kembali kredensial login dengan menentukan '<ph name="LOGIN_EMAIL_PLACEHOLDER" />' dan <ph name="PASSWORD_PLACEHOLDER" />', masing-masing untuk principal dan sandi, sehingga tiket Kerberos dapat diambil secara otomatis kecuali autentikasi 2 langkah dikonfigurasi. Pengguna tidak dapat memodifikasi akun yang ditambahkan melalui kebijakan ini.
+
+          Jika kebijakan ini diaktifkan, daftar akun yang ditentukan oleh kebijakan akan ditambahkan ke setelan Akun Kerberos.
+
+          Jika kebijakan ini dinonaktifkan atau tidak ditetapkan, tidak ada akun yang akan ditambahkan ke setelan Akun Kerberos dan semua akun yang sebelumnya ditambahkan dengan kebijakan ini akan dihapus. Pengguna masih dapat menambahkan akun secara manual jika kebijakan 'Pengguna dapat menambahkan akun Kerberos' diaktifkan.</translation>
 <translation id="8078366200175825572">Memungkinkan Anda menyetel daftar pola URL yang menentukan situs mana yang tidak diizinkan untuk menyetel cookie.
 
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs yaitu dari kebijakan 'DefaultWebUsbGuardSetting' jika disetel, atau dari konfigurasi pribadi pengguna.

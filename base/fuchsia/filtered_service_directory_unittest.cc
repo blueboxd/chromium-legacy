@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,6 +74,15 @@ TEST_F(FilteredServiceDirectoryTest, NoServiceDir) {
 
   auto stub = filtered_client_->Connect<testfidl::TestInterface>();
   VerifyTestInterface(&stub, ZX_ERR_PEER_CLOSED);
+}
+
+// Verify that FilteredServiceDirectory allows extra services to be added.
+TEST_F(FilteredServiceDirectoryTest, AdditionalService) {
+  ScopedServiceBinding<testfidl::TestInterface> binding(
+      filtered_service_directory_->outgoing_directory(), &test_service_);
+
+  auto stub = filtered_client_->Connect<testfidl::TestInterface>();
+  VerifyTestInterface(&stub, ZX_OK);
 }
 
 }  // namespace fuchsia

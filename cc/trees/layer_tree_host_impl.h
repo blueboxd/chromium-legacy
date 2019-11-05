@@ -106,7 +106,6 @@ enum class GpuRasterizationStatus {
   ON,
   ON_FORCED,
   OFF_DEVICE,
-  MSAA_CONTENT,
 };
 
 enum class ImplThreadPhase {
@@ -474,6 +473,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void RequestImplSideInvalidationForCheckerImagedTiles() override;
   size_t GetFrameIndexForImage(const PaintImage& paint_image,
                                WhichTree tree) const override;
+  int GetMSAASampleCountForRaster(
+      const scoped_refptr<DisplayItemList>& display_list) override;
 
   // ScrollbarAnimationControllerClient implementation.
   void PostDelayedScrollbarAnimationTask(base::OnceClosure task,
@@ -524,15 +525,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   virtual bool InitializeFrameSink(LayerTreeFrameSink* layer_tree_frame_sink);
   TileManager* tile_manager() { return &tile_manager_; }
 
-  void SetContentHasSlowPaths(bool flag);
-  void SetContentHasNonAAPaint(bool flag);
   void GetGpuRasterizationCapabilities(bool* gpu_rasterization_enabled,
                                        bool* gpu_rasterization_supported,
                                        int* max_msaa_samples,
                                        bool* supports_disable_msaa);
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
   bool use_oop_rasterization() const { return use_oop_rasterization_; }
-  bool use_msaa() const { return use_msaa_; }
 
   GpuRasterizationStatus gpu_rasterization_status() const {
     return gpu_rasterization_status_;
@@ -811,6 +809,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     return did_lock_scrolling_layer_;
   }
 
+  bool can_use_msaa() const { return can_use_msaa_; }
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -1049,12 +1049,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<viz::ContextCacheController::ScopedVisibility>
       worker_context_visibility_;
 
+  bool can_use_msaa_ = false;
+  bool supports_disable_msaa_ = false;
+
   bool need_update_gpu_rasterization_status_ = false;
-  bool content_has_slow_paths_ = false;
-  bool content_has_non_aa_paint_ = false;
   bool use_gpu_rasterization_ = false;
   bool use_oop_rasterization_ = false;
-  bool use_msaa_ = false;
   GpuRasterizationStatus gpu_rasterization_status_ =
       GpuRasterizationStatus::OFF_DEVICE;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;

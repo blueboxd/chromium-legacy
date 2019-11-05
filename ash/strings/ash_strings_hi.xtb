@@ -44,7 +44,6 @@
 <translation id="1516740043221086139">'परेशान न करें' मोड चालू है.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{सूचना सेटिंग दिखाएं. किसी एक ऐप्लिकेशन के लिए सूचनाएं बंद हैं}one{सूचना सेटिंग दिखाएं. # ऐप्लिकेशन के लिए सूचनाएं बंद हैं}other{सूचना सेटिंग दिखाएं. # ऐप्लिकेशन के लिए सूचनाएं बंद हैं}}</translation>
 <translation id="1525508553941733066">ख़ारिज करें</translation>
-<translation id="1537254971476575106">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा</translation>
 <translation id="15373452373711364">बड़ा माउस कर्सर</translation>
 <translation id="1546492247443594934">डेस्क 2</translation>
 <translation id="1550523713251050646">ज़्यादा विकल्पों के लिए क्लिक करें</translation>
@@ -114,7 +113,6 @@
 <translation id="2484513351006226581">कीबोर्ड लेआउट स्विच करने के लिए <ph name="KEYBOARD_SHORTCUT" /> दबाएं.</translation>
 <translation id="2501920221385095727">रोचक कुंजियां</translation>
 <translation id="2509468283778169019">CAPS LOCK चालू है</translation>
-<translation id="2532589005999780174">उच्च कंट्रास्ट मोड</translation>
 <translation id="2542089167727451762">अपनी प्रोफ़ाइल फ़ोटो पर टैप करें</translation>
 <translation id="255671100581129685">सार्वजनिक सत्र में Google Assistant उपलब्ध नहीं है.</translation>
 <translation id="2575685495496069081">एक से ज़्यादा 'साइन इन' को बंद कर दिया गया है</translation>
@@ -293,6 +291,7 @@
 <translation id="5302048478445481009">भाषा</translation>
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग</translation>
 <translation id="5331975486040154427">USB-C डिवाइस (बायां पिछला पोर्ट)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">कई बार कोशिश की जा चुकी है</translation>
 <translation id="5397578532367286026">chrome.com पर इस उपयोगकर्ता के उपयोग और इतिहास से जुड़ी जानकारी की प्रबंधक (<ph name="MANAGER_EMAIL" />) समीक्षा कर सकता है.</translation>
 <translation id="5430931332414098647">इंस्टैंट टेदरिंग</translation>
@@ -315,6 +314,7 @@
 <translation id="5682642926269496722">मौजूदा उपयोगकर्ता खाते के लिए Google Assistant की सुविधा उपलब्ध नहीं है.</translation>
 <translation id="5691772641933328258">फ़िंगरप्रिंट नहीं पहचाना गया</translation>
 <translation id="5710450975648804523">'परेशान न करें' मोड चालू है</translation>
+<translation id="573413375004481890">यह डिवाइस आपके सभी डिसप्ले के साथ काम नहीं कर सकता. इसलिए, एक डिसप्ले को डिसकनेक्ट किया गया है</translation>
 <translation id="574392208103952083">मध्यम</translation>
 <translation id="5744083938413354016">टैप करके खींचना</translation>
 <translation id="5750765938512549687">ब्लूटूथ बंद है</translation>
@@ -472,7 +472,6 @@
 <translation id="7984197416080286869">फ़िंगरप्रिंट से बहुत ज़्यादा बार कोशिश की गई</translation>
 <translation id="7994370417837006925">एक से ज़्यादा साइन-इन</translation>
 <translation id="8000066093800657092">नेटवर्क नहीं है</translation>
-<translation id="8029241286966751120">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा चालू है. उसे बंद पर टॉगल करने के लिए Ctrl+Search+M फिर से दबाएं.</translation>
 <translation id="8030169304546394654">डिसकनेक्ट किया गया</translation>
 <translation id="8054466585765276473">बैटरी समय की गणना की जा रही है.</translation>
 <translation id="8061464966246066292">उच्च स्क्रीन की रोशनी</translation>
@@ -497,7 +496,6 @@
 <translation id="8388750414311082622">आखिरी डेस्क को हटाया नहीं जा सकता.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> के लिए विकल्प मेन्यू</translation>
 <translation id="8394567579869570560">आपके अभिभावक ने यह डिवाइस लॉक कर दिया है</translation>
-<translation id="8406981827175133772">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा</translation>
 <translation id="8425213833346101688">बदलें</translation>
 <translation id="8427213022735114808">'डिक्टेशन (आप जो बोलते हैं उसे लिखना)' सुविधा आपकी आवाज़ Google को भेजती है ताकि किसी भी लेख फ़ील्ड में बोलकर लिखा जा सके.</translation>
 <translation id="8428213095426709021">सेटिंग</translation>

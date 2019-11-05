@@ -284,6 +284,7 @@ ArcSystemStatCollector::~ArcSystemStatCollector() {
 }
 
 void ArcSystemStatCollector::Start(const base::TimeDelta& max_interval) {
+  max_interval_ = max_interval;
   const size_t sample_count =
       1 + max_interval.InMicroseconds() /
               kSystemStatUpdateInterval.InMicroseconds();

@@ -146,5 +146,13 @@
         this.fire('offline-gaia-cancel');
       }
     },
+
+    onNextButtonClicked_: function() {
+      if (this.isEmailSectionActive_()) {
+        this.onEmailSubmitted_();
+        return;
+      }
+      this.onPasswordSubmitted_();
+    },
   });
 }

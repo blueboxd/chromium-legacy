@@ -23,26 +23,10 @@ MockPipelineClient::~MockPipelineClient() = default;
 MockPipeline::MockPipeline() = default;
 MockPipeline::~MockPipeline() = default;
 
-void MockPipeline::Start(StartType start_type,
-                         Demuxer* demuxer,
-                         std::unique_ptr<Renderer> renderer,
-                         Client* client,
-                         const PipelineStatusCB& seek_cb) {
-  Start(start_type, demuxer, &renderer, client, seek_cb);
-}
-
-void MockPipeline::Resume(std::unique_ptr<Renderer> renderer,
-                          base::TimeDelta timestamp,
-                          const PipelineStatusCB& seek_cb) {
-  Resume(&renderer, timestamp, seek_cb);
-}
-
 MockMediaResource::MockMediaResource() = default;
-
 MockMediaResource::~MockMediaResource() = default;
 
 MockDemuxer::MockDemuxer() = default;
-
 MockDemuxer::~MockDemuxer() = default;
 
 std::string MockDemuxer::GetDisplayName() const {
@@ -123,6 +107,10 @@ MockAudioRenderer::~MockAudioRenderer() = default;
 MockRenderer::MockRenderer() = default;
 
 MockRenderer::~MockRenderer() = default;
+
+MockRendererFactory::MockRendererFactory() = default;
+
+MockRendererFactory::~MockRendererFactory() = default;
 
 MockTimeSource::MockTimeSource() = default;
 

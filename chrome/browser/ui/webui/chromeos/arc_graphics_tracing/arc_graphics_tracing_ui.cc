@@ -20,11 +20,13 @@ namespace {
 
 constexpr char kArcGraphicsTracingJsPath[] = "arc_graphics_tracing.js";
 constexpr char kArcGraphicsTracingUiJsPath[] = "arc_graphics_tracing_ui.js";
+constexpr char kArcOverviewTracingJsPath[] = "arc_overview_tracing.js";
+constexpr char kArcOverviewTracingUiJsPath[] = "arc_overview_tracing_ui.js";
 constexpr char kArcTracingUiJsPath[] = "arc_tracing_ui.js";
 constexpr char kArcTracingCssPath[] = "arc_tracing.css";
 
-content::WebUIDataSource* CreateDataSource() {
-  content::WebUIDataSource* source =
+content::WebUIDataSource* CreateGraphicsDataSource() {
+  content::WebUIDataSource* const source =
       content::WebUIDataSource::Create(chrome::kChromeUIArcGraphicsTracingHost);
   source->UseStringsJs();
   source->SetDefaultResource(IDR_ARC_GRAPHICS_TRACING_HTML);
@@ -45,14 +47,50 @@ content::WebUIDataSource* CreateDataSource() {
   return source;
 }
 
+content::WebUIDataSource* CreateOverviewDataSource() {
+  content::WebUIDataSource* const source =
+      content::WebUIDataSource::Create(chrome::kChromeUIArcOverviewTracingHost);
+  source->UseStringsJs();
+  source->SetDefaultResource(IDR_ARC_OVERVIEW_TRACING_HTML);
+  source->AddResourcePath(kArcOverviewTracingJsPath,
+                          IDR_ARC_OVERVIEW_TRACING_JS);
+  source->AddResourcePath(kArcOverviewTracingUiJsPath,
+                          IDR_ARC_OVERVIEW_TRACING_UI_JS);
+  source->AddResourcePath(kArcTracingCssPath, IDR_ARC_TRACING_CSS);
+  source->AddResourcePath(kArcTracingUiJsPath, IDR_ARC_TRACING_UI_JS);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self';");
+
+  base::DictionaryValue localized_strings;
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
+  source->AddLocalizedStrings(localized_strings);
+
+  return source;
+}
+
 }  // anonymous namespace
 
 namespace chromeos {
 
-ArcGraphicsTracingUI::ArcGraphicsTracingUI(content::WebUI* web_ui)
+template <>
+ArcGraphicsTracingUI<ArcGraphicsTracingMode::kFull>::ArcGraphicsTracingUI(
+    content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(std::make_unique<ArcGraphicsTracingHandler>());
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), CreateDataSource());
+  web_ui->AddMessageHandler(std::make_unique<ArcGraphicsTracingHandler>(
+      ArcGraphicsTracingMode::kFull));
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
+                                CreateGraphicsDataSource());
+}
+
+template <>
+ArcGraphicsTracingUI<ArcGraphicsTracingMode::kOverview>::ArcGraphicsTracingUI(
+    content::WebUI* web_ui)
+    : WebUIController(web_ui) {
+  web_ui->AddMessageHandler(std::make_unique<ArcGraphicsTracingHandler>(
+      ArcGraphicsTracingMode::kOverview));
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
+                                CreateOverviewDataSource());
 }
 
 }  // namespace chromeos

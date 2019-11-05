@@ -92,15 +92,12 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/browser/tts_controller.h"
-#include "content/public/browser/tts_platform.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
@@ -131,10 +128,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -142,19 +135,13 @@
 #include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
-using chrome_browser_net::NetworkPredictionOptions;
 using content::BrowserThread;
-using content::DevToolsAgentHost;
-using content::NavigationController;
 using content::OpenURLParams;
 using content::Referrer;
 using content::RenderFrameHost;
-using content::RenderViewHost;
-using content::RenderWidgetHost;
 using content::TestNavigationObserver;
 using content::WebContents;
 using content::WebContentsObserver;
-using net::NetworkChangeNotifier;
 using prerender::test_utils::TestPrerender;
 using prerender::test_utils::TestPrerenderContents;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
@@ -336,28 +323,6 @@ class ChannelDestructionWatcher {
   DISALLOW_COPY_AND_ASSIGN(ChannelDestructionWatcher);
 };
 
-// A navigation observer to wait until WebContents is destroyed.
-class WebContentsDestructionObserver : public WebContentsObserver {
- public:
-  explicit WebContentsDestructionObserver(WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
-
-  // Waits for destruction of the observed WebContents.
-  void Wait() {
-    loop_.Run();
-  }
-
-  // WebContentsObserver implementation:
-  void WebContentsDestroyed() override {
-    loop_.Quit();
-  }
-
- private:
-  base::RunLoop loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsDestructionObserver);
-};
-
 // A navigation observer to wait on either a new load or a swap of a
 // WebContents. On swap, if the new WebContents is still loading, wait for that
 // load to complete as well. Note that the load must begin after the observer is
@@ -490,15 +455,6 @@ class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
   std::unique_ptr<NavigationOrSwapObserver> swap_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NewTabNavigationOrSwapObserver);
-};
-
-class FakeDevToolsClient : public content::DevToolsAgentHostClient {
- public:
-  FakeDevToolsClient() {}
-  ~FakeDevToolsClient() override {}
-  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override {}
-  void AgentHostClosed(DevToolsAgentHost* agent_host) override {}
 };
 
 base::FilePath GetTestPath(const std::string& file_name) {
@@ -2158,83 +2114,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
   // waiting for PrerenderContents to stop should be reliable.
   PrerenderTestURL("/password/autosignin.html",
                    FINAL_STATUS_CREDENTIAL_MANAGER_API, 0);
-}
-
-// When instantiated, mocks out the global text-to-speech engine with something
-// that emulates speaking any phrase for the duration of 0ms.
-class TtsPlatformMock : public content::TtsPlatform {
- public:
-  TtsPlatformMock() : speaking_requested_(false) {
-    content::TtsController::GetInstance()->SetTtsPlatform(this);
-  }
-
-  virtual ~TtsPlatformMock() {
-    content::TtsController::GetInstance()->SetTtsPlatform(
-        TtsPlatform::GetInstance());
-  }
-
-  bool speaking_requested() { return speaking_requested_; }
-
-  // TtsPlatform:
-
-  bool PlatformImplAvailable() override { return true; }
-
-  void Speak(int utterance_id,
-             const std::string& utterance,
-             const std::string& lang,
-             const content::VoiceData& voice,
-             const content::UtteranceContinuousParameters& params,
-             base::OnceCallback<void(bool)> on_speak_finished) override {
-    speaking_requested_ = true;
-    // Dispatch the end of speaking back to the page.
-    content::TtsController::GetInstance()->OnTtsEvent(
-        utterance_id, content::TTS_EVENT_END, 0,
-        static_cast<int>(utterance.size()), std::string());
-    std::move(on_speak_finished).Run(true);
-  }
-
-  bool StopSpeaking() override { return true; }
-
-  bool IsSpeaking() override { return false; }
-
-  void GetVoices(std::vector<content::VoiceData>* out_voices) override {
-    out_voices->push_back(content::VoiceData());
-    content::VoiceData& voice = out_voices->back();
-    voice.native = true;
-    voice.name = "TtsPlatformMock";
-    voice.events.insert(content::TTS_EVENT_END);
-  }
-
-  void Pause() override {}
-
-  void Resume() override {}
-
-  bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override {
-    return false;
-  }
-
-  void WillSpeakUtteranceWithVoice(
-      content::TtsUtterance* utterance,
-      const content::VoiceData& voice_data) override {}
-
-  void SetError(const std::string& error) override {}
-
-  std::string GetError() override { return std::string(); }
-
-  void ClearError() override {}
-
- private:
-  bool speaking_requested_;
-};
-
-// Checks that text-to-speech is not called from prerenders that did not reach
-// the visible state. Disabled until the http://crbug.com/520275 is fixed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderSpeechSynthesis) {
-  TtsPlatformMock tts_platform_mock;
-  PrerenderTestURL("/prerender/prerender_speech_synthesis.html",
-                   FINAL_STATUS_JAVASCRIPT_ALERT, 1);
-  EXPECT_FALSE(tts_platform_mock.speaking_requested());
 }
 
 class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {

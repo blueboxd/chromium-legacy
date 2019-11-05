@@ -153,6 +153,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="2063539687800151747">Lời đề từ</translation>
 <translation id="207477615537953741">Diễn giải ngữ nghĩa bị tắt</translation>
 <translation id="2086961585857038472">Từ tiếp theo</translation>
+<translation id="2087981446621639008">ttct dsmt</translation>
 <translation id="2089387485033699258">vi</translation>
 <translation id="2091933974477985526">Vùng văn bản có thể chỉnh sửa trước</translation>
 <translation id="2100350898815792233">Tất cả dấu câu</translation>
@@ -193,6 +194,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="2416512023405990736">Hộp kiểm được bỏ chọn</translation>
 <translation id="2417569100218200841">Thông tin nội dung</translation>
 <translation id="2417948780551741035">Chú thích</translation>
+<translation id="2419852971200420169">Danh sách mô tả</translation>
 <translation id="2421113964388408478">Xóa</translation>
 <translation id="2422937916923936891">Hộp kiểm mục menu</translation>
 <translation id="2428534162001909979">Menu lệnh</translation>
@@ -371,6 +373,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3497063866483065785">{COUNT,plural, =1{dấu hỏi}other{# dấu hỏi}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{dấu mũ}other{# dấu mũ}}</translation>
 <translation id="352577523970648069">Trường văn bản có thể chỉnh sửa</translation>
+<translation id="3538907380453898475">dsmt</translation>
 <translation id="3549141990712742152">cắt <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Nhấn bằng 2 ngón tay để tạm thời dừng lời nói</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, hộp kiểm không được chọn</translation>
@@ -779,6 +782,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6378394210114975876">Màu cây kế</translation>
 <translation id="6385591741672306837">cột</translation>
 <translation id="6387719785439924554">loại trừ</translation>
+<translation id="6393014464788431702">Tắt tất cả bộ lọc sự kiện</translation>
 <translation id="6411426777058107714">Không có nút radio trước nào.</translation>
 <translation id="6414968628640960377">Phần tử khác trước.</translation>
 <translation id="6417265370957905582">Trợ lý Google</translation>
@@ -914,6 +918,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="7332592614823088566">Hàng <ph name="ROWINDEX" /> / <ph name="ROWTOTAL" />, cột <ph name="COLINDEX" /> / <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">có cửa sổ bật lên</translation>
 <translation id="7356165926712028380">Chuyển sang chữ nổi 8 chấm</translation>
+<translation id="7356610683936413584">Thông tin chi tiết danh sách mô tả</translation>
 <translation id="7362871137496673139">Không có tiêu đề cấp 2 trước nào.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{dấu và}other{# dấu và}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8096975275316362544">Màu kem bạc hà</translation>
 <translation id="8098587210054821856">Màu xám đen</translation>
 <translation id="8110647606445335195">Không có mốc ARIA nào.</translation>
+<translation id="8121539003537428024">Bật tất cả bộ lọc sự kiện</translation>
 <translation id="812886159861361726">Đã dừng tải <ph name="FILE_NAME" /> xuống</translation>
 <translation id="8138880386467279117">Cảm ứng</translation>
 <translation id="8153880621934657047">Không phải bên trong bảng.</translation>

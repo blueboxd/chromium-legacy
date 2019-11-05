@@ -40,8 +40,9 @@ class ScenicGpuHost : public mojom::ScenicGpuHost,
   mojo::PendingRemote<mojom::ScenicGpuHost> CreateHostProcessSelfRemote();
 
   // mojom::ScenicGpuHost:
-  void AttachSurfaceToWindow(int32_t window_id,
-                             mojo::ScopedHandle export_token_mojo) override;
+  void AttachSurfaceToWindow(
+      int32_t window_id,
+      mojo::ScopedHandle surface_view_holder_token_mojo) override;
 
   // GpuPlatformSupportHost:
   void OnGpuProcessLaunched(

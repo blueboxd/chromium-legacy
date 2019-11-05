@@ -2457,6 +2457,7 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^courgette[\\/]courgette_tool\.cc$",
                  r"^extensions[\\/]renderer[\\/]logging_native_handler\.cc$",
                  r"^fuchsia[\\/]engine[\\/]browser[\\/]frame_impl.cc$",
+                 r"^fuchsia[\\/]engine[\\/]context_provider_main.cc$",
                  r"^headless[\\/]app[\\/]headless_shell\.cc$",
                  r"^ipc[\\/]ipc_logging\.cc$",
                  r"^native_client_sdk[\\/]",

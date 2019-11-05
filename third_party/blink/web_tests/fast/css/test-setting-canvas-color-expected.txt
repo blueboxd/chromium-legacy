@@ -20,6 +20,10 @@ PASS Setting color to ButtonShadow was successfully set.
 PASS Setting color to buttonshadow was successfully set.
 PASS Setting color to ButtonText was successfully set.
 PASS Setting color to buttontext was successfully set.
+PASS Setting color to Canvas was successfully set.
+PASS Setting color to canvas was successfully set.
+PASS Setting color to CanvasText was successfully set.
+PASS Setting color to canvastext was successfully set.
 PASS Setting color to CaptionText was successfully set.
 PASS Setting color to captiontext was successfully set.
 FAIL Setting color to Field was not set but should!

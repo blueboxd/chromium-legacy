@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">URL をコピー</translation>
 <translation id="2156074688469523661">その他のサイト（<ph name="NUMBER_OF_SITES" /> 件）</translation>
 <translation id="2157851137955077194">お使いのスマートフォンから別のデバイスにデータを共有するには、両方のデバイスの Chrome 設定で同期をオンにしてください</translation>
-<translation id="2170088579611075216">VR を許可して開始</translation>
 <translation id="2175927920773552910">QR コード</translation>
 <translation id="218608176142494674">共有</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> として続行</translation>
@@ -183,6 +182,7 @@
 <translation id="2321958826496381788">読みやすくなるまでスライダをドラッグしてください。段落をダブルタップするとテキストがこれより大きくなります。</translation>
 <translation id="2323763861024343754">サイトのストレージ</translation>
 <translation id="2328985652426384049">ログインできません</translation>
+<translation id="2330129964253841015">パスワードが危険にさらされた場合に警告する</translation>
 <translation id="2349710944427398404">Chrome が使用するデータ全体（アカウント、ブックマーク、保存済みの設定など）</translation>
 <translation id="2353636109065292463">インターネット接続を確認しています</translation>
 <translation id="2359808026110333948">続行</translation>
@@ -190,6 +190,7 @@
 <translation id="2387895666653383613">テキストの拡大と縮小</translation>
 <translation id="2394602618534698961">ダウンロードしたファイルがここに表示されます</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2407481962792080328">この機能は Google アカウントにログインすると有効になります</translation>
 <translation id="2410754283952462441">アカウントの選択</translation>
 <translation id="2414886740292270097">暗</translation>
 <translation id="2416359993254398973">このサイトを利用するには、Chrome でカメラの使用を許可する必要があります。</translation>
@@ -198,6 +199,7 @@
 <translation id="2434158240863470628">ダウンロードが完了しました<ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">位置情報へのアクセス</translation>
 <translation id="2450083983707403292"><ph name="FILE_NAME" /> のダウンロードをやり直してもよろしいですか？</translation>
+<translation id="246532703174860178">共有</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> で管理</translation>
 <translation id="2494974097748878569">Chrome の Google アシスタント</translation>
@@ -412,7 +414,6 @@
 <translation id="4135200667068010335">タブを共有するデバイスのリストが閉じられました。</translation>
 <translation id="4149994727733219643">ウェブページの簡易表示</translation>
 <translation id="4165986682804962316">サイトの設定</translation>
-<translation id="4169535189173047238">許可しない</translation>
 <translation id="4170011742729630528">このサービスはご利用になれません。しばらくしてからもう一度お試しください。</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> 使用</translation>
 <translation id="4181841719683918333">言語</translation>
@@ -531,10 +532,6 @@
 <translation id="5011311129201317034"><ph name="SITE" /> が接続を要求しています</translation>
 <translation id="5013696553129441713">新しいおすすめ記事はありません</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">VR の使用中、このサイトで次の情報が把握される場合があります。
-  -  あなたの身体的特徴（身長など）
-
-VR を開始する前に、信頼できるサイトかどうかを確認してください。</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5040262127954254034">プライバシー</translation>
 <translation id="5048398596102334565">サイトによるモーション センサーへのアクセスを許可する（推奨）</translation>
@@ -608,11 +605,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5527082711130173040">Chrome ではデバイスをスキャンするために現在地情報にアクセスする必要があります。<ph name="BEGIN_LINK1" />権限を更新<ph name="END_LINK1" />してください。また、現在地情報へのアクセスが<ph name="BEGIN_LINK2" />このデバイスでオフになっています<ph name="END_LINK2" />。</translation>
 <translation id="5527111080432883924">サイトがクリップボードのテキストや画像を読み取る前に確認する（推奨）</translation>
 <translation id="5530766185686772672">シークレットタブを閉じる</translation>
-<translation id="5534334044554683961">VR の使用中、このサイトで次の情報が把握される場合があります。
-  -   あなたの身体的特徴（身長など）
-  -   あなたの部屋のレイアウト
-
-VR を開始する前に、信頼できるサイトかどうかを確認してください。</translation>
 <translation id="5534640966246046842">サイトがコピーされました</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5561549206367097665">ネットワーク接続を待機しています…</translation>
@@ -903,7 +895,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7665369617277396874">アカウントを追加</translation>
 <translation id="766587987807204883">記事がここに表示されます。これらの記事はオフラインでも読むことができます</translation>
 <translation id="7682724950699840886">推奨される対策: デバイスに十分な空き容量があることを確認し、再度エクスポートを試します。</translation>
-<translation id="7685301384041462804">VR を開始する前に、信頼できるサイトかどうかを確認してください。</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> でメールを作成</translation>
 <translation id="7704317875155739195">検索語句や URL をオートコンプリートする</translation>
 <translation id="7725024127233776428">ブックマークしたページがここに表示されます</translation>
@@ -1079,7 +1070,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> で管理されているアカウントでログインして、Chrome データの管理を管理者に委ねようとしています。この操作を行うと、データはこのアカウントに恒久的に関連付けられます。Chrome からログアウトすると、データはこのデバイスから削除されますが、Google アカウントには残ります。</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
 <translation id="9028914725102941583">デバイス間で共有するには同期をオンにします</translation>
-<translation id="9029323097866369874"><ph name="DOMAIN" /> に VR の開始を許可しますか？</translation>
 <translation id="9040142327097499898">通知が許可されていますが、位置情報がデバイスでオフになっています。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 個の動画}other{# 個の動画}}</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>

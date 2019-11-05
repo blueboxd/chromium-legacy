@@ -550,6 +550,13 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     }
 
     /**
+     * @return Whether the location bar has been scrolled to top in the NTP.
+     */
+    public boolean isLocationBarScrolledToTopInNtp() {
+        return mNewTabPageLayout.getToolbarTransitionPercentage() == 1;
+    }
+
+    /**
      * Sets the listener for search box scroll changes.
      * @param listener The listener to be notified on changes.
      */

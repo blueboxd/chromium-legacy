@@ -10,8 +10,6 @@
 #include "url/origin.h"
 #if defined(OS_ANDROID)
 #include "content/browser/sms/sms_provider_android.h"
-#else
-#include "content/browser/sms/sms_provider_desktop.h"
 #endif
 
 namespace content {
@@ -25,7 +23,7 @@ std::unique_ptr<SmsProvider> SmsProvider::Create() {
 #if defined(OS_ANDROID)
   return std::make_unique<SmsProviderAndroid>();
 #else
-  return std::make_unique<SmsProviderDesktop>();
+  return nullptr;
 #endif
 }
 

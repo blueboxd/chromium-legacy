@@ -123,6 +123,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
           GetColorPickerList(),
           base::Bind(&TabGroupEditorBubbleView::UpdateGroup,
                      base::Unretained(this))));
+  color_selector_->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(vertical_spacing, 0, 0, 0)));
 
   AddChildView(std::make_unique<views::Separator>());
 

@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Chế độ Không làm phiền đang bật.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Hiển thị tùy chọn cài đặt thông báo. Các thông báo hiện đang tắt cho một ứng dụng}other{Hiển thị tùy chọn cài đặt thông báo. Các thông báo hiện đang tắt cho # ứng dụng}}</translation>
 <translation id="1525508553941733066">LOẠI BỎ</translation>
-<translation id="1537254971476575106">Phóng to toàn bộ màn hình</translation>
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
 <translation id="1546492247443594934">Không gian làm việc 2</translation>
 <translation id="1550523713251050646">Nhấp để xem các tùy chọn khác</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Hãy nhấn <ph name="KEYBOARD_SHORTCUT" /> để chuyển bố cục bàn phím.</translation>
 <translation id="2501920221385095727">Phím cố định</translation>
 <translation id="2509468283778169019">Đang bật CAPS LOCK</translation>
-<translation id="2532589005999780174">Chế độ tương phản cao</translation>
 <translation id="2542089167727451762">Nhấn vào ảnh hồ sơ của bạn</translation>
 <translation id="255671100581129685">Bạn không thể sử dụng Trợ lý Google trong phiên công khai.</translation>
 <translation id="256712445991462162">tính năng phóng to ở vị trí cố định</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">Ngôn ngữ</translation>
 <translation id="5313326810920013265">Cài đặt Bluetooth</translation>
 <translation id="5331975486040154427">Thiết bị USB-C (cổng phía sau, bên trái)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Quá nhiều lần thử</translation>
 <translation id="5397578532367286026">Người quản lý (<ph name="MANAGER_EMAIL" />) trên chrome.com có thể xem lại mức sử dụng và lịch sử của người dùng này.</translation>
 <translation id="5430931332414098647">Chia sẻ kết nối tức thì</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">Tài khoản người dùng hiện tại chưa hỗ trợ Trợ lý Google.</translation>
 <translation id="5691772641933328258">Không nhận dạng được vân tay</translation>
 <translation id="5710450975648804523">Chế độ Không làm phiền đang bật</translation>
+<translation id="573413375004481890">Thiết bị này không thể hỗ trợ tất cả màn hình của bạn nên một màn hình đã bị ngắt kết nối</translation>
 <translation id="574392208103952083">Trung bình</translation>
 <translation id="5744083938413354016">Kéo nhấn</translation>
 <translation id="5750765938512549687">Bluetooth đang tắt</translation>
@@ -481,7 +481,6 @@
 <translation id="7984197416080286869">Quá nhiều lần thử vân tay</translation>
 <translation id="7994370417837006925">Đăng nhập nhiều tài khoản</translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
-<translation id="8029241286966751120">Đã bật tính năng Phóng to toàn bộ màn hình. Hãy nhấn lại tổ hợp phím Ctrl+Search+M để tắt tính năng này.</translation>
 <translation id="8030169304546394654">Đã ngắt kết nối</translation>
 <translation id="8054466585765276473">Đang tính toán thời lượng pin.</translation>
 <translation id="8061464966246066292">Độ tương phản cao</translation>
@@ -506,7 +505,6 @@
 <translation id="8388750414311082622">Không thể xóa không gian làm việc gần đây nhất.</translation>
 <translation id="8392451568018454956">Menu tùy chọn dành cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Cha mẹ của bạn đã khóa thiết bị này</translation>
-<translation id="8406981827175133772">Phóng to toàn màn hình</translation>
 <translation id="8425213833346101688">Thay đổi</translation>
 <translation id="8427213022735114808">Tính năng nhập bằng giọng nói gửi giọng nói của bạn tới Google để cho phép nhập liệu bằng giọng nói vào bất kỳ trường văn bản nào.</translation>
 <translation id="8428213095426709021">Cài đặt</translation>

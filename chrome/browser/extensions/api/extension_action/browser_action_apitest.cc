@@ -411,7 +411,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, DynamicBrowserAction) {
   EXPECT_EQ(kEmptyPathError, catcher.message());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, InvisibleIconBrowserAction) {
+// https://crbug.com/1019669; flaky on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_InvisibleIconBrowserAction DISABLED_InvisibleIconBrowserAction
+#else
+#define MAYBE_InvisibleIconBrowserAction InvisibleIconBrowserAction
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest,
+                       MAYBE_InvisibleIconBrowserAction) {
   // Turn this on so errors are reported.
   ExtensionActionSetIconFunction::SetReportErrorForInvisibleIconForTesting(
       true);
@@ -1103,8 +1110,14 @@ class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
   const Extension* other_extension_;
 };
 
+// Flaky - crbug.com/1021172
+#if defined(OS_LINUX)
+#define MAYBE_Webpage DISABLED_Webpage
+#else
+#define MAYBE_Webpage Webpage
+#endif
 // Tests that an extension pop-up cannot be navigated to a web page.
-IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, Webpage) {
+IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, MAYBE_Webpage) {
   GURL web_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   TestPopupNavigationViaGet(web_url, EXPECTING_NAVIGATION_FAILURE);
   TestPopupNavigationViaPost(web_url, EXPECTING_NAVIGATION_FAILURE);

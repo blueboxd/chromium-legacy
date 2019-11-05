@@ -48,12 +48,10 @@ const char kPrinterSettings[] = R"({
 }  // namespace
 
 TEST(PrintSettingsConversionTest, ConversionTest) {
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadDeprecated(kPrinterSettings);
-  ASSERT_TRUE(value);
+  base::Optional<base::Value> value = base::JSONReader::Read(kPrinterSettings);
+  ASSERT_TRUE(value.has_value());
   PrintSettings settings;
-  bool success = PrintSettingsFromJobSettings(
-      base::Value::FromUniquePtrValue(std::move(value)), &settings);
+  bool success = PrintSettingsFromJobSettings(value.value(), &settings);
   ASSERT_TRUE(success);
 #if defined(OS_CHROMEOS)
   EXPECT_TRUE(settings.send_user_info());
@@ -64,13 +62,11 @@ TEST(PrintSettingsConversionTest, ConversionTest) {
 
 #if defined(OS_CHROMEOS)
 TEST(PrintSettingsConversionTest, ConversionTest_DontSendUsername) {
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadDeprecated(kPrinterSettings);
-  ASSERT_TRUE(value);
+  base::Optional<base::Value> value = base::JSONReader::Read(kPrinterSettings);
+  ASSERT_TRUE(value.has_value());
   value->SetKey(kSettingSendUserInfo, base::Value(false));
   PrintSettings settings;
-  bool success = PrintSettingsFromJobSettings(
-      base::Value::FromUniquePtrValue(std::move(value)), &settings);
+  bool success = PrintSettingsFromJobSettings(value.value(), &settings);
   ASSERT_TRUE(success);
   EXPECT_FALSE(settings.send_user_info());
   EXPECT_EQ("", settings.username());

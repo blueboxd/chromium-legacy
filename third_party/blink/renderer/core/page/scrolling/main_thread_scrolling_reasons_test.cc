@@ -4,6 +4,8 @@
 
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/property_tree.h"
+#include "cc/trees/scroll_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -29,20 +31,8 @@ class MainThreadScrollingReasonsTest : public testing::Test {
   MainThreadScrollingReasonsTest() : base_url_("http://www.test.com/") {
     helper_.InitializeWithSettings(&ConfigureSettings);
     GetWebView()->MainFrameWidget()->Resize(IntSize(320, 240));
-
-    // macOS attaches main frame scrollbars to the VisualViewport so the
-    // VisualViewport layers need to be initialized.
     GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
         WebWidget::LifecycleUpdateReason::kTest);
-    WebFrameWidgetBase* main_frame_widget =
-        GetWebView()->MainFrameImpl()->FrameWidgetImpl();
-    main_frame_widget->SetRootGraphicsLayer(GetWebView()
-                                                ->MainFrameImpl()
-                                                ->GetFrame()
-                                                ->View()
-                                                ->GetLayoutView()
-                                                ->Compositor()
-                                                ->RootGraphicsLayer());
   }
 
   ~MainThreadScrollingReasonsTest() override {
@@ -71,12 +61,11 @@ class MainThreadScrollingReasonsTest : public testing::Test {
         WebString(base_url_), test::CoreTestDataPath(), WebString(file_name));
   }
 
-  uint32_t GetMainThreadScrollingReasons(const GraphicsLayer& layer) const {
-    const auto* scroll = layer.GetPropertyTreeState()
-                             .Transform()
-                             .NearestScrollTranslationNode()
-                             .ScrollNode();
-    return scroll->GetMainThreadScrollingReasons();
+  uint32_t GetMainThreadScrollingReasons(const cc::Layer* layer) const {
+    return layer->layer_tree_host()
+        ->property_trees()
+        ->scroll_tree.Node(layer->scroll_tree_index())
+        ->main_thread_scrolling_reasons;
   }
 
   uint32_t GetViewMainThreadScrollingReasons() const {
@@ -134,14 +123,12 @@ TEST_F(MainThreadScrollingReasonsTest,
   PaintLayerCompositor* inner_compositor = inner_layout_view->Compositor();
   ASSERT_TRUE(inner_compositor->InCompositingMode());
 
-  GraphicsLayer* scroll_layer =
+  cc::Layer* cc_scroll_layer =
       inner_frame_view->LayoutViewport()->LayerForScrolling();
-  ASSERT_TRUE(scroll_layer);
-
-  cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
+  ASSERT_TRUE(cc_scroll_layer);
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(
-      GetMainThreadScrollingReasons(*scroll_layer) &
+      GetMainThreadScrollingReasons(cc_scroll_layer) &
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
 
   // Remove fixed background-attachment should make the iframe
@@ -156,14 +143,12 @@ TEST_F(MainThreadScrollingReasonsTest,
   layout_object = iframe->GetLayoutObject();
   ASSERT_TRUE(layout_object);
 
-  scroll_layer =
+  cc_scroll_layer =
       layout_object->GetFrameView()->LayoutViewport()->LayerForScrolling();
-  ASSERT_TRUE(scroll_layer);
-
-  cc_scroll_layer = scroll_layer->CcLayer();
+  ASSERT_TRUE(cc_scroll_layer);
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_FALSE(
-      GetMainThreadScrollingReasons(*scroll_layer) &
+      GetMainThreadScrollingReasons(cc_scroll_layer) &
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
 
   // Force main frame to scroll on main thread. All its descendants
@@ -179,14 +164,12 @@ TEST_F(MainThreadScrollingReasonsTest,
   layout_object = iframe->GetLayoutObject();
   ASSERT_TRUE(layout_object);
 
-  scroll_layer =
+  cc_scroll_layer =
       layout_object->GetFrameView()->LayoutViewport()->LayerForScrolling();
-  ASSERT_TRUE(scroll_layer);
-
-  cc_scroll_layer = scroll_layer->CcLayer();
+  ASSERT_TRUE(cc_scroll_layer);
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(
-      GetMainThreadScrollingReasons(*scroll_layer) &
+      GetMainThreadScrollingReasons(cc_scroll_layer) &
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
 }
 
@@ -234,11 +217,10 @@ TEST_F(MainThreadScrollingReasonsTest, FastScrollingCanBeDisabledWithSetting) {
   EXPECT_TRUE(GetViewMainThreadScrollingReasons());
 
   // Main scrolling should also propagate to inner viewport layer.
-  const auto& visual_viewport_scroll_graphics_layer =
-      *GetFrame()->GetPage()->GetVisualViewport().ScrollLayer();
-  ASSERT_TRUE(visual_viewport_scroll_graphics_layer.CcLayer()->scrollable());
-  EXPECT_TRUE(
-      GetMainThreadScrollingReasons(visual_viewport_scroll_graphics_layer));
+  const cc::Layer* visual_viewport_scroll_layer =
+      GetFrame()->GetPage()->GetVisualViewport().LayerForScrolling();
+  ASSERT_TRUE(visual_viewport_scroll_layer->scrollable());
+  EXPECT_TRUE(GetMainThreadScrollingReasons(visual_viewport_scroll_layer));
 }
 
 TEST_F(MainThreadScrollingReasonsTest, FastScrollingForFixedPosition) {
@@ -267,11 +249,10 @@ TEST_F(MainThreadScrollingReasonsTest, FastScrollingByDefault) {
   // Fast scrolling should be enabled by default.
   EXPECT_FALSE(GetViewMainThreadScrollingReasons());
 
-  const auto& visual_viewport_scroll_graphics_layer =
-      *GetFrame()->GetPage()->GetVisualViewport().ScrollLayer();
-  ASSERT_TRUE(visual_viewport_scroll_graphics_layer.CcLayer()->scrollable());
-  EXPECT_FALSE(
-      GetMainThreadScrollingReasons(visual_viewport_scroll_graphics_layer));
+  const cc::Layer* visual_viewport_scroll_layer =
+      GetFrame()->GetPage()->GetVisualViewport().LayerForScrolling();
+  ASSERT_TRUE(visual_viewport_scroll_layer->scrollable());
+  EXPECT_FALSE(GetMainThreadScrollingReasons(visual_viewport_scroll_layer));
 }
 
 TEST_F(MainThreadScrollingReasonsTest,
@@ -295,8 +276,9 @@ TEST_F(MainThreadScrollingReasonsTest,
   ASSERT_TRUE(scrollbar_graphics_layer);
 
   bool has_cc_scrollbar_layer = !scrollbar_graphics_layer->DrawsContent();
-  EXPECT_TRUE(has_cc_scrollbar_layer ||
-              GetMainThreadScrollingReasons(*scrollbar_graphics_layer));
+  EXPECT_TRUE(
+      has_cc_scrollbar_layer ||
+      GetMainThreadScrollingReasons(scrollbar_graphics_layer->ContentsLayer()));
 }
 
 class NonCompositedMainThreadScrollingReasonsTest

@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">מצב 'נא לא להפריע' מופעל.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{צפייה בהגדרות של הודעות. ההודעות מושבתות באפליקציה אחת}two{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}many{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}other{צפייה בהגדרות של הודעות. ההודעות מושבתות ב-# אפליקציות}}</translation>
 <translation id="1525508553941733066">סגור</translation>
-<translation id="1537254971476575106">מגדיל למסך מלא</translation>
 <translation id="15373452373711364">סמן עכבר גדול</translation>
 <translation id="1546492247443594934">שולחן עבודה 2</translation>
 <translation id="1550523713251050646">לחץ לקבלת אפשרויות נוספות</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">צריך להקיש על <ph name="KEYBOARD_SHORTCUT" /> כדי להחליף פריסת מקלדת.</translation>
 <translation id="2501920221385095727">מקשים דביקים</translation>
 <translation id="2509468283778169019">‏CAPS LOCK מופעל</translation>
-<translation id="2532589005999780174">מצב ניגודיות גבוהה</translation>
 <translation id="2542089167727451762">יש להקיש על תמונת הפרופיל</translation>
 <translation id="255671100581129685">‏Google Assistant אינו זמין בסשן ציבורי.</translation>
 <translation id="256712445991462162">הזכוכית המגדלת שהוצמדה</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">שפה</translation>
 <translation id="5313326810920013265">‏הגדרות Bluetooth</translation>
 <translation id="5331975486040154427">‏מכשיר עם יציאת USB-C (יציאה שמאלית-אחורית)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">יותר מדי ניסיונות</translation>
 <translation id="5397578532367286026">‏המנהל (<ph name="MANAGER_EMAIL" />) יכול לבדוק את השימוש וההיסטוריה של משתמש זה ב-chrome.com.</translation>
 <translation id="5430931332414098647">שיתוף אינטרנט מיידי בין ניידים</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">‏Google Assistant אינו זמין לחשבון המשתמש הנוכחי.</translation>
 <translation id="5691772641933328258">טביעת האצבע לא זוהתה</translation>
 <translation id="5710450975648804523">מצב 'נא לא להפריע' מופעל</translation>
+<translation id="573413375004481890">המכשיר הזה לא הצליח לתמוך בכל המסכים, ולכן אחד מהם נותק</translation>
 <translation id="574392208103952083">בינוני</translation>
 <translation id="5744083938413354016">הקשה וגרירה</translation>
 <translation id="5750765938512549687">‏Bluetooth כבוי</translation>
@@ -483,7 +483,6 @@
 <translation id="7984197416080286869">יותר מדי ניסיונות טביעת אצבע</translation>
 <translation id="7994370417837006925">כניסה עם מספר חשבונות</translation>
 <translation id="8000066093800657092">אין רשת</translation>
-<translation id="8029241286966751120">‏הזכוכית המגדלת במסך מלא הופעלה. כדי לכבות אותה יש להקיש שוב על Ctrl+Search+M.</translation>
 <translation id="8030169304546394654">מנותק</translation>
 <translation id="8054466585765276473">מחשב זמן סוללה</translation>
 <translation id="8061464966246066292">ניגודיות גבוהה</translation>
@@ -508,7 +507,6 @@
 <translation id="8388750414311082622">לא ניתן להסיר את שולחן העבודה האחרון.</translation>
 <translation id="8392451568018454956">תפריט אפשרויות עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">הורה נעל את המכשיר הזה</translation>
-<translation id="8406981827175133772">זכוכית מגדלת במסך מלא</translation>
 <translation id="8425213833346101688">שנה</translation>
 <translation id="8427213022735114808">‏הכתבה שולחת הקלטה של הקול שלך אל Google כדי לאפשר הקלדה קולית בתיבת טקסט כלשהי.</translation>
 <translation id="8428213095426709021">הגדרות</translation>

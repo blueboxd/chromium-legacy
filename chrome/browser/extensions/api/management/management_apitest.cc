@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/api/management/management_api.h"
@@ -189,6 +190,43 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
     ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
 
+  void RunInstallableWebAppTest(const char* manifest,
+                                const char* web_app_url,
+                                const char* web_app_start_url) {
+    static constexpr char kInstallReplacementWebApp[] =
+        R"(chrome.test.runWithUserGesture(function() {
+             chrome.management.installReplacementWebApp(function() {
+               chrome.test.assertNoLastError();
+               chrome.test.notifyPass();
+             });
+           });)";
+
+    chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+    const GURL start_url = https_test_server_.GetURL(web_app_start_url);
+    web_app::AppId web_app_id = web_app::GenerateAppIdFromURL(start_url);
+
+    auto* provider =
+        web_app::WebAppProviderBase::GetProviderBase(browser()->profile());
+    EXPECT_FALSE(provider->registrar().IsLocallyInstalled(start_url));
+    EXPECT_EQ(0, static_cast<int>(
+                     provider->ui_manager().GetNumWindowsForApp(web_app_id)));
+
+    RunTest(manifest, web_app_url, kInstallReplacementWebApp,
+            true /* from_webstore */);
+    EXPECT_TRUE(provider->registrar().IsLocallyInstalled(start_url));
+    EXPECT_EQ(1, static_cast<int>(
+                     provider->ui_manager().GetNumWindowsForApp(web_app_id)));
+
+    // Call API again. It should launch the app.
+    RunTest(manifest, web_app_url, kInstallReplacementWebApp,
+            true /* from_webstore */);
+    EXPECT_TRUE(provider->registrar().IsLocallyInstalled(start_url));
+    EXPECT_EQ(2, static_cast<int>(
+                     provider->ui_manager().GetNumWindowsForApp(web_app_id)));
+
+    chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+  }
+
   net::EmbeddedTestServer https_test_server_;
 };
 
@@ -254,76 +292,32 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotInstallableWebApp) {
 }
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
-  static constexpr char kBackground[] =
-      R"(chrome.test.runTests([
-           function runInstall() {
-             chrome.test.runWithUserGesture(function() {
-               chrome.management.installReplacementWebApp(function() {
-                 chrome.test.assertNoLastError();
-                 chrome.test.succeed();
-               });
-             });
-           },
-           function runInstallWhenAlreadyInstalled() {
-             chrome.test.runWithUserGesture(function() {
-               chrome.management.installReplacementWebApp(function() {
-                 chrome.test.assertLastError(
-                     'Web app is already installed.');
-                 chrome.test.succeed();
-               });
-             });
-           }
-         ]);)";
   static constexpr char kGoodWebAppURL[] =
       "/management/install_replacement_web_app/good_web_app/index.html";
 
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
-  const GURL good_web_app_url = https_test_server_.GetURL(kGoodWebAppURL);
+  RunInstallableWebAppTest(kManifest, kGoodWebAppURL, kGoodWebAppURL);
+}
 
-  auto* provider =
-      web_app::WebAppProviderBase::GetProviderBase(browser()->profile());
-  EXPECT_FALSE(provider->registrar().IsLocallyInstalled(good_web_app_url));
+// Check that web app still installs and launches correctly when start_url does
+// not match replacement_web_app_url.
+IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest,
+                       InstallableWebAppWithStartUrl) {
+  static constexpr char kGoodWebAppUrl[] =
+      "/management/install_replacement_web_app/good_web_app_with_start_url/"
+      "index.html";
+  static constexpr char kGoodWebAppStartUrl[] =
+      "/management/install_replacement_web_app/good_web_app_with_start_url/"
+      "pwa_start_url.html";
 
-  RunTest(kManifest, kGoodWebAppURL, kBackground, true /* from_webstore */);
-  EXPECT_TRUE(provider->registrar().IsLocallyInstalled(good_web_app_url));
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+  RunInstallableWebAppTest(kManifest, kGoodWebAppUrl, kGoodWebAppStartUrl);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest,
                        InstallableWebAppInPlatformApp) {
-  static constexpr char kBackground[] =
-      R"(chrome.test.runTests([
-           function runInstall() {
-             chrome.test.runWithUserGesture(function() {
-               chrome.management.installReplacementWebApp(function() {
-                 chrome.test.assertNoLastError();
-                 chrome.test.succeed();
-               });
-             });
-           },
-           function runInstallWhenAlreadyInstalled() {
-             chrome.test.runWithUserGesture(function() {
-               chrome.management.installReplacementWebApp(function() {
-                 chrome.test.assertLastError(
-                     'Web app is already installed.');
-                 chrome.test.succeed();
-               });
-             });
-           }
-         ]);)";
   static constexpr char kGoodWebAppURL[] =
       "/management/install_replacement_web_app/good_web_app/index.html";
 
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
-  const GURL good_web_app_url = https_test_server_.GetURL(kGoodWebAppURL);
-
-  auto* provider =
-      web_app::WebAppProviderBase::GetProviderBase(browser()->profile());
-  EXPECT_FALSE(provider->registrar().IsLocallyInstalled(good_web_app_url));
-
-  RunTest(kAppManifest, kGoodWebAppURL, kBackground, true /* from_webstore */);
-  EXPECT_TRUE(provider->registrar().IsLocallyInstalled(good_web_app_url));
-  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+  RunInstallableWebAppTest(kAppManifest, kGoodWebAppURL, kGoodWebAppURL);
 }
 
 // Fails often on Windows dbg bots. http://crbug.com/177163

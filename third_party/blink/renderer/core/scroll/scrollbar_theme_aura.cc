@@ -217,32 +217,28 @@ int ScrollbarThemeAura::MinimumThumbLength(const Scrollbar& scrollbar) {
       .width;
 }
 
-void ScrollbarThemeAura::PaintTrackBackground(GraphicsContext& context,
-                                              const Scrollbar& scrollbar,
-                                              const IntRect& rect) {
-  // Just assume a forward track part. We only paint the track as a single piece
-  // when there is no thumb.
-  if (!HasThumb(scrollbar) && !rect.IsEmpty())
-    PaintTrackPiece(context, scrollbar, rect, kForwardTrackPart);
-}
+void ScrollbarThemeAura::PaintTrack(GraphicsContext& context,
+                                    const Scrollbar& scrollbar,
+                                    const IntRect& rect) {
+  if (rect.IsEmpty())
+    return;
 
-void ScrollbarThemeAura::PaintTrackPiece(GraphicsContext& gc,
-                                         const Scrollbar& scrollbar,
-                                         const IntRect& rect,
-                                         ScrollbarPart part_type) {
-  WebThemeEngine::State state = scrollbar.HoveredPart() == part_type
-                                    ? WebThemeEngine::kStateHover
-                                    : WebThemeEngine::kStateNormal;
+  // We always paint the track as a single piece, so don't support hover state
+  // of the back track and forward track.
+  auto state = WebThemeEngine::kStateNormal;
 
+  // TODO(wangxianzhu): The extra params for scrollbar track were for painting
+  // back and forward tracks separately, which we don't support. Remove them.
   IntRect align_rect = TrackRect(scrollbar);
   WebThemeEngine::ExtraParams extra_params;
-  extra_params.scrollbar_track.is_back = (part_type == kBackTrackPart);
+  extra_params.scrollbar_track.is_back = false;
   extra_params.scrollbar_track.track_x = align_rect.X();
   extra_params.scrollbar_track.track_y = align_rect.Y();
   extra_params.scrollbar_track.track_width = align_rect.Width();
   extra_params.scrollbar_track.track_height = align_rect.Height();
+
   Platform::Current()->ThemeEngine()->Paint(
-      gc.Canvas(),
+      context.Canvas(),
       scrollbar.Orientation() == kHorizontalScrollbar
           ? WebThemeEngine::kPartScrollbarHorizontalTrack
           : WebThemeEngine::kPartScrollbarVerticalTrack,

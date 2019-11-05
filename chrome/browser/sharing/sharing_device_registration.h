@@ -54,6 +54,9 @@ class SharingDeviceRegistration {
   // Returns if device can handle receiving of sms fetcher requests.
   virtual bool IsSmsFetcherSupported() const;
 
+  // Returns if device can handle receiving of remote copy contents.
+  virtual bool IsRemoteCopySupported() const;
+
   // For testing
   void SetEnabledFeaturesForTesting(
       std::set<sync_pb::SharingSpecificFields_EnabledFeatures>

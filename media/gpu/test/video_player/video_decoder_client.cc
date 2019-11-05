@@ -130,7 +130,7 @@ bool VideoDecoderClient::WaitForFrameProcessors() {
 }
 
 void VideoDecoderClient::WaitForRenderer() {
-  LOG_ASSERT(frame_renderer_);
+  ASSERT_TRUE(frame_renderer_);
   frame_renderer_->WaitUntilRenderingDone();
 }
 
@@ -174,7 +174,7 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
                                            base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK_EQ(decoder_client_state_, VideoDecoderClientState::kUninitialized);
-  LOG_ASSERT(!decoder_) << "Can't create decoder: already created";
+  ASSERT_TRUE(!decoder_) << "Can't create decoder: already created";
 
   if (decoder_client_config_.use_vd) {
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -205,8 +205,8 @@ void VideoDecoderClient::InitializeDecoderTask(const Video* video,
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK(decoder_client_state_ == VideoDecoderClientState::kUninitialized ||
          decoder_client_state_ == VideoDecoderClientState::kIdle);
-  LOG_ASSERT(decoder_) << "Can't initialize decoder: not created yet";
-  LOG_ASSERT(video);
+  ASSERT_TRUE(decoder_) << "Can't initialize decoder: not created yet";
+  ASSERT_TRUE(video);
 
   video_ = video;
   encoded_data_helper_ =
@@ -354,7 +354,7 @@ void VideoDecoderClient::DecoderInitializedTask(bool status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK(decoder_client_state_ == VideoDecoderClientState::kUninitialized ||
          decoder_client_state_ == VideoDecoderClientState::kIdle);
-  LOG_ASSERT(status) << "Initializing decoder failed";
+  ASSERT_TRUE(status) << "Initializing decoder failed";
 
   decoder_client_state_ = VideoDecoderClientState::kIdle;
   FireEvent(VideoPlayerEvent::kInitialized);
@@ -363,8 +363,8 @@ void VideoDecoderClient::DecoderInitializedTask(bool status) {
 void VideoDecoderClient::DecodeDoneTask(media::DecodeStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK_NE(VideoDecoderClientState::kIdle, decoder_client_state_);
-  LOG_ASSERT(status != media::DecodeStatus::ABORTED ||
-             decoder_client_state_ == VideoDecoderClientState::kResetting);
+  ASSERT_TRUE(status != media::DecodeStatus::ABORTED ||
+              decoder_client_state_ == VideoDecoderClientState::kResetting);
   DVLOGF(4);
 
   num_outstanding_decode_requests_--;

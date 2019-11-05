@@ -37,10 +37,10 @@
 
 #include "third_party/blink/renderer/platform/image-decoders/jpeg/jpeg_image_decoder.h"
 
+#include <limits>
 #include <memory>
 
-#include "base/bits.h"
-#include "base/numerics/safe_conversions.h"
+#include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -157,6 +157,24 @@ blink::BitmapImageMetrics::JpegColorSpace ExtractUMAJpegColorSpace(
     default:
       return blink::BitmapImageMetrics::JpegColorSpace::kUnknown;
   }
+}
+
+// Rounds |size| to the smallest multiple of |alignment| that is greater than or
+// equal to |size|.
+// Note that base::bits::Align is not used here because the alignment is not
+// guaranteed to be a power of two.
+int Align(int size, int alignment) {
+  // Width and height are 16 bits for a JPEG (i.e. < 65536) and the maximum
+  // size of a JPEG MCU in either dimension is 8 * 4 == 32.
+  DCHECK_GE(size, 0);
+  DCHECK_LT(size, 1 << 16);
+  DCHECK_GT(alignment, 0);
+  DCHECK_LE(alignment, 32);
+
+  if (size % alignment == 0)
+    return size;
+
+  return ((size + alignment) / alignment) * alignment;
 }
 
 }  // namespace
@@ -431,6 +449,31 @@ class JPEGImageReader final {
     const int mcu_height = info_.max_v_samp_factor * DCTSIZE;
     return info_.image_width % mcu_width != 0 ||
            info_.image_height % mcu_height != 0;
+  }
+
+  // Whether or not the horizontal and vertical sample factors of all components
+  // hold valid values (i.e. 1, 2, 3, or 4). It also returns the maximal
+  // horizontal and vertical sample factors via |max_h| and |max_v|.
+  bool AreValidSampleFactorsAvailable(int* max_h, int* max_v) const {
+    if (!info_.num_components)
+      return false;
+
+    const jpeg_component_info* comp_info = info_.comp_info;
+    if (!comp_info)
+      return false;
+
+    *max_h = 0;
+    *max_v = 0;
+    for (int i = 0; i < info_.num_components; ++i) {
+      if (comp_info[i].h_samp_factor < 1 || comp_info[i].h_samp_factor > 4 ||
+          comp_info[i].v_samp_factor < 1 || comp_info[i].v_samp_factor > 4) {
+        return false;
+      }
+
+      *max_h = std::max(*max_h, comp_info[i].h_samp_factor);
+      *max_v = std::max(*max_v, comp_info[i].v_samp_factor);
+    }
+    return true;
   }
 
   // Decode the JPEG data. If |only_size| is specified, then only the size
@@ -934,24 +977,30 @@ Vector<SkISize> JPEGImageDecoder::GetSupportedDecodeSizes() const {
   return supported_decode_sizes_;
 }
 
+gfx::Size JPEGImageDecoder::GetImageCodedSize() const {
+  // We use the |max_{h,v}_samp_factor|s returned by
+  // AreValidSampleFactorsAvailable() since the ones available via
+  // Info()->max_{h,v}_samp_factor are not updated until the image is actually
+  // being decoded.
+  int max_h_samp_factor;
+  int max_v_samp_factor;
+  if (!reader_->AreValidSampleFactorsAvailable(&max_h_samp_factor,
+                                               &max_v_samp_factor)) {
+    return gfx::Size();
+  }
+
+  const int coded_width = Align(Size().Width(), max_h_samp_factor * 8);
+  const int coded_height = Align(Size().Height(), max_v_samp_factor * 8);
+
+  return gfx::Size(coded_width, coded_height);
+}
+
 cc::ImageHeaderMetadata JPEGImageDecoder::MakeMetadataForDecodeAcceleration()
     const {
   cc::ImageHeaderMetadata image_metadata =
       ImageDecoder::MakeMetadataForDecodeAcceleration();
   image_metadata.jpeg_is_progressive = reader_->Info()->buffered_image;
-
-  // Calculate the coded size of the image.
-  const size_t mcu_width =
-      base::checked_cast<size_t>(reader_->Info()->comp_info->h_samp_factor * 8);
-  const size_t mcu_height =
-      base::checked_cast<size_t>(reader_->Info()->comp_info->v_samp_factor * 8);
-  const int coded_width = base::checked_cast<int>(base::bits::Align(
-      base::checked_cast<size_t>(image_metadata.image_size.width()),
-      mcu_width));
-  const int coded_height = base::checked_cast<int>(base::bits::Align(
-      base::checked_cast<size_t>(image_metadata.image_size.height()),
-      mcu_height));
-  image_metadata.coded_size = gfx::Size(coded_width, coded_height);
+  image_metadata.coded_size = GetImageCodedSize();
   return image_metadata;
 }
 

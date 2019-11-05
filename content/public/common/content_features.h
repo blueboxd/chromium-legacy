@@ -32,6 +32,7 @@ CONTENT_EXPORT extern const base::Feature kBrowserVerifiedUserActivation;
 CONTENT_EXPORT extern const base::Feature kCacheInlineScriptCode;
 CONTENT_EXPORT extern const base::Feature kCacheStorageParallelOps;
 CONTENT_EXPORT extern const base::Feature kCacheStorageEagerReading;
+CONTENT_EXPORT extern const base::Feature kCacheStorageHighPriorityMatch;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature kConsolidatedMovementXY;
 CONTENT_EXPORT extern const base::Feature kCookieDeprecationMessages;

@@ -167,9 +167,8 @@ public class OriginVerifier {
      */
     public static boolean wasPreviouslyVerified(String packageName, Origin origin,
             @Relation int relation) {
-        return shouldOverrideVerification(packageName, origin, relation)
-                || VerificationResultStore.isRelationshipSaved(new Relationship(packageName,
-                getCertificateSHA256FingerprintForPackage(packageName), origin, relation));
+        return wasPreviouslyVerified(packageName,
+                getCertificateSHA256FingerprintForPackage(packageName), origin, relation);
     }
 
 
@@ -186,7 +185,8 @@ public class OriginVerifier {
      */
     private static boolean wasPreviouslyVerified(String packageName, String signatureFingerprint,
             Origin origin, @Relation int relation) {
-        return VerificationResultStore.isRelationshipSaved(
+        return shouldOverrideVerification(packageName, origin, relation)
+                || VerificationResultStore.isRelationshipSaved(
                 new Relationship(packageName, signatureFingerprint, origin, relation));
     }
 

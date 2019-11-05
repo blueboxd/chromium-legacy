@@ -113,19 +113,30 @@ em {
 
 #cookie-controls-description {
   flex: 1;
-  padding-inline-end: 20px;
+  padding-inline-end: 12px;
 }
 
 #cookie-controls-description em {
   display: block;
 }
 
-#cookie-controls-toggle {
+#cookie-controls-toggle,
+#cookie-controls-tooltip-icon-wrapper {
   flex: none;
 }
 
 #cookie-controls-toggle:not(:defined) {
   width: 34px;
+}
+
+#cookie-controls-tooltip-icon-wrapper {
+  /* calc(var(--cr-icon-size) + var(--cr-controlled-by-spacing)) */
+  /* Using actual numbers because the above definitions are lazy-loaded. */
+  width: 44px;
+}
+
+#cookie-controls-tooltip-icon-wrapper > a {
+  color: inherit;
 }
 
 /** Layout ------------------------------------------------------------------ */

@@ -43,6 +43,10 @@
         <span>DevTools agent route ID:</span>
         <span jscontent="$this.devtools_agent_route_id"></span>
       </div>
+      <div class="serviceworker-clients" jsselect="$this.clients">
+        <div>Client: </div>
+        <div transclude="serviceworker-client-template"></div>
+      </div>
       <div>
         <div>Log:</div>
         <textarea class="serviceworker-log"
@@ -135,7 +139,15 @@
         </label>
       </div>
     </div>
-  </div>
+    <div id="serviceworker-client-template" class="serviceworker-client">
+      <div>
+        <span>ID: </span><span jscontent="$this.client_id"></span>
+      </div>
+      <div>
+        <span>URL: </span><span jscontent="$this.url"></span>
+      </div>
+    </div>
+  </div> <!-- templates end -->
   <h1>ServiceWorker</h1>
   <div class="content">
     <div id="serviceworker-options"></div>

@@ -6159,19 +6159,13 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(layer_->HasSlowPaths());
-
     EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
     EXPECT_FALSE(host_impl->use_gpu_rasterization());
-    EXPECT_FALSE(host_impl->use_msaa());
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(layer_->HasSlowPaths());
-
     EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
     EXPECT_FALSE(host_impl->use_gpu_rasterization());
-    EXPECT_FALSE(host_impl->use_msaa());
     EndTest();
   }
 
@@ -6237,17 +6231,19 @@ class LayerTreeHostTestGpuRasterizationEnabled
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(layer_->HasSlowPaths());
+    auto* raster_source = static_cast<PictureLayerImpl*>(
+                              host_impl->sync_tree()->LayerById(layer_->id()))
+                              ->GetRasterSource();
+    EXPECT_EQ(host_impl->GetMSAASampleCountForRaster(
+                  raster_source->GetDisplayItemList()),
+              0);
     EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
-    EXPECT_FALSE(host_impl->use_msaa());
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(layer_->HasSlowPaths());
     EXPECT_TRUE(host_impl->active_tree()->use_gpu_rasterization());
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
-    EXPECT_FALSE(host_impl->use_msaa());
     EndTest();
   }
 };
@@ -6259,7 +6255,7 @@ class LayerTreeHostTestGpuRasterizationEnabledWithMSAA
  protected:
   void BeginTest() override {
     // Content-based MSAA trigger.
-    layer_->set_force_content_has_slow_paths(true);
+    layer_client_.set_contains_slow_paths(true);
 
     // MSAA trigger will take effect when layers are updated.
     // The results will be verified after commit is completed below.
@@ -6270,124 +6266,19 @@ class LayerTreeHostTestGpuRasterizationEnabledWithMSAA
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    // Ensure the slow path bit sticks.
-    EXPECT_TRUE(layer_->HasSlowPaths());
-
+    auto* raster_source = static_cast<PictureLayerImpl*>(
+                              host_impl->sync_tree()->LayerById(layer_->id()))
+                              ->GetRasterSource();
+    EXPECT_GT(host_impl->GetMSAASampleCountForRaster(
+                  raster_source->GetDisplayItemList()),
+              0);
     EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
-    EXPECT_TRUE(host_impl->use_msaa());
-  }
-
-  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_TRUE(layer_->HasSlowPaths());
-
-    EXPECT_TRUE(host_impl->active_tree()->use_gpu_rasterization());
-    EXPECT_TRUE(host_impl->use_gpu_rasterization());
-    EXPECT_TRUE(host_impl->use_msaa());
     EndTest();
   }
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabledWithMSAA);
-
-class LayerTreeHostTestGpuRasterizationMSAAReenabled
-    : public LayerTreeHostWithGpuRasterizationSupportedTest {
- protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_msaa_sample_count = 4;
-  }
-
-  void BeginTest() override {
-    // Content-based MSAA trigger is relevant.
-    layer_->set_force_content_has_slow_paths(true);
-
-    // MSAA trigger will take effect when layers are updated.
-    // The results will be verified after commit is completed below.
-    // Since we are manually marking the source as containing slow paths,
-    // make sure that the layer gets a chance to update.
-    layer_->SetNeedsDisplay();
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    SCOPED_TRACE(base::StringPrintf("commit %d", num_commits_));
-    if (expected_use_msaa_) {
-      EXPECT_TRUE(host_impl->use_msaa());
-    } else {
-      EXPECT_FALSE(host_impl->use_msaa());
-    }
-
-    ++num_commits_;
-    switch (num_commits_) {
-      case 1:
-        layer_->set_force_content_has_slow_paths(false);
-        break;
-      case 30:
-        layer_->set_force_content_has_slow_paths(true);
-        break;
-      case 31:
-        layer_->set_force_content_has_slow_paths(false);
-        break;
-      case 90:
-        expected_use_msaa_ = false;
-        break;
-    }
-    PostSetNeedsCommitToMainThread();
-    if (num_commits_ > 100)
-      EndTest();
-  }
-
-  int num_commits_ = 0;
-  bool expected_use_msaa_ = true;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationMSAAReenabled);
-
-class LayerTreeHostTestGpuRasterizationNonAASticky
-    : public LayerTreeHostWithGpuRasterizationSupportedTest {
- protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->gpu_rasterization_msaa_sample_count = 4;
-  }
-
-  void BeginTest() override {
-    // Start without slow paths, but no non-aa paint.
-    layer_->set_force_content_has_slow_paths(true);
-    layer_->set_force_content_has_non_aa_paint(false);
-
-    // The results will be verified after commit is completed below.
-    layer_->SetNeedsDisplay();
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    SCOPED_TRACE(base::StringPrintf("commit %d", num_commits_));
-    if (expected_use_msaa_) {
-      EXPECT_TRUE(host_impl->use_msaa());
-    } else {
-      EXPECT_FALSE(host_impl->use_msaa());
-    }
-
-    ++num_commits_;
-    switch (num_commits_) {
-      case 30:
-        layer_->set_force_content_has_non_aa_paint(true);
-        expected_use_msaa_ = false;
-        break;
-      case 31:
-        layer_->set_force_content_has_non_aa_paint(false);
-        break;
-    }
-    PostSetNeedsCommitToMainThread();
-    if (num_commits_ > 100)
-      EndTest();
-  }
-
-  int num_commits_ = 0;
-  bool expected_use_msaa_ = true;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationNonAASticky);
 
 class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
  protected:
@@ -6415,9 +6306,6 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   }
 
   void BeginTest() override {
-    // Content-based MSAA trigger is irrelevant as well.
-    layer_->set_force_content_has_slow_paths(true);
-
     // Veto will take effect when layers are updated.
     // The results will be verified after commit is completed below.
     // Since we are manually marking the source as containing slow paths,
@@ -6427,16 +6315,11 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    // Ensure the slow-paths bit sticks.
-    EXPECT_TRUE(layer_->HasSlowPaths());
-
     EXPECT_TRUE(host_impl->sync_tree()->use_gpu_rasterization());
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_TRUE(layer_->HasSlowPaths());
-
     EXPECT_TRUE(host_impl->active_tree()->use_gpu_rasterization());
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
     EndTest();

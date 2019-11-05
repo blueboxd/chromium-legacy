@@ -22,6 +22,27 @@ index 02aebd81b0df..342d26d6f797 100644
    _template: html`
      <style>
        :host {
+--- a/components-chromium/iron-iconset-svg/iron-iconset-svg.js
++++ b/components-chromium/iron-iconset-svg/iron-iconset-svg.js
+@@ -134,6 +134,18 @@ Polymer({
+     return null;
+   },
+
++  /**
++   * Produce installable clone of the SVG element matching `id` in this
++   * iconset, or `undefined` if there is no matching element.
++   * @param {string} iconName Name of the icon to apply.
++   * @param {boolean} targetIsRTL Whether the target element is RTL.
++   * @return {Element} Returns an installable clone of the SVG element
++   *     matching `id`.
++   */
++  createIcon: function(iconName, targetIsRTL) {
++    return this._cloneIcon(iconName, this.rtlMirroring && targetIsRTL);
++  },
++
+   /**
+    * Remove an icon from the given element by undoing the changes effected
+    * by `applyIcon`.
 diff --git a/components-chromium/polymer/lib/legacy/legacy-element-mixin.js b/components-chromium/polymer/lib/legacy/legacy-element-mixin.js
 index 21fa65c0208d..bd591b6dd341 100644
 --- a/components-chromium/polymer/lib/legacy/legacy-element-mixin.js

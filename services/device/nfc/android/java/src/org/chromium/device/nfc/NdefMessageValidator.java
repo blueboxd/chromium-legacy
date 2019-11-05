@@ -36,8 +36,7 @@ public final class NdefMessageValidator {
         if (record == null) return false;
         if (record.recordType.equals(NdefMessageUtils.RECORD_TYPE_EMPTY)) return true;
         if (record.data == null) return false;
-        if ((record.recordType.equals(NdefMessageUtils.RECORD_TYPE_JSON)
-                    || record.recordType.equals(NdefMessageUtils.RECORD_TYPE_OPAQUE))
+        if (record.recordType.equals(NdefMessageUtils.RECORD_TYPE_MIME)
                 && (record.mediaType == null || record.mediaType.isEmpty())) {
             return false;
         }

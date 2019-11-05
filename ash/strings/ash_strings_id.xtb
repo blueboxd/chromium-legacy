@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Mode Jangan Ganggu aktif.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Tampilkan setelan notifikasi. Notifikasi nonaktif untuk satu aplikasi}other{Tampilkan setelan notifikasi. Notifikasi nonaktif untuk # aplikasi}}</translation>
 <translation id="1525508553941733066">TUTUP</translation>
-<translation id="1537254971476575106">Kaca pembesar layar penuh</translation>
 <translation id="15373452373711364">Kursor mouse besar</translation>
 <translation id="1546492247443594934">Halaman kerja 2</translation>
 <translation id="1550523713251050646">Klik untuk opsi lainnya</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Tekan <ph name="KEYBOARD_SHORTCUT" /> untuk mengganti tata letak keyboard.</translation>
 <translation id="2501920221385095727">Tombol sticky</translation>
 <translation id="2509468283778169019">CAPS LOCK aktif</translation>
-<translation id="2532589005999780174">Mode kontras tinggi</translation>
 <translation id="2542089167727451762">Ketuk gambar profil Anda</translation>
 <translation id="255671100581129685">Asisten Google tidak tersedia dalam sesi publik.</translation>
 <translation id="256712445991462162">kaca pembesar yang dipasang ke dok</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Terlalu banyak percobaan sidik jari</translation>
 <translation id="7994370417837006925">Fitur masuk banyak akun</translation>
 <translation id="8000066093800657092">Tidak ada jaringan</translation>
-<translation id="8029241286966751120">Kaca Pembesar Layar Penuh diaktifkan. Tekan Ctrl+Search+M lagi untuk menonaktifkannya.</translation>
 <translation id="8030169304546394654">Diputuskan</translation>
 <translation id="8054466585765276473">Menghitung masa pakai baterai.</translation>
 <translation id="8061464966246066292">Kontras tinggi</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Halaman kerja terakhir tidak dapat dihapus.</translation>
 <translation id="8392451568018454956">Menu opsi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Orang tuamu mengunci perangkat ini</translation>
-<translation id="8406981827175133772">Kaca Pembesar Layar Penuh</translation>
 <translation id="8425213833346101688">Ubah</translation>
 <translation id="8427213022735114808">Fitur Pengetikan suara mengirimkan suara Anda ke Google untuk memungkinkan pengetikan menggunakan suara ke kolom teks.</translation>
 <translation id="8428213095426709021">Setelan</translation>

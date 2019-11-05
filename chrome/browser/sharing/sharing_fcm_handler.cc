@@ -183,7 +183,6 @@ void SharingFCMHandler::SendAckMessage(
 
   sharing_fcm_sender_->SendMessageToDevice(
       std::move(*sharing_info), kAckTimeToLive, std::move(sharing_message),
-      /*sender_device_info=*/nullptr,
       base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(original_message_id), original_message_type));

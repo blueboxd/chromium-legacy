@@ -32,7 +32,8 @@ DataSaverSiteBreakdownMetricsObserver::OnCommit(
       navigation_handle->GetWebContents()->GetBrowserContext());
   // Skip if Lite mode is not enabled.
   if (!profile || !data_reduction_proxy::DataReductionProxySettings::
-                      IsDataSaverEnabledByUser(profile->GetPrefs())) {
+                      IsDataSaverEnabledByUser(profile->IsOffTheRecord(),
+                                               profile->GetPrefs())) {
     return STOP_OBSERVING;
   }
 

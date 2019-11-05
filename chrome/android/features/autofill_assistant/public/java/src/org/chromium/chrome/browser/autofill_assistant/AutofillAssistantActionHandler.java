@@ -8,6 +8,8 @@ import android.os.Bundle;
 
 import org.chromium.base.Callback;
 
+import java.util.List;
+
 /**
  * Interface that provides implementation for AA actions, triggered by direct actions.
  */
@@ -46,9 +48,9 @@ public interface AutofillAssistantActionHandler {
      * either that the controller has not yet been started or there are no actions available for the
      * current website.
      *
-     * @return Array of strings with the names of known actions.
+     * @return Array of actions containing the names and arguments of known actions.
      */
-    String[] getActions();
+    List<AutofillAssistantDirectAction> getActions();
 
     /** Performs onboarding and returns the result to the callback. */
     void performOnboarding(String experimentIds, Callback<Boolean> callback);

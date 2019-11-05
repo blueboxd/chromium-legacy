@@ -77,6 +77,7 @@ class ScrollableShelfViewTest : public AshTestBase {
     shelf_view_ = scrollable_shelf_view_->shelf_view();
     test_api_ = std::make_unique<ShelfViewTestAPI>(
         scrollable_shelf_view_->shelf_view());
+    test_api_->SetAnimationDuration(base::TimeDelta::FromMilliseconds(1));
   }
 
  protected:

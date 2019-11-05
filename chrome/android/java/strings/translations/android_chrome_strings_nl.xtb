@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">URL kopiëren</translation>
 <translation id="2156074688469523661">Resterende sites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Als je iets op je telefoon wilt delen met een ander apparaat, schakel je de synchronisatie in de Chrome-instellingen op beide apparaten in</translation>
-<translation id="2170088579611075216">VR toestaan en openen</translation>
 <translation id="2175927920773552910">QR-code</translation>
 <translation id="218608176142494674">Delen</translation>
 <translation id="2227444325776770048">Doorgaan als <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4135200667068010335">De lijst met apparaten om een tabblad mee te delen is gesloten.</translation>
 <translation id="4149994727733219643">Vereenvoudigde weergave voor webpagina's</translation>
 <translation id="4165986682804962316">Site-instellingen</translation>
-<translation id="4169535189173047238">Niet toestaan</translation>
 <translation id="4170011742729630528">De service is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> gebruikt</translation>
 <translation id="4181841719683918333">Talen</translation>
@@ -534,10 +532,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5011311129201317034"><ph name="SITE" /> wil verbinding maken</translation>
 <translation id="5013696553129441713">Geen nieuwe suggesties</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">De site kan mogelijk informatie over je verzamelen wanneer VR actief is, zoals:
-  -  je fysieke kenmerken, bijvoorbeeld je lengte
-
-Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5039804452771397117">Toestaan</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5048398596102334565">Sites toegang geven tot bewegingssensoren (aanbevolen)</translation>
@@ -611,11 +605,6 @@ Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5527082711130173040">Chrome heeft locatietoegang nodig om naar apparaten te scannen. <ph name="BEGIN_LINK1" />Rechten updaten<ph name="END_LINK1" />. Locatietoegang is ook <ph name="BEGIN_LINK2" />uitgeschakeld voor dit apparaat<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Vragen voordat sites toestemming krijgen om tekst en afbeeldingen vanaf het klembord te lezen (aanbevolen)</translation>
 <translation id="5530766185686772672">Incognitotabbladen sluiten</translation>
-<translation id="5534334044554683961">De site kan mogelijk informatie over je verzamelen wanneer VR actief is, zoals:
-  -   je fysieke kenmerken, bijvoorbeeld je lengte
-  -   de indeling van je kamer
-
-Controleer of je de site vertrouwt voordat je VR activeert.</translation>
 <translation id="5534640966246046842">Site gekopieerd</translation>
 <translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="5561549206367097665">Wachten op netwerk…</translation>
@@ -906,7 +895,6 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="7665369617277396874">Account toevoegen</translation>
 <translation id="766587987807204883">Hier worden artikelen weergegeven die je zelfs kunt lezen wanneer je offline bent</translation>
 <translation id="7682724950699840886">Probeer de volgende tips: zorg dat er voldoende ruimte op je apparaat beschikbaar is, probeer opnieuw te exporteren.</translation>
-<translation id="7685301384041462804">Controleer of je deze site vertrouwt voordat je VR activeert.</translation>
 <translation id="7698359219371678927">E-mail in <ph name="APP_NAME" /> maken</translation>
 <translation id="7704317875155739195">Zoekopdrachten en URL's automatisch aanvullen</translation>
 <translation id="7725024127233776428">Pagina's waaraan je een bladwijzer toevoegt, worden hier weergegeven</translation>
@@ -1082,7 +1070,6 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8998729206196772491">Je logt in met een account dat wordt beheerd door <ph name="MANAGED_DOMAIN" /> waarmee je de eigenaar beheer geeft over je Chrome-gegevens. Je gegevens worden permanent gekoppeld aan dit account. Als je uitlogt van Chrome, worden je gegevens van dit apparaat verwijderd. Ze blijven echter opgeslagen in je Google-account.</translation>
 <translation id="9019902583201351841">Beheerd door je ouders</translation>
 <translation id="9028914725102941583">Schakel de synchronisatie in om content op apparaten te delen</translation>
-<translation id="9029323097866369874"><ph name="DOMAIN" /> toestaan om VR te activeren?</translation>
 <translation id="9040142327097499898">Meldingen zijn toegestaan. Locatie is uitgeschakeld voor dit apparaat.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video's}}</translation>
 <translation id="9050666287014529139">Wachtwoordzin</translation>

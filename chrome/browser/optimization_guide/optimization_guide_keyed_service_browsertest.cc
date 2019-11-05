@@ -19,10 +19,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/optimization_guide/command_line_top_host_provider.h"
-#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
+#include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
@@ -154,7 +154,8 @@ class OptimizationGuideKeyedServiceBrowserTest
   ~OptimizationGuideKeyedServiceBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    cmd->AppendSwitch(optimization_guide::switches::kPurgeHintCacheStore);
+    cmd->AppendSwitch(
+        optimization_guide::switches::kPurgeOptimizationGuideStore);
   }
 
   void SetUpOnMainThread() override {

@@ -26,24 +26,20 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
   bool IsLeftSideVerticalScrollbar() const override;
   bool HasThumb() const override;
   bool IsOverlay() const override;
-  gfx::Point Location() const override;
-  int ThumbThickness() const override;
-  int ThumbLength() const override;
   bool SupportsDragSnapBack() const override;
 
-  // Returns the track rect relative to the scrollbar's origin.
+  // The following rects are all relative to the scrollbar's origin.
+  gfx::Rect ThumbRect() const override;
   gfx::Rect TrackRect() const override;
-
-  // Returns the back button rect relative to the scrollbar's origin.
   gfx::Rect BackButtonRect() const override;
-
-  // Returns the forward button rect relative to the scrollbar's origin.
   gfx::Rect ForwardButtonRect() const override;
 
   float ThumbOpacity() const override;
-  bool NeedsPaintPart(cc::ScrollbarPart part) const override;
+  bool NeedsRepaintPart(cc::ScrollbarPart part) const override;
   bool HasTickmarks() const override;
-  void PaintPart(cc::PaintCanvas* canvas, cc::ScrollbarPart part) override;
+  void PaintPart(cc::PaintCanvas* canvas,
+                 cc::ScrollbarPart part,
+                 const gfx::Rect& rect) override;
 
   bool UsesNinePatchThumbResource() const override;
   gfx::Size NinePatchThumbCanvasSize() const override;

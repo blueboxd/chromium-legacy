@@ -96,6 +96,8 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   source->SetDefaultResource(IDR_ASSISTANT_OPTIN_HTML);
   source->AddResourcePath("voice_match_animation.json",
                           IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
+  source->AddResourcePath("voice_match_already_setup_animation.json",
+                          IDR_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_ANIMATION);
   source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 

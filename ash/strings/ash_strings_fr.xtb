@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Le mode Ne pas déranger est activé.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Afficher les paramètres de notification. Les notifications sont désactivées pour une application}one{Afficher les paramètres de notification. Les notifications sont désactivées pour # application}other{Afficher les paramètres de notification. Les notifications sont désactivées pour # applications}}</translation>
 <translation id="1525508553941733066">IGNORER</translation>
-<translation id="1537254971476575106">Loupe plein écran</translation>
 <translation id="15373452373711364">Grand curseur</translation>
 <translation id="1546492247443594934">Bureau 2</translation>
 <translation id="1550523713251050646">Cliquez pour obtenir plus d'options.</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Appuyez sur <ph name="KEYBOARD_SHORTCUT" /> pour changer la disposition du clavier.</translation>
 <translation id="2501920221385095727">Touches persistantes</translation>
 <translation id="2509468283778169019">Touche VERR MAJ activée</translation>
-<translation id="2532589005999780174">Mode Contraste élevé</translation>
 <translation id="2542089167727451762">Appuyez sur votre image de profil</translation>
 <translation id="255671100581129685">L'Assistant Google n'est pas disponible dans une session publique.</translation>
 <translation id="256712445991462162">la loupe ancrée</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Trop de tentatives avec votre empreinte digitale</translation>
 <translation id="7994370417837006925">Connexion multicompte</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
-<translation id="8029241286966751120">Le mode Loupe plein écran est activé. Appuyez de nouveau sur Ctrl+Recherche+M pour le désactiver.</translation>
 <translation id="8030169304546394654">Déconnecté</translation>
 <translation id="8054466585765276473">Calcul de l'autonomie de la batterie en cours…</translation>
 <translation id="8061464966246066292">Contraste élevé</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Impossible de supprimer le dernier bureau.</translation>
 <translation id="8392451568018454956">Menu "Options" de l'adresse e-mail <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Ton parent a verrouillé cet appareil</translation>
-<translation id="8406981827175133772">Loupe plein écran</translation>
 <translation id="8425213833346101688">Modifier</translation>
 <translation id="8427213022735114808">La fonctionnalité de dictée transmet votre voix à Google et permet d'utiliser ainsi la saisie vocale dans n'importe quelle zone de texte.</translation>
 <translation id="8428213095426709021">Paramètres</translation>

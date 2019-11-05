@@ -42,13 +42,14 @@ bool WebAppInstallManager::CanInstallWebApp(
 
 void WebAppInstallManager::LoadWebAppAndCheckInstallability(
     const GURL& web_app_url,
+    WebappInstallSource install_source,
     WebAppInstallabilityCheckCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), shortcut_manager(), finalizer(),
       data_retriever_factory_.Run());
 
   task->LoadWebAppAndCheckInstallability(
-      web_app_url, WebappInstallSource::MANAGEMENT_API, url_loader_.get(),
+      web_app_url, install_source, url_loader_.get(),
       base::BindOnce(
           &WebAppInstallManager::OnLoadWebAppAndCheckInstallabilityCompleted,
           base::Unretained(this), task.get(), std::move(callback)));
@@ -292,7 +293,20 @@ void WebAppInstallManager::OnLoadWebAppAndCheckInstallabilityCompleted(
     InstallResultCode code) {
   DeleteTask(task);
 
-  std::move(callback).Run(std::move(web_contents), IsSuccess(code));
+  InstallableCheckResult result;
+  base::Optional<AppId> opt_app_id;
+  if (IsSuccess(code)) {
+    if (!app_id.empty() && registrar()->IsInstalled(app_id)) {
+      result = InstallableCheckResult::kAlreadyInstalled;
+      opt_app_id = app_id;
+    } else {
+      result = InstallableCheckResult::kInstallable;
+    }
+  } else {
+    result = InstallableCheckResult::kNotInstallable;
+  }
+
+  std::move(callback).Run(std::move(web_contents), result, opt_app_id);
 }
 
 void WebAppInstallManager::OnWebAppInstalledAfterSync(

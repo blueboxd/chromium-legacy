@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">題詞</translation>
 <translation id="207477615537953741">語意轉譯功能已關閉</translation>
 <translation id="2086961585857038472">下一個字詞</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">en</translation>
 <translation id="2091933974477985526">上一個可編輯的文字區域</translation>
 <translation id="2100350898815792233">所有標點符號</translation>
@@ -193,6 +194,7 @@
 <translation id="2416512023405990736">未勾選的核取方塊</translation>
 <translation id="2417569100218200841">內容資訊</translation>
 <translation id="2417948780551741035">章節附註</translation>
+<translation id="2419852971200420169">說明清單</translation>
 <translation id="2421113964388408478">刪除</translation>
 <translation id="2422937916923936891">選單項目核取方塊</translation>
 <translation id="2428534162001909979">指令選單</translation>
@@ -371,6 +373,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{問號}other{# 個問號}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{插入符號}other{# 個插入符號}}</translation>
 <translation id="352577523970648069">可編輯的文字欄位</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">剪下<ph name="TEXT" />。</translation>
 <translation id="3549680091535286226">用雙指輕觸即可暫停朗讀功能</translation>
 <translation id="3568702578574425662"><ph name="NAME" />，未勾選的核取方塊</translation>
@@ -779,6 +782,7 @@
 <translation id="6378394210114975876">薊紫</translation>
 <translation id="6385591741672306837">欄</translation>
 <translation id="6387719785439924554">獨立元素</translation>
+<translation id="6393014464788431702">停用所有事件篩選器</translation>
 <translation id="6411426777058107714">沒有上一個圓形按鈕。</translation>
 <translation id="6414968628640960377">上一個不同的元素。</translation>
 <translation id="6417265370957905582">Google 助理</translation>
@@ -914,6 +918,7 @@
 <translation id="7332592614823088566">第 <ph name="ROWINDEX" /> 列，第 <ph name="COLINDEX" /> 欄 (共 <ph name="ROWTOTAL" /> 列，<ph name="COLTOTAL" /> 欄)</translation>
 <translation id="7336596009609913925">含彈出式元件</translation>
 <translation id="7356165926712028380">切換至 8 點點字</translation>
+<translation id="7356610683936413584">說明清單詳細資料</translation>
 <translation id="7362871137496673139">沒有上一個第 2 階標題。</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{&amp; 符號}other{# 個 &amp; 符號}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@
 <translation id="8096975275316362544">薄荷奶油色</translation>
 <translation id="8098587210054821856">岩灰</translation>
 <translation id="8110647606445335195">沒有 ARIA 地標。</translation>
+<translation id="8121539003537428024">啟用所有事件篩選器</translation>
 <translation id="812886159861361726">已停止下載「<ph name="FILE_NAME" />」</translation>
 <translation id="8138880386467279117">輕觸</translation>
 <translation id="8153880621934657047">不在表格內。</translation>

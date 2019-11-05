@@ -7,8 +7,8 @@
 #include <fuzzer/FuzzedDataProvider.h>
 
 #include <algorithm>
+#include <memory>
 
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -18,16 +18,19 @@
 //
 // |data| is used to create a FuzzedSourceStream.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Bound the input to 256 KiB. If the input is divided into one-byte chunks,
+  // the fuzzer may time out. See https://crbug.com/1014767.
+  size = std::min(size, size_t(256 * 1024));
+
   net::TestCompletionCallback callback;
   FuzzedDataProvider data_provider(data, size);
-  std::unique_ptr<net::FuzzedSourceStream> fuzzed_source_stream(
-      new net::FuzzedSourceStream(&data_provider));
+  auto fuzzed_source_stream =
+      std::make_unique<net::FuzzedSourceStream>(&data_provider);
 
   // Gzip has a maximum compression ratio of 1032x. While, strictly speaking,
-  // linear, this means the fuzzer will often get stuck. Stop reading at a more
-  // modest compression ratio of 2x, or 512 KiB, whichever is larger. See
+  // linear, this means the fuzzer will often get stuck. Bound the output. See
   // https://crbug.com/921075.
-  size_t max_output = std::max(2u * size, static_cast<size_t>(512 * 1024));
+  size_t max_output = 512 * 1024;
 
   const net::SourceStream::SourceType kGzipTypes[] = {
       net::SourceStream::TYPE_GZIP, net::SourceStream::TYPE_DEFLATE};

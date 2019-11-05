@@ -527,8 +527,8 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
   std::string hex_ssid_string;
   if (object->GetStringWithoutPathExpansion(::onc::wifi::kHexSSID,
                                             &hex_ssid_string)) {
-    std::vector<uint8_t> decoded_ssid;
-    if (!base::HexStringToBytes(hex_ssid_string, &decoded_ssid)) {
+    std::string decoded_ssid;
+    if (!base::HexStringToString(hex_ssid_string, &decoded_ssid)) {
       path_.push_back(::onc::wifi::kHexSSID);
       std::ostringstream msg;
       msg << "Not a valid hex representation: '" << hex_ssid_string << "'";
@@ -550,9 +550,7 @@ bool Validator::ValidateSSIDAndHexSSID(base::DictionaryValue* object) {
     // HexSSID contains the UTF-8 encoding of SSID. If not, remove the SSID
     // field.
     if (ssid_string.length() > 0) {
-      std::string decoded_ssid_string(
-          reinterpret_cast<const char*>(&decoded_ssid[0]), decoded_ssid.size());
-      if (ssid_string != decoded_ssid_string) {
+      if (ssid_string != decoded_ssid) {
         path_.push_back(::onc::wifi::kSSID);
         std::ostringstream msg;
         msg << "Fields '" << ::onc::wifi::kSSID << "' and '"

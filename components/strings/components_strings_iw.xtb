@@ -172,6 +172,7 @@
 <translation id="173080396488393970">אין תמיכה בכרטיס מסוג זה</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">נסה לפנות אל מנהל המערכת.</translation>
+<translation id="1739107442478692187">‏אירעה פרצה באבטחת מידע באחד מהאתרים או האפליקציות שמשמשים אותך. מערכת Chrome ממליצה לך לבדוק כעת את הסיסמאות ששמרת ולשנות את הסיסמה ב-<ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">עליך להזין חודש תפוגה חוקי</translation>
 <translation id="1743520634839655729">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google ובמכשיר הזה את פרטי הכרטיס, השם והכתובת לחיוב.</translation>
 <translation id="1743570585616704562">לא מזוהה</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">אי התאמה בדומיינים</translation>
 <translation id="2096368010154057602">מחלקה</translation>
 <translation id="2099652385553570808">3 סיכות הידוק בצד שמאל</translation>
+<translation id="2100280972184758440">הסיסמה שלך בסיכון</translation>
 <translation id="2102134110707549001">הצעת סיסמה חזקה…</translation>
 <translation id="2108755909498034140">אתחול המחשב</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">המערכת התעלמה משום שהמדיניות בוטלה על ידי <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">נופק ל: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">ניקוב בפינה הימנית התחתונה</translation>
+<translation id="2124528555835617522">‏אירעה פרצה באבטחת מידע באחד מהאתרים או האפליקציות שמשמשים אותך. ההמלצה של Chrome היא לבדוק עכשיו את הסיסמאות השמורות.</translation>
 <translation id="2129079103035905234">חיישני תנועה</translation>
 <translation id="213826338245044447">סימניות לנייד</translation>
 <translation id="214556005048008348">ביטול תשלום</translation>
@@ -478,11 +481,13 @@
 <translation id="3282497668470633863">הוספה של השם המופיע בכרטיס</translation>
 <translation id="3287510313208355388">להורדה אחרי התחברות לרשת</translation>
 <translation id="3293642807462928945">מידע נוסף על המדיניות <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">‏אירעה פרצה באבטחת מידע באחד מהאתרים או האפליקציות שמשמשים אותך. ההמלצה של Chrome היא לשנות עכשיו את הסיסמה ב-<ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">לא נמצאו תוצאות חיפוש</translation>
 <translation id="3320021301628644560">הוספה של כתובת לחיוב</translation>
 <translation id="3324983252691184275">ארגמן</translation>
 <translation id="3338095232262050444">מאובטח</translation>
 <translation id="3355823806454867987">‏שנה הגדרות שרת Proxy...</translation>
+<translation id="3360103848165129075">גיליון פרטי התשלום</translation>
 <translation id="3362968246557010467">המדיניות הזו הועתקה באופן אוטומטי ממדיניות <ph name="OLD_POLICY" /> שהוצאה משימוש. צריך להשתמש במדיניות הזו במקומה.</translation>
 <translation id="3366477098757335611">הצגת כרטיסים</translation>
 <translation id="3369192424181595722">שגיאת שעון</translation>
@@ -602,6 +607,7 @@
 <translation id="3949601375789751990">היסטוריית הגלישה שלך מופיעה כאן</translation>
 <translation id="3949870428812919180">אין אמצעי תשלום שמורים</translation>
 <translation id="3950820424414687140">כניסה</translation>
+<translation id="3961148744525529027">גיליון פרטי התשלום פתוח בחצי גובה המסך</translation>
 <translation id="3962859241508114581">הטראק הקודם</translation>
 <translation id="3963837677003247395">להמשיך באופן ידני?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{ללא}=1{מאתר אחד }two{משני אתרים }many{מ-# אתרים }other{מ-# אתרים }}</translation>
@@ -1339,6 +1345,7 @@ Del</translation>
 <translation id="7637571805876720304">‏האם להסיר מ-Chromium את כרטיס האשראי?</translation>
 <translation id="7638605456503525968">יציאות טוריות</translation>
 <translation id="7639968568612851608">אפור כהה</translation>
+<translation id="7653957176542370971">גיליון פרטי התשלום סגור</translation>
 <translation id="765676359832457558">הסתר הגדרות מתקדמות...</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7662298039739062396">ההגדרה נשלטת על-ידי תוסף</translation>
@@ -1468,6 +1475,7 @@ Del</translation>
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8262952874573525464">הידוק קצוות בחלק התחתון</translation>
 <translation id="8267698848189296333">נכנס כ-<ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">טופס פרטי התשלום פתוח</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">כניסה</translation>
 <translation id="8288807391153049143">הצגת אישור</translation>

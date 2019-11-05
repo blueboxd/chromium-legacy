@@ -38,8 +38,6 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
   // Updates card content and anchoring and shows the tab hover card.
   void UpdateAndShow(Tab* tab);
 
-  void UpdateAnchorBounds(gfx::Rect anchor_bounds);
-
   bool IsVisible();
 
   void FadeOutToHide();
@@ -85,6 +83,11 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
 
   void ClearPreviewImage();
 
+  // Called when a hover card lands on the tab it's supposed to be a preview
+  // for; happens immediately if there is no slide animation, otherwise when the
+  // animation completes.
+  void OnHoverCardLanded();
+
   // ThumbnailImage::Observer:
   void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) override;
   base::Optional<gfx::Size> GetThumbnailSizeHint() const override;
@@ -117,12 +120,13 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
   views::Label* domain_label_ = nullptr;
   views::ImageView* preview_image_ = nullptr;
 
-  // Counter used to keey track of the number of tab hover cards seen before a
+  // Counter used to keep track of the number of tab hover cards seen before a
   // tab is selected by mouse press.
   size_t hover_cards_seen_count_ = 0;
   scoped_refptr<ThumbnailImage> thumbnail_image_;
   ScopedObserver<ThumbnailImage, ThumbnailImage::Observer> thumbnail_observer_{
       this};
+  bool waiting_for_decompress_ = false;
 
   base::WeakPtrFactory<TabHoverCardBubbleView> weak_factory_{this};
 

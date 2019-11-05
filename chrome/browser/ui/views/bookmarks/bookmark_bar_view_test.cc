@@ -325,8 +325,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     // On desktop Linux, the bookmark bar context menu blocks on retrieving the
     // clipboard selection from the X server (for the 'paste' item), so mock it
     // out.
-    ui::Clipboard::SetClipboardForCurrentThread(
-        std::make_unique<ui::TestClipboard>());
+    ui::TestClipboard::CreateForCurrentThread();
     GetWidget()->Activate();
 #endif
   }

@@ -32,9 +32,8 @@ WebAppMenuButton::WebAppMenuButton(BrowserView* browser_view)
 
   SetInkDropMode(InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  // Avoid the native theme border, which would crop the icon (see
-  // https://crbug.com/831968).
-  SetBorder(nullptr);
+  OverrideLayoutInsets(gfx::Insets());
+
   // This name is guaranteed not to change during the lifetime of this button.
   // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
   // because the menu applies to the entire app.

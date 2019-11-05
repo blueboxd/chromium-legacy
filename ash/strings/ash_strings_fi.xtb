@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Älä häiritse ‑tila on käytössä.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Näytä ilmoitusasetukset. Ilmoitukset on poistettu 1 sovelluksen käytöstä.}other{Näytä ilmoitusasetukset. Ilmoitukset on poistettu # sovelluksen käytöstä.}}</translation>
 <translation id="1525508553941733066">HYLKÄÄ</translation>
-<translation id="1537254971476575106">Koko näytön suurennus</translation>
 <translation id="15373452373711364">Suuri hiiren osoitin</translation>
 <translation id="1546492247443594934">Pöytä 2</translation>
 <translation id="1550523713251050646">Näet lisävaihtoehtoja klikkaamalla tätä.</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Paina <ph name="KEYBOARD_SHORTCUT" /> vaihtaaksesi näppäimistöasettelua.</translation>
 <translation id="2501920221385095727">Päälle jäävät näppäimet</translation>
 <translation id="2509468283778169019">CAPS LOCK on päällä</translation>
-<translation id="2532589005999780174">Suuri kontrasti -tila</translation>
 <translation id="2542089167727451762">Napauta profiilikuvaasi</translation>
 <translation id="255671100581129685">Google Assistantia ei voi käyttää julkisella käyttökerralla.</translation>
 <translation id="256712445991462162">kiinnitetty näytön suurentaja</translation>
@@ -485,7 +483,6 @@
 <translation id="7984197416080286869">Liian monta sormenjälkiyritystä</translation>
 <translation id="7994370417837006925">Kirjautuminen useaan tiliin</translation>
 <translation id="8000066093800657092">Ei verkkoa</translation>
-<translation id="8029241286966751120">Koko näytön suurennus on käytössä. Poista se käytöstä painamalla uudelleen Ctrl + haku + M.</translation>
 <translation id="8030169304546394654">Yhteys katkaistu</translation>
 <translation id="8054466585765276473">Lasketaan akun kesto.</translation>
 <translation id="8061464966246066292">Suuri kontrasti</translation>
@@ -510,7 +507,6 @@
 <translation id="8388750414311082622">Viimeistä työpöytää ei voi poistaa.</translation>
 <translation id="8392451568018454956">Tilin <ph name="USER_EMAIL_ADDRESS" /> vaihtoehtovalikko</translation>
 <translation id="8394567579869570560">Vanhempasi lukitsi tämän laitteen</translation>
-<translation id="8406981827175133772">Koko näytön suurennus</translation>
 <translation id="8425213833346101688">Vaihda</translation>
 <translation id="8427213022735114808">Sanelu lähettää äänesi Googlelle, jotta puhekirjoitus on mahdollista kaikissa tekstikentissä.</translation>
 <translation id="8428213095426709021">Asetukset</translation>

@@ -466,6 +466,7 @@ class PrintRenderFrameHelper
     // Helper functions
     int GetNextPageNumber();
     bool IsRendering() const;
+    bool IsForArc() const;
     bool IsModifiable() const;
     bool IsPdf() const;
     bool HasSelection();
@@ -473,6 +474,7 @@ class PrintRenderFrameHelper
     bool IsFinalPageRendered() const;
 
     // Setters
+    void SetIsForArc(bool is_for_arc);
     void set_error(enum PrintPreviewErrorBuckets error);
 
     // Getters
@@ -530,6 +532,9 @@ class PrintRenderFrameHelper
     // True, if the document source is a PDF. Used to distinguish from
     // other plugins such as Flash.
     bool is_pdf_ = false;
+
+    // True, if the document source is from ARC.
+    bool is_for_arc_ = false;
 
     // Specifies the total number of pages in the print ready metafile.
     int print_ready_metafile_page_count_ = 0;

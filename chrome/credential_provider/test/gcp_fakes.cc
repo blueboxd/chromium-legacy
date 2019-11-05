@@ -229,6 +229,21 @@ HRESULT FakeOSUserManager::SetUserPassword(const wchar_t* domain,
   return HRESULT_FROM_WIN32(NERR_UserNotFound);
 }
 
+HRESULT FakeOSUserManager::SetUserFullname(const wchar_t* domain,
+                                           const wchar_t* username,
+                                           const wchar_t* full_name) {
+  DCHECK(domain);
+  DCHECK(username);
+  DCHECK(full_name);
+
+  if (username_to_info_.count(username) > 0) {
+    username_to_info_[username].fullname = full_name;
+    return S_OK;
+  }
+
+  return HRESULT_FROM_WIN32(NERR_UserNotFound);
+}
+
 HRESULT FakeOSUserManager::IsWindowsPasswordValid(const wchar_t* domain,
                                                   const wchar_t* username,
                                                   const wchar_t* password) {

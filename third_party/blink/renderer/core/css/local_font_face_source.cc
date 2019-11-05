@@ -13,20 +13,11 @@
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
-
-namespace {
-
-void NotifyFontUniqueNameLookupReadyWeakPtr(
-    base::WeakPtr<LocalFontFaceSource> local_font_face_source) {
-  if (local_font_face_source)
-    local_font_face_source->NotifyFontUniqueNameLookupReady();
-}
-
-}  // namespace
 
 LocalFontFaceSource::LocalFontFaceSource(CSSFontFace* css_font_face,
                                          FontSelector* font_selector,
@@ -110,7 +101,8 @@ void LocalFontFaceSource::BeginLoadIfNeeded() {
       FontGlobalContext::Get()->GetFontUniqueNameLookup();
   DCHECK(unique_name_lookup);
   unique_name_lookup->PrepareFontUniqueNameLookup(
-      WTF::Bind(&NotifyFontUniqueNameLookupReadyWeakPtr, GetWeakPtr()));
+      WTF::Bind(&LocalFontFaceSource::NotifyFontUniqueNameLookupReady,
+                WrapWeakPersistent(this)));
   face_->DidBeginLoad();
 }
 
@@ -120,10 +112,6 @@ void LocalFontFaceSource::NotifyFontUniqueNameLookupReady() {
   if (face_->FontLoaded(this)) {
     font_selector_->FontFaceInvalidated();
   }
-}
-
-base::WeakPtr<LocalFontFaceSource> LocalFontFaceSource::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 bool LocalFontFaceSource::IsLoaded() const {

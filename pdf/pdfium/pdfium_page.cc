@@ -323,12 +323,7 @@ void PDFiumPage::CalculateTextRunStyleInfo(
     style_info->stroke_color = MakeARGB(0xff, 0, 0, 0);
   }
 
-  int render_mode = FPDFText_GetTextRenderMode(text_page, char_index);
-  if (render_mode < 0 || render_mode > PP_TEXTRENDERINGMODE_LAST) {
-    style_info->render_mode = PP_TEXTRENDERINGMODE_UNKNOWN;
-  } else {
-    style_info->render_mode = static_cast<PP_TextRenderingMode>(render_mode);
-  }
+  style_info->render_mode = FPDFText_GetTextRenderMode(text_page, char_index);
 }
 
 bool PDFiumPage::AreTextStyleEqual(

@@ -81,13 +81,21 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   host_frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
+void DelegatedFrameHost::AddObserverForTesting(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DelegatedFrameHost::RemoveObserverForTesting(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void DelegatedFrameHost::WasShown(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_dip_size,
     const base::Optional<RecordTabSwitchTimeRequest>&
         record_tab_switch_time_request) {
   // Cancel any pending frame eviction and unpause it if paused.
-  frame_eviction_state_ = FrameEvictionState::kNotStarted;
+  SetFrameEvictionStateAndNotifyObservers(FrameEvictionState::kNotStarted);
 
   frame_evictor_->SetVisible(true);
   if (record_tab_switch_time_request && compositor_) {
@@ -185,6 +193,16 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceInternal(
   DCHECK(host_frame_sink_manager_);
   host_frame_sink_manager_->RequestCopyOfOutput(
       viz::SurfaceId(frame_sink_id_, local_surface_id_), std::move(request));
+}
+
+void DelegatedFrameHost::SetFrameEvictionStateAndNotifyObservers(
+    FrameEvictionState frame_eviction_state) {
+  if (frame_eviction_state_ == frame_eviction_state)
+    return;
+
+  frame_eviction_state_ = frame_eviction_state;
+  for (auto& obs : observers_)
+    obs.OnFrameEvictionStateChanged(frame_eviction_state_);
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
@@ -379,7 +397,8 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
   // CrOS overview mode.
   if (client_->ShouldShowStaleContentOnEviction() &&
       !stale_content_layer_->has_external_content()) {
-    frame_eviction_state_ = FrameEvictionState::kPendingEvictionRequests;
+    SetFrameEvictionStateAndNotifyObservers(
+        FrameEvictionState::kPendingEvictionRequests);
     auto callback =
         base::BindOnce(&DelegatedFrameHost::DidCopyStaleContent, GetWeakPtr());
 
@@ -405,7 +424,7 @@ void DelegatedFrameHost::DidCopyStaleContent(
   DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
 
   DCHECK_NE(frame_eviction_state_, FrameEvictionState::kNotStarted);
-  frame_eviction_state_ = FrameEvictionState::kNotStarted;
+  SetFrameEvictionStateAndNotifyObservers(FrameEvictionState::kNotStarted);
   ContinueDelegatedFrameEviction();
 
   auto transfer_resource = viz::TransferableResource::MakeGL(

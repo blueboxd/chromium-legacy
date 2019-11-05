@@ -153,7 +153,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Semantyka wyłączona</translation>
 <translation id="2086961585857038472">Następne słowo</translation>
-<translation id="2087981446621639008">sz lstyopisu</translation>
+<translation id="2087981446621639008">szczeg listyopisu</translation>
 <translation id="2089387485033699258">pl</translation>
 <translation id="2091933974477985526">Poprzedni obszar tekstowy do edytowania</translation>
 <translation id="2100350898815792233">Pełna interpunkcja</translation>
@@ -373,7 +373,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3497063866483065785">{COUNT,plural, =1{pytajnik}few{# pytajniki}many{# pytajników}other{# question marks}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{kareta}few{# znaki karety}many{# znaków karety}other{# carets}}</translation>
 <translation id="352577523970648069">Pole tekstowe z możliwością edytowania</translation>
-<translation id="3538907380453898475">lstopisu</translation>
+<translation id="3538907380453898475">listaopisu</translation>
 <translation id="3549141990712742152">wytnij <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Kliknij dwoma palcami, by tymczasowo wyłączyć głos</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, niezaznaczone pole wyboru</translation>
@@ -918,7 +918,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="7332592614823088566">Wiersz <ph name="ROWINDEX" /> z <ph name="ROWTOTAL" />, kolumna <ph name="COLINDEX" /> z <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">ma wyskakujące okienko</translation>
 <translation id="7356165926712028380">Przełącz na pismo 8-punktowe Braille'a</translation>
-<translation id="7356610683936413584">Szczegół listy opisu</translation>
+<translation id="7356610683936413584">Szczegół z listy opisu</translation>
 <translation id="7362871137496673139">Brak poprzedniego nagłówka poziomu 2.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{et}few{# znaki et}many{# znaków et}other{# ampersands}}</translation>
 <translation id="737396357417333429">clk</translation>

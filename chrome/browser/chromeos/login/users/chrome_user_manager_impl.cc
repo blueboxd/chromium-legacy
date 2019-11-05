@@ -415,19 +415,19 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
     GetMinimumVersionPolicyHandler()->AddObserver(this);
   }
 
-  cloud_external_data_policy_handlers_.emplace_back(
+  cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::UserAvatarImageExternalDataHandler>(
           cros_settings_, device_local_account_policy_service));
-  cloud_external_data_policy_handlers_.emplace_back(
+  cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::WallpaperImageExternalDataHandler>(
           cros_settings_, device_local_account_policy_service));
-  cloud_external_data_policy_handlers_.emplace_back(
+  cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::NativePrintersExternalDataHandler>(
           cros_settings_, device_local_account_policy_service));
-  cloud_external_data_policy_handlers_.emplace_back(
+  cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::PrintServersExternalDataHandler>(
           cros_settings_, device_local_account_policy_service));
-  cloud_external_data_policy_handlers_.emplace_back(
+  cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::CrostiniAnsiblePlaybookExternalDataHandler>(
           cros_settings_, device_local_account_policy_service));
 

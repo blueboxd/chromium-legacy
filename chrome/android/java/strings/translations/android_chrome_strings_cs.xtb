@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Kopírovat adresu URL</translation>
 <translation id="2156074688469523661">Zbývající weby (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Chcete-li něco z telefonu sdílet do jiného zařízení, zapněte v nastavení Chromu na obou zařízeních synchronizaci</translation>
-<translation id="2170088579611075216">Povolit a spustit virtuální realitu</translation>
 <translation id="2175927920773552910">QR kód</translation>
 <translation id="218608176142494674">Sdílení</translation>
 <translation id="2227444325776770048">Pokračovat jako uživatel <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4135200667068010335">Seznam zařízení, se kterými se má karta sdílet, je zavřený.</translation>
 <translation id="4149994727733219643">Zjednodušené zobrazení webových stránek</translation>
 <translation id="4165986682804962316">Nastavení webu</translation>
-<translation id="4169535189173047238">Nepovolovat</translation>
 <translation id="4170011742729630528">Služba není k dispozici, zkuste to později.</translation>
 <translation id="4179980317383591987">Využito: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Jazyky</translation>
@@ -534,10 +532,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5011311129201317034">Web <ph name="SITE" /> žádá o připojení</translation>
 <translation id="5013696553129441713">Žádné nové návrhy</translation>
 <translation id="5016205925109358554">Patková</translation>
-<translation id="5033865233969348410">V režimu virtuální reality tento web může získat následující informace:
-– vaše fyzické vlastnosti, jako je výška
-
-Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu důvěřujete.</translation>
 <translation id="5039804452771397117">Povolit</translation>
 <translation id="5040262127954254034">Ochrana soukromí</translation>
 <translation id="5048398596102334565">Povolit webům přístup k senzorům pohybu (doporučeno)</translation>
@@ -611,11 +605,6 @@ Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu d�
 <translation id="5527082711130173040">K vyhledání zařízení potřebuje Chrome přístup k informacím o poloze. <ph name="BEGIN_LINK1" />Aktualizujte oprávnění<ph name="END_LINK1" />. V tomto zařízení je také <ph name="BEGIN_LINK2" />vypnut přístup k poloze<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Zeptat se, než bude webům povolen přístup k textu a obrázkům zkopírovaným do schránky (doporučeno)</translation>
 <translation id="5530766185686772672">Zavřít anonymní karty</translation>
-<translation id="5534334044554683961">V režimu virtuální reality tento web může získat následující informace:
-– vaše fyzické vlastnosti, jako je výška,
-– rozvržení vaší místnosti.
-
-Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu důvěřujete.</translation>
 <translation id="5534640966246046842">Web byl zkopírován</translation>
 <translation id="5556459405103347317">Načíst znovu</translation>
 <translation id="5561549206367097665">Čekání na síť…</translation>
@@ -906,7 +895,6 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="7665369617277396874">Přidat účet</translation>
 <translation id="766587987807204883">Zde se zobrazují články, které si můžete číst i offline</translation>
 <translation id="7682724950699840886">Vyzkoušejte tyto tipy: Zajistěte, aby v zařízení byl dostatek místa a zkuste export zopakovat.</translation>
-<translation id="7685301384041462804">Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu důvěřujete</translation>
 <translation id="7698359219371678927">Vytvořit e-mail v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Automaticky doplňovat vyhledávací dotazy a adresy URL</translation>
 <translation id="7725024127233776428">Zde se zobrazují stránky přidané do záložek</translation>
@@ -1082,7 +1070,6 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8998729206196772491">Přihlašujete se pomocí účtu spravovaného doménou <ph name="MANAGED_DOMAIN" /> a poskytujete jeho správci kontrolu nad svými daty prohlížeče Chrome. Vaše data budou trvale přidružena k tomuto účtu. Odhlášením z Chromu svá data smažete z tohoto zařízení, ve vašem účtu Google však uložena zůstanou.</translation>
 <translation id="9019902583201351841">Spravováno vašimi rodiči</translation>
 <translation id="9028914725102941583">Chcete-li umožnit sdílení mezi zařízeními, zapněte synchronizaci</translation>
-<translation id="9029323097866369874">Povolit webu <ph name="DOMAIN" /> přejít do režimu virtuální reality?</translation>
 <translation id="9040142327097499898">Oznámení jsou povolena. Poloha je v tomto zařízení vypnutá.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}few{# videa}many{# videa}other{# videí}}</translation>
 <translation id="9050666287014529139">Heslová fráze</translation>

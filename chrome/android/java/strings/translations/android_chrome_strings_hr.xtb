@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostale web-lokacije (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Da biste dijelili sadržaj s telefona s nekim drugim uređajem, uključite sinkronizaciju u Chromeovim postavkama na oba uređaja</translation>
-<translation id="2170088579611075216">Dopusti i unesi VR</translation>
 <translation id="2175927920773552910">QR kôd</translation>
 <translation id="218608176142494674">Dijeljenje</translation>
 <translation id="2227444325776770048">Nastavite kao <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Da biste prilagodili pojam za pretraživanje, odaberite ga tako što ćete ga du
 <translation id="4135200667068010335">Popis za odabir uređaja s kojim će se dijeliti kartica zatvoren je.</translation>
 <translation id="4149994727733219643">Pojednostavljeni prikaz za web-stranice</translation>
 <translation id="4165986682804962316">Postavke web-lokacije</translation>
-<translation id="4169535189173047238">Nemoj dopustiti</translation>
 <translation id="4170011742729630528">Usluga nije dostupna, pokušajte ponovo kasnije.</translation>
 <translation id="4179980317383591987">Iskorišteno <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Jezici</translation>
@@ -534,10 +532,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5011311129201317034">Web-lokacija <ph name="SITE" /> želi se povezati</translation>
 <translation id="5013696553129441713">Nema novih prijedloga</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Ova web-lokacija možda može saznati nešto o vama dok ste u VR-u, na primjer:
-  -  vaša fizička obilježja, primjerice visina
-
-Prije nego što pokrenete VR, provjerite je li ta web-lokacija pouzdana.</translation>
 <translation id="5039804452771397117">Dopusti</translation>
 <translation id="5040262127954254034">Privatnost</translation>
 <translation id="5048398596102334565">Dopuštanje pristupa senzorima kretanja za web-lokacije (preporučeno)</translation>
@@ -611,11 +605,6 @@ Prije nego što pokrenete VR, provjerite je li ta web-lokacija pouzdana.</transl
 <translation id="5527082711130173040">Chrome treba pristup lokaciji kako bi skenirao uređaje. <ph name="BEGIN_LINK1" />Ažurirajte dopuštenja<ph name="END_LINK1" />. Pristup lokaciji također je <ph name="BEGIN_LINK2" />isključen za ovaj uređaj<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Traži dopuštenje prije nego što se web-lokacijama dopusti čitanje teksta i slika iz međuspremnika (preporučeno)</translation>
 <translation id="5530766185686772672">Zatvori anonimne kartice</translation>
-<translation id="5534334044554683961">Ova web-lokacija možda može saznati nešto o vama dok ste u VR-u, na primjer:
-  -   vaša fizička obilježja, primjerice visina
-  -   razmještaj vaše sobe
-
-Prije nego što uđete u VR, provjerite je li ta web-lokacija pouzdana.</translation>
 <translation id="5534640966246046842">Web-lokacija kopirana</translation>
 <translation id="5556459405103347317">Ponovno učitaj</translation>
 <translation id="5561549206367097665">Čekanje na mrežu…</translation>
@@ -906,7 +895,6 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="7665369617277396874">Dodaj račun</translation>
 <translation id="766587987807204883">Ovdje će se prikazivati članci koje možete čitati i offline</translation>
 <translation id="7682724950699840886">Pokušajte napraviti sljedeće: provjerite ima li dovoljno prostora na uređaju i pokušajte ponoviti izvoz.</translation>
-<translation id="7685301384041462804">Prije pokretanja VR-a provjerite je li riječ o pouzdanoj web-lokaciji.</translation>
 <translation id="7698359219371678927">Izradite e-poruku u aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Samodovršavanje pretraživanja i URL-ova</translation>
 <translation id="7725024127233776428">Ovdje se prikazuju stranice koje označite</translation>
@@ -1082,7 +1070,6 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="8998729206196772491">Prijavljujete se računom kojim upravlja <ph name="MANAGED_DOMAIN" /> i njegovom administratoru dajete kontrolu nad svojim podacima u Chromeu. Vaši će se podaci trajno povezati s tim računom. Ako se odjavite iz Chromea, vaši će se podaci izbrisati s ovog uređaja, no ostat će pohranjeni na vašem Google računu.</translation>
 <translation id="9019902583201351841">Upravljaju tvoji roditelji</translation>
 <translation id="9028914725102941583">Uključite sinkronizaciju da biste dijelili na uređajima</translation>
-<translation id="9029323097866369874">Želite li dopustiti web-lokaciji <ph name="DOMAIN" /> pokretanje VR-a?</translation>
 <translation id="9040142327097499898">Obavijesti su dopuštene. Lokacija je isključena za ovaj uređaj.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# videozapis}one{# videozapis}few{# videozapisa}other{# videozapisa}}</translation>
 <translation id="9050666287014529139">Zaporka</translation>

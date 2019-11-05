@@ -31,6 +31,8 @@ class FakeTileManagerClient : public TileManagerClient {
   void RequestImplSideInvalidationForCheckerImagedTiles() override {}
   size_t GetFrameIndexForImage(const PaintImage& paint_image,
                                WhichTree tree) const override;
+  int GetMSAASampleCountForRaster(
+      const scoped_refptr<DisplayItemList>& display_list) override;
 
  private:
   gfx::ColorSpace color_space_;

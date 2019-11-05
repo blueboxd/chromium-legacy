@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Kopyahin ang URL</translation>
 <translation id="2156074688469523661">Mga natitirang site (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Para magbahagi ng isang bagay sa isa pang device mula sa iyong telepono, i-on ang pag-sync sa mga setting ng Chrome sa dalawang device</translation>
-<translation id="2170088579611075216">Payagan at pumasok sa VR</translation>
 <translation id="2175927920773552910">QR Code</translation>
 <translation id="218608176142494674">Pagbabahagi</translation>
 <translation id="2227444325776770048">Magpatuloy bilang si <ph name="USER_FULL_NAME" /></translation>
@@ -183,6 +182,7 @@
 <translation id="2321958826496381788">I-drag ang slider hanggang sa mabasa mo ito nang kumportable. Dapat ay halos ganito kalaki ang text pagkatapos mag-double tap sa isang talata.</translation>
 <translation id="2323763861024343754">Storage ng site</translation>
 <translation id="2328985652426384049">Hindi makapag-sign in</translation>
+<translation id="2330129964253841015">Balaan ka kung makokompromiso ang mga password</translation>
 <translation id="2349710944427398404">Kabuuang data na ginagamit ng Chrome, kabilang ang mga account, bookmark at naka-save na setting</translation>
 <translation id="2353636109065292463">Sinusuri ang iyong koneksyon sa internet</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
@@ -190,6 +190,7 @@
 <translation id="2387895666653383613">Pag-scale ng text</translation>
 <translation id="2394602618534698961">Lalabas dito ang mga file na dina-download mo</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2407481962792080328">Kapag nag-sign in ka sa iyong Google Account, mao-on ang feature na ito</translation>
 <translation id="2410754283952462441">Pumili ng account</translation>
 <translation id="2414886740292270097">Madilim</translation>
 <translation id="2416359993254398973">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera para sa site na ito.</translation>
@@ -198,6 +199,7 @@
 <translation id="2434158240863470628">Tapos nang mag-download <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Access sa lokasyon</translation>
 <translation id="2450083983707403292">Gusto mo bang simulang muli ang pag-download sa <ph name="FILE_NAME" />?</translation>
+<translation id="246532703174860178">Ibahagi</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2490684707762498678">Pinapamahalaan ng <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Google Assistant sa Chrome</translation>
@@ -412,7 +414,6 @@ Para isaayos ang iyong termino para sa paghahanap, pumindot nang matagal para pu
 <translation id="4135200667068010335">Nakasara ang listahan ng mga device kung saan magbabahagi ng tab.</translation>
 <translation id="4149994727733219643">Pinasimpleng view para sa mga web page</translation>
 <translation id="4165986682804962316">Mga setting ng site</translation>
-<translation id="4169535189173047238">Huwag payagan</translation>
 <translation id="4170011742729630528">Hindi available ang serbisyo; subukang muli sa ibang pagkakataon.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> ang nagamit</translation>
 <translation id="4181841719683918333">Mga Wika</translation>
@@ -531,10 +532,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5011311129201317034">Gustong kumonekta ng <ph name="SITE" /></translation>
 <translation id="5013696553129441713">Walang bagong suhestyon</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Habang nasa VR ka, puwedeng malaman ng site na ito ang tungkol sa:
-  -  iyong mga pisikal na katangian, gaya ng tangkad
-
-Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translation>
 <translation id="5039804452771397117">Payagan</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5048398596102334565">Payagan ang mga site na i-access ang mga sensor ng paggalaw (inirerekomenda)</translation>
@@ -608,11 +605,6 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translatio
 <translation id="5527082711130173040">Kailangan ng Chrome ng access sa lokasyon upang makapag-scan ng mga device. <ph name="BEGIN_LINK1" />I-update ang mga pahintulot<ph name="END_LINK1" />. Ang access sa lokasyon ay <ph name="BEGIN_LINK2" />naka-off din para sa device na ito<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Magtanong bago payagan ang mga site na i-read ang text at mga larawan mula sa clipboard (inirerekomenda)</translation>
 <translation id="5530766185686772672">Isara ang mga tab na incognito</translation>
-<translation id="5534334044554683961">Habang nasa VR ka, puwedeng malaman ng site na ito ang tungkol sa:
-  -   iyong mga pisikal na katangian, gaya ng tangkad
-  -   layout ng kwarto mo
-
-Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translation>
 <translation id="5534640966246046842">Nakopya ang site</translation>
 <translation id="5556459405103347317">I-reload</translation>
 <translation id="5561549206367097665">Naghihintay ng network…</translation>
@@ -903,7 +895,6 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="7665369617277396874">Magdagdag ng account</translation>
 <translation id="766587987807204883">Lalabas dito ang mga artikulong mababasa mo kahit offline ka</translation>
 <translation id="7682724950699840886">Subukan ang mga sumusunod na tip: tiyaking may sapat na espasyo sa iyong device, at subukang mag-export muli.</translation>
-<translation id="7685301384041462804">Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translation>
 <translation id="7698359219371678927">Gumawa ng email sa <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Awtomatikong kumpletuhin ang mga paghahanap at URL</translation>
 <translation id="7725024127233776428">Lalabas dito ang mga page na iyong.na-bookmark</translation>
@@ -1079,7 +1070,6 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="8998729206196772491">Nagsa-sign in ka gamit ang isang account na pinamamahalaan ng <ph name="MANAGED_DOMAIN" /> at binibigyan mo ang administrator nito ng kontrol sa iyong data sa Chrome. Permanenteng mauugnay ang iyong data sa account na ito. Made-delete ang data mo sa device na ito kapag nag-sign out ka sa Chrome, ngunit mananatili itong naka-store sa iyong Google Account.</translation>
 <translation id="9019902583201351841">Pinamamahalaan ng iyong mga magulang</translation>
 <translation id="9028914725102941583">I-on ang pag-sync para makapagbahagi sa mga device</translation>
-<translation id="9029323097866369874">Payagan ang <ph name="DOMAIN" /> na pumasok sa VR?</translation>
 <translation id="9040142327097499898">Pinapayagan ang mga notification. Naka-off ang lokasyon para sa device na ito.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}one{# Video}other{# na Video}}</translation>
 <translation id="9050666287014529139">Passphrase</translation>

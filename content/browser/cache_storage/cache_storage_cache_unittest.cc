@@ -566,7 +566,7 @@ class CacheStorageCacheTest : public testing::Test {
 
     cache_->Match(
         CopyFetchRequest(request), std::move(match_options),
-        /* trace_id = */ 0,
+        CacheStorageSchedulerPriority::kNormal, /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::ResponseAndErrorCallback,
                        base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
@@ -2353,7 +2353,7 @@ TEST_P(CacheStorageCacheTestP, SelfRefsDuringMatch) {
 
   std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->Match(CopyFetchRequest(body_request_), /* match_options = */ nullptr,
-                /* trace_id = */ 0,
+                CacheStorageSchedulerPriority::kNormal, /* trace_id = */ 0,
                 base::BindOnce(&CacheStorageCacheTest::ResponseAndErrorCallback,
                                base::Unretained(this), loop.get()));
 

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_NTP_NTP_RESOURCE_CACHE_H_
 #define CHROME_BROWSER_UI_WEBUI_NTP_NTP_RESOURCE_CACHE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -25,6 +27,10 @@ class Value;
 
 namespace content {
 class RenderProcessHost;
+}
+
+namespace policy {
+class PolicyChangeRegistrar;
 }
 
 // This class keeps a cache of NTP resources (HTML and CSS) so we don't have to
@@ -61,6 +67,8 @@ class NTPResourceCache : public content::NotificationObserver,
 
   void OnPreferenceChanged();
 
+  void OnPolicyChanged(const base::Value* previous, const base::Value* current);
+
   // Invalidates the NTPResourceCache.
   void Invalidate();
 
@@ -96,6 +104,8 @@ class NTPResourceCache : public content::NotificationObserver,
 
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> theme_observer_{
       this};
+
+  std::unique_ptr<policy::PolicyChangeRegistrar> policy_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };

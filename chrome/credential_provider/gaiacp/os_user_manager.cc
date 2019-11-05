@@ -416,6 +416,37 @@ HRESULT OSUserManager::SetUserPassword(const wchar_t* domain,
   return HRESULT_FROM_WIN32(nsts);
 }
 
+HRESULT OSUserManager::SetUserFullname(const wchar_t* domain,
+                                       const wchar_t* username,
+                                       const wchar_t* full_name) {
+  LPBYTE domain_server_buffer = nullptr;
+  HRESULT hr =
+      GetDomainControllerServerForDomain(domain, &domain_server_buffer);
+  if (FAILED(hr))
+    return hr;
+
+  std::unique_ptr<wchar_t, void (*)(wchar_t*)> domain_to_query(
+      reinterpret_cast<wchar_t*>(domain_server_buffer), [](wchar_t* p) {
+        if (p)
+          ::NetApiBufferFree(p);
+      });
+
+  DWORD error = 0;
+  USER_INFO_1011 info1011;
+  NET_API_STATUS nsts;
+  memset(&info1011, 0, sizeof(info1011));
+  info1011.usri1011_full_name = const_cast<wchar_t*>(full_name);
+
+  nsts = ::NetUserSetInfo(domain_to_query.get(), username, 1011,
+                          reinterpret_cast<LPBYTE>(&info1011), &error);
+  if (nsts != NERR_Success) {
+    LOGFN(ERROR) << "Unable to change full name on the account for '"
+                 << username << "' nsts=" << nsts;
+  }
+
+  return HRESULT_FROM_WIN32(nsts);
+}
+
 HRESULT OSUserManager::IsWindowsPasswordValid(const wchar_t* domain,
                                               const wchar_t* username,
                                               const wchar_t* password) {

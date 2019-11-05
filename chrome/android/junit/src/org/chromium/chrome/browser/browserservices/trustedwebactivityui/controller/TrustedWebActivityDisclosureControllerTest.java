@@ -26,7 +26,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationState;
@@ -41,7 +40,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 @Config(manifest = Config.NONE)
 public class TrustedWebActivityDisclosureControllerTest {
     private static final String CLIENT_PACKAGE = "com.example.twaclient";
-    private static final Origin ORIGIN = Origin.create("com.example.twa");
+    private static final String SCOPE = "https://www.example.com";
 
     @Mock public ChromePreferenceManager mPreferences;
     @Mock public ActivityLifecycleDispatcher mLifecycleDispatcher;
@@ -106,11 +105,11 @@ public class TrustedWebActivityDisclosureControllerTest {
     }
 
     private void enterVerifiedOrigin() {
-        setVerificationState(new VerificationState(ORIGIN, VerificationStatus.SUCCESS));
+        setVerificationState(new VerificationState(SCOPE, VerificationStatus.SUCCESS));
     }
 
     private void exitVerifiedOrigin() {
-        setVerificationState(new VerificationState(ORIGIN, VerificationStatus.FAILURE));
+        setVerificationState(new VerificationState(SCOPE, VerificationStatus.FAILURE));
     }
 
     private void setVerificationState(VerificationState state) {

@@ -564,12 +564,17 @@
   {
     "prefix": "cache-storage-sequence",
     "bases": ["external/wpt/service-workers"],
-    "args": ["--disable-features=CacheStorageSequence"]
+    "args": ["--enable-features=CacheStorageSequence"]
   },
   {
     "prefix": "cache-storage-eager-reading",
     "bases": ["external/wpt/service-workers"],
-    "args": ["--disable-features=CacheStorageEagerReading"]
+    "args": ["--enable-features=CacheStorageEagerReading"]
+  },
+  {
+    "prefix": "cache-storage-high-priority-match",
+    "bases": ["external/wpt/service-workers"],
+    "args": ["--enable-features=CacheStorageHighPriorityMatch"]
   },
   {
     "prefix": "conditional-appcache-delay",

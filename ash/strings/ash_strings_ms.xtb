@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Jangan ganggu dihidupkan.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan untuk satu apl}other{Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan untuk # apl}}</translation>
 <translation id="1525508553941733066">KETEPIKAN</translation>
-<translation id="1537254971476575106">Penggadang skrin penuh</translation>
 <translation id="15373452373711364">Kursor tetikus besar</translation>
 <translation id="1546492247443594934">Meja 2</translation>
 <translation id="1550523713251050646">Klik untuk mendapatkan lagi pilihan</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Tekan <ph name="KEYBOARD_SHORTCUT" /> untuk menukar atur letak papan kekunci.</translation>
 <translation id="2501920221385095727">Kekunci lekit</translation>
 <translation id="2509468283778169019">Kekunci CAPS LOCK dihidupkan</translation>
-<translation id="2532589005999780174">Mod kontras tinggi</translation>
 <translation id="2542089167727451762">Ketik imej profil anda</translation>
 <translation id="255671100581129685">Google Assistant tidak tersedia dalam sesi awam.</translation>
 <translation id="256712445991462162">penggadang yang didokkan</translation>
@@ -484,7 +482,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7984197416080286869">Terlalu banyak percubaan cap jari</translation>
 <translation id="7994370417837006925">Log masuk berbilang</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
-<translation id="8029241286966751120">Penggadang Skrin Penuh didayakan. Tekan Ctrl+Cari+M semula untuk mematikannya.</translation>
 <translation id="8030169304546394654">Diputuskan sambungan</translation>
 <translation id="8054466585765276473">Mengira tempoh bateri.</translation>
 <translation id="8061464966246066292">Kontras tinggi</translation>
@@ -509,7 +506,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8388750414311082622">Meja terakhir tidak boleh dialih keluar.</translation>
 <translation id="8392451568018454956">Menu pilihan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Ibu/bapa anda mengunci peranti ini</translation>
-<translation id="8406981827175133772">Penggadang Skrin Penuh</translation>
 <translation id="8425213833346101688">Tukar</translation>
 <translation id="8427213022735114808">Pengimlakan menghantar suara anda kepada Google untuk membolehkan penaipan suara dalam mana-mana medan teks.</translation>
 <translation id="8428213095426709021">Tetapan</translation>

@@ -207,17 +207,9 @@ TEST_F(PDFiumPageTextTest, GetTextRunInfo) {
   int current_char_index = 0;
 
   pp::PDF::PrivateAccessibilityTextStyleInfo expected_style_1 = {
-      "Times-Roman",
-      0,
-      PP_TEXTRENDERINGMODE_FILL,
-      12,
-      0xff000000,
-      0xff000000,
-      false,
-      false};
+      "Times-Roman", 0, 0, 12, 0xff000000, 0xff000000, false, false};
   pp::PDF::PrivateAccessibilityTextStyleInfo expected_style_2 = {
-      "Helvetica", 0,    PP_TEXTRENDERINGMODE_FILL, 16, 0xff000000, 0xff000000,
-      false,       false};
+      "Helvetica", 0, 0, 16, 0xff000000, 0xff000000, false, false};
   // The links span from [7, 22], [52, 66] and [92, 108] with 16, 15 and 17
   // text run lengths respectively. There are text runs preceding and
   // succeeding them.

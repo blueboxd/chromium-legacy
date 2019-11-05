@@ -203,8 +203,8 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
 
   // Ensures update of accessibility data for button text.
   if (state == BUTTON_FOCUSED) {
-    edit_model_->view()->OnTemporaryTextMaybeChanged(
-        edit_model_->view()->GetText(), match, false, false);
+    edit_model_->view()->SetAccessibilityLabel(edit_model_->view()->GetText(),
+                                               match);
   }
 }
 

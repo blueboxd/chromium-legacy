@@ -495,6 +495,11 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, DisabledOnIncognito) {
   ASSERT_TRUE(test_server.Start());
 
   Browser* incognito = CreateIncognitoBrowser();
+  ASSERT_FALSE(DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+      incognito->profile()));
+  ASSERT_TRUE(DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+      browser()->profile()));
+
   ui_test_utils::NavigateToURL(
       incognito, GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"));
   EXPECT_EQ(GetBody(incognito), kDummyBody);

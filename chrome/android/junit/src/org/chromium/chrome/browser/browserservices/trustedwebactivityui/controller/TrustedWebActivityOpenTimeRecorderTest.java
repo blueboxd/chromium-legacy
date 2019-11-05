@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,7 +24,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationState;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
@@ -203,7 +201,7 @@ public class TrustedWebActivityOpenTimeRecorderTest {
     }
 
     private void setVerificationStatus(@VerificationStatus int status) {
-        VerificationState newState = new VerificationState(mock(Origin.class), status);
+        VerificationState newState = new VerificationState("www.example.com", status);
         when(mVerifier.getState()).thenReturn(newState);
         for (Runnable observer : mVerificationObserverCaptor.getAllValues()) {
             observer.run();

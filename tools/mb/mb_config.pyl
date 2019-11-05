@@ -66,7 +66,7 @@
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86',
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86',
       'android-incremental-dbg': 'android_incremental_debug_bot',
-      'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols',
+      'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols_fastbuild',
 
       # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
       # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
@@ -669,7 +669,7 @@
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
-      'android-kitkat-arm-rel': 'android_release_trybot',
+      'android-kitkat-arm-rel': 'android_release_trybot_fastbuild',
       'android-marshmallow-arm64-coverage-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting',
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_resource_whitelisting',
@@ -1161,6 +1161,11 @@
       'strip_debug_info', 'webview_google',
     ],
 
+    'android_release_bot_minimal_symbols_fastbuild': [
+      'android', 'release_bot', 'minimal_symbols',
+      'strip_debug_info', 'android_fastbuild',
+    ],
+
     'android_release_bot_minimal_symbols_x86': [
       'android', 'release_bot', 'minimal_symbols', 'x86',
       'strip_debug_info',
@@ -1186,6 +1191,10 @@
     'android_release_trybot_arm64_webview_google': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
       'webview_google',
+    ],
+
+    'android_release_trybot_fastbuild': [
+      'android', 'release_trybot', 'strip_debug_info', 'android_fastbuild'
     ],
 
     'android_release_trybot_x86': [
@@ -2061,6 +2070,12 @@
 
     'android_config_check': {
       'gn_args': 'check_android_configuration = true'
+    },
+
+    # It's significantly faster to build without lint and errorprone.
+    'android_fastbuild': {
+      'gn_args': ('use_errorprone_java_compiler=false '
+                  'disable_android_lint=true'),
     },
 
     'android_without_codecs': {

@@ -17,6 +17,7 @@ public_tab_management_java_sources = [
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabSwitcher.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabContext.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestions.java",
+  "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsObserver.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestion.java",
 ]
 
@@ -39,6 +40,7 @@ tab_management_test_java_sources = [
 ]
 
 tab_management_junit_java_sources = [
+  "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/TasksSurfaceMediatorUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/MostVisitedListViewBinderUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/pseudotab/PseudoTabUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/pseudotab/TabAttributeCacheUnitTest.java",

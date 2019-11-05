@@ -106,6 +106,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">「<ph name="ATSIGN" />」後面的部分不應包含「<ph name="INVALIDCHARACTER" />」符號。</translation>
 <translation id="4668956016107839909">附錄</translation>
+<translation id="4698212723196775569">程式碼</translation>
 <translation id="4718048029184481307">在子母畫面中播放</translation>
 <translation id="4742539557769756338">封面</translation>
 <translation id="4748357248530471599">切換螢幕凹口全螢幕模式</translation>
@@ -191,6 +192,7 @@
 <translation id="7118469954320184356">目前沒有說明。</translation>
 <translation id="7139483182332611405">前言</translation>
 <translation id="7214187073215825913">內容資訊</translation>
+<translation id="7238347055216017155">強調</translation>
 <translation id="7263440858009898357">請選取一個清單中的項目。</translation>
 <translation id="727747134524199931">欄標題</translation>
 <translation id="7320576522385648310">緩衝處理中</translation>
@@ -217,6 +219,7 @@
 <translation id="7888071071722539607">請在電子郵件地址中包含「<ph name="ATSIGN" />」。「<ph name="INVALIDADDRESS" />」未包含「<ph name="ATSIGN" />」。</translation>
 <translation id="7891486169920085145">分割器</translation>
 <translation id="795667975304826397">未選擇任何檔案</translation>
+<translation id="8034303206267677282">強</translation>
 <translation id="8053789581856978548">搜尋文字欄位</translation>
 <translation id="8057695513531652401">聲明</translation>
 <translation id="8105797009065549151">附註參考資料</translation>

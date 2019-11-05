@@ -190,8 +190,15 @@ TEST_F(BrowserViewTest, DISABLED_BrowserViewLayout) {
   BookmarkBarView::DisableAnimationsForTesting(false);
 }
 
+// TODO(https://crbug.com/1020758): Flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_FindBarBoundingBoxLocationBar \
+  DISABLED_FindBarBoundingBoxLocationBar
+#else
+#define MAYBE_FindBarBoundingBoxLocationBar FindBarBoundingBoxLocationBar
+#endif
 // Test the find bar's bounding box when the location bar is visible.
-TEST_F(BrowserViewTest, FindBarBoundingBoxLocationBar) {
+TEST_F(BrowserViewTest, MAYBE_FindBarBoundingBoxLocationBar) {
   ASSERT_FALSE(base::i18n::IsRTL());
   const views::View* location_bar = browser_view()->GetLocationBarView();
   const views::View* contents_container =

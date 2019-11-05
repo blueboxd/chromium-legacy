@@ -123,6 +123,7 @@ bool ThemeServiceWin::GetPlatformHighContrastColor(int id,
     case ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
+    case ThemeProperties::COLOR_LOCATION_BAR_BORDER:
       system_theme_color = ui::NativeTheme::SystemThemeColor::kWindowText;
       break;
 

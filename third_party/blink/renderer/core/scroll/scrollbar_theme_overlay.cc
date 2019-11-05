@@ -127,6 +127,18 @@ IntRect ScrollbarThemeOverlay::TrackRect(const Scrollbar& scrollbar) {
   return rect;
 }
 
+IntRect ScrollbarThemeOverlay::ThumbRect(const Scrollbar& scrollbar) {
+  IntRect rect = ScrollbarTheme::ThumbRect(scrollbar);
+  if (scrollbar.Orientation() == kHorizontalScrollbar) {
+    rect.SetHeight(thumb_thickness_);
+  } else {
+    if (scrollbar.IsLeftSideVerticalScrollbar())
+      rect.Move(scrollbar_margin_, 0);
+    rect.SetWidth(thumb_thickness_);
+  }
+  return rect;
+}
+
 int ScrollbarThemeOverlay::ThumbThickness(const Scrollbar&) {
   return thumb_thickness_;
 }
@@ -172,19 +184,6 @@ void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
 
   if (scrollbar.IsLeftSideVerticalScrollbar())
     canvas->restore();
-}
-
-IntRect ScrollbarThemeOverlay::ThumbPaintRect(const Scrollbar& scrollbar,
-                                              const IntRect& rect) const {
-  IntRect paint_rect = rect;
-  if (scrollbar.Orientation() == kHorizontalScrollbar) {
-    paint_rect.SetHeight(paint_rect.Height() - scrollbar_margin_);
-  } else {
-    paint_rect.SetWidth(paint_rect.Width() - scrollbar_margin_);
-    if (scrollbar.IsLeftSideVerticalScrollbar())
-      paint_rect.SetX(paint_rect.X() + scrollbar_margin_);
-  }
-  return paint_rect;
 }
 
 ScrollbarPart ScrollbarThemeOverlay::HitTest(const Scrollbar& scrollbar,

@@ -107,9 +107,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kVirtualDesksGestures;
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
-// Enables Shelf Dimming for ChromeOS.
-ASH_PUBLIC_EXPORT extern const base::Feature kShelfDimming;
-
 // Enables the Supervised User Deprecation notices.
 ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
 

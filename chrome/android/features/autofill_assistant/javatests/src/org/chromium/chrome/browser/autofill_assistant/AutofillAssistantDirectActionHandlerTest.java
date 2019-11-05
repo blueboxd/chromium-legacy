@@ -134,28 +134,47 @@ public class AutofillAssistantDirectActionHandlerTest {
         reportAvailableDirectActions(mHandler, reporter);
 
         // Now that the AA stack is up, the fetdch_website_actions should no longer show up.
-        assertEquals(2, reporter.mActions.size());
+        assertEquals(3, reporter.mActions.size());
 
-        // Now we expect 2 dyamic actions "search" and "action2".
+        // Now we expect 3 dyamic actions "search", "action2" and "action2_alias".
         FakeDirectActionDefinition search = reporter.mActions.get(0);
         assertEquals("search", search.mId);
-        assertEquals(2, search.mParameters.size());
+        assertEquals(3, search.mParameters.size());
         assertEquals("experiment_ids", search.mParameters.get(0).mName);
         assertEquals(Type.STRING, search.mParameters.get(0).mType);
         assertEquals("SEARCH_QUERY", search.mParameters.get(1).mName);
         assertEquals(Type.STRING, search.mParameters.get(1).mType);
+        assertEquals("arg2", search.mParameters.get(2).mName);
+        assertEquals(Type.STRING, search.mParameters.get(2).mType);
         assertEquals(1, search.mResults.size());
         assertEquals("success", search.mResults.get(0).mName);
         assertEquals(Type.BOOLEAN, search.mResults.get(0).mType);
 
         FakeDirectActionDefinition action2 = reporter.mActions.get(1);
         assertEquals("action2", action2.mId);
-        assertEquals(1, action2.mParameters.size());
+        assertEquals(3, action2.mParameters.size());
         assertEquals("experiment_ids", action2.mParameters.get(0).mName);
         assertEquals(Type.STRING, action2.mParameters.get(0).mType);
+        assertEquals("SEARCH_QUERY", action2.mParameters.get(1).mName);
+        assertEquals(Type.STRING, action2.mParameters.get(1).mType);
+        assertEquals("arg2", action2.mParameters.get(2).mName);
+        assertEquals(Type.STRING, action2.mParameters.get(2).mType);
         assertEquals(1, action2.mResults.size());
         assertEquals("success", action2.mResults.get(0).mName);
         assertEquals(Type.BOOLEAN, action2.mResults.get(0).mType);
+
+        FakeDirectActionDefinition action2Alias = reporter.mActions.get(2);
+        assertEquals("action2_alias", action2Alias.mId);
+        assertEquals(3, action2Alias.mParameters.size());
+        assertEquals("experiment_ids", action2Alias.mParameters.get(0).mName);
+        assertEquals(Type.STRING, action2Alias.mParameters.get(0).mType);
+        assertEquals("SEARCH_QUERY", action2Alias.mParameters.get(1).mName);
+        assertEquals(Type.STRING, action2Alias.mParameters.get(1).mType);
+        assertEquals("arg2", action2Alias.mParameters.get(2).mName);
+        assertEquals(Type.STRING, action2Alias.mParameters.get(2).mType);
+        assertEquals(1, action2Alias.mResults.size());
+        assertEquals("success", action2Alias.mResults.get(0).mName);
+        assertEquals(Type.BOOLEAN, action2Alias.mResults.get(0).mType);
     }
 
     @Test

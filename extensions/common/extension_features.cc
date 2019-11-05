@@ -6,6 +6,16 @@
 
 namespace extensions_features {
 
+// Controls whether we redirect the NTP to the chrome://extensions page or show
+// a middle slot promo, and which of the the three checkup banner messages
+// (performance focused, privacy focused or neutral) to show.
+const base::Feature kExtensionsCheckupTool{"ExtensionsCheckupTool",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+// Parameters for ExtensionsCheckupTool feature.
+const char kExtensionsCheckupToolEntryPointParameter[] = "entry_point";
+const char kExtensionsCheckupToolBannerMessageParameter[] =
+    "banner_message_type";
+
 // Forces requests to go through WebRequestProxyingURLLoaderFactory.
 const base::Feature kForceWebRequestProxyForTest{
     "ForceWebRequestProxyForTest", base::FEATURE_DISABLED_BY_DEFAULT};

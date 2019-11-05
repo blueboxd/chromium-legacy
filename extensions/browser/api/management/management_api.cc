@@ -958,33 +958,27 @@ ManagementInstallReplacementWebAppFunction::Run() {
         Error(keys::kInstallReplacementWebAppInvalidContextError));
   }
 
-  if (api_delegate->IsWebAppInstalled(browser_context(), web_app_url)) {
-    return RespondNow(
-        Error(keys::kInstallReplacementWebAppAlreadyInstalledError));
-  }
-
   // Adds a ref-count.
-  api_delegate->InstallReplacementWebApp(
+  api_delegate->InstallOrLaunchReplacementWebApp(
       browser_context(), web_app_url,
       base::BindOnce(
-          &ManagementInstallReplacementWebAppFunction::FinishCreateWebApp,
-          this));
+          &ManagementInstallReplacementWebAppFunction::FinishResponse, this));
 
-  // Response is sent async in FinishCreateWebApp().
+  // Response is sent async in FinishResponse().
   return RespondLater();
 }
 
-void ManagementInstallReplacementWebAppFunction::FinishCreateWebApp(
-    ManagementAPIDelegate::InstallWebAppResult result) {
+void ManagementInstallReplacementWebAppFunction::FinishResponse(
+    ManagementAPIDelegate::InstallOrLaunchWebAppResult result) {
   ResponseValue response;
   switch (result) {
-    case ManagementAPIDelegate::InstallWebAppResult::kSuccess:
+    case ManagementAPIDelegate::InstallOrLaunchWebAppResult::kSuccess:
       response = NoArguments();
       break;
-    case ManagementAPIDelegate::InstallWebAppResult::kInvalidWebApp:
+    case ManagementAPIDelegate::InstallOrLaunchWebAppResult::kInvalidWebApp:
       response = Error(keys::kInstallReplacementWebAppInvalidWebAppError);
       break;
-    case ManagementAPIDelegate::InstallWebAppResult::kUnknownError:
+    case ManagementAPIDelegate::InstallOrLaunchWebAppResult::kUnknownError:
       response = Error(keys::kGenerateAppForLinkInstallError);
   }
   Respond(std::move(response));

@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Sertifikat-signatar</translation>
 <translation id="1145292499998999162">Et programtillegg ble blokkert</translation>
 <translation id="1145532888383813076">Søk på enheten din, appene dine og på nettet.</translation>
+<translation id="1146678959555564648">Slå på VR-modus</translation>
 <translation id="114721135501989771">Få Googles smarte funksjoner i Chrome</translation>
 <translation id="1149401351239820326">Utløpsmåned</translation>
 <translation id="1150565364351027703">Solbriller</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">lagre data i Google Disk-kontoen din</translation>
 <translation id="1288037062697528143">Nattlys blir slått på automatisk ved solnedgang</translation>
 <translation id="1288300545283011870">Taleegenskaper</translation>
-<translation id="1289513325360489062">Kan ikke lese dataene på dette nettstedet</translation>
 <translation id="1293264513303784526">USB-C-enhet (porten på venstre side)</translation>
 <translation id="1293556467332435079">Filer</translation>
 <translation id="1296911687402551044">Fest den valgte fanen</translation>
@@ -810,7 +810,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2165421703844373933">Få tilgang til assistenten når du sier «Ok Google». For å spare batteri, velg «På (anbefales)». Assistenten svarer bare når enheten er koblet til strøm eller står på lading.</translation>
 <translation id="2166369534954157698">Høvdingens kjære squaw får litt pizza i Mexico by</translation>
 <translation id="2169062631698640254">Logg på likevel</translation>
-<translation id="2170088579611075216">Tillat og start VR</translation>
 <translation id="2172784515318616985">Fortsett</translation>
 <translation id="2173302385160625112">Sjekk internettilkoblingen</translation>
 <translation id="2173801458090845390">Legg til en rekvisisjons-ID for denne enheten</translation>
@@ -1003,7 +1002,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2439545803278355377">Skriv inn den nye PIN-koden. En PIN-kode må ha minst fire tegn og kan bestå av bokstaver, tall og andre tegn.</translation>
 <translation id="2440604414813129000">Vis &amp;kilde</translation>
 <translation id="2442916515643169563">Tekstskygge</translation>
-<translation id="2444119669991608829">Er ikke siden på <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">Det kreves en rotkatalog for utvidelsen</translation>
 <translation id="2445484935443597917">Opprett en ny profil</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> ønsker å bekrefte identiteten din</translation>
@@ -1424,7 +1422,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3020183492814296499">Snarveier</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Sommerfugl</translation>
-<translation id="3021426244864538700">Leser dataene på dette nettstedet</translation>
 <translation id="3021678814754966447">&amp;Vis rammekilde</translation>
 <translation id="3022978424994383087">Det skjønte jeg ikke.</translation>
 <translation id="3023464535986383522">Tekstopplesing</translation>
@@ -2213,7 +2210,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4159681666905192102">Dette er en konto for barn som administreres av <ph name="CUSTODIAN_EMAIL" /> og <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Ukjent tastatur</translation>
 <translation id="4168015872538332605">Noen innstillinger som tilhører <ph name="PRIMARY_EMAIL" /> blir delt med deg. Disse innstillingene påvirker bare kontoen din når du bruker multipålogging.</translation>
-<translation id="4169535189173047238">Ikke tillat</translation>
 <translation id="4170314459383239649">Slett ved avslutning</translation>
 <translation id="4172051516777682613">Vis alltid</translation>
 <translation id="4175137578744761569">Lys lilla og hvit</translation>
@@ -2299,6 +2295,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4316850752623536204">Utviklernettsted</translation>
 <translation id="4320177379694898372">Ingen internettilkobling</translation>
 <translation id="4321442524549817090">V&amp;is nettadressen</translation>
+<translation id="4322394346347055525">Lukk andre faner</translation>
 <translation id="4324577459193912240">Filen er ufullstendig</translation>
 <translation id="4325237902968425115">Avinstallerer <ph name="LINUX_APP_NAME" /> …</translation>
 <translation id="4330191372652740264">Isvann</translation>
@@ -2752,10 +2749,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5029568752722684782">Slett kopi</translation>
 <translation id="5030338702439866405">Utstedt av</translation>
 <translation id="5033266061063942743">Geometriske figurer</translation>
-<translation id="5033865233969348410">Når du er i VR, kan dette nettstedet finne ut mer om følgende:
-    – fysiske kjennetegn, som hvor høy du er
-
-    Forsikre deg om at du stoler på dette nettstedet før du går inn i VR.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> ber om å bruke kameraet ditt og mikrofonen din</translation>
 <translation id="5036662165765606524">Ikke tillat at nettsteder laster ned flere filer automatisk</translation>
 <translation id="5037676449506322593">Velg alle</translation>
@@ -3029,7 +3022,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5449588825071916739">Angi bokmerker for alle faner</translation>
 <translation id="5449716055534515760">Lukk vin&amp;du</translation>
 <translation id="5454166040603940656">med <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Språket du vil oversette til</translation>
 <translation id="5457113250005438886">Ugyldig</translation>
 <translation id="5457459357461771897">lese og slette bilder, musikk og andre medier fra datamaskinen din</translation>
 <translation id="5457599981699367932">Surf som gjest</translation>
@@ -3089,11 +3081,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5532223876348815659">Overordnet</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> vil</translation>
 <translation id="5534304873398226603">Forkast bilde eller video</translation>
-<translation id="5534334044554683961">Når du er i VR, kan dette nettstedet finne ut mer om følgende:
-    – fysiske kjennetegn, som hvor høy du er
-    – hvordan rommet ditt ser ut
-
-    Forsikre deg om at du stoler på dette nettstedet før du går inn i VR.</translation>
 <translation id="5535941515421698170">Fjern også de eksisterende dataene dine fra denne enheten</translation>
 <translation id="5539221284352502426">Passordet du skrev inn, ble avvist av tjeneren. Mulige grunner kan være: Passordet er for kort. Passordet må inneholde tall eller symboler. Passordet må være forskjellig fra tidligere passord.</translation>
 <translation id="5541694225089836610">Administratoren din har slått av handlingen</translation>
@@ -3991,6 +3978,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6850286078059909152">Tekstfarge</translation>
 <translation id="6851497530878285708">Appen er slått på</translation>
 <translation id="6853388645642883916">Oppdatereringsprogrammet er i hvilemodus</translation>
+<translation id="68541483639528434">Lukk andre faner</translation>
 <translation id="6856623341093082836">Konfigurer og juster nøyaktigheten til berøringsskjermen din</translation>
 <translation id="6857699260879628349">Få informasjon om oppsett</translation>
 <translation id="6860097299815761905">Innstillinger for proxy-tjener</translation>
@@ -4103,7 +4091,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7019805045859631636">Høy</translation>
 <translation id="7022562585984256452">Startsiden din er angitt.</translation>
 <translation id="7025190659207909717">Administrering av tjenester for mobildata</translation>
-<translation id="7027891519253193555">Er ikke siden på <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="703001695939087067">Du er i modusen for vindusoversikt. Trykk på fanen for å navigere.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – seriell port er tilkoblet</translation>
@@ -4548,7 +4535,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7684718995427157417">For å lage og teste apper, slå på Android Debug Bridge (ADB). Merk at dette gjør det mulig å installere Android-apper som ikke er verifisert av Google, og enheten må tilbakestilles til fabrikkinnstillingene hvis du vil slå av ADB igjen.</translation>
 <translation id="7685049629764448582">JavaScript-minne</translation>
 <translation id="7685087414635069102">PIN-kode kreves</translation>
-<translation id="7685301384041462804">Forsikre deg om at du stoler på dette nettstedet før du går inn i VR.</translation>
 <translation id="768549422429443215">Legg til språk eller endre rekkefølgen på listen.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Bekreft det nye passordet</translation>
@@ -4947,11 +4933,9 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Nedlasting pågår}other{Nedlastinger pågår}}</translation>
 <translation id="8213449224684199188">Fotomodus er aktivert</translation>
 <translation id="8213577208796878755">Én annen tilgjengelig enhet.</translation>
-<translation id="8213996900880218548">Vil lese dataene på dette nettstedet</translation>
 <translation id="8214489666383623925">Åpne fil</translation>
 <translation id="8214962590150211830">Fjern denne personen</translation>
 <translation id="8217399928341212914">Fortsett blokkeringen av automatisk nedlasting av flere filer</translation>
-<translation id="822519928942492333">Sidespråket du vil oversette</translation>
 <translation id="8225265270453771718">Del et programvindu</translation>
 <translation id="8225753906568652947">Løs inn tilbudene dine</translation>
 <translation id="8226222018808695353">Forbudt</translation>
@@ -5523,7 +5507,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9026731007018893674">last ned</translation>
 <translation id="9026852570893462412">Denne prosessen kan ta noen minutter. Laster ned den virtuelle maskinen.</translation>
 <translation id="9027459031423301635">Åpne link i ny &amp;fane</translation>
-<translation id="9029323097866369874">Vil du tillate <ph name="DOMAIN" /> å gå inn i VR?</translation>
 <translation id="9030515284705930323">Organisasjonen din har ikke slått på Google Play-butikken for kontoen din. Kontakt administratoren din for å få mer informasjon.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Lim inn</translation>
@@ -5567,7 +5550,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9094038138851891550">Ugyldig brukernavn</translation>
 <translation id="9094982973264386462">Fjern</translation>
 <translation id="9095253524804455615">Fjern</translation>
-<translation id="9095388113577226029">Flere språk</translation>
 <translation id="9100610230175265781">Det kreves en passordfrase</translation>
 <translation id="9100765901046053179">Avanserte innstillinger</translation>
 <translation id="9101691533782776290">Start appen</translation>

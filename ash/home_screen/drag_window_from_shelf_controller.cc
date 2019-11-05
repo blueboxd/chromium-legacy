@@ -22,6 +22,7 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
@@ -153,15 +154,23 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
   // If overview is active, update its splitview indicator during dragging if
   // splitview is allowed in current configuration.
   if (overview_controller->InOverviewSession()) {
-    IndicatorState indicator_state = GetIndicatorState(location_in_screen);
+    const SplitViewController::SnapPosition snap_position =
+        GetSnapPosition(location_in_screen);
+    // Pass non_snap_state=kNoDrag so that only snap previews show up.
+    // TODO(crbug.com/1020349): Achieve that effect another way, because this
+    // way causes incorrect animations.
+    SplitViewDragIndicators::WindowDraggingState window_dragging_state =
+        SplitViewDragIndicators::ComputeWindowDraggingState(
+            drag_started_,
+            SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+            snap_position);
     OverviewSession* overview_session = overview_controller->overview_session();
-    overview_session->SetSplitViewDragIndicatorsIndicatorState(
-        indicator_state, location_in_screen);
+    overview_session->SetSplitViewDragIndicatorsWindowDraggingState(
+        window_dragging_state, location_in_screen);
     overview_session->OnWindowDragContinued(
-        window_, gfx::PointF(location_in_screen), indicator_state);
+        window_, gfx::PointF(location_in_screen), window_dragging_state);
 
-    if (indicator_state == IndicatorState::kPreviewAreaLeft ||
-        indicator_state == IndicatorState::kPreviewAreaRight) {
+    if (snap_position != SplitViewController::NONE) {
       // If the dragged window is in snap preview area, make sure overview is
       // visible.
       ShowOverviewDuringOrAfterDrag();
@@ -304,8 +313,9 @@ void DragWindowFromShelfController::OnDragEnded(
     ShowOverviewDuringOrAfterDrag();
 
     OverviewSession* overview_session = overview_controller->overview_session();
-    overview_session->SetSplitViewDragIndicatorsIndicatorState(
-        IndicatorState::kNone, location_in_screen);
+    overview_session->SetSplitViewDragIndicatorsWindowDraggingState(
+        SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+        location_in_screen);
     overview_session->OnWindowDragEnded(
         window_, gfx::PointF(location_in_screen),
         should_drop_window_in_overview,
@@ -407,30 +417,6 @@ DragWindowFromShelfController::GetSnapPosition(
   }
 
   return snap_position;
-}
-
-IndicatorState DragWindowFromShelfController::GetIndicatorState(
-    const gfx::Point& location_in_screen) const {
-  if (!drag_started_)
-    return IndicatorState::kNone;
-
-  if (!ShouldAllowSplitView())
-    return IndicatorState::kNone;
-
-  // if |location_in_screen| is close to the bottom of the screen and is
-  // inside of kReturnToMaximizedThreshold threshold, we do not show the
-  // indicators.
-  if (ShouldRestoreToOriginalBounds(location_in_screen))
-    return IndicatorState::kNone;
-
-  IndicatorState indicator_state =
-      ::ash::GetIndicatorState(GetSnapPosition(location_in_screen));
-  // Do not show drag-to-snap or cannot-snap drag indicator so that the drag is
-  // is less distracting.
-  if (indicator_state == IndicatorState::kDragAreaBoth)
-    indicator_state = IndicatorState::kNone;
-
-  return indicator_state;
 }
 
 bool DragWindowFromShelfController::ShouldRestoreToOriginalBounds(

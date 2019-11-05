@@ -22,7 +22,6 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 import textwrap
 import zipfile
 from xml.etree import ElementTree
@@ -911,14 +910,19 @@ def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
 
+  path = options.arsc_path or options.proto_path
   debug_temp_resources_dir = os.environ.get(_ENV_DEBUG_VARIABLE)
   if debug_temp_resources_dir:
-    debug_temp_resources_dir = os.path.join(debug_temp_resources_dir,
-                                            os.path.basename(options.arsc_path))
-    build_utils.DeleteDirectory(debug_temp_resources_dir)
-    build_utils.MakeDirectory(debug_temp_resources_dir)
+    path = os.path.join(debug_temp_resources_dir, os.path.basename(path))
+    build_utils.DeleteDirectory(path)
+  else:
+    # Use a deterministic temp directory since .pb files embed the absolute
+    # path of resources: crbug.com/939984
+    path = path + '.tmpdir'
+  build_utils.MakeDirectory(path)
 
-  with resource_utils.BuildContext(debug_temp_resources_dir) as build:
+  with resource_utils.BuildContext(
+      temp_dir=path, keep_files=bool(debug_temp_resources_dir)) as build:
     manifest_package_name = _PackageApk(options, build)
 
     # If --shared-resources-whitelist is used, the all resources listed in

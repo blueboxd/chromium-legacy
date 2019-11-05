@@ -51,9 +51,7 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
   // Add input shape.
   node_.AddChild(input_node_);
 
-  // Add rendering subtree. Hit testing is disabled to prevent GPU process from
-  // receiving input.
-  render_node_.SetHitTestBehavior(fuchsia::ui::gfx::HitTestBehavior::kSuppress);
+  // Add rendering subtree.
   node_.AddChild(render_node_);
 
   delegate_->OnAcceleratedWidgetAvailable(window_id_);
@@ -63,14 +61,22 @@ ScenicWindow::~ScenicWindow() {
   manager_->RemoveWindow(window_id_, this);
 }
 
-void ScenicWindow::AttachSurface(
-    fuchsia::ui::gfx::ExportToken surface_export_token) {
-  scenic::EntityNode export_node(&scenic_session_);
+void ScenicWindow::AttachSurfaceView(
+    fuchsia::ui::views::ViewHolderToken token) {
+  scenic::ViewHolder surface_view_holder(&scenic_session_, std::move(token),
+                                         "chromium window surface");
+
+  // Configure the ViewHolder not to be focusable, or hit-testable, to ensure
+  // that it cannot receive input.
+  fuchsia::ui::gfx::ViewProperties view_properties;
+  view_properties.focus_change = false;
+  surface_view_holder.SetViewProperties(std::move(view_properties));
+  surface_view_holder.SetHitTestBehavior(
+      fuchsia::ui::gfx::HitTestBehavior::kSuppress);
 
   render_node_.DetachChildren();
-  render_node_.AddChild(export_node);
+  render_node_.Attach(surface_view_holder);
 
-  export_node.Export(std::move(surface_export_token.value));
   scenic_session_.Present(
       /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }

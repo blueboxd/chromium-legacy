@@ -414,16 +414,15 @@ void CloudExternalDataManagerBase::OnPolicyStoreLoaded() {
     const base::DictionaryValue* dict = NULL;
     std::string url;
     std::string hex_hash;
-    std::vector<uint8_t> hash;
+    std::string hash;
     if (it.second.value && it.second.value->GetAsDictionary(&dict) &&
         dict->GetStringWithoutPathExpansion("url", &url) &&
         dict->GetStringWithoutPathExpansion("hash", &hex_hash) &&
         !url.empty() && !hex_hash.empty() &&
-        base::HexStringToBytes(hex_hash, &hash)) {
+        base::HexStringToString(hex_hash, &hash)) {
       // Add the external data reference to |metadata| if it is valid (URL and
       // hash are not empty, hash can be decoded as a hex string).
-      (*metadata)[it.first] =
-          MetadataEntry(url, std::string(hash.begin(), hash.end()));
+      (*metadata)[it.first] = MetadataEntry(url, hash);
     }
   }
 

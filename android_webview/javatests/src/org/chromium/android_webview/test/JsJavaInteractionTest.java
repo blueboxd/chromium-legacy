@@ -198,7 +198,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListenerAfterPageLoadWontAffectCurrentPage() throws Throwable {
         loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
 
@@ -215,7 +215,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddTheSameWebMessageListenerForDifferentJsObjectsWorks() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
         addWebMessageListenerOnUiThread(
@@ -235,7 +235,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testFragmentNavigationWontDoJsInjection() throws Throwable {
         String url = loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
 
@@ -256,7 +256,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListenerAffectsRendererInitiatedNavigation() throws Throwable {
         // TODO(crbug.com/969842): We'd either replace the following html file with a file contains
         // no JavaScript code or add a test to ensure that evaluateJavascript() won't
@@ -293,7 +293,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListenerWontAffectOtherAwContents() throws Throwable {
         // Create another AwContents object.
         final TestAwContentsClient awContentsClient = new TestAwContentsClient();
@@ -325,7 +325,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListenerAllowsCertainUrlWorksWithIframe() throws Throwable {
         final String frameUrl = mTestServer.getURL(POST_MESSAGE_SIMPLE_HTML);
         final String html = createCrossOriginAccessTestPageHtml(frameUrl);
@@ -349,7 +349,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testRemoveWebMessageListener_preventInjectionForNextPageLoad() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
@@ -373,7 +373,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testRemoveWebMessageListener_cutJsJavaMappingImmediately() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
@@ -400,7 +400,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testRemoveWebMessageListener_removeWithNoAddWebMessageListener() throws Throwable {
         // Call removeWebMessageListener() without addWebMessageListener() shouldn't fail.
         removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
@@ -410,7 +410,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testRemoveWebMessageListener_removeBeforeLoadPage() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
         removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
@@ -423,7 +423,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testRemoveWebMessageListener_extraRemove() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
         removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
@@ -438,7 +438,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAllowedOriginsWorksForVariousBaseUrls() throws Throwable {
         // Set a typical rule.
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME,
@@ -506,7 +506,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testDontAllowAddWebMessageLitenerWithTheSameJsObjectName() {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
         try {
@@ -525,7 +525,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListener_SameOrigins() throws Throwable {
         final String[] allowedOriginRules =
                 new String[] {"https://www.example.com", "https://www.allowed.com"};
@@ -552,7 +552,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListener_OverlappingSetOfOrigins() throws Throwable {
         final String[] allowedOriginRules1 =
                 new String[] {"https://www.example.com", "https://www.allowed.com"};
@@ -596,7 +596,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListener_NonOverlappingSetOfOrigins() throws Throwable {
         final String[] allowedOriginRules1 =
                 new String[] {"https://www.example.com", "https://www.allowed.com"};
@@ -628,7 +628,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testJsReplyProxyWorks() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
@@ -651,7 +651,7 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testJsReplyProxyReplyToTheCorrectJsObject() throws Throwable {
         final TestWebMessageListener webMessageListener2 = new TestWebMessageListener();
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
@@ -662,20 +662,12 @@ public class JsJavaInteractionTest {
 
         // Listener for myObject.
         final String listener1 = "function (event) {"
-                + "  if (window.listenerResult1) {"
-                + "    window.listenerResult1 += event.data;"
-                + "  } else {"
-                + "    window.listenerResult1 = event.data;"
-                + "  }"
+                + "  " + JS_OBJECT_NAME + ".postMessage('ack1' + event.data);"
                 + "}";
 
         // Listener for myObject2.
         final String listener2 = "function (event) {"
-                + "  if (window.listenerResult2) {"
-                + "    window.listenerResult2 += event.data;"
-                + "  } else {"
-                + "    window.listenerResult2 = event.data;"
-                + "  }"
+                + "  " + JS_OBJECT_NAME_2 + ".postMessage('ack2' + event.data);"
                 + "}";
 
         // Add two different js objects.
@@ -693,19 +685,16 @@ public class JsJavaInteractionTest {
 
         Assert.assertEquals(message, data2.mMessage);
 
-        final String hello1 = "hello1";
-        final String hello2 = "hello2";
         // Targeting myObject.
-        data.mReplyProxy.postMessage(hello1);
+        data.mReplyProxy.postMessage(HELLO);
         // Targeting myObject2.
-        data2.mReplyProxy.postMessage(hello2);
+        data2.mReplyProxy.postMessage(HELLO);
 
-        Assert.assertEquals(hello1,
-                getJsObjectValue(
-                        "window.listenerResult1", mActivityTestRule, mAwContents, mContentsClient));
-        Assert.assertEquals(hello2,
-                getJsObjectValue(
-                        "window.listenerResult2", mActivityTestRule, mAwContents, mContentsClient));
+        TestWebMessageListener.Data replyData1 = mListener.waitForOnPostMessage();
+        TestWebMessageListener.Data replyData2 = webMessageListener2.waitForOnPostMessage();
+
+        Assert.assertEquals("ack1" + HELLO, replyData1.mMessage);
+        Assert.assertEquals("ack2" + HELLO, replyData2.mMessage);
 
         Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
         Assert.assertTrue(webMessageListener2.hasNoMoreOnPostMessage());
@@ -751,19 +740,21 @@ public class JsJavaInteractionTest {
         JsReplyProxy proxy = mListener.waitForOnPostMessage().mReplyProxy;
 
         final String listener1 = "function (event) {"
-                + "  if (window.listenerResult1) {"
-                + "    window.listenerResult1 += event.data;"
+                + "  if (window.receivedCount1) {"
+                + "    window.receivedCount1++;"
                 + "  } else {"
-                + "    window.listenerResult1 = event.data;"
+                + "    window.receivedCount1 = 1;"
                 + "  }"
+                + "  " + JS_OBJECT_NAME + ".postMessage('ack1:' + window.receivedCount1);"
                 + "}";
 
         final String listener2 = "function (event) {"
-                + "  if (window.listenerResult2) {"
-                + "    window.listenerResult2 += event.data;"
+                + "  if (window.receivedCount2) {"
+                + "    window.receivedCount2++;"
                 + "  } else {"
-                + "    window.listenerResult2 = event.data;"
+                + "    window.receivedCount2 = 1;"
                 + "  }"
+                + "  " + JS_OBJECT_NAME + ".postMessage('ack2:' + window.receivedCount2);"
                 + "}";
 
         addEventListener(listener1, "listener1", JS_OBJECT_NAME, mActivityTestRule, mAwContents,
@@ -772,35 +763,31 @@ public class JsJavaInteractionTest {
                 mContentsClient);
 
         // Post message to test both listeners receive message.
-        final String message = "testListener";
-        proxy.postMessage(message);
+        proxy.postMessage(HELLO);
 
-        Assert.assertEquals(message,
-                getJsObjectValue(
-                        "window.listenerResult1", mActivityTestRule, mAwContents, mContentsClient));
-        Assert.assertEquals(message,
-                getJsObjectValue(
-                        "window.listenerResult2", mActivityTestRule, mAwContents, mContentsClient));
+        TestWebMessageListener.Data replyData1 = mListener.waitForOnPostMessage();
+        TestWebMessageListener.Data replyData2 = mListener.waitForOnPostMessage();
+
+        Assert.assertEquals("ack1:1", replyData1.mMessage);
+        Assert.assertEquals("ack2:1", replyData2.mMessage);
 
         removeEventListener(
                 "listener2", JS_OBJECT_NAME, mActivityTestRule, mAwContents, mContentsClient);
 
         // Post message again to test if remove works.
-        proxy.postMessage(message);
+        proxy.postMessage(HELLO);
 
         // listener 1 should add message again.
-        Assert.assertEquals(message + message,
-                getJsObjectValue(
-                        "window.listenerResult1", mActivityTestRule, mAwContents, mContentsClient));
-        // listener 2 result should remain the same.
-        Assert.assertEquals(message,
-                getJsObjectValue(
-                        "window.listenerResult2", mActivityTestRule, mAwContents, mContentsClient));
+        TestWebMessageListener.Data replyData3 = mListener.waitForOnPostMessage();
+        Assert.assertEquals("ack1:2", replyData3.mMessage);
+
+        // Should be no more messages.
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
     }
 
     @Test
     @MediumTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testJsObjectRemoveOnMessage() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
@@ -823,6 +810,40 @@ public class JsJavaInteractionTest {
         Assert.assertEquals("null",
                 mActivityTestRule.executeJavaScriptAndWaitForResult(
                         mAwContents, mContentsClient, JS_OBJECT_NAME + ".onmessage"));
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testPostMessage_JsObjectName_Number() throws Throwable {
+        checkInjectAndAccessJsObjectNameAsWindowProperty("123");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testPostMessage_JsObjectName_Keyword() throws Throwable {
+        checkInjectAndAccessJsObjectNameAsWindowProperty("var");
+    }
+
+    private void checkInjectAndAccessJsObjectNameAsWindowProperty(String jsObjName)
+            throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, jsObjName, new String[] {"*"}, mListener);
+
+        String html = "<html><head><script>window['" + jsObjName + "'].postMessage('Hello');"
+                + "</script></head><body><div>postMessage</div></body></html>";
+        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
+                mContentsClient.getOnPageFinishedHelper(), html, "text/html", false,
+                "http://www.google.com", null);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        Assert.assertEquals("http://www.google.com", data.mSourceOrigin.toString());
+        Assert.assertEquals(HELLO, data.mMessage);
+        Assert.assertTrue(data.mIsMainFrame);
+        Assert.assertEquals(0, data.mPorts.length);
 
         Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
     }
@@ -889,13 +910,6 @@ public class JsJavaInteractionTest {
             final TestAwContentsClient contentsClient) throws Throwable {
         String code = jsObjectName + ".removeEventListener('message', " + funcName + ")";
         rule.executeJavaScriptAndWaitForResult(awContents, contentsClient, code);
-    }
-
-    private static String getJsObjectValue(final String jsObjectName, final AwActivityTestRule rule,
-            final AwContents awContents, final TestAwContentsClient contentsClient)
-            throws Throwable {
-        return rule.maybeStripDoubleQuotes(
-                rule.executeJavaScriptAndWaitForResult(awContents, contentsClient, jsObjectName));
     }
 
     private static String parseOrigin(String url) {

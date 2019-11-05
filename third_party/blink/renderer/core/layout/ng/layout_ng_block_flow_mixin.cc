@@ -283,17 +283,25 @@ void LayoutNGBlockFlowMixin<Base>::Paint(const PaintInfo& paint_info) const {
     }
   }
 
+  // |NGBoxFragmentPainter| currently doesn't support column rules.
+  if (UNLIKELY(Base::MultiColumnFlowThread())) {
+    Base::Paint(paint_info);
+    return;
+  }
+
+  if (const NGPaintFragment* paint_fragment = PaintFragment()) {
+    NGBoxFragmentPainter(*paint_fragment).Paint(paint_info);
+    return;
+  }
+
   if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentPaintEnabled())) {
     if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
-      NGBoxFragmentPainter(*fragment, PaintFragment()).Paint(paint_info);
+      NGBoxFragmentPainter(*fragment).Paint(paint_info);
       return;
     }
   }
 
-  if (const NGPaintFragment* paint_fragment = PaintFragment())
-    NGBoxFragmentPainter(*paint_fragment).Paint(paint_info);
-  else
-    LayoutBlockFlow::Paint(paint_info);
+  Base::Paint(paint_info);
 }
 
 template <typename Base>

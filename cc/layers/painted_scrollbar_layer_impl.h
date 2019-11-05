@@ -43,8 +43,7 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   void SetForwardButtonRect(gfx::Rect forward_button_rect);
   void SetThumbThickness(int thumb_thickness);
   void SetThumbLength(int thumb_length);
-  void SetTrackStart(int track_start);
-  void SetTrackLength(int track_length);
+  void SetTrackRect(gfx::Rect track_rect);
 
   void set_track_ui_resource_id(UIResourceId uid) {
     track_ui_resource_id_ = uid;
@@ -97,10 +96,9 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   bool supports_drag_snap_back_;
   int thumb_thickness_;
   int thumb_length_;
-  int track_start_;
-  int track_length_;
   gfx::Rect back_button_rect_;
   gfx::Rect forward_button_rect_;
+  gfx::Rect track_rect_;
 };
 
 }  // namespace cc

@@ -411,8 +411,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   void SetUp() override {
     // OS clipboard is a global resource, which causes flakiness when unit tests
     // run in parallel. So, use a per-instance test clipboard.
-    ui::Clipboard::SetClipboardForCurrentThread(
-        std::make_unique<ui::TestClipboard>());
+    ui::TestClipboard::CreateForCurrentThread();
     ViewsTestBase::SetUp();
   }
 

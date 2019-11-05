@@ -65,7 +65,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                                       public ShellObserver,
                                       public SplitViewObserver,
                                       public OverviewObserver,
-                                      public HotseatWidget::Observer,
                                       public ::wm::ActivationChangeObserver,
                                       public LockStateObserver,
                                       public WmDefaultLayoutManager,
@@ -121,7 +120,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void ProcessGestureEventOfAutoHideShelf(ui::GestureEvent* event,
                                           aura::Window* target);
 
-  // Handles events that are detected while the hotseat is extended in in-app
+  // Handles events that are detected while the hotseat is kExtended in in-app
   // shelf.
   void ProcessGestureEventOfInAppHotseat(ui::GestureEvent* event,
                                          aura::Window* target);
@@ -188,9 +187,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
   void OnOverviewModeEnded() override;
-
-  // HotseatWidget::Observer:
-  void OnHotseatStateChanged() override;
 
   // AppListControllerObserver:
   void OnAppListVisibilityWillChange(bool shown, int64_t display_id) override;

@@ -285,8 +285,6 @@ NET_EXPORT_PRIVATE bool ParseOCSPResponse(const der::Input& raw_tlv,
 //        the |this_update| field in OCSPSingleResponse. Responses older than
 //        |max_age| will be considered invalid.
 //  * |response_details|: Additional details about failures.
-//      TODO(eroman): This is only being used for logging of Expect-Staple, can
-//      remove if that gets pulled out.
 NET_EXPORT OCSPRevocationStatus CheckOCSP(
     base::StringPiece raw_response,
     base::StringPiece certificate_der,

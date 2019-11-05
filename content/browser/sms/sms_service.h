@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "content/browser/sms/sms_provider.h"
+#include "content/browser/sms/sms_queue.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -21,9 +21,10 @@
 namespace content {
 
 class RenderFrameHost;
+class SmsFetcher;
 
 // SmsService handles mojo connections from the renderer, observing the incoming
-// SMS messages from an SmsProvider.
+// SMS messages from an SmsFetcher.
 // In practice, it is owned and managed by a RenderFrameHost. It accomplishes
 // that via subclassing FrameServiceBase, which observes the lifecycle of a
 // RenderFrameHost and manages it own memory.
@@ -31,28 +32,27 @@ class RenderFrameHost;
 // request.
 class CONTENT_EXPORT SmsService
     : public FrameServiceBase<blink::mojom::SmsReceiver>,
-      public content::SmsProvider::Observer {
+      public SmsFetcher::Subscriber {
  public:
-  static void Create(SmsProvider*,
+  static void Create(SmsFetcher*,
                      RenderFrameHost*,
                      mojo::PendingReceiver<blink::mojom::SmsReceiver>);
 
-  SmsService(SmsProvider*,
+  SmsService(SmsFetcher*,
              RenderFrameHost*,
              mojo::PendingReceiver<blink::mojom::SmsReceiver>);
-  SmsService(SmsProvider*,
+  SmsService(SmsFetcher*,
              const url::Origin&,
              RenderFrameHost*,
              mojo::PendingReceiver<blink::mojom::SmsReceiver>);
   ~SmsService() override;
 
-  // content::SmsProvider::Observer:
-  bool OnReceive(const url::Origin&,
-                 const std::string& one_time_code,
-                 const std::string& sms) override;
-
   // blink::mojom::SmsReceiver:
   void Receive(ReceiveCallback) override;
+
+  // content::SmsQueue::Subscriber
+  void OnReceive(const std::string& one_time_code,
+                 const std::string& sms) override;
 
  private:
   void OpenInfoBar(const std::string& one_time_code);
@@ -64,10 +64,10 @@ class CONTENT_EXPORT SmsService
   // Called when the user manually dismisses the infobar.
   void OnCancel();
 
-  // |sms_provider_| is safe because all instances of SmsProvider are owned
-  // by a SmsKeyedService, which is owned by a Profile, which transitively
-  // owns SmsServices.
-  SmsProvider* sms_provider_;
+  // |fetcher_| is safe because all instances of SmsFetcher are owned
+  // by the browser context, which transitively (through RenderFrameHost) owns
+  // and outlives this class.
+  SmsFetcher* fetcher_;
 
   const url::Origin origin_;
 

@@ -36,7 +36,7 @@ if (window.internals) {
     left: 200px;
     background: blue;
     /* Without this, when _not_ composited, the reflected scrollbar disappears. See crbug.com/396775 */
-    transform: translateZ(0);
+    will-change: transform;
 }
 
 #scrolled {

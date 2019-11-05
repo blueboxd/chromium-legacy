@@ -680,6 +680,17 @@ void PictureLayerImpl::UpdateRasterSource(
         SetPaintWorkletInputs({});
       }
     }
+
+    // If the MSAA sample count has changed, we need to re-raster the complete
+    // layer.
+    if (raster_source_ && raster_source_->GetDisplayItemList() &&
+        raster_source->GetDisplayItemList() &&
+        layer_tree_impl()->GetMSAASampleCountForRaster(
+            raster_source_->GetDisplayItemList()) !=
+            layer_tree_impl()->GetMSAASampleCountForRaster(
+                raster_source->GetDisplayItemList())) {
+      new_invalidation->Union(gfx::Rect(raster_source->GetSize()));
+    }
   }
 
   // The |raster_source_| is initially null, so have to check for that for the

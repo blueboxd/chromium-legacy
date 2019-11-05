@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,14 +16,13 @@
 #include "net/url_request/url_fetcher.h"
 
 using net::HttpRequestHeaders;
-using net::URLRequestStatus;
 
 namespace {
 
 const char kPublicTopicNameKey[] = "publicTopicName";
 const char kPrivateTopicNameKey[] = "privateTopicName";
 
-const std::string* GetTopicName(base::Value& value) {
+const std::string* GetTopicName(const base::Value& value) {
   if (!value.is_dict())
     return nullptr;
   if (value.FindBoolKey("isPublic").value_or(false))
@@ -164,7 +162,7 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
     RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_,
                         net_error, response_code);
     std::move(request_completed_callback_)
-        .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
+        .Run(Status(StatusCode::FAILED, base::StringPrintf("Body missing")),
              std::string());
     return;
   }
@@ -193,7 +191,8 @@ void PerUserTopicRegistrationRequest::OnJsonParse(
   } else {
     RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
     std::move(request_completed_callback_)
-        .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
+        .Run(Status(StatusCode::FAILED,
+                    base::StringPrintf("Missing topic name")),
              std::string());
   }
 }
@@ -213,7 +212,7 @@ PerUserTopicRegistrationRequest::Builder::Build() const {
     case SUBSCRIBE:
       url = base::StringPrintf(
           "%s/v1/perusertopics/%s/rel/topics/?subscriber_token=%s",
-          scope_.c_str(), project_id_.c_str(), token_.c_str());
+          scope_.c_str(), project_id_.c_str(), instance_id_token_.c_str());
       break;
     case UNSUBSCRIBE:
       std::string public_param;
@@ -223,7 +222,7 @@ PerUserTopicRegistrationRequest::Builder::Build() const {
       url = base::StringPrintf(
           "%s/v1/perusertopics/%s/rel/topics/%s?%ssubscriber_token=%s",
           scope_.c_str(), project_id_.c_str(), topic_.c_str(),
-          public_param.c_str(), token_.c_str());
+          public_param.c_str(), instance_id_token_.c_str());
       break;
   }
   GURL full_url(url);
@@ -248,8 +247,9 @@ PerUserTopicRegistrationRequest::Builder::Build() const {
 }
 
 PerUserTopicRegistrationRequest::Builder&
-PerUserTopicRegistrationRequest::Builder::SetToken(const std::string& token) {
-  token_ = token;
+PerUserTopicRegistrationRequest::Builder::SetInstanceIdToken(
+    const std::string& token) {
+  instance_id_token_ = token;
   return *this;
 }
 
@@ -268,7 +268,7 @@ PerUserTopicRegistrationRequest::Builder::SetAuthenticationHeader(
 
 PerUserTopicRegistrationRequest::Builder&
 PerUserTopicRegistrationRequest::Builder::SetPublicTopicName(
-    const std::string& topic) {
+    const Topic& topic) {
   topic_ = topic;
   return *this;
 }
@@ -360,6 +360,8 @@ PerUserTopicRegistrationRequest::Builder::BuildURLFetcher(
   }
   request->url = url;
   request->headers = headers;
+  // TODO(treib): Should we set request->credentials_mode to kOmit, to match
+  // "cookies_allowed: NO" above?
 
   std::unique_ptr<network::SimpleURLLoader> url_loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);

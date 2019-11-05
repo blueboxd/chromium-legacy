@@ -60,6 +60,7 @@ public abstract class XrTestFramework {
     public static final int POLL_CHECK_INTERVAL_LONG_MS = 100;
     public static final int POLL_TIMEOUT_SHORT_MS = 1000;
     public static final int POLL_TIMEOUT_LONG_MS = 10000;
+    public static final boolean DEBUG_LOGS = false;
 
     // The "3" corresponds to the "Mobile Bookmarks" folder - omitting a particular folder
     // automatically redirects to that folder, and not having it in the URL causes issues with the
@@ -120,9 +121,12 @@ public abstract class XrTestFramework {
      * @return The return value of the JavaScript.
      */
     public static String runJavaScriptOrFail(String js, int timeout, WebContents webContents) {
+        if (DEBUG_LOGS) Log.i(TAG, "runJavaScriptOrFail " + js);
         try {
-            return JavaScriptUtils.executeJavaScriptAndWaitForResult(
+            String ret = JavaScriptUtils.executeJavaScriptAndWaitForResult(
                     webContents, js, timeout, TimeUnit.MILLISECONDS);
+            if (DEBUG_LOGS) Log.i(TAG, "runJavaScriptOrFail result=" + ret);
+            return ret;
         } catch (TimeoutException e) {
             Assert.fail("Fatal interruption or timeout running JavaScript '" + js
                     + "': " + e.toString());
@@ -154,12 +158,16 @@ public abstract class XrTestFramework {
      */
     public static boolean pollJavaScriptBoolean(
             final String boolExpression, int timeoutMs, final WebContents webContents) {
+        if (DEBUG_LOGS) Log.i(TAG, "pollJavaScriptBoolean " + boolExpression);
         try {
             CriteriaHelper.pollInstrumentationThread(() -> {
                 String result = "false";
                 try {
                     result = JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
                             boolExpression, POLL_CHECK_INTERVAL_SHORT_MS, TimeUnit.MILLISECONDS);
+                    if (DEBUG_LOGS) {
+                        Log.i(TAG, "pollJavaScriptBoolean " + boolExpression + " => " + result);
+                    }
                 } catch (TimeoutException e) {
                     // Expected to happen regularly, do nothing
                 }
@@ -183,11 +191,15 @@ public abstract class XrTestFramework {
      */
     public static boolean pollJavaScriptBooleanInFrame(
             final String boolExpression, int timeoutMs, final WebContents webContents) {
+        if (DEBUG_LOGS) Log.i(TAG, "pollJavaScriptBooleanInFrame " + boolExpression);
         try {
             CriteriaHelper.pollInstrumentationThread(() -> {
                 String result = "false";
                 result = runJavaScriptInFrameInternal(boolExpression, POLL_CHECK_INTERVAL_SHORT_MS,
                         webContents, false /* failOnTimeout */);
+                if (DEBUG_LOGS) {
+                    Log.i(TAG, "pollJavaScriptBooleanInFrame " + boolExpression + " => " + result);
+                }
                 return Boolean.parseBoolean(result);
             }, "Polling timed out", timeoutMs, POLL_CHECK_INTERVAL_LONG_MS);
         } catch (AssertionError e) {
@@ -234,8 +246,11 @@ public abstract class XrTestFramework {
      */
     public static void executeStepAndWait(String stepFunction, WebContents webContents) {
         // Run the step and block
+        if (DEBUG_LOGS) Log.i(TAG, "executeStepAndWait " + stepFunction);
         JavaScriptUtils.executeJavaScript(webContents, stepFunction);
+        if (DEBUG_LOGS) Log.i(TAG, "executeStepAndWait ...wait");
         waitOnJavaScriptStep(webContents);
+        if (DEBUG_LOGS) Log.i(TAG, "executeStepAndWait ...done");
     }
 
     /**
@@ -245,6 +260,7 @@ public abstract class XrTestFramework {
      * @param webContents The WebContents for the tab the JavaScript step is in.
      */
     public static void waitOnJavaScriptStep(WebContents webContents) {
+        if (DEBUG_LOGS) Log.i(TAG, "waitOnJavaScriptStep");
         // Make sure we aren't trying to wait on a JavaScript test step without the code to do so.
         Assert.assertTrue("Attempted to wait on a JavaScript step without the code to do so. You "
                         + "either forgot to import webxr_e2e.js or are incorrectly using a "

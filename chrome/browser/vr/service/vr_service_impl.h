@@ -63,7 +63,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   void SupportsSession(
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::VRService::SupportsSessionCallback callback) override;
-  void ExitPresent() override;
+  void ExitPresent(ExitPresentCallback on_exited) override;
   void SetFramesThrottled(bool throttled) override;
   // device::mojom::VRService WebVR compatibility functions
   void GetImmersiveVRDisplayInfo(

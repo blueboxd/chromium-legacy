@@ -63,7 +63,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
-  std::unique_ptr<views::View> CreateFootnoteView() override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
@@ -107,6 +106,9 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   // Sets the bookmark name and parent of the node.
   void ApplyEdits();
 
+  // Creates the signin promo view, if there should be one.
+  std::unique_ptr<views::View> CreateSigninPromoView();
+
   // The bookmark bubble, if we're showing one.
   static BookmarkBubbleView* bookmark_bubble_;
 
@@ -135,9 +137,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   // The regular bookmark bubble contents, with all the edit fields and dialog
   // buttons. TODO(tapted): Move the buttons to the DialogClientView.
   views::View* bookmark_contents_view_ = nullptr;
-
-  // Footnote view.
-  views::View* footnote_view_ = nullptr;
 
   // When the destructor is invoked should the bookmark be removed?
   bool remove_bookmark_ = false;

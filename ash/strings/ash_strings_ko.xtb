@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">방해 금지 모드가 사용 설정되어 있습니다.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{알림 설정을 표시합니다. 앱 1개의 알림이 사용 중지되어 있습니다.}other{알림 설정을 표시합니다. 앱 #개의 알림이 사용 중지되어 있습니다.}}</translation>
 <translation id="1525508553941733066">닫기</translation>
-<translation id="1537254971476575106">전체화면 돋보기</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1546492247443594934">데스크 2</translation>
 <translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">키보드 레이아웃을 전환하려면 <ph name="KEYBOARD_SHORTCUT" />을(를) 누르세요.</translation>
 <translation id="2501920221385095727">고정키</translation>
 <translation id="2509468283778169019">CAPS LOCK이 켜져 있습니다.</translation>
-<translation id="2532589005999780174">고대비 모드</translation>
 <translation id="2542089167727451762">프로필 이미지 탭</translation>
 <translation id="255671100581129685">공개 세션에서는 Google 어시스턴트를 사용할 수 없습니다.</translation>
 <translation id="256712445991462162">고정 돋보기</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">언어</translation>
 <translation id="5313326810920013265">블루투스 설정</translation>
 <translation id="5331975486040154427">USB-C 기기(좌측 후면 포트)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">시도 횟수가 너무 많음</translation>
 <translation id="5397578532367286026">관리자(<ph name="MANAGER_EMAIL" />)는 chrome.com에서 해당 사용자의 사용 및 방문 기록을 검토할 수 있습니다.</translation>
 <translation id="5430931332414098647">인스턴트 테더링</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">현재 사용자 계정에서 Google 어시스턴트를 사용할 수 없습니다.</translation>
 <translation id="5691772641933328258">지문을 인식할 수 없음</translation>
 <translation id="5710450975648804523">방해 금지 모드 사용 중</translation>
+<translation id="573413375004481890">사용 중인 일부 디스플레이가 기기에서 지원되지 않아 1개 디스플레이의 연결이 끊김</translation>
 <translation id="574392208103952083">보통</translation>
 <translation id="5744083938413354016">탭 드래그</translation>
 <translation id="5750765938512549687">블루투스가 사용 중지됨</translation>
@@ -481,7 +481,6 @@
 <translation id="7984197416080286869">지문 인식을 너무 많이 시도함</translation>
 <translation id="7994370417837006925">멀티 로그인</translation>
 <translation id="8000066093800657092">네트워크 없음</translation>
-<translation id="8029241286966751120">전체화면 돋보기가 사용 설정되었습니다. 사용 중지하려면 다시 Ctrl+Search+M을 누르세요.</translation>
 <translation id="8030169304546394654">연결 끊김</translation>
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
 <translation id="8061464966246066292">고대비</translation>
@@ -506,7 +505,6 @@
 <translation id="8388750414311082622">마지막 데스크는 삭제할 수 없습니다.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" />의 옵션 메뉴</translation>
 <translation id="8394567579869570560">부모님이 이 기기를 잠갔습니다.</translation>
-<translation id="8406981827175133772">전체화면 돋보기</translation>
 <translation id="8425213833346101688">변경</translation>
 <translation id="8427213022735114808">음성기록을 사용하면 모든 텍스트 입력란에서 음성 입력 기능을 지원하기 위해 Google에 음성이 전송됩니다.</translation>
 <translation id="8428213095426709021">설정</translation>

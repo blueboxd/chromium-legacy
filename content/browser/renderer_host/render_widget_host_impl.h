@@ -109,6 +109,7 @@ class BrowserAccessibilityManager;
 class FlingSchedulerBase;
 class InputRouter;
 class MockRenderWidgetHost;
+class PeakGpuMemoryTracker;
 class RenderViewHost;
 class RenderWidgetHostOwnerDelegate;
 class SyntheticGestureController;
@@ -1306,6 +1307,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // This timer resets |pending_user_activation_counter_| after a short delay.
   // See comments on Add/ClearPendingUserActivation().
   base::OneShotTimer pending_user_activation_timer_;
+
+  std::unique_ptr<PeakGpuMemoryTracker> scroll_peak_gpu_mem_tracker_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 

@@ -17,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -55,6 +56,7 @@
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
+#include "content/test/fake_network_url_loader_factory.h"
 #include "ipc/ipc_security_test_util.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -3067,6 +3069,109 @@ IN_PROC_BROWSER_TEST_P(NavigationCookiesBrowserTest, CookiesInheritedDataUrl) {
   EXPECT_TRUE(ExecJs(sub_document_2, JsReplace("fetch($1)", url_response_2)));
   response_2.WaitForRequest();
   EXPECT_EQ(0u, response_2.http_request()->headers.count("Cookie"));
+}
+
+// Tests for validating URL rewriting behavior like chrome://history to
+// chrome-native://history.
+class NavigationUrlRewriteBrowserTest : public NavigationBaseBrowserTest {
+ protected:
+  static constexpr const char* kRewriteURL = "http://foo.com/rewrite";
+  static constexpr const char* kNoAccessScheme = "no-access";
+  static constexpr const char* kNoAccessURL = "no-access://testing/";
+
+  class BrowserClient : public ContentBrowserClient {
+   public:
+    void BrowserURLHandlerCreated(BrowserURLHandler* handler) override {
+      handler->AddHandlerPair(RewriteUrl,
+                              BrowserURLHandlerImpl::null_handler());
+    }
+
+    void RegisterNonNetworkNavigationURLLoaderFactories(
+        int frame_tree_node_id,
+        NonNetworkURLLoaderFactoryMap* factories) override {
+      auto url_loader_factory = std::make_unique<FakeNetworkURLLoaderFactory>(
+          "HTTP/1.1 200 OK\nContent-Type: text/html\n\n", "This is a test",
+          /* network_accessed */ true, net::OK);
+      factories->emplace(std::string(kNoAccessScheme),
+                         std::move(url_loader_factory));
+    }
+
+    bool ShouldAssignSiteForURL(const GURL& url) override {
+      return !url.SchemeIs(kNoAccessScheme);
+    }
+
+    static bool RewriteUrl(GURL* url, BrowserContext* browser_context) {
+      if (*url == GURL(kRewriteURL)) {
+        *url = GURL(kNoAccessURL);
+        return true;
+      }
+      return false;
+    }
+  };
+
+  void SetUp() override {
+    url::AddStandardScheme(kNoAccessScheme, url::SCHEME_WITH_HOST);
+    url::AddNoAccessScheme(kNoAccessScheme);
+
+    NavigationBaseBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    NavigationBaseBrowserTest::SetUpOnMainThread();
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    browser_client_ = std::make_unique<BrowserClient>();
+    old_browser_client_ = SetBrowserClientForTesting(browser_client_.get());
+  }
+
+  void TearDownOnMainThread() override {
+    NavigationBaseBrowserTest::TearDownOnMainThread();
+    SetBrowserClientForTesting(old_browser_client_);
+  }
+
+  GURL GetRewriteToNoAccessURL() const { return GURL(kRewriteURL); }
+
+ private:
+  std::unique_ptr<BrowserClient> browser_client_;
+  ContentBrowserClient* old_browser_client_;
+};
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         NavigationUrlRewriteBrowserTest,
+                         ::testing::Bool());
+
+// Tests navigating to a URL that gets rewritten to a "no access" URL. This
+// mimics the behavior of navigating to special URLs like chrome://newtab and
+// chrome://history which get rewritten to "no access" chrome-native:// URLs.
+IN_PROC_BROWSER_TEST_P(NavigationUrlRewriteBrowserTest, RewriteToNoAccess) {
+  // Perform an initial navigation.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    GURL url = embedded_test_server()->GetURL("foo.com", "/title1.html");
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    EXPECT_EQ(url, observer.last_navigation_url());
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_FALSE(observer.last_initiator_origin().has_value());
+  }
+
+  // Navigate to the URL that will get rewritten to a "no access" URL.
+  {
+    auto* web_contents = shell()->web_contents();
+    TestNavigationObserver observer(web_contents);
+
+    // Note: We are using LoadURLParams here because we need to have the
+    // initiator_origin set and NavigateToURL() does not do that.
+    NavigationController::LoadURLParams params(GetRewriteToNoAccessURL());
+    params.initiator_origin =
+        web_contents->GetMainFrame()->GetLastCommittedOrigin();
+    web_contents->GetController().LoadURLWithParams(params);
+    web_contents->Focus();
+    observer.Wait();
+
+    EXPECT_EQ(GURL(kNoAccessURL), observer.last_navigation_url());
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_TRUE(observer.last_initiator_origin().has_value());
+  }
 }
 
 }  // namespace content

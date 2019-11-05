@@ -47,12 +47,10 @@ class SharingFCMSender {
   // Sends a |message| to device identified by |target|, which expires
   // after |time_to_live| seconds. |callback| will be invoked with message_id if
   // asynchronous operation succeeded, or base::nullopt if operation failed.
-  // |sender_device_info| must be provided except for sending ack messages.
   virtual void SendMessageToDevice(
       syncer::DeviceInfo::SharingInfo target,
       base::TimeDelta time_to_live,
       SharingMessage message,
-      std::unique_ptr<syncer::DeviceInfo> sender_device_info,
       SendMessageCallback callback);
 
  private:

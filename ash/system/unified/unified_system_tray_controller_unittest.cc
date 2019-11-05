@@ -123,6 +123,8 @@ TEST_F(UnifiedSystemTrayControllerTest, ToggleExpanded) {
   const int collapsed_height = view()->GetPreferredSize().height();
   EXPECT_LT(collapsed_height, expanded_height);
   EXPECT_FALSE(model()->IsExpandedOnOpen());
+
+  EXPECT_EQ(expanded_height, view()->GetExpandedSystemTrayHeight());
 }
 
 TEST_F(UnifiedSystemTrayControllerTest, EnsureExpanded_UserChooserShown) {

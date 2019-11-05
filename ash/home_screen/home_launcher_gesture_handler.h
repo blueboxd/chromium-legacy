@@ -13,6 +13,7 @@
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -24,7 +25,6 @@
 
 namespace ash {
 
-class HomeLauncherGestureHandlerObserver;
 class SwipeHomeToOverviewController;
 
 // HomeLauncherGestureHandler makes modifications to a window's transform and
@@ -79,9 +79,6 @@ class ASH_EXPORT HomeLauncherGestureHandler
   aura::Window* GetSecondaryWindow();
 
   bool IsDragInProgress() const;
-
-  void AddObserver(HomeLauncherGestureHandlerObserver* observer);
-  void RemoveObserver(HomeLauncherGestureHandlerObserver* obsever);
 
   void NotifyHomeLauncherTargetPositionChanged(bool showing,
                                                int64_t display_id);
@@ -162,6 +159,8 @@ class ASH_EXPORT HomeLauncherGestureHandler
                    base::Optional<float> velocity_y);
   void OnDragCancelled();
 
+  void PauseBackdropUpdatesForActiveWindow();
+
   Mode mode_ = Mode::kNone;
 
   // The windows we are tracking. They are null if a drag is not underway, or if
@@ -213,7 +212,11 @@ class ASH_EXPORT HomeLauncherGestureHandler
   std::unique_ptr<SwipeHomeToOverviewController>
       swipe_home_to_overview_controller_;
 
-  base::ObserverList<HomeLauncherGestureHandlerObserver> observers_;
+  // The closure runner returned by BackdropController::PauseUpdates() requested
+  // when app window drag starts to prevent backdrop from showing up mid-drag.
+  // Keeping this in scope keeps backdrop changes paused (it's reset when the
+  // drag gesture sequence finishes).
+  base::Optional<base::ScopedClosureRunner> scoped_backdrop_update_pause_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherGestureHandler);
 };

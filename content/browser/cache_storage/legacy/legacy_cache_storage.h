@@ -99,11 +99,13 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
   void MatchCache(const std::string& cache_name,
                   blink::mojom::FetchAPIRequestPtr request,
                   blink::mojom::CacheQueryOptionsPtr match_options,
+                  CacheStorageSchedulerPriority priority,
                   int64_t trace_id,
                   CacheStorageCache::ResponseCallback callback) override;
 
   void MatchAllCaches(blink::mojom::FetchAPIRequestPtr request,
                       blink::mojom::CacheQueryOptionsPtr match_options,
+                      CacheStorageSchedulerPriority priority,
                       int64_t trace_id,
                       CacheStorageCache::ResponseCallback callback) override;
 
@@ -214,6 +216,7 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
   void MatchCacheImpl(const std::string& cache_name,
                       blink::mojom::FetchAPIRequestPtr request,
                       blink::mojom::CacheQueryOptionsPtr match_options,
+                      CacheStorageSchedulerPriority priority,
                       int64_t trace_id,
                       CacheStorageCache::ResponseCallback callback);
   void MatchCacheDidMatch(CacheStorageCacheHandle cache_handle,
@@ -225,6 +228,7 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
   // The MatchAllCaches callbacks are below.
   void MatchAllCachesImpl(blink::mojom::FetchAPIRequestPtr request,
                           blink::mojom::CacheQueryOptionsPtr match_options,
+                          CacheStorageSchedulerPriority priority,
                           int64_t trace_id,
                           CacheStorageCache::ResponseCallback callback);
   void MatchAllCachesDidMatch(CacheStorageCacheHandle cache_handle,

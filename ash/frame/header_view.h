@@ -11,6 +11,7 @@
 #include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -50,7 +51,9 @@ class ASH_EXPORT HeaderView : public views::View,
   explicit HeaderView(views::Widget* target_widget);
   ~HeaderView() override;
 
-  void set_is_immersive_delegate(bool value) { is_immersive_delegate_ = value; }
+  void set_immersive_mode_changed_callback(base::RepeatingClosure callback) {
+    immersive_mode_changed_callback_ = std::move(callback);
+  }
 
   bool should_paint() { return should_paint_; }
 
@@ -128,6 +131,9 @@ class ASH_EXPORT HeaderView : public views::View,
   // The widget that the caption buttons act on.
   views::Widget* target_widget_;
 
+  // A callback to run when |in_immersive_mode_| changes.
+  base::RepeatingClosure immersive_mode_changed_callback_;
+
   // Helper for painting the header. The exact type of FrameHeader will depend
   // on the type of window: In Mash, Chrome Browser windows use
   // CustomFrameHeader which is aware of theming. In classic Ash, Chrome Browser
@@ -135,20 +141,17 @@ class ASH_EXPORT HeaderView : public views::View,
   // windows will use DefaultFrameHeader.
   std::unique_ptr<DefaultFrameHeader> frame_header_;
 
-  views::ImageView* avatar_icon_;
+  views::ImageView* avatar_icon_ = nullptr;
 
   // View which draws the content of the frame.
   HeaderContentView* header_content_view_ = nullptr;
 
   // View which contains the window caption buttons.
-  FrameCaptionButtonContainerView* caption_button_container_;
+  FrameCaptionButtonContainerView* caption_button_container_ = nullptr;
 
   // The fraction of the header's height which is visible while in fullscreen.
   // This value is meaningless when not in fullscreen.
-  double fullscreen_visible_fraction_;
-
-  // Has this instance been set as the ImmersiveFullscreenControllerDelegate?
-  bool is_immersive_delegate_ = true;
+  double fullscreen_visible_fraction_ = 0;
 
   // True if a layer should be used for the immersive mode reveal. Some code
   // needs HeaderView to always paint to a layer instead of only during
@@ -158,7 +161,7 @@ class ASH_EXPORT HeaderView : public views::View,
   bool did_layout_ = false;
 
   // False to skip painting. Used for overview mode to hide the header.
-  bool should_paint_;
+  bool should_paint_ = true;
 
   bool in_immersive_mode_ = false;
 

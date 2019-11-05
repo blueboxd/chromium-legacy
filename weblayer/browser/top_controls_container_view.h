@@ -30,7 +30,6 @@ class TopControlsContainerView : public content::WebContentsObserver {
  public:
   TopControlsContainerView(const base::android::JavaParamRef<jobject>&
                                java_top_controls_container_view,
-                           content::WebContents* web_contents,
                            ContentViewRenderView* content_view_render_view);
   ~TopControlsContainerView() override;
 
@@ -70,6 +69,10 @@ class TopControlsContainerView : public content::WebContentsObserver {
   void UpdateTopControlsResource(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller);
+
+  void SetWebContents(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& caller,
+                      const base::android::JavaParamRef<jobject>& web_contents);
 
  private:
   // WebContentsObserver:

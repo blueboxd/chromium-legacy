@@ -1804,28 +1804,27 @@ component("net") {
 
     if (is_linux) {
       sources += [
-        "base/address_tracker_linux.cc",
-        "base/address_tracker_linux.h",
         "base/network_change_notifier_linux.cc",
         "base/network_change_notifier_linux.h",
-        "base/network_interfaces_linux.cc",
-        "base/network_interfaces_linux.h",
-        "base/platform_mime_util_linux.cc",
         "proxy_resolution/proxy_config_service_linux.cc",
         "proxy_resolution/proxy_config_service_linux.h",
       ]
     }
 
+    if (is_linux || is_android) {
+      sources += [
+        "base/address_tracker_linux.cc",
+        "base/address_tracker_linux.h",
+        "base/network_interfaces_linux.cc",
+        "base/network_interfaces_linux.h",
+        "base/platform_mime_util_linux.cc",
+      ]
+    }
+
     if (is_mac) {
       sources += [
-        "base/network_change_notifier_mac.cc",
-        "base/network_change_notifier_mac.h",
-        "base/network_config_watcher_mac.cc",
-        "base/network_config_watcher_mac.h",
         "base/network_notification_thread_mac.cc",
         "base/network_notification_thread_mac.h",
-        "base/platform_mime_util_mac.mm",
-        "base/proxy_server_mac.cc",
         "cert/cert_database_mac.cc",
         "cert/cert_verify_proc_mac.cc",
         "cert/cert_verify_proc_mac.h",
@@ -1835,21 +1834,34 @@ component("net") {
         "cert/known_roots_mac.h",
         "cert/test_keychain_search_list_mac.cc",
         "cert/test_keychain_search_list_mac.h",
-        "cert/test_root_certs_mac.cc",
-        "cert/x509_util_ios_and_mac.cc",
-        "cert/x509_util_ios_and_mac.h",
         "cert/x509_util_mac.cc",
         "cert/x509_util_mac.h",
         "proxy_resolution/proxy_config_service_mac.cc",
         "proxy_resolution/proxy_config_service_mac.h",
-        "proxy_resolution/proxy_resolver_mac.cc",
-        "proxy_resolution/proxy_resolver_mac.h",
         "ssl/client_cert_identity_mac.cc",
         "ssl/client_cert_identity_mac.h",
         "ssl/client_cert_store_mac.cc",
         "ssl/client_cert_store_mac.h",
         "ssl/ssl_platform_key_mac.cc",
         "ssl/ssl_platform_key_mac.h",
+      ]
+    }
+
+    if (is_ios || is_mac) {
+      sources += [
+        "base/mac/url_conversions.h",
+        "base/mac/url_conversions.mm",
+        "base/network_change_notifier_mac.cc",
+        "base/network_change_notifier_mac.h",
+        "base/network_config_watcher_mac.cc",
+        "base/network_config_watcher_mac.h",
+        "base/platform_mime_util_mac.mm",
+        "base/proxy_server_mac.cc",
+        "cert/test_root_certs_mac.cc",
+        "cert/x509_util_ios_and_mac.cc",
+        "cert/x509_util_ios_and_mac.h",
+        "proxy_resolution/proxy_resolver_mac.cc",
+        "proxy_resolution/proxy_resolver_mac.h",
       ]
     }
 
@@ -1914,7 +1926,6 @@ component("net") {
         "base/file_stream_context_posix.cc",
         "base/network_interfaces_posix.cc",
         "base/network_interfaces_posix.h",
-        "disk_cache/blockfile/file_posix.cc",
         "disk_cache/cache_util_posix.cc",
         "disk_cache/simple/simple_index_file_posix.cc",
         "disk_cache/simple/simple_util_posix.cc",
@@ -1926,6 +1937,9 @@ component("net") {
         "socket/udp_socket_posix.cc",
         "socket/udp_socket_posix.h",
       ]
+      if (!is_ios) {
+        sources += [ "disk_cache/blockfile/file_posix.cc" ]
+      }
       if (posix_avoid_mmap) {
         sources += [ "disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc" ]
       } else {
@@ -1942,6 +1956,7 @@ component("net") {
 
     if (!is_win) {
       sources += [
+        "http/http_auth_handler_ntlm_portable.cc",
         "ntlm/ntlm.cc",
         "ntlm/ntlm.h",
         "ntlm/ntlm_buffer_reader.cc",
@@ -1985,6 +2000,16 @@ component("net") {
         "third_party/mozilla_security_manager/nsPKCS12Blob.h",
         "third_party/nss/ssl/cmpcert.cc",
         "third_party/nss/ssl/cmpcert.h",
+
+        # These files are part of the partial implementation of NSS for
+        # cert verification, so keep them in that case.
+        "cert/cert_verify_proc_nss.cc",
+        "cert/cert_verify_proc_nss.h",
+        "cert/test_root_certs_nss.cc",
+        "cert/x509_util_nss.cc",
+        "cert/x509_util_nss.h",
+        "cert_net/nss_ocsp.cc",
+        "cert_net/nss_ocsp.h",
       ]
       if (!is_chromecast) {
         sources += [
@@ -1994,61 +2019,6 @@ component("net") {
           "ssl/ssl_platform_key_nss.h",
         ]
       }
-    }
-
-    if (use_nss_certs) {
-      # These files are part of the partial implementation of NSS for
-      # cert verification, so keep them in that case.
-      sources += [
-        "cert/cert_verify_proc_nss.cc",
-        "cert/cert_verify_proc_nss.h",
-        "cert/test_root_certs_nss.cc",
-        "cert/x509_util_nss.cc",
-        "cert/x509_util_nss.h",
-        "cert_net/nss_ocsp.cc",
-        "cert_net/nss_ocsp.h",
-      ]
-    }
-
-    if (!is_win) {
-      sources += [ "http/http_auth_handler_ntlm_portable.cc" ]
-    }
-
-    if (is_ios) {
-      sources += [
-        "base/network_change_notifier_mac.cc",
-        "base/network_change_notifier_mac.h",
-        "base/network_config_watcher_mac.cc",
-        "base/network_config_watcher_mac.h",
-        "base/platform_mime_util_mac.mm",
-        "base/proxy_server_mac.cc",
-        "cert/test_root_certs_mac.cc",
-        "cert/x509_util_ios_and_mac.cc",
-        "cert/x509_util_ios_and_mac.h",
-        "proxy_resolution/proxy_resolver_mac.cc",
-        "proxy_resolution/proxy_resolver_mac.h",
-      ]
-
-      sources -= [ "disk_cache/blockfile/file_posix.cc" ]
-    }
-
-    if (is_ios || is_mac) {
-      sources += [
-        "base/mac/url_conversions.h",
-        "base/mac/url_conversions.mm",
-      ]
-    }
-
-    if (is_android) {
-      # Add some Linux sources that were excluded by the filter, but which
-      # are needed.
-      sources += [
-        "base/address_tracker_linux.cc",
-        "base/address_tracker_linux.h",
-        "base/network_interfaces_linux.cc",
-        "base/network_interfaces_linux.h",
-        "base/platform_mime_util_linux.cc",
-      ]
     }
 
     if (is_fuchsia) {
@@ -5820,6 +5790,7 @@ test("net_unittests") {
 
   if (enable_reporting) {
     sources += [
+      "extras/sqlite/sqlite_persistent_reporting_and_nel_store_unittest.cc",
       "network_error_logging/mock_persistent_nel_store_unittest.cc",
       "network_error_logging/network_error_logging_service_unittest.cc",
       "reporting/mock_persistent_reporting_store_unittest.cc",
@@ -5832,12 +5803,6 @@ test("net_unittests") {
       "reporting/reporting_network_change_observer_unittest.cc",
       "reporting/reporting_service_unittest.cc",
       "reporting/reporting_uploader_unittest.cc",
-    ]
-  }
-
-  if (enable_reporting) {
-    sources += [
-      "extras/sqlite/sqlite_persistent_reporting_and_nel_store_unittest.cc",
     ]
   }
 
@@ -5938,6 +5903,7 @@ test("net_unittests") {
       "cert/internal/trust_store_nss_unittest.cc",
       "cert/nss_cert_database_unittest.cc",
       "cert/x509_util_nss_unittest.cc",
+      "cert_net/nss_ocsp_unittest.cc",
     ]
     if (!is_chromecast) {
       sources += [
@@ -5961,10 +5927,6 @@ test("net_unittests") {
 
   if (use_kerberos) {
     sources += [ "http/http_auth_handler_negotiate_unittest.cc" ]
-  }
-
-  if (use_nss_certs) {
-    sources += [ "cert_net/nss_ocsp_unittest.cc" ]
   }
 
   if (enable_websockets) {

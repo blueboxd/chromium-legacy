@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">పరిచయ వాక్యం</translation>
 <translation id="207477615537953741">అర్థ వివరణలు ఆపివేయబడ్డాయి</translation>
 <translation id="2086961585857038472">తరువాత పదం</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">en</translation>
 <translation id="2091933974477985526">మునుపటి సవరించగల వచన ప్రదేశం</translation>
 <translation id="2100350898815792233">అన్ని విరామచిహ్నాలు</translation>
@@ -193,6 +194,7 @@
 <translation id="2416512023405990736">ఎంచుకున్నట్లు గుర్తు పెట్టని చెక్‌బాక్స్‌</translation>
 <translation id="2417569100218200841">కంటెంట్ సమాచారం</translation>
 <translation id="2417948780551741035">ఎండ్‌నోట్‌లు</translation>
+<translation id="2419852971200420169">వివరణ జాబితా</translation>
 <translation id="2421113964388408478">తొలగింపు</translation>
 <translation id="2422937916923936891">మెనూ అంశం చెక్‌ బాక్స్</translation>
 <translation id="2428534162001909979">ఆదేశ మెనూలు</translation>
@@ -371,6 +373,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{ప్రశ్నార్థక గుర్తు}other{# ప్రశ్నార్థక గుర్తులు}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{హంసపాదు గుర్తు}other{# హంసపాదు గుర్తులు}}</translation>
 <translation id="352577523970648069">సవరించగల వచన ఫీల్డ్</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152"><ph name="TEXT" />ని కత్తిరించండి.</translation>
 <translation id="3549680091535286226">తాత్కాలికంగా ప్రసంగాన్ని ఆపడం కోసం 2 వేళ్లతో నొక్కండి</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, చెక్‌బాక్స్ ఎంచుకోబడలేదు</translation>
@@ -779,6 +782,7 @@
 <translation id="6378394210114975876">థిజిల్ పుష్పంలాగా లేత ఊదా రంగు</translation>
 <translation id="6385591741672306837">నిలువు</translation>
 <translation id="6387719785439924554">ప్రక్కన</translation>
+<translation id="6393014464788431702">అన్ని ఈవెంట్ ఫిల్టర్‌లను నిలిపివేయండి</translation>
 <translation id="6411426777058107714">మునుపటి రేడియో బటన్ లేదు.</translation>
 <translation id="6414968628640960377">మునుపటి విభిన్న మూలకం.</translation>
 <translation id="6417265370957905582">Google అసిస్టెంట్</translation>
@@ -914,6 +918,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="7332592614823088566"><ph name="ROWTOTAL" />లో <ph name="ROWINDEX" />వ అడ్డు వరుస, <ph name="COLTOTAL" />లో <ph name="COLINDEX" />వ నిలువు వరుస</translation>
 <translation id="7336596009609913925">పాప్అప్‌ను కలిగి ఉంది</translation>
 <translation id="7356165926712028380">8 చుక్కల బ్రెయిలీకి మార్చు</translation>
+<translation id="7356610683936413584">వివరణ జాబితా వివరం</translation>
 <translation id="7362871137496673139">మునుపటి స్థాయి 2 శీర్షిక లేదు.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ఆంపర్సండ్ గుర్తు}other{# ఆంపర్సండ్ గుర్తులు}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8096975275316362544">పుదీనా మీగడ రంగు</translation>
 <translation id="8098587210054821856">మేఘవర్ణ బూడిద రంగు</translation>
 <translation id="8110647606445335195">ARIA మైలురాళ్లు లేవు.</translation>
+<translation id="8121539003537428024">అన్ని ఈవెంట్ ఫిల్టర్‌లను ప్రారంభించండి</translation>
 <translation id="812886159861361726"><ph name="FILE_NAME" /> డౌన్‌లోడ్ ఆపివేయబడింది</translation>
 <translation id="8138880386467279117">స్పర్శ</translation>
 <translation id="8153880621934657047">లోపల పట్టిక కాదు.</translation>

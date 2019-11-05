@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Signant del certificat</translation>
 <translation id="1145292499998999162">Connector bloquejat</translation>
 <translation id="1145532888383813076">Cerca al dispositiu, en aplicacions i al web.</translation>
+<translation id="1146678959555564648">Activa el mode RV</translation>
 <translation id="114721135501989771">Eines intel·ligents a Chrome</translation>
 <translation id="1149401351239820326">Mes de caducitat</translation>
 <translation id="1150565364351027703">Ulleres de sol</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Emmagatzemar les dades al compte de Google Drive</translation>
 <translation id="1288037062697528143">La funció Llum nocturna s'activarà automàticament quan es pongui el sol</translation>
 <translation id="1288300545283011870">Propietats de la veu</translation>
-<translation id="1289513325360489062">No es pot accedir a les dades d'aquest lloc web</translation>
 <translation id="1293264513303784526">Dispositiu USB-C (port esquerre)</translation>
 <translation id="1293556467332435079">Fitxers</translation>
 <translation id="1296911687402551044">Fixa la pestanya seleccionada</translation>
@@ -813,7 +813,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2165421703844373933">Accedeix a l'assistent quan diguis "Ok Google". Per estalviar bateria, escull “Activat (opció recomanada)”. El teu Assistent respondrà només quan es connecti o es carregui el dispositiu.</translation>
 <translation id="2166369534954157698">L'àgil guineu marró salta per sobre del gos mandrós</translation>
 <translation id="2169062631698640254">Inicia la sessió de tota manera</translation>
-<translation id="2170088579611075216">Permet i activa el mode RV</translation>
 <translation id="2172784515318616985">Continua</translation>
 <translation id="2173302385160625112">Comprova la connexió a Internet</translation>
 <translation id="2173801458090845390">Afegeix l'identificador de sol·licitud a aquest dispositiu</translation>
@@ -1005,7 +1004,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2439545803278355377">Introdueix el PIN nou. Els codis PIN han de tenir quatre caràcters com a mínim i poden contenir lletres, números i altres caràcters.</translation>
 <translation id="2440604414813129000">Visualitza l'&amp;origen</translation>
 <translation id="2442916515643169563">Ombra del text</translation>
-<translation id="2444119669991608829">La pàgina no està en <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">El directori arrel de l'extensió és obligatori.</translation>
 <translation id="2445484935443597917">Crea un perfil</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> vol verificar la teva identitat</translation>
@@ -1426,7 +1424,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3020183492814296499">Dreceres</translation>
 <translation id="3020990233660977256">Número de sèrie: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Papallona</translation>
-<translation id="3021426244864538700">S'està accedint a les dades d'aquest lloc web</translation>
 <translation id="3021678814754966447">&amp;Visualitza l'origen del marc</translation>
 <translation id="3022978424994383087">No t'he entès.</translation>
 <translation id="3023464535986383522">Escolta la selecció</translation>
@@ -2215,7 +2212,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4159681666905192102">Aquest és un compte infantil gestionat per <ph name="CUSTODIAN_EMAIL" /> i per <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Teclat desconegut</translation>
 <translation id="4168015872538332605">Alguns paràmetres de configuració que pertanyen a <ph name="PRIMARY_EMAIL" /> es comparteixen amb l'usuari. Aquests paràmetres només afecten el vostre compte quan s'utilitza l'inici de sessió múltiple.</translation>
-<translation id="4169535189173047238">No permetis</translation>
 <translation id="4170314459383239649">Esborra en sortir</translation>
 <translation id="4172051516777682613">Mostra sempre</translation>
 <translation id="4175137578744761569">Porpra clar i blanc</translation>
@@ -2301,6 +2297,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4316850752623536204">Lloc web per a desenvolupadors</translation>
 <translation id="4320177379694898372">No hi ha connexió a Internet</translation>
 <translation id="4321442524549817090">M&amp;ostra l'URL</translation>
+<translation id="4322394346347055525">Tanca les altres pestanyes</translation>
 <translation id="4324577459193912240">Fitxer incomplet</translation>
 <translation id="4325237902968425115">S'està desinstal·lant <ph name="LINUX_APP_NAME" />...</translation>
 <translation id="4330191372652740264">Aigua glaçada</translation>
@@ -2754,10 +2751,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5029568752722684782">Esborra la còpia</translation>
 <translation id="5030338702439866405">Emès per</translation>
 <translation id="5033266061063942743">Formes geomètriques</translation>
-<translation id="5033865233969348410">Mentre estiguis en el mode RV, pot ser que aquest lloc web pugui obtenir la informació següent:
-  -  les teves característiques físiques, com ara l'alçada.
-
-Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> vol utilitzar la càmera i el micròfon</translation>
 <translation id="5036662165765606524">No permetis que cap lloc baixi diversos fitxers automàticament</translation>
 <translation id="5037676449506322593">Selecciona-ho tot</translation>
@@ -3032,7 +3025,6 @@ Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translatio
 <translation id="5449588825071916739">Afegeix totes les pestanyes a les adreces d'interès</translation>
 <translation id="5449716055534515760">Tanca la &amp;finestra</translation>
 <translation id="5454166040603940656">amb <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Idioma d'arribada de la traducció</translation>
 <translation id="5457113250005438886">No vàlides</translation>
 <translation id="5457459357461771897">Llegeix i suprimeix fotos, música i altres elements multimèdia de l'ordinador</translation>
 <translation id="5457599981699367932">Navega com a convidat</translation>
@@ -3092,11 +3084,6 @@ Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translatio
 <translation id="5532223876348815659">General</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> vol</translation>
 <translation id="5534304873398226603">Descarta la foto o el vídeo</translation>
-<translation id="5534334044554683961">Mentre estiguis en el mode RV, pot ser que aquest lloc web pugui obtenir la informació següent:
-  -   les teves característiques físiques, com ara l'alçada
-  -   la distribució de la teva habitació
-
-Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translation>
 <translation id="5535941515421698170">Suprimeix també les teves dades d'aquest dispositiu</translation>
 <translation id="5539221284352502426">El servidor ha rebutjat la contrasenya que has introduït. Els motius poden ser els següents: la contrasenya és massa curta, la contrasenya ha d'incloure números o símbols, o la contrasenya no es pot haver utilitzat anteriorment.</translation>
 <translation id="5541694225089836610">L'administrador ha desactivat l'acció</translation>
@@ -3995,6 +3982,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6850286078059909152">Color del text</translation>
 <translation id="6851497530878285708">Aplicació activada</translation>
 <translation id="6853388645642883916">S'ha posat l'actualitzador en repòs.</translation>
+<translation id="68541483639528434">Tanca les altres pestanyes</translation>
 <translation id="6856623341093082836">Configura i ajusta la precisió de la pantalla tàctil</translation>
 <translation id="6857699260879628349">Obtén informació de configuració</translation>
 <translation id="6860097299815761905">Config. servidor interm.</translation>
@@ -4107,7 +4095,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7019805045859631636">Ràpid</translation>
 <translation id="7022562585984256452">S'ha definit la pàgina d'inici.</translation>
 <translation id="7025190659207909717">Gestió de serveis de dades mòbils</translation>
-<translation id="7027891519253193555">La pàgina no està en <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
 <translation id="703001695939087067">S'ha entrat al mode de visió general de la finestra. Prem la pestanya per navegar.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" />: port en sèrie connectat</translation>
@@ -4552,7 +4539,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7684718995427157417">Per crear aplicacions i provar-les, activa Android Debug Bridge (ADB). Tingues en compte que aquesta acció permet instal·lar aplicacions d'Android que Google no ha verificat. Per desactivar ADB, hauràs de restablir la configuració de fàbrica del dispositiu.</translation>
 <translation id="7685049629764448582">Memòria de JavaScript </translation>
 <translation id="7685087414635069102">PIN obligatori</translation>
-<translation id="7685301384041462804">Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translation>
 <translation id="768549422429443215">Afegeix idiomes o torna a ordenar la llista.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Confirma la contrasenya nova</translation>
@@ -4950,11 +4936,9 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Baixada en curs}other{Baixades en curs}}</translation>
 <translation id="8213449224684199188">S'ha entrat al mode de fotos</translation>
 <translation id="8213577208796878755">Hi ha disponible un altre dispositiu.</translation>
-<translation id="8213996900880218548">Vol accedir a les dades d'aquest lloc web</translation>
 <translation id="8214489666383623925">Obre un fitxer...</translation>
 <translation id="8214962590150211830">Suprimeix aquesta persona</translation>
 <translation id="8217399928341212914">Continua bloquejant les baixades automàtiques de diversos fitxers</translation>
-<translation id="822519928942492333">Idioma de la pàgina que cal traduir</translation>
 <translation id="8225265270453771718">Comparteix la finestra d'una aplicació</translation>
 <translation id="8225753906568652947">Bescanvia les teves ofertes</translation>
 <translation id="8226222018808695353">Prohibit</translation>
@@ -5527,7 +5511,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9026731007018893674">baixa</translation>
 <translation id="9026852570893462412">Aquest procés pot tardar uns quants minuts. S'està baixant la màquina virtual.</translation>
 <translation id="9027459031423301635">Obre l'enllaç en una pes&amp;tanya nova</translation>
-<translation id="9029323097866369874">Vols permetre que <ph name="DOMAIN" /> entri al mode RV?</translation>
 <translation id="9030515284705930323">La teva organització no t'ha activat Google Play Store al compte. Contacta amb l'administrador per obtenir més informació.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Enganxa</translation>
@@ -5571,7 +5554,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9094038138851891550">El nom d'usuari no és vàlid</translation>
 <translation id="9094982973264386462">Suprimeix</translation>
 <translation id="9095253524804455615">Suprimeix</translation>
-<translation id="9095388113577226029">Més idiomes...</translation>
 <translation id="9100610230175265781">S'ha d'introduir una frase de contrasenya </translation>
 <translation id="9100765901046053179">Configuració avançada</translation>
 <translation id="9101691533782776290">Inicia l'aplicació</translation>

@@ -26,7 +26,6 @@ class CORE_EXPORT ScrollbarThemeOverlayMobile : public ScrollbarThemeOverlay {
   ScrollbarThemeOverlayMobile(int thumb_thickness, int scrollbar_margin, Color);
 
  private:
-  bool IsMobileTheme() const override { return true; }
   Color color_;
 };
 

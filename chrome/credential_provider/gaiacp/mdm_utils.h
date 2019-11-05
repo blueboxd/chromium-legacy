@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "base/win/windows_types.h"
+#include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "url/gurl.h"
 
 namespace credential_provider {
@@ -51,11 +52,11 @@ class GoogleMdmEnrolledStatusForTesting {
   ~GoogleMdmEnrolledStatusForTesting();
 };
 
-// Class used in tests to force set serial number.
-class GoogleSerialNumberForTesting {
+// Class used in tests to set registration data for testing.
+class GoogleRegistrationDataForTesting {
  public:
-  explicit GoogleSerialNumberForTesting(base::string16 serial_number);
-  ~GoogleSerialNumberForTesting();
+  explicit GoogleRegistrationDataForTesting(base::string16 serial_number);
+  ~GoogleRegistrationDataForTesting();
 };
 
 // Class used in tests to force password escrow service availability when not

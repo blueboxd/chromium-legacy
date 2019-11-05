@@ -34,8 +34,7 @@ void ServiceProviderImpl::AddBinding(
 
 void ServiceProviderImpl::ConnectToService(std::string service_name,
                                            zx::channel client_handle) {
-  directory_.ConnectToServiceUnsafe(service_name.c_str(),
-                                    std::move(client_handle));
+  directory_.Connect(service_name.c_str(), std::move(client_handle));
 }
 
 void ServiceProviderImpl::SetOnLastClientDisconnectedClosure(

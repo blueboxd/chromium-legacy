@@ -373,6 +373,7 @@
 <translation id="1553684822621013552">Als dit beleid is ingesteld op 'True', wordt ARC ingeschakeld voor de gebruiker (onderhevig aan extra controles van de beleidsinstellingen; ARC is nog steeds niet beschikbaar als de kortstondige modus of toegang tot meerdere accounts is ingeschakeld in de huidige gebruikerssessie).
 
      Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen zakelijke gebruikers ARC niet gebruiken.</translation>
+<translation id="1553956579506604198">Blokkeert de installatie van externe extensies</translation>
 <translation id="1559980755219453326">Met dit beleid wordt bepaald of informatie over extensies en plug-ins wordt gerapporteerd.
 
       Als dit beleid niet is ingesteld of is ingesteld op True, worden er gegevens verzameld over de extensies en plug-ins.
@@ -503,6 +504,15 @@
       Als dit beleid is ingesteld op een geldige URL, downloadt<ph name="PRODUCT_NAME" /> de lijst met sites van die URL en worden de regels toegepast alsof ze zijn geconfigureerd met het <ph name="SITELIST_POLICY_NAME" />-beleid.
 
       Ga naar https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode voor meer informatie over het <ph name="IEEM_SITELIST_POLICY" />-beleid van Internet Explorer</translation>
+<translation id="1839278886947586809">
+      Dit beleid is verwijderd in M80, omdat het niet meer nodig is omdat WebDriver nu werkt met alle bestaande beleidsregels.
+
+      Met dit beleid kunnen gebruikers van de WebDriver-functie beleidsregels overschrijven die problemen met de werking kunnen veroorzaken.
+
+      Dit beleid schakelt momenteel de beleidsregels SitePerProcess en IsolateOrigins uit.
+
+      Als het beleid is ingeschakeld, kan WebDriver niet-geschikte beleidsregels overschrijven.
+      Als het beleid is uitgeschakeld of niet is geconfigureerd, mag WebDriver niet-geschikte beleidsregels niet overschrijven.</translation>
 <translation id="1843117931376765605">Vernieuwingsfrequentie voor gebruikersbeleid</translation>
 <translation id="1844620919405873871">Hiermee configureer je het beleid ten aanzien van snel ontgrendelen.</translation>
 <translation id="1845405905602899692">Kiosk-instellingen</translation>
@@ -661,6 +671,7 @@
           Als dit beleid niet is ingesteld, worden alle vier de schema's gebruikt.</translation>
 <translation id="2067011586099792101">Toegang blokkeren naar sites die zich niet in inhoudspakketten bevinden</translation>
 <translation id="2073552873076775140">Inloggen bij <ph name="PRODUCT_NAME" /> toestaan</translation>
+<translation id="2075732129949889165">Crostini Ansible-playbook</translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="2077273864382355561">Vertraging van scherm uitschakelen wanneer op de batterij wordt gewerkt</translation>
 <translation id="2082205219176343977">Configureer de minimaal toegestane Chrome-versie voor het apparaat.</translation>
@@ -671,6 +682,14 @@
 <translation id="2107601598727098402">
         Dit beleid is beëindigd in M72. Gebruik in plaats daarvan CloudManagementEnrollmentToken.
         </translation>
+<translation id="2108169571875569435">Met dit beleid wordt bepaald welke opdracht wordt gebruikt om URL's te openen in een alternatieve browser.
+
+      Als dit beleid niet is ingesteld, wordt een platformspecifieke standaard gebruikt: Internet Explorer voor Windows of Safari voor Mac OS X. Op Linux kan geen alternatieve browser worden gestart als dit niet is ingesteld.
+
+      Als dit beleid is ingesteld op een van de browsers <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" /> of
+      <ph name="OPERA_VALUE_PLACEHOLDER" />, wordt die browser gestart als deze is geïnstalleerd. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> is alleen beschikbaar in Windows en <ph name="SAFARI_VALUE_PLACEHOLDER" /> is alleen beschikbaar in Windows en Mac OS X.
+
+      Als dit beleid is ingesteld op een bestandspad, wordt dat bestand gebruikt als uitvoerbaar bestand.</translation>
 <translation id="2111016292707172233">Hiermee wordt de beschikbaarheid van 'Tikken om te zoeken' ingeschakeld in de contentweergave van <ph name="PRODUCT_NAME" />.
 
       Als je deze instelling inschakelt, is 'Tikken om te zoeken' beschikbaar voor de gebruiker en kan de gebruiker de functie in- of uitschakelen.
@@ -765,6 +784,9 @@
       Als dit beleid is uitgeschakeld, krijgt de gebruiker nooit een prompt en is het vastleggen van video alleen beschikbaar voor URL's die in VideoCaptureAllowedUrls zijn geconfigureerd.
 
       Dit beleid is van toepassing op alle typen video-invoer en niet alleen op de ingebouwde camera.</translation>
+<translation id="2197625019569762163">Als je het beleid instelt op True, wordt het numerieke toetsenbord standaard weergegeven om het wachtwoord op te geven op het inlogscherm. Gebruikers kunnen overschakelen naar het normale toetsenbord.
+
+      Als je het beleid instelt, kunnen gebruikers het niet wijzigen. Als het beleid niet is ingesteld of is ingesteld op False, heeft het geen effect.</translation>
 <translation id="2201555246697292490">Witte lijst voor systeemeigen berichten configureren</translation>
 <translation id="220280840901385239">Gebruikers toestaan uitzonderingen toe te voegen om blokkeerbare gecombineerde content toe te staan</translation>
 <translation id="2204753382813641270">Automatisch verbergen van archief beheren</translation>
@@ -951,6 +973,17 @@
 
       Als dit beleid op 'False' is ingesteld, verschijnt een foutmelding in plaats van de prompt voor de netwerkconfiguratie.</translation>
 <translation id="2498238926436517902">Archief altijd automatisch verbergen</translation>
+<translation id="2505805702054675476">Dit beleid bepaalt opdrachtregelparameters die moeten worden gestart in de alternatieve browser.
+
+      Als dit beleid niet wordt ingesteld, wordt alleen de URL doorgegeven als opdrachtregelparameter.
+
+      Als dit beleid is ingesteld op een lijst met tekenreeksen, wordt elke tekenreeks doorgegeven aan de alternatieve browser als afzonderlijke opdrachtregelparameter. In Windows worden de parameters samengevoegd met spaties. In Mac OS X en Linux mag een parameter spaties bevatten en wordt dan nog gewoon verwerkt als één parameter.
+
+      Als een element <ph name="URL_PLACEHOLDER" /> bevat, wordt dit vervangen door de URL van de pagina die moet worden geopend.
+
+      Als geen enkel element <ph name="URL_PLACEHOLDER" /> bevat, wordt de URL toegevoegd aan het einde van de opdrachtregel.
+
+      Omgevingsvariabelen worden uitgevouwen. In Windows wordt <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> vervangen door de waarde van de omgevingsvariabele <ph name="ENV_VARIABLE_VALUE" />. In Mac OS X en Linux wordt <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> vervangen door de waarde van de omgevingsvariabele <ph name="ENV_VARIABLE" />.</translation>
 <translation id="250670737672448119">De toegankelijkheidsfunctie voor markering van het caret-teken inschakelen.
 
           Met deze functie wordt het gebied rondom het caret-teken gemarkeerd tijdens het bewerken.
@@ -975,6 +1008,11 @@
 <translation id="2517466659416174529">Toestaan dat tabbladen op de achtergrond worden vastgezet</translation>
 <translation id="2518231489509538392">Het afspelen van audio toestaan</translation>
 <translation id="2521581787935130926">De snelkoppeling voor apps weergeven op de bladwijzerbalk</translation>
+<translation id="2526082146909867346">Hiermee kun je een lijst met URL-patronen opgeven waarvoor <ph name="PRODUCT_NAME" /> automatisch een clientcertificaat moet selecteren als de site vraagt om een certificaat.
+
+          De waarde moet een matrix van json-woordenboeken met tekenreeksen zijn. Elk woordenboek moet de indeling <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> hebben, waarbij <ph name="URL_PATTERN_PLACEHOLDER" /> een patroon voor het instellen van content is. <ph name="FILTER_PLACEHOLDER" /> beperkt de clientcertificaten die de browser automatisch kan selecteren. Onafhankelijk van het filter worden alleen certificaten geselecteerd die overeenkomen met het certificaatverzoek van de server. Als <ph name="FILTER_PLACEHOLDER" /> bijvoorbeeld de indeling <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> heeft, worden daarnaast alleen clientcertificaten geselecteerd die zijn uitgegeven door een certificaat met de CommonName <ph name="ISSUER_CN_PLACEHOLDER" />. Als <ph name="FILTER_PLACEHOLDER" /> een <ph name="ISSUER_STRING_VALUE" /> en een gedeelte <ph name="SUBJECT_STRING_VALUE" /> bevat, moet een clientcertificaat aan beide voorwaarden voldoen om te worden geselecteerd. Als <ph name="FILTER_PLACEHOLDER" /> een organisatie ('O') specificeert, moet een certificaat ten minste één organisatie bevatten die overeenkomt met de gespecificeerde waarde die moet worden geselecteerd. Als <ph name="FILTER_PLACEHOLDER" /> een organisatie-eenheid ('OU') specificeert, moet een certificaat ten minste één organisatie-eenheid bevatten die overeenkomt met de gespecificeerde waarde die moet worden geselecteerd. Als <ph name="FILTER_PLACEHOLDER" /> het lege woordenboek <ph name="EMPTY_DICTIONARY" /> is, wordt de selectie van clientcertificaten niet verder beperkt.
+
+          Als dit beleid niet wordt ingesteld, wordt voor geen enkele site automatische selectie uitgevoerd.</translation>
 <translation id="2529659024053332711">Hiermee kun je het gedrag bij opstarten opgeven.
 
           Als je 'De pagina 'Nieuw tabblad' openen' kiest, wordt altijd de pagina 'Nieuw tabblad' geopend wanneer je <ph name="PRODUCT_NAME" /> start.
@@ -1404,6 +1442,13 @@
 <translation id="3236046242843493070">URL-patronen om de installatie van extensies, apps en gebruikersscripts toe te staan vanaf</translation>
 <translation id="3240609035816615922">Toegangsbeleid voor printerconfiguratie.</translation>
 <translation id="3240655340884151271">MAC-adres van ingebouwde NIC van dock</translation>
+<translation id="3242756958360374888">Bevat een lijst met patronen die worden gebruikt om de zichtbaarheid van accounts in <ph name="PRODUCT_NAME" /> te beheren.
+
+      Elk Google-account op het apparaat wordt vergeleken met patronen die in dit beleid zijn opgeslagen om de accountzichtbaarheid in <ph name="PRODUCT_NAME" /> te bepalen. Het account is zichtbaar als de bijbehorende naam overeenkomt met een patroon in de lijst. Anders wordt het account verborgen.
+
+      Gebruik het jokerteken '*' voor overeenkomsten met nul of meer willekeurige tekens. Het escape-teken is '\'. Als je dus naar overeenkomsten zoekt met de feitelijke tekens '*', '?' of '\', kun je er een '\' voor zetten.
+
+      Als dit beleid niet is ingesteld, zijn alle Google-accounts op het apparaat zichtbaar in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3251500716404598358">Configureer de beleidsregels om te schakelen tussen browsers.
 
       Geconfigureerde websites worden automatisch geopend in een andere browser dan <ph name="PRODUCT_NAME" />.</translation>
@@ -1454,6 +1499,19 @@
 
       Dit beleid kan alleen worden ingesteld als aanbevolen. Je kunt dit beleid gebruiken om een aantal aanbevolen landinstellingen naar boven te verplaatsen, maar gebruikers kunnen altijd de gewenste landinstelling die wordt ondersteund door <ph name="PRODUCT_OS_NAME" /> kiezen voor hun sessie.
       </translation>
+<translation id="3378482432905539452">Dit beleid is beëindigd. Gebruik het beleid <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> om de beschikbaarheid van de Flash-plug-in te beheren en het beleid <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> om aan te geven of de geïntegreerde pdf-viewer moet worden gebruikt om pdf-bestanden te openen.
+
+      Specificeert een lijst met plug-ins die de gebruiker kan in- of uitschakelen in <ph name="PRODUCT_NAME" />.
+
+      De jokertekens '*' en '?' kunnen worden gebruikt om overeenkomsten te zoeken in reeksen met willekeurige tekens. '*' komt overeen met een willekeurig aantal tekens, terwijl met '?' een optioneel enkel teken wordt gespecificeerd dat overeenkomt met nul tekens of één teken. Het escape-teken is '\'. Als je dus naar overeenkomsten zoekt met de feitelijke tekens '*', '?' of '\', kun je er een '\' voor zetten.
+
+      Als je deze instelling inschakelt, kan de gespecificeerde lijst met plug-ins in <ph name="PRODUCT_NAME" /> worden gebruikt. Gebruikers kunnen plug-ins in- of uitschakelen in 'about:plugins', zelfs als de plug-in ook overeenkomt met een patroon in DisabledPlugins. Gebruikers kunnen ook plug-ins in- en uitschakelen die niet overeenkomen met een patroon in DisabledPlugins, DisabledPluginsExceptions of EnabledPlugins.
+
+      Dit beleid is bedoeld om een streng beleid voor een blacklist met plug-ins mogelijk te maken, waarbij de lijst 'DisabledPlugins' items met jokertekens bevat. Bijvoorbeeld 'schakel alle plug-ins met '*' uit' of 'schakel alle Java-plug-ins met '*Java*' uit', terwijl de beheerder een bepaalde versie wil inschakelen, zoals 'IcedTea Java 2.3'. Deze specifieke versies kunnen worden gespecificeerd in dit beleid.
+
+      Zowel de naam van de plug-in als de groepsnaam van de plug-in moeten worden uitgesloten. Elke groep plug-ins wordt in een afzonderlijk gedeelte in 'about:plugins' weergegeven. Elk gedeelte kan een of meer plug-ins bevatten. De plug-in 'Shockwave Flash' hoort bijvoorbeeld bij de groep 'Adobe Flash Player' en beide namen moeten een overeenkomst hebben in de lijst met uitzonderingen als die plug-in moet worden uitgesloten van de blacklist.
+
+      Als dit beleid niet is ingesteld, wordt elke plug-in uitgeschakeld die overeenkomt met de patronen in 'DisabledPlugins', en kan de gebruiker deze niet inschakelen.</translation>
 <translation id="3381968327636295719"> gebruiken</translation>
 <translation id="3388153794103186066">Hiermee kun je een lijst met URL's instellen die aangeven welke sites automatisch toegang krijgen tot een USB-apparaat met de opgegeven leverancier- en product-ID. Het beleid is alleen geldig als elk item in de lijst zowel apparaten als URL's bevat. Elk item in apparaten kan een veld voor leverancier-ID en een veld voor product-ID bevatten. Een ID die is weggelaten, wordt als wildcard behandeld, met één uitzondering: er mag geen product-ID worden opgegeven zonder dat er ook een leverancier-ID is opgegeven. Anders is het beleid niet geldig. Ongeldige beleidswaarden worden genegeerd.
 
@@ -2171,6 +2229,15 @@
 <translation id="445270821089253489">Beheert welke gebruikers- en apparaatgegevens worden gerapporteerd.</translation>
 <translation id="4453913621209182880">Alleen afdrukken met achtergrondbeelden toestaan</translation>
 <translation id="4454820008017317557">Het werkbalkpictogram van <ph name="PRODUCT_NAME" /> weergeven</translation>
+<translation id="4458977366860064210">Gebruik de verouderde <ph name="CORS" />-implementatie in plaats van de nieuwe <ph name="CORS" />.
+
+      Als deze instelling is ingesteld op True, wordt de verouderde implementatie gebruikt die zou moeten werken met eerdere versies.
+
+      Als deze instelling is ingesteld op False of niet is ingesteld, wordt de nieuwe implementatie gebruikt die mogelijk ondernemingsspecifieke compatibiliteitsproblemen kan veroorzaken.
+
+      Dit beleid wordt na een aantal mijlpalen verwijderd.
+
+      Ga naar <ph name="CORS_HELP_URL" /> voor meer informatie over <ph name="CORS" />.</translation>
 <translation id="4467952432486360968">Indirecte cookies blokkeren</translation>
 <translation id="4474167089968829729">Opslaan van wachtwoorden in Wachtwoordmanager inschakelen</translation>
 <translation id="4476769083125004742">Als dit beleid wordt ingesteld op <ph name="BLOCK_GEOLOCATION_SETTING" />, hebben de Android-apps geen toegang tot locatiegegevens. Als je een andere waarde voor dit beleid instelt of het beleid niet instelt, wordt de gebruiker om toestemming gevraagd wanneer een Android-app toegang tot locatiegegevens probeert te krijgen.</translation>
@@ -2216,6 +2283,17 @@
 <translation id="4534500438517478692">Naam Android-beperking:</translation>
 <translation id="4541530620466526913">Lokale accounts op apparaat</translation>
 <translation id="4543502256674577024">Update-instellingen voor apparaat</translation>
+<translation id="4548555985107150628">Dit beleid is beëindigd. Gebruik het beleid <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> om de beschikbaarheid van de Flash-plug-in te beheren en het beleid <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> om aan te geven of de geïntegreerde pdf-viewer moet worden gebruikt om pdf-bestanden te openen.
+
+      Specificeert een lijst met plug-ins die zijn ingeschakeld in <ph name="PRODUCT_NAME" /> en voorkomt dat gebruikers deze instelling kunnen wijzigen.
+
+      De jokertekens '*' en '?' kunnen worden gebruikt om overeenkomsten te zoeken in reeksen met willekeurige tekens. '*' komt overeen met een willekeurig aantal tekens, terwijl met '?' een optioneel enkel teken wordt gespecificeerd dat overeenkomt met nul tekens of één teken. Het escape-teken is '\'. Als je dus naar overeenkomsten zoekt met de feitelijke tekens '*', '?' of '\', kun je er een '\' voor zetten.
+
+      De gespecificeerde lijst met plug-ins wordt altijd gebruikt in <ph name="PRODUCT_NAME" /> als deze plug-ins zijn geïnstalleerd. De plug-ins zijn gemarkeerd als 'ingeschakeld' in 'about:plugins' en gebruikers kunnen ze niet uitschakelen.
+
+      Dit beleid heeft voorrang op zowel DisabledPlugins als DisabledPluginsExceptions.
+
+      Als dit beleid niet wordt ingesteld, kan de gebruiker alle op het systeem geïnstalleerde plug-ins uitschakelen.</translation>
 <translation id="4554651132977135445">Loopback-verwerkingsmodus voor gebruikersbeleid</translation>
 <translation id="4554841826517980623">Dit beleid bepaalt of de functie 'Network File Shares' voor <ph name="PRODUCT_NAME" /> het <ph name="NETBIOS_PROTOCOL" />-protocol moet gebruiken om shares te detecteren in het netwerk.
       Als dit beleid is ingesteld op 'True', wordt voor de detectie van shares in het netwerk gebruikgemaakt van het <ph name="NETBIOS_PROTOCOL" />-protocol.
@@ -3008,6 +3086,19 @@
 
       URL's (zoals https://example.com/some/path) komen alleen overeen als U2F appID's. Domeinen (zoals example.com) komen alleen overeen als webauthn RP ID's. Dus om zowel de U2F- als webauthn-API voor een bepaalde site te omvatten, moeten zowel de appID-URL als het appID-domein worden vermeld.</translation>
 <translation id="5836064773277134605">Het UDP-poortbereik beperken dat voor de host voor externe toegang wordt gebruikt</translation>
+<translation id="5855010364142818361">Dit beleid bepaalt opdrachtregelparameters voor Chrome vanuit Internet Explorer.
+
+      Als de oude add-in 'Ondersteuning voor oudere browsers' voor Internet Explorer niet is geïnstalleerd, heeft dit beleid geen effect.
+
+      Als dit beleid niet is ingesteld, geeft Internet Explorer de URL alleen door aan Chrome als opdrachtregelparameter.
+
+      Als dit beleid is ingesteld op een lijst met tekenreeksen, worden de tekenreeksen samengevoegd met spaties en doorgegeven aan Chrome als opdrachtregelparameter.
+
+      Als een element <ph name="URL_PLACEHOLDER" /> bevat, wordt dit vervangen door de URL van de pagina die moet worden geopend.
+
+      Als geen enkel element <ph name="URL_PLACEHOLDER" /> bevat, wordt de URL toegevoegd aan het einde van de opdrachtregel.
+
+      Omgevingsvariabelen worden uitgevouwen. In Windows wordt <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> vervangen door de waarde van de omgevingsvariabele ABC.</translation>
 <translation id="5861856285460256766">Configuratie van toegangscode voor ouders</translation>
 <translation id="5868414965372171132">Netwerkconfiguratie op gebruikersniveau</translation>
 <translation id="5879014913445067283">Bepaalt de detectiemethode van 'Network File Shares' via <ph name="NETBIOS_NAME" /></translation>
@@ -3319,6 +3410,15 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 
       Als deze instelling is uitgeschakeld of niet is ingesteld, kan Flash-content van andere bronnen of minder belangrijke content worden geblokkeerd.</translation>
 <translation id="6532769014584932288">Wake locks toestaan</translation>
+<translation id="653645667373317432">Met dit beleid wordt bepaald welke opdracht wordt gebruik om URL's te openen in <ph name="PRODUCT_NAME" /> bij overschakeling vanuit Internet Explorer.
+
+      Als de oude add-in 'Ondersteuning voor oudere browsers' voor Internet Explorer niet is geïnstalleerd, heeft dit beleid geen effect.
+
+      Als dit beleid niet is ingesteld, detecteert Internet Explorer automatisch het eigen uitvoerbare pad van <ph name="PRODUCT_NAME" /> als <ph name="PRODUCT_NAME" /> wordt gestart via Internet Explorer.
+
+      Als dit beleid is ingesteld, wordt het gebruikt om <ph name="PRODUCT_NAME" /> te starten als <ph name="PRODUCT_NAME" /> wordt gestart via Internet Explorer.
+
+      Dit beleid kan worden ingesteld op een pad naar een uitvoerbaar bestand of op <ph name="PRODUCT_NAME_PLACEHOLDER" /> om de installatielocatie van Chrome automatisch te detecteren.</translation>
 <translation id="6536600139108165863">Automatisch opnieuw opstarten wanneer apparaat wordt afgesloten</translation>
 <translation id="6539246272469751178">Dit beleid is niet van invloed op Android-apps. Android-apps gebruiken altijd de standaardmap voor downloads en hebben geen toegang tot bestanden die door <ph name="PRODUCT_OS_NAME" /> zijn gedownload naar een niet-standaard downloadmap.</translation>
 <translation id="654303922206238013">Migratiestrategie voor eCryptfs</translation>
@@ -3332,6 +3432,17 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6559057113164934677">Niet toestaan dat sites toegang krijgen tot de camera en microfoon</translation>
 <translation id="6561396069801924653">Toegankelijkheidsopties weergeven in het systeemvakmenu</translation>
 <translation id="6563458316362153786">802.11r Fast Transition inschakelen</translation>
+<translation id="6568977718979857253">Dit beleid is beëindigd. Gebruik het beleid <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> om de beschikbaarheid van de Flash-plug-in te beheren en het beleid <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> om aan te geven of de geïntegreerde pdf-viewer moet worden gebruikt om pdf-bestanden te openen.
+
+      Specificeert een lijst met plug-ins die zijn uitgeschakeld in <ph name="PRODUCT_NAME" /> en voorkomt dat gebruikers deze instelling kunnen wijzigen.
+
+      De jokertekens '*' en '?' kunnen worden gebruikt om overeenkomsten te zoeken in reeksen met willekeurige tekens. '*' komt overeen met een willekeurig aantal tekens, terwijl met '?' een optioneel enkel teken wordt gespecificeerd dat overeenkomt met nul tekens of één teken. Het escape-teken is '\'. Als je dus naar overeenkomsten zoekt met de feitelijke tekens '*', '?' of '\', kun je er een '\' voor zetten.
+
+      Als je deze instelling inschakelt, wordt de gespecificeerde lijst met plug-ins nooit gebruikt in <ph name="PRODUCT_NAME" />. De plug-ins zijn gemarkeerd als 'uitgeschakeld' in 'about:plugins' en gebruikers kunnen deze niet inschakelen.
+
+      Dit beleid kan worden overschreven door EnabledPlugins en DisabledPluginsExceptions.
+
+      Als dit beleid niet is ingesteld, kan de gebruiker elke op het systeem geïnstalleerde plug-in gebruiken, behalve hardgecodeerde ongeschikte, verouderde of gevaarlijke plug-ins.</translation>
 <translation id="6573305661369899995">Een externe bron voor URL-beperkingen instellen</translation>
 <translation id="6583851521569686409">Hiermee wordt een lijst met printers geconfigureerd.
 
@@ -3413,6 +3524,11 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
       Deze instelling beheert de presentatie van de welkomstpagina's waar gebruikers kunnen inloggen bij <ph name="PRODUCT_NAME" />, de browser kunnen instellen als hun standaardbrowser of anderszins informatie krijgen over productfuncties.</translation>
 <translation id="6766216162565713893">Toestaan dat sites de gebruiker vragen om toegang te verlenen tot een Bluetooth-apparaat in de buurt</translation>
 <translation id="6770454900105963262">Informatie over actieve kiosk-sessies melden</translation>
+<translation id="6780908086869332493">Hiermee kun je een lijst met URL-patronen opgeven om sites te specificeren waarvoor automatisch een clientcertificaat wordt geselecteerd op het inlogscherm in het frame waarin het SAML-proces wordt gehost als de site vraagt om een certificaat. Een voorbeeldgebruik is een certificaat voor het hele apparaat configureren dat wordt gepresenteerd aan de SAML IdP.
+
+      De waarde moet een matrix van json-woordenboeken met tekenreeksen zijn. Elk woordenboek moet de indeling <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> hebben, waarbij <ph name="URL_PATTERN_PLACEHOLDER" /> een patroon voor het instellen van content is. <ph name="FILTER_PLACEHOLDER" /> beperkt de clientcertificaten die de browser automatisch kan selecteren. Onafhankelijk van het filter worden alleen certificaten geselecteerd die overeenkomen met het certificaatverzoek van de server. Als <ph name="FILTER_PLACEHOLDER" /> de indeling <ph name="JSON_DICTIONARY_EXAMPLE" /> heeft, worden daarnaast alleen clientcertificaten geselecteerd die zijn uitgegeven door een certificaat met de CommonName <ph name="ISSUER_CN_PLACEHOLDER" />. Als <ph name="FILTER_PLACEHOLDER" /> het lege woordenboek {} is, wordt de selectie van clientcertificaten niet verder beperkt.
+
+      Als dit beleid niet wordt ingesteld, wordt voor geen enkele site automatische selectie uitgevoerd.</translation>
 <translation id="6786747875388722282">Extensies</translation>
 <translation id="6786967369487349613">De map voor roaming-profielen instellen</translation>
 <translation id="6795485990775913659">Alleen afdrukken toestaan zonder pincode</translation>
@@ -3632,6 +3748,15 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid niet is geconfigureerd, kunnen alle gebruikers inloggen. Als je nieuwe gebruikers wilt maken, moet het beleid <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> correct zijn ingesteld.</translation>
 <translation id="7126716959063786004">Het beëindigen van processen in Taakbeheer inschakelen</translation>
 <translation id="7127892035367404455">Doelversie herstellen</translation>
+<translation id="712963038874313213">Hiermee wordt een Ansible-playbook geboden dat moet worden uitgevoerd in de standaard Crostini-container.
+
+      Dit beleid staat het bieden van een Ansible-playbook toe die mag worden toegepast op de standaard Crostini-container als deze beschikbaar is op het opgegeven apparaat en is toegestaan door het beleid.
+
+      Het bestand mag niet groter zijn dan 1 MB (1.000.000 bytes) en moet zijn gecodeerd in YAML. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
+
+      De configuratie wordt gedownload en opgeslagen in het cachegeheugen. Deze wordt opnieuw gedownload als de URL of de hash wordt gewijzigd.
+
+      Als je het beleid instelt, kunnen gebruikers het niet wijzigen. Als het beleid niet is ingesteld, kunnen gebruikers de standaard Crostini-container blijven gebruiken met de actieve configuratie als Crostini wordt toegestaan door het beleid.</translation>
 <translation id="713121532817834879">Dit beleid is een URL die met dezelfde indeling naar een XML-bestand verwijst als het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer. Hiermee worden regels vanuit een XML-bestand geladen, zonder dat deze regels worden gedeeld met Internet Explorer.
 
       De regels in dit XML-bestand zijn op dezelfde manier van toepassing als <ph name="GREYLIST_POLICY_NAME" />. Dit betekent dat deze regels voorkomen dat <ph name="PRODUCT_NAME" /> de alternatieve browser opent en ook voorkomen dat de alternatieve browser <ph name="PRODUCT_NAME" /> opent.
@@ -3838,8 +3963,16 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid is ingesteld op 'Uploads en downloads uitstellen', werkt <ph name="PRODUCT_NAME" /> in overeenstemming met de regels die worden beschreven onder 'Downloads uitstellen' en 'Uploads uitstellen'.
       </translation>
 <translation id="7372831798009983116">De toegankelijkheidsfunctie voor automatisch klikken inschakelen</translation>
+<translation id="7373200034079131670">Opnieuw opstarten bij uitloggen gebruiker als Android of een VM is gestart.</translation>
 <translation id="737655323154569539">Hiermee beperk je de grootte van de afdrukpagina. Als er geen beleid is ingesteld of de instelling leeg is, gelden er geen beperkingen.</translation>
 <translation id="7382191643394429934">Afdrukken zowel met als zonder achtergrondbeelden toestaan</translation>
+<translation id="7383445181072113521">Hiermee bepaal je de hostnaam van het apparaat die wordt gebruikt in DHCP-verzoeken.
+
+      Als dit beleid is ingesteld op een niet-lege tekenreeks, wordt deze tekenreeks tijdens het DHCP-verzoek gebruikt als hostnaam van het apparaat.
+
+      De tekenreeks kan de variabelen <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" /> bevatten, die worden vervangen door waarden op het apparaat voordat deze hostnaam wordt gebruikt. Deze vervanging moet een geldige hostnaam opleveren (volgens RFC 1035, artikel 3.1).
+
+      Als dit beleid niet is ingesteld of als de vervanging geen geldige hostnaam oplevert, wordt er geen hostnaam ingesteld in het DHCP-verzoek. </translation>
 <translation id="7389872682701720082">Als je deze instelling inschakelt, worden plug-ins altijd uitgevoerd als ze niet verouderd zijn.
 
       Als deze instelling is uitgeschakeld of niet is ingesteld, wordt gebruikers om toestemming gevraagd voordat plug-ins worden uitgevoerd waarvoor toestemming is vereist. Dit zijn de plug-ins die een beveiligingsrisico kunnen vormen.</translation>
@@ -3926,6 +4059,14 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Voor cookies op domeinen die niet overeenkomen met de hier genoemde patronen, of voor alle cookies als dit beleid niet is ingesteld, wordt de algemene standaardinstelling gebruikt op basis van het <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" />-beleid (als dit is ingesteld), of anders op basis van de configuratie van de gebruiker.
 
           Houd er rekening mee dat de patronen die je hier opgeeft, worden behandeld als domeinen (en niet als URL's). Geef daarom geen schema of poort op.</translation>
+<translation id="7590188804371204512">Beheert de installatie van externe extensies.
+
+      Als je deze instelling inschakelt, wordt de installatie van externe extensies geblokkeerd.
+
+      Als je deze instelling uitschakelt of niet instelt, kunnen externe extensies worden geïnstalleerd.
+
+      Externe extensies en de installatie daarvan worden beschreven op https://developer.chrome.com/apps/external_extensions.
+      </translation>
 <translation id="7593523670408385997">Configureert de cachegrootte die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gecachte bestanden op de schijf.
 
       Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> de opgegeven cachegrootte, ongeacht of de gebruiker de markering --disk-cache-size heeft opgegeven. De waarde die in dit beleid wordt opgegeven, is geen vaste waarde maar een suggestie voor het cachesysteem. Een waarde die lager is dan een paar megabytes, is te klein en wordt afgerond naar een redelijk minimum.
@@ -3989,6 +4130,13 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Zie ook de beleidsregels CookiesAllowedForUrls en CookiesBlockedForUrls. Houd er rekening mee dat er geen conflicterende URL-patronen tussen deze drie beleidsregels mogen bestaan, omdat er niet wordt aangegeven welk beleid voorrang krijgt.
 
           Als het beleid RestoreOnStartup zo is ingesteld dat URL's van eerdere sessies worden hersteld, geldt dit beleid niet en worden cookies voor deze sites permanent opgeslagen.</translation>
+<translation id="7677220829878081413">
+      Als dit beleid is ingesteld op ArcSession, wordt het apparaat gedwongen opnieuw opgestart na het uitloggen van een gebruiker als Android is gestart.
+      Als dit beleid is ingesteld op ArcSessionOrVMStart, wordt het apparaat gedwongen opnieuw opgestart na het uitloggen van een gebruiker als Android of een VM is gestart.
+      Als dit beleid is ingesteld op Altijd, wordt het apparaat elke keer na het uitloggen van een gebruiker gedwongen opnieuw opgestart.
+      Als dit beleid niet wordt ingesteld, heeft het geen effect en wordt opnieuw opstarten na het uitloggen van een gebruiker niet afgedwongen. Hetzelfde is van toepassing als het beleid is ingesteld op Nooit.
+      Dit beleid is alleen van invloed op niet-gelieerde gebruikers.
+      </translation>
 <translation id="7683777542468165012">Beleid dynamisch vernieuwen</translation>
 <translation id="7687943045976362719">Als dit beleid is ingesteld, worden de opgegeven contenttypen verwerkt door <ph name="PRODUCT_FRAME_NAME" />.
 
@@ -4097,6 +4245,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als dit beleid is uitgeschakeld, mogen gebruikers geen Kerberos-accounts toevoegen. De accounts kunnen alleen worden toegevoegd via het beleid 'Kerberos-accounts configureren'. Dit is een effectieve manier om accounts te vergrendelen.</translation>
 <translation id="7895553628261067384">Externe toegang</translation>
+<translation id="7902040092815978832">Numeriek toetsenbord weergeven voor wachtwoord</translation>
 <translation id="7902255855035461275">Patronen in deze lijst worden vergeleken met de beveiligingsoorsprong van de aanvragende URL. Als een overeenkomst wordt gevonden, wordt toegang tot apparaten voor het vastleggen van video zonder prompt toegestaan.
 
       OPMERKING: Tot versie 45 werd dit beleid alleen ondersteund in de kioskmodus.</translation>
@@ -4176,6 +4325,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Deze bladwijzers worden in een map geplaatst die niet kan worden aangepast door de gebruiker. De gebruiker kan er wel voor kiezen de map te verbergen op de bladwijzerbalk. De mapnaam is standaard 'Beheerde bladwijzers'. De naam kan worden aangepast door een woordenboek met de sleutel '<ph name="TOPLEVEL_NAME" />' en de gewenste mapnaam als waarde toe te voegen aan de lijst met bladwijzers.
 
       Beheerde bladwijzers worden niet gesynchroniseerd met het gebruikersaccount en kunnen niet worden aangepast via extensies.</translation>
+<translation id="8077245272412229388">Hiermee worden vooraf ingevulde Kerberos-accounts toegevoegd. Als de Kerberos-gegevens overeenkomen met de inloggegevens, kan een account worden geconfigureerd om de inloggegevens opnieuw te gebruiken door '<ph name="LOGIN_EMAIL_PLACEHOLDER" />' en '<ph name="PASSWORD_PLACEHOLDER" />' te specificeren voor respectievelijk het hoofdaccount en wachtwoord, zodat het Kerberos-ticket automatisch kan worden opgehaald, tenzij verificatie in twee stappen is geconfigureerd. Gebruikers kunnen accounts die zijn toegevoegd via dit beleid niet aanpassen.
+
+          Als dit beleid is ingeschakeld, wordt de lijst met accounts die is gespecificeerd door het beleid, toegevoegd aan de instellingen voor Kerberos-accounts.
+
+          Als dit beleid is uitgeschakeld of niet is ingesteld, worden er geen accounts toegevoegd aan de instellingen voor Kerberos-accounts en worden alle accounts verwijderd die eerder zijn toegevoegd via dit beleid. Gebruikers kunnen nog altijd handmatig accounts toevoegen als het beleid 'Gebruikers kunnen Kerberos-accounts toevoegen' is ingeschakeld.</translation>
 <translation id="8078366200175825572">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop geen cookies mogen worden ingesteld.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites, op basis van het beleid DefaultPluginsSetting (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.

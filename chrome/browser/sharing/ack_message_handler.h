@@ -10,13 +10,14 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chrome/browser/sharing/response_callback_helper.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
+
+class SharingMessageSender;
 
 // Class to managae ack message and notify observers.
 class AckMessageHandler : public SharingMessageHandler {
  public:
-  explicit AckMessageHandler(ResponseCallbackHelper* response_callback_helper);
+  explicit AckMessageHandler(SharingMessageSender* sharing_message_sender);
   ~AckMessageHandler() override;
 
   // SharingMessageHandler implementation:
@@ -24,7 +25,7 @@ class AckMessageHandler : public SharingMessageHandler {
                  SharingMessageHandler::DoneCallback done_callback) override;
 
  private:
-  ResponseCallbackHelper* response_callback_helper_;
+  SharingMessageSender* sharing_message_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(AckMessageHandler);
 };

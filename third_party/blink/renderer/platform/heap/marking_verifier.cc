@@ -19,7 +19,6 @@ void MarkingVerifier::VerifyObject(HeapObjectHeader* header) {
   const bool can_verify =
       !info->has_v_table || blink::VTableInitialized(header->Payload());
   if (can_verify) {
-    CHECK(header->IsValid());
     parent_ = header;
     info->trace(this, header->Payload());
   }

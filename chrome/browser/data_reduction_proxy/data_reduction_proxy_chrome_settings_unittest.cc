@@ -40,7 +40,7 @@ class DataReductionProxyChromeSettingsTest
     ChromeRenderViewHostTestHarness::SetUp();
     network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
         network::mojom::ConnectionType::CONNECTION_4G);
-    auto settings = std::make_unique<DataReductionProxyChromeSettings>();
+    auto settings = std::make_unique<DataReductionProxyChromeSettings>(false);
     drp_chrome_settings_ = settings.get();
     test_context_ =
         data_reduction_proxy::DataReductionProxyTestContext::Builder()

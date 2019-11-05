@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/counters/site_settings_counter.h"
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/test/simple_test_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -26,6 +27,49 @@
 
 namespace {
 
+class TestProtocolHandlerRegistryDelegate
+    : public ProtocolHandlerRegistry::Delegate {
+ public:
+  TestProtocolHandlerRegistryDelegate() = default;
+  ~TestProtocolHandlerRegistryDelegate() override = default;
+
+  TestProtocolHandlerRegistryDelegate(
+      const TestProtocolHandlerRegistryDelegate& other) = delete;
+  TestProtocolHandlerRegistryDelegate& operator=(
+      const TestProtocolHandlerRegistryDelegate& other) = delete;
+
+  // ProtocolHandlerRegistry::Delegate:
+  void RegisterExternalHandler(const std::string& protocol) override {
+    bool inserted = registered_protocols_.insert(protocol).second;
+    DCHECK(inserted);
+  }
+  void DeregisterExternalHandler(const std::string& protocol) override {
+    size_t removed = registered_protocols_.erase(protocol);
+    DCHECK_EQ(removed, 1u);
+  }
+  bool IsExternalHandlerRegistered(const std::string& protocol) override {
+    return registered_protocols_.find(protocol) != registered_protocols_.end();
+  }
+  void RegisterWithOSAsDefaultClient(
+      const std::string& protocol,
+      ProtocolHandlerRegistry* registry) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(registry->GetDefaultWebClientCallback(protocol),
+                       shell_integration::NOT_DEFAULT));
+  }
+  void CheckDefaultClientWithOS(const std::string& protocol,
+                                ProtocolHandlerRegistry* registry) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(registry->GetDefaultWebClientCallback(protocol),
+                       shell_integration::NOT_DEFAULT));
+  }
+
+ private:
+  base::flat_set<std::string> registered_protocols_;
+};
+
 class SiteSettingsCounterTest : public testing::Test {
  public:
   void SetUp() override {
@@ -37,7 +81,7 @@ class SiteSettingsCounterTest : public testing::Test {
     zoom_map_ = nullptr;
 #endif
     handler_registry_ = std::make_unique<ProtocolHandlerRegistry>(
-        profile(), new ProtocolHandlerRegistry::Delegate());
+        profile(), new TestProtocolHandlerRegistryDelegate());
 
     counter_ = std::make_unique<SiteSettingsCounter>(
         map(), zoom_map(), handler_registry(), profile_->GetPrefs());

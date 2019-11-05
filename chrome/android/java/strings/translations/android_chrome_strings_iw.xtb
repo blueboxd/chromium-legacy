@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">העתק כתובת אתר</translation>
 <translation id="2156074688469523661">אתרים שנותרו (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">‏כדי לשתף משהו מהטלפון שלך עם מכשיר אחר, יש להפעיל את הסנכרון בהגדרות Chrome בשני המכשירים</translation>
-<translation id="2170088579611075216">‏הפעלת VR וכניסה ל-VR</translation>
 <translation id="2175927920773552910">‏קוד QR</translation>
 <translation id="218608176142494674">שיתוף</translation>
 <translation id="2227444325776770048">המשך בשם <ph name="USER_FULL_NAME" /></translation>
@@ -183,6 +182,7 @@
 <translation id="2321958826496381788">יש לגרור את המחוון עד שאפשר יהיה לקרוא את הקטע הזה בצורה נוחה. לאחר הקשה פעמיים על פיסקה, הטקסט אמור להיות מוצג בגודל הזה לפחות.</translation>
 <translation id="2323763861024343754">נתוני אתר מאוחסנים</translation>
 <translation id="2328985652426384049">אי אפשר להיכנס לחשבון</translation>
+<translation id="2330129964253841015">הצגת אזהרות כשסיסמאות בסיכון</translation>
 <translation id="2349710944427398404">‏סך כל הנתונים שבהם משתמש Chrome, כולל חשבונות, סימניות והגדרות שמורות</translation>
 <translation id="2353636109065292463">בדיקת חיבור האינטרנט</translation>
 <translation id="2359808026110333948">המשך</translation>
@@ -190,6 +190,7 @@
 <translation id="2387895666653383613">שינוי גודל טקסט</translation>
 <translation id="2394602618534698961">קבצים שהורדת מופיעים כאן</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2407481962792080328">‏התכונה הזו מופעלת בעת הכניסה לחשבון Google</translation>
 <translation id="2410754283952462441">בחירת חשבון</translation>
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2416359993254398973">‏Chrome זקוק להרשאה גישה אל המצלמה בשביל האתר הזה.</translation>
@@ -198,6 +199,7 @@
 <translation id="2434158240863470628">ההורדה הושלמה <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">גישה למיקום</translation>
 <translation id="2450083983707403292">להתחיל שוב את ההורדה של <ph name="FILE_NAME" />?</translation>
+<translation id="246532703174860178">שיתוף</translation>
 <translation id="2482878487686419369">התראות</translation>
 <translation id="2490684707762498678">מנוהלות על-ידי <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">‏Google Assistant ב-Chrome</translation>
@@ -412,7 +414,6 @@
 <translation id="4135200667068010335">רשימת המכשירים שאפשר לשתף איתם כרטיסייה נסגרה.</translation>
 <translation id="4149994727733219643">תצוגה פשוטה של דפי אינטרנט</translation>
 <translation id="4165986682804962316">הגדרות לאתרים</translation>
-<translation id="4169535189173047238">לא לאפשר</translation>
 <translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="4179980317383591987">נעשה שימוש ב-<ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">שפות</translation>
@@ -531,10 +532,6 @@
 <translation id="5011311129201317034"><ph name="SITE" /> מבקש להתחבר אל</translation>
 <translation id="5013696553129441713">אין הצעות חדשות</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">‏בזמן השימוש ב-VR, ייתכן שלאתר הזה תהיה אפשרות ללמוד על:
-  -  התכונות הפיזיות שלך, כמו הגובה
-
-חשוב לוודא שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="5039804452771397117">זה בסדר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
 <translation id="5048398596102334565">התרת גישה של אתרים אל חיישני התנועה (מומלץ)</translation>
@@ -608,11 +605,6 @@
 <translation id="5527082711130173040">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. <ph name="BEGIN_LINK1" />עדכן את ההרשאות<ph name="END_LINK1" />. כמו כן, הגישה למיקום <ph name="BEGIN_LINK2" />כבויה במכשיר הזה<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">יש לבקש הרשאה לפני מתן גישה לאתרים אל טקסט ותמונות מלוח העריכה (מומלץ)</translation>
 <translation id="5530766185686772672">סגור כרטיסיות גלישה בסתר</translation>
-<translation id="5534334044554683961">‏בזמן השימוש ב-VR, ייתכן שלאתר הזה תהיה אפשרות ללמוד על:
-  -   התכונות הפיזיות שלך, כמו הגובה
-  -   הצורה שבה החדר שלך מסודר
-
-חשוב לוודא שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="5534640966246046842">האתר הועתק</translation>
 <translation id="5556459405103347317">ניסיון טעינה נוסף</translation>
 <translation id="5561549206367097665">ממתין לרשת…</translation>
@@ -903,7 +895,6 @@
 <translation id="7665369617277396874">חשבון חדש</translation>
 <translation id="766587987807204883">כאן יוצגו מאמרים, ואפשר לקרוא אותם גם במצב לא מקוון</translation>
 <translation id="7682724950699840886">אפשר לנסות את הטיפים הבאים: צריך לוודא שיש מספיק מקום פנוי במכשיר ואז לנסות לייצא שוב.</translation>
-<translation id="7685301384041462804">‏חשוב לוודא שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
 <translation id="7698359219371678927">צור הודעת אימייל ב-<ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
 <translation id="7725024127233776428">הדפים שהוספת לסימניות מופיעים כאן</translation>
@@ -1079,7 +1070,6 @@
 <translation id="8998729206196772491">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chrome. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chrome תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google.</translation>
 <translation id="9019902583201351841">מנוהל על-ידי ההורים שלך</translation>
 <translation id="9028914725102941583">כדי לבצע שיתוף בין מכשירים יש להפעיל את הסנכרון</translation>
-<translation id="9029323097866369874">‏לאפשר ל-<ph name="DOMAIN" /> להפעיל VR?</translation>
 <translation id="9040142327097499898">יש הרשאה להצגת הודעות. המיקום כבוי בשביל המכשיר הזה.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{סרטון אחד (#)}two{# סרטונים}many{# סרטונים}other{# סרטונים}}</translation>
 <translation id="9050666287014529139">משפט-סיסמה</translation>

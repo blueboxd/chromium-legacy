@@ -19,7 +19,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -605,11 +605,12 @@ void RecordSiteIsolationPrintMetrics(blink::WebFrame* printed_frame) {
         cross_site_visible_frame_count++;
     }
   }
-  UMA_HISTOGRAM_COUNTS_100("PrintPreview.SiteIsolation.RemoteFrameCount",
-                           remote_frame_count);
-  UMA_HISTOGRAM_COUNTS_100("PrintPreview.SiteIsolation.CrossSiteFrameCount",
-                           cross_site_frame_count);
-  UMA_HISTOGRAM_COUNTS_100(
+
+  base::UmaHistogramCounts100("PrintPreview.SiteIsolation.RemoteFrameCount",
+                              remote_frame_count);
+  base::UmaHistogramCounts100("PrintPreview.SiteIsolation.CrossSiteFrameCount",
+                              cross_site_frame_count);
+  base::UmaHistogramCounts100(
       "PrintPreview.SiteIsolation.CrossSiteVisibleFrameCount",
       cross_site_visible_frame_count);
 }
@@ -1243,8 +1244,10 @@ void PrintRenderFrameHelper::InitiatePrintPreview(
   if (ipc_nesting_level_ > 1)
     return;
 
-  if (print_renderer)
+  if (print_renderer) {
     print_renderer_.Bind(std::move(print_renderer));
+    print_preview_context_.SetIsForArc(true);
+  }
 
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
 
@@ -1310,8 +1313,10 @@ void PrintRenderFrameHelper::OnPrintPreview(
 
   print_preview_context_.OnPrintPreview();
 
-  UMA_HISTOGRAM_ENUMERATION("PrintPreview.PreviewEvent",
-                            PREVIEW_EVENT_REQUESTED, PREVIEW_EVENT_MAX);
+  base::UmaHistogramEnumeration(print_preview_context_.IsForArc()
+                                    ? "Arc.PrintPreview.PreviewEvent"
+                                    : "PrintPreview.PreviewEvent",
+                                PREVIEW_EVENT_REQUESTED, PREVIEW_EVENT_MAX);
 
   if (!print_preview_context_.source_frame()) {
     DidFinishPrinting(FAIL_PREVIEW);
@@ -1394,8 +1399,10 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
   if (!print_pages_params_ || CheckForCancel())
     return false;
 
-  UMA_HISTOGRAM_ENUMERATION("PrintPreview.PreviewEvent",
-                            PREVIEW_EVENT_CREATE_DOCUMENT, PREVIEW_EVENT_MAX);
+  base::UmaHistogramEnumeration(
+      print_preview_context_.IsForArc() ? "Arc.PrintPreview.PreviewEvent"
+                                        : "PrintPreview.PreviewEvent",
+      PREVIEW_EVENT_CREATE_DOCUMENT, PREVIEW_EVENT_MAX);
 
   const PrintMsg_Print_Params& print_params = print_pages_params_->params;
   const std::vector<int>& pages = print_pages_params_->pages;
@@ -1804,8 +1811,8 @@ void PrintRenderFrameHelper::PrintPages() {
   if (print_params.preview_ui_id < 0) {
     // Printing for system dialog.
     int printed_count = params.pages.empty() ? page_count : params.pages.size();
-    UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.SystemDialog",
-                            printed_count);
+    base::UmaHistogramCounts1M("PrintPreview.PageCount.SystemDialog",
+                               printed_count);
   }
 
   RecordSiteIsolationPrintMetrics(prep_frame_view_->frame());
@@ -2401,7 +2408,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::RenderedPreviewPage(
     const base::TimeDelta& page_time) {
   DCHECK_EQ(RENDERING, state_);
   document_render_time_ += page_time;
-  UMA_HISTOGRAM_TIMES("PrintPreview.RenderPDFPageTime", page_time);
+  base::UmaHistogramTimes("PrintPreview.RenderPDFPageTime", page_time);
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::AllPagesRendered() {
@@ -2421,14 +2428,21 @@ void PrintRenderFrameHelper::PrintPreviewContext::FinalizePrintReadyDocument() {
     return;
   }
 
-  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderToPDFTime",
-                             document_render_time_);
   base::TimeDelta total_time =
       (base::TimeTicks::Now() - begin_time) + document_render_time_;
-  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderAndGeneratePDFTime",
-                             total_time);
-  UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderAndGeneratePDFTimeAvgPerPage",
-                             total_time / pages_to_render_.size());
+  base::TimeDelta avg_time_per_page = total_time / pages_to_render_.size();
+
+  base::UmaHistogramMediumTimes(is_for_arc_ ? "Arc.PrintPreview.RenderToPDFTime"
+                                            : "PrintPreview.RenderToPDFTime",
+                                document_render_time_);
+  base::UmaHistogramMediumTimes(
+      is_for_arc_ ? "Arc.PrintPreview.RenderAndGeneratePDFTime"
+                  : "PrintPreview.RenderAndGeneratePDFTime",
+      total_time);
+  base::UmaHistogramMediumTimes(
+      is_for_arc_ ? "Arc.PrintPreview.RenderAndGeneratePDFTimeAvgPerPage"
+                  : "PrintPreview.RenderAndGeneratePDFTimeAvgPerPage",
+      avg_time_per_page);
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::Finished() {
@@ -2442,8 +2456,9 @@ void PrintRenderFrameHelper::PrintPreviewContext::Failed(bool report_error) {
   state_ = INITIALIZED;
   if (report_error) {
     DCHECK_NE(PREVIEW_ERROR_NONE, error_);
-    UMA_HISTOGRAM_ENUMERATION("PrintPreview.RendererError", error_,
-                              PREVIEW_ERROR_LAST_ENUM);
+    base::UmaHistogramEnumeration(is_for_arc_ ? "Arc.PrintPreview.RendererError"
+                                              : "PrintPreview.RendererError",
+                                  error_, PREVIEW_ERROR_LAST_ENUM);
   }
   ClearContext();
 }
@@ -2457,6 +2472,11 @@ int PrintRenderFrameHelper::PrintPreviewContext::GetNextPageNumber() {
 
 bool PrintRenderFrameHelper::PrintPreviewContext::IsRendering() const {
   return state_ == RENDERING || state_ == DONE;
+}
+
+bool PrintRenderFrameHelper::PrintPreviewContext::IsForArc() const {
+  DCHECK_NE(state_, UNINITIALIZED);
+  return is_for_arc_;
 }
 
 bool PrintRenderFrameHelper::PrintPreviewContext::IsModifiable() const {
@@ -2482,6 +2502,10 @@ bool PrintRenderFrameHelper::PrintPreviewContext::
 bool PrintRenderFrameHelper::PrintPreviewContext::IsFinalPageRendered() const {
   DCHECK(IsRendering());
   return static_cast<size_t>(current_page_index_) == pages_to_render_.size();
+}
+
+void PrintRenderFrameHelper::PrintPreviewContext::SetIsForArc(bool is_for_arc) {
+  is_for_arc_ = is_for_arc;
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::set_error(

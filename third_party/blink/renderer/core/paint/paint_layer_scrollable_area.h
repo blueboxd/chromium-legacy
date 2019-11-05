@@ -60,6 +60,7 @@ namespace blink {
 enum ResizerHitTestType { kResizerForPointer, kResizerForTouch };
 
 class ComputedStyle;
+class GraphicsLayer;
 class HitTestResult;
 class LayoutBox;
 class LayoutCustomScrollbarPart;
@@ -273,21 +274,27 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // composited at little cost.
   // Note that this is done in CompositedLayerMapping, this function being
   // only a helper.
-  GraphicsLayer* LayerForScrolling() const override;
+  cc::Layer* LayerForScrolling() const override;
 
   void DidScroll(const FloatPoint&) override;
 
   // GraphicsLayers for the scrolling components.
-  //
   // Any function can return nullptr if they are not accelerated.
-  GraphicsLayer* LayerForHorizontalScrollbar() const override;
-  GraphicsLayer* LayerForVerticalScrollbar() const override;
-  GraphicsLayer* LayerForScrollCorner() const override;
+  GraphicsLayer* GraphicsLayerForScrolling() const;
+  GraphicsLayer* GraphicsLayerForHorizontalScrollbar() const;
+  GraphicsLayer* GraphicsLayerForVerticalScrollbar() const;
+  GraphicsLayer* GraphicsLayerForScrollCorner() const;
+
+  cc::Layer* LayerForHorizontalScrollbar() const override;
+  cc::Layer* LayerForVerticalScrollbar() const override;
+  cc::Layer* LayerForScrollCorner() const override;
 
   bool ShouldScrollOnMainThread() const override;
   bool IsActive() const override;
   bool IsScrollCornerVisible() const override;
   IntRect ScrollCornerRect() const override;
+  void SetScrollbarNeedsPaintInvalidation(ScrollbarOrientation) override;
+  void SetScrollCornerNeedsPaintInvalidation() override;
   IntRect ConvertFromScrollbarToContainingEmbeddedContentView(
       const Scrollbar&,
       const IntRect&) const override;
@@ -520,7 +527,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void InvalidateStickyConstraintsFor(PaintLayer*,
                                       bool needs_compositing_update = true);
   void InvalidatePaintForStickyDescendants();
-  bool HasNonCompositedStickyDescendants() const;
   uint32_t GetNonCompositedMainThreadScrollingReasons() {
     return non_composited_main_thread_scrolling_reasons_;
   }
@@ -631,6 +637,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void SetHorizontalScrollbarVisualRect(const IntRect&);
   void SetVerticalScrollbarVisualRect(const IntRect&);
   void SetScrollCornerAndResizerVisualRect(const IntRect&);
+
+  bool HasNonCompositedStickyDescendants() const;
 
   // PaintLayer is destructed before PaintLayerScrollable area, during this
   // time before PaintLayerScrollableArea has been collected layer_ will

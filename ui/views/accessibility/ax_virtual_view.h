@@ -123,7 +123,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
       base::RepeatingCallback<void(const View&, ui::AXNodeData*)> callback);
   void UnsetPopulateDataCallback();
 
-  // ui::AXPlatformNodeDelegate
+  // ui::AXPlatformNodeDelegate. Note that some of these functions have
+  // Mac-specific implementations in ax_virtual_view_mac.mm.
   const ui::AXNodeData& GetData() const override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;

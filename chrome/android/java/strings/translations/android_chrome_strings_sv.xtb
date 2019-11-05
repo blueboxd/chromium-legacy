@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Om du vill dela något från telefonen till en annan enhet aktiverar du synkronisering i Chrome-inställningarna på båda enheterna</translation>
-<translation id="2170088579611075216">Tillåt och aktivera VR</translation>
 <translation id="2175927920773552910">QR-kod</translation>
 <translation id="218608176142494674">Delar</translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
@@ -183,6 +182,7 @@
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
 <translation id="2323763861024343754">Webbplatslagring</translation>
 <translation id="2328985652426384049">Det gick inte att logga in</translation>
+<translation id="2330129964253841015">En varning visas om lösenord har läckt ut</translation>
 <translation id="2349710944427398404">Total data som används av Chrome, inklusive konton, bokmärken och sparade inställningar</translation>
 <translation id="2353636109065292463">Kontrollera internetanslutningen</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
@@ -190,6 +190,7 @@
 <translation id="2387895666653383613">Textskalning</translation>
 <translation id="2394602618534698961">Filer som du laddar ned visas här</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2407481962792080328">Den här funktionen är aktiverad när du loggar in på Google-kontot</translation>
 <translation id="2410754283952462441">Välj ett konto</translation>
 <translation id="2414886740292270097">Mörk</translation>
 <translation id="2416359993254398973">Du behöver ge Chrome behörighet att använda kameran på den här webbplatsen.</translation>
@@ -198,6 +199,7 @@
 <translation id="2434158240863470628">Nedladdningen är klar<ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Platsåtkomst</translation>
 <translation id="2450083983707403292">Vill du börja ladda ned <ph name="FILE_NAME" /> igen?</translation>
+<translation id="246532703174860178">Dela</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="2490684707762498678">Hanteras av <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Google-assistenten i Chrome</translation>
@@ -412,7 +414,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4135200667068010335">Listan över enheter som fliken kan delas med är stängd.</translation>
 <translation id="4149994727733219643">Förenklad vy för webbsidor</translation>
 <translation id="4165986682804962316">Platsinställningar</translation>
-<translation id="4169535189173047238">Tillåt inte</translation>
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> har använts</translation>
 <translation id="4181841719683918333">Språk</translation>
@@ -531,10 +532,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5011311129201317034"><ph name="SITE" /> vill ansluta</translation>
 <translation id="5013696553129441713">Inga nya förslag</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Webbplatsen kan ta reda på mer om följande om dig när VR är aktiverat:
-  – dina fysiska egenskaper, som längd
-
-Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5040262127954254034">Sekretess</translation>
 <translation id="5048398596102334565">Tillåt webbplatser att använda enhetens rörelsesensorer (rekommenderas)</translation>
@@ -608,11 +605,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5527082711130173040">Chrome behöver tillgång till platsinformation för att kunna söka efter enheter. <ph name="BEGIN_LINK1" />Uppdatera behörigheter<ph name="END_LINK1" />. Platsåtkomst är dessutom <ph name="BEGIN_LINK2" />inaktiverat för enheten<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Fråga innan en webbplats ges läsbehörighet till text och bilder i Urklipp (rekommenderas)</translation>
 <translation id="5530766185686772672">Stäng inkognitoflikar</translation>
-<translation id="5534334044554683961">Webbplatsen kan ta reda på mer om följande om dig när VR är aktiverat:
-  – dina fysiska egenskaper, som längd
-  –   formen på ditt rum
-
-Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="5534640966246046842">Webbplatsen har kopierats</translation>
 <translation id="5556459405103347317">Hämta igen</translation>
 <translation id="5561549206367097665">Väntar på nätverket …</translation>
@@ -903,7 +895,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7665369617277396874">Lägg till konto</translation>
 <translation id="766587987807204883">Artiklar som du kan läsa även när du är offline visas här</translation>
 <translation id="7682724950699840886">Testa följande: kontrollera att det finns tillräckligt mycket utrymme på enheten, gör om exporten.</translation>
-<translation id="7685301384041462804">Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="7698359219371678927">Skapa ett e-postmeddelande i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autoslutför sökningar och webbadresser</translation>
 <translation id="7725024127233776428">Sidor som infogats som bokmärke visas här</translation>
@@ -1079,7 +1070,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
 <translation id="9028914725102941583">Aktivera synkronisering om du vill dela mellan enheter</translation>
-<translation id="9029323097866369874">Vill du tillåta att <ph name="DOMAIN" /> aktiverar VR?</translation>
 <translation id="9040142327097499898">Aviseringar tillåts. Plats har inaktiverats på enheten.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videor}}</translation>
 <translation id="9050666287014529139">Lösenfras</translation>

@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Do Not Disturb is on.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Show notification settings. Notifications are off for an app}other{Show notification settings. Notifications are off for # apps}}</translation>
 <translation id="1525508553941733066">DISMISS</translation>
-<translation id="1537254971476575106">Full-screen magnifier</translation>
 <translation id="15373452373711364">Large mouse cursor</translation>
 <translation id="1546492247443594934">Desk 2</translation>
 <translation id="1550523713251050646">Click for more options</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Hit <ph name="KEYBOARD_SHORTCUT" /> to switch keyboard layout.</translation>
 <translation id="2501920221385095727">Sticky keys</translation>
 <translation id="2509468283778169019">CAPS LOCK is on</translation>
-<translation id="2532589005999780174">High contrast mode</translation>
 <translation id="2542089167727451762">Tap your profile image</translation>
 <translation id="255671100581129685">The Google Assistant is not available in a public session.</translation>
 <translation id="256712445991462162">the docked magnifier</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Too many fingerprint attempts</translation>
 <translation id="7994370417837006925">Multiple sign-in</translation>
 <translation id="8000066093800657092">No network</translation>
-<translation id="8029241286966751120">Full-screen Magnifier enabled. Press Ctrl+Search+M again to toggle it off.</translation>
 <translation id="8030169304546394654">Disconnected</translation>
 <translation id="8054466585765276473">Calculating battery time.</translation>
 <translation id="8061464966246066292">High contrast</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Last desk can't be removed.</translation>
 <translation id="8392451568018454956">Options menu for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Your parent has locked this device</translation>
-<translation id="8406981827175133772">Full-screen Magnifier</translation>
 <translation id="8425213833346101688">Change</translation>
 <translation id="8427213022735114808">Dictation sends your voice to Google to allow voice typing in any text field.</translation>
 <translation id="8428213095426709021">Settings</translation>

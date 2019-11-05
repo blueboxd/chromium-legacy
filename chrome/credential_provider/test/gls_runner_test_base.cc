@@ -25,6 +25,7 @@ constexpr char kGlsUserEmail[] = "gls-user-email";
 constexpr char kStartGlsEventName[] = "start-gls-event-name";
 constexpr char kOverrideGaiaId[] = "override-gaia-id";
 constexpr char kOverrideGaiaPassword[] = "override-gaia-password";
+constexpr char kOverrideFullName[] = "override-full-name";
 
 }  // namespace switches
 
@@ -70,6 +71,8 @@ MULTIPROCESS_TEST_MAIN(gls_main) {
       command_line->GetSwitchValueASCII(switches::kOverrideGaiaId);
   std::string gaia_password =
       command_line->GetSwitchValueASCII(switches::kOverrideGaiaPassword);
+  std::string full_name =
+      command_line->GetSwitchValueASCII(switches::kOverrideFullName);
   std::string expected_gaia_id =
       command_line->GetSwitchValueASCII(kGaiaIdSwitch);
   std::string expected_email =
@@ -85,6 +88,9 @@ MULTIPROCESS_TEST_MAIN(gls_main) {
   if (gaia_password.empty())
     gaia_password = "password";
 
+  if (full_name.empty())
+    full_name = "Full Name";
+
   if (command_line->HasSwitch(switches::kIgnoreExpectedGaiaId)) {
     DCHECK(!gaia_id_override.empty());
     expected_gaia_id = gaia_id_override;
@@ -96,7 +102,7 @@ MULTIPROCESS_TEST_MAIN(gls_main) {
   } else {
     dict.SetIntKey(kKeyExitCode, static_cast<UiExitCodes>(default_exit_code));
     dict.SetStringKey(kKeyEmail, expected_email);
-    dict.SetStringKey(kKeyFullname, "Full Name");
+    dict.SetStringKey(kKeyFullname, full_name);
     dict.SetStringKey(kKeyId, expected_gaia_id);
     dict.SetStringKey(kKeyAccessToken, "at-123456");
     dict.SetStringKey(kKeyMdmIdToken, "idt-123456");
@@ -483,6 +489,7 @@ HRESULT GlsRunnerTestBase::GetFakeGlsCommandline(
     const std::string& gls_email,
     const std::string& gaia_id_override,
     const std::string& gaia_password,
+    const std::string& full_name_override,
     const base::string16& start_gls_event_name,
     bool ignore_expected_gaia_id,
     base::CommandLine* command_line) {
@@ -504,9 +511,15 @@ HRESULT GlsRunnerTestBase::GetFakeGlsCommandline(
     command_line->AppendSwitchASCII(switches::kOverrideGaiaPassword,
                                     gaia_password);
   }
+
   if (!start_gls_event_name.empty()) {
     command_line->AppendSwitchNative(switches::kStartGlsEventName,
                                      start_gls_event_name);
+  }
+
+  if (!full_name_override.empty()) {
+    command_line->AppendSwitchASCII(switches::kOverrideFullName,
+                                    full_name_override);
   }
 
   return S_OK;

@@ -219,6 +219,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // SetNeedsDisplay() that have not been committed to the compositor thread.
   const gfx::Rect& update_rect() const { return inputs_.update_rect; }
 
+  void ResetUpdateRectForTesting() { inputs_.update_rect = gfx::Rect(); }
+
   // Set or get the rounded corner radii which is applied to the layer and its
   // subtree (as if they are together as a single composited entity) when
   // blitting into their target. Setting this makes the layer masked to bounds.
@@ -574,23 +576,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // if there is anything new to commit. If all layers return false, the commit
   // may be aborted.
   virtual bool Update();
-  // Internal method to be overriden by Layer subclasses that override Update()
-  // and require rasterization. After Update() is called, this is immediately
-  // called, and should return whether the layer will require rasterization of
-  // paths that will be difficult/slow to raster. Only layers that do
-  // rasterization via TileManager need to override this, other layers that have
-  // content generated in other ways may leave it as the default.
-  virtual bool HasSlowPaths() const;
-  // Internal method to be overriden by Layer subclasses that override Update()
-  // and require rasterization. After Update() is called, this is immediately
-  // called, and should return whether the layer will require rasterization of a
-  // drawing operation that must not be anti-aliased. In this case using MSAA to
-  // antialias the entire layer's content would produce an incorrect result.
-  // This result is considered sticky, once a layer returns true, so false
-  // positives should be avoided. Only layers that do rasterization via
-  // TileManager need to override this, other layers that have content generated
-  // in other ways may leave it as the default.
-  virtual bool HasNonAAPaint() const;
 
   // Internal to property tree construction. This allows a layer to request that
   // its transform should be snapped such that the layer aligns with the pixel

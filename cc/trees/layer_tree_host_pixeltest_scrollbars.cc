@@ -50,12 +50,14 @@ class PaintedScrollbar : public FakeScrollbar {
     set_track_rect(gfx::Rect(size));
   }
 
-  void PaintPart(PaintCanvas* canvas, ScrollbarPart part) override {
+  void PaintPart(PaintCanvas* canvas,
+                 ScrollbarPart part,
+                 const gfx::Rect& rect) override {
     PaintFlags flags;
     flags.setStyle(PaintFlags::kStroke_Style);
     flags.setStrokeWidth(SkIntToScalar(paint_scale_));
     flags.setColor(color_);
-    gfx::Rect inset_rect = GetPartRect(part);
+    gfx::Rect inset_rect = rect;
     while (!inset_rect.IsEmpty()) {
       int big = paint_scale_ + 2;
       int small = paint_scale_;
@@ -212,12 +214,13 @@ class PaintedOverlayScrollbar : public FakeScrollbar {
                       VERTICAL,
                       /*is_left_side_vertical_scrollbar*/ false,
                       /*is_overlay*/ true) {
-    set_thumb_thickness(15);
-    set_thumb_length(50);
+    set_thumb_size(gfx::Size(15, 50));
     set_track_rect(gfx::Rect(0, 0, 15, 400));
   }
 
-  void PaintPart(PaintCanvas* canvas, ScrollbarPart part) override {
+  void PaintPart(PaintCanvas* canvas,
+                 ScrollbarPart part,
+                 const gfx::Rect& rect) override {
     // The outside of the rect will be painted with a 1 pixel black, red, then
     // blue border. The inside will be solid blue. This will allow the test to
     // ensure that scaling the thumb doesn't scale the border at all.  Note
@@ -228,7 +231,7 @@ class PaintedOverlayScrollbar : public FakeScrollbar {
     flags.setStrokeWidth(SkIntToScalar(1));
     flags.setColor(SK_ColorBLACK);
 
-    gfx::Rect inset_rect = GetPartRect(part);
+    gfx::Rect inset_rect = rect;
     canvas->drawRect(RectToSkRect(inset_rect), flags);
 
     flags.setColor(SK_ColorRED);

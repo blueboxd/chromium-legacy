@@ -365,6 +365,7 @@
 
       如果停用或未設定這項政策，企業使用者將
       無法使用 ARC。</translation>
+<translation id="1553956579506604198">禁止系統安裝外部擴充功能</translation>
 <translation id="1559980755219453326">這項政策可控管是否要回報擴充功能和外掛程式資訊。
 
       如果不設定這項政策或設為 True，系統會收集擴充功能和外掛程式資料。
@@ -493,6 +494,15 @@
       如將這項政策設為有效的網址，<ph name="PRODUCT_NAME" /> 就會從該網址下載網站清單，然後按照 <ph name="SITELIST_POLICY_NAME" /> 政策中的設定套用規則。
 
       如要進一步瞭解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，請參閱：https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
+<translation id="1839278886947586809">
+      這項政策已在 M80 版中遭到移除，因為 WebDriver 現階段與所有現有政策相容，因此不再需要使用這項政策。
+
+      這項政策可讓使用 WebDriver 功能的使用者覆寫可能干擾此功能運作的政策。
+
+      目前這項政策停用了 SitePerProcess 和 IsolateOrigins 政策。
+
+      如果啟用這項政策，WebDriver 將可以覆寫不相容的政策。
+      如果停用這項政策或未設定，WebDriver 將無法覆寫不相容的政策。</translation>
 <translation id="1843117931376765605">使用者政策的重新整理頻率</translation>
 <translation id="1844620919405873871">設定快速解鎖相關政策。</translation>
 <translation id="1845405905602899692">資訊站設定</translation>
@@ -644,6 +654,7 @@
           如果未設定這項政策，系統將全部採用以上 4 種機制。</translation>
 <translation id="2067011586099792101">禁止存取內容套件以外的網站</translation>
 <translation id="2073552873076775140">允許登入 <ph name="PRODUCT_NAME" /></translation>
+<translation id="2075732129949889165">Crostini Ansible Playbook</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2077273864382355561">在電池供電環境下執行時的螢幕關閉延遲時間</translation>
 <translation id="2082205219176343977">設定裝置的最低 Chrome 版本限制。</translation>
@@ -654,6 +665,13 @@
 <translation id="2107601598727098402">
         這項政策已於 M72 淘汰。請改用 CloudManagementEnrollmentToken。
         </translation>
+<translation id="2108169571875569435">這項政策可控管在替代瀏覽器中開啟網址時，系統所使用的指令。
+
+      如果不設定這項政策，系統會使用平台專屬的預設值：Windows 使用 Internet Explorer、Mac OS X 使用 Safari。Linux 在未設定這項政策的情況下，將無法啟動替代瀏覽器。
+
+      如果將這項政策設為 <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />、<ph name="FIREFOX_VALUE_PLACEHOLDER" />、<ph name="SAFARI_VALUE_PLACEHOLDER" /> 或 <ph name="OPERA_VALUE_PLACEHOLDER" /> 的其中一項，系統會啟動指定瀏覽器 (如有安裝)。<ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> 只適用於 Windows，而 <ph name="SAFARI_VALUE_PLACEHOLDER" /> 只適用於 Windows 和 Mac OS X。
+
+      如果將這項政策設為檔案路徑，系統會將該檔案做為執行檔使用。</translation>
 <translation id="2111016292707172233">在 <ph name="PRODUCT_NAME" /> 的內容畫面中啟用「輕觸搜尋」功能。
 
       如果你啟用這項設定，使用者即可使用「輕觸搜尋」功能，並可自行選擇開啟或關閉這項功能。
@@ -749,6 +767,9 @@
       VideoCaptureAllowedUrls 清單內的網址才能進行錄影。
 
       這項政策會影響所有類型的影片輸入設備，而不僅限於內建攝影機。</translation>
+<translation id="2197625019569762163">將這項政策設為 True 時，系統預設會在登入畫面顯示數字鍵盤，方便使用者輸入密碼。使用者仍可切換為普通鍵盤。
+
+      如果設定這項政策，使用者將無法變更。如果不設定或將其設為 False，這項政策將不會生效。</translation>
 <translation id="2201555246697292490">設定內建訊息傳遞許可清單</translation>
 <translation id="220280840901385239">允許使用者新增例外網站，允許特定網站顯示可封鎖的混合內容</translation>
 <translation id="2204753382813641270">控制檔案櫃自動隱藏功能</translation>
@@ -930,6 +951,17 @@
 
       如果這項政策已設定或設為 False，則會顯示錯誤訊息，而不是網路設定提示。</translation>
 <translation id="2498238926436517902">一律自動隱藏檔案櫃</translation>
+<translation id="2505805702054675476">這項政策可控管用於啟動替代瀏覽器的指令行參數。
+
+      如果不設定這項政策，系統只會將網址以指令行參數的形式傳送。
+
+      如果將這項政策設定為字串清單，系統會將每個字串以個別指令行參數的形式傳送到替代瀏覽器。在 Windows 上，這些參數會以空格連接起來。在 Mac OS X 和 Linux 上，參數可能會包含空格，但仍會被視為單一參數。
+
+      如果有元素包含 <ph name="URL_PLACEHOLDER" />，系統會將該元素替換成要開啟的網頁網址。
+
+      如果沒有元素包含 <ph name="URL_PLACEHOLDER" />，則網址會附加在指令列結尾。
+
+      系統會展開環境變數。在 Windows 上，系統會將 <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> 替換為 <ph name="ENV_VARIABLE_VALUE" /> 環境變數的值。在 Mac OS X 和 Linux 上，系統會將 <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> 替換為 <ph name="ENV_VARIABLE" /> 環境變數的值。</translation>
 <translation id="250670737672448119">啟用插入點醒目顯示無障礙功能。
 
           這項功能會在使用者編輯時，醒目顯示插入點周圍的區域。
@@ -950,6 +982,11 @@
 <translation id="2517466659416174529">允許背景分頁凍結</translation>
 <translation id="2518231489509538392">允許播放音訊</translation>
 <translation id="2521581787935130926">在書籤列中顯示應用程式捷徑</translation>
+<translation id="2526082146909867346">允許你設定網址模式清單，指定 <ph name="PRODUCT_NAME" /> 要為哪些網站自動選取用戶端憑證 (如果網站要求憑證的話}。
+
+          這個值必須是字串化的 JSON 字典陣列。每個字典都必須採用 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />格式，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定模式，<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器只會選取符合伺服器憑證要求的憑證。例如，如果 <ph name="FILTER_PLACEHOLDER" /> 的格式為 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />，則瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 包含 <ph name="ISSUER_STRING_VALUE" /> 和 <ph name="SUBJECT_STRING_VALUE" /> 區段，則瀏覽器只會選取同時符合兩個條件的用戶端憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 指定了機構 (也就是「O」)，憑證必須有至少一個機構與指定值相符，才會納入選取範圍。如果 <ph name="FILTER_PLACEHOLDER" /> 指定了機構單位 (也就是「OU」)，憑證必須有至少一個機構單位與指定值相符，才會納入選取範圍。如果 <ph name="FILTER_PLACEHOLDER" /> 是空白的字典 <ph name="EMPTY_DICTIONARY" />，則瀏覽器在選取用戶端憑證時不會受到額外限制。
+
+          如果不設定這項政策，系統不會為任何網站自動選取憑證。</translation>
 <translation id="2529659024053332711">讓你指定啟動時的運作行為。
 
           如果你選擇 [開啟新分頁]，那麼每當你啟動 <ph name="PRODUCT_NAME" />，系統就會開啟新分頁。
@@ -1365,6 +1402,11 @@
 <translation id="3236046242843493070">允許安裝擴充功能、應用程式和使用者指令碼的來源網址模式清單</translation>
 <translation id="3240609035816615922">印表機設定存取權政策。</translation>
 <translation id="3240655340884151271">座架的內建 NIC MAC 位址</translation>
+<translation id="3242756958360374888">這項政策包含的模式清單可用於控管 <ph name="PRODUCT_NAME" /> 中帳戶的顯示設定。
+
+      系統會將裝置上的每個 Google 帳戶與這項政策中儲存的模式互相比對，藉此判定是否要在 <ph name="PRODUCT_NAME" /> 中顯示帳戶。如果帳戶名稱符合清單中的任何模式，系統即會顯示帳戶；反之則會隱藏帳戶。
+
+      你可以使用萬用字元「*」來比對零或其他任意字元。因「\」為逸出字元，如果要比對出「*」或「\」字元本身，請在這些字元前插入「\」。如果不設定這項政策，裝置上的所有 Google 帳戶都會在 <ph name="PRODUCT_NAME" /> 中顯示出來。</translation>
 <translation id="3251500716404598358">設定政策以便切換瀏覽器。
 
       設定的網站會自動在 <ph name="PRODUCT_NAME" /> 以外的另一個瀏覽器中開啟。</translation>
@@ -1415,6 +1457,19 @@
 
       這項政策僅能設為建議政策。你可以使用這項政策將一些建議語言代碼移到頂端，但使用者隨時能為工作階段選擇 <ph name="PRODUCT_OS_NAME" /> 支援的任何語言代碼。
       </translation>
+<translation id="3378482432905539452">這項政策已遭到淘汰。請使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 控管是否要提供 Flash 外掛程式，並使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> 指定是否要使用整合式 PDF 檢視器開啟 PDF 檔案。
+
+      指定使用者能否在 <ph name="PRODUCT_NAME" /> 中啟用或停用的外掛程式清單。
+
+      你可以使用萬用字元「*」和「?」來比對出任意字元序列。「*」可代表任意數量的字元，而「?」只能指定單一選用字元，也就是可代表零或一個字元。逸出字元為「\」，因此如果要比對出「*」、「?」或「\」字元本身，請在這些字元前面加上「\」。
+
+      如果啟用這項設定，<ph name="PRODUCT_NAME" /> 可以使用清單指定的外掛程式。即使外掛程式符合 DisabledPlugins 中的模式，使用者仍可在「about:plugins」中啟用或停用這些外掛程式。如果外掛程式與 DisabledPlugins、DisabledPluginsExceptions 和 EnabledPlugins 中的任何模式都不相符，使用者也可以啟用及停用這些外掛程式。
+
+      這項政策的用途是為嚴格的外掛程式黑名單設定例外；如果「DisabledPlugins」清單使用萬用字元設定黑名單 (例如以「*」停用所有外掛程式，或以「*Java*」停用所有 Java 外掛程式)，但管理員希望啟用某些特定版本的外掛程式 (例如「IcedTea Java 2.3」)，即可在這項政策中指定要允許的版本。
+
+      請注意，你必須將外掛程式的名稱與其群組名稱設為豁免項目。系統會在「about:plugins」中將每個外掛程式群組列為一個單獨區段；每個區段中可能會有一或多個外掛程式。例如，「Shockwave Flash」外掛程式屬於「Adobe Flash Player」群組，如要從黑名單中豁免該外掛程式，這兩個名稱都必須符合例外清單中的某個項目。
+
+      如果不設定這項政策，系統將鎖定並停用任何與「DisabledPlugins」中模式相符的外掛程式，且使用者無法加以啟用。</translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
 <translation id="3388153794103186066">你可以設定一組網址清單，當中指定的網站會自動取得權限，可存取具有特定廠商和產品 ID 的 USB 裝置。清單中的每個項目都必須包含裝置和網址，這項政策才會生效。裝置中的每個項目可包含廠商 ID 和產品 ID 欄位。如省略任何 ID，系統將視作萬用字元處理，但以下情況例外：如果未指定廠商 ID，也不可指定產品 ID。否則這項政策將不會生效，並會遭到忽略。
 
@@ -2116,6 +2171,15 @@
 <translation id="445270821089253489">控管 Chrome 回報的使用者與裝置資訊類型。</translation>
 <translation id="4453913621209182880">只允許使用背景圖形列印</translation>
 <translation id="4454820008017317557">顯示 <ph name="PRODUCT_NAME" /> 工具列圖示</translation>
+<translation id="4458977366860064210">使用舊版 <ph name="CORS" /> 導入作業，而不使用新版 <ph name="CORS" />。
+
+     如果將這項政策設為 True，系統會使用舊版導入作業，該作業應與先前的版本相容。
+
+      如果將這項政策設為 False 或不予設定，系統會使用新版導入作業，這可能會導致企業特定的相容性問題。
+
+      這項政策將在日後的版本中移除。
+
+      如要進一步瞭解 <ph name="CORS" />，請前往：<ph name="CORS_HELP_URL" />。</translation>
 <translation id="4467952432486360968">封鎖第三方 Cookie</translation>
 <translation id="4474167089968829729">允許將密碼儲存到密碼管理員</translation>
 <translation id="4476769083125004742">如果將這項政策設為 <ph name="BLOCK_GEOLOCATION_SETTING" />，Android 應用程式將無法存取位置資訊。如果將這項政策設為任何其他值或不予設定，當 Android 應用程式要存取位置資訊時，會詢問使用者是否同意。</translation>
@@ -2153,6 +2217,17 @@
 <translation id="4534500438517478692">Android 限制名稱：</translation>
 <translation id="4541530620466526913">裝置本機帳戶</translation>
 <translation id="4543502256674577024">裝置更新設定</translation>
+<translation id="4548555985107150628">這項政策已遭到淘汰。請使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 控管是否要提供 Flash 外掛程式，並使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> 指定是否要使用整合式 PDF 檢視器開啟 PDF 檔案。
+
+      這會指定在 <ph name="PRODUCT_NAME" /> 中要啟用哪些外掛程式，並禁止使用者變更這項設定。
+
+      你可以使用萬用字元「*」和「?」來比對出任意字元序列。「*」可代表任意數量的字元，而「?」只能指定單一選用字元，也就是可代表零或一個字元。逸出字元為「\」，因此如果要比對出「*」、「?」或「\」字元本身，請在這些字元前面加上「\」。
+
+      只要裝置安裝了清單中指定的外掛程式，<ph name="PRODUCT_NAME" /> 一律會使用這些外掛程式。這些外掛程式在「about:plugins」中會標示為已啟用，使用者無法予以停用。
+
+      請注意，這項政策會覆寫 DisabledPlugins 和 DisabledPluginsExceptions。
+
+      如果不設定這項政策，使用者將可停用系統上安裝的任何外掛程式。</translation>
 <translation id="4554651132977135445">使用者政策回送處理模式</translation>
 <translation id="4554841826517980623">這項政策可控管是否要允許 <ph name="PRODUCT_NAME" />的網路檔案共用功能使用 <ph name="NETBIOS_PROTOCOL" /> 搜尋網路上的共用項目。
       將這項政策設為 True 時，共用項目搜尋功能會使用 <ph name="NETBIOS_PROTOCOL" /> 通訊協定在網路上搜尋共用項目。
@@ -2913,6 +2988,19 @@
 
       網址 (例如 https://example.com/some/path) 只會比對為 U2F appID，網域 (例如 example.com) 則只會比對為 WebAuthn RP ID。因此，如要同時涵蓋指定網站的 U2F API 和 WebAuthn API，必須一併列出 appID 網址和網域。</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
+<translation id="5855010364142818361">這項政策可控管從 Internet Explorer 切換至 Chrome 時使用的指令列參數。
+
+      如果 Internet Explorer 未安裝「舊版瀏覽器支援」增益集，這項政策將不會生效。
+
+      如果不設定這項政策，Internet Explorer 僅會將網址傳送至 Chrome 做為指令列參數。
+
+      如果將這項政策設為字串清單，系統會使用空格連接字串，並傳送至 Chrome 做為指令列參數。
+
+      如果有元素包含 <ph name="URL_PLACEHOLDER" />，系統會將該元素替換成要開啟的網頁網址。
+
+      如果沒有元素包含 <ph name="URL_PLACEHOLDER" />，則網址會附加在指令列結尾。
+
+      系統會展開環境變數。在 Windows 上，系統會將 <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> 替換為 ABC 環境變數的值。</translation>
 <translation id="5861856285460256766">家長存取碼設定</translation>
 <translation id="5868414965372171132">使用者層級網路設定</translation>
 <translation id="5879014913445067283">控制網路檔案共用功能是否透過 <ph name="NETBIOS_NAME" /> 搜尋檔案</translation>
@@ -3220,6 +3308,15 @@
 
       如果這項設定已停用或尚未設定，系統可能會封鎖來自其他來源的 Flash 內容或檔案較小的內容。</translation>
 <translation id="6532769014584932288">允許使用 Wake Lock</translation>
+<translation id="653645667373317432">這項政策可控管從 Internet Explorer 切換到 Chrome 時，在 <ph name="PRODUCT_NAME" /> 中開啟網址時使用的指令。
+
+      如果 Internet Explorer 未安裝「舊版瀏覽器支援」增益集，這項政策將不會生效。
+
+      如果不設定這項政策，從 Internet Explorer 啟動 <ph name="PRODUCT_NAME" /> 時，Internet Explorer 會自動偵測 <ph name="PRODUCT_NAME" /> 專屬的執行檔路徑。
+
+      如果設定這項政策，從 Internet Explorer 啟動 <ph name="PRODUCT_NAME" /> 時，系統會使用指定的指令啟動 <ph name="PRODUCT_NAME" />。
+
+      你可以將這項政策設為執行檔路徑，或是設為 <ph name="PRODUCT_NAME_PLACEHOLDER" />，讓系統自動偵測 Chrome 的安裝位置。</translation>
 <translation id="6536600139108165863">裝置關機時自動重新啟動</translation>
 <translation id="6539246272469751178">這項政策對 Android 應用程式沒有影響。Android 應用程式會一律使用預設的下載目錄，無法存取任何由 <ph name="PRODUCT_OS_NAME" />下載到非預設下載目錄的檔案。</translation>
 <translation id="654303922206238013">eCryptfs 遷移策略</translation>
@@ -3233,6 +3330,15 @@
 <translation id="6559057113164934677">不允許任何網站使用攝影機和麥克風</translation>
 <translation id="6561396069801924653">在系統匣選單中顯示無障礙選項</translation>
 <translation id="6563458316362153786">啟用 802.11r 快速轉換</translation>
+<translation id="6568977718979857253">這項政策已遭到淘汰。請使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 控管是否要提供 Flash 外掛程式，並使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> 指定是否要使用整合式 PDF 檢視器開啟 PDF 檔案。
+
+      指定在 <ph name="PRODUCT_NAME" /> 中停用的外掛程式清單，並禁止使用者變更這項設定。
+
+      你可以使用萬用字元「*」和「?」來比對出任意字元序列。「*」可代表任意數量的字元，而「?」只能指定單一選用字元，也就是可代表零或一個字元。逸出字元為「\」，因此如果要比對出「*」、「?」或「\」字元本身，請在這些字元前面加上「\」。
+
+      如果啟用這項設定，<ph name="PRODUCT_NAME" /> 一律不會使用清單中指定的外掛程式，並且會在「about:plugins」中將這些外掛程式標示為已停用，使用者將無法予以啟用。請注意，EnabledPlugins 和 DisabledPluginsExceptions 可覆寫這項政策。
+
+      如果不設定這項政策，使用者可以使用系統上安裝的任何外掛程式 (不含與硬式編碼不相容、過舊或危險的外掛程式)。</translation>
 <translation id="6573305661369899995">設定外部網址來源限制</translation>
 <translation id="6583851521569686409">設定印表機清單。
 
@@ -3314,6 +3420,11 @@
       這項設定將決定歡迎頁面顯示與否，歡迎頁面可協助使用者登入 <ph name="PRODUCT_NAME" />，並將其設為預設瀏覽器，或是讓使用者瞭解產品功能。</translation>
 <translation id="6766216162565713893">允許網站要求使用者授權存取附近的藍牙裝置</translation>
 <translation id="6770454900105963262">回報運作中資訊站工作階段相關資訊</translation>
+<translation id="6780908086869332493">允許你設定網址模式清單，指定在 SAML 流程代管架構的登入畫面中，系統要為哪些網站自動選取用戶端憑證 (如果網站要求憑證的話)。實際應用範例為設定要提供給 SAML IdP 的裝置通用憑證。
+
+      這個值必須是字串化的 JSON 字典陣列。每個字典的格式都必須為 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定模式。<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器只會選取符合伺服器憑證要求的憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 的格式為 <ph name="JSON_DICTIONARY_EXAMPLE" />，瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 是空白的字典 {}，則瀏覽器在選取用戶端憑證時不會受到額外限制。
+
+      如果不設定這項政策，系統不會為任何網站自動選取憑證。</translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6786967369487349613">設定漫遊設定檔目錄</translation>
 <translation id="6795485990775913659">只在 PIN 碼停用時允許列印</translation>
@@ -3519,6 +3630,15 @@
       如果不設定這項政策，所有使用者均可登入裝置。請注意，想要建立新使用者，你仍需適當地設定 <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> 政策。</translation>
 <translation id="7126716959063786004">允許在工作管理員中結束處理程序</translation>
 <translation id="7127892035367404455">復原至目標版本</translation>
+<translation id="712963038874313213">提供應在預設 Crostini 容器中執行的 Ansible Playbook。
+
+      這項政策允許你提供要套用至預設 Crostini 容器的 Ansible Playbook (如果指定裝置可使用該容器，且政策允許)。
+
+      檔案大小不得超過 1 MB (1000000 個位元組)，且必須使用 YAML 編碼。系統會使用加密編譯雜湊碼驗證下載內容的完整性。
+
+      系統會下載並快取這個設定檔。只要網址或雜湊碼有任何變更，系統就會重新下載檔案。
+
+      如果設定這項政策，使用者將無法變更。如果未設定，且政策允許使用 Crostini 容器，則使用者在目前的配置中可繼續使用預設的 Crostini 容器。</translation>
 <translation id="713121532817834879">這項政策是一個網址，指向和 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策採用相同格式的 XML 檔案。因此，系統會從 XML 檔案載入規則，但不會與 Internet Explorer 共用這些規則。
 
       系統套用這個 XML 檔案中所含規則的方式與 <ph name="GREYLIST_POLICY_NAME" /> 相同。也就是說，這些規則會禁止 <ph name="PRODUCT_NAME" /> 開啟替代瀏覽器，並禁止替代瀏覽器開啟 <ph name="PRODUCT_NAME" />。
@@ -3722,8 +3842,16 @@
       如果將這項政策設為「延遲上傳及下載」，<ph name="PRODUCT_NAME" /> 會依照「延遲下載」和「延遲上傳」設定的規則執行作業。
       </translation>
 <translation id="7372831798009983116">啟用自動點擊無障礙功能</translation>
+<translation id="7373200034079131670">在 Android 或 VM 已啟動的前提下，於使用者登出時重新啟動。</translation>
 <translation id="737655323154569539">限制列印頁面大小。未設定這項政策或將設定留空，系統會視為未設限制。</translation>
 <translation id="7382191643394429934">不論是否使用背景圖形一律允許列印</translation>
+<translation id="7383445181072113521">決定 DHCP 要求所使用的裝置主機名稱。
+
+      如果將這項政策的值設為非空白字串，系統會將該字串設為 DHCP 要求中的裝置主機名稱。
+
+      字串可包含 <ph name="ASSET_ID_PLACEHOLDER" />、<ph name="SERIAL_NUM_PLACEHOLDER" />、<ph name="MAC_ADDR_PLACEHOLDER" />、<ph name="MACHINE_NAME_PLACEHOLDER" /> 變數，這些變數會先替換成裝置的值，再做為主機名稱使用。請注意，替換後的值必須是有效的主機名稱 (根據 RFC 1035 文件第 3.1 條的規定)。
+
+      如果未設定這項政策，或是替換後的值不是有效的主機名稱，系統將不會設定 DHCP 要求中的主機名稱。 </translation>
 <translation id="7389872682701720082">如果啟用這項設定，系統會一律執行未過期的外掛程式。
 
       如果停用這項設定或不設定，系統將徵求使用者許可來執行需要授權的外掛程式。這些外掛程式可能會危害系統的安全性。</translation>
@@ -3808,6 +3936,14 @@
           未設定這項政策或網域不符合這些模式時，系統會對 Cookie 套用 <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> 政策 (如已設定) 或個人配置中的全域預設值。
 
           請注意，系統會將你在這裡列出的模式視為網域而非網址，因此你不應指定網址架構或通訊埠。</translation>
+<translation id="7590188804371204512">控管是否能安裝外部擴充功能。
+
+      啟用這項設定會禁止安裝外部擴充功能。
+
+      如果停用或不指定這項設定，則可以安裝外部擴充功能。
+
+      外部擴充功能及其安裝方式請參閱 https://developer.chrome.com/apps/external_extensions。
+      </translation>
 <translation id="7593523670408385997">設定快取大小，供 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時套用。
 
       如果設定這項政策，則不論使用者是否指定「--disk-cache-size」參數，<ph name="PRODUCT_NAME" /> 都會使用政策提供的快取大小。在這項政策中指定的值是對快取系統的建議值，而非不可變動的界限。如果是不到幾 MB 的值，由於太小的緣故，系統會進位到合適的最小值。
@@ -3861,6 +3997,13 @@
           另請查看「CookiesAllowedForUrls」和「CookiesBlockedForUrls」政策。請注意，這三項政策的網址模式不得有衝突，否則系統將無法判定應優先遵循哪一項政策。
 
           如果將「RestoreOnStartup」政策設為還原先前工作階段的網址，系統就不會遵循這項政策，並且會為這些網站永久儲存 Cookie。</translation>
+<translation id="7677220829878081413">
+      如果將這項政策設為 [ArcSession]，系統會在 Android 已啟動的前提下，於使用者登出時強制裝置重新啟動。
+      如果將這項政策設為 [ArcSessionOrVMStart]，系統會在 Android 或 VM 已啟動的前提下，於使用者登出時強制裝置重新啟動。
+      如果將這項政策設為 [一律重新啟動]，系統會在每位使用者登出時強制裝置重新啟動。
+      如果不設定這項政策，則不會有任何影響，系統不會在使用者登出時強制重新啟動。如果設為 [不要重新啟動]，結果也一樣。
+      這項政策只會影響無關聯的使用者。
+      </translation>
 <translation id="7683777542468165012">動態政策更新</translation>
 <translation id="7687943045976362719">如果設定這項政策，指定的內容類型會由 <ph name="PRODUCT_FRAME_NAME" />處理。
 
@@ -3969,6 +4112,7 @@
 
           如果停用這項政策，使用者就無法新增 Kerberos 帳戶，只能透過「設定 Kerberos 帳戶」政策新增帳戶。這個方法可以有效地鎖定帳戶。</translation>
 <translation id="7895553628261067384">遠端存取</translation>
+<translation id="7902040092815978832">在輸入密碼時顯示數字鍵盤</translation>
 <translation id="7902255855035461275">系統會將這份清單中的模式與要求網址的安全性
       來源進行比對。如果找到相符的結果，系統就會授權存取
       影片擷取裝置，並且不會提示使用者。
@@ -4044,6 +4188,11 @@
       這些書籤會存放在使用者無法修改的資料夾中，但使用者可選擇在書籤列中隱藏該資料夾。資料夾的預設名稱為「受管理書籤」，但你也可以自訂資料夾名稱，方法是在書籤清單中加入一個內含「<ph name="TOPLEVEL_NAME" />」索引鍵的條目，並將索引鍵值設為你想使用的資料夾名稱。
 
       受管理書籤不會同步到使用者帳戶，也無法透過擴充功能修改。</translation>
+<translation id="8077245272412229388">新增預先填寫的 Kerberos 帳戶。如果 Kerberos 憑證與登入憑證相符，只要將主體與密碼分別指定為「<ph name="LOGIN_EMAIL_PLACEHOLDER" />」和「<ph name="PASSWORD_PLACEHOLDER" />」，即可將帳戶設定為重複使用登入憑證。設定完成後，除非你為帳戶設定雙重驗證，否則系統會自動擷取 Kerberos 票證。使用者無法修改透過這項政策新增的帳戶。
+
+          如果啟用這項政策，系統會將這項政策定義的帳戶清單加入 Kerberos 帳戶設定。
+
+          如果停用或不設定這項政策，系統不會將任何帳戶加入 Kerberos 帳戶設定，並會移除先前透過這項政策新增的所有帳戶。如果啟用「使用者可以新增 Kerberos 帳戶」政策，則使用者仍可以手動新增帳戶。</translation>
 <translation id="8078366200175825572">讓你設定網址模式清單，指定不可設定 Cookie 的網站。
 
           如果未設定這項政策，系統會根據「DefaultCookiesSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。

@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Kopeeri URL</translation>
 <translation id="2156074688469523661">Järelejäänud saidid (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Kui soovite midagi oma telefonist teise seadmega jagada, lülitage sünkroonimine mõlema seadme Chrome'i seadetes sisse</translation>
-<translation id="2170088579611075216">Luba virtuaalreaalsus ja sisene</translation>
 <translation id="2175927920773552910">QR-kood</translation>
 <translation id="218608176142494674">Jagamine</translation>
 <translation id="2227444325776770048">Jätka kasutajana <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="4135200667068010335">Vahelehe jagamise seadmete loend on suletud.</translation>
 <translation id="4149994727733219643">Veebilehtede lihtsustatud vaade</translation>
 <translation id="4165986682804962316">Saidi seaded</translation>
-<translation id="4169535189173047238">Ära luba</translation>
 <translation id="4170011742729630528">Teenus pole saadaval, proovige hiljem uuesti.</translation>
 <translation id="4179980317383591987">Kasutati <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Keeled</translation>
@@ -534,10 +532,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5011311129201317034"><ph name="SITE" /> soovib ühenduse luua</translation>
 <translation id="5013696553129441713">Uusi soovitusi pole</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">VR-i kasutamise ajal saab sait hankida järgmist teavet:
-  -  teie füüsilised omadused, näiteks pikkus
-
-Enne VR-i aktiveerimist veenduge, et sait oleks usaldusväärne.</translation>
 <translation id="5039804452771397117">Luba</translation>
 <translation id="5040262127954254034">Privaatsus</translation>
 <translation id="5048398596102334565">Luba saitide jaoks juurdepääs liikumisanduritele (soovitatav)</translation>
@@ -611,11 +605,6 @@ Enne VR-i aktiveerimist veenduge, et sait oleks usaldusväärne.</translation>
 <translation id="5527082711130173040">Chrome vajab seadmete otsimiseks juurdepääsu teie asukohale. <ph name="BEGIN_LINK1" />Värskendage lube<ph name="END_LINK1" />. Juurdepääs asukohale on samuti <ph name="BEGIN_LINK2" />selles seadmes välja lülitatud<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Küsi luba, kui sait soovib lugeda lõikelaual olevat teksti ja pilte (soovitatav)</translation>
 <translation id="5530766185686772672">Inkognito vahelehtede sulgemine</translation>
-<translation id="5534334044554683961">VR-i kasutamise ajal võib sait hankida järgmist teavet:
-  -   teie füüsilised omadused, näiteks pikkus;
-  -   teie toa paigutus.
-
-Enne VR-i aktiveerimist veenduge, et sait oleks usaldusväärne.</translation>
 <translation id="5534640966246046842">Sait on kopeeritud</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="5561549206367097665">Võrguühenduse ootamine …</translation>
@@ -906,7 +895,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7665369617277396874">Konto lisamine</translation>
 <translation id="766587987807204883">Artiklid kuvatakse siin ja saate neid lugeda ka võrguühenduseta</translation>
 <translation id="7682724950699840886">Järgige neid nõuandeid: veenduge, et seadmes oleks piisavalt ruumi, seejärel proovige uuesti eksportida.</translation>
-<translation id="7685301384041462804">Enne VR-i aktiveerimist veenduge, et sait oleks usaldusväärne.</translation>
 <translation id="7698359219371678927">Looge meil rakenduses <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Otsingute ja URL-ide automaatne täitmine</translation>
 <translation id="7725024127233776428">Järjehoidjatesse lisatud lehed kuvatakse siin</translation>
@@ -1082,7 +1070,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8998729206196772491">Logite sisse kontoga, mida haldab <ph name="MANAGED_DOMAIN" />, ja annate selle administraatorile üle Chrome'i andmete juhtimise. Teie andmed seotakse jäädavalt selle kontoga. Chrome'ist väljalogimisel kustutatakse teie andmed sellest seadmest, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="9019902583201351841">Vanemate hallatud</translation>
 <translation id="9028914725102941583">Seadmete vahel jagamiseks lülitage sünkroonimine sisse</translation>
-<translation id="9029323097866369874">Kas lubate saidil <ph name="DOMAIN" /> VR-i aktiveerida?</translation>
 <translation id="9040142327097499898">Märguanded on lubatud. Asukoht on selle seadme puhul välja lülitatud.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videot}}</translation>
 <translation id="9050666287014529139">Parool</translation>

@@ -380,7 +380,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      *
      * @return the transition percentage
      */
-    private float getToolbarTransitionPercentage() {
+    float getToolbarTransitionPercentage() {
         // During startup the view may not be fully initialized.
         if (!mScrollDelegate.isScrollViewInitialized()) return 0f;
 

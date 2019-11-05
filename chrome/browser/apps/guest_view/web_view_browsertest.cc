@@ -4415,3 +4415,24 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, OpenAndCloseDevTools) {
       embedder, false /* is_docked */);
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
+
+// Regression test for https://crbug.com/1014385
+// We load an extension whose background page attempts to declare variables with
+// names that are the same as guest view types. The declarations should not be
+// syntax errors.
+using GuestViewExtensionNameCollisionTest = extensions::ExtensionBrowserTest;
+IN_PROC_BROWSER_TEST_F(GuestViewExtensionNameCollisionTest,
+                       GuestViewNamesDoNotCollideWithExtensions) {
+  ExtensionTestMessageListener loaded_listener("LOADED", false);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII(
+          "platform_apps/web_view/no_extension_name_collision"));
+  ASSERT_TRUE(loaded_listener.WaitUntilSatisfied());
+
+  const std::string script =
+      "window.domAutomationController.send("
+      "    window.testPassed ? 'PASSED' : 'FAILED');";
+  const std::string test_passed =
+      ExecuteScriptInBackgroundPage(extension->id(), script);
+  EXPECT_EQ("PASSED", test_passed);
+}

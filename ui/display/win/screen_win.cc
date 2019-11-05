@@ -306,6 +306,30 @@ MONITORINFOEX MonitorInfoFromHMONITOR(HMONITOR monitor) {
   return monitor_info;
 }
 
+gfx::Vector2dF GetPixelsPerInchForPointerDevice(HANDLE source_device) {
+  gfx::Vector2dF pixels_per_inch;
+  static const auto get_pointer_device_rects =
+      reinterpret_cast<decltype(&::GetPointerDeviceRects)>(
+          base::win::GetUser32FunctionPointer("GetPointerDeviceRects"));
+  if (!get_pointer_device_rects)
+    return pixels_per_inch;
+
+  RECT screen = {};
+  RECT device = {};
+  if (get_pointer_device_rects(source_device, &device, &screen)) {
+    constexpr float kHimetricPerInch = 2540.f;
+    float himetric_to_pixel_ratio_x =
+        float{device.right - device.left} / float{screen.right - screen.left};
+    float himetric_to_pixel_ratio_y =
+        float{device.bottom - device.top} / float{screen.bottom - screen.top};
+    pixels_per_inch.set_x(kHimetricPerInch / himetric_to_pixel_ratio_x);
+    pixels_per_inch.set_y(kHimetricPerInch / himetric_to_pixel_ratio_y);
+    return pixels_per_inch;
+  }
+
+  return pixels_per_inch;
+}
+
 BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
                                                 HDC hdc,
                                                 LPRECT rect,
@@ -319,9 +343,42 @@ BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
   MONITORINFOEX monitor_info = MonitorInfoFromHMONITOR(monitor);
   GetDisplaySettingsForDevice(monitor_info.szDevice, &rotation,
                               &display_frequency);
-  display_infos->push_back(DisplayInfo(
-      monitor_info, GetMonitorScaleFactor(monitor),
-      GetMonitorSDRWhiteLevel(monitor), rotation, display_frequency));
+  // Get the count of pointer devices.
+  static const auto get_pointer_devices =
+      reinterpret_cast<decltype(&::GetPointerDevices)>(
+          base::win::GetUser32FunctionPointer("GetPointerDevices"));
+  uint32_t pointer_device_count = 0;
+  if (get_pointer_devices)
+    get_pointer_devices(&pointer_device_count, nullptr);
+
+  // Map touch pointer device to |monitor| and retrieve pixels per inch
+  // for the |monitor| based on pointer device handle.
+  gfx::Vector2dF pixels_per_inch;
+  if (pointer_device_count != 0) {
+    // Get all pointer devices.
+    std::vector<POINTER_DEVICE_INFO> pointer_devices(pointer_device_count);
+    if (get_pointer_devices(&pointer_device_count, &pointer_devices.front())) {
+      for (uint32_t i = 0; i < pointer_device_count; i++) {
+        if (pointer_devices[i].pointerDeviceType == POINTER_DEVICE_TYPE_TOUCH &&
+            pointer_devices[i].monitor == monitor) {
+          pixels_per_inch =
+              GetPixelsPerInchForPointerDevice(pointer_devices[i].device);
+          break;
+        }
+      }
+
+      if (pixels_per_inch.IsZero()) {
+        int default_pixels_per_inch = GetPerMonitorDPI(monitor);
+        pixels_per_inch.set_x(default_pixels_per_inch);
+        pixels_per_inch.set_y(default_pixels_per_inch);
+      }
+    }
+  }
+
+  display_infos->push_back(
+      DisplayInfo(monitor_info, GetMonitorScaleFactor(monitor),
+                  GetMonitorSDRWhiteLevel(monitor), rotation, display_frequency,
+                  pixels_per_inch));
   return TRUE;
 }
 
@@ -526,6 +583,14 @@ float ScreenWin::GetScaleFactorForHWND(HWND hwnd) {
   ScreenWinDisplay screen_win_display =
       g_screen_win_instance->GetScreenWinDisplayNearestHWND(rootHwnd);
   return screen_win_display.display().device_scale_factor();
+}
+
+// static
+gfx::Vector2dF ScreenWin::GetPixelsPerInch(const gfx::PointF& point) {
+  ScreenWinDisplay screen_win_display =
+      GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestDIPPoint,
+                             gfx::ToFlooredPoint(point));
+  return screen_win_display.pixels_per_inch();
 }
 
 // static

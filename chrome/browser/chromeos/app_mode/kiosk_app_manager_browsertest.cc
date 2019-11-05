@@ -583,7 +583,8 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromProfile) {
   CheckAppData("app_1", "Updated App1 Name", "1234");
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromCrx) {
+// Flaky; https://crbug.com/783450
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_UpdateAppDataFromCrx) {
   const char kAppId[] = "iiigpodgfihagabpagjehoocpakbnclp";
   const char kAppName[] = "Test Kiosk App";
 

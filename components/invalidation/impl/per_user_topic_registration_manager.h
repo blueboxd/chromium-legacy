@@ -101,8 +101,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   void DoRegistrationUpdate();
 
-  // Tries to register |id|. No retry in case of failure.
-  void StartRegistrationRequest(const Topic& id);
+  // Tries to register |topic|. No retry in case of failure.
+  void StartRegistrationRequest(const Topic& topic);
 
   void ActOnSuccesfullRegistration(
       const Topic& topic,
@@ -122,19 +122,19 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   void OnAccessTokenRequestSucceeded(std::string access_token);
   void OnAccessTokenRequestFailed(GoogleServiceAuthError error);
 
-  void DropAllSavedRegistrationsOnTokenChange(
-      const std::string& instance_id_token);
+  void DropAllSavedRegistrationsOnTokenChange();
   void NotifySubscriptionChannelStateChange(
       SubscriptionChannelState invalidator_state);
 
   std::map<Topic, std::unique_ptr<RegistrationEntry>> registration_statuses_;
 
-  // For registered ids it maps the id value to the topic value.
+  // For registered topics, these map from the topic to the private topic name
+  // and vice versa.
   std::map<Topic, std::string> topic_to_private_topic_;
   std::map<std::string, Topic> private_topic_to_topic_;
 
-  // Token derrived from GCM IID.
-  std::string token_;
+  // Token derived from GCM IID.
+  std::string instance_id_token_;
 
   PrefService* local_state_ = nullptr;
 

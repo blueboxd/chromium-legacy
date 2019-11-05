@@ -7,8 +7,8 @@
 #include <jni.h>
 #include <utility>
 
-#include "chrome/android/chrome_jni_headers/DownloadStartupUtils_jni.h"
 #include "chrome/browser/android/profile_key_startup_accessor.h"
+#include "chrome/browser/download/android/jni_headers/DownloadStartupUtils_jni.h"
 #include "chrome/browser/download/download_manager_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/download/public/common/in_progress_download_manager.h"

@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -112,10 +111,6 @@ ASH_EXPORT SplitViewController::SnapPosition GetSnapPosition(
     aura::Window* window,
     const gfx::Point& location_in_screen,
     const gfx::Rect& work_area);
-
-// Returns the desried indicator state based on the desired |snap_position|.
-ASH_EXPORT IndicatorState
-GetIndicatorState(SplitViewController::SnapPosition snap_position);
 
 }  // namespace ash
 

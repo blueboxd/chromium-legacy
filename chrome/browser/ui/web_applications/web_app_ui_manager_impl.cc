@@ -40,11 +40,10 @@ WebAppUiManagerImpl* WebAppUiManagerImpl::Get(Profile* profile) {
 
 WebAppUiManagerImpl::WebAppUiManagerImpl(Profile* profile) : profile_(profile) {
   for (Browser* browser : *BrowserList::GetInstance()) {
-    base::Optional<AppId> app_id = GetAppIdForBrowser(browser);
-    if (!app_id.has_value())
+    if (!IsBrowserForInstalledApp(browser))
       continue;
 
-    ++num_windows_for_apps_map_[app_id.value()];
+    ++num_windows_for_apps_map_[GetAppIdForBrowser(browser)];
   }
 
   BrowserList::AddObserver(this);
@@ -155,19 +154,19 @@ void WebAppUiManagerImpl::ReparentAppTabToWindow(content::WebContents* contents,
 }
 
 void WebAppUiManagerImpl::OnBrowserAdded(Browser* browser) {
-  base::Optional<AppId> app_id = GetAppIdForBrowser(browser);
-  if (!app_id.has_value())
+  if (!IsBrowserForInstalledApp(browser)) {
     return;
+  }
 
-  ++num_windows_for_apps_map_[app_id.value()];
+  ++num_windows_for_apps_map_[GetAppIdForBrowser(browser)];
 }
 
 void WebAppUiManagerImpl::OnBrowserRemoved(Browser* browser) {
-  base::Optional<AppId> app_id_opt = GetAppIdForBrowser(browser);
-  if (!app_id_opt.has_value())
+  if (!IsBrowserForInstalledApp(browser)) {
     return;
+  }
 
-  const auto& app_id = app_id_opt.value();
+  const auto& app_id = GetAppIdForBrowser(browser);
 
   size_t& num_windows_for_app = num_windows_for_apps_map_[app_id];
   DCHECK_GT(num_windows_for_app, 0u);
@@ -186,14 +185,20 @@ void WebAppUiManagerImpl::OnBrowserRemoved(Browser* browser) {
   windows_closed_requests_map_.erase(app_id);
 }
 
-base::Optional<AppId> WebAppUiManagerImpl::GetAppIdForBrowser(
-    Browser* browser) {
+bool WebAppUiManagerImpl::IsBrowserForInstalledApp(Browser* browser) {
   if (browser->profile() != profile_)
-    return base::nullopt;
+    return false;
 
   if (!browser->app_controller())
-    return base::nullopt;
+    return false;
 
+  if (!browser->app_controller()->HasAppId())
+    return false;
+
+  return true;
+}
+
+const AppId WebAppUiManagerImpl::GetAppIdForBrowser(Browser* browser) {
   return browser->app_controller()->GetAppId();
 }
 

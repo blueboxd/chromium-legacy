@@ -46,6 +46,7 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   void OnShutdown() override;
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;

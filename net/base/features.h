@@ -65,6 +65,25 @@ NET_EXPORT extern const base::Feature kTLS13KeyUpdate;
 // Changes the timeout after which unused sockets idle sockets are cleaned up.
 NET_EXPORT extern const base::Feature kNetUnusedIdleSocketTimeout;
 
+// Enables the built-in resolver requesting ESNI (TLS 1.3 Encrypted
+// Server Name Indication) records alongside IPv4 and IPv6 address records
+// during DNS over HTTPS (DoH) host resolution.
+NET_EXPORT extern const base::Feature kRequestEsniDnsRecords;
+// Returns a TimeDelta of value kEsniDnsMaxAbsoluteAdditionalWaitMilliseconds
+// milliseconds (see immediately below).
+NET_EXPORT base::TimeDelta EsniDnsMaxAbsoluteAdditionalWait();
+// The following two parameters specify the amount of extra time to wait for a
+// long-running ESNI DNS transaction after the successful conclusion of
+// concurrent A and AAAA transactions. This timeout will have value
+// min{kEsniDnsMaxAbsoluteAdditionalWaitMilliseconds,
+//     (100% + kEsniDnsMaxRelativeAdditionalWaitPercent)
+//       * max{time elapsed for the concurrent A query,
+//             time elapsed for the concurrent AAAA query}}.
+NET_EXPORT extern const base::FeatureParam<int>
+    kEsniDnsMaxAbsoluteAdditionalWaitMilliseconds;
+NET_EXPORT extern const base::FeatureParam<int>
+    kEsniDnsMaxRelativeAdditionalWaitPercent;
+
 // When enabled, makes cookies without a SameSite attribute behave like
 // SameSite=Lax cookies by default, and requires SameSite=None to be specified
 // in order to make cookies available in a third-party context. When disabled,

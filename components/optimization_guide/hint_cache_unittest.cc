@@ -14,8 +14,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
-#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -41,15 +41,15 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
   }
 
  protected:
-  // Creates and initializes the hint cache and hint cache store and waits for
-  // the callback indicating that initialization is complete.
+  // Creates and initializes the hint cache and optimization guide store and
+  // waits for the callback indicating that initialization is complete.
   void CreateAndInitializeHintCache(int memory_cache_size,
                                     bool purge_existing_data = false) {
     auto database_path = temp_dir_.GetPath();
     auto database_task_runner = task_environment_.GetMainThreadTaskRunner();
     hint_cache_ = std::make_unique<HintCache>(
-        std::make_unique<HintCacheStore>(db_provider_.get(), database_path,
-                                         database_task_runner),
+        std::make_unique<OptimizationGuideStore>(
+            db_provider_.get(), database_path, database_task_runner),
         memory_cache_size);
     is_store_initialized_ = false;
     hint_cache_->Initialize(purge_existing_data,
@@ -501,7 +501,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHints) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
-  // Default update time for empty hint cache store is base::Time().
+  // Default update time for empty optimization guide store is base::Time().
   EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
 
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
@@ -541,7 +541,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   const int kFetchedHintExpirationSecs = 60;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
-  // Default update time for empty hint cache store is base::Time().
+  // Default update time for empty optimization guide store is base::Time().
   EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
 
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
@@ -576,7 +576,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
-  // Default update time for empty hint cache store is base::Time().
+  // Default update time for empty optimization guide store is base::Time().
   EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
 
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =

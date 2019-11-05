@@ -106,7 +106,7 @@ AddressListDeltaType FindAddressListDeltaType(const AddressList& a,
 NET_EXPORT std::string CreateNamePointer(uint16_t offset);
 
 // Convert a DnsQueryType enum to the wire format integer representation.
-uint16_t DnsQueryTypeToQtype(DnsQueryType dns_query_type);
+NET_EXPORT_PRIVATE uint16_t DnsQueryTypeToQtype(DnsQueryType dns_query_type);
 
 NET_EXPORT DnsQueryType
 AddressFamilyToDnsQueryType(AddressFamily address_family);

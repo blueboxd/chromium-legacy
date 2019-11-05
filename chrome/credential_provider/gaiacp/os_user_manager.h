@@ -48,6 +48,10 @@ class [[clang::lto_visibility_public]] OSUserManager {
   virtual HRESULT SetUserPassword(
       const wchar_t* domain, const wchar_t* username, const wchar_t* password);
 
+  // Updates the full name on the given OS account.
+  virtual HRESULT SetUserFullname(
+      const wchar_t* domain, const wchar_t* username, const wchar_t* full_name);
+
   // Checks if the given user's password matches |password|. Returns S_OK if it
   // matches, S_FALSE if not. Otherwise will return the windows error code.
   virtual HRESULT IsWindowsPasswordValid(

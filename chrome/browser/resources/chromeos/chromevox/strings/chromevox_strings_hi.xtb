@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">इपिग्राफ़</translation>
 <translation id="207477615537953741">शब्दार्थ विज्ञान बंद</translation>
 <translation id="2086961585857038472">अगला शब्‍द</translation>
+<translation id="2087981446621639008">जानकारी वाली सूची का ब्यौरा</translation>
 <translation id="2089387485033699258">hi</translation>
 <translation id="2091933974477985526">बदलाव करने लायक पिछला टेक्स्ट एरिया</translation>
 <translation id="2100350898815792233">सभी विराम चिह्न</translation>
@@ -192,6 +193,7 @@
 <translation id="2416512023405990736">अनचेक किया गया चेकबॉक्स</translation>
 <translation id="2417569100218200841">सामग्री की जानकारी</translation>
 <translation id="2417948780551741035">एंडनोट</translation>
+<translation id="2419852971200420169">जानकारी वाली सूची</translation>
 <translation id="2421113964388408478">मिटाना</translation>
 <translation id="2422937916923936891">मेन्यू आइटम चेक बॉक्स</translation>
 <translation id="2428534162001909979">निर्देश मेन्यू</translation>
@@ -370,6 +372,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{प्रश्न चिह्न}one{# प्रश्न चिह्न}other{# प्रश्न चिह्न}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{कैरेट}one{# कैरेट}other{# कैरेट}}</translation>
 <translation id="352577523970648069">संपादन-योग्य लेख फ़ील्ड</translation>
+<translation id="3538907380453898475">जानकारी वाली सूची</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> को काटें.</translation>
 <translation id="3549680091535286226">कुछ समय तक बोला जाना रोकने के लिए दो उंगलियों से टैप करें</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, चेकबॉक्‍स चेक न‍हीं किया गया</translation>
@@ -778,6 +781,7 @@
 <translation id="6378394210114975876">बहुत हल्का जामुनी</translation>
 <translation id="6385591741672306837">स्तंभ</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">सभी इवेंट फ़िल्टर बंद करें</translation>
 <translation id="6411426777058107714">कोई पिछला रेडियो बटन नहीं.</translation>
 <translation id="6414968628640960377">पिछला अलग तरह का तत्व.</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -913,6 +917,7 @@
 <translation id="7332592614823088566"><ph name="ROWTOTAL" /> में से <ph name="ROWINDEX" /> पंक्ति, <ph name="COLTOTAL" /> में से <ph name="COLINDEX" /> स्‍तंभ</translation>
 <translation id="7336596009609913925">पॉपअप है</translation>
 <translation id="7356165926712028380">8 बिंदु ब्रेल पर स्विच करें</translation>
+<translation id="7356610683936413584">जानकारी वाली सूची का ब्यौरा</translation>
 <translation id="7362871137496673139">कोई पिछला लेवल 2 का शीर्षक नहीं.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ऐम्परसेंड}one{# ऐम्परसेंड}other{# ऐम्परसेंड}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1091,6 +1096,7 @@
 <translation id="8096975275316362544">मिंट क्रीम</translation>
 <translation id="8098587210054821856">स्लेटी रंग</translation>
 <translation id="8110647606445335195">कोई ARIA स्थानचिह्न नहीं.</translation>
+<translation id="8121539003537428024">सभी इवेंट फ़िल्टर चालू करें</translation>
 <translation id="812886159861361726">डाउनलोड बंद हो गया <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">स्पर्श करें</translation>
 <translation id="8153880621934657047">टेबल में नहीं है.</translation>

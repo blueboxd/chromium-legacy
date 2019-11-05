@@ -2,7 +2,6 @@
   :host {
     --tabstrip-tab-transition-duration: 250ms;
 
-    cursor: pointer;
     height: var(--tabstrip-tab-height);
     position: relative;
     width: var(--tabstrip-tab-width);
@@ -15,9 +14,9 @@
     color: var(--tabstrip-tab-text-color);
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: var(--tabstrip-tab-height);
     overflow: hidden;
-    width: 100%;
+    width: var(--tabstrip-tab-width);
   }
 
   :host([active]) #tab {
@@ -228,8 +227,8 @@
 
   /* Pinned tab styles */
   :host([pinned]) {
-    height: var(--tabstrip-pinned-tab-size);
-    width: var(--tabstrip-pinned-tab-size);
+    --tabstrip-tab-height: var(--tabstrip-pinned-tab-size);
+    --tabstrip-tab-width: var(--tabstrip-pinned-tab-size);
   }
 
   :host([pinned]) #title {

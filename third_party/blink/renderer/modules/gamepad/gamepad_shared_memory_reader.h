@@ -25,8 +25,8 @@ class Gamepads;
 
 namespace blink {
 
+class GamepadListener;
 class LocalFrame;
-class WebGamepadListener;
 
 class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
  public:
@@ -34,7 +34,7 @@ class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
   ~GamepadSharedMemoryReader() override;
 
   void SampleGamepads(device::Gamepads& gamepads);
-  void Start(blink::WebGamepadListener* listener);
+  void Start(blink::GamepadListener* listener);
   void Stop();
 
  protected:
@@ -58,7 +58,7 @@ class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
 
   mojo::Receiver<device::mojom::blink::GamepadObserver> receiver_{this};
   mojo::Remote<device::mojom::blink::GamepadMonitor> gamepad_monitor_remote_;
-  blink::WebGamepadListener* listener_ = nullptr;
+  blink::GamepadListener* listener_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadSharedMemoryReader);
 };

@@ -160,6 +160,7 @@ class BrowserViewLayoutTest : public ChromeViewsTestBase {
   views::View* root_view() { return root_view_.get(); }
   views::View* top_container() { return top_container_; }
   TabStrip* tab_strip() { return tab_strip_; }
+  views::View* webui_tab_strip() { return webui_tab_strip_; }
   views::View* toolbar() { return toolbar_; }
   views::View* separator() { return separator_; }
   InfoBarContainerView* infobar_container() { return infobar_container_; }
@@ -178,6 +179,9 @@ class BrowserViewLayoutTest : public ChromeViewsTestBase {
     tab_strip_ = new TabStrip(std::make_unique<FakeBaseTabStripController>());
     top_container_->AddChildView(tab_strip_region_view);
     tab_strip_region_view->AddChildView(tab_strip_);
+    webui_tab_strip_ = CreateFixedSizeView(gfx::Size(800, 200));
+    webui_tab_strip_->SetVisible(false);
+    top_container_->AddChildView(webui_tab_strip_);
     toolbar_ = CreateFixedSizeView(gfx::Size(800, kToolbarHeight));
     top_container_->AddChildView(toolbar_);
     separator_ =
@@ -206,8 +210,8 @@ class BrowserViewLayoutTest : public ChromeViewsTestBase {
         std::unique_ptr<BrowserViewLayoutDelegate>(delegate_),
         nullptr,  // NativeView.
         nullptr,  // BrowserView.
-        top_container_, tab_strip_region_view, tab_strip_, nullptr, toolbar_,
-        infobar_container_, contents_container_,
+        top_container_, tab_strip_region_view, tab_strip_, webui_tab_strip_,
+        toolbar_, infobar_container_, contents_container_,
         immersive_mode_controller_.get(), nullptr, separator_);
   }
 
@@ -219,6 +223,7 @@ class BrowserViewLayoutTest : public ChromeViewsTestBase {
   // Views owned by |root_view_|.
   views::View* top_container_;
   TabStrip* tab_strip_;
+  views::View* webui_tab_strip_;
   views::View* toolbar_;
   views::Separator* separator_;
   InfoBarContainerView* infobar_container_;
@@ -327,4 +332,20 @@ TEST_F(BrowserViewLayoutTest, LayoutContentsWithTopControlsSlideBehavior) {
   EXPECT_EQ(gfx::Rect(0, kToolbarHeight, 800, views::Separator::kThickness),
             separator()->bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 800, 600), contents_container()->bounds());
+}
+
+TEST_F(BrowserViewLayoutTest, WebUITabStripPushesDownContents) {
+  delegate()->set_tab_strip_visible(false);
+  delegate()->set_toolbar_visible(true);
+  webui_tab_strip()->SetVisible(false);
+  layout()->Layout(root_view());
+  const gfx::Rect original_contents_bounds = contents_container()->bounds();
+  EXPECT_EQ(gfx::Size(), webui_tab_strip()->size());
+
+  webui_tab_strip()->SetVisible(true);
+  layout()->Layout(root_view());
+  EXPECT_LT(0, webui_tab_strip()->size().height());
+  EXPECT_EQ(original_contents_bounds.size(), contents_container()->size());
+  EXPECT_EQ(webui_tab_strip()->size().height(),
+            contents_container()->bounds().y() - original_contents_bounds.y());
 }

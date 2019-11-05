@@ -22,9 +22,6 @@ class AnimationCurve;
 // It represents a model of the keyframes (internally represented as a curve).
 class CC_ANIMATION_EXPORT KeyframeModel {
  public:
-  // TODO(yigu): RunState is supposed to be managed/accessed at Animation
-  // level rather than KeyframeModel level. See https://crbug.com/812652.
-  //
   // KeyframeModels begin in the 'WAITING_FOR_TARGET_AVAILABILITY' state. A
   // KeyframeModel waiting for target availibility will run as soon as its
   // target property is free (and all the KeyframeModels animating with it are

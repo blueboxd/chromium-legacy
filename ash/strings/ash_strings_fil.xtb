@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Naka-on ang Huwag istorbohin.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Ipakita ang mga setting ng notification. Naka-off ang mga notification para sa isang app}one{Ipakita ang mga setting ng notification. Naka-off ang mga notification para sa # app}other{Ipakita ang mga setting ng notification. Naka-off ang mga notification para sa # na app}}</translation>
 <translation id="1525508553941733066">I-DISMISS</translation>
-<translation id="1537254971476575106">Fullscreen magnifier</translation>
 <translation id="15373452373711364">Malaking mouse cursor</translation>
 <translation id="1546492247443594934">Desk 2</translation>
 <translation id="1550523713251050646">Mag-click para sa higit pang mga opsyon</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Pindutin ang <ph name="KEYBOARD_SHORTCUT" /> upang palitan ang layout ng keyboard.</translation>
 <translation id="2501920221385095727">Mga sticky key</translation>
 <translation id="2509468283778169019">Naka-on ang CAPS LOCK</translation>
-<translation id="2532589005999780174">High contrast mode</translation>
 <translation id="2542089167727451762">I-tap ang iyong larawan sa profile</translation>
 <translation id="255671100581129685">Hindi available ang Google Assistant sa isang pampublikong session.</translation>
 <translation id="256712445991462162">ang naka-dock na magnifier</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">Wika</translation>
 <translation id="5313326810920013265">Mga setting ng Bluetooth</translation>
 <translation id="5331975486040154427">USB-C device (port sa kaliwang bahagi sa likod)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Masyadong maraming pagtatangka</translation>
 <translation id="5397578532367286026">Ang paggamit at kasaysayan ng user na ito ay maaaring suriin ng manager (<ph name="MANAGER_EMAIL" />) sa chrome.com.</translation>
 <translation id="5430931332414098647">Instant na Pag-tether</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">Hindi available ang Google Assistant para sa kasalukuyang user account.</translation>
 <translation id="5691772641933328258">Hindi nakilala ang fingerprint</translation>
 <translation id="5710450975648804523">Naka-on ang Huwag Istorbohin</translation>
+<translation id="573413375004481890">Hindi masuportahan ng device na ito ang lahat ng iyong display kaya may isang nadiskonekta</translation>
 <translation id="574392208103952083">Katamtaman</translation>
 <translation id="5744083938413354016">Pag-tap upang mag-drag</translation>
 <translation id="5750765938512549687">Naka-off ang Bluetooth</translation>
@@ -481,7 +481,6 @@
 <translation id="7984197416080286869">Masyadong maraming beses sumubok gamit ang fingerprint</translation>
 <translation id="7994370417837006925">Multiple na pag-sign in</translation>
 <translation id="8000066093800657092">Walang network</translation>
-<translation id="8029241286966751120">Na-enable ang Fullscreen Magnifier. Pinduting muli ang Ctrl+Search+M para i-off ito.</translation>
 <translation id="8030169304546394654">Naalis sa pagkakakonekta</translation>
 <translation id="8054466585765276473">Kinakalkula ang oras ng baterya.</translation>
 <translation id="8061464966246066292">Mataas na contrast</translation>
@@ -506,7 +505,6 @@
 <translation id="8388750414311082622">Hindi puwedeng alisin ang huling desk.</translation>
 <translation id="8392451568018454956">Menu ng mga pagpipilian para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Ni-lock ng iyong magulang ang device na ito</translation>
-<translation id="8406981827175133772">Fullscreen Magnifier</translation>
 <translation id="8425213833346101688">Baguhin</translation>
 <translation id="8427213022735114808">Ipinapadala ng Dictation ang iyong boses sa Google para mabigyang-daan ang voice-typing sa anumang field ng text.</translation>
 <translation id="8428213095426709021">Mga Setting</translation>

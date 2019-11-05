@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "components/optimization_guide/hint_cache_store.h"
+#include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
 namespace optimization_guide {
@@ -29,10 +29,11 @@ using HintLoadedCallback = base::OnceCallback<void(const proto::Hint*)>;
 class HintCache {
  public:
   // Construct the HintCache with a backing store and an optional max memory
-  // cache size. While |hint_store| is required, |max_memory_cache_hints| is
-  // optional and the default max size will be used if it is not provided.
+  // cache size. While |optimization_guide_store| is required,
+  // |max_memory_cache_hints| is optional and the default max size will be used
+  // if it is not provided.
   explicit HintCache(
-      std::unique_ptr<HintCacheStore> hint_store,
+      std::unique_ptr<OptimizationGuideStore> optimization_guide_store,
       base::Optional<int> max_memory_cache_hints = base::Optional<int>());
   ~HintCache();
 
@@ -77,7 +78,7 @@ class HintCache {
       base::Time update_time,
       base::OnceClosure callback);
 
-  // Purge fetched hints from the owned |hint_store_| and reset
+  // Purge fetched hints from the owned |optimization_guide_store_| and reset
   // the |memory_cache_|.
   void ClearFetchedHints();
 
@@ -99,7 +100,7 @@ class HintCache {
 
  private:
   using StoreHintMemoryCache =
-      base::HashingMRUCache<HintCacheStore::EntryKey,
+      base::HashingMRUCache<OptimizationGuideStore::EntryKey,
                             std::unique_ptr<proto::Hint>>;
 
   // The callback run after the store finishes initialization. This then runs
@@ -110,12 +111,13 @@ class HintCache {
   // loaded hint to |memory_cache_|, potentially purging the least recently
   // used element, and then runs the callback initially provided by the
   // LoadHint() call.
-  void OnLoadStoreHint(HintLoadedCallback callback,
-                       const HintCacheStore::EntryKey& store_hint_entry_key,
-                       std::unique_ptr<proto::Hint> hint);
+  void OnLoadStoreHint(
+      HintLoadedCallback callback,
+      const OptimizationGuideStore::EntryKey& store_hint_entry_key,
+      std::unique_ptr<proto::Hint> hint);
 
   // The backing store used with this hint cache. Set during construction.
-  const std::unique_ptr<HintCacheStore> hint_store_;
+  const std::unique_ptr<OptimizationGuideStore> optimization_guide_store_;
 
   // The in-memory cache of hints loaded from the store. Maps store EntryKey to
   // Hint proto. This servers two purposes:

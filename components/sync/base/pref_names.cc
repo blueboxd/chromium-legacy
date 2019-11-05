@@ -27,6 +27,13 @@ const char kSyncFirstSetupComplete[] = "sync.has_setup_completed";
 // (kSyncBookmarks, kSyncPasswords, etc.) can all be ignored.
 const char kSyncKeepEverythingSynced[] = "sync.keep_everything_synced";
 
+#if defined(OS_CHROMEOS)
+// Boolean specifying whether to automatically sync all Chrome OS specific data
+// types (including future ones). This includes types like printers, OS-only
+// settings, etc. If set, the individual type preferences can be ignored.
+const char kSyncAllOsTypes[] = "sync.all_os_types";
+#endif
+
 // Booleans specifying whether the user has selected to sync the following
 // datatypes.
 const char kSyncAppList[] = "sync.app_list";
@@ -48,6 +55,7 @@ const char kSyncFaviconImages[] = "sync.favicon_images";
 const char kSyncFaviconTracking[] = "sync.favicon_tracking";
 const char kSyncHistoryDeleteDirectives[] = "sync.history_delete_directives";
 const char kSyncMountainShares[] = "sync.mountain_shares";
+const char kSyncOsPreferences[] = "sync.os_preferences";
 const char kSyncPasswords[] = "sync.passwords";
 const char kSyncPreferences[] = "sync.preferences";
 const char kSyncPrinters[] = "sync.printers";

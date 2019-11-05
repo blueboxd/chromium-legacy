@@ -53,8 +53,8 @@
     <link rel="stylesheet" href="offline_ad_login.css">
     <oobe-dialog id="unlockStep" hidden="[[!unlockPasswordStep]]"
         aria-label$="[[adWelcomeMessage]]" has-buttons>
-      <hd-iron-icon slot="oobe-icon" icon1x="oobe-enrollment-32:briefcase"
-          icon2x="oobe-enrollment-64:briefcase">
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
       </hd-iron-icon>
       <h1 slot="title" class="welcome-message">
         [[i18nDynamic(locale, 'adUnlockTitle')]]
@@ -81,8 +81,8 @@
     </oobe-dialog>
     <oobe-dialog id="credsStep" hidden="[[unlockPasswordStep]]"
         aria-label$="[[adWelcomeMessage]]" has-buttons>
-      <hd-iron-icon slot="oobe-icon" icon1x="oobe-enrollment-32:briefcase"
-          icon2x="oobe-enrollment-64:briefcase" hidden="[[!isDomainJoin]]">
+      <hd-iron-icon slot="oobe-icon" hidden="[[!isDomainJoin]]"
+          icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
       </hd-iron-icon>
       <h1 slot="title" id="welcomeMsg"
           class="welcome-message">[[adWelcomeMessage]]</h1>

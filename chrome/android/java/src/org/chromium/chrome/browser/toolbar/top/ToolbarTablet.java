@@ -387,8 +387,8 @@ public class ToolbarTablet extends ToolbarLayout
     @Override
     public void onThemeColorChanged(int color, boolean shouldAnimate) {
         setBackgroundColor(color);
-        final int textBoxColor = ToolbarColors.getTextBoxColorForToolbarBackground(
-                getResources(), false, color, isIncognito());
+        final int textBoxColor = ToolbarColors.getTextBoxColorForToolbarBackgroundInNonNativePage(
+                getResources(), color, isIncognito());
         mLocationBar.getBackground().setColorFilter(textBoxColor, PorterDuff.Mode.SRC_IN);
 
         mLocationBar.updateVisualsForState();

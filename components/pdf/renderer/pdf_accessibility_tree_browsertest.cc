@@ -231,7 +231,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
 
   {
     ppapi::PdfAccessibilityLinkInfo link;
-    link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    link.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
     link.url = kChromiumTestUrl;
     link.text_run_index = 0;
     link.text_run_count = 1;
@@ -240,7 +240,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
 
   {
     ppapi::PdfAccessibilityImageInfo image;
-    image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    image.bounds = PP_MakeFloatRectFromXYWH(8.0f, 9.0f, 2.0f, 1.0f);
     image.alt_text = kTestAltText;
     image.text_run_index = 2;
     images_.push_back(std::move(image));
@@ -248,7 +248,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
 
   {
     ppapi::PdfAccessibilityImageInfo image;
-    image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
+    image.bounds = PP_MakeFloatRectFromXYWH(11.0f, 14.0f, 5.0f, 8.0f);
     image.text_run_index = 2;
     images_.push_back(std::move(image));
   }
@@ -303,6 +303,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
   EXPECT_EQ(kChromiumTestUrl,
             link_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl));
   EXPECT_EQ(ax::mojom::Role::kLink, link_node->data().role);
+  EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
+            link_node->data().relative_bounds.bounds);
   ASSERT_EQ(1u, link_node->children().size());
 
   paragraph_node = page_node->children()[1];
@@ -318,12 +320,16 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
   ui::AXNode* image_node = paragraph_node->children()[1];
   ASSERT_TRUE(image_node);
   EXPECT_EQ(ax::mojom::Role::kImage, image_node->data().role);
+  EXPECT_EQ(gfx::RectF(8.0f, 9.0f, 2.0f, 1.0f),
+            image_node->data().relative_bounds.bounds);
   EXPECT_EQ(kTestAltText,
             image_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   image_node = paragraph_node->children()[2];
   ASSERT_TRUE(image_node);
   EXPECT_EQ(ax::mojom::Role::kImage, image_node->data().role);
+  EXPECT_EQ(gfx::RectF(11.0f, 14.0f, 5.0f, 8.0f),
+            image_node->data().relative_bounds.bounds);
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION),
             image_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 }

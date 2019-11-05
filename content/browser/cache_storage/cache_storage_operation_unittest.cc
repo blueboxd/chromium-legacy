@@ -41,7 +41,7 @@ class CacheStorageOperationTest : public testing::Test {
         base::BindOnce(&TestTask::Run, base::Unretained(&task_)),
         /* id = */ 0, CacheStorageSchedulerClient::kStorage,
         CacheStorageSchedulerMode::kExclusive, CacheStorageSchedulerOp::kTest,
-        mock_task_runner_);
+        CacheStorageSchedulerPriority::kNormal, mock_task_runner_);
   }
 
   base::HistogramTester histogram_tester_;

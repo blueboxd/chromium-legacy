@@ -172,6 +172,7 @@
 <translation id="173080396488393970">この種類のカードはご利用いただけません</translation>
 <translation id="1734864079702812349">AMEX</translation>
 <translation id="1734878702283171397">システム管理者にお問い合わせください。</translation>
+<translation id="1739107442478692187">ご利用のサイトまたはアプリでデータ侵害がありました。保存したパスワードを確認し、<ph name="ORIGIN" /> のパスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="1740951997222943430">有効期限（月）を正しい形式で入力してください</translation>
 <translation id="1743520634839655729">カード、お名前、請求先住所を Google アカウントとこのデバイスに保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="1743570585616704562">認識されませんでした</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">ドメインが一致しません</translation>
 <translation id="2096368010154057602">県</translation>
 <translation id="2099652385553570808">3 か所のステープル（左）</translation>
+<translation id="2100280972184758440">パスワードが危険にさらされています</translation>
 <translation id="2102134110707549001">安全なパスワードを自動生成…</translation>
 <translation id="2108755909498034140">パソコンを再起動する</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> によって上書きされるため無視されます。</translation>
 <translation id="2119505898009119320">発行先: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">パンチ（右下）</translation>
+<translation id="2124528555835617522">ご利用のサイトまたはアプリでデータ侵害がありました。保存したパスワードをすぐに確認することをおすすめします。</translation>
 <translation id="2129079103035905234">モーション センサー</translation>
 <translation id="213826338245044447">モバイルのブックマーク</translation>
 <translation id="214556005048008348">支払いをキャンセル</translation>
@@ -470,11 +473,13 @@
 <translation id="3282497668470633863">名義人名を追加</translation>
 <translation id="3287510313208355388">オンライン時にダウンロード</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> ポリシーの詳細</translation>
+<translation id="3295439534709115864">ご利用のサイトまたはアプリでデータ侵害がありました。<ph name="ORIGIN" /> のパスワードをすぐに変更することをおすすめします。</translation>
 <translation id="3303855915957856445">一致する結果は見つかりませんでした</translation>
 <translation id="3320021301628644560">請求先住所を追加</translation>
 <translation id="3324983252691184275">クリムゾン</translation>
 <translation id="3338095232262050444">保護された通信</translation>
 <translation id="3355823806454867987">プロキシ設定の変更...</translation>
+<translation id="3360103848165129075">支払いハンドラのシート</translation>
 <translation id="3362968246557010467">このポリシーは、サポートが終了した <ph name="OLD_POLICY" /> ポリシーから自動的にコピーされました。今後はこのポリシーを使用してください。</translation>
 <translation id="3366477098757335611">カードを表示</translation>
 <translation id="3369192424181595722">時計のエラー</translation>
@@ -589,6 +594,7 @@
 <translation id="3949601375789751990">閲覧履歴がここに表示されます</translation>
 <translation id="3949870428812919180">保存済みのお支払い方法がありません</translation>
 <translation id="3950820424414687140">ログイン</translation>
+<translation id="3961148744525529027">支払いハンドラのシートが半分開いています</translation>
 <translation id="3962859241508114581">前の曲</translation>
 <translation id="3963837677003247395">手動で続行しますか？</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{なし}=1{1 件のサイトから}other{# 件のサイトから}}</translation>
@@ -1320,6 +1326,7 @@
 <translation id="7637571805876720304">Chromium からクレジット カードを削除してもよろしいですか？</translation>
 <translation id="7638605456503525968">シリアルポート</translation>
 <translation id="7639968568612851608">ダークグレー</translation>
+<translation id="7653957176542370971">支払いハンドラのシートは閉じています</translation>
 <translation id="765676359832457558">詳細設定を表示しない...</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7662298039739062396">拡張機能によって指定される設定</translation>
@@ -1449,6 +1456,7 @@
 <translation id="8261506727792406068">削除</translation>
 <translation id="8262952874573525464">端綴じ（下）</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" /> としてログイン</translation>
+<translation id="8277900682056760511">支払いハンドラのシートが開いています</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">ログイン</translation>
 <translation id="8288807391153049143">証明書を表示</translation>

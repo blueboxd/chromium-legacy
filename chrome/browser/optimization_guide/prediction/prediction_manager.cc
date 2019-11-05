@@ -26,11 +26,14 @@
 namespace optimization_guide {
 
 PredictionManager::PredictionManager(
+    const std::vector<optimization_guide::proto::OptimizationTarget>&
+        optimization_targets_at_initialization,
     TopHostProvider* top_host_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : session_fcp_(),
       top_host_provider_(top_host_provider),
       url_loader_factory_(url_loader_factory) {
+  RegisterOptimizationTargets(optimization_targets_at_initialization);
   g_browser_process->network_quality_tracker()
       ->AddEffectiveConnectionTypeObserver(this);
 }
@@ -58,9 +61,9 @@ void PredictionManager::RegisterOptimizationTargets(
     }
     registered_optimization_targets_.insert(optimization_target);
   }
-  // TODO(crbug/1001194): If the HintCacheStore is available/ready, ask it to
-  // start loading the registered models. Scheduling for model host model fetch
-  // will wait until the store is ready.
+  // TODO(crbug/1001194): If the OptimizationGuideStore is available/ready, ask
+  // it to start loading the registered models. Scheduling for model host model
+  // fetch will wait until the store is ready.
 
   // TODO(crbug/1001194): Create a schedule for fetching updates for models and
   // for additional/fresh host model features.

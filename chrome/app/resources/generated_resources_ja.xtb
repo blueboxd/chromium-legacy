@@ -26,6 +26,7 @@
 <translation id="1031362278801463162">プレビューを読み込んでいます</translation>
 <translation id="103279545524624934">Android アプリを起動できるようにディスク領域を解放します。</translation>
 <translation id="1033780634303702874">シリアル デバイスへのアクセス</translation>
+<translation id="1034942643314881546">ADB によるアプリのイラストレーション作成を有効にする</translation>
 <translation id="1036348656032585052">オフにする</translation>
 <translation id="1036511912703768636">これらの USB デバイスへのアクセス</translation>
 <translation id="1036982837258183574">全画面表示を終了するには |<ph name="ACCELERATOR" />| を押します</translation>
@@ -102,6 +103,7 @@
 <translation id="1143142264369994168">証明書の署名者</translation>
 <translation id="1145292499998999162">プラグインをブロックしました</translation>
 <translation id="1145532888383813076">デバイス、アプリ、ウェブを検索します。</translation>
+<translation id="1146678959555564648">VR を入力</translation>
 <translation id="114721135501989771">Chrome で Google の最先端技術を活用</translation>
 <translation id="1149401351239820326">有効期限（月）</translation>
 <translation id="1150565364351027703">サングラス</translation>
@@ -201,7 +203,6 @@
 <translation id="1285484354230578868">Google ドライブ アカウントでのデータの保存</translation>
 <translation id="1288037062697528143">夜間モードは日の入り時刻に自動的にオンになります</translation>
 <translation id="1288300545283011870">読み上げのプロパティ</translation>
-<translation id="1289513325360489062">このサイトのデータにアクセスできません</translation>
 <translation id="1293264513303784526">USB-C デバイス（左側面のポート）</translation>
 <translation id="1293556467332435079">ファイル</translation>
 <translation id="1296911687402551044">選択したタブを固定</translation>
@@ -284,6 +285,7 @@
 <translation id="1415708812149920388">クリップボードの読み取りアクセスが拒否されました</translation>
 <translation id="1415990189994829608">このタイプのセッションでは、<ph name="EXTENSION_NAME" />（拡張機能 ID「<ph name="EXTENSION_ID" />」）は使用できません。</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="1418954524306642206">プリンタの PPD を参照して指定します</translation>
 <translation id="1420834118113404499">メディア ライセンス</translation>
 <translation id="1420920093772172268">ペア設定するには <ph name="TURN_ON_BLUETOOTH_LINK" /></translation>
 <translation id="1422159345171879700">安全でないスクリプトを読み込む</translation>
@@ -555,6 +557,7 @@
 <translation id="1782196717298160133">スマートフォンを検出中</translation>
 <translation id="1784707308176068866">連携するネイティブ アプリケーションからのリクエストに応じてバックグラウンドで実行する</translation>
 <translation id="1784849162047402014">デバイスのディスク空き領域が少なくなっています</translation>
+<translation id="1787350673646245458">ユーザー画像</translation>
 <translation id="1790194216133135334"><ph name="DEVICE_NAME" /> にリンクを送信</translation>
 <translation id="1790976235243700817">アクセスを削除</translation>
 <translation id="1792619191750875668">拡張ディスプレイ</translation>
@@ -685,6 +688,7 @@
 <translation id="1976150099241323601">セキュリティ デバイスへのログイン</translation>
 <translation id="1976323404609382849">複数サイトからの Cookie がブロックされました。</translation>
 <translation id="1977965994116744507"><ph name="DEVICE_TYPE" /> のロックを解除するにはスマートフォンを近づけます。</translation>
+<translation id="1978006917103730774">今後はソフトウェアとセキュリティに関するアップデートが自動的にインストールされます。</translation>
 <translation id="1979280758666859181">古いバージョンの <ph name="PRODUCT_NAME" /> のチャンネルに変更しようとしています。このチャンネル変更は、チャンネルのバージョンとお使いのデバイスにインストールされているバージョンとが一致したときに適用されます。</translation>
 <translation id="197989455406964291">KDC でサポートされていない暗号化タイプです</translation>
 <translation id="1981544341227357861">デバイスからセキュリティ キーを取り外してもう一度挿入し、タップします。</translation>
@@ -809,12 +813,12 @@
 <translation id="2165421703844373933">「OK Google」と話すとアシスタントにアクセスできます。バッテリー消費を抑えるには [オン（推奨）] を選択してください。オンにすると、デバイスが電源または充電器に接続されている場合にのみアシスタントが反応します。</translation>
 <translation id="2166369534954157698">あいうえおアイウエオABCabc123漢字</translation>
 <translation id="2169062631698640254">このままログインする</translation>
-<translation id="2170088579611075216">VR を許可して開始</translation>
 <translation id="2172784515318616985">次へ</translation>
 <translation id="2173302385160625112">インターネット接続を確認してください</translation>
 <translation id="2173801458090845390">登録 ID をこのデバイスに追加します</translation>
 <translation id="2175042898143291048">常に翻訳する</translation>
 <translation id="2175607476662778685">クイック起動バー</translation>
+<translation id="217576141146192373">プリンタを追加できません。プリンタの設定を確認して、もう一度お試しください。</translation>
 <translation id="2177950615300672361">シークレット タブ: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> の <ph name="PEPPER_PLUGIN_NAME" /> プラグインから、パソコンへのアクセス許可を求められています</translation>
 <translation id="2178614541317717477">認証局が侵害された</translation>
@@ -927,6 +931,7 @@
 <translation id="2326931316514688470">アプリを再読み込み(&amp;R)</translation>
 <translation id="2327492829706409234">アプリを有効にする</translation>
 <translation id="2329597144923131178">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
+<translation id="2330129964253841015">パスワードが危険にさらされた場合に警告する</translation>
 <translation id="2332131598580221120">ストアで見る</translation>
 <translation id="2332192922827071008">設定を開く</translation>
 <translation id="2332742915001411729">デフォルトに戻す</translation>
@@ -975,6 +980,7 @@
 <translation id="2395616325548404795">この <ph name="DEVICE_TYPE" /> は組織の管理対象として登録されましたが、アセットと位置情報を送信できませんでした。このデバイスの管理コンソールで、この情報を手動で入力してください。</translation>
 <translation id="2396783860772170191">4 桁の PIN（0000～9999）を入力してください</translation>
 <translation id="2399939490305346086">セキュリティ キーのログインデータ</translation>
+<translation id="2407481962792080328">この機能は Google アカウントにログインすると有効になります</translation>
 <translation id="2408955596600435184">PIN を入力してください</translation>
 <translation id="241082044617551207">不明なプラグイン</translation>
 <translation id="2412593942846481727">アップデートが利用可能</translation>
@@ -999,7 +1005,6 @@
 <translation id="2439545803278355377">新しい PIN を入力してください。PIN は 4 文字以上の長さにする必要があり、文字や数字などを含めることができます。</translation>
 <translation id="2440604414813129000">ソースを表示(&amp;O)</translation>
 <translation id="2442916515643169563">テキストの影</translation>
-<translation id="2444119669991608829"><ph name="LANGUAGE" />のページではない場合</translation>
 <translation id="2445081178310039857">拡張機能のルート ディレクトリを指定してください。</translation>
 <translation id="2445484935443597917">新しいプロフィールを作成</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> が本人確認を求めています</translation>
@@ -1416,10 +1421,10 @@
 <translation id="3016641847947582299">コンポーネント更新完了</translation>
 <translation id="3016780570757425217">ユーザーの現在地の認識</translation>
 <translation id="3017079585324758401">背景</translation>
+<translation id="3019285239893817657">サブページのボタン</translation>
 <translation id="3020183492814296499">ショートカット</translation>
 <translation id="3020990233660977256">シリアル番号: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">蝶</translation>
-<translation id="3021426244864538700">このサイトのデータにアクセスしています</translation>
 <translation id="3021678814754966447">フレームのソースを表示(&amp;V)</translation>
 <translation id="3022978424994383087">聞き取れませんでした。</translation>
 <translation id="3023464535986383522">選択して読み上げ</translation>
@@ -1431,6 +1436,7 @@
 <translation id="3038612606416062604">プリンタを手動で追加</translation>
 <translation id="3038675903128704560">すべてのサイトに対し、プラグインを使ったパソコンへのアクセスを禁止する</translation>
 <translation id="3039491566278747710">オフライン ポリシーをデバイスにインストールできませんでした。</translation>
+<translation id="3043581297103810752"><ph name="ORIGIN" /> より</translation>
 <translation id="3045447014237878114">このサイトで複数のファイルが自動的にダウンロードされました</translation>
 <translation id="3046910703532196514">ウェブページ、完全</translation>
 <translation id="304747341537320566">読み上げエンジン</translation>
@@ -1812,6 +1818,7 @@
 <translation id="3629631988386925734">パスワードを入力すると Smart Lock が有効になり、次回から、スマートフォンで <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] をご利用ください。</translation>
 <translation id="3630132874740063857">スマートフォン</translation>
 <translation id="3630995161997703415">このサイトをシェルフに追加するといつでも使えるようになります</translation>
+<translation id="3635353578505343390">Google にフィードバックを送信</translation>
 <translation id="3636096452488277381">こんにちは、<ph name="USER_GIVEN_NAME" /> さん。</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - 残り <ph name="TIME" /></translation>
 <translation id="3637561406135221044">ファイルをスキャンして機密データを確認しています...</translation>
@@ -1892,6 +1899,7 @@
 <translation id="3732530910372558017">PIN は 63 文字以内で指定してください</translation>
 <translation id="3733127536501031542">International Step-UP 対応の SSL サーバー</translation>
 <translation id="3735740477244556633">並べ替え</translation>
+<translation id="3736016243818847857">続行しますか？</translation>
 <translation id="3737274407993947948">Linux のインストール中にエラーが発生しました...</translation>
 <translation id="3737536731758327622">ダウンロードがここに表示されます</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2207,7 +2215,6 @@
 <translation id="4159681666905192102">これは <ph name="CUSTODIAN_EMAIL" /> と <ph name="SECOND_CUSTODIAN_EMAIL" /> によって管理されている子供向けのアカウントです。</translation>
 <translation id="4163560723127662357">不明なキーボード</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> に帰属する設定の一部を共有しています。これらの設定は、マルチ ログインを使用した場合にのみこのアカウントに適用されます。</translation>
-<translation id="4169535189173047238">許可しない</translation>
 <translation id="4170314459383239649">終了時に削除</translation>
 <translation id="4172051516777682613">常に表示</translation>
 <translation id="4175137578744761569">明るい紫と白</translation>
@@ -2293,6 +2300,7 @@
 <translation id="4316850752623536204">デベロッパーのウェブサイト</translation>
 <translation id="4320177379694898372">インターネットに接続されていません</translation>
 <translation id="4321442524549817090">URL を表示(&amp;H)</translation>
+<translation id="4322394346347055525">他のタブをすべて閉じる</translation>
 <translation id="4324577459193912240">ファイルが不完全です</translation>
 <translation id="4325237902968425115"><ph name="LINUX_APP_NAME" /> をアンインストールしています...</translation>
 <translation id="4330191372652740264">氷水</translation>
@@ -2401,6 +2409,7 @@
 <translation id="4501530680793980440">削除の確認</translation>
 <translation id="4502423230170890588">このデバイスから削除</translation>
 <translation id="4504940961672722399">この拡張機能を使用するには、このアイコンをクリックするか、<ph name="EXTENSION_SHORTCUT" /> を押します。</translation>
+<translation id="4506379069541445709">続行すると、ADB による Android アプリの作成とテストが可能になります。ADB を使用すると、Google が確認していないアプリのインストールが可能になりますのでご注意ください。</translation>
 <translation id="4508051413094283164">すべてをシークレット ウィンドウで開く</translation>
 <translation id="4508265954913339219">起動に失敗しました</translation>
 <translation id="4508765956121923607">ソースを表示(&amp;O)</translation>
@@ -2745,10 +2754,6 @@
 <translation id="5029568752722684782">コピーを消去</translation>
 <translation id="5030338702439866405">発行元</translation>
 <translation id="5033266061063942743">幾何学模様</translation>
-<translation id="5033865233969348410">VR の使用中、このサイトで次の情報が把握される場合があります。
-  -  あなたの身体的特徴（身長など）
-
-VR を開始する前に、信頼できるサイトかどうかを確認してください。</translation>
 <translation id="503498442187459473"><ph name="HOST" /> から、カメラとマイクの使用許可を求められています</translation>
 <translation id="5036662165765606524">複数ファイルの自動ダウンロードをどのサイトにも許可しない</translation>
 <translation id="5037676449506322593">すべてを選択</translation>
@@ -2960,6 +2965,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5363109466694494651">Powerwash を実行して以前のバージョンに戻す</translation>
 <translation id="5365881113273618889">選択したフォルダには、機密ファイルが含まれています。このフォルダに対する永続的な書き込みアクセス権を「<ph name="APP_NAME" />」に付与してもよろしいですか？</translation>
 <translation id="5367091008316207019">ファイルを読み取っています...</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">スマートフォンがロックされています。ログインするにはロックを解除してしてください。</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> にログインしてください</translation>
 <translation id="5369491905435686894">マウス アクセラレーションを有効にする</translation>
@@ -3021,7 +3027,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5449588825071916739">すべてのタブをブックマークに追加する</translation>
 <translation id="5449716055534515760">ウィンドウを閉じる(&amp;D)</translation>
 <translation id="5454166040603940656">- <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">翻訳先の言語</translation>
 <translation id="5457113250005438886">無効</translation>
 <translation id="5457459357461771897">パソコンからの写真、音楽、その他のメディアの読み取りと削除</translation>
 <translation id="5457599981699367932">ゲストとしてブラウジング</translation>
@@ -3081,11 +3086,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5532223876348815659">グローバル</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> が次の許可を求めています</translation>
 <translation id="5534304873398226603">写真または動画を破棄</translation>
-<translation id="5534334044554683961">VR の使用中、このサイトで次の情報が把握される場合があります。
-  -   あなたの身体的特徴（身長など）
-  -   あなたの部屋のレイアウト
-
-VR を開始する前に、信頼できるサイトかどうかを確認してください。</translation>
 <translation id="5535941515421698170">このデバイスから既存のデータも削除する</translation>
 <translation id="5539221284352502426">入力したパスワードはサーバーによって拒否されました。考えられる原因は次のとおりです。パスワードが短すぎる。パスワードに数字または記号が含まれていない。以前と同じパスワードを指定した。</translation>
 <translation id="5541694225089836610">操作が管理者によって無効にされています</translation>
@@ -3176,6 +3176,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5646558797914161501">ビジネスマン</translation>
 <translation id="5648166631817621825">過去 7 日間</translation>
 <translation id="5649053991847567735">自動ダウンロード</translation>
+<translation id="5656845498778518563">Google にフィードバックを送信</translation>
 <translation id="5657667036353380798">外部の拡張機能で、Chrome バージョン <ph name="MINIMUM_CHROME_VERSION" /> 以上がインストールされていることが要件となっています。</translation>
 <translation id="5658415415603568799">セキュリティ強化のため、Smart Lock では 20 時間が経過するとパスワードの入力が求められます。</translation>
 <translation id="5659593005791499971">メール</translation>
@@ -3305,6 +3306,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5851868085455377790">発行元</translation>
 <translation id="5852112051279473187">エラー: このデバイスの登録中に問題が発生しました。もう一度お試しいただくか、サポート担当者にお問い合わせください。</translation>
 <translation id="5852137567692933493">再起動して Powerwash を実行する</translation>
+<translation id="5852360662347412211">Linux の設定に移動して、もう一度お試しください。</translation>
 <translation id="5854912040170951372">スライス</translation>
 <translation id="5855643921295613558">0.6秒</translation>
 <translation id="5856721540245522153">デバッグ機能を有効にする</translation>
@@ -3373,6 +3375,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5941153596444580863">ユーザーを追加...</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME" /> にログインしてください。</translation>
 <translation id="5941711191222866238">最小化</translation>
+<translation id="5942964813783878922">この更新が行われた後、<ph name="DEVICE_TYPE" /> は再起動します。今後はソフトウェアとセキュリティに関するアップデートが自動的にインストールされます。</translation>
 <translation id="5944869793365969636">QR コードのスキャン</translation>
 <translation id="5945188205370098537">使用状況データや診断データを送信します。診断データやデバイスとアプリの使用状況データを Google に自動送信して、Android の機能向上にご協力ください。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。[その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータは Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">レポート ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
@@ -3774,6 +3777,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641"><ph name="NETWORK_TYPE" /> ネットワークに接続しています。</translation>
 <translation id="6527303717912515753">共有</translation>
+<translation id="6528189551082329571">このタイプのリンクは常に関連付けられたアプリで開く</translation>
 <translation id="6528513914570774834">このデバイスの他のユーザーにこのネットワークの使用を許可する</translation>
 <translation id="652948702951888897">Chrome 履歴</translation>
 <translation id="6530186581263215931">管理者が行った設定です</translation>
@@ -3979,6 +3983,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="6850286078059909152">テキストの色</translation>
 <translation id="6851497530878285708">アプリは有効です</translation>
 <translation id="6853388645642883916">アップデータのスリープ中</translation>
+<translation id="68541483639528434">他のタブをすべて閉じる</translation>
 <translation id="6856623341093082836">タッチスクリーンをを設定し、精度を調整します</translation>
 <translation id="6857699260879628349">設定情報を取得</translation>
 <translation id="6860097299815761905">プロキシの設定...</translation>
@@ -4091,7 +4096,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7019805045859631636">速い</translation>
 <translation id="7022562585984256452">ホームページが設定されました。</translation>
 <translation id="7025190659207909717">モバイル データ サービスの管理</translation>
-<translation id="7027891519253193555"><ph name="LANGUAGE" />のページではない場合</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="703001695939087067">ウィンドウ概観モードに切り替わりました。タブキーを押してウィンドウ間を移動できます。</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - シリアルポートを接続しました</translation>
@@ -4536,7 +4540,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7684718995427157417">アプリを作成してテストするには、Android Debug Bridge（ADB）を有効にします。この操作を行うと、Google が確認していない Android アプリのインストールが許可されます。無効にする場合は、出荷時の設定へのリセットが必要になります。</translation>
 <translation id="7685049629764448582">JavaScript メモリ</translation>
 <translation id="7685087414635069102">PIN が必要です</translation>
-<translation id="7685301384041462804">VR を開始する前に、信頼できるサイトかどうかを確認してください。</translation>
 <translation id="768549422429443215">言語を追加するか、リストを並べ替えます。</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" />（<ph name="DEVICE_PATH" />）</translation>
 <translation id="7690294790491645610">新しいパスワードの確認入力</translation>
@@ -4935,11 +4938,9 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{ダウンロードが進行中です}other{ダウンロードが進行中です}}</translation>
 <translation id="8213449224684199188">写真モードに切り替えました</translation>
 <translation id="8213577208796878755">利用可能なデバイスが 1 つあります。</translation>
-<translation id="8213996900880218548">このサイトのデータへのアクセスを求めています</translation>
 <translation id="8214489666383623925">ファイルを開く...</translation>
 <translation id="8214962590150211830">このユーザーを削除</translation>
 <translation id="8217399928341212914">複数ファイルの自動ダウンロードを今後もブロックする</translation>
-<translation id="822519928942492333">翻訳するページの言語</translation>
 <translation id="8225265270453771718">アプリケーション ウィンドウの共有</translation>
 <translation id="8225753906568652947">特典を利用</translation>
 <translation id="8226222018808695353">アクセスできません</translation>
@@ -5096,6 +5097,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8449008133205184768">ペーストしてスタイルを合わせる</translation>
 <translation id="8449036207308062757">ストレージを管理</translation>
 <translation id="8452135315243592079">SIM カードがありません</translation>
+<translation id="8455026683977728932">ADB のイラストレーションを有効にできませんでした。</translation>
 <translation id="845702320058262034">接続できません。スマートフォンの Bluetooth がオンになっていることを確認してください。</translation>
 <translation id="8457451314607652708">ブックマークをインポート</translation>
 <translation id="8460336040822756677">Smart Lock for <ph name="DEVICE_TYPE" /> を無効にすると、スマートフォンを使って Chrome デバイスのロックを解除することはできなくなり、パスワードの入力が必要になります。</translation>
@@ -5510,7 +5512,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="9026731007018893674">ダウンロード</translation>
 <translation id="9026852570893462412">この処理には数分かかることがあります。仮想マシンをダウンロードします。</translation>
 <translation id="9027459031423301635">新しいタブで開く(&amp;T)</translation>
-<translation id="9029323097866369874"><ph name="DOMAIN" /> に VR の開始を許可しますか？</translation>
 <translation id="9030515284705930323">組織の設定により、アカウントで Google Play ストアをご利用いただくことができません。詳しくは管理者にお尋ねください。</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">貼り付け(&amp;P)</translation>
@@ -5554,7 +5555,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="9094038138851891550">無効なユーザー名です</translation>
 <translation id="9094982973264386462">削除</translation>
 <translation id="9095253524804455615">削除</translation>
-<translation id="9095388113577226029">その他の言語...</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
 <translation id="9100765901046053179">詳細設定</translation>
 <translation id="9101691533782776290">アプリを起動</translation>
@@ -5573,6 +5573,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="9116799625073598554">メモ用アプリ</translation>
 <translation id="9117030152748022724">アプリを管理する</translation>
 <translation id="9121814364785106365">固定されたタブとして開く</translation>
+<translation id="9122074588095746047">ADB を有効にできませんでした</translation>
 <translation id="9124003689441359348">保存したパスワードがここに表示されます</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" />（残り <ph name="LICENSE_COUNT" /> ライセンス）</translation>
 <translation id="9128317794749765148">セットアップを完了できませんでした</translation>

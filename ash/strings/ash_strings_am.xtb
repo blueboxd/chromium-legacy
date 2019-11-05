@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">አትረብሽ በርቷል።</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ለአንድ መተግበሪያ ጠፍተዋል}one{የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ለ# መተግበሪያዎች ጠፍተዋል}other{የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ለ# መተግበሪያዎች ጠፍተዋል}}</translation>
 <translation id="1525508553941733066">አሰናብት</translation>
-<translation id="1537254971476575106">የሙሉ ማያ ገጽ ማጉያ</translation>
 <translation id="15373452373711364">ትልቅ የመዳፊት ጠቋሚ</translation>
 <translation id="1546492247443594934">ዴስክ 2</translation>
 <translation id="1550523713251050646">ለተጨማሪ አማራጮች ጠቅ ያድርጉ</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">የቁልፍ ሰሌዳ አቀማመጥን ለመቀየር <ph name="KEYBOARD_SHORTCUT" />ን ይጫኑ</translation>
 <translation id="2501920221385095727">ተጣባቂ ቁልፎች</translation>
 <translation id="2509468283778169019">CAPS LOCK በርቷል</translation>
-<translation id="2532589005999780174">ባለከፍተኛ ንፅፅር ሁነታ</translation>
 <translation id="2542089167727451762">የመገለጫ ምስልዎን መታ ያድርጉ</translation>
 <translation id="255671100581129685">የGoogle ረዳቱ በይፋዊ ክፍለ-ጊዜ ውስጥ አይገኝም።</translation>
 <translation id="256712445991462162">የተተከለው ማጉያ</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">ከልክ በላይ ብዙ የጣት አሻራ ሙከራዎች</translation>
 <translation id="7994370417837006925">ባለብዙ በመለያ-መግቢያ</translation>
 <translation id="8000066093800657092">ምንም አውታረ መረብ የለም</translation>
-<translation id="8029241286966751120">የሙሉ ማያ ገጽ ማጉያ ነቅቷል። እንዲጠፋ አድርጎ እንደገና ለመቀያየር Ctrl+ፍለጋ+M ይጫኑ።</translation>
 <translation id="8030169304546394654">አልተያያዘም</translation>
 <translation id="8054466585765276473">የባትሪ ጊዜን በማስላት ላይ።</translation>
 <translation id="8061464966246066292">ከፍተኛ ንፅፅር</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">የመጨረሻ ዴስክ ሊወገድ አይችልም።</translation>
 <translation id="8392451568018454956">የ<ph name="USER_EMAIL_ADDRESS" /> አማራጮች ምናሌ</translation>
 <translation id="8394567579869570560">የእርስዎ ወላጅ ይህን መሣሪያ ቆልፈውታል</translation>
-<translation id="8406981827175133772">የሙሉ ማያ ገጽ ማጉያ</translation>
 <translation id="8425213833346101688">ለውጥ</translation>
 <translation id="8427213022735114808">በቃል ማስጻፍ በማንኛውም የጽሑፍ መስክ ውስጥ የድምጽ ትየባን ለመፍቀድ ድምጽዎን ወደ Google ይልካል።</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>

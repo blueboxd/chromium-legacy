@@ -95,6 +95,41 @@ function centerElement(element, totalWidth, totalHeight) {
 }
 
 /**
+ * Helper function to give an element the ripple effect capability.
+ * @param {String} elementID The element to be centered.
+ */
+function addRippleOverlay(elementID) {
+  if(!$(elementID))
+    return;
+  $(elementID).querySelectorAll('.ink').forEach(e => e.remove());
+  var inkEl = document.createElement('span');
+  inkEl.classList.add('ink');
+  $(elementID).appendChild(inkEl);
+  $(elementID).addEventListener('mousedown', e => {
+    var currentTarget = e.currentTarget;
+    var inkEl = currentTarget.querySelector('.ink');
+    inkEl.style.width = inkEl.style.height =
+        currentTarget.offsetWidth + 'px';
+    // If target is on contained child, the offset of child must be added.
+    inkEl.style.left =
+        (e.offsetX +
+         (e.target.id != elementID ? e.target.offsetLeft : 0) -
+         0.5 * inkEl.offsetWidth) +
+        'px';
+    inkEl.style.top =
+        (e.offsetY +
+         (e.target.id != elementID ? e.target.offsetTop : 0) -
+         0.5 * inkEl.offsetHeight) +
+        'px';
+    inkEl.classList.add('ripple-category-list-item-animation');
+  });
+  inkEl.addEventListener('animationend', e => {
+    var inkTarget = e.target;
+    inkTarget.classList.remove('ripple-category-list-item-animation');
+  });
+}
+
+/**
  * Loads translated strings.
  */
 WallpaperManager.initStrings = function(callback) {
@@ -798,7 +833,7 @@ WallpaperManager.prototype.setCustomWallpaperImpl_ = function(
             return;
           }
           var layoutButton = this.document_.querySelector(
-              layout == 'CENTER' ? '.center-button' : '.center-cropped-button');
+              layout == 'CENTER' ? '#center-button' : '#center-cropped-button');
           this.addEventToButton_(layoutButton, () => {
             chrome.wallpaperPrivate.setCustomWallpaper(
                 imageData, layout, false /*generateThumbnail=*/,
@@ -809,9 +844,9 @@ WallpaperManager.prototype.setCustomWallpaperImpl_ = function(
                     return;
                   }
                   this.currentlySelectedLayout_ = layout;
-                  this.document_.querySelector('.center-button')
+                  this.document_.querySelector('#center-button')
                       .classList.toggle('disabled', layout == 'CENTER');
-                  this.document_.querySelector('.center-cropped-button')
+                  this.document_.querySelector('#center-cropped-button')
                       .classList.toggle('disabled', layout == 'CENTER_CROPPED');
                   this.onPreviewModeStarted_(
                       selectedItem,
@@ -825,7 +860,7 @@ WallpaperManager.prototype.setCustomWallpaperImpl_ = function(
         decorateLayoutButton('CENTER');
         decorateLayoutButton('CENTER_CROPPED');
         // The default layout is CENTER_CROPPED.
-        this.document_.querySelector('.center-cropped-button').click();
+        this.document_.querySelector('#center-cropped-button').click();
       });
 };
 
@@ -913,6 +948,9 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
     wallpaperInfo, optConfirmCallback, optCancelCallback, optOnRefreshClicked) {
   if (this.isDuringPreview_())
     return;
+
+  addRippleOverlay("center-button");
+  addRippleOverlay("center-cropped-button");
 
   this.document_.body.classList.add('preview-animation');
   chrome.wallpaperPrivate.minimizeInactiveWindows();
@@ -1224,14 +1262,14 @@ WallpaperManager.prototype.setCustomWallpaperLayout_ = function(newLayout) {
       return;
     }
     var layoutButton = this.document_.querySelector(
-        layout == 'CENTER' ? '.center-button' : '.center-cropped-button');
+        layout == 'CENTER' ? '#center-button' : '#center-cropped-button');
     var newLayoutButton = layoutButton.cloneNode(true);
     layoutButton.parentNode.replaceChild(newLayoutButton, layoutButton);
     newLayoutButton.addEventListener('click', () => {
       setCustomWallpaperLayoutImpl(layout, () => {
-        this.document_.querySelector('.center-button')
+        this.document_.querySelector('#center-button')
             .classList.toggle('disabled', layout == 'CENTER');
-        this.document_.querySelector('.center-cropped-button')
+        this.document_.querySelector('#center-cropped-button')
             .classList.toggle('disabled', layout == 'CENTER_CROPPED');
         this.onPreviewModeStarted_(
             {source: Constants.WallpaperSourceEnum.Custom},
@@ -1247,7 +1285,7 @@ WallpaperManager.prototype.setCustomWallpaperLayout_ = function(newLayout) {
   decorateLayoutButton('CENTER_CROPPED');
   this.document_
       .querySelector(
-          newLayout == 'CENTER' ? '.center-button' : '.center-cropped-button')
+          newLayout == 'CENTER' ? '#center-button' : '#center-cropped-button')
       .click();
   this.setWallpaperAttribution({collectionName: str('customCategoryLabel')});
 };

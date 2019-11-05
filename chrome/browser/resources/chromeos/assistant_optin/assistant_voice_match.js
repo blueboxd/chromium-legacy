@@ -48,6 +48,7 @@ Polymer({
         'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
         ['skip-pressed']);
     this.$['voice-match-lottie'].setPlay(false);
+    this.$['already-setup-lottie'].setPlay(false);
   },
 
   /**
@@ -149,6 +150,7 @@ Polymer({
           'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
           ['voice-match-done']);
       this.$['voice-match-lottie'].setPlay(false);
+      this.$['already-setup-lottie'].setPlay(false);
     }, this.doneActionDelayMs_);
   },
 
@@ -158,6 +160,7 @@ Polymer({
   onShow: function() {
     chrome.send('login.AssistantOptInFlowScreen.VoiceMatchScreen.screenShown');
     this.$['voice-match-lottie'].setPlay(true);
+    this.$['already-setup-lottie'].setPlay(true);
     this.$['agree-button'].focus();
     if (loadTimeData.getBoolean('hotwordDspAvailable')) {
       this.$['no-dsp-message'].hidden = true;

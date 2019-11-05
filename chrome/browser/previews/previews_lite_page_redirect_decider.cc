@@ -144,7 +144,8 @@ PreviewsLitePageRedirectDecider::PreviewsLitePageRedirectDecider(
       pref_service_(nullptr),
       need_to_show_notification_(false),
       host_bypass_blacklist_(std::make_unique<base::DictionaryValue>()),
-      drp_headers_valid_(false) {
+      drp_headers_valid_(false),
+      browser_context_(browser_context) {
   if (!browser_context)
     return;
 
@@ -448,7 +449,8 @@ bool PreviewsLitePageRedirectDecider::HostBlacklistedFromBypass(
 bool PreviewsLitePageRedirectDecider::ShouldSendNextProbe() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return data_reduction_proxy::DataReductionProxySettings::
-             IsDataSaverEnabledByUser(pref_service_) &&
+             IsDataSaverEnabledByUser(browser_context_->IsOffTheRecord(),
+                                      pref_service_) &&
          previews::params::ArePreviewsAllowed() &&
          previews::params::IsLitePageServerPreviewsEnabled() &&
          // Only probe if we rely on it for triggering.

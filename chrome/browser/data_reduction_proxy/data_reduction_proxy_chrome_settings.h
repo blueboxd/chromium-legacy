@@ -53,7 +53,7 @@ class DataReductionProxyChromeSettings
 
   // Constructs a settings object. Construction and destruction must happen on
   // the UI thread.
-  DataReductionProxyChromeSettings();
+  explicit DataReductionProxyChromeSettings(bool is_off_the_record_profile);
 
   // Destructs the settings object.
   ~DataReductionProxyChromeSettings() override;

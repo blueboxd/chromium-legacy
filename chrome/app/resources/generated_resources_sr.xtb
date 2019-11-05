@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Потписник сертификата</translation>
 <translation id="1145292499998999162">Додатна компонента је блокирана</translation>
 <translation id="1145532888383813076">Претражите уређај, апликације и веб.</translation>
+<translation id="1146678959555564648">Уђи у ВР</translation>
 <translation id="114721135501989771">Паметне Google функције</translation>
 <translation id="1149401351239820326">Месец истека</translation>
 <translation id="1150565364351027703">Наочари за сунце</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Складиштите податке на налогу Google диска</translation>
 <translation id="1288037062697528143">Ноћно светло се аутоматски укључује када сунце зађе</translation>
 <translation id="1288300545283011870">Својства говора</translation>
-<translation id="1289513325360489062">Немају приступ подацима овог сајта</translation>
 <translation id="1293264513303784526">Уређај са USB прикључком типа C (леви порт)</translation>
 <translation id="1293556467332435079">Датотеке</translation>
 <translation id="1296911687402551044">Закачи изабрану картицу</translation>
@@ -810,7 +810,6 @@
 <translation id="2165421703844373933">Приступајте Помоћнику када кажете „Ок Google“. Да бисте уштедели батерију, одаберите „Укључено (препоручено)“. Помоћник ће одговорити само када је уређај прикључен или се пуни.</translation>
 <translation id="2166369534954157698">На врх брда врба мрда</translation>
 <translation id="2169062631698640254">Ипак ме пријави</translation>
-<translation id="2170088579611075216">Дозволи и започни ВР презентацију</translation>
 <translation id="2172784515318616985">Настави</translation>
 <translation id="2173302385160625112">Проверите интернет везу</translation>
 <translation id="2173801458090845390">Додајте ИД захтева на овај уређај</translation>
@@ -1003,7 +1002,6 @@
 <translation id="2439545803278355377">Унесите нови PIN. PIN мора да има бар четири знака и може да садржи слова, бројеве и друге знакове.</translation>
 <translation id="2440604414813129000">Прикажи и&amp;звор</translation>
 <translation id="2442916515643169563">Сенка текста</translation>
-<translation id="2444119669991608829">Страница није на језику <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">Основни директоријум додатка је обавезан.</translation>
 <translation id="2445484935443597917">Направи нов профил</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> жели да потврди ваш идентитет</translation>
@@ -1424,7 +1422,6 @@
 <translation id="3020183492814296499">Пречице</translation>
 <translation id="3020990233660977256">Серијски број: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Лептир</translation>
-<translation id="3021426244864538700">Приступ подацима овог сајта</translation>
 <translation id="3021678814754966447">&amp;Прикажи извор оквира</translation>
 <translation id="3022978424994383087">Нисмо вас разумели.</translation>
 <translation id="3023464535986383522">Изаберите за говор</translation>
@@ -2215,7 +2212,6 @@
 <translation id="4159681666905192102">Ово је налог за децу којим управљају <ph name="CUSTODIAN_EMAIL" /> и <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Непозната тастатура</translation>
 <translation id="4168015872538332605">Нека подешавања чији је власник <ph name="PRIMARY_EMAIL" /> се деле са вама. Та подешавања утичу на налог само када користите вишеструко пријављивање.</translation>
-<translation id="4169535189173047238">Не дозволи</translation>
 <translation id="4170314459383239649">Обриши при затварању</translation>
 <translation id="4172051516777682613">Увек прикажи</translation>
 <translation id="4175137578744761569">Светлољубичаста и бела</translation>
@@ -2301,6 +2297,7 @@
 <translation id="4316850752623536204">Веб-сајт програмера</translation>
 <translation id="4320177379694898372">Нема интернет везе</translation>
 <translation id="4321442524549817090">П&amp;рикажи URL</translation>
+<translation id="4322394346347055525">Затвори друге картице</translation>
 <translation id="4324577459193912240">Датотека је непотпуна</translation>
 <translation id="4325237902968425115">Деинсталира се <ph name="LINUX_APP_NAME" />...</translation>
 <translation id="4330191372652740264">Вода са ледом</translation>
@@ -2754,10 +2751,6 @@
 <translation id="5029568752722684782">Обриши копију</translation>
 <translation id="5030338702439866405">Издао/ла</translation>
 <translation id="5033266061063942743">Геометријски облици</translation>
-<translation id="5033865233969348410">Док сте у ВР режиму, овај сајт можда може да сазна нешто:
-  –  о вашим физичким карактеристикама, попут висине
-
-Уверите се да верујете овом сајту пре него што покренете ВР.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> жели да користи камеру и микрофон</translation>
 <translation id="5036662165765606524">Не дозволи ниједном сајту да аутоматски преузима више датотека</translation>
 <translation id="5037676449506322593">Изабери све</translation>
@@ -3031,7 +3024,6 @@
 <translation id="5449588825071916739">Обележи све картице</translation>
 <translation id="5449716055534515760">Close Win&amp;dow (Затвори прозор)</translation>
 <translation id="5454166040603940656">са добављачем <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Језик на који желите да преводите</translation>
 <translation id="5457113250005438886">Неважеће</translation>
 <translation id="5457459357461771897">Читање слика, музике и других медија са рачунара и брисање тих медија</translation>
 <translation id="5457599981699367932">Прегледајте као гост</translation>
@@ -3091,11 +3083,6 @@
 <translation id="5532223876348815659">Опште</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> жели да</translation>
 <translation id="5534304873398226603">Одбаци слику или видео</translation>
-<translation id="5534334044554683961">Док сте у ВР режиму, овај сајт можда може да сазна нешто:
-  –  о вашим физичким карактеристикама, попут висине
-  –   о изгледу ваше собе
-
-Уверите се да верујете овом сајту пре него што покренете ВР.</translation>
 <translation id="5535941515421698170">Уклања и постојеће податке са овог уређаја</translation>
 <translation id="5539221284352502426">Сервер је одбио лозинку коју сте унели. Могући разлози обухватају: Лозинка је прекратка. Лозинка мора да садржи бројеве или симболе. Лозинка мора да се разликује од претходних лозинки.</translation>
 <translation id="5541694225089836610">Администратор је онемогућио радњу</translation>
@@ -3995,6 +3982,7 @@
 <translation id="6850286078059909152">Боја текста</translation>
 <translation id="6851497530878285708">Апликација је омогућена</translation>
 <translation id="6853388645642883916">Програм за ажурирање је у стању спавања</translation>
+<translation id="68541483639528434">Затвори друге картице</translation>
 <translation id="6856623341093082836">Подесите и прилагодите прецизност додирног екрана</translation>
 <translation id="6857699260879628349">Добијте информације о конфигурацији</translation>
 <translation id="6860097299815761905">Подешавања проксија...</translation>
@@ -4107,7 +4095,6 @@
 <translation id="7019805045859631636">Брзо</translation>
 <translation id="7022562585984256452">Почетна страница је подешена.</translation>
 <translation id="7025190659207909717">Управљање услугом мобилног преноса података</translation>
-<translation id="7027891519253193555">Страница није на језику <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Лозинке</translation>
 <translation id="703001695939087067">Ушли сте у режим прегледа прозора. Притисните табулатор да бисте се кретали.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – серијски порт је повезан</translation>
@@ -4552,7 +4539,6 @@
 <translation id="7684718995427157417">Да бисте правили и тестирали апликације, омогућите Android Debug Bridge (ADB). Имајте на уму да ова радња омогућава инсталирање Android апликација које Google није верификовао и захтева ресетовање на фабричка подешавања да би се онемогућила.</translation>
 <translation id="7685049629764448582">JavaScript меморија</translation>
 <translation id="7685087414635069102">PIN је обавезан</translation>
-<translation id="7685301384041462804">Уверите се да је сајт поуздан пре покретања ВР режима.</translation>
 <translation id="768549422429443215">Додајте језике или промените редослед ставки на листи.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Потврдите нову лозинку</translation>
@@ -4951,11 +4937,9 @@
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Преузимање је у току}one{Преузимања су у току}few{Преузимања су у току}other{Преузимања су у току}}</translation>
 <translation id="8213449224684199188">Активиран је режим слика</translation>
 <translation id="8213577208796878755">Доступан је још један уређај.</translation>
-<translation id="8213996900880218548">Желе да приступају подацима овог сајта</translation>
 <translation id="8214489666383623925">Отвори датотеку...</translation>
 <translation id="8214962590150211830">Уклони ову особу</translation>
 <translation id="8217399928341212914">Настави да блокираш аутоматска преузимања више датотека</translation>
-<translation id="822519928942492333">Језик странице са кога желите да преводите</translation>
 <translation id="8225265270453771718">Делите прозор апликације</translation>
 <translation id="8225753906568652947">Искористите понуде</translation>
 <translation id="8226222018808695353">Забрањено је</translation>
@@ -5527,7 +5511,6 @@
 <translation id="9026731007018893674">преузимање</translation>
 <translation id="9026852570893462412">Ово може да потраје неколико минута. Преузима се виртуелна машина.</translation>
 <translation id="9027459031423301635">Отвори линк у новој &amp;картици</translation>
-<translation id="9029323097866369874">Желите ли да дозволите сајту <ph name="DOMAIN" /> да покрене ВР?</translation>
 <translation id="9030515284705930323">Организација није омогућила Google Play продавницу за налог. Контактирајте администратора за више информација.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Налепи</translation>
@@ -5571,7 +5554,6 @@
 <translation id="9094038138851891550">Корисничко име је неважеће</translation>
 <translation id="9094982973264386462">Уклони</translation>
 <translation id="9095253524804455615">Уклони</translation>
-<translation id="9095388113577226029">Још језика...</translation>
 <translation id="9100610230175265781">Потребна је приступна фраза</translation>
 <translation id="9100765901046053179">Напредна подешавања</translation>
 <translation id="9101691533782776290">Покрените апликацију</translation>

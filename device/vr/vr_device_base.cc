@@ -27,13 +27,25 @@ mojom::VRDisplayInfoPtr VRDeviceBase::GetVRDisplayInfo() {
   return display_info_.Clone();
 }
 
+void VRDeviceBase::ShutdownSession(base::OnceClosure on_completed) {
+  DVLOG(2) << __func__;
+  // TODO(https://crbug.com/1015594): The default implementation of running the
+  // callback immediately is backwards compatible, but runtimes should be
+  // updated to override this, calling the callback at the appropriate time
+  // after any necessary cleanup has been completed. Once that's done, make this
+  // method abstract.
+  std::move(on_completed).Run();
+}
+
 void VRDeviceBase::OnExitPresent() {
+  DVLOG(2) << __func__ << ": !!listener_=" << !!listener_;
   if (listener_)
     listener_->OnExitPresent();
   presenting_ = false;
 }
 
 void VRDeviceBase::OnStartPresenting() {
+  DVLOG(2) << __func__;
   presenting_ = true;
 }
 
@@ -70,6 +82,7 @@ void VRDeviceBase::OnVisibilityStateChanged(
 }
 
 mojo::PendingRemote<mojom::XRRuntime> VRDeviceBase::BindXRRuntime() {
+  DVLOG(2) << __func__;
   return runtime_receiver_.BindNewPipeAndPassRemote();
 }
 

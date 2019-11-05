@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios web restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Si quieres compartir algo de tu teléfono con otro dispositivo, activa la sincronización en la configuración de Chrome en ambos dispositivos.</translation>
-<translation id="2170088579611075216">Permitir y acceder a la realidad virtual</translation>
 <translation id="2175927920773552910">Código QR</translation>
 <translation id="218608176142494674">Compartir</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4135200667068010335">La lista de dispositivos con los que puedes compartir una pestaña está cerrada.</translation>
 <translation id="4149994727733219643">Vista simplificada de páginas web</translation>
 <translation id="4165986682804962316">Configuración del sitio web</translation>
-<translation id="4169535189173047238">No permitir</translation>
 <translation id="4170011742729630528">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
 <translation id="4179980317383591987">Usados: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -534,10 +532,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5011311129201317034"><ph name="SITE" /> quiere conectarse</translation>
 <translation id="5013696553129441713">No hay sugerencias nuevas</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Mientras estés en el modo de realidad virtual, es posible que el sitio web obtenga información sobre lo siguiente:
-  - Tus características físicas, como tu altura.
-
-Asegúrate de que este sitio web sea de confianza antes de acceder al modo de realidad virtual.</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidad</translation>
 <translation id="5048398596102334565">Permitir que los sitios web accedan a los sensores de movimiento (recomendado)</translation>
@@ -611,11 +605,6 @@ Asegúrate de que este sitio web sea de confianza antes de acceder al modo de re
 <translation id="5527082711130173040">Chrome necesita acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualizar permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Preguntar antes de permitir que los sitios web lean texto e imágenes del portapapeles (recomendado)</translation>
 <translation id="5530766185686772672">Cerrar pestañas de incógnito</translation>
-<translation id="5534334044554683961">Mientras estés en el modo de realidad virtual, es posible que el sitio web obtenga información sobre lo siguiente:
-  - Tus características físicas, como tu altura.
-  - La disposición de la habitación.
-
-Asegúrate de que este sitio web sea de confianza antes de acceder al modo de realidad virtual.</translation>
 <translation id="5534640966246046842">Se ha copiado el sitio web</translation>
 <translation id="5556459405103347317">Volver a cargar</translation>
 <translation id="5561549206367097665">Esperando red…</translation>
@@ -906,7 +895,6 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="7665369617277396874">Añadir cuenta</translation>
 <translation id="766587987807204883">Los artículos se muestran aquí y los puedes leer aunque no tengas conexión a Internet</translation>
 <translation id="7682724950699840886">Prueba los siguientes consejos: deja suficiente espacio en el dispositivo y vuelve a exportar las contraseñas.</translation>
-<translation id="7685301384041462804">Asegúrate de que este sitio web sea de confianza antes de acceder al modo de realidad virtual.</translation>
 <translation id="7698359219371678927">Crear correo electrónico en <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autocompletar búsquedas y URLs</translation>
 <translation id="7725024127233776428">Las páginas que añadas a marcadores aparecerán aquí</translation>
@@ -1082,7 +1070,6 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8998729206196772491">Estás iniciando sesión con una cuenta gestionada por <ph name="MANAGED_DOMAIN" />, lo que significa que vas a proporcionar a su administrador el control sobre tus datos de Chrome. Los datos se vincularán de forma permanente a esta cuenta. Si cierras sesión en Chrome, se eliminarán los datos de este dispositivo, pero permanecerán almacenados en tu cuenta de Google.</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9028914725102941583">Activar la sincronización para compartir con otros dispositivos</translation>
-<translation id="9029323097866369874">¿Permites a <ph name="DOMAIN" /> acceder al modo de realidad virtual?</translation>
 <translation id="9040142327097499898">Las notificaciones están permitidas. La ubicación está desactivada en este dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vídeo}other{# vídeos}}</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>

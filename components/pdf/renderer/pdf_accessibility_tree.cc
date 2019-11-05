@@ -206,30 +206,6 @@ bool IsObjectInTextRun(const std::vector<T>& objects,
           objects[object_index].text_run_index <= text_run_index);
 }
 
-bool IsTextRenderModeFill(const PP_TextRenderingMode& mode) {
-  switch (mode) {
-    case PP_TEXTRENDERINGMODE_FILL:
-    case PP_TEXTRENDERINGMODE_FILLSTROKE:
-    case PP_TEXTRENDERINGMODE_FILLCLIP:
-    case PP_TEXTRENDERINGMODE_FILLSTROKECLIP:
-      return true;
-    default:
-      return false;
-  }
-}
-
-bool IsTextRenderModeStroke(const PP_TextRenderingMode& mode) {
-  switch (mode) {
-    case PP_TEXTRENDERINGMODE_STROKE:
-    case PP_TEXTRENDERINGMODE_FILLSTROKE:
-    case PP_TEXTRENDERINGMODE_STROKECLIP:
-    case PP_TEXTRENDERINGMODE_FILLSTROKECLIP:
-      return true;
-    default:
-      return false;
-  }
-}
-
 }  // namespace
 
 PdfAccessibilityTree::PdfAccessibilityTree(content::RendererPpapiHost* host,
@@ -404,7 +380,7 @@ void PdfAccessibilityTree::AddPageContent(
     if (IsObjectInTextRun(links, current_link_index, text_run_index)) {
       FinishStaticNode(&static_text_node, &static_text);
       const ppapi::PdfAccessibilityLinkInfo& link = links[current_link_index++];
-      ui::AXNodeData* link_node = CreateLinkNode(link, page_bounds, page_index);
+      ui::AXNodeData* link_node = CreateLinkNode(link, page_index);
       para_node->child_ids.push_back(link_node->id);
 
       // If |link.text_run_count| == 0, then the link is not part of the page
@@ -429,8 +405,7 @@ void PdfAccessibilityTree::AddPageContent(
       FinishStaticNode(&static_text_node, &static_text);
       // If the |text_run_index| is less than or equal to the image's text run
       // index, then push the image ahead of the current text run.
-      ui::AXNodeData* image_node =
-          CreateImageNode(images[current_image_index], page_bounds);
+      ui::AXNodeData* image_node = CreateImageNode(images[current_image_index]);
       para_node->child_ids.push_back(image_node->id);
       ++current_image_index;
       --text_run_index;
@@ -515,12 +490,12 @@ void PdfAccessibilityTree::AddRemainingAnnotations(
   }
   // Push all the links not anchored to any text run to the last paragraph.
   for (const ppapi::PdfAccessibilityLinkInfo& link : links) {
-    ui::AXNodeData* link_node = CreateLinkNode(link, page_bounds, page_index);
+    ui::AXNodeData* link_node = CreateLinkNode(link, page_index);
     para_node->child_ids.push_back(link_node->id);
   }
   // Push all the images not anchored to any text run to the last paragraph.
   for (const ppapi::PdfAccessibilityImageInfo& image : images) {
-    ui::AXNodeData* image_node = CreateImageNode(image, page_bounds);
+    ui::AXNodeData* image_node = CreateImageNode(image);
     para_node->child_ids.push_back(image_node->id);
   }
 }
@@ -723,24 +698,6 @@ ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
                                            chars_utf8);
   inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
                                         text_run.direction);
-  inline_text_box_node->AddStringAttribute(
-      ax::mojom::StringAttribute::kFontFamily, text_run.style.font_name);
-  inline_text_box_node->AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
-                                          text_run.style.font_size);
-  inline_text_box_node->AddFloatAttribute(
-      ax::mojom::FloatAttribute::kFontWeight, text_run.style.font_weight);
-  if (text_run.style.is_italic)
-    inline_text_box_node->AddTextStyle(ax::mojom::TextStyle::kItalic);
-  if (text_run.style.is_bold)
-    inline_text_box_node->AddTextStyle(ax::mojom::TextStyle::kBold);
-  if (IsTextRenderModeFill(text_run.style.render_mode)) {
-    inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kColor,
-                                          text_run.style.fill_color);
-  } else if (IsTextRenderModeStroke(text_run.style.render_mode)) {
-    inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kColor,
-                                          text_run.style.stroke_color);
-  }
-
   inline_text_box_node->relative_bounds.bounds =
       ToGfxRectF(text_run.bounds) + page_bounds.OffsetFromOrigin();
   std::vector<int32_t> char_offsets =
@@ -753,15 +710,13 @@ ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
 
 ui::AXNodeData* PdfAccessibilityTree::CreateLinkNode(
     const ppapi::PdfAccessibilityLinkInfo& link,
-    const gfx::RectF& page_bounds,
     uint32_t page_index) {
   ui::AXNodeData* link_node = CreateNode(ax::mojom::Role::kLink);
 
   link_node->AddStringAttribute(ax::mojom::StringAttribute::kUrl, link.url);
   link_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                 std::string());
-  link_node->relative_bounds.bounds =
-      ToGfxRectF(link.bounds) + page_bounds.OffsetFromOrigin();
+  link_node->relative_bounds.bounds = ToGfxRectF(link.bounds);
   node_id_to_link_info_.emplace(link_node->id,
                                 LinkInfo(page_index, link.index_in_page));
 
@@ -769,8 +724,7 @@ ui::AXNodeData* PdfAccessibilityTree::CreateLinkNode(
 }
 
 ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
-    const ppapi::PdfAccessibilityImageInfo& image,
-    const gfx::RectF& page_bounds) {
+    const ppapi::PdfAccessibilityImageInfo& image) {
   ui::AXNodeData* image_node = CreateNode(ax::mojom::Role::kImage);
 
   if (image.alt_text.empty()) {
@@ -781,8 +735,7 @@ ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
     image_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                    image.alt_text);
   }
-  image_node->relative_bounds.bounds =
-      ToGfxRectF(image.bounds) + page_bounds.OffsetFromOrigin();
+  image_node->relative_bounds.bounds = ToGfxRectF(image.bounds);
   return image_node;
 }
 

@@ -433,7 +433,7 @@ DataReductionProxyTestContext::Builder::Build() {
   }
 
   if (!settings_)
-    settings_ = std::make_unique<DataReductionProxySettings>();
+    settings_ = std::make_unique<DataReductionProxySettings>(false);
   if (skip_settings_initialization_) {
     test_context_flags |= SKIP_SETTINGS_INITIALIZATION;
   }

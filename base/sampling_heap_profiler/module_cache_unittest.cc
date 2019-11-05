@@ -62,8 +62,9 @@ class FakeModule : public ModuleCache::Module {
   bool is_native_;
 };
 
-#if defined(OS_POSIX) && !defined(OS_IOS) && !defined(ARCH_CPU_ARM64) || \
-    defined(OS_WIN) || defined(OS_FUCHSIA)
+#if (defined(OS_POSIX) && !defined(OS_IOS) && !defined(ARCH_CPU_ARM64)) || \
+    (defined(OS_FUCHSIA) && !defined(ARCH_CPU_ARM64)) || \
+    defined(OS_WIN)
 #define MAYBE_TEST(TestSuite, TestName) TEST(TestSuite, TestName)
 #else
 #define MAYBE_TEST(TestSuite, TestName) TEST(TestSuite, DISABLED_##TestName)

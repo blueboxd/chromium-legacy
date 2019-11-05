@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Hindi sinusuportahan ang uri ng card na ito</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Subukang makipag-ugnayan sa admin ng system.</translation>
+<translation id="1739107442478692187">May nangyaring paglabag sa data sa isang site o app na ginagamit mo. Inirerekomenda ng Chrome na suriin ngayon ang iyong mga naka-save na password at palitan ang password mo sa <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Maglagay ng wastong buwan ng pag-expire</translation>
 <translation id="1743520634839655729">Para mas mabilis na makapagbayad sa susunod, i-save ang iyong card, pangalan, at billing address sa Google Account mo at sa device na ito.</translation>
 <translation id="1743570585616704562">Hindi nakilala</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Maling pagtutugma sa domain</translation>
 <translation id="2096368010154057602">Kagawaran</translation>
 <translation id="2099652385553570808">Triple staple left</translation>
+<translation id="2100280972184758440">Nakompromiso ang iyong password</translation>
 <translation id="2102134110707549001">Magmungkahi ng Malakas na Password...</translation>
 <translation id="2108755909498034140">I-restart ang iyong computer</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Binalewala dahil na-override ito ng <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Ibinigay sa: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Punch bottom right</translation>
+<translation id="2124528555835617522">May nangyaring paglabag sa data sa isang site o app na ginagamit mo. Inirerekomenda ng Chrome na suriin ngayon ang iyong mga naka-save na password.</translation>
 <translation id="2129079103035905234">Mga Sensor ng Paggalaw</translation>
 <translation id="213826338245044447">Mga Bookmark sa Mobile</translation>
 <translation id="214556005048008348">Kanselahin ang pagbabayad</translation>
@@ -472,11 +475,13 @@
 <translation id="3282497668470633863">Magdagdag ng pangalan sa card</translation>
 <translation id="3287510313208355388">I-download kapag online</translation>
 <translation id="3293642807462928945">Matuto pa tungkol sa patakarang <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">May nangyaring paglabag sa data sa isang site o app na ginagamit mo. Inirerekomenda ng Chrome na baguhin ngayon ang iyong password sa <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Walang nakitang resulta ng paghahanap</translation>
 <translation id="3320021301628644560">Magdagdag ng billing address</translation>
 <translation id="3324983252691184275">Crimson</translation>
 <translation id="3338095232262050444">Secure</translation>
 <translation id="3355823806454867987">Baguhin ang mga setting ng proxy...</translation>
+<translation id="3360103848165129075">Sheet ng tagapangasiwa ng pagbabayad</translation>
 <translation id="3362968246557010467">Awtomatikong kinopya ang patakarang ito mula sa hindi na ginagamit na patakarang <ph name="OLD_POLICY" />. Dapat mong gamitin ang patakarang ito sa halip.</translation>
 <translation id="3366477098757335611">Tingnan ang mga card</translation>
 <translation id="3369192424181595722">Error sa orasan</translation>
@@ -591,6 +596,7 @@
 <translation id="3949601375789751990">Lalabas dito ang iyong history ng pag-browse</translation>
 <translation id="3949870428812919180">Walang naka-save na paraan ng pagbabayad</translation>
 <translation id="3950820424414687140">Mag-sign in</translation>
+<translation id="3961148744525529027">Nakabukas nang kalahati ang tagapangasiwa ng pagbabayad</translation>
 <translation id="3962859241508114581">Nakaraang Track</translation>
 <translation id="3963837677003247395">Manual na magpatuloy?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Wala}=1{Mula sa 1 site }one{Mula sa # site }other{Mula sa # na site }}</translation>
@@ -1322,6 +1328,7 @@ Mga karagdagang detalye:
 <translation id="7637571805876720304">Gusto mo bang alisin ang credit card sa Chromium?</translation>
 <translation id="7638605456503525968">Mga serial port</translation>
 <translation id="7639968568612851608">Dark Grey</translation>
+<translation id="7653957176542370971">Nakasara ang sheet ng tagapangasiwa ng pagbabayad</translation>
 <translation id="765676359832457558">Itago ang mga advanced na setting...</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7662298039739062396">Kinokontrol ng isang extension ang setting</translation>
@@ -1451,6 +1458,7 @@ Mga karagdagang detalye:
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8262952874573525464">Edge stitch bottom</translation>
 <translation id="8267698848189296333">Nagsa-sign in bilang <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Nakabukas ang sheet ng tagapangasiwa ng pagbabayad</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Mag-sign In</translation>
 <translation id="8288807391153049143">Ipakita ang certificate</translation>

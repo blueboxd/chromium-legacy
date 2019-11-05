@@ -30,7 +30,6 @@ class Point;
 
 namespace blink {
 class AnimationWorkletMutatorDispatcherImpl;
-class GraphicsLayer;
 class HitTestResult;
 class Page;
 class PageWidgetEventHandler;
@@ -71,11 +70,6 @@ class CORE_EXPORT WebFrameWidgetBase
   // be dereferenced on the output |paint_task_runner|.
   base::WeakPtr<PaintWorkletPaintDispatcher> EnsureCompositorPaintDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* paint_task_runner);
-
-  // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
-  // the root layer.
-  virtual void SetRootGraphicsLayer(GraphicsLayer*) = 0;
-  virtual GraphicsLayer* RootGraphicsLayer() const = 0;
 
   // Sets the root layer. The |layer| can be null when detaching the root layer.
   virtual void SetRootLayer(scoped_refptr<cc::Layer> layer) = 0;

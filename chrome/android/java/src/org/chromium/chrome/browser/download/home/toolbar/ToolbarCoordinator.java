@@ -13,13 +13,13 @@ import android.view.ViewGroup;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.widget.FadingShadow;
 import org.chromium.chrome.browser.ui.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.download.R;
+import org.chromium.components.feature_engagement.Tracker;
 
 import java.util.List;
 
@@ -92,7 +92,7 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
     public ToolbarCoordinator(Context context, ToolbarActionDelegate delegate,
             ToolbarListActionDelegate listActionDelegate,
             SelectionDelegate<ListItem> selectionDelegate, boolean showOfflineHome,
-            boolean hasCloseButton, Profile profile) {
+            boolean hasCloseButton, Tracker tracker) {
         mDelegate = delegate;
         mListActionDelegate = listActionDelegate;
 
@@ -111,7 +111,7 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
         mToolbar.initializeSearchView(
                 mSearchDelegate, R.string.download_manager_search, R.id.search_menu_id);
 
-        ToolbarUtils.setupTrackerForDownloadSettingsIPH(mToolbar, profile);
+        ToolbarUtils.setupTrackerForDownloadSettingsIPH(tracker, mToolbar);
 
         mShadow.init(ApiCompatibilityUtils.getColor(
                              context.getResources(), R.color.toolbar_shadow_color),

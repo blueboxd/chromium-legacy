@@ -81,8 +81,19 @@ base::string16 AppBrowserController::FormatUrlOrigin(const GURL& url) {
       net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
 }
 
-AppBrowserController::AppBrowserController(Browser* browser)
-    : content::WebContentsObserver(nullptr), browser_(browser) {
+AppBrowserController::AppBrowserController(
+    Browser* browser,
+    base::Optional<web_app::AppId> app_id)
+    : content::WebContentsObserver(nullptr),
+      app_id_(std::move(app_id)),
+      browser_(browser),
+      // Show tabs for Terminals only
+      // TODO(crbug.com/846546): Generalise has_tab_strip_ as a SystemWebApp
+      // capability.
+      has_tab_strip_(HasAppId() ? GetAppIdForSystemWebApp(
+                                      browser->profile(),
+                                      SystemAppType::TERMINAL) == GetAppId()
+                                : false) {
   browser->tab_strip_model()->AddObserver(this);
 }
 
@@ -168,11 +179,8 @@ bool AppBrowserController::ShouldShowCustomTabBar() const {
   return false;
 }
 
-bool AppBrowserController::HasTabStrip() const {
-  // Show tabs for Terminal only.
-  // TODO(crbug.com/846546): Generalise this as a SystemWebApp capability.
-  return GetAppIdForSystemWebApp(browser()->profile(),
-                                 SystemAppType::TERMINAL) == GetAppId();
+bool AppBrowserController::has_tab_strip() const {
+  return has_tab_strip_;
 }
 
 bool AppBrowserController::HasTitlebarToolbar() const {
@@ -235,12 +243,12 @@ void AppBrowserController::UpdateCustomTabBarVisibility(bool animate) const {
 }
 
 bool AppBrowserController::IsForSystemWebApp() const {
-  if (!GetAppId())
+  if (!HasAppId())
     return false;
 
   return WebAppProvider::Get(browser()->profile())
       ->system_web_app_manager()
-      .IsSystemWebApp(*GetAppId());
+      .IsSystemWebApp(GetAppId());
 }
 
 void AppBrowserController::DidStartNavigation(

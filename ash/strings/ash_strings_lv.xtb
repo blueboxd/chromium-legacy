@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Režīms “Netraucēt” ir ieslēgts.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Rādīt paziņojumu iestatījumus. Paziņojumi lietotnei ir izslēgti}zero{Rādīt paziņojumu iestatījumus. Paziņojumi ir izslēgti # lietotnēm}one{Rādīt paziņojumu iestatījumus. Paziņojumi ir izslēgti # lietotnei}other{Rādīt paziņojumu iestatījumus. Paziņojumi ir izslēgti # lietotnēm}}</translation>
 <translation id="1525508553941733066">NERĀDĪT</translation>
-<translation id="1537254971476575106">Pilnekrāna lupa</translation>
 <translation id="15373452373711364">Liels peles kursors</translation>
 <translation id="1546492247443594934">2. galds</translation>
 <translation id="1550523713251050646">Noklikšķiniet, lai skatītu citas iespējas.</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Nospiediet īsinājumtaustiņu <ph name="KEYBOARD_SHORTCUT" />, lai pārslēgtu tastatūras izkārtojumu.</translation>
 <translation id="2501920221385095727">Taustiņu ķēde</translation>
 <translation id="2509468283778169019">Funkcija Caps Lock ir ieslēgta</translation>
-<translation id="2532589005999780174">Augsta kontrasta režīms</translation>
 <translation id="2542089167727451762">Pieskarieties profila attēlam</translation>
 <translation id="255671100581129685">Google asistents nav pieejams publiskā sesijā.</translation>
 <translation id="256712445991462162">dokota lupa</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Pārāk daudz mēģinājumu atbloķēt ar pirksta nospiedumu</translation>
 <translation id="7994370417837006925">Vairākkārtēja pierakstīšanās</translation>
 <translation id="8000066093800657092">Nav tīkla</translation>
-<translation id="8029241286966751120">Pilnekrāna lupa ir iespējota. Lai to izslēgtu, vēlreiz nospiediet taustiņu kombināciju Ctrl+Search+H.</translation>
 <translation id="8030169304546394654">atvienots</translation>
 <translation id="8054466585765276473">Notiek akumulatora darbības ilguma aprēķināšana.</translation>
 <translation id="8061464966246066292">Augsts kontrasts</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Pēdējo darbvietu nevar noņemt.</translation>
 <translation id="8392451568018454956">Opciju izvēlne kontam <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Jūsu vecāki bloķēja šo ierīci</translation>
-<translation id="8406981827175133772">Pilnekrāna lupa</translation>
 <translation id="8425213833346101688">Mainīt</translation>
 <translation id="8427213022735114808">Diktēšanas funkcija nosūta jūsu balss datus Google serveriem, lai atļautu rakstīšanu ar balsi jebkurā teksta laukā.</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>

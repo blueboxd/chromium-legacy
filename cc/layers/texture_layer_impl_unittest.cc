@@ -102,41 +102,5 @@ TEST(TextureLayerImplTest, Occlusion) {
   }
 }
 
-TEST(TextureLayerImplTest, ResourceNotFreedOnMSAAToggle) {
-  bool released = false;
-  LayerTreeImplTestBase impl(
-      FakeLayerTreeFrameSink::Create3dForGpuRasterization());
-  impl.host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
-
-  gfx::Size layer_size(1000, 1000);
-  gfx::Size viewport_size(1000, 1000);
-
-  viz::TransferableResource resource;
-  resource.is_software = false;
-  resource.mailbox_holder.mailbox = gpu::Mailbox::Generate();
-  resource.mailbox_holder.sync_token =
-      gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
-                     gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456);
-  resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
-
-  TextureLayerImpl* texture_layer_impl = impl.AddLayer<TextureLayerImpl>();
-  texture_layer_impl->SetBounds(layer_size);
-  texture_layer_impl->SetDrawsContent(true);
-  texture_layer_impl->SetTransferableResource(
-      resource, viz::SingleReleaseCallback::Create(base::BindOnce(
-                    [](bool* released, const gpu::SyncToken& sync_token,
-                       bool lost) { *released = true; },
-                    base::Unretained(&released))));
-  CopyProperties(impl.root_layer(), texture_layer_impl);
-
-  impl.CalcDrawProps(viewport_size);
-
-  EXPECT_FALSE(released);
-  // Toggling MSAA clears all tilings on both trees.
-  impl.host_impl()->SetContentHasSlowPaths(true);
-  impl.host_impl()->CommitComplete();
-  EXPECT_FALSE(released);
-}
-
 }  // namespace
 }  // namespace cc

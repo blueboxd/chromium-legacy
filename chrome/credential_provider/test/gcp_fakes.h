@@ -85,6 +85,9 @@ class FakeOSUserManager : public OSUserManager {
   HRESULT SetUserPassword(const wchar_t* domain,
                           const wchar_t* username,
                           const wchar_t* password) override;
+  HRESULT SetUserFullname(const wchar_t* domain,
+                          const wchar_t* username,
+                          const wchar_t* full_name) override;
   HRESULT IsWindowsPasswordValid(const wchar_t* domain,
                                  const wchar_t* username,
                                  const wchar_t* password) override;

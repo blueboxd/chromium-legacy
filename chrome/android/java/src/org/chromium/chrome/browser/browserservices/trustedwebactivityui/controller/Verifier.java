@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.Promise;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
@@ -23,9 +21,6 @@ import org.chromium.content_public.browser.NavigationHandle;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -36,18 +31,12 @@ import androidx.annotation.Nullable;
 /**
  * Checks whether the currently seen web page belongs to a verified origin and updates the
  * {@link TrustedWebActivityModel} accordingly.
- *
- * TODO(peconn): Make this class work with both Origins and Scopes (for WebAPK unificiation).
  */
 @ActivityScope
 public class Verifier implements NativeInitObserver {
     private final CustomTabActivityTabProvider mTabProvider;
-    private final TabObserverRegistrar mTabObserverRegistrar;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final VerifierDelegate mDelegate;
-
-    // These origins need to be verified via OriginVerifier#start, bypassing cache.
-    private final Set<Origin> mOriginsToVerify = new HashSet<>();
 
     @Nullable private VerificationState mState;
 
@@ -63,23 +52,22 @@ public class Verifier implements NativeInitObserver {
 
     /** Represents the verification state of currently viewed web page. */
     public static class VerificationState {
-        public final Origin origin;
+        public final String scope;
         @VerificationStatus
         public final int status;
 
-        public VerificationState(Origin origin, @VerificationStatus int status) {
-            this.origin = origin;
+        public VerificationState(String scope, @VerificationStatus int status) {
+            this.scope = scope;
             this.status = status;
         }
     }
 
-    /** A {@link TabObserver} that checks whether we are on a verified Origin on page navigation. */
+    /** A {@link TabObserver} that checks whether we are on a verified page on navigation. */
     private final TabObserver mVerifyOnPageLoadObserver = new EmptyTabObserver() {
         @Override
         public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
             if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
-
-            verifyVisitedOrigin(Origin.createOrThrow(navigation.getUrl()));
+            verify(navigation.getUrl());
         }
     };
 
@@ -90,7 +78,7 @@ public class Verifier implements NativeInitObserver {
                     // When a link with target="_blank" is followed and the user navigates back, we
                     // don't get the onDidFinishNavigation event (because the original page wasn't
                     // navigated away from, it was only ever hidden). https://crbug.com/942088
-                    verifyVisitedOrigin(Origin.createOrThrow(tab.getUrl()));
+                    verify(tab.getUrl());
                 }
             };
 
@@ -104,7 +92,6 @@ public class Verifier implements NativeInitObserver {
         // TODO(peconn): Change the CustomTabIntentDataProvider to a BrowserServices... once
         // https://chromium-review.googlesource.com/c/chromium/src/+/1877600 has landed.
         mTabProvider = tabProvider;
-        mTabObserverRegistrar =  tabObserverRegistrar;
         mIntentDataProvider = intentDataProvider;
         mDelegate = delegate;
 
@@ -114,9 +101,8 @@ public class Verifier implements NativeInitObserver {
     }
 
     /**
-     * @return the {@link VerificationState} of the origin we are currently in.
-     * Since resolving the origin requires native, returns null before native is loaded.
-     * TODO(peconn): Is there any reason to distinguish between null and PENDING?
+     * @return the {@link VerificationState} of the page we are currently on.
+     * Since verification may require native, may return null before native is loaded.
      */
     @Nullable
     public VerificationState getState() {
@@ -133,69 +119,22 @@ public class Verifier implements NativeInitObserver {
 
     @Override
     public void onFinishNativeInitialization() {
-        // This value comes from an externally sent Intent, it may be invalid.
-        Origin initialOrigin = Origin.create(mIntentDataProvider.getUrlToLoad());
-
-        if (initialOrigin == null) {
-            mTabObserverRegistrar.unregisterTabObserver(mVerifyOnPageLoadObserver);
-            updateState(initialOrigin, VerificationStatus.FAILURE);
-            return;
-        }
-
-        collectTrustedOrigins(initialOrigin);
-        verifyVisitedOrigin(initialOrigin);
-    }
-
-    private void collectTrustedOrigins(Origin initialOrigin) {
-        mOriginsToVerify.add(initialOrigin);
-        List<String> additionalOrigins =
-                mIntentDataProvider.getTrustedWebActivityAdditionalOrigins();
-        if (additionalOrigins != null) {
-            for (String originAsString : additionalOrigins) {
-                // This value comes from an externally sent Intent, it may be invalid.
-                Origin origin = Origin.create(originAsString);
-                if (origin != null) mOriginsToVerify.add(origin);
-            }
-        }
+        verify(mIntentDataProvider.getUrlToLoad());
     }
 
     /**
-     * Returns whether the given |url| is on an Origin that the package has been previously
-     * verified for.
+     * Perform verification for the given page.
      */
-    public boolean isPageOnVerifiedOrigin(String url) {
-        Origin origin = Origin.create(url);
-        if (origin == null) return false;
-        return mDelegate.wasPreviouslyVerified(origin);
-    }
+    private void verify(String url) {
+        Promise<Boolean> result = mDelegate.verify(url);
+        String scope = mDelegate.getVerifiedScope(url);
+        if (scope == null) return;
 
-    /**
-     * Verifies an arbitrary url.
-     * Returns a {@link Promise<Boolean>} with boolean telling whether verification succeeded.
-     */
-    public Promise<Boolean> verifyOrigin(String url) {
-        Origin origin = Origin.create(url);
-        if (origin == null) return Promise.fulfilled(false);
-
-        if (mDelegate.wasPreviouslyVerified(origin)) {
-            return Promise.fulfilled(true);
-        }
-        return mDelegate.verify(origin);
-    }
-
-    /**
-     * Perform verification for the origin the user is currently on.
-     */
-    private void verifyVisitedOrigin(Origin origin) {
-        if (mOriginsToVerify.contains(origin)) {
-            // Do verification bypassing the cache.
-            updateState(origin, VerificationStatus.PENDING);
-            mDelegate.verify(origin).then(
-                    (Callback<Boolean>) verified -> onVerificationResult(origin, verified));
+        if (result.isFulfilled()) {
+            updateState(scope, statusFromBoolean(result.getResult()));
         } else {
-            // Look into cache only
-            boolean verified = mDelegate.wasPreviouslyVerified(origin);
-            updateState(origin, verified ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE);
+            updateState(scope, VerificationStatus.PENDING);
+            result.then(verified -> { onVerificationResult(scope, verified); });
         }
     }
 
@@ -204,19 +143,24 @@ public class Verifier implements NativeInitObserver {
      * client called |validateRelationship| before launching the TWA and we found that verification
      * in the cache.
      */
-    private void onVerificationResult(Origin origin, boolean verified) {
-        mOriginsToVerify.remove(origin);
+    private void onVerificationResult(String scope, boolean verified) {
         Tab tab = mTabProvider.getTab();
-        boolean stillOnSameOrigin = tab != null && origin.equals(Origin.create(tab.getUrl()));
-        if (stillOnSameOrigin) {
-            updateState(origin, verified ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE);
+
+        boolean resultStillApplies = tab != null
+                && scope.equals(mDelegate.getVerifiedScope(tab.getUrl()));
+        if (resultStillApplies) {
+            updateState(scope, verified ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE);
         }
     }
 
-    private void updateState(Origin origin, @VerificationStatus int status) {
-        mState = new VerificationState(origin, status);
+    private void updateState(String scope, @VerificationStatus int status) {
+        mState = new VerificationState(scope, status);
         for (Runnable observer : mObservers) {
             observer.run();
         }
+    }
+
+    private static @VerificationStatus int statusFromBoolean(boolean success) {
+        return success ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE;
     }
 }

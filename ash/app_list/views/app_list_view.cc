@@ -1187,6 +1187,21 @@ void AppListView::MaybeCreateAccessibilityEvent(
   announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
+void AppListView::EnsureWidgetBoundsMatchCurrentState() {
+  const gfx::Rect new_target_bounds =
+      GetPreferredWidgetBoundsForState(app_list_state_);
+  aura::Window* window = GetWidget()->GetNativeView();
+  if (new_target_bounds == window->GetTargetBounds())
+    return;
+
+  // Set the widget size to fit the new display metrics.
+  GetWidget()->GetNativeView()->SetBounds(new_target_bounds);
+
+  // Update the widget bounds to accomodate the new work
+  // area.
+  SetState(app_list_state_);
+}
+
 int AppListView::GetRemainingBoundsAnimationDistance() const {
   return GetWidget()->GetLayer()->transform().To2dTranslation().y();
 }
@@ -2120,7 +2135,7 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
     // sure app list bounds match the current app list view state.
     GetWidget()->GetNativeView()->ClearProperty(
         wm::kVirtualKeyboardRestoreBoundsKey);
-    SetState(app_list_state_);
+    EnsureWidgetBoundsMatchCurrentState();
   }
 }
 
@@ -2138,18 +2153,7 @@ bool AppListView::CloseKeyboardIfVisible() {
 }
 
 void AppListView::OnParentWindowBoundsChanged() {
-  const gfx::Rect new_target_bounds =
-      GetPreferredWidgetBoundsForState(app_list_state_);
-  aura::Window* window = GetWidget()->GetNativeView();
-  if (new_target_bounds == window->GetTargetBounds())
-    return;
-
-  // Set the widget size to fit the new display metrics.
-  GetWidget()->GetNativeView()->SetBounds(new_target_bounds);
-
-  // Update the widget bounds to accomodate the new work
-  // area.
-  SetState(app_list_state_);
+  EnsureWidgetBoundsMatchCurrentState();
 }
 
 float AppListView::GetAppListBackgroundOpacityDuringDragging() {

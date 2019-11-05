@@ -24,6 +24,7 @@ class CrossSequenceCacheStorageCache::Inner {
 
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::CacheQueryOptionsPtr match_options,
+             CacheStorageSchedulerPriority priority,
              int64_t trace_id,
              ResponseCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -33,7 +34,7 @@ class CrossSequenceCacheStorageCache::Inner {
       return;
     }
     handle_.value()->Match(std::move(request), std::move(match_options),
-                           trace_id, std::move(callback));
+                           priority, trace_id, std::move(callback));
   }
 
   void MatchAll(blink::mojom::FetchAPIRequestPtr request,
@@ -168,11 +169,12 @@ bool CrossSequenceCacheStorageCache::IsUnreferenced() const {
 void CrossSequenceCacheStorageCache::Match(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr match_options,
+    CacheStorageSchedulerPriority priority,
     int64_t trace_id,
     ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   inner_.Post(FROM_HERE, &Inner::Match, std::move(request),
-              std::move(match_options), trace_id,
+              std::move(match_options), priority, trace_id,
               WrapCallbackForCurrentSequence(std::move(callback)));
 }
 

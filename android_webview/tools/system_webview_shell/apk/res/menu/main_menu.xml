@@ -17,4 +17,6 @@
           android:title="@string/menu_start_animation_activity"/>
     <item android:id="@+id/menu_about"
           android:title="@string/menu_about"/>
+    <item android:id="@+id/menu_devui"
+          android:title="@string/menu_devui"/>
 </menu>

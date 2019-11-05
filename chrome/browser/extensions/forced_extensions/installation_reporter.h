@@ -174,6 +174,8 @@ class InstallationReporter : public KeyedService {
     base::Optional<extensions::InstallationReporter::Stage> install_stage;
     base::Optional<extensions::ExtensionDownloaderDelegate::Stage>
         downloading_stage;
+    base::Optional<extensions::ExtensionDownloaderDelegate::CacheStatus>
+        downloading_cache_status;
     base::Optional<extensions::InstallationReporter::FailureReason>
         failure_reason;
     base::Optional<extensions::CrxInstallErrorDetail> install_error_detail;
@@ -199,6 +201,9 @@ class InstallationReporter : public KeyedService {
   void ReportFailure(const ExtensionId& id, FailureReason reason);
   void ReportDownloadingStage(const ExtensionId& id,
                               ExtensionDownloaderDelegate::Stage stage);
+  void ReportDownloadingCacheStatus(
+      const ExtensionId& id,
+      ExtensionDownloaderDelegate::CacheStatus cache_status);
   void ReportCrxInstallError(const ExtensionId& id,
                              FailureReason reason,
                              CrxInstallErrorDetail crx_install_error);

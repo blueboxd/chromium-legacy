@@ -290,6 +290,7 @@ jumbo_component("views") {
     "accessibility/ax_event_manager.cc",
     "accessibility/ax_event_observer.cc",
     "accessibility/ax_virtual_view.cc",
+    "accessibility/ax_virtual_view_mac.mm",
     "accessibility/view_accessibility.cc",
     "accessibility/view_accessibility_utils.cc",
     "accessible_pane_view.cc",

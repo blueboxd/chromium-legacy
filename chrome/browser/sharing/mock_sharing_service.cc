@@ -22,6 +22,7 @@ MockSharingService::MockSharingService()
           std::make_unique<SharingFCMHandler>(/*gcm_driver=*/nullptr,
                                               /*sharing_fcm_sender=*/nullptr,
                                               /*sync_preference=*/nullptr),
+          /*message_sender=*/nullptr,
           /*gcm_driver=*/nullptr,
           /*device_info_tracker=*/nullptr,
           /*local_device_info_provider=*/nullptr,

@@ -466,14 +466,14 @@ INSTANTIATE_TEST_SUITE_P(,
 // See https://crbug.com/782322 for details. Also occasional flakes on win7
 // (https://crbug.com/789542).
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
 
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(ResourceLoadingHintsHttpsWhitelisted)) {
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -559,7 +559,7 @@ IN_PROC_BROWSER_TEST_P(
 // be blocked.
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsWhitelisted_Iframe)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(ResourceLoadingHintsHttpsWhitelisted_Iframe)) {
   GURL url = https_url_iframe();
 
   // Whitelist resource loading hints for https_url_iframe()'s' host, which is
@@ -597,7 +597,7 @@ IN_PROC_BROWSER_TEST_P(
 // resources should not be blocked either since https_url_iframe() is not
 // whitelisted.
 IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(
+                       DISABLE_ON_WIN_MAC_CHROMEOS(
                            ResourceLoadingHintsHttpsNotWhitelisted_Iframe)) {
   GURL url = https_url_iframe();
 
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
 // not blocked.
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(ExperimentalHints_ExperimentIsNotEnabled)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(ExperimentalHints_ExperimentIsNotEnabled)) {
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -669,7 +669,7 @@ class ResourceLoadingHintsBrowserTestWithExperimentEnabled
 // Sets only the experimental hints, and enables the matching experiment.
 // Verifies that the hints are used, and the resource loading is blocked.
 IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTestWithExperimentEnabled,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(ExperimentalHints)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ExperimentalHints)) {
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -704,7 +704,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTestWithExperimentEnabled,
 // experiment. Verifies that the hints are used, and the resource loading is
 // blocked.
 IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTestWithExperimentEnabled,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(MixExperimentalHints)) {
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host. Set
@@ -741,7 +741,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTestWithExperimentEnabled,
 // match. Verifies that the hints are not used on that webpage.
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(MatchingOrigin_NonMatchingPagePattern)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(MatchingOrigin_NonMatchingPagePattern)) {
   const GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -776,7 +776,7 @@ IN_PROC_BROWSER_TEST_P(
 // the page patterns. Verifies that the hints are not used on that webpage.
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(SameOriginDifferentPattern)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(SameOriginDifferentPattern)) {
   // Whitelist resource loading hints for https_url()'s' host and pattern.
   SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_hint_setup_url(),
                                                     https_url().path());
@@ -849,7 +849,7 @@ class ResourceLoadingHintsBrowserTestWithExperimentDisabled
 // matching experiment. Verifies that the hints from the experiment are not
 // used.
 IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTestWithExperimentDisabled,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(MixExperimentalHints)) {
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -877,7 +877,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTestWithExperimentDisabled,
 
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         ResourceLoadingHintsHttpsWhitelistedRedirectToHttps)) {
   GURL url = redirect_url();
 
@@ -912,7 +912,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsNotWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(ResourceLoadingHintsHttpsNotWhitelisted)) {
   GURL url = https_url();
 
   SetExpectedFooJpgRequest(true);
@@ -937,7 +937,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttp)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ResourceLoadingHintsHttp)) {
   GURL url = http_url();
 
   // Whitelist resource loading hints for http_hint_setup_url()'s' host.
@@ -961,7 +961,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(
+                       DISABLE_ON_WIN_MAC_CHROMEOS(
                            ResourceLoadingHintsHttpsWhitelistedNoTransform)) {
   GURL url = https_no_transform_url();
 
@@ -1003,7 +1003,7 @@ class ResourceLoadingHintsBrowserTestWithCoinFlipAlwaysHoldback
 
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTestWithCoinFlipAlwaysHoldback,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         ResourceLoadingHintsHttpsWhitelistedButShouldNotApplyBecauseCoinFlipHoldback)) {
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 

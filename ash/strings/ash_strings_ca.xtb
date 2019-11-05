@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">El mode No molestis està activat.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostra la configuració de les notificacions. Les notificacions estan desactivades per a una aplicació.}other{Mostra la configuració de les notificacions. Les notificacions estan desactivades per a # aplicacions.}}</translation>
 <translation id="1525508553941733066">IGNORA</translation>
-<translation id="1537254971476575106">Lupa de pantalla completa</translation>
 <translation id="15373452373711364">Cursor del ratolí gran</translation>
 <translation id="1546492247443594934">Escriptori 2</translation>
 <translation id="1550523713251050646">Feu clic per veure més opcions</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Prem <ph name="KEYBOARD_SHORTCUT" /> per canviar el disseny del teclat.</translation>
 <translation id="2501920221385095727">Tecles permanents</translation>
 <translation id="2509468283778169019">BLOQ MAJ està activat.</translation>
-<translation id="2532589005999780174">Mode d'alt contrast</translation>
 <translation id="2542089167727451762">Toca la teva imatge de perfil</translation>
 <translation id="255671100581129685">L'Assistent de Google no està disponible a les sessions públiques.</translation>
 <translation id="256712445991462162">la lupa acoblada</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Has intentat desbloquejar el dispositiu amb empremta digital massa vegades</translation>
 <translation id="7994370417837006925">Inici de sessió múltiple</translation>
 <translation id="8000066093800657092">No hi ha cap xarxa</translation>
-<translation id="8029241286966751120">La lupa de pantalla completa està activada. Torna a prémer Ctrl+Cerca+M per desactivar-la.</translation>
 <translation id="8030169304546394654">Desconnectat</translation>
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="8061464966246066292">Contrast alt</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">L'últim escriptori no es pot suprimir.</translation>
 <translation id="8392451568018454956">Menú d'opcions per a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">El teu pare o la teva mare han bloquejat aquest dispositiu</translation>
-<translation id="8406981827175133772">Lupa de pantalla completa</translation>
 <translation id="8425213833346101688">Canvia</translation>
 <translation id="8427213022735114808">El dictat envia la teva veu a Google per permetre l'escriptura per veu en qualsevol camp de text.</translation>
 <translation id="8428213095426709021">Configuració</translation>

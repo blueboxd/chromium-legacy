@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.compositor.scene_layer.ToolbarSceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
@@ -650,15 +649,11 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         boolean canUseLiveTexture = tab.getWebContents() != null && !SadTab.isShowing(tab)
                 && !isNativePage && !tab.isHidden();
 
-        boolean isNtp = tab.getNativePage() instanceof NewTabPage;
-        boolean isLocationBarShownInNtp =
-                isNtp && ((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP();
-
         boolean needsUpdate = layoutTab.initFromHost(TabThemeColorHelper.getBackgroundColor(tab),
                 shouldStall(tab), canUseLiveTexture,
                 ToolbarColors.getToolbarSceneLayerBackground(tab),
-                ToolbarColors.getTextBoxColorForToolbarBackground(mContext.getResources(),
-                        isLocationBarShownInNtp, themeColor, tab.isIncognito()),
+                ToolbarColors.getTextBoxColorForToolbarBackground(
+                        mContext.getResources(), tab, themeColor),
                 ToolbarColors.getTextBoxAlphaForToolbarBackground(tab));
         if (needsUpdate) requestUpdate();
 

@@ -557,6 +557,7 @@ void PrintPreviewHandler::OnJavascriptAllowed() {
   print_preview_ui()->SetPreviewUIId();
   // Now that the UI is initialized, any future account changes will require
   // a printer list refresh.
+  ReadPrinterTypeBlacklistFromPrefs();
   RegisterForGaiaCookieChanges();
 }
 
@@ -567,6 +568,7 @@ void PrintPreviewHandler::OnJavascriptDisallowed() {
   print_preview_ui()->ClearPreviewUIId();
   preview_callbacks_.clear();
   preview_failures_.clear();
+  printer_type_blacklist_.clear();
   UnregisterForGaiaCookieChanges();
 }
 
@@ -578,6 +580,33 @@ PrefService* PrintPreviewHandler::GetPrefs() const {
   auto* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   DCHECK(prefs);
   return prefs;
+}
+
+void PrintPreviewHandler::ReadPrinterTypeBlacklistFromPrefs() {
+  PrefService* prefs = GetPrefs();
+  if (!prefs->HasPrefPath(prefs::kPrinterTypeBlacklist))
+    return;
+
+  const base::Value* blacklist_types = prefs->Get(prefs::kPrinterTypeBlacklist);
+  if (!blacklist_types || !blacklist_types->is_list())
+    return;
+
+  for (const base::Value& blacklist_type : blacklist_types->GetList()) {
+    if (!blacklist_type.is_string())
+      continue;
+
+    const std::string& blacklist_str = blacklist_type.GetString();
+    if (blacklist_str == "privet")
+      printer_type_blacklist_.insert(kPrivetPrinter);
+    else if (blacklist_str == "extension")
+      printer_type_blacklist_.insert(kExtensionPrinter);
+    else if (blacklist_str == "pdf")
+      printer_type_blacklist_.insert(kPdfPrinter);
+    else if (blacklist_str == "local")
+      printer_type_blacklist_.insert(kLocalPrinter);
+    else if (blacklist_str == "cloud")
+      printer_type_blacklist_.insert(kCloudPrinter);
+  }
 }
 
 PrintPreviewUI* PrintPreviewHandler::print_preview_ui() const {
@@ -623,6 +652,13 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
   CHECK(args->GetInteger(1, &type));
   PrinterType printer_type = static_cast<PrinterType>(type);
 
+  // Immediately resolve the callback without fetching printers if the printer
+  // type is blacklisted
+  if (base::Contains(printer_type_blacklist_, printer_type)) {
+    ResolveJavascriptCallback(base::Value(callback_id), base::Value());
+    return;
+  }
+
   PrinterHandler* handler = GetPrinterHandler(printer_type);
   if (!handler) {
     RejectJavascriptCallback(base::Value(callback_id), base::Value());
@@ -665,6 +701,12 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
     return;
   }
   PrinterType printer_type = static_cast<PrinterType>(type);
+
+  // Reject the callback if the printer type is blacklisted
+  if (base::Contains(printer_type_blacklist_, printer_type)) {
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
+    return;
+  }
 
   PrinterHandler* handler = GetPrinterHandler(printer_type);
   if (!handler) {
@@ -1361,6 +1403,7 @@ void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
   DCHECK(!identity_manager_);
   cloud_print_enabled_ =
+      !base::Contains(printer_type_blacklist_, kCloudPrinter) &&
       GetPrefs()->GetBoolean(prefs::kCloudPrintSubmitEnabled);
 
   if (!cloud_print_enabled_)

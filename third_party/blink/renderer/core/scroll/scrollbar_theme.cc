@@ -59,13 +59,7 @@ void ScrollbarTheme::Paint(const Scrollbar& scrollbar,
                            const CullRect& cull_rect) {
   if (!ShouldPaintScrollbarPart(scrollbar.FrameRect(), cull_rect))
     return;
-  PaintTrackAndButtons(graphics_context, scrollbar);
-
-  if (scrollbar.HasTickmarks()) {
-    IntRect track_rect = TrackRect(scrollbar);
-    if (ShouldPaintScrollbarPart(track_rect, cull_rect))
-      PaintTickmarks(graphics_context, scrollbar, track_rect);
-  }
+  PaintTrackButtonsTickmarks(graphics_context, scrollbar, IntPoint());
 
   IntRect thumb_rect = ThumbRect(scrollbar);
   if (HasThumb(scrollbar) && ShouldPaintScrollbarPart(thumb_rect, cull_rect))
@@ -120,6 +114,7 @@ ScrollbarPart ScrollbarTheme::HitTest(const Scrollbar& scrollbar,
 
 void ScrollbarTheme::PaintScrollCorner(
     GraphicsContext& context,
+    const Scrollbar* vertical_scrollbar,
     const DisplayItemClient& display_item_client,
     const IntRect& corner_rect,
     WebColorScheme color_scheme) {
@@ -313,60 +308,16 @@ ScrollbarTheme& ScrollbarTheme::GetTheme() {
 }
 
 void ScrollbarTheme::PaintTrackAndButtons(GraphicsContext& context,
-                                          const Scrollbar& scrollbar) {
-  base::Optional<DrawingRecorder> recorder;
-  if (CreatesSingleDisplayItemForTrackAndButtons()) {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(
-            context, scrollbar, DisplayItem::kScrollbarTrackAndButtons))
-      return;
-    recorder.emplace(context, scrollbar,
-                     DisplayItem::kScrollbarTrackAndButtons);
-  }
+                                          const Scrollbar& scrollbar,
+                                          const IntPoint& offset) {
+  // CustomScrollbarTheme must override this method.
+  DCHECK(!scrollbar.IsCustomScrollbar());
 
-  PaintScrollbarBackground(context, scrollbar);
-
-  if (HasButtons(scrollbar)) {
-    PaintButton(context, scrollbar,
-                BackButtonRect(scrollbar, kBackButtonStartPart),
-                kBackButtonStartPart);
-    PaintButton(context, scrollbar,
-                BackButtonRect(scrollbar, kBackButtonEndPart),
-                kBackButtonEndPart);
-    PaintButton(context, scrollbar,
-                ForwardButtonRect(scrollbar, kForwardButtonStartPart),
-                kForwardButtonStartPart);
-    PaintButton(context, scrollbar,
-                ForwardButtonRect(scrollbar, kForwardButtonEndPart),
-                kForwardButtonEndPart);
-  }
-
-  IntRect track_rect = TrackRect(scrollbar);
-  PaintTrackBackground(context, scrollbar, track_rect);
-
-  if (HasThumb(scrollbar)) {
-    IntRect start_track_rect;
-    IntRect thumb_rect;
-    IntRect end_track_rect;
-    SplitTrack(scrollbar, track_rect, start_track_rect, thumb_rect,
-               end_track_rect);
-    PaintTrackPiece(context, scrollbar, start_track_rect, kBackTrackPart);
-    PaintTrackPiece(context, scrollbar, end_track_rect, kForwardTrackPart);
-  }
-}
-
-void ScrollbarTheme::PaintTrackAndButtonsForCompositor(
-    GraphicsContext& context,
-    const Scrollbar& scrollbar) {
-  base::Optional<DrawingRecorder> recorder;
-  DCHECK(CreatesSingleDisplayItemForTrackAndButtons());
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           context, scrollbar, DisplayItem::kScrollbarTrackAndButtons))
     return;
-  recorder.emplace(context, scrollbar, DisplayItem::kScrollbarTrackAndButtons);
-
-  // We paint compositor scrollbars in the space relative to the scrollbar's
-  // origin.
-  IntPoint offset = -scrollbar.Location();
+  DrawingRecorder recorder(context, scrollbar,
+                           DisplayItem::kScrollbarTrackAndButtons);
 
   if (HasButtons(scrollbar)) {
     IntRect back_button_rect = BackButtonRect(scrollbar, kBackButtonStartPart);
@@ -378,7 +329,7 @@ void ScrollbarTheme::PaintTrackAndButtonsForCompositor(
     forward_button_rect.MoveBy(offset);
     PaintButton(context, scrollbar, forward_button_rect, kForwardButtonEndPart);
 
-    // Composited scrollbars don't have kBackButtonEndPart and
+    // Non-custom scrollbars don't have kBackButtonEndPart and
     // kForwardButtonStartPart.
     DCHECK(BackButtonRect(scrollbar, kBackButtonEndPart).IsEmpty());
     DCHECK(ForwardButtonRect(scrollbar, kForwardButtonStartPart).IsEmpty());
@@ -386,15 +337,17 @@ void ScrollbarTheme::PaintTrackAndButtonsForCompositor(
 
   IntRect track_rect = TrackRect(scrollbar);
   track_rect.MoveBy(offset);
-  PaintTrackBackground(context, scrollbar, track_rect);
+  PaintTrack(context, scrollbar, track_rect);
+}
 
-  if (HasThumb(scrollbar)) {
-    // We don't repaint composited scrollbars on thumb position change, so
-    // the back track and forward track can't depend on thumb position. Just
-    // paint them on the whole track. All scrollbar themes for composited
-    // scrollbars know how to handle this case.
-    PaintTrackPiece(context, scrollbar, track_rect, kBackTrackPart);
-    PaintTrackPiece(context, scrollbar, track_rect, kForwardTrackPart);
+void ScrollbarTheme::PaintTrackButtonsTickmarks(GraphicsContext& context,
+                                                const Scrollbar& scrollbar,
+                                                const IntPoint& offset) {
+  PaintTrackAndButtons(context, scrollbar, offset);
+  if (scrollbar.HasTickmarks()) {
+    IntRect track_rect = TrackRect(scrollbar);
+    track_rect.MoveBy(offset);
+    PaintTickmarks(context, scrollbar, track_rect);
   }
 }
 

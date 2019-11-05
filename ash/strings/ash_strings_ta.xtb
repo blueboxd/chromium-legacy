@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">'தொந்தரவு செய்ய வேண்டாம்' ஆன் செய்யப்பட்டுள்ளது.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{அறிவிப்பு அமைப்புகளைக் காண்பிக்கும். ஒரு ஆப்ஸுக்கு அறிவிப்புகள் முடக்கப்பட்டுள்ளன}other{அறிவிப்பு அமைப்புகளைக் காண்பிக்கும். # ஆப்ஸுக்கு அறிவிப்புகள் முடக்கப்பட்டுள்ளன}}</translation>
 <translation id="1525508553941733066">நிராகரி</translation>
-<translation id="1537254971476575106">முழுத்திரைப் பெரிதாக்கி</translation>
 <translation id="15373452373711364">பெரிய மவுஸ் இடஞ்சுட்டி</translation>
 <translation id="1546492247443594934">மேசை 2</translation>
 <translation id="1550523713251050646">மேலும் விருப்பங்களுக்குக் கிளிக் செய்யவும்</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">விசைப்பலகைத் தளவமைப்பை மாற்ற, <ph name="KEYBOARD_SHORTCUT" /> விசையை அழுத்தவும்.</translation>
 <translation id="2501920221385095727">ஸ்டிக்கி விசைகள்</translation>
 <translation id="2509468283778169019">CAPS LOCK இயக்கத்தில்</translation>
-<translation id="2532589005999780174">அதிக ஒளி மாறுபாட்டுப் பயன்முறை</translation>
 <translation id="2542089167727451762">உங்கள் சுயவிவரப் படத்தைத் தட்டவும்</translation>
 <translation id="255671100581129685">பொது அமர்வில் Google அசிஸ்டண்ட்டைப் பயன்படுத்த முடியாது.</translation>
 <translation id="256712445991462162">டாக் செய்யப்பட்ட பெரிதாக்கி</translation>
@@ -300,6 +298,7 @@
 <translation id="5302048478445481009">மொழி</translation>
 <translation id="5313326810920013265">புளூடூத் அமைப்புகள்</translation>
 <translation id="5331975486040154427">USB-C சாதனம் (இடது பக்கம் பின்னே இருக்கும் போர்ட்)</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">அதிகபட்சம் முயன்றுவிட்டீர்கள்</translation>
 <translation id="5397578532367286026">இந்தப் பயனரின் பயன்பாடு மற்றும் வரலாறு chrome.com இன் நிர்வாகியால் (<ph name="MANAGER_EMAIL" />) மதிப்பாய்வு செய்யப்படும்.</translation>
 <translation id="5430931332414098647">உடனடி இணைப்பு முறை</translation>
@@ -322,6 +321,7 @@
 <translation id="5682642926269496722">பயனரின் தற்போதைய கணக்கில் Google அசிஸ்டண்ட் ஆதரிக்கப்படாது.</translation>
 <translation id="5691772641933328258">கைரேகை அங்கீகரிக்கப்படவில்லை</translation>
 <translation id="5710450975648804523">தொந்தரவு செய்ய வேண்டாம்: ஆன்</translation>
+<translation id="573413375004481890">உங்கள் அனைத்து திரைகளையும் இந்தச் சாதனத்தால் ஆதரிக்க இயலாது, ஆகையால் ஒன்றை இணைப்பு நீக்க வேண்டும்</translation>
 <translation id="574392208103952083">நடுநிலை</translation>
 <translation id="5744083938413354016">தட்டி நகர்த்துதல்</translation>
 <translation id="5750765938512549687">புளூடூத் முடக்கப்பட்டுள்ளது</translation>
@@ -481,7 +481,6 @@
 <translation id="7984197416080286869">கைரேகையை அதிகபட்சம் முயன்றுவிட்டீர்கள்</translation>
 <translation id="7994370417837006925">பல உள்நுழைவு</translation>
 <translation id="8000066093800657092">நெட்வொர்க் இல்லை</translation>
-<translation id="8029241286966751120">முழுத்திரைப் பெரிதாக்கி இயக்கப்பட்டுள்ளது. அதை முடக்க, Ctrl+Search+Mமை மீண்டும் அழுத்தவும்.</translation>
 <translation id="8030169304546394654">துண்டிக்கப்பட்டது</translation>
 <translation id="8054466585765276473">பேட்டரி நேரத்தைக் கணக்கிடுகிறது.</translation>
 <translation id="8061464966246066292">உயர் மாறுபாடு</translation>
@@ -506,7 +505,6 @@
 <translation id="8388750414311082622">இறுதி டெஸ்க்கை அகற்ற இயலாது.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> க்கான விருப்பத்தேர்வுகள் மெனு</translation>
 <translation id="8394567579869570560">உங்கள் பெற்றோர் இந்தச் சாதனத்தைப் பூட்டிவிட்டனர்</translation>
-<translation id="8406981827175133772">முழுத்திரைப் பெரிதாக்கி</translation>
 <translation id="8425213833346101688">மாற்று</translation>
 <translation id="8427213022735114808">உரை புலங்களில் குரல் தட்டச்சை அனுமதிக்க, டிக்டேஷன் அம்சம் உங்கள் குரலை Googleளுக்கு அனுப்பும்.</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>

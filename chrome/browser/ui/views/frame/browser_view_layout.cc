@@ -360,8 +360,12 @@ int BrowserViewLayout::LayoutTabStripRegion(int top) {
 }
 
 int BrowserViewLayout::LayoutWebUITabStrip(int top) {
-  if (!webui_tab_strip_ || !webui_tab_strip_->GetVisible())
+  if (!webui_tab_strip_)
     return top;
+  if (!webui_tab_strip_->GetVisible()) {
+    webui_tab_strip_->SetBoundsRect(gfx::Rect());
+    return top;
+  }
   webui_tab_strip_->SetBounds(
       vertical_layout_rect_.x(), top, vertical_layout_rect_.width(),
       webui_tab_strip_->GetHeightForWidth(vertical_layout_rect_.width()));
@@ -446,6 +450,13 @@ void BrowserViewLayout::LayoutContentsContainerView(int top, int bottom) {
                                       top,
                                       vertical_layout_rect_.width(),
                                       std::max(0, bottom - top));
+  if (webui_tab_strip_ && webui_tab_strip_->GetVisible()) {
+    // The WebUI tab strip container should "push" the tab contents down without
+    // resizing it.
+    contents_container_bounds.Inset(0, 0, 0,
+                                    -webui_tab_strip_->size().height());
+  }
+
   contents_container_->SetBoundsRect(contents_container_bounds);
 }
 

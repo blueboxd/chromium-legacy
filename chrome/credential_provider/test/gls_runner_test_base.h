@@ -38,6 +38,7 @@ class GlsRunnerTestBase : public ::testing::Test {
       const std::string& gls_email,
       const std::string& gaia_id_override,
       const std::string& gaia_password,
+      const std::string& full_name_override,
       const base::string16& start_gls_event_name,
       bool ignore_expected_gaia_id,
       base::CommandLine* command_line);

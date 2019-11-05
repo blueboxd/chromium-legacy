@@ -37,6 +37,10 @@ class AppShortcutManager {
   void AddObserver(AppShortcutObserver* observer);
   void RemoveObserver(AppShortcutObserver* observer);
 
+  // Tells the AppShortcutManager that no shortcuts should actually be written
+  // to the disk.
+  void SuppressShortcutsForTesting();
+
   virtual bool CanCreateShortcuts() const;
 
   // virtual for testing.
@@ -61,6 +65,13 @@ class AppShortcutManager {
   Profile* profile() { return profile_; }
 
  private:
+  void OnShortcutInfoRetrievedCreateShortcuts(
+      bool add_to_desktop,
+      CreateShortcutsCallback callback,
+      std::unique_ptr<ShortcutInfo> info);
+
+  bool suppress_shortcuts_for_testing_ = false;
+
   AppRegistrar* registrar_ = nullptr;
   Profile* const profile_;
 

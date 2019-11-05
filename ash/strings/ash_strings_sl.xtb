@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Način »ne moti« je vklopljen.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Prikaz nastavitev obvestil. Obvestila so izklopljena za eno aplikacijo.}one{Prikaz nastavitev obvestil. Obvestila so izklopljena za # aplikacijo.}two{Prikaz nastavitev obvestil. Obvestila so izklopljena za # aplikaciji.}few{Prikaz nastavitev obvestil. Obvestila so izklopljena za # aplikacije.}other{Prikaz nastavitev obvestil. Obvestila so izklopljena za # aplikacij.}}</translation>
 <translation id="1525508553941733066">OPUSTI</translation>
-<translation id="1537254971476575106">Celozaslonska lupa</translation>
 <translation id="15373452373711364">Velik miškin kazalec</translation>
 <translation id="1546492247443594934">Namizje 2</translation>
 <translation id="1550523713251050646">Kliknite za več možnosti</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Pritisnite <ph name="KEYBOARD_SHORTCUT" />, če želite preklopiti postavitev tipkovnice</translation>
 <translation id="2501920221385095727">Zaklepanje tipk</translation>
 <translation id="2509468283778169019">Tipka CAPS LOCK je vklopljena</translation>
-<translation id="2532589005999780174">Visokokontrastni način</translation>
 <translation id="2542089167727451762">Dotaknite se slike profila</translation>
 <translation id="255671100581129685">Pomočnik Google ni na voljo v javni seji.</translation>
 <translation id="256712445991462162">zasidrana lupa</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Preveč poskusov odklepanja s prstnim odtisom</translation>
 <translation id="7994370417837006925">Prijava z več računi</translation>
 <translation id="8000066093800657092">Ni omrežja</translation>
-<translation id="8029241286966751120">Celozaslonska lupa je omogočena. Če jo želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + M.</translation>
 <translation id="8030169304546394654">Ni povezave</translation>
 <translation id="8054466585765276473">Izračunavanje časa trajanja akumulatorja.</translation>
 <translation id="8061464966246066292">Visok kontrast</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Zadnjega namizja ni mogoče odstraniti.</translation>
 <translation id="8392451568018454956">Meni z možnostmi za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Tvoj starš je zaklenil to napravo</translation>
-<translation id="8406981827175133772">Celozaslonska lupa</translation>
 <translation id="8425213833346101688">Spremeni</translation>
 <translation id="8427213022735114808">Narekovanje pošlje vaš glas v Google zaradi omogočanja glasovnega tipkanja v poljubnem besedilnem polju.</translation>
 <translation id="8428213095426709021">Nastavitve</translation>

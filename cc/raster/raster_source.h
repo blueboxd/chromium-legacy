@@ -38,6 +38,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
     // If set to true, we should use LCD text.
     bool use_lcd_text = true;
 
+    // Specifies the sample count if MSAA is enabled for this tile.
+    int msaa_sample_count = 0;
+
     ImageProvider* image_provider = nullptr;
   };
 

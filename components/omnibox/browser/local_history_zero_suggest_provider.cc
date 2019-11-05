@@ -68,9 +68,9 @@ void LocalHistoryZeroSuggestProvider::Start(const AutocompleteInput& input,
   done_ = true;
   matches_.clear();
 
-  // Allow local history query suggestions only when the user is unauthenticated
-  // and is not in an off-the-record context.
-  if (client_->IsAuthenticated() || client_->IsOffTheRecord())
+  // Allow local history query suggestions only when the user is not in an
+  // off-the-record context.
+  if (client_->IsOffTheRecord())
     return;
 
   // Allow local history query suggestions only when the omnibox is empty and is

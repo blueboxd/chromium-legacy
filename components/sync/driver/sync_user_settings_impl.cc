@@ -20,6 +20,16 @@ ModelTypeSet ResolvePreferredTypes(UserSelectableTypeSet selected_types) {
   return preferred_types;
 }
 
+#if defined(OS_CHROMEOS)
+ModelTypeSet ResolvePreferredOsTypes(UserSelectableOsTypeSet selected_types) {
+  ModelTypeSet preferred_types;
+  for (UserSelectableOsType type : selected_types) {
+    preferred_types.PutAll(UserSelectableOsTypeToAllModelTypes(type));
+  }
+  return preferred_types;
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 SyncUserSettingsImpl::SyncUserSettingsImpl(
@@ -103,6 +113,37 @@ UserSelectableTypeSet SyncUserSettingsImpl::GetRegisteredSelectableTypes()
   return registered_types;
 }
 
+#if defined(OS_CHROMEOS)
+bool SyncUserSettingsImpl::IsSyncAllOsTypesEnabled() const {
+  return prefs_->IsSyncAllOsTypesEnabled();
+}
+
+UserSelectableOsTypeSet SyncUserSettingsImpl::GetSelectedOsTypes() const {
+  UserSelectableOsTypeSet types = prefs_->GetSelectedOsTypes();
+  types.RetainAll(GetRegisteredSelectableOsTypes());
+  return types;
+}
+
+void SyncUserSettingsImpl::SetSelectedOsTypes(bool sync_all_os_types,
+                                              UserSelectableOsTypeSet types) {
+  UserSelectableOsTypeSet registered_types = GetRegisteredSelectableOsTypes();
+  DCHECK(registered_types.HasAll(types));
+  prefs_->SetSelectedOsTypes(sync_all_os_types, registered_types, types);
+}
+
+UserSelectableOsTypeSet SyncUserSettingsImpl::GetRegisteredSelectableOsTypes()
+    const {
+  UserSelectableOsTypeSet registered_types;
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    if (registered_model_types_.Has(
+            UserSelectableOsTypeToCanonicalModelType(type))) {
+      registered_types.Put(type);
+    }
+  }
+  return registered_types;
+}
+#endif  // defined(OS_CHROMEOS)
+
 UserSelectableTypeSet SyncUserSettingsImpl::GetForcedTypes() const {
   if (preference_provider_) {
     return preference_provider_->GetForcedTypes();
@@ -183,7 +224,12 @@ void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {
 
 ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
   ModelTypeSet types;
-  if (IsSyncEverythingEnabled()) {
+#if defined(OS_CHROMEOS)
+  bool sync_everything = IsSyncAllOsTypesEnabled() && IsSyncEverythingEnabled();
+#else
+  bool sync_everything = IsSyncEverythingEnabled();
+#endif
+  if (sync_everything) {
     // TODO(crbug.com/950874): it's possible to remove this case if we accept
     // behavioral change. When one of UserSelectableTypes() isn't registered,
     // but one of its corresponding UserTypes() is registered, current
@@ -194,6 +240,9 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
   } else {
     types = ResolvePreferredTypes(GetSelectedTypes());
     types.PutAll(AlwaysPreferredUserTypes());
+#if defined(OS_CHROMEOS)
+    types.PutAll(ResolvePreferredOsTypes(GetSelectedOsTypes()));
+#endif
     types.RetainAll(registered_model_types_);
   }
 

@@ -61,7 +61,9 @@ class CORE_EXPORT ScrollbarThemeOverlayMock
     return false;
   }
 
-  int MinimumThumbLength(const Scrollbar&) override { return 7; }
+  int MinimumThumbLength(const Scrollbar& scrollbar) override {
+    return ThumbThickness(scrollbar);
+  }
 
  private:
   bool IsMockTheme() const final { return true; }

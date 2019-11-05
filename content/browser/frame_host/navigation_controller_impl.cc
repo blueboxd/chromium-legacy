@@ -3383,6 +3383,11 @@ void NavigationControllerImpl::LoadPostCommitErrorPage(
     const GURL& url,
     const std::string& error_page_html,
     net::Error error) {
+  // A frame pending deletion is not allowed to navigate, the browser is already
+  // committed to destroying this frame so ignore loading the error page.
+  if (!static_cast<RenderFrameHostImpl*>(render_frame_host)->is_active())
+    return;
+
   FrameTreeNode* node =
       static_cast<RenderFrameHostImpl*>(render_frame_host)->frame_tree_node();
 

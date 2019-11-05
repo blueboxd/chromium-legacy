@@ -17,7 +17,8 @@ namespace {
 bool IsUserDataSaverEnabledAndAllowedToFetchHints(Profile* profile) {
   // Check if they are a data saver user.
   if (!data_reduction_proxy::DataReductionProxySettings::
-          IsDataSaverEnabledByUser(profile->GetPrefs())) {
+          IsDataSaverEnabledByUser(profile->IsOffTheRecord(),
+                                   profile->GetPrefs())) {
     return false;
   }
 

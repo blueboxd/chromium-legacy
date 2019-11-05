@@ -338,10 +338,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   weak_this_ = weak_factory_.GetWeakPtr();
 
   pipeline_controller_ = std::make_unique<PipelineController>(
-      std::make_unique<PipelineImpl>(media_task_runner_, main_task_runner_,
-                                     media_log_.get()),
-      base::BindRepeating(&WebMediaPlayerImpl::CreateRenderer,
-                          base::Unretained(this)),
+      std::make_unique<PipelineImpl>(
+          media_task_runner_, main_task_runner_,
+          BindToCurrentLoop(base::BindRepeating(
+              &WebMediaPlayerImpl::CreateRenderer, weak_this_)),
+          media_log_.get()),
       base::BindRepeating(&WebMediaPlayerImpl::OnPipelineSeeked, weak_this_),
       base::BindRepeating(&WebMediaPlayerImpl::OnPipelineSuspended, weak_this_),
       base::BindRepeating(&WebMediaPlayerImpl::OnBeforePipelineResume,
@@ -1720,7 +1721,7 @@ void WebMediaPlayerImpl::OnMemoryPressure(
 }
 
 void WebMediaPlayerImpl::OnError(PipelineStatus status) {
-  DVLOG(1) << __func__;
+  DVLOG(1) << __func__ << ": status=" << status;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(status, PIPELINE_OK);
 
@@ -2614,7 +2615,7 @@ void WebMediaPlayerImpl::MaybeSendOverlayInfoToDecoder() {
   }
 }
 
-std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
+void WebMediaPlayerImpl::CreateRenderer(RendererCreatedCB renderer_created_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Make sure that overlays are enabled if they're always allowed.
@@ -2627,9 +2628,14 @@ std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
       base::Bind(&WebMediaPlayerImpl::OnOverlayInfoRequested, weak_this_));
 #endif
   reported_renderer_type_ = renderer_factory_selector_->GetCurrentFactoryType();
-  return renderer_factory_selector_->GetCurrentFactory()->CreateRenderer(
-      media_task_runner_, worker_task_runner_, audio_source_provider_.get(),
-      compositor_.get(), request_overlay_info_cb, client_->TargetColorSpace());
+
+  auto renderer =
+      renderer_factory_selector_->GetCurrentFactory()->CreateRenderer(
+          media_task_runner_, worker_task_runner_, audio_source_provider_.get(),
+          compositor_.get(), request_overlay_info_cb,
+          client_->TargetColorSpace());
+
+  std::move(renderer_created_cb).Run(std::move(renderer));
 }
 
 void WebMediaPlayerImpl::StartPipeline() {

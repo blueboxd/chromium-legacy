@@ -5,6 +5,7 @@
 #include <fuchsia/modular/cpp/fidl.h>
 #include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
+#include <lib/sys/cpp/component_context.h>
 #include <lib/zx/channel.h>
 
 #include "base/base_paths_fuchsia.h"
@@ -235,8 +236,7 @@ class CastRunnerIntegrationTest : public testing::Test {
              ZX_OK);
 
     component_services_client_ =
-        std::make_unique<base::fuchsia::ServiceDirectoryClient>(
-            std::move(svc_directory));
+        std::make_unique<sys::ServiceDirectory>(std::move(svc_directory));
 
     // Place the ServiceDirectory in the |flat_namespace|.
     startup_info.flat_namespace.paths.emplace_back(
@@ -288,8 +288,7 @@ class CastRunnerIntegrationTest : public testing::Test {
   // Incoming service directory, ComponentContext and per-component state.
   sys::OutgoingDirectory component_services_;
   std::unique_ptr<cr_fuchsia::FakeComponentContext> component_context_;
-  std::unique_ptr<base::fuchsia::ServiceDirectoryClient>
-      component_services_client_;
+  std::unique_ptr<sys::ServiceDirectory> component_services_client_;
   FakeComponentState* component_state_ = nullptr;
 
   // ServiceDirectory into which the CastRunner will publish itself.
@@ -507,7 +506,7 @@ TEST_F(CastRunnerIntegrationTest, Lifecycle) {
       StartCastComponent(base::StringPrintf("cast:%s", kCastChannelAppId));
 
   fuchsia::modular::LifecyclePtr lifecycle;
-  component_services_client_->ConnectToService(lifecycle.NewRequest());
+  component_services_client_->Connect(lifecycle.NewRequest());
   lifecycle->Terminate();
 
   base::RunLoop run_loop;

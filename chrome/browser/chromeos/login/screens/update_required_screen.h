@@ -80,8 +80,6 @@ class UpdateRequiredScreen : public BaseScreen,
 
   void HideErrorMessage();
 
-  void OnGetEndOfLifeStatus(update_engine::EndOfLifeStatus status);
-
   // The user requested an attempt to connect to the network should be made.
   void OnConnectRequested();
 

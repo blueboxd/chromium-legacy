@@ -44,12 +44,13 @@ if (is_win || is_mac) {
       "update_apps.h",
       "updater.cc",
       "updater.h",
+      "updater_constants.cc",
+      "updater_constants.h",
       "util.cc",
       "util.h",
     ]
 
     deps = [
-      ":updater_constants",
       ":version_header",
       "//base",
       "//components/crash/core/common:crash_key",
@@ -63,13 +64,6 @@ if (is_win || is_mac) {
       "//third_party/crashpad/crashpad/handler",
       "//third_party/zlib/google:zip",
       "//url",
-    ]
-  }
-
-  source_set("updater_constants") {
-    sources = [
-      "updater_constants.cc",
-      "updater_constants.h",
     ]
   }
 

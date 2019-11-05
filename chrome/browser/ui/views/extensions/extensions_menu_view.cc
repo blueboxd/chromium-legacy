@@ -28,6 +28,10 @@
 #include "ui/views/view_class_properties.h"
 
 namespace {
+// If true, allows more than one instance of the ExtensionsMenuView, which may
+// not be the active instance in g_extensions_dialog.
+bool g_allow_testing_dialogs = false;
+
 ExtensionsMenuView* g_extensions_dialog = nullptr;
 
 constexpr int EXTENSIONS_SETTINGS_ID = 42;
@@ -66,7 +70,8 @@ ExtensionsMenuView::ExtensionsMenuView(
 }
 
 ExtensionsMenuView::~ExtensionsMenuView() {
-  DCHECK_EQ(g_extensions_dialog, this);
+  if (!g_allow_testing_dialogs)
+    DCHECK_EQ(g_extensions_dialog, this);
   g_extensions_dialog = nullptr;
   extensions_menu_items_.clear();
 }
@@ -248,6 +253,11 @@ void ExtensionsMenuView::OnToolbarPinnedActionsChanged() {
   for (auto* menu_item : extensions_menu_items_) {
     menu_item->UpdatePinButton();
   }
+}
+
+// static
+base::AutoReset<bool> ExtensionsMenuView::AllowInstancesForTesting() {
+  return base::AutoReset<bool>(&g_allow_testing_dialogs, true);
 }
 
 // static

@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.vr;
 
+import android.os.SystemClock;
+
 import org.junit.Assert;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -16,6 +19,8 @@ import java.util.concurrent.TimeoutException;
  * Extension of XrTestFramework meant for testing XR-related web APIs.
  */
 public abstract class WebXrTestFramework extends XrTestFramework {
+    private static final String TAG = "WebXrTestFramework";
+
     /**
      * Must be constructed after the rule has been applied (e.g. in whatever method is
      * tagged with @Before).
@@ -53,10 +58,61 @@ public abstract class WebXrTestFramework extends XrTestFramework {
      * @param webContents The WebContents for the tab the canvas is in.
      */
     public void enterSessionWithUserGesture(WebContents webContents) {
-        try {
-            DOMUtils.clickNode(webContents, "webgl-canvas", false /* goThroughRootAndroidView */);
-        } catch (TimeoutException e) {
-            Assert.fail("Failed to click canvas to enter session: " + e.toString());
+        if (DEBUG_LOGS) Log.i(TAG, "enterSessionWithUserGesture");
+
+        // This method includes multiple workarounds, see https://crbug.com/c/998307 for
+        // context. In short, canvas clicks sometimes don't register after a transition
+        // from a WebXR immersive session to VR Browser mode. Sometimes clickNode returns
+        // false, but even when it returns true the click event doesn't always get
+        // processed by JavaScript. Use a JavaScript variable to verify if the click was
+        // received, and retry if it wasn't.
+        boolean canvasClicked = false;
+        runJavaScriptOrFail("canvasClicked=false", POLL_TIMEOUT_SHORT_MS, webContents);
+        for (int i = 0; i < 3; ++i) {
+            if (i > 0) {
+                Log.e(TAG, "Failed to click canvas: retry #" + i);
+            }
+            boolean nodeClicked = false;
+            try {
+                nodeClicked = DOMUtils.clickNode(
+                        webContents, "webgl-canvas", false /* goThroughRootAndroidView */);
+                if (DEBUG_LOGS) {
+                    Log.i(TAG, "enterSessionWithUserGesture: nodeClicked => " + nodeClicked);
+                }
+                if (!nodeClicked) {
+                    Log.e(TAG, "Failed to click canvas: clickNode is false");
+                    // Since this path didn't involve a timeout, wait a bit before retrying.
+                    SystemClock.sleep(1000);
+                }
+            } catch (TimeoutException e) {
+                Log.e(TAG, "Failed to click canvas: " + e.toString());
+            }
+            if (nodeClicked) {
+                canvasClicked = pollJavaScriptBoolean("canvasClicked", POLL_TIMEOUT_SHORT_MS);
+                if (!canvasClicked) {
+                    Log.e(TAG, "Failed to click canvas: canvasClicked is false");
+                }
+            } else {
+                // nodeClicked is false, retry.
+                continue;
+            }
+
+            if (canvasClicked) break;
+
+            // If we get here, "nodeClicked" is true but "canvasClicked" is false. Before
+            // retrying, check if there's a dialog visible. Polling Javascript doesn't
+            // work while a dialog is showing, and sometimes the click is handled quickly
+            // enough for the consent prompt to show before we got a chance to check the
+            // canvasClicked variable. In that case, assume we got the click and continue.
+            if (getRule().getActivity().getModalDialogManager().getCurrentDialogForTest() != null) {
+                if (DEBUG_LOGS) Log.i(TAG, "Got a dialog, stop waiting for click");
+                canvasClicked = true;
+                break;
+            }
+        }
+
+        if (!canvasClicked) {
+            Assert.fail("Failed to click canvas to enter session: Click not received");
         }
     }
 

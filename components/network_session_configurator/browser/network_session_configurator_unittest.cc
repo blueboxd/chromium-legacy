@@ -817,7 +817,23 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHeadersIncludeH2StreamDependency) {
   EXPECT_TRUE(params_.quic_params.headers_include_h2_stream_dependency);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, Http2GreaseSettings) {
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseSettingsFromCommandLine) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kHttp2GreaseSettings);
+
+  ParseCommandLineAndFieldTrials(command_line);
+
+  bool greased_setting_found = false;
+  for (const auto& setting : params_.http2_settings) {
+    if ((setting.first & 0x0f0f) == 0x0a0a) {
+      greased_setting_found = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(greased_setting_found);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseSettingsFromFieldTrial) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["http2_grease_settings"] = "true";
   variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);
@@ -835,7 +851,18 @@ TEST_F(NetworkSessionConfiguratorTest, Http2GreaseSettings) {
   EXPECT_TRUE(greased_setting_found);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, Http2GreaseFrameType) {
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseFrameTypeFromCommandLine) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kHttp2GreaseFrameType);
+
+  ParseCommandLineAndFieldTrials(command_line);
+
+  ASSERT_TRUE(params_.greased_http2_frame);
+  const uint8_t frame_type = params_.greased_http2_frame.value().type;
+  EXPECT_EQ(0x0b, frame_type % 0x1f);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseFrameTypeFromFieldTrial) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["http2_grease_frame_type"] = "true";
   variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);

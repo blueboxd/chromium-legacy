@@ -26,7 +26,6 @@ public final class NdefMessageUtils {
     private static final String AUTHOR_RECORD_DOMAIN = "w3.org";
     private static final String AUTHOR_RECORD_TYPE = "A";
     private static final String TEXT_MIME = "text/plain";
-    private static final String JSON_MIME = "application/json";
     private static final String OCTET_STREAM_MIME = "application/octet-stream";
     private static final String ENCODING_UTF8 = "utf-8";
     private static final String ENCODING_UTF16 = "utf-16";
@@ -35,8 +34,7 @@ public final class NdefMessageUtils {
     public static final String RECORD_TYPE_TEXT = "text";
     public static final String RECORD_TYPE_URL = "url";
     public static final String RECORD_TYPE_ABSOLUTE_URL = "absolute-url";
-    public static final String RECORD_TYPE_JSON = "json";
-    public static final String RECORD_TYPE_OPAQUE = "opaque";
+    public static final String RECORD_TYPE_MIME = "mime";
     public static final String RECORD_TYPE_UNKNOWN = "unknown";
     public static final String RECORD_TYPE_SMART_POSTER = "smart-poster";
 
@@ -120,8 +118,7 @@ public final class NdefMessageUtils {
                 byte[] payload = createPayloadForTextRecord(record);
                 return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
                         android.nfc.NdefRecord.RTD_TEXT, null, payload);
-            case RECORD_TYPE_JSON:
-            case RECORD_TYPE_OPAQUE:
+            case RECORD_TYPE_MIME:
                 return android.nfc.NdefRecord.createMime(record.mediaType, record.data);
             case RECORD_TYPE_UNKNOWN:
                 return new android.nfc.NdefRecord(
@@ -210,15 +207,11 @@ public final class NdefMessageUtils {
 
     /**
     /**
-     * Constructs MIME or JSON NdefRecord
+     * Constructs mime NdefRecord
      */
     private static NdefRecord createMIMERecord(String mediaType, byte[] payload) {
         NdefRecord nfcRecord = new NdefRecord();
-        if (mediaType.equals(JSON_MIME)) {
-            nfcRecord.recordType = RECORD_TYPE_JSON;
-        } else {
-            nfcRecord.recordType = RECORD_TYPE_OPAQUE;
-        }
+        nfcRecord.recordType = RECORD_TYPE_MIME;
         nfcRecord.mediaType = mediaType;
         nfcRecord.data = payload;
         return nfcRecord;

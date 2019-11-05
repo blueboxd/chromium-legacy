@@ -753,11 +753,6 @@ TEST_F(AppSearchProviderTest, CrostiniApp) {
 }
 
 TEST_F(AppSearchProviderTest, AppServiceIconCache) {
-  // Skip this App Service specific test if the App Service is disabled.
-  if (!base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
-    return;
-  }
-
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   ASSERT_NE(proxy, nullptr);

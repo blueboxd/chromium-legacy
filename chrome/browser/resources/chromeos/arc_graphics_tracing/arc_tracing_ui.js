@@ -16,7 +16,10 @@ var bandColor = '#d3d3d3';
 var unusedColor = '#ff0000';
 
 // Supported zooms, mcs per pixel
-var zooms = [2.5, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1000.0, 2500.0];
+var zooms = [
+  2.5, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1000.0, 2500.0, 5000.0,
+  10000.0
+];
 
 // Active zoom level, as index in |zooms|. By default 100 mcs per pixel.
 var zoomLevel = 5;
@@ -331,6 +334,7 @@ function updateZoom(delta) {
 function initializeUi(initZoomLevel, callback) {
   zoomLevel = initZoomLevel;
   updateUiCallback = callback;
+
   document.body.onkeydown = function(event) {
     // Escape and Enter.
     if (event.key === 'Escape' || event.key === 'Enter') {
@@ -369,7 +373,6 @@ function initializeUi(initZoomLevel, callback) {
     fileElement.click();
   };
 }
-
 
 /**
  * Updates current status.
@@ -676,15 +679,22 @@ class EventBands {
    * @param {boolean} smooth if set to true then indicates that chart should
    *                  display value interpolated, otherwise values are changed
    *                  discretely.
+   * @param {Object=} opt_attributes optional argument that defines view of
+   *                  the chart. If not set then it is automatically selected
+   *                  based on event type.
    */
-  addChartSources(sources, smooth) {
+  addChartSources(sources, smooth, opt_attributes) {
     var chart = this.charts[this.charts.length - 1];
 
     // Calculate min/max for sources and event indices.
     var minValue = null;
     var maxValue = null;
-    var attributes = null;
     var eventIndicesForAll = [];
+    var eventDetected = false;
+    var attributes = opt_attributes;
+    var autoDetectRange = !attributes ||
+        typeof attributes.minValue == 'undefined' ||
+        typeof attributes.maxValue == 'undefined';
     for (var i = 0; i < sources.length; ++i) {
       var source = sources[i];
       var eventIndex = source.getFirstAfter(this.minTimestamp);
@@ -692,7 +702,7 @@ class EventBands {
         eventIndicesForAll.push([]);
         continue;
       }
-      if (!minValue) {
+      if (autoDetectRange && !minValue) {
         minValue = source.events[eventIndex][2];
         maxValue = source.events[eventIndex][2];
       }
@@ -700,8 +710,11 @@ class EventBands {
       while (eventIndex >= 0 &&
              source.events[eventIndex][1] <= this.maxTimestamp) {
         eventIndices.push(eventIndex);
-        minValue = Math.min(minValue, source.events[eventIndex][2]);
-        maxValue = Math.max(maxValue, source.events[eventIndex][2]);
+        eventDetected = true;
+        if (autoDetectRange) {
+          minValue = Math.min(minValue, source.events[eventIndex][2]);
+          maxValue = Math.max(maxValue, source.events[eventIndex][2]);
+        }
         if (!attributes) {
           attributes = valueAttributes[source.events[eventIndex][0]];
         }
@@ -710,20 +723,25 @@ class EventBands {
       eventIndicesForAll.push(eventIndices);
     }
 
-    if (!attributes) {
+    if (!eventDetected) {
       // no one event to render.
       return;
     }
 
-    // Ensure minimum value range.
-    if (maxValue - minValue < attributes.minRange / attributes.scale) {
-      maxValue = minValue + attributes.minRange / attributes.scale;
-    }
+    if (autoDetectRange) {
+      // Ensure minimum value range.
+      if (maxValue - minValue < attributes.minRange / attributes.scale) {
+        maxValue = minValue + attributes.minRange / attributes.scale;
+      }
 
-    // Add +-1% to bounds.
-    var dif = maxValue - minValue;
-    minValue -= dif * 0.01;
-    maxValue += dif * 0.01;
+      // Add +-1% to bounds.
+      var dif = maxValue - minValue;
+      minValue -= dif * 0.01;
+      maxValue += dif * 0.01;
+    } else {
+      minValue = attributes.minValue;
+      maxValue = attributes.maxValue;
+    }
     var divider = 1.0 / (maxValue - minValue);
 
     // Render now.
@@ -760,6 +778,10 @@ class EventBands {
 
       SVG.addPolyline(this.svg, points, attributes.color, attributes.width);
     }
+  }
+
+  addChartGridLine(y) {
+    SVG.addLine(this.svg, 0, y, this.width, y, '#ccc', 0.5);
   }
 
   /**
@@ -1506,13 +1528,18 @@ class Events {
    *     where first element is type and second is timestamp.
    * @param {number} eventTypeMin minimum inclusive type of the event to be
    *     displayed on this band.
-   * @param {number} eventTypeMax maximum inclusive type of the event to be
-   *     displayed on this band.
+   * @param {number=} opt_eventTypeMax maximum inclusive type of the event to be
+   *     displayed on this band. It is optional and in case is not set then
+   *     range of one event type eventTypeMin is used.
    */
-  constructor(events, eventTypeMin, eventTypeMax) {
+  constructor(events, eventTypeMin, opt_eventTypeMax) {
     this.events = events;
     this.eventTypeMin = eventTypeMin;
-    this.eventTypeMax = eventTypeMax;
+    if (opt_eventTypeMax) {
+      this.eventTypeMax = opt_eventTypeMax;
+    } else {
+      this.eventTypeMax = eventTypeMin;
+    }
   }
 
   /**
@@ -1655,4 +1682,28 @@ class Events {
     }
     return this.getNextEvent(closest, -1 /* direction */);
   }
+}
+
+/**
+ * Helper function that creates chart with required attributes.
+ *
+ * @param {HTMLElement} parent container for the newly created chart.
+ * @param {string} title of the chart.
+ * @param {number} resolution scale of the chart in microseconds per pixel.
+ * @param {number} duration length of the chart in microseconds.
+ * @param {number} height of the chart in pixels.
+ * @param {number} gridLinesCount number of extra intermediate grid lines, 0 i
+ *                 not required.
+ */
+function createChart(
+    parent, title, resolution, duration, height, gridLinesCount) {
+  var titleBands = new EventBandTitle(parent, title, 'arc-events-band-title');
+  var bands =
+      new EventBands(titleBands, 'arc-events-band', resolution, 0, duration);
+  bands.setWidth(bands.timestampToOffset(duration));
+  bands.addChart(height, 4 /* padding */);
+  for (var i = 0; i < gridLinesCount; i++) {
+    bands.addChartGridLine((i + 1) * height / (gridLinesCount + 1));
+  }
+  return bands;
 }

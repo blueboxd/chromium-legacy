@@ -52,8 +52,13 @@ class ManagementAPIDelegate {
   using AndroidAppInstallStatusCallback = base::OnceCallback<void(bool)>;
   using InstallAndroidAppCallback = base::OnceCallback<void(bool)>;
 
-  enum class InstallWebAppResult { kSuccess, kInvalidWebApp, kUnknownError };
-  typedef base::OnceCallback<void(InstallWebAppResult)> InstallWebAppCallback;
+  enum class InstallOrLaunchWebAppResult {
+    kSuccess,
+    kInvalidWebApp,
+    kUnknownError
+  };
+  using InstallOrLaunchWebAppCallback =
+      base::OnceCallback<void(InstallOrLaunchWebAppResult)>;
 
   // Launches the app |extension|.
   virtual void LaunchAppFunctionDelegate(
@@ -124,18 +129,15 @@ class ManagementAPIDelegate {
       const std::string& title,
       const GURL& launch_url) const = 0;
 
-  // Returns true if there is already a web app installed for |web_app_url|.
-  virtual bool IsWebAppInstalled(content::BrowserContext* context,
-                                 const GURL& web_app_url) const = 0;
   // Returns whether the current user type can install web apps.
   virtual bool CanContextInstallWebApps(
       content::BrowserContext* context) const = 0;
 
-  // Installs a web app for |web_app_url|.
-  virtual void InstallReplacementWebApp(
+  // Installs a web app for |web_app_url| or launches if already installed.
+  virtual void InstallOrLaunchReplacementWebApp(
       content::BrowserContext* context,
       const GURL& web_app_url,
-      InstallWebAppCallback callback) const = 0;
+      InstallOrLaunchWebAppCallback callback) const = 0;
 
   // Returns whether arc apps can be installed in the given |context|.
   virtual bool CanContextInstallAndroidApps(

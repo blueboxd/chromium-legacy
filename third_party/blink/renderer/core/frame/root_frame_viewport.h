@@ -86,14 +86,15 @@ class CORE_EXPORT RootFrameViewport final
   IntSize ClampScrollOffset(const IntSize&) const override;
   ScrollOffset ClampScrollOffset(const ScrollOffset&) const override;
   IntSize ContentsSize() const override;
+  bool ShouldScrollOnMainThread() const override;
   bool ScrollbarsCanBeActive() const override;
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
   void ScrollControlWasSetNeedsPaintInvalidation() override;
-  GraphicsLayer* LayerForScrolling() const override;
-  GraphicsLayer* LayerForHorizontalScrollbar() const override;
-  GraphicsLayer* LayerForVerticalScrollbar() const override;
-  GraphicsLayer* LayerForScrollCorner() const override;
+  cc::Layer* LayerForScrolling() const override;
+  cc::Layer* LayerForHorizontalScrollbar() const override;
+  cc::Layer* LayerForVerticalScrollbar() const override;
+  cc::Layer* LayerForScrollCorner() const override;
   int HorizontalScrollbarHeight(
       OverlayScrollbarClipBehavior =
           kIgnorePlatformOverlayScrollbarSize) const override;

@@ -161,6 +161,7 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -1499,6 +1500,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             @Override
             public void onSheetOpened(int reason) {
+                BottomSheetContent content = mBottomSheetController.getCurrentSheetContent();
+                // Content with a custom scrim lifecycle should not obscure the tab. The feature
+                // is responsible for adding itself to the list of obscuring views when applicable.
+                if (content != null && content.hasCustomScrimLifecycle()) return;
+
                 addViewObscuringAllTabs(mBottomSheet);
 
                 assert mAppModalToken == TokenHolder.INVALID_TOKEN;
@@ -1513,6 +1519,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             @Override
             public void onSheetClosed(int reason) {
+                // This can happen if the sheet has a custom lifecycle.
+                if (mAppModalToken == TokenHolder.INVALID_TOKEN
+                        && mTabModalToken == TokenHolder.INVALID_TOKEN) {
+                    return;
+                }
+
                 removeViewObscuringAllTabs(mBottomSheet);
 
                 if (getModalDialogManager() != null) {

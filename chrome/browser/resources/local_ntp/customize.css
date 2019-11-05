@@ -677,7 +677,8 @@ html[dir=rtl] #custom-bg-attr {
   right: 16px;
 }
 
-#custom-bg-attr a {
+#attr1,
+#attr2 {
   clear: both;
   color: inherit;
   float: left;
@@ -691,16 +692,12 @@ html[dir=rtl] #custom-bg-attr {
   white-space: nowrap;
 }
 
-[dir=rtl] #custom-bg-attr a {
+[dir=rtl] #attr1,
+[dir=rtl] #attr2 {
   float: right;
 }
 
-#custom-bg-attr a[href=''] {
-  cursor: auto;
-  text-decoration: none;
-}
-
-#custom-bg-attr a ~ a {
+#custom-bg-attr #attr1 ~ #attr2 {
   font-size: 11px;
 }
 

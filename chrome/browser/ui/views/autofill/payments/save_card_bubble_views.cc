@@ -79,10 +79,6 @@ void SaveCardBubbleViews::Hide() {
   CloseBubble();
 }
 
-std::unique_ptr<views::View> SaveCardBubbleViews::CreateFootnoteView() {
-  return nullptr;
-}
-
 bool SaveCardBubbleViews::Accept() {
   if (controller_)
     controller_->OnSaveButton({});

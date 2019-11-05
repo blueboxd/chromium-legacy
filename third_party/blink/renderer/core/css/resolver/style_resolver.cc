@@ -900,6 +900,9 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
   if (state.Style()->HasRemUnits())
     GetDocument().GetStyleEngine().SetUsesRemUnit(true);
 
+  if (state.Style()->HasGlyphRelativeUnits())
+    UseCounter::Count(GetDocument(), WebFeature::kHasGlyphRelativeUnits);
+
   // Now return the style.
   return state.TakeStyle();
 }
@@ -1009,6 +1012,9 @@ bool StyleResolver::PseudoStyleForElementInternal(
 
   if (state.Style()->HasViewportUnits())
     GetDocument().SetHasViewportUnits();
+
+  if (state.Style()->HasGlyphRelativeUnits())
+    UseCounter::Count(GetDocument(), WebFeature::kHasGlyphRelativeUnits);
 
   return true;
 }

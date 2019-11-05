@@ -127,10 +127,10 @@ template("partitioned_shared_library") {
   # to rename the partition's soname to "foo1" or "foo2".  Other build config
   # can name the libraries foo1.so and foo2.so, allowing them to reside in the
   # same directory.
-  _partition_dir = "$root_out_dir/${invoker.target_name}_partitions"
   foreach(_partition, invoker.partitions) {
     partition_action("${target_name}_${_partition}") {
       partition = _partition
+      _partition_dir = "$root_out_dir/${invoker.target_name}_partitions"
       unstripped_output = "$_partition_dir/lib.unstripped/lib${partition}.so"
       stripped_output = "$_partition_dir/lib${partition}.so"
     }

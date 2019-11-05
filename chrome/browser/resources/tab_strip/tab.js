@@ -12,9 +12,10 @@ import {AlertIndicatorsElement} from './alert_indicators.js';
 import {CustomElement} from './custom_element.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {tabStripOptions} from './tab_strip_options.js';
+import {TabSwiper} from './tab_swiper.js';
 import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
 
-export const DEFAULT_ANIMATION_DURATION = 125;
+const DEFAULT_ANIMATION_DURATION = 125;
 
 /**
  * @param {!TabData} tab
@@ -85,9 +86,13 @@ export class TabElement extends CustomElement {
     this.titleTextEl_ = /** @type {!HTMLElement} */ (
         this.shadowRoot.querySelector('#titleText'));
 
-    this.tabEl_.addEventListener('click', this.onClick_.bind(this));
-    this.tabEl_.addEventListener('contextmenu', this.onContextMenu_.bind(this));
-    this.closeButtonEl_.addEventListener('click', this.onClose_.bind(this));
+    this.tabEl_.addEventListener('click', () => this.onClick_());
+    this.tabEl_.addEventListener('contextmenu', e => this.onContextMenu_(e));
+    this.closeButtonEl_.addEventListener('click', e => this.onClose_(e));
+    this.addEventListener('swipe', () => this.onSwipe_());
+
+    /** @private @const {!TabSwiper} */
+    this.tabSwiper_ = new TabSwiper(this);
   }
 
   /** @return {!TabData} */
@@ -137,6 +142,12 @@ export class TabElement extends CustomElement {
           this.toggleAttribute('has-alert-states_', alertIndicatorsCount > 0);
         });
 
+    if (!this.tab_ || (this.tab_.pinned !== tab.pinned && !tab.pinned)) {
+      this.tabSwiper_.startObserving();
+    } else if (this.tab_.pinned !== tab.pinned && tab.pinned) {
+      this.tabSwiper_.stopObserving();
+    }
+
     this.tab_ = Object.freeze(tab);
   }
 
@@ -154,7 +165,7 @@ export class TabElement extends CustomElement {
 
   /** @private */
   onClick_() {
-    if (!this.tab_) {
+    if (!this.tab_ || this.tabSwiper_.wasSwiping()) {
       return;
     }
 
@@ -193,6 +204,13 @@ export class TabElement extends CustomElement {
     this.tabsApi_.closeTab(this.tab_.id);
   }
 
+  /** @private */
+  onSwipe_() {
+    // Prevent slideOut animation from playing.
+    this.remove();
+    this.tabsApi_.closeTab(this.tab_.id);
+  }
+
   /**
    * @param {boolean} dragging
    */
@@ -214,7 +232,12 @@ export class TabElement extends CustomElement {
             duration: DEFAULT_ANIMATION_DURATION,
             fill: 'forwards',
           });
-      animation.onfinish = resolve;
+      animation.onfinish = () => {
+        // Cancel the effects of the animation so that maxWidth and opacity
+        // can be animated by other animations.
+        animation.cancel();
+        resolve();
+      };
     });
   }
 

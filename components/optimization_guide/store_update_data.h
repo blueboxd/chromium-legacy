@@ -25,7 +25,8 @@ class StoreEntry;
 using EntryVector =
     leveldb_proto::ProtoDatabase<proto::StoreEntry>::KeyEntryVector;
 
-// Holds hint data for updating the HintCacheStore.
+// Holds hint, prediction model, or host model features data for updating the
+// OptimizationGuideStore.
 class StoreUpdateData {
  public:
   ~StoreUpdateData();

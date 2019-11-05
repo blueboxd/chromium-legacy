@@ -38,8 +38,6 @@ import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.download.ui.StubbedProvider;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.download.R;
@@ -61,8 +59,6 @@ import java.util.Map;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class DownloadActivityV2Test extends DummyUiActivityTestCase {
-    @Mock
-    private Profile mProfile;
     @Mock
     private Tracker mTracker;
     @Mock
@@ -112,8 +108,6 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         mStubbedOfflineContentProvider.addItem(item1);
         mStubbedOfflineContentProvider.addItem(item2);
         mStubbedOfflineContentProvider.addItem(item3);
-
-        TrackerFactory.setTrackerForTests(mTracker);
     }
 
     private void setUpUi() {
@@ -129,7 +123,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
                 new ModalDialogManager(mAppModalPresenter, ModalDialogManager.ModalDialogType.APP);
 
         mDownloadCoordinator = new DownloadManagerCoordinatorImpl(
-                mProfile, getActivity(), config, mSnackbarManager, mModalDialogManager);
+                getActivity(), config, mSnackbarManager, mModalDialogManager, mTracker);
         getActivity().setContentView(mDownloadCoordinator.getView());
 
         mDownloadCoordinator.updateForUrl(UrlConstants.DOWNLOADS_URL);

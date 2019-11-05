@@ -19,18 +19,6 @@ class TestVerifierDelegate implements VerifierDelegate {
     private final Set<Origin> mPreviouslyVerifiedOrigins = new HashSet<>();
     private final Map<Origin, Promise<Boolean>> mPendingVerifications = new HashMap<>();
 
-    @Override
-    public Promise<Boolean> verify(Origin origin) {
-        Promise<Boolean> promise = new Promise<>();
-        mPendingVerifications.put(origin, promise);
-        return promise;
-    }
-
-    @Override
-    public boolean wasPreviouslyVerified(Origin origin) {
-        return mPreviouslyVerifiedOrigins.contains(origin);
-    }
-
     public void passVerification(Origin origin) {
         completeVerification(origin, true);
     }
@@ -52,7 +40,20 @@ class TestVerifierDelegate implements VerifierDelegate {
         return mPendingVerifications.containsKey(origin);
     }
 
-    public boolean hasAnyPendingVerifications() {
-        return mPendingVerifications.size() != 0;
+    @Override
+    public Promise<Boolean> verify(String url) {
+        Promise<Boolean> promise = new Promise<>();
+        mPendingVerifications.put(Origin.createOrThrow(url), promise);
+        return promise;
+    }
+
+    @Override
+    public boolean wasPreviouslyVerified(String url) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getVerifiedScope(String url) {
+        return Origin.createOrThrow(url).toString();
     }
 }

@@ -116,7 +116,7 @@ void OfflineGaiaTestMixin::SubmitGaiaAuthOfflineForm(
   test::OobeJS().TypeIntoPath(user_email,
                               {"gaia-signin", "offline-gaia", "emailInput"});
   test::OobeJS().ClickOnPath(
-      {"gaia-signin", "offline-gaia", "email-input-form", "button"});
+      {"gaia-signin", "offline-gaia", "next-button"});
   test::OobeJS()
       .CreateDisplayedWaiter(false,
                              {"gaia-signin", "offline-gaia", "email-section"})
@@ -128,7 +128,7 @@ void OfflineGaiaTestMixin::SubmitGaiaAuthOfflineForm(
   test::OobeJS().TypeIntoPath(password,
                               {"gaia-signin", "offline-gaia", "passwordInput"});
   test::OobeJS().ClickOnPath(
-      {"gaia-signin", "offline-gaia", "password-input-form", "button"});
+      {"gaia-signin", "offline-gaia", "next-button"});
 }
 
 }  // namespace chromeos

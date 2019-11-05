@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">கல்வெட்டு</translation>
 <translation id="207477615537953741">பொருள்விளக்கம் முடக்கப்பட்டது</translation>
 <translation id="2086961585857038472">அடுத்த வார்த்தை</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">ta</translation>
 <translation id="2091933974477985526">முந்தைய திருத்தக்கூடிய உரைப் பகுதி</translation>
 <translation id="2100350898815792233">எல்லா நிறுத்தற்குறிகளும்</translation>
@@ -193,6 +194,7 @@
 <translation id="2416512023405990736">தேர்வுநீக்கப்பட்ட செக்பாக்ஸ்</translation>
 <translation id="2417569100218200841">உள்ளடக்கத் தகவல்</translation>
 <translation id="2417948780551741035">முடிவுக்குறிப்புகள்</translation>
+<translation id="2419852971200420169">விளக்கப் பட்டியல்</translation>
 <translation id="2421113964388408478">நீக்கும்</translation>
 <translation id="2422937916923936891">மெனு ஐட்டம் செக்பாக்ஸ்</translation>
 <translation id="2428534162001909979">கட்டளை மெனுக்கள்</translation>
@@ -371,6 +373,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{கேள்விக் குறி}other{# கேள்விக் குறிகள்}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{கூரைக் குறி}other{# கூரைக் குறிகள்}}</translation>
 <translation id="352577523970648069">திருத்தக்கூடிய உரைப் புலம்</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152"><ph name="TEXT" />ஐ வெட்டும்.</translation>
 <translation id="3549680091535286226">பேச்சைத் தற்காலிகமாக நிறுத்த, 2 விரல்களால் தட்டவும்</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, பெட்டி தேர்ந்தெடுக்கப்படவில்லை</translation>
@@ -779,6 +782,7 @@
 <translation id="6378394210114975876">திஸ்ஸல்</translation>
 <translation id="6385591741672306837">நெடுவரிசை</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">நிகழ்வு வடிப்பான்கள் அனைத்தையும் முடக்கு</translation>
 <translation id="6411426777058107714">முந்தைய ரேடியோ பட்டன் இல்லை.</translation>
 <translation id="6414968628640960377">வேறுபட்ட முந்தைய உறுப்பு.</translation>
 <translation id="6417265370957905582">Google அசிஸ்டண்ட்</translation>
@@ -914,6 +918,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="7332592614823088566"><ph name="ROWTOTAL" /> இல் <ph name="ROWINDEX" /> வது வரிசை, <ph name="COLTOTAL" /> இல் <ph name="COLINDEX" /> வது நெடுவரிசை</translation>
 <translation id="7336596009609913925">பாப்அப் உள்ளது</translation>
 <translation id="7356165926712028380">8 புள்ளி பிரெய்லுக்கு மாறு</translation>
+<translation id="7356610683936413584">விளக்கப் பட்டியல் விவரம்</translation>
 <translation id="7362871137496673139">முந்தைய 2 ஆம் நிலை தலைப்பு இல்லை.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{உம்மைக்குறி}other{# உம்மைக்குறிகள்}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="8096975275316362544">மின்ட் க்ரீம்</translation>
 <translation id="8098587210054821856">சிலேட் கிரே</translation>
 <translation id="8110647606445335195">ARIA லேண்ட்மார்க்குகள் இல்லை.</translation>
+<translation id="8121539003537428024">அனைத்து நிகழ்வு வடிப்பான்களையும் இயக்கு</translation>
 <translation id="812886159861361726"><ph name="FILE_NAME" /> கோப்பின் பதிவிறக்கம் நிறுத்தப்பட்டது</translation>
 <translation id="8138880386467279117">தொடுதல்</translation>
 <translation id="8153880621934657047">அட்டவணையின் உள்ளே கிடையாது.</translation>

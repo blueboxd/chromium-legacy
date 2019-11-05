@@ -592,7 +592,7 @@ public class ContentViewRenderView extends FrameLayout {
         mNativeContentViewRenderView = 0;
     }
 
-    public void setCurrentWebContents(WebContents webContents) {
+    public void setWebContents(WebContents webContents) {
         assert mNativeContentViewRenderView != 0;
         mWebContents = webContents;
 

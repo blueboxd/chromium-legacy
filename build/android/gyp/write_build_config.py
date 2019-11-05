@@ -648,9 +648,7 @@ class Deps(object):
         GetDepConfig(p) for p in self.all_deps_config_paths]
     self.direct_deps_config_paths = direct_deps_config_paths
 
-  def All(self, wanted_type=None):
-    if type is None:
-      return self.all_deps_configs
+  def All(self, wanted_type):
     return DepsOfType(wanted_type, self.all_deps_configs)
 
   def Direct(self, wanted_type=None):

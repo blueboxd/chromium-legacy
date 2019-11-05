@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Način Ne uznemiravaj je uključen.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Prikaz postavki obavijesti. Obavijesti su isključene za jednu aplikaciju}one{Prikaz postavki obavijesti. Obavijesti su isključene za # aplikaciju}few{Prikaz postavki obavijesti. Obavijesti su isključene za # aplikacije}other{Prikaz postavki obavijesti. Obavijesti su isključene za # aplikacija}}</translation>
 <translation id="1525508553941733066">ODBACI</translation>
-<translation id="1537254971476575106">Povećalo za cijeli zaslon</translation>
 <translation id="15373452373711364">Veliki pokazivač miša</translation>
 <translation id="1546492247443594934">Radna površina 2</translation>
 <translation id="1550523713251050646">Kliknite za više opcija</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Pritisnite <ph name="KEYBOARD_SHORTCUT" /> da biste promijenili raspored tipkovnice.</translation>
 <translation id="2501920221385095727">Ljepljive tipke</translation>
 <translation id="2509468283778169019">Opcija CAPS LOCK uključena</translation>
-<translation id="2532589005999780174">Način visokog kontrasta</translation>
 <translation id="2542089167727451762">Dodirnite svoju profilnu sliku</translation>
 <translation id="255671100581129685">Google asistent nije dostupan u javnoj sesiji.</translation>
 <translation id="256712445991462162">usidreno povećalo</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Previše pokušaja otključavanja otiskom prsta</translation>
 <translation id="7994370417837006925">Višestruka prijava</translation>
 <translation id="8000066093800657092">Nema mreže</translation>
-<translation id="8029241286966751120">Omogućeno je povećalo za cijeli zaslon. Ponovo pritisnite Ctrl + Search + M da biste ga isključili.</translation>
 <translation id="8030169304546394654">Prekinuta veza</translation>
 <translation id="8054466585765276473">Izračun vremena baterije.</translation>
 <translation id="8061464966246066292">Visoki kontrast</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Zadnja radna površina ne može se ukloniti.</translation>
 <translation id="8392451568018454956">Izbornik opcija za korisnika <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Tvoj je roditelj zaključao ovaj uređaj</translation>
-<translation id="8406981827175133772">Povećalo za cijeli zaslon</translation>
 <translation id="8425213833346101688">Promijeni</translation>
 <translation id="8427213022735114808">Diktat šalje Googleu audiopodatke o vašem glasu kako biste mogli unositi tekst govorom u bilo koje tekstno polje.</translation>
 <translation id="8428213095426709021">Postavke</translation>

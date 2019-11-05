@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_sets.h"
 
 #include <cmath>
 
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 
 namespace blink {
 namespace media_constraints {

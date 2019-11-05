@@ -34,10 +34,10 @@
 namespace blink {
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
+class RTCAnswerOptionsPlatform;
 class RTCOfferOptionsPlatform;
 class SetLocalDescriptionRequest;
 class WebLocalFrame;
-class WebRTCAnswerOptions;
 class WebRTCLegacyStats;
 class WebRTCPeerConnectionHandlerClient;
 
@@ -117,7 +117,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   void CreateAnswer(const blink::WebRTCSessionDescriptionRequest& request,
                     const blink::WebMediaConstraints& options) override;
   void CreateAnswer(const blink::WebRTCSessionDescriptionRequest& request,
-                    const blink::WebRTCAnswerOptions& options) override;
+                    blink::RTCAnswerOptionsPlatform* options) override;
 
   void SetLocalDescription(const blink::WebRTCVoidRequest& request) override;
   void SetLocalDescription(

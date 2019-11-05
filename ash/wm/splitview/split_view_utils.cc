@@ -401,19 +401,4 @@ SplitViewController::SnapPosition GetSnapPosition(
   return SplitViewController::NONE;
 }
 
-IndicatorState GetIndicatorState(
-    SplitViewController::SnapPosition snap_position) {
-  if (!ShouldAllowSplitView())
-    return IndicatorState::kNone;
-
-  switch (snap_position) {
-    case SplitViewController::NONE:
-      return IndicatorState::kDragAreaBoth;
-    case SplitViewController::LEFT:
-      return IndicatorState::kPreviewAreaLeft;
-    case SplitViewController::RIGHT:
-      return IndicatorState::kPreviewAreaRight;
-  }
-}
-
 }  // namespace ash

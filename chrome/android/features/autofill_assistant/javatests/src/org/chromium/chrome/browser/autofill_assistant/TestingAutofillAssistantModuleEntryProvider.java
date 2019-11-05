@@ -15,6 +15,9 @@ import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,8 +42,15 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
         }
 
         @Override
-        public String[] getActions() {
-            return new String[] {"search", "action2"};
+        public List<AutofillAssistantDirectAction> getActions() {
+            String[] search = new String[] {"search"};
+            String[] required = new String[] {"SEARCH_QUERY"};
+            String[] optional = new String[] {"arg2"};
+            String[] action2 = new String[] {"action2", "action2_alias"};
+            AutofillAssistantDirectAction[] actions = new AutofillAssistantDirectActionImpl[] {
+                    new AutofillAssistantDirectActionImpl(search, required, optional),
+                    new AutofillAssistantDirectActionImpl(action2, required, optional)};
+            return new ArrayList<>(Arrays.asList(actions));
         }
     }
 

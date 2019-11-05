@@ -35,12 +35,13 @@ class BASE_EXPORT FilteredServiceDirectory {
   void ConnectClient(
       fidl::InterfaceRequest<::fuchsia::io::Directory> dir_request);
 
+  // Accessor for the OutgoingDirectory, used to add handlers for services
+  // in addition to those provided from |directory| via AddService().
+  sys::OutgoingDirectory* outgoing_directory() { return &outgoing_directory_; }
+
  private:
   const sys::ServiceDirectory* const directory_;
   sys::OutgoingDirectory outgoing_directory_;
-
-  // Client side of the channel used by |outgoing_directory_|.
-  fidl::InterfaceHandle<::fuchsia::io::Directory> outgoing_directory_client_;
 
   DISALLOW_COPY_AND_ASSIGN(FilteredServiceDirectory);
 };

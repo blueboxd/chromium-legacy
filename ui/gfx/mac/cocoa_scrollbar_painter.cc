@@ -24,7 +24,7 @@ constexpr int kThumbInsetOverlay = 2;
 
 // The minimum sizes for the thumb. We will not inset the thumb if it will
 // be smaller than this size.
-constexpr int kThumbMinGirth = 8;
+constexpr int kThumbMinGirth = 6;
 constexpr int kThumbMinLength = 18;
 
 // Scrollbar thumb colors.
@@ -90,23 +90,23 @@ void ConstrainInsets(int old_width, int min_width, int* left, int* right) {
     *left = *right = 0;
     return;
   }
-  // Prefer to preserve the the left (or top) side's inset.
-  *left = std::min(max_total_inset, *left);
-  *right = max_total_inset - *left;
+  // Multiply the right/bottom inset by the ratio by which we need to shrink the
+  // total inset. This has the effect of rounding down the right/bottom inset,
+  // if the two sides are to be affected unevenly.
+  *right *= max_total_inset * 1.f / requested_total_inset;
+  *left = max_total_inset - *right;
 }
 
-gfx::Rect ConstrainedInset(const gfx::Rect& rect,
-                           int min_width,
-                           int min_height,
-                           int inset_left,
-                           int inset_top,
-                           int inset_right,
-                           int inset_bottom) {
-  ConstrainInsets(rect.width(), min_width, &inset_left, &inset_right);
-  ConstrainInsets(rect.height(), min_height, &inset_top, &inset_bottom);
-  gfx::Rect inset_rect = rect;
-  inset_rect.Inset(inset_left, inset_top, inset_right, inset_bottom);
-  return inset_rect;
+void ConstrainedInset(gfx::Rect* rect,
+                      int min_width,
+                      int min_height,
+                      int inset_left,
+                      int inset_top,
+                      int inset_right,
+                      int inset_bottom) {
+  ConstrainInsets(rect->width(), min_width, &inset_left, &inset_right);
+  ConstrainInsets(rect->height(), min_height, &inset_top, &inset_bottom);
+  rect->Inset(inset_left, inset_top, inset_right, inset_bottom);
 }
 
 void PaintTrackGradient(gfx::Canvas* canvas,
@@ -277,17 +277,15 @@ void CocoaScrollbarPainter::PaintThumb(cc::PaintCanvas* cc_canvas,
                                        const SkIRect& sk_bounds,
                                        const Params& params) {
   gfx::Canvas canvas(cc_canvas, 1.f);
-  gfx::Rect bounds(SkIRectToRect(sk_bounds));
+
+  // Select the color.
   SkColor thumb_color = 0;
-  int thumb_inset = 0;
   if (params.overlay) {
-    thumb_inset = kThumbInsetOverlay;
     if (params.dark_mode)
       thumb_color = kThumbColorOverlayDarkMode;
     else
       thumb_color = kThumbColorOverlay;
   } else {
-    thumb_inset = kThumbInset;
     if (params.dark_mode) {
       if (params.hovered)
         thumb_color = kThumbColorDarkModeHover;
@@ -301,30 +299,27 @@ void CocoaScrollbarPainter::PaintThumb(cc::PaintCanvas* cc_canvas,
     }
   }
 
-  // Shrink the thumb evenly in length and girth to fit within the track. Do not
-  // shrink beyond the minimum size.
-  if (params.orientation == Orientation::kHorizontal) {
-    bounds =
-        ConstrainedInset(bounds, kThumbMinLength, kThumbMinGirth, thumb_inset,
-                         thumb_inset, thumb_inset, thumb_inset);
-  } else {
-    bounds =
-        ConstrainedInset(bounds, kThumbMinGirth, kThumbMinLength, thumb_inset,
-                         thumb_inset, thumb_inset, thumb_inset);
-  }
+  // Compute the bounds for the rounded rect for the thumb from the bounds of
+  // the thumb.
+  gfx::Rect bounds(SkIRectToRect(sk_bounds));
+  {
+    // Shrink the thumb evenly in length and girth to fit within the track.
+    const int thumb_inset = params.overlay ? kThumbInsetOverlay : kThumbInset;
+    int inset_left = thumb_inset;
+    int inset_top = thumb_inset;
+    int inset_right = thumb_inset;
+    int inset_bottom = thumb_inset;
 
-  // Shrink the thumb in girth to not touch the border. Note that this can
-  // shrink below the minimum girth.
-  switch (params.orientation) {
-    case Orientation::kHorizontal:
-      bounds.Inset(0, kTrackBorderWidth, 0, 0);
-      break;
-    case Orientation::kVerticalOnLeft:
-      bounds.Inset(kTrackBorderWidth, 0, 0, 0);
-      break;
-    case Orientation::kVerticalOnRight:
-      bounds.Inset(kTrackBorderWidth, 0, 0, 0);
-      break;
+    // Also shrink the thumb in girth to not touch the border.
+    if (params.orientation == Orientation::kHorizontal) {
+      inset_top += kTrackBorderWidth;
+      ConstrainedInset(&bounds, kThumbMinLength, kThumbMinGirth, inset_left,
+                       inset_top, inset_right, inset_bottom);
+    } else {
+      inset_left += kTrackBorderWidth;
+      ConstrainedInset(&bounds, kThumbMinGirth, kThumbMinLength, inset_left,
+                       inset_top, inset_right, inset_bottom);
+    }
   }
 
   // Draw.

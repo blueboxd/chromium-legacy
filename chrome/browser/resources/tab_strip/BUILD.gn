@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
     ":tab_list",
     ":tab_strip_embedder_proxy",
     ":tab_strip_options",
+    ":tab_swiper",
     ":tabs_api_proxy",
   ]
 }
@@ -51,6 +52,9 @@ js_library("tab_strip_embedder_proxy") {
 }
 
 js_library("tab_strip_options") {
+}
+
+js_library("tab_swiper") {
 }
 
 group("tab_strip_modules") {

@@ -100,11 +100,10 @@ class TopControlsContainerView extends FrameLayout {
                 mNativeTopControlsContainerView, TopControlsContainerView.this);
     };
 
-    TopControlsContainerView(Context context, WebContents webContents,
-            ContentViewRenderView contentViewRenderView, Listener listener) {
+    TopControlsContainerView(
+            Context context, ContentViewRenderView contentViewRenderView, Listener listener) {
         super(context);
         mContentViewRenderView = contentViewRenderView;
-        mWebContents = webContents;
         mEventOffsetHandler =
                 new EventOffsetHandler(new EventOffsetHandler.EventOffsetHandlerDelegate() {
                     @Override
@@ -114,13 +113,21 @@ class TopControlsContainerView extends FrameLayout {
 
                     @Override
                     public void setCurrentTouchEventOffsets(float top) {
-                        mWebContents.getEventForwarder().setCurrentTouchEventOffsets(0, top);
+                        if (mWebContents != null) {
+                            mWebContents.getEventForwarder().setCurrentTouchEventOffsets(0, top);
+                        }
                     }
                 });
         mNativeTopControlsContainerView =
                 TopControlsContainerViewJni.get().createTopControlsContainerView(
-                        this, webContents, contentViewRenderView.getNativeHandle());
+                        this, contentViewRenderView.getNativeHandle());
         mListener = listener;
+    }
+
+    public void setWebContents(WebContents webContents) {
+        mWebContents = webContents;
+        TopControlsContainerViewJni.get().setWebContents(
+                mNativeTopControlsContainerView, TopControlsContainerView.this, webContents);
     }
 
     public void destroy() {
@@ -324,8 +331,8 @@ class TopControlsContainerView extends FrameLayout {
 
     @NativeMethods
     interface Natives {
-        long createTopControlsContainerView(TopControlsContainerView view, WebContents webContents,
-                long nativeContentViewRenderView);
+        long createTopControlsContainerView(
+                TopControlsContainerView view, long nativeContentViewRenderView);
         void deleteTopControlsContainerView(
                 long nativeTopControlsContainerView, TopControlsContainerView caller);
         void createTopControlsLayer(
@@ -338,5 +345,7 @@ class TopControlsContainerView extends FrameLayout {
                 TopControlsContainerView caller, int width, int height);
         void updateTopControlsResource(
                 long nativeTopControlsContainerView, TopControlsContainerView caller);
+        void setWebContents(long nativeTopControlsContainerView, TopControlsContainerView caller,
+                WebContents webContents);
     }
 }

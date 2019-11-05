@@ -200,6 +200,8 @@ extern const char kChromeUIAddSupervisionHost[];
 extern const char kChromeUIAddSupervisionURL[];
 extern const char kChromeUIArcGraphicsTracingHost[];
 extern const char kChromeUIArcGraphicsTracingURL[];
+extern const char kChromeUIArcOverviewTracingHost[];
+extern const char kChromeUIArcOverviewTracingURL[];
 extern const char kChromeUIAssistantOptInHost[];
 extern const char kChromeUIAssistantOptInURL[];
 extern const char kChromeUIBluetoothPairingHost[];

@@ -281,8 +281,8 @@ void FrameImpl::TearDownView() {
 
     // Allows posted focus events to process before the FocusController is torn
     // down.
-    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
-                                       std::move(focus_controller_));
+    base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
+                     std::move(focus_controller_));
   }
 }
 

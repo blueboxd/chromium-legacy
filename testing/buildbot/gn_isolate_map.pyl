@@ -375,7 +375,6 @@
       "5000",
       "--exit-after-n-crashes-or-timeouts",
       "100",
-      "--debug-rwt-logging",
       "--results-directory",
       "${ISOLATED_OUTDIR}/layout-test-results",
     ],
@@ -3025,7 +3024,6 @@
     "args": [
       "../../third_party/blink/tools/run_web_tests.py",
       "--clobber-old-results",
-      "--debug-rwt-logging",
       "--no-show-results",
       "--results-directory",
       "${ISOLATED_OUTDIR}/layout-test-results",

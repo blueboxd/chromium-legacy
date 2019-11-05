@@ -352,6 +352,9 @@ class ArcAppListPrefs : public KeyedService,
   // 4. Is not currently installing.
   bool IsUnknownPackage(const std::string& package_name) const;
 
+  // Returns true if the package is a default package, even it's uninstalled.
+  bool IsDefaultPackage(const std::string& package_name) const;
+
  private:
   friend class ChromeLauncherControllerTest;
   friend class ArcAppModelBuilderTest;

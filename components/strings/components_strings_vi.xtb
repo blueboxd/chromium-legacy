@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Loại thẻ này không được hỗ trợ</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Thử liên hệ với quản trị viên hệ thống.</translation>
+<translation id="1739107442478692187">Một sự cố rò rỉ dữ liệu đã xảy ra trên trang web hoặc ứng dụng bạn dùng. Bạn nên kiểm tra mật khẩu đã lưu và đổi mật khẩu dùng trên <ph name="ORIGIN" /> ngay bây giờ.</translation>
 <translation id="1740951997222943430">Nhập tháng hết hạn hợp lệ</translation>
 <translation id="1743520634839655729">Để thanh toán nhanh hơn vào lần tới, hãy lưu địa chỉ thanh toán, tên và thẻ vào thiết bị này và Tài khoản Google của bạn.</translation>
 <translation id="1743570585616704562">Không nhận dạng được</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Miền không khớp</translation>
 <translation id="2096368010154057602">Khu vực hành chính</translation>
 <translation id="2099652385553570808">Dập 3 ghim bên trái</translation>
+<translation id="2100280972184758440">Mật khẩu của bạn đã bị lộ</translation>
 <translation id="2102134110707549001">Đề xuất mật khẩu mạnh…</translation>
 <translation id="2108755909498034140">Khởi động lại máy tính của bạn</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Bỏ qua vì đã bị <ph name="POLICY_NAME" /> ghi đè.</translation>
 <translation id="2119505898009119320">Cấp cho: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Đục lỗ dưới cùng bên phải</translation>
+<translation id="2124528555835617522">Một sự cố rò rỉ dữ liệu đã xảy ra trên trang web hoặc ứng dụng bạn dùng. Bạn nên kiểm tra mật khẩu đã lưu ngay bây giờ.</translation>
 <translation id="2129079103035905234">Cảm biến chuyển động</translation>
 <translation id="213826338245044447">Dấu trang trên thiết bị di động</translation>
 <translation id="214556005048008348">Hủy thanh toán</translation>
@@ -480,11 +483,13 @@
 <translation id="3282497668470633863">Thêm tên trên thẻ</translation>
 <translation id="3287510313208355388">Tải xuống khi trực tuyến</translation>
 <translation id="3293642807462928945">Hãy tìm hiểu thêm về chính sách <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">Một sự cố rò rỉ dữ liệu đã xảy ra trên trang web hoặc ứng dụng bạn dùng. Bạn nên đổi mật khẩu dùng trên <ph name="ORIGIN" /> ngay bây giờ.</translation>
 <translation id="3303855915957856445">Không tìm thấy kết quả tìm kiếm nào</translation>
 <translation id="3320021301628644560">Thêm địa chỉ thanh toán</translation>
 <translation id="3324983252691184275">Đỏ thẫm</translation>
 <translation id="3338095232262050444">Bảo mật</translation>
 <translation id="3355823806454867987">Thay đổi cài đặt proxy...</translation>
+<translation id="3360103848165129075">Trang tính trình xử lý thanh toán</translation>
 <translation id="3362968246557010467">Chính sách này được sao chép tự động từ chính sách <ph name="OLD_POLICY" /> không còn dùng nữa. Thay vào đó, bạn nên sử dụng chính sách này.</translation>
 <translation id="3366477098757335611">Xem thẻ</translation>
 <translation id="3369192424181595722">Lỗi đồng hồ</translation>
@@ -604,6 +609,7 @@
 <translation id="3949601375789751990">Lịch sử duyệt web của bạn xuất hiện ở đây</translation>
 <translation id="3949870428812919180">Bạn chưa lưu phương thức thanh toán nào</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
+<translation id="3961148744525529027">Trang tính trình xử lý thanh toán đang mở trên nửa màn hình</translation>
 <translation id="3962859241508114581">Bản nhạc trước</translation>
 <translation id="3963837677003247395">Bạn muốn tiếp tục theo cách thủ công?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Không có}=1{Của 1 trang web }other{Của # trang web }}</translation>
@@ -1336,6 +1342,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7637571805876720304">Bạn muốn xóa thẻ tín dụng khỏi Chromium?</translation>
 <translation id="7638605456503525968">Cổng nối tiếp</translation>
 <translation id="7639968568612851608">Xám đen</translation>
+<translation id="7653957176542370971">Trang tính trình xử lý thanh toán đang đóng</translation>
 <translation id="765676359832457558">Ẩn cài đặt nâng cao...</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7662298039739062396">Cài đặt được một tiện ích kiểm soát</translation>
@@ -1465,6 +1472,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8262952874573525464">May viền ở dưới cùng</translation>
 <translation id="8267698848189296333">Đăng nhập với tên <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Trang tính trình xử lý thanh toán đang mở</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Đăng nhập</translation>
 <translation id="8288807391153049143">Hiển thị chứng chỉ</translation>

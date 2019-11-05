@@ -1270,6 +1270,15 @@ Browser::ShowBluetoothScanningPrompt(
   return std::move(bluetooth_scanning_prompt_desktop);
 }
 
+void Browser::CreateSmsPrompt(content::RenderFrameHost*,
+                              const url::Origin&,
+                              const std::string& one_time_code,
+                              base::OnceClosure on_confirm,
+                              base::OnceClosure on_cancel) {
+  // TODO(crbug.com/1015645): implementation left pending deliberately.
+  std::move(on_confirm).Run();
+}
+
 void Browser::PassiveInsecureContentFound(const GURL& resource_url) {
   // Note: this implementation is a mirror of
   // ContentSettingsObserver::passiveInsecureContentFound
@@ -2722,7 +2731,7 @@ bool Browser::WebAppBrowserSupportsWindowFeature(WindowFeature feature,
     case FEATURE_LOCATIONBAR:
       return check_can_support || !fullscreen;
     case FEATURE_TABSTRIP:
-      return app_controller_->HasTabStrip();
+      return app_controller_->has_tab_strip();
     case FEATURE_BOOKMARKBAR:
     case FEATURE_NONE:
       return false;

@@ -72,14 +72,8 @@ BookmarksCommandManagerTest.prototype = {
   ]),
 };
 
-// https://crbug.com/1010381: Flaky on Linux Tests (dbg)
-GEN('#if defined(OS_LINUX) && !defined(NDEBUG)');
-GEN('#define MAYBE_AllBCM DISABLED_AllBCM');
-GEN('#else');
-GEN('#define MAYBE_AllBCM AllBCM');
-GEN('#endif');
-
-TEST_F('BookmarksCommandManagerTest', 'MAYBE_AllBCM', function() {
+// https://crbug.com/1010381: Flaky.
+TEST_F('BookmarksCommandManagerTest', 'DISABLED_AllBCM', function() {
   mocha.run();
 });
 

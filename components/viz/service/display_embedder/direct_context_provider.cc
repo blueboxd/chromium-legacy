@@ -96,6 +96,7 @@ DirectContextProvider::DirectContextProvider(
   command_buffer_ = std::move(command_buffer);
   decoder_ = std::move(decoder);
   gl_context_ = std::move(gl_context);
+  gl_surface_ = std::move(gl_surface);
 
   gles2_implementation_ = std::make_unique<gpu::gles2::GLES2Implementation>(
       gles2_cmd_helper_.get(), nullptr, transfer_buffer_.get(),
@@ -123,7 +124,11 @@ DirectContextProvider::~DirectContextProvider() {
 
 void DirectContextProvider::Destroy() {
   DCHECK(decoder_);
-  bool have_context = !decoder_->WasContextLost();
+
+  bool have_context = !decoder_->WasContextLost() &&
+                      (gl_context_->IsCurrent(nullptr) ||
+                       gl_context_->MakeCurrent(gl_surface_.get()));
+
   if (have_context && framebuffer_id_ != 0) {
     gles2_implementation_->DeleteFramebuffers(1, &framebuffer_id_);
     framebuffer_id_ = 0;
@@ -358,6 +363,11 @@ void DirectContextProvider::MarkContextLost() {
     command_buffer_->service()->SetParseError(gpu::error::kLostContext);
     OnContextLost();
   }
+}
+
+void DirectContextProvider::FinishQueries() {
+  if (decoder_->HasPendingQueries())
+    gles2_implementation_->Finish();
 }
 
 }  // namespace viz

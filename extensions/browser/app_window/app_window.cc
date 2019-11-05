@@ -454,6 +454,10 @@ void AppWindow::ExitPictureInPicture() {
   app_delegate_->ExitPictureInPicture();
 }
 
+bool AppWindow::ShouldShowStaleContentOnEviction(content::WebContents* source) {
+  return true;
+}
+
 bool AppWindow::OnMessageReceived(const IPC::Message& message,
                                   content::RenderFrameHost* render_frame_host) {
   bool handled = true;

@@ -65,7 +65,7 @@ class PerUserTopicRegistrationRequestTest : public testing::Test {
   PerUserTopicRegistrationRequestTest() {}
 
   GURL url(PerUserTopicRegistrationRequest* request) {
-    return request->getUrl();
+    return request->GetUrlForTesting();
   }
 
   network::TestURLLoaderFactory* url_loader_factory() {
@@ -95,7 +95,7 @@ TEST_F(PerUserTopicRegistrationRequestTest,
 
   PerUserTopicRegistrationRequest::Builder builder;
   std::unique_ptr<PerUserTopicRegistrationRequest> request =
-      builder.SetToken(token)
+      builder.SetInstanceIdToken(token)
           .SetScope(url)
           .SetPublicTopicName(topic)
           .SetProjectId(project_id)
@@ -125,7 +125,7 @@ TEST_F(PerUserTopicRegistrationRequestTest, ShouldSubscribeWithoutErrors) {
 
   PerUserTopicRegistrationRequest::Builder builder;
   std::unique_ptr<PerUserTopicRegistrationRequest> request =
-      builder.SetToken(token)
+      builder.SetInstanceIdToken(token)
           .SetScope(base_url)
           .SetPublicTopicName(topic)
           .SetProjectId(project_id)
@@ -168,7 +168,7 @@ TEST_F(PerUserTopicRegistrationRequestTest,
 
   PerUserTopicRegistrationRequest::Builder builder;
   std::unique_ptr<PerUserTopicRegistrationRequest> request =
-      builder.SetToken(token)
+      builder.SetInstanceIdToken(token)
           .SetScope(base_url)
           .SetPublicTopicName(topic)
           .SetProjectId(project_id)
@@ -211,7 +211,7 @@ TEST_F(PerUserTopicRegistrationRequestTest,
 
   PerUserTopicRegistrationRequest::Builder builder;
   std::unique_ptr<PerUserTopicRegistrationRequest> request =
-      builder.SetToken(token)
+      builder.SetInstanceIdToken(token)
           .SetScope(base_url)
           .SetPublicTopicName(topic)
           .SetProjectId(project_id)
@@ -231,7 +231,7 @@ TEST_F(PerUserTopicRegistrationRequestTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(status.code, StatusCode::FAILED);
-  EXPECT_EQ(status.message, "Body parse error");
+  EXPECT_EQ(status.message, "Missing topic name");
 }
 
 TEST_F(PerUserTopicRegistrationRequestTest, ShouldUnsubscribe) {
@@ -252,7 +252,7 @@ TEST_F(PerUserTopicRegistrationRequestTest, ShouldUnsubscribe) {
 
   PerUserTopicRegistrationRequest::Builder builder;
   std::unique_ptr<PerUserTopicRegistrationRequest> request =
-      builder.SetToken(token)
+      builder.SetInstanceIdToken(token)
           .SetScope(base_url)
           .SetPublicTopicName(topic)
           .SetProjectId(project_id)
@@ -304,7 +304,7 @@ TEST_P(PerUserTopicRegistrationRequestParamTest,
 
   PerUserTopicRegistrationRequest::Builder builder;
   std::unique_ptr<PerUserTopicRegistrationRequest> request =
-      builder.SetToken(token)
+      builder.SetInstanceIdToken(token)
           .SetScope(base_url)
           .SetPublicTopicName(topic)
           .SetProjectId(project_id)

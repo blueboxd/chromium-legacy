@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
-                       LazyLoadFrameDisabledInReload) {
+                       DISABLED_LazyLoadFrameDisabledInReload) {
   net::EmbeddedTestServer cross_origin_server;
   cross_origin_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(cross_origin_server.Start());

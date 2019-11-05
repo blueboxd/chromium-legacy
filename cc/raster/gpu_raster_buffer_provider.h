@@ -32,7 +32,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       viz::ContextProvider* compositor_context_provider,
       viz::RasterContextProvider* worker_context_provider,
       bool use_gpu_memory_buffer_resources,
-      int gpu_rasterization_msaa_sample_count,
       viz::ResourceFormat tile_format,
       const gfx::Size& max_tile_size,
       bool unpremultiply_and_dither_low_bit_depth_tiles,
@@ -161,7 +160,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   viz::ContextProvider* const compositor_context_provider_;
   viz::RasterContextProvider* const worker_context_provider_;
   const bool use_gpu_memory_buffer_resources_;
-  const int msaa_sample_count_;
   const viz::ResourceFormat tile_format_;
   const gfx::Size max_tile_size_;
   const bool unpremultiply_and_dither_low_bit_depth_tiles_;

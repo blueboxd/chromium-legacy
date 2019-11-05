@@ -35,6 +35,14 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
       <em>$i18n{cookieControlsTitle}</em>
       $i18n{cookieControlsDescription}
     </div>
+    <div id="cookie-controls-tooltip-icon-wrapper" $i18n{hideTooltipIcon}>
+      <a href="chrome://settings/content/cookies">
+        <cr-tooltip-icon icon-aria-label="$i18n{cookieControlsTitle}"
+                         icon-class="cr20:domain"
+                         tooltip-text="$i18n{cookieControlsTooltipText}">
+        </cr-tooltip-icon>
+      </a>
+    </div>
     <cr-toggle id="cookie-controls-toggle"
                aria-label="$i18n{cookieControlsTitle}"
                $i18n{cookieControlsToggleChecked} dark></cr-toggle>
@@ -44,7 +52,8 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="incognito_tab.js"></script>
-<!-- Lazy-load cr_toggle to avoid performance penalty introduced by loading Polymer -->
+<!-- Lazy-load cr_elements to avoid performance penalty introduced by loading Polymer -->
 <script type="module" src="chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js" async></script>
+<script type="module" src="chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js" async></script>
 </body>
 </html>

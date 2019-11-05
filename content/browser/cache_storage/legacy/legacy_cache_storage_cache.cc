@@ -524,6 +524,7 @@ bool LegacyCacheStorageCache::IsUnreferenced() const {
 void LegacyCacheStorageCache::Match(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr match_options,
+    CacheStorageSchedulerPriority priority,
     int64_t trace_id,
     ResponseCallback callback) {
   if (backend_state_ == BACKEND_CLOSED) {
@@ -533,8 +534,10 @@ void LegacyCacheStorageCache::Match(
   }
 
   auto id = scheduler_->CreateId();
+  // TODO: use priority
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kShared, CacheStorageSchedulerOp::kMatch,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &LegacyCacheStorageCache::MatchImpl, weak_ptr_factory_.GetWeakPtr(),
           std::move(request), std::move(match_options), trace_id,
@@ -557,6 +560,7 @@ void LegacyCacheStorageCache::MatchAll(
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kShared,
       CacheStorageSchedulerOp::kMatchAll,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &LegacyCacheStorageCache::MatchAllImpl,
           weak_ptr_factory_.GetWeakPtr(), std::move(request),
@@ -825,6 +829,7 @@ void LegacyCacheStorageCache::Keys(blink::mojom::FetchAPIRequestPtr request,
   auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kShared, CacheStorageSchedulerOp::kKeys,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &LegacyCacheStorageCache::KeysImpl, weak_ptr_factory_.GetWeakPtr(),
           std::move(request), std::move(options), trace_id,
@@ -838,7 +843,7 @@ void LegacyCacheStorageCache::Close(base::OnceClosure callback) {
   auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kClose,
+      CacheStorageSchedulerOp::kClose, CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &LegacyCacheStorageCache::CloseImpl, weak_ptr_factory_.GetWeakPtr(),
           scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
@@ -855,6 +860,7 @@ void LegacyCacheStorageCache::Size(SizeCallback callback) {
   auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kShared, CacheStorageSchedulerOp::kSize,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &LegacyCacheStorageCache::SizeImpl, weak_ptr_factory_.GetWeakPtr(),
           scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
@@ -871,6 +877,7 @@ void LegacyCacheStorageCache::GetSizeThenClose(SizeCallback callback) {
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kSizeThenClose,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &LegacyCacheStorageCache::SizeImpl, weak_ptr_factory_.GetWeakPtr(),
           base::BindOnce(
@@ -1359,6 +1366,7 @@ void LegacyCacheStorageCache::WriteSideDataDidGetQuota(
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kWriteSideData,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&LegacyCacheStorageCache::WriteSideDataImpl,
                      weak_ptr_factory_.GetWeakPtr(),
                      scheduler_->WrapCallbackToRunNext(id, std::move(callback)),
@@ -1560,6 +1568,7 @@ void LegacyCacheStorageCache::Put(blink::mojom::FetchAPIRequestPtr request,
 
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive, CacheStorageSchedulerOp::kPut,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&LegacyCacheStorageCache::PutImpl,
                      weak_ptr_factory_.GetWeakPtr(), std::move(put_context)));
 }
@@ -1974,6 +1983,7 @@ void LegacyCacheStorageCache::GetAllMatchedEntries(
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kShared,
       CacheStorageSchedulerOp::kGetAllMatched,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &LegacyCacheStorageCache::GetAllMatchedEntriesImpl,
           weak_ptr_factory_.GetWeakPtr(), std::move(request),
@@ -2059,7 +2069,7 @@ void LegacyCacheStorageCache::Delete(blink::mojom::BatchOperationPtr operation,
   auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive,
-      CacheStorageSchedulerOp::kDelete,
+      CacheStorageSchedulerOp::kDelete, CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &LegacyCacheStorageCache::DeleteImpl, weak_ptr_factory_.GetWeakPtr(),
           std::move(request), std::move(operation->match_options),
@@ -2265,6 +2275,7 @@ void LegacyCacheStorageCache::InitBackend() {
   auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kExclusive, CacheStorageSchedulerOp::kInit,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &LegacyCacheStorageCache::CreateBackend,
           weak_ptr_factory_.GetWeakPtr(),

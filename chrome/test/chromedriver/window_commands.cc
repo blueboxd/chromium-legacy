@@ -731,8 +731,7 @@ Status ExecuteGetPageSource(Session* session,
                             std::unique_ptr<base::Value>* value,
                             Timeout* timeout) {
   const char kGetPageSource[] =
-      " () => document.documentElement"
-      " ? document.documentElement.outerHTML : ''";
+      " () => (document.documentElement || {}).outerHTML || ''";
 
   base::ListValue args;
   return web_view->CallFunction(

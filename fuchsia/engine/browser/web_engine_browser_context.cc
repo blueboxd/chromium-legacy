@@ -65,8 +65,8 @@ WebEngineBrowserContext::~WebEngineBrowserContext() {
   NotifyWillBeDestroyed(this);
 
   if (resource_context_) {
-    content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                       std::move(resource_context_));
+    base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                     std::move(resource_context_));
   }
 
   ShutdownStoragePartitions();

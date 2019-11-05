@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -46,13 +45,10 @@ import java.util.Collections;
 @EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)
 @DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_POST_MESSAGE)
 public class VerifierTest {
-
     private static final Origin TRUSTED_ORIGIN = Origin.create("https://www.origin1.com/");
     private static final Origin OTHER_TRUSTED_ORIGIN = Origin.create("https://www.origin2.com/");
     private static final String TRUSTED_ORIGIN_PAGE1 = TRUSTED_ORIGIN + "/page1";
-    private static final String TRUSTED_ORIGIN_PAGE2 = TRUSTED_ORIGIN + "/page2";
     private static final String OTHER_TRUSTED_ORIGIN_PAGE1 = OTHER_TRUSTED_ORIGIN + "/page1";
-    private static final String OTHER_TRUSTED_ORIGIN_PAGE2 = OTHER_TRUSTED_ORIGIN + "/page2";
     private static final String UNTRUSTED_PAGE = "https://www.origin3.com/page1";
 
     public static final String PACKAGE_NAME = "package.name";
@@ -117,16 +113,6 @@ public class VerifierTest {
     }
 
     @Test
-    public void usesCache_whenNavigatingWithinPreviouslyVerifiedOrigin() {
-        setInitialUrl(TRUSTED_ORIGIN_PAGE1);
-        mVerifier.onFinishNativeInitialization();
-        mVerifierDelegate.passVerification(Origin.create(TRUSTED_ORIGIN_PAGE1));
-
-        navigateToUrl(TRUSTED_ORIGIN_PAGE2);
-        verifyUsesCache();
-    }
-
-    @Test
     public void verifies_WhenNavigatingToOtherTrustedOrigin() {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
@@ -134,41 +120,6 @@ public class VerifierTest {
 
         navigateToUrl(OTHER_TRUSTED_ORIGIN_PAGE1);
         verifyStartsVerification(OTHER_TRUSTED_ORIGIN_PAGE1);
-    }
-
-    @Test
-    public void usesCache_WhenReturningBackToFirstVerifiedOrigin() {
-        setInitialUrl(TRUSTED_ORIGIN_PAGE1);
-        mVerifier.onFinishNativeInitialization();
-        mVerifierDelegate.passVerification(Origin.create(TRUSTED_ORIGIN_PAGE1));
-        navigateToUrl(OTHER_TRUSTED_ORIGIN_PAGE1);
-        mVerifierDelegate.passVerification(Origin.create(OTHER_TRUSTED_ORIGIN_PAGE1));
-
-        navigateToUrl(TRUSTED_ORIGIN_PAGE2);
-        verifyUsesCache();
-    }
-
-    @Test
-    public void usesCache_WhenReturningBackToSecondVerifiedOrigin() {
-        setInitialUrl(TRUSTED_ORIGIN_PAGE1);
-        mVerifier.onFinishNativeInitialization();
-        mVerifierDelegate.passVerification(Origin.create(TRUSTED_ORIGIN_PAGE1));
-        navigateToUrl(OTHER_TRUSTED_ORIGIN_PAGE1);
-        mVerifierDelegate.passVerification(Origin.create(OTHER_TRUSTED_ORIGIN_PAGE1));
-        navigateToUrl(TRUSTED_ORIGIN_PAGE1);
-
-        navigateToUrl(OTHER_TRUSTED_ORIGIN_PAGE2);
-        verifyUsesCache();
-    }
-
-    @Test
-    public void usesCache_WhenNavigatesToUntrustedOrigin() {
-        setInitialUrl(TRUSTED_ORIGIN_PAGE1);
-        mVerifier.onFinishNativeInitialization();
-        mVerifierDelegate.passVerification(Origin.create(TRUSTED_ORIGIN_PAGE1));
-
-        navigateToUrl(UNTRUSTED_PAGE);
-        verifyUsesCache();
     }
 
     @Test
@@ -194,10 +145,6 @@ public class VerifierTest {
 
     private void assertStatus(@Verifier.VerificationStatus int status) {
         assertEquals(status, mVerifier.getState().status);
-    }
-
-    private void verifyUsesCache() {
-        assertFalse(mVerifierDelegate.hasAnyPendingVerifications());
     }
 
     private void verifyStartsVerification(String url) {

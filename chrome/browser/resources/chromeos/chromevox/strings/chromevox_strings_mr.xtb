@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">बोधवाक्य</translation>
 <translation id="207477615537953741">सिमेंटिक बंद</translation>
 <translation id="2086961585857038472">पुढील शब्द</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">en</translation>
 <translation id="2091933974477985526">मागील संपादन करता येणारे मजकूर क्षेत्र</translation>
 <translation id="2100350898815792233">सर्व विरामचिन्‍ह</translation>
@@ -192,6 +193,7 @@
 <translation id="2416512023405990736">अनचेक केलेला चेकबॉक्स</translation>
 <translation id="2417569100218200841">आशय माहिती</translation>
 <translation id="2417948780551741035">अंतिम नोंदी</translation>
+<translation id="2419852971200420169">वर्णन सूची</translation>
 <translation id="2421113964388408478">हटवणे</translation>
 <translation id="2422937916923936891">मेनू आयटम चेक बॉक्‍स</translation>
 <translation id="2428534162001909979">कमांड मेनू</translation>
@@ -370,6 +372,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{प्रश्नचिन्ह}other{# प्रश्नचिन्हे}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{कॅरेट}other{# कॅरेट}}</translation>
 <translation id="352577523970648069">एक संपादन करण्यायोग्य मजकूर फील्ड</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> कट करा.</translation>
 <translation id="3549680091535286226">बोलणे तात्पुरते थांबवण्यासाठी दोन बोटांनी टॅप करा</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, चेकबॉक्स चेक केलेला नाही</translation>
@@ -778,6 +781,7 @@
 <translation id="6378394210114975876">हलका जांभळा</translation>
 <translation id="6385591741672306837">स्तंभ</translation>
 <translation id="6387719785439924554">बाजूस</translation>
+<translation id="6393014464788431702">सर्व इव्‍हेंट फिल्टर बंद करा</translation>
 <translation id="6411426777058107714">मागील रेडिओ बटण नाही.</translation>
 <translation id="6414968628640960377">मागील वेगळा घटक.</translation>
 <translation id="6417265370957905582">Google साहाय्यक</translation>
@@ -913,6 +917,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="7332592614823088566"><ph name="ROWTOTAL" /> पैकी <ph name="ROWINDEX" /> पंक्ती, <ph name="COLTOTAL" /> पैकी <ph name="COLINDEX" /> स्तंभ</translation>
 <translation id="7336596009609913925">यास पॉपअप आहे</translation>
 <translation id="7356165926712028380">8 बिंदू ब्रेलवर स्विच करा</translation>
+<translation id="7356610683936413584">वर्णन सूची तपशील</translation>
 <translation id="7362871137496673139">मागील स्‍तर 2 मथळा नाही.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{अँपरसँड}other{# अँपरसँड}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1091,6 +1096,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8096975275316362544">दुधाळ</translation>
 <translation id="8098587210054821856">भडक राखाडी</translation>
 <translation id="8110647606445335195">कोणत्याही ARIA च्‍या महत्त्वाच्या खुणा नाहीत.</translation>
+<translation id="8121539003537428024">सर्व इव्हेंट फिल्टर सुरू करा</translation>
 <translation id="812886159861361726"><ph name="FILE_NAME" /> चे डाउनलोड थांबले</translation>
 <translation id="8138880386467279117">स्पर्श करा</translation>
 <translation id="8153880621934657047">सारणीमध्ये नाही.</translation>

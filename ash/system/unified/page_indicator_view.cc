@@ -214,6 +214,10 @@ void PageIndicatorView::SetExpandedAmount(double expanded_amount) {
   layer()->SetOpacity(std::max(0., 6 * expanded_amount_ - 5.));
 }
 
+int PageIndicatorView::GetExpandedHeight() {
+  return buttons_container_->GetPreferredSize().height();
+}
+
 void PageIndicatorView::TotalPagesChanged(int previous_page_count,
                                           int new_page_count) {
   DCHECK(model_);

@@ -133,21 +133,9 @@ class NormalPageArena;
 class PageMemory;
 class BaseArena;
 
-// Returns a random value.
+// HeapObjectHeader is a 32-bit object that has the following layout:
 //
-// The implementation gets its randomness from the locations of 2 independent
-// sources of address space layout randomization: a function in a Chrome
-// executable image, and a function in an external DLL/so. This implementation
-// should be fast and small, and should have the benefit of requiring
-// attackers to discover and use 2 independent weak infoleak bugs, or 1
-// arbitrary infoleak bug (used twice).
-uint32_t ComputeRandomMagic();
-
-// HeapObjectHeader is a 64-bit (64-bit platforms) or 32-bit (32-bit platforms)
-// object that has the following layout:
-//
-// | random magic value (32 bits) | Only present on 64-bit platforms.
-//
+// | padding (32 bits)            | Only present on 64-bit platforms.
 // | gc_info_index (14 bits)      |
 // | unused (1 bit)               |
 // | in construction (1 bit)      | true: bit not set; false bit set
@@ -234,14 +222,6 @@ class PLATFORM_EXPORT HeapObjectHeader {
   enum HeaderLocation : uint8_t { kNormalPage, kLargePage };
   enum class AccessMode : uint8_t { kNonAtomic, kAtomic };
 
-  // The following values are used when zapping free list entries.
-  // Regular zapping value.
-  static const uint32_t kZappedMagic = 0xDEAD4321;
-  // On debug and sanitizer builds the zap values differ, indicating when free
-  // list entires are allowed to be reused.
-  static const uint32_t kZappedMagicAllowed = 0x2a2a2a2a;
-  static const uint32_t kZappedMagicForbidden = 0x2c2c2c2c;
-
   static HeapObjectHeader* FromPayload(const void*);
   static HeapObjectHeader* FromInnerAddress(const void*);
 
@@ -295,21 +275,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // Returns a human-readable name of this object.
   const char* Name() const;
 
-  // Returns true if magic number is valid.
-  bool IsValid() const;
-  // Returns true if magic number is valid or zapped.
-  bool IsValidOrZapped() const;
-
- protected:
-#if DCHECK_IS_ON() && defined(ARCH_CPU_64_BITS)
-  // Zap |m_magic| with a new magic number that means there was once an object
-  // allocated here, but it was freed because nobody marked it during GC.
-  void ZapMagic();
-#endif
-
  private:
-  void CheckHeader() const;
-
   enum class EncodedHalf : uint8_t { kLow, kHigh };
 
   template <AccessMode, EncodedHalf>
@@ -318,11 +284,8 @@ class PLATFORM_EXPORT HeapObjectHeader {
   void StoreEncoded(uint16_t bits, uint16_t mask);
 
 #if defined(ARCH_CPU_64_BITS)
-  // Returns a random magic value.
-  static uint32_t GetMagic();
-  uint32_t magic_;
+  uint32_t padding_ = 0;
 #endif  // defined(ARCH_CPU_64_BITS)
-
   uint16_t encoded_high_;
   uint16_t encoded_low_;
 };
@@ -335,10 +298,6 @@ class FreeListEntry final : public HeapObjectHeader {
                          kGcInfoIndexForFreeListHeader,
                          HeapObjectHeader::kNormalPage),
         next_(nullptr) {
-#if DCHECK_IS_ON() && defined(ARCH_CPU_64_BITS)
-    DCHECK_GE(size, sizeof(HeapObjectHeader));
-    ZapMagic();
-#endif
   }
 
   Address GetAddress() { return reinterpret_cast<Address>(this); }
@@ -543,16 +502,9 @@ class BasePage {
     return page_type_ == PageType::kLargeObjectPage;
   }
 
-  // Returns true if magic number is valid.
-  bool IsValid() const;
-
   virtual void VerifyMarking() = 0;
 
  private:
-  // Returns a random magic value.
-  PLATFORM_EXPORT static uint32_t GetMagic();
-
-  uint32_t const magic_;
   PageMemory* const storage_;
   BaseArena* const arena_;
   ThreadState* const thread_state_;
@@ -1076,8 +1028,6 @@ PLATFORM_EXPORT ALWAYS_INLINE BasePage* PageFromObject(const void* object) {
   Address address = reinterpret_cast<Address>(const_cast<void*>(object));
   BasePage* page = reinterpret_cast<BasePage*>(BlinkPageAddress(address) +
                                                kBlinkGuardPageSize);
-  // Page must have a valid magic.
-  DCHECK(page->IsValid());
 #if DCHECK_IS_ON()
   DCHECK(page->Contains(address));
 #endif
@@ -1088,7 +1038,6 @@ inline HeapObjectHeader* HeapObjectHeader::FromPayload(const void* payload) {
   Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
   HeapObjectHeader* header =
       reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
-  header->CheckHeader();
   return header;
 }
 
@@ -1116,7 +1065,6 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
 
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
-  CheckHeader();
   encoded_low_ = static_cast<uint16_t>(internal::EncodeSize(size) |
                                        (encoded_low_ & ~kHeaderSizeMask));
 }
@@ -1138,29 +1086,6 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkFullyConstructed() {
                                          kHeaderIsInConstructionMask);
 }
 
-NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValid() const {
-#if defined(ARCH_CPU_64_BITS)
-  return GetMagic() == magic_;
-#else
-  return true;
-#endif
-}
-
-NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValidOrZapped() const {
-#if defined(ARCH_CPU_64_BITS)
-  return IsValid() || kZappedMagic == magic_ || kZappedMagicAllowed == magic_ ||
-         kZappedMagicForbidden == magic_;
-#else
-  return true;
-#endif
-}
-
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::CheckHeader() const {
-#if defined(ARCH_CPU_64_BITS)
-  CHECK(IsValid());
-#endif
-}
-
 inline Address HeapObjectHeader::Payload() const {
   return reinterpret_cast<Address>(const_cast<HeapObjectHeader*>(this)) +
          sizeof(HeapObjectHeader);
@@ -1172,7 +1097,6 @@ inline Address HeapObjectHeader::PayloadEnd() const {
 }
 
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() const {
-  CheckHeader();
   const size_t size = internal::DecodeSize(encoded_low_);
   if (UNLIKELY(size == kLargeObjectSizeInHeader)) {
     DCHECK(PageFromObject(this)->IsLargeObjectPage());
@@ -1184,21 +1108,18 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() const {
 
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsMarked() const {
-  CheckHeader();
   const uint16_t encoded = LoadEncoded<mode, EncodedHalf::kLow>();
   return encoded & kHeaderMarkBitMask;
 }
 
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Mark() {
-  CheckHeader();
   DCHECK(!IsMarked<mode>());
   StoreEncoded<mode, EncodedHalf::kLow>(kHeaderMarkBitMask, kHeaderMarkBitMask);
 }
 
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Unmark() {
-  CheckHeader();
   DCHECK(IsMarked<mode>());
   StoreEncoded<mode, EncodedHalf::kLow>(0u, kHeaderMarkBitMask);
 }
@@ -1207,7 +1128,6 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Unmark() {
 // called, i.e. SetSize() and TryMark() can't be called concurrently.
 template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::TryMark() {
-  CheckHeader();
   if (mode == AccessMode::kNonAtomic) {
     if (encoded_low_ & kHeaderMarkBitMask)
       return false;
@@ -1225,10 +1145,6 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::TryMark() {
   return atomic_encoded->compare_exchange_strong(old_value, new_value,
                                                  std::memory_order_acq_rel,
                                                  std::memory_order_relaxed);
-}
-
-NO_SANITIZE_ADDRESS inline bool BasePage::IsValid() const {
-  return GetMagic() == magic_;
 }
 
 inline Address NormalPageArena::AllocateObject(size_t allocation_size,
@@ -1319,11 +1235,6 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
   static_assert(
       sizeof(HeapObjectHeader) <= kAllocationGranularity,
       "size of HeapObjectHeader must be smaller than kAllocationGranularity");
-#if defined(ARCH_CPU_64_BITS)
-  static_assert(sizeof(HeapObjectHeader) == 8,
-                "sizeof(HeapObjectHeader) must be 8 bytes");
-  magic_ = GetMagic();
-#endif
 
   DCHECK_LT(gc_info_index, GCInfoTable::kMaxIndex);
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);

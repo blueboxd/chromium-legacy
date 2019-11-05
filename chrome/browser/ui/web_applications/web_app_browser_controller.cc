@@ -20,22 +20,18 @@
 namespace web_app {
 
 WebAppBrowserController::WebAppBrowserController(Browser* browser)
-    : AppBrowserController(browser),
-      provider_(*WebAppProvider::Get(browser->profile())),
-      app_id_(GetAppIdFromApplicationName(browser->app_name())) {}
+    : AppBrowserController(browser,
+                           GetAppIdFromApplicationName(browser->app_name())),
+      provider_(*WebAppProvider::Get(browser->profile())) {}
 
 WebAppBrowserController::~WebAppBrowserController() = default;
 
-base::Optional<AppId> WebAppBrowserController::GetAppId() const {
-  return app_id_;
-}
-
 bool WebAppBrowserController::CreatedForInstalledPwa() const {
-  return !registrar().IsShortcutApp(app_id_);
+  return !registrar().IsShortcutApp(GetAppId());
 }
 
 bool WebAppBrowserController::HasMinimalUiButtons() const {
-  return registrar().GetAppEffectiveDisplayMode(app_id_) ==
+  return registrar().GetAppEffectiveDisplayMode(GetAppId()) ==
          DisplayMode::kMinimalUi;
 }
 
@@ -54,7 +50,7 @@ gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {
   app_icon_ = GetFallbackAppIcon();
 
   provider_.icon_manager().ReadSmallestIcon(
-      app_id_, gfx::kFaviconSize,
+      GetAppId(), gfx::kFaviconSize,
       base::BindOnce(&WebAppBrowserController::OnReadIcon,
                      weak_ptr_factory_.GetWeakPtr()));
 
@@ -71,15 +67,15 @@ base::Optional<SkColor> WebAppBrowserController::GetThemeColor() const {
   if (web_theme_color)
     return web_theme_color;
 
-  return registrar().GetAppThemeColor(app_id_);
+  return registrar().GetAppThemeColor(GetAppId());
 }
 
 GURL WebAppBrowserController::GetAppLaunchURL() const {
-  return registrar().GetAppLaunchURL(app_id_);
+  return registrar().GetAppLaunchURL(GetAppId());
 }
 
 bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
-  base::Optional<GURL> app_scope = registrar().GetAppScope(app_id_);
+  base::Optional<GURL> app_scope = registrar().GetAppScope(GetAppId());
   if (!app_scope)
     return false;
 
@@ -99,7 +95,7 @@ WebAppBrowserController* WebAppBrowserController::AsWebAppBrowserController() {
 }
 
 std::string WebAppBrowserController::GetAppShortName() const {
-  return registrar().GetAppShortName(app_id_);
+  return registrar().GetAppShortName(GetAppId());
 }
 
 base::string16 WebAppBrowserController::GetFormattedUrlOrigin() const {
@@ -109,18 +105,19 @@ base::string16 WebAppBrowserController::GetFormattedUrlOrigin() const {
 bool WebAppBrowserController::CanUninstall() const {
   return WebAppUiManagerImpl::Get(browser()->profile())
       ->dialog_manager()
-      .CanUninstallWebApp(app_id_);
+      .CanUninstallWebApp(GetAppId());
 }
 
 void WebAppBrowserController::Uninstall() {
   WebAppUiManagerImpl::Get(browser()->profile())
       ->dialog_manager()
-      .UninstallWebApp(app_id_, WebAppDialogManager::UninstallSource::kAppMenu,
+      .UninstallWebApp(GetAppId(),
+                       WebAppDialogManager::UninstallSource::kAppMenu,
                        browser()->window(), base::DoNothing());
 }
 
 bool WebAppBrowserController::IsInstalled() const {
-  return registrar().IsInstalled(app_id_);
+  return registrar().IsInstalled(GetAppId());
 }
 
 const AppRegistrar& WebAppBrowserController::registrar() const {

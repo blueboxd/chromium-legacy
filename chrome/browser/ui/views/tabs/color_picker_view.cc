@@ -149,8 +149,8 @@ class ColorPickerElementView : public views::Button,
   // Does nothing if not selected or hovered.
   void PaintSelectionIndicator(gfx::Canvas* canvas) {
     // Visual parameters of our ring.
-    constexpr float kInset = 4.0f;
-    constexpr float kThickness = 4.0f;
+    constexpr float kInset = 3.0f;
+    constexpr float kThickness = 2.0f;
     constexpr SkColor kSelectedColor = SK_ColorWHITE;
     constexpr SkColor kPendingColor = gfx::kGoogleGrey200;
 

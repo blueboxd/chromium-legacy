@@ -16,8 +16,6 @@
   # TODO(thakis): Move android det bots to use two distinct build dirs,
   # https://crbug.com/899438
   'android': [
-    # https://crbug.com/939984
-    'apks/ChromeModernPublic.aab',
   ],
 
   'fuchsia': [

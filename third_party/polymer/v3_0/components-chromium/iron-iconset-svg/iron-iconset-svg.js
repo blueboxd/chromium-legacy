@@ -135,6 +135,18 @@ Polymer({
   },
 
   /**
+   * Produce installable clone of the SVG element matching `id` in this
+   * iconset, or `undefined` if there is no matching element.
+   * @param {string} iconName Name of the icon to apply.
+   * @param {boolean} targetIsRTL Whether the target element is RTL.
+   * @return {Element} Returns an installable clone of the SVG element
+   *     matching `id`.
+   */
+  createIcon: function(iconName, targetIsRTL) {
+    return this._cloneIcon(iconName, this.rtlMirroring && targetIsRTL);
+  },
+
+  /**
    * Remove an icon from the given element by undoing the changes effected
    * by `applyIcon`.
    *

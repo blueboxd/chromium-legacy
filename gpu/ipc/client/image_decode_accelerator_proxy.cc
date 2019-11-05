@@ -35,6 +35,7 @@ bool IsSupportedImageSize(
     image_size = image_data->coded_size.value();
   else
     image_size = image_data->image_size;
+  DCHECK(!image_size.IsEmpty());
 
   return image_size.width() >=
              supported_profile.min_encoded_dimensions.width() &&

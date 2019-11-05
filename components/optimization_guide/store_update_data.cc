@@ -5,7 +5,7 @@
 #include "components/optimization_guide/store_update_data.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "components/optimization_guide/hint_cache_store.h"
+#include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -56,16 +56,17 @@ StoreUpdateData::StoreUpdateData(base::Time host_model_features_update_time,
     : update_time_(host_model_features_update_time),
       expiry_time_(expiry_time),
       entries_to_save_(std::make_unique<EntryVector>()) {
-  entry_key_prefix_ = HintCacheStore::GetHostModelFeaturesEntryKeyPrefix();
+  entry_key_prefix_ =
+      OptimizationGuideStore::GetHostModelFeaturesEntryKeyPrefix();
   proto::StoreEntry metadata_host_model_features_entry;
   metadata_host_model_features_entry.set_entry_type(
       static_cast<proto::StoreEntryType>(
-          HintCacheStore::StoreEntryType::kMetadata));
+          OptimizationGuideStore::StoreEntryType::kMetadata));
   metadata_host_model_features_entry.set_update_time_secs(
       host_model_features_update_time.ToDeltaSinceWindowsEpoch().InSeconds());
   entries_to_save_->emplace_back(
-      HintCacheStore::GetMetadataTypeEntryKey(
-          HintCacheStore::MetadataType::kHostModelFeatures),
+      OptimizationGuideStore::GetMetadataTypeEntryKey(
+          OptimizationGuideStore::MetadataType::kHostModelFeatures),
       std::move(metadata_host_model_features_entry));
 
   // |this| may be modified on another thread after construction but all
@@ -76,7 +77,8 @@ StoreUpdateData::StoreUpdateData(base::Time host_model_features_update_time,
 
 StoreUpdateData::StoreUpdateData()
     : entries_to_save_(std::make_unique<EntryVector>()) {
-  entry_key_prefix_ = HintCacheStore::GetPredictionModelEntryKeyPrefix();
+  entry_key_prefix_ =
+      OptimizationGuideStore::GetPredictionModelEntryKeyPrefix();
 
   // |this| may be modified on another thread after construction but all
   // future modifications, from that call forward, must be made on the same
@@ -95,29 +97,30 @@ StoreUpdateData::StoreUpdateData(
   DCHECK_NE(!component_version_, !update_time_);
 
   if (component_version_.has_value()) {
-    entry_key_prefix_ =
-        HintCacheStore::GetComponentHintEntryKeyPrefix(*component_version_);
+    entry_key_prefix_ = OptimizationGuideStore::GetComponentHintEntryKeyPrefix(
+        *component_version_);
 
     // Add a component metadata entry for the component's version.
     proto::StoreEntry metadata_component_entry;
 
     metadata_component_entry.set_entry_type(static_cast<proto::StoreEntryType>(
-        HintCacheStore::StoreEntryType::kMetadata));
+        OptimizationGuideStore::StoreEntryType::kMetadata));
     metadata_component_entry.set_version(component_version_->GetString());
     entries_to_save_->emplace_back(
-        HintCacheStore::GetMetadataTypeEntryKey(
-            HintCacheStore::MetadataType::kComponent),
+        OptimizationGuideStore::GetMetadataTypeEntryKey(
+            OptimizationGuideStore::MetadataType::kComponent),
         std::move(metadata_component_entry));
   } else if (update_time_.has_value()) {
-    entry_key_prefix_ = HintCacheStore::GetFetchedHintEntryKeyPrefix();
+    entry_key_prefix_ = OptimizationGuideStore::GetFetchedHintEntryKeyPrefix();
     proto::StoreEntry metadata_fetched_entry;
     metadata_fetched_entry.set_entry_type(static_cast<proto::StoreEntryType>(
-        HintCacheStore::StoreEntryType::kMetadata));
+        OptimizationGuideStore::StoreEntryType::kMetadata));
     metadata_fetched_entry.set_update_time_secs(
         update_time_->ToDeltaSinceWindowsEpoch().InSeconds());
-    entries_to_save_->emplace_back(HintCacheStore::GetMetadataTypeEntryKey(
-                                       HintCacheStore::MetadataType::kFetched),
-                                   std::move(metadata_fetched_entry));
+    entries_to_save_->emplace_back(
+        OptimizationGuideStore::GetMetadataTypeEntryKey(
+            OptimizationGuideStore::MetadataType::kFetched),
+        std::move(metadata_fetched_entry));
   } else {
     NOTREACHED();
   }
@@ -136,17 +139,18 @@ void StoreUpdateData::MoveHintIntoUpdateData(proto::Hint&& hint) {
   DCHECK(!entry_key_prefix_.empty());
 
   // To avoid any unnecessary copying, the hint is moved into proto::StoreEntry.
-  HintCacheStore::EntryKey hint_entry_key = entry_key_prefix_ + hint.key();
+  OptimizationGuideStore::EntryKey hint_entry_key =
+      entry_key_prefix_ + hint.key();
   proto::StoreEntry entry_proto;
   if (component_version()) {
     entry_proto.set_entry_type(static_cast<proto::StoreEntryType>(
-        HintCacheStore::StoreEntryType::kComponentHint));
+        OptimizationGuideStore::StoreEntryType::kComponentHint));
   } else if (update_time()) {
     DCHECK(expiry_time());
     entry_proto.set_expiry_time_secs(
         expiry_time_->ToDeltaSinceWindowsEpoch().InSeconds());
     entry_proto.set_entry_type(static_cast<proto::StoreEntryType>(
-        HintCacheStore::StoreEntryType::kFetchedHint));
+        OptimizationGuideStore::StoreEntryType::kFetchedHint));
   }
   entry_proto.set_allocated_hint(new proto::Hint(std::move(hint)));
   entries_to_save_->emplace_back(std::move(hint_entry_key),
@@ -163,11 +167,11 @@ void StoreUpdateData::MoveHostModelFeaturesIntoUpdateData(
 
   // To avoid any unnecessary copying, the host model feature data is moved into
   // proto::StoreEntry.
-  HintCacheStore::EntryKey host_model_features_entry_key =
+  OptimizationGuideStore::EntryKey host_model_features_entry_key =
       entry_key_prefix_ + host_model_features.host();
   proto::StoreEntry entry_proto;
   entry_proto.set_entry_type(static_cast<proto::StoreEntryType>(
-      HintCacheStore::StoreEntryType::kHostModelFeatures));
+      OptimizationGuideStore::StoreEntryType::kHostModelFeatures));
   entry_proto.set_expiry_time_secs(
       expiry_time_->ToDeltaSinceWindowsEpoch().InSeconds());
   entry_proto.set_allocated_host_model_features(
@@ -185,13 +189,13 @@ void StoreUpdateData::MovePredictionModelIntoUpdateData(
 
   // To avoid any unnecessary copying, the prediction model is moved into
   // proto::StoreEntry.
-  HintCacheStore::EntryKey prediction_model_entry_key =
+  OptimizationGuideStore::EntryKey prediction_model_entry_key =
       entry_key_prefix_ +
       base::NumberToString(static_cast<int>(
           prediction_model.model_info().optimization_target()));
   proto::StoreEntry entry_proto;
   entry_proto.set_entry_type(static_cast<proto::StoreEntryType>(
-      HintCacheStore::StoreEntryType::kPredictionModel));
+      OptimizationGuideStore::StoreEntryType::kPredictionModel));
   entry_proto.set_allocated_prediction_model(
       new proto::PredictionModel(std::move(prediction_model)));
   entries_to_save_->emplace_back(std::move(prediction_model_entry_key),

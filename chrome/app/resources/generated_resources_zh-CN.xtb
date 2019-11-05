@@ -26,6 +26,7 @@
 <translation id="1031362278801463162">正在加载预览</translation>
 <translation id="103279545524624934">请释放磁盘空间以启动 Android 应用。</translation>
 <translation id="1033780634303702874">访问您的串行设备</translation>
+<translation id="1034942643314881546">允许 ADB 创建应用图示</translation>
 <translation id="1036348656032585052">关闭</translation>
 <translation id="1036511912703768636">访问其中的任意 USB 设备</translation>
 <translation id="1036982837258183574">按 |<ph name="ACCELERATOR" />| 即可退出全屏模式</translation>
@@ -102,6 +103,7 @@
 <translation id="1143142264369994168">证书签名人</translation>
 <translation id="1145292499998999162">插件已被拦截</translation>
 <translation id="1145532888383813076">搜索您的设备、应用和网站。</translation>
+<translation id="1146678959555564648">进入 VR</translation>
 <translation id="114721135501989771">在 Chrome 中畅享 Google 的智能技术</translation>
 <translation id="1149401351239820326">过期月份</translation>
 <translation id="1150565364351027703">太阳镜</translation>
@@ -201,7 +203,6 @@
 <translation id="1285484354230578868">将数据存储在您的 Google 云端硬盘帐号中</translation>
 <translation id="1288037062697528143">夜间模式将于日落时自动开启</translation>
 <translation id="1288300545283011870">语音属性</translation>
-<translation id="1289513325360489062">无法访问此网站的数据</translation>
 <translation id="1293264513303784526">USB-C 设备（左侧端口）</translation>
 <translation id="1293556467332435079">文件</translation>
 <translation id="1296911687402551044">固定所选标签页</translation>
@@ -284,6 +285,7 @@
 <translation id="1415708812149920388">已被禁止读取剪贴板</translation>
 <translation id="1415990189994829608">这类会话不允许使用“<ph name="EXTENSION_NAME" />”（扩展程序 ID 为“<ph name="EXTENSION_ID" />”）。</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
+<translation id="1418954524306642206">浏览以指定您的打印机 PPD</translation>
 <translation id="1420834118113404499">媒体许可</translation>
 <translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" />以允许配对</translation>
 <translation id="1422159345171879700">加载不安全的脚本</translation>
@@ -552,6 +554,7 @@
 <translation id="1782196717298160133">正在查找您的手机</translation>
 <translation id="1784707308176068866">在合作的原生应用请求时在后台运行</translation>
 <translation id="1784849162047402014">设备磁盘空间不足</translation>
+<translation id="1787350673646245458">用户图片</translation>
 <translation id="1790194216133135334">将链接发送到<ph name="DEVICE_NAME" /></translation>
 <translation id="1790976235243700817">移除访问权限</translation>
 <translation id="1792619191750875668">扩展显示屏</translation>
@@ -682,6 +685,7 @@
 <translation id="1976150099241323601">登录安全设备</translation>
 <translation id="1976323404609382849">已拦截来自多个网站的 Cookie。</translation>
 <translation id="1977965994116744507">需将您的手机靠近您的 <ph name="DEVICE_TYPE" />，才能为其解锁。</translation>
+<translation id="1978006917103730774">后续的软件更新和安全更新将会自动安装。</translation>
 <translation id="1979280758666859181">您正将版本更改为较旧版的 <ph name="PRODUCT_NAME" />。该版本的版本号必须与您设备上目前所安装版本的版本号相符，版本变更才会生效。</translation>
 <translation id="197989455406964291">KDC 不支持加密类型</translation>
 <translation id="1981544341227357861">请从您的设备上拔出安全密钥，然后重新插入并轻触它。</translation>
@@ -806,12 +810,12 @@
 <translation id="2165421703844373933">只需说“Ok Google”即可访问您的 Google 助理。要节省电量，请选择“开启（推荐）”。选择这一选项后，只有当您的设备已接通电源或正在充电时，Google 助理才会做出响应。</translation>
 <translation id="2166369534954157698">The quick brown fox jumps over the lazy dog</translation>
 <translation id="2169062631698640254">仍然登录</translation>
-<translation id="2170088579611075216">允许并进入 VR</translation>
 <translation id="2172784515318616985">继续</translation>
 <translation id="2173302385160625112">请检查您的互联网连接是否正常</translation>
 <translation id="2173801458090845390">向此设备添加申请 ID</translation>
 <translation id="2175042898143291048">一律执行此操作</translation>
 <translation id="2175607476662778685">快速启动栏</translation>
+<translation id="217576141146192373">无法添加打印机。请检查您打印机的配置，然后重试。</translation>
 <translation id="2177950615300672361">隐身标签页：<ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> 上的“<ph name="PEPPER_PLUGIN_NAME" />”想访问您的计算机</translation>
 <translation id="2178614541317717477">CA 泄漏</translation>
@@ -924,6 +928,7 @@
 <translation id="2326931316514688470">重新加载应用(&amp;R)</translation>
 <translation id="2327492829706409234">启用应用</translation>
 <translation id="2329597144923131178">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
+<translation id="2330129964253841015">在密码泄露时向您发出警告</translation>
 <translation id="2332131598580221120">在应用店中查看</translation>
 <translation id="2332192922827071008">打开偏好设置</translation>
 <translation id="2332742915001411729">重置为默认设置</translation>
@@ -972,6 +977,7 @@
 <translation id="2395616325548404795">您的 <ph name="DEVICE_TYPE" /> 已成功注册企业管理服务，但未能发送其资产和位置信息。请通过管理控制台为此设备手动输入这些信息。</translation>
 <translation id="2396783860772170191">输入 4 位数的 PIN 码 (0000-9999)</translation>
 <translation id="2399939490305346086">安全密钥登录数据</translation>
+<translation id="2407481962792080328">当您登录自己的 Google 帐号后，系统即会启用此功能</translation>
 <translation id="2408955596600435184">输入您的 PIN 码</translation>
 <translation id="241082044617551207">未知插件</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
@@ -995,7 +1001,6 @@
 <translation id="2439545803278355377">输入您的新 PIN 码。PIN 码必须包含至少 4 个字符，且可以包含字母、数字和其他字符。</translation>
 <translation id="2440604414813129000">查看源代码(&amp;O)</translation>
 <translation id="2442916515643169563">文字阴影</translation>
-<translation id="2444119669991608829">不是<ph name="LANGUAGE" />网页？</translation>
 <translation id="2445081178310039857">必须指定扩展程序根目录。</translation>
 <translation id="2445484935443597917">创建新的个人资料</translation>
 <translation id="2446585455334014596">“<ph name="APP_NAME" />”想验证您的身份</translation>
@@ -1412,10 +1417,10 @@
 <translation id="3016641847947582299">组件已更新</translation>
 <translation id="3016780570757425217">获取您的位置</translation>
 <translation id="3017079585324758401">背景</translation>
+<translation id="3019285239893817657">子页面按钮</translation>
 <translation id="3020183492814296499">快捷键</translation>
 <translation id="3020990233660977256">序列号：<ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">蝴蝶</translation>
-<translation id="3021426244864538700">访问此网站的数据</translation>
 <translation id="3021678814754966447">查看框架的源代码(&amp;V)</translation>
 <translation id="3022978424994383087">无法解析您所说的内容。</translation>
 <translation id="3023464535986383522">随选朗读</translation>
@@ -1427,6 +1432,7 @@
 <translation id="3038612606416062604">手动添加打印机</translation>
 <translation id="3038675903128704560">不允许任何网站使用插件访问您的计算机</translation>
 <translation id="3039491566278747710">未能在此设备上安装离线政策。</translation>
+<translation id="3043581297103810752">源自：<ph name="ORIGIN" /></translation>
 <translation id="3045447014237878114">此网站已自动下载多个文件</translation>
 <translation id="3046910703532196514">网页，全部</translation>
 <translation id="304747341537320566">语音引擎</translation>
@@ -1808,6 +1814,7 @@
 <translation id="3629631988386925734">请输入您的密码，以启用 Smart Lock。下次，您只需使用手机就能解锁您的 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
 <translation id="3630132874740063857">您的手机</translation>
 <translation id="3630995161997703415">请将此网站添加到您的任务栏中，以便随时使用</translation>
+<translation id="3635353578505343390">向 Google 发送反馈</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />，您好！</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - 还可使用 <ph name="TIME" /></translation>
 <translation id="3637561406135221044">正在扫描文件以检查是否含有敏感数据…</translation>
@@ -1888,6 +1895,7 @@
 <translation id="3732530910372558017">PIN 码不得超过 63 个字符</translation>
 <translation id="3733127536501031542">带有递升式验证机制的 SSL 服务器</translation>
 <translation id="3735740477244556633">排序依据</translation>
+<translation id="3736016243818847857">要继续操作吗？</translation>
 <translation id="3737274407993947948">安装 Linux 时出错…</translation>
 <translation id="3737536731758327622">您的下载内容会显示在此处</translation>
 <translation id="3738924763801731196"><ph name="OID" />：</translation>
@@ -2202,7 +2210,6 @@
 <translation id="4159681666905192102">此帐号是由 <ph name="CUSTODIAN_EMAIL" /> 和 <ph name="SECOND_CUSTODIAN_EMAIL" /> 管理的未成年人帐号。</translation>
 <translation id="4163560723127662357">未知键盘</translation>
 <translation id="4168015872538332605">属于<ph name="PRIMARY_EMAIL" />的部分设置现在也会用于您的帐号。仅当您使用多帐号登录时，这些设置才会影响您的帐号。</translation>
-<translation id="4169535189173047238">不允许</translation>
 <translation id="4170314459383239649">退出时清除</translation>
 <translation id="4172051516777682613">一律显示</translation>
 <translation id="4175137578744761569">浅紫色和白色</translation>
@@ -2288,6 +2295,7 @@
 <translation id="4316850752623536204">开发者网站</translation>
 <translation id="4320177379694898372">未连接到互联网</translation>
 <translation id="4321442524549817090">显示网址</translation>
+<translation id="4322394346347055525">关闭其他标签页</translation>
 <translation id="4324577459193912240">文件下载未完成</translation>
 <translation id="4325237902968425115">正在卸载 <ph name="LINUX_APP_NAME" />…</translation>
 <translation id="4330191372652740264">冰水</translation>
@@ -2396,6 +2404,7 @@
 <translation id="4501530680793980440">确认删除</translation>
 <translation id="4502423230170890588">从此设备中移除</translation>
 <translation id="4504940961672722399">点击该图标或按 <ph name="EXTENSION_SHORTCUT" />，即可使用此扩展程序。</translation>
+<translation id="4506379069541445709">继续操作会启用 ADB 以创建和测试 Android 应用。请注意，ADB 允许安装未经 Google 验证的测试应用。</translation>
 <translation id="4508051413094283164">在无痕式窗口中打开所有网址</translation>
 <translation id="4508265954913339219">激活失败</translation>
 <translation id="4508765956121923607">显示源代码(&amp;O)</translation>
@@ -2740,10 +2749,6 @@
 <translation id="5029568752722684782">清除副本</translation>
 <translation id="5030338702439866405">颁发者</translation>
 <translation id="5033266061063942743">几何图形</translation>
-<translation id="5033865233969348410">当您处于 VR 环境时，此网站或许能够得知：
-  -  您的身体特征，例如身高
-
-请确保您信任此网站，然后再进入 VR 环境。</translation>
 <translation id="503498442187459473"><ph name="HOST" /> 想使用您的摄像头和麦克风</translation>
 <translation id="5036662165765606524">禁止任何网站自动下载多个文件</translation>
 <translation id="5037676449506322593">全选</translation>
@@ -2955,6 +2960,7 @@
 <translation id="5363109466694494651">执行 Powerwash 操作并还原</translation>
 <translation id="5365881113273618889">您所选的文件夹中包含敏感文件。确定要向“<ph name="APP_NAME" />”授予对此文件夹的永久写入权限吗？</translation>
 <translation id="5367091008316207019">正在读取文件...</translation>
+<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">配对手机已锁定，需将其解锁才能进入。</translation>
 <translation id="5368779022775404937">登录 <ph name="REALM" /></translation>
 <translation id="5369491905435686894">启用鼠标加速</translation>
@@ -3016,7 +3022,6 @@
 <translation id="5449588825071916739">为所有标签页添加书签</translation>
 <translation id="5449716055534515760">关闭窗口(&amp;D)</translation>
 <translation id="5454166040603940656">提供方：<ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">翻译目标语言</translation>
 <translation id="5457113250005438886">无效</translation>
 <translation id="5457459357461771897">读取和删除您计算机上的照片、音乐和其他媒体</translation>
 <translation id="5457599981699367932">以访客身份浏览</translation>
@@ -3076,11 +3081,6 @@
 <translation id="5532223876348815659">全局</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> 想要</translation>
 <translation id="5534304873398226603">舍弃照片或视频</translation>
-<translation id="5534334044554683961">当您处于 VR 环境时，此网站或许能够得知：
-  -   您的身体特征，例如身高
-  -   您房间的布局
-
-请确保您信任此网站，然后再进入 VR 环境。</translation>
 <translation id="5535941515421698170">一并从这台设备中移除您的现有数据</translation>
 <translation id="5539221284352502426">您输入的密码被服务器拒绝了。可能的原因包括：此密码太短。此密码必须包含数字或符号，且必须不同于旧密码。</translation>
 <translation id="5541694225089836610">操作已被您的管理员禁止执行</translation>
@@ -3171,6 +3171,7 @@
 <translation id="5646558797914161501">商务人士</translation>
 <translation id="5648166631817621825">过去 7 天</translation>
 <translation id="5649053991847567735">自动下载项</translation>
+<translation id="5656845498778518563">向 Google 发送反馈</translation>
 <translation id="5657667036353380798">该外部扩展程序需要安装 <ph name="MINIMUM_CHROME_VERSION" /> 或更高版本的 Chrome。</translation>
 <translation id="5658415415603568799">为了提升安全性，Smart Lock 会在 20 小时后要求您输入您的密码。</translation>
 <translation id="5659593005791499971">电子邮件</translation>
@@ -3300,6 +3301,7 @@
 <translation id="5851868085455377790">颁发者</translation>
 <translation id="5852112051279473187">糟糕！系统在注册此设备时遇到了一些严重的问题。请重试或与您的技术支持代表联系。</translation>
 <translation id="5852137567692933493">重新启动，然后执行 Powerwash</translation>
+<translation id="5852360662347412211">请转到 Linux 设置，然后重试</translation>
 <translation id="5854912040170951372">比萨</translation>
 <translation id="5855643921295613558">0.6 秒</translation>
 <translation id="5856721540245522153">启用调试功能</translation>
@@ -3368,6 +3370,7 @@
 <translation id="5941153596444580863">添加用户…</translation>
 <translation id="5941343993301164315">请登录 <ph name="TOKEN_NAME" />。</translation>
 <translation id="5941711191222866238">最小化</translation>
+<translation id="5942964813783878922">安装此更新之后，您的 <ph name="DEVICE_TYPE" /> 将会重启。后续的软件更新和安全更新将会自动安装。</translation>
 <translation id="5944869793365969636">扫描二维码</translation>
 <translation id="5945188205370098537">发送使用情况数据和诊断数据。通过自动向 Google 发送诊断数据、设备数据和应用使用情况数据，帮助改善您的 Android 使用体验。这些数据会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">报告ID：<ph name="WEBRTC_LOG_REPORT_ID" /></translation>
@@ -3769,6 +3772,7 @@
         <ph name="EVENT_NAME" /></translation>
 <translation id="652492607360843641">您已连接到<ph name="NETWORK_TYPE" />网络。</translation>
 <translation id="6527303717912515753">分享</translation>
+<translation id="6528189551082329571">始终在关联的应用中打开此类链接</translation>
 <translation id="6528513914570774834">允许此设备的其他用户使用此网络</translation>
 <translation id="652948702951888897">Chrome 历史记录</translation>
 <translation id="6530186581263215931">这些设置是由您的管理员强制指定的</translation>
@@ -3974,6 +3978,7 @@
 <translation id="6850286078059909152">文字颜色</translation>
 <translation id="6851497530878285708">已启用此应用</translation>
 <translation id="6853388645642883916">更新程序处于休眠模式</translation>
+<translation id="68541483639528434">关闭其他标签页</translation>
 <translation id="6856623341093082836">设置和调整您的触摸屏的精确度</translation>
 <translation id="6857699260879628349">获取配置信息</translation>
 <translation id="6860097299815761905">代理设置...</translation>
@@ -4086,7 +4091,6 @@
 <translation id="7019805045859631636">快</translation>
 <translation id="7022562585984256452">您的主页已设置。</translation>
 <translation id="7025190659207909717">移动数据服务管理</translation>
-<translation id="7027891519253193555">不是<ph name="LANGUAGE" />网页？</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="703001695939087067">已进入窗口概览模式。按 Tab 键即可导航。</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - 已连接到串行端口</translation>
@@ -4531,7 +4535,6 @@
 <translation id="7684718995427157417">要创建和测试您的应用，请启用 Android 调试桥 (ADB)。请注意，此操作会允许安装未经 Google 验证的 Android 应用，而且您会需要将设备恢复出厂设置才能停用 ADB。</translation>
 <translation id="7685049629764448582">JavaScript 使用的内存</translation>
 <translation id="7685087414635069102">必须输入 PIN 码</translation>
-<translation id="7685301384041462804">请确保您信任此网站，然后再进入 VR 环境。</translation>
 <translation id="768549422429443215">添加语言或将列表中的语言重新排列。</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">再次输入新密码</translation>
@@ -4929,11 +4932,9 @@
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{有 1 项下载正在进行中}other{有多项下载正在进行中}}</translation>
 <translation id="8213449224684199188">已进入照片模式</translation>
 <translation id="8213577208796878755">另外一个可用的设备。</translation>
-<translation id="8213996900880218548">想要访问此网站的数据</translation>
 <translation id="8214489666383623925">打开文件...</translation>
 <translation id="8214962590150211830">移除此用户</translation>
 <translation id="8217399928341212914">继续阻止自动下载多个文件</translation>
-<translation id="822519928942492333">要翻译的网页语言</translation>
 <translation id="8225265270453771718">共享应用窗口</translation>
 <translation id="8225753906568652947">兑换优惠</translation>
 <translation id="8226222018808695353">已被禁止</translation>
@@ -5090,6 +5091,7 @@
 <translation id="8449008133205184768">粘贴并匹配样式</translation>
 <translation id="8449036207308062757">管理存储空间</translation>
 <translation id="8452135315243592079">缺少 SIM 卡</translation>
+<translation id="8455026683977728932">未能启用 ADB 图示</translation>
 <translation id="845702320058262034">无法连接。请确保您手机的蓝牙已开启。</translation>
 <translation id="8457451314607652708">导入书签</translation>
 <translation id="8460336040822756677">如果您关闭了 Smart Lock（<ph name="DEVICE_TYPE" /> 版），将不能使用配对手机为 Chrome 设备解锁。在这种情况下，您需要输入密码才能解锁。</translation>
@@ -5504,7 +5506,6 @@
 <translation id="9026731007018893674">下载</translation>
 <translation id="9026852570893462412">此过程可能需要几分钟的时间。正在下载虚拟机。</translation>
 <translation id="9027459031423301635">在新标签页中打开链接(&amp;T)</translation>
-<translation id="9029323097866369874">允许 <ph name="DOMAIN" /> 进入 VR 环境？</translation>
 <translation id="9030515284705930323">贵单位还没有为您的帐号启用 Google Play 商店。如需更多信息，请与管理员联系。</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">粘贴(&amp;P)</translation>
@@ -5548,7 +5549,6 @@
 <translation id="9094038138851891550">用户名无效</translation>
 <translation id="9094982973264386462">移除</translation>
 <translation id="9095253524804455615">移除</translation>
-<translation id="9095388113577226029">更多语言…</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9100765901046053179">高级设置</translation>
 <translation id="9101691533782776290">启动应用</translation>
@@ -5567,6 +5567,7 @@
 <translation id="9116799625073598554">记事应用</translation>
 <translation id="9117030152748022724">管理应用</translation>
 <translation id="9121814364785106365">在固定标签页中打开</translation>
+<translation id="9122074588095746047">无法启用 ADB</translation>
 <translation id="9124003689441359348">已保存的密码将显示在这里</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" />（剩余 <ph name="LICENSE_COUNT" /> 项）</translation>
 <translation id="9128317794749765148">无法完成设置</translation>

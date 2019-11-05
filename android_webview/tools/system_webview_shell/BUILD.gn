@@ -29,6 +29,7 @@ android_apk("system_webview_shell_apk") {
     "apk/src/org/chromium/webview_shell/WebViewBrowserActivity.java",
     "apk/src/org/chromium/webview_shell/WebViewCreateDestroyActivity.java",
     "apk/src/org/chromium/webview_shell/WebViewLayoutTestActivity.java",
+    "apk/src/org/chromium/webview_shell/WebViewPackageHelper.java",
     "apk/src/org/chromium/webview_shell/WebViewThreadTestActivity.java",
     "apk/src/org/chromium/webview_shell/WebViewTracingActivity.java",
   ]

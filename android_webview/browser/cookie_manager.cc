@@ -186,7 +186,7 @@ base::FilePath GetPathInAppDirectory(std::string path) {
 }  // namespace
 
 CookieManager::CookieManager()
-    : accept_file_scheme_cookies_(kDefaultFileSchemeAllowed),
+    : allow_file_scheme_cookies_(kDefaultFileSchemeAllowed),
       cookie_store_created_(false),
       cookie_store_client_thread_("CookieMonsterClient"),
       cookie_store_backend_thread_("CookieMonsterBackend"),
@@ -306,20 +306,20 @@ net::CookieStore* CookieManager::GetCookieStore() {
         cookie_store_backend_thread_.task_runner();
 
     {
-      base::AutoLock lock(accept_file_scheme_cookies_lock_);
+      base::AutoLock lock(allow_file_scheme_cookies_lock_);
 
       // There are some unknowns about how to correctly handle file:// cookies,
       // and our implementation for this is not robust.  http://crbug.com/582985
       //
       // TODO(mmenke): This call should be removed once we can deprecate and
-      // remove the Android WebView 'CookieManager::setAcceptFileSchemeCookies'
+      // remove the Android WebView 'CookieManager::SetAllowFileSchemeCookies'
       // method. Until then, note that this is just not a great idea.
       cookie_config.cookieable_schemes.insert(
           cookie_config.cookieable_schemes.begin(),
           net::CookieMonster::kDefaultCookieableSchemes,
           net::CookieMonster::kDefaultCookieableSchemes +
               net::CookieMonster::kDefaultCookieableSchemesCount);
-      if (accept_file_scheme_cookies_)
+      if (allow_file_scheme_cookies_)
         cookie_config.cookieable_schemes.push_back(url::kFileScheme);
       cookie_store_created_ = true;
     }
@@ -636,51 +636,52 @@ void CookieManager::HasCookiesCompleted(base::OnceClosure complete,
   std::move(complete).Run();
 }
 
-bool CookieManager::AllowFileSchemeCookies() {
-  base::AutoLock lock(accept_file_scheme_cookies_lock_);
-  return accept_file_scheme_cookies_;
+bool CookieManager::GetAllowFileSchemeCookies() {
+  base::AutoLock lock(allow_file_scheme_cookies_lock_);
+  return allow_file_scheme_cookies_;
 }
 
-jboolean CookieManager::AllowFileSchemeCookies(
+jboolean CookieManager::GetAllowFileSchemeCookies(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return AllowFileSchemeCookies();
+  return GetAllowFileSchemeCookies();
 }
 
-void CookieManager::SetAcceptFileSchemeCookies(JNIEnv* env,
-                                               const JavaParamRef<jobject>& obj,
-                                               jboolean accept) {
+void CookieManager::SetAllowFileSchemeCookies(JNIEnv* env,
+                                              const JavaParamRef<jobject>& obj,
+                                              jboolean allow) {
   ExecCookieTaskSync(
-      base::BindOnce(&CookieManager::AllowFileSchemeCookiesAsyncHelper,
-                     base::Unretained(this), accept));
+      base::BindOnce(&CookieManager::SetAllowFileSchemeCookiesAsyncHelper,
+                     base::Unretained(this), allow));
 }
 
-void CookieManager::AllowFileSchemeCookiesAsyncHelper(
-    bool accept,
+void CookieManager::SetAllowFileSchemeCookiesAsyncHelper(
+    bool allow,
     base::OnceClosure complete) {
   DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
   if (GetMojoCookieManager()) {
     GetMojoCookieManager()->AllowFileSchemeCookies(
-        accept,
-        base::BindOnce(&CookieManager::AllowFileSchemeCookiesCompleted,
-                       base::Unretained(this), std::move(complete), accept));
+        allow,
+        base::BindOnce(&CookieManager::SetAllowFileSchemeCookiesCompleted,
+                       base::Unretained(this), std::move(complete), allow));
   } else {
     // If we have neither a Network Service CookieManager nor have created the
-    // CookieStore, we may modify |accept_file_scheme_cookies_|.
+    // CookieStore, we may modify |allow_file_scheme_cookies_|.
     bool can_change_schemes = !cookie_store_created_;
-    AllowFileSchemeCookiesCompleted(std::move(complete), accept,
-                                    can_change_schemes);
+    SetAllowFileSchemeCookiesCompleted(std::move(complete), allow,
+                                       can_change_schemes);
   }
 }
 
-void CookieManager::AllowFileSchemeCookiesCompleted(base::OnceClosure complete,
-                                                    bool accept,
-                                                    bool can_change_schemes) {
-  // Should only update |accept_file_scheme_cookies_| if
-  // AllowFileSchemeCookiesAsyncHelper said this is OK.
+void CookieManager::SetAllowFileSchemeCookiesCompleted(
+    base::OnceClosure complete,
+    bool allow,
+    bool can_change_schemes) {
+  // Should only update |allow_file_scheme_cookies_| if
+  // SetAllowFileSchemeCookiesAsyncHelper said this is OK.
   if (can_change_schemes) {
-    base::AutoLock lock(accept_file_scheme_cookies_lock_);
-    accept_file_scheme_cookies_ = accept;
+    base::AutoLock lock(allow_file_scheme_cookies_lock_);
+    allow_file_scheme_cookies_ = allow;
   }
   std::move(complete).Run();
 }

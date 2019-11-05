@@ -202,6 +202,13 @@ void ArCoreDevice::OnDrawingSurfaceDestroyed() {
   OnSessionEnded();
 }
 
+void ArCoreDevice::ShutdownSession(
+    mojom::XRRuntime::ShutdownSessionCallback on_completed) {
+  DVLOG(2) << __func__;
+  OnDrawingSurfaceDestroyed();
+  std::move(on_completed).Run();
+}
+
 void ArCoreDevice::OnSessionEnded() {
   DVLOG(1) << __func__;
 

@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">"Bitte nicht stören" ist aktiviert.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Benachrichtigungseinstellungen anzeigen. Benachrichtigungen sind für eine App deaktiviert.}other{Benachrichtigungseinstellungen anzeigen. Benachrichtigungen sind für # Apps deaktiviert.}}</translation>
 <translation id="1525508553941733066">SCHLIESSEN</translation>
-<translation id="1537254971476575106">Vollbildlupe</translation>
 <translation id="15373452373711364">Großer Cursor</translation>
 <translation id="1546492247443594934">Desktop 2</translation>
 <translation id="1550523713251050646">Für weitere Optionen klicken</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Drücken Sie <ph name="KEYBOARD_SHORTCUT" />, um das Tastaturlayout zu ändern.</translation>
 <translation id="2501920221385095727">Sticky Keys</translation>
 <translation id="2509468283778169019">Feststelltaste An</translation>
-<translation id="2532589005999780174">Modus mit hohem Kontrast</translation>
 <translation id="2542089167727451762">Tippen Sie auf Ihr Profilbild</translation>
 <translation id="255671100581129685">In öffentlichen Sitzungen ist Google Assistant nicht verfügbar.</translation>
 <translation id="256712445991462162">die angedockte Lupe</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Zu viele Entsperrversuche mit Fingerabdruck</translation>
 <translation id="7994370417837006925">Mehrfachanmeldung</translation>
 <translation id="8000066093800657092">Nicht verbunden</translation>
-<translation id="8029241286966751120">Vollbildlupe aktiviert. Drücken Sie Strg + Suchtaste + M, um sie zu deaktivieren.</translation>
 <translation id="8030169304546394654">Verbindung getrennt</translation>
 <translation id="8054466585765276473">Akku-Laufzeit wird berechnet.</translation>
 <translation id="8061464966246066292">Hoher Kontrast</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Letzter Arbeitsbereich kann nicht entfernt werden.</translation>
 <translation id="8392451568018454956">Optionsmenü für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Deine Eltern haben dieses Gerät gesperrt</translation>
-<translation id="8406981827175133772">Vollbildlupe</translation>
 <translation id="8425213833346101688">Ändern</translation>
 <translation id="8427213022735114808">Die Diktierfunktion sendet Ihre Spracheingaben an Google, damit sie in das entsprechende Textfeld eingetragen werden können.</translation>
 <translation id="8428213095426709021">Einstellungen</translation>

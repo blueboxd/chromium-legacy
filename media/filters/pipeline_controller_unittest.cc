@@ -37,8 +37,6 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   PipelineControllerTest()
       : pipeline_(new StrictMock<MockPipeline>()),
         pipeline_controller_(std::unique_ptr<Pipeline>(pipeline_),
-                             base::Bind(&PipelineControllerTest::CreateRenderer,
-                                        base::Unretained(this)),
                              base::Bind(&PipelineControllerTest::OnSeeked,
                                         base::Unretained(this)),
                              base::Bind(&PipelineControllerTest::OnSuspended,
@@ -55,8 +53,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   PipelineStatusCB StartPipeline(bool is_streaming, bool is_static) {
     EXPECT_FALSE(pipeline_controller_.IsStable());
     PipelineStatusCB start_cb;
-    EXPECT_CALL(*pipeline_, Start(_, _, _, _, _))
-        .WillOnce(SaveArg<4>(&start_cb));
+    EXPECT_CALL(*pipeline_, Start(_, _, _, _)).WillOnce(SaveArg<3>(&start_cb));
     pipeline_controller_.Start(Pipeline::StartType::kNormal, &demuxer_, this,
                                is_streaming, is_static);
     Mock::VerifyAndClear(pipeline_);
@@ -105,9 +102,9 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   PipelineStatusCB ResumePipeline() {
     EXPECT_TRUE(pipeline_controller_.IsPipelineSuspended());
     PipelineStatusCB resume_cb;
-    EXPECT_CALL(*pipeline_, Resume(_, _, _))
+    EXPECT_CALL(*pipeline_, Resume(_, _))
         .WillOnce(
-            DoAll(SaveArg<1>(&last_resume_time_), SaveArg<2>(&resume_cb)));
+            DoAll(SaveArg<0>(&last_resume_time_), SaveArg<1>(&resume_cb)));
     EXPECT_CALL(*pipeline_, GetMediaTime())
         .WillRepeatedly(Return(base::TimeDelta()));
     pipeline_controller_.Resume();
@@ -127,10 +124,6 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   }
 
  protected:
-  std::unique_ptr<Renderer> CreateRenderer() {
-    return std::unique_ptr<Renderer>();
-  }
-
   void OnSeeked(bool time_updated) {
     was_seeked_ = true;
     last_seeked_time_updated_ = time_updated;
@@ -188,7 +181,7 @@ TEST_F(PipelineControllerTest, Startup) {
 TEST_F(PipelineControllerTest, StartSuspendedSeekAndResume) {
   EXPECT_FALSE(pipeline_controller_.IsStable());
   PipelineStatusCB start_cb;
-  EXPECT_CALL(*pipeline_, Start(_, _, _, _, _)).WillOnce(SaveArg<4>(&start_cb));
+  EXPECT_CALL(*pipeline_, Start(_, _, _, _)).WillOnce(SaveArg<3>(&start_cb));
   pipeline_controller_.Start(Pipeline::StartType::kSuspendAfterMetadata,
                              &demuxer_, this, false, true);
   Mock::VerifyAndClear(pipeline_);
@@ -201,8 +194,7 @@ TEST_F(PipelineControllerTest, StartSuspendedSeekAndResume) {
   EXPECT_FALSE(was_seeked_);
 
   PipelineStatusCB resume_cb;
-  EXPECT_CALL(*pipeline_, Resume(_, _, _))
-      .WillOnce(DoAll(SaveArg<2>(&resume_cb)));
+  EXPECT_CALL(*pipeline_, Resume(_, _)).WillOnce(DoAll(SaveArg<1>(&resume_cb)));
   EXPECT_CALL(*pipeline_, GetMediaTime())
       .WillRepeatedly(Return(base::TimeDelta()));
 
@@ -229,7 +221,7 @@ TEST_F(PipelineControllerTest, StartSuspendedSeekAndResume) {
 TEST_F(PipelineControllerTest, StartSuspendedAndResume) {
   EXPECT_FALSE(pipeline_controller_.IsStable());
   PipelineStatusCB start_cb;
-  EXPECT_CALL(*pipeline_, Start(_, _, _, _, _)).WillOnce(SaveArg<4>(&start_cb));
+  EXPECT_CALL(*pipeline_, Start(_, _, _, _)).WillOnce(SaveArg<3>(&start_cb));
   pipeline_controller_.Start(Pipeline::StartType::kSuspendAfterMetadata,
                              &demuxer_, this, false, true);
   Mock::VerifyAndClear(pipeline_);

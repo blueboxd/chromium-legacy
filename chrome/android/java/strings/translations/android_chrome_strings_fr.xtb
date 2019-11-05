@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2156074688469523661">Sites restants (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Pour partager un contenu entre votre téléphone et un autre appareil, activez la synchronisation dans les paramètres Chrome sur les deux appareils</translation>
-<translation id="2170088579611075216">Autoriser et activer la RV</translation>
 <translation id="2175927920773552910">Code QR</translation>
 <translation id="218608176142494674">Partage</translation>
 <translation id="2227444325776770048">Continuer en tant que <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4135200667068010335">La liste des appareils avec lesquels vous pouvez partager un onglet est fermée.</translation>
 <translation id="4149994727733219643">Vue simplifiée pour les pages Web</translation>
 <translation id="4165986682804962316">Paramètres de site</translation>
-<translation id="4169535189173047238">Interdire</translation>
 <translation id="4170011742729630528">Service indisponible. Veuillez réessayer plus tard.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> utilisé(s)</translation>
 <translation id="4181841719683918333">Langues</translation>
@@ -534,10 +532,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5011311129201317034"><ph name="SITE" /> tente de se connecter</translation>
 <translation id="5013696553129441713">Aucune nouvelle suggestion</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Lorsque vous utilisez le mode RV, le site peut retenir les informations suivantes :
-  – Vos caractéristiques physiques, telles que votre taille
-
-N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
 <translation id="5048398596102334565">Autoriser les sites à accéder à vos capteurs de mouvement (recommandé)</translation>
@@ -611,11 +605,6 @@ N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="5527082711130173040">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK1" />Modifiez les autorisations.<ph name="END_LINK1" /> De plus, l'accès aux données de localisation est <ph name="BEGIN_LINK2" />désactivé pour cet appareil<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Demander avant d'autoriser les sites à accéder en lecture au texte et aux images du presse-papiers (recommandé)</translation>
 <translation id="5530766185686772672">Fermer onglets navig. privée</translation>
-<translation id="5534334044554683961">Lorsque vous utilisez le mode RV, le site peut retenir les informations suivantes :
-  – Vos caractéristiques physiques, telles que votre taille
-  – La disposition de la pièce
-
-N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="5534640966246046842">Site copié</translation>
 <translation id="5556459405103347317">Actualiser</translation>
 <translation id="5561549206367097665">En attente de connexion au réseau…</translation>
@@ -906,7 +895,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7665369617277396874">Ajouter un compte</translation>
 <translation id="766587987807204883">Les articles sont affichés ici (vous pouvez les lire même lorsque vous êtes hors connexion)</translation>
 <translation id="7682724950699840886">Essayez l'astuce suivante°: assurez-vous de disposer de suffisamment d'espace sur votre appareil, puis tentez à nouveau d'exporter les mots de passe.</translation>
-<translation id="7685301384041462804">N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="7698359219371678927">Créer un e-mail dans <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Saisir semi-automatiquement les recherches et les URL</translation>
 <translation id="7725024127233776428">Les pages que vous ajoutez aux favoris sont répertoriées ici</translation>
@@ -1082,7 +1070,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, ce qui permettra à son administrateur de contrôler vos données Chrome. Celles-ci seront définitivement associées à ce compte. Si vous vous déconnectez de Chrome, vos données seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>
 <translation id="9028914725102941583">Activer la synchronisation pour partager des contenus entre des appareils</translation>
-<translation id="9029323097866369874">Autoriser le site <ph name="DOMAIN" /> à activer la RV ?</translation>
 <translation id="9040142327097499898">Les notifications sont autorisées. La localisation est désactivée pour cet appareil.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vidéo}one{# vidéo}other{# vidéos}}</translation>
 <translation id="9050666287014529139">Phrase secrète</translation>

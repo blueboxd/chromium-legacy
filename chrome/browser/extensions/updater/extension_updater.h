@@ -201,9 +201,11 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   void DoCheckSoon();
 
   // Implementation of ExtensionDownloaderDelegate.
-  void OnExtensionDownloadStageChanged(const std::string& id,
+  void OnExtensionDownloadStageChanged(const ExtensionId& id,
                                        Stage stage) override;
-  void OnExtensionDownloadFailed(const std::string& id,
+  void OnExtensionDownloadCacheStatusRetrieved(const ExtensionId& id,
+                                               CacheStatus status) override;
+  void OnExtensionDownloadFailed(const ExtensionId& id,
                                  Error error,
                                  const PingResult& ping,
                                  const std::set<int>& request_ids) override;
@@ -214,14 +216,14 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                                    const PingResult& ping,
                                    const std::set<int>& request_id,
                                    const InstallCallback& callback) override;
-  bool GetPingDataForExtension(const std::string& id,
+  bool GetPingDataForExtension(const ExtensionId& id,
                                ManifestFetchData::PingData* ping_data) override;
-  std::string GetUpdateUrlData(const std::string& id) override;
-  bool IsExtensionPending(const std::string& id) override;
-  bool GetExtensionExistingVersion(const std::string& id,
+  std::string GetUpdateUrlData(const ExtensionId& id) override;
+  bool IsExtensionPending(const ExtensionId& id) override;
+  bool GetExtensionExistingVersion(const ExtensionId& id,
                                    std::string* version) override;
 
-  void UpdatePingData(const std::string& id, const PingResult& ping_result);
+  void UpdatePingData(const ExtensionId& id, const PingResult& ping_result);
 
   // Starts installing a crx file that has been fetched but not installed yet.
   void MaybeInstallCRXFile();

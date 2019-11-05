@@ -15,12 +15,10 @@
 
 namespace blink {
 
-class DOMArrayBuffer;
 class DOMDataView;
 class ExceptionState;
 class ExecutionContext;
 class NDEFRecordInit;
-class ScriptState;
 
 class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -33,7 +31,7 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   // Construct a "text" record from a string.
   explicit NDEFRecord(const ExecutionContext*, const String&);
 
-  // Construct a "opaque" record from the raw payload bytes.
+  // Construct a "mime" record from the raw payload bytes.
   explicit NDEFRecord(WTF::Vector<uint8_t> payload_data);
 
   NDEFRecord(const String&, const String&, WTF::Vector<uint8_t>);
@@ -50,9 +48,6 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   const String& encoding() const;
   const String& lang() const;
   DOMDataView* data() const;
-  String text() const;
-  DOMArrayBuffer* arrayBuffer() const;
-  ScriptValue json(ScriptState*, ExceptionState&) const;
 
   const WTF::Vector<uint8_t>& payloadData() const;
 

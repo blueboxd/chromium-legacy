@@ -50,16 +50,6 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
     }
 
     /**
-     * Convenience method for both ending an immersive session and waiting until that session has
-     * actually ended.
-     */
-    public void endSessionOrFail() {
-        endSession();
-        pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.IMMERSIVE].currentSession == null",
-                POLL_TIMEOUT_LONG_MS);
-    }
-
-    /**
      * VR-specific implementation of enterSessionWithUserGesture that includes a workaround for
      * receiving broadcasts late.
      *
@@ -116,14 +106,20 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
     }
 
     /**
-     * Ends a WebXR immersive session.
+     * End an immersive session and wait until that session has actually ended.
      *
      * @param webContents The WebContents for the tab to end the session in.
      */
     @Override
     public void endSession(WebContents webContents) {
+        // Use a long timeout for session.end(), this can unexpectedly take more than
+        // a second. TODO(https://crbug.com/1014159): investigate why.
         runJavaScriptOrFail("sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
-                POLL_TIMEOUT_SHORT_MS, webContents);
+                POLL_TIMEOUT_LONG_MS, webContents);
+
+        // Wait for the session to end before proceeding with followup tests.
+        pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.IMMERSIVE].currentSession == null",
+                POLL_TIMEOUT_LONG_MS, webContents);
     }
 
     /**

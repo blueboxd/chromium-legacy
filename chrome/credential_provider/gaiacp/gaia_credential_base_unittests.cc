@@ -8,6 +8,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
@@ -187,6 +188,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Verify that the authentication results dictionary is not empty.
   ASSERT_FALSE(test->IsAuthenticationResultsEmpty());
+  ASSERT_FALSE(test->IsAdJoinedUser());
 
   // Trigger ReportResult and verify that the authentication results are saved
   // into registry and ResetInternalState is triggered.
@@ -1209,6 +1211,7 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+  ASSERT_TRUE(test->IsAdJoinedUser());
 
   // Make sure no user was created and the login happens on the
   // existing user instead.
@@ -1716,5 +1719,55 @@ INSTANTIATE_TEST_SUITE_P(,
                          ::testing::Values(nullptr,
                                            L"",
                                            L"https://escrowservice.com"));
+
+TEST_F(GcpGaiaCredentialBaseTest, FullNameUpdated) {
+  USES_CONVERSION;
+
+  CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
+  CComBSTR username = L"foo_bar";
+  CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
+  CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
+  CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
+
+  // Create a fake user to reauth.
+  CComBSTR sid;
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
+                OLE2CW(email), &sid));
+
+  base::string16 current_full_name;
+  ASSERT_EQ(S_OK, OSUserManager::Get()->GetUserFullname(
+                      OSUserManager::GetLocalDomain().c_str(), username,
+                      &current_full_name));
+  ASSERT_EQ(current_full_name, (BSTR)full_name);
+
+  // Create provider and start logon.
+  CComPtr<ICredentialProviderCredential> cred;
+
+  // Create with invalid token handle response so that a reauth occurs.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
+
+  // Override the full name in the gls command line.
+  std::string new_full_name = "New Name";
+  ASSERT_EQ(S_OK, test->SetGaiaFullNameOverride(new_full_name));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  base::string16 updated_full_name;
+  ASSERT_EQ(S_OK, OSUserManager::Get()->GetUserFullname(
+                      OSUserManager::GetLocalDomain().c_str(), username,
+                      &updated_full_name));
+  ASSERT_EQ(updated_full_name, base::UTF8ToUTF16(new_full_name));
+}
+
 }  // namespace testing
 }  // namespace credential_provider

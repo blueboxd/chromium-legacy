@@ -183,9 +183,7 @@ class ArcTracingGraphicsModel {
   ArcSystemModel& system_model() { return system_model_; }
   const ArcSystemModel& system_model() const { return system_model_; }
 
-  void set_skip_structure_validation_for_testing() {
-    skip_structure_validation_for_testing_ = true;
-  }
+  void set_skip_structure_validation() { skip_structure_validation_ = true; }
 
  private:
   // Normalizes timestamp for all events by subtracting the timestamp of the
@@ -215,8 +213,8 @@ class ArcTracingGraphicsModel {
   std::map<std::string, int> chrome_buffer_id_to_task_id_;
   // CPU event model.
   ArcSystemModel system_model_;
-  // Allows to have model incomplete for testing.
-  bool skip_structure_validation_for_testing_ = false;
+  // Allows to have model incomplete, used in overview and in tests.
+  bool skip_structure_validation_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingGraphicsModel);
 };

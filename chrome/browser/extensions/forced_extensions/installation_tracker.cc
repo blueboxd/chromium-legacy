@@ -12,6 +12,7 @@
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/updater/extension_downloader_delegate.h"
 
 namespace {
 // Timeout to report UMA if not all force-installed extension were loaded.
@@ -131,6 +132,10 @@ void InstallationTracker::ReportResults(bool succeeded) {
       for (const auto& extension_id : pending_forced_extensions_) {
         InstallationReporter::InstallationData installation =
             installation_reporter->Get(extension_id);
+        UMA_HISTOGRAM_ENUMERATION(
+            "Extensions.ForceInstalledFailureCacheStatus",
+            installation.downloading_cache_status.value_or(
+                ExtensionDownloaderDelegate::CacheStatus::CACHE_UNKNOWN));
         if (!installation.failure_reason && installation.install_stage) {
           installation.failure_reason =
               InstallationReporter::FailureReason::IN_PROGRESS;

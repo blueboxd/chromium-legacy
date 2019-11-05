@@ -174,69 +174,54 @@ void SplitViewHighlightView::SetColor(SkColor color) {
   middle_->layer()->SetColor(color);
 }
 
-void SplitViewHighlightView::OnIndicatorTypeChanged(
-    IndicatorState indicator_state,
-    IndicatorState previous_indicator_state,
+void SplitViewHighlightView::OnWindowDraggingStateChanged(
+    SplitViewDragIndicators::WindowDraggingState window_dragging_state,
+    SplitViewDragIndicators::WindowDraggingState previous_window_dragging_state,
     bool can_dragged_window_be_snapped) {
-  if (indicator_state == IndicatorState::kNone) {
-    if (!SplitViewDragIndicators::IsPreviewAreaState(
-            previous_indicator_state)) {
+  const SplitViewController::SnapPosition preview_position =
+      SplitViewDragIndicators::GetSnapPosition(window_dragging_state);
+  const SplitViewController::SnapPosition previous_preview_position =
+      SplitViewDragIndicators::GetSnapPosition(previous_window_dragging_state);
+
+  if (window_dragging_state ==
+      SplitViewDragIndicators::WindowDraggingState::kNoDrag) {
+    if (previous_preview_position == SplitViewController::NONE) {
       DoSplitviewOpacityAnimation(layer(),
                                   SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
       return;
     }
-
-    // There are two SplitViewHighlightView objects,
-    // |SplitViewDragIndicatorsView::left_highlight_view_| and
-    // |SplitViewDragIndicatorsView::right_highlight_view_|.
-    // |was_this_the_preview| indicates that this, in the sense of the C++
-    // keyword this, is the one that represented the preview area.
-    const bool was_this_the_preview =
-        is_right_or_bottom_ !=
-        SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
-            previous_indicator_state);
-    if (was_this_the_preview) {
+    if (is_right_or_bottom_ != IsPhysicalLeftOrTop(previous_preview_position)) {
       DoSplitviewOpacityAnimation(layer(),
                                   SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT);
     }
     return;
   }
 
-  if (SplitViewDragIndicators::IsPreviewAreaState(indicator_state)) {
-    // There are two SplitViewHighlightView objects,
-    // |SplitViewDragIndicatorsView::left_highlight_view_| and
-    // |SplitViewDragIndicatorsView::right_highlight_view_|.
-    // |is_this_the_preview| indicates that this, in the sense of the C++
-    // keyword this, is the one that represents the preview area.
-    const bool is_this_the_preview =
-        is_right_or_bottom_ !=
-        SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
-            indicator_state);
+  if (preview_position != SplitViewController::NONE) {
     DoSplitviewOpacityAnimation(
-        layer(), is_this_the_preview
+        layer(), is_right_or_bottom_ != IsPhysicalLeftOrTop(preview_position)
                      ? SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN
                      : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
     return;
   }
 
-  // No need for the left or top indicator to do anything if |indicator_state|
-  // is |IndicatorState::kDragAreaRight|.
-  if (indicator_state == IndicatorState::kDragAreaRight && !is_right_or_bottom_)
+  // No top indicator for dragging from the top in portrait orientation.
+  if (window_dragging_state ==
+          SplitViewDragIndicators::WindowDraggingState::kFromTop &&
+      !IsCurrentScreenOrientationLandscape() && !is_right_or_bottom_) {
     return;
+  }
 
   const bool in_split_view_mode =
       SplitViewController::Get(GetWidget()->GetNativeWindow())
           ->InSplitViewMode();
 
-  if (SplitViewDragIndicators::IsPreviewAreaState(previous_indicator_state)) {
-    const bool was_this_the_preview =
-        is_right_or_bottom_ !=
-        SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
-            previous_indicator_state);
+  if (previous_preview_position != SplitViewController::NONE) {
     DoSplitviewOpacityAnimation(
         layer(), in_split_view_mode
                      ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT
-                     : (was_this_the_preview
+                     : (is_right_or_bottom_ !=
+                                IsPhysicalLeftOrTop(previous_preview_position)
                             ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN
                             : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN));
     return;

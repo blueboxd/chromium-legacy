@@ -39,16 +39,4 @@ bool FakePictureLayer::Update() {
   return updated || always_update_resources_;
 }
 
-bool FakePictureLayer::HasSlowPaths() const {
-  if (force_content_has_slow_paths_)
-    return true;
-  return PictureLayer::HasSlowPaths();
-}
-
-bool FakePictureLayer::HasNonAAPaint() const {
-  if (force_content_has_non_aa_paint_)
-    return true;
-  return PictureLayer::HasNonAAPaint();
-}
-
 }  // namespace cc

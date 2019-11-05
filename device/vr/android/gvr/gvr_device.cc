@@ -221,7 +221,32 @@ void GvrDevice::OnPresentingControllerMojoConnectionError() {
   StopPresenting();
 }
 
+void GvrDevice::ShutdownSession(
+    mojom::XRRuntime::ShutdownSessionCallback on_completed) {
+  DVLOG(2) << __func__;
+  StopPresenting();
+
+  // At this point, the main thread session shutdown is complete, but the GL
+  // thread may still be in the process of finishing shutdown or transitioning
+  // to VR Browser mode. Java VrShell::setWebVrModeEnable calls native
+  // VrShell::setWebVrMode which calls BrowserRenderer::SetWebXrMode on the GL
+  // thread, and that triggers the VRB transition via ui_->SetWebVrMode.
+  //
+  // Since tasks posted to the GL thread are handled in sequence, any calls
+  // related to a new session will be processed after the GL thread transition
+  // is complete.
+  //
+  // TODO(https://crbug.com/998307): It would be cleaner to delay the shutdown
+  // until the GL thread transition is complete, but this would need a fair
+  // amount of additional plumbing to ensure that the callback is consistently
+  // called. See also WebXrTestFramework.enterSessionWithUserGesture(), but
+  // it's unclear if changing this would be sufficient to avoid the need for
+  // workarounds there.
+  std::move(on_completed).Run();
+}
+
 void GvrDevice::StopPresenting() {
+  DVLOG(2) << __func__;
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (delegate_provider)
     delegate_provider->ExitWebVRPresent();

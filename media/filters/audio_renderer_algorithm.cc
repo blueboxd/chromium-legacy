@@ -161,27 +161,20 @@ void AudioRendererAlgorithm::SetChannelMask(std::vector<bool> channel_mask) {
 
 void AudioRendererAlgorithm::OnResamplerRead(int frame_delay,
                                              AudioBus* audio_bus) {
-  input_frames_read_or_buffered_ +=
-      audio_buffer_.ReadFrames(audio_bus->frames(), 0, audio_bus);
+  const int requested_frames = audio_bus->frames();
+
+  int read_frames = audio_buffer_.ReadFrames(requested_frames, 0, audio_bus);
+
+  if (read_frames < requested_frames) {
+    // We should only be filling up |resampler_| with silence if we are playing
+    // out all remaining frames.
+    DCHECK(reached_end_of_stream_);
+    audio_bus->ZeroFramesPartial(read_frames, requested_frames - read_frames);
+  }
 }
 
-int AudioRendererAlgorithm::CalculateOutputFramesResampled(
-    double playback_rate,
-    int requested_frames) {
-  double input_frames_consumed =
-      input_frames_read_or_buffered_ - resampler_->BufferedFrames();
-
-  int output_frames =
-      static_cast<int>(input_frames_consumed / playback_rate + 0.5);
-
-  // The first or second call to resample appears to consume more input frames
-  // than it actually does. This is due to the internals of |resampler_|
-  // treating the first data read differently, to prime internal buffers. We
-  // therefore appear to have read up to SincResampler::kKernelSize more frames
-  // when using the difference between calls to |resampler_->BufferedFrames()|.
-  // |resampler_| never actually writes more frames than we request out of it,
-  // so we can safely cap this value here.
-  return std::min(output_frames, requested_frames);
+void AudioRendererAlgorithm::MarkEndOfStream() {
+  reached_end_of_stream_ = true;
 }
 
 int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
@@ -195,16 +188,31 @@ int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
                             base::Unretained(this)));
   }
 
-  resampler_->SetRatio(playback_rate);
+  const double input_frames_required = playback_rate * requested_frames;
 
-  // Reset with leftover frames from previous resampling iteration.
-  input_frames_read_or_buffered_ = resampler_->BufferedFrames();
+  // |resampler_| can request more than |input_frames_required|, due to the
+  // requests size not being aligned. To prevent having to fill it with silence,
+  // we find the max number of reads it could request, and make sure we have
+  // enough data to satisfy all of those reads.
+  const int min_frames_required =
+      static_cast<int>(
+          std::ceil(input_frames_required / resampler_->ChunkSize())) *
+      resampler_->ChunkSize();
+
+  if (!reached_end_of_stream_ && audio_buffer_.frames() < min_frames_required) {
+    // Exit early, forgoing at most a total of |audio_buffer_.frames()| +
+    // |resampler_->BufferedFrames()|.
+    // If we have reached the end of stream, |resampler_| will output silence
+    // after running out of frames, which is ok.
+    return 0;
+  }
+
+  resampler_->SetRatio(playback_rate);
 
   // Directly use |dest| for the most common case of having 0 offset.
   if (!dest_offset) {
     resampler_->Resample(requested_frames, dest);
-
-    return CalculateOutputFramesResampled(playback_rate, requested_frames);
+    return requested_frames;
   }
 
   // This is only really used once, at the beginning of a stream, which means
@@ -215,15 +223,9 @@ int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
       AudioBus::Create(channels_, requested_frames);
 
   resampler_->Resample(requested_frames, resampler_output.get());
+  resampler_output->CopyPartialFramesTo(0, requested_frames, dest_offset, dest);
 
-  int output_frames =
-      CalculateOutputFramesResampled(playback_rate, requested_frames);
-
-  DCHECK_LE(output_frames, resampler_output->frames());
-
-  resampler_output->CopyPartialFramesTo(0, output_frames, dest_offset, dest);
-
-  return output_frames;
+  return requested_frames;
 }
 
 int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
@@ -259,8 +261,6 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
   // This does results in a noticeable pitch shift.
   // NOTE: The cutoff values are arbitrary, and picked based off of a tradeoff
   // between "resample pitch shift" vs "WSOLA distortions".
-  constexpr double kLowerResampleThreshold = 0.95;
-  constexpr double kUpperResampleThreshold = 1.06;
   if (kLowerResampleThreshold <= playback_rate &&
       playback_rate <= kUpperResampleThreshold) {
     return ResampleAndFill(dest, dest_offset, requested_frames, playback_rate);
@@ -317,6 +317,7 @@ void AudioRendererAlgorithm::FlushBuffers() {
   num_complete_frames_ = 0;
 
   resampler_.reset();
+  reached_end_of_stream_ = false;
 
   // Reset |capacity_| so growth triggered by underflows doesn't penalize seek
   // time.

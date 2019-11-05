@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>Tests mouse interactions when DSF=2 and --enable-use-zoom-for-dsf=true.</title>
+<title>Tests mouse interactions.</title>
 <script src="../../../../resources/testharness.js"></script>
 <script src="../../../../resources/testharnessreport.js"></script>
 <script src="../../../../resources/gesture-util.js"></script>
@@ -28,7 +28,7 @@
 }
 </style>
 
-<!-- Composited non-custom fast scroller -->
+<!-- Standard scroller -->
 <div id="standard" class="appearance standardLocation">
   <div class="space"></div>
 </div>
@@ -58,6 +58,16 @@ window.onload = () => {
     x: standardRectFast.right - TRACK_WIDTH / 2,
     y: standardRectFast.top + BUTTON_WIDTH + 5
   }
+
+  // TODO (arakeri): This test was moved to the top due to crbug.com/1017568. Delete the
+  // comment once the bug is fixed.
+  promise_test (async () => {
+    resetScrollOffset(standardDivFast);
+
+    // Click on the track part just above the down arrow.
+    await mouseClickOn(SCROLLBAR_BUTTON_FWD.x, SCROLLBAR_BUTTON_FWD.y - 10);
+    assert_equals(standardDivFast.scrollTop, 74, "Pressing the down trackpart didn't scroll.");
+  }, "Test mouse click on non-custom composited div scrollbar empty trackparts.");
 
   promise_test (async () => {
     resetScrollOffset(standardDivFast);
@@ -90,22 +100,6 @@ window.onload = () => {
   }, "Test mouse click on non-custom composited div scrollbar arrows.");
 
   promise_test (async (test) => {
-    // TODO (arakeri): Track clicks on Mac don't work yet (crbug.com/1016452).
-    if(onMacPlatform)
-      test.done();
-
-    resetScrollOffset(standardDivFast);
-
-    // Click on the track part just above the down arrow.
-    await mouseClickOn(SCROLLBAR_BUTTON_FWD.x, SCROLLBAR_BUTTON_FWD.y - 10);
-    assert_equals(standardDivFast.scrollTop, 74, "Pressing the down trackpart didn't scroll.");
-  }, "Test mouse click on non-custom composited div scrollbar empty trackparts.");
-
-  promise_test (async (test) => {
-    // TODO (arakeri): Track clicks on Mac don't work yet (crbug.com/1016452).
-    if(onMacPlatform)
-      test.done();
-
     resetScrollOffset(standardDivFast);
 
     // Testing forward scroll on vertical scrollbar.

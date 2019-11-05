@@ -82,7 +82,7 @@ class DataReductionProxySettings {
   using SyntheticFieldTrialRegistrationCallback =
       base::Callback<bool(base::StringPiece, base::StringPiece)>;
 
-  DataReductionProxySettings();
+  explicit DataReductionProxySettings(bool is_off_the_record_profile);
   virtual ~DataReductionProxySettings();
 
   // Initializes the Data Reduction Proxy with the profile prefs. The caller
@@ -102,7 +102,8 @@ class DataReductionProxySettings {
   // This checks only the Data Saver prefs on Android or forcing flag on any
   // platform. Does not check any holdback experiments. Note that this may be
   // different from the value of |IsDataReductionProxyEnabled|.
-  static bool IsDataSaverEnabledByUser(PrefService* prefs);
+  static bool IsDataSaverEnabledByUser(bool is_off_the_record_profile,
+                                       PrefService* prefs);
 
   // Enables or disables Data Saver, regardless of platform.
   static void SetDataSaverEnabledForTesting(PrefService* prefs, bool enabled);
@@ -303,6 +304,9 @@ class DataReductionProxySettings {
   // the DataReductionProxyService was available.
   std::vector<mojo::Remote<network::mojom::CustomProxyConfigClient>>
       proxy_config_clients_;
+
+  // True if |this| was constructed for an off-the-record profile.
+  const bool is_off_the_record_profile_;
 
   base::ThreadChecker thread_checker_;
 

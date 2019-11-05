@@ -55,7 +55,8 @@ class CORE_EXPORT ScrollbarTheme {
 
   virtual void UpdateEnabledState(const Scrollbar&) {}
 
-  void Paint(const Scrollbar&, GraphicsContext&, const CullRect&);
+  // |context|'s current space is the space of the scrollbar's FrameRect().
+  void Paint(const Scrollbar&, GraphicsContext& context, const CullRect&);
 
   virtual ScrollbarPart HitTest(const Scrollbar&, const IntPoint&);
 
@@ -95,6 +96,7 @@ class CORE_EXPORT ScrollbarTheme {
   }
 
   virtual void PaintScrollCorner(GraphicsContext&,
+                                 const Scrollbar* vertical_scrollbar,
                                  const DisplayItemClient&,
                                  const IntRect& corner_rect,
                                  WebColorScheme color_scheme);
@@ -138,6 +140,8 @@ class CORE_EXPORT ScrollbarTheme {
   virtual bool HasButtons(const Scrollbar&) = 0;
   virtual bool HasThumb(const Scrollbar&) = 0;
 
+  // All these rects are in the same coordinate space as the scrollbar's
+  // FrameRect.
   virtual IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) = 0;
   virtual IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) = 0;
   virtual IntRect TrackRect(const Scrollbar&) = 0;
@@ -154,7 +158,11 @@ class CORE_EXPORT ScrollbarTheme {
 
   virtual void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) {}
 
-  void PaintTrackAndButtonsForCompositor(GraphicsContext&, const Scrollbar&);
+  // |offset| is from the space of the scrollbar's FrameRect() to |context|'s
+  // current space.
+  void PaintTrackButtonsTickmarks(GraphicsContext& context,
+                                  const Scrollbar&,
+                                  const IntPoint& offset);
 
   virtual int MaxOverlapBetweenPages() {
     return std::numeric_limits<int>::max();
@@ -194,23 +202,17 @@ class CORE_EXPORT ScrollbarTheme {
 
  protected:
   virtual int TickmarkBorderWidth() { return 0; }
-  virtual void PaintScrollbarBackground(GraphicsContext&, const Scrollbar&) {}
-  virtual void PaintTrackBackground(GraphicsContext&,
-                                    const Scrollbar&,
-                                    const IntRect&) {}
-  virtual void PaintTrackPiece(GraphicsContext&,
-                               const Scrollbar&,
-                               const IntRect&,
-                               ScrollbarPart) {}
+  virtual void PaintTrack(GraphicsContext&, const Scrollbar&, const IntRect&) {}
   virtual void PaintButton(GraphicsContext&,
                            const Scrollbar&,
                            const IntRect&,
                            ScrollbarPart) {}
 
-  void PaintTrackAndButtons(GraphicsContext&, const Scrollbar&);
-  virtual bool CreatesSingleDisplayItemForTrackAndButtons() const {
-    return true;
-  }
+  // |offset| is the offset of the |context|'s current space to the space of
+  // scrollbar's FrameRect().
+  virtual void PaintTrackAndButtons(GraphicsContext& context,
+                                    const Scrollbar&,
+                                    const IntPoint& offset);
 
   // Paint the thumb with ThumbOpacity() applied.
   virtual void PaintThumbWithOpacity(GraphicsContext& context,

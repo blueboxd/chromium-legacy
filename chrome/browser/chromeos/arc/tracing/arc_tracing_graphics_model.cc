@@ -1591,7 +1591,7 @@ bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
   BufferToEvents per_buffer_surface_flinger_events;
   if (!GetSurfaceFlingerEvents(common_model,
                                &per_buffer_surface_flinger_events)) {
-    if (!skip_structure_validation_for_testing_)
+    if (!skip_structure_validation_)
       return false;
   }
   BufferToEvents per_buffer_chrome_events =
@@ -1652,7 +1652,7 @@ bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
 
   if (view_buffers_.empty()) {
     LOG(ERROR) << "No buffer events";
-    if (!skip_structure_validation_for_testing_)
+    if (!skip_structure_validation_)
       return false;
   }
 
@@ -1674,14 +1674,14 @@ bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
   GetChromeTopLevelEvents(common_model, &chrome_top_level_);
   if (chrome_top_level_.buffer_events().empty()) {
     LOG(ERROR) << "No Chrome top events";
-    if (!skip_structure_validation_for_testing_)
+    if (!skip_structure_validation_)
       return false;
   }
 
   GetAndroidTopEvents(common_model, &android_top_level_);
   if (android_top_level_.buffer_events().empty()) {
     LOG(ERROR) << "No Android events";
-    if (!skip_structure_validation_for_testing_)
+    if (!skip_structure_validation_)
       return false;
   }
 

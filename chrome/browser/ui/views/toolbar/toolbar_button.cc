@@ -152,9 +152,9 @@ void ToolbarButton::UpdateColorsAndInsets() {
     SetBackground(nullptr);
   }
 
-  gfx::Insets new_insets = GetLayoutInsets(TOOLBAR_BUTTON) +
-                           layout_inset_delta_ +
-                           *GetProperty(views::kInternalPaddingKey);
+  gfx::Insets new_insets =
+      layout_insets_.value_or(GetLayoutInsets(TOOLBAR_BUTTON)) +
+      layout_inset_delta_ + *GetProperty(views::kInternalPaddingKey);
   base::Optional<SkColor> border_color =
       highlight_color_animation_.GetBorderColor();
   if (!border() || new_insets != border()->GetInsets() ||
@@ -197,6 +197,11 @@ void ToolbarButton::SetLabelSideSpacing(int spacing) {
     // Forces LabelButton to dump the cached preferred size and recompute it.
     PreferredSizeChanged();
   }
+}
+
+void ToolbarButton::OverrideLayoutInsets(const gfx::Insets& insets) {
+  layout_insets_ = insets;
+  UpdateColorsAndInsets();
 }
 
 void ToolbarButton::SetLayoutInsetDelta(const gfx::Insets& inset_delta) {

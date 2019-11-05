@@ -919,6 +919,8 @@
 "activetext"
 "field"
 "fieldtext"
+"canvas"
+"canvastext"
 
 # at-rules
 "@charset"

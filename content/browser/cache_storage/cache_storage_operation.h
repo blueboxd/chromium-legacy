@@ -25,6 +25,7 @@ class CONTENT_EXPORT CacheStorageOperation {
                         CacheStorageSchedulerClient client_type,
                         CacheStorageSchedulerMode mode,
                         CacheStorageSchedulerOp op_type,
+                        CacheStorageSchedulerPriority priority,
                         scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   ~CacheStorageOperation();
@@ -36,6 +37,7 @@ class CONTENT_EXPORT CacheStorageOperation {
   CacheStorageSchedulerId id() const { return id_; }
   CacheStorageSchedulerMode mode() const { return mode_; }
   CacheStorageSchedulerOp op_type() const { return op_type_; }
+  CacheStorageSchedulerPriority priority() const { return priority_; }
   base::WeakPtr<CacheStorageOperation> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -59,6 +61,7 @@ class CONTENT_EXPORT CacheStorageOperation {
   const CacheStorageSchedulerClient client_type_;
   const CacheStorageSchedulerMode mode_;
   const CacheStorageSchedulerOp op_type_;
+  const CacheStorageSchedulerPriority priority_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<CacheStorageOperation> weak_ptr_factory_{this};
 

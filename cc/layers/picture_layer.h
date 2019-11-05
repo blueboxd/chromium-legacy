@@ -49,8 +49,6 @@ class CC_EXPORT PictureLayer : public Layer {
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
   sk_sp<SkPicture> GetPicture() const override;
   bool Update() override;
-  bool HasSlowPaths() const override;
-  bool HasNonAAPaint() const override;
   void RunMicroBenchmark(MicroBenchmark* benchmark) override;
   void CaptureContent(const gfx::Rect& rect,
                       std::vector<NodeId>* content) override;

@@ -51,6 +51,7 @@ void ContactsProviderAndroid::Select(bool multiple,
                                      bool include_emails,
                                      bool include_tel,
                                      bool include_addresses,
+                                     bool include_icons,
                                      ContactsSelectedCallback callback) {
   if (!dialog_) {
     std::move(callback).Run(base::nullopt, /*percentage_shared=*/-1,
@@ -114,9 +115,11 @@ void ContactsProviderAndroid::AddContact(
     addresses = std::move(addresses_vector);
   }
 
-  blink::mojom::ContactInfoPtr contact =
-      blink::mojom::ContactInfo::New(std::move(names), std::move(emails),
-                                     std::move(tel), std::move(addresses));
+  base::Optional<std::vector<blink::mojom::ContactIconBlobPtr>> icons;
+
+  blink::mojom::ContactInfoPtr contact = blink::mojom::ContactInfo::New(
+      std::move(names), std::move(emails), std::move(tel), std::move(addresses),
+      std::move(icons));
 
   contacts_.push_back(std::move(contact));
 }

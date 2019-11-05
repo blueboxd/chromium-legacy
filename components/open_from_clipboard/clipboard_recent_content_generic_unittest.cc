@@ -19,9 +19,7 @@
 class ClipboardRecentContentGenericTest : public testing::Test {
  protected:
   void SetUp() override {
-    test_clipboard_ = new ui::TestClipboard;
-    std::unique_ptr<ui::Clipboard> clipboard(test_clipboard_);
-    ui::Clipboard::SetClipboardForCurrentThread(std::move(clipboard));
+    test_clipboard_ = ui::TestClipboard::CreateForCurrentThread();
   }
 
   void TearDown() override {

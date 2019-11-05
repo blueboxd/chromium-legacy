@@ -95,20 +95,20 @@ inline uint16_t ToInterfaceConstant(CSSPrimitiveValue::UnitType type) {
   }
 }
 
-}  // namespace
-
-bool SVGLengthTearOff::HasExposedLengthUnit() {
-  if (Target()->IsCalculated())
+bool HasExposedLengthUnit(const SVGLength& length) {
+  if (length.IsCalculated())
     return false;
 
-  CSSPrimitiveValue::UnitType unit = Target()->NumericLiteralType();
+  CSSPrimitiveValue::UnitType unit = length.NumericLiteralType();
   return IsValidLengthUnit(unit) ||
          unit == CSSPrimitiveValue::UnitType::kUnknown ||
          unit == CSSPrimitiveValue::UnitType::kUserUnits;
 }
 
+}  // namespace
+
 uint16_t SVGLengthTearOff::unitType() {
-  return HasExposedLengthUnit()
+  return HasExposedLengthUnit(*Target())
              ? ToInterfaceConstant(Target()->NumericLiteralType())
              : kSvgLengthtypeUnknown;
 }
@@ -166,10 +166,7 @@ void SVGLengthTearOff::setValueInSpecifiedUnits(
 }
 
 String SVGLengthTearOff::valueAsString() {
-  // TODO(shanmuga.m@samsung.com): Not all <length> properties have 0 (with no
-  // unit) as the default (lacuna) value. We need to return default value
-  // instead of 0.
-  return HasExposedLengthUnit() ? Target()->ValueAsString() : String::Number(0);
+  return Target()->ValueAsString();
 }
 
 void SVGLengthTearOff::setValueAsString(const String& str,
@@ -178,12 +175,7 @@ void SVGLengthTearOff::setValueAsString(const String& str,
     ThrowReadOnly(exception_state);
     return;
   }
-  String old_value = Target()->ValueAsString();
   SVGParsingError status = Target()->SetValueAsString(str);
-  if (status == SVGParseStatus::kNoError && !HasExposedLengthUnit()) {
-    Target()->SetValueAsString(old_value);  // rollback to old value
-    status = SVGParseStatus::kParsingFailed;
-  }
   if (status != SVGParseStatus::kNoError) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,

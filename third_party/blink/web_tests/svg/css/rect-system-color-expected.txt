@@ -31,6 +31,12 @@ PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorButtonText
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
+Testing system colorCanvas
+PASS computedStyleText.fill is computedStyleDiv.color
+PASS computedStyleText.stroke is computedStyleDiv.color
+Testing system colorCanvasText
+PASS computedStyleText.fill is computedStyleDiv.color
+PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorCaptionText
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color

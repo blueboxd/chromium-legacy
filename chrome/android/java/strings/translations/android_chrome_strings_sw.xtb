@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Nakili UR:</translation>
 <translation id="2156074688469523661">Tovuti zilizosalia (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Ili ushiriki kitu kutoka simu yako hadi kifaa kingine, washa usawazishaji katika mipangilio ya Chrome kwenye vifaa vyote viwili</translation>
-<translation id="2170088579611075216">Ruhusu na uingie katika VR</translation>
 <translation id="2175927920773552910">Msimbo wa QR</translation>
 <translation id="218608176142494674">Inashiriki</translation>
 <translation id="2227444325776770048">Endelea ukitumia <ph name="USER_FULL_NAME" /></translation>
@@ -415,7 +414,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili ulichague. Il
 <translation id="4135200667068010335">Orodha ya vifaa vinavyoweza kutumia kichupo pamoja imefungwa.</translation>
 <translation id="4149994727733219643">Mwonekano uliorahisishwa kwa ajili ya kurasa za wavuti</translation>
 <translation id="4165986682804962316">Mipangilio ya tovuti</translation>
-<translation id="4169535189173047238">Usiruhusu</translation>
 <translation id="4170011742729630528">Huduma haipatikani; jaribu tena baadaye.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> imetumika</translation>
 <translation id="4181841719683918333">Lugha</translation>
@@ -534,10 +532,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5011311129201317034"><ph name="SITE" /> inataka kuunganisha</translation>
 <translation id="5013696553129441713">Hakuna mapendekezo mapya</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Wakati upo katika VR, tovuti hii inaweza kujifunza kuhusu:
- -  sifa zako za mwili, kama vile urefu,
-
-Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="5039804452771397117">Ruhusu</translation>
 <translation id="5040262127954254034">Faragha</translation>
 <translation id="5048398596102334565">Ruhusu tovuti zifikie vitambuzi vyako vya mwendo (inapendekezwa)</translation>
@@ -611,10 +605,6 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="5527082711130173040">Chrome inahitaji idhini ya kufikia mahali ili itafute vifaa. <ph name="BEGIN_LINK1" />Badilisha ruhusa<ph name="END_LINK1" />. Kipengele cha idhini ya kufikia mahali pia <ph name="BEGIN_LINK2" />kimezimwa kwenye kifaa hiki<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Iulize kabla ya kuruhusu tovuti kusoma maandishi na picha kutoka ubao wa kunakili (inapendekezwa)</translation>
 <translation id="5530766185686772672">Funga vichupo fiche</translation>
-<translation id="5534334044554683961">Ukiwa katika VR, tovuti hii inaweza kujifunza kuhusu:
-  -   sifa zako za mwili, kama vile urefu
-  -   muundo wa chumba chako
-Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="5534640966246046842">Tovuti imenakiliwa</translation>
 <translation id="5556459405103347317">Pakia upya</translation>
 <translation id="5561549206367097665">Inasubiri intaneti…</translation>
@@ -904,7 +894,6 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="7665369617277396874">Ongeza akaunti</translation>
 <translation id="766587987807204883">Makala yanaonekana hapa na unaweza kuyasoma hata ukiwa nje ya mtandao</translation>
 <translation id="7682724950699840886">Jaribu vidokezo vifuatavyo: Hakikisha kuwa una nafasi ya kutosha kwenye kifaa chako kisha ujaribu kuihamisha tena.</translation>
-<translation id="7685301384041462804">Hakikisha kuwa unaamini tovuti hii kabla ya kuanzisha VR.</translation>
 <translation id="7698359219371678927">Tunga barua pepe katika <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Jaza kiotomatiki URL na hoja za utafutaji</translation>
 <translation id="7725024127233776428">Kurasa unazoalamisha zitaonekana hapa</translation>
@@ -1080,7 +1069,6 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8998729206196772491">Unaingia kwa kutumia akaunti inayodhibitiwa na <ph name="MANAGED_DOMAIN" /> na kumpa msimamizi wa kikoa hicho udhibiti wa data yako ya Chrome. Data yako ya Chrome itahusishwa na akaunti hii daima. Kuondoka kwenye Chrome kutafuta data yako kwenye kifaa hiki, lakini itaendelea kuhifadhiwa katika Akaunti yako ya Google.</translation>
 <translation id="9019902583201351841">Inadhibitiwa na wazazi wako</translation>
 <translation id="9028914725102941583">Washa usawazishaji ili ushiriki kwenye vifaa vyote</translation>
-<translation id="9029323097866369874">Ungependa kuruhusu <ph name="DOMAIN" /> kuanzisha VR?</translation>
 <translation id="9040142327097499898">Arifa zinaruhusiwa. Kipengele cha mahali kimezimwa kwenye kifaa hiki.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{Video #}other{Video #}}</translation>
 <translation id="9050666287014529139">Kaulisiri</translation>

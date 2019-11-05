@@ -121,6 +121,10 @@ class ClientAndroid : public Client,
   base::android::ScopedJavaLocalRef<jobjectArray>
   GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const;
 
+  base::android::ScopedJavaLocalRef<jobject>
+  ToJavaAutofillAssistantDirectAction(JNIEnv* env,
+                                      const DirectAction& direct_action) const;
+
   // Returns the index of a direct action with that name, to pass to
   // UiDelegate::PerformUserAction() or -1 if not found.
   int FindDirectAction(const std::string& action_name);

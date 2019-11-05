@@ -67,7 +67,6 @@ class BrowserAppMenuButton : public AppMenuButton,
   base::Optional<SkColor> GetPromoHighlightColor() const;
 
   // AppMenuButton:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   const char* GetClassName() const override;
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;

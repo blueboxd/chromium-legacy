@@ -1691,6 +1691,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& scope,
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin);
+
+  // Requests an SMS from |origin| from a remote device with telephony
+  // capabilities, for example the user's mobile phone. Callbacks |callback|
+  // with the contents of the SMS upon success or an empty response on error.
+  virtual void FetchRemoteSms(
+      content::BrowserContext* browser_context,
+      const url::Origin& origin,
+      base::OnceCallback<void(base::Optional<std::string>)> callback);
 };
 
 }  // namespace content

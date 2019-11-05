@@ -6,6 +6,7 @@
 
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/sms/sms_fetcher_impl.h"
 #include "content/browser/sms/sms_service.h"
 #include "content/browser/sms/test/mock_sms_provider.h"
 #include "content/browser/sms/test/mock_sms_web_contents_delegate.h"
@@ -83,6 +84,10 @@ class SmsBrowserTest : public ContentBrowserTest {
     cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
+  SmsFetcher* GetSmsFetcher() {
+    return SmsFetcher::Get(shell()->web_contents()->GetBrowserContext());
+  }
+
   ukm::TestAutoSetUkmRecorder* ukm_recorder() { return ukm_recorder_.get(); }
 
   NiceMock<MockSmsWebContentsDelegate> delegate_;
@@ -132,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
 
   ukm_loop.Run();
 
-  ASSERT_FALSE(provider->HasObservers());
+  ASSERT_FALSE(GetSmsFetcher()->HasSubscribers());
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
@@ -179,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOrigin) {
 
   ukm_loop1.Run();
 
-  ASSERT_FALSE(provider->HasObservers());
+  ASSERT_FALSE(GetSmsFetcher()->HasSubscribers());
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
@@ -227,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOriginPerTab) {
 
   EXPECT_EQ("AbortError", EvalJs(tab1, "firstRequest"));
 
-  ASSERT_TRUE(provider->HasObservers());
+  ASSERT_TRUE(GetSmsFetcher()->HasSubscribers());
 
   {
     base::RunLoop ukm_loop;
@@ -249,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOriginPerTab) {
 
   EXPECT_EQ("hello1", EvalJs(tab2, "request"));
 
-  ASSERT_TRUE(provider->HasObservers());
+  ASSERT_TRUE(GetSmsFetcher()->HasSubscribers());
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 
@@ -275,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOriginPerTab) {
 
   EXPECT_EQ("hello2", EvalJs(tab1, "secondRequest"));
 
-  ASSERT_FALSE(provider->HasObservers());
+  ASSERT_FALSE(GetSmsFetcher()->HasSubscribers());
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
@@ -307,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
 
   loop.Run();
 
-  ASSERT_TRUE(provider->HasObservers());
+  ASSERT_TRUE(GetSmsFetcher()->HasSubscribers());
 
   // Wait for UKM to be recorded to avoid race condition.
   base::RunLoop ukm_loop;
@@ -319,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
 
   ukm_loop.Run();
 
-  ASSERT_FALSE(provider->HasObservers());
+  ASSERT_FALSE(GetSmsFetcher()->HasSubscribers());
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kTimeout);
 }
@@ -349,9 +354,11 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
 
   ASSERT_TRUE(provider->HasObservers());
 
+  auto* fetcher = GetSmsFetcher();
+
   shell()->Close();
 
-  ASSERT_FALSE(provider->HasObservers());
+  ASSERT_FALSE(fetcher->HasSubscribers());
 
   ExpectNoOutcomeUKM();
 }
@@ -462,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
 
   EXPECT_EQ("hello2", EvalJs(tab2, "sms"));
 
-  ASSERT_FALSE(provider->HasObservers());
+  ASSERT_FALSE(GetSmsFetcher()->HasSubscribers());
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
@@ -551,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
 
   EXPECT_EQ("hello2", EvalJs(tab2, "sms"));
 
-  ASSERT_FALSE(provider->HasObservers());
+  ASSERT_FALSE(GetSmsFetcher()->HasSubscribers());
 
   ExpectOutcomeUKM(url1, blink::SMSReceiverOutcome::kSuccess);
   ExpectOutcomeUKM(url2, blink::SMSReceiverOutcome::kSuccess);

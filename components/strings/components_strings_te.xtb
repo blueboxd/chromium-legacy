@@ -174,6 +174,7 @@
 <translation id="173080396488393970">ఈ రకమైన కార్డ్‌కి మద్దతు లేదు</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">సిస్టమ్ నిర్వాహకుడిని సంప్రదించి ప్రయత్నించండి.</translation>
+<translation id="1739107442478692187">మీరు ఉపయోగిస్తున్న సైట్ లేదా యాప్‌లో డేటా ఉల్లంఘన జరిగింది. సేవ్ చేసిన మీ పాస్‌వర్డ్‌లను తనిఖీ చేయాల్సిందిగా, ఇప్పుడే <ph name="ORIGIN" />లో మీ పాస్‌వర్డ్‌ను మార్చాల్సిందిగా Chrome సిఫార్సు చేస్తోంది.</translation>
 <translation id="1740951997222943430">చెల్లుబాటు అయ్యే గడువు ముగింపు నెలను నమోదు చేయండి</translation>
 <translation id="1743520634839655729">తర్వాతిసారి మరింత వేగంగా చెల్లించడానికి, మీ కార్డ్, పేరు మరియు బిల్లింగ్ చిరునామాను మీ Google ఖాతాకు మరియు ఈ పరికరానికి సేవ్ చేయండి.</translation>
 <translation id="1743570585616704562">గుర్తించలేదు</translation>
@@ -236,6 +237,7 @@
 <translation id="2094505752054353250">డొమైన్ సరిపోలలేదు</translation>
 <translation id="2096368010154057602">శాఖ</translation>
 <translation id="2099652385553570808">ఎడమవైపు ట్రిపుల్ స్టేపుల్</translation>
+<translation id="2100280972184758440">మీ పాస్‌వర్డ్ చోరీకి గురైంది</translation>
 <translation id="2102134110707549001">బలమైన పాస్‌వర్డ్‌ను సూచించు…</translation>
 <translation id="2108755909498034140">మీ కంప్యూటర్‌ను పునఃప్రారంభించండి</translation>
 <translation id="2111256659903765347">సూపర్-A</translation>
@@ -243,6 +245,7 @@
 <translation id="2114841414352855701">ఇది <ph name="POLICY_NAME" /> ద్వారా భర్తీ చేయబడినందున విస్మరించబడింది.</translation>
 <translation id="2119505898009119320">వీరికి జారీ చేయబడింది: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">కుడివైపు దిగువ భాగంలో రంధ్రాలు</translation>
+<translation id="2124528555835617522">మీరు ఉపయోగిస్తున్న సైట్ లేదా యాప్‌లో డేటా ఉల్లంఘన జరిగింది. మీ సేవ్ చేసిన పాస్‌వర్డ్‌లను తనిఖీ చేయాల్సిందిగా Chrome సిఫార్సు చేస్తోంది.</translation>
 <translation id="2129079103035905234">మోషన్ సెన్సార్‌లు</translation>
 <translation id="213826338245044447">మొబైల్ బుక్‌మార్క్‌లు</translation>
 <translation id="214556005048008348">చెల్లింపును రద్దు చేయి</translation>
@@ -480,11 +483,13 @@
 <translation id="3282497668470633863">కార్డ్‌లో పేరుని జోడించండి</translation>
 <translation id="3287510313208355388">ఆన్‌లైన్‌లో ఉన్నప్పుడు డౌన్‌లోడ్ చేయి</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> విధానం గురించి మరింత తెలుసుకోండి</translation>
+<translation id="3295439534709115864">మీరు ఉపయోగిస్తున్న సైట్ లేదా యాప్‌లో డేటా ఉల్లంఘన జరిగింది. ఇప్పుడే <ph name="ORIGIN" />లో మీ పాస్‌వర్డ్‌ను మార్చాల్సిందిగా Chrome సిఫార్సు చేస్తోంది.</translation>
 <translation id="3303855915957856445">శోధన ఫలితాలు ఏవీ కనుగొనబడలేదు</translation>
 <translation id="3320021301628644560">బిల్లింగ్ చిరునామాను జోడించండి</translation>
 <translation id="3324983252691184275">ముదురు ఎరుపు రంగు</translation>
 <translation id="3338095232262050444">సురక్షితం</translation>
 <translation id="3355823806454867987">ప్రాక్సీ సెట్టింగ్‌లను మార్చు...</translation>
+<translation id="3360103848165129075">చెల్లింపు హ్యాండ్లర్ షీట్</translation>
 <translation id="3362968246557010467">ఈ విధానం ఒక విస్మరించబడిన <ph name="OLD_POLICY" /> విధానం నుండి ఆటోమేటిక్‌గా కాపీ చేయబడింది. దానికి బదులుగా, మీరు ఈ విధానాన్ని ఉపయోగించాలి.</translation>
 <translation id="3366477098757335611">కార్డ్‌లను చూడండి</translation>
 <translation id="3369192424181595722">గడియారం ఎర్రర్</translation>
@@ -604,6 +609,7 @@
 <translation id="3949601375789751990">మీ బ్రౌజింగ్ చరిత్ర ఇక్కడ కనిపిస్తుంది</translation>
 <translation id="3949870428812919180">సేవ్ చేసిన చెల్లింపు పద్ధతులేవీ లేవు</translation>
 <translation id="3950820424414687140">సైన్ ఇన్</translation>
+<translation id="3961148744525529027">చెల్లింపు హ్యాండ్లర్ షీట్ సగం తెరవబడింది</translation>
 <translation id="3962859241508114581">మునుపటి ట్రాక్</translation>
 <translation id="3963837677003247395">మాన్యువల్‌గా కొనసాగించాలా?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{ఏవీ కాదు}=1{1 సైట్ నుండి }other{# సైట్‌ల నుండి }}</translation>
@@ -1336,6 +1342,7 @@
 <translation id="7637571805876720304">Chromium నుండి క్రెడిట్ కార్డ్‌ను తీసివేయాలా?</translation>
 <translation id="7638605456503525968">సీరియల్ పోర్ట్‌లు</translation>
 <translation id="7639968568612851608">ముదురు బూడిద రంగు</translation>
+<translation id="7653957176542370971">చెల్లింపు హ్యాండ్లర్ షీట్ మూసివేయబడింది</translation>
 <translation id="765676359832457558">అధునాతన సెట్టింగ్‌లను దాచు...</translation>
 <translation id="7658239707568436148">రద్దు చేయి</translation>
 <translation id="7662298039739062396">పొడిగింపు ద్వారా సెట్టింగ్ నియంత్రించబడుతోంది</translation>
@@ -1465,6 +1472,7 @@
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8262952874573525464">దిగువ భాగంలో కుట్టిన అంచులు</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" />గా సైన్ ఇన్ చేస్తోంది</translation>
+<translation id="8277900682056760511">చెల్లింపు హ్యాండ్లర్ షీట్ తెరవబడింది</translation>
 <translation id="8281084378435768645">పెద్ద-ఫోటో</translation>
 <translation id="8286036467436129157">సైన్ ఇన్ చేయండి</translation>
 <translation id="8288807391153049143">సర్టిఫికేట్‌ను చూపు</translation>

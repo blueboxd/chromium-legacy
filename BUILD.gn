@@ -342,6 +342,7 @@ group("gn_all") {
       "//tools/android/errorprone_plugin:errorprone_plugin_java",
       "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
       "//ui/android:ui_junit_tests",
+      "//weblayer/public/java:client_aar",
       "//weblayer/shell/android:weblayer_shell_apk",
     ]
     deps -= [

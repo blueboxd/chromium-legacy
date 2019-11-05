@@ -6,12 +6,15 @@
 
 #include <stddef.h>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_test_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_action_test_util_views.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
@@ -193,6 +196,11 @@ BrowserActionTestUtilViews::BrowserActionTestUtilViews(
 std::unique_ptr<BrowserActionTestUtil> BrowserActionTestUtil::Create(
     Browser* browser,
     bool is_real_window) {
+  // If the ExtensionsMenu is enabled, then use a separate implementation of
+  // the BrowserActionTestUtil.
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    return std::make_unique<ExtensionsMenuTestUtil>(browser);
+
   std::unique_ptr<BrowserActionTestUtil> browser_action_test_util;
 
   if (is_real_window) {

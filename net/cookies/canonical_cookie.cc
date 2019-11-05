@@ -865,8 +865,6 @@ std::string CanonicalCookie::CookieInclusionStatus::GetDebugString() const {
     base::StrAppend(&out, {"EXCLUDE_SAMESITE_STRICT, "});
   if (HasExclusionReason(EXCLUDE_SAMESITE_LAX))
     base::StrAppend(&out, {"EXCLUDE_SAMESITE_LAX, "});
-  if (HasExclusionReason(EXCLUDE_SAMESITE_EXTENDED))
-    base::StrAppend(&out, {"EXCLUDE_SAMESITE_EXTENDED, "});
   if (HasExclusionReason(EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX))
     base::StrAppend(&out, {"EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX, "});
   if (HasExclusionReason(EXCLUDE_SAMESITE_NONE_INSECURE))

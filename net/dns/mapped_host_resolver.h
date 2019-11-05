@@ -52,6 +52,7 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   // HostResolver methods:
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;

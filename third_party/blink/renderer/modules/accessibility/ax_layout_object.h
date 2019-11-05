@@ -224,8 +224,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AddRemoteSVGChildren();
   void AddTableChildren();
   void AddValidationMessageChild();
-  ax::mojom::Role DetermineTableCellRole() const;
-  ax::mojom::Role DetermineTableRowRole() const;
   bool FindAllTableCellsWithRole(ax::mojom::Role, AXObjectVector&) const;
 
   LayoutRect ComputeElementRect() const;

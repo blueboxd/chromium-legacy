@@ -73,6 +73,8 @@ class ArcDefaultAppList {
   // Returns true if package exists in default packages list. Note it may be
   // marked as uninstalled.
   bool HasPackage(const std::string& package_name) const;
+  // Returns true if a uninstalled package exists in default packages list.
+  bool HasHiddenPackage(const std::string& package_name) const;
   // Marks default app |app_id| as hidden in case |hidden| is true.
   void SetAppHidden(const std::string& app_id, bool hidden);
   // Marks all default apps from the package |package_name| as hidden.

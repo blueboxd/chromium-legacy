@@ -89,8 +89,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   // WebFrameWidgetBase overrides:
   void SetAnimationHost(cc::AnimationHost*) override;
   bool ForSubframe() const override { return false; }
-  void SetRootGraphicsLayer(GraphicsLayer*) override;
-  GraphicsLayer* RootGraphicsLayer() const override;
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
   cc::AnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;

@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">এপিগ্রাফ</translation>
 <translation id="207477615537953741">শব্দার্থিক বন্ধ আছে</translation>
 <translation id="2086961585857038472">পরবর্তী শব্দ</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">bn</translation>
 <translation id="2091933974477985526">পূর্ববর্তী সম্পাদনার যোগ্য পাঠ্য অঞ্চল</translation>
 <translation id="2100350898815792233">সমস্ত যতিচিহ্ন</translation>
@@ -193,6 +194,7 @@
 <translation id="2416512023405990736">একটি টিকচিহ্ন উঠানো চেকবাক্স</translation>
 <translation id="2417569100218200841">কন্টেন্টর তথ্য</translation>
 <translation id="2417948780551741035">এন্ডনোট</translation>
+<translation id="2419852971200420169">বর্ণনার তালিকা</translation>
 <translation id="2421113964388408478">মোছা হচ্ছে</translation>
 <translation id="2422937916923936891">মেনু আইটেম চেক বাক্স</translation>
 <translation id="2428534162001909979">কম্যান্ড মেনুগুলি</translation>
@@ -371,6 +373,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{প্রশ্নবোধক চিহ্ন}one{#টি প্রশ্নবোধক চিহ্ন}other{#টি প্রশ্নবোধক চিহ্ন}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{ক্যারেট}one{# ক্যারেট}other{# ক্যারেট}}</translation>
 <translation id="352577523970648069">একটি সম্পাদনাযোগ্য পাঠ্য ফিল্ড</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> কাট করুন।</translation>
 <translation id="3549680091535286226">আপাতত স্পিচ বন্ধ করার জন্য ২টি আঙ্গুল দিয়ে ট্যাপ করুন</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, চেকবাক্স চেক করা হয়নি</translation>
@@ -779,6 +782,7 @@
 <translation id="6378394210114975876">থিসল</translation>
 <translation id="6385591741672306837">কলাম</translation>
 <translation id="6387719785439924554">একপাশে</translation>
+<translation id="6393014464788431702">সমস্ত ইভেন্ট ফিল্টার বন্ধ করুন</translation>
 <translation id="6411426777058107714">আগের কোনও রেডিও বোতাম নেই৷</translation>
 <translation id="6414968628640960377">পূর্ববর্তী পৃথক উপাদান৷</translation>
 <translation id="6417265370957905582">Google অ্যাসিস্ট্যান্ট</translation>
@@ -914,6 +918,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="7332592614823088566"><ph name="ROWTOTAL" /> এর <ph name="ROWINDEX" /> সারি, <ph name="COLTOTAL" /> এর <ph name="COLINDEX" /> কলাম</translation>
 <translation id="7336596009609913925">পপআপ রয়েছে</translation>
 <translation id="7356165926712028380">৮ ডট ব্রেইল-এ স্যুইচ করুন</translation>
+<translation id="7356610683936413584">বর্ণনা তালিকার বিবরণ</translation>
 <translation id="7362871137496673139">কোনো পূর্ববর্তী স্তর ২ শিরোনাম নেই৷</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{অ্যামপারসেন্ট}one{#টি অ্যামপারসেন্ট}other{#টি অ্যামপারসেন্ট}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8096975275316362544">মিন্ট ক্রিম</translation>
 <translation id="8098587210054821856">স্লেট ধূসর</translation>
 <translation id="8110647606445335195">কোনো ARIA ল্যান্ডমার্ক নেই৷</translation>
+<translation id="8121539003537428024">সমস্ত ইভেন্ট ফিল্টার চালু করুন</translation>
 <translation id="812886159861361726"><ph name="FILE_NAME" /> ডাউনলোড করা বন্ধ হয়ে গেছে</translation>
 <translation id="8138880386467279117">স্পর্শ</translation>
 <translation id="8153880621934657047">সারণীর ভিতরে নয়৷</translation>

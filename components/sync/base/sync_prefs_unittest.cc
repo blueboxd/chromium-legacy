@@ -15,6 +15,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_demographics.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -133,6 +134,19 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
 
   sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(SyncPrefsTest, SetSelectedOsTypesTriggersPreferredDataTypesPrefChange) {
+  StrictMock<MockSyncPrefObserver> mock_sync_pref_observer;
+  EXPECT_CALL(mock_sync_pref_observer, OnPreferredDataTypesPrefChange());
+
+  sync_prefs_->AddSyncPrefObserver(&mock_sync_pref_observer);
+  sync_prefs_->SetSelectedOsTypes(/*sync_all_os_types=*/false,
+                                  UserSelectableOsTypeSet(),
+                                  UserSelectableOsTypeSet());
+  sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
+}
+#endif
 
 TEST_F(SyncPrefsTest, ClearPreferences) {
   EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
@@ -282,6 +296,61 @@ TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSynced) {
     EXPECT_EQ(UserSelectableTypeSet{type}, sync_prefs_->GetSelectedTypes());
   }
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(SyncPrefsTest, IsSyncAllOsTypesEnabled) {
+  EXPECT_TRUE(sync_prefs_->IsSyncAllOsTypesEnabled());
+
+  sync_prefs_->SetSelectedOsTypes(
+      /*sync_all_os_types=*/false,
+      /*registered_types=*/UserSelectableOsTypeSet::All(),
+      /*selected_types=*/UserSelectableOsTypeSet::All());
+  EXPECT_FALSE(sync_prefs_->IsSyncAllOsTypesEnabled());
+  // Browser pref is not affected.
+  EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
+
+  sync_prefs_->SetSelectedOsTypes(
+      /*sync_all_os_types=*/true,
+      /*registered_types=*/UserSelectableOsTypeSet::All(),
+      /*selected_types=*/UserSelectableOsTypeSet::All());
+  EXPECT_TRUE(sync_prefs_->IsSyncAllOsTypesEnabled());
+}
+
+TEST_F(SyncPrefsTest, GetSelectedOsTypesWithAllOsTypesEnabled) {
+  EXPECT_TRUE(sync_prefs_->IsSyncAllOsTypesEnabled());
+  EXPECT_EQ(UserSelectableOsTypeSet::All(), sync_prefs_->GetSelectedOsTypes());
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    sync_prefs_->SetSelectedOsTypes(
+        /*sync_all_os_types=*/true,
+        /*registered_types=*/UserSelectableOsTypeSet::All(),
+        /*selected_types=*/{type});
+    EXPECT_EQ(UserSelectableOsTypeSet::All(),
+              sync_prefs_->GetSelectedOsTypes());
+  }
+}
+
+TEST_F(SyncPrefsTest, GetSelectedOsTypesNotAllOsTypesSelected) {
+  const UserSelectableTypeSet browser_types = sync_prefs_->GetSelectedTypes();
+
+  sync_prefs_->SetSelectedOsTypes(
+      /*sync_all_os_types=*/false,
+      /*registered_types=*/UserSelectableOsTypeSet::All(),
+      /*selected_types=*/UserSelectableOsTypeSet());
+  EXPECT_EQ(UserSelectableOsTypeSet(), sync_prefs_->GetSelectedOsTypes());
+  // Browser types are not changed.
+  EXPECT_EQ(browser_types, sync_prefs_->GetSelectedTypes());
+
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    sync_prefs_->SetSelectedOsTypes(
+        /*sync_all_os_types=*/false,
+        /*registered_types=*/UserSelectableOsTypeSet::All(),
+        /*selected_types=*/{type});
+    EXPECT_EQ(UserSelectableOsTypeSet{type}, sync_prefs_->GetSelectedOsTypes());
+    // Browser types are not changed.
+    EXPECT_EQ(browser_types, sync_prefs_->GetSelectedTypes());
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Similar to SyncPrefsTest, but does not create a SyncPrefs instance. This lets
 // individual tests set up the "before" state of the PrefService before

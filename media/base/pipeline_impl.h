@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline.h"
+#include "media/base/renderer.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -21,6 +22,10 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class MediaLog;
+
+// Callbacks used for Renderer creation.
+using RendererCreatedCB = base::OnceCallback<void(std::unique_ptr<Renderer>)>;
+using CreateRendererCB = base::RepeatingCallback<void(RendererCreatedCB)>;
 
 // Pipeline runs the media pipeline.  Filters are created and called on the
 // task runner injected into this object. Pipeline works like a state
@@ -70,23 +75,22 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
  public:
   // Constructs a media pipeline that will execute media tasks on
   // |media_task_runner|.
+  // |create_renderer_cb|: to create renderers when starting and resuming.
   PipelineImpl(scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
                scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+               CreateRendererCB create_renderer_cb,
                MediaLog* media_log);
   ~PipelineImpl() override;
 
   // Pipeline implementation.
   void Start(StartType start_type,
              Demuxer* demuxer,
-             std::unique_ptr<Renderer> renderer,
              Client* client,
              const PipelineStatusCB& seek_cb) override;
   void Stop() override;
   void Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) override;
   void Suspend(const PipelineStatusCB& suspend_cb) override;
-  void Resume(std::unique_ptr<Renderer> renderer,
-              base::TimeDelta time,
-              const PipelineStatusCB& seek_cb) override;
+  void Resume(base::TimeDelta time, const PipelineStatusCB& seek_cb) override;
   bool IsRunning() const override;
   bool IsSuspended() const override;
   double GetPlaybackRate() const override;

@@ -457,11 +457,16 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
               overview_session_->enter_exit_overview_type() ==
               OverviewSession::EnterExitOverviewType::kSlideInEnter;
           if (!slide_in) {
-            FadeInWidgetAndMaybeSlideOnEnter(
-                item_widget_.get(),
-                OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-                /*slide=*/false,
-                /*observe=*/true);
+            // If entering from home launcher, use the home specific (fade)
+            // animation.
+            OverviewAnimationType fade_animation =
+                animation_type == OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER
+                    ? animation_type
+                    : OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN;
+
+            FadeInWidgetAndMaybeSlideOnEnter(item_widget_.get(), fade_animation,
+                                             /*slide=*/false,
+                                             /*observe=*/true);
           }
 
           // Update the item header visibility immediately if entering from home
@@ -1063,8 +1068,6 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
   if (is_being_dragged_) {
     DCHECK_EQ(this, overview_session_->window_drag_controller()->item());
     overview_session_->window_drag_controller()->ResetGesture();
-    Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
-        kOcclusionPauseDurationForDrag);
   }
 
   overview_grid_->RemoveItem(this, /*item_destroying=*/true,

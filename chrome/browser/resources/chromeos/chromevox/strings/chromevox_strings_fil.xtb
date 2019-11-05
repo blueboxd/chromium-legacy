@@ -153,6 +153,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="2063539687800151747">Epigraph</translation>
 <translation id="207477615537953741">Naka-off ang semantics</translation>
 <translation id="2086961585857038472">Susunod na Salita</translation>
+<translation id="2087981446621639008">dscrplst dtl</translation>
 <translation id="2089387485033699258">fil</translation>
 <translation id="2091933974477985526">Nakaraang na-e-edit na lugar ng text</translation>
 <translation id="2100350898815792233">Lahat ng bantas</translation>
@@ -193,6 +194,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="2416512023405990736">Isang checkbox na walang check</translation>
 <translation id="2417569100218200841">Impormasyon ng nilalaman</translation>
 <translation id="2417948780551741035">Mga Endnote</translation>
+<translation id="2419852971200420169">Listahan ng paglalarawan</translation>
 <translation id="2421113964388408478">Pag-delete</translation>
 <translation id="2422937916923936891">Check box ng item sa menu</translation>
 <translation id="2428534162001909979">Mga Menu ng Command</translation>
@@ -371,6 +373,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="3497063866483065785">{COUNT,plural, =1{tandang pananong}one{# tandang pananong}other{# na tandang pananong}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{caret}one{# caret}other{# na caret}}</translation>
 <translation id="352577523970648069">Isang nae-edit na text field</translation>
+<translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">i-cut ang <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Mag-tap gamit ang 2 daliri para pansamantalang ihinto ang pagsasalita</translation>
 <translation id="3568702578574425662">Hindi nilagyan ng check ang <ph name="NAME" />, checkbox</translation>
@@ -779,6 +782,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="6378394210114975876">Thistle</translation>
 <translation id="6385591741672306837">col</translation>
 <translation id="6387719785439924554">aside</translation>
+<translation id="6393014464788431702">I-disable ang lahat ng filter ng event</translation>
 <translation id="6411426777058107714">Walang nakaraang radio button.</translation>
 <translation id="6414968628640960377">Nakaraang naiibang elemento.</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -914,6 +918,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="7332592614823088566">Row <ph name="ROWINDEX" /> ng <ph name="ROWTOTAL" />, Column <ph name="COLINDEX" /> ng <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">may popup</translation>
 <translation id="7356165926712028380">Lumipat sa 8 dot braille</translation>
+<translation id="7356610683936413584">Detalye ng listahan ng paglalarawan</translation>
 <translation id="7362871137496673139">Walang nakaraang heading sa antas 2.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ampersand}one{# ampersand}other{# na ampersand}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1092,6 +1097,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="8096975275316362544">Mint Cream</translation>
 <translation id="8098587210054821856">Slate Grey</translation>
 <translation id="8110647606445335195">Walang mga landmark ng ARIA.</translation>
+<translation id="8121539003537428024">I-enable ang lahat ng filter ng event</translation>
 <translation id="812886159861361726">Hininto ang pag-download ng <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Pindutin</translation>
 <translation id="8153880621934657047">Wala sa loob ng talahanayan.</translation>

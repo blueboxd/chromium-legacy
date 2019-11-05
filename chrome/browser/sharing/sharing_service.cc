@@ -44,20 +44,10 @@
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop.h"
 #endif  // defined(OS_ANDROID)
 
-namespace {
-// Clones device with new device name.
-std::unique_ptr<syncer::DeviceInfo> CloneDevice(
-    const syncer::DeviceInfo* device,
-    const std::string& device_name) {
-  return std::make_unique<syncer::DeviceInfo>(
-      device->guid(), device_name, device->chrome_version(),
-      device->sync_user_agent(), device->device_type(),
-      device->signin_scoped_device_id(), device->hardware_info(),
-      device->last_updated_timestamp(),
-      device->send_tab_to_self_receiving_enabled(), device->sharing_info());
-}
-
-}  // namespace
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+#include "chrome/browser/sharing/shared_clipboard/remote_copy_message_handler.h"
+#endif
 
 SharingService::SharingService(
     std::unique_ptr<SharingSyncPreference> sync_prefs,
@@ -65,6 +55,7 @@ SharingService::SharingService(
     std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
     std::unique_ptr<SharingFCMSender> fcm_sender,
     std::unique_ptr<SharingFCMHandler> fcm_handler,
+    std::unique_ptr<SharingMessageSender> message_sender,
     gcm::GCMDriver* gcm_driver,
     syncer::DeviceInfoTracker* device_info_tracker,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
@@ -75,6 +66,7 @@ SharingService::SharingService(
       sharing_device_registration_(std::move(sharing_device_registration)),
       fcm_sender_(std::move(fcm_sender)),
       fcm_handler_(std::move(fcm_handler)),
+      message_sender_(std::move(message_sender)),
       device_info_tracker_(device_info_tracker),
       local_device_info_provider_(local_device_info_provider),
       sync_service_(sync_service),
@@ -99,7 +91,7 @@ SharingService::SharingService(
       &ping_message_handler_);
 
   ack_message_handler_ =
-      std::make_unique<AckMessageHandler>(&response_callback_helper_);
+      std::make_unique<AckMessageHandler>(message_sender_.get());
   fcm_handler_->AddSharingHandler(
       chrome_browser_sharing::SharingMessage::kAckMessage,
       ack_message_handler_.get());
@@ -133,6 +125,18 @@ SharingService::SharingService(
         chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
         shared_clipboard_message_handler_.get());
   }
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+  if (sharing_device_registration_->IsRemoteCopySupported()) {
+    remote_copy_message_handler_ = std::make_unique<RemoteCopyMessageHandler>(
+        notification_display_service);
+    fcm_handler_->AddSharingHandler(
+        chrome_browser_sharing::SharingMessage::kRemoteCopyMessage,
+        remote_copy_message_handler_.get());
+  }
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 
   // If device has already registered before, start listening to FCM right away
   // to avoid missing messages.
@@ -222,61 +226,9 @@ void SharingService::SendMessageToDevice(
     const std::string& device_guid,
     base::TimeDelta response_timeout,
     chrome_browser_sharing::SharingMessage message,
-    ResponseCallbackHelper::ResponseCallback callback) {
-  std::string message_guid = base::GenerateGUID();
-  response_callback_helper_.RegisterCallback(message_guid, std::move(callback));
-  chrome_browser_sharing::MessageType message_type =
-      SharingPayloadCaseToMessageType(message.payload_case());
-
-  base::PostDelayedTask(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, content::BrowserThread::UI},
-      base::BindOnce(&SharingService::InvokeSendMessageCallback,
-                     weak_ptr_factory_.GetWeakPtr(), message_guid, message_type,
-                     SharingSendMessageResult::kAckTimeout,
-                     /*response=*/nullptr),
-      response_timeout);
-
-  // TODO(crbug/1015411): Here we assume caller gets |device_guid| from
-  // GetDeviceCandidates, so both DeviceInfoTracker and LocalDeviceInfoProvider
-  // are already ready. It's better to queue up the message and wait until
-  // DeviceInfoTracker and LocalDeviceInfoProvider are ready.
-  base::Optional<syncer::DeviceInfo::SharingInfo> target_sharing_info =
-      sync_prefs_->GetSharingInfo(device_guid);
-  if (!target_sharing_info) {
-    InvokeSendMessageCallback(message_guid, message_type,
-                              SharingSendMessageResult::kDeviceNotFound,
-                              /*response=*/nullptr);
-    return;
-  }
-
-  const syncer::DeviceInfo* local_device_info =
-      local_device_info_provider_->GetLocalDeviceInfo();
-  if (!local_device_info) {
-    InvokeSendMessageCallback(message_guid, message_type,
-                              SharingSendMessageResult::kInternalError,
-                              /*response=*/nullptr);
-    return;
-  }
-
-  std::unique_ptr<syncer::DeviceInfo> sender_device_info = CloneDevice(
-      local_device_info, GetSharingDeviceNames(local_device_info).full_name);
-  sender_device_info->set_sharing_info(
-      sync_prefs_->GetLocalSharingInfo(local_device_info));
-
-  if (!sender_device_info->sharing_info()) {
-    InvokeSendMessageCallback(message_guid, message_type,
-                              SharingSendMessageResult::kInternalError,
-                              /*response=*/nullptr);
-    return;
-  }
-
-  DCHECK_GE(response_timeout, kAckTimeToLive);
-  fcm_sender_->SendMessageToDevice(
-      std::move(*target_sharing_info), response_timeout - kAckTimeToLive,
-      std::move(message), std::move(sender_device_info),
-      base::BindOnce(&SharingService::OnMessageSent,
-                     weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
-                     message_guid, message_type));
+    SharingMessageSender::ResponseCallback callback) {
+  message_sender_->SendMessageToDevice(device_guid, response_timeout,
+                                       std::move(message), std::move(callback));
 }
 
 void SharingService::SetDeviceInfoTrackerForTesting(
@@ -290,25 +242,6 @@ SharingService::State SharingService::GetStateForTesting() const {
 
 SharingSyncPreference* SharingService::GetSyncPreferencesForTesting() const {
   return sync_prefs_.get();
-}
-
-void SharingService::OnMessageSent(
-    base::TimeTicks start_time,
-    const std::string& message_guid,
-    chrome_browser_sharing::MessageType message_type,
-    SharingSendMessageResult result,
-    base::Optional<std::string> message_id) {
-  response_callback_helper_.OnFCMMessageSent(
-      start_time, message_guid, message_type, result, std::move(message_id));
-}
-
-void SharingService::InvokeSendMessageCallback(
-    const std::string& message_guid,
-    chrome_browser_sharing::MessageType message_type,
-    SharingSendMessageResult result,
-    std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
-  response_callback_helper_.RunCallback(message_guid, message_type, result,
-                                        std::move(response));
 }
 
 void SharingService::OnDeviceInfoChange() {

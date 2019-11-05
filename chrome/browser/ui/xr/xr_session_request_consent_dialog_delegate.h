@@ -36,7 +36,6 @@ class XrSessionRequestConsentDialogDelegate
   base::string16 GetTitle() override;
   base::string16 GetDialogMessage() override;
   base::string16 GetAcceptButtonTitle() override;
-  base::string16 GetCancelButtonTitle() override;
 
   base::Optional<int> GetDefaultDialogButton() override;
   base::Optional<int> GetInitiallyFocusedButton() override;

@@ -11,10 +11,9 @@
 
 namespace cr_fuchsia {
 
-AgentManager::AgentManager(
-    const base::fuchsia::ServiceDirectoryClient* incoming)
+AgentManager::AgentManager(const sys::ServiceDirectory* incoming)
     : component_context_(
-          incoming->ConnectToService<fuchsia::modular::ComponentContext>()) {}
+          incoming->Connect<fuchsia::modular::ComponentContext>()) {}
 
 AgentManager::~AgentManager() = default;
 

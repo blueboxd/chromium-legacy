@@ -276,9 +276,9 @@ INSTANTIATE_TEST_SUITE_P(,
 
 // Avoid flakes and issues on non-applicable platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
 
 // Fetches an HTML weboage that fetches CSS files followed by an external
@@ -295,7 +295,7 @@ INSTANTIATE_TEST_SUITE_P(,
 // as non-delayale, thus fetching it in parallel with the CSS files.
 IN_PROC_BROWSER_TEST_P(
     DeferAllScriptPriorityBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelisted)) {
   GURL url = https_url();
 
   if (IsDeferAllScriptFeatureEnabled()) {

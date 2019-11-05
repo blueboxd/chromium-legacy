@@ -17,10 +17,10 @@
 #include "base/test/task_environment.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_cache.h"
-#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/optimization_guide/store_update_data.h"
@@ -87,7 +87,7 @@ class PreviewsHintsTest
   void SetUp() override {
     ProtoDatabaseProviderTestBase::SetUp();
     hint_cache_ = std::make_unique<optimization_guide::HintCache>(
-        std::make_unique<optimization_guide::HintCacheStore>(
+        std::make_unique<optimization_guide::OptimizationGuideStore>(
             db_provider_.get(), temp_dir_.GetPath(),
             task_environment_.GetMainThreadTaskRunner()));
 

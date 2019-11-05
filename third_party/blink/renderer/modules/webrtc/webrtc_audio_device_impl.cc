@@ -11,8 +11,8 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/sample_rates.h"
-#include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
+#include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 
 using media::AudioParameters;
 using media::ChannelLayout;

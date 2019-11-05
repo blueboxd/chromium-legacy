@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Autor podpisu certifikátu</translation>
 <translation id="1145292499998999162">Plugin zablokován</translation>
 <translation id="1145532888383813076">Prohledejte zařízení, aplikace a internet.</translation>
+<translation id="1146678959555564648">Zapnout VR</translation>
 <translation id="114721135501989771">Získejte do Chromu chytré funkce Google</translation>
 <translation id="1149401351239820326">Měsíc vypršení platnosti</translation>
 <translation id="1150565364351027703">Sluneční brýle</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Ukládat údaje v účtu na Disku Google</translation>
 <translation id="1288037062697528143">Noční režim se zapne automaticky za soumraku</translation>
 <translation id="1288300545283011870">Vlastnosti řeči</translation>
-<translation id="1289513325360489062">Bez přístupu k datům tohoto webu</translation>
 <translation id="1293264513303784526">Zařízení USB Type-C (levý port)</translation>
 <translation id="1293556467332435079">Soubory</translation>
 <translation id="1296911687402551044">Připnout vybranou kartu</translation>
@@ -813,7 +813,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2165421703844373933">Aktivovat Asistenta, když řeknete „Ok Google“ Chcete-li ušetřit baterii, vyberte výchozí možnost Zapnout (doporučeno). Asistent vám odpoví jen v případě, že je zařízení připojené ke zdroji napájení nebo se nabíjí.</translation>
 <translation id="2166369534954157698">Příliš žluťoučký kůň úpěl ďábelské ódy</translation>
 <translation id="2169062631698640254">Přesto se přihlásit</translation>
-<translation id="2170088579611075216">Povolit a spustit virtuální realitu</translation>
 <translation id="2172784515318616985">Pokračovat</translation>
 <translation id="2173302385160625112">Zkontrolujte připojení k internetu.</translation>
 <translation id="2173801458090845390">Přidat do tohoto zařízení ID požadavku</translation>
@@ -1005,7 +1004,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2439545803278355377">Zadejte nový PIN. PIN musí být dlouhý alespoň čtyři znaky a může obsahovat písmena, číslice i jiné znaky.</translation>
 <translation id="2440604414813129000">Zobrazit zdrojový kód</translation>
 <translation id="2442916515643169563">Stín textu</translation>
-<translation id="2444119669991608829">Stránka není v jazyce <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">Je vyžadován kořenový adresář rozšíření.</translation>
 <translation id="2445484935443597917">Vytvořit nový profil</translation>
 <translation id="2446585455334014596">Web <ph name="APP_NAME" /> chce ověřit vaši identitu</translation>
@@ -1426,7 +1424,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3020183492814296499">Zkratky</translation>
 <translation id="3020990233660977256">Sériové číslo: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Motýl</translation>
-<translation id="3021426244864538700">Přístup k datům tohoto webu</translation>
 <translation id="3021678814754966447">Zobrazit zdrojo&amp;vý kód rámce</translation>
 <translation id="3022978424994383087">Nerozumím.</translation>
 <translation id="3023464535986383522">Poslech vybraného textu</translation>
@@ -2216,7 +2213,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4159681666905192102">Toto je dětský účet spravovaný uživateli <ph name="CUSTODIAN_EMAIL" /> a <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Neznámá klávesnice</translation>
 <translation id="4168015872538332605">Uživatel <ph name="PRIMARY_EMAIL" /> s vámi sdílí některá svá nastavení. Tato nastavení váš účet ovlivní pouze během vícenásobného přihlášení.</translation>
-<translation id="4169535189173047238">Nepovolovat</translation>
 <translation id="4170314459383239649">Smazat při ukončení</translation>
 <translation id="4172051516777682613">Vždy zobrazovat</translation>
 <translation id="4175137578744761569">Světle nachová a bílá</translation>
@@ -2302,6 +2298,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4316850752623536204">Webové stránky vývojáře</translation>
 <translation id="4320177379694898372">Žádné připojení k internetu</translation>
 <translation id="4321442524549817090">Z&amp;obrazit adresu URL</translation>
+<translation id="4322394346347055525">Zavřít ostatní karty</translation>
 <translation id="4324577459193912240">Soubor je neúplný</translation>
 <translation id="4325237902968425115">Odinstalace aplikace <ph name="LINUX_APP_NAME" />...</translation>
 <translation id="4330191372652740264">Ledová voda</translation>
@@ -2755,10 +2752,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5029568752722684782">Vymazat kopii</translation>
 <translation id="5030338702439866405">Vydal:</translation>
 <translation id="5033266061063942743">Geometrické obrazce</translation>
-<translation id="5033865233969348410">V režimu virtuální reality tento web může získat následující informace:
-– vaše fyzické vlastnosti, jako je výška
-
-Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu důvěřujete.</translation>
 <translation id="503498442187459473">Web <ph name="HOST" /> chce použít váš mikrofon a kameru</translation>
 <translation id="5036662165765606524">Nepovolovat žádnému webu automatické stahování několika souborů</translation>
 <translation id="5037676449506322593">Vybrat vše</translation>
@@ -3032,7 +3025,6 @@ Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu d�
 <translation id="5449588825071916739">Přidat do záložek všechny karty</translation>
 <translation id="5449716055534515760">Zavřít okno</translation>
 <translation id="5454166040603940656">(<ph name="PROVIDER" />)</translation>
-<translation id="545426320101607695">Cílový jazyk překladu</translation>
 <translation id="5457113250005438886">Neplatné</translation>
 <translation id="5457459357461771897">Číst a mazat fotografie, hudbu a další média z počítače</translation>
 <translation id="5457599981699367932">Použít jako host</translation>
@@ -3092,11 +3084,6 @@ Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu d�
 <translation id="5532223876348815659">Globální</translation>
 <translation id="5533001281916885985">Web <ph name="SITE_NAME" /> chce</translation>
 <translation id="5534304873398226603">Zahodit fotku nebo video</translation>
-<translation id="5534334044554683961">V režimu virtuální reality tento web může získat následující informace:
-– vaše fyzické vlastnosti, jako je výška,
-– rozvržení vaší místnosti.
-
-Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu důvěřujete.</translation>
 <translation id="5535941515421698170">Zároveň z tohoto zařízení odstranit vaše stávající údaje</translation>
 <translation id="5539221284352502426">Zadané heslo bylo serverem odmítnuto. Možné příčiny: Heslo je příliš krátké. Heslo musí obsahovat číslice nebo symboly. Heslo se musí lišit od předchozích hesel.</translation>
 <translation id="5541694225089836610">Administrátor akci zakázal</translation>
@@ -3994,6 +3981,7 @@ Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu d�
 <translation id="6850286078059909152">Barva textu</translation>
 <translation id="6851497530878285708">Aplikace povolena</translation>
 <translation id="6853388645642883916">Nástroj na aktualizaci je v režimu spánku</translation>
+<translation id="68541483639528434">Zavřít ostatní karty</translation>
 <translation id="6856623341093082836">Nastavit a upravit přesnost dotykové obrazovky</translation>
 <translation id="6857699260879628349">Zobrazit konfigurační údaje</translation>
 <translation id="6860097299815761905">Nastavení proxy serveru...</translation>
@@ -4106,7 +4094,6 @@ Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu d�
 <translation id="7019805045859631636">Rychle</translation>
 <translation id="7022562585984256452">Domovská stránka byla nastavena.</translation>
 <translation id="7025190659207909717">Správa mobilních datových služeb</translation>
-<translation id="7027891519253193555">Stránka není v jazyce <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Hesla</translation>
 <translation id="703001695939087067">Byl aktivován režim přehledu oken. Můžete je procházet tabulátorem.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – připojeno k sériovému portu</translation>
@@ -4551,7 +4538,6 @@ Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu d�
 <translation id="7684718995427157417">Chcete-li vytvořit a otestovat aplikace, zapněte Android Debug Bridge (ADB). Upozorňujeme, že tato akce povoluje instalaci aplikací pro Android, které Google neověřil, a že je k její deaktivaci potřeba obnovení továrního nastavení.</translation>
 <translation id="7685049629764448582">Paměť JavaScriptu</translation>
 <translation id="7685087414635069102">Je vyžadován kód PIN</translation>
-<translation id="7685301384041462804">Před přechodem do režimu virtuální reality zkontrolujte, zda tomuto webu důvěřujete</translation>
 <translation id="768549422429443215">Přidejte jazyky nebo přeuspořádejte seznam.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Potvrďte nové heslo</translation>
@@ -4949,11 +4935,9 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Probíhá stahování}few{Probíhají stahování}many{Probíhají stahování}other{Probíhají stahování}}</translation>
 <translation id="8213449224684199188">Přešli jste do režimu fotek</translation>
 <translation id="8213577208796878755">K dispozici je jedno další zařízení.</translation>
-<translation id="8213996900880218548">Chce získat přístup k datům tohoto webu</translation>
 <translation id="8214489666383623925">Otevřít soubor...</translation>
 <translation id="8214962590150211830">Odebrat tohoto uživatele</translation>
 <translation id="8217399928341212914">I nadále blokovat automatické stahování několika souborů</translation>
-<translation id="822519928942492333">Jazyk stránky k překladu</translation>
 <translation id="8225265270453771718">Sdílet okno aplikace</translation>
 <translation id="8225753906568652947">Využít nabídky</translation>
 <translation id="8226222018808695353">Zakázané</translation>
@@ -5525,7 +5509,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9026731007018893674">stažený soubor</translation>
 <translation id="9026852570893462412">Tento proces může trvat několik minut. Probíhá stahování virtuálního počítače.</translation>
 <translation id="9027459031423301635">Otevří&amp;t odkaz v nové kartě</translation>
-<translation id="9029323097866369874">Povolit webu <ph name="DOMAIN" /> přejít do režimu virtuální reality?</translation>
 <translation id="9030515284705930323">Vaše organizace pro váš účet Obchod Google Play nepovolila. Další informace získáte u svého administrátora.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Vložit</translation>
@@ -5569,7 +5552,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9094038138851891550">Neplatné uživatelské jméno</translation>
 <translation id="9094982973264386462">Odstranit</translation>
 <translation id="9095253524804455615">Odstranit</translation>
-<translation id="9095388113577226029">Další jazyky...</translation>
 <translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="9100765901046053179">Rozšířená nastavení</translation>
 <translation id="9101691533782776290">Spustit aplikaci</translation>

@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Ikke forstyrr er på.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis innstillinger for varsler. Varsler er slått av for en app}other{Vis innstillinger for varsler. Varsler er slått av for # apper}}</translation>
 <translation id="1525508553941733066">AVVIS</translation>
-<translation id="1537254971476575106">Lupe for hele skjermen</translation>
 <translation id="15373452373711364">Stor markør</translation>
 <translation id="1546492247443594934">Skrivebord 2</translation>
 <translation id="1550523713251050646">Klikk for å se flere alternativer</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Trykk på <ph name="KEYBOARD_SHORTCUT" /> for å bytte tastaturoppsett.</translation>
 <translation id="2501920221385095727">Trege taster</translation>
 <translation id="2509468283778169019">Caps Lock er på</translation>
-<translation id="2532589005999780174">Høykontrastmodus</translation>
 <translation id="2542089167727451762">Trykk på profilbildet ditt</translation>
 <translation id="255671100581129685">Google-assistenten er ikke tilgjengelig i offentlige økter.</translation>
 <translation id="256712445991462162">den dokkede lupen</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">For mange forsøk med fingeravtrykk</translation>
 <translation id="7994370417837006925">Multipålogging</translation>
 <translation id="8000066093800657092">Ingen nettverk</translation>
-<translation id="8029241286966751120">Lupe for hele skjermen er slått på. Trykk på Ctrl + Søk + M igjen for å slå det av.</translation>
 <translation id="8030169304546394654">Frakoblet</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høy kontrast</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Det siste skrivebordet kan ikke fjernes.</translation>
 <translation id="8392451568018454956">Alternativmenyen for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Forelderen din har låst denne enheten</translation>
-<translation id="8406981827175133772">Lupe for hele skjermen</translation>
 <translation id="8425213833346101688">Endre</translation>
 <translation id="8427213022735114808">Diktat sender stemmen din til Google for å muliggjøre stemmestyrt skriving i alle tekstfelt.</translation>
 <translation id="8428213095426709021">Innstillinger</translation>

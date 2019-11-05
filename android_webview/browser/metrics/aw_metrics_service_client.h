@@ -131,6 +131,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
  protected:
   virtual bool IsInSample();  // virtual for testing
+  virtual bool CanRecordPackageName();  // virtual for testing
 
  private:
   void MaybeStartMetrics();

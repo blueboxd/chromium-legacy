@@ -37,7 +37,7 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   void CreateAnswer(const WebRTCSessionDescriptionRequest&,
                     const WebMediaConstraints&) override;
   void CreateAnswer(const WebRTCSessionDescriptionRequest&,
-                    const WebRTCAnswerOptions&) override;
+                    RTCAnswerOptionsPlatform*) override;
   void SetLocalDescription(const WebRTCVoidRequest&) override;
   void SetLocalDescription(const WebRTCVoidRequest&,
                            const WebRTCSessionDescription&) override;

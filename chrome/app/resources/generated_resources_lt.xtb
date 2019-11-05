@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Sertifikatą pasirašantis asmuo</translation>
 <translation id="1145292499998999162">Papildinys užblokuotas</translation>
 <translation id="1145532888383813076">Ieškokite įrenginyje, programose, žiniatinklyje.</translation>
+<translation id="1146678959555564648">Įgalinti VR</translation>
 <translation id="114721135501989771">„Google“ išm. funkc. „Chrome“</translation>
 <translation id="1149401351239820326">Galiojimo laiko pabaigos mėnuo</translation>
 <translation id="1150565364351027703">Akiniai nuo saulės</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Saugoti duomenis „Google“ disko paskyroje</translation>
 <translation id="1288037062697528143">Nakties šviesa bus įjungta automatiškai saulei leidžiantis</translation>
 <translation id="1288300545283011870">Kalbos ypatybės</translation>
-<translation id="1289513325360489062">Nepavyko pasiekti šios svetainės duomenų</translation>
 <translation id="1293264513303784526">USB-C įrenginys (prievadas kairėje)</translation>
 <translation id="1293556467332435079">Failai</translation>
 <translation id="1296911687402551044">Prisegti pasirinktą skirtuką</translation>
@@ -813,7 +813,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2165421703844373933">Pasiekite Padėjėją pasakę „Ok Google“. Siekdami tausoti akumuliatoriaus energiją, pasirinkite „Įjungti (rekomenduojama)“. Padėjėjas reaguos, tik kai įrenginys bus prijungtas prie maitinimo šaltinio arba kraunamas.</translation>
 <translation id="2166369534954157698">Įlinkdama fechtuotojo špaga sublykčiojo ir pragręžė apvalų arbūzą</translation>
 <translation id="2169062631698640254">Vis tiek prisijungti</translation>
-<translation id="2170088579611075216">Leisti ir įvesti VR</translation>
 <translation id="2172784515318616985">Tęsti</translation>
 <translation id="2173302385160625112">Patikrinkite interneto ryšį</translation>
 <translation id="2173801458090845390">Pridėti užklausų teikimo ID prie šio įrenginio</translation>
@@ -1006,7 +1005,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2439545803278355377">Įveskite naują PIN kodą. PIN kodą turi sudaryti bent keturi simboliai ir jame turi būti raidžių, skaitmenų bei kitų simbolių.</translation>
 <translation id="2440604414813129000">Rodyti š&amp;altinį</translation>
 <translation id="2442916515643169563">Teksto šešėlis</translation>
-<translation id="2444119669991608829">Puslapis rodomas ne <ph name="LANGUAGE" /> kalba?</translation>
 <translation id="2445081178310039857">Reikalingas plėtinio šakninis katalogas.</translation>
 <translation id="2445484935443597917">Kurti naują profilį</translation>
 <translation id="2446585455334014596">„<ph name="APP_NAME" />“ nori patvirtinti jūsų tapatybę</translation>
@@ -1427,7 +1425,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3020183492814296499">Spartieji klavišai</translation>
 <translation id="3020990233660977256">Serijos numeris: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Drugelis</translation>
-<translation id="3021426244864538700">Prieiga prie šios svetainės duomenų</translation>
 <translation id="3021678814754966447">&amp;Žiūrėti rėmelio šaltinį</translation>
 <translation id="3022978424994383087">Nepavyko suprasti.</translation>
 <translation id="3023464535986383522">Teksto ištarimas</translation>
@@ -2218,7 +2215,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4159681666905192102">Tai yra vaikų paskyra, kurią tvarko <ph name="CUSTODIAN_EMAIL" /> ir <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Nežinoma klaviatūra</translation>
 <translation id="4168015872538332605">Kai kurie <ph name="PRIMARY_EMAIL" /> priklausantys nustatymai bendrinami su jumis. Šie nustatymai turi įtakos jūsų paskyrai, tik kai naudojate kelias paskyras.</translation>
-<translation id="4169535189173047238">Neleisti</translation>
 <translation id="4170314459383239649">Išvalyti išeinant</translation>
 <translation id="4172051516777682613">Visada rodyti</translation>
 <translation id="4175137578744761569">Šviesiai violetinė ir balta</translation>
@@ -2304,6 +2300,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4316850752623536204">Kūrėjo svetainė</translation>
 <translation id="4320177379694898372">Nėra interneto ryšio</translation>
 <translation id="4321442524549817090">R&amp;odyti URL</translation>
+<translation id="4322394346347055525">Uždaryti kitus skirtukus</translation>
 <translation id="4324577459193912240">Failas neužbaigtas</translation>
 <translation id="4325237902968425115">Pašalinama „<ph name="LINUX_APP_NAME" />“...</translation>
 <translation id="4330191372652740264">Ledinis vanduo</translation>
@@ -2757,10 +2754,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5029568752722684782">Išvalyti kopiją</translation>
 <translation id="5030338702439866405">Išdavė</translation>
 <translation id="5033266061063942743">Geometrinės figūros</translation>
-<translation id="5033865233969348410">VR režimu ši svetainė gali sužinoti apie jus tam tikros informacijos:
-  –  jūsų fizines savybes, pvz., ūgį.
-
-Prieš aktyvindami VR režimą įsitikinkite, kad ši svetainė patikima.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> nori naudoti kamerą ir mikrofoną</translation>
 <translation id="5036662165765606524">Neleisti jokiai svetainei automatiškai atsisiųsti kelis failus</translation>
 <translation id="5037676449506322593">Pasirinkti viską</translation>
@@ -3034,7 +3027,6 @@ Prieš aktyvindami VR režimą įsitikinkite, kad ši svetainė patikima.</trans
 <translation id="5449588825071916739">Žymėti visus skirtukus</translation>
 <translation id="5449716055534515760">Uždaryti lan&amp;gą</translation>
 <translation id="5454166040603940656">naudojant <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Kalba, į kurią verčiama</translation>
 <translation id="5457113250005438886">Netinkama</translation>
 <translation id="5457459357461771897">Skaityti ir ištrinti nuotraukas, muziką ir kitą mediją iš kompiuterio</translation>
 <translation id="5457599981699367932">Naršyti kaip svečiui</translation>
@@ -3094,11 +3086,6 @@ Prieš aktyvindami VR režimą įsitikinkite, kad ši svetainė patikima.</trans
 <translation id="5532223876348815659">Visuotinės</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> nori</translation>
 <translation id="5534304873398226603">Atmesti nuotrauką arba vaizdo įrašą</translation>
-<translation id="5534334044554683961">VR režimu ši svetainė gali sužinoti apie jus tam tikros informacijos:
-  –   jūsų fizines savybes, pvz., ūgį;
-  –   patalpos išdėstymą.
-
-Prieš aktyvindami VR, įsitikinkite, kad ši svetainė patikima.</translation>
 <translation id="5535941515421698170">Taip pat pašalinkite esamus duomenis iš šio įrenginio</translation>
 <translation id="5539221284352502426">Serveris atmetė įvestą slaptažodį. Taip galėjo nutikti dėl toliau išvardytų priežasčių. Slaptažodis yra per trumpas. Slaptažodį turi sudaryti ir skaičiai arba simboliai. Slaptažodis turi skirtis nuo ankstesnių slaptažodžių.</translation>
 <translation id="5541694225089836610">Veiksmą išjungė administratorius</translation>
@@ -3997,6 +3984,7 @@ Prieš aktyvindami VR, įsitikinkite, kad ši svetainė patikima.</translation>
 <translation id="6850286078059909152">Teksto spalva</translation>
 <translation id="6851497530878285708">Programa įgalinta</translation>
 <translation id="6853388645642883916">Atnaujinimo priemonė yra miego būsenos</translation>
+<translation id="68541483639528434">Uždaryti kitus skirtukus</translation>
 <translation id="6856623341093082836">Nustatyti ir koreguoti jutiklinio ekrano tikslumą</translation>
 <translation id="6857699260879628349">Gauti konfigūravimo informacijos</translation>
 <translation id="6860097299815761905">Įgaliotojo serverio nustatymai...</translation>
@@ -4109,7 +4097,6 @@ Prieš aktyvindami VR, įsitikinkite, kad ši svetainė patikima.</translation>
 <translation id="7019805045859631636">Greitas</translation>
 <translation id="7022562585984256452">Pagrindinis puslapis nustatytas.</translation>
 <translation id="7025190659207909717">Duomenų mobiliesiems paslaugos valdymas</translation>
-<translation id="7027891519253193555">Puslapis rodomas ne <ph name="LANGUAGE" /> kalba?</translation>
 <translation id="7029809446516969842">Slaptažodžiai</translation>
 <translation id="703001695939087067">Įjungtas langų apžvalgos režimas. Norėdami naršyti, paspauskite tabuliavimo klavišą.</translation>
 <translation id="7031608529463141342">„<ph name="WINDOW_TITLE" />“ – nuoseklusis prievadas prijungtas</translation>
@@ -4554,7 +4541,6 @@ Prieš aktyvindami VR, įsitikinkite, kad ši svetainė patikima.</translation>
 <translation id="7684718995427157417">Kad galėtumėte kurti ir testuoti programas, įgalinkite „Android“ derinimo tiltą (ADB). Atminkite, kad atlikus šį veiksmą bus leidžiama įdiegti „Android“ programas, kurios nebuvo patvirtintos „Google“, o norint išjungti ADB, reikės atkurti gamyklinius nustatymus.</translation>
 <translation id="7685049629764448582">„JavaScript“ atmintis</translation>
 <translation id="7685087414635069102">Reikia PIN kodo</translation>
-<translation id="7685301384041462804">Prieš aktyvindami VR režimą, įsitikinkite, kad ši svetainė patikima.</translation>
 <translation id="768549422429443215">Pridėkite kalbų arba pertvarkykite sąrašą.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Patvirtinkite naują slaptažodį</translation>
@@ -4953,11 +4939,9 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Vykdomas atsisiuntimas}one{Vykdomi atsisiuntimai}few{Vykdomi atsisiuntimai}many{Vykdomi atsisiuntimai}other{Vykdomi atsisiuntimai}}</translation>
 <translation id="8213449224684199188">Įjungtas nuotraukų režimas</translation>
 <translation id="8213577208796878755">Dar vienas pasiekiamas įrenginys.</translation>
-<translation id="8213996900880218548">Nori pasiekti šios svetainės duomenis</translation>
 <translation id="8214489666383623925">Atidaryti failą...</translation>
 <translation id="8214962590150211830">Pašalinti šį asmenį</translation>
 <translation id="8217399928341212914">Toliau blokuoti automatinius kelių failų atsisiuntimus</translation>
-<translation id="822519928942492333">Verčiama puslapio kalba</translation>
 <translation id="8225265270453771718">Programos lango bendrinimas</translation>
 <translation id="8225753906568652947">Išpirkti pasiūlymus</translation>
 <translation id="8226222018808695353">Uždrausta</translation>
@@ -5529,7 +5513,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9026731007018893674">atsisiųsti</translation>
 <translation id="9026852570893462412">Šis procesas gali užtrukti kelias minutes. Atsisiunčiamas virtualus įrenginys.</translation>
 <translation id="9027459031423301635">Atidaryti nuorodą naujame &amp;skirtuke</translation>
-<translation id="9029323097866369874">Leisti <ph name="DOMAIN" /> aktyvinti VR režimą?</translation>
 <translation id="9030515284705930323">Organizacija jūsų paskyroje neįgalino „Google Play“ parduotuvės. Jei reikia daugiau informacijos, susisiekite su administratoriumi.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Įklijuoti</translation>
@@ -5573,7 +5556,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9094038138851891550">Netinkamas naudotojo vardas</translation>
 <translation id="9094982973264386462">Pašalinti</translation>
 <translation id="9095253524804455615">Pašalinti</translation>
-<translation id="9095388113577226029">Daugiau kalbų...</translation>
 <translation id="9100610230175265781">Būtina slaptafrazė</translation>
 <translation id="9100765901046053179">Išplėstiniai nustatymai</translation>
 <translation id="9101691533782776290">Paleisti programą</translation>

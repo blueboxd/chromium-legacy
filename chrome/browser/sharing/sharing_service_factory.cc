@@ -14,6 +14,7 @@
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
@@ -98,12 +99,16 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<SharingFCMHandler> fcm_handler =
       std::make_unique<SharingFCMHandler>(gcm_driver, fcm_sender.get(),
                                           sync_prefs.get());
+  std::unique_ptr<SharingMessageSender> sharing_message_sender =
+      std::make_unique<SharingMessageSender>(fcm_sender.get(), sync_prefs.get(),
+                                             local_device_info_provider);
 
-  return new SharingService(
-      std::move(sync_prefs), std::move(vapid_key_manager),
-      std::move(sharing_device_registration), std::move(fcm_sender),
-      std::move(fcm_handler), gcm_driver, device_info_tracker,
-      local_device_info_provider, sync_service, notification_display_service);
+  return new SharingService(std::move(sync_prefs), std::move(vapid_key_manager),
+                            std::move(sharing_device_registration),
+                            std::move(fcm_sender), std::move(fcm_handler),
+                            std::move(sharing_message_sender), gcm_driver,
+                            device_info_tracker, local_device_info_provider,
+                            sync_service, notification_display_service);
 }
 
 content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(

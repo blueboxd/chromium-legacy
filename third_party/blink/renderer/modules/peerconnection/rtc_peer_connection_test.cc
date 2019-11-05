@@ -728,7 +728,7 @@ class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
   }
 
   void CreateAnswer(const WebRTCSessionDescriptionRequest& request,
-                    const WebRTCAnswerOptions&) override {
+                    RTCAnswerOptionsPlatform*) override {
     PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
         async_operation_action_, request);
   }

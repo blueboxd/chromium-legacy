@@ -1398,15 +1398,12 @@ template("ios_framework_bundle") {
         # sources, so filter any non-header source files from "sources". It is
         # less error prone that having the developer duplicate the list of all
         # headers in addition to "sources".
-        set_sources_assignment_filter([
-                                        "*.c",
-                                        "*.cc",
-                                        "*.cpp",
-                                        "*.m",
-                                        "*.mm",
-                                      ])
-        sources = invoker.sources
-        set_sources_assignment_filter([])
+        sources = []
+        foreach(_source, invoker.sources) {
+          if (get_path_info(_source, "extension") == "h") {
+            sources += [ _source ]
+          }
+        }
 
         args = [
                  rebase_path(_header_map_filename),

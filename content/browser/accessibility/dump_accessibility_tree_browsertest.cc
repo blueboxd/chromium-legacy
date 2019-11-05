@@ -283,6 +283,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunCSSTest(FILE_PATH_LITERAL("table-display.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCSSTableDisplayOther) {
+  RunCSSTest(FILE_PATH_LITERAL("table-display-other.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSTransform) {
   RunCSSTest(FILE_PATH_LITERAL("transform.html"));
 }

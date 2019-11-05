@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="2156074688469523661">Site-uri rămase (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Ca să trimiți ceva de pe telefon pe alt dispozitiv, activează sincronizarea în setările Chrome pe ambele dispozitive</translation>
-<translation id="2170088579611075216">Permite și intră în RV</translation>
 <translation id="2175927920773552910">Cod QR</translation>
 <translation id="218608176142494674">Trimitere</translation>
 <translation id="2227444325776770048">Continuă ca <ph name="USER_FULL_NAME" /></translation>
@@ -183,6 +182,7 @@
 <translation id="2321958826496381788">Trage cursorul până poți citi textul cu ușurință. Textul trebuie să fie cel puțin la fel de mare ca acesta după o atingere dublă pe un paragraf.</translation>
 <translation id="2323763861024343754">Stocarea site-urilor</translation>
 <translation id="2328985652426384049">Nu se poate conecta</translation>
+<translation id="2330129964253841015">Te avertizează dacă parolele tale au fost compromise</translation>
 <translation id="2349710944427398404">Totalul datelor folosite de Chrome, inclusiv conturile, marcajele și setările salvate</translation>
 <translation id="2353636109065292463">Se verifică conexiunea la internet</translation>
 <translation id="2359808026110333948">Continuă</translation>
@@ -190,6 +190,7 @@
 <translation id="2387895666653383613">Scalarea textului</translation>
 <translation id="2394602618534698961">Fișierele pe care le descarci apar aici</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2407481962792080328">Când te conectezi la Contul Google, această funcție este activată</translation>
 <translation id="2410754283952462441">Alege un cont</translation>
 <translation id="2414886740292270097">Întunecat</translation>
 <translation id="2416359993254398973">Chrome are nevoie de permisiune ca să acceseze camera foto pentru acest site.</translation>
@@ -198,6 +199,7 @@
 <translation id="2434158240863470628">Descărcare finalizată <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Accesul la locație</translation>
 <translation id="2450083983707403292">Dorești să se înceapă din nou descărcarea pentru <ph name="FILE_NAME" />?</translation>
+<translation id="246532703174860178">Trimite</translation>
 <translation id="2482878487686419369">Notificări</translation>
 <translation id="2490684707762498678">Gestionate de <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Asistentul Google în Chrome</translation>
@@ -412,7 +414,6 @@ Pentru a ajusta termenul de căutare, apasă lung pentru a selecta. Pentru a raf
 <translation id="4135200667068010335">Lista de dispozitive pe care să trimiți o filă este închisă.</translation>
 <translation id="4149994727733219643">Afișare simplificată pentru paginile web</translation>
 <translation id="4165986682804962316">Setări pentru site-uri</translation>
-<translation id="4169535189173047238">Nu permite</translation>
 <translation id="4170011742729630528">Serviciul nu este disponibil. Încercați din nou mai târziu.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> folosiți</translation>
 <translation id="4181841719683918333">Limbi</translation>
@@ -531,10 +532,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5011311129201317034"><ph name="SITE" /> dorește să se conecteze</translation>
 <translation id="5013696553129441713">Nicio sugestie nouă</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">În RV, acest site ar putea afla:
-  -  trăsăturile tale fizice, cum ar fi înălțimea.
-
-Asigură-te că site-ul este de încredere înainte să intri în RV.</translation>
 <translation id="5039804452771397117">Permite</translation>
 <translation id="5040262127954254034">Confidențialitate</translation>
 <translation id="5048398596102334565">Permite accesul site-urilor la senzorii de mișcare (recomandat)</translation>
@@ -608,11 +605,6 @@ Asigură-te că site-ul este de încredere înainte să intri în RV.</translati
 <translation id="5527082711130173040">Chrome necesită accesul la locație pentru a căuta dispozitive. <ph name="BEGIN_LINK1" />Actualizează permisiunile<ph name="END_LINK1" />. Accesul la locație este <ph name="BEGIN_LINK2" />dezactivat pentru acest dispozitiv<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Întreabă-mă înainte de a permite site-urilor să citească textul și imaginile din clipboard (recomandat)</translation>
 <translation id="5530766185686772672">Închide filele incognito</translation>
-<translation id="5534334044554683961">În RV, acest site ar putea afla:
-  -   trăsăturile tale fizice, cum ar fi înălțimea,
-  -   configurația camerei în care te afli.
-
-Asigură-te că site-ul este de încredere înainte să intri în RV.</translation>
 <translation id="5534640966246046842">Site-ul a fost copiat</translation>
 <translation id="5556459405103347317">Reîncarcă</translation>
 <translation id="5561549206367097665">Se așteaptă rețeaua…</translation>
@@ -903,7 +895,6 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="7665369617277396874">Adaugă un cont</translation>
 <translation id="766587987807204883">Articolele apar aici și le poți citi chiar dacă ești offline</translation>
 <translation id="7682724950699840886">Încearcă următoarele sfaturi: asigură-te că există spațiu suficient pe dispozitiv, încearcă să exporți din nou.</translation>
-<translation id="7685301384041462804">Asigură-te că site-ul este de încredere înainte de a intra în RV.</translation>
 <translation id="7698359219371678927">Creează un e-mail în <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Completează automat căutările și adresele URL</translation>
 <translation id="7725024127233776428">Paginile pe care le marchezi apar aici</translation>
@@ -1079,7 +1070,6 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8998729206196772491">Te conectezi cu un cont gestionat de <ph name="MANAGED_DOMAIN" /> și acorzi administratorului acestuia controlul asupra datelor Chrome. Datele vor fi asociate definitiv acestui cont. Dacă te deconectezi de la Chrome, datele se vor șterge de pe acest dispozitiv, dar vor rămâne stocate în Contul Google.</translation>
 <translation id="9019902583201351841">Gestionat de părinții tăi</translation>
 <translation id="9028914725102941583">Activează sincronizarea ca să trimiți de pe un dispozitiv pe altul</translation>
-<translation id="9029323097866369874">Permiți ca <ph name="DOMAIN" /> să intre în VR?</translation>
 <translation id="9040142327097499898">Notificările sunt permise. Locația este dezactivată pentru acest dispozitiv.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{Un videoclip}few{# videoclipuri}other{# de videoclipuri}}</translation>
 <translation id="9050666287014529139">Expresie de acces</translation>

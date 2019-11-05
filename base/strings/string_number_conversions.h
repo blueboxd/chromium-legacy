@@ -141,6 +141,17 @@ BASE_EXPORT bool HexStringToUInt64(StringPiece input, uint64_t* output);
 BASE_EXPORT bool HexStringToBytes(StringPiece input,
                                   std::vector<uint8_t>* output);
 
+// Same as HexStringToBytes, but for an std::string.
+BASE_EXPORT bool HexStringToString(StringPiece input, std::string* output);
+
+// Decodes the hex string |input| into a presized |output|. The output buffer
+// must be sized exactly to |input.size() / 2| or decoding will fail and no
+// bytes will be written to |output|. Decoding an empty input is also
+// considered a failure. When decoding fails due to encountering invalid input
+// characters, |output| will have been filled with the decoded bytes up until
+// the failure.
+BASE_EXPORT bool HexStringToSpan(StringPiece input, base::span<uint8_t> output);
+
 }  // namespace base
 
 #endif  // BASE_STRINGS_STRING_NUMBER_CONVERSIONS_H_

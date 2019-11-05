@@ -5098,10 +5098,7 @@ interface NDEFRecord
     getter lang
     getter mediaType
     getter recordType
-    method arrayBuffer
     method constructor
-    method json
-    method text
 interface NDEFWriter
     attribute @@toStringTag
     method constructor

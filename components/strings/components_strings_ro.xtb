@@ -172,6 +172,7 @@
 <translation id="173080396488393970">Acest tip de card nu este acceptat</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Încearcă să contactezi administratorul sistemului.</translation>
+<translation id="1739107442478692187">A avut loc o încălcare a securității datelor pe site-ul sau în aplicația folosită. Chrome recomandă să verifici parolele salvate și să-ți schimbi acum parola în <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Introdu o lună de expirare validă</translation>
 <translation id="1743520634839655729">Pentru a plăti mai rapid data viitoare, salvează cardul, numele și adresa de facturare în Contul Google și pe acest dispozitiv.</translation>
 <translation id="1743570585616704562">Nu este recunoscută</translation>
@@ -234,6 +235,7 @@
 <translation id="2094505752054353250">Nepotrivire domeniu</translation>
 <translation id="2096368010154057602">Departament</translation>
 <translation id="2099652385553570808">Capsare triplă în stânga</translation>
+<translation id="2100280972184758440">Parola a fost compromisă</translation>
 <translation id="2102134110707549001">Sugerează o parolă puternică…</translation>
 <translation id="2108755909498034140">repornește computerul;</translation>
 <translation id="2111256659903765347">Super-A</translation>
@@ -241,6 +243,7 @@
 <translation id="2114841414352855701">Politica este ignorată, deoarece a fost înlocuită de <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Emis către: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2119867082804433120">Perforare în dreapta jos</translation>
+<translation id="2124528555835617522">A avut loc o încălcare a securității datelor pe site-ul sau în aplicația folosită. Chrome recomandă să verifici acum parolele salvate.</translation>
 <translation id="2129079103035905234">Senzori de mișcare</translation>
 <translation id="213826338245044447">Marcaje mobile</translation>
 <translation id="214556005048008348">Anulează plata</translation>
@@ -478,11 +481,13 @@
 <translation id="3282497668470633863">Adaugă numele de pe card</translation>
 <translation id="3287510313208355388">Descarcă când ești online</translation>
 <translation id="3293642807462928945">Află mai multe despre politica <ph name="POLICY_NAME" /></translation>
+<translation id="3295439534709115864">A avut loc o încălcare a securității datelor pe site-ul sau în aplicația folosită. Chrome recomandă să-ți schimbi acum parola în <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Nu s-au găsit rezultate de căutare</translation>
 <translation id="3320021301628644560">Adaugă o adresă de facturare</translation>
 <translation id="3324983252691184275">Roșu aprins</translation>
 <translation id="3338095232262050444">Securizat</translation>
 <translation id="3355823806454867987">Modifica setările proxy...</translation>
+<translation id="3360103848165129075">Foaia handlerului pentru plăți</translation>
 <translation id="3362968246557010467">Politica a fost copiată automat din politica învechită <ph name="OLD_POLICY" />. Ar trebui să folosești această politică.</translation>
 <translation id="3366477098757335611">Vezi cardurile</translation>
 <translation id="3369192424181595722">Eroare de ceas</translation>
@@ -602,6 +607,7 @@
 <translation id="3949601375789751990">Istoricul de navigare apare aici</translation>
 <translation id="3949870428812919180">Nicio metodă de plată salvată</translation>
 <translation id="3950820424414687140">Conectează-te</translation>
+<translation id="3961148744525529027">Foaia handlerului pentru plăți este pe jumătate deschisă</translation>
 <translation id="3962859241508114581">Melodia anterioară</translation>
 <translation id="3963837677003247395">Continui manual?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Niciunul}=1{De la 1 site }few{De la # site-uri }other{De la # de site-uri }}</translation>
@@ -1334,6 +1340,7 @@ Detalii suplimentare:
 <translation id="7637571805876720304">Elimini cardul de credit din Chromium?</translation>
 <translation id="7638605456503525968">Porturi seriale</translation>
 <translation id="7639968568612851608">Gri închis</translation>
+<translation id="7653957176542370971">Foaia handlerului pentru plăți este închisă</translation>
 <translation id="765676359832457558">Ascundeți setările avansate...</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7662298039739062396">Setare controlată de o extensie</translation>
@@ -1463,6 +1470,7 @@ Detalii suplimentare:
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8262952874573525464">Broșare pe marginea de jos</translation>
 <translation id="8267698848189296333">Te conectezi ca <ph name="USERNAME" /></translation>
+<translation id="8277900682056760511">Foaia handlerului pentru plăți este deschisă</translation>
 <translation id="8281084378435768645">Fotografie-Mare</translation>
 <translation id="8286036467436129157">Conectați-vă</translation>
 <translation id="8288807391153049143">Afișează certificatul</translation>

@@ -140,7 +140,7 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 std::unique_ptr<View> DialogDelegate::CreateFootnoteView() {
-  return nullptr;
+  return std::move(footnote_view_);
 }
 
 bool DialogDelegate::Cancel() {

@@ -153,6 +153,7 @@
 <translation id="2063539687800151747">Епиграф</translation>
 <translation id="207477615537953741">Семантиката е изключена</translation>
 <translation id="2086961585857038472">Следващата дума</translation>
+<translation id="2087981446621639008">подр. в спис. с опис.</translation>
 <translation id="2089387485033699258">bg</translation>
 <translation id="2091933974477985526">Предишната текстова област, която може да се редактира</translation>
 <translation id="2100350898815792233">Всички препинателни знаци</translation>
@@ -192,6 +193,7 @@
 <translation id="2416512023405990736">Квадратче без отметка</translation>
 <translation id="2417569100218200841">Информация за съдържанието</translation>
 <translation id="2417948780551741035">Бележки в края</translation>
+<translation id="2419852971200420169">Списък с описания</translation>
 <translation id="2421113964388408478">Изтриване</translation>
 <translation id="2422937916923936891">Квадратче за отметка на елемент от меню</translation>
 <translation id="2428534162001909979">Менюта с команди</translation>
@@ -370,6 +372,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{въпросителен знак}other{# въпросителни знака}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{карета}other{# карети}}</translation>
 <translation id="352577523970648069">Текстово поле, което може да се редактира</translation>
+<translation id="3538907380453898475">спис. с опис.</translation>
 <translation id="3549141990712742152">изрязване на <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Докоснете с 2 пръста, за да спрете временно говора</translation>
 <translation id="3568702578574425662">„<ph name="NAME" />“, квадратче без отметка</translation>
@@ -778,6 +781,7 @@
 <translation id="6378394210114975876">млечнолилаво</translation>
 <translation id="6385591741672306837">кол.</translation>
 <translation id="6387719785439924554">странично съдържание</translation>
+<translation id="6393014464788431702">Деактивиране на всички филтри за събития</translation>
 <translation id="6411426777058107714">Няма предишен бутон за избор.</translation>
 <translation id="6414968628640960377">Предишният различен елемент.</translation>
 <translation id="6417265370957905582">Google Асистент</translation>
@@ -913,6 +917,7 @@
 <translation id="7332592614823088566">Ред <ph name="ROWINDEX" /> от <ph name="ROWTOTAL" />, графа <ph name="COLINDEX" /> от <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">има изскачащ прозорец</translation>
 <translation id="7356165926712028380">Превключване към 8-точково брайлово писмо</translation>
+<translation id="7356610683936413584">Подробности в списък с описания</translation>
 <translation id="7362871137496673139">Няма предишно заглавие от второ ниво.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{амперсанд}other{# амперсанда}}</translation>
 <translation id="737396357417333429">clk</translation>
@@ -1091,6 +1096,7 @@
 <translation id="8096975275316362544">бледо ментовозелено</translation>
 <translation id="8098587210054821856">шистовосиво</translation>
 <translation id="8110647606445335195">Няма отличителни белези на ARIA.</translation>
+<translation id="8121539003537428024">Активиране на всички филтри за събития</translation>
 <translation id="812886159861361726">Изтеглянето на <ph name="FILE_NAME" /> спря</translation>
 <translation id="8138880386467279117">Докосване</translation>
 <translation id="8153880621934657047">Не сте в таблицата.</translation>

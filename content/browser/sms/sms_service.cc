@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "content/browser/sms/sms_metrics.h"
+#include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
@@ -22,19 +23,19 @@ using blink::mojom::SmsStatus;
 namespace content {
 
 SmsService::SmsService(
-    SmsProvider* provider,
+    SmsFetcher* fetcher,
     const url::Origin& origin,
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver)
     : FrameServiceBase(host, std::move(receiver)),
-      sms_provider_(provider),
+      fetcher_(fetcher),
       origin_(origin) {}
 
 SmsService::SmsService(
-    SmsProvider* provider,
+    SmsFetcher* fetcher,
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver)
-    : SmsService(provider,
+    : SmsService(fetcher,
                  host->GetLastCommittedOrigin(),
                  host,
                  std::move(receiver)) {}
@@ -46,7 +47,7 @@ SmsService::~SmsService() {
 
 // static
 void SmsService::Create(
-    SmsProvider* provider,
+    SmsFetcher* fetcher,
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver) {
   DCHECK(host);
@@ -54,45 +55,36 @@ void SmsService::Create(
   // SmsService owns itself. It will self-destruct when a mojo interface
   // error occurs, the render frame host is deleted, or the render frame host
   // navigates to a new document.
-  new SmsService(provider, host, std::move(receiver));
+  new SmsService(fetcher, host, std::move(receiver));
 }
 
 void SmsService::Receive(ReceiveCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (callback_) {
     std::move(callback_).Run(SmsStatus::kCancelled, base::nullopt);
-    sms_provider_->RemoveObserver(this);
+    fetcher_->Unsubscribe(origin_, this);
   }
 
   start_time_ = base::TimeTicks::Now();
 
-  sms_provider_->AddObserver(this);
-
   callback_ = std::move(callback);
 
-  sms_provider_->Retrieve();
+  fetcher_->Subscribe(origin_, this);
 }
 
-bool SmsService::OnReceive(const url::Origin& origin,
-                           const std::string& one_time_code,
+void SmsService::OnReceive(const std::string& one_time_code,
                            const std::string& sms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (origin_ != origin)
-    return false;
 
   DCHECK(!sms_);
   DCHECK(!start_time_.is_null());
 
   RecordSmsReceiveTime(base::TimeTicks::Now() - start_time_);
 
-  sms_provider_->RemoveObserver(this);
-
   sms_ = sms;
   receive_time_ = base::TimeTicks::Now();
 
   OpenInfoBar(one_time_code);
-
-  return true;
 }
 
 void SmsService::OpenInfoBar(const std::string& one_time_code) {
@@ -141,7 +133,7 @@ void SmsService::CleanUp() {
   sms_.reset();
   start_time_ = base::TimeTicks();
   receive_time_ = base::TimeTicks();
-  sms_provider_->RemoveObserver(this);
+  fetcher_->Unsubscribe(origin_, this);
 }
 
 }  // namespace content

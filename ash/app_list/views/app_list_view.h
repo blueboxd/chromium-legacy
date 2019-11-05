@@ -425,6 +425,11 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Creates an Accessibility Event if the state transition warrants one.
   void MaybeCreateAccessibilityEvent(ash::AppListViewState new_state);
 
+  // Ensures that the app list widget bounds are set to the preferred bounds for
+  // the current app list view state - intended to be called when the
+  // display bounds available to the app list view change.
+  void EnsureWidgetBoundsMatchCurrentState();
+
   // Returns the remaining vertical distance for the bounds movement
   // animation.
   int GetRemainingBoundsAnimationDistance() const;

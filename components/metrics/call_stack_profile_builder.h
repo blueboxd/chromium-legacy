@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/profiler/metadata_recorder.h"
 #include "base/profiler/profile_builder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
@@ -69,8 +70,8 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
 
   // base::ProfileBuilder:
   base::ModuleCache* GetModuleCache() override;
-  void RecordMetadata(base::ProfileBuilder::MetadataProvider*
-                          metadata_provider = nullptr) override;
+  void RecordMetadata(
+      base::ProfileBuilder::MetadataProvider* metadata_provider) override;
   void OnSampleCompleted(std::vector<base::Frame> frames) override;
   void OnProfileCompleted(base::TimeDelta profile_duration,
                           base::TimeDelta sampling_period) override;
@@ -99,14 +100,51 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
                     const CallStackProfile::Stack* stack2) const;
   };
 
-  // Adds the already-collected metadata to the sample.
-  void AddSampleMetadata(CallStackProfile* profile,
-                         CallStackProfile::StackSample* sample);
+  // Comparison function for the metadata map.
+  struct MetadataKey;
+  struct MetadataKeyCompare {
+    bool operator()(const MetadataKey& a, const MetadataKey& b) const;
+  };
 
-  // Adds the specified name hash to the profile's name hash collection if it's
-  // not already in it. Returns the index of the name hash in the collection.
-  size_t MaybeAddNameHashToProfile(CallStackProfile* profile,
-                                   uint64_t name_hash);
+  // Definitions for a map-based representation of sample metadata.
+  struct MetadataKey {
+    MetadataKey(uint64_t name_hash, base::Optional<int64_t> key);
+
+    MetadataKey(const MetadataKey& other);
+    MetadataKey& operator=(const MetadataKey& other);
+
+    // The name_hash and optional user-specified key uniquely identifies a
+    // metadata value. See base::MetadataRecorder for details.
+    uint64_t name_hash;
+    base::Optional<int64_t> key;
+  };
+  using MetadataMap = std::map<MetadataKey, int64_t, MetadataKeyCompare>;
+
+  // Creates the metdata map from the array of items.
+  MetadataMap CreateMetadataMap(base::ProfileBuilder::MetadataItemArray items,
+                                size_t item_count);
+
+  // Returns all metadata items with new values in the current sample.
+  MetadataMap GetNewOrModifiedMetadataItems(const MetadataMap& current_items,
+                                            const MetadataMap& previous_items);
+
+  // Returns all metadata items deleted since the previous sample.
+  MetadataMap GetDeletedMetadataItems(const MetadataMap& current_items,
+                                      const MetadataMap& previous_items);
+
+  // Creates MetadataItems for the currently active metadata, adding new name
+  // hashes to |metadata_name_hashes| if necessary. The same
+  // |metadata_name_hashes| must be passed to each invocation, and must not be
+  // modified outside this function.
+  google::protobuf::RepeatedPtrField<CallStackProfile::MetadataItem>
+  CreateSampleMetadata(
+      google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes);
+
+  // Appends the |name_hash| to |name_hashes| if it's not already
+  // present. Returns its index in |name_hashes|.
+  size_t MaybeAppendNameHash(
+      uint64_t name_hash,
+      google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes);
 
   // The module cache to use for the duration the sampling associated with this
   // ProfileBuilder.
@@ -138,8 +176,9 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   // The data fetched from the MetadataRecorder for the next sample.
   base::ProfileBuilder::MetadataItemArray metadata_items_;
   size_t metadata_item_count_ = 0;
+
   // The data fetched from the MetadataRecorder for the previous sample.
-  std::map<uint64_t, int64_t> previous_items_;
+  MetadataMap previous_items_;
 
   // Maps metadata hash to index in |metadata_name_hash| array.
   std::unordered_map<uint64_t, int> metadata_hashes_cache_;

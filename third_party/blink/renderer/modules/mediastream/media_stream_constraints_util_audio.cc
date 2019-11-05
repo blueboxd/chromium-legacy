@@ -22,9 +22,9 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_sets.h"
+#include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 
 // TODO(crbug.com/704136): Replace the use of std::vector by WTF::Vector.
 

@@ -167,7 +167,6 @@
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Si quieres compartir contenido entre tu teléfono y otro dispositivo, activa la sincronización en la configuración de Chrome en ambos dispositivos.</translation>
-<translation id="2170088579611075216">Permitir y acceder a la RV</translation>
 <translation id="2175927920773552910">Código QR</translation>
 <translation id="218608176142494674">Uso compartido</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
@@ -183,6 +182,7 @@
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer esto cómodamente. El texto debería verse, al menos, de este tamaño al tocar dos veces un párrafo.</translation>
 <translation id="2323763861024343754">Almacenamiento del sitio</translation>
 <translation id="2328985652426384049">No puedes acceder</translation>
+<translation id="2330129964253841015">Advertirme si se vulneran las contraseñas</translation>
 <translation id="2349710944427398404">Cantidad total de datos que usa Chrome, lo que incluye las cuentas, favoritos y opciones de configuración guardadas</translation>
 <translation id="2353636109065292463">Revisando tu conexión a Internet</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -190,6 +190,7 @@
 <translation id="2387895666653383613">Ajuste de texto</translation>
 <translation id="2394602618534698961">Los archivos que descargues aparecerán aquí</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
+<translation id="2407481962792080328">Se activa esta función cuando accedes a tu Cuenta de Google</translation>
 <translation id="2410754283952462441">Elegir una cuenta</translation>
 <translation id="2414886740292270097">Oscuro</translation>
 <translation id="2416359993254398973">Chrome necesita permiso para acceder a tu cámara para este sitio.</translation>
@@ -198,6 +199,7 @@
 <translation id="2434158240863470628">Se completó la descarga <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Acceso a la ubicación</translation>
 <translation id="2450083983707403292">¿Deseas comenzar la descarga de <ph name="FILE_NAME" /> de nuevo?</translation>
+<translation id="246532703174860178">Compartir</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2490684707762498678">Administradas por <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Asistente de Google en Chrome</translation>
@@ -412,7 +414,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4135200667068010335">La lista de dispositivos con los que se puede compartir una pestaña está cerrada.</translation>
 <translation id="4149994727733219643">Vista simplificada para páginas web</translation>
 <translation id="4165986682804962316">Configuración del sitio</translation>
-<translation id="4169535189173047238">No permitir</translation>
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
 <translation id="4179980317383591987">Datos utilizados: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -531,10 +532,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5011311129201317034"><ph name="SITE" /> desea conectarse</translation>
 <translation id="5013696553129441713">No hay sugerencias nuevas</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Mientras usas el modo RV, es posible que este sitio obtenga la siguiente información:
-- tus características físicas, como tu altura
-
-Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidad</translation>
 <translation id="5048398596102334565">Permitir que los sitios accedan a los sensores de movimiento (recomendado)</translation>
@@ -608,11 +605,6 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="5527082711130173040">Chrome debe acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualiza los permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Preguntar antes de permitir que los sitios lean el texto y las imágenes del portapapeles (recomendado)</translation>
 <translation id="5530766185686772672">Cerrar pest. de incógnito</translation>
-<translation id="5534334044554683961">Mientras usas el modo RV, es posible que este sitio obtenga la siguiente información:
-- tus características físicas, como tu altura
-- la disposición de tu habitación
-
-Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</translation>
 <translation id="5534640966246046842">Se copió el sitio</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5561549206367097665">Esperando red…</translation>
@@ -903,7 +895,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="7665369617277396874">Agregar cuenta</translation>
 <translation id="766587987807204883">Los artículos aparecen aquí, y puedes leerlos incluso cuando estás sin conexión</translation>
 <translation id="7682724950699840886">Intenta las siguientes sugerencias: Antes de exportar las contraseñas nuevamente, asegúrate de que haya espacio suficiente en tu dispositivo.</translation>
-<translation id="7685301384041462804">Asegúrate de que el sitio sea confiable antes de entrar al modo RV.</translation>
 <translation id="7698359219371678927">Crear correo electrónico en <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autocompletar búsquedas y URL</translation>
 <translation id="7725024127233776428">Las páginas que agregues a favoritos aparecerán aquí</translation>
@@ -1079,7 +1070,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="8998729206196772491">Estás accediendo con una cuenta administrada por <ph name="MANAGED_DOMAIN" /> y dándole permiso a su administrador para que controle tus datos de Chrome. Tus datos se vincularán de forma permanente a esta cuenta. Si sales de Chrome, tus datos se borrarán en este dispositivo, pero quedarán guardados en tu cuenta de Google.</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9028914725102941583">Activa la sincronización para compartir contenido entre dispositivos</translation>
-<translation id="9029323097866369874">¿Quieres permitir que <ph name="DOMAIN" /> entre al modo RV?</translation>
 <translation id="9040142327097499898">Las notificaciones están habilitadas. La ubicación está desactivada en este dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videos}}</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>

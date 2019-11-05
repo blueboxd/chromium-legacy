@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -265,5 +266,11 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
     @VisibleForTesting
     static void forcePromoStateForTests(@Nullable @PromoState Integer promoState) {
         sPromoStateForTests = promoState;
+    }
+
+    @VisibleForTesting
+    static void setPrefPersonalizedSigninPromoDeclinedForTests(boolean isDeclined) {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED, isDeclined);
     }
 }

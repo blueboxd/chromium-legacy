@@ -1018,7 +1018,12 @@
         android:launchMode="singleTask"
         android:name="org.chromium.android_webview.devui.MainActivity"
         android:process=":webview_apk"
-        android:theme="@android:style/Theme.DeviceDefault"/>
+        android:theme="@android:style/Theme.DeviceDefault">
+      <intent-filter>
+        <action android:name="com.android.webview.SHOW_DEV_UI"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
+    </activity>
     <activity
         android:enabled="false"
         android:excludeFromRecents="true"

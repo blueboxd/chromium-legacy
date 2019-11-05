@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -27,30 +28,31 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
     private List<TabSuggestion> mPrefetchedResults = new LinkedList<>();
     private TabContext mPrefetchedTabContext;
     private TabModelSelector mTabModelSelector;
+    private ObserverList<TabSuggestionsObserver> mTabSuggestionsObservers;
+    private int mRemainingFetchers;
 
     public TabSuggestionsOrchestrator(
             TabModelSelector selector, ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         mTabModelSelector = selector;
         mTabSuggestionsFetchers = new LinkedList<>();
         mTabSuggestionsFetchers.add(new TabSuggestionsClientFetcher());
+        mTabSuggestionsObservers = new ObserverList<>();
         mTabContextObserver = new TabContextObserver(selector) {
             @Override
             public void onTabContextChanged(@TabContextChangeReason int changeReason) {
+                synchronized (mPrefetchedResults) {
+                    if (mPrefetchedTabContext != null) {
+                        for (TabSuggestionsObserver tabSuggestionsObserver :
+                                mTabSuggestionsObservers) {
+                            tabSuggestionsObserver.onTabSuggestionInvalidated();
+                        }
+                    }
+                }
                 prefetchSuggestions();
             }
         };
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         activityLifecycleDispatcher.register(this);
-    }
-
-    @Override
-    public List<TabSuggestion> getSuggestions(TabContext tabContext) {
-        synchronized (mPrefetchedResults) {
-            if (tabContext.equals(mPrefetchedTabContext)) {
-                return aggregateResults(mPrefetchedResults);
-            }
-            return new LinkedList<>();
-        }
     }
 
     private List<TabSuggestion> aggregateResults(List<TabSuggestion> tabSuggestions) {
@@ -90,10 +92,12 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
     protected void prefetchSuggestions() {
         TabContext tabContext = TabContext.createCurrentContext(mTabModelSelector);
         synchronized (mPrefetchedResults) {
+            mRemainingFetchers = 0;
             mPrefetchedTabContext = tabContext;
             mPrefetchedResults = new LinkedList<>();
             for (TabSuggestionsFetcher tabSuggestionsFetcher : mTabSuggestionsFetchers) {
                 if (tabSuggestionsFetcher.isEnabled()) {
+                    mRemainingFetchers++;
                     tabSuggestionsFetcher.fetch(tabContext, res -> prefetchCallback(res));
                 }
             }
@@ -102,9 +106,28 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
 
     private void prefetchCallback(TabSuggestionsFetcherResults suggestions) {
         synchronized (mPrefetchedResults) {
+            // If the tab context has changed since the fetchers were used,
+            // we simply ignore the result as it is no longer relevant.
             if (suggestions.tabContext.equals(mPrefetchedTabContext)) {
+                mRemainingFetchers--;
                 mPrefetchedResults.addAll(suggestions.tabSuggestions);
+                if (mRemainingFetchers == 0) {
+                    for (TabSuggestionsObserver tabSuggestionsObserver : mTabSuggestionsObservers) {
+                        tabSuggestionsObserver.onNewSuggestion(
+                                aggregateResults(mPrefetchedResults));
+                    }
+                }
             }
         }
+    }
+
+    @Override
+    public void addObserver(TabSuggestionsObserver tabSuggestionsObserver) {
+        mTabSuggestionsObservers.addObserver(tabSuggestionsObserver);
+    }
+
+    @Override
+    public void removeObserver(TabSuggestionsObserver tabSuggestionsObserver) {
+        mTabSuggestionsObservers.removeObserver(tabSuggestionsObserver);
     }
 }

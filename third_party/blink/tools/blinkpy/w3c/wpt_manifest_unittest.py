@@ -125,3 +125,29 @@ class WPTManifestUnitTest(unittest.TestCase):
         manifest = WPTManifest(manifest_json)
         self.assertEqual(manifest.all_url_items(),
                          {u'/test.any.html': [u'/test.any.html', {}]})
+
+    def test_file_for_test(self):
+        # Test that we can lookup a test's filename for various cases like
+        # variants and multi-globals.
+        manifest_json = '''
+ {
+    "items": {
+        "manual": {},
+        "reftest": {},
+        "testharness": {
+            "test.any.js": [
+                ["/test.any.html", {}],
+                ["/test.any.worker.html", {}]
+            ]
+        }
+    }
+}       '''
+        manifest = WPTManifest(manifest_json)
+        self.assertEqual(manifest.all_url_items(),
+                         {u'/test.any.html': [u'/test.any.html', {}],
+                          u'/test.any.worker.html': [u'/test.any.worker.html', {}]})
+        # Ensure that we can get back to `test.any.js` from both of the tests.
+        self.assertEqual(manifest.file_path_for_test_url('/test.any.html'),
+                         'test.any.js')
+        self.assertEqual(manifest.file_path_for_test_url('/test.any.worker.html'),
+                         'test.any.js')

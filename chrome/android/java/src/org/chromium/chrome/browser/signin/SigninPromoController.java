@@ -21,6 +21,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.SigninActivity.AccessPoint;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
@@ -349,6 +350,18 @@ public class SigninPromoController {
             int numImpressions = preferences.getInt(mImpressionCountName, 0) + 1;
             preferences.edit().putInt(mImpressionCountName, numImpressions).apply();
         }
+    }
+
+    @VisibleForTesting
+    public static void setSigninPromoImpressionsCountBookmarksForTests(int count) {
+        SharedPreferencesManager.getInstance().writeInt(
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS, count);
+    }
+
+    @VisibleForTesting
+    public static int getSigninPromoImpressionsCountBookmarksForTests() {
+        return SharedPreferencesManager.getInstance().readInt(
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS, 0);
     }
 
     @VisibleForTesting

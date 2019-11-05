@@ -28,6 +28,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_navigation_widget.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/system/status_area_widget.h"
@@ -222,24 +223,22 @@ class HideAnimationObserver : public ui::ImplicitAnimationObserver {
 };
 
 // Forwards gesture events to ShelfLayoutManager to hide the hotseat
-// when it is extended.
+// when it is kExtended.
 class HotseatEventHandler : public ui::EventHandler,
-                            public HotseatWidget::Observer {
+                            public ShelfLayoutManagerObserver {
  public:
-  HotseatEventHandler(ShelfLayoutManager* shelf_layout_manager,
-                      HotseatWidget* widget)
-      : shelf_layout_manager_(shelf_layout_manager), widget_(widget) {
-    widget_->AddObserver(this);
+  explicit HotseatEventHandler(ShelfLayoutManager* shelf_layout_manager)
+      : shelf_layout_manager_(shelf_layout_manager) {
+    shelf_layout_manager_->AddObserver(this);
     Shell::Get()->AddPreTargetHandler(this);
   }
   ~HotseatEventHandler() override {
-    widget_->RemoveObserver(this);
+    shelf_layout_manager_->RemoveObserver(this);
     Shell::Get()->RemovePreTargetHandler(this);
   }
 
-  // HotseatWidget::Observer:
-  void OnHotseatStateChanged() override {
-    const HotseatState state = widget_->state();
+  // ShelfLayoutManagerObserver:
+  void OnHotseatStateChanged(HotseatState state) override {
     should_forward_event_ = state == HotseatState::kExtended;
   }
 
@@ -255,7 +254,6 @@ class HotseatEventHandler : public ui::EventHandler,
   // Whether events should get forwarded to ShelfLayoutManager.
   bool should_forward_event_ = false;
   ShelfLayoutManager* const shelf_layout_manager_;  // unowned.
-  HotseatWidget* const widget_;                     // unowned.
   DISALLOW_COPY_AND_ASSIGN(HotseatEventHandler);
 };
 
@@ -370,8 +368,6 @@ ShelfLayoutManager::~ShelfLayoutManager() {
     observer.WillDeleteShelfLayoutManager();
   display::Screen::GetScreen()->RemoveObserver(this);
   auto* shell = Shell::Get();
-  if (shelf_widget_->hotseat_widget())
-    shelf_widget_->hotseat_widget()->RemoveObserver(this);
   shell->locale_update_controller()->RemoveObserver(this);
   shell->RemoveShellObserver(this);
   shell->lock_state_controller()->RemoveObserver(this);
@@ -390,7 +386,6 @@ void ShelfLayoutManager::InitObservers() {
   shell->lock_state_controller()->AddObserver(this);
   shell->activation_client()->AddObserver(this);
   shell->locale_update_controller()->AddObserver(this);
-  shelf_widget_->hotseat_widget()->AddObserver(this);
   state_.session_state = shell->session_controller()->GetSessionState();
   shelf_background_type_ = GetShelfBackgroundType();
   wallpaper_controller_observer_.Add(shell->wallpaper_controller());
@@ -858,15 +853,6 @@ void ShelfLayoutManager::OnOverviewModeEnded() {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnHotseatStateChanged() {
-  if (hotseat_state() == HotseatState::kExtended) {
-    hotseat_event_handler_ = std::make_unique<HotseatEventHandler>(
-        this, shelf_widget_->hotseat_widget());
-  } else {
-    hotseat_event_handler_.reset();
-  }
-}
-
 void ShelfLayoutManager::OnAppListVisibilityWillChange(bool shown,
                                                        int64_t display_id) {
   // We respond to "will change" and "did change" notifications in the same
@@ -973,19 +959,18 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   if (suspend_visibility_update_)
     return;
 
-  const HotseatState hotseat_previous_state = hotseat_state();
   State state;
+  const HotseatState previous_hotseat_state = hotseat_state();
   state.visibility_state = visibility_state;
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
   state.window_state =
       GetShelfWorkspaceWindowState(shelf_widget_->GetNativeWindow());
+  shelf_widget_->hotseat_widget()->set_state(
+      CalculateHotseatState(state.visibility_state, state.auto_hide_state));
   // Preserve the log in screen states.
   state.session_state = state_.session_state;
   state.pre_lock_screen_animation_active =
       state_.pre_lock_screen_animation_active;
-
-  const HotseatState hotseat_new_state =
-      CalculateHotseatState(state.visibility_state, state.auto_hide_state);
 
   // Force an update because drag events affect the shelf bounds and we
   // should animate back to the normal bounds at the end of the drag event.
@@ -993,7 +978,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
                        drag_status_ == kDragCompleteInProgress);
 
   if (!force_update && state_.Equals(state) &&
-      hotseat_new_state == hotseat_previous_state) {
+      previous_hotseat_state == hotseat_state()) {
     return;  // Nothing changed.
   }
 
@@ -1039,7 +1024,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   }
 
   TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, hotseat_new_state);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, hotseat_state());
   UpdateBoundsAndOpacity(
       target_bounds, true /* animate */,
       delay_background_change ? update_shelf_observer_ : nullptr);
@@ -1053,7 +1038,15 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     for (auto& observer : observers_)
       observer.OnAutoHideStateChanged(state_.auto_hide_state);
   }
-  shelf_widget_->hotseat_widget()->SetState(hotseat_new_state);
+
+  if (previous_hotseat_state != hotseat_state()) {
+    if (hotseat_state() == HotseatState::kExtended)
+      hotseat_event_handler_ = std::make_unique<HotseatEventHandler>(this);
+    else
+      hotseat_event_handler_.reset();
+    for (auto& observer : observers_)
+      observer.OnHotseatStateChanged(hotseat_state());
+  }
 }
 
 HotseatState ShelfLayoutManager::CalculateHotseatState(
@@ -2162,7 +2155,7 @@ bool ShelfLayoutManager::StartShelfDrag(
 
   // For the hotseat, |drag_amount_| is relative to the top of the shelf.
   // To keep the hotseat from jumping to the top of the shelf on drag, set the
-  // offset to the hotseat's extended position.
+  // offset to the hotseats extended position.
   if (hotseat_state() == HotseatState::kExtended &&
       visibility_state() == SHELF_VISIBLE) {
     drag_amount_ = -(ShelfConfig::Get()->hotseat_size() +
@@ -2296,7 +2289,7 @@ void ShelfLayoutManager::CancelDrag() {
   }
   if (hotseat_is_in_drag_) {
     shelf_widget_->hotseat_widget()->set_manually_extended(
-        state_.hotseat_state == HotseatState::kExtended);
+        hotseat_state() == HotseatState::kExtended);
   }
   hotseat_is_in_drag_ = false;
   drag_status_ = kDragNone;

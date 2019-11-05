@@ -585,23 +585,6 @@ static void JNI_PrefServiceBridge_SetTranslateEnabled(
   GetPrefService()->SetBoolean(prefs::kOfferTranslateEnabled, enabled);
 }
 
-static void JNI_PrefServiceBridge_MigrateJavascriptPreference(JNIEnv* env) {
-  const PrefService::Preference* javascript_pref =
-      GetPrefService()->FindPreference(prefs::kWebKitJavascriptEnabled);
-  DCHECK(javascript_pref);
-
-  if (!javascript_pref->HasUserSetting())
-    return;
-
-  bool javascript_enabled = false;
-  bool retval = javascript_pref->GetValue()->GetAsBoolean(&javascript_enabled);
-  DCHECK(retval);
-  JNI_PrefServiceBridge_SetContentSettingEnabled(
-      env, static_cast<int>(ContentSettingsType::JAVASCRIPT),
-      javascript_enabled);
-  GetPrefService()->ClearPref(prefs::kWebKitJavascriptEnabled);
-}
-
 static void JNI_PrefServiceBridge_SetPasswordEchoEnabled(
     JNIEnv* env,
     jboolean passwordEchoEnabled) {

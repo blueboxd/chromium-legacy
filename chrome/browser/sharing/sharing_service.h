@@ -16,8 +16,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/sharing/ack_message_handler.h"
 #include "chrome/browser/sharing/ping_message_handler.h"
-#include "chrome/browser/sharing/response_callback_helper.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
+#include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/gcm_driver/web_push_common.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -44,6 +44,7 @@ class SyncService;
 }  // namespace syncer
 
 class NotificationDisplayService;
+class RemoteCopyMessageHandler;
 class SharedClipboardMessageHandler;
 class SharingFCMHandler;
 class SharingFCMSender;
@@ -77,6 +78,7 @@ class SharingService : public KeyedService,
       std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
       std::unique_ptr<SharingFCMSender> fcm_sender,
       std::unique_ptr<SharingFCMHandler> fcm_handler,
+      std::unique_ptr<SharingMessageSender> message_sender_,
       gcm::GCMDriver* gcm_driver,
       syncer::DeviceInfoTracker* device_info_tracker,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
@@ -108,7 +110,7 @@ class SharingService : public KeyedService,
       const std::string& device_guid,
       base::TimeDelta response_timeout,
       chrome_browser_sharing::SharingMessage message,
-      ResponseCallbackHelper::ResponseCallback callback);
+      SharingMessageSender::ResponseCallback callback);
 
   // Used to register devices with required capabilities in tests.
   void RegisterDeviceInTesting(
@@ -140,17 +142,6 @@ class SharingService : public KeyedService,
   void OnDeviceRegistered(SharingDeviceRegistrationResult result);
   void OnDeviceUnregistered(SharingDeviceRegistrationResult result);
 
-  void OnMessageSent(base::TimeTicks start_time,
-                     const std::string& message_guid,
-                     chrome_browser_sharing::MessageType message_type,
-                     SharingSendMessageResult result,
-                     base::Optional<std::string> message_id);
-  void InvokeSendMessageCallback(
-      const std::string& message_guid,
-      chrome_browser_sharing::MessageType message_type,
-      SharingSendMessageResult result,
-      std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
-
   // Returns true if required sync feature is enabled.
   bool IsSyncEnabled() const;
 
@@ -179,13 +170,12 @@ class SharingService : public KeyedService,
   void InitPersonalizableLocalDeviceName(
       std::string personalizable_local_device_name);
 
-  ResponseCallbackHelper response_callback_helper_;
-
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;
   std::unique_ptr<SharingFCMSender> fcm_sender_;
   std::unique_ptr<SharingFCMHandler> fcm_handler_;
+  std::unique_ptr<SharingMessageSender> message_sender_;
 
   syncer::DeviceInfoTracker* device_info_tracker_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
@@ -209,12 +199,19 @@ class SharingService : public KeyedService,
 
   PingMessageHandler ping_message_handler_;
   std::unique_ptr<AckMessageHandler> ack_message_handler_;
+
 #if defined(OS_ANDROID)
   ClickToCallMessageHandler click_to_call_message_handler_;
   std::unique_ptr<SmsFetchRequestHandler> sms_fetch_request_handler_;
 #endif  // defined(OS_ANDROID)
+
   std::unique_ptr<SharedClipboardMessageHandler>
       shared_clipboard_message_handler_;
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+  std::unique_ptr<RemoteCopyMessageHandler> remote_copy_message_handler_;
+#endif
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_{this};
 

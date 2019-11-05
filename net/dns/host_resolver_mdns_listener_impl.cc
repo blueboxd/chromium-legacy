@@ -72,6 +72,7 @@ void HostResolverMdnsListenerImpl::OnRecordUpdate(
 
   switch (query_type_) {
     case DnsQueryType::UNSPECIFIED:
+    case DnsQueryType::ESNI:
       NOTREACHED();
       break;
     case DnsQueryType::A:

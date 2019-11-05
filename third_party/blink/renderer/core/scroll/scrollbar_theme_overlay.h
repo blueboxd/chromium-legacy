@@ -59,6 +59,7 @@ class CORE_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
   IntRect BackButtonRect(const Scrollbar&, ScrollbarPart) override;
   IntRect ForwardButtonRect(const Scrollbar&, ScrollbarPart) override;
   IntRect TrackRect(const Scrollbar&) override;
+  IntRect ThumbRect(const Scrollbar&) override;
   int ThumbThickness(const Scrollbar&) override;
   int ThumbThickness() { return thumb_thickness_; }
 
@@ -72,16 +73,10 @@ class CORE_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
 
   int MinimumThumbLength(const Scrollbar&) override;
 
-  virtual bool IsMobileTheme() const { return false; }
-
  protected:
   FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeOverlayTest, PaintInvalidation);
 
   ScrollbarThemeOverlay(int thumb_thickness, int scrollbar_margin);
-
-  // Gets the rect to paint the thumb inside of the given thumb rect,
-  // considering scrollbar margin.
-  IntRect ThumbPaintRect(const Scrollbar&, const IntRect&) const;
 
  private:
   int thumb_thickness_;

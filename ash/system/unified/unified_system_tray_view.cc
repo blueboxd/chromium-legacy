@@ -426,7 +426,7 @@ int UnifiedSystemTrayView::GetExpandedSystemTrayHeight() const {
               : 0) +
          top_shortcuts_view_->GetPreferredSize().height() +
          feature_pods_container_->GetExpandedHeight() +
-         page_indicator_view_->GetPreferredSize().height() +
+         page_indicator_view_->GetExpandedHeight() +
          sliders_container_->GetExpandedHeight() +
          system_info_view_->GetPreferredSize().height();
 }

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/contacts_picker/contact_address.h"
 #include "third_party/blink/renderer/modules/contacts_picker/contact_info.h"
@@ -71,6 +72,16 @@ TypeConverter<blink::ContactInfo*, blink::mojom::blink::ContactInfoPtr>::
     contact_info->setAddress(addresses);
   }
 
+  if (contact->icon) {
+    blink::HeapVector<blink::Member<blink::Blob>> icons;
+    for (blink::mojom::blink::ContactIconBlobPtr& icon : *contact->icon) {
+      icons.push_back(blink::Blob::Create(icon->data.data(), icon->data.size(),
+                                          icon->mime_type));
+    }
+
+    contact_info->setIcon(icons);
+  }
+
   return contact_info;
 }
 
@@ -84,6 +95,7 @@ constexpr char kAddress[] = "address";
 constexpr char kEmail[] = "email";
 constexpr char kName[] = "name";
 constexpr char kTel[] = "tel";
+constexpr char kIcon[] = "icon";
 
 }  // namespace
 
@@ -92,6 +104,8 @@ ContactsManager::ContactsManager() {
 
   if (RuntimeEnabledFeatures::ContactsManagerAddressesEnabled())
     properties_.push_back(kAddress);
+  if (RuntimeEnabledFeatures::ContactsManagerIconsEnabled())
+    properties_.push_back(kIcon);
 }
 
 ContactsManager::~ContactsManager() = default;
@@ -145,6 +159,7 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
   bool include_emails = false;
   bool include_tel = false;
   bool include_addresses = false;
+  bool include_icons = false;
 
   for (const String& property : properties) {
     if (!base::Contains(properties_, property)) {
@@ -164,6 +179,8 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
       include_tel = true;
     else if (property == kAddress)
       include_addresses = true;
+    else if (property == kIcon)
+      include_icons = true;
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -172,7 +189,7 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
   contact_picker_in_use_ = true;
   GetContactsManager(script_state)
       ->Select(options->multiple(), include_names, include_emails, include_tel,
-               include_addresses,
+               include_addresses, include_icons,
                WTF::Bind(&ContactsManager::OnContactsSelected,
                          WrapPersistent(this), WrapPersistent(resolver)));
 

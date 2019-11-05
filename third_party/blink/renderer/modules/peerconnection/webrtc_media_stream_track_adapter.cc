@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
-#include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/renderer/modules/peerconnection/media_stream_video_webrtc_sink.h"
 
 namespace blink {

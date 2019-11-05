@@ -26,10 +26,10 @@ class DataChannelInterface;
 
 namespace blink {
 class RTCPeerConnectionHandler;
+class RTCAnswerOptionsPlatform;
 class RTCOfferOptionsPlatform;
 class WebLocalFrame;
 class WebMediaConstraints;
-class WebRTCAnswerOptions;
 class WebRTCICECandidate;
 class WebUserMediaRequest;
 
@@ -104,7 +104,7 @@ class MODULES_EXPORT PeerConnectionTracker
   virtual void TrackCreateOffer(RTCPeerConnectionHandler* pc_handler,
                                 const blink::WebMediaConstraints& options);
   virtual void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
-                                 const blink::WebRTCAnswerOptions& options);
+                                 blink::RTCAnswerOptionsPlatform* options);
   virtual void TrackCreateAnswer(RTCPeerConnectionHandler* pc_handler,
                                  const blink::WebMediaConstraints& constraints);
 

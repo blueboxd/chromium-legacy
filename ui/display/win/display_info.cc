@@ -14,14 +14,16 @@ DisplayInfo::DisplayInfo(const MONITORINFOEX& monitor_info,
                          float device_scale_factor,
                          float sdr_white_level,
                          Display::Rotation rotation,
-                         int display_frequency)
+                         int display_frequency,
+                         const gfx::Vector2dF& pixels_per_inch)
     : id_(DeviceIdFromDeviceName(monitor_info.szDevice)),
       rotation_(rotation),
       screen_rect_(monitor_info.rcMonitor),
       screen_work_rect_(monitor_info.rcWork),
       device_scale_factor_(device_scale_factor),
       sdr_white_level_(sdr_white_level),
-      display_frequency_(display_frequency) {}
+      display_frequency_(display_frequency),
+      pixels_per_inch_(pixels_per_inch) {}
 
 DisplayInfo::~DisplayInfo() = default;
 

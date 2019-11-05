@@ -12,6 +12,7 @@ import android.support.v7.content.res.AppCompatResources;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -28,17 +29,37 @@ public class ToolbarColors {
     private static final float LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA = 0.2f;
 
     /**
-     * Determine the text box color based on the current toolbar background color.
+     * Determine the text box background color given the current tab.
      * @param res {@link Resources} used to retrieve colors.
-     * @param isLocationBarShownInNtp Whether the location bar is currently shown in an NTP. Note
-     *                                that this should be false if the returned text box color is
-     *                                not used in an NTP.
+     * @param tab The current {@link Tab}
+     * @param color The color of the toolbar background.
+     * @return The base color for the textbox given a toolbar background color.
+     */
+    public static int getTextBoxColorForToolbarBackground(
+            Resources res, @Nullable Tab tab, int color) {
+        boolean isIncognito = tab != null && tab.isIncognito();
+        if (tab != null && tab.getNativePage() instanceof NewTabPage) {
+            NewTabPage page = (NewTabPage) tab.getNativePage();
+            if (page.isLocationBarShownInNTP()) {
+                return page.isLocationBarScrolledToTopInNtp()
+                        ? ApiCompatibilityUtils.getColor(res, R.color.toolbar_text_box_background)
+                        : ChromeColors.getPrimaryBackgroundColor(res, false);
+            }
+        }
+
+        return ToolbarColors.getTextBoxColorForToolbarBackgroundInNonNativePage(
+                res, color, isIncognito);
+    }
+
+    /**
+     * Determine the text box background color given a toolbar background color
+     * @param res {@link Resources} used to retrieve colors.
      * @param color The color of the toolbar background.
      * @param isIncognito Whether or not the color is used for incognito mode.
      * @return The base color for the textbox given a toolbar background color.
      */
-    public static int getTextBoxColorForToolbarBackground(
-            Resources res, boolean isLocationBarShownInNtp, int color, boolean isIncognito) {
+    public static int getTextBoxColorForToolbarBackgroundInNonNativePage(
+            Resources res, int color, boolean isIncognito) {
         // Text box color on default toolbar background in incognito mode is a pre-defined
         // color. We calculate the equivalent opaque color from the pre-defined translucent color.
         if (isIncognito) {
@@ -48,10 +69,6 @@ public class ToolbarColors {
             final int overlayColorOpaque = overlayColor & 0xFF000000;
             return ColorUtils.getColorWithOverlay(color, overlayColorOpaque, overlayColorAlpha);
         }
-
-        // NTP should have no visible text box in the toolbar, so just return the NTP
-        // background color.
-        if (isLocationBarShownInNtp) return ChromeColors.getPrimaryBackgroundColor(res, false);
 
         // Text box color on default toolbar background in standard mode is a pre-defined
         // color instead of a calculated color.

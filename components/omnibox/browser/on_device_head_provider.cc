@@ -98,7 +98,8 @@ OnDeviceHeadProvider::~OnDeviceHeadProvider() {
 }
 
 bool OnDeviceHeadProvider::IsOnDeviceHeadProviderAllowed(
-    const AutocompleteInput& input) {
+    const AutocompleteInput& input,
+    const std::string& incognito_serve_mode) {
   // Only accept asynchronous request.
   if (!input.want_asynchronous_matches() ||
       input.type() == metrics::OmniboxInputType::EMPTY)
@@ -114,12 +115,10 @@ bool OnDeviceHeadProvider::IsOnDeviceHeadProviderAllowed(
   //    request; this is the default behavior;
   // 2. incognito-only: only serve incognito request;
   // 3. always-serve: always serve regardless of incognito.
-  const std::string mode = base::GetFieldTrialParamValueByFeature(
-      omnibox::kOnDeviceHeadProvider, "IncognitoServeMode");
-  if (mode != "always-serve") {
-    if (client()->IsOffTheRecord() && mode != "incognito-only")
+  if (incognito_serve_mode != "always-serve") {
+    if (client()->IsOffTheRecord() && incognito_serve_mode != "incognito-only")
       return false;
-    if (!client()->IsOffTheRecord() && mode == "incognito-only")
+    if (!client()->IsOffTheRecord() && incognito_serve_mode == "incognito-only")
       return false;
   }
 
@@ -138,7 +137,9 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
   // Cancel any in-progress request.
   Stop(!minimal_changes, false);
 
-  if (!IsOnDeviceHeadProviderAllowed(input)) {
+  const std::string mode = base::GetFieldTrialParamValueByFeature(
+      omnibox::kOnDeviceHeadProvider, "IncognitoServeMode");
+  if (!IsOnDeviceHeadProviderAllowed(input, mode)) {
     matches_.clear();
     return;
   }

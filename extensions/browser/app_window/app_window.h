@@ -451,6 +451,7 @@ class AppWindow : public content::WebContentsDelegate,
       const viz::SurfaceId& surface_id,
       const gfx::Size& natural_size) override;
   void ExitPictureInPicture() override;
+  bool ShouldShowStaleContentOnEviction(content::WebContents* source) override;
 
   // content::WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message,

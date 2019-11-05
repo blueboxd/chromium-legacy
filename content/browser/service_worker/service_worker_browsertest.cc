@@ -3297,7 +3297,8 @@ class CacheStorageSideDataSizeChecker
     scoped_request->url = url_;
     CacheStorageCache* cache = cache_handle.value();
     cache->Match(
-        std::move(scoped_request), nullptr, /* trace_id = */ 0,
+        std::move(scoped_request), nullptr,
+        CacheStorageSchedulerPriority::kNormal, /* trace_id = */ 0,
         base::BindOnce(&self::OnCacheStorageCacheMatchCallback, this, result,
                        std::move(continuation), std::move(cache_handle)));
   }

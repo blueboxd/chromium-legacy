@@ -455,7 +455,7 @@ public class BottomSheetController implements Destroyable {
      * Expand the {@link BottomSheet}. If there is no content in the sheet, this is a noop.
      */
     public void expandSheet() {
-        if (mBottomSheet == null) return;
+        if (mBottomSheet == null || mIsSuppressed) return;
 
         if (mBottomSheet.getCurrentSheetContent() == null) return;
         mBottomSheet.setSheetState(SheetState.HALF, true);
@@ -465,6 +465,21 @@ public class BottomSheetController implements Destroyable {
             mOverlayPanelManager.get().getActivePanel().closePanel(
                     OverlayPanel.StateChangeReason.UNKNOWN, true);
         }
+    }
+
+    /**
+     * Collapse the current sheet to peek state. Sheet may not change the state if the state
+     * is not allowed.
+     * @param animate {@code true} for animation effect.
+     * @return {@code true} if the sheet could go to the peek state.
+     */
+    public boolean peekSheet(boolean animate) {
+        if (mBottomSheet == null || mIsSuppressed) return false;
+        if (mBottomSheet.isSheetOpen() && mBottomSheet.isPeekStateEnabled()) {
+            mBottomSheet.setSheetState(SheetState.PEEK, animate);
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -476,6 +476,7 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 .top-header-contents #wallpaper-description {
   color: rgb(128, 134, 139);
   max-width: 312px;
+  min-width: 132px;
   overflow: hidden;
   padding-inline-end: 16px;
   padding-inline-start: 8px;
@@ -532,46 +533,55 @@ html[dir='rtl'] .top-header-contents .more-options {
   width: 16px;
 }
 
-.top-header-contents .more-options .center-button,
-.top-header-contents .more-options .center-cropped-button {
+#centering-options {
+  display: flex;
+  padding: 0;
+}
+
+.top-header-contents .more-options #center-button,
+.top-header-contents .more-options #center-cropped-button {
   background-color: #fff;
+  border: none;
+  border-radius: 16px;
   color: rgb(128, 134, 139);
-  padding-inline-start: 28px;
+  overflow: hidden;
+  padding: 8px 28px;
+  position: relative;
   z-index: 0;
 }
 
-.top-header-contents .more-options .center-button.disabled,
-.top-header-contents .more-options .center-cropped-button.disabled {
+.top-header-contents .more-options #center-button.disabled,
+.top-header-contents .more-options #center-cropped-button.disabled {
   background-color: rgb(232, 240, 254);
   color: rgb(26, 115, 232);
   pointer-events: none;
   z-index: 1;
 }
 
-.top-header-contents .more-options .center-button {
+.top-header-contents .more-options #center-button {
   padding-inline-end: 36px;
 }
 
-.top-header-contents .more-options .center-cropped-button {
+.top-header-contents .more-options #center-cropped-button {
   margin-inline-start: -24px;
 }
 
-.top-header-contents .center-button .icon,
+.top-header-contents #center-button .icon,
 #current-wallpaper-more-options #center .icon {
   background-image: url(../images/ui/center_layout.svg);
 }
 
-.top-header-contents .center-button.disabled .icon,
+.top-header-contents #center-button.disabled .icon,
 #current-wallpaper-more-options #center.disabled .icon {
   background-image: url(../images/ui/center_layout_disabled.svg);
 }
 
-.top-header-contents .center-cropped-button .icon,
+.top-header-contents #center-cropped-button .icon,
 #current-wallpaper-more-options #center-cropped .icon {
   background-image: url(../images/ui/center_cropped_layout.svg);
 }
 
-.top-header-contents .center-cropped-button.disabled .icon,
+.top-header-contents #center-cropped-button.disabled .icon,
 #current-wallpaper-more-options #center-cropped.disabled .icon {
   background-image: url(../images/ui/center_cropped_layout_disabled.svg);
 }

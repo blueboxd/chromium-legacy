@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 
 namespace blink {
@@ -71,6 +72,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   ItemType Type() const { return static_cast<ItemType>(type_); }
 
+  bool IsContainer() const { return Type() == kBox || Type() == kLine; }
   bool IsAtomicInline() const;
   bool IsEmptyLineBox() const;
   bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
@@ -98,9 +100,9 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   const PhysicalRect& Rect() const { return rect_; }
   const PhysicalOffset& Offset() const { return rect_.offset; }
   const PhysicalSize& Size() const { return rect_.size; }
+  PhysicalRect LocalRect() const { return {PhysicalOffset(), Size()}; }
   void SetOffset(const PhysicalOffset& offset) { rect_.offset = offset; }
 
-  PhysicalRect LocalRect() const { return {PhysicalOffset(), Size()}; }
   PhysicalRect InkOverflow() const;
   PhysicalRect SelfInkOverflow() const;
 
@@ -112,6 +114,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
       return box_.descendants_count;
     if (Type() == kLine)
       return line_.descendants_count;
+    DCHECK(!IsContainer());
     return 0;
   }
   bool HasChildren() const { return DescendantsCount() > 1; }
@@ -122,6 +125,9 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
       return box_.box_fragment.get();
     return nullptr;
   }
+
+  bool HasOverflowClip() const;
+  bool HasSelfPaintingLayer() const;
 
   // TODO(kojii): Avoid using this function in outside of this class as much as
   // possible, because |NGPhysicalLineBoxFragment| is likely to be removed. Add
@@ -196,17 +202,31 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   static ItemsForLayoutObject ItemsFor(const LayoutObject& layout_object);
   static PhysicalRect LocalVisualRectFor(const LayoutObject& layout_object);
 
+  // Re-compute the ink overflow for the |cursor| until its end.
+  static PhysicalRect RecalcInkOverflowAll(NGInlineCursor* cursor);
+
+  // Re-compute the ink overflow for this item. |cursor| should be at |this|,
+  // and is advanced to the next item on return.
+  void RecalcInkOverflow(NGInlineCursor* cursor,
+                         PhysicalRect* self_and_contents_rect_out);
+
   // Painters can use const methods only, except for these explicitly declared
   // methods.
   class MutableForPainting {
     STACK_ALLOCATED();
 
    public:
-    // TODO(kojii): Add painter functions.
+    void RecalcInkOverflow(NGInlineCursor* cursor,
+                           PhysicalRect* self_and_contents_rect_out) {
+      return item_.RecalcInkOverflow(cursor, self_and_contents_rect_out);
+    }
 
    private:
     friend class NGFragmentItem;
-    MutableForPainting(const NGFragmentItem& item) {}
+    MutableForPainting(const NGFragmentItem& item)
+        : item_(const_cast<NGFragmentItem&>(item)) {}
+
+    NGFragmentItem& item_;
   };
   MutableForPainting GetMutableForPainting() const {
     return MutableForPainting(*this);
@@ -322,21 +342,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   PhysicalRect rect_;
 
-  struct NGInkOverflowModel {
-    USING_FAST_MALLOC(NGInkOverflowModel);
-
-   public:
-    NGInkOverflowModel(const PhysicalRect& self_ink_overflow,
-                       const PhysicalRect& contents_ink_overflow);
-
-    PhysicalRect self_ink_overflow;
-    // TODO(kojii): Some types (e.g., kText) never have |contents_ink_overflow|.
-    // Can/should we optimize the memory usage for those cases?
-    PhysicalRect contents_ink_overflow;
-  };
-  mutable std::unique_ptr<NGInkOverflowModel> ink_overflow_;
-  // TOOD(kojii): mutable because this is lazily computed, but it may not be
-  // needed if we use |MutableForPainting|. TBD.
+  std::unique_ptr<NGInkOverflow> ink_overflow_;
 
   // Item index delta to the next item for the same |LayoutObject|.
   // wtf_size_t delta_to_next_for_same_layout_object_ = 0;

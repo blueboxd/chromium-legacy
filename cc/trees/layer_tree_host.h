@@ -478,9 +478,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void UnregisterLayer(Layer* layer);
   Layer* LayerById(int id) const;
 
-  bool PaintContent(const LayerList& update_layer_list,
-                    bool* content_has_slow_paths,
-                    bool* content_has_non_aa_paint);
+  bool PaintContent(const LayerList& update_layer_list);
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
   void SetHasCopyRequest(bool has_copy_request);
@@ -751,8 +749,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   bool visible_ = false;
 
-  bool content_has_slow_paths_ = false;
-  bool content_has_non_aa_paint_ = false;
   bool gpu_rasterization_histogram_recorded_ = false;
 
   // If set, then page scale animation has completed, but the client hasn't been

@@ -1201,7 +1201,7 @@ void TableView::UpdateVirtualAccessibilityChildren() {
     ui::AXNodeData& header_data = ax_header->GetCustomData();
     header_data.role = ax::mojom::Role::kRow;
     header_data.relative_bounds.bounds =
-        gfx::RectF(header_->GetVisibleBounds());
+        AdjustRectForAXRelativeBounds(header_->GetVisibleBounds());
 
     for (size_t visible_column_index = 0;
          visible_column_index < visible_columns_.size();
@@ -1215,7 +1215,8 @@ void TableView::UpdateVirtualAccessibilityChildren() {
       cell_data.SetName(column.title);
       gfx::Rect header_cell_bounds(visible_column.x, header_->y(),
                                    visible_column.width, header_->height());
-      cell_data.relative_bounds.bounds = gfx::RectF(header_cell_bounds);
+      cell_data.relative_bounds.bounds =
+          AdjustRectForAXRelativeBounds(header_cell_bounds);
       cell_data.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
                                 static_cast<int32_t>(visible_column_index));
       cell_data.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
@@ -1260,7 +1261,7 @@ void TableView::UpdateVirtualAccessibilityChildren() {
     row_data.AddIntAttribute(ax::mojom::IntAttribute::kTableRowIndex,
                              static_cast<int32_t>(view_index));
     gfx::Rect row_bounds = GetRowBounds(view_index);
-    row_data.relative_bounds.bounds = gfx::RectF(row_bounds);
+    row_data.relative_bounds.bounds = AdjustRectForAXRelativeBounds(row_bounds);
     if (!single_selection_)
       row_data.AddState(ax::mojom::State::kMultiselectable);
 
@@ -1291,7 +1292,8 @@ void TableView::UpdateVirtualAccessibilityChildren() {
       if (PlatformStyle::kTableViewSupportsKeyboardNavigationByCell)
         cell_data.AddState(ax::mojom::State::kFocusable);
       gfx::Rect cell_bounds = GetCellBounds(view_index, visible_column_index);
-      cell_data.relative_bounds.bounds = gfx::RectF(cell_bounds);
+      cell_data.relative_bounds.bounds =
+          AdjustRectForAXRelativeBounds(cell_bounds);
 
       cell_data.AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
                                 static_cast<int32_t>(view_index));
@@ -1410,6 +1412,11 @@ AXVirtualView* TableView::GetVirtualAccessibilityCell(
       << "|visible_column_index| not found. Did you forget to call "
       << "UpdateVirtualAccessibilityChildren()?";
   return i->get();
+}
+
+gfx::RectF TableView::AdjustRectForAXRelativeBounds(gfx::Rect rect) const {
+  View::ConvertRectToScreen(this, &rect);
+  return gfx::RectF(rect);
 }
 
 DEFINE_ENUM_CONVERTERS(TableTypes,

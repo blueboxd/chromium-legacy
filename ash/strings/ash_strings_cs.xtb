@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Režim Nerušit je zapnutý.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Zobrazit nastavení oznámení. U jedné aplikace jsou oznámení vypnutá}few{Zobrazit nastavení oznámení. U # aplikací jsou oznámení vypnutá}many{Zobrazit nastavení oznámení. U # aplikace jsou oznámení vypnutá}other{Zobrazit nastavení oznámení. U # aplikací jsou oznámení vypnutá}}</translation>
 <translation id="1525508553941733066">ZAVŘÍT</translation>
-<translation id="1537254971476575106">Lupa celé obrazovky</translation>
 <translation id="15373452373711364">Velký kurzor myši</translation>
 <translation id="1546492247443594934">Plocha 2</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte další možnosti</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Rozložení klávesnice změníte stisknutím kláves <ph name="KEYBOARD_SHORTCUT" /></translation>
 <translation id="2501920221385095727">Jedním prstem</translation>
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
-<translation id="2532589005999780174">Režim vysokého kontrastu</translation>
 <translation id="2542089167727451762">Klepněte na profilovou fotku</translation>
 <translation id="255671100581129685">Asistent Google není ve veřejné relaci k dispozici.</translation>
 <translation id="256712445991462162">zadokovaná lupa</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Příliš mnoho pokusů o odemknutí otiskem prstu</translation>
 <translation id="7994370417837006925">Vícenásobné přihlášení</translation>
 <translation id="8000066093800657092">Žádná síť</translation>
-<translation id="8029241286966751120">Je zapnutá lupa celé obrazovky. Vypnete ji opětovným stisknutím kombinace kláves Ctrl+Hledat+M.</translation>
 <translation id="8030169304546394654">Odpojeno</translation>
 <translation id="8054466585765276473">Výpočet doby výdrže baterie.</translation>
 <translation id="8061464966246066292">Vysoký kontrast</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Poslední plochu nelze odstranit.</translation>
 <translation id="8392451568018454956">Nabídka možností pro uživatele <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Rodič toto zařízení uzamkl</translation>
-<translation id="8406981827175133772">Lupa celé obrazovky</translation>
 <translation id="8425213833346101688">Změnit</translation>
 <translation id="8427213022735114808">Diktování odesílá váš hlas do Googlu, aby bylo možné hlasově zadávat do libovolného textového pole.</translation>
 <translation id="8428213095426709021">Nastavení</translation>

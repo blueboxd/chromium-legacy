@@ -110,6 +110,8 @@ static_library("test_support") {
     "base/chrome_unit_test_suite.h",
     "base/find_result_waiter.cc",
     "base/find_result_waiter.h",
+    "base/launchservices_utils_mac.h",
+    "base/launchservices_utils_mac.mm",
     "base/process_inspector_win.cc",
     "base/process_inspector_win.h",
     "base/process_lineage_win.cc",
@@ -3220,10 +3222,10 @@ test("unit_tests") {
     "../browser/sharing/ack_message_handler_unittest.cc",
     "../browser/sharing/mock_sharing_service.cc",
     "../browser/sharing/mock_sharing_service.h",
-    "../browser/sharing/response_callback_helper_unittest.cc",
     "../browser/sharing/sharing_device_registration_unittest.cc",
     "../browser/sharing/sharing_fcm_handler_unittest.cc",
     "../browser/sharing/sharing_fcm_sender_unittest.cc",
+    "../browser/sharing/sharing_message_sender_unittest.cc",
     "../browser/sharing/sharing_service_unittest.cc",
     "../browser/sharing/sharing_sync_preference_unittest.cc",
     "../browser/sharing/sharing_utils_unittest.cc",
@@ -3636,6 +3638,7 @@ test("unit_tests") {
       "../browser/permissions/permission_request_notification_android_unittest.cc",
       "../browser/permissions/permission_request_notification_handler_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
+      "../browser/updates/update_notification_config_unittest.cc",
     ]
     deps += [
       "//base:base_java",
@@ -4003,8 +4006,11 @@ test("unit_tests") {
       "../browser/sharing/click_to_call/click_to_call_context_menu_observer_unittest.cc",
       "../browser/sharing/click_to_call/click_to_call_ui_controller_unittest.cc",
       "../browser/sharing/click_to_call/click_to_call_utils_unittest.cc",
+      "../browser/sharing/shared_clipboard/remote_copy_message_handler_unittest.cc",
       "../browser/sharing/shared_clipboard/shared_clipboard_context_menu_observer_unittest.cc",
       "../browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop_unittest.cc",
+      "../browser/sharing/shared_clipboard/shared_clipboard_test_base.cc",
+      "../browser/sharing/shared_clipboard/shared_clipboard_test_base.h",
       "../browser/sharing/shared_clipboard/shared_clipboard_ui_controller_unittest.cc",
       "../browser/sharing/shared_clipboard/shared_clipboard_utils_unittest.cc",
       "../browser/ui/autofill/payments/local_card_migration_bubble_controller_impl_unittest.cc",
@@ -4966,6 +4972,7 @@ test("unit_tests") {
       "../browser/ui/views/download/download_item_view_unittest.cc",
       "../browser/ui/views/extensions/chooser_dialog_view_unittest.cc",
       "../browser/ui/views/extensions/extensions_menu_item_unittest.cc",
+      "../browser/ui/views/extensions/extensions_menu_view_unittest.cc",
       "../browser/ui/views/extensions/media_galleries_dialog_views_unittest.cc",
       "../browser/ui/views/frame/browser_non_client_frame_view_unittest.cc",
       "../browser/ui/views/frame/browser_view_layout_unittest.cc",
@@ -6104,8 +6111,10 @@ if (!is_android && !is_fuchsia) {
     if (is_chromeos) {
       sources += [
         "../browser/sync/test/integration/single_client_arc_package_sync_test.cc",
+        "../browser/sync/test/integration/single_client_os_preferences_sync_test.cc",
         "../browser/sync/test/integration/single_client_printers_sync_test.cc",
         "../browser/sync/test/integration/two_client_arc_package_sync_test.cc",
+        "../browser/sync/test/integration/two_client_os_preferences_sync_test.cc",
         "../browser/sync/test/integration/two_client_printers_sync_test.cc",
       ]
     }

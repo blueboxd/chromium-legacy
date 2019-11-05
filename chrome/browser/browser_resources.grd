@@ -609,6 +609,9 @@
         <include name="IDR_ARC_GRAPHICS_TRACING_HTML" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing.html" compress="gzip" type="BINDATA"/>
         <include name="IDR_ARC_GRAPHICS_TRACING_JS" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing.js" compress="gzip" type="BINDATA" />
         <include name="IDR_ARC_GRAPHICS_TRACING_UI_JS" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing_ui.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_ARC_OVERVIEW_TRACING_HTML" file="resources\chromeos\arc_graphics_tracing\arc_overview_tracing.html" compress="gzip" type="BINDATA"/>
+        <include name="IDR_ARC_OVERVIEW_TRACING_JS" file="resources\chromeos\arc_graphics_tracing\arc_overview_tracing.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_ARC_OVERVIEW_TRACING_UI_JS" file="resources\chromeos\arc_graphics_tracing\arc_overview_tracing_ui.js" compress="gzip" type="BINDATA" />
         <include name="IDR_ARC_TRACING_UI_JS" file="resources\chromeos\arc_graphics_tracing\arc_tracing_ui.js" compress="gzip" type="BINDATA" />
         <include name="IDR_ARC_TRACING_CSS" file="resources\chromeos\arc_graphics_tracing\arc_tracing.css" compress="gzip" type="BINDATA" />
       </if>

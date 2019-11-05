@@ -4,6 +4,8 @@
 
 #include "fuchsia/base/agent_impl.h"
 
+#include <lib/sys/cpp/component_context.h>
+
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/logging.h"
@@ -76,8 +78,8 @@ class AgentImplTest : public ::testing::Test {
         fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_WRITABLE,
         directory.NewRequest().TakeChannel());
 
-    services_client_ = std::make_unique<base::fuchsia::ServiceDirectoryClient>(
-        std::move(directory));
+    services_client_ =
+        std::make_unique<sys::ServiceDirectory>(std::move(directory));
   }
 
   fuchsia::modular::AgentPtr CreateAgentAndConnect() {
@@ -86,7 +88,7 @@ class AgentImplTest : public ::testing::Test {
         &services_, base::BindRepeating(&AgentImplTest::OnComponentConnect,
                                         base::Unretained(this)));
     fuchsia::modular::AgentPtr agent;
-    services_client_->ConnectToService(agent.NewRequest());
+    services_client_->Connect(agent.NewRequest());
     return agent;
   }
 
@@ -116,7 +118,7 @@ class AgentImplTest : public ::testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   sys::OutgoingDirectory services_;
-  std::unique_ptr<base::fuchsia::ServiceDirectoryClient> services_client_;
+  std::unique_ptr<sys::ServiceDirectory> services_client_;
 
   std::unique_ptr<AgentImpl> agent_impl_;
 
@@ -148,7 +150,7 @@ TEST_F(AgentImplTest, PublishAndUnpublish) {
 
   // Verify that the Agent service is no longer available.
   cr_fuchsia::ResultReceiver<zx_status_t> client_disconnect_status2;
-  services_client_->ConnectToService(agent.NewRequest());
+  services_client_->Connect(agent.NewRequest());
   agent.set_error_handler(cr_fuchsia::CallbackToFitFunction(
       client_disconnect_status2.GetReceiveCallback()));
 

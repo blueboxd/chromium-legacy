@@ -153,9 +153,9 @@ void DownloadProtectionService::ParseManualBlacklistFlag() {
       safe_browsing::switches::kSbManualDownloadBlacklist);
   for (const std::string& hash_hex : base::SplitString(
            flag_val, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    std::vector<uint8_t> bytes;
-    if (base::HexStringToBytes(hash_hex, &bytes) && bytes.size() == 32) {
-      manual_blacklist_hashes_.insert(std::string(bytes.begin(), bytes.end()));
+    std::string bytes;
+    if (base::HexStringToString(hash_hex, &bytes) && bytes.size() == 32) {
+      manual_blacklist_hashes_.insert(std::move(bytes));
     } else {
       LOG(FATAL) << "Bad sha256 hex value '" << hash_hex << "' found in --"
                  << safe_browsing::switches::kSbManualDownloadBlacklist;

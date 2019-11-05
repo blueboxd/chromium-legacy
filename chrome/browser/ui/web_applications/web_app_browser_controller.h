@@ -37,7 +37,6 @@ class WebAppBrowserController : public AppBrowserController {
   ~WebAppBrowserController() override;
 
   // AppBrowserController:
-  base::Optional<AppId> GetAppId() const override;
   bool CreatedForInstalledPwa() const override;
   bool HasMinimalUiButtons() const override;
   gfx::ImageSkia GetWindowAppIcon() const override;
@@ -61,7 +60,6 @@ class WebAppBrowserController : public AppBrowserController {
   void OnReadIcon(SkBitmap bitmap);
 
   WebAppProvider& provider_;
-  const AppId app_id_;
   mutable base::Optional<gfx::ImageSkia> app_icon_;
 
   base::OnceClosure callback_for_testing_;

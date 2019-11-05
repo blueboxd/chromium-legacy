@@ -357,6 +357,10 @@ class VIEWS_EXPORT TableView
   // |visible_column_index| indexes into |visible_columns_|.
   AXVirtualView* GetVirtualAccessibilityCell(int row, int visible_column_index);
 
+  // Returns |rect|, adjusted for use in AXRelativeBounds by converting it to
+  // gfx::RectF and translating it into screen coordinates.
+  gfx::RectF AdjustRectForAXRelativeBounds(gfx::Rect rect) const;
+
   ui::TableModel* model_ = nullptr;
 
   std::vector<ui::TableColumn> columns_;

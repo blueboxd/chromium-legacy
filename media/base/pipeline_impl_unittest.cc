@@ -103,14 +103,18 @@ class PipelineImplTest : public ::testing::Test {
   };
 
   PipelineImplTest()
-      : pipeline_(new PipelineImpl(task_environment_.GetMainThreadTaskRunner(),
-                                   task_environment_.GetMainThreadTaskRunner(),
-                                   &media_log_)),
-        demuxer_(new StrictMock<MockDemuxer>()),
+      : demuxer_(new StrictMock<MockDemuxer>()),
         demuxer_host_(nullptr),
         scoped_renderer_(new StrictMock<MockRenderer>()),
         renderer_(scoped_renderer_.get()),
         renderer_client_(nullptr) {
+    pipeline_ = std::make_unique<PipelineImpl>(
+        task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(),
+        base::BindRepeating(&PipelineImplTest::CreateRenderer,
+                            base::Unretained(this)),
+        &media_log_);
+
     // SetDemuxerExpectations() adds overriding expectations for expected
     // non-NULL streams.
     std::vector<DemuxerStream*> empty;
@@ -182,7 +186,7 @@ class PipelineImplTest : public ::testing::Test {
       Pipeline::StartType start_type = Pipeline::StartType::kNormal) {
     EXPECT_CALL(callbacks_, OnWaiting(_)).Times(0);
     pipeline_->Start(
-        start_type, demuxer_.get(), std::move(scoped_renderer_), &callbacks_,
+        start_type, demuxer_.get(), &callbacks_,
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   }
 
@@ -273,10 +277,14 @@ class PipelineImplTest : public ::testing::Test {
     pipeline_->Suspend(
         base::Bind(&CallbackHelper::OnSuspend, base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
-    CreateRenderer();
+    ResetRenderer();
   }
 
-  void CreateRenderer() {
+  void CreateRenderer(RendererCreatedCB renderer_created_cb) {
+    std::move(renderer_created_cb).Run(std::move(scoped_renderer_));
+  }
+
+  void ResetRenderer() {
     // |renderer_| has been deleted, replace it.
     scoped_renderer_.reset(new StrictMock<MockRenderer>());
     renderer_ = scoped_renderer_.get();
@@ -298,9 +306,8 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   void DoResume(const base::TimeDelta& seek_time) {
-    pipeline_->Resume(
-        std::move(scoped_renderer_), seek_time,
-        base::Bind(&CallbackHelper::OnResume, base::Unretained(&callbacks_)));
+    pipeline_->Resume(seek_time, base::Bind(&CallbackHelper::OnResume,
+                                            base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -418,7 +425,7 @@ TEST_F(PipelineImplTest, StartSuspendedAndResumeAudioOnly) {
                          PostStartStatus::kSuspended);
   ASSERT_TRUE(pipeline_->IsSuspended());
 
-  CreateRenderer();
+  ResetRenderer();
   base::TimeDelta expected = base::TimeDelta::FromSeconds(2000);
   ExpectResume(expected);
   DoResume(expected);
@@ -437,7 +444,7 @@ TEST_F(PipelineImplTest, StartSuspendedAndResumeAudioVideo) {
                          PostStartStatus::kSuspended);
   ASSERT_TRUE(pipeline_->IsSuspended());
 
-  CreateRenderer();
+  ResetRenderer();
   base::TimeDelta expected = base::TimeDelta::FromSeconds(2000);
   ExpectResume(expected);
   DoResume(expected);
@@ -900,7 +907,7 @@ TEST_F(PipelineImplTest, RendererErrorsReset) {
 
   base::RunLoop().RunUntilIdle();
 
-  CreateRenderer();
+  ResetRenderer();
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
   StartPipelineAndExpect(PIPELINE_OK);

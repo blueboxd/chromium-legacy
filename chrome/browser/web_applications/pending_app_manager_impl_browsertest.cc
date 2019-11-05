@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -33,6 +34,11 @@ class PendingAppManagerImplBrowserTest : public InProcessBrowserTest {
   AppRegistrar& registrar() {
     return WebAppProviderBase::GetProviderBase(browser()->profile())
         ->registrar();
+  }
+
+  AppShortcutManager& shortcut_manager() {
+    return WebAppProviderBase::GetProviderBase(browser()->profile())
+        ->shortcut_manager();
   }
 
   PendingAppManager& pending_app_manager() {
@@ -80,6 +86,32 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, InstallSucceeds) {
           .LookupAppId(url);
   EXPECT_TRUE(app_id.has_value());
   EXPECT_EQ("Manifest test app", registrar().GetAppShortName(app_id.value()));
+}
+
+// Installing a placeholder app with shortcuts should succeed.
+IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest,
+                       PlaceholderInstallSucceedsWithShortcuts) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  shortcut_manager().SuppressShortcutsForTesting();
+
+  GURL final_url =
+      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
+  // Add a redirect, so a placeholder is installed.
+  GURL url(
+      embedded_test_server()->GetURL("/server-redirect?" + final_url.spec()));
+
+  ExternalInstallOptions options = CreateInstallOptions(url);
+  options.install_placeholder = true;
+  options.add_to_applications_menu = true;
+  options.add_to_desktop = true;
+  InstallApp(options);
+
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
+  base::Optional<AppId> app_id =
+      ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
+          .LookupAppId(url);
+  ASSERT_TRUE(app_id.has_value());
+  EXPECT_TRUE(registrar().IsPlaceholderApp(app_id.value()));
 }
 
 // Tests that the browser doesn't crash if it gets shutdown with a pending

@@ -30,6 +30,7 @@ class WebView;
 }  // namespace views
 
 class Browser;
+class TabCounterModelObserver;
 
 class WebUITabStripContainerView : public TabStripUI::Embedder,
                                    public views::View,
@@ -45,7 +46,7 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
 
   // Control buttons.
   std::unique_ptr<ToolbarButton> CreateNewTabButton();
-  std::unique_ptr<ToolbarButton> CreateToggleButton();
+  std::unique_ptr<views::View> CreateTabCounter();
 
  private:
   class AutoCloser;
@@ -86,6 +87,8 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   std::unique_ptr<ui::MenuModel> context_menu_model_;
 
   ScopedObserver<views::View, views::ViewObserver> view_observer_{this};
+
+  std::unique_ptr<TabCounterModelObserver> tab_counter_model_observer_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_WEBUI_TAB_STRIP_CONTAINER_VIEW_H_

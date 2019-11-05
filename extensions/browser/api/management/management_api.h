@@ -261,7 +261,8 @@ class ManagementInstallReplacementWebAppFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void FinishCreateWebApp(ManagementAPIDelegate::InstallWebAppResult result);
+  void FinishResponse(
+      ManagementAPIDelegate::InstallOrLaunchWebAppResult result);
 };
 
 class ManagementEventRouter : public ExtensionRegistryObserver {

@@ -9,6 +9,7 @@
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -436,8 +437,8 @@ void Shelf::WillChangeVisibilityState(ShelfVisibilityState new_state) {
   } else if (!auto_hide_event_handler_) {
     auto_hide_event_handler_ = std::make_unique<AutoHideEventHandler>(this);
   }
-  if (!auto_dim_event_handler_ &&
-      base::FeatureList::IsEnabled(ash::features::kShelfDimming)) {
+
+  if (!auto_dim_event_handler_ && ash::switches::IsUsingShelfAutoDim()) {
     auto_dim_event_handler_ = std::make_unique<AutoDimEventHandler>(this);
   }
 }

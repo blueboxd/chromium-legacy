@@ -80,13 +80,14 @@ GetOptimizationGuideDecisionFromOptimizationTypeDecision(
         kHadOptimizationFilterButNotLoadedInTime:
     case optimization_guide::OptimizationTypeDecision::
         kHadHintButNotLoadedInTime:
+    case optimization_guide::OptimizationTypeDecision::kDeciderNotInitialized:
       return optimization_guide::OptimizationGuideDecision::kUnknown;
     default:
       return optimization_guide::OptimizationGuideDecision::kFalse;
   }
   static_assert(
       optimization_guide::OptimizationTypeDecision::kMaxValue ==
-          optimization_guide::OptimizationTypeDecision::kNoHintAvailable,
+          optimization_guide::OptimizationTypeDecision::kDeciderNotInitialized,
       "This function should be updated when a new OptimizationTypeDecision is "
       "added");
 }
@@ -107,13 +108,14 @@ optimization_guide::OptimizationGuideDecision ResolveOptimizationGuideDecision(
     case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
       return GetOptimizationGuideDecisionFromOptimizationTypeDecision(
           optimization_type_decision);
+    case optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized:
     default:
       return optimization_guide::OptimizationGuideDecision::kUnknown;
   }
   static_assert(
       optimization_guide::OptimizationTargetDecision::kMaxValue ==
           optimization_guide::OptimizationTargetDecision::
-              kModelPredictionHoldback,
+              kDeciderNotInitialized,
       "This function should be updated when a new OptimizationTargetDecision "
       "is added");
 }
@@ -144,13 +146,15 @@ void OptimizationGuideKeyedService::Initialize(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();
   hints_manager_ = std::make_unique<OptimizationGuideHintsManager>(
-      optimization_guide_service, profile, profile_path, profile->GetPrefs(),
-      database_provider, top_host_provider_.get(), url_loader_factory);
+      pre_initialized_optimization_types_, optimization_guide_service, profile,
+      profile_path, profile->GetPrefs(), database_provider,
+      top_host_provider_.get(), url_loader_factory);
   if (optimization_guide::features::IsOptimizationTargetPredictionEnabled() &&
       optimization_guide::features::IsHintsFetchingEnabled()) {
     prediction_manager_ =
         std::make_unique<optimization_guide::PredictionManager>(
-            top_host_provider_.get(), url_loader_factory);
+            pre_initialized_optimization_targets_, top_host_provider_.get(),
+            url_loader_factory);
   }
 }
 
@@ -169,7 +173,20 @@ void OptimizationGuideKeyedService::RegisterOptimizationTypesAndTargets(
         optimization_types,
     const std::vector<optimization_guide::proto::OptimizationTarget>&
         optimization_targets) {
-  DCHECK(hints_manager_);
+  // If the service has not been initialized yet, keep track of the optimization
+  // types and targets that are registered, so that we can pass them to the
+  // appropriate managers at initialization.
+  if (!hints_manager_) {
+    pre_initialized_optimization_types_.insert(
+        pre_initialized_optimization_types_.begin(), optimization_types.begin(),
+        optimization_types.end());
+
+    pre_initialized_optimization_targets_.insert(
+        pre_initialized_optimization_targets_.begin(),
+        optimization_targets.begin(), optimization_targets.end());
+    return;
+  }
+
   hints_manager_->RegisterOptimizationTypes(optimization_types);
 
   if (prediction_manager_)
@@ -182,7 +199,15 @@ OptimizationGuideKeyedService::CanApplyOptimization(
     optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata) {
-  DCHECK(hints_manager_);
+  if (!hints_manager_) {
+    // We are not initialized yet, so return unknown.
+    LogDecisions(
+        navigation_handle, optimization_target,
+        optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized,
+        optimization_type,
+        optimization_guide::OptimizationTypeDecision::kDeciderNotInitialized);
+    return optimization_guide::OptimizationGuideDecision::kUnknown;
+  }
 
   optimization_guide::OptimizationTargetDecision optimization_target_decision;
   optimization_guide::OptimizationTypeDecision optimization_type_decision;

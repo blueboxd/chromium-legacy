@@ -503,7 +503,10 @@ interface VRService {
   // UI to appear.
   GetImmersiveVRDisplayInfo() => (VRDisplayInfo? info);
 
-  ExitPresent();
+  // Shuts down an active immersive session. The callback is triggered
+  // once teardown is complete and the system is again in a state where
+  // a new immersive session could be started.
+  ExitPresent() => ();
 
   // Used for the renderer process to indicate that it is throttling frame
   // requests from the page, and thus it (not the page) is responsible for any

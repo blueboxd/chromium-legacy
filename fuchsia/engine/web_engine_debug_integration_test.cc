@@ -10,7 +10,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/macros.h"
 #include "base/test/task_environment.h"
 #include "fuchsia/base/fit_adapter.h"
@@ -53,9 +52,9 @@ class WebEngineDebugIntegrationTest : public testing::Test {
     // There should only be one instance of WebEngine in the realm.
     ASSERT_TRUE(file_enum.Next().empty());
 
-    debug_dir_ = std::make_unique<base::fuchsia::ServiceDirectoryClient>(
+    debug_dir_ = std::make_unique<sys::ServiceDirectory>(
         base::fuchsia::OpenDirectory(chromium_path.Append("out/debug")));
-    debug_ = debug_dir_->ConnectToServiceSync<fuchsia::web::Debug>();
+    debug_dir_->Connect(debug_.NewRequest());
 
     // Attach the DevToolsListener. EnableDevTools has an acknowledgement
     // callback so the listener will have been added after this call returns.
@@ -101,7 +100,7 @@ class WebEngineDebugIntegrationTest : public testing::Test {
 
   TestDebugListener dev_tools_listener_;
   fidl::Binding<fuchsia::web::DevToolsListener> dev_tools_listener_binding_;
-  std::unique_ptr<base::fuchsia::ServiceDirectoryClient> debug_dir_;
+  std::unique_ptr<sys::ServiceDirectory> debug_dir_;
   fuchsia::web::ContextProviderPtr web_context_provider_;
   fuchsia::web::DebugSyncPtr debug_;
 
@@ -197,7 +196,7 @@ TEST_F(WebEngineDebugIntegrationTest, MultipleDebugClients) {
 
   // Connect a second Debug interface.
   fuchsia::web::DebugSyncPtr debug2;
-  debug2 = debug_dir_->ConnectToServiceSync<fuchsia::web::Debug>();
+  debug_dir_->Connect(debug2.NewRequest());
   TestDebugListener dev_tools_listener2;
   fidl::Binding<fuchsia::web::DevToolsListener> dev_tools_listener_binding2(
       &dev_tools_listener2);

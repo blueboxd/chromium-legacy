@@ -205,11 +205,11 @@ def _OptimizeWithR8(options,
 
     cmd += options.input_paths
 
-    stderr_filter = None
     env = os.environ.copy()
+    stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
+    env['_JAVA_OPTIONS'] = '-Dcom.android.tools.r8.allowTestProguardOptions=1'
     if options.disable_outlining:
-      stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
-      env['_JAVA_OPTIONS'] = '-Dcom.android.tools.r8.disableOutlining=1'
+      env['_JAVA_OPTIONS'] += '-Dcom.android.tools.r8.disableOutlining=1'
 
     build_utils.CheckOutput(
         cmd, env=env, print_stdout=print_stdout, stderr_filter=stderr_filter)
@@ -366,6 +366,11 @@ Embedded configs are not permitted (https://crbug.com/989505)
     sys.exit(1)
 
 
+def _ContainsDebuggingConfig(config_str):
+  debugging_configs = ('-whyareyoukeeping', '-whyareyounotinlining')
+  return any(config in config_str for config in debugging_configs)
+
+
 def main():
   options = _ParseOptions()
 
@@ -383,7 +388,7 @@ def main():
   # ProGuard configs that are derived from flags.
   merged_configs = _CombineConfigs(
       options.proguard_configs, dynamic_config_data, exclude_generated=True)
-  print_stdout = '-whyareyoukeeping' in merged_configs or options.verbose
+  print_stdout = _ContainsDebuggingConfig(merged_configs) or options.verbose
 
   # Writing the config output before we know ProGuard is going to succeed isn't
   # great, since then a failure will result in one of the outputs being updated.

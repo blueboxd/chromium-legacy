@@ -74,10 +74,6 @@ GURL GetPingbackURL();
 // Data Reduction Proxy config service.
 GURL GetConfigServiceURL();
 
-// Returns true if the Data Reduction Proxy is forced to be enabled from the
-// command line.
-bool ShouldForceEnableDataReductionProxy();
-
 // The current LitePage experiment blacklist version.
 int LitePageVersion();
 

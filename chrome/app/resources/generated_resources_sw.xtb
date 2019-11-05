@@ -103,6 +103,7 @@
 <translation id="1143142264369994168">Mtia Sahihi kwenye Cheti</translation>
 <translation id="1145292499998999162">Programu jalizi imezuiwa</translation>
 <translation id="1145532888383813076">Tafuta kwenye wavuti, programu na kifaa chako.</translation>
+<translation id="1146678959555564648">Tumia hali ya VR</translation>
 <translation id="114721135501989771">Pata Google mahiri kwenye Chrome</translation>
 <translation id="1149401351239820326">Mwezi wa kuisha kwa muda wa matumizi</translation>
 <translation id="1150565364351027703">Miwani</translation>
@@ -202,7 +203,6 @@
 <translation id="1285484354230578868">Hifadhi data katika akaunti yako ya Hifadhi ya Google</translation>
 <translation id="1288037062697528143">Kipengele cha Mwanga wa Usiku kitawaka kiotomatiki wakati wa machweo</translation>
 <translation id="1288300545283011870">Sifa za Sauti</translation>
-<translation id="1289513325360489062">Haiwezi kufikia data ya tovuti hii</translation>
 <translation id="1293264513303784526">Kifaa cha USB-C (mlango wa kushoto)</translation>
 <translation id="1293556467332435079">Faili</translation>
 <translation id="1296911687402551044">Bandika Kichupo Kilichoteuliwa</translation>
@@ -810,7 +810,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2165421703844373933">Fikia programu yako ya Mratibu unaposema "Ok Google" Ili kuokoa betri, chagua “Washa (Inapendekezwa.)” Programu yako ya Mratibu itafanya kazi tu wakati kifaa chako kimechomekwa kwenye kituo cha umeme au kinachaji.</translation>
 <translation id="2166369534954157698">Juma ameanza kuvua papa baharini, naye Fatuma anamsaidia Lawi kuchimba mgodi</translation>
 <translation id="2169062631698640254">Ingia tu</translation>
-<translation id="2170088579611075216">Ruhusu na uingie katika VR</translation>
 <translation id="2172784515318616985">Endelea</translation>
 <translation id="2173302385160625112">Angalia muunganisho wako wa intaneti</translation>
 <translation id="2173801458090845390">Ongeza ombi la Kitambulisho kwenye kifaa hiki</translation>
@@ -1003,7 +1002,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2439545803278355377">Weka PIN yako mpya. PIN lazima iwe angalau herufi nne na inaweza kujumuisha herufi za alfabeti, nambari na herufi maalum.</translation>
 <translation id="2440604414813129000">Tazama &amp;asili</translation>
 <translation id="2442916515643169563">Vivuli vya maandishi</translation>
-<translation id="2444119669991608829">Je, Ukurasa Haujaandikwa Katika <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">Saraka la shina la kiendelezi linahitajika.</translation>
 <translation id="2445484935443597917">Unda Wasifu Mpya</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> inataka kuthibitisha utambulisho wako</translation>
@@ -1424,7 +1422,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3020183492814296499">Njia za mkato</translation>
 <translation id="3020990233660977256">Nambari ya Kufuatilia: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Kipepeo</translation>
-<translation id="3021426244864538700">Kufikia data ya tovuti hii</translation>
 <translation id="3021678814754966447">&amp;Ona Asili ya Fremu</translation>
 <translation id="3022978424994383087">Imeshindwa kutafsiri.</translation>
 <translation id="3023464535986383522">Chagua ili izungumze</translation>
@@ -2213,7 +2210,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4159681666905192102">Hii ni akaunti ya watoto inayodhibitiwa na <ph name="CUSTODIAN_EMAIL" /> na <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Kibodi isiyojulikana</translation>
 <translation id="4168015872538332605">Baadhi ya mipangilio ya <ph name="PRIMARY_EMAIL" /> inashirikiwa nawe. Mipangilio hii huathiri akaunti yako unapotumia uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja.</translation>
-<translation id="4169535189173047238">Usiruhusu</translation>
 <translation id="4170314459383239649">Futa Unapofunga</translation>
 <translation id="4172051516777682613">Onyesha kila mara</translation>
 <translation id="4175137578744761569">Zambarau hafifu na nyeupe</translation>
@@ -2299,6 +2295,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4316850752623536204">Tovuti ya Wasanidi Programu</translation>
 <translation id="4320177379694898372">Hakuna muunganisho wa intaneti</translation>
 <translation id="4321442524549817090">O&amp;nyesha URL</translation>
+<translation id="4322394346347055525">Funga Vichupo Vingine</translation>
 <translation id="4324577459193912240">Faili haijakamilika</translation>
 <translation id="4325237902968425115">Inaondoa <ph name="LINUX_APP_NAME" />...</translation>
 <translation id="4330191372652740264">Maji ya barafu</translation>
@@ -2752,10 +2749,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5029568752722684782">Futa nakala</translation>
 <translation id="5030338702439866405">Kimetolewa Na</translation>
 <translation id="5033266061063942743">Maumbo ya Jiometriki</translation>
-<translation id="5033865233969348410">Wakati upo katika VR, tovuti hii inaweza kujifunza kuhusu:
- -  sifa zako za mwili, kama vile urefu,
-
-Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> inataka kutumia kamera na maikrofoni yako</translation>
 <translation id="5036662165765606524">Usiruhusu tovuti yoyote kupakua faili nyingi kiotomatiki</translation>
 <translation id="5037676449506322593">Chagua Zote</translation>
@@ -3029,7 +3022,6 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="5449588825071916739">Alamisha Vichupo Vyote</translation>
 <translation id="5449716055534515760">Funga Dirisha</translation>
 <translation id="5454166040603940656">na <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Lugha ya Kutafsiria</translation>
 <translation id="5457113250005438886">Haiwezi kutumika</translation>
 <translation id="5457459357461771897">Soma na ufute picha, muziki, na maudhui mengine kwenye kompyuta yako</translation>
 <translation id="5457599981699367932">Vinjari kama Mgeni</translation>
@@ -3089,10 +3081,6 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="5532223876348815659">Ulimwenguni</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> inataka</translation>
 <translation id="5534304873398226603">Ondoa picha au video</translation>
-<translation id="5534334044554683961">Ukiwa katika VR, tovuti hii inaweza kujifunza kuhusu:
-  -   sifa zako za mwili, kama vile urefu
-  -   muundo wa chumba chako
-Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="5535941515421698170">Pia ondoa data yako iliyopo kwenye kifaa hiki</translation>
 <translation id="5539221284352502426">Nenosiri uliloweka limekataliwa na seva. Hali hii inaweza kusababishwa na: Nenosiri kuwa fupi mno. Nenosiri lazima lijumuishe nambari na ishara. Nenosiri lazima liwe tofauti na manenosiri ya awali.</translation>
 <translation id="5541694225089836610">Kitendo kimezimwa na msimamizi wako</translation>
@@ -3990,6 +3978,7 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="6850286078059909152">Rangi ya maandishi</translation>
 <translation id="6851497530878285708">Programu Imewashwa</translation>
 <translation id="6853388645642883916">Kisasishaji kimetulia</translation>
+<translation id="68541483639528434">Funga vichupo vingine</translation>
 <translation id="6856623341093082836">Weka mipangilio na urekebishe usahihi wa skrini yako ya kugusa</translation>
 <translation id="6857699260879628349">Pata maelezo ya kuweka mipangilio</translation>
 <translation id="6860097299815761905">Mipangilio ya proksi...</translation>
@@ -4102,7 +4091,6 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="7019805045859631636">Haraka</translation>
 <translation id="7022562585984256452">Ukurasa wako wa mwanzo umewekwa.</translation>
 <translation id="7025190659207909717">Udhibiti wa huduma ya data ya simu ya mkononi</translation>
-<translation id="7027891519253193555">Je, ukurasa haujaandikwa katika <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Manenosiri</translation>
 <translation id="703001695939087067">Umeingia katika hali ya muhtasari wa dirisha. Bonyeza kichupo ili usogeze.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - Imeunganisha kwenye mlango wa kuchomeka vifaa</translation>
@@ -4547,7 +4535,6 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="7684718995427157417">Ili kutengeneza na kujaribu programu zako, washa Zana ya Android Debug Bridge (ADB). Kumbuka kwamba hatua hii inaruhusu usakinishaji wa programu za Android ambazo hazijathibitishwa na Google na zinahitaji urejeshe mipangilio ya kiwandani ya kifaa ili kuzizima.</translation>
 <translation id="7685049629764448582">Kumbukumbu ya JavaScript</translation>
 <translation id="7685087414635069102">PIN inahitajika</translation>
-<translation id="7685301384041462804">Hakikisha kuwa unaamini tovuti hii kabla ya kuanzisha VR.</translation>
 <translation id="768549422429443215">Ongeza lugha au panga orodha upya.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Thibitisha nenosiri jipya</translation>
@@ -4948,11 +4935,9 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Inaendelea kupakua}other{Inaendelea kupakua}}</translation>
 <translation id="8213449224684199188">Umeweka hali ya picha</translation>
 <translation id="8213577208796878755">Kifaa kingine kinachopatikana.</translation>
-<translation id="8213996900880218548">Inataka kufikia data ya tovuti hii</translation>
 <translation id="8214489666383623925">Fungua Faili...</translation>
 <translation id="8214962590150211830">Ondoa Mtumiaji Huyu</translation>
 <translation id="8217399928341212914">Endelea kuzuia upakuaji otomatiki wa faili nyingi</translation>
-<translation id="822519928942492333">Lugha ya Ukurasa Unaotafsiriwa</translation>
 <translation id="8225265270453771718">Shiriki dirisha la programu</translation>
 <translation id="8225753906568652947">Tumia ofa zako</translation>
 <translation id="8226222018808695353">Hairuhusiwi</translation>
@@ -5524,7 +5509,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="9026731007018893674">pakua</translation>
 <translation id="9026852570893462412">Huenda mchakato huu ukachukua dakika kadhaa. Inapakua kompyuta iliyo mbali.</translation>
 <translation id="9027459031423301635">Fungua Kiungo katika Kichupo &amp;Kipya</translation>
-<translation id="9029323097866369874">Ungependa kuruhusu <ph name="DOMAIN" /> kuanzisha VR?</translation>
 <translation id="9030515284705930323">Shirika lako halijaruhusu Duka la Google Play kwa akaunti yako. Wasiliana na msimamizi wako kwa maelezo zaidi.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Bandika</translation>
@@ -5568,7 +5552,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="9094038138851891550">Jina la mtumiaji si sahihi</translation>
 <translation id="9094982973264386462">Ondoa</translation>
 <translation id="9095253524804455615">Ondoa</translation>
-<translation id="9095388113577226029">Lugha zaidi...</translation>
 <translation id="9100610230175265781">Kaulisiri inahitajika</translation>
 <translation id="9100765901046053179">Mipangilio ya kina</translation>
 <translation id="9101691533782776290">Zindua programu</translation>

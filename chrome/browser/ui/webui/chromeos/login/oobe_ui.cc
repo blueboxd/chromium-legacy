@@ -184,6 +184,8 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
 void AddAssistantScreensResources(content::WebUIDataSource* source) {
   source->AddResourcePath("voice_match_animation.json",
                           IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
+  source->AddResourcePath("voice_match_already_setup_animation.json",
+                          IDR_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_ANIMATION);
   source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
 }
 

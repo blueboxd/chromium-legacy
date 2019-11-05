@@ -133,8 +133,7 @@ void ArcAppTest::SetUp(Profile* profile) {
     WaitForInstanceReady(arc_service_manager_->arc_bridge_service()->app());
 
   // Ensure that the singleton apps::ArcApps is constructed.
-  if (base::FeatureList::IsEnabled(features::kAppServiceAsh))
-    apps::ArcAppsFactory::GetForProfile(profile_);
+  apps::ArcAppsFactory::GetForProfile(profile_);
 }
 
 void ArcAppTest::WaitForDefaultApps() {

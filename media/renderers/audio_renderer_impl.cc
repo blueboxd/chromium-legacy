@@ -804,6 +804,7 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
   lock_.AssertAcquired();
   if (buffer->end_of_stream()) {
     received_end_of_stream_ = true;
+    algorithm_->MarkEndOfStream();
   } else {
     if (buffer->IsBitstreamFormat() && state_ == kPlaying) {
       if (IsBeforeStartTime(*buffer))

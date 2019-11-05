@@ -2487,6 +2487,7 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/832071 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
+crbug.com/832071 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # failures in external/wpt/css/css-animations/ and web-animations/ from Mozilla tests
 crbug.com/849859 external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
@@ -2538,6 +2539,15 @@ crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_
 # When DSF = 2 and use_zoom_for_dsf=false, the scroll offsets are different when compared to DSF = 2 and use_zoom_for_dsf=true.
 crbug.com/1016186 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 crbug.com/1016186 [ Linux ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+
+# TODO (arakeri): Mac uses the "Option" modifier instead of "Shift" to do the non-animated jump. This hasn't been implemented yet.
+crbug.com/1016955 [ Mac ] fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -2843,6 +2853,7 @@ crbug.com/626703 virtual/omt-service-worker-startup/external/wpt/service-workers
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
+crbug.com/626703 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
@@ -3992,6 +4003,7 @@ crbug.com/691944 virtual/omt-service-worker-startup/external/wpt/service-workers
 crbug.com/691944 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
+crbug.com/691944 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # These tests (erroneously) see a platform-specific User-Agent header
 crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
@@ -3999,6 +4011,7 @@ crbug.com/595993 virtual/omt-service-worker-startup/external/wpt/service-workers
 crbug.com/595993 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
+crbug.com/595993 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 
 crbug.com/619427 [ Mac ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
@@ -4259,6 +4272,7 @@ crbug.com/889798 virtual/cache-storage-sequence/external/wpt/service-workers/ser
 crbug.com/889798 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
+crbug.com/889798 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
@@ -4802,6 +4816,8 @@ crbug.com/873873 virtual/cache-storage-sequence/external/wpt/service-workers/ser
 crbug.com/873873 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
+crbug.com/873873 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
+crbug.com/873873 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 
 crbug.com/875884 [ Linux ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
 crbug.com/875884 [ Win ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
@@ -5116,6 +5132,7 @@ crbug.com/933880 virtual/omt-service-worker-startup/external/wpt/service-workers
 crbug.com/933880 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
+crbug.com/933880 virtual/cache-storage-high-priority-match/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/interception-take-stream.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]
 # This passes in content_shell but not in chrome with network service disabled,
@@ -5570,6 +5587,7 @@ crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-mai
 
 # Pending enabling scroll to text feature
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]
+crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment-same-doc.html [ Skip ]
 
 crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
 
@@ -5679,7 +5697,7 @@ crbug.com/1013391 http/tests/devtools/a11y-axe-core/settings/shortcuts-a11y-test
 crbug.com/1013523 [ Release ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1013523 [ Release Linux Mac ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1010472 [ Linux Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Timeout Pass ]
-crbug.com/1010472 [ Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass ]
+crbug.com/1010472 virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure Pass ]
 crbug.com/1013779 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/pointerevents/pointerevent_touch-adjustment_click_target.html [ Failure Pass ]
@@ -5721,7 +5739,7 @@ crbug.com/925325 [ Win ] storage/indexeddb/index-population.html [ Pass Timeout 
 crbug.com/1018064 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
 
 # Sheriff 2019-10-30
-crbug.com/1014810 [ Mac ] virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
+crbug.com/1014810 [ Mac ] virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout Crash ]
 crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
 crbug.com/1019663 external/wpt/web-nfc/NDEFReader_options.https.html [ Failure Pass ]
 
@@ -5739,7 +5757,6 @@ crbug.com/940927 external/wpt/trusted-types/trusted-types-eval-reporting-no-unsa
 crbug.com/940927 external/wpt/trusted-types/eval-with-permissive-csp.tentative.html [ Failure ]
 
 # Sheriff 2019-10-31
-crbug.com/1020034 [ Mac10.10 ] fast/forms/month/month-appearance-l10n.html [ Failure ]
 crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
 
 # Temporarily disabled for landing datagrid Changes in devtools
@@ -5752,6 +5769,3 @@ crbug.com/963183 http/tests/devtools/network/network-cookies-pane.js [ Pass Time
 crbug.com/963183 http/tests/devtools/network/preview-searchable.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/network/waterfall-header-height-updates.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/network/network-search.js [ Pass Timeout Failure ]
-
-# Temporarily disabled for landing code coverage changes in DevTools
-crbug.com/1004203 http/tests/devtools/user-metrics.js [ Pass Failure ]

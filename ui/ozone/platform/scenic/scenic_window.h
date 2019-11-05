@@ -44,7 +44,9 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
 
   scenic::Session* scenic_session() { return &scenic_session_; }
 
-  void AttachSurface(fuchsia::ui::gfx::ExportToken surface_export_token);
+  // Embeds the View identified by |token| into the render node,
+  // causing its contents to be displayed in this window.
+  void AttachSurfaceView(fuchsia::ui::views::ViewHolderToken token);
 
   // PlatformWindow implementation.
   gfx::Rect GetBounds() override;

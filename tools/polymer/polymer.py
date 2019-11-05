@@ -56,7 +56,8 @@ import re
 import sys
 
 _CWD = os.getcwd()
-_ROOT = os.path.normpath(os.path.join(_CWD, '..', '..'))
+_HERE_PATH = os.path.dirname(__file__)
+_ROOT = os.path.normpath(os.path.join(_HERE_PATH, '..', '..'))
 
 POLYMER_V1_DIR = 'third_party/polymer/v1_0/components-chromium/'
 POLYMER_V3_DIR = 'third_party/polymer/v3_0/components-chromium/'

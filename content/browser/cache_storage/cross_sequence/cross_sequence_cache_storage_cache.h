@@ -41,6 +41,7 @@ class CrossSequenceCacheStorageCache
   bool IsUnreferenced() const override;
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::CacheQueryOptionsPtr match_options,
+             CacheStorageSchedulerPriority priority,
              int64_t trace_id,
              ResponseCallback callback) override;
 

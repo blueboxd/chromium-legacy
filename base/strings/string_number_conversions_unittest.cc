@@ -672,7 +672,8 @@ TEST(StringNumberConversionsTest, HexStringToUInt64) {
   EXPECT_EQ(0xc0ffeeU, output);
 }
 
-TEST(StringNumberConversionsTest, HexStringToBytes) {
+// Tests for HexStringToBytes, HexStringToString, HexStringToSpan.
+TEST(StringNumberConversionsTest, HexStringToBytesStringSpan) {
   static const struct {
     const std::string input;
     const char* output;
@@ -698,16 +699,65 @@ TEST(StringNumberConversionsTest, HexStringToBytes) {
      "\x01\x23\x45\x67\x89\xAB\xCD\xEF\x01\x23\x45", 11, true},
   };
 
-  for (size_t i = 0; i < base::size(cases); ++i) {
-    std::vector<uint8_t> output;
-    std::vector<uint8_t> compare;
-    EXPECT_EQ(cases[i].success, HexStringToBytes(cases[i].input, &output)) <<
-        i << ": " << cases[i].input;
-    for (size_t j = 0; j < cases[i].output_len; ++j)
-      compare.push_back(static_cast<uint8_t>(cases[i].output[j]));
-    ASSERT_EQ(output.size(), compare.size()) << i << ": " << cases[i].input;
-    EXPECT_TRUE(std::equal(output.begin(), output.end(), compare.begin())) <<
-        i << ": " << cases[i].input;
+  for (size_t test_i = 0; test_i < base::size(cases); ++test_i) {
+    const auto& test = cases[test_i];
+
+    std::string expected_output(test.output, test.output_len);
+
+    // Test HexStringToBytes().
+    {
+      std::vector<uint8_t> output;
+      EXPECT_EQ(test.success, HexStringToBytes(test.input, &output))
+          << test_i << ": " << test.input;
+      EXPECT_EQ(expected_output, std::string(output.begin(), output.end()));
+    }
+
+    // Test HexStringToString().
+    {
+      std::string output;
+      EXPECT_EQ(test.success, HexStringToString(test.input, &output))
+          << test_i << ": " << test.input;
+      EXPECT_EQ(expected_output, output) << test_i << ": " << test.input;
+    }
+
+    // Test HexStringToSpan() with a properly sized output.
+    {
+      std::vector<uint8_t> output;
+      output.resize(test.input.size() / 2);
+
+      EXPECT_EQ(test.success, HexStringToSpan(test.input, output))
+          << test_i << ": " << test.input;
+
+      // On failure the output will only have been partially written (with
+      // everything after the failure being 0).
+      for (size_t i = 0; i < test.output_len; ++i) {
+        EXPECT_EQ(test.output[i], static_cast<char>(output[i]))
+            << test_i << ": " << test.input;
+      }
+      for (size_t i = test.output_len; i < output.size(); ++i) {
+        EXPECT_EQ('\0', static_cast<char>(output[i]))
+            << test_i << ": " << test.input;
+      }
+    }
+
+    // Test HexStringToSpan() with an output that is 1 byte too small.
+    {
+      std::vector<uint8_t> output;
+      if (test.input.size() > 1)
+        output.resize(test.input.size() / 2 - 1);
+
+      EXPECT_FALSE(HexStringToSpan(test.input, output))
+          << test_i << ": " << test.input;
+    }
+
+    // Test HexStringToSpan() with an output that is 1 byte too large.
+    {
+      std::vector<uint8_t> output;
+      output.resize(test.input.size() / 2 + 1);
+
+      EXPECT_FALSE(HexStringToSpan(test.input, output))
+          << test_i << ": " << test.input;
+    }
   }
 }
 

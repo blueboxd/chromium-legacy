@@ -14,9 +14,11 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "content/browser/sms/sms_fetcher_impl.h"
 #include "content/browser/sms/test/mock_sms_provider.h"
 #include "content/browser/sms/test/mock_sms_web_contents_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/sms_fetcher.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
@@ -59,12 +61,13 @@ const char kTestUrl[] = "https://www.google.com";
 // control the testing environment.
 class Service {
  public:
-  Service(WebContents* web_contents, const Origin& origin) {
+  Service(WebContents* web_contents, const Origin& origin)
+      : fetcher_(web_contents->GetBrowserContext(), &provider_) {
     WebContentsImpl* web_contents_impl =
         reinterpret_cast<WebContentsImpl*>(web_contents);
     web_contents_impl->SetDelegate(&delegate_);
     service_ = std::make_unique<SmsService>(
-        &provider_, origin, web_contents->GetMainFrame(),
+        &fetcher_, origin, web_contents->GetMainFrame(),
         service_remote_.BindNewPipeAndPassReceiver());
   }
 
@@ -74,6 +77,7 @@ class Service {
 
   NiceMock<MockSmsWebContentsDelegate>* delegate() { return &delegate_; }
   NiceMock<MockSmsProvider>* provider() { return &provider_; }
+  SmsFetcher* fetcher() { return &fetcher_; }
 
   void CreateSmsPrompt(RenderFrameHost* rfh, bool confirm) {
     EXPECT_CALL(*delegate(), CreateSmsPrompt(rfh, _, _, _, _))
@@ -101,6 +105,7 @@ class Service {
  private:
   NiceMock<MockSmsWebContentsDelegate> delegate_;
   NiceMock<MockSmsProvider> provider_;
+  SmsFetcherImpl fetcher_;
   mojo::Remote<blink::mojom::SmsReceiver> service_remote_;
   std::unique_ptr<SmsService> service_;
 };
@@ -146,7 +151,7 @@ TEST_F(SmsServiceTest, Basic) {
 
   loop.Run();
 
-  ASSERT_FALSE(service.provider()->HasObservers());
+  ASSERT_FALSE(service.fetcher()->HasSubscribers());
 }
 
 TEST_F(SmsServiceTest, HandlesMultipleCalls) {
@@ -243,9 +248,9 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
   EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
     // Delivers two SMSes for the same origin, even if only one was being
     // expected.
-    ASSERT_TRUE(service.provider()->HasObservers());
+    ASSERT_TRUE(service.fetcher()->HasSubscribers());
     service.NotifyReceive(GURL(kTestUrl), "first");
-    ASSERT_FALSE(service.provider()->HasObservers());
+    ASSERT_FALSE(service.fetcher()->HasSubscribers());
     service.NotifyReceive(GURL(kTestUrl), "second");
   }));
 
@@ -380,8 +385,9 @@ TEST_F(SmsServiceTest, CleansUp) {
   web_contents_impl->SetDelegate(&delegate);
 
   NiceMock<MockSmsProvider> provider;
+  SmsFetcherImpl fetcher(web_contents()->GetBrowserContext(), &provider);
   mojo::Remote<blink::mojom::SmsReceiver> service;
-  SmsService::Create(&provider, main_rfh(),
+  SmsService::Create(&fetcher, main_rfh(),
                      service.BindNewPipeAndPassReceiver());
 
   base::RunLoop navigate;
@@ -408,7 +414,7 @@ TEST_F(SmsServiceTest, CleansUp) {
 
   reload.Run();
 
-  ASSERT_FALSE(provider.HasObservers());
+  ASSERT_FALSE(fetcher.HasSubscribers());
 }
 
 TEST_F(SmsServiceTest, PromptsDialog) {
@@ -434,7 +440,7 @@ TEST_F(SmsServiceTest, PromptsDialog) {
 
   loop.Run();
 
-  ASSERT_FALSE(service.provider()->HasObservers());
+  ASSERT_FALSE(service.fetcher()->HasSubscribers());
 }
 
 TEST_F(SmsServiceTest, Cancel) {
@@ -465,7 +471,7 @@ TEST_F(SmsServiceTest, Cancel) {
 
   loop.Run();
 
-  ASSERT_FALSE(service.provider()->HasObservers());
+  ASSERT_FALSE(service.fetcher()->HasSubscribers());
 }
 
 TEST_F(SmsServiceTest, RecordTimeMetricsForContinueOnSuccess) {

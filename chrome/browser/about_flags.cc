@@ -2777,7 +2777,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"omnibox-local-entity-suggestions",
      flag_descriptions::kOmniboxLocalEntitySuggestionsName,
-     flag_descriptions::kOmniboxLocalEntitySuggestionsDescription, kOsDesktop,
+     flag_descriptions::kOmniboxLocalEntitySuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxLocalEntitySuggestions)},
 
     {"omnibox-experimental-suggest-scoring",
@@ -4258,12 +4258,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAudioWorkletRealtimeThreadName,
      flag_descriptions::kAudioWorkletRealtimeThreadDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kAudioWorkletRealtimeThread)},
-
-#if defined(OS_CHROMEOS)
-    {"dim-shelf", flag_descriptions::kShelfDimmingName,
-     flag_descriptions::kShelfDimmingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kShelfDimming)},
-#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
     {"release-notes", flag_descriptions::kReleaseNotesName,

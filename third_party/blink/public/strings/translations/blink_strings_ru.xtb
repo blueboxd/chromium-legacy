@@ -106,6 +106,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Часть адреса после символа "<ph name="ATSIGN" />" не должна содержать символ "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">приложение</translation>
+<translation id="4698212723196775569">код</translation>
 <translation id="4718048029184481307">Воспроизведение в режиме "Картинка в картинке"</translation>
 <translation id="4742539557769756338">обложка</translation>
 <translation id="4748357248530471599">Переключить вырезанную область на полный экран</translation>
@@ -191,6 +192,7 @@
 <translation id="7118469954320184356">Нет описания.</translation>
 <translation id="7139483182332611405">вступление</translation>
 <translation id="7214187073215825913">информация о содержании</translation>
+<translation id="7238347055216017155">выделение</translation>
 <translation id="7263440858009898357">Выберите один из пунктов списка.</translation>
 <translation id="727747134524199931">заголовок столбца</translation>
 <translation id="7320576522385648310">Буферизация…</translation>
@@ -217,6 +219,7 @@
 <translation id="7888071071722539607">Адрес электронной почты должен содержать символ "<ph name="ATSIGN" />". В адресе "<ph name="INVALIDADDRESS" />" отсутствует символ "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">разделитель</translation>
 <translation id="795667975304826397">Файл не выбран</translation>
+<translation id="8034303206267677282">важный</translation>
 <translation id="8053789581856978548">поле поиска</translation>
 <translation id="8057695513531652401">примечание</translation>
 <translation id="8105797009065549151">ссылка на примечание</translation>

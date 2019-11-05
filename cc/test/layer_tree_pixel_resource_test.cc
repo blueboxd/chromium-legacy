@@ -99,7 +99,7 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
       EXPECT_NE(RENDERER_SOFTWARE, renderer_type());
       bool enable_oopr = renderer_type() == RENDERER_SKIA_VK;
       return std::make_unique<GpuRasterBufferProvider>(
-          compositor_context_provider, worker_context_provider, false, 0,
+          compositor_context_provider, worker_context_provider, false,
           gpu_raster_format, gfx::Size(), true, enable_oopr);
     }
     case ZERO_COPY:

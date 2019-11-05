@@ -6,6 +6,7 @@
 #define ASH_WALLPAPER_WALLPAPER_BASE_VIEW_H_
 
 #include "base/macros.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -20,6 +21,10 @@ class WallpaperBaseView : public views::View {
   WallpaperBaseView() = default;
   ~WallpaperBaseView() override = default;
 
+  void set_centered_layout_image_scale(const gfx::Vector2dF& value) {
+    centered_layout_image_scale_ = value;
+  }
+
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -32,6 +37,14 @@ class WallpaperBaseView : public views::View {
                              gfx::Canvas* canvas);
 
  private:
+  // Factor by which we scale the size of the wallpaper image when the wallpaper
+  // layout is WALLPAPER_LAYOUT_CENTER. This is used by DeskPreviewView, which
+  // acts as a minified view of the desk, in which case a centered image in the
+  // big bounds of the display, will not look the same way if we don't scale it
+  // down by the same factor by which we scale down the desk in the its
+  // mini_view.
+  gfx::Vector2dF centered_layout_image_scale_ = gfx::Vector2dF(1.0f, 1.0f);
+
   DISALLOW_COPY_AND_ASSIGN(WallpaperBaseView);
 };
 

@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
+#include "content/browser/cache_storage/cache_storage_scheduler_types.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "url/origin.h"
@@ -77,6 +78,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // Returns ERROR_TYPE_NOT_FOUND if not found.
   virtual void Match(blink::mojom::FetchAPIRequestPtr request,
                      blink::mojom::CacheQueryOptionsPtr match_options,
+                     CacheStorageSchedulerPriority priority,
                      int64_t trace_id,
                      ResponseCallback callback) = 0;
 

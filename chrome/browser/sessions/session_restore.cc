@@ -370,10 +370,10 @@ class SessionRestoreImpl : public BrowserListObserver {
         "SessionRestore-CreatingTabs-Start", false);
 #endif
 
-    // After the for loop this contains the last TABBED_BROWSER. Is null if no
-    // tabbed browsers exist.
-    Browser* last_browser = nullptr;
-    bool has_tabbed_browser = false;
+    // After the for loop this contains the last TYPE_NORMAL browser, or nullptr
+    // if no TYPE_NORMAL browser exists.
+    Browser* last_normal_browser = nullptr;
+    bool has_normal_browser = false;
 
     // After the for loop, this contains the browser to activate, if one of the
     // windows has the same id as specified in active_window_id.
@@ -391,10 +391,9 @@ class SessionRestoreImpl : public BrowserListObserver {
     }
 
     for (auto i = windows->begin(); i != windows->end(); ++i) {
+      // 1. Choose between restoring tabs in an existing browser or in a newly
+      //    created browser.
       Browser* browser = nullptr;
-      if (!has_tabbed_browser &&
-          (*i)->type == sessions::SessionWindow::TYPE_NORMAL)
-        has_tabbed_browser = true;
       if (i == windows->begin() &&
           (*i)->type == sessions::SessionWindow::TYPE_NORMAL && browser_ &&
           browser_->is_type_normal() &&
@@ -406,7 +405,8 @@ class SessionRestoreImpl : public BrowserListObserver {
         chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
             "SessionRestore-CreateRestoredBrowser-Start", false);
 #endif
-        // Show the first window if none are visible.
+        // Change the initial show state of the created browser to
+        // SHOW_STATE_NORMAL if there are no visible browsers.
         ui::WindowShowState show_state = (*i)->show_state;
         if (!has_visible_browser) {
           show_state = ui::SHOW_STATE_NORMAL;
@@ -420,8 +420,14 @@ class SessionRestoreImpl : public BrowserListObserver {
             "SessionRestore-CreateRestoredBrowser-End", false);
 #endif
       }
-      if ((*i)->type == sessions::SessionWindow::TYPE_NORMAL)
-        last_browser = browser;
+
+      // 2. Track TYPE_NORMAL browsers.
+      if ((*i)->type == sessions::SessionWindow::TYPE_NORMAL) {
+        has_normal_browser = true;
+        last_normal_browser = browser;
+      }
+
+      // 3. Determine whether the currently active tab should be closed.
       WebContents* active_tab =
           browser->tab_strip_model()->GetActiveWebContents();
       int initial_tab_count = browser->tab_strip_model()->count();
@@ -439,11 +445,15 @@ class SessionRestoreImpl : public BrowserListObserver {
       if ((*i)->window_id == active_window_id)
         browser_to_activate = browser;
 
+      // 5. Restore tabs in |browser|. This will also call Show() on |browser|
+      //    if its initial show state is not mimimized.
       RestoreTabsToBrowser(*(*i), browser, initial_tab_count,
                            selected_tab_index, created_contents);
+      DCHECK(browser->window()->IsVisible() ||
+             browser->window()->IsMinimized());
 
-      // Tabs will be grouped appropriately in RestoreTabsToBrowser. Now restore
-      // the groups' visual data.
+      // 6. Tabs will be grouped appropriately in RestoreTabsToBrowser. Now
+      //    restore the groups' visual data.
       if (base::FeatureList::IsEnabled(features::kTabGroups)) {
         for (auto& tab_group : (*i)->tab_groups) {
           TabGroupVisualData restored_data(std::move(tab_group->metadata.title),
@@ -454,18 +464,24 @@ class SessionRestoreImpl : public BrowserListObserver {
         }
       }
 
+      // 7. Notify SessionService of restored tabs, so they can be saved to the
+      //    current session.
+      // TODO(fdoray): This seems redundant with the call to
+      // SessionService::TabRestored() at the end of chrome::AddRestoredTab().
+      // Consider removing it.
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
-      // This needs to be done after restore because closing the last tab will
-      // close the whole window.
+
+      // 8. Close the tab that was active in the window prior to session
+      //    restore, if needed.
       if (close_active_tab)
         chrome::CloseWebContents(browser, active_tab, true);
     }
 
     if (browser_to_activate && browser_to_activate->is_type_normal())
-      last_browser = browser_to_activate;
+      last_normal_browser = browser_to_activate;
 
-    if (last_browser && !urls_to_open_.empty())
-      AppendURLsToBrowser(last_browser, urls_to_open_);
+    if (last_normal_browser && !urls_to_open_.empty())
+      AppendURLsToBrowser(last_normal_browser, urls_to_open_);
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
         "SessionRestore-CreatingTabs-End", false);
@@ -477,13 +493,13 @@ class SessionRestoreImpl : public BrowserListObserver {
       browser_to_activate->window()->Activate();
     }
 
-    // If last_browser is NULL and urls_to_open_ is non-empty,
+    // If last_normal_browser is NULL and urls_to_open_ is non-empty,
     // FinishedTabCreation will create a new TabbedBrowser and add the urls to
     // it.
     Browser* finished_browser =
-        FinishedTabCreation(true, has_tabbed_browser, created_contents);
+        FinishedTabCreation(true, has_normal_browser, created_contents);
     if (finished_browser)
-      last_browser = finished_browser;
+      last_normal_browser = finished_browser;
 
     // sessionStorages needed for the session restore have now been recreated
     // by RestoreTab. Now it's safe for the DOM storage system to start
@@ -491,7 +507,7 @@ class SessionRestoreImpl : public BrowserListObserver {
     content::BrowserContext::GetDefaultStoragePartition(profile_)
         ->GetDOMStorageContext()
         ->StartScavengingUnusedSessionStorage();
-    return last_browser;
+    return last_normal_browser;
   }
 
   // Record an app launch event (if appropriate) for a tab which is about to

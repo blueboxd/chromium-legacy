@@ -214,11 +214,6 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
     client_view_ = client_view;
   }
 
-  // Layout just the frame view. This is necessary on Windows when non-client
-  // metrics such as the position of the window controls changes independently
-  // of a window resize message.
-  void LayoutFrameView();
-
   // Set the accessible name of this view.
   void SetAccessibleName(const base::string16& name);
 
@@ -228,7 +223,6 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   gfx::Size GetMaximumSize() const override;
   void Layout() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 
  protected:

@@ -47,7 +47,6 @@
 <translation id="1516740043221086139">Režim Nerušiť je zapnutý.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Zobraziť nastavenia upozornení. Upozornenia sú pre aplikáciu vypnuté}few{Zobraziť nastavenia upozornení. Upozornenia sú vypnuté pre # aplikácie}many{Show notification settings. Notifications are off for # apps}other{Zobraziť nastavenia upozornení. Upozornenia sú vypnuté pre # aplikácií}}</translation>
 <translation id="1525508553941733066">ZATVORIŤ</translation>
-<translation id="1537254971476575106">Lupa celej obrazovky</translation>
 <translation id="15373452373711364">Veľký kurzor myši</translation>
 <translation id="1546492247443594934">Pracovné prostredie 2</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte ďalšie možnosti</translation>
@@ -117,7 +116,6 @@
 <translation id="2484513351006226581">Stlačením klávesov <ph name="KEYBOARD_SHORTCUT" /> zmeníte rozloženie klávesnice.</translation>
 <translation id="2501920221385095727">Funkcia sticky keys</translation>
 <translation id="2509468283778169019">Kláves CAPS LOCK je zapnutý</translation>
-<translation id="2532589005999780174">Režim s vysokým kontrastom</translation>
 <translation id="2542089167727451762">Klepnite na svoj profilový obrázok</translation>
 <translation id="255671100581129685">Asistent Google nie je k dispozícii vo verejnej relácii.</translation>
 <translation id="256712445991462162">ukotvená lupa</translation>
@@ -483,7 +481,6 @@
 <translation id="7984197416080286869">Príliš veľa pokusov o nasnímanie odtlačku prsta</translation>
 <translation id="7994370417837006925">Viacnásobné prihlásenie</translation>
 <translation id="8000066093800657092">Žiadna sieť</translation>
-<translation id="8029241286966751120">Bola zapnutá lupa na celú obrazovku. Vypnete ju opätovným stlačením kombinácie klávesov Ctrl+Hľadať+M.</translation>
 <translation id="8030169304546394654">Odpojené</translation>
 <translation id="8054466585765276473">Výpočet času výdrže batérie.</translation>
 <translation id="8061464966246066292">Vysoký kontrast</translation>
@@ -508,7 +505,6 @@
 <translation id="8388750414311082622">Posledné pracovné prostredie sa nedá odstrániť.</translation>
 <translation id="8392451568018454956">Ponuka možností pre používateľa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Tvoj rodič uzamkol toto zariadenie</translation>
-<translation id="8406981827175133772">Lupa na celú obrazovku</translation>
 <translation id="8425213833346101688">Zmeniť</translation>
 <translation id="8427213022735114808">Diktovanie odosiela váš hlas do Googlu a umožňuje tak hlasové zadávanie do všetkých textových polí.</translation>
 <translation id="8428213095426709021">Nastavenia</translation>

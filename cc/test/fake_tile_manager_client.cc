@@ -33,4 +33,9 @@ size_t FakeTileManagerClient::GetFrameIndexForImage(
   return PaintImage::kDefaultFrameIndex;
 }
 
+int FakeTileManagerClient::GetMSAASampleCountForRaster(
+    const scoped_refptr<DisplayItemList>& display_list) {
+  return 0;
+}
+
 }  // namespace cc

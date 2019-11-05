@@ -199,6 +199,14 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest,
     return script_log;
   }
 
+  std::string GetScriptLogForBrowser(Browser* browser) {
+    std::string script_log;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        browser->tab_strip_model()->GetActiveWebContents(), "sendLogToTest()",
+        &script_log));
+    return script_log;
+  }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedFeatureList param_feature_list_;
@@ -232,14 +240,14 @@ INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
 
 // Avoid flakes and issues on non-applicable platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
 
 IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelisted)) {
   GURL url = https_url();
 
   // Whitelist DeferAllScript for any path for the url's host.
@@ -278,10 +286,35 @@ IN_PROC_BROWSER_TEST_P(
       entry, UkmDeferEntry::kforce_deferred_scripts_mainframe_externalName, 1);
 }
 
+// Test with an incognito browser.
+IN_PROC_BROWSER_TEST_P(
+    DeferAllScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelisted_Incognito)) {
+  GURL url = https_url();
+
+  // Whitelist DeferAllScript for any path for the url's host.
+  SetDeferAllScriptHintWithPageWithPattern(url, "*");
+
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  Browser* incognito = CreateIncognitoBrowser();
+  ASSERT_FALSE(PreviewsServiceFactory::GetForProfile(incognito->profile()));
+  ASSERT_TRUE(PreviewsServiceFactory::GetForProfile(browser()->profile()));
+
+  ui_test_utils::NavigateToURL(incognito, url);
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
+      1);
+
+  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLogForBrowser(incognito));
+}
+
 // Defer should not be used on a webpage whose URL matches the denylist regex.
 IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsWhitelistedDenylistURL)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelistedDenylistURL)) {
   // Whitelist DeferAllScript for any path for the url's host.
   SetDeferAllScriptHintWithPageWithPattern(server_denylist_url(), "*");
 
@@ -311,7 +344,7 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsNotWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsNotWhitelisted)) {
   GURL url = https_url();
 
   // Whitelist DeferAllScript for the url's host but with nonmatching pattern.
@@ -356,7 +389,7 @@ class DeferAllScriptBrowserTestWithCoinFlipHoldback
 
 IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTestWithCoinFlipHoldback,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         DeferAllScriptHttpsWhitelistedButWithCoinFlipHoldback)) {
   GURL url = https_url();
 
@@ -413,7 +446,7 @@ INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
 // pattern seen in crbug.com/987062
 IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptClientRedirectLoopStopped)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptClientRedirectLoopStopped)) {
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(browser()
                                       ->tab_strip_model()
@@ -464,7 +497,7 @@ IN_PROC_BROWSER_TEST_P(
 // client_redirect_url_target_url() performs a client redirect back to
 // client_redirect_url() only if script execution is deferred.
 IN_PROC_BROWSER_TEST_P(DeferAllScriptBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(
+                       DISABLE_ON_WIN_MAC_CHROMEOS(
                            DeferAllScriptServerClientRedirectLoopStopped)) {
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(browser()
@@ -517,7 +550,7 @@ IN_PROC_BROWSER_TEST_P(DeferAllScriptBrowserTest,
 // server_redirect_base_redirect_to_final_server_redirect().
 IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
+    DISABLE_ON_WIN_MAC_CHROMEOS(
         DeferAllScriptServerClientServerClientServerRedirectLoopStopped)) {
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(browser()

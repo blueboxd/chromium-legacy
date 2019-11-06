@@ -20,6 +20,7 @@ source_set("first_run") {
     "welcome_to_chrome_view_controller.mm",
   ]
   deps = [
+    ":constants",
     "resources:checkbox",
     "resources:checkbox_checked",
     "//base",
@@ -60,6 +61,14 @@ source_set("first_run") {
   libs = [ "UIKit.framework" ]
 }
 
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "first_run_constants.h",
+    "first_run_constants.mm",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -85,13 +94,15 @@ source_set("unit_tests") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "first_run_egtest.mm",
   ]
   deps = [
-    ":first_run",
+    ":constants",
+    ":eg_test_support",
     "//base",
     "//base/test:test_support",
     "//components/metrics",
@@ -102,14 +113,101 @@ source_set("eg_tests") {
     "//ios/chrome/browser/geolocation:geolocation_internal",
     "//ios/chrome/browser/geolocation:test_support",
     "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "first_run_egtest.mm",
+  ]
+  deps = [
+    ":constants",
+    ":eg_test_support+eg2",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/app/strings:ios_chromium_strings_grit",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ui/base",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("eg_test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "first_run_app_interface.h",
+    "first_run_app_interface.mm",
+  ]
+  deps = [
+    ":first_run",
+    "//components/metrics",
+    "//components/prefs",
+    "//ios/chrome/app:app_internal",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/sync",
+    "//ios/chrome/test/app:test_support",
+  ]
+}
+
+source_set("eg_app_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "first_run_app_interface.h",
+    "first_run_app_interface.mm",
+  ]
+  deps = [
+    ":first_run",
+    "//components/metrics",
+    "//components/prefs",
+    "//ios/chrome/app:app_internal",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/sync",
+    "//ios/chrome/test/app:test_support",
+    "//ios/third_party/earl_grey2:app_framework+link",
+  ]
+}
+
+source_set("eg_test_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "first_run_app_interface.h",
+    "first_run_app_interface_stub.mm",
+  ]
+  deps = [
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+  ]
 }

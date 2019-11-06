@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-extern NSString* const kUMAMetricsButtonAccessibilityIdentifier;
-
 @protocol ApplicationCommands;
 class Browser;
 @protocol SyncPresenter;

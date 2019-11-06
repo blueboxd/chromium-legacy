@@ -28,6 +28,9 @@
 // Returns a fake managed identity.
 - (ChromeIdentity*)fakeManagedIdentity;
 
+// Adds |identity| to the fake identity service.
+- (void)addIdentity:(ChromeIdentity*)identity;
+
 // Induces a GREYAssert if |identity| is not signed in to the active profile.
 - (void)checkSignedInWithIdentity:(ChromeIdentity*)identity;
 

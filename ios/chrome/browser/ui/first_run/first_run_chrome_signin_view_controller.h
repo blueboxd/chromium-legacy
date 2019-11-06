@@ -7,9 +7,6 @@
 
 #import "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 
-extern NSString* const kSignInButtonAccessibilityIdentifier;
-extern NSString* const kSignInSkipButtonAccessibilityIdentifier;
-
 @protocol ApplicationCommands;
 class Browser;
 @class FirstRunConfiguration;

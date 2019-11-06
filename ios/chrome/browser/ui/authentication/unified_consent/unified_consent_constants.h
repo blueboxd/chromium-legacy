@@ -11,5 +11,7 @@
 extern NSString* const kAdvancedSigninSettingsLinkIdentifier;
 // Accessibility identifier for |-UnifiedConsentViewController.view|.
 extern NSString* const kUnifiedConsentScrollViewIdentifier;
+// Accessibility identifier for the identity picker view.
+extern NSString* const kIdentityPickerViewIdentifier;
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_UNIFIED_CONSENT_CONSTANTS_H_

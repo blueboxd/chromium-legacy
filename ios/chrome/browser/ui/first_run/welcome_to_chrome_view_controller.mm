@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 #import "ios/chrome/browser/ui/first_run/first_run_chrome_signin_view_controller.h"
+#import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #include "ios/chrome/browser/ui/first_run/first_run_util.h"
 #include "ios/chrome/browser/ui/first_run/static_file_view_controller.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view.h"
@@ -36,9 +37,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kUMAMetricsButtonAccessibilityIdentifier =
-    @"UMAMetricsButtonAccessibilityIdentifier";
 
 namespace {
 

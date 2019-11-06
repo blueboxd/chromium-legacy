@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_view.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -15,9 +16,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kIdentityPickerViewIdentifier =
-    @"kIdentityPickerViewIdentifier";
 
 namespace {
 

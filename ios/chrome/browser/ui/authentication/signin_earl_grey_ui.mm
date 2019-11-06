@@ -4,17 +4,12 @@
 
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 
-#import <EarlGrey/EarlGrey.h>
-
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_cell.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
+#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller_egtest_util.h"
-#import "ios/chrome/browser/ui/util/transparent_link_button.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -22,6 +17,7 @@
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,12 +28,12 @@ namespace {
 // Returns a matcher to test whether the element is a scroll view with a content
 // smaller than the scroll view bounds.
 id<GREYMatcher> ContentViewSmallerThanScrollView() {
-  MatchesBlock matches = ^BOOL(UIView* view) {
+  GREYMatchesBlock matches = ^BOOL(UIView* view) {
     UIScrollView* scrollView = base::mac::ObjCCast<UIScrollView>(view);
     return scrollView &&
            scrollView.contentSize.height < scrollView.bounds.size.height;
   };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
+  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
     [description appendText:
                      @"Not a scroll view or the scroll view content is bigger "
                      @"than the scroll view bounds"];
@@ -84,21 +80,15 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
   // Assumes that the identity chooser is visible.
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(userEmail),
-                                          grey_kindOfClass(
-                                              [IdentityChooserCell class]),
-                                          grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:[SignInEarlGreyUtilsAppInterface
+                                   identityCellMatcherForEmail:userEmail]]
       performAction:grey_tap()];
 }
 
 + (void)tapSettingsLink {
-  id<GREYMatcher> settingsLinkMatcher =
-      grey_allOf(grey_kindOfClass([TransparentLinkButton class]),
-                 grey_sufficientlyVisible(), nil);
-  [[[EarlGrey selectElementWithMatcher:settingsLinkMatcher]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
-      onElementWithMatcher:grey_accessibilityID(
-                               kUnifiedConsentScrollViewIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kAdvancedSigninSettingsLinkIdentifier)]
       performAction:grey_tap()];
 }
 

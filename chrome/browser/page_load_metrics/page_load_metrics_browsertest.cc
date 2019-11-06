@@ -26,6 +26,7 @@
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/session_restore_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
@@ -2439,4 +2440,41 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // unconditionally on commit.
   histogram_tester_.ExpectTotalCount("PageLoad.Navigation.RedirectChainLength",
                                      2);
+}
+
+// Does a navigation to a page controlled by a service worker and verifies
+// that service worker page load metrics are logged.
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ServiceWorkerMetrics) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kFirstPaint);
+
+  // Load a page that registers a service worker.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/service_worker/create_service_worker.html"));
+  EXPECT_EQ("DONE", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                           "register('fetch_event_pass_through.js');"));
+  waiter->Wait();
+
+  // The first load was not controlled, so service worker metrics should not be
+  // logged.
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramServiceWorkerFirstPaint, 0);
+
+  waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kFirstPaint);
+
+  // Load a controlled page.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/service_worker/create_service_worker.html"));
+  waiter->Wait();
+
+  // Service worker metrics should be logged.
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 2);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramServiceWorkerFirstPaint, 1);
 }

@@ -6,10 +6,8 @@
 
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

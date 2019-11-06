@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -27,10 +28,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kSignInButtonAccessibilityIdentifier =
-    @"SignInButtonAccessibilityIdentifier";
-NSString* const kSignInSkipButtonAccessibilityIdentifier =
-    @"SkipButtonAccessibilityIdentifier";
 
 @interface FirstRunChromeSigninViewController ()<
     ChromeSigninViewControllerDelegate> {
@@ -75,9 +72,9 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
   [super viewDidLoad];
   [self.navigationController setNavigationBarHidden:YES];
   self.primaryButton.accessibilityIdentifier =
-      kSignInButtonAccessibilityIdentifier;
+      first_run::kSignInButtonAccessibilityIdentifier;
   self.secondaryButton.accessibilityIdentifier =
-      kSignInSkipButtonAccessibilityIdentifier;
+      first_run::kSignInSkipButtonAccessibilityIdentifier;
 }
 
 - (void)viewDidAppear:(BOOL)animated {

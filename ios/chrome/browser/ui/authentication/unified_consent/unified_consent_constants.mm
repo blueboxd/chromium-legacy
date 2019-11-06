@@ -12,3 +12,5 @@ NSString* const kAdvancedSigninSettingsLinkIdentifier =
     @"AdvancedSigninSettingsLinkIdentifier";
 NSString* const kUnifiedConsentScrollViewIdentifier =
     @"kUnifiedConsentScrollViewIdentifier";
+NSString* const kIdentityPickerViewIdentifier =
+    @"kIdentityPickerViewIdentifier";

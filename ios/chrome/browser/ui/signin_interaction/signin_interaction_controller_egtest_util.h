@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_UI_SIGNIN_INTERACTION_SIGNIN_INTERACTION_CONTROLLER_EGTEST_UTIL_H_
 #define IOS_CHROME_BROWSER_UI_SIGNIN_INTERACTION_SIGNIN_INTERACTION_CONTROLLER_EGTEST_UTIL_H_
 
-#import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
+
+@protocol GREYMatcher;
 
 // Taps the button with accessibility label |label|.
 void TapButtonWithAccessibilityLabel(NSString* label);

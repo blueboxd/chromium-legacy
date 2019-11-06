@@ -411,52 +411,6 @@ class FailingVideoDecoder : public VideoDecoder {
   bool NeedsBitstreamConversion() const override { return true; }
 };
 
-// TODO(xhwang): These tests have been disabled for some time as apptests and no
-//               longer pass. They need to be reconstituted as shell tests.
-//               Currently there are compile issues which must be resolved,
-//               preferably by eliminating multiple inheritance here which is
-//               banned by Google C++ style.
-#if defined(MOJO_RENDERER) && defined(ENABLE_MOJO_PIPELINE_INTEGRATION_TEST)
-const char kTestServiceName[] = "media_pipeline_integration_unittests";
-
-class PipelineIntegrationTest : public testing::Testing,
-                                public PipelineIntegrationTestBase {
- public:
-  PipelineIntegrationTest()
-      : test_service_manager_(
-            {GetMediaManifest(),
-             service_manager::ManifestBuilder()
-                 .WithServiceName(kTestServiceName)
-                 .RequireCapability(mojom::kMediaServiceName, "media:media")
-                 .Build()}),
-        test_service_(
-            test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
-
-  void SetUp() override {
-    InitializeMediaLibrary();
-  }
-
- protected:
-  std::unique_ptr<Renderer> CreateRenderer(
-      CreateVideoDecodersCB prepend_video_decoders_cb,
-      CreateAudioDecodersCB prepend_audio_decoders_cb) override {
-    test_service_.connector()->BindInterface(mojom::kMediaServiceName,
-                                             &media_interface_factory_);
-
-    mojo::PendingRemote<mojom::Renderer> mojo_renderer;
-    media_interface_factory_->CreateRenderer(
-        std::string(), mojo_renderer.InitWithNewPipeAndPassReceiver());
-
-    return std::make_unique<MojoRenderer>(message_loop_.task_runner(),
-                                          std::move(mojo_renderer));
-  }
-
- private:
-  service_manager::TestServiceManager test_service_manager_;
-  service_manager::TestService test_service_;
-  mojom::InterfaceFactoryPtr media_interface_factory_;
-};
-#else
 class PipelineIntegrationTest : public testing::Test,
                                 public PipelineIntegrationTestBase {
  public:
@@ -507,7 +461,6 @@ class PipelineIntegrationTest : public testing::Test,
     run_loop.Run();
   }
 };
-#endif  // defined(MOJO_RENDERER)
 
 struct PlaybackTestData {
   const std::string filename;

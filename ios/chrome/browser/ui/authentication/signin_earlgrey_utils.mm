@@ -4,19 +4,14 @@
 
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 
-#import <EarlGrey/EarlGrey.h>
-
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-#if defined(CHROME_EARL_GREY_2)
-GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyUtilsAppInterface)
-#endif  // defined(CHROME_EARL_GREY_2)
 
 @implementation SigninEarlGreyUtilsImpl
 
@@ -36,6 +31,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyUtilsAppInterface)
   return [FakeChromeIdentity identityWithEmail:@"foo@managed.com"
                                         gaiaID:@"fooManagedID"
                                           name:@"Fake Managed"];
+}
+
+- (void)addIdentity:(ChromeIdentity*)identity {
+  [SignInEarlGreyUtilsAppInterface addIdentity:identity];
 }
 
 - (void)checkSignedInWithIdentity:(ChromeIdentity*)identity {

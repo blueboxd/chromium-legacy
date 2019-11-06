@@ -294,17 +294,3 @@ test("media_service_unittests") {
     ":media",
   ]
 }
-
-# media_pipeline_integration_unittests is out of date and disabled by default.
-test("media_pipeline_integration_unittests") {
-  testonly = true
-
-  deps = [
-    "//media/test:mojo_pipeline_integration_tests",
-    "//mojo/core/test:run_all_unittests",
-  ]
-
-  data_deps = [
-    ":media",
-  ]
-}

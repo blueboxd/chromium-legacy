@@ -492,8 +492,8 @@ bool NetworkQualityEstimator::RequestProvidesRTTObservation(
     const URLRequest& request) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  bool private_network_request = nqe::internal::IsPrivateHost(
-      request.context()->host_resolver(), HostPortPair::FromURL(request.url()));
+  bool private_network_request =
+      nqe::internal::IsRequestForPrivateHost(request);
 
   return (use_localhost_requests_ || !private_network_request) &&
          // Verify that response headers are received, so it can be ensured that

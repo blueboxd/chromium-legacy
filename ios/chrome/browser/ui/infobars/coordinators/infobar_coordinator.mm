@@ -186,10 +186,14 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 #pragma mark InfobarUIDelegate
 
 - (void)removeView {
-  [self dismissInfobarBanner:self animated:YES completion:nil];
+  // Do not animate the dismissal since the Coordinator might have been stopped
+  // and the animation can cause undefined behavior.
+  [self dismissInfobarBanner:self animated:NO completion:nil];
 }
 
 - (void)detachView {
+  // Do not animate the dismissals since the Coordinator might have been stopped
+  // and the animation can cause undefined behavior.
   if (self.bannerViewController)
     [self dismissInfobarBanner:self animated:NO completion:nil];
   if (self.modalViewController)

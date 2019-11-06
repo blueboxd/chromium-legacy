@@ -247,8 +247,8 @@ void NodeController::ConnectIsolated(ConnectionParams connection_params,
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&NodeController::ConnectIsolatedOnIOThread,
-                     base::Unretained(this), base::Passed(&connection_params),
-                     port, connection_name.as_string()));
+                     base::Unretained(this), std::move(connection_params), port,
+                     connection_name.as_string()));
 }
 
 void NodeController::SetPortObserver(const ports::PortRef& port,

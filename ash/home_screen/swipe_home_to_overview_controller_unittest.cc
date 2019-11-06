@@ -24,7 +24,8 @@ namespace ash {
 class SwipeHomeToOverviewControllerTest : public AshTestBase {
  public:
   SwipeHomeToOverviewControllerTest() {
-    scoped_feature_list_.InitWithFeatures({features::kHomerviewGesture}, {});
+    scoped_feature_list_.InitWithFeatures(
+        {features::kDragFromShelfToHomeOrOverview}, {});
   }
   ~SwipeHomeToOverviewControllerTest() override = default;
 

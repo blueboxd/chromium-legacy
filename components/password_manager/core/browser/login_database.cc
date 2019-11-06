@@ -655,6 +655,13 @@ bool FixVersionIfNeeded(sql::Database* db, int* current_version) {
     if (db->DoesColumnExist("logins", "form_data"))
       *current_version = 4;
   }
+  // "date_last_used" columns has been introduced in version 25. if it exists,
+  // the version should be at least 25. This has been added to address this bug
+  // (crbug.com/1020320).
+  if (*current_version < 25) {
+    if (db->DoesColumnExist("logins", "date_last_used"))
+      *current_version = 25;
+  }
   return true;
 }
 

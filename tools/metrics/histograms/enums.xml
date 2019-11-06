@@ -18641,6 +18641,7 @@ Called by update_net_error_codes.py.-->
   <int value="641" label="PerAppTimeLimits"/>
   <int value="642" label="DnsOverHttpsTemplates"/>
   <int value="643" label="GloballyScopeHTTPAuthCacheEnabled"/>
+  <int value="644" label="WebComponentsV0Enabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -21213,6 +21214,9 @@ Called by update_net_error_codes.py.-->
   <int value="1398" label="AUTOTESTPRIVATE_INSTALLPWAFORCURRENTURL"/>
   <int value="1399" label="AUTOTESTPRIVATE_ACTIVATEACCELERATOR"/>
   <int value="1400" label="AUTOTESTPRIVATE_WAITFORLAUNCHERSTATE"/>
+  <int value="1401" label="AUTOTESTPRIVATE_CREATENEWDESK"/>
+  <int value="1402" label="AUTOTESTPRIVATE_ACTIVATEDESKATINDEX"/>
+  <int value="1403" label="AUTOTESTPRIVATE_REMOVEACTIVEDESK"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -30923,6 +30927,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2147219455" label="GOOPDATE_E_NO_NETWORK"/>
   <int value="-2147219437" label="GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY"/>
   <int value="-2147219198" label="GOOPDATEINSTALL_E_INSTALLER_FAILED"/>
+  <int value="-2147168255" label="ITF_E_FONTFILE_UTIL_TOO_MANY_FILES_PER_FACE"/>
+  <int value="-2147168254" label="ITF_E_FONTFILE_UTIL_EMPTY_FILE_PATH"/>
+  <int value="-2147167999" label="ITF_E_SCANNING_TIMEOUT"/>
+  <int value="-2147167998" label="ITF_E_EXTRACT_LOCALIZED_STRINGS_FAILED"/>
+  <int value="-2147167997"
+      label="ITF_E_EXTRACT_NO_FULL_NAME_OR_POSTSCRIPT_NAME"/>
   <int value="-2147024894" label="ERROR_FILE_NOT_FOUND"/>
   <int value="-2147024893" label="ERROR_PATH_NOT_FOUND"/>
   <int value="-2147024891" label="E_ACCESSDENIED"/>

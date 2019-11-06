@@ -11,8 +11,10 @@
 #include "ash/public/cpp/assistant/assistant_settings.h"
 #include "ash/shell.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/services/assistant/public/features.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
@@ -87,6 +89,30 @@ TEST_F(AssistantWebContainerViewTest, CenterWindow) {
               container_view->GetWidget()->GetWindowBoundsInScreen());
     container_view->GetWidget()->CloseNow();
   }
+}
+
+TEST_F(AssistantWebContainerViewTest, CloseWindowByKeyEvent) {
+  // Show Assistant Settings UI.
+  OpenAssistantSettings();
+  ASSERT_TRUE(view());
+
+  // Close Assistant Settings UI by key event.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(view());
+}
+
+TEST_F(AssistantWebContainerViewTest, NoCaptionBarInAssistantWebView) {
+  // Show Assistant Settings UI.
+  OpenAssistantSettings();
+  AssistantWebContainerView* container_view = view();
+  ASSERT_TRUE(container_view);
+
+  // AssistantWebContainerView's widget should have its own caption buttons in
+  // the ash frame view. Therefore the AssistantWebView should not have the
+  // caption bar.
+  ASSERT_FALSE(container_view->GetCaptionBarForTesting());
 }
 
 }  // namespace ash

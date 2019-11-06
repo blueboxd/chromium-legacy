@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_ARC_GRAPHICS_TRACING_ARC_GRAPHICS_TRACING_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_ARC_GRAPHICS_TRACING_ARC_GRAPHICS_TRACING_HANDLER_H_
 
-#include <map>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -124,7 +125,6 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
 
   // Task id and title for current ARC window.
   int active_task_id_ = -1;
-  std::string active_task_title_;
 
   // Used to detect janks for the currently active ARC++ window.
   std::unique_ptr<arc::ArcGraphicsJankDetector> jank_detector_;
@@ -133,7 +133,9 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   std::unique_ptr<arc::ArcSystemStatCollector> system_stat_colletor_;
 
   // Information about active task, title and icon.
-  base::DictionaryValue task_information_;
+  std::string active_task_title_;
+  std::vector<unsigned char> active_task_icon_png_;
+  base::Time timestamp_;
 
   base::WeakPtrFactory<ArcGraphicsTracingHandler> weak_ptr_factory_{this};
 

@@ -148,7 +148,12 @@ void UnifiedMessageCenterBubble::UpdatePosition() {
   // corner clipping for ARC notifications. This approach only modifies the
   // position of the layer.
   gfx::Rect anchor_rect = tray_->shelf()->GetSystemTrayAnchorRect();
-  anchor_rect.set_x(anchor_rect.x() - kUnifiedMenuPadding);
+
+  int left_offset =
+      tray_->shelf()->alignment() == SHELF_ALIGNMENT_LEFT
+          ? kUnifiedMenuPadding
+          : -(kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
+  anchor_rect.set_x(anchor_rect.x() + left_offset);
   anchor_rect.set_y(anchor_rect.y() - tray_->bubble()->GetCurrentTrayHeight() -
                     kUnifiedMenuPadding - kUnifiedMessageCenterBubbleSpacing);
   bubble_view_->ChangeAnchorRect(anchor_rect);

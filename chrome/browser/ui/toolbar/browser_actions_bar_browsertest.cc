@@ -42,7 +42,6 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
@@ -54,17 +53,10 @@ const char* kInjectionSucceededMessage = "injection succeeded";
 scoped_refptr<const extensions::Extension> CreateExtension(
     const std::string& name,
     bool has_browser_action) {
-  extensions::DictionaryBuilder manifest;
-  manifest.Set("name", name).
-           Set("description", "an extension").
-           Set("manifest_version", 2).
-           Set("version", "1.0");
+  extensions::ExtensionBuilder builder(name);
   if (has_browser_action)
-    manifest.Set("browser_action", extensions::DictionaryBuilder().Build());
-  return extensions::ExtensionBuilder()
-      .SetManifest(manifest.Build())
-      .SetID(crx_file::id_util::GenerateId(name))
-      .Build();
+    builder.SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION);
+  return builder.Build();
 }
 
 class BlockedActionWaiter

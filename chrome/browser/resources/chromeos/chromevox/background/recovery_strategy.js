@@ -26,8 +26,9 @@ RecoveryStrategy = function(node) {
 RecoveryStrategy.prototype = {
   /** @return {!AutomationNode} */
   get node() {
-    if (this.requiresRecovery())
+    if (this.requiresRecovery()) {
       this.node_ = this.recover() || this.node_;
+    }
 
     return this.node_;
   },
@@ -60,8 +61,9 @@ AncestryRecoveryStrategy = function(node) {
   while (nodeWalker) {
     this.ancestry_.push(nodeWalker);
     nodeWalker = nodeWalker.parent;
-    if (nodeWalker && nodeWalker.role == RoleType.WINDOW)
+    if (nodeWalker && nodeWalker.role == RoleType.WINDOW) {
       break;
+    }
   }
 };
 
@@ -103,8 +105,9 @@ TreePathRecoveryStrategy = function(node) {
   while (nodeWalker) {
     this.recoveryChildIndex_.push(nodeWalker.indexInParent);
     nodeWalker = nodeWalker.parent;
-    if (nodeWalker && nodeWalker.role == RoleType.WINDOW)
+    if (nodeWalker && nodeWalker.role == RoleType.WINDOW) {
       break;
+    }
   }
 };
 
@@ -114,16 +117,18 @@ TreePathRecoveryStrategy.prototype = {
   /** @override */
   recover: function() {
     var index = this.getFirstValidNodeIndex_();
-    if (index == 0)
+    if (index == 0) {
       return this.ancestry_[index];
+    }
 
     // Otherwise, attempt to recover.
     var node = this.ancestry_[index];
     for (var j = index - 1; j >= 0; j--) {
       var childIndex = this.recoveryChildIndex_[j];
       var children = node.children;
-      if (!children[childIndex])
+      if (!children[childIndex]) {
         return node;
+      }
       node = children[childIndex];
     }
     return node;

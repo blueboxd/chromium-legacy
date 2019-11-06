@@ -354,6 +354,33 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
   check_layer(highlight->LayerForTesting(0));
   check_layer(highlight->LayerForTesting(1));
 
+  Element* multicol = touch_node->parentElement();
+  EXPECT_EQ(50, multicol->OffsetHeight());
+  // Make multicol shorter to create 3 total columns for touch_node.
+  multicol->setAttribute(html_names::kStyleAttr, "height: 25px");
+  UpdateAllLifecyclePhases();
+  ASSERT_EQ(&first_fragment, &touch_node->GetLayoutObject()->FirstFragment());
+  ASSERT_EQ(second_fragment, first_fragment.NextFragment());
+  const auto* third_fragment = second_fragment->NextFragment();
+  ASSERT_TRUE(third_fragment);
+  EXPECT_FALSE(third_fragment->NextFragment());
+
+  EXPECT_EQ(layer_count_before_highlight + 3, ContentLayerCount());
+  EXPECT_EQ(3u, highlight->FragmentCountForTesting());
+  check_layer(highlight->LayerForTesting(0));
+  check_layer(highlight->LayerForTesting(1));
+  check_layer(highlight->LayerForTesting(2));
+
+  // Make multicol taller to create only 1 column for touch_node.
+  multicol->setAttribute(html_names::kStyleAttr, "height: 100px");
+  UpdateAllLifecyclePhases();
+  ASSERT_EQ(&first_fragment, &touch_node->GetLayoutObject()->FirstFragment());
+  EXPECT_FALSE(first_fragment.NextFragment());
+
+  EXPECT_EQ(layer_count_before_highlight + 1, ContentLayerCount());
+  EXPECT_EQ(1u, highlight->FragmentCountForTesting());
+  check_layer(highlight->LayerForTesting(0));
+
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   UpdateAllLifecyclePhases();
   // Removing the highlight layer should drop the cc layers for highlights.

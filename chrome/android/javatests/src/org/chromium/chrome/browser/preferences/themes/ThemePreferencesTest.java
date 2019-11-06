@@ -22,9 +22,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences.ThemeSetting;
 import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -61,7 +61,7 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        ChromePreferenceManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
+        SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
         Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), ThemePreferences.class.getName());
         mFragment = (ThemePreferences) preferences.getMainFragment();
@@ -71,7 +71,7 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
 
     @Override
     public void tearDownTest() throws Exception {
-        ChromePreferenceManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
+        SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
         FeatureUtilities.setNightModeDefaultToLightForTesting(null);
         super.tearDownTest();
     }
@@ -101,7 +101,7 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
             assertButtonCheckedCorrectly("System default", 0);
             Assert.assertEquals(ThemeSetting.SYSTEM_DEFAULT, mPreference.getSetting());
             Assert.assertEquals(mPreference.getSetting(),
-                    ChromePreferenceManager.getInstance().readInt(UI_THEME_SETTING_KEY));
+                    SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING_KEY));
 
             // Select Light
             Assert.assertEquals(R.id.light, getButton(1).getId());
@@ -109,7 +109,7 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
             assertButtonCheckedCorrectly("Light", 1);
             Assert.assertEquals(ThemeSetting.LIGHT, mPreference.getSetting());
             Assert.assertEquals(mPreference.getSetting(),
-                    ChromePreferenceManager.getInstance().readInt(UI_THEME_SETTING_KEY));
+                    SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING_KEY));
 
             // Select Dark
             Assert.assertEquals(R.id.dark, getButton(2).getId());
@@ -117,7 +117,7 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
             assertButtonCheckedCorrectly("Dark", 2);
             Assert.assertEquals(ThemeSetting.DARK, mPreference.getSetting());
             Assert.assertEquals(mPreference.getSetting(),
-                    ChromePreferenceManager.getInstance().readInt(UI_THEME_SETTING_KEY));
+                    SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING_KEY));
         });
     }
 

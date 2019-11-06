@@ -10,6 +10,7 @@
   <template>
     <oobe-dialog id="signin-frame-dialog" class="gaia-dialog" role="dialog"
         has-buttons no-header no-footer-padding
+        show-buttons-overlay="[[!navigationEnabled_]]"
         hidden="[[!isSigninFrameDialogVisible_(screenMode_,
                                                pinDialogParameters_)]]">
       <div slot="footer" class="flex layout vertical">
@@ -35,9 +36,6 @@
               hidden="[[!secondaryActionButtonLabel_]]"
               disabled="[[!secondaryActionButtonEnabled_]]"
               >[[secondaryActionButtonLabel_]]</oobe-text-button>
-        </div>
-        <div id="gaia-screen-buttons-overlay" class="fit"
-            hidden="[[navigationEnabled_]]">
         </div>
       </div>
     </oobe-dialog>

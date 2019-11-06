@@ -125,10 +125,10 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
     }
 
     /**
-     * Starts the WebLayer activity with the given extras Bundle and completely loads the given URL
-     * (this calls navigateAndWait()).
+     * Starts the WebLayer activity with the given extras Bundle. This does not create and load
+     * WebLayer.
      */
-    public InstrumentationActivity launchShellWithUrl(String url, Bundle extras) {
+    public InstrumentationActivity launchShell(Bundle extras) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.putExtras(extras);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -136,8 +136,18 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         intent.setComponent(
                 new ComponentName(InstrumentationRegistry.getInstrumentation().getTargetContext(),
                         InstrumentationActivity.class));
-        InstrumentationActivity activity = launchActivity(intent);
+        return launchActivity(intent);
+    }
+
+    /**
+     * Starts the WebLayer activity with the given extras Bundle and completely loads the given URL
+     * (this calls navigateAndWait()).
+     */
+    public InstrumentationActivity launchShellWithUrl(String url, Bundle extras) {
+        InstrumentationActivity activity = launchShell(extras);
         Assert.assertNotNull(activity);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { activity.createWebLayer(activity.getApplication(), null).get(); });
         if (url != null) navigateAndWait(url);
         return activity;
     }
@@ -193,12 +203,12 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
     /**
      * Executes the script passed in and waits for the result.
      */
-    public JSONObject executeScriptSync(String script) {
+    public JSONObject executeScriptSync(String script, boolean useSeparateIsolate) {
         JSONCallbackHelper callbackHelper = new JSONCallbackHelper();
         int count = callbackHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            getActivity().getBrowserController().executeScript(
-                    script, (JSONObject result) -> { callbackHelper.notifyCalled(result); });
+            getActivity().getBrowserController().executeScript(script, useSeparateIsolate,
+                    (JSONObject result) -> { callbackHelper.notifyCalled(result); });
         });
         try {
             callbackHelper.waitForCallback(count);
@@ -210,7 +220,8 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public int executeScriptAndExtractInt(String script) {
         try {
-            return executeScriptSync(script).getInt(BrowserController.SCRIPT_RESULT_KEY);
+            return executeScriptSync(script, true /* useSeparateIsolate */)
+                    .getInt(BrowserController.SCRIPT_RESULT_KEY);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -218,7 +229,8 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public String executeScriptAndExtractString(String script) {
         try {
-            return executeScriptSync(script).getString(BrowserController.SCRIPT_RESULT_KEY);
+            return executeScriptSync(script, true /* useSeparateIsolate */)
+                    .getString(BrowserController.SCRIPT_RESULT_KEY);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -226,7 +238,8 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public boolean executeScriptAndExtractBoolean(String script) {
         try {
-            return executeScriptSync(script).getBoolean(BrowserController.SCRIPT_RESULT_KEY);
+            return executeScriptSync(script, true /* useSeparateIsolate */)
+                    .getBoolean(BrowserController.SCRIPT_RESULT_KEY);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

@@ -143,6 +143,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           &env->clock, params);
 
   SetQuicReloadableFlag(quic_supports_tls_handshake, true);
+  SetQuicReloadableFlag(quic_coalesce_stream_frames, true);
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;
   NetErrorDetails net_error_details;

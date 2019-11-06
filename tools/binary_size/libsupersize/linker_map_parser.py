@@ -495,11 +495,11 @@ class MapFileParserLld(object):
       # PROVIDE_HIDDEN lines.
       if level == 1:
         # Ignore sections that belong to feature library partitions. Seeing a
-        # library name is an indicator that we've entered a list of feature
+        # partition name is an indicator that we've entered a list of feature
         # partitions. After these, a single .part.end section will follow to
         # reserve memory at runtime. Seeing the .part.end section also marks the
         # end of partition sections in the map file.
-        if tok.startswith('lib') and tok.endswith('.so'):
+        if tok.endswith('_partition'):
           in_partitions = True
         elif tok == '.part.end':
           # Note that we want to retain .part.end section, so it's fine to

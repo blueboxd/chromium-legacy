@@ -43,6 +43,7 @@ class TestNavigableContentsClient : public mojom::NavigableContentsClient {
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override {}
+  void UpdateCanGoBack(bool can_go_back) override {}
   void UpdateContentAXTree(const ui::AXTreeID& id) override {}
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigableContentsClient);

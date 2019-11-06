@@ -33,7 +33,6 @@
 #include "extensions/browser/value_store/test_value_store_factory.h"
 #include "extensions/browser/value_store/testing_value_store.h"
 #include "services/data_decoder/data_decoder_service.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
 #if defined(OS_CHROMEOS)
 #include "components/user_manager/user_manager.h"
 #endif

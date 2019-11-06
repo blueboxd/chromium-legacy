@@ -670,6 +670,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // NodeId in |content| and return true, otherwise return false.
   bool CaptureContent(std::vector<NodeId>* content);
 
+  std::unique_ptr<BeginMainFrameMetrics> begin_main_frame_metrics() {
+    return std::move(begin_main_frame_metrics_);
+  }
+
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);
 

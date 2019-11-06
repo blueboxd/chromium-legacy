@@ -1371,6 +1371,22 @@
             ]
         }
     ],
+    "BoostThreadPriorityOnLibraryLoadingAndBackgroundMode": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "BoostPriorityAndBackgroundThreadMode",
+                    "enable_features": [
+                        "BoostThreadPriorityOnLibraryLoading",
+                        "WindowsThreadModeBackground"
+                    ]
+                }
+            ]
+        }
+    ],
     "BrowserBlacklist": [
         {
             "platforms": [
@@ -1880,21 +1896,6 @@
                     "name": "Enabled_20191004",
                     "enable_features": [
                         "DefaultPassthroughCommandDecoder"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DeferAllScript": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "DeferAllScriptPreviews_Enabled_20190814",
-                    "enable_features": [
-                        "DeferAllScript"
                     ]
                 }
             ]
@@ -5294,6 +5295,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingSendOnFocusPing"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingPasswordProtectionPasswordReusePingAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingSendPasswordReusePing"
                     ]
                 }
             ]

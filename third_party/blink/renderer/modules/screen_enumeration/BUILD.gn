@@ -12,7 +12,8 @@ blink_modules_sources("screen_enumeration") {
     "screen_manager.h",
   ]
 
-  deps = [
+  public_deps = [
     "//third_party/blink/renderer/platform",
+    "//ui/display/mojom:mojom_blink",
   ]
 }

@@ -35,7 +35,6 @@ sync_protocol_bases = [
   "managed_user_whitelist_specifics",
   "model_type_state",
   "model_type_store_schema_descriptor",
-  "mountain_share_specifics",
   "nigori_local_data",
   "nigori_specifics",
   "os_preference_specifics",

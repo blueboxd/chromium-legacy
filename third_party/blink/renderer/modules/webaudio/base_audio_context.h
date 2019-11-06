@@ -142,6 +142,10 @@ class MODULES_EXPORT BaseAudioContext
   // does nothing useful because the context is closed.
   void WarnForConnectionIfContextClosed() const;
 
+  // Return true if the destination is pulling on the audio graph.  Otherwise
+  // return false.
+  virtual bool IsPullingAudioGraph() const = 0;
+
   AudioBuffer* createBuffer(uint32_t number_of_channels,
                             uint32_t number_of_frames,
                             float sample_rate,

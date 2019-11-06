@@ -422,16 +422,20 @@ TEST_F(OverviewControllerTest, SelectingHidesAppList) {
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
-// Parameterized test depending on whether kHomerviewGesture is enabled.
-class OverviewControllerTestWithHomerviewGesture
+// Parameterized test depending on whether kDragFromShelfToHomeOrOverview is
+// enabled.
+class OverviewControllerTestWithDragFromShelfToHomeOrOverview
     : public OverviewControllerTest,
       public testing::WithParamInterface<bool> {
  public:
-  OverviewControllerTestWithHomerviewGesture() {
-    if (GetParam())
-      scoped_feature_list_.InitAndEnableFeature(features::kHomerviewGesture);
-    else
-      scoped_feature_list_.InitAndDisableFeature(features::kHomerviewGesture);
+  OverviewControllerTestWithDragFromShelfToHomeOrOverview() {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDragFromShelfToHomeOrOverview);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDragFromShelfToHomeOrOverview);
+    }
   }
 
  private:
@@ -441,7 +445,7 @@ class OverviewControllerTestWithHomerviewGesture
 // Tests which animation for overview is used in tablet if all windows
 // are minimized, and that if overview is exited from the home launcher all
 // windows are minimized.
-TEST_P(OverviewControllerTestWithHomerviewGesture,
+TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
        OverviewEnterExitAnimationTablet) {
   TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
 
@@ -480,7 +484,7 @@ TEST_P(OverviewControllerTestWithHomerviewGesture,
 
 // Tests that the slide and fade animations are not used to enter or exit
 // overview in clamshell.
-TEST_P(OverviewControllerTestWithHomerviewGesture,
+TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
        OverviewEnterExitAnimationClamshell) {
   TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
 
@@ -505,7 +509,8 @@ TEST_P(OverviewControllerTestWithHomerviewGesture,
   EXPECT_FALSE(observer.last_animation_was_fade());
 }
 
-TEST_P(OverviewControllerTestWithHomerviewGesture, WallpaperAnimationTiming) {
+TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
+       WallpaperAnimationTiming) {
   const gfx::Rect bounds(200, 200);
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(bounds));
@@ -525,9 +530,10 @@ TEST_P(OverviewControllerTestWithHomerviewGesture, WallpaperAnimationTiming) {
             overview_controller->HasBlurAnimationForTest());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
-                         OverviewControllerTestWithHomerviewGesture,
-                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    OverviewControllerTestWithDragFromShelfToHomeOrOverview,
+    testing::Bool());
 
 class OverviewVirtualKeyboardTest : public OverviewControllerTest {
  protected:

@@ -264,7 +264,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     private @SheetState int getTargetOrCurrentState() {
         BottomSheet sheet = mBottomSheetController.get().getBottomSheet();
-        if (sheet == null) return BottomSheetController.SheetState.NONE;
+        if (sheet == null) return BottomSheetController.SheetState.HIDDEN;
         @SheetState
         int state = mBottomSheetController.get().getTargetSheetState();
         return state != BottomSheetController.SheetState.NONE

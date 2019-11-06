@@ -9,19 +9,10 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_config.pb.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/data_decoder/public/mojom/json_parser.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-
-namespace base {
-class Value;
-}
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "services/data_decoder/public/cpp/data_decoder.h"
 
 namespace app_list {
 
@@ -44,8 +35,7 @@ class JsonConfigConverter {
 
   // Creates a JsonConfigConverter and starts a conversion of |json_string|.
   // |model_identifier| is used for metrics reporting in the same way as
-  // RecurrenceRanker's |model_identifier|. |connector| can be
-  // content::GetSystemConnector() in most cases.
+  // RecurrenceRanker's |model_identifier|.
   //
   // The provided |callback| will be called with the resulting proto if the
   // conversion succeeded, or base::nullopt if the parsing or conversion failed.
@@ -54,7 +44,6 @@ class JsonConfigConverter {
   //
   // |callback| should destroy the returned JsonConfigConverter instance.
   static std::unique_ptr<JsonConfigConverter> Convert(
-      service_manager::Connector* connector,
       const std::string& json_string,
       const std::string& model_identifier,
       OnConfigLoadedCallback callback);
@@ -62,9 +51,7 @@ class JsonConfigConverter {
   ~JsonConfigConverter();
 
  private:
-  // The constructor requires a connector to interact with the parsing service.
-  // For most use cases, this can be content::GetSystemConnector().
-  explicit JsonConfigConverter(service_manager::Connector* connector);
+  JsonConfigConverter();
 
   // Performs a conversion.
   void Start(const std::string& json_string,
@@ -74,13 +61,10 @@ class JsonConfigConverter {
   // Callback for parser.
   void OnJsonParsed(OnConfigLoadedCallback callback,
                     const std::string& model_identifier,
-                    const base::Optional<base::Value> json_data,
-                    const base::Optional<std::string>& error);
+                    data_decoder::DataDecoder::ValueOrError result);
 
   std::string model_identifier_;
-
-  service_manager::Connector* connector_;
-  mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;
+  base::WeakPtrFactory<JsonConfigConverter> weak_ptr_factory_{this};
 };
 
 }  // namespace app_list

@@ -70,11 +70,6 @@ declare_args() {
   enable_mse_mpeg2ts_stream_parser =
       proprietary_codecs && (is_chromecast || is_fuchsia || use_fuzzing_engine)
 
-  # Enable parsing for the 'cbcs' encryption scheme added by MPEG Common
-  # Encryption 3rd Edition (ISO/IEC 23001-7), published 02/15/2016.
-  enable_cbcs_encryption_scheme =
-      is_chromecast || is_mac || is_win || is_linux || is_android
-
   # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
   # platform. Enabled by default for Chromecast.
   enable_platform_hevc = proprietary_codecs && is_chromecast

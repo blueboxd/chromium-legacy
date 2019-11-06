@@ -24,8 +24,9 @@ OutputRulesStr = function(enableKey) {
 OutputRulesStr.prototype = {
   /** @param {string} str */
   write: function(str) {
-    if (this.disableLogging())
+    if (this.disableLogging()) {
       return;
+    }
     this.str += str;
   },
 
@@ -34,20 +35,23 @@ OutputRulesStr.prototype = {
    * @param {string|undefined} value
    */
   writeTokenWithValue: function(token, value) {
-    if (this.disableLogging())
+    if (this.disableLogging()) {
       return;
+    }
     this.writeToken(token);
-    if (value)
+    if (value) {
       this.str += value;
-    else
+    } else {
       this.str += 'EMPTY';
+    }
     this.str += '\n';
   },
 
   /** @param {string} token */
   writeToken: function(token) {
-    if (this.disableLogging())
+    if (this.disableLogging()) {
       return;
+    }
     this.str += '$' + token + ': ';
   },
 
@@ -58,27 +62,32 @@ OutputRulesStr.prototype = {
    *          output: (string|undefined)}} rule
    */
   writeRule: function(rule) {
-    if (this.disableLogging())
+    if (this.disableLogging()) {
       return;
+    }
     this.str += 'RULE: ';
     this.str += rule.event + ' ' + rule.role;
-    if (rule.navigation)
+    if (rule.navigation) {
       this.str += ' ' + rule.navigation;
-    if (rule.output)
+    }
+    if (rule.output) {
       this.str += ' ' + rule.output;
+    }
     this.str += '\n';
   },
 
   bufferClear: function() {
-    if (this.disableLogging())
+    if (this.disableLogging()) {
       return;
+    }
     this.str += '\nBuffer is cleared.\n';
   },
 
   /** @param {string} errorMsg */
   writeError: function(errorMsg) {
-    if (this.disableLogging())
+    if (this.disableLogging()) {
       return;
+    }
     this.str += 'ERROR with message: ';
     this.str += errorMsg;
     this.str += '\n';

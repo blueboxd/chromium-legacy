@@ -19,7 +19,9 @@ void NavigateAndWaitForCompletion(const GURL& url, Shell* shell);
 void NavigateAndWaitForFailure(const GURL& url, Shell* shell);
 
 // Executes |script| in |shell| and returns the result.
-base::Value ExecuteScript(Shell* shell, const std::string& script);
+base::Value ExecuteScript(Shell* shell,
+                          const std::string& script,
+                          bool use_separate_isolate);
 
 }  // namespace weblayer
 

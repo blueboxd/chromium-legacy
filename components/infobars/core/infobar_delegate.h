@@ -172,6 +172,8 @@ class InfoBarDelegate {
     bool did_replace_entry;
     bool is_reload;
     bool is_redirect;
+    // True if the navigation was caused by a form submission.
+    bool is_form_submission = false;
   };
 
   // Value to use when the InfoBar has no icon to show.

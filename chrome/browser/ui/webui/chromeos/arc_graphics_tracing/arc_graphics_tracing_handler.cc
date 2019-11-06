@@ -5,10 +5,8 @@
 #include "chrome/browser/ui/webui/chromeos/arc_graphics_tracing/arc_graphics_tracing_handler.h"
 
 #include <map>
-#include <string>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -50,13 +48,6 @@ namespace chromeos {
 
 namespace {
 
-constexpr char kKeyInformation[] = "information";
-constexpr char kKeyIcon[] = "icon";
-constexpr char kKeyTitle[] = "title";
-constexpr char kKeyPlatform[] = "platform";
-constexpr char kKeyTimestamp[] = "timestamp";
-constexpr char kKeyDuration[] = "duration";
-
 constexpr char kLastTracingModelName[] = "last_tracing_model.json";
 
 enum class Action {
@@ -97,7 +88,7 @@ base::FilePath GetModelPathFromTitle(Profile* profile,
       normalized_name[index++] = '_';
       continue;
     }
-    if (c >= 'a' && c <= 'z')
+    if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
       normalized_name[index++] = c;
   }
   normalized_name[index] = 0;
@@ -200,7 +191,9 @@ void UpdateThreads(arc::ArcSystemModel::ThreadMap* threads) {
 std::pair<base::Value, std::string> BuildGraphicsModel(
     const std::string& data,
     ArcGraphicsTracingMode mode,
-    base::DictionaryValue task_information,
+    const std::string& title,
+    const std::vector<unsigned char>& icon_png,
+    base::Time timestamp,
     std::unique_ptr<arc::ArcSystemStatCollector> system_stat_collector,
     const base::TimeTicks& time_min,
     const base::TimeTicks& time_max,
@@ -231,12 +224,11 @@ std::pair<base::Value, std::string> BuildGraphicsModel(
   }
 
   UpdateThreads(&graphics_model.system_model().thread_map());
-
+  graphics_model.set_app_title(title);
+  graphics_model.set_app_icon_png(icon_png);
+  graphics_model.set_platform(base::GetLinuxDistro());
+  graphics_model.set_timestamp(timestamp);
   std::unique_ptr<base::DictionaryValue> model = graphics_model.Serialize();
-  task_information.SetKey(
-      kKeyDuration,
-      base::Value(static_cast<double>(graphics_model.duration())));
-  model->SetKey(kKeyInformation, std::move(task_information));
 
   std::string json_content;
   base::JSONWriter::WriteWithOptions(
@@ -294,6 +286,8 @@ base::trace_event::TraceConfig GetTracingConfig(ArcGraphicsTracingMode mode) {
     case ArcGraphicsTracingMode::kOverview: {
       base::trace_event::TraceConfig config(
           "-*,exo,viz,toplevel,gpu", base::trace_event::RECORD_CONTINUOUSLY);
+      config.EnableSystrace();
+      config.EnableSystraceEvent("i915:intel_gpu_freq_change");
       return config;
     }
   }
@@ -435,21 +429,14 @@ void ArcGraphicsTracingHandler::UpdateActiveArcWindowInfo() {
   DCHECK(arc_active_window_);
 
   active_task_title_ = base::UTF16ToASCII(arc_active_window_->GetTitle());
-  task_information_.SetKey(kKeyTitle, base::Value(active_task_title_));
+  active_task_icon_png_.clear();
 
   const gfx::ImageSkia* app_icon =
       arc_active_window_->GetProperty(aura::client::kAppIconKey);
   if (app_icon) {
-    std::vector<unsigned char> png_data;
-    if (gfx::PNGCodec::EncodeBGRASkBitmap(
-            app_icon->GetRepresentation(1.0f).GetBitmap(),
-            false /* discard_transparency */, &png_data)) {
-      const std::string png_data_as_string(
-          reinterpret_cast<const char*>(&png_data[0]), png_data.size());
-      std::string icon_content;
-      base::Base64Encode(png_data_as_string, &icon_content);
-      task_information_.SetKey(kKeyIcon, base::Value(icon_content));
-    }
+    gfx::PNGCodec::EncodeBGRASkBitmap(
+        app_icon->GetRepresentation(1.0f).GetBitmap(),
+        false /* discard_transparency */, &active_task_icon_png_);
   }
 }
 
@@ -529,10 +516,7 @@ void ArcGraphicsTracingHandler::SetStatus(const std::string& status) {
 }
 
 void ArcGraphicsTracingHandler::OnTracingStarted() {
-  task_information_.Clear();
-  task_information_.SetKey(kKeyPlatform, base::Value(base::GetLinuxDistro()));
-  task_information_.SetKey(kKeyTimestamp,
-                           base::Value(base::Time::Now().ToJsTime()));
+  timestamp_ = base::Time::Now();
 
   UpdateActiveArcWindowInfo();
 
@@ -560,7 +544,7 @@ void ArcGraphicsTracingHandler::OnTracingStopped(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BuildGraphicsModel, std::move(string_data), mode_,
-                     std::move(task_information_),
+                     active_task_title_, active_task_icon_png_, timestamp_,
                      std::move(system_stat_colletor_), tracing_time_min_,
                      tracing_time_max_, model_path),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,

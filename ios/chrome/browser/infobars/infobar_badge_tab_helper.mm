@@ -38,6 +38,12 @@ void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted(
   [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
 }
 
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarReverted(
+    InfobarType infobar_type) {
+  infobar_badge_models_[infobar_type].badgeState &= ~BadgeStateAccepted;
+  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
+}
+
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerPresented(
     InfobarType infobar_type) {
   infobar_badge_models_[infobar_type].badgeState |= BadgeStatePresented;

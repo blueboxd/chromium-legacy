@@ -57,6 +57,8 @@ jumbo_static_library("content") {
       "service_worker_payment_instrument.cc",
       "service_worker_payment_instrument.h",
     ]
+
+    deps += [ "//components/payments/core:method_strings" ]
   }
 }
 
@@ -98,6 +100,7 @@ jumbo_static_library("utils") {
     "//components/payments/content/utility",
     "//components/payments/core",
     "//components/payments/core:error_strings",
+    "//components/payments/core:method_strings",
     "//components/strings",
     "//components/webdata/common",
     "//content/public/browser",

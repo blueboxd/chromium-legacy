@@ -315,6 +315,11 @@ FuchsiaVideoDecoder::FuchsiaVideoDecoder(
 }
 
 FuchsiaVideoDecoder::~FuchsiaVideoDecoder() {
+  // Call ReleaseInputBuffers() to make sure the corresponding fields are
+  // destroyed in the right order.
+  ReleaseInputBuffers();
+
+  // Release mailboxes used for output frames.
   ReleaseOutputBuffers();
 }
 

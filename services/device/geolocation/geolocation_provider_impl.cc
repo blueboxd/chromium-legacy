@@ -237,7 +237,7 @@ void GeolocationProviderImpl::Init() {
         std::move(g_url_loader_factory_info.Get()));
   }
 
-  DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier())
+  DCHECK(!net::NetworkChangeNotifier::CreateIfNeeded())
       << "PositionCacheImpl needs a global NetworkChangeNotifier";
   arbitrator_ = std::make_unique<LocationArbitrator>(
       g_custom_location_provider_callback.Get(), std::move(url_loader_factory),

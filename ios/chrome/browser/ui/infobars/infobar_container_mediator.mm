@@ -107,6 +107,16 @@
     infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted(infobarType);
 }
 
+- (void)infobarWasReverted:(InfobarType)infobarType
+               forWebState:(web::WebState*)webState {
+  DCHECK(webState);
+  DCHECK_EQ(webState, self.webStateList->GetActiveWebState());
+  InfobarBadgeTabHelper* infobarBadgeTabHelper =
+      InfobarBadgeTabHelper::FromWebState(webState);
+  DCHECK(infobarBadgeTabHelper);
+  infobarBadgeTabHelper->UpdateBadgeForInfobarReverted(infobarType);
+}
+
 - (void)infobarBannerWasPresented:(InfobarType)infobarType
                       forWebState:(web::WebState*)webState {
   DCHECK(webState);

@@ -58,6 +58,16 @@ constexpr base::TimeDelta kFontIndexingTimeoutDefault =
 // timeout should be usually hit during indexing the second font.
 constexpr float kIndexingSlowDownForTestingPercentage = 0.75;
 
+// Additional local custom interface specific HRESULT codes (also added to
+// enums.xml) to mark font scanning implementation specific error situations, as
+// part of reporting them in a UMA metric.
+constexpr HRESULT kErrorFontScanningTimedOut =
+    MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF, 0xD101);
+constexpr HRESULT kErrorExtractingLocalizedStringsFailed =
+    MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF, 0xD102);
+constexpr HRESULT kErrorNoFullNameOrPostScriptName =
+    MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF, 0xD103);
+
 bool ExtractCaseFoldedLocalizedStrings(
     IDWriteLocalizedStrings* dwrite_localized_strings,
     std::vector<std::string>* localized_strings) {
@@ -111,6 +121,11 @@ DWriteFontLookupTableBuilder::FontFileWithUniqueNames::
 
 DWriteFontLookupTableBuilder::FontFileWithUniqueNames::FontFileWithUniqueNames(
     DWriteFontLookupTableBuilder::FontFileWithUniqueNames&& other) = default;
+
+DWriteFontLookupTableBuilder::FamilyResult::FamilyResult() = default;
+DWriteFontLookupTableBuilder::FamilyResult::FamilyResult(FamilyResult&& other) =
+    default;
+DWriteFontLookupTableBuilder::FamilyResult::~FamilyResult() = default;
 
 DWriteFontLookupTableBuilder::DWriteFontLookupTableBuilder()
     : font_indexing_timeout_(kFontIndexingTimeoutDefault) {
@@ -330,6 +345,7 @@ void DWriteFontLookupTableBuilder::
     return;
 
   start_time_table_ready_ = base::TimeTicks::Now();
+  scanning_error_reasons_.clear();
 
   scoped_refptr<base::SequencedTaskRunner> results_collection_task_runner =
       base::CreateSequencedTaskRunner(
@@ -436,19 +452,23 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
   DWriteFontLookupTableBuilder::FamilyResult family_result;
 
   if (base::TimeTicks::Now() - start_time > indexing_timeout) {
+    family_result.exit_hresult = kErrorFontScanningTimedOut;
     return family_result;
   }
 
   Microsoft::WRL::ComPtr<IDWriteFontFamily> family;
   HRESULT hr = collection->GetFontFamily(family_index, &family);
   if (FAILED(hr)) {
+    family_result.exit_hresult = hr;
     return family_result;
   }
   UINT32 font_count = family->GetFontCount();
 
+  HRESULT last_hresult_continue_reason = S_OK;
   for (UINT32 font_index = 0; font_index < font_count; ++font_index) {
     if (base::TimeTicks::Now() - start_time > indexing_timeout) {
-      return DWriteFontLookupTableBuilder::FamilyResult();
+      family_result.exit_hresult = kErrorFontScanningTimedOut;
+      return family_result;
     }
 
     Microsoft::WRL::ComPtr<IDWriteFont> font;
@@ -457,8 +477,10 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
           FROM_HERE, base::BlockingType::MAY_BLOCK);
       hr = family->GetFont(font_index, &font);
     }
-    if (FAILED(hr))
+    if (FAILED(hr)) {
+      family_result.exit_hresult = hr;
       return family_result;
+    }
 
     if (font->GetSimulations() != DWRITE_FONT_SIMULATIONS_NONE)
       continue;
@@ -476,6 +498,7 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
         // is in the system font collection, see https://crbug.com/922183. If we
         // were not able to retrieve a file for a registered font, we do not
         // need to add it to the map.
+        last_hresult_continue_reason = hr;
         continue;
       }
     }
@@ -501,26 +524,30 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
 
     std::vector<std::string> extracted_names;
     auto extract_names =
-        [&extracted_names, &hr,
-         &font](DWRITE_INFORMATIONAL_STRING_ID font_info_string_id) {
-          // Now get names, and make them point to the added font.
-          Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> font_id_keyed_names;
-          BOOL has_id_keyed_names;
-          {
-            base::ScopedBlockingCall scoped_blocking_call(
-                FROM_HERE, base::BlockingType::MAY_BLOCK);
-            hr = font->GetInformationalStrings(
-                font_info_string_id, &font_id_keyed_names, &has_id_keyed_names);
-            if (FAILED(hr) || !has_id_keyed_names)
-              return;
-          }
+        [&extracted_names,
+         &font](DWRITE_INFORMATIONAL_STRING_ID font_info_string_id) -> HRESULT {
+      // Now get names, and make them point to the added font.
+      Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> font_id_keyed_names;
+      BOOL has_id_keyed_names;
+      {
+        base::ScopedBlockingCall scoped_blocking_call(
+            FROM_HERE, base::BlockingType::MAY_BLOCK);
+        HRESULT hr = font->GetInformationalStrings(
+            font_info_string_id, &font_id_keyed_names, &has_id_keyed_names);
+        if (FAILED(hr))
+          return hr;
+        if (!has_id_keyed_names)
+          return kErrorNoFullNameOrPostScriptName;
+      }
 
-          ExtractCaseFoldedLocalizedStrings(font_id_keyed_names.Get(),
-                                            &extracted_names);
-        };
+      return ExtractCaseFoldedLocalizedStrings(font_id_keyed_names.Get(),
+                                               &extracted_names)
+                 ? S_OK
+                 : kErrorExtractingLocalizedStringsFailed;
+    };
 
-    extract_names(DWRITE_INFORMATIONAL_STRING_POSTSCRIPT_NAME);
-    extract_names(DWRITE_INFORMATIONAL_STRING_FULL_NAME);
+    hr = extract_names(DWRITE_INFORMATIONAL_STRING_POSTSCRIPT_NAME);
+    hr = FAILED(hr) ? hr : extract_names(DWRITE_INFORMATIONAL_STRING_FULL_NAME);
 
     if (UNLIKELY(slow_down_mode_for_testing == SlowDownMode::kDelayEachTask)) {
       base::PlatformThread::Sleep(indexing_timeout *
@@ -533,12 +560,19 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
       hang_event_for_testing->Wait();
     }
 
-    if (!extracted_names.size())
+    if (extracted_names.empty()) {
+      last_hresult_continue_reason = hr;
       continue;
+    }
 
-    family_result.push_back(
+    family_result.exit_hresult = S_OK;
+    family_result.font_files_with_names.push_back(
         DWriteFontLookupTableBuilder::FontFileWithUniqueNames(
             std::move(unique_font), std::move(extracted_names)));
+  }
+
+  if (family_result.font_files_with_names.empty()) {
+    family_result.exit_hresult = last_hresult_continue_reason;
   }
 
   return family_result;
@@ -557,12 +591,16 @@ void DWriteFontLookupTableBuilder::AppendFamilyResultAndFinalizeIfNeeded(
   if (font_table_built_.IsSignaled())
     return;
 
-  if (!family_result.size())
+  if (!family_result.font_files_with_names.size())
     family_results_empty_++;
   else
     family_results_non_empty_++;
 
-  for (const FontFileWithUniqueNames& font_of_family : family_result) {
+  if (FAILED(family_result.exit_hresult))
+    scanning_error_reasons_[family_result.exit_hresult]++;
+
+  for (const FontFileWithUniqueNames& font_of_family :
+       family_result.font_files_with_names) {
     blink::FontUniqueNameTable_UniqueFont* added_unique_font =
         font_unique_name_table_->add_fonts();
 
@@ -611,6 +649,18 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
             100.0);
   UMA_HISTOGRAM_PERCENTAGE("DirectWrite.Fonts.Proxy.EmptyFamilyResultsRatio",
                            empty_family_results_percentage);
+
+  if (empty_family_results_percentage > 0) {
+    auto most_frequent_hresult_element = std::max_element(
+        std::begin(scanning_error_reasons_), std::end(scanning_error_reasons_),
+        [](const decltype(scanning_error_reasons_)::value_type& a,
+           decltype(scanning_error_reasons_)::value_type& b) {
+          return a.second < b.second;
+        });
+    base::UmaHistogramSparse(
+        "DirectWrite.Fonts.Proxy.MostFrequentScanningFailure",
+        most_frequent_hresult_element->first);
+  }
 
   unsigned num_font_files = font_unique_name_table->fonts_size();
 

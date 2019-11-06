@@ -99,17 +99,6 @@ webrtc::DtlsTransportInterface* RTCDtlsTransport::native_transport() {
 void RTCDtlsTransport::ChangeState(webrtc::DtlsTransportInformation info) {
   DCHECK(current_state_.state() != webrtc::DtlsTransportState::kClosed);
   current_state_ = info;
-  if (current_state_.state() == webrtc::DtlsTransportState::kConnected) {
-    if (current_state_.tls_version()) {
-      if (*current_state_.tls_version() == DTLS1_VERSION ||
-          *current_state_.tls_version() == SSL3_VERSION ||
-          *current_state_.tls_version() == TLS1_VERSION ||
-          *current_state_.tls_version() == TLS1_1_VERSION) {
-        Deprecation::CountDeprecation(GetExecutionContext(),
-                                      WebFeature::kObsoleteWebrtcTlsVersion);
-      }
-    }
-  }
 }
 
 void RTCDtlsTransport::Close() {
@@ -129,6 +118,20 @@ void RTCDtlsTransport::OnStateChange(webrtc::DtlsTransportInformation info) {
   // We depend on closed only happening once for safe garbage collection.
   DCHECK(current_state_.state() != webrtc::DtlsTransportState::kClosed);
   current_state_ = info;
+
+  // DTLS 1.0 is deprecated, emit a console warning.
+  if (current_state_.state() == webrtc::DtlsTransportState::kConnected) {
+    if (current_state_.tls_version()) {
+      if (*current_state_.tls_version() == DTLS1_VERSION ||
+          *current_state_.tls_version() == SSL3_VERSION ||
+          *current_state_.tls_version() == TLS1_VERSION ||
+          *current_state_.tls_version() == TLS1_1_VERSION) {
+        Deprecation::CountDeprecation(GetExecutionContext(),
+                                      WebFeature::kObsoleteWebrtcTlsVersion);
+      }
+    }
+  }
+
   // If the certificates have changed, copy them as DOMArrayBuffers.
   // This makes sure that getRemoteCertificates() == getRemoteCertificates()
   if (current_state_.remote_ssl_certificates()) {

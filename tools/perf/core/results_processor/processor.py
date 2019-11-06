@@ -203,8 +203,9 @@ def UploadArtifacts(test_result, upload_bucket, run_identifier):
     if name in [compute_metrics.HISTOGRAM_DICTS_FILE, MEASUREMENTS_NAME]:
       continue
     remote_name = '/'.join([run_identifier, test_result['testPath'], name])
+    urlsafe_remote_name = re.sub(r'[^A-Za-z0-9/.-]+', '_', remote_name)
     artifact['remoteUrl'] = cloud_storage.Insert(
-        upload_bucket, remote_name, artifact['filePath'])
+        upload_bucket, urlsafe_remote_name, artifact['filePath'])
     logging.info('Uploaded %s of %s to %s', name, test_result['testPath'],
                  artifact['remoteUrl'])
 

@@ -161,7 +161,13 @@ PASS childWindow.screen.availTop is 0
 PASS childWindow.screen.availWidth is 0
 PASS childWindow.screen.colorDepth is 0
 PASS childWindow.screen.height is 0
+PASS childWindow.screen.internal is false
+PASS childWindow.screen.left is 0
+PASS childWindow.screen.name is ''
 PASS childWindow.screen.pixelDepth is 0
+PASS childWindow.screen.primary is false
+PASS childWindow.screen.scaleFactor is 0
+PASS childWindow.screen.top is 0
 PASS childWindow.screen.width is 0
 PASS childWindow.screenLeft is 0
 PASS childWindow.screenTop is 0

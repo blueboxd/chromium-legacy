@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
+#include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_manifest_downloader.h"
 #include "components/payments/core/url_util.h"
 #include "components/webdata/common/web_data_results.h"
@@ -91,13 +92,10 @@ void ManifestVerifier::Verify(content::PaymentAppProvider::PaymentApps apps,
     for (const auto& method : app.second->enabled_methods) {
       // For non-URL payment method names, only names published by W3C should be
       // supported. Keep this in sync with AndroidPaymentAppFinder.java.
-      // https://w3c.github.io/payment-method-basic-card/
-      // https://w3c.github.io/webpayments/proposals/interledger-payment-method.html
-      // https://w3c.github.io/webpayments-methods-credit-transfer-direct-debit/
-      // https://w3c.github.io/webpayments-methods-tokenization/
-      if (method == "basic-card" || method == "interledger" ||
-          method == "payee-credit-transfer" ||
-          method == "payer-credit-transfer" || method == "tokenized-card") {
+      if (method == methods::kBasicCard || method == methods::kInterledger ||
+          method == methods::kPayeeCreditTransfer ||
+          method == methods::kPayerCreditTransfer ||
+          method == methods::kTokenizedCard) {
         verified_method_names.emplace_back(method);
         continue;
       }

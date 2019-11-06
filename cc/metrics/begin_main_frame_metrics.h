@@ -28,6 +28,8 @@ struct CC_EXPORT BeginMainFrameMetrics {
   base::TimeDelta update_layers;
 
   BeginMainFrameMetrics();
+
+  BeginMainFrameMetrics(const BeginMainFrameMetrics& other);
 };
 
 }  // namespace cc

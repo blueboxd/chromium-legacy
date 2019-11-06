@@ -30,8 +30,6 @@ class PageNodeImpl;
 
 // The performance manager is a rendezvous point for binding to performance
 // manager interfaces.
-// TODO(https://crbug.com/910288): Refactor this along with the
-// {Frame|Page|Process|System}ResourceCoordinator classes.
 class PerformanceManagerImpl : public PerformanceManager {
  public:
   using FrameNodeCreationCallback = base::OnceCallback<void(FrameNodeImpl*)>;

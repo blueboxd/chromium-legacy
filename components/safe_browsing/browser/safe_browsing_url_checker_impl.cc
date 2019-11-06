@@ -298,12 +298,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
                  &SafeBrowsingUrlCheckerImpl::OnTimeout);
 
     bool safe_synchronously;
-    auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
-    if (real_time_lookup_enabled_ &&
-        RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-            resource_type_) &&
-        rt_lookup_service && rt_lookup_service->CanCheckUrl(url) &&
-        !rt_lookup_service->IsInBackoffMode()) {
+    if (CanPerformFullURLLookup(url)) {
       UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Checked",
                                 resource_type_);
       safe_synchronously = false;
@@ -377,6 +372,19 @@ void SafeBrowsingUrlCheckerImpl::BlockAndProcessUrls(bool showed_interstitial) {
     if (!RunNextCallback(false, showed_interstitial))
       return;
   }
+}
+
+bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
+  if (!real_time_lookup_enabled_)
+    return false;
+
+  if (!RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
+          resource_type_))
+    return false;
+
+  auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
+  return rt_lookup_service && rt_lookup_service->CanCheckUrl(url) &&
+         !rt_lookup_service->IsInBackoffMode();
 }
 
 void SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete(bool proceed) {

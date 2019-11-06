@@ -59,7 +59,7 @@ class TestDebugListener : public fuchsia::web::DevToolsListener {
   base::flat_set<std::unique_ptr<TestPerContextListener>,
                  base::UniquePtrComparator>
       per_context_listeners_;
-  base::OnceClosure run_ack_;
+  base::RepeatingClosure on_debug_ports_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDebugListener);
 };

@@ -307,8 +307,13 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kEnableOnly},
           {wf::EnableDocumentPolicy, features::kDocumentPolicy,
            kUseFeatureState},
-          {wf::EnableNeverSlowMode, features::kNeverSlowMode,
-           kUseFeatureState},
+          {wf::EnableNeverSlowMode, features::kNeverSlowMode, kUseFeatureState},
+          {wf::EnableShadowDOMV0, blink::features::kWebComponentsV0Enabled,
+           kEnableOnly},
+          {wf::EnableCustomElementsV0, blink::features::kWebComponentsV0Enabled,
+           kEnableOnly},
+          {wf::EnableHTMLImports, blink::features::kWebComponentsV0Enabled,
+           kEnableOnly},
       };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     const bool featureEnabled =
@@ -355,6 +360,13 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kIgnoreCrossOriginWindowWhenNamedAccessOnWindow,
            kEnableOnly},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI, kEnableOnly},
+          {"ShadowDOMV0", blink::features::kWebComponentsV0Enabled,
+           kEnableOnly},
+          {"CustomElementsV0", blink::features::kWebComponentsV0Enabled,
+           kEnableOnly},
+          {"HTMLImports", blink::features::kWebComponentsV0Enabled,
+           kEnableOnly},
+
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
     const bool featureEnabled =
@@ -437,6 +449,9 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
        switches::kEnableAccessibilityObjectModel, true},
       {wrf::EnableAllowSyncXHRInPageDismissal,
        switches::kAllowSyncXHRInPageDismissal, true},
+      {wrf::EnableShadowDOMV0, switches::kWebComponentsV0Enabled, true},
+      {wrf::EnableCustomElementsV0, switches::kWebComponentsV0Enabled, true},
+      {wrf::EnableHTMLImports, switches::kWebComponentsV0Enabled, true},
   };
   for (const auto& mapping : switchToFeatureMapping) {
     if (command_line.HasSwitch(mapping.switch_name))

@@ -12,6 +12,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -37,7 +38,7 @@ import org.chromium.base.AnimationFrameTimeHistogram;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
-import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
 import org.chromium.ui.widget.Toast;
@@ -297,14 +298,6 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
         }
     }
 
-    /**
-     * @return The footer view for the menu or null if one has not been set.
-     */
-    @Nullable
-    public View getFooterView() {
-        return mFooterView;
-    }
-
     private int[] getPopupPosition(int screenRotation, Rect appRect, Rect padding, View anchorView,
             int popupWidth, int popupHeight, boolean isAnchorAtBottom) {
         anchorView.getLocationInWindow(mTempLocation);
@@ -364,11 +357,6 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
     public void onItemClick(MenuItem menuItem) {
         if (menuItem.isEnabled()) {
             dismiss();
-            if (menuItem.getItemId() == R.id.new_tab_menu_id) {
-                RecordUserAction.record("MobileMenuNewTab.AppMenu");
-            } else if (menuItem.getItemId() == R.id.new_incognito_tab_menu_id) {
-                RecordUserAction.record("MobileMenuNewIncognitoTab.AppMenu");
-            }
             mHandler.onOptionsItemSelected(menuItem);
         }
     }
@@ -376,27 +364,11 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
     @Override
     public boolean onItemLongClick(MenuItem menuItem, View view) {
         if (!menuItem.isEnabled()) return false;
-
-        String description = null;
         Context context = ContextUtils.getApplicationContext();
-        Resources resources = context.getResources();
-        final int itemId = menuItem.getItemId();
-
-        if (itemId == R.id.forward_menu_id) {
-            description = resources.getString(R.string.menu_forward);
-        } else if (itemId == R.id.bookmark_this_page_id) {
-            description = resources.getString(R.string.menu_bookmark);
-        } else if (itemId == R.id.offline_page_id) {
-            description = resources.getString(R.string.menu_download);
-        } else if (itemId == R.id.info_menu_id) {
-            description = resources.getString(R.string.menu_page_info);
-        } else if (itemId == R.id.reload_menu_id) {
-            description = (menuItem.getIcon().getLevel()
-                                  == resources.getInteger(R.integer.reload_button_level_reload))
-                    ? resources.getString(R.string.menu_refresh)
-                    : resources.getString(R.string.menu_stop_refresh);
-        }
-        return Toast.showAnchoredToast(context, view, description);
+        CharSequence titleCondensed = menuItem.getTitleCondensed();
+        CharSequence message =
+                TextUtils.isEmpty(titleCondensed) ? menuItem.getTitle() : titleCondensed;
+        return Toast.showAnchoredToast(context, view, message);
     }
 
     @Override
@@ -567,5 +539,10 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
         if (mHandler != null) mHandler.onHeaderViewInflated(headerView);
 
         return headerView.getMeasuredHeight();
+    }
+
+    @VisibleForTesting
+    void finishAnimationsForTests() {
+        if (mMenuItemEnterAnimator != null) mMenuItemEnterAnimator.end();
     }
 }

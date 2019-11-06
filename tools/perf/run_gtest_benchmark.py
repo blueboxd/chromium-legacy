@@ -82,7 +82,8 @@ def main(args):
   parser.add_argument('executable', help='The name of the executable to run.')
 
   options, leftover_args = parser.parse_known_args(args)
-  results_processor.ProcessOptions(options, standalone=True)
+  options.test_path_format = 'gtest'
+  results_processor.ProcessOptions(options)
 
   run_return_code = RunGTest(options, leftover_args)
   process_return_code = ProcessResults(options)

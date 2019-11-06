@@ -89,6 +89,8 @@ class ElementFinder : public WebControllerWorker {
                      std::unique_ptr<dom::ResolveNodeResult> result);
 
   content::RenderFrameHost* FindCorrespondingRenderFrameHost(
+      std::string frame_id);
+  content::RenderFrameHost* FindCorrespondingRenderFrameHost(
       std::string name,
       std::string document_url);
 

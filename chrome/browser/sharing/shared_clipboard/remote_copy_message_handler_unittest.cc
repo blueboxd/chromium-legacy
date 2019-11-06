@@ -7,13 +7,14 @@
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/notifications/stub_notification_display_service.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_test_base.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/sync/protocol/sharing_message.pb.h"
 #include "components/sync/protocol/sharing_remote_copy_message.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace {
 
@@ -29,8 +30,7 @@ class RemoteCopyMessageHandlerTest : public SharedClipboardTestBase {
 
   void SetUp() override {
     SharedClipboardTestBase::SetUp();
-    message_handler_ = std::make_unique<RemoteCopyMessageHandler>(
-        notification_display_service_.get());
+    message_handler_ = std::make_unique<RemoteCopyMessageHandler>(&profile_);
   }
 
   chrome_browser_sharing::SharingMessage CreateMessage(std::string guid,

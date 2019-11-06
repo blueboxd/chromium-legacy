@@ -78,6 +78,8 @@ class LoopbackServer {
     return keystore_keys_;
   }
 
+  void AddNewKeystoreKeyForTesting();
+
  private:
   // Allow the FakeServer decorator to inspect the internals of this class.
   friend class fake_server::FakeServer;

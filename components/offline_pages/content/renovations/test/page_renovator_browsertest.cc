@@ -62,10 +62,10 @@ const char kTestRenovationScript[] =
       var node = document.getElementById('always');
       node.parentNode.removeChild(node);
     }
-    var map_renovations = {'foo':foo, 'bar':bar, 'always':always};
+    var mapRenovations = {'foo':foo, 'bar':bar, 'always':always};
     function run_renovations(idlist) {
       for (var id of idlist) {
-        map_renovations[id]();
+        mapRenovations[id]();
       }
     })*";
 

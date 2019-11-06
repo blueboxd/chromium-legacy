@@ -11,7 +11,7 @@
 <translation id="1025074108959230262">रोचक मोड अक्षम</translation>
 <translation id="1031961866430398710">नंतर</translation>
 <translation id="1038643060055067718">रेखा:</translation>
-<translation id="1038795173450935438">पेजवरील आयटम मधून पुढे जाण्याकरिता, Search + Right किंवा परत मागे जाण्यासाठी Search + Left अॅरो दाबा. पुढील ओळीवर जाण्यासाठी, Search + Down अॅरो दाबा. मागील ओळीवर जाण्यासाठी Search + Up अॅरो वापरा. तुम्ही क्लिक करू इच्छित आयटमवर पोहचल्यास, Search + Space दाबा.</translation>
+<translation id="1038795173450935438">पेजवरील आयटम मधून पुढे जाण्याकरिता, Search + Right किंवा परत मागे जाण्यासाठी Search + Left ॲरो दाबा. पुढील ओळीवर जाण्यासाठी, Search + Down ॲरो दाबा. मागील ओळीवर जाण्यासाठी Search + Up ॲरो वापरा. तुम्ही क्लिक करू इच्छित आयटमवर पोहचल्यास, Search + Space दाबा.</translation>
 <translation id="1044777062731150180">कोणतेही शीर्षलेख नाहीत</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">चुकीचे इनपुट</translation>
@@ -159,7 +159,7 @@
 <translation id="2100350898815792233">सर्व विरामचिन्‍ह</translation>
 <translation id="2110480898214777136">पेज, डायलॉग किंवा अन्य कंटेनरमध्ये सुरूवातीपासून समाप्तीपर्यंत किंवा समाप्तीपासून सुरूवातीपर्यंत पूर्ण करा</translation>
 <translation id="2119965627982867824">spnbtn</translation>
-<translation id="2121067395472282800">अॅक्सेस की:<ph name="KEY" /></translation>
+<translation id="2121067395472282800">ॲक्सेस की:<ph name="KEY" /></translation>
 <translation id="2126597928985245619">या आयटमसाठी कोणताही मजकूर उपलब्ध नाही</translation>
 <translation id="2127747486437921899">तिरपे</translation>
 <translation id="2138345533858834403">स्क्रीनच्या वर ChromeVox पॅनेलमध्ये रिफ्रेश करता येण्यासारख्या ब्रेल डिस्प्लेच्या आउटपुटचे सिम्युलेशन करेल.</translation>
@@ -398,14 +398,14 @@
 <translation id="3716845769494773620">एकाधिक रेखा</translation>
 <translation id="3731746171184829332">मागील मथळा नाही.</translation>
 <translation id="3735039640698208086">ऑडिओ प्ले करताना...</translation>
-<translation id="3755561384917041694">कृपया विस्तारित ब्रेल आदेश वापरण्यासाठी स्टेटस ट्रेच्या अॅक्सेसिबिलिटीमधून स्क्रीनवरील कीबोर्ड चालू करा.</translation>
+<translation id="3755561384917041694">कृपया विस्तारित ब्रेल आदेश वापरण्यासाठी स्टेटस ट्रेच्या ॲक्सेसिबिलिटीमधून स्क्रीनवरील कीबोर्ड चालू करा.</translation>
 <translation id="3762198587642264450">वर्तमान पंक्तीच्या शेवटी जा</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3777742246909257041">पांढरा शुभ्र</translation>
 <translation id="3781428340399460090">गडद गुलाबी</translation>
 <translation id="3783725005098956899">लॉग दाखवा</translation>
 <translation id="3793710123303304873">डायलॉगच्या बाहेर पडले.</translation>
-<translation id="3801735343383419236">अॉटोकंप्लीशन सूची</translation>
+<translation id="3801735343383419236">ऑटोकंप्लीशन सूची</translation>
 <translation id="3810838688059735925">व्हिडिओ</translation>
 <translation id="3813387282697781382">फिकट लाल</translation>
 <translation id="3816633764618089385">पुढील माध्यम</translation>
@@ -675,14 +675,14 @@
 <translation id="5597933780944041114">पुढील मथळा नाही.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, रेडिओ बटण निवडले नाही</translation>
 <translation id="5601172225407283979">डीफॉल्ट क्रिया करा</translation>
-<translation id="5608798115546226984">अॉटोकंप्लीशन इनलाइन</translation>
+<translation id="5608798115546226984">ऑटोकंप्लीशन इनलाइन</translation>
 <translation id="561939826962581046">time</translation>
 <translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">लॉग</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">ग्राफिक्स चिन्ह</translation>
 <translation id="5637871198229500030">मागील सारणी नाही.</translation>
-<translation id="5653397561111110475">Chromebook टच स्क्रीन अॅक्सेसिबिलिटी वैशिष्ट्ये वापरा</translation>
+<translation id="5653397561111110475">Chromebook टच स्क्रीन ॲक्सेसिबिलिटी वैशिष्ट्ये वापरा</translation>
 <translation id="5655682562155942719">जाण्याचे आदेश</translation>
 <translation id="56637627897541303">मजकूर क्षेत्र</translation>
 <translation id="5678161956734658133">mled</translation>
@@ -864,7 +864,7 @@
 <translation id="7043850226734279132">गडद खाकी</translation>
 <translation id="7048792632163898198">पुढील काही शॉर्टकट ChromeVox कमांड नाहीत, परंतु तरीही Chromeमधून बरेच काही मिळवण्यासाठी ते खूप उपयुक्त आहेत.
 बटणे आणि लिंक यांसारख्या कृती करण्यायोग्य आयटममधून पुढे नेव्हिगेट करण्यासाठी, Tab की, दाबा. मागे नेव्हिगेट करण्यासाठी, Shift+Tab दाबा.
-Chrome ब्राउझरच्या, ऑम्निबॉक्स असेही म्हणवल्या जाणाऱ्या, अॅड्रेस बॉक्समध्ये अॅक्सेस करण्यासाठी Control + L दाबा.
+Chrome ब्राउझरच्या, ऑम्निबॉक्स असेही म्हणवल्या जाणाऱ्या, ॲड्रेस बॉक्समध्ये ॲक्सेस करण्यासाठी Control + L दाबा.
 नवीन टॅब उघडण्यासाठी आणि त्यामध्ये आपोआप जाण्यासाठी, Control+T दाबा. तुमचा कर्सर ऑम्निबॉक्समध्ये असेल.
 टॅब बंद करण्यासाठी, Control+W दाबा.
 उघडलेल्या टॅबमध्ये पुढे जाण्यासाठी, Control+Tab वापरा.
@@ -1124,14 +1124,14 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8345569862449483843">{COUNT,plural, =1{पाउंड}other{# पाउंड चिन्हे}}</translation>
 <translation id="8374154622594089836">महिना</translation>
 <translation id="8378855320830505539">प्रदेश</translation>
-<translation id="8382679411218029383">अॉटोकंप्लीशन इनलाइन आणि सूची</translation>
+<translation id="8382679411218029383">ऑटोकंप्लीशन इनलाइन आणि सूची</translation>
 <translation id="8428603554127842284">स्तर <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">पुढील स्‍तर 3 मथळा नाही.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">मागील चेकबॉक्‍स नाही.</translation>
 <translation id="8446884382197647889">अधिक जाणून घ्या</translation>
 <translation id="8455868257606149352">कमाल <ph name="X" /></translation>
-<translation id="84575901236241018">अॅक्सेस की आहे, <ph name="KEY" /></translation>
+<translation id="84575901236241018">ॲक्सेस की आहे, <ph name="KEY" /></translation>
 <translation id="8463645336674919227">व्याकरणाची चूक सुधारलेली नाही</translation>
 <translation id="847154984256717791">व्यस्त</translation>
 <translation id="8476408756881832830">ChromeVox बोलत असताना प्लेबॅकला विराम द्या</translation>

@@ -21,7 +21,8 @@ interface ContentSettingsManager {
     SESSION_STORAGE,
     FILE_SYSTEM,
     INDEXED_DB,
-    CACHE
+    CACHE,
+    WEB_LOCKS,
   };
 
   // Sent by the renderer process to check whether access to a particular

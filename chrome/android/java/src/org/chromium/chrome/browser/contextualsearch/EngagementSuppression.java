@@ -6,12 +6,13 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * Provides a ContextualSearchHeuristic for Engagement with the feature.
  */
 public class EngagementSuppression extends ContextualSearchHeuristic {
-    private final ChromePreferenceManager mPreferenceManager;
+    private final SharedPreferencesManager mPreferenceManager;
     private final boolean mIsConditionSatisfied;
     private final boolean mIsEnabled;
 
@@ -19,7 +20,7 @@ public class EngagementSuppression extends ContextualSearchHeuristic {
      * Constructs an object that tracks panel opens and other measures of engagement.
      */
     EngagementSuppression() {
-        mPreferenceManager = ChromePreferenceManager.getInstance();
+        mPreferenceManager = SharedPreferencesManager.getInstance();
         mIsEnabled = ContextualSearchFieldTrial.getSwitch(
                 ContextualSearchSwitch.IS_ENGAGEMENT_SUPPRESSION_ENABLED);
         // Used for manual testing; suppress when we've had an entity impression but no open,
@@ -56,7 +57,7 @@ public class EngagementSuppression extends ContextualSearchHeuristic {
      */
     public static void registerQuickActionImpression(
             boolean wasPanelOpened, boolean wasActionClicked) {
-        ChromePreferenceManager prefs = ChromePreferenceManager.getInstance();
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
         prefs.incrementInt(
                 ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT);
         if (wasActionClicked) {
@@ -73,7 +74,7 @@ public class EngagementSuppression extends ContextualSearchHeuristic {
      * @param wasPanelOpened Whether the panel was opened.
      */
     public static void registerContextualCardsImpression(boolean wasPanelOpened) {
-        ChromePreferenceManager prefs = ChromePreferenceManager.getInstance();
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
         prefs.incrementInt(ChromePreferenceManager.CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT);
         if (wasPanelOpened) {
             prefs.incrementInt(ChromePreferenceManager.CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT);

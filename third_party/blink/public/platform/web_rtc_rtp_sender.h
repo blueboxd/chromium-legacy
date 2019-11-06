@@ -9,7 +9,6 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
-#include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
@@ -17,6 +16,7 @@
 
 namespace blink {
 
+class RTCVoidRequest;
 class WebMediaStreamTrack;
 class WebRTCDTMFSenderHandler;
 
@@ -40,15 +40,15 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
   virtual webrtc::DtlsTransportInformation DtlsTransportInformation() = 0;
   virtual WebMediaStreamTrack Track() const = 0;
   virtual WebVector<WebString> StreamIds() const = 0;
-  // TODO(hbos): Replace WebRTCVoidRequest by something resolving promises based
+  // TODO(hbos): Replace RTCVoidRequest by something resolving promises based
   // on RTCError, as to surface both exception type and error message.
   // https://crbug.com/790007
-  virtual void ReplaceTrack(WebMediaStreamTrack, WebRTCVoidRequest) = 0;
+  virtual void ReplaceTrack(WebMediaStreamTrack, RTCVoidRequest*) = 0;
   virtual std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const = 0;
   virtual std::unique_ptr<webrtc::RtpParameters> GetParameters() const = 0;
   virtual void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                              webrtc::DegradationPreference,
-                             WebRTCVoidRequest) = 0;
+                             RTCVoidRequest*) = 0;
   virtual void GetStats(blink::WebRTCStatsReportCallback,
                         const WebVector<webrtc::NonStandardGroupId>&) = 0;
   virtual void SetStreams(const WebVector<WebString>& stream_ids) = 0;

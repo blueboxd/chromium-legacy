@@ -199,7 +199,7 @@ void HostScannerOperation::OnMessageReceived(
       static_cast<TetherAvailabilityResponse*>(
           message_wrapper->GetProto().get());
   if (AreGmsCoreNotificationsDisabled(response)) {
-    PA_LOG(VERBOSE)
+    PA_LOG(WARNING)
         << "Received TetherAvailabilityResponse from device with ID "
         << remote_device.GetTruncatedDeviceIdForLogs() << " which "
         << "indicates that Google Play Services notifications are "
@@ -209,10 +209,11 @@ void HostScannerOperation::OnMessageReceived(
   } else if (!IsTetheringAvailableWithValidDeviceStatus(response)) {
     // If the received message is invalid or if it states that tethering is
     // unavailable, ignore it.
-    PA_LOG(VERBOSE)
+    PA_LOG(WARNING)
         << "Received TetherAvailabilityResponse from device with ID "
         << remote_device.GetTruncatedDeviceIdForLogs() << " which "
-        << "indicates that tethering is not available.";
+        << "indicates that tethering is not available. Response code: "
+        << response->response_code();
   } else {
     bool setup_required =
         response->response_code() ==

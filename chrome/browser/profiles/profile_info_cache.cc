@@ -50,7 +50,7 @@ const char kSupervisedUserId[] = "managed_user_id";
 const char kAccountIdKey[] = "account_id_key";
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 const char kLegacyProfileNameMigrated[] = "legacy.profile.name.migrated";
-bool migration_enabled_for_testing_ = false;
+bool migration_enabled_for_testing = false;
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 void DeleteBitmap(const base::FilePath& image_path) {
@@ -117,9 +117,9 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   LoadGAIAPictureIfNeeded();
 
   bool migrate_legacy_profile_names =
-      (!prefs_->GetBoolean(kLegacyProfileNameMigrated) &&
-       ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName()) ||
-      migration_enabled_for_testing_;
+      ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName() &&
+      (!prefs_->GetBoolean(kLegacyProfileNameMigrated) ||
+       migration_enabled_for_testing);
   if (migrate_legacy_profile_names) {
     MigrateLegacyProfileNamesAndRecomputeIfNeeded();
     prefs_->SetBoolean(kLegacyProfileNameMigrated, true);
@@ -689,8 +689,8 @@ void ProfileInfoCache::MigrateLegacyProfileNamesAndRecomputeIfNeeded() {
 }
 
 // static
-void ProfileInfoCache::EnableLegacyProfileMigrationForTesting() {
-  migration_enabled_for_testing_ = true;
+void ProfileInfoCache::SetLegacyProfileMigrationForTesting(bool value) {
+  migration_enabled_for_testing = value;
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 

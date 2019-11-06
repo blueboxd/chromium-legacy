@@ -50,6 +50,7 @@
 #endif
 
 SharingService::SharingService(
+    Profile* profile,
     std::unique_ptr<SharingSyncPreference> sync_prefs,
     std::unique_ptr<VapidKeyManager> vapid_key_manager,
     std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
@@ -59,8 +60,7 @@ SharingService::SharingService(
     gcm::GCMDriver* gcm_driver,
     syncer::DeviceInfoTracker* device_info_tracker,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
-    syncer::SyncService* sync_service,
-    NotificationDisplayService* notification_display_service)
+    syncer::SyncService* sync_service)
     : sync_prefs_(std::move(sync_prefs)),
       vapid_key_manager_(std::move(vapid_key_manager)),
       sharing_device_registration_(std::move(sharing_device_registration)),
@@ -118,8 +118,7 @@ SharingService::SharingService(
         std::make_unique<SharedClipboardMessageHandlerAndroid>(this);
 #else
     shared_clipboard_message_handler_ =
-        std::make_unique<SharedClipboardMessageHandlerDesktop>(
-            this, notification_display_service);
+        std::make_unique<SharedClipboardMessageHandlerDesktop>(this, profile);
 #endif  // defined(OS_ANDROID)
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
@@ -129,8 +128,8 @@ SharingService::SharingService(
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
   if (sharing_device_registration_->IsRemoteCopySupported()) {
-    remote_copy_message_handler_ = std::make_unique<RemoteCopyMessageHandler>(
-        notification_display_service);
+    remote_copy_message_handler_ =
+        std::make_unique<RemoteCopyMessageHandler>(profile);
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kRemoteCopyMessage,
         remote_copy_message_handler_.get());
@@ -242,6 +241,10 @@ SharingService::State SharingService::GetStateForTesting() const {
 
 SharingSyncPreference* SharingService::GetSyncPreferencesForTesting() const {
   return sync_prefs_.get();
+}
+
+SharingFCMHandler* SharingService::GetFCMHandlerForTesting() const {
+  return fcm_handler_.get();
 }
 
 void SharingService::OnDeviceInfoChange() {

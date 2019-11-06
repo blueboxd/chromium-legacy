@@ -60,8 +60,9 @@ MediaAutomationHandler.prototype = {
     var now = new Date();
     setTimeout(function() {
       var then = this.lastTtsEvent_;
-      if (now < then)
+      if (now < then) {
         return;
+      }
       this.lastTtsEvent_ = now;
       this.update_({end: true});
     }.bind(this), MediaAutomationHandler.MIN_WAITTIME_MS);
@@ -78,8 +79,9 @@ MediaAutomationHandler.prototype = {
   onMediaStartedPlaying: function(evt) {
     this.mediaRoots_.add(evt.target);
     var audioStrategy = localStorage['audioStrategy'];
-    if (cvox.ChromeVox.tts.isSpeaking() && audioStrategy == 'audioDuck')
+    if (cvox.ChromeVox.tts.isSpeaking() && audioStrategy == 'audioDuck') {
       this.update_({start: true});
+    }
   },
 
   /**
@@ -102,15 +104,17 @@ MediaAutomationHandler.prototype = {
     while (!item.done) {
       var root = item.value;
       if (options.start) {
-        if (audioStrategy == 'audioDuck')
+        if (audioStrategy == 'audioDuck') {
           root.startDuckingMedia();
-        else if (audioStrategy == 'audioSuspend')
+        } else if (audioStrategy == 'audioSuspend') {
           root.suspendMedia();
+        }
       } else if (options.end) {
-        if (audioStrategy == 'audioDuck')
+        if (audioStrategy == 'audioDuck') {
           root.stopDuckingMedia();
-        else if (audioStrategy == 'audioSuspend')
+        } else if (audioStrategy == 'audioSuspend') {
           root.resumeMedia();
+        }
       }
       item = it.next();
     }

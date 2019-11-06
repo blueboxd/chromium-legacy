@@ -11,7 +11,10 @@
 Polymer({
   is: 'settings-storage-external',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [
+    I18nBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /**
@@ -55,5 +58,17 @@ Polymer({
    */
   handleExternalStoragesUpdated_: function(storages) {
     this.externalStorages_ = storages;
+  },
+
+  /**
+   * @param {Arrray<!settings.ExternalStorage>} externalStorages
+   * @return {string}
+   * @private
+   */
+  computeStorageListHeader_: function(externalStorages) {
+    return this.i18n(
+        !externalStorages || externalStorages.length == 0 ?
+            'storageExternalStorageEmptyListHeader' :
+            'storageExternalStorageListHeader');
   },
 });

@@ -77,3 +77,11 @@ java_cpp_strings("error_strings_generated_srcjar") {
 
   template = "java_templates/ErrorStrings.java.tmpl"
 }
+
+java_cpp_strings("method_strings_generated_srcjar") {
+  sources = [
+    "//components/payments/core/method_strings.cc",
+  ]
+
+  template = "java_templates/MethodStrings.java.tmpl"
+}

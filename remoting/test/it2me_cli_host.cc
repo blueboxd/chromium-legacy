@@ -116,7 +116,7 @@ void It2MeCliHost::Start() {
       &It2MeCliHost::StartCRDHostAndGetCode, base::Unretained(this)));
 
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
+      net::NetworkChangeNotifier::CreateIfNeeded());
   ui_loop.Run();
 }
 

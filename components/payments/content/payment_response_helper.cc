@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payment_request_delegate.h"
 
@@ -167,7 +168,7 @@ void PaymentResponseHelper::GeneratePaymentResponse() {
   // "visa") or through basic-card's supportedNetworks.
   payment_response->method_name =
       spec_->IsMethodSupportedThroughBasicCard(method_name_)
-          ? kBasicCardMethodName
+          ? methods::kBasicCard
           : method_name_;
   payment_response->stringified_details = stringified_details_;
 

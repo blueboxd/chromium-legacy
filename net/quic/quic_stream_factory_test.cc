@@ -11144,9 +11144,20 @@ TEST_P(QuicStreamFactoryTest, HostResolverRequestReprioritizedOnSetPriority) {
   EXPECT_EQ(DEFAULT_PRIORITY, host_resolver_->request_priority(2));
 }
 
-// Verifies that the host resolver uses the disable secure DNS setting passed to
-// QuicStreamRequest::Request().
-TEST_P(QuicStreamFactoryTest, HostResolverUsesDisableSecureDns) {
+// Verifies that the host resolver uses the disable secure DNS setting and
+// NetworkIsolationKey passed to QuicStreamRequest::Request().
+TEST_P(QuicStreamFactoryTest, HostResolverUsesParams) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOrigin1, kOrigin1);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionConnectionsByNetworkIsolationKey,
+       features::kSplitHostCacheByNetworkIsolationKey},
+      // disabled_features
+      {});
+
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -11162,7 +11173,7 @@ TEST_P(QuicStreamFactoryTest, HostResolverUsesDisableSecureDns) {
       ERR_IO_PENDING,
       request.Request(
           host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
-          SocketTag(), NetworkIsolationKey(), true /* disable_secure_dns */,
+          SocketTag(), kNetworkIsolationKey, true /* disable_secure_dns */,
           /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
           failed_on_default_network_callback_, callback_.callback()));
 
@@ -11170,8 +11181,12 @@ TEST_P(QuicStreamFactoryTest, HostResolverUsesDisableSecureDns) {
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
 
+  ASSERT_TRUE(host_resolver_->last_secure_dns_mode_override().has_value());
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
             host_resolver_->last_secure_dns_mode_override().value());
+  ASSERT_TRUE(host_resolver_->last_request_network_isolation_key().has_value());
+  EXPECT_EQ(kNetworkIsolationKey,
+            host_resolver_->last_request_network_isolation_key().value());
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());

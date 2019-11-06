@@ -31,23 +31,28 @@ SimpleAutomationNode = function(node) {
 
   /** @return {string} */
   this.toString = function() {
-    if (this.logStr.length)
+    if (this.logStr.length) {
       return this.logStr;
+    }
 
-    if (node.name)
+    if (node.name) {
       this.logStr += 'name=' + node.name + ' ';
-    if (node.role)
+    }
+    if (node.role) {
       this.logStr += 'role=' + node.role + ' ';
-    if (node.value)
+    }
+    if (node.value) {
       this.logStr += 'value=' + node.value + ' ';
+    }
     if (node.location) {
       this.logStr +=
           'location=(' + node.location.left + ', ' + node.location.top + ') ';
       this.logStr +=
           'size=(' + node.location.width + ', ' + node.location.height + ') ';
     }
-    if (node.url)
+    if (node.url) {
       this.logStr += 'url=' + node.url + ' ';
+    }
     return this.logStr;
   };
 };
@@ -74,8 +79,9 @@ TreeDumper = function(root) {
 
 /** @return {string} */
 TreeDumper.prototype.treeToString = function() {
-  if (!this.treeStr_)
+  if (!this.treeStr_) {
     this.treeStr_ = this.formatTree_();
+  }
 
   return this.treeStr_;
 };

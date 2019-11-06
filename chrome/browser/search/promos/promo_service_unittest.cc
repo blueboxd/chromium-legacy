@@ -157,7 +157,7 @@ TEST_F(PromoServiceTest, GoodPromoResponse) {
 
 TEST_F(PromoServiceTest, GoodPromoResponseCanDismiss) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+  feature_list.InitAndEnableFeature(ntp_features::kDismissPromos);
 
   std::string response_string =
       "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
@@ -180,7 +180,7 @@ TEST_F(PromoServiceTest, GoodPromoResponseCanDismiss) {
 
 TEST_F(PromoServiceTest, GoodPromoResponseNoIdField) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+  feature_list.InitAndEnableFeature(ntp_features::kDismissPromos);
 
   std::string response_string =
       "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
@@ -203,7 +203,7 @@ TEST_F(PromoServiceTest, GoodPromoResponseNoIdField) {
 
 TEST_F(PromoServiceTest, GoodPromoResponseNoIdFieldNorLogUrl) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+  feature_list.InitAndEnableFeature(ntp_features::kDismissPromos);
 
   std::string response_string =
       "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
@@ -224,7 +224,7 @@ TEST_F(PromoServiceTest, GoodPromoResponseNoIdFieldNorLogUrl) {
 
 TEST_F(PromoServiceTest, GoodPromoWithBlockedID) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+  feature_list.InitAndEnableFeature(ntp_features::kDismissPromos);
 
   {
     DictionaryPrefUpdate update(prefs(), prefs::kNtpPromoBlocklist);
@@ -248,7 +248,7 @@ TEST_F(PromoServiceTest, GoodPromoWithBlockedID) {
 
 TEST_F(PromoServiceTest, BlocklistPromo) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+  feature_list.InitAndEnableFeature(ntp_features::kDismissPromos);
 
   std::string response_string =
       "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
@@ -282,7 +282,7 @@ TEST_F(PromoServiceTest, BlocklistPromo) {
 
 TEST_F(PromoServiceTest, BlocklistExpiration) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+  feature_list.InitAndEnableFeature(ntp_features::kDismissPromos);
 
   {
     DictionaryPrefUpdate update(prefs(), prefs::kNtpPromoBlocklist);
@@ -316,7 +316,7 @@ TEST_F(PromoServiceTest, BlocklistExpiration) {
 
 TEST_F(PromoServiceTest, BlocklistWrongExpiryType) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+  feature_list.InitAndEnableFeature(ntp_features::kDismissPromos);
 
   {
     DictionaryPrefUpdate update(prefs(), prefs::kNtpPromoBlocklist);

@@ -7,14 +7,26 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/timer/timer.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/manifest_handlers/natively_connectable_handler.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/messaging/channel_endpoint.h"
 #include "extensions/browser/api/messaging/message_service.h"
+#include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
@@ -26,6 +38,88 @@ namespace {
 
 ScopedAllowNativeAppConnectionForTest* g_allow_native_app_connection_for_test =
     nullptr;
+
+constexpr base::TimeDelta kNativeMessagingHostErrorTimeout =
+    base::TimeDelta::FromSeconds(10);
+
+ScopedNativeMessagingErrorTimeoutOverrideForTest*
+    g_native_messaging_host_timeout_override = nullptr;
+
+// A self-owning class responsible for starting a native messaging host with
+// command-line parameters reporting an error, keeping Chrome alive until the
+// host terminates, or a timeout is reached.
+//
+// This lives on the IO thread, but its public factory static method should be
+// called on the UI thread.
+class NativeMessagingHostErrorReporter : public NativeMessageHost::Client {
+ public:
+  using MovableScopedKeepAlive =
+      std::unique_ptr<ScopedKeepAlive,
+                      content::BrowserThread::DeleteOnUIThread>;
+
+  static void Report(const std::string& extension_id,
+                     const std::string& host_id,
+                     const std::string& connection_id,
+                     Profile* profile,
+                     const std::string& error_arg) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    std::unique_ptr<NativeMessageHost> host =
+        NativeMessageProcessHost::CreateWithLauncher(
+            extension_id, host_id,
+            NativeProcessLauncher::CreateDefault(
+                /* allow_user_level = */ true,
+                /* native_view = */ nullptr, profile->GetPath(),
+                /* require_native_initiated_connections = */ false,
+                connection_id, error_arg));
+    MovableScopedKeepAlive keep_alive(
+        new ScopedKeepAlive(KeepAliveOrigin::NATIVE_MESSAGING_HOST_ERROR_REPORT,
+                            KeepAliveRestartOption::DISABLED));
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(&NativeMessagingHostErrorReporter::ReportOnIoThread,
+                       std::move(host), std::move(keep_alive)));
+  }
+
+ private:
+  static void ReportOnIoThread(std::unique_ptr<NativeMessageHost> process,
+                               MovableScopedKeepAlive keep_alive) {
+    new NativeMessagingHostErrorReporter(std::move(process),
+                                         std::move(keep_alive));
+  }
+
+  NativeMessagingHostErrorReporter(std::unique_ptr<NativeMessageHost> process,
+                                   MovableScopedKeepAlive keep_alive)
+      : keep_alive_(std::move(keep_alive)), process_(std::move(process)) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    timeout_.Start(
+        FROM_HERE,
+        g_native_messaging_host_timeout_override
+            ? g_native_messaging_host_timeout_override->timeout()
+            : kNativeMessagingHostErrorTimeout,
+        base::BindOnce(&base::DeletePointer<NativeMessagingHostErrorReporter>,
+                       base::Unretained(this)));
+    process_->Start(this);
+  }
+
+ private:
+  // NativeMessageHost::Client:
+  void PostMessageFromNativeHost(const std::string& message) override {}
+
+  void CloseChannel(const std::string& error_message) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    timeout_.AbandonAndStop();
+
+    base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  }
+
+  MovableScopedKeepAlive keep_alive_;
+  std::unique_ptr<NativeMessageHost> process_;
+  base::OneShotTimer timeout_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeMessagingHostErrorReporter);
+};
 
 }  // namespace
 
@@ -95,6 +189,19 @@ ScopedAllowNativeAppConnectionForTest::
   g_allow_native_app_connection_for_test = nullptr;
 }
 
+ScopedNativeMessagingErrorTimeoutOverrideForTest::
+    ScopedNativeMessagingErrorTimeoutOverrideForTest(base::TimeDelta timeout)
+    : timeout_(timeout) {
+  DCHECK(!g_native_messaging_host_timeout_override);
+  g_native_messaging_host_timeout_override = this;
+}
+
+ScopedNativeMessagingErrorTimeoutOverrideForTest::
+    ~ScopedNativeMessagingErrorTimeoutOverrideForTest() {
+  DCHECK_EQ(this, g_native_messaging_host_timeout_override);
+  g_native_messaging_host_timeout_override = nullptr;
+}
+
 bool IsValidConnectionId(const base::StringPiece connection_id) {
   return connection_id.size() <= 20 &&
          base::ContainsOnlyChars(
@@ -107,12 +214,16 @@ void LaunchNativeMessageHostFromNativeApp(const std::string& extension_id,
                                           const std::string& connection_id,
                                           Profile* profile) {
   if (!IsValidConnectionId(connection_id)) {
-    // TODO(crbug.com/967262): Report errors to the native messaging host.
+    NativeMessagingHostErrorReporter::Report(extension_id, host_id,
+                                             /* connect_id = */ {}, profile,
+                                             "--invalid-connect-id");
     return;
   }
   if (!ExtensionSupportsConnectionFromNativeApp(extension_id, host_id, profile,
                                                 /* log_errors = */ true)) {
-    // TODO(crbug.com/967262): Report errors to the native messaging host.
+    NativeMessagingHostErrorReporter::Report(extension_id, host_id,
+                                             connection_id, profile,
+                                             "--extension-not-installed");
     return;
   }
   const extensions::PortId port_id(base::UnguessableToken::Create(),
@@ -125,7 +236,8 @@ void LaunchNativeMessageHostFromNativeApp(const std::string& extension_id,
       NativeProcessLauncher::CreateDefault(
           /* allow_user_level = */ true, /* native_view = */ nullptr,
           profile->GetPath(),
-          /* require_native_initiated_connections = */ true, connection_id));
+          /* require_native_initiated_connections = */ true, connection_id,
+          ""));
   auto native_message_port = std::make_unique<extensions::NativeMessagePort>(
       message_service->GetChannelDelegate(), port_id,
       std::move(native_message_host));

@@ -167,12 +167,18 @@ class SAChildNode {
     let str = this.role + ' ';
 
     const autoNode = this.automationNode;
-    if (autoNode && autoNode.name) str += 'name(' + autoNode.name + ') ';
+    if (autoNode && autoNode.name) {
+      str += 'name(' + autoNode.name + ') ';
+    }
 
     const loc = this.location;
-    if (loc) str += 'loc(' + RectHelper.toString(loc) + ') ';
+    if (loc) {
+      str += 'loc(' + RectHelper.toString(loc) + ') ';
+    }
 
-    if (this.isGroup_) str += '[isGroup]';
+    if (this.isGroup_) {
+      str += '[isGroup]';
+    }
 
     return str;
   }
@@ -197,8 +203,12 @@ class SARootNode {
    * @return {boolean}
    */
   equals(other) {
-    if (!other) return false;
-    if (this.children_.length !== other.children_.length) return false;
+    if (!other) {
+      return false;
+    }
+    if (this.children_.length !== other.children_.length) {
+      return false;
+    }
 
     let result = true;
     for (let i = 0; i < this.children_.length; i++) {
@@ -275,11 +285,17 @@ class SARootNode {
   debugString(wholeTree = false, prefix = '', currentNode = null) {
     const autoNode = this.automationNode;
     let str = 'Root: ';
-    if (autoNode && autoNode.role) str += autoNode.role + ' ';
-    if (autoNode && autoNode.name) str += 'name(' + autoNode.name + ') ';
+    if (autoNode && autoNode.role) {
+      str += autoNode.role + ' ';
+    }
+    if (autoNode && autoNode.name) {
+      str += 'name(' + autoNode.name + ') ';
+    }
 
     const loc = this.location;
-    if (loc) str += 'loc(' + RectHelper.toString(loc) + ') ';
+    if (loc) {
+      str += 'loc(' + RectHelper.toString(loc) + ') ';
+    }
 
 
     for (const child of this.children) {

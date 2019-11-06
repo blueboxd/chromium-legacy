@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
-#include "content/public/browser/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -24,11 +23,6 @@ namespace {
 
 // Ratio of icon size to the amount of padding between the icons.
 const int kIconPaddingScale = 8;
-
-// How long to let our Data Decoder service instance hang around unused before
-// terminating it.
-constexpr base::TimeDelta kDataDecoderInstanceTimeout{
-    base::TimeDelta::FromSeconds(5)};
 
 }  // namespace
 
@@ -48,11 +42,9 @@ class ImageHelper::Job {
   ~Job();
 
   // Start begins the work that a Job performs (decoding and composition).
-  void Start(data_decoder::mojom::DataDecoderService* service_override);
+  void Start();
 
-  void DecodeImageBytes(
-      std::unique_ptr<EncodedImageBytes> image_bytes,
-      data_decoder::mojom::DataDecoderService* service_override);
+  void DecodeImageBytes(std::unique_ptr<EncodedImageBytes> image_bytes);
   void OnDecodeSiteImageDone(const SkBitmap& decoded_image);
   void OnDecodeCategoryImageDone(const SkBitmap& decoded_image);
   std::unique_ptr<SkBitmap> CombineImages();
@@ -91,18 +83,16 @@ ImageHelper::Job::Job(ImageHelper* image_helper,
 
 ImageHelper::Job::~Job() = default;
 
-void ImageHelper::Job::Start(
-    data_decoder::mojom::DataDecoderService* service_override) {
+void ImageHelper::Job::Start() {
   for (int i = 0; i < num_icons_; i++) {
     // TODO(freedjm): preserve order of images.
     DVLOG(1) << "Decoding image " << i + 1 << " of " << images_.size();
-    DecodeImageBytes(std::move(images_[i]), service_override);
+    DecodeImageBytes(std::move(images_[i]));
   }
 }
 
 void ImageHelper::Job::DecodeImageBytes(
-    std::unique_ptr<EncodedImageBytes> image_bytes,
-    data_decoder::mojom::DataDecoderService* service_override) {
+    std::unique_ptr<EncodedImageBytes> image_bytes) {
   data_decoder::mojom::ImageDecoder::DecodeImageCallback callback;
   if (job_type_ == ImageJobType::kSiteIcon) {
     callback = base::BindOnce(&ImageHelper::Job::OnDecodeSiteImageDone,
@@ -112,16 +102,7 @@ void ImageHelper::Job::DecodeImageBytes(
                               weak_ptr_factory_.GetWeakPtr());
   }
 
-  mojo::PendingRemote<data_decoder::mojom::ImageDecoder> decoder;
-  if (service_override) {
-    service_override->BindImageDecoder(
-        decoder.InitWithNewPipeAndPassReceiver());
-  } else {
-    image_helper_->GetDataDecoder()->BindImageDecoder(
-        decoder.InitWithNewPipeAndPassReceiver());
-  }
-
-  data_decoder::DecodeImage(std::move(decoder), *image_bytes,
+  data_decoder::DecodeImage(&image_helper_->data_decoder_, *image_bytes,
                             data_decoder::mojom::ImageCodec::DEFAULT, false,
                             data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
                             std::move(callback));
@@ -288,18 +269,16 @@ ImageHelper::ImageHelper() : last_used_job_id_(0) {}
 
 ImageHelper::~ImageHelper() {}
 
-void ImageHelper::NewJob(
-    ImageJobType job_type,
-    ImageJobFinishedCallback job_finished_callback,
-    BitmapCallback bitmap_callback,
-    EncodedImageList images,
-    int pixel_size,
-    data_decoder::mojom::DataDecoderService* service_override) {
+void ImageHelper::NewJob(ImageJobType job_type,
+                         ImageJobFinishedCallback job_finished_callback,
+                         BitmapCallback bitmap_callback,
+                         EncodedImageList images,
+                         int pixel_size) {
   auto job = std::make_unique<Job>(
       this, job_type, std::move(job_finished_callback),
       std::move(bitmap_callback), std::move(images), pixel_size);
   id_to_job_[last_used_job_id_] = std::move(job);
-  id_to_job_[last_used_job_id_]->Start(service_override);
+  id_to_job_[last_used_job_id_]->Start();
 }
 
 void ImageHelper::OnJobFinished(int job_id) {
@@ -307,10 +286,8 @@ void ImageHelper::OnJobFinished(int job_id) {
   id_to_job_.erase(job_id);
 }
 
-void ImageHelper::ComposeSiteImage(
-    BitmapCallback callback,
-    EncodedImageList images,
-    data_decoder::mojom::DataDecoderService* service_override) {
+void ImageHelper::ComposeSiteImage(BitmapCallback callback,
+                                   EncodedImageList images) {
   DVLOG(1) << "Requested decoding for site image";
   if (images.size() == 0) {
     std::move(callback).Run(nullptr);
@@ -320,14 +297,12 @@ void ImageHelper::ComposeSiteImage(
   NewJob(ImageJobType::kSiteIcon,
          base::BindOnce(&ImageHelper::OnJobFinished, weak_factory_.GetWeakPtr(),
                         ++last_used_job_id_),
-         std::move(callback), std::move(images), -1, service_override);
+         std::move(callback), std::move(images), -1);
 }
 
-void ImageHelper::ComposeCategoryImage(
-    BitmapCallback callback,
-    int pixel_size,
-    EncodedImageList images,
-    data_decoder::mojom::DataDecoderService* service_override) {
+void ImageHelper::ComposeCategoryImage(BitmapCallback callback,
+                                       int pixel_size,
+                                       EncodedImageList images) {
   DVLOG(1) << "Requested decoding " << images.size()
            << " images for category image";
 
@@ -339,17 +314,7 @@ void ImageHelper::ComposeCategoryImage(
   NewJob(ImageJobType::kCategoryImage,
          base::BindOnce(&ImageHelper::OnJobFinished, weak_factory_.GetWeakPtr(),
                         ++last_used_job_id_),
-         std::move(callback), std::move(images), pixel_size, service_override);
-}
-
-data_decoder::mojom::DataDecoderService* ImageHelper::GetDataDecoder() {
-  if (!data_decoder_) {
-    data_decoder_ = content::LaunchDataDecoder();
-    data_decoder_.reset_on_disconnect();
-    data_decoder_.reset_on_idle_timeout(kDataDecoderInstanceTimeout);
-  }
-
-  return data_decoder_.get();
+         std::move(callback), std::move(images), pixel_size);
 }
 
 }  // namespace explore_sites

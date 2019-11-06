@@ -11,6 +11,7 @@ import android.view.WindowInsets;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Supplier;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -63,6 +64,13 @@ public class HistoryNavigationDelegateFactory {
         if (!isFeatureFlagEnabled() || tab.getActivity() == null) return DEFAULT;
 
         return new HistoryNavigationDelegate() {
+            // TODO(jinsukkim): Avoid getting activity from tab.
+            private final Supplier<BottomSheetController> mController = () -> {
+                ChromeActivity activity = tab.getActivity();
+                return activity == null || activity.isActivityFinishingOrDestroyed()
+                        ? null
+                        : activity.getBottomSheetController();
+            };
             private Runnable mInsetsChangeRunnable;
 
             @Override
@@ -77,8 +85,7 @@ public class HistoryNavigationDelegateFactory {
 
             @Override
             public Supplier<BottomSheetController> getBottomSheetController() {
-                // TODO(jinsukkim): Avoid getting activity from tab.
-                return tab.getActivity()::getBottomSheetController;
+                return mController;
             }
 
             @TargetApi(Build.VERSION_CODES.O)

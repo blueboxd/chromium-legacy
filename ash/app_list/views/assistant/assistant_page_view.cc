@@ -85,8 +85,9 @@ void AssistantPageView::InitLayout() {
 
     // Do not add web view when Assistant web container is enabled.
     if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
-      assistant_web_view_ = AddChildView(
-          std::make_unique<AssistantWebView>(assistant_view_delegate_));
+      assistant_web_view_ = AddChildView(std::make_unique<AssistantWebView>(
+          assistant_view_delegate_,
+          /*web_container_view_delegate=*/nullptr));
     }
 
     // Update the view state based on the current UI mode.

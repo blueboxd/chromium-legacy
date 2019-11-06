@@ -79,6 +79,10 @@ interface NavigableContentsClient {
                         ui.mojom.WindowOpenDisposition disposition,
                         bool from_user_gesture);
 
+  // Notifies the client whether the web contents can navigate back in its
+  // history stack.
+  UpdateCanGoBack(bool can_go_back);
+
   // Informs the client of the ID of the content area's accessibility tree
   // whenever it changes.
   UpdateContentAXTree(ax.mojom.AXTreeID id);

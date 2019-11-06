@@ -142,8 +142,11 @@ class MetricsServiceClient {
   // Returns whether UKM notification listeners were attached to all profiles.
   virtual bool AreNotificationListenersEnabledOnAllProfiles();
 
-  // Gets Chrome's package name in Android Chrome, or the host app's package
-  // name in Android WebView, or an empty string on other platforms.
+  // Gets the app package name (as defined by the embedder). Since package name
+  // is only meaningful for Android, other platforms should return the empty
+  // string (this is the same as the default behavior). If the package name
+  // should not be logged for privacy/fingerprintability reasons, the embedder
+  // should return the empty string.
   virtual std::string GetAppPackageName();
 
   // Gets the key used to sign metrics uploads. This will be used to compute an

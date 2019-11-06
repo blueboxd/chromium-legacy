@@ -636,7 +636,7 @@ bool MagnificationController::RedrawDIP(const gfx::PointF& position_in_dip,
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
   std::unique_ptr<RootWindowTransformer> transformer(
-      CreateRootWindowTransformerForDisplay(root_window_, display));
+      CreateRootWindowTransformerForDisplay(display));
 
   // Inverse the transformation on the keyboard container so the keyboard will
   // remain zoomed out. Apply the same animation settings to it.

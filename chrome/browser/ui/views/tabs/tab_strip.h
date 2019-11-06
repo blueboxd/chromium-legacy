@@ -481,8 +481,8 @@ class TabStrip : public views::AccessiblePaneView,
   // from the tab animation code and is not a general-purpose method.
   void OnGroupCloseAnimationCompleted(TabGroupId group);
 
-  // Invoked from StoppedDraggingTabs to cleanup |tab|. If |tab| is known
-  // |is_first_tab| is set to true.
+  // Invoked from StoppedDraggingTabs to cleanup |view|. If |view| is known
+  // |is_first_view| is set to true.
   void StoppedDraggingView(TabSlotView* view, bool* is_first_view);
 
   // Invoked when a mouse event occurs over |source|. Potentially switches the

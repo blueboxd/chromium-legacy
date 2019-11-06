@@ -550,28 +550,40 @@ void NGInlineCursor::MakeNull() {
 
 void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
+  // If this cursor is rootless, find the root of the inline formatting context.
+  if (!HasRoot()) {
+    const LayoutBlockFlow& root = *layout_object.RootInlineFormattingContext();
+    DCHECK(&root);
+    SetRoot(root);
+    if (!HasRoot()) {
+      const auto fragments =
+          NGPaintFragment::InlineFragmentsFor(&layout_object);
+      if (!fragments.IsInLayoutNGInlineFormattingContext() ||
+          fragments.IsEmpty())
+        return MakeNull();
+      // external/wpt/css/css-scroll-anchoring/text-anchor-in-vertical-rl.html
+      // reaches here.
+      root_paint_fragment_ = fragments.front().Root();
+    }
+  }
   if (fragment_items_) {
     item_iter_ = items_.begin();
     while (current_item_ && CurrentLayoutObject() != &layout_object)
       MoveToNextItem();
     return;
   }
-  const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
-  if (!fragments.IsInLayoutNGInlineFormattingContext() || fragments.IsEmpty())
-    return MakeNull();
-  if (!root_paint_fragment_) {
-    // We reach here in case of |ScrollANchor::NotifyBeforeLayout()| via
-    // |LayoutText::PhysicalLinesBoundingBox()|
-    // See external/wpt/css/css-scroll-anchoring/wrapped-text.html
-    root_paint_fragment_ = fragments.front().Root();
+  if (root_paint_fragment_) {
+    const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
+    if (!fragments.IsInLayoutNGInlineFormattingContext() || fragments.IsEmpty())
+      return MakeNull();
+    return MoveTo(fragments.front());
   }
-  return MoveTo(fragments.front());
 }
 
 void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext()) << layout_object;
   InternalMoveTo(layout_object);
-  if (*this) {
+  if (*this || !HasRoot()) {
     layout_inline_ = nullptr;
     return;
   }
@@ -582,17 +594,6 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   layout_inline_ = ToLayoutInlineOrNull(&layout_object);
   if (!layout_inline_)
     return;
-
-  // If this cursor is rootless, find the root of the inline formatting context.
-  if (!HasRoot()) {
-    const LayoutBlockFlow* root = layout_object.RootInlineFormattingContext();
-    DCHECK(root);
-    SetRoot(*root);
-    if (!HasRoot()) {
-      DCHECK(IsNull());
-      return;
-    }
-  }
 
   MoveToFirst();
   while (IsNotNull() && !IsInclusiveDescendantOf(layout_object))

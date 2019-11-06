@@ -141,7 +141,6 @@ static_library("libxml") {
     ":xml_reader",
     ":xml_writer",
     ":libxml_utils",
-    "//components/search_engines",
     "//testing/libfuzzer/*",
     "//third_party/blink/renderer/*",
     "//third_party/fontconfig",

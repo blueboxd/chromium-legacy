@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import org.chromium.components.payments.MethodStrings;
 import org.chromium.payments.mojom.GooglePaymentMethodData;
 import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentDetails;
@@ -87,7 +88,7 @@ public class SkipToGPayHelper {
      * @return True if the patch is successful, false if any error occurred.
      */
     public boolean patchPaymentResponse(PaymentResponse response) {
-        assert response.methodName.equals("https://google.com/pay");
+        assert response.methodName.equals(MethodStrings.GOOGLE_PAY);
 
         // If GPay fails to return data, pass through without handling.
         if (response.stringifiedDetails.isEmpty()) return true;

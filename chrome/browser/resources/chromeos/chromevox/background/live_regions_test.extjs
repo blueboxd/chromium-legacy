@@ -200,10 +200,11 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionThenFocus', function() {
       var focusOrLive = function(candidate) {
         sawFocus = candidate.text == 'Focus' || sawFocus;
         sawLive = candidate.text == 'Live' || sawLive;
-        if (sawFocus && sawLive)
+        if (sawFocus && sawLive) {
           return candidate.queueMode != cvox.QueueMode.FLUSH;
-        else if (sawFocus || sawLive)
+        } else if (sawFocus || sawLive) {
           return candidate.queueMode == cvox.QueueMode.FLUSH;
+        }
       };
       var go = rootNode.find({ role: RoleType.BUTTON });
       mockFeedback.call(this.simulateUserInteraction.bind(this))

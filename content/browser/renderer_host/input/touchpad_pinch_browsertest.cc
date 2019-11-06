@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_P(TouchpadPinchBrowserTest, WheelListenerPreventingPinch) {
 // If the synthetic wheel event for a touchpad double tap is canceled, we
 // should not change the page scale.
 IN_PROC_BROWSER_TEST_P(TouchpadPinchBrowserTest,
-                       WheelListenerPreventingDoubleTap) {
+                       DISABLED_WheelListenerPreventingDoubleTap) {
   LoadURL();
 
   WebPreferences prefs =

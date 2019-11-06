@@ -141,10 +141,10 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
 
         if (mode == TabListCoordinator.TabListMode.GRID) {
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)) {
-                mTabListCoordinator.registerItemType(TabProperties.UiType.SUGGESTION, () -> {
+                mTabListCoordinator.registerItemType(TabProperties.UiType.MESSAGE, () -> {
                     return (ViewGroup) LayoutInflater.from(context).inflate(
-                            R.layout.tab_suggestion_card_item, container, false);
-                }, TabGridMessageCardViewBinder::bind);
+                            R.layout.tab_grid_message_card_item, container, false);
+                }, MessageCardViewBinder::bind);
             }
 
             assert mTabListCoordinator.getContainerView().getLayoutManager()
@@ -159,7 +159,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                                                    .getAdapter()
                                                    .getItemViewType(position);
 
-                            if (itemType == TabProperties.UiType.SUGGESTION) return 2;
+                            if (itemType == TabProperties.UiType.MESSAGE) return 2;
                             return 1;
                         }
                     });

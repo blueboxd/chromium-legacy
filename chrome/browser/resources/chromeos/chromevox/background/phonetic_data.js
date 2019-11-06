@@ -49,17 +49,20 @@ PhoneticData.init = function() {
  * @return {string}
  */
 PhoneticData.getPhoneticDisambiguation = function(language, character) {
-  if (!language || !character)
+  if (!language || !character) {
     return '';
+  }
   language = language.toLowerCase();
   character = character.toLowerCase();
   // If language isn't in the map, try stripping extra information, such as the
   // country and/or script codes (e.g. "en-us" or "zh-hant-hk") and use only the
   // language code to do a lookup.
-  if (!PhoneticData.phoneticMap_[language])
+  if (!PhoneticData.phoneticMap_[language]) {
     language = language.split('-')[0];
+  }
   // If language still isn't in the map, return empty string.
-  if (!PhoneticData.phoneticMap_[language])
+  if (!PhoneticData.phoneticMap_[language]) {
     return '';
+  }
   return PhoneticData.phoneticMap_[language][character] || '';
 };

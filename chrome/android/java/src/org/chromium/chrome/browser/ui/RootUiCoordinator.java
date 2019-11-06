@@ -279,7 +279,8 @@ public class RootUiCoordinator
         if (mActivity.supportsAppMenu()) {
             mAppMenuCoordinator = AppMenuCoordinatorFactory.createAppMenuCoordinator(mActivity,
                     mActivity.getLifecycleDispatcher(), mActivity.getToolbarManager(), mActivity,
-                    mActivity.getWindow().getDecorView());
+                    mActivity.getWindow().getDecorView(),
+                    mActivity.getWindow().getDecorView().findViewById(R.id.menu_anchor_stub));
             mActivity.getToolbarManager().onAppMenuInitialized(
                     mAppMenuCoordinator.getAppMenuHandler(),
                     mAppMenuCoordinator.getAppMenuPropertiesDelegate());

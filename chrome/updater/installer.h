@@ -40,6 +40,9 @@ class Installer final : public update_client::CrxInstaller {
 
   const std::string app_id() const { return app_id_; }
 
+  // Returns the app ids that are managed by the CRX installer.
+  static std::vector<std::string> FindAppIds();
+
   // Finds the highest version install of the app, and updates the install
   // info for this installer instance.
   void FindInstallOfApp();

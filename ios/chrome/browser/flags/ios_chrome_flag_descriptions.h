@@ -52,6 +52,11 @@ extern const char kAutofillNoLocalSaveOnUploadSuccessDescription[];
 extern const char kAutofillPruneSuggestionsName[];
 extern const char kAutofillPruneSuggestionsDescription[];
 
+// Title and description for the flag to control dismissing the Save Card
+// Infobar on Navigation.
+extern const char kAutofillSaveCardDismissOnNavigationName[];
+extern const char kAutofillSaveCardDismissOnNavigationDescription[];
+
 // Title and description for the flag to control if prefilled value filter
 // profiles.
 extern const char kAutofillShowAllSuggestionsOnPrefilledFormsName[];

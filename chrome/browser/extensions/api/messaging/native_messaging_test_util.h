@@ -38,6 +38,8 @@ class ScopedTestNativeMessagingHost {
 
   void RegisterTestHost(bool user_level);
 
+  const base::FilePath& temp_dir() { return temp_dir_.GetPath(); }
+
  private:
   base::ScopedTempDir temp_dir_;
 

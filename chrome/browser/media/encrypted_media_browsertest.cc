@@ -722,11 +722,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CBCS) {
     return;
   }
 
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
   TestSimplePlayback("bear-640x360-v_frag-cbcs.mp4");
-#else
-  DVLOG(0) << "Skipping test; 'cbcs' decryption not supported.";
-#endif
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
@@ -861,9 +857,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DecryptOnly_VideoOnly_MP4_CBCS) {
   // 'cbcs' decryption is only supported on CDM 10 or later as long as
   // the appropriate buildflag is enabled.
   std::string expected_result =
-      GetCdmInterfaceVersion() >= 10 && BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
-          ? media::kEnded
-          : media::kError;
+      GetCdmInterfaceVersion() >= 10 ? media::kEnded : media::kError;
   RunEncryptedMediaTest(kDefaultEmePlayer, "bear-640x360-v_frag-cbcs.mp4",
                         kExternalClearKeyDecryptOnlyKeySystem, SrcType::MSE,
                         kNoSessionToLoad, false, PlayCount::ONCE,
@@ -894,9 +888,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Playback_Encryption_CBCS) {
   // 'cbcs' decryption is only supported on CDM 10 or later as long as
   // the appropriate buildflag is enabled.
   std::string expected_result =
-      GetCdmInterfaceVersion() >= 10 && BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
-          ? media::kEnded
-          : media::kError;
+      GetCdmInterfaceVersion() >= 10 ? media::kEnded : media::kError;
   RunEncryptedMediaMultipleFileTest(
       kExternalClearKeyKeySystem, "bear-640x360-v_frag-cbcs.mp4",
       "bear-640x360-a_frag-cbcs.mp4", expected_result);

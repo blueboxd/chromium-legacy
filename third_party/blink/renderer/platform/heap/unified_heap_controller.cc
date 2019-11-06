@@ -181,6 +181,12 @@ void UnifiedHeapController::ResetHandleInNonTracingGC(
       class_id != WrapperTypeInfo::kObjectClassId)
     return;
 
+  // We should not reset any handles during an already running tracing
+  // collection. Resetting a handle could re-allocate a backing or trigger
+  // potential in place rehashing. Both operations may trigger write barriers by
+  // moving references. Such references may already be dead but not yet cleared
+  // which would result in reporting dead objects to V8.
+  DCHECK(IsTracingDone());
   // Clearing the wrapper below adjusts the DOM wrapper store which may
   // re-allocate its backing. We have to avoid report memory to V8 as that may
   // trigger GC during GC.

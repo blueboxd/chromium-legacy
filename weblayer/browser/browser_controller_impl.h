@@ -68,13 +68,15 @@ class BrowserControllerImpl : public BrowserController,
       jlong native_top_controls_container_view);
   void ExecuteScript(JNIEnv* env,
                      const base::android::JavaParamRef<jstring>& script,
+                     bool use_separate_isolate,
                      const base::android::JavaParamRef<jobject>& callback);
+  void SetJavaImpl(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& impl);
 #endif
 
   DownloadDelegate* download_delegate() { return download_delegate_; }
   FullscreenDelegate* fullscreen_delegate() { return fullscreen_delegate_; }
 
- private:
   // BrowserController:
   void SetDownloadDelegate(DownloadDelegate* delegate) override;
   void SetFullscreenDelegate(FullscreenDelegate* delegate) override;
@@ -83,11 +85,13 @@ class BrowserControllerImpl : public BrowserController,
   void RemoveObserver(BrowserObserver* observer) override;
   NavigationController* GetNavigationController() override;
   void ExecuteScript(const base::string16& script,
+                     bool use_separate_isolate,
                      JavaScriptResultCallback callback) override;
 #if !defined(OS_ANDROID)
   void AttachToView(views::WebView* web_view) override;
 #endif
 
+ private:
   // content::WebContentsDelegate:
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,

@@ -169,7 +169,7 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
 
   // The NetworkChangeNotifier must be created after ThreadPool because it
   // posts tasks to it.
-  network_change_notifier_ = net::NetworkChangeNotifier::Create();
+  network_change_notifier_ = net::NetworkChangeNotifier::CreateIfNeeded();
   network_connection_tracker_ =
       std::make_unique<InProcessNetworkConnectionTracker>();
 

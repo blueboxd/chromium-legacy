@@ -16,6 +16,10 @@
 class SearchTermsData;
 class TemplateURL;
 
+namespace data_decoder {
+class DataDecoder;
+}
+
 // TemplateURLParser, as the name implies, handling reading of TemplateURLs
 // from OpenSearch description documents.
 class TemplateURLParser {
@@ -27,19 +31,30 @@ class TemplateURLParser {
   using ParameterFilter =
       base::RepeatingCallback<bool(const std::string&, const std::string&)>;
 
+  using ParseCallback = base::OnceCallback<void(std::unique_ptr<TemplateURL>)>;
+
   // Decodes the chunk of data representing a TemplateURL, creates the
-  // TemplateURL, and returns it.  Returns null if the data does not describe a
-  // valid TemplateURL, the URLs referenced do not point to valid http/https
-  // resources, or for some other reason we do not support the described
-  // TemplateURL.  |parameter_filter| can be used if you want to filter some
-  // parameters out of the URL.  For example, when importing from another
-  // browser, we remove any parameter identifying that browser.  If set to null,
-  // the URL is not modified.
-  static std::unique_ptr<TemplateURL> Parse(
-      const SearchTermsData& search_terms_data,
-      const char* data,
-      size_t length,
-      const ParameterFilter& parameter_filter);
+  // TemplateURL, and calls the |completion_callback| with the result. A null
+  // value is provided if the data does not describe a valid TemplateURL, the
+  // URLs referenced do not point to valid http/https resources, or for some
+  // other reason we do not support the described TemplateURL.
+  // |parameter_filter| can be used if you want to filter some parameters out
+  // of the URL. For example, when importing from another browser, we remove
+  // any parameter identifying that browser. If set to null, the URL is not
+  // modified.
+  static void Parse(const SearchTermsData* search_terms_data,
+                    const std::string& data,
+                    const ParameterFilter& parameter_filter,
+                    ParseCallback completion_callback);
+
+  // The same as Parse(), but it allows the caller to manage the lifetime of
+  // the DataDecoder service. The |data_decoder| must be kept alive until the
+  // |completion_callback| is called.
+  static void ParseWithDataDecoder(data_decoder::DataDecoder* data_decoder,
+                                   const SearchTermsData* search_terms_data,
+                                   const std::string& data,
+                                   const ParameterFilter& parameter_filter,
+                                   ParseCallback completion_callback);
 
  private:
   // No one should create one of these.

@@ -28,6 +28,23 @@ class ProgressCenterImpl {
      * @private @const {!Array<ProgressCenterPanelInterface>}
      */
     this.panels_ = [];
+
+    /**
+     * Inhibit end of operation updates for testing.
+     * @private
+     */
+    this.neverNotifyCompleted_ = false;
+  }
+
+  /**
+   * Turns off sending updates when a file operation reaches 'completed' state.
+   * Used for testing UI that can be ephemeral otherwise.
+   * @public
+   */
+  neverNotifyCompleted() {
+    if (window.IN_TEST) {
+      this.neverNotifyCompleted_ = true;
+    }
   }
 
   /**
@@ -48,6 +65,10 @@ class ProgressCenterImpl {
     } else {
       // Error item is not removed until user explicitly dismiss it.
       if (item.state !== ProgressItemState.ERROR && index !== -1) {
+        if (this.neverNotifyCompleted_) {
+          item.state = ProgressItemState.PROGRESSING;
+          return;
+        }
         this.items_.splice(index, 1);
       }
     }

@@ -90,6 +90,14 @@ void GetAdminDaclSecurityAttributes(CSecurityAttributes* sec_attr,
 // to admins and system.
 void GetAdminDaclSecurityDescriptor(CSecurityDesc* sd, ACCESS_MASK accessmask);
 
+// Returns the registry path for the Updater app id under the |Clients| subkey.
+// The path does not include the registry root hive prefix.
+base::string16 GetRegistryKeyClientsUpdater();
+
+// Returns the registry path for the Updater app id under the |ClientState|
+// subkey. The path does not include the registry root hive prefix.
+base::string16 GetRegistryKeyClientStateUpdater();
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_WIN_UTIL_H_

@@ -610,3 +610,47 @@ testcase.transferDeletedFile = async () => {
   // Check that only one line of text is shown.
   chrome.test.assertFalse(!!element.attributes['secondary-text']);
 };
+
+/**
+ * Tests that transfer source/destination persists if app window is re-opened.
+ */
+testcase.transferInfoIsRemembered = async () => {
+  const entry = ENTRIES.hello;
+
+  // Open files app.
+  let appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+
+  // Select the file.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [entry.nameText]));
+
+  // Copy the file.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('execCommand', appId, ['copy']));
+
+  // Tell the background page to never finish the file copy.
+  await remoteCall.callRemoteTestUtil(
+      'progressCenterNeverNotifyCompleted', appId, []);
+
+  // Paste the file to begin a copy operation.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('execCommand', appId, ['paste']));
+
+  // The feedback panel should appear: record the feedback panel text.
+  let panel = await remoteCall.waitForElement(
+      appId, ['#progress-panel', 'xf-panel-item']);
+  const primaryText = panel.primaryText;
+  const secondaryText = panel.secondaryText;
+
+  // Close the Files app window.
+  await remoteCall.closeWindowAndWait(appId);
+
+  // Open a Files app window again.
+  appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Check the feedback panel text is remembered.
+  panel = await remoteCall.waitForElement(
+      appId, ['#progress-panel', 'xf-panel-item']);
+  chrome.test.assertEq(primaryText, panel.primaryText);
+  chrome.test.assertEq(secondaryText, panel.secondaryText);
+};

@@ -18,7 +18,7 @@ namespace safe_browsing {
 
 SafeBrowsingSubresourceTabHelper::~SafeBrowsingSubresourceTabHelper() {}
 
-void SafeBrowsingSubresourceTabHelper::DidFinishNavigation(
+void SafeBrowsingSubresourceTabHelper::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->GetNetErrorCode() == net::ERR_BLOCKED_BY_CLIENT) {
     safe_browsing::SafeBrowsingService* service =

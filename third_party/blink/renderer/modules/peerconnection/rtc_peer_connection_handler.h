@@ -36,6 +36,7 @@ class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
 class RTCAnswerOptionsPlatform;
 class RTCOfferOptionsPlatform;
+class RTCVoidRequest;
 class SetLocalDescriptionRequest;
 class WebLocalFrame;
 class WebRTCLegacyStats;
@@ -108,23 +109,23 @@ class MODULES_EXPORT RTCPeerConnectionHandler
                   const blink::WebMediaConstraints& options) override;
 
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
-      const blink::WebRTCSessionDescriptionRequest& request,
+      blink::RTCSessionDescriptionRequest* request,
       const blink::WebMediaConstraints& options) override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
-      const blink::WebRTCSessionDescriptionRequest& request,
+      blink::RTCSessionDescriptionRequest* request,
       blink::RTCOfferOptionsPlatform* options) override;
 
-  void CreateAnswer(const blink::WebRTCSessionDescriptionRequest& request,
+  void CreateAnswer(blink::RTCSessionDescriptionRequest* request,
                     const blink::WebMediaConstraints& options) override;
-  void CreateAnswer(const blink::WebRTCSessionDescriptionRequest& request,
+  void CreateAnswer(blink::RTCSessionDescriptionRequest* request,
                     blink::RTCAnswerOptionsPlatform* options) override;
 
-  void SetLocalDescription(const blink::WebRTCVoidRequest& request) override;
+  void SetLocalDescription(blink::RTCVoidRequest* request) override;
   void SetLocalDescription(
-      const blink::WebRTCVoidRequest& request,
+      blink::RTCVoidRequest* request,
       const blink::WebRTCSessionDescription& description) override;
   void SetRemoteDescription(
-      const blink::WebRTCVoidRequest& request,
+      blink::RTCVoidRequest* request,
       const blink::WebRTCSessionDescription& description) override;
 
   blink::WebRTCSessionDescription LocalDescription() override;
@@ -142,9 +143,9 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   bool AddICECandidate(
       scoped_refptr<blink::WebRTCICECandidate> candidate) override;
   bool AddICECandidate(
-      const blink::WebRTCVoidRequest& request,
+      blink::RTCVoidRequest* request,
       scoped_refptr<blink::WebRTCICECandidate> candidate) override;
-  virtual void OnaddICECandidateResult(const blink::WebRTCVoidRequest& request,
+  virtual void OnaddICECandidateResult(blink::RTCVoidRequest* request,
                                        bool result);
   void RestartIce() override;
 
@@ -307,7 +308,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       bool* result);
   std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOfferInternal(
-      const blink::WebRTCSessionDescriptionRequest& request,
+      blink::RTCSessionDescriptionRequest* request,
       webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options);
   void CreateOfferOnSignalingThread(
       webrtc::CreateSessionDescriptionObserver* observer,

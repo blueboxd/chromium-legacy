@@ -12,6 +12,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/autotest_desks_api.h"
 #include "ash/public/cpp/autotest_private_api_utils.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/desks_helper.h"
@@ -3361,6 +3362,79 @@ AutotestPrivateWaitForLauncherStateFunction::Run() {
 
 void AutotestPrivateWaitForLauncherStateFunction::Done() {
   Respond(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateCreateNewDeskFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateCreateNewDeskFunction::AutotestPrivateCreateNewDeskFunction() =
+    default;
+AutotestPrivateCreateNewDeskFunction::~AutotestPrivateCreateNewDeskFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateCreateNewDeskFunction::Run() {
+  const bool success = ash::AutotestDesksApi().CreateNewDesk();
+  return RespondNow(OneArgument(
+      api::autotest_private::CreateNewDesk::Results::Create(success)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateActivateDeskAtIndexFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateActivateDeskAtIndexFunction::
+    AutotestPrivateActivateDeskAtIndexFunction() = default;
+AutotestPrivateActivateDeskAtIndexFunction::
+    ~AutotestPrivateActivateDeskAtIndexFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateActivateDeskAtIndexFunction::Run() {
+  std::unique_ptr<api::autotest_private::ActivateDeskAtIndex::Params> params(
+      api::autotest_private::ActivateDeskAtIndex::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (!ash::AutotestDesksApi().ActivateDeskAtIndex(
+          params->index,
+          base::BindOnce(
+              &AutotestPrivateActivateDeskAtIndexFunction::OnAnimationComplete,
+              this))) {
+    return RespondNow(OneArgument(
+        api::autotest_private::ActivateDeskAtIndex::Results::Create(false)));
+  }
+
+  return RespondLater();
+}
+
+void AutotestPrivateActivateDeskAtIndexFunction::OnAnimationComplete() {
+  Respond(OneArgument(
+      api::autotest_private::ActivateDeskAtIndex::Results::Create(true)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateRemoveActiveDeskFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateRemoveActiveDeskFunction::
+    AutotestPrivateRemoveActiveDeskFunction() = default;
+AutotestPrivateRemoveActiveDeskFunction::
+    ~AutotestPrivateRemoveActiveDeskFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateRemoveActiveDeskFunction::Run() {
+  if (!ash::AutotestDesksApi().RemoveActiveDesk(base::BindOnce(
+          &AutotestPrivateRemoveActiveDeskFunction::OnAnimationComplete,
+          this))) {
+    return RespondNow(OneArgument(
+        api::autotest_private::RemoveActiveDesk::Results::Create(false)));
+  }
+
+  return RespondLater();
+}
+
+void AutotestPrivateRemoveActiveDeskFunction::OnAnimationComplete() {
+  Respond(OneArgument(
+      api::autotest_private::RemoveActiveDesk::Results::Create(true)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

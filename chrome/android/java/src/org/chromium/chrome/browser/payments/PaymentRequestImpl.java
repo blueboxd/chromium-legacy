@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.widget.prefeditor.Completable;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.ErrorStrings;
+import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentHandlerHost;
@@ -232,8 +233,6 @@ public class PaymentRequestImpl
     public static final int SUGGESTIONS_LIMIT = 4;
 
     private static final String TAG = "PaymentRequest";
-    private static final String ANDROID_PAY_METHOD_NAME = "https://android.com/pay";
-    private static final String PAY_WITH_GOOGLE_METHOD_NAME = "https://google.com/pay";
     // Reverse order of the comparator to sort in descending order of completeness scores.
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             (a, b) -> (compareCompletablesByCompleteness(b, a));
@@ -578,7 +577,7 @@ public class PaymentRequestImpl
 
         mMethodData = getValidatedMethodData(methodData, googlePayBridgeActivated, mCardEditor);
         if (googlePayBridgeActivated) {
-            PaymentMethodData data = mMethodData.get(PAY_WITH_GOOGLE_METHOD_NAME);
+            PaymentMethodData data = mMethodData.get(MethodStrings.GOOGLE_PAY);
             mSkipToGPayHelper = new SkipToGPayHelper(options, data.gpayBridgeData);
         }
 
@@ -589,7 +588,7 @@ public class PaymentRequestImpl
         }
 
         mQueryForQuota = new HashMap<>(mMethodData);
-        if (mQueryForQuota.containsKey("basic-card")
+        if (mQueryForQuota.containsKey(MethodStrings.BASIC_CARD)
                 && PaymentsExperimentalFeatures.isEnabled(
                         ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
             PaymentMethodData paymentMethodData = new PaymentMethodData();
@@ -660,8 +659,8 @@ public class PaymentRequestImpl
         boolean requestedMethodGoogle = false;
         boolean requestedMethodOther = false;
         for (String methodName : mMethodData.keySet()) {
-            if (methodName.equals(ANDROID_PAY_METHOD_NAME)
-                    || methodName.equals(PAY_WITH_GOOGLE_METHOD_NAME)) {
+            if (methodName.equals(MethodStrings.ANDROID_PAY)
+                    || methodName.equals(MethodStrings.GOOGLE_PAY)) {
                 requestedMethodGoogle = true;
             } else if (methodName.startsWith(UrlConstants.HTTPS_URL_PREFIX)) {
                 // Any method that starts with https and is not Android pay or Google pay is in the
@@ -1018,7 +1017,7 @@ public class PaymentRequestImpl
                 // If skip-to-GPay flow is activated, ignore all other payment methods, which can be
                 // either "basic-card" or "https://android.com/pay". The latter is safe to ignore
                 // because merchant has already requested Google Pay.
-                if (!method.equals(PAY_WITH_GOOGLE_METHOD_NAME)) continue;
+                if (!method.equals(MethodStrings.GOOGLE_PAY)) continue;
                 if (methodData[i].gpayBridgeData != null
                         && !methodData[i].gpayBridgeData.stringifiedData.isEmpty()) {
                     methodData[i].stringifiedData = methodData[i].gpayBridgeData.stringifiedData;
@@ -1908,8 +1907,8 @@ public class PaymentRequestImpl
             if (mModifiers != null && mModifiers.containsKey(instrumentMethodName)) {
                 modifiers.put(instrumentMethodName, mModifiers.get(instrumentMethodName));
             }
-            if (instrumentMethodName.equals(ANDROID_PAY_METHOD_NAME)
-                    || instrumentMethodName.equals(PAY_WITH_GOOGLE_METHOD_NAME)) {
+            if (instrumentMethodName.equals(MethodStrings.ANDROID_PAY)
+                    || instrumentMethodName.equals(MethodStrings.GOOGLE_PAY)) {
                 isGooglePaymentInstrument = true;
             }
         }
@@ -2300,8 +2299,8 @@ public class PaymentRequestImpl
 
                     if (instrument.isAutofillInstrument()) {
                         mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_BASIC_CARD);
-                    } else if (instrumentMethodNames.contains(PAY_WITH_GOOGLE_METHOD_NAME)
-                            || instrumentMethodNames.contains(ANDROID_PAY_METHOD_NAME)) {
+                    } else if (instrumentMethodNames.contains(MethodStrings.GOOGLE_PAY)
+                            || instrumentMethodNames.contains(MethodStrings.ANDROID_PAY)) {
                         mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_GOOGLE);
                     } else {
                         mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_OTHER);
@@ -2476,8 +2475,8 @@ public class PaymentRequestImpl
      * @return Whether client has been disconnected.
      */
     private boolean disconnectForStrictShow() {
-        if (!mIsUserGestureShow || !mMethodData.containsKey("basic-card") || mHasEnrolledInstrument
-                || mHasNonAutofillInstrument
+        if (!mIsUserGestureShow || !mMethodData.containsKey(MethodStrings.BASIC_CARD)
+                || mHasEnrolledInstrument || mHasNonAutofillInstrument
                 || !PaymentsExperimentalFeatures.isEnabled(
                         ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
             return false;

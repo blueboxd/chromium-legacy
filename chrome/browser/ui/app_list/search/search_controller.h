@@ -21,10 +21,6 @@ class AppListModelUpdater;
 class ChromeSearchResult;
 class Profile;
 
-namespace service_manager {
-class Connector;
-}
-
 namespace app_list {
 
 class SearchResultRanker;
@@ -41,7 +37,7 @@ class SearchController {
                    Profile* profile);
   virtual ~SearchController();
 
-  void InitializeRankers(service_manager::Connector* connector);
+  void InitializeRankers();
 
   void Start(const base::string16& query);
   void ViewClosing();

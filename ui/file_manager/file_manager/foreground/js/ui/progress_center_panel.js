@@ -277,9 +277,12 @@ class ProgressCenterPanel {
 
     /**
      * Timeout for hiding file operations in progress.
-     * @const @type {number}
+     * @type {number}
      */
     this.PENDING_TIME_MS_ = 2000;
+    if (window.IN_TEST) {
+      this.PENDING_TIME_MS_ = 0;
+    }
 
     // Register event handlers.
     element.addEventListener('click', this.onClick_.bind(this));

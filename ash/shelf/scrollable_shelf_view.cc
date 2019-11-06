@@ -251,6 +251,12 @@ void ScrollableShelfContainerView::Layout() {
   const gfx::Rect local_bounds = GetLocalBounds();
   gfx::Rect shelf_view_bounds =
       local_bounds.Contains(ideal_bounds) ? local_bounds : ideal_bounds;
+
+  if (shelf_view_->shelf()->IsHorizontalAlignment())
+    shelf_view_bounds.set_x(GetAppIconEndPadding());
+  else
+    shelf_view_bounds.set_y(GetAppIconEndPadding());
+
   shelf_view_->SetBoundsRect(shelf_view_bounds);
 }
 
@@ -640,9 +646,9 @@ void ScrollableShelfView::Layout() {
   }
 
   // Paddings are within the shelf view. It makes sure that |shelf_view_|'s
-  // bounds are never changed.
-  shelf_view_->set_app_icons_layout_offset(before_padding +
-                                           GetAppIconEndPadding());
+  // bounds are not changed by adding/removing the shelf icon under the same
+  // layout strategy.
+  shelf_view_->set_app_icons_layout_offset(before_padding);
 
   // Adjust the bounds when not showing in the horizontal
   // alignment.tShelf()->IsHorizontalAlignment()) {

@@ -64,9 +64,13 @@ const SwitchAccessPredicate = {
     }
 
     // Check various indicators that the node is actionable.
-    if (role === RoleType.BUTTON || role === RoleType.SLIDER) return true;
+    if (role === RoleType.BUTTON || role === RoleType.SLIDER) {
+      return true;
+    }
 
-    if (SwitchAccessPredicate.isTextInput(node)) return true;
+    if (SwitchAccessPredicate.isTextInput(node)) {
+      return true;
+    }
 
     if (defaultActionVerb &&
         (defaultActionVerb === DefaultActionVerb.ACTIVATE ||
@@ -110,7 +114,9 @@ const SwitchAccessPredicate = {
         RectHelper.areEqual(node.location, scope.location)) {
       return false;
     }
-    if (node.state[StateType.INVISIBLE]) return false;
+    if (node.state[StateType.INVISIBLE]) {
+      return false;
+    }
 
     let interestingBranchesCount =
         SwitchAccessPredicate.isActionable(node) ? 1 : 0;

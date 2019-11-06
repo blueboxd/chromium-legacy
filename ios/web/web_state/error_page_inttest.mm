@@ -48,7 +48,8 @@ bool WaitForErrorText(WebState* web_state, const GURL& url) {
       web_state,
       testing::GetErrorText(web_state, url, "NSURLErrorDomain",
                             /*error_code=*/NSURLErrorNetworkConnectionLost,
-                            /*is_post=*/false, /*is_otr=*/false));
+                            /*is_post=*/false, /*is_otr=*/false,
+                            /*has_ssl_info=*/false));
 }
 }  // namespace
 
@@ -327,7 +328,8 @@ TEST_P(ErrorPageTest, OtrError) {
       testing::GetErrorText(web_state.get(), server_.GetURL("/echo-query?foo"),
                             "NSURLErrorDomain",
                             /*error_code=*/NSURLErrorNetworkConnectionLost,
-                            /*is_post=*/false, /*is_otr=*/true)));
+                            /*is_post=*/false, /*is_otr=*/true,
+                            /*has_ssl_info=*/false)));
 }
 
 // Loads the URL with form which fails to submit.
@@ -342,10 +344,10 @@ TEST_P(ErrorPageTest, FormSubmissionError) {
   // Error is displayed after the form submission navigation.
   ASSERT_TRUE(test::WaitForWebViewContainingText(
       web_state(),
-      testing::GetErrorText(web_state(), server_.GetURL("/close-socket"),
-                            "NSURLErrorDomain",
-                            /*error_code=*/NSURLErrorNetworkConnectionLost,
-                            /*is_post=*/true, /*is_otr=*/false)));
+      testing::GetErrorText(
+          web_state(), server_.GetURL("/close-socket"), "NSURLErrorDomain",
+          /*error_code=*/NSURLErrorNetworkConnectionLost,
+          /*is_post=*/true, /*is_otr=*/false, /*has_ssl_info=*/false)));
 }
 
 // Loads an item and checks that virtualURL and URL after displaying the error

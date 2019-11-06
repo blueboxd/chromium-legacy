@@ -23,6 +23,7 @@
 #include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/features.h"
+#include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_experimental_features.h"
@@ -195,7 +196,7 @@ void AutofillPaymentInstrument::IsValidForPaymentMethodIdentifier(
     const std::string& payment_method_identifier,
     bool* is_valid) const {
   // This instrument only matches basic-card.
-  *is_valid = payment_method_identifier == "basic-card";
+  *is_valid = payment_method_identifier == methods::kBasicCard;
 }
 
 base::WeakPtr<PaymentInstrument> AutofillPaymentInstrument::AsWeakPtr() {

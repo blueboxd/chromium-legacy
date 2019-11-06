@@ -69,9 +69,6 @@ static_assert(
 TestArrayBuffer* V8ArrayBuffer::ToImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsArrayBuffer());
   v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
-  // TODO(ahaas): The use of IsExternal is wrong here. Instead we should call
-  // ToScriptWrappable(object)->ToImpl<ArrayBuffer>() and check for nullptr.
-  // We can then also avoid the call to Externalize below.
   if (v8buffer->IsExternal()) {
     const WrapperTypeInfo* wrapper_type = ToWrapperTypeInfo(object);
     CHECK(wrapper_type);
@@ -81,9 +78,12 @@ TestArrayBuffer* V8ArrayBuffer::ToImpl(v8::Local<v8::Object> object) {
 
   // Transfer the ownership of the allocated memory to an ArrayBuffer without
   // copying.
-  auto backing_store = v8buffer->GetBackingStore();
-  v8buffer->Externalize(backing_store);
-  ArrayBufferContents contents(std::move(backing_store));
+  v8::ArrayBuffer::Contents v8_contents = v8buffer->Externalize();
+  ArrayBufferContents::DataHandle data(v8_contents.Data(),
+                                       v8_contents.ByteLength(),
+                                       v8_contents.Deleter(),
+                                       v8_contents.DeleterData());
+  ArrayBufferContents contents(std::move(data), ArrayBufferContents::kNotShared);
   TestArrayBuffer* buffer = TestArrayBuffer::Create(contents);
   v8::Local<v8::Object> associatedWrapper = buffer->AssociateWithWrapper(v8::Isolate::GetCurrent(), buffer->GetWrapperTypeInfo(), object);
   DCHECK(associatedWrapper == object);

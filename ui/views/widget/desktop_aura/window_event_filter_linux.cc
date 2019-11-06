@@ -149,7 +149,9 @@ void WindowEventFilterLinux::ToggleMaximizedState() {
     desktop_window_tree_host_->Maximize();
 }
 
-void WindowEventFilterLinux::LowerWindow() {}
+void WindowEventFilterLinux::LowerWindow() {
+  desktop_window_tree_host_->LowerXWindow();
+}
 
 void WindowEventFilterLinux::MaybeDispatchHostWindowDragMovement(
     int hittest,

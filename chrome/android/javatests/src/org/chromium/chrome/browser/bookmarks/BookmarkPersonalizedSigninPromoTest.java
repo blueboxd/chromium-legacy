@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -80,6 +81,7 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1020069")
     public void testSigninButtonDefaultAccount() {
         doNothing()
                 .when(SigninActivityLauncher.get())
@@ -94,6 +96,7 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1020069")
     public void testSigninButtonNotDefaultAccount() {
         doNothing()
                 .when(SigninActivityLauncher.get())
@@ -108,6 +111,7 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1020069")
     public void testSigninButtonNewAccount() {
         doNothing()
                 .when(SigninActivityLauncher.get())

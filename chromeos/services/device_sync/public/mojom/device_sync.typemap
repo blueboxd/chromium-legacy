@@ -4,8 +4,10 @@
 
 mojom = "//chromeos/services/device_sync/public/mojom/device_sync.mojom"
 
-public_headers =
-    [ "//chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h" ]
+public_headers = [
+  "//chromeos/services/device_sync/feature_status_change.h",
+  "//chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h",
+]
 
 traits_headers = [
   "//chromeos/services/device_sync/public/mojom/device_sync_mojom_traits.h",
@@ -16,4 +18,12 @@ sources = [
   "//chromeos/services/device_sync/public/mojom/device_sync_mojom_traits.h",
 ]
 
-type_mappings = [ "chromeos.device_sync.mojom.ConnectivityStatus=cryptauthv2::ConnectivityStatus" ]
+public_deps = [
+  "//chromeos/services/device_sync:feature_status_change",
+  "//chromeos/services/device_sync/proto",
+]
+
+type_mappings = [
+  "chromeos.device_sync.mojom.ConnectivityStatus=cryptauthv2::ConnectivityStatus",
+  "chromeos.device_sync.mojom.FeatureStatusChange=chromeos::device_sync::FeatureStatusChange",
+]

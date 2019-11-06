@@ -56,6 +56,8 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   bool HasRealtimeConstraint() final { return true; }
 
+  bool IsPullingAudioGraph() const final;
+
   AudioTimestamp* getOutputTimestamp(ScriptState*) const;
   double baseLatency() const;
 

@@ -6,7 +6,9 @@
 
 namespace updater {
 
-// The prefix to use for global names in WIN32 API's.
 const base::char16 kGlobalPrefix[] = L"Global\\G";
+
+extern const base::char16 kRegistryValuePV[] = L"pv";
+extern const base::char16 kRegistryValueName[] = L"name";
 
 }  // namespace updater

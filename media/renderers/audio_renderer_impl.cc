@@ -19,6 +19,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/audio/null_audio_sink.h"
@@ -968,6 +969,11 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
   DVLOG(4) << __func__ << " delay:" << delay
            << " prior_frames_skipped:" << prior_frames_skipped
            << " frames_requested:" << frames_requested;
+
+  // Since this information is coming from the OS or potentially a fake stream,
+  // it may end up with spurious values.
+  if (delay < base::TimeDelta())
+    delay = base::TimeDelta();
 
   int frames_written = 0;
   {

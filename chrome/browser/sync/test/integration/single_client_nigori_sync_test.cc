@@ -69,6 +69,14 @@ KeyParams KeystoreKeyParams(const std::string& key) {
           std::move(encoded_key)};
 }
 
+std::string ComputeKeyName(const KeyParams& key_params) {
+  std::string key_name;
+  syncer::Nigori::CreateByDerivation(key_params.derivation_params,
+                                     key_params.password)
+      ->Permute(syncer::Nigori::Password, syncer::kNigoriKeyName, &key_name);
+  return key_name;
+}
+
 // Builds NigoriSpecifics with following fields:
 // 1. encryption_keybag contains all keys derived from |keybag_keys_params|
 // and encrypted with a key derived from |keybag_decryptor_params|.
@@ -329,6 +337,22 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
+                       ShouldRotateKeystoreKey) {
+  ASSERT_TRUE(SetupSync());
+
+  GetFakeServer()->TriggerKeystoreKeyRotation();
+  const std::vector<std::string>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  ASSERT_THAT(keystore_keys, SizeIs(2));
+  const KeyParams new_keystore_key_params = KeystoreKeyParams(keystore_keys[1]);
+  const std::string expected_key_bag_key_name =
+      ComputeKeyName(new_keystore_key_params);
+  EXPECT_TRUE(ServerNigoriKeyNameChecker(expected_key_bag_key_name,
+                                         GetSyncService(0), GetFakeServer())
+                  .Wait());
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
                        ShouldExposeExperimentalAuthenticationKey) {
   const std::vector<std::string>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
@@ -370,16 +394,22 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
                        PRE_ShouldCompleteKeystoreInitializationAfterRestart) {
   GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::THROTTLED);
   ASSERT_TRUE(SetupSync());
+
+  sync_pb::NigoriSpecifics specifics;
+  ASSERT_TRUE(GetServerNigori(GetFakeServer(), &specifics));
+  ASSERT_EQ(specifics.passphrase_type(),
+            sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE);
 }
 
 // After browser restart the client should commit initialized Nigori.
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
                        ShouldCompleteKeystoreInitializationAfterRestart) {
+  sync_pb::NigoriSpecifics specifics;
+  ASSERT_TRUE(GetServerNigori(GetFakeServer(), &specifics));
+  ASSERT_EQ(specifics.passphrase_type(),
+            sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE);
+
   ASSERT_TRUE(SetupClients());
-  ASSERT_TRUE(ServerNigoriChecker(GetSyncService(0), GetFakeServer(),
-                                  syncer::PassphraseType::kImplicitPassphrase)
-                  .Wait());
-  GetFakeServer()->TriggerCommitError(sync_pb::SyncEnums::SUCCESS);
   EXPECT_TRUE(ServerNigoriChecker(GetSyncService(0), GetFakeServer(),
                                   syncer::PassphraseType::kKeystorePassphrase)
                   .Wait());

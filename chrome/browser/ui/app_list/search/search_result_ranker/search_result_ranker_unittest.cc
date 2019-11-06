@@ -37,7 +37,7 @@
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/history/core/test/test_history_database.h"
 #include "content/public/test/browser_task_environment.h"
-#include "services/data_decoder/public/cpp/test_data_decoder_service.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -170,9 +170,8 @@ class SearchResultRankerTest : public testing::Test {
   }
 
   std::unique_ptr<SearchResultRanker> MakeRanker() {
-    dd_service_ = std::make_unique<data_decoder::TestDataDecoderService>();
-    return std::make_unique<SearchResultRanker>(
-        profile_.get(), history_service_.get(), dd_service_->connector());
+    return std::make_unique<SearchResultRanker>(profile_.get(),
+                                                history_service_.get());
   }
 
   Mixer::SortedResults MakeSearchResults(const std::vector<std::string>& ids,
@@ -200,8 +199,7 @@ class SearchResultRankerTest : public testing::Test {
   std::list<TestSearchResult> test_search_results_;
 
   content::BrowserTaskEnvironment task_environment_;
-
-  std::unique_ptr<data_decoder::TestDataDecoderService> dd_service_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   ScopedFeatureList scoped_feature_list_;
   ScopedTempDir temp_dir_;
@@ -534,9 +532,8 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
 
   // Load a new ranker from disk and ensure |url_1| hasn't been retained.
   base::RunLoop new_run_loop;
-  dd_service_ = std::make_unique<data_decoder::TestDataDecoderService>();
-  auto new_ranker = std::make_unique<SearchResultRanker>(
-      profile_.get(), history_service(), dd_service_->connector());
+  auto new_ranker =
+      std::make_unique<SearchResultRanker>(profile_.get(), history_service());
   new_ranker->set_json_config_parsed_for_testing(new_run_loop.QuitClosure());
   new_ranker->InitializeRankers(MakeSearchController());
   new_run_loop.Run();

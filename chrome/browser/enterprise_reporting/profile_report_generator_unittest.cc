@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
@@ -18,8 +19,9 @@
 namespace enterprise_reporting {
 namespace {
 
-const char kProfile[] = "Profile";
-const char kIdleProfile[] = "IdleProfile";
+constexpr char kProfile[] = "Profile";
+constexpr char kIdleProfile[] = "IdleProfile";
+constexpr char kExtensionId[] = "abcdefghijklmnopabcdefghijklmnop";
 
 }  // namespace
 
@@ -54,6 +56,15 @@ class ProfileReportGeneratorTest : public ::testing::Test {
     EXPECT_TRUE(report->is_full_report());
 
     return report;
+  }
+
+  void SetExtensionToPendingList(const std::vector<std::string>& ids) {
+    base::Value::ListStorage id_values;
+    for (auto id : ids)
+      id_values.push_back(base::Value(id));
+    profile()->GetTestingPrefService()->SetUserPref(
+        prefs::kCloudExtensionRequestIds,
+        std::make_unique<base::Value>(std::move(id_values)));
   }
 
   TestingProfile* profile() { return profile_; }
@@ -95,6 +106,25 @@ TEST_F(ProfileReportGeneratorTest, SignedInProfile) {
   EXPECT_EQ(expected_info.email, report->chrome_signed_in_user().email());
   EXPECT_EQ(expected_info.gaia,
             report->chrome_signed_in_user().obfudscated_gaia_id());
+}
+
+TEST_F(ProfileReportGeneratorTest, PendingRequest) {
+  generator_.set_extension_request_enabled(true);
+  std::vector<std::string> ids = {kExtensionId};
+  SetExtensionToPendingList(ids);
+
+  auto report = GenerateReport();
+  EXPECT_EQ(1, report->extension_requests_size());
+  EXPECT_EQ(kExtensionId, report->extension_requests(0).id());
+}
+
+TEST_F(ProfileReportGeneratorTest, NoPendingRequestWhenItsDisabled) {
+  generator_.set_extension_request_enabled(false);
+  std::vector<std::string> ids = {kExtensionId};
+  SetExtensionToPendingList(ids);
+
+  auto report = GenerateReport();
+  EXPECT_EQ(0, report->extension_requests_size());
 }
 
 }  // namespace enterprise_reporting

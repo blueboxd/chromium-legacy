@@ -17,6 +17,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -98,13 +99,21 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                 "org.chromium.weblayer.ChildProcessService$Sandboxed");
 
         if (!CommandLine.isInitialized()) {
-            CommandLine.initFromFile(COMMAND_LINE_FILE);
+            // This disk read in the critical path is for development purposes only.
+            // TODO: Move it to debug-only (similar to WebView), or allow clients to configure the
+            // command line.
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                CommandLine.initFromFile(COMMAND_LINE_FILE);
+            }
         }
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
 
-        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBLAYER);
+        // TODO: Validate that doing this disk IO on the main thread is necessary.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBLAYER);
+        }
         GmsBridge.getInstance().setSafeBrowsingHandler();
 
         final ValueCallback<Boolean> loadedCallback = (ValueCallback<Boolean>) ObjectWrapper.unwrap(

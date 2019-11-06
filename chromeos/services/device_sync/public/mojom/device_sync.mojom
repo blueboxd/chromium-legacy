@@ -42,6 +42,20 @@ enum NetworkRequestResult {
   kUnknown
 };
 
+enum FeatureStatusChange {
+  // Enables a feature on a device and disables the feature on all other
+  // devices associated with the account.
+  kEnableExclusively,
+
+  // Enables a feature on a device; other devices on the account are
+  // unaffected.
+  kEnableNonExclusively,
+
+  // Disables a feature on a device; other devices on the account are
+  // unaffected.
+  kDisable
+};
+
 struct FindEligibleDevicesResponse {
   array<chromeos.multidevice.mojom.RemoteDevice> eligible_devices;
   array<chromeos.multidevice.mojom.RemoteDevice> ineligible_devices;

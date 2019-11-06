@@ -159,12 +159,8 @@ float ReRange(const float score, const float min, const float max) {
 }  // namespace
 
 SearchResultRanker::SearchResultRanker(Profile* profile,
-                                       history::HistoryService* history_service,
-                                       service_manager::Connector* connector)
-    : connector_(connector),
-      history_service_observer_(this),
-      profile_(profile),
-      weak_factory_(this) {
+                                       history::HistoryService* history_service)
+    : history_service_observer_(this), profile_(profile), weak_factory_(this) {
   DCHECK(profile);
   DCHECK(history_service);
   history_service_observer_.Add(history_service);
@@ -220,7 +216,7 @@ void SearchResultRanker::InitializeRankers(
       const std::string config_json = GetFieldTrialParamValueByFeature(
           app_list_features::kEnableQueryBasedMixedTypesRanker, "config");
       query_mixed_config_converter_ = JsonConfigConverter::Convert(
-          connector_, config_json, "QueryBasedMixedTypes",
+          config_json, "QueryBasedMixedTypes",
           base::BindOnce(
               [](SearchResultRanker* ranker,
                  const RecurrenceRankerConfigProto& default_config,
@@ -267,7 +263,7 @@ void SearchResultRanker::InitializeRankers(
         app_list_features::kEnableZeroStateMixedTypesRanker, "config");
 
     zero_state_config_converter_ = JsonConfigConverter::Convert(
-        connector_, config_json, "ZeroStateGroups",
+        config_json, "ZeroStateGroups",
         base::BindOnce(
             [](SearchResultRanker* ranker,
                const RecurrenceRankerConfigProto& default_config,

@@ -69,9 +69,12 @@ ui::SelectFileDialog::FileTypeInfo GetAudioVideoFileTypeInfo() {
 
 }  // namespace
 
-// FileSystemDelegate default implementations
 MediaRouterFileDialog::FileSystemDelegate::FileSystemDelegate() = default;
-MediaRouterFileDialog::FileSystemDelegate::~FileSystemDelegate() = default;
+
+MediaRouterFileDialog::FileSystemDelegate::~FileSystemDelegate() {
+  if (select_file_dialog_)
+    select_file_dialog_->ListenerDestroyed();
+}
 
 bool MediaRouterFileDialog::FileSystemDelegate::FileExists(
     const base::FilePath& file_path) const {

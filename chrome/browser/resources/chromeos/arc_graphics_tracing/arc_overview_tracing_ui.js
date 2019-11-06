@@ -98,9 +98,7 @@ function addModelHeader(model) {
       new Date(model.information.timestamp).toLocaleString() :
       'Unknown date';
   header.getElementsByClassName('arc-tracing-app-date')[0].textContent = date;
-  var duration = model.information.duration ?
-      (model.information.duration * 0.000001).toFixed(2) :
-      'unknown duration';
+  var duration = (model.information.duration * 0.000001).toFixed(2);
   header.getElementsByClassName('arc-tracing-app-duration')[0].textContent =
       duration;
   var platform = model.information.platform ? model.information.platform :
@@ -108,14 +106,12 @@ function addModelHeader(model) {
   header.getElementsByClassName('arc-tracing-app-platform')[0].textContent =
       platform;
 
-  if (model.information.duration) {
-    header.getElementsByClassName('arc-tracing-app-fps')[0].textContent =
-        calculateFPS(getAppCommitEvents(model), model.information.duration)
-            .toFixed(2);
-    header.getElementsByClassName('arc-tracing-chrome-fps')[0].textContent =
-        calculateFPS(getChromeSwapEvents(model), model.information.duration)
-            .toFixed(2);
-  }
+  header.getElementsByClassName('arc-tracing-app-fps')[0].textContent =
+      calculateFPS(getAppCommitEvents(model), model.information.duration)
+          .toFixed(2);
+  header.getElementsByClassName('arc-tracing-chrome-fps')[0].textContent =
+      calculateFPS(getChromeSwapEvents(model), model.information.duration)
+          .toFixed(2);
 
   var cpuPower = getAveragePower(model, 10 /* kCpuPower */);
   var gpuPower = getAveragePower(model, 11 /* kGpuPower */);
@@ -183,9 +179,10 @@ function getAveragePower(model, eventType) {
   var lastTimestamp = 0;
   var totalEnergy = 0;
   var index = events.getFirstEvent();
-  while (index > 0) {
+  while (index >= 0) {
     var timestamp = events.events[index][1];
-    totalEnergy = events.events[index][2] * (timestamp - lastTimestamp);
+    totalEnergy +=
+        events.events[index][2] * (timestamp - lastTimestamp) * 0.001;
     lastTimestamp = timestamp;
     index = events.getNextEvent(index, 1 /* direction */);
   }
@@ -308,9 +305,7 @@ function addCPUFrequencyView(parent, resolution, duration) {
     var attributes = Object.assign({}, attributesTemplate);
     attributes.color = modelColors.get(models[i]);
     bands.addChartSources(
-        [new Events(
-            models[i].system.memory, 9 /* kCpuTemperature */,
-            9 /* kCpuFrequency */)],
+        [new Events(models[i].system.memory, 9 /* kCpuFrequency */)],
         true /* smooth */, attributes);
   }
 }
@@ -336,10 +331,34 @@ function addCPUTempView(parent, resolution, duration) {
     var attributes = Object.assign({}, attributesTemplate);
     attributes.color = modelColors.get(models[i]);
     bands.addChartSources(
-        [new Events(
-            models[i].system.memory, 8 /* kCpuTemperature */,
-            8 /* kCpuTemperature */)],
+        [new Events(models[i].system.memory, 8 /* kCpuTemperature */)],
         true /* smooth */, attributes);
+  }
+}
+
+/**
+ * Creates view that shows GPU frequency.
+ *
+ * @param {HTMLElement} parent container for the newly created view.
+ * @param {number} resolution scale of the chart in microseconds per pixel.
+ * @param {number} duration length of the chart in microseconds.
+ */
+function addGPUFrequencyView(parent, resolution, duration) {
+  // Range from 300MHz to 1GHz
+  // 14MHz  1 pixel resolution
+  var bands = createChart(
+      parent, 'GPU Frequency' /* title */, resolution, duration,
+      50 /* height */, 4 /* gridLinesCount */);
+  var attributesTemplate =
+      Object.assign({}, valueAttributes[7 /* kGpuFrequency */]);
+  attributesTemplate.minValue = 300;   // Mhz
+  attributesTemplate.maxValue = 1000;  // Mhz
+  for (i = 0; i < models.length; i++) {
+    var attributes = Object.assign({}, attributesTemplate);
+    attributes.color = modelColors.get(models[i]);
+    bands.addChartSources(
+        [new Events(models[i].system.memory, 7 /* kGpuFrequency */)],
+        false /* smooth */, attributes);
   }
 }
 
@@ -458,7 +477,7 @@ function refreshModels() {
 
   var duration = 0;
   for (i = 0; i < models.length; i++) {
-    duration = Math.max(duration, models[i].duration);
+    duration = Math.max(duration, models[i].information.duration);
   }
 
   for (i = 0; i < models.length; i++) {
@@ -467,6 +486,7 @@ function refreshModels() {
 
   addCPUFrequencyView(parent, resolution, duration);
   addCPUTempView(parent, resolution, duration);
+  addGPUFrequencyView(parent, resolution, duration);
   addFPSView(parent, resolution, duration, true /* appView */);
   addDeltaView(parent, resolution, duration, true /* appView */);
   addFPSView(parent, resolution, duration, false /* appView */);
@@ -516,14 +536,6 @@ function setModelColor(model) {
  * @param {object} model to add.
  */
 function addModel(model) {
-  // Patch old models that do not have model.information to simplify checks.
-  if (!model.information) {
-    model.information = {};
-    if (!model.information.duration) {
-      model.information.duration = model.duration;
-    }
-  }
-
   models.push(model);
 
   setModelColor(model);

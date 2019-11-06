@@ -184,6 +184,38 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockInOneColumn) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ZeroHeightBlockAtFragmentainerBoundary) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 2;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 210px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:33px; height:200px;"></div>
+        <div style="width:44px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:210x100
+      offset:0,0 size:100x100
+        offset:0,0 size:33x100
+      offset:110,0 size:100x100
+        offset:0,0 size:33x100
+        offset:0,100 size:44x0
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, BlockInTwoColumns) {
   SetBodyInnerHTML(R"HTML(
     <style>

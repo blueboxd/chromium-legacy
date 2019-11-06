@@ -23,13 +23,16 @@
 #include "chrome/updater/win/setup/uninstall.h"
 #endif
 
-// To install the updater on Windows, run:
-// "updater.exe --install --enable-logging --v=1 --vmodule=*/chrome/updater/*"
-// from the build directory. The program needs a number of dependencies which
-// are available in the |out| directory of the build.
-// To uninstall, run "updater.exe --uninstall" from its install directory or
-// from the build out directory. Doing this will make the program delete its
-// install directory using a shim cmd script.
+// To install the updater on Windows, run "updatersetup.exe" from the
+// build directory.
+//
+// To uninstall, run "updater.exe --uninstall" from its install directory,
+// which is under %LOCALAPPDATA%\Google\GoogleUpdater, or from the |out|
+// directory of the build.
+//
+// To debug, use the command line arguments:
+//    --enable-logging --vmodule=*/chrome/updater/*=2.
+
 namespace updater {
 
 namespace {
@@ -86,8 +89,7 @@ int UpdaterUpdateApps() {
 int UpdaterInstallApp() {
 #if defined(OS_WIN)
   // TODO(sorin): pick up the app id from the tag. https://crbug.com/1014298
-  // For now, use Omaha4 app id, just to get a CRX for testing of the UI.
-  return InstallApp({kUpdaterAppId});
+  return InstallApp({kChromeAppId});
 #else
   NOTREACHED();
   return -1;

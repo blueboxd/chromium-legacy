@@ -99,7 +99,7 @@
 <translation id="2273327106802955778">Ponuka Viac</translation>
 <translation id="2316709634732130529">Použiť navrhnuté heslo</translation>
 <translation id="2320166752086256636">Skryť klávesnicu</translation>
-<translation id="2330129964253841015">Upozorniť v prípade napadnutia hesiel</translation>
+<translation id="2330129964253841015">Upozorňovať pri odhalení hesiel</translation>
 <translation id="2339560363438331454">Synchronizácia a služby Googlu</translation>
 <translation id="2351097562818989364">Nastavenia prekladov boli resetované.</translation>
 <translation id="2359043044084662842">Preložiť</translation>
@@ -496,7 +496,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="8059533439631660104">Zbalí sekciu.</translation>
 <translation id="806745655614357130">Ponechať moje dáta oddelené</translation>
 <translation id="8073670137947914548">Sťahovanie bolo dokončené</translation>
-<translation id="8073872304774253879">Zlepšovanie vyhľadávaní a prehliadania</translation>
+<translation id="8073872304774253879">Zlepšovať vyhľadávanie a prehliadanie</translation>
 <translation id="8076014560081431679">Uložené nastavenia webov sa neodstránia a môžu odrážať vaše návyky prehliadania. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Súbor je k dispozícii na stiahnutie. Možnosti sú k dispozícii v dolnej časti obrazovky.</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>

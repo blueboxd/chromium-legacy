@@ -725,6 +725,9 @@ enum ProcessedActionStatusProto {
   // The requested autofill info (e.g., Chrome password manager login) was not
   // available. It might have been recently deleted.
   AUTOFILL_INFO_NOT_AVAILABLE = 21;
+
+  // An unexpected error occurred during element resolution.
+  FRAME_HOST_NOT_FOUND = 22;
 }
 
 // The pseudo type values come from

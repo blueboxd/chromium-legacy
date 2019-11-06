@@ -41,9 +41,8 @@ void DecodeAnimation(const std::vector<uint8_t>& image_data,
   // - PNGCodec::Decode uses libpng which does not support APNG. blink::WebImage
   // also goes through libpng, but APNG support is handled specifically by
   // blink's PNGImageReader.cpp.
-  data_decoder::DecodeAnimation(
-      Shell::Get()->shell_delegate()->LaunchDataDecoder(), image_data,
-      true /*shrink_to_fit*/, kMaxImageSizeInBytes,
+  data_decoder::DecodeAnimationIsolated(
+      image_data, true /*shrink_to_fit*/, kMaxImageSizeInBytes,
       base::BindOnce(&ConvertToAnimationFrame, std::move(on_decoded)));
 }
 

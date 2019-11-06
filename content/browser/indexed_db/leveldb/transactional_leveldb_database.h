@@ -19,7 +19,6 @@
 #include "base/time/clock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
-#include "content/browser/indexed_db/indexed_db_data_loss_info.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"

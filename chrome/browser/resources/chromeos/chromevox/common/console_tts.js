@@ -33,8 +33,9 @@ ConsoleTts.prototype = {
   speak: function(textString, queueMode, properties) {
     if (this.enabled_ && window['console']) {
       var category = cvox.TtsCategory.NAV;
-      if (properties && properties.category)
+      if (properties && properties.category) {
         category = properties.category;
+      }
 
       const speechLog = new SpeechLog(textString, queueMode, category);
       LogStore.getInstance().writeLog(speechLog);

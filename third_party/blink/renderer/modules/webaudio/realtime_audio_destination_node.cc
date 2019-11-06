@@ -52,7 +52,8 @@ RealtimeAudioDestinationHandler::RealtimeAudioDestinationHandler(
     base::Optional<float> sample_rate)
     : AudioDestinationHandler(node),
       latency_hint_(latency_hint),
-      sample_rate_(sample_rate) {
+      sample_rate_(sample_rate),
+      allow_pulling_audio_graph_(false) {
   // Node-specific default channel count and mixing rules.
   channel_count_ = 2;
   SetInternalChannelCountMode(kExplicit);
@@ -194,19 +195,26 @@ void RealtimeAudioDestinationHandler::Render(
 
   context->HandlePreRenderTasks(&output_position, &metric);
 
-  // Renders the graph by pulling all the input(s) to this node. This will in
-  // turn pull on their input(s), all the way backwards through the graph.
-  AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
+  // Only pull on the audio graph if we have not stopped the destination.  It
+  // takes time for the destination to stop, but we want to stop pulling before
+  // the destination has actually stopped.
+  if (IsPullingAudioGraphAllowed()) {
+    // Renders the graph by pulling all the input(s) to this node. This will in
+    // turn pull on their input(s), all the way backwards through the graph.
+    AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
 
-  DCHECK(rendered_bus);
-  if (!rendered_bus) {
-    // AudioNodeInput might be in the middle of destruction. Then the internal
-    // summing bus will return as nullptr. Then zero out the output.
+    DCHECK(rendered_bus);
+    if (!rendered_bus) {
+      // AudioNodeInput might be in the middle of destruction. Then the internal
+      // summing bus will return as nullptr. Then zero out the output.
+      destination_bus->Zero();
+    } else if (rendered_bus != destination_bus) {
+      // In-place processing was not possible. Copy the rendererd result to the
+      // given |destination_bus| buffer.
+      destination_bus->CopyFrom(*rendered_bus);
+    }
+  } else {
     destination_bus->Zero();
-  } else if (rendered_bus != destination_bus) {
-    // In-place processing was not possible. Copy the rendererd result to the
-    // given |destination_bus| buffer.
-    destination_bus->CopyFrom(*rendered_bus);
   }
 
   // Processes "automatic" nodes that are not connected to anything. This can
@@ -243,6 +251,8 @@ void RealtimeAudioDestinationHandler::CreatePlatformDestination() {
 }
 
 void RealtimeAudioDestinationHandler::StartPlatformDestination() {
+  DCHECK(IsMainThread());
+
   if (platform_destination_->IsPlaying()) {
     return;
   }
@@ -258,9 +268,19 @@ void RealtimeAudioDestinationHandler::StartPlatformDestination() {
   } else {
     platform_destination_->Start();
   }
+
+  // Allow the graph to be pulled once the destination actually starts
+  // requesting data.
+  EnablePullingAudioGraph();
 }
 
 void RealtimeAudioDestinationHandler::StopPlatformDestination() {
+  DCHECK(IsMainThread());
+
+  // Stop pulling on the graph, even if the destination is still requesting data
+  // for a while. (It may take a bit of time for the destination to stop.)
+  DisablePullingAudioGraph();
+
   if (platform_destination_->IsPlaying()) {
     platform_destination_->Stop();
   }

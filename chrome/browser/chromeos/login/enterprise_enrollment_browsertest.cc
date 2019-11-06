@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, StoragePartitionUpdated) {
 }
 
 // Flaky in debug builds - crbug.com/1021191
-#if defined(DEBUG)
+#if !defined(NDEBUG)
 #define MAYBE_TestActiveDirectoryEnrollment_Success \
   DISABLED_TestActiveDirectoryEnrollment_Success
 #else
@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 }
 
 // Flaky in debug builds - crbug.com/1021191
-#if defined(DEBUG)
+#if !defined(NDEBUG)
 #define MAYBE_TestActiveDirectoryEnrollment_DistinguishedName \
   DISABLED_TestActiveDirectoryEnrollment_DistinguishedName
 #else
@@ -631,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 }
 
 // Flaky in debug builds - crbug.com/1021191
-#if defined(DEBUG)
+#if !defined(NDEBUG)
 #define MAYBE_TestActiveDirectoryEnrollment_UIErrors \
   DISABLED_TestActiveDirectoryEnrollment_UIErrors
 #else
@@ -686,7 +686,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 }
 
 // Flaky in debug builds - crbug.com/1021191
-#if defined(DEBUG)
+#if !defined(NDEBUG)
 #define MAYBE_TestActiveDirectoryEnrollment_ErrorCard \
   DISABLED_TestActiveDirectoryEnrollment_ErrorCard
 #else
@@ -716,7 +716,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 }
 
 // Flaky in debug builds - crbug.com/1021191
-#if defined(DEBUG)
+#if !defined(NDEBUG)
 #define MAYBE_TestActiveDirectoryEnrollment_Streamline \
   DISABLED_TestActiveDirectoryEnrollment_Streamline
 #else

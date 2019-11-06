@@ -29,6 +29,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -120,13 +121,13 @@ public class LocationBarLayoutTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        setupTabForTests(false);
+        setupModelsForCurrentTab();
     }
 
-    private void setupTabForTests(boolean isIncognito) {
-        if (isIncognito) mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL, isIncognito);
+    private void setupModelsForCurrentTab() {
         mTestLocationBarModel = new TestLocationBarModel();
-        mTestLocationBarModel.setTab(mActivityTestRule.getActivity().getActivityTab(), isIncognito);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        mTestLocationBarModel.setTab(tab, tab.isIncognito());
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> getLocationBar().setToolbarDataProvider(mTestLocationBarModel));
@@ -244,12 +245,38 @@ public class LocationBarLayoutTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     @Feature({"OmniboxSearchEngineLogo"})
-    public void testOmniboxSearchEngineLogo_goneWhenIncognito() {
+    public void testOmniboxSearchEngineLogo_goneWhenIncognito() throws ExecutionException {
+        mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL, true);
+        setupModelsForCurrentTab();
+
         final LocationBarLayout locationBar = getLocationBar();
         final View iconView = locationBar.getSecurityIconView();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestLocationBarModel.setDisplaySearchTerms(null);
+            locationBar.updateSearchEngineStatusIcon(false, false, "");
+        });
+
         onView(withId(R.id.location_bar_status))
-                .check((view, e) -> Assert.assertEquals(iconView.getVisibility(), VISIBLE));
-        setupTabForTests(true);
+                .check((view, e) -> Assert.assertEquals(iconView.getVisibility(), GONE));
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    @Feature({"OmniboxSearchEngineLogo"})
+    public void testOmniboxSearchEngineLogo_goneOnNTP() {
+        mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL, false);
+        setupModelsForCurrentTab();
+
+        final LocationBarLayout locationBar = getLocationBar();
+        final View iconView = locationBar.getSecurityIconView();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestLocationBarModel.setDisplaySearchTerms(null);
+            locationBar.updateVisualsForState();
+            locationBar.updateSearchEngineStatusIcon(false, false, "");
+        });
         onView(withId(R.id.location_bar_status))
                 .check((view, e) -> Assert.assertEquals(iconView.getVisibility(), GONE));
     }

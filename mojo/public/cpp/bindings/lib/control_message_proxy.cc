@@ -114,12 +114,12 @@ void SendRunOrClosePipeMessage(
 }
 
 void RunVersionCallback(
-    const base::Callback<void(uint32_t)>& callback,
+    base::OnceCallback<void(uint32_t)> callback,
     interface_control::RunResponseMessageParamsPtr run_response) {
   uint32_t version = 0u;
   if (run_response->output && run_response->output->is_query_version_result())
     version = run_response->output->get_query_version_result()->version;
-  callback.Run(version);
+  std::move(callback).Run(version);
 }
 
 void RunClosure(base::OnceClosure callback,
@@ -140,11 +140,11 @@ ControlMessageProxy::~ControlMessageProxy() {
 }
 
 void ControlMessageProxy::QueryVersion(
-    const base::Callback<void(uint32_t)>& callback) {
+    base::OnceCallback<void(uint32_t)> callback) {
   auto input_ptr = interface_control::RunInput::New();
   input_ptr->set_query_version(interface_control::QueryVersion::New());
   SendRunMessage(owner_, std::move(input_ptr),
-                 base::BindOnce(&RunVersionCallback, callback));
+                 base::BindOnce(&RunVersionCallback, std::move(callback)));
 }
 
 void ControlMessageProxy::RequireVersion(uint32_t version) {

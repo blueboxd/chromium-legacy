@@ -221,8 +221,6 @@ public class TabGroupUiMediator {
             mResetHandler.resetGridWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
             if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
                 RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
-            } else {
-                RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridSheet");
             }
         });
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.ADD_CLICK_LISTENER, view -> {

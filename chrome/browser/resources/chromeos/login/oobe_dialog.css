@@ -71,6 +71,10 @@
   z-index: 1;
 }
 
+#buttons-overlay {
+  background: rgba(var(--google-grey-900-rgb), 0.6);
+}
+
 :host #oobe-bottom[no-buttons-padding] {
   padding: unset;
 }

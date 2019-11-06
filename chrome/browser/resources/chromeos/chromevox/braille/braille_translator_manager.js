@@ -89,8 +89,9 @@ cvox.BrailleTranslatorManager.prototype = {
     }
 
     var tables = this.tables_;
-    if (tables.length == 0)
+    if (tables.length == 0) {
       return;
+    }
 
     // Look for the table requested.
     var table = cvox.BrailleTable.forId(tables, brailleTable);
@@ -108,13 +109,15 @@ cvox.BrailleTranslatorManager.prototype = {
           var secondPass = firstPass.filter(function(table) {
             return table.locale.split(/[_-]/)[1] == minor;
           });
-          if (secondPass.length > 0)
+          if (secondPass.length > 0) {
             table = secondPass[0];
+          }
         }
       }
     }
-    if (!table)
+    if (!table) {
       table = cvox.BrailleTable.forId(tables, 'en-US-comp8');
+    }
 
     // If the user explicitly set an 8 dot table, use that when looking
     // for an uncontracted table.  Otherwise, use the current table and let

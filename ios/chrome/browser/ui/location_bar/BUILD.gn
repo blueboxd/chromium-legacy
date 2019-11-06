@@ -83,7 +83,6 @@ source_set("location_bar") {
     "//ios/web/public:public",
     "//ios/web/public/security",
     "//skia",
-    "//third_party/google_toolbox_for_mac",
     "//ui/base",
     "//ui/base",
     "//ui/gfx",

@@ -685,13 +685,15 @@ cvox.TtsBackground.prototype.createPunctuationReplace_ = function(clear) {
 cvox.TtsBackground.prototype.pronouncePhonetically_ = function(
     text, properties) {
   // Math should never be pronounced phonetically.
-  if (properties.math)
+  if (properties.math) {
     return;
+  }
 
   text = text.toLowerCase();
   // If undefined language, use the UI language of the browser as a best guess.
-  if (!properties['lang'])
+  if (!properties['lang']) {
     properties['lang'] = chrome.i18n.getUILanguage();
+  }
 
   var phoneticText =
       PhoneticData.getPhoneticDisambiguation(properties['lang'], text);
@@ -734,8 +736,9 @@ cvox.TtsBackground.prototype.updateVoice_ = function(voiceName, opt_callback) {
       this.currentVoice = newVoice.voiceName;
       this.startSpeakingNextItemInQueue_();
     }
-    if (opt_callback)
+    if (opt_callback) {
       opt_callback(this.currentVoice);
+    }
   }, this));
 };
 
@@ -767,8 +770,9 @@ cvox.TtsBackground.prototype.updateFromPrefs_ = function(announce, prefs) {
 
     this.ttsProperties[propertyName] = pref.value;
 
-    if (!announce)
+    if (!announce) {
       return;
+    }
 
     var valueAsPercent =
         Math.round(this.propertyToPercentage(propertyName) * 100);

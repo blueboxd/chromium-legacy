@@ -10,9 +10,11 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/task_environment.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -39,15 +41,25 @@ class TemplateURLParserTest : public testing::Test {
   void ParseFile(const std::string& file_name,
                  const TemplateURLParser::ParameterFilter& filter);
 
+  void ParseString(const std::string& data,
+                   const TemplateURLParser::ParameterFilter& filter);
+
   // ParseFile parses the results into this template_url.
   std::unique_ptr<TemplateURL> template_url_;
 
  private:
+  void OnTemplateURLParsed(base::OnceClosure quit_closure,
+                           std::unique_ptr<TemplateURL> template_url) {
+    template_url_ = std::move(template_url);
+    std::move(quit_closure).Run();
+  }
+
   base::FilePath osdd_dir_;
+  base::test::TaskEnvironment task_environment_;
+  data_decoder::test::InProcessDataDecoder data_decoder_;
 };
 
-TemplateURLParserTest::TemplateURLParserTest() {
-}
+TemplateURLParserTest::TemplateURLParserTest() {}
 
 TemplateURLParserTest::~TemplateURLParserTest() {
 }
@@ -66,8 +78,19 @@ void TemplateURLParserTest::ParseFile(
 
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(full_path, &contents));
-  template_url_ = TemplateURLParser::Parse(SearchTermsData(), contents.data(),
-                                           contents.length(), filter);
+  ParseString(contents, filter);
+}
+
+void TemplateURLParserTest::ParseString(
+    const std::string& data,
+    const TemplateURLParser::ParameterFilter& filter) {
+  base::RunLoop run_loop;
+  SearchTermsData search_terms_data;
+  TemplateURLParser::Parse(
+      &search_terms_data, data, filter,
+      base::BindOnce(&TemplateURLParserTest::OnTemplateURLParsed,
+                     base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 // Actual tests ---------------------------------------------------------------
@@ -249,6 +272,5 @@ TEST_F(TemplateURLParserTest, InvalidInput) {
     </Url>
     </OpenSearchDescription>
   )";
-  TemplateURLParser::Parse(SearchTermsData(), char_data, base::size(char_data),
-                           filter);
+  ParseString(char_data, filter);
 }

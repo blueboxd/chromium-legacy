@@ -27,14 +27,17 @@ class ToolbarIconContainerView : public views::View,
   ToolbarIconContainerView& operator=(const ToolbarIconContainerView&) = delete;
   ~ToolbarIconContainerView() override;
 
-  // Update all the icons it contains. Override by subclass.
-  virtual void UpdateAllIcons();
+  // Update all the icons it contains.
+  virtual void UpdateAllIcons() = 0;
 
   // Adds the RHS child as well as setting its margins.
   void AddMainButton(views::Button* main_button);
 
   void AddObserver(Observer* obs);
   void RemoveObserver(const Observer* obs);
+
+  void OverrideIconColor(SkColor icon_color);
+  SkColor GetIconColor() const;
 
   bool IsHighlighted();
 
@@ -83,6 +86,10 @@ class ToolbarIconContainerView : public views::View,
   // The main view is nominally always present and is last child in the view
   // hierarchy.
   views::Button* main_button_ = nullptr;
+
+  // Override for the icon color. If not set, |COLOR_TOOLBAR_BUTTON_ICON| is
+  // used.
+  base::Optional<SkColor> icon_color_;
 
   // Points to the child buttons that we know are currently highlighted.
   // TODO(pbos): Consider observing buttons leaving our hierarchy and removing

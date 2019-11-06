@@ -60,6 +60,8 @@ class ASH_EXPORT CrosDisplayConfig : public mojom::CrosDisplayConfigController {
 
  private:
   class ObserverImpl;
+  friend class OverscanCalibratorTest;
+
   OverscanCalibrator* GetOverscanCalibrator(const std::string& id);
 
   std::unique_ptr<ObserverImpl> observer_impl_;

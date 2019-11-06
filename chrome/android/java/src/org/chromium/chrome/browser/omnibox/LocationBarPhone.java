@@ -14,6 +14,7 @@ import android.view.WindowManager;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.status.StatusView;
 
 /**
@@ -187,8 +188,7 @@ public class LocationBarPhone extends LocationBarLayout {
                         - mStatusView.getEndPaddingPixelSizeForFocusState(false));
 
         if (!hasFocus && mIconView.getVisibility() == VISIBLE
-                && mToolbarDataProvider.getNewTabPageForCurrentTab() != null
-                && !mToolbarDataProvider.getTab().isLoading()) {
+                && SearchEngineLogoUtils.currentlyOnNTP(mToolbarDataProvider)) {
             // When:
             // 1. unfocusing the LocationBar on the NTP.
             // 2. scrolling the fakebox to the LocationBar on the NTP.
@@ -292,6 +292,7 @@ public class LocationBarPhone extends LocationBarLayout {
             setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
             getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
         }
+        mStatusViewCoordinator.onUrlAnimationFinished(hasFocus);
         setUrlFocusChangeInProgress(false);
         updateShouldAnimateIconChanges();
     }
@@ -352,9 +353,30 @@ public class LocationBarPhone extends LocationBarLayout {
         boolean isIncognito = getToolbarDataProvider().isIncognito();
         boolean shouldShowSearchEngineLogo =
                 SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito);
-        updateUrlBarPaddingForSearchEngineIcon();
-        if (mIconView != null) mIconView.setVisibility(shouldShowSearchEngineLogo ? VISIBLE : GONE);
         setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
         mFirstVisibleFocusedView = shouldShowSearchEngineLogo ? mStatusView : mUrlBar;
+
+        updateStatusVisibility();
+        updateUrlBarPaddingForSearchEngineIcon();
+    }
+
+    @Override
+    public void onTabLoadingNTP(NewTabPage ntp) {
+        super.onTabLoadingNTP(ntp);
+        updateStatusVisibility();
+    }
+
+    /** Update the status visibility according to the current state held in LocationBar. */
+    private void updateStatusVisibility() {
+        boolean incognito = getToolbarDataProvider().isIncognito();
+        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(incognito)) {
+            return;
+        }
+
+        if (SearchEngineLogoUtils.currentlyOnNTP(mToolbarDataProvider)) {
+            mStatusViewCoordinator.setStatusIconShown(hasFocus());
+        } else {
+            mStatusViewCoordinator.setStatusIconShown(true);
+        }
     }
 }

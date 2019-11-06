@@ -80,8 +80,9 @@ class Autoclick {
    * @private
    */
   shouldHighlightAsScrollable_(node) {
-    if (node.scrollable === undefined || !node.scrollable)
+    if (node.scrollable === undefined || !node.scrollable) {
       return false;
+    }
 
     // Check that the size of the scrollable area is larger than the node's
     // location. If it is not larger, then scrollbars are not shown.
@@ -103,12 +104,14 @@ class Autoclick {
            node.role != chrome.automation.RoleType.DIALOG &&
            node.role != chrome.automation.RoleType.ALERT_DIALOG &&
            node.role != chrome.automation.RoleType.TOOLBAR) {
-      if (this.shouldHighlightAsScrollable_(node))
+      if (this.shouldHighlightAsScrollable_(node)) {
         break;
+      }
       node = node.parent;
     }
-    if (!node.location)
+    if (!node.location) {
       return;
+    }
     let bounds = node.location;
     this.setFocusRings_([bounds]);
     if (this.blinkFocusRings_) {

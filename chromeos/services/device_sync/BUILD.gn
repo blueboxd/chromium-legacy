@@ -4,6 +4,12 @@
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
+static_library("feature_status_change") {
+  sources = [
+    "feature_status_change.h",
+  ]
+}
+
 static_library("device_sync") {
   sources = [
     "async_execution_time_metrics_logger.cc",
@@ -135,6 +141,7 @@ static_library("device_sync") {
   ]
 
   public_deps = [
+    ":feature_status_change",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
     "//chromeos/services/device_sync/public/mojom",
@@ -271,6 +278,7 @@ source_set("unit_tests") {
 
   deps = [
     ":device_sync",
+    ":feature_status_change",
     ":test_support",
     "//base",
     "//base/test:test_support",

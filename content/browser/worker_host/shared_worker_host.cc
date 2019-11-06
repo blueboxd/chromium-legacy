@@ -334,6 +334,13 @@ void SharedWorkerHost::AllowCacheStorage(
           GetRenderFrameIDsForWorker()));
 }
 
+void SharedWorkerHost::AllowWebLocks(const GURL& url,
+                                     base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(GetContentClient()->browser()->AllowWorkerWebLocks(
+      url, RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
+      GetRenderFrameIDsForWorker()));
+}
+
 void SharedWorkerHost::BindVideoDecodePerfHistory(
     mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -1500,7 +1500,7 @@ bool IsFormControlVisible(blink::WebLocalFrame* frame,
   if (doc.IsNull())
     return false;
   WebFormControlElement field =
-      FindFormControlElementsByUniqueRendererId(doc, field_renderer_id);
+      FindFormControlElementByUniqueRendererId(doc, field_renderer_id);
   return field.IsNull() ? false : IsWebElementVisible(field);
 }
 
@@ -2144,7 +2144,7 @@ WebFormElement FindFormByUniqueRendererId(WebDocument doc,
   return WebFormElement();
 }
 
-WebFormControlElement FindFormControlElementsByUniqueRendererId(
+WebFormControlElement FindFormControlElementByUniqueRendererId(
     WebDocument doc,
     uint32_t form_control_renderer_id) {
   WebElementCollection elements = doc.All();

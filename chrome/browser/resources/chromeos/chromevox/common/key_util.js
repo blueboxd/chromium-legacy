@@ -117,7 +117,7 @@ cvox.KeyUtil.keyEventToKeySequence = function(keyEvent) {
       keySequence.equals(util.prevKeySequence)) {
     var prevTime = util.modeKeyPressTime;
     var delta = currTime - prevTime;
-    if (prevTime > 0 && delta > 100 && delta < 300) {  // Double tap
+    if (prevTime > 0 && delta > 100 && delta < 300) /* Double tap */ {
       keySequence = util.prevKeySequence;
       keySequence.doubleTap = true;
       util.prevKeySequence = null;

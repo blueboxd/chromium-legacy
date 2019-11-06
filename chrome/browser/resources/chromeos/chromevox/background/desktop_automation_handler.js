@@ -141,8 +141,9 @@ DesktopAutomationHandler.prototype = {
    */
   onEventDefault: function(evt) {
     var node = evt.target;
-    if (!node)
+    if (!node) {
       return;
+    }
 
     // Decide whether to announce and sync this event.
     if (!DesktopAutomationHandler.announceActions &&
@@ -176,12 +177,15 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onEventIfInRange: function(evt) {
-    if (!DesktopAutomationHandler.announceActions && evt.eventFrom == 'action')
+    if (!DesktopAutomationHandler.announceActions &&
+        evt.eventFrom == 'action') {
       return;
+    }
 
     var prev = ChromeVoxState.instance.currentRange;
-    if (!prev)
+    if (!prev) {
       return;
+    }
 
     if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
@@ -221,8 +225,9 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onEventIfSelected: function(evt) {
-    if (evt.target.selected)
+    if (evt.target.selected) {
       this.onEventDefault(evt);
+    }
   },
 
   /**
@@ -232,8 +237,9 @@ DesktopAutomationHandler.prototype = {
     // Don't report changes on editable nodes since they interfere with text
     // selection changes. Users can query via Search+k for the current state of
     // the text field (which would also report the entire value).
-    if (evt.target.state[StateType.EDITABLE])
+    if (evt.target.state[StateType.EDITABLE]) {
       return;
+    }
 
     // Only report attribute changes on some *Option roles if it is selected.
     if ((evt.target.role == RoleType.MENU_LIST_OPTION ||
@@ -264,14 +270,16 @@ DesktopAutomationHandler.prototype = {
     }
 
     chrome.automation.getFocus(function(focus) {
-      if (!focus && !node)
+      if (!focus && !node) {
         return;
+      }
 
       focus = node || focus;
       var focusedRoot = AutomationUtil.getTopLevelRoot(focus);
       var output = new Output();
-      if (focus != focusedRoot && focusedRoot)
+      if (focus != focusedRoot && focusedRoot) {
         output.format('$name', focusedRoot);
+      }
 
       // Even though we usually don't output events from actions, hit test
       // results should generate output.
@@ -286,8 +294,9 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onHover: function(evt) {
-    if (!GestureCommandHandler.getEnabled())
+    if (!GestureCommandHandler.getEnabled()) {
       return;
+    }
 
     EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
@@ -295,23 +304,27 @@ DesktopAutomationHandler.prototype = {
     var targetLeaf = null;
     var targetObject = null;
     while (target && target != target.root) {
-      if (!targetObject && AutomationPredicate.object(target))
+      if (!targetObject && AutomationPredicate.object(target)) {
         targetObject = target;
-      if (AutomationPredicate.touchLeaf(target))
+      }
+      if (AutomationPredicate.touchLeaf(target)) {
         targetLeaf = target;
+      }
       target = target.parent;
     }
 
     target = targetLeaf || targetObject;
-    if (!target)
+    if (!target) {
       return;
+    }
 
     if (ChromeVoxState.instance.currentRange &&
         target == ChromeVoxState.instance.currentRange.start.node)
       return;
 
-    if (!this.createTextEditHandlerIfNeeded_(target))
+    if (!this.createTextEditHandlerIfNeeded_(target)) {
       this.textEditHandler_ = null;
+    }
 
     Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     this.onEventDefault(
@@ -323,8 +336,9 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onActiveDescendantChanged: function(evt) {
-    if (!evt.target.activeDescendant || !evt.target.state.focused)
+    if (!evt.target.activeDescendant || !evt.target.state.focused) {
       return;
+    }
 
     // Various events might come before a key press (which forces flushed
     // speech) and this handler. Force output to be at least category flushed.
@@ -349,8 +363,9 @@ DesktopAutomationHandler.prototype = {
   onBlur: function(evt) {
     // Nullify focus if it no longer exists.
     chrome.automation.getFocus(function(focus) {
-      if (!focus)
+      if (!focus) {
         ChromeVoxState.instance.setCurrentRange(null);
+      }
     });
   },
 
@@ -359,8 +374,9 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onCheckedStateChanged: function(evt) {
-    if (!AutomationPredicate.checkable(evt.target))
+    if (!AutomationPredicate.checkable(evt.target)) {
       return;
+    }
 
     var event = new CustomAutomationEvent(
         EventType.CHECKED_STATE_CHANGED, evt.target, evt.eventFrom);
@@ -374,8 +390,9 @@ DesktopAutomationHandler.prototype = {
     var selectionStart = evt.target.selectionStartObject;
 
     // No selection.
-    if (!selectionStart)
+    if (!selectionStart) {
       return;
+    }
 
     // A caller requested this event be ignored.
     if (this.shouldIgnoreDocumentSelectionFromAction_ &&
@@ -406,20 +423,25 @@ DesktopAutomationHandler.prototype = {
     }
 
     // Invalidate any previous editable text handler state.
-    if (!this.createTextEditHandlerIfNeeded_(evt.target, true))
+    if (!this.createTextEditHandlerIfNeeded_(evt.target, true)) {
       this.textEditHandler_ = null;
+    }
 
     var node = evt.target;
 
     // Discard focus events on embeddedObject and webView.
-    if (node.role == RoleType.EMBEDDED_OBJECT || node.role == RoleType.WEB_VIEW)
+    if (node.role == RoleType.EMBEDDED_OBJECT ||
+        node.role == RoleType.WEB_VIEW) {
       return;
+    }
 
-    if (node.role == RoleType.UNKNOWN)
+    if (node.role == RoleType.UNKNOWN) {
       return;
+    }
 
-    if (!node.root)
+    if (!node.root) {
       return;
+    }
 
     // Update the focused root url, which gets used as part of focus recovery.
     this.lastRootUrl_ = node.root.docUrl || '';
@@ -438,8 +460,9 @@ DesktopAutomationHandler.prototype = {
   onLoadComplete: function(evt) {
     // We are only interested in load completes on valid top level roots.
     var top = AutomationUtil.getTopLevelRoot(evt.target);
-    if (!top || top != evt.target.root || !top.docUrl)
+    if (!top || top != evt.target.root || !top.docUrl) {
       return;
+    }
 
     this.lastRootUrl_ = '';
     chrome.automation.getFocus(function(focus) {
@@ -449,8 +472,9 @@ DesktopAutomationHandler.prototype = {
       // if focus is the ancestor of the load complete target (below).
       var focusIsAncestor = AutomationUtil.isDescendantOf(evt.target, focus);
       var focusIsDescendant = AutomationUtil.isDescendantOf(focus, evt.target);
-      if (!focus || (!focusIsAncestor && !focusIsDescendant))
+      if (!focus || (!focusIsAncestor && !focusIsDescendant)) {
         return;
+      }
 
       if (focusIsAncestor) {
         focus = evt.target;
@@ -490,8 +514,9 @@ DesktopAutomationHandler.prototype = {
     }
 
     var cur = ChromeVoxState.instance.currentRange;
-    if (!cur)
+    if (!cur) {
       return;
+    }
 
     if (AutomationUtil.isDescendantOf(cur.start.node, evt.target) ||
         AutomationUtil.isDescendantOf(cur.end.node, evt.target)) {
@@ -530,8 +555,9 @@ DesktopAutomationHandler.prototype = {
         evt.target.state[StateType.RICHLY_EDITABLE])
       return;
 
-    if (!this.createTextEditHandlerIfNeeded_(evt.target))
+    if (!this.createTextEditHandlerIfNeeded_(evt.target)) {
       return;
+    }
 
     if (!ChromeVoxState.instance.currentRange) {
       this.onEventDefault(evt);
@@ -565,8 +591,9 @@ DesktopAutomationHandler.prototype = {
    */
   onValueChanged: function(evt) {
     // Skip root web areas.
-    if (evt.target.role == RoleType.ROOT_WEB_AREA)
+    if (evt.target.role == RoleType.ROOT_WEB_AREA) {
       return;
+    }
 
     // Skip all unfocused text fields.
     if (!evt.target.state[StateType.FOCUSED] &&
@@ -615,8 +642,9 @@ DesktopAutomationHandler.prototype = {
    */
   onScrollPositionChanged: function(evt) {
     var currentRange = ChromeVoxState.instance.currentRange;
-    if (currentRange && currentRange.isValid())
+    if (currentRange && currentRange.isValid()) {
       new Output().withLocation(currentRange, null, evt.type).go();
+    }
   },
 
   /**
@@ -640,8 +668,9 @@ DesktopAutomationHandler.prototype = {
       var override = AutomationPredicate.menuItem(evt.target) ||
           (evt.target.root == focus.root &&
            focus.root.role == RoleType.DESKTOP);
-      if (override || AutomationUtil.isDescendantOf(evt.target, focus))
+      if (override || AutomationUtil.isDescendantOf(evt.target, focus)) {
         this.onEventDefault(evt);
+      }
     }.bind(this));
   },
 
@@ -679,8 +708,9 @@ DesktopAutomationHandler.prototype = {
    * @return {boolean} True if the handler exists (created/already present).
    */
   createTextEditHandlerIfNeeded_: function(node, opt_onFocus) {
-    if (!node.state.editable)
+    if (!node.state.editable) {
       return false;
+    }
 
     if (!ChromeVoxState.instance.currentRange ||
         !ChromeVoxState.instance.currentRange.start ||
@@ -723,8 +753,9 @@ DesktopAutomationHandler.prototype = {
    */
   maybeRecoverFocusAndOutput_: function(evt, focus) {
     var focusedRoot = AutomationUtil.getTopLevelRoot(focus);
-    if (!focusedRoot)
+    if (!focusedRoot) {
       return;
+    }
 
     var curRoot;
     if (ChromeVoxState.instance.currentRange) {
@@ -754,8 +785,9 @@ DesktopAutomationHandler.prototype = {
     }
 
     // This catches initial focus (i.e. on startup).
-    if (!curRoot && focus != focusedRoot)
+    if (!curRoot && focus != focusedRoot) {
       o.format('$name', focusedRoot);
+    }
 
     ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
 

@@ -43,7 +43,7 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
     chromeos::shill_clients::InitializeFakes();
     chromeos::NetworkHandler::Initialize();
 #endif
-    network_change_notifier_ = net::NetworkChangeNotifier::CreateMock();
+    network_change_notifier_ = net::NetworkChangeNotifier::CreateMockIfNeeded();
     // We need to initialize the above *before* the base fixture instantiates
     // the device service.
     DeviceServiceTestBase::SetUp();

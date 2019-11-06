@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -95,10 +96,19 @@ void ScopedTestNativeMessagingHost::RegisterTestHost(bool user_level) {
       temp_dir_.GetPath()));
 #endif
 
+  base::CopyFile(test_user_data_dir.AppendASCII("echo.py"),
+                 temp_dir_.GetPath().AppendASCII("echo.py"));
+#if defined(OS_WIN)
+  base::FilePath host_path = temp_dir_.GetPath().AppendASCII("echo.bat");
+  base::CopyFile(test_user_data_dir.AppendASCII("echo.bat"), host_path);
+#endif
+
 #if defined(OS_POSIX)
-  base::FilePath host_path = test_user_data_dir.AppendASCII("echo.py");
-#else
-  base::FilePath host_path = test_user_data_dir.AppendASCII("echo.bat");
+  base::FilePath host_path = temp_dir_.GetPath().AppendASCII("echo.py");
+  ASSERT_TRUE(base::SetPosixFilePermissions(
+      host_path, base::FILE_PERMISSION_READ_BY_USER |
+                     base::FILE_PERMISSION_WRITE_BY_USER |
+                     base::FILE_PERMISSION_EXECUTE_BY_USER));
 #endif
   ASSERT_NO_FATAL_FAILURE(WriteTestNativeHostManifest(
       temp_dir_.GetPath(), kHostName, host_path, user_level, false));

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -16,7 +17,6 @@
 #include "ui/gfx/x/x11_types.h"
 
 class SkCanvas;
-class SkSurface;
 
 namespace base {
 class TaskRunner;
@@ -37,10 +37,9 @@ class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
 
   ~X11SoftwareBitmapPresenter();
 
-  bool ShmPoolReady() const;
-  bool Resize(const gfx::Size& pixel_size);
+  void Resize(const gfx::Size& pixel_size);
   SkCanvas* GetSkCanvas();
-  void EndPaint(sk_sp<SkSurface> sk_surface, const gfx::Rect& damage_rect);
+  void EndPaint(const gfx::Rect& damage_rect);
   void OnSwapBuffers(SwapBuffersCallback swap_ack_callback);
   int MaxFramesPending() const;
 
@@ -57,6 +56,8 @@ class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
                               GC gc,
                               const void* data);
 
+  bool ShmPoolReady() const;
+
   gfx::AcceleratedWidget widget_;
   XDisplay* display_;
   GC gc_;
@@ -68,6 +69,9 @@ class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
 
   scoped_refptr<ui::XShmImagePoolBase> shm_pool_;
   bool needs_swap_ = false;
+
+  base::TaskRunner* host_task_runner_;
+  sk_sp<SkSurface> surface_;
 
   gfx::Size viewport_pixel_size_;
 

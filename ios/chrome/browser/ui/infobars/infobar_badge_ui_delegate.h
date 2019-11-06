@@ -22,6 +22,12 @@ enum class InfobarType;
 - (void)infobarWasAccepted:(InfobarType)infobarType
                forWebState:(web::WebState*)webState;
 
+// Called whenever the revert action button of an Infobar of type |infobarType|
+// in |webState| was tapped (e.g. the Translate "Show Original" action). It is
+// triggered by the banner button. |webState| cannot be nil.
+- (void)infobarWasReverted:(InfobarType)infobarType
+               forWebState:(web::WebState*)webState;
+
 // Called whenever an InfobarBanner of type |infobarType| in |webState| was
 // presented. |webState| cannot be nil.
 - (void)infobarBannerWasPresented:(InfobarType)infobarType

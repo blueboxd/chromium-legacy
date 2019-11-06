@@ -36,8 +36,9 @@ BaseAutomationHandler.prototype = {
    * @protected
    */
   addListener_: function(eventType, eventCallback) {
-    if (this.listeners_[eventType])
+    if (this.listeners_[eventType]) {
       throw 'Listener already added: ' + eventType;
+    }
 
     var listener = this.makeListener_(eventCallback.bind(this));
     this.node_.addEventListener(eventType, listener, true);
@@ -60,8 +61,9 @@ BaseAutomationHandler.prototype = {
    */
   makeListener_: function(callback) {
     return function(evt) {
-      if (this.willHandleEvent_(evt))
+      if (this.willHandleEvent_(evt)) {
         return;
+      }
       callback(evt);
       this.didHandleEvent_(evt);
     }.bind(this);

@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -45,6 +46,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #import "chrome/common/mac/app_mode_common.h"
@@ -612,6 +614,29 @@ std::unique_ptr<web_app::ShortcutInfo> BuildShortcutInfoFromBundle(
   return shortcut_info;
 }
 
+base::FilePath GetMultiProfileAppDataDir(base::FilePath app_data_dir) {
+  // The kCrAppModeUserDataDirKey is expected to be a path in kWebAppDirname,
+  // and the true user data dir is extracted by going three directories up.
+  // For profile-agnostic apps, remove this reference to the profile name.
+  // TODO(https://crbug.com/1021237): Do not specify kCrAppModeUserDataDirKey
+  // if Chrome is using the default user data dir.
+
+  // Strip the app name directory.
+  base::FilePath app_name_dir = app_data_dir.BaseName();
+  app_data_dir = app_data_dir.DirName();
+
+  // Strip kWebAppDirname.
+  base::FilePath web_app_dir = app_data_dir.BaseName();
+  app_data_dir = app_data_dir.DirName();
+
+  // Strip the profile and replace it with kNewProfilePath.
+  app_data_dir = app_data_dir.DirName();
+  const std::string kNewProfilePath("-");
+  return app_data_dir.Append(kNewProfilePath)
+      .Append(web_app_dir)
+      .Append(app_name_dir);
+}
+
 }  // namespace
 
 namespace web_app {
@@ -931,12 +956,19 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
             forKey:app_mode::kCFBundleShortVersionStringKey];
   [plist setObject:base::SysUTF8ToNSString(GetBundleIdentifier())
             forKey:base::mac::CFToNSCast(kCFBundleIdentifierKey)];
-  [plist setObject:base::mac::FilePathToNSString(app_data_dir_)
-            forKey:app_mode::kCrAppModeUserDataDirKey];
-  [plist setObject:base::mac::FilePathToNSString(info_->profile_path.BaseName())
-            forKey:app_mode::kCrAppModeProfileDirKey];
-  [plist setObject:base::SysUTF8ToNSString(info_->profile_name)
-            forKey:app_mode::kCrAppModeProfileNameKey];
+  if (IsMultiProfile()) {
+    base::FilePath data_dir = GetMultiProfileAppDataDir(app_data_dir_);
+    [plist setObject:base::mac::FilePathToNSString(data_dir)
+              forKey:app_mode::kCrAppModeUserDataDirKey];
+  } else {
+    [plist setObject:base::mac::FilePathToNSString(app_data_dir_)
+              forKey:app_mode::kCrAppModeUserDataDirKey];
+    [plist
+        setObject:base::mac::FilePathToNSString(info_->profile_path.BaseName())
+           forKey:app_mode::kCrAppModeProfileDirKey];
+    [plist setObject:base::SysUTF8ToNSString(info_->profile_name)
+              forKey:app_mode::kCrAppModeProfileNameKey];
+  }
   [plist setObject:[NSNumber numberWithBool:YES]
             forKey:app_mode::kLSHasLocalizedDisplayNameKey];
   [plist setObject:[NSNumber numberWithBool:YES]
@@ -963,7 +995,8 @@ bool WebAppShortcutCreator::UpdateDisplayName(
 
   NSString* bundle_name = base::SysUTF16ToNSString(info_->title);
   NSString* display_name = base::SysUTF16ToNSString(info_->title);
-  if (HasExistingExtensionShimForDifferentProfile(
+  if (!IsMultiProfile() &&
+      HasExistingExtensionShimForDifferentProfile(
           GetChromeAppsFolder(), info_->extension_id, info_->profile_path)) {
     display_name = [bundle_name
         stringByAppendingString:base::SysUTF8ToNSString(
@@ -1002,12 +1035,27 @@ bool WebAppShortcutCreator::UpdateIcon(const base::FilePath& app_path) const {
 
 std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesByIdUnsorted()
     const {
-  const std::string bundle_id = GetBundleIdentifier();
-  base::ScopedCFTypeRef<CFStringRef> bundle_id_cf(
-      base::SysUTF8ToCFStringRef(bundle_id));
+  base::scoped_nsobject<NSMutableArray> urls([[NSMutableArray alloc] init]);
 
-  // Retrieve the URLs found by LaunchServices.
-  base::scoped_nsobject<NSArray> urls(NULL);
+  // If in multi-profile mode, search using the profile-scoped bundle id, in
+  // case the user has an old shim hanging around.
+  if (IsMultiProfile()) {
+    base::ScopedCFTypeRef<CFStringRef> bundle_id_cf(
+        base::SysUTF8ToCFStringRef(GetProfileScopedBundleIdentifier()));
+    base::scoped_nsobject<NSArray> bundle_urls(base::mac::CFToNSCast(
+        LSCopyApplicationURLsForBundleIdentifier(bundle_id_cf.get(), nullptr)));
+    [urls addObjectsFromArray:bundle_urls];
+  }
+
+  // Search using LaunchServices using the default bundle id.
+  const std::string bundle_id = GetBundleIdentifier();
+  {
+    base::ScopedCFTypeRef<CFStringRef> bundle_id_cf(
+        base::SysUTF8ToCFStringRef(bundle_id));
+    base::scoped_nsobject<NSArray> bundle_urls(base::mac::CFToNSCast(
+        LSCopyApplicationURLsForBundleIdentifier(bundle_id_cf.get(), nullptr)));
+    [urls addObjectsFromArray:bundle_urls];
+  }
 
   // Store only those results corresponding to this user data dir.
   std::vector<base::FilePath> paths;
@@ -1069,7 +1117,23 @@ std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesById() const {
   return paths;
 }
 
+bool WebAppShortcutCreator::IsMultiProfile() const {
+  // Only PWAs and bookmark apps are multi-profile capable.
+  if (!info_->url.is_valid())
+    return false;
+  return base::FeatureList::IsEnabled(features::kAppShimMultiProfile);
+}
+
 std::string WebAppShortcutCreator::GetBundleIdentifier() const {
+  if (IsMultiProfile()) {
+    std::string bundle_id =
+        base::mac::BaseBundleID() + std::string(".app.") + info_->extension_id;
+    return bundle_id;
+  }
+  return GetProfileScopedBundleIdentifier();
+}
+
+std::string WebAppShortcutCreator::GetProfileScopedBundleIdentifier() const {
   // Replace spaces in the profile path with hyphen.
   std::string normalized_profile_path;
   base::ReplaceChars(info_->profile_path.BaseName().value(), " ", "-",
@@ -1080,10 +1144,6 @@ std::string WebAppShortcutCreator::GetBundleIdentifier() const {
                           normalized_profile_path + "-" + info_->extension_id;
 
   return bundle_id;
-}
-
-std::string WebAppShortcutCreator::GetInternalBundleIdentifier() const {
-  return GetBundleIdentifier() + "-internal";
 }
 
 void WebAppShortcutCreator::RevealAppShimInFinder() const {

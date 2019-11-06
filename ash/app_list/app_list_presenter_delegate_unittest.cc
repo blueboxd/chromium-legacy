@@ -2500,14 +2500,13 @@ class AppListPresenterDelegateHomeLauncherTest
   AppListPresenterDelegateHomeLauncherTest() {
     if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
-          {features::kEnableBackgroundBlur, features::kHomerviewGesture,
+          {features::kEnableBackgroundBlur,
            features::kDragFromShelfToHomeOrOverview},
           {});
     } else {
       scoped_feature_list_.InitWithFeatures(
           {features::kEnableBackgroundBlur},
-          {features::kHomerviewGesture,
-           features::kDragFromShelfToHomeOrOverview});
+          {features::kDragFromShelfToHomeOrOverview});
     }
   }
   ~AppListPresenterDelegateHomeLauncherTest() override = default;

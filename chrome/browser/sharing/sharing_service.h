@@ -43,7 +43,7 @@ class DeviceInfo;
 class SyncService;
 }  // namespace syncer
 
-class NotificationDisplayService;
+class Profile;
 class RemoteCopyMessageHandler;
 class SharedClipboardMessageHandler;
 class SharingFCMHandler;
@@ -73,6 +73,7 @@ class SharingService : public KeyedService,
   };
 
   SharingService(
+      Profile* profile,
       std::unique_ptr<SharingSyncPreference> sync_prefs,
       std::unique_ptr<VapidKeyManager> vapid_key_manager,
       std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
@@ -82,8 +83,7 @@ class SharingService : public KeyedService,
       gcm::GCMDriver* gcm_driver,
       syncer::DeviceInfoTracker* device_info_tracker,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
-      syncer::SyncService* sync_service,
-      NotificationDisplayService* notification_display_service);
+      syncer::SyncService* sync_service);
   ~SharingService() override;
 
   // Returns the device matching |guid|, or nullptr if no match was found.
@@ -125,6 +125,9 @@ class SharingService : public KeyedService,
 
   // Returns SharingSyncPreference for integration tests.
   SharingSyncPreference* GetSyncPreferencesForTesting() const;
+
+  // Returns SharingFCMHandler for testing.
+  SharingFCMHandler* GetFCMHandlerForTesting() const;
 
  private:
   // Overrides for syncer::SyncServiceObserver.

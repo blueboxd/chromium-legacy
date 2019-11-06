@@ -17,8 +17,8 @@ import androidx.annotation.Nullable;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
@@ -50,20 +50,20 @@ public class ThemePreferences extends PreferenceFragmentCompat {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.theme_preferences);
         getActivity().setTitle(R.string.prefs_themes);
 
-        ChromePreferenceManager chromePreferenceManager = ChromePreferenceManager.getInstance();
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
         RadioButtonGroupThemePreference radioButtonGroupThemePreference =
                 (RadioButtonGroupThemePreference) findPreference(PREF_UI_THEME_PREF);
         radioButtonGroupThemePreference.initialize(NightModeUtils.getThemeSetting(),
-                chromePreferenceManager.readBoolean(DARKEN_WEBSITES_ENABLED_KEY, false));
+                sharedPreferencesManager.readBoolean(DARKEN_WEBSITES_ENABLED_KEY, false));
 
         radioButtonGroupThemePreference.setOnPreferenceChangeListener((preference, newValue) -> {
             if (ChromeFeatureList.isEnabled(
                         ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
-                chromePreferenceManager.writeBoolean(DARKEN_WEBSITES_ENABLED_KEY,
+                sharedPreferencesManager.writeBoolean(DARKEN_WEBSITES_ENABLED_KEY,
                         radioButtonGroupThemePreference.isDarkenWebsitesEnabled());
             }
             int theme = (int) newValue;
-            chromePreferenceManager.writeInt(UI_THEME_SETTING_KEY, theme);
+            sharedPreferencesManager.writeInt(UI_THEME_SETTING_KEY, theme);
             return true;
         });
     }

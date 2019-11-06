@@ -14,10 +14,9 @@ namespace blink {
 
 class ScriptState;
 
-// An interface for querying the state of the device's screen space.
-//
-// The interface is available in both window and service worker execution
-// contexts.
+// A proposed interface for querying the state of the device's screen space.
+// https://github.com/spark008/screen-enumeration/blob/master/EXPLAINER.md
+// The interface is available in both window and worker execution contexts.
 class ScreenManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -25,8 +24,8 @@ class ScreenManager final : public ScriptWrappable {
   // Creates a ScreenManager and binds it to the browser-side implementation.
   explicit ScreenManager(mojo::Remote<mojom::blink::ScreenEnumeration> backend);
 
-  // Resolves to the list of |Display| objects in the device's screen space.
-  ScriptPromise requestDisplays(ScriptState*, ExceptionState&);
+  // Resolves to the list of |Screen| objects in the device's screen space.
+  ScriptPromise getScreens(ScriptState*, ExceptionState&);
 
   // Called if the backend is disconnected, e.g. during renderer shutdown.
   void OnBackendDisconnected();

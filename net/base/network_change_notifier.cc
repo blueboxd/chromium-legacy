@@ -35,7 +35,7 @@
 #include "net/base/network_change_notifier_linux.h"
 #elif defined(OS_MACOSX)
 #include "net/base/network_change_notifier_mac.h"
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include "net/base/network_change_notifier_posix.h"
 #elif defined(OS_FUCHSIA)
 #include "net/base/network_change_notifier_fuchsia.h"
@@ -45,14 +45,22 @@ namespace net {
 
 namespace {
 
-// The actual singleton notifier.  The class contract forbids usage of the API
-// in ways that would require us to place locks around access to this object.
-// (The prohibition on global non-POD objects makes it tricky to do such a thing
-// anyway.)
+// The process-wide singleton notifier.
 NetworkChangeNotifier* g_network_change_notifier = nullptr;
 
 // Class factory singleton.
 NetworkChangeNotifierFactory* g_network_change_notifier_factory = nullptr;
+
+// Lock to protect |g_network_change_notifier| during creation time. Since
+// creation of the process-wide instance can happen on any thread, this lock is
+// used to guarantee only one instance is created. Once the global instance is
+// created, the owner is responsible for destroying it on the same thread. All
+// the other calls to the NetworkChangeNotifier do not require this lock as
+// the global instance is only destroyed when the process is getting killed.
+base::Lock& NetworkChangeNotifierCreationLock() {
+  static base::NoDestructor<base::Lock> instance;
+  return *instance;
+}
 
 class MockNetworkChangeNotifier : public NetworkChangeNotifier {
  public:
@@ -200,7 +208,13 @@ void NetworkChangeNotifier::SetFactory(
 }
 
 // static
-std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::Create() {
+std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::CreateIfNeeded(
+    NetworkChangeNotifier::ConnectionType initial_type,
+    NetworkChangeNotifier::ConnectionSubtype initial_subtype) {
+  base::AutoLock auto_lock(NetworkChangeNotifierCreationLock());
+  if (g_network_change_notifier)
+    return nullptr;
+
   if (g_network_change_notifier_factory)
     return g_network_change_notifier_factory->CreateInstance();
 
@@ -210,12 +224,14 @@ std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::Create() {
   network_change_notifier->WatchForAddressChange();
   return network_change_notifier;
 #elif defined(OS_ANDROID)
-  // Android builds MUST use their own class factory.
-  CHECK(false);
-  return NULL;
+  // Fallback to use NetworkChangeNotifierPosix if NetworkChangeNotifierFactory
+  // is not set. Currently used for tests and when running network
+  // service in a separate process.
+  return std::make_unique<NetworkChangeNotifierPosix>(initial_type,
+                                                      initial_subtype);
 #elif defined(OS_CHROMEOS)
-  return std::make_unique<NetworkChangeNotifierPosix>(CONNECTION_NONE,
-                                                      SUBTYPE_NONE);
+  return std::make_unique<NetworkChangeNotifierPosix>(initial_type,
+                                                      initial_subtype);
 #elif defined(OS_LINUX)
   return std::make_unique<NetworkChangeNotifierLinux>(
       std::unordered_set<std::string>());
@@ -228,11 +244,6 @@ std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::Create() {
   NOTIMPLEMENTED();
   return NULL;
 #endif
-}
-
-// static
-bool NetworkChangeNotifier::HasNetworkChangeNotifier() {
-  return g_network_change_notifier != nullptr;
 }
 
 // static
@@ -488,7 +499,12 @@ NetworkChangeNotifier::ConnectionTypeFromInterfaceList(
 }
 
 // static
-std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::CreateMock() {
+std::unique_ptr<NetworkChangeNotifier>
+NetworkChangeNotifier::CreateMockIfNeeded() {
+  base::AutoLock auto_lock(NetworkChangeNotifierCreationLock());
+  if (g_network_change_notifier)
+    return nullptr;
+
   // Use an empty noop SystemDnsConfigChangeNotifier to disable actual system
   // DNS configuration notifications.
   return std::make_unique<MockNetworkChangeNotifier>(

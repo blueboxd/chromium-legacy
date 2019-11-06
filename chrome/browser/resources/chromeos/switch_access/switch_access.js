@@ -98,7 +98,9 @@ class SwitchAccess {
       this.desktop_ = desktop;
       this.findBackButtonNode_();
 
-      if (this.navReadyCallback_) this.navReadyCallback_();
+      if (this.navReadyCallback_) {
+        this.navReadyCallback_();
+      }
     }.bind(this));
   }
 
@@ -107,7 +109,9 @@ class SwitchAccess {
    * @override
    */
   enterMenu() {
-    if (this.navigationManager_) this.navigationManager_.enterMenu();
+    if (this.navigationManager_) {
+      this.navigationManager_.enterMenu();
+    }
   }
 
   /**
@@ -115,8 +119,12 @@ class SwitchAccess {
    * @override
    */
   moveForward() {
-    if (this.navigationManager_) this.navigationManager_.moveForward();
-    if (this.onMoveForwardForTesting_) this.onMoveForwardForTesting_();
+    if (this.navigationManager_) {
+      this.navigationManager_.moveForward();
+    }
+    if (this.onMoveForwardForTesting_) {
+      this.onMoveForwardForTesting_();
+    }
   }
 
   /**
@@ -124,7 +132,9 @@ class SwitchAccess {
    * @override
    */
   moveBackward() {
-    if (this.navigationManager_) this.navigationManager_.moveBackward();
+    if (this.navigationManager_) {
+      this.navigationManager_.moveBackward();
+    }
   }
 
   /**
@@ -132,7 +142,9 @@ class SwitchAccess {
    * @override
    */
   selectCurrentNode() {
-    if (this.navigationManager_) this.navigationManager_.selectCurrentNode();
+    if (this.navigationManager_) {
+      this.navigationManager_.selectCurrentNode();
+    }
   }
 
   /**
@@ -274,7 +286,9 @@ class SwitchAccess {
    */
   onPrefsReady_() {
     this.autoScanManager_.onPrefsReady();
-    if (this.navigationManager_) this.navigationManager_.onPrefsReady();
+    if (this.navigationManager_) {
+      this.navigationManager_.onPrefsReady();
+    }
   }
 
   /** @return {chrome.automation.AutomationNode} */
@@ -292,7 +306,9 @@ class SwitchAccess {
    * Looks for the back button node.
    */
   findBackButtonNode_() {
-    if (!this.desktop_) return;
+    if (!this.desktop_) {
+      return;
+    }
     this.backButtonAutomationNode_ =
         new AutomationTreeWalker(
             this.desktop_, constants.Dir.FORWARD,

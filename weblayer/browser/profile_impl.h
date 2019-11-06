@@ -49,6 +49,8 @@ class ProfileImpl : public Profile {
   class BrowserContextImpl;
   class DataClearer;
 
+  void ClearRendererCache();
+
   base::FilePath path_;
   std::unique_ptr<BrowserContextImpl> browser_context_;
 

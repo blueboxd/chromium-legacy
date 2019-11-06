@@ -824,6 +824,13 @@ public class JsJavaInteractionTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testPostMessage_JsObjectName_Symbol() throws Throwable {
+        checkInjectAndAccessJsObjectNameAsWindowProperty("*");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testPostMessage_JsObjectName_Keyword() throws Throwable {
         checkInjectAndAccessJsObjectNameAsWindowProperty("var");
     }

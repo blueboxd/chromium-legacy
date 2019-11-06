@@ -203,6 +203,8 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     }
 
     if (decoded->channel_count() != config_.channel_number) {
+      LOG(WARNING) << "channel_count changed to " << decoded->channel_count()
+                   << " from " << config_.channel_number;
       config_.channel_number = decoded->channel_count();
       decoded_bus_.reset();
     }

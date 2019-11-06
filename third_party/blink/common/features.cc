@@ -237,6 +237,10 @@ const base::Feature kFileHandlingAPI{"FileHandlingAPI",
 const base::Feature kAllowSyncXHRInPageDismissal{
     "AllowSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows Web Components v0 to be re-enabled.
+const base::Feature kWebComponentsV0Enabled{"WebComponentsV0Enabled",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Prefetch request properties are updated to be privacy-preserving. See
 // crbug.com/988956.
 const base::Feature kPrefetchPrivacyChanges{"PrefetchPrivacyChanges",

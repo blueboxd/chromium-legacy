@@ -272,14 +272,12 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void DestroyDispatcher();
 
   // If frame_sink_id is not passed in, one will be grabbed from
-  // ContextFactoryPrivate. |are_events_in_pixels| indicates if events are
-  // received in pixels. If |are_events_in_pixels| is false, events are
-  // received in DIPs. See Compositor() for details on |trace_environment_name|.
+  // ContextFactoryPrivate. See Compositor() for details on
+  // |trace_environment_name|.
   void CreateCompositor(
       const viz::FrameSinkId& frame_sink_id = viz::FrameSinkId(),
       bool force_software_compositor = false,
       bool use_external_begin_frame_control = false,
-      bool are_events_in_pixels = true,
       const char* trace_environment_name = nullptr);
 
   void InitCompositor();

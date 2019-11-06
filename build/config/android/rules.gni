@@ -4349,7 +4349,15 @@ if (enable_java_templates) {
   #
   #    static_library_provider: Specifies a single target that this target will
   #      use as a static library APK. When proguard is enabled, the
-  #      static_library_provider target will perform the synchronized dex step.
+  #      static_library_provider target will perform the synchronized dex step
+  #      unless |static_library_proguard_disabled| is set.
+  #      Additionally, when allotting libraries to be packaged into modules, the
+  #      libraries packaged into the static library will be accounted for to
+  #      avoid library duplication. Effectively, the static library will be
+  #      treated as the parent of the base module.
+  #
+  #    static_library_proguard_disabled: If true will not use the
+  #      |static_library_provider| to perform synchronized proguarding.
   #
   #    verify_proguard_flags: Enables verification of expected merged proguard
   #      flags based on a golden file.
@@ -4370,6 +4378,16 @@ if (enable_java_templates) {
   #
   template("android_app_bundle") {
     _target_name = target_name
+    _uses_static_library = defined(invoker.static_library_provider)
+    _proguard_enabled =
+        defined(invoker.proguard_enabled) && invoker.proguard_enabled
+    if (_proguard_enabled) {
+      _static_library_proguard_disabled =
+          defined(invoker.static_library_proguard_disabled) &&
+          invoker.static_library_proguard_disabled
+    } else {
+      assert(!defined(invoker.static_library_proguard_disabled))
+    }
 
     _bundle_base_path = "$root_build_dir/apks"
     if (defined(invoker.bundle_base_path)) {
@@ -4399,11 +4417,12 @@ if (enable_java_templates) {
         module_target = invoker.base_module_target
         build_config = _base_module_build_config
         build_config_target = _base_module_build_config_target
+        if (_uses_static_library) {
+          parent = "lib"
+        }
       },
     ]
 
-    _proguard_enabled =
-        defined(invoker.proguard_enabled) && invoker.proguard_enabled
     _enable_multidex =
         !defined(invoker.enable_multidex) || invoker.enable_multidex
 
@@ -4415,8 +4434,7 @@ if (enable_java_templates) {
     not_needed([ "_enable_multidex" ])
 
     if (_proguard_enabled) {
-      _uses_static_library = defined(invoker.static_library_provider)
-      if (_uses_static_library) {
+      if (!_static_library_proguard_disabled && _uses_static_library) {
         _sync_dex_target_dep = "${invoker.static_library_provider}__dexsplitter"
       } else {
         _sync_dex_target = "${_target_name}__sync_dex"
@@ -4449,6 +4467,7 @@ if (enable_java_templates) {
             "$_module_target_gen_dir/${_module_target_name}.build_config"
         _module.build_config_target =
             "$_module_target$build_config_target_suffix"
+        _module.parent = "base"
         _modules += [ _module ]
       }
     }
@@ -4463,9 +4482,26 @@ if (enable_java_templates) {
       _module_build_configs += [ _module.build_config ]
     }
 
+    if (_uses_static_library) {
+      _lib_proxy_module = {
+        name = "lib"
+      }
+      _static_library_target_name =
+          get_label_info(invoker.static_library_provider, "name")
+      _static_library_gen_dir =
+          get_label_info(invoker.static_library_provider, "target_gen_dir")
+      _lib_proxy_module.build_config =
+          "$_static_library_gen_dir/$_static_library_target_name.build_config"
+      _lib_proxy_module.build_config_target =
+          "${invoker.static_library_provider}$build_config_target_suffix"
+    }
+
     # Allot native libraries to modules they should be packaged into. This is
     # necessary since all libraries that are depended on by multiple modules
-    # have to go into base.
+    # have to go into base or the static shared library if it exists.
+    # TODO(crbug.com/1021565): It would be nice if this lived outside the
+    # android_app_bundle template and the static shared library would pull in
+    # the libs as allotted by this step.
     _native_libraries_config =
         "$target_gen_dir/$_target_name.native_libraries_config"
     allot_native_libraries("${_target_name}__allot_native_libraries") {
@@ -4475,6 +4511,9 @@ if (enable_java_templates) {
         "native:extra_shared_libraries",
       ]
       output = _native_libraries_config
+      if (_uses_static_library) {
+        modules += [ _lib_proxy_module ]
+      }
     }
     if (defined(android_app_secondary_abi)) {
       _secondary_abi_native_libraries_config =
@@ -4484,6 +4523,9 @@ if (enable_java_templates) {
         modules = _modules
         native_libraries_filearg_keys = [ "native:secondary_abi_libraries" ]
         output = _secondary_abi_native_libraries_config
+        if (_uses_static_library) {
+          modules += [ _lib_proxy_module ]
+        }
       }
     }
 
@@ -4529,7 +4571,7 @@ if (enable_java_templates) {
     if (_proguard_enabled) {
       # If this Bundle uses a static library, the static library APK will
       # create the synchronized dex file path.
-      if (_uses_static_library) {
+      if (!_static_library_proguard_disabled && _uses_static_library) {
         if (defined(invoker.min_sdk_version)) {
           not_needed(invoker, [ "min_sdk_version" ])
         }

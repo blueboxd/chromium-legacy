@@ -1288,6 +1288,31 @@ bool IsSyncExtensionAvailable() {
   return result;
 }
 
+SkColorType ColorTypeForVisual(void* visual) {
+  struct {
+    SkColorType color_type;
+    unsigned long red_mask;
+    unsigned long green_mask;
+    unsigned long blue_mask;
+  } color_infos[] = {
+      {kRGB_565_SkColorType, 0x1f, 0x7e0, 0xf800},
+      {kARGB_4444_SkColorType, 0xf0, 0xf00, 0xf000},
+      {kRGBA_8888_SkColorType, 0xff, 0xff00, 0xff0000},
+      {kBGRA_8888_SkColorType, 0xff0000, 0xff00, 0xff},
+      {kRGBA_1010102_SkColorType, 0x3ff, 0xffc00, 0x3ff00000},
+  };
+  Visual* vis = reinterpret_cast<Visual*>(visual);
+  for (const auto& color_info : color_infos) {
+    if (vis->red_mask == color_info.red_mask &&
+        vis->green_mask == color_info.green_mask &&
+        vis->blue_mask == color_info.blue_mask) {
+      return color_info.color_type;
+    }
+  }
+  LOG(FATAL) << "Unsupported visual: " << XVisualIDFromVisual(vis);
+  return kUnknown_SkColorType;
+}
+
 XRefcountedMemory::XRefcountedMemory(unsigned char* x11_data, size_t length)
     : x11_data_(length ? x11_data : nullptr), length_(length) {
 }

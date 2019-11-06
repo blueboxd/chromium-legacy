@@ -192,6 +192,15 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         """
         raise exceptions.NotImplementedError()
 
+    @property
+    def keyword_typename(self):
+        """
+        Returns the keyword name of the type if this is a simple built-in type,
+        e.g. "any", "boolean", "unsigned long long", "void", etc.  Otherwise,
+        returns None.
+        """
+        return None
+
     def apply_to_all_composing_elements(self, callback):
         """
         Applies |callback| to all instances of IdlType of which this IdlType
@@ -514,6 +523,10 @@ class SimpleType(IdlType):
         name = 'String' if self._name == 'DOMString' else self._name
         return self._format_type_name(
             NameStyleConverter(name).to_upper_camel_case())
+
+    @property
+    def keyword_typename(self):
+        return self._name
 
     @property
     def is_numeric(self):

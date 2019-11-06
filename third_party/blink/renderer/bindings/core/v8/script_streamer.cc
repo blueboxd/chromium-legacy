@@ -435,11 +435,12 @@ bool ScriptStreamer::TryStartStreaming(
 
   DCHECK(!stream_);
   DCHECK(!source_);
-  stream_ = new SourceStream;
+  auto stream_ptr = std::make_unique<SourceStream>();
+  stream_ = stream_ptr.get();
   // |source_| takes ownership of |stream_|, and will keep |stream_| alive until
   // |source_| is destructed.
-  source_ =
-      std::make_unique<v8::ScriptCompiler::StreamedSource>(stream_, encoding_);
+  source_ = std::make_unique<v8::ScriptCompiler::StreamedSource>(
+      std::move(stream_ptr), encoding_);
 
   std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>
       script_streaming_task(

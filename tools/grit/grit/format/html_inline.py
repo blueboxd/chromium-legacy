@@ -49,8 +49,8 @@ _STYLESHEET_RE = lazy_re.compile(
     r'<link rel="stylesheet"[^>]+?href="(?P<filename>[^"]*)".*?>(\s*</link>)?',
     re.DOTALL)
 _INCLUDE_RE = lazy_re.compile(
-    r'<include[^>]+?src=("(?P<file1>[^">]*)"|\'(?P<file2>[^\'>]*)\').*?>'
-    r'(\s*</include>)?',
+    r'(?P<comment>\/\/ )?<include[^>]+?'
+    r'src=("(?P<file1>[^">]*)"|\'(?P<file2>[^\'>]*)\').*?>(\s*</include>)?',
     re.DOTALL)
 _SRC_RE = lazy_re.compile(
     r'<(?!script)(?:[^>]+?\s)src="(?!\[\[|{{)(?P<filename>[^"\']*)"',

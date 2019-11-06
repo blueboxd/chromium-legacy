@@ -133,10 +133,8 @@ class BundledExchangesReader::SharedFileDataSource final
 };
 
 BundledExchangesReader::BundledExchangesReader(
-    std::unique_ptr<BundledExchangesSource> source,
-    mojo::Remote<data_decoder::mojom::DataDecoderService> service)
+    std::unique_ptr<BundledExchangesSource> source)
     : source_(std::move(source)),
-      parser_(std::move(service)),
       file_(base::MakeRefCounted<SharedFile>(source_->Clone())) {}
 
 BundledExchangesReader::~BundledExchangesReader() {

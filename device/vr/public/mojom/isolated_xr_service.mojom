@@ -56,11 +56,6 @@ struct XRRuntimeSessionOptions {
   // module install UI in the browser process before calling out to devices.
   int32 render_process_id;
   int32 render_frame_id;
-
-  // This flag ensures that render paths that are only supported in WebXR are
-  // not used for WebVR 1.1. It is also used for metrics to distinguish between
-  // WebVR and WebXR APIs.
-  bool is_legacy_webvr;
 };
 
 // An XRRuntime may live in the browser process or a utility process.  The

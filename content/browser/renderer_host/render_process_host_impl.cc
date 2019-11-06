@@ -195,6 +195,7 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "media/webrtc/webrtc_switches.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -2080,10 +2081,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(),
       base::BindRepeating(
           [](RenderProcessHostImpl* host,
-             memory_instrumentation::mojom::CoordinatorConnectorRequest
-                 request) {
+             mojo::PendingReceiver<
+                 memory_instrumentation::mojom::CoordinatorConnector>
+                 receiver) {
             host->coordinator_connector_receiver_.reset();
-            host->coordinator_connector_receiver_.Bind(std::move(request));
+            host->coordinator_connector_receiver_.Bind(std::move(receiver));
             if (!host->GetProcess().IsValid()) {
               // We only want to accept messages from this interface once we
               // have a known PID.

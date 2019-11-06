@@ -64,7 +64,7 @@ perf_test::LuciTestResult CreateTestResult(
     const std::vector<std::string>& tbm_metrics) {
   perf_test::LuciTestResult result =
       perf_test::LuciTestResult::CreateForGTest();
-  result.AddOutputArtifactFile("trace/1", trace_file, "application/json");
+  result.AddOutputArtifactFile("trace/1.json", trace_file, "application/json");
   for (auto& metric : tbm_metrics)
     result.AddTag("tbmv2", metric);
 

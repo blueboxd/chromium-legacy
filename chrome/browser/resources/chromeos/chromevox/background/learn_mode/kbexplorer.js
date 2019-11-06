@@ -143,8 +143,9 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
       break;
     case cvox.BrailleKeyCommand.CHORD:
       var dots = evt.brailleDots;
-      if (!dots)
+      if (!dots) {
         return;
+      }
 
       // First, check for the dots mapping to a key code.
       var keyCode = cvox.BrailleKeyEvent.brailleChordsToStandardKeyCode[dots];
@@ -158,12 +159,13 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
       if (mods) {
         var outputs = [];
         for (var mod in mods) {
-          if (mod == 'ctrlKey')
+          if (mod == 'ctrlKey') {
             outputs.push('control');
-          else if (mod == 'altKey')
+          } else if (mod == 'altKey') {
             outputs.push('alt');
-          else if (mod == 'shiftKey')
+          } else if (mod == 'shiftKey') {
             outputs.push('shift');
+          }
         }
 
         text = outputs.join(' ');
@@ -171,14 +173,16 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
       }
 
       var command = BrailleCommandData.getCommand(dots);
-      if (command && cvox.KbExplorer.onCommand(command))
+      if (command && cvox.KbExplorer.onCommand(command)) {
         return;
+      }
       text = BrailleCommandData.makeShortcutText(dots, true);
       break;
     case cvox.BrailleKeyCommand.DOTS:
       var dots = evt.brailleDots;
-      if (!dots)
+      if (!dots) {
         return;
+      }
       var cells = new ArrayBuffer(1);
       var view = new Uint8Array(cells);
       view[0] = dots;
@@ -190,8 +194,9 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
     case cvox.BrailleKeyCommand.STANDARD_KEY:
       break;
   }
-  if (msgid)
+  if (msgid) {
     text = Msgs.getMsg(msgid, msgArgs);
+  }
   cvox.KbExplorer.output(text || evt.command);
   cvox.KbExplorer.clearRange();
 };
@@ -204,8 +209,9 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
 cvox.KbExplorer.onAccessibilityGesture = function(gesture) {
   cvox.KbExplorer.maybeClose_();
   var gestureData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
-  if (gestureData)
+  if (gestureData) {
     cvox.KbExplorer.onCommand(gestureData.command);
+  }
 };
 
 /**

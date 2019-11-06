@@ -105,12 +105,21 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
     // asynchronous.
     WILL_REDIRECT_REQUEST,
 
+    // The response is being processed. Wait for the NavigationThrottles to
+    // finish running the WillProcessResponse event. This is potentially
+    // asynchronous.
+    WILL_PROCESS_RESPONSE,
+
     // The response started on the IO thread and is ready to be committed. This
     // is one of the two final states for the request.
     RESPONSE_STARTED,
 
     // The request is being canceled.
     CANCELING,
+
+    // The request is failing. Wait for the NavigationThrottles to finish
+    // running the WillFailRequest event. This is potentially asynchronous.
+    WILL_FAIL_REQUEST,
 
     // The request failed on the IO thread and an error page should be
     // displayed. This is one of the two final states for the request.
@@ -125,8 +134,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   //                the duplicates.
   enum NavigationHandleState {
     NOT_CREATED = 0,
-    WILL_FAIL_REQUEST,
-    WILL_PROCESS_RESPONSE,
     READY_TO_COMMIT,
     DID_COMMIT,
     DID_COMMIT_ERROR_PAGE,

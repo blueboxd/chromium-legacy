@@ -220,10 +220,7 @@ GvrSchedulerDelegate::GetWebXrFrameTransportOptions(
   // ClientWait.
   if (gl::GLFence::IsGpuFenceSupported()) {
     webxr_use_gpu_fence_ = true;
-    if (base::AndroidHardwareBufferCompat::IsSupportAvailable() &&
-        !options->is_legacy_webvr) {
-      // Currently, SharedBuffer mode is only supported for WebXR via
-      // XRWebGlDrawingBuffer, WebVR 1.1 doesn't use that.
+    if (base::AndroidHardwareBufferCompat::IsSupportAvailable()) {
       webxr_use_shared_buffer_draw_ = true;
       render_path = MetricsUtilAndroid::XRRenderPath::kSharedBuffer;
     } else {

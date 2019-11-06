@@ -120,7 +120,7 @@ class ProtocolPerfTest
     encode_thread_.Start();
     decode_thread_.Start();
 
-    network_change_notifier_ = net::NetworkChangeNotifier::Create();
+    network_change_notifier_ = net::NetworkChangeNotifier::CreateIfNeeded();
 
     desktop_environment_factory_.reset(
         new FakeDesktopEnvironmentFactory(capture_thread_.task_runner()));

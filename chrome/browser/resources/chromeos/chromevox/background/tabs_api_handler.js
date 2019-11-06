@@ -170,15 +170,17 @@ cvox.TabsApiHandler.prototype = {
    */
   startPageLoadTimer_: function(tabId) {
     if (this.pageLoadIntervalID_) {
-      if (tabId == this.pageLoadTabID_)
+      if (tabId == this.pageLoadTabID_) {
         return;
+      }
       this.cancelPageLoadTimer_();
     }
 
     this.pageLoadTabID_ = tabId;
     this.pageLoadIntervalID_ = window.setInterval(function() {
-      if (this.pageLoadTabID_)
+      if (this.pageLoadTabID_) {
         this.onUpdated(this.pageLoadTabID_, {});
+      }
     }.bind(this), 1000);
   },
 

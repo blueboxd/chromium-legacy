@@ -211,11 +211,46 @@ MadvFreeDiscardableMemoryPosix::CreateMemoryAllocatorDump(
   DFAKE_SCOPED_LOCK(thread_collision_warner_);
 
   using base::trace_event::MemoryAllocatorDump;
+  std::string allocator_dump_name = base::StringPrintf(
+      "discardable/segment_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this));
+
+  MemoryAllocatorDump* allocator_dump =
+      pmd->CreateAllocatorDump(allocator_dump_name);
+
+  bool is_discarded = IsDiscarded();
 
   MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(name);
+  // The effective_size is the amount of unused space as a result of being
+  // page-aligned.
   dump->AddScalar(MemoryAllocatorDump::kNameSize,
                   MemoryAllocatorDump::kUnitsBytes,
-                  static_cast<uint64_t>(size_in_bytes_));
+                  is_discarded ? 0U : static_cast<uint64_t>(size_in_bytes_));
+
+  allocator_dump->AddScalar(
+      MemoryAllocatorDump::kNameSize, MemoryAllocatorDump::kUnitsBytes,
+      is_discarded
+          ? 0U
+          : static_cast<uint64_t>(allocated_pages_ * base::GetPageSize()));
+  allocator_dump->AddScalar(MemoryAllocatorDump::kNameObjectCount,
+                            MemoryAllocatorDump::kUnitsObjects, 1U);
+  allocator_dump->AddScalar(
+      "wasted_size", MemoryAllocatorDump::kUnitsBytes,
+      static_cast<uint64_t>(allocated_pages_ * base::GetPageSize() -
+                            size_in_bytes_));
+  allocator_dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
+                            is_locked_ ? size_in_bytes_ : 0U);
+  allocator_dump->AddScalar("page_count", MemoryAllocatorDump::kUnitsObjects,
+                            static_cast<uint64_t>(allocated_pages_));
+
+  // The amount of space that is discarded, but not unmapped (i.e. the memory
+  // was discarded while unlocked, but the pages are still mapped in memory
+  // since Deallocate() has not been called yet). This instance is discarded if
+  // it is unlocked and not all pages are resident in memory.
+  allocator_dump->AddScalar(
+      "discarded_size", MemoryAllocatorDump::kUnitsBytes,
+      is_discarded ? allocated_pages_ * base::GetPageSize() : 0U);
+
+  pmd->AddSuballocation(dump->guid(), allocator_dump_name);
   return dump;
 }
 

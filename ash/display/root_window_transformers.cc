@@ -33,7 +33,6 @@ namespace {
 // call |CreateRotationTransform()|, the |old_rotation| will implicitly be
 // |display::Display::ROTATE_0|.
 gfx::Transform CreateRootWindowRotationTransform(
-    aura::Window* root_window,
     const display::Display& display) {
   display::ManagedDisplayInfo info =
       Shell::Get()->display_manager()->GetDisplayInfo(display.id());
@@ -46,8 +45,8 @@ gfx::Transform CreateRootWindowRotationTransform(
                                  info.GetLogicalActiveRotation(), size);
 }
 
-gfx::Transform CreateInsetsAndScaleTransform(const gfx::Insets& insets,
-                                             float device_scale_factor) {
+gfx::Transform CreateInsetsTransform(const gfx::Insets& insets,
+                                     float device_scale_factor) {
   gfx::Transform transform;
   if (insets.top() != 0 || insets.left() != 0) {
     float x_offset = insets.left() / device_scale_factor;
@@ -98,16 +97,14 @@ gfx::Transform CreateReverseRotatedInsetsTransform(
 // RootWindowTransformer for ash environment.
 class AshRootWindowTransformer : public RootWindowTransformer {
  public:
-  AshRootWindowTransformer(aura::Window* root, const display::Display& display)
-      : root_window_(root) {
+  AshRootWindowTransformer(const display::Display& display) {
     display::DisplayManager* display_manager = Shell::Get()->display_manager();
     display::ManagedDisplayInfo info =
         display_manager->GetDisplayInfo(display.id());
     host_insets_ = info.GetOverscanInsetsInPixel();
     root_window_bounds_transform_ =
-        CreateInsetsAndScaleTransform(host_insets_,
-                                      display.device_scale_factor()) *
-        CreateRootWindowRotationTransform(root, display);
+        CreateInsetsTransform(host_insets_, display.device_scale_factor()) *
+        CreateRootWindowRotationTransform(display);
     transform_ = root_window_bounds_transform_;
     insets_and_scale_transform_ = CreateReverseRotatedInsetsTransform(
         info.GetLogicalActiveRotation(), host_insets_,
@@ -121,6 +118,9 @@ class AshRootWindowTransformer : public RootWindowTransformer {
     }
 
     CHECK(transform_.GetInverse(&invert_transform_));
+
+    root_window_bounds_transform_.Scale(1.f / display.device_scale_factor(),
+                                        1.f / display.device_scale_factor());
   }
 
   // aura::RootWindowTransformer overrides:
@@ -129,10 +129,8 @@ class AshRootWindowTransformer : public RootWindowTransformer {
     return invert_transform_;
   }
   gfx::Rect GetRootWindowBounds(const gfx::Size& host_size) const override {
-    gfx::Rect bounds(host_size);
-    bounds.Inset(host_insets_);
-    bounds = ui::ConvertRectToDIP(root_window_->layer(), bounds);
-    gfx::RectF new_bounds(bounds);
+    gfx::RectF new_bounds = gfx::RectF(gfx::SizeF(host_size));
+    new_bounds.Inset(host_insets_);
     root_window_bounds_transform_.TransformRect(&new_bounds);
     // Ignore the origin because RootWindow's insets are handled by
     // the transform.
@@ -150,7 +148,6 @@ class AshRootWindowTransformer : public RootWindowTransformer {
  private:
   ~AshRootWindowTransformer() override = default;
 
-  aura::Window* root_window_;
   gfx::Transform transform_;
 
   // The accurate representation of the inverse of the |transform_|.
@@ -323,9 +320,8 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
 }  // namespace
 
 RootWindowTransformer* CreateRootWindowTransformerForDisplay(
-    aura::Window* root,
     const display::Display& display) {
-  return new AshRootWindowTransformer(root, display);
+  return new AshRootWindowTransformer(display);
 }
 
 RootWindowTransformer* CreateRootWindowTransformerForMirroredDisplay(

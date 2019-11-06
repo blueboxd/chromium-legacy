@@ -147,8 +147,9 @@ Panel.init = function() {
   document.addEventListener('keydown', Panel.onKeyDown, false);
   document.addEventListener('mouseup', Panel.onMouseUp, false);
   window.addEventListener('blur', function(evt) {
-    if (evt.target != window || document.activeElement == document.body)
+    if (evt.target != window || document.activeElement == document.body) {
       return;
+    }
 
     Panel.closeMenusAndRestoreFocus();
   }, false);
@@ -246,8 +247,9 @@ Panel.exec = function(command) {
  * @param {Panel.Mode} mode The new mode.
  */
 Panel.setMode = function(mode) {
-  if (Panel.mode_ == mode)
+  if (Panel.mode_ == mode) {
     return;
+  }
 
   Panel.mode_ = mode;
 
@@ -348,8 +350,9 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   var gestures = Object.keys(GestureCommandData.GESTURE_COMMAND_MAP);
   sortedBindings.forEach(goog.bind(function(binding) {
     var command = binding.command;
-    if (sawBindingSet[command])
+    if (sawBindingSet[command]) {
       return;
+    }
     sawBindingSet[command] = true;
     var category = cvox.CommandStore.categoryForCommand(binding.command);
     var menu = category ? categoryToMenu[category] : null;
@@ -398,8 +401,9 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
           var tabs = windows[i].tabs;
           for (var j = 0; j < tabs.length; j++) {
             var title = tabs[j].title;
-            if (tabs[j].active && windows[i].id == lastFocusedWindow.id)
+            if (tabs[j].active && windows[i].id == lastFocusedWindow.id) {
               title += ' ' + Msgs.getMsg('active_tab');
+            }
             tabsMenu.addMenuItem(
                 title, '', '', '', (function(win, tab) {
                                      bkgnd.chrome.windows.update(
@@ -443,8 +447,9 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     for (var i = 0; i < node.standardActions.length; i++) {
       var standardAction = node.standardActions[i];
       var actionMsg = Panel.ACTION_TO_MSG_ID[standardAction];
-      if (!actionMsg)
+      if (!actionMsg) {
         continue;
+      }
       var actionDesc = Msgs.getMsg(actionMsg);
       actionsMenu.addMenuItem(
           actionDesc, '' /* menuItemShortcut */, '' /* menuItemBraille */,
@@ -466,8 +471,9 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   // Activate either the specified menu or the first menu.
   var selectedMenu = Panel.menus_[0];
   for (var i = 0; i < Panel.menus_.length; i++) {
-    if (Panel.menus_[i].menuMsg == opt_activateMenuTitle)
+    if (Panel.menus_[i].menuMsg == opt_activateMenuTitle) {
       selectedMenu = Panel.menus_[i];
+    }
   }
   Panel.activateMenu(selectedMenu);
 };
@@ -491,8 +497,9 @@ Panel.clearMenus = function() {
     $('menu-bar').removeChild(menu.menuBarItemElement);
     $('menus_background').removeChild(menu.menuContainerElement);
   }
-  if (Panel.activeMenu_)
+  if (Panel.activeMenu_) {
     Panel.lastMenu_ = Panel.activeMenu_.menuMsg;
+  }
   Panel.activeMenu_ = null;
 };
 
@@ -569,8 +576,9 @@ Panel.onUpdateBraille = function(data) {
     if (cellCount == cols) {
       cellCount = 0;
       // Check if we reached the limit on the number of rows we can have.
-      if (rowCount == rows)
+      if (rowCount == rows) {
         break;
+      }
       rowCount++;
       row1 = Panel.brailleTableElement_.insertRow(-1);
       if (sideBySide) {
@@ -600,8 +608,9 @@ Panel.onUpdateBraille = function(data) {
         // Update to see what we still have to fill.
         brailleText = brailleText.substring(cols - cellCount);
         // Make new row.
-        if (rowCount == rows)
+        if (rowCount == rows) {
           break;
+        }
         rowCount++;
         row1 = Panel.brailleTableElement_.insertRow(-1);
         if (sideBySide) {
@@ -665,8 +674,9 @@ Panel.addNodeMenu = function(menuMsg, node, pred, defer) {
  * @param {PanelMenu} menu The new menu to activate.
  */
 Panel.activateMenu = function(menu) {
-  if (menu == Panel.activeMenu_)
+  if (menu == Panel.activeMenu_) {
     return;
+  }
 
   if (Panel.activeMenu_) {
     Panel.activeMenu_.deactivate();
@@ -712,10 +722,11 @@ Panel.advanceActiveMenuBy = function(delta) {
     activeIndex += delta;
     activeIndex = (activeIndex + Panel.menus_.length) % Panel.menus_.length;
   } else {
-    if (delta >= 0)
+    if (delta >= 0) {
       activeIndex = 0;
-    else
+    } else {
       activeIndex = Panel.menus_.length - 1;
+    }
   }
   Panel.activateMenu(Panel.menus_[activeIndex]);
 };
@@ -725,8 +736,9 @@ Panel.advanceActiveMenuBy = function(delta) {
  * @param {number} delta The number to add to the active menu item index.
  */
 Panel.advanceItemBy = function(delta) {
-  if (Panel.activeMenu_)
+  if (Panel.activeMenu_) {
     Panel.activeMenu_.advanceItemBy(delta);
+  }
 };
 
 /**
@@ -737,21 +749,24 @@ Panel.advanceItemBy = function(delta) {
  * @param {Event} event The mouse event.
  */
 Panel.onMouseUp = function(event) {
-  if (!Panel.activeMenu_)
+  if (!Panel.activeMenu_) {
     return;
+  }
 
   var target = event.target;
   while (target && !target.classList.contains('menu-item')) {
     // Allow the user to click and release on the menu button and leave
     // the menu button.
-    if (target.id == 'menus_button')
+    if (target.id == 'menus_button') {
       return;
+    }
 
     target = target.parentElement;
   }
 
-  if (target && Panel.activeMenu_)
+  if (target && Panel.activeMenu_) {
     Panel.pendingCallback_ = Panel.activeMenu_.getCallbackForElement(target);
+  }
   Panel.closeMenusAndRestoreFocus();
 };
 
@@ -771,11 +786,13 @@ Panel.onKeyDown = function(event) {
       !Panel.tutorial_.onKeyDown(event))
     return;
 
-  if (!Panel.activeMenu_)
+  if (!Panel.activeMenu_) {
     return;
+  }
 
-  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
     return;
+  }
 
   switch (event.key) {
     case 'ArrowLeft':
@@ -844,8 +861,9 @@ Panel.onClose = function() {
  * @return {Function} The callback for the current item.
  */
 Panel.getCallbackForCurrentItem = function() {
-  if (Panel.activeMenu_)
+  if (Panel.activeMenu_) {
     return Panel.activeMenu_.getCallbackForCurrentItem();
+  }
   return null;
 };
 
@@ -860,8 +878,9 @@ Panel.closeMenusAndRestoreFocus = function() {
     var pendingCallback = Panel.pendingCallback_;
     Panel.pendingCallback_ = null;
     var onFocus = function(evt) {
-      if (evt.target.docUrl == location.href)
+      if (evt.target.docUrl == location.href) {
         return;
+      }
 
       desktop.removeEventListener(
           chrome.automation.EventType.FOCUS, onFocus, true);
@@ -869,12 +888,14 @@ Panel.closeMenusAndRestoreFocus = function() {
       // Clears focus on the page by focusing the root explicitly. This makes
       // sure we don't get future focus events as a result of giving this entire
       // page focus and that would have interfered with with our desired range.
-      if (evt.target.root)
+      if (evt.target.root) {
         evt.target.root.focus();
+      }
 
       setTimeout(function() {
-        if (pendingCallback)
+        if (pendingCallback) {
           pendingCallback();
+        }
       }, 0);
     };
 
@@ -942,12 +963,14 @@ window.addEventListener('hashchange', function() {
   var bkgnd = chrome.extension.getBackgroundPage();
 
   // Save the sticky state when a user first focuses the panel.
-  if (location.hash == '#fullscreen' || location.hash == '#focus')
+  if (location.hash == '#fullscreen' || location.hash == '#focus') {
     Panel.originalStickyState_ = bkgnd['cvox']['ChromeVox']['isStickyPrefOn'];
+  }
 
   // If the original sticky state was on when we first entered the panel, toggle
   // it in in every case. (fullscreen/focus turns the state off, collapse
   // turns it back on).
-  if (Panel.originalStickyState_)
+  if (Panel.originalStickyState_) {
     bkgnd['CommandHandler']['onCommand']('toggleStickyMode');
+  }
 }, false);

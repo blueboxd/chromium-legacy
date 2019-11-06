@@ -5,6 +5,7 @@
 import os.path
 
 from . import name_style
+from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_v8_to_blink_value
 from .code_generation_context import CodeGenerationContext
 from .code_node import CodeNode
@@ -193,7 +194,9 @@ def bind_return_value(code_node, cg_context):
         if cg_context.return_type.unwrap().is_void:
             text = "${blink_api_call};"
         elif cg_context.is_return_by_argument:
-            text = "${blink_return_type} ${return_value};\n${blink_api_call};"
+            pattern = "{_1} ${return_value};\n${blink_api_call};"
+            _1 = blink_type_info(cg_context.return_type).value_t
+            text = _format(pattern, _1=_1)
         else:
             text = "const auto& ${return_value} = ${blink_api_call};"
         node = SymbolDefinitionNode(symbol_node, [TextNode(text)])

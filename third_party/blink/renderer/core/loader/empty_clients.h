@@ -430,8 +430,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   Frame* FindFrame(const AtomicString& name) const override;
 
-  void EvictFromBackForwardCache() override {}
-
  protected:
   // Not owned
   WebTextCheckClient* text_check_client_;

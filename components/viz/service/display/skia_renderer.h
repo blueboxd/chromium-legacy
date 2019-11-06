@@ -90,6 +90,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void GenerateMipmap() override;
 
  private:
+  enum class BypassMode;
   struct DrawQuadParams;
   struct DrawRPDQParams;
   class ScopedSkImageBuilder;
@@ -126,28 +127,28 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   DrawQuadParams CalculateDrawQuadParams(const gfx::Transform& target_to_device,
                                          const gfx::Rect* scissor_rect,
                                          const DrawQuad* quad,
-                                         const gfx::QuadF* draw_region);
+                                         const gfx::QuadF* draw_region) const;
   DrawRPDQParams CalculateRPDQParams(const RenderPassDrawQuad* quad,
                                      DrawQuadParams* params);
   // Modifies |params| and |rpdq_params| to apply correctly when drawing the
   // RenderPass directly via |bypass_quad|.
-  void CalculateBypassParams(const DrawQuad* bypass_quad,
-                             DrawRPDQParams* rpdq_params,
-                             DrawQuadParams* params);
+  BypassMode CalculateBypassParams(const DrawQuad* bypass_quad,
+                                   DrawRPDQParams* rpdq_params,
+                                   DrawQuadParams* params) const;
 
   SkCanvas::ImageSetEntry MakeEntry(const SkImage* image,
                                     int matrix_index,
-                                    const DrawQuadParams& params);
+                                    const DrawQuadParams& params) const;
   // Returns overall constraint to pass to Skia, and modifies |params| to
   // emulate content area clamping different from the provided texture coords.
   SkCanvas::SrcRectConstraint ResolveTextureConstraints(
       const SkImage* image,
       const gfx::RectF& valid_texel_bounds,
-      DrawQuadParams* params);
+      DrawQuadParams* params) const;
 
   bool MustFlushBatchedQuads(const DrawQuad* new_quad,
                              const DrawRPDQParams* rpdq_params,
-                             const DrawQuadParams& params);
+                             const DrawQuadParams& params) const;
   void AddQuadToBatch(const SkImage* image,
                       const gfx::RectF& valid_texel_bounds,
                       DrawQuadParams* params);

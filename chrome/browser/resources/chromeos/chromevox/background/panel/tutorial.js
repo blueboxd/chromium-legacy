@@ -155,12 +155,13 @@ Tutorial.prototype = {
          document.activeElement.id == 'tutorial_next'))
       return true;
 
-    if (evt.key == 'Enter')
+    if (evt.key == 'Enter') {
       this.nextPage();
-    else if (evt.key == 'Backspace')
+    } else if (evt.key == 'Backspace') {
       this.previousPage();
-    else
+    } else {
       return true;
+    }
     return false;
   },
 
@@ -169,8 +170,9 @@ Tutorial.prototype = {
     this.page = sessionStorage['tutorial_page_pos'] !== undefined ?
         sessionStorage['tutorial_page_pos'] :
         0;
-    if (this.page == -1)
+    if (this.page == -1) {
       this.page = 0;
+    }
     this.showCurrentPage_();
   },
 
@@ -241,14 +243,16 @@ Tutorial.prototype = {
       var pageElement = pageElements[i];
       var msgid = pageElement.msgid;
       var text = '';
-      if (msgid)
+      if (msgid) {
         text = Msgs.getMsg(msgid);
+      }
       var element;
       if (pageElement.heading) {
         element = document.createElement('h2');
         element.setAttribute('tabindex', -1);
-        if (!focus)
+        if (!focus) {
           focus = element;
+        }
       } else if (pageElement.list) {
         element = document.createElement('ul');
         this.buildDom_(pageElement.items, element);
@@ -257,13 +261,15 @@ Tutorial.prototype = {
       } else if (pageElement.link) {
         element = document.createElement('a');
         element.href = pageElement.link;
-        if (!this.incognito_)
+        if (!this.incognito_) {
           element.setAttribute('tabindex', 0);
-        else
+        } else {
           element.disabled = true;
+        }
         element.addEventListener('click', function(evt) {
-          if (this.incognito_)
+          if (this.incognito_) {
             return;
+          }
 
           Panel.closeMenusAndRestoreFocus();
           chrome.windows.create({url: evt.target.href});
@@ -275,12 +281,14 @@ Tutorial.prototype = {
       } else {
         element = document.createElement('p');
       }
-      if (text)
+      if (text) {
         element.innerText = text;
+      }
       container.appendChild(element);
     }
-    if (focus)
+    if (focus) {
       focus.focus();
+    }
   },
 
   /** @private */

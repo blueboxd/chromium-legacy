@@ -419,7 +419,6 @@ void WindowTreeHost::DestroyDispatcher() {
 void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
                                       bool force_software_compositor,
                                       bool use_external_begin_frame_control,
-                                      bool are_events_in_pixels,
                                       const char* trace_environment_name) {
   Env* env = Env::GetInstance();
   ui::ContextFactory* context_factory = env->context_factory();
@@ -441,8 +440,7 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);
     window()->SetName("RootWindow");
-    dispatcher_ =
-        std::make_unique<WindowEventDispatcher>(this, are_events_in_pixels);
+    dispatcher_ = std::make_unique<WindowEventDispatcher>(this);
   }
 }
 

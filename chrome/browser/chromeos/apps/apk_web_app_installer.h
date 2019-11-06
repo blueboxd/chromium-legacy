@@ -18,10 +18,6 @@
 class GURL;
 class Profile;
 
-namespace service_manager {
-class Connector;
-}
-
 namespace web_app {
 enum class InstallResultCode;
 }
@@ -59,8 +55,7 @@ class ApkWebAppInstaller {
   virtual ~ApkWebAppInstaller();
 
   // Starts the installation flow by decoding icon data.
-  void Start(service_manager::Connector* connector,
-             arc::mojom::WebAppInfoPtr web_app_info,
+  void Start(arc::mojom::WebAppInfoPtr web_app_info,
              const std::vector<uint8_t>& icon_png_data);
 
   // Calls |callback_| with |id|, and deletes this object. Virtual for testing.
@@ -82,8 +77,6 @@ class ApkWebAppInstaller {
   const WebApplicationInfo& web_app_info() const { return *web_app_info_; }
 
  private:
-  std::unique_ptr<service_manager::Connector> connector_;
-
   // If |weak_owner_| is ever invalidated while this class is working,
   // installation will be aborted. |weak_owner_|'s lifetime must be equal to or
   // shorter than that of |profile_|.

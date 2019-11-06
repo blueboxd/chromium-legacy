@@ -86,10 +86,12 @@ ChromeVoxCursorsTest.prototype = {
    * @param {Cursor} cursor
    */
   makeCursorAssertion: function(expected, cursor) {
-    if (goog.isDef(expected.value))
+    if (goog.isDef(expected.value)) {
       assertEquals(expected.value, cursor.node.name);
-    if (goog.isDef(expected.index))
+    }
+    if (goog.isDef(expected.index)) {
       assertEquals(expected.index, cursor.index);
+    }
   },
 
   /**
@@ -405,8 +407,9 @@ TEST_F('ChromeVoxCursorsTest', 'InlineElementOffset', function() {
   */}, function(root) {
     root.addEventListener('textSelectionChanged', this.newCallback(function(evt) {
       // Test setup moves initial focus; ensure we don't test that here.
-      if (testNode != root.selectionStartObject)
+      if (testNode != root.selectionStartObject) {
         return;
+      }
 
       // This is a little unexpected though not really incorrect; Ctrl+C works.
       assertEquals(testNode, root.selectionStartObject);

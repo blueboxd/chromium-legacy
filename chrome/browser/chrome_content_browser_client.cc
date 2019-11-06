@@ -2095,6 +2095,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(switches::kAllowSyncXHRInPageDismissal);
       }
 
+      if (prefs->HasPrefPath(prefs::kWebComponentsV0Enabled) &&
+          prefs->GetBoolean(prefs::kWebComponentsV0Enabled)) {
+        command_line->AppendSwitch(switches::kWebComponentsV0Enabled);
+      }
+
       if (!profile->ShouldEnableOutOfBlinkCors()) {
         command_line->AppendSwitch(
             network::switches::kForceToDisableOutOfBlinkCors);
@@ -2519,6 +2524,15 @@ bool ChromeContentBrowserClient::AllowWorkerCacheStorage(
   }
 
   return allow;
+}
+
+bool ChromeContentBrowserClient::AllowWorkerWebLocks(
+    const GURL& url,
+    content::BrowserContext* browser_context,
+    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
+  return cookie_settings->IsCookieAccessAllowed(url, url);
 }
 
 ChromeContentBrowserClient::AllowWebBluetoothResult

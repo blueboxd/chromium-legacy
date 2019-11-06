@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer.shell;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import android.widget.RelativeLayout;
 import org.chromium.weblayer.BrowserCallback;
 import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.BrowserFragmentController;
+import org.chromium.weblayer.ListenableFuture;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
@@ -102,14 +104,20 @@ public class InstrumentationActivity extends FragmentActivity {
         mTopContentsContainer.addView(mUrlView,
                 new RelativeLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-
-        try {
-            // This ensures asynchronous initialization of WebLayer on first start of activity.
+        if (savedInstanceState != null) {
             // If activity is re-created during process restart, FragmentManager attaches
             // BrowserFragment immediately, resulting in synchronous init. By the time this line
             // executes, the synchronous init has already happened.
-            WebLayer.create(getApplication())
-                    .addCallback(webLayer -> onWebLayerReady(savedInstanceState));
+            createWebLayer(getApplication(), savedInstanceState);
+        }
+    }
+
+    public ListenableFuture<WebLayer> createWebLayer(
+            Context appContext, Bundle savedInstanceState) {
+        try {
+            ListenableFuture<WebLayer> future = WebLayer.create(appContext);
+            future.addCallback(webLayer -> onWebLayerReady(savedInstanceState));
+            return future;
         } catch (UnsupportedVersionException e) {
             throw new RuntimeException("Failed to initialize WebLayer", e);
         }
@@ -124,7 +132,7 @@ public class InstrumentationActivity extends FragmentActivity {
 
         mBrowserFragmentController.setTopView(mTopContentsContainer);
 
-        mBrowserController = mBrowserFragmentController.getBrowserController();
+        mBrowserController = mBrowserFragmentController.getActiveBrowserController();
         mBrowserController.registerBrowserCallback(new BrowserCallback() {
             @Override
             public void visibleUrlChanged(Uri uri) {

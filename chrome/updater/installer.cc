@@ -57,6 +57,21 @@ update_client::CrxComponent Installer::MakeCrxComponent() {
   return component;
 }
 
+std::vector<std::string> Installer::FindAppIds() {
+  base::FilePath app_install_dir;
+  if (!GetProductDirectory(&app_install_dir))
+    return {};
+  app_install_dir = app_install_dir.AppendASCII(kAppsDir);
+  std::vector<std::string> app_ids;
+  base::FileEnumerator file_enumerator(app_install_dir, false,
+                                       base::FileEnumerator::DIRECTORIES);
+  for (auto path = file_enumerator.Next(); !path.value().empty();
+       path = file_enumerator.Next()) {
+    app_ids.push_back(path.BaseName().MaybeAsASCII());
+  }
+  return app_ids;
+}
+
 void Installer::FindInstallOfApp() {
   VLOG(1) << __func__ << " for " << app_id_;
 

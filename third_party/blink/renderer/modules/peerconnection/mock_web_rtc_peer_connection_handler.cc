@@ -71,7 +71,7 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   WebVector<WebString> StreamIds() const override {
     return std::vector<WebString>({WebString::FromUTF8("DummyStringId")});
   }
-  void ReplaceTrack(WebMediaStreamTrack, WebRTCVoidRequest) override {}
+  void ReplaceTrack(WebMediaStreamTrack, RTCVoidRequest*) override {}
   std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const override {
     return nullptr;
   }
@@ -80,7 +80,7 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   }
   void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,
-                     WebRTCVoidRequest) override {}
+                     RTCVoidRequest*) override {}
   void GetStats(WebRTCStatsReportCallback,
                 const WebVector<webrtc::NonStandardGroupId>&) override {}
   void SetStreams(
@@ -251,36 +251,33 @@ bool MockWebRTCPeerConnectionHandler::Initialize(
 }
 
 WebVector<std::unique_ptr<WebRTCRtpTransceiver>>
-MockWebRTCPeerConnectionHandler::CreateOffer(
-    const WebRTCSessionDescriptionRequest&,
-    const WebMediaConstraints&) {
+MockWebRTCPeerConnectionHandler::CreateOffer(RTCSessionDescriptionRequest*,
+                                             const WebMediaConstraints&) {
   return {};
 }
 
 WebVector<std::unique_ptr<WebRTCRtpTransceiver>>
-MockWebRTCPeerConnectionHandler::CreateOffer(
-    const WebRTCSessionDescriptionRequest&,
-    RTCOfferOptionsPlatform*) {
+MockWebRTCPeerConnectionHandler::CreateOffer(RTCSessionDescriptionRequest*,
+                                             RTCOfferOptionsPlatform*) {
   return {};
 }
 
 void MockWebRTCPeerConnectionHandler::CreateAnswer(
-    const WebRTCSessionDescriptionRequest&,
+    RTCSessionDescriptionRequest*,
     const WebMediaConstraints&) {}
 
 void MockWebRTCPeerConnectionHandler::CreateAnswer(
-    const WebRTCSessionDescriptionRequest&,
+    RTCSessionDescriptionRequest*,
     RTCAnswerOptionsPlatform*) {}
 
-void MockWebRTCPeerConnectionHandler::SetLocalDescription(
-    const WebRTCVoidRequest&) {}
+void MockWebRTCPeerConnectionHandler::SetLocalDescription(RTCVoidRequest*) {}
 
 void MockWebRTCPeerConnectionHandler::SetLocalDescription(
-    const WebRTCVoidRequest&,
+    RTCVoidRequest*,
     const WebRTCSessionDescription&) {}
 
 void MockWebRTCPeerConnectionHandler::SetRemoteDescription(
-    const WebRTCVoidRequest&,
+    RTCVoidRequest*,
     const WebRTCSessionDescription&) {}
 
 WebRTCSessionDescription MockWebRTCPeerConnectionHandler::LocalDescription() {

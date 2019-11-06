@@ -356,34 +356,56 @@ const IDNTestCase kIdnCases[] = {
     {"xn--a1-eo4a.jp", L"a1\x30fe.jp", false},
 
     // Cyrillic labels made of Latin-look-alike Cyrillic letters.
-    // ѕсоре.com with ѕсоре in Cyrillic
+    // 1) ѕсоре.com with ѕсоре in Cyrillic.
     {"xn--e1argc3h.com", L"\x0455\x0441\x043e\x0440\x0435.com", false},
-    // ѕсоре123.com with ѕсоре in Cyrillic.
+    // 2) ѕсоре123.com with ѕсоре in Cyrillic.
     {"xn--123-qdd8bmf3n.com",
      L"\x0455\x0441\x043e\x0440\x0435"
      L"123.com",
      false},
-    // ѕсоре-рау.com with ѕсоре and рау in Cyrillic.
+    // 3) ѕсоре-рау.com with ѕсоре and рау in Cyrillic.
     {"xn----8sbn9akccw8m.com",
      L"\x0455\x0441\x043e\x0440\x0435-\x0440\x0430\x0443.com", false},
-    // ѕсоре·рау.com with scope and pay in Cyrillic and U+00B7 between them.
+    // 4) ѕсоре·рау.com with scope and pay in Cyrillic and U+00B7 between them.
     {"xn--uba29ona9akccw8m.com",
      L"\x0455\x0441\x043e\x0440\x0435\u00b7\x0440\x0430\x0443.com", false},
 
-    // The same as above three, but in IDN TLD.
+    // The same as above three, but in IDN TLD (рф).
+    // 1) ѕсоре.рф  with ѕсоре in Cyrillic.
     {"xn--e1argc3h.xn--p1ai", L"\x0455\x0441\x043e\x0440\x0435.\x0440\x0444",
      true},
+    // 2) ѕсоре123.рф with ѕсоре in Cyrillic.
     {"xn--123-qdd8bmf3n.xn--p1ai",
      L"\x0455\x0441\x043e\x0440\x0435"
      L"123.\x0440\x0444",
      true},
+    // 3) ѕсоре-рау.рф with ѕсоре and рау in Cyrillic.
+    {"xn----8sbn9akccw8m.xn--p1ai",
+     L"\x0455\x0441\x043e\x0440\x0435-\x0440\x0430\x0443.\x0440\x0444", true},
+    // 4) ѕсоре·рау.com with scope and pay in Cyrillic and U+00B7 between them.
     {"xn--uba29ona9akccw8m.xn--p1ai",
      L"\x0455\x0441\x043e\x0440\x0435\u00b7\x0440\x0430\x0443.\x0440\x0444",
      true},
 
-    // ѕсоре-рау.한국 with ѕсоре and рау in Cyrillic.
-    {"xn----8sbn9akccw8m.xn--3e0b707e",
-     L"\x0455\x0441\x043e\x0440\x0435-\x0440\x0430\x0443.\xd55c\xad6d", true},
+    // Same as above three, but in .ru TLD.
+    // 1) ѕсоре.ru  with ѕсоре in Cyrillic.
+    {"xn--e1argc3h.ru", L"\x0455\x0441\x043e\x0440\x0435.ru", true},
+    // 2) ѕсоре123.ru with ѕсоре in Cyrillic.
+    {"xn--123-qdd8bmf3n.ru",
+     L"\x0455\x0441\x043e\x0440\x0435"
+     L"123.ru",
+     true},
+    // 3) ѕсоре-рау.ru with ѕсоре and рау in Cyrillic.
+    {"xn----8sbn9akccw8m.ru",
+     L"\x0455\x0441\x043e\x0440\x0435-\x0440\x0430\x0443.ru", true},
+    // 4) ѕсоре·рау.ru with scope and pay in Cyrillic and U+00B7 between them.
+    {"xn--uba29ona9akccw8m.ru",
+     L"\x0455\x0441\x043e\x0440\x0435\u00b7\x0440\x0430\x0443.ru", true},
+
+    // ѕсоре-рау.한국 with ѕсоре and рау in Cyrillic. The label will remain
+    // punycode while the TLD will be decoded.
+    {"xn----8sbn9akccw8m.xn--3e0b707e", L"xn----8sbn9akccw8m.\xd55c\xad6d",
+     true},
 
     // музей (museum in Russian) has characters without a Latin-look-alike.
     {"xn--e1adhj9a.com", L"\x043c\x0443\x0437\x0435\x0439.com", true},
@@ -396,6 +418,11 @@ const IDNTestCase kIdnCases[] = {
 
     // сю.com is Cyrillic with Latin lookalikes.
     {"xn--q1a0a.com", L"\x0441\x044e.com", false},
+
+    // googlе.한국 where е is Cyrillic. This tests the generic case when one
+    // label is not allowed but  other labels in the domain name are still
+    // decoded. Here, googlе is left in punycode but the TLD is decoded.
+    {"xn--googl-3we.xn--3e0b707e", L"xn--googl-3we.\xd55c\xad6d", true},
 
     // Combining Diacritic marks after a script other than Latin-Greek-Cyrillic
     {"xn--rsa2568fvxya.com", L"\xd55c\x0301\xae00.com", false},  // 한́글.com

@@ -58,7 +58,16 @@ class BrowserController {
   virtual NavigationController* GetNavigationController() = 0;
 
   using JavaScriptResultCallback = base::OnceCallback<void(base::Value)>;
+
+  // Executes the script, and returns the result to the callback if provided. If
+  // |use_separate_isolate| is true, runs the script in a separate v8 Isolate.
+  // This uses more memory, but separates the injected scrips from scripts in
+  // the page. This prevents any potentially malicious interaction between
+  // first-party scripts in the page, and injected scripts. Use with caution,
+  // only pass false for this argument if you know this isn't an issue or you
+  // need to interact with first-party scripts.
   virtual void ExecuteScript(const base::string16& script,
+                             bool use_separate_isolate,
                              JavaScriptResultCallback callback) = 0;
 
 #if !defined(OS_ANDROID)

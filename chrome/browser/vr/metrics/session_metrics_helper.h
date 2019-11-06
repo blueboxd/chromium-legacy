@@ -129,6 +129,8 @@ class VR_BASE_EXPORT SessionMetricsHelper
 
   ~SessionMetricsHelper() override;
 
+  // Despite the name, which may suggest WebVR 1.1, both of these are *also*
+  // used for and crucial to, WebXr metrics.
   void SetWebVREnabled(bool is_webvr_presenting);
   void SetVRActive(bool is_vr_enabled);
   void RecordVoiceSearchStarted();
@@ -154,7 +156,6 @@ class VR_BASE_EXPORT SessionMetricsHelper
 
   struct PendingImmersiveSessionStartInfo {
     PresentationStartAction action = PresentationStartAction::kOther;
-    bool is_legacy_webvr = false;
     device::SessionMode mode = device::SessionMode::kUnknown;
   };
 
@@ -175,7 +176,6 @@ class VR_BASE_EXPORT SessionMetricsHelper
 
   void LogVrStartAction(VrStartAction action);
   void LogPresentationStartAction(PresentationStartAction action,
-                                  bool is_web_vr,
                                   device::SessionMode xr_session_mode);
 
   void OnEnterAnyVr();

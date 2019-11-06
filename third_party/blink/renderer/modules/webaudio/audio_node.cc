@@ -609,25 +609,15 @@ void AudioNode::Dispose() {
   BaseAudioContext::GraphAutoLocker locker(context());
   Handler().Dispose();
 
-  if (context()->HasRealtimeConstraint()) {
-    // Add the handler to the orphan list if the context is not
-    // uninitialized (Nothing will clean up the orphan list if the context
-    // is uninitialized.)  These will get cleaned up in the post render task
-    // if audio thread is running or when the context is colleced (in
-    // the worst case).
-    if (!context()->IsContextClosed()) {
-      context()->GetDeferredTaskHandler().AddRenderingOrphanHandler(
-          std::move(handler_));
-    }
-  } else {
-    // For an offline context, only need to save the handler when the
-    // context is running.  The change in the context state is
-    // synchronous with the main thread (even though the offline
-    // thread is not synchronized to the main thread).
-    if (context()->ContextState() == BaseAudioContext::kRunning) {
-      context()->GetDeferredTaskHandler().AddRenderingOrphanHandler(
-          std::move(handler_));
-    }
+  // Add the handler to the orphan list if the context is pulling on the audio
+  // graph.  This keeps the handler alive until it can be deleted at a safe
+  // point (in pre/post handler task).  If graph isn't being pulled, we can
+  // delete the handler now since nothing on the audio thread will be touching
+  // it.
+  DCHECK(context());
+  if (context()->IsPullingAudioGraph()) {
+    context()->GetDeferredTaskHandler().AddRenderingOrphanHandler(
+        std::move(handler_));
   }
 
   // Notify the inspector that this node is going away. The actual clean up

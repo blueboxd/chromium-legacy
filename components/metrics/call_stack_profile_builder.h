@@ -18,6 +18,7 @@
 #include "base/profiler/profile_builder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/time/time.h"
+#include "components/metrics/call_stack_profile_metadata.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -100,52 +101,6 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
                     const CallStackProfile::Stack* stack2) const;
   };
 
-  // Comparison function for the metadata map.
-  struct MetadataKey;
-  struct MetadataKeyCompare {
-    bool operator()(const MetadataKey& a, const MetadataKey& b) const;
-  };
-
-  // Definitions for a map-based representation of sample metadata.
-  struct MetadataKey {
-    MetadataKey(uint64_t name_hash, base::Optional<int64_t> key);
-
-    MetadataKey(const MetadataKey& other);
-    MetadataKey& operator=(const MetadataKey& other);
-
-    // The name_hash and optional user-specified key uniquely identifies a
-    // metadata value. See base::MetadataRecorder for details.
-    uint64_t name_hash;
-    base::Optional<int64_t> key;
-  };
-  using MetadataMap = std::map<MetadataKey, int64_t, MetadataKeyCompare>;
-
-  // Creates the metdata map from the array of items.
-  MetadataMap CreateMetadataMap(base::ProfileBuilder::MetadataItemArray items,
-                                size_t item_count);
-
-  // Returns all metadata items with new values in the current sample.
-  MetadataMap GetNewOrModifiedMetadataItems(const MetadataMap& current_items,
-                                            const MetadataMap& previous_items);
-
-  // Returns all metadata items deleted since the previous sample.
-  MetadataMap GetDeletedMetadataItems(const MetadataMap& current_items,
-                                      const MetadataMap& previous_items);
-
-  // Creates MetadataItems for the currently active metadata, adding new name
-  // hashes to |metadata_name_hashes| if necessary. The same
-  // |metadata_name_hashes| must be passed to each invocation, and must not be
-  // modified outside this function.
-  google::protobuf::RepeatedPtrField<CallStackProfile::MetadataItem>
-  CreateSampleMetadata(
-      google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes);
-
-  // Appends the |name_hash| to |name_hashes| if it's not already
-  // present. Returns its index in |name_hashes|.
-  size_t MaybeAppendNameHash(
-      uint64_t name_hash,
-      google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes);
-
   // The module cache to use for the duration the sampling associated with this
   // ProfileBuilder.
   base::ModuleCache module_cache_;
@@ -173,15 +128,8 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   // The start time of a profile collection.
   const base::TimeTicks profile_start_time_;
 
-  // The data fetched from the MetadataRecorder for the next sample.
-  base::ProfileBuilder::MetadataItemArray metadata_items_;
-  size_t metadata_item_count_ = 0;
-
-  // The data fetched from the MetadataRecorder for the previous sample.
-  MetadataMap previous_items_;
-
-  // Maps metadata hash to index in |metadata_name_hash| array.
-  std::unordered_map<uint64_t, int> metadata_hashes_cache_;
+  // Maintains the current metadata to apply to samples.
+  CallStackProfileMetadata metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileBuilder);
 };

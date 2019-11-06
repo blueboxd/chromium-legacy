@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/capture_service/constants.h"
@@ -236,9 +237,16 @@ void CaptureServiceReceiver::OnConnectTimeout(
 }
 
 void CaptureServiceReceiver::Stop() {
-  ENSURE_ON_IO_THREAD(Stop);
+  base::WaitableEvent finished;
+  StopOnTaskRunner(&finished);
+  finished.Wait();
+}
+
+void CaptureServiceReceiver::StopOnTaskRunner(base::WaitableEvent* finished) {
+  ENSURE_ON_IO_THREAD(StopOnTaskRunner, finished);
   connecting_socket_.reset();
   socket_.reset();
+  finished->Signal();
 }
 
 void CaptureServiceReceiver::SetTaskRunnerForTest(

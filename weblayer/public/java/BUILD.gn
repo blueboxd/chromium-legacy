@@ -35,6 +35,8 @@ android_library("java") {
     "org/chromium/weblayer/NavigationCallback.java",
     "org/chromium/weblayer/NavigationController.java",
     "org/chromium/weblayer/Navigation.java",
+    "org/chromium/weblayer/NewBrowserCallback.java",
+    "org/chromium/weblayer/NewBrowserType.java",
     "org/chromium/weblayer/ObserverList.java",
     "org/chromium/weblayer/Profile.java",
     "org/chromium/weblayer/ThreadCheck.java",

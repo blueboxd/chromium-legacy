@@ -84,7 +84,7 @@ sys.path.append(
     os.path.join(
         os.path.dirname(__file__), os.path.pardir, os.path.pardir, 'tools',
         'clang', 'scripts'))
-from update import LLVM_BUILD_DIR
+import update
 
 sys.path.append(
     os.path.join(
@@ -93,11 +93,10 @@ sys.path.append(
 from collections import defaultdict
 
 import coverage_utils
-import update_clang_coverage_tools
 
 # Absolute path to the code coverage tools binary. These paths can be
 # overwritten by user specified coverage tool paths.
-LLVM_BIN_DIR = os.path.join(LLVM_BUILD_DIR, 'bin')
+LLVM_BIN_DIR = os.path.join(update.LLVM_BUILD_DIR, 'bin')
 LLVM_COV_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-cov')
 LLVM_PROFDATA_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-profdata')
 
@@ -158,7 +157,7 @@ def _ConfigureLLVMCoverageTools(args):
     LLVM_COV_PATH = os.path.join(llvm_bin_dir, 'llvm-cov')
     LLVM_PROFDATA_PATH = os.path.join(llvm_bin_dir, 'llvm-profdata')
   else:
-    update_clang_coverage_tools.DownloadCoverageToolsIfNeeded()
+    update.UpdatePackage('coverage_tools')
 
   coverage_tools_exist = (
       os.path.exists(LLVM_COV_PATH) and os.path.exists(LLVM_PROFDATA_PATH))
@@ -932,7 +931,7 @@ def Main():
   # Setup coverage binaries even when script is called with empty params. This
   # is used by coverage bot for initial setup.
   if len(sys.argv) == 1:
-    update_clang_coverage_tools.DownloadCoverageToolsIfNeeded()
+    update.UpdatePackage('coverage_tools')
     print(__doc__)
     return
 

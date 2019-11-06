@@ -24,6 +24,8 @@ class StatusViewBinder implements ViewBinder<PropertyModel, StatusView, Property
             view.setStatusIcon(model.get(StatusProperties.STATUS_ICON));
         } else if (StatusProperties.STATUS_ALPHA.equals(propertyKey)) {
             view.setStatusIconAlpha(model.get(StatusProperties.STATUS_ALPHA));
+        } else if (StatusProperties.SHOW_STATUS_ICON.equals(propertyKey)) {
+            view.setStatusIconShown(model.get(StatusProperties.SHOW_STATUS_ICON));
         } else if (StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES.equals(propertyKey)) {
             view.setStatusIconAccessibilityToast(
                     model.get(StatusProperties.STATUS_ICON_ACCESSIBILITY_TOAST_RES));

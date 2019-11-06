@@ -4,11 +4,14 @@
 
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_service_client.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/model_impl.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -16,7 +19,6 @@
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
-#include "mojo/public/cpp/bindings/map.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 using ::chromeos::machine_learning::mojom::BuiltinModelId;
@@ -169,7 +171,7 @@ void MlServiceClientImpl::DoInference(
   InitMlServiceHandlesIfNeeded();
 
   // Prepare the input tensor.
-  std::map<std::string, TensorPtr> inputs;
+  base::flat_map<std::string, TensorPtr> inputs;
   auto tensor = Tensor::New();
   tensor->shape = Int64List::New();
   tensor->shape->value = std::vector<int64_t>({1, features.size()});
@@ -182,7 +184,7 @@ void MlServiceClientImpl::DoInference(
   std::vector<std::string> outputs({std::string("output")});
 
   executor_->Execute(
-      mojo::MapToFlatMap(std::move(inputs)), std::move(outputs),
+      std::move(inputs), std::move(outputs),
       base::BindOnce(&MlServiceClientImpl::ExecuteCallback,
                      weak_factory_.GetWeakPtr(), get_prediction_callback,
                      std::move(decision_callback)));

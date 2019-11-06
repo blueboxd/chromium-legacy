@@ -115,8 +115,9 @@ TEST_F('ChromeVoxEditingTest', 'TextButNoSelectionChange', function() {
         var timer;
         var input = document.getElementById('input');
         function poll(e) {
-          if (input.selectionStart == 0)
+          if (input.selectionStart == 0) {
             return;
+          }
           console.log('TIM' + 'ER');
           input.value = 'text2';
           window.clearInterval(timer);
@@ -155,15 +156,18 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
       document.getElementById('go').addEventListener('click', function() {
         var sel = getSelection();
         sel.modify('move', dir, 'line');
-        if (dir == 'forward')
+        if (dir == 'forward') {
           line++;
-        else
+        } else {
           line--;
+        }
 
-        if (line == 0)
+        if (line == 0) {
           dir = 'forward';
-        if (line == 2)
+        }
+        if (line == 2) {
           dir = 'backward';
+        }
       }, true);
     </script>
   */}, function(root) {
@@ -204,15 +208,18 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
       document.getElementById('go').addEventListener('click', function() {
         var sel = getSelection();
         sel.modify('move', dir, 'character');
-        if (dir == 'forward')
+        if (dir == 'forward') {
           char++;
-        else
+        } else {
           char--;
+        }
 
-        if (char == 0)
+        if (char == 0) {
           dir = 'forward';
-        if (line == 16)
+        }
+        if (line == 16) {
           dir = 'backward';
+        }
       }, true);
     </script>
   */}, function(root) {

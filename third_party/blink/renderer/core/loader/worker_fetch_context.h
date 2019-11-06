@@ -89,7 +89,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   }
 
   bool AllowRunningInsecureContent(bool enabled_per_settings,
-                                   const SecurityOrigin* origin,
                                    const KURL& url) const;
 
   void Trace(blink::Visitor*) override;

@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -60,7 +59,7 @@ public class TopControlsTest {
                     .commitNow();
             mBrowserFragmentController = BrowserFragmentController.fromFragment(fragment);
             mBrowserFragmentController.setTopView(new FrameLayout(activity));
-            mBrowserController = mBrowserFragmentController.getBrowserController();
+            mBrowserController = mBrowserFragmentController.getActiveBrowserController();
         });
 
         mActivityTestRule.navigateAndWait(
@@ -76,21 +75,11 @@ public class TopControlsTest {
         helper.waitForCallback(0);
     }
 
-    // TODO(https://crbug.com/1020065): fix this test, it's flaky.
     @Test
     @SmallTest
-    @DisabledTest
     public void testBasic() throws Exception {
         final String url = UrlUtils.encodeHtmlDataUri("<body><p style='height:5000px'>");
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
-
-        // Wait for layout to make sure the top contents container is shown.
-        CallbackHelper helper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getTopContentsContainer().getViewTreeObserver().addOnGlobalLayoutListener(
-                    helper::notifyCalled);
-        });
-        helper.waitForCallback(0);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTopControlsHeight = activity.getTopContentsContainer().getHeight();

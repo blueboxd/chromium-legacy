@@ -134,8 +134,9 @@ LogPage.update = function() {
  */
 LogPage.updateLog = function(log, div) {
   for (var i = 0; i < log.length; i++) {
-    if (!LogPage.urlPrefs_[log[i].logType + 'Filter'])
+    if (!LogPage.urlPrefs_[log[i].logType + 'Filter']) {
       continue;
+    }
 
     var p = document.createElement('p');
     var typeName = document.createElement('span');
@@ -179,10 +180,11 @@ LogPage.updateLog = function(log, div) {
  * @param {?string} checked
  */
 LogPage.setFilterTypeEnabled = function(typeFilter, checked) {
-  if (checked == null || checked == 'true')
+  if (checked == null || checked == 'true') {
     LogPage.urlPrefs_[typeFilter] = true;
-  else
+  } else {
     LogPage.urlPrefs_[typeFilter] = false;
+  }
 };
 
 /**

@@ -31,8 +31,8 @@ import java.util.List;
 
 /**
  * A coordinator for TabGroupUi component. Manages the communication with
- * {@link TabListCoordinator}, {@link TabGridSheetCoordinator}, and
- * {@link TabStripToolbarCoordinator}, as well as the life-cycle of shared component objects.
+ * {@link TabListCoordinator} and {@link TabStripToolbarCoordinator}, as well as the life-cycle of
+ * shared component objects.
  */
 public class TabGroupUiCoordinator
         implements TabGroupUiMediator.ResetHandler, TabGroupUi, PauseResumeWithNativeObserver {
@@ -40,7 +40,6 @@ public class TabGroupUiCoordinator
     private final Context mContext;
     private final PropertyModel mTabStripToolbarModel;
     private final ThemeColorProvider mThemeColorProvider;
-    private TabGridSheetCoordinator mTabGridSheetCoordinator;
     private TabGridDialogCoordinator mTabGridDialogCoordinator;
     private TabListCoordinator mTabStripCoordinator;
     private TabGroupUiMediator mMediator;
@@ -83,19 +82,14 @@ public class TabGroupUiCoordinator
 
         boolean isTabGroupsUiImprovementsEnabled =
                 FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
+        // TODO(yuezhanggg): TabGridDialog should be the default mode.
         if (isTabGroupsUiImprovementsEnabled) {
             // TODO(crbug.com/972217): find a way to enable interactions between grid tab switcher
             // and the dialog here.
-            mTabGridSheetCoordinator = null;
-
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(mContext, tabModelSelector,
                     tabContentManager, activity, activity.getCompositorViewHolder(), null, null,
                     null, mTabStripCoordinator.getTabGroupTitleEditor());
         } else {
-            mTabGridSheetCoordinator =
-                    new TabGridSheetCoordinator(mContext, activity.getBottomSheetController(),
-                            tabModelSelector, tabContentManager, activity, mThemeColorProvider);
-
             mTabGridDialogCoordinator = null;
         }
 
@@ -130,9 +124,7 @@ public class TabGroupUiCoordinator
      */
     @Override
     public void resetGridWithListOfTabs(List<Tab> tabs) {
-        if (mTabGridDialogCoordinator == null) {
-            mTabGridSheetCoordinator.resetWithListOfTabs(tabs);
-        } else {
+        if (mTabGridDialogCoordinator != null) {
             mTabGridDialogCoordinator.resetWithListOfTabs(tabs);
         }
     }
@@ -154,9 +146,6 @@ public class TabGroupUiCoordinator
         if (mActivity == null) return;
 
         mTabStripCoordinator.destroy();
-        if (mTabGridSheetCoordinator != null) {
-            mTabGridSheetCoordinator.destroy();
-        }
         if (mTabGridDialogCoordinator != null) {
             mTabGridDialogCoordinator.destroy();
         }

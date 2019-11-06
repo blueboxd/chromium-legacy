@@ -66,9 +66,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/browser/media_session.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -213,10 +211,7 @@ void ToolbarView::Init() {
 
   std::unique_ptr<MediaToolbarButtonView> media_button;
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControls)) {
-    const base::UnguessableToken& source_id =
-        content::MediaSession::GetSourceId(browser_->profile());
-    media_button = std::make_unique<MediaToolbarButtonView>(
-        source_id, content::GetSystemConnector(), browser_);
+    media_button = std::make_unique<MediaToolbarButtonView>(browser_);
   }
 
   std::unique_ptr<ToolbarAccountIconContainerView>

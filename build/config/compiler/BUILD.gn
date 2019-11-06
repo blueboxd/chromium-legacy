@@ -1526,7 +1526,7 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/999871): Decide if we want to clean up the
           # codebase or just disable this.  Doesn't seem super useful, but
-          # also fires in only 4 files.
+          # also fires in only 2 files.
           "-Wno-c99-designator",
 
           # TODO(https://crbug.com/999886): Clean up, enable.

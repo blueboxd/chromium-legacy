@@ -8,5 +8,5 @@
     Exposed=(Window,Worker),
     RuntimeEnabled=ScreenEnumeration
 ] interface ScreenManager {
-  [CallWith=ScriptState, RaisesException] Promise<sequence<Display>> requestDisplays();
+  [CallWith=ScriptState, RaisesException] Promise<sequence<Screen>> getScreens();
 };

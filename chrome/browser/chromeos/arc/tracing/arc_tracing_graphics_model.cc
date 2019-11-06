@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
@@ -53,10 +54,15 @@ constexpr char kKeyBuffers[] = "buffers";
 constexpr char kKeyChrome[] = "chrome";
 constexpr char kKeyDuration[] = "duration";
 constexpr char kKeyGlobalEvents[] = "global_events";
+constexpr char kKeyIcon[] = "icon";
+constexpr char kKeyInformation[] = "information";
 constexpr char kKeyInput[] = "input";
 constexpr char kKeyViews[] = "views";
+constexpr char kKeyPlatform[] = "platform";
 constexpr char kKeySystem[] = "system";
 constexpr char kKeyTaskId[] = "task_id";
+constexpr char kKeyTimestamp[] = "timestamp";
+constexpr char kKeyTitle[] = "title";
 
 constexpr char kAcquireBufferQuery[] =
     "android:onMessageReceived/android:handleMessageInvalidate/"
@@ -1520,6 +1526,20 @@ bool LoadEventsContainer(const base::Value* value,
   return true;
 }
 
+bool ReadDuration(const base::Value* root, uint32_t* duration) {
+  const base::Value* duration_value = root->FindKey(kKeyDuration);
+  if (!duration_value ||
+      (!duration_value->is_double() && !duration_value->is_int())) {
+    return false;
+  }
+
+  *duration = duration_value->GetDouble();
+  if (*duration < 0)
+    return false;
+
+  return true;
+}
+
 }  // namespace
 
 ArcTracingGraphicsModel::BufferEvent::BufferEvent(BufferEventType type,
@@ -1759,6 +1779,10 @@ void ArcTracingGraphicsModel::Reset() {
   chrome_buffer_id_to_task_id_.clear();
   system_model_.Reset();
   duration_ = 0;
+  app_title_ = std::string();
+  app_icon_png_.clear();
+  platform_ = std::string();
+  timestamp_ = base::Time();
 }
 
 void ArcTracingGraphicsModel::VsyncTrim() {
@@ -1827,8 +1851,23 @@ std::unique_ptr<base::DictionaryValue> ArcTracingGraphicsModel::Serialize()
   // System.
   root->SetKey(kKeySystem, system_model_.Serialize());
 
-  // Duration.
-  root->SetKey(kKeyDuration, base::Value(static_cast<double>(duration_)));
+  // Information
+  base::DictionaryValue information;
+  information.SetKey(kKeyDuration, base::Value(static_cast<double>(duration_)));
+  if (!platform_.empty())
+    information.SetKey(kKeyPlatform, base::Value(platform_));
+  if (!timestamp_.is_null())
+    information.SetKey(kKeyTimestamp, base::Value(timestamp_.ToJsTime()));
+  if (!app_title_.empty())
+    information.SetKey(kKeyTitle, base::Value(app_title_));
+  if (!app_icon_png_.empty()) {
+    const std::string png_data_as_string(
+        reinterpret_cast<const char*>(&app_icon_png_[0]), app_icon_png_.size());
+    std::string icon_content;
+    base::Base64Encode(png_data_as_string, &icon_content);
+    information.SetKey(kKeyIcon, base::Value(icon_content));
+  }
+  root->SetKey(kKeyInformation, std::move(information));
 
   return root;
 }
@@ -1891,13 +1930,37 @@ bool ArcTracingGraphicsModel::LoadFromValue(const base::DictionaryValue& root) {
   if (!system_model_.Load(root.FindKey(kKeySystem)))
     return false;
 
-  const base::Value* duration = root.FindKey(kKeyDuration);
-  if (!duration || (!duration->is_double() && !duration->is_int()))
-    return false;
+  const base::Value* informaton =
+      root.FindKeyOfType(kKeyInformation, base::Value::Type::DICTIONARY);
+  if (informaton) {
+    if (!ReadDuration(informaton, &duration_))
+      return false;
 
-  duration_ = duration->GetDouble();
-  if (duration_ < 0)
-    return false;
+    const base::Value* platform_value =
+        informaton->FindKeyOfType(kKeyPlatform, base::Value::Type::STRING);
+    if (platform_value)
+      platform_ = platform_value->GetString();
+    const base::Value* title_value =
+        informaton->FindKeyOfType(kKeyTitle, base::Value::Type::STRING);
+    if (title_value)
+      app_title_ = title_value->GetString();
+    const base::Value* icon_value =
+        informaton->FindKeyOfType(kKeyIcon, base::Value::Type::STRING);
+    if (icon_value) {
+      std::string icon_content;
+      if (!base::Base64Decode(icon_value->GetString(), &icon_content))
+        return false;
+      app_icon_png_ =
+          std::vector<unsigned char>(icon_content.begin(), icon_content.end());
+    }
+    const base::Value* timestamp_value =
+        informaton->FindKeyOfType(kKeyTimestamp, base::Value::Type::DOUBLE);
+    if (timestamp_value)
+      timestamp_ = base::Time::FromJsTime(timestamp_value->GetDouble());
+  } else {
+    if (!ReadDuration(&root, &duration_))
+      return false;
+  }
 
   return true;
 }

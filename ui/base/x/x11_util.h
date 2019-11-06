@@ -324,6 +324,11 @@ gfx::ICCProfile GetICCProfileForMonitor(int monitor);
 // Return true if the display supports SYNC extension.
 COMPONENT_EXPORT(UI_BASE_X) bool IsSyncExtensionAvailable();
 
+// Returns the preferred Skia colortype for an X11 visual.  LOG(FATAL)'s if
+// there isn't a suitable colortype.
+COMPONENT_EXPORT(UI_BASE_X)
+SkColorType ColorTypeForVisual(void* visual);
+
 // Manages a piece of X11 allocated memory as a RefCountedMemory segment. This
 // object takes ownership over the passed in memory and will free it with the
 // X11 allocator when done.

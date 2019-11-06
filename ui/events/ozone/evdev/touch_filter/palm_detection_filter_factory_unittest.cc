@@ -11,6 +11,7 @@
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/event_device_test_util.h"
 #include "ui/events/ozone/evdev/touch_filter/heuristic_stylus_palm_detection_filter.h"
+#include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/open_palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/shared_palm_detection_filter_state.h"
@@ -42,8 +43,9 @@ class PalmDetectionFilterFactoryTest : public testing::Test {
 };
 
 TEST_F(PalmDetectionFilterFactoryTest, AllDisabled) {
-  scoped_feature_list_->InitAndDisableFeature(
-      ui::kEnableHeuristicPalmDetectionFilter);
+  scoped_feature_list_->InitWithFeatures(
+      {}, {ui::kEnableHeuristicPalmDetectionFilter,
+           ui::kEnableNeuralPalmDetectionFilter});
   std::unique_ptr<PalmDetectionFilter> palm_filter =
       CreatePalmDetectionFilter(eve_touchscreen_info_, &shared_palm_state_);
   EXPECT_EQ(OpenPalmDetectionFilter::kFilterName,
@@ -59,7 +61,7 @@ TEST_F(PalmDetectionFilterFactoryTest, HeuristicEnabledForEve) {
   scoped_feature_list_->InitWithFeaturesAndParameters(
       {base::test::ScopedFeatureList::FeatureAndParams(
           ui::kEnableHeuristicPalmDetectionFilter, {})},
-      {});
+      {ui::kEnableNeuralPalmDetectionFilter});
   std::unique_ptr<PalmDetectionFilter> palm_filter =
       CreatePalmDetectionFilter(eve_touchscreen_info_, &shared_palm_state_);
   EXPECT_EQ(HeuristicStylusPalmDetectionFilter::kFilterName,
@@ -87,7 +89,7 @@ TEST_F(PalmDetectionFilterFactoryTest, HeuristicTimesSet) {
           ui::kEnableHeuristicPalmDetectionFilter,
           {{"heuristic_palm_cancel_threshold_seconds", "0.8"},
            {"heuristic_palm_hold_threshold_seconds", "15.327"}})},
-      {});
+      {ui::kEnableNeuralPalmDetectionFilter});
 
   std::unique_ptr<PalmDetectionFilter> palm_filter = CreatePalmDetectionFilter(
       nocturne_touchscreen_info_, &shared_palm_state_);
@@ -100,4 +102,16 @@ TEST_F(PalmDetectionFilterFactoryTest, HeuristicTimesSet) {
             heuristic_filter->HoldTime());
 }
 
+TEST_F(PalmDetectionFilterFactoryTest, NeuralBeatsHeuristic) {
+  scoped_feature_list_->InitWithFeaturesAndParameters(
+      {base::test::ScopedFeatureList::FeatureAndParams(
+           ui::kEnableHeuristicPalmDetectionFilter, {}),
+       base::test::ScopedFeatureList::FeatureAndParams(
+           ui::kEnableNeuralPalmDetectionFilter, {})},
+      {});
+  std::unique_ptr<PalmDetectionFilter> palm_filter = CreatePalmDetectionFilter(
+      nocturne_touchscreen_info_, &shared_palm_state_);
+  ASSERT_EQ(NeuralStylusPalmDetectionFilter::kFilterName,
+            palm_filter->FilterNameForTesting());
+}
 }  // namespace ui

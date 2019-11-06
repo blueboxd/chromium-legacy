@@ -680,9 +680,6 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     // Let the controller know that the user stopped dragging tabs.
     tab_strip_->controller_->OnStoppedDragging();
 
-    for (size_t i = 0; i < views.size(); ++i)
-      views[i]->set_dragging(false);
-
     SetNewTabButtonVisible(true);
     if (move_only && tab_strip_->touch_layout_) {
       if (completed)
@@ -2641,6 +2638,14 @@ void TabStrip::OnGroupCloseAnimationCompleted(TabGroupId group) {
 void TabStrip::StoppedDraggingView(TabSlotView* view, bool* is_first_view) {
   int tab_data_index = GetModelIndexOf(view);
   if (tab_data_index == -1) {
+    // Ensure the drag status is updated even if the view is not a valid tab.
+    // This is primarily to make sure group headers are updated correctly.
+    // Otherwise, tab drag status is only updated in PrepareForAnimation().
+    // TODO(crbug.com/1021689): Incorporate group headers in the normal
+    // animation flow instead of handling it here and then ignoring it.
+    if (view)
+      view->set_dragging(false);
+
     // The tab was removed before the drag completed. Don't do anything.
     return;
   }

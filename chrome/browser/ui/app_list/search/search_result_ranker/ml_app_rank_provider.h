@@ -7,9 +7,9 @@
 
 #include <map>
 #include <string>
-#include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -62,8 +62,8 @@ class MlAppRankProvider {
  private:
   // Execute the |executor_| on the creation thread.
   void RunExecutor(
-      std::map<std::string, ::chromeos::machine_learning::mojom::TensorPtr>
-          inputs,
+      base::flat_map<std::string,
+                     ::chromeos::machine_learning::mojom::TensorPtr> inputs,
       std::vector<std::string> outputs,
       std::string app_id);
 

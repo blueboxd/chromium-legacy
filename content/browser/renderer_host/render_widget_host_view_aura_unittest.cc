@@ -207,7 +207,7 @@ class TestWindowObserver : public aura::WindowObserver {
 class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
  public:
   FakeWindowEventDispatcher(aura::WindowTreeHost* host)
-      : WindowEventDispatcher(host, true), processed_touch_event_count_(0) {}
+      : WindowEventDispatcher(host), processed_touch_event_count_(0) {}
 
   void ProcessedTouchEvent(
       uint32_t unique_event_id,

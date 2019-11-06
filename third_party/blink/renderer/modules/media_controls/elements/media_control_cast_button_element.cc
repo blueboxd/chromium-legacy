@@ -93,13 +93,9 @@ void MediaControlCastButtonElement::DefaultEventHandler(Event& event) {
     if (is_overlay_button_) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.CastOverlay"));
-      Platform::Current()->RecordRapporURL("Media.Controls.CastOverlay",
-                                           WebURL(GetDocument().Url()));
     } else {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.Cast"));
-      Platform::Current()->RecordRapporURL("Media.Controls.Cast",
-                                           WebURL(GetDocument().Url()));
     }
 
     RemotePlayback::From(MediaElement()).PromptInternal();

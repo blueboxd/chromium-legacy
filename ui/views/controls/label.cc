@@ -631,8 +631,6 @@ void Label::PaintText(gfx::Canvas* canvas) {
 }
 
 void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (previous_bounds.size() != size())
-    InvalidateLayout();
   ClearDisplayText();
 }
 

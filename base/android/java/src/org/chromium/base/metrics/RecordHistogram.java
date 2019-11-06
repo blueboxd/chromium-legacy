@@ -29,7 +29,13 @@ import java.util.Map;
 @JNINamespace("base::android")
 @MainDex
 public class RecordHistogram {
-    private static Throwable sDisabledBy;
+    /**
+     * Whether recording histograms is currently disabled for testing. Exposed for use in peer
+     * classes {e.g. AnimationFrameTimeHistogram}.
+     * Use {@link #setDisabledForTests(boolean)} to set this value.
+     */
+    @VisibleForTesting
+    public static Throwable sDisabledBy;
     private static Map<String, Long> sCache =
             Collections.synchronizedMap(new HashMap<String, Long>());
 

@@ -415,7 +415,10 @@ class StartSurfaceMediator
             mSecondaryTasksSurfacePropertyModel.set(IS_INCOGNITO, mIsIncognito);
         }
 
-        notifyStateChange();
+        // TODO(crbug.com/1021399): This looks not needed since there is no way to change incognito
+        // mode when focusing on the omnibox and incognito mode change won't affect the visibility
+        // of the tab switcher toolbar.
+        if (mPropertyModel.get(IS_SHOWING_OVERVIEW)) notifyStateChange();
     }
 
     private void setSecondaryTasksSurfaceVisibility(boolean isVisible) {
@@ -436,6 +439,7 @@ class StartSurfaceMediator
 
     private void notifyStateChange() {
         assert mSurfaceMode != SurfaceMode.NO_START_SURFACE;
+        assert mPropertyModel.get(IS_SHOWING_OVERVIEW);
 
         if (mStateObserver != null) {
             mStateObserver.onStateChanged(shouldShowTabSwitcherToolbar());

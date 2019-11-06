@@ -371,7 +371,10 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     public IPHInfoBarSupport.TrackerParameters getTrackerParameters() {
         if (getDownloadCount().inProgress == 0) return null;
 
-        if (getCurrentTab().getActivity().getBottomSheetController().isSheetOpen()) return null;
+        if (getCurrentTab() == null || getCurrentTab().getActivity() == null
+                || getCurrentTab().getActivity().getBottomSheetController().isSheetOpen()) {
+            return null;
+        }
 
         return new IPHInfoBarSupport.TrackerParameters(
                 FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_FEATURE,

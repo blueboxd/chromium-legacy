@@ -5,34 +5,12 @@
 
 """Script to download lld/mac from google storage."""
 
-import os
-import re
-import subprocess
 import sys
 
 import update
 
-LLVM_BUILD_DIR = update.LLVM_BUILD_DIR
-LLD_LINK_PATH = os.path.join(LLVM_BUILD_DIR, 'bin', 'lld-link')
-
-
-def AlreadyUpToDate():
-  if not os.path.exists(LLD_LINK_PATH):
-    return False
-  lld_rev = subprocess.check_output([LLD_LINK_PATH, '--version'])
-  # Version output example:
-  # LLD 9.0.0 (https://github.com/llvm/llvm-project/ 342571e8d6eb1afb151ae1103431798e3d24054f)
-  return (re.match(r'LLD.*\(.*git.*llvm.* ([0-9a-f]+)\)', lld_rev).group(1) ==
-             update.CLANG_REVISION)
-
-
-def main():
-  if AlreadyUpToDate():
-    return 0
-  remote_path = '%s/Mac/lld-%s.tgz' % (update.CDS_URL, update.PACKAGE_VERSION)
-  update.DownloadAndUnpack(remote_path, update.LLVM_BUILD_DIR)
-  return 0
-
-
+# TODO(hans): Remove this forwarding hack after all callers of this script have
+# been updated to call update.py instead.
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.argv = [sys.argv[0], '--package=lld_mac']
+  sys.exit(update.main())

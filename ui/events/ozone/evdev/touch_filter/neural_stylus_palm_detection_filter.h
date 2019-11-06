@@ -8,6 +8,10 @@
 #include <bitset>
 #include <cstdint>
 #include <deque>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/time/time.h"
@@ -41,12 +45,13 @@ class EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilter
   static bool CompatibleWithNeuralStylusPalmDetectionFilter(
       const EventDeviceInfo& devinfo);
 
-  const static int kFeaturesPerSample;
-  const static int kExtraFeaturesForNeighbor;
+  static const int kFeaturesPerSample;
+  static const int kExtraFeaturesForNeighbor;
 
- private:
+  static const char kFilterName[];
   std::string FilterNameForTesting() const override;
 
+ private:
   void FindNearestNeighborsWithin(
       int neighbor_count,
       float max_distance,
@@ -80,7 +85,6 @@ class EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilter
   const PalmFilterDeviceInfo palm_filter_dev_info_;
   std::unique_ptr<NeuralStylusPalmDetectionFilterModel> model_;
 
-  const static char kFilterName[];
   static const std::vector<int> kRequiredAbsMtCodes;
 
   DISALLOW_COPY_AND_ASSIGN(NeuralStylusPalmDetectionFilter);

@@ -76,6 +76,7 @@ jumbo_static_library("core") {
 
   deps = [
     ":error_strings",
+    ":method_strings",
     "//base",
     "//components/autofill/core/browser",
     "//components/keyed_service/core",
@@ -105,6 +106,13 @@ jumbo_static_library("error_strings") {
     "error_strings.h",
     "native_error_strings.cc",
     "native_error_strings.h",
+  ]
+}
+
+jumbo_static_library("method_strings") {
+  sources = [
+    "method_strings.cc",
+    "method_strings.h",
   ]
 }
 

@@ -51,8 +51,9 @@ CommandHandler.onCommand = function(command) {
           cursors.Range.fromNode(focusedNode));
     }
 
-    if (!focusedNode)
+    if (!focusedNode) {
       ChromeVoxState.instance.setCurrentRange(null);
+    }
   });
 
   // These commands don't require a current range.
@@ -67,8 +68,9 @@ CommandHandler.onCommand = function(command) {
 
         var timeString = '';
         allTime.forEach(function(t) {
-          if (t.name)
+          if (t.name) {
             timeString = t.name;
+          }
         });
         if (timeString) {
           cvox.ChromeVox.tts.speak(timeString, cvox.QueueMode.FLUSH);
@@ -88,8 +90,9 @@ CommandHandler.onCommand = function(command) {
       chrome.runtime.openOptionsPage();
       break;
     case 'toggleChromeVox':
-      if (cvox.ChromeVox.isChromeOS)
+      if (cvox.ChromeVox.isChromeOS) {
         return false;
+      }
 
       cvox.ChromeVox.isActive = !cvox.ChromeVox.isActive;
       if (!cvox.ChromeVox.isActive) {
@@ -102,10 +105,11 @@ CommandHandler.onCommand = function(command) {
       cvox.ChromeVoxBackground.setPref(
           'sticky', !cvox.ChromeVox.isStickyPrefOn, true);
 
-      if (cvox.ChromeVox.isStickyPrefOn)
+      if (cvox.ChromeVox.isStickyPrefOn) {
         chrome.accessibilityPrivate.setKeyboardListener(true, true);
-      else
+      } else {
         chrome.accessibilityPrivate.setKeyboardListener(true, false);
+      }
       return false;
     case 'passThroughMode':
       cvox.ChromeVox.passThroughMode = true;
@@ -277,8 +281,9 @@ CommandHandler.onCommand = function(command) {
   }
 
   // Require a current range.
-  if (!ChromeVoxState.instance.currentRange_)
+  if (!ChromeVoxState.instance.currentRange_) {
     return true;
+  }
 
   var current = ChromeVoxState.instance.currentRange;
 
@@ -286,8 +291,9 @@ CommandHandler.onCommand = function(command) {
   var matchCurrent = false;
 
   // Allow edit commands first.
-  if (!CommandHandler.onEditCommand_(command))
+  if (!CommandHandler.onEditCommand_(command)) {
     return false;
+  }
 
   var dir = Dir.FORWARD;
   var pred = null;
@@ -545,15 +551,17 @@ CommandHandler.onCommand = function(command) {
     case 'jumpToTop':
       var node = AutomationUtil.findNodePost(
           current.start.node.root, Dir.FORWARD, AutomationPredicate.object);
-      if (node)
+      if (node) {
         current = cursors.Range.fromNode(node);
+      }
       tryScrolling = false;
       break;
     case 'jumpToBottom':
       var node = AutomationUtil.findLastNode(
           current.start.node.root, AutomationPredicate.object);
-      if (node)
+      if (node) {
         current = cursors.Range.fromNode(node);
+      }
       tryScrolling = false;
       break;
     case 'forceClickOnCurrentItem':
@@ -601,8 +609,9 @@ CommandHandler.onCommand = function(command) {
       var node = current.start.node;
       while (node && !node.details)
         node = node.parent;
-      if (node)
+      if (node) {
         current = cursors.Range.fromNode(node.details);
+      }
       break;
     case 'readFromHere':
       ChromeVoxState.isReadingContinuously = true;
@@ -646,8 +655,9 @@ CommandHandler.onCommand = function(command) {
     case 'contextMenu':
       if (ChromeVoxState.instance.currentRange) {
         var actionNode = ChromeVoxState.instance.currentRange.start.node;
-        if (actionNode.role == RoleType.INLINE_TEXT_BOX)
+        if (actionNode.role == RoleType.INLINE_TEXT_BOX) {
           actionNode = actionNode.parent;
+        }
         actionNode.showContextMenu();
         return false;
       }
@@ -680,8 +690,9 @@ CommandHandler.onCommand = function(command) {
       var target = ChromeVoxState.instance.currentRange.start.node;
       var output = new Output();
 
-      if (!target)
+      if (!target) {
         return false;
+      }
 
       if (target.root && target.root.role == RoleType.DESKTOP) {
         // Search for the first container with a name.
@@ -693,10 +704,11 @@ CommandHandler.onCommand = function(command) {
           target = target.parent;
       }
 
-      if (!target)
+      if (!target) {
         output.format('@no_title');
-      else
+      } else {
         output.withString(target.name);
+      }
 
       output.go();
       return false;
@@ -778,20 +790,23 @@ CommandHandler.onCommand = function(command) {
       var node = current.start.node;
       while (node && node.role != RoleType.ROW)
         node = node.parent;
-      if (!node)
+      if (!node) {
         break;
+      }
       var end = AutomationUtil.findNodePost(
           node, command == 'goToRowLastCell' ? Dir.BACKWARD : Dir.FORWARD,
           AutomationPredicate.leaf);
-      if (end)
+      if (end) {
         current = cursors.Range.fromNode(end);
+      }
       break;
     case 'goToColFirstCell':
       var node = current.start.node;
       while (node && node.role != RoleType.TABLE)
         node = node.parent;
-      if (!node || !node.firstChild)
+      if (!node || !node.firstChild) {
         return false;
+      }
       var tableOpts = {col: true, dir: dir, end: true};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
@@ -806,8 +821,9 @@ CommandHandler.onCommand = function(command) {
       var node = current.start.node;
       while (node && node.role != RoleType.TABLE)
         node = node.parent;
-      if (!node || !node.lastChild)
+      if (!node || !node.lastChild) {
         return false;
+      }
       var tableOpts = {col: true, dir: dir, end: true};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
@@ -831,13 +847,15 @@ CommandHandler.onCommand = function(command) {
       node = current.start.node;
       while (node && node.role != RoleType.TABLE)
         node = node.parent;
-      if (!node)
+      if (!node) {
         break;
+      }
       var end = AutomationUtil.findNodePost(
           node, command == 'goToLastCell' ? Dir.BACKWARD : Dir.FORWARD,
           AutomationPredicate.leaf);
-      if (end)
+      if (end) {
         current = cursors.Range.fromNode(end);
+      }
       break;
     case 'scrollBackward':
       var node = current.start.node;
@@ -846,8 +864,9 @@ CommandHandler.onCommand = function(command) {
                  chrome.automation.ActionType.SCROLL_BACKWARD))
         node = node.parent;
 
-      if (node)
+      if (node) {
         node.scrollBackward();
+      }
       break;
     case 'scrollForward':
       var node = current.start.node;
@@ -856,8 +875,9 @@ CommandHandler.onCommand = function(command) {
                  chrome.automation.ActionType.SCROLL_FORWARD))
         node = node.parent;
 
-      if (node)
+      if (node) {
         node.scrollForward();
+      }
       break;
 
     // These commands are only available when invoked from touch.
@@ -958,8 +978,9 @@ CommandHandler.onCommand = function(command) {
       // Find the word we want to speak phonetically. If index === -1, then the
       // index represents an entire node. If that is the case, we want to find
       // the first word in the node's name. We do this by setting index to 0.
-      if (index === -1)
+      if (index === -1) {
         index = 0;
+      }
       var word = '';
       for (var z = 0; z < wordStarts.length; ++z) {
         if (wordStarts[z] <= index && wordEnds[z] >= index) {
@@ -1012,8 +1033,9 @@ CommandHandler.onCommand = function(command) {
       return true;
   }
 
-  if (didNavigate)
+  if (didNavigate) {
     chrome.metricsPrivate.recordUserAction('Accessibility.ChromeVox.Navigate');
+  }
 
   if (pred) {
     chrome.metricsPrivate.recordUserAction('Accessibility.ChromeVox.Jump');
@@ -1022,8 +1044,9 @@ CommandHandler.onCommand = function(command) {
     if (bound) {
       var node = null;
 
-      if (matchCurrent && pred(bound))
+      if (matchCurrent && pred(bound)) {
         node = bound;
+      }
 
       if (!node) {
         node = AutomationUtil.findNextNode(
@@ -1055,8 +1078,9 @@ CommandHandler.onCommand = function(command) {
         while (root && !AutomationPredicate.rootOrEditableRoot(root))
           root = root.parent;
 
-        if (!root)
+        if (!root) {
           root = bound.root;
+        }
 
         if (dir == Dir.FORWARD) {
           bound = root;
@@ -1133,10 +1157,11 @@ CommandHandler.onCommand = function(command) {
         }
       };
 
-      if (dir == Dir.FORWARD)
+      if (dir == Dir.FORWARD) {
         scrollable.scrollForward(callback);
-      else
+      } else {
         scrollable.scrollBackward(callback);
+      }
       return false;
     }
   }
@@ -1174,8 +1199,9 @@ CommandHandler.imageNode_;
  */
 CommandHandler.onImageFrameUpdated_ = function(event) {
   var target = event.target;
-  if (target != CommandHandler.imageNode_)
+  if (target != CommandHandler.imageNode_) {
     return;
+  }
 
   if (!AutomationUtil.isDescendantOf(
           ChromeVoxState.instance.currentRange.start.node,
@@ -1210,8 +1236,9 @@ CommandHandler.viewGraphicAsBraille_ = function(current) {
   // Find the first node within the current range that supports image data.
   var imageNode = AutomationUtil.findNodePost(
       current.start.node, Dir.FORWARD, AutomationPredicate.supportsImageData);
-  if (!imageNode)
+  if (!imageNode) {
     return;
+  }
 
   imageNode.addEventListener(
       EventType.IMAGE_FRAME_UPDATED, CommandHandler.onImageFrameUpdated_,
@@ -1240,8 +1267,9 @@ CommandHandler.onEditCommand_ = function(command) {
     return true;
 
   var textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
-  if (!textEditHandler)
+  if (!textEditHandler) {
     return true;
+  }
 
   // Skip customized keys for read only text fields.
   if (textEditHandler.node.restriction ==
@@ -1268,13 +1296,15 @@ CommandHandler.onEditCommand_ = function(command) {
       BackgroundKeyboardHandler.sendKeyPress(35, {shift: true, ctrl: true});
       break;
     case 'previousObject':
-      if (!isMultiline || textEditHandler.isSelectionOnFirstLine())
+      if (!isMultiline || textEditHandler.isSelectionOnFirstLine()) {
         return true;
+      }
       BackgroundKeyboardHandler.sendKeyPress(36);
       break;
     case 'nextObject':
-      if (!isMultiline)
+      if (!isMultiline) {
         return true;
+      }
 
       if (textEditHandler.isSelectionOnLastLine()) {
         textEditHandler.moveToAfterEditText();
@@ -1284,13 +1314,15 @@ CommandHandler.onEditCommand_ = function(command) {
       BackgroundKeyboardHandler.sendKeyPress(35);
       break;
     case 'previousLine':
-      if (!isMultiline || textEditHandler.isSelectionOnFirstLine())
+      if (!isMultiline || textEditHandler.isSelectionOnFirstLine()) {
         return true;
+      }
       BackgroundKeyboardHandler.sendKeyPress(33);
       break;
     case 'nextLine':
-      if (!isMultiline)
+      if (!isMultiline) {
         return true;
+      }
 
       if (textEditHandler.isSelectionOnLastLine()) {
         textEditHandler.moveToAfterEditText();
@@ -1319,8 +1351,9 @@ CommandHandler.init = function() {
   var firstRunId = 'jdgcneonijmofocbhmijhacgchbihela';
   chrome.runtime.onMessageExternal.addListener(function(
       request, sender, sendResponse) {
-    if (sender.id != firstRunId)
+    if (sender.id != firstRunId) {
       return;
+    }
 
     if (request.openTutorial) {
       var launchTutorial = function(desktop, evt) {

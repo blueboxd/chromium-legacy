@@ -132,18 +132,6 @@
       </message>
 
       <!-- Bottom Tab Grid strings -->
-      <message name="IDS_BOTTOM_TAB_GRID_DESCRIPTION" desc="The content description of the 'opened tabs' bottom sheet.">
-        Opened tabs
-      </message>
-      <message name="IDS_BOTTOM_TAB_GRID_OPENED_HALF" desc="Accessibility string read when the 'opened tabs' sheet is opened at half height. The sheet will occupy the bottom half the screen. ">
-        Opened tabs at half height
-      </message>
-      <message name="IDS_BOTTOM_TAB_GRID_OPENED_FULL" desc="Accessibility string read when the 'opened tabs' bottom sheet is opened at full height. The sheet will occupy the entire screen.">
-        Opened tabs at full height
-      </message>
-      <message name="IDS_BOTTOM_TAB_GRID_CLOSED" desc="Accessibility string read when the 'opened tabs' bottom sheet is closed.">
-        Opened tabs closed
-      </message>
       <message name="IDS_BOTTOM_TAB_GRID_TITLE_PLACEHOLDER" desc="Placeholder string for the BottomTabGrid toolbar title.">
         <!-- <ph name="TABS_COUNT">%1$d<ex>5</ex></ph> tabs -->
         {TABS_COUNT, plural,

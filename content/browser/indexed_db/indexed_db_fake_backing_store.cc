@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 

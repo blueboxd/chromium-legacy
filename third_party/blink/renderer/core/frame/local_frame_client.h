@@ -447,8 +447,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void FrameRectsChanged(const IntRect&) {}
 
-  virtual void LifecycleStateChanged(mojom::FrameLifecycleState state) {}
-
   // Returns true when the contents of plugin are handled externally. This means
   // the plugin element will own a content frame but the frame is than used
   // externally to load the required handelrs.
@@ -493,8 +491,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
-
-  virtual void EvictFromBackForwardCache() = 0;
 };
 
 }  // namespace blink

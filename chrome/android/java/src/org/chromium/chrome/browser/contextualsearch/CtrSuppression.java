@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextualsearch;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * Provides a ContextualSearchHeuristic for CTR Recording, logging, and eventually suppression.
@@ -23,14 +24,14 @@ public class CtrSuppression extends ContextualSearchHeuristic {
 
     private static Integer sCurrentWeekNumberCache;
 
-    private final ChromePreferenceManager mPreferenceManager;
+    private final SharedPreferencesManager mPreferenceManager;
 
     /**
      * Constructs an object that tracks impressions and clicks per user to produce CTR and
      * impression metrics.
      */
     CtrSuppression() {
-        mPreferenceManager = ChromePreferenceManager.getInstance();
+        mPreferenceManager = SharedPreferencesManager.getInstance();
 
         // This needs to be done last in this constructor because the native code may call
         // into this object.
@@ -148,10 +149,14 @@ public class CtrSuppression extends ContextualSearchHeuristic {
      *         or we have never checked.
      */
     private boolean didWeekChange(int currentWeekNumber) {
-        if (mPreferenceManager.getContextualSearchCurrentWeekNumber() == currentWeekNumber) {
+        if (mPreferenceManager.readInt(
+                    ChromePreferenceManager.CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER)
+                == currentWeekNumber) {
             return false;
         } else {
-            mPreferenceManager.setContextualSearchCurrentWeekNumber(currentWeekNumber);
+            mPreferenceManager.writeInt(
+                    ChromePreferenceManager.CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER,
+                    currentWeekNumber);
             return true;
         }
     }

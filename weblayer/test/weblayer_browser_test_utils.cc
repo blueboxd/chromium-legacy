@@ -98,11 +98,13 @@ void NavigateAndWaitForFailure(const GURL& url, Shell* shell) {
       url, shell, TestNavigationObserver::NavigationEventToObserve::Failure);
 }
 
-base::Value ExecuteScript(Shell* shell, const std::string& script) {
+base::Value ExecuteScript(Shell* shell,
+                          const std::string& script,
+                          bool use_separate_isolate) {
   base::Value final_result;
   base::RunLoop run_loop;
   shell->browser_controller()->ExecuteScript(
-      base::ASCIIToUTF16(script),
+      base::ASCIIToUTF16(script), use_separate_isolate,
       base::BindLambdaForTesting(
           [&run_loop, &final_result](base::Value result) {
             final_result = std::move(result);

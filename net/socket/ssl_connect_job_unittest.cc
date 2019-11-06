@@ -83,10 +83,12 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
         session_(CreateNetworkSession()),
         direct_transport_socket_params_(
             new TransportSocketParams(HostPortPair("host", 443),
+                                      NetworkIsolationKey(),
                                       false /* disable_secure_dns */,
                                       OnHostResolutionCallback())),
         proxy_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 443),
+                                      NetworkIsolationKey(),
                                       false /* disable_secure_dns */,
                                       OnHostResolutionCallback())),
         socks_socket_params_(
@@ -416,9 +418,9 @@ TEST_F(SSLConnectJobTest, DisableSecureDns) {
   for (bool disable_secure_dns : {false, true}) {
     TestConnectJobDelegate test_delegate;
     direct_transport_socket_params_ =
-        base::MakeRefCounted<TransportSocketParams>(HostPortPair("host", 443),
-                                                    disable_secure_dns,
-                                                    OnHostResolutionCallback());
+        base::MakeRefCounted<TransportSocketParams>(
+            HostPortPair("host", 443), NetworkIsolationKey(),
+            disable_secure_dns, OnHostResolutionCallback());
     auto common_connect_job_params = session_->CreateCommonConnectJobParams();
     std::unique_ptr<ConnectJob> ssl_connect_job =
         std::make_unique<SSLConnectJob>(DEFAULT_PRIORITY, SocketTag(),

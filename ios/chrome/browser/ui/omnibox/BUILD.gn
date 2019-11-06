@@ -169,7 +169,6 @@ source_set("omnibox_internal") {
     "//ios/web",
     "//net",
     "//skia",
-    "//third_party/google_toolbox_for_mac",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",

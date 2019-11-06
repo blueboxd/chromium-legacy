@@ -1185,6 +1185,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
         constraint_space.IsNewFormattingContext());
     builder.SetInitialFragmentGeometry(fragment_geometry);
     builder.SetIsLegacyLayoutRoot();
+    builder.SetIntrinsicBlockSize(box_->IntrinsicContentLogicalHeight());
 
     // If we're block-fragmented, we can only handle monolithic content, since
     // the two block fragmentation machineries (NG and legacy) cannot cooperate.

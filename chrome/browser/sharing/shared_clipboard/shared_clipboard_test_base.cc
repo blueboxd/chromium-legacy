@@ -5,7 +5,7 @@
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_test_base.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/notifications/stub_notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "components/sync/protocol/sharing_message.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,8 +18,8 @@ SharedClipboardTestBase::SharedClipboardTestBase() = default;
 SharedClipboardTestBase::~SharedClipboardTestBase() = default;
 
 void SharedClipboardTestBase::SetUp() {
-  notification_display_service_ =
-      std::make_unique<StubNotificationDisplayService>(&profile_);
+  notification_tester_ =
+      std::make_unique<NotificationDisplayServiceTester>(&profile_);
   sharing_service_ = std::make_unique<MockSharingService>();
   ui::TestClipboard::CreateForCurrentThread();
 }
@@ -45,9 +45,8 @@ std::string SharedClipboardTestBase::GetClipboardText() {
 }
 
 message_center::Notification SharedClipboardTestBase::GetNotification() {
-  auto notifications =
-      notification_display_service_->GetDisplayedNotificationsForType(
-          NotificationHandler::Type::SHARING);
+  auto notifications = notification_tester_->GetDisplayedNotificationsForType(
+      NotificationHandler::Type::SHARING);
   EXPECT_EQ(notifications.size(), 1u);
 
   const message_center::Notification& notification = notifications[0];

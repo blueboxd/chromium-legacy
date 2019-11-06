@@ -85,6 +85,7 @@ class ClickToCallUtilsTest : public testing::Test {
       return nullptr;
 
     return std::make_unique<SharingService>(
+        &profile_,
         /* sync_prefs= */ nullptr,
         /* vapid_key_manager= */ nullptr,
         std::make_unique<MockSharingDeviceRegistration>(),
@@ -96,8 +97,7 @@ class ClickToCallUtilsTest : public testing::Test {
         /* gcm_driver= */ nullptr,
         /* device_info_tracker= */ nullptr,
         /* local_device_info_provider= */ nullptr,
-        /* sync_service */ nullptr,
-        /* notification_display_service= */ nullptr);
+        /* sync_service */ nullptr);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

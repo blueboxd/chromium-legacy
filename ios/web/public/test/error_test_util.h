@@ -27,7 +27,8 @@ std::string GetErrorText(WebState* web_state,
                          const std::string& error_domain,
                          long error_code,
                          bool is_post,
-                         bool is_off_the_record);
+                         bool is_off_the_record,
+                         bool has_ssl_info);
 
 }  // namespace testing
 }  // namespace web

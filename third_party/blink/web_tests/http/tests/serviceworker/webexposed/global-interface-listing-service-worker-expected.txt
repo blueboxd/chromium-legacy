@@ -1285,7 +1285,7 @@ interface Response
 interface ScreenManager
     attribute @@toStringTag
     method constructor
-    method requestDisplays
+    method getScreens
 interface SecurityPolicyViolationEvent : Event
     attribute @@toStringTag
     getter blockedURI

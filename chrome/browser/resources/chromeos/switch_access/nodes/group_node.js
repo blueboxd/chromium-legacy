@@ -23,12 +23,18 @@ class GroupNode extends SAChildNode {
 
   /** @override */
   equals(other) {
-    if (!(other instanceof GroupNode)) return false;
+    if (!(other instanceof GroupNode)) {
+      return false;
+    }
 
     other = /** @type {GroupNode} */ (other);
-    if (other.children_.length !== this.children_.length) return false;
+    if (other.children_.length !== this.children_.length) {
+      return false;
+    }
     for (let i = 0; i < this.children_.length; i++) {
-      if (other.children_[i].equals(this.children_[i])) return false;
+      if (other.children_[i].equals(this.children_[i])) {
+        return false;
+      }
     }
     return true;
   }

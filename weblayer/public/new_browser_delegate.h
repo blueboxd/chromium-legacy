@@ -11,19 +11,22 @@ namespace weblayer {
 
 class BrowserController;
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: ImplNewBrowserType
 // Corresponds to type of browser the page requested.
-enum class NewBrowserDisposition {
+enum class NewBrowserType {
   // The new browser should be opened in the foreground.
-  kForeground,
+  FOREGROUND_TAB = 0,
 
   // The new browser should be opened in the foreground.
-  kBackground,
+  BACKGROUND_TAB,
 
   // The page requested the browser be shown in a new window with minimal
   // browser UI. For example, no tabstrip.
-  kNewPopup,
+  NEW_POPUP,
+
   // The page requested the browser be shown in a new window.
-  kNewWindow,
+  NEW_WINDOW,
 };
 
 // An interface that allows clients to handle requests for new browsers, or
@@ -31,7 +34,7 @@ enum class NewBrowserDisposition {
 class NewBrowserDelegate {
  public:
   virtual void OnNewBrowser(std::unique_ptr<BrowserController> new_contents,
-                            NewBrowserDisposition disposition) = 0;
+                            NewBrowserType type) = 0;
 
  protected:
   virtual ~NewBrowserDelegate() {}

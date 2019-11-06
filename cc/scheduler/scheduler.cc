@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/devtools_instrumentation.h"
+#include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/metrics/compositor_timing_history.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 
@@ -168,9 +169,10 @@ void Scheduler::SetTreePrioritiesAndScrollState(
   ProcessScheduledActions();
 }
 
-void Scheduler::NotifyReadyToCommit() {
+void Scheduler::NotifyReadyToCommit(
+    std::unique_ptr<BeginMainFrameMetrics> details) {
   TRACE_EVENT0("cc", "Scheduler::NotifyReadyToCommit");
-  compositor_timing_history_->NotifyReadyToCommit();
+  compositor_timing_history_->NotifyReadyToCommit(std::move(details));
   state_machine_.NotifyReadyToCommit();
   ProcessScheduledActions();
 }

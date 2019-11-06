@@ -172,6 +172,12 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // Remove all players.
   void RemoveAllPlayers();
 
+  // Return a weak pointer to |this| that's local to |render_frame_host|, in the
+  // sense that we can cancel all of the ptrs to one frame without cancelling
+  // pointers for any of the others.
+  base::WeakPtr<MediaWebContentsObserver> GetWeakPtrForFrame(
+      RenderFrameHost* render_frame_host);
+
   // Helper class for recording audible metrics.
   AudibleMetrics* audible_metrics_;
 
@@ -186,7 +192,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   MediaSessionControllersManager session_controllers_manager_;
   MediaPowerExperimentManager* power_experiment_manager_ = nullptr;
 
-  base::WeakPtrFactory<MediaWebContentsObserver> weak_factory_;
+  std::map<RenderFrameHost*,
+           std::unique_ptr<base::WeakPtrFactory<MediaWebContentsObserver>>>
+      per_frame_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserver);
 };

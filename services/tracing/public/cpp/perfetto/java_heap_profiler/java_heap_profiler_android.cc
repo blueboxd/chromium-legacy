@@ -6,6 +6,7 @@
 
 #include "base/android/java_heap_dump_generator.h"
 #include "base/files/scoped_temp_dir.h"
+#include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_parser_android.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 
 namespace tracing {
@@ -32,6 +33,10 @@ void JavaHeapProfiler::StartTracing(
   base::android::WriteJavaHeapDumpToPath(file_path);
 
   // TODO(zhanggeorge): Convert heap dump and write to trace.
+  HprofParser parser(file_path);
+  parser.Parse();
+  DCHECK_EQ(parser.parse_stats().result,
+            HprofParser::ParseResult::PARSE_SUCCESS);
 }
 
 void JavaHeapProfiler::StopTracing(base::OnceClosure stop_complete_callback) {

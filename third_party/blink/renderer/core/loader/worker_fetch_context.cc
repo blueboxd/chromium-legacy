@@ -257,12 +257,11 @@ WorkerSettings* WorkerFetchContext::GetWorkerSettings() const {
 
 bool WorkerFetchContext::AllowRunningInsecureContent(
     bool enabled_per_settings,
-    const SecurityOrigin* origin,
     const KURL& url) const {
   if (!global_scope_->ContentSettingsClient())
     return enabled_per_settings;
   return global_scope_->ContentSettingsClient()->AllowRunningInsecureContent(
-      enabled_per_settings, WebSecurityOrigin(origin), url);
+      enabled_per_settings, url);
 }
 
 void WorkerFetchContext::Trace(blink::Visitor* visitor) {

@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_ranking_event_logger.h"
 
-#include <cmath>
+#include <utility>
 
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "base/containers/flat_map.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,7 +21,6 @@
 #include "components/assist_ranker/example_preprocessing.h"
 #include "components/crx_file/id_util.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
-#include "mojo/public/cpp/bindings/map.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -51,7 +51,7 @@ constexpr base::TimeDelta kDelayForHistoryService =
 // exponent used for counts that are not seconds is 1.15 (via
 // ukm::GetExponentialBucketMinForCounts1000). The first value skipped by
 // bucketing is 10.
-constexpr float kBucketExponentForSeconds = 1.045;
+constexpr float kBucketExponentForSeconds = 1.045f;
 
 // The UMA histogram that logs the error occurs in inference code.
 constexpr char kInferenceError[] = "Apps.AppList.AggregatedSearchRankerError";
@@ -313,7 +313,7 @@ void SearchRankingEventLogger::PopulateSearchRankingItem(
     }
   }
 
-  if (event_info->last_launch != base::nullopt) {
+  if (event_info->last_launch.has_value()) {
     base::Time last_launch = event_info->last_launch.value();
     base::Time::Exploded last_launch_exploded;
     last_launch.LocalExplode(&last_launch_exploded);
@@ -576,7 +576,7 @@ void SearchRankingEventLogger::DoInference(const std::vector<float>& features,
   BindGraphExecutorIfNeeded();
 
   // Prepare the input tensor.
-  std::map<std::string, TensorPtr> inputs;
+  base::flat_map<std::string, TensorPtr> inputs;
   auto tensor = Tensor::New();
   tensor->shape = Int64List::New();
   tensor->shape->value = std::vector<int64_t>({1, features.size()});
@@ -588,7 +588,7 @@ void SearchRankingEventLogger::DoInference(const std::vector<float>& features,
 
   const std::vector<std::string> outputs({std::string("output")});
   // Execute
-  executor_->Execute(mojo::MapToFlatMap(std::move(inputs)), std::move(outputs),
+  executor_->Execute(std::move(inputs), std::move(outputs),
                      base::BindOnce(&SearchRankingEventLogger::ExecuteCallback,
                                     weak_factory_.GetWeakPtr(), id));
 }

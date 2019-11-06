@@ -68,7 +68,7 @@ ThumbnailTracker::ThumbnailTracker(ThumbnailUpdatedCallback callback,
 
 ThumbnailTracker::~ThumbnailTracker() = default;
 
-void ThumbnailTracker::WatchTab(content::WebContents* contents) {
+void ThumbnailTracker::AddTab(content::WebContents* contents) {
   auto data_it = contents_data_.find(contents);
   if (data_it == contents_data_.end()) {
     data_it = contents_data_.emplace_hint(
@@ -76,6 +76,10 @@ void ThumbnailTracker::WatchTab(content::WebContents* contents) {
   }
 
   data_it->second->RequestThumbnail();
+}
+
+void ThumbnailTracker::RemoveTab(content::WebContents* contents) {
+  contents_data_.erase(contents);
 }
 
 void ThumbnailTracker::ThumbnailUpdated(content::WebContents* contents,

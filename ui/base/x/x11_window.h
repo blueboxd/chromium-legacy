@@ -139,6 +139,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void CancelResize();
   void NotifySwapAfterResize();
   void ConfineCursorTo(const gfx::Rect& bounds);
+  void LowerWindow();
 
   // Returns if the point is within XWindow shape. If shape is not set, always
   // returns true.

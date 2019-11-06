@@ -685,7 +685,7 @@ void SearchTabHelper::DeleteAutocompleteMatch(
     return;
   }
 
-  if (!base::FeatureList::IsEnabled(features::kConfirmNtpSuggestionRemovals)) {
+  if (!base::FeatureList::IsEnabled(ntp_features::kConfirmSuggestionRemovals)) {
     // If suggestion transparency is disabled, the UI is also disabled. This
     // must've come from a keyboard shortcut, which are allowed to remove
     // without confirmation.

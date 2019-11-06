@@ -91,7 +91,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<List<String>> SUPPORTED_BASIC_CARD_NETWORKS =
             new WritableObjectPropertyKey<>();
 
-    /** The available payment methods, e.g., |BASIC_CARD_METHOD_NAME|. */
+    /** The available payment methods, e.g., |BASIC_CARD|. */
     public static final WritableObjectPropertyKey<Map<String, PaymentMethodData>>
             SUPPORTED_PAYMENT_METHODS = new WritableObjectPropertyKey<>();
 

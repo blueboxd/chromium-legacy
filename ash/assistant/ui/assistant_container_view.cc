@@ -332,16 +332,17 @@ void AssistantContainerView::Init() {
   layer()->SetFillsBoundsOpaquely(false);
 
   // Main view.
-  assistant_main_view_ = new AssistantMainViewDeprecated(delegate_);
-  AddChildView(assistant_main_view_);
+  assistant_main_view_ =
+      AddChildView(std::make_unique<AssistantMainViewDeprecated>(delegate_));
 
   // Mini view.
-  assistant_mini_view_ = new AssistantMiniView(delegate_);
-  AddChildView(assistant_mini_view_);
+  assistant_mini_view_ =
+      AddChildView(std::make_unique<AssistantMiniView>(delegate_));
 
   // Web view.
-  assistant_web_view_ = new AssistantWebView(delegate_);
-  AddChildView(assistant_web_view_);
+  assistant_web_view_ = AddChildView(std::make_unique<AssistantWebView>(
+      delegate_,
+      /*web_container_view_delegate=*/nullptr));
 
   // Update the view state based on the current UI mode.
   OnUiModeChanged(delegate_->GetUiModel()->ui_mode(),

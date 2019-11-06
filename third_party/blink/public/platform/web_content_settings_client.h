@@ -14,7 +14,6 @@
 
 namespace blink {
 
-class WebSecurityOrigin;
 class WebURL;
 
 // This class provides the content settings information which tells
@@ -48,6 +47,9 @@ class WebContentSettingsClient {
   // Controls whether access to CacheStorage is allowed for this frame.
   virtual bool AllowCacheStorage() { return true; }
 
+  // Controls whether access to Web Locks is allowed for this frame.
+  virtual bool AllowWebLocks() { return true; }
+
   // Controls whether scripts are allowed to execute for this frame.
   virtual bool AllowScript(bool enabled_per_settings) {
     return enabled_per_settings;
@@ -67,7 +69,6 @@ class WebContentSettingsClient {
 
   // Controls whether insecure scripts are allowed to execute for this frame.
   virtual bool AllowRunningInsecureContent(bool enabled_per_settings,
-                                           const WebSecurityOrigin&,
                                            const WebURL&) {
     return enabled_per_settings;
   }

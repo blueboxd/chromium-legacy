@@ -88,7 +88,6 @@ component("bindings_base") {
     "lib/validation_errors.h",
     "lib/validation_util.cc",
     "lib/validation_util.h",
-    "map.h",
     "map_data_view.h",
     "map_traits.h",
     "map_traits_flat_map.h",

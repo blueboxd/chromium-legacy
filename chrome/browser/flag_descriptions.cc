@@ -3013,7 +3013,7 @@ const char kTabFreezeDescription[] =
     "minutes.";
 
 const char kWebUIA11yEnhancementsName[] =
-    "Enable accessibility enahncements in WebUI";
+    "Enable accessibility enhancements in WebUI";
 const char kWebUIA11yEnhancementsDescription[] =
     "This flag covers a wide variety of accessibility enhancements in WebUI "
     "and is used to demonstrate the enhancements for review and testing. When "

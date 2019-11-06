@@ -1886,8 +1886,9 @@ void NavigationRequest::OnRequestFailedInternal(
     const base::Optional<std::string>& error_page_content,
     bool collapse_frame) {
   DCHECK(state_ == WILL_START_NAVIGATION || state_ == WILL_START_REQUEST ||
-         state_ == WILL_REDIRECT_REQUEST || state_ == RESPONSE_STARTED ||
-         state_ == CANCELING);
+         state_ == WILL_REDIRECT_REQUEST || state_ == WILL_PROCESS_RESPONSE ||
+         state_ == RESPONSE_STARTED || state_ == CANCELING ||
+         state_ == WILL_FAIL_REQUEST);
   DCHECK(!(status.error_code == net::ERR_ABORTED &&
            error_page_content.has_value()));
 
@@ -2974,7 +2975,7 @@ void NavigationRequest::OnWillRedirectRequestProcessed(
 
 void NavigationRequest::OnWillFailRequestProcessed(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(WILL_FAIL_REQUEST, handle_state_);
+  DCHECK_EQ(WILL_FAIL_REQUEST, state_);
   DCHECK_NE(NavigationThrottle::BLOCK_RESPONSE, result.action());
   DCHECK(processing_navigation_throttle_);
   processing_navigation_throttle_ = false;
@@ -2989,7 +2990,7 @@ void NavigationRequest::OnWillFailRequestProcessed(
 
 void NavigationRequest::OnWillProcessResponseProcessed(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK_EQ(WILL_PROCESS_RESPONSE, handle_state_);
+  DCHECK_EQ(WILL_PROCESS_RESPONSE, state_);
   DCHECK_NE(NavigationThrottle::BLOCK_REQUEST, result.action());
   DCHECK_NE(NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE, result.action());
   DCHECK(processing_navigation_throttle_);
@@ -3125,7 +3126,7 @@ void NavigationRequest::WillFailRequest(
                                "WillFailRequest");
 
   complete_callback_ = std::move(callback);
-  handle_state_ = WILL_FAIL_REQUEST;
+  state_ = WILL_FAIL_REQUEST;
   processing_navigation_throttle_ = true;
 
   // Notify each throttle of the request.
@@ -3141,7 +3142,7 @@ void NavigationRequest::WillProcessResponse(
                                "WillProcessResponse");
 
   complete_callback_ = std::move(callback);
-  handle_state_ = WILL_PROCESS_RESPONSE;
+  state_ = WILL_PROCESS_RESPONSE;
   processing_navigation_throttle_ = true;
 
   // Notify each throttle of the response.
@@ -3312,6 +3313,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
       std::string("RTCN") +
       (render_frame_host_->GetProcess()->IsReady() ? "1" : "0"));
   handle_state_ = READY_TO_COMMIT;
+  state_ = RESPONSE_STARTED;
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
 
@@ -3547,7 +3549,7 @@ bool NavigationRequest::IsSignedExchangeInnerResponse() {
 }
 
 net::IPEndPoint NavigationRequest::GetSocketAddress() {
-  DCHECK_GE(handle_state_, WILL_PROCESS_RESPONSE);
+  DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
   return response() ? response()->head.remote_endpoint : net::IPEndPoint();
 }
 
@@ -3687,11 +3689,11 @@ RenderFrameHostImpl* NavigationRequest::GetRenderFrameHost() {
   // Only allow the RenderFrameHost to be retrieved once it has been set for
   // this navigation. This will happens either at WillProcessResponse time for
   // regular navigations or at WillFailRequest time for error pages.
-  CHECK_GE(handle_state_, WILL_FAIL_REQUEST)
+  CHECK_GE(state_, WILL_PROCESS_RESPONSE)
       << "This accessor should only be called after a RenderFrameHost has "
          "been picked for this navigation.";
-  static_assert(WILL_FAIL_REQUEST < WILL_PROCESS_RESPONSE,
-                "WillFailRequest state should come before WillProcessResponse");
+  static_assert(WILL_FAIL_REQUEST > WILL_PROCESS_RESPONSE,
+                "WillFailRequest state should come after WillProcessResponse");
   return render_frame_host_;
 }
 
@@ -3772,7 +3774,7 @@ const GURL& NavigationRequest::GetBaseURLForDataURL() {
 }
 
 const GlobalRequestID& NavigationRequest::GetGlobalRequestID() {
-  DCHECK_GE(handle_state_, WILL_PROCESS_RESPONSE);
+  DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
   return request_id_;
 }
 

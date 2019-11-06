@@ -103,8 +103,9 @@ SwitchAccessE2ETest.prototype = {
             // URL encoding of newlines in the target root URL were causing
             // tests to fail, so we decode %0A to \n.
             const targetUrl = evt.target.root.url.replace(/%0A/g, '\n');
-            if (targetUrl != url)
+            if (targetUrl != url) {
               return;
+            }
             callback && callback(desktopRootNode);
             callback = null;
           });

@@ -27,6 +27,12 @@ bool SharedWorkerContentSettingsProxy::AllowCacheStorage() {
   return result;
 }
 
+bool SharedWorkerContentSettingsProxy::AllowWebLocks() {
+  bool result = false;
+  GetService()->AllowWebLocks(&result);
+  return result;
+}
+
 bool SharedWorkerContentSettingsProxy::RequestFileSystemAccessSync() {
   bool result = false;
   GetService()->RequestFileSystemAccessSync(&result);

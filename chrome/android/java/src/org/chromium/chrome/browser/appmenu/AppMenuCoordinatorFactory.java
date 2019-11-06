@@ -25,11 +25,14 @@ public class AppMenuCoordinatorFactory {
      * @param appMenuDelegate The {@link AppMenuDelegate} for the containing activity.
      * @param decorView The decor {@link View}, e.g. from Window#getDecorView(), for the containing
      *         activity.
+     * @param hardwareButtonAnchorView The {@link View} used as an anchor for the menu when it is
+     *            displayed using a hardware butt
      */
     public static AppMenuCoordinator createAppMenuCoordinator(Context context,
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
-            MenuButtonDelegate buttonDelegate, AppMenuDelegate appMenuDelegate, View decorView) {
-        return new AppMenuCoordinatorImpl(
-                context, activityLifecycleDispatcher, buttonDelegate, appMenuDelegate, decorView);
+            MenuButtonDelegate buttonDelegate, AppMenuDelegate appMenuDelegate, View decorView,
+            View hardwareButtonAnchorView) {
+        return new AppMenuCoordinatorImpl(context, activityLifecycleDispatcher, buttonDelegate,
+                appMenuDelegate, decorView, hardwareButtonAnchorView);
     }
 }

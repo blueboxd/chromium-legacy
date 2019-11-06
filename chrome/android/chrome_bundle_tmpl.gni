@@ -80,6 +80,7 @@ template("chrome_bundle") {
                              "proguard_android_sdk_dep",
                              "proguard_jar_path",
                              "sign_bundle",
+                             "static_library_proguard_disabled",
                              "static_library_provider",
                              "verify_proguard_flags",
                            ])

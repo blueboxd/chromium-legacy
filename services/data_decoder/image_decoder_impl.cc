@@ -65,9 +65,7 @@ void ResizeImage(SkBitmap* decoded_image,
 
 }  // namespace
 
-ImageDecoderImpl::ImageDecoderImpl(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+ImageDecoderImpl::ImageDecoderImpl() = default;
 
 ImageDecoderImpl::~ImageDecoderImpl() = default;
 

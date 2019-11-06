@@ -419,20 +419,20 @@ TEST_F(CommandDispatcherTest, DispatchingForProtocol) {
   EXPECT_TRUE([dispatcher dispatchingForProtocol:@protocol(HideProtocol)]);
 }
 
-TEST_F(CommandDispatcherTest, CallableDispatcher) {
+TEST_F(CommandDispatcherTest, HandlerForProtocol) {
   CommandDispatcher* dispatcher = [[CommandDispatcher alloc] init];
   NSObject* target = [[NSObject alloc] init];
 
   [dispatcher startDispatchingToTarget:target
                            forProtocol:@protocol(ShowProtocol)];
-  id<ShowProtocol> callable = CallableDispatcher(dispatcher, ShowProtocol);
-  EXPECT_EQ(callable, dispatcher);
+  id<ShowProtocol> handler = HandlerForProtocol(dispatcher, ShowProtocol);
+  EXPECT_EQ(handler, dispatcher);
 
   [dispatcher startDispatchingToTarget:target
                            forProtocol:@protocol(HideProtocol)];
   [dispatcher startDispatchingToTarget:target
                            forProtocol:@protocol(CompositeProtocolWithMethods)];
-  id<EmptyContainerProtocol> container_callable =
-      CallableDispatcher(dispatcher, EmptyContainerProtocol);
-  EXPECT_EQ(container_callable, dispatcher);
+  id<EmptyContainerProtocol> container_handler =
+      HandlerForProtocol(dispatcher, EmptyContainerProtocol);
+  EXPECT_EQ(container_handler, dispatcher);
 }

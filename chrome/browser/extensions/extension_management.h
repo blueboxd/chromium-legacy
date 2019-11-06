@@ -96,6 +96,11 @@ class ExtensionManagement : public KeyedService {
   // Returns installation mode for an extension.
   InstallationMode GetInstallationMode(const Extension* extension) const;
 
+  // Returns installation mode for an extension with id |id| and updated with
+  // |update_url|.
+  InstallationMode GetInstallationMode(const ExtensionId& extension_id,
+                                       const std::string& update_url) const;
+
   // Returns the force install list, in format specified by
   // ExternalPolicyLoader::AddExtension().
   std::unique_ptr<base::DictionaryValue> GetForceInstallList() const;

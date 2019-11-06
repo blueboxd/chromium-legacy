@@ -28,6 +28,7 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
         std::make_unique<RealTimeUrlLookupService>(test_shared_loader_factory_);
   }
 
+  bool CanCheckUrl(const GURL& url) { return rt_service_->CanCheckUrl(url); }
   void HandleLookupError() { rt_service_->HandleLookupError(); }
   void HandleLookupSuccess() { rt_service_->HandleLookupSuccess(); }
   bool IsInBackoffMode() { return rt_service_->IsInBackoffMode(); }
@@ -141,6 +142,28 @@ TEST_F(RealTimeUrlLookupServiceTest, TestGetSBThreatTypeForRTThreatType) {
   EXPECT_EQ(SB_THREAT_TYPE_BILLING,
             RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
                 RTLookupResponse::ThreatInfo::UNCLEAR_BILLING));
+}
+
+TEST_F(RealTimeUrlLookupServiceTest, TestCanCheckUrl) {
+  struct CanCheckUrlCases {
+    const char* url;
+    bool can_check;
+  } can_check_url_cases[] = {{"ftp://example.test/path", false},
+                             {"http://localhost/path", false},
+                             {"http://localhost.localdomain/path", false},
+                             {"http://127.0.0.1/path", false},
+                             {"http://127.0.0.1:2222/path", false},
+                             {"http://192.168.1.1/path", false},
+                             {"http://172.16.2.2/path", false},
+                             {"http://10.1.1.1/path", false},
+                             {"http://10.1.1.1.1/path", true},
+                             {"http://example.test/path", true},
+                             {"https://example.test/path", true}};
+  for (size_t i = 0; i < base::size(can_check_url_cases); i++) {
+    GURL url(can_check_url_cases[i].url);
+    bool expected_can_check = can_check_url_cases[i].can_check;
+    EXPECT_EQ(expected_can_check, CanCheckUrl(url));
+  }
 }
 
 }  // namespace safe_browsing

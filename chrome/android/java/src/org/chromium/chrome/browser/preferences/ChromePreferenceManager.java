@@ -116,11 +116,12 @@ public class ChromePreferenceManager {
 
     @Deprecated
     private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
-    private static final String CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT =
+
+    public static final String CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT =
             "contextual_search_tap_triggered_promo_count";
-    private static final String CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME =
+    public static final String CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME =
             "contextual_search_last_animation_time";
-    private static final String CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER =
+    public static final String CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER =
             "contextual_search_current_week_number";
 
     /**
@@ -392,54 +393,6 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * @return The last time the search provider icon was animated on tap.
-     */
-    public long getContextualSearchLastAnimationTime() {
-        return mManager.readLong(CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME);
-    }
-
-    /**
-     * Sets the last time the search provider icon was animated on tap.
-     * @param time The last time the search provider icon was animated on tap.
-     */
-    public void setContextualSearchLastAnimationTime(long time) {
-        mManager.writeLong(CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME, time);
-    }
-
-    /**
-     * @return Number of times the promo was triggered to peek by a tap gesture, or a negative value
-     *         if in the disabled state.
-     */
-    public int getContextualSearchTapTriggeredPromoCount() {
-        return mManager.readInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT);
-    }
-
-    /**
-     * Sets the number of times the promo was triggered to peek by a tap gesture.
-     * Use a negative value to record that the counter has been disabled.
-     * @param count Number of times the promo was triggered by a tap gesture, or a negative value
-     *        to record that the counter has been disabled.
-     */
-    public void setContextualSearchTapTriggeredPromoCount(int count) {
-        mManager.writeInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, count);
-    }
-
-    /**
-     * @return The current week number, persisted for weekly CTR recording.
-     */
-    public int getContextualSearchCurrentWeekNumber() {
-        return mManager.readInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER);
-    }
-
-    /**
-     * Sets the current week number to persist.  Used for weekly CTR recording.
-     * @param weekNumber The week number to store.
-     */
-    public void setContextualSearchCurrentWeekNumber(int weekNumber) {
-        mManager.writeInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER, weekNumber);
-    }
-
-    /**
      * Returns timestamp of the suppression period start if signin promos in the New Tab Page are
      * temporarily suppressed; zero otherwise.
      * @return the epoch time in milliseconds (see {@link System#currentTimeMillis()}).
@@ -514,52 +467,6 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * Writes the given int value to the named shared preference.
-     * @param key The name of the preference to modify.
-     * @param value The new value for the preference.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void writeInt(String key, int value) {
-        mManager.writeInt(key, value);
-    }
-
-    /**
-     * Reads the given int value from the named shared preference, defaulting to 0 if not found.
-     * @param key The name of the preference to return.
-     * @return The value of the preference.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public int readInt(String key) {
-        return mManager.readInt(key);
-    }
-
-    /**
-     * Reads the given int value from the named shared preference.
-     * @param key The name of the preference to return.
-     * @param defaultValue The default value to return if the preference is not set.
-     * @return The value of the preference.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public int readInt(String key, int defaultValue) {
-        return mManager.readInt(key, defaultValue);
-    }
-
-    /**
-     * Increments the integer value specified by the given key.  If no initial value is present then
-     * an initial value of 0 is assumed and incremented, so a new value of 1 is set.
-     * @param key The key specifying which integer value to increment.
-     * @return The newly incremented value.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public int incrementInt(String key) {
-        return mManager.incrementInt(key);
-    }
-
-    /**
      * Writes the given boolean to the named shared preference.
      *
      * @param key The name of the preference to modify.
@@ -582,16 +489,5 @@ public class ChromePreferenceManager {
     @Deprecated
     public boolean readBoolean(String key, boolean defaultValue) {
         return mManager.readBoolean(key, defaultValue);
-    }
-
-    /**
-     * Removes the shared preference entry.
-     *
-     * @param key The key of the preference to remove.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void removeKey(String key) {
-        mManager.removeKey(key);
     }
 }

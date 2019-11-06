@@ -45,6 +45,10 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowLinux
   // X11-specific.  Asks X11 to set transparency of the X11 Root Window. Not
   // used for Wayland as it uses alpha channel to blend a window instead.
   virtual void SetOpacityForXWindow(float opacity);
+
+  // X11-specific.  Asks X11 to lower the Xwindow down the stack so that it does
+  // not obscure any sibling windows.
+  virtual void LowerXWindow();
 };
 
 }  // namespace ui

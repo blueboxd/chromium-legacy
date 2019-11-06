@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_web_view.h"
@@ -31,8 +32,10 @@ constexpr int kPreferredPaddingMinDip = 48;
 }  // namespace
 
 AssistantWebContainerView::AssistantWebContainerView(
-    AssistantViewDelegate* delegate)
-    : delegate_(delegate) {
+    AssistantViewDelegate* assistant_view_delegate,
+    AssistantWebViewDelegate* web_container_view_delegate)
+    : assistant_view_delegate_(assistant_view_delegate),
+      web_container_view_delegate_(web_container_view_delegate) {
   InitLayout();
 }
 
@@ -60,6 +63,14 @@ gfx::Size AssistantWebContainerView::CalculatePreferredSize() const {
   return gfx::Size(width, height - non_client_frame_view_height);
 }
 
+void AssistantWebContainerView::OnBackButtonPressed() {
+  assistant_web_view_->OnCaptionButtonPressed(AssistantButtonId::kBack);
+}
+
+views::View* AssistantWebContainerView::GetCaptionBarForTesting() {
+  return assistant_web_view_->caption_bar_for_testing();
+}
+
 void AssistantWebContainerView::InitLayout() {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW;
@@ -73,7 +84,8 @@ void AssistantWebContainerView::InitLayout() {
   SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
   // Web view.
-  AddChildView(std::make_unique<AssistantWebView>(delegate_));
+  assistant_web_view_ = AddChildView(std::make_unique<AssistantWebView>(
+      assistant_view_delegate_, web_container_view_delegate_));
 }
 
 }  // namespace ash

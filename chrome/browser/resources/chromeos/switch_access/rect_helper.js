@@ -15,10 +15,12 @@ const RectHelper = {
    * @return {boolean}
    */
   areEqual: (rect1, rect2) => {
-    if (!rect1 && !rect2)
+    if (!rect1 && !rect2) {
       return true;
-    if (!rect1 || !rect2)
+    }
+    if (!rect1 || !rect2) {
       return false;
+    }
     return rect1.left === rect2.left && rect1.top === rect2.top &&
         rect1.width === rect2.width && rect1.height === rect2.height;
   },
@@ -60,8 +62,9 @@ const RectHelper = {
    * @return {chrome.accessibilityPrivate.ScreenRect|undefined}
    */
   expandToFitWithPadding: (padding, outer, inner) => {
-    if (!outer || !inner)
+    if (!outer || !inner) {
       return outer;
+    }
 
     let newOuter = RectHelper.deepCopy(outer);
 
@@ -97,8 +100,9 @@ const RectHelper = {
    * @param {chrome.accessibilityPrivate.ScreenRect=} rect2
    */
   sameRow: (rect1, rect2) => {
-    if (!rect1 || !rect2)
+    if (!rect1 || !rect2) {
       return false;
+    }
     const halfHeight = Math.round(rect1.height / 2);
     const topBound = rect1.top - halfHeight;
     const bottomBound = rect1.top + halfHeight;
@@ -150,8 +154,9 @@ const RectHelper = {
    * @return {!chrome.accessibilityPrivate.ScreenRect}
    */
   unionAll: (rects) => {
-    if (rects.length < 1)
+    if (rects.length < 1) {
       return RectHelper.ZERO_RECT;
+    }
 
     let result = rects[0];
     for (let i = 1; i < rects.length; i++) {

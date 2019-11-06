@@ -4,8 +4,11 @@
 
 #include "ash/wm/overview/overview_item_view.h"
 
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_constants.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -14,6 +17,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
@@ -38,11 +46,19 @@ constexpr base::TimeDelta kCloseButtonSlowFadeInDuration =
 constexpr base::TimeDelta kCloseButtonSlowFadeInDelay =
     base::TimeDelta::FromMilliseconds(750);
 
-void AddChildWithLayer(views::View* parent, views::View* child) {
-  child->SetPaintToLayer();
-  child->layer()->SetFillsBoundsOpaquely(false);
-  parent->AddChildView(child);
-}
+constexpr int kCloseButtonInkDropInsetDp = 2;
+
+constexpr SkColor kCloseButtonColor = SK_ColorWHITE;
+
+// Value should match the one in
+// ash/resources/vector_icons/overview_window_close.icon.
+constexpr int kCloseButtonIconMarginDp = 5;
+
+// The colors of the close button ripple.
+constexpr SkColor kCloseButtonInkDropRippleColor =
+    SkColorSetA(kCloseButtonColor, 0x0F);
+constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
+    SkColorSetA(kCloseButtonColor, 0x14);
 
 // Animates |layer| from 0 -> 1 opacity if |visible| and 1 -> 0 opacity
 // otherwise. The tween type differs for |visible| and if |visible| is true
@@ -67,26 +83,88 @@ void AnimateLayerOpacity(ui::Layer* layer, bool visible) {
   layer->SetOpacity(target_opacity);
 }
 
+// The close button for the overview item. It has a custom ink drop.
+class OverviewCloseButton : public views::ImageButton {
+ public:
+  explicit OverviewCloseButton(views::ButtonListener* listener)
+      : views::ImageButton(listener) {
+    SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+    SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kOverviewWindowCloseIcon, kCloseButtonColor));
+    SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+    SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
+    SetMinimumImageSize(gfx::Size(kHeaderHeightDp, kHeaderHeightDp));
+    SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
+    SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
+  }
+
+  ~OverviewCloseButton() override = default;
+
+  // Resets the listener so that the listener can go out of scope.
+  void ResetListener() { listener_ = nullptr; }
+
+ protected:
+  // views::Button:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
+    auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
+    ink_drop->SetAutoHighlightMode(
+        views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
+    ink_drop->SetShowHighlightOnHover(true);
+    return ink_drop;
+  }
+
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
+    return std::make_unique<views::FloodFillInkDropRipple>(
+        size(), gfx::Insets(), GetInkDropCenterBasedOnLastEvent(),
+        kCloseButtonInkDropRippleColor, /*visible_opacity=*/1.f);
+  }
+
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override {
+    return std::make_unique<views::InkDropHighlight>(
+        gfx::PointF(GetLocalBounds().CenterPoint()),
+        std::make_unique<views::CircleLayerDelegate>(
+            kCloseButtonInkDropRippleHighlightColor, GetInkDropRadius()));
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return std::make_unique<views::CircleInkDropMask>(
+        size(), GetLocalBounds().CenterPoint(), GetInkDropRadius());
+  }
+
+ private:
+  int GetInkDropRadius() const {
+    return std::min(size().width(), size().height()) / 2 -
+           kCloseButtonInkDropInsetDp;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
+};
+
 }  // namespace
 
-OverviewItemView::OverviewItemView(EventDelegate* event_delegate,
+OverviewItemView::OverviewItemView(OverviewItem* overview_item,
                                    aura::Window* window,
-                                   bool show_preview,
-                                   views::ImageButton* close_button)
-    : WindowMiniView(window),
-      event_delegate_(event_delegate),
-      close_button_(close_button) {
+                                   bool show_preview)
+    : WindowMiniView(window, /*views_should_paint_to_layers=*/true),
+      overview_item_(overview_item) {
+  DCHECK(overview_item_);
   // This should not be focusable. It's also to avoid accessibility error when
   // |window->GetTitle()| is empty.
   SetFocusBehavior(FocusBehavior::NEVER);
 
-  if (close_button)
-    AddChildWithLayer(header_view(), close_button);
+  close_button_ = new OverviewCloseButton(overview_item_);
+  close_button_->SetPaintToLayer();
+  close_button_->layer()->SetFillsBoundsOpaquely(false);
+  AddChildViewOf(header_view(), close_button_);
 
   // Call this last as it calls |Layout()| which relies on the some of the other
   // elements existing.
   SetShowPreview(show_preview);
-  if (show_preview) {
+  // Do not show header if the current overview item is the drop target widget.
+  if (show_preview || overview_item_->overview_grid()->IsDropTargetWindow(
+                          overview_item_->GetWindow())) {
     header_view()->layer()->SetOpacity(0.f);
     current_header_visibility_ = HeaderVisibility::kInvisible;
   }
@@ -137,8 +215,9 @@ void OverviewItemView::HideCloseInstantlyAndThenShowItSlowly() {
   layer->SetOpacity(1.f);
 }
 
-void OverviewItemView::ResetEventDelegate() {
-  event_delegate_ = nullptr;
+void OverviewItemView::OnOverviewItemWindowRestoring() {
+  overview_item_ = nullptr;
+  static_cast<OverviewCloseButton*>(close_button_)->ResetListener();
 }
 
 void OverviewItemView::RefreshPreviewView() {
@@ -147,6 +226,51 @@ void OverviewItemView::RefreshPreviewView() {
 
   preview_view()->RecreatePreviews();
   Layout();
+}
+
+void OverviewItemView::UpdatePreviewRoundedCorners(bool show, float rounding) {
+  if (!preview_view())
+    return;
+
+  DCHECK(preview_view()->layer());
+  const float scale = preview_view()->layer()->transform().Scale2d().x();
+  const gfx::RoundedCornersF radii(show ? rounding / scale : 0.0f);
+  preview_view()->layer()->SetRoundedCornerRadius(radii);
+  preview_view()->layer()->SetIsFastRoundedCorner(true);
+}
+
+int OverviewItemView::GetMargin() const {
+  return kOverviewMargin;
+}
+
+gfx::Rect OverviewItemView::GetHeaderBounds() const {
+  // The size of the close button resource, |image_width| is scaled up to
+  // |close_button_width| when laid out. The resource itself contains some
+  // padding, which is the distance from the edges of the image to the edges of
+  // the vector icon. We want to align the edges of the image as shown below in
+  // the diagram. The resource padding, like the rest of the resource is scaled
+  // up, so calculate the scaled up resource padding.
+  const int image_width =
+      close_button_->GetImage(views::ImageButton::STATE_NORMAL).width();
+  const int close_button_width = close_button_->width();
+  const int right_padding = gfx::ToRoundedInt(
+      kCloseButtonIconMarginDp * float{close_button_width} / image_width);
+  const int margin = GetMargin();
+
+  // Positions the header in a way so that the right aligned close button is
+  // aligned so that the edge of its icon, not the button lines up with the
+  // margins. In the diagram below, a represents the the right edge of the
+  // provided icon (which contains some padding), b represents the right edge of
+  // |close_button_| and c represents the right edge of the local bounds.
+  // ---------------------------+---------+
+  //                            |  +---+  |
+  //      |title_label_|        |  |   a  b
+  //                            |  +---+  |
+  // ---------------------------+---------+
+  //                                   c
+  //                                   |
+  return gfx::Rect(margin, margin, GetLocalBounds().width() - right_padding,
+                   kHeaderHeightDp);
 }
 
 views::View* OverviewItemView::GetView() {
@@ -167,13 +291,13 @@ gfx::Rect OverviewItemView::GetHighlightBoundsInScreen() {
 }
 
 void OverviewItemView::MaybeActivateHighlightedView() {
-  if (event_delegate_)
-    event_delegate_->OnHighlightedViewActivated();
+  if (overview_item_)
+    overview_item_->OnHighlightedViewActivated();
 }
 
 void OverviewItemView::MaybeCloseHighlightedView() {
-  if (event_delegate_)
-    event_delegate_->OnHighlightedViewClosed();
+  if (overview_item_)
+    overview_item_->OnHighlightedViewClosed();
 }
 
 gfx::Point OverviewItemView::GetMagnifierFocusPointInScreen() {
@@ -189,37 +313,37 @@ const char* OverviewItemView::GetClassName() const {
 }
 
 bool OverviewItemView::OnMousePressed(const ui::MouseEvent& event) {
-  if (!event_delegate_)
-    return Button::OnMousePressed(event);
-  event_delegate_->HandleMouseEvent(event);
+  if (!overview_item_)
+    return views::View::OnMousePressed(event);
+  overview_item_->HandleMouseEvent(event);
   return true;
 }
 
 bool OverviewItemView::OnMouseDragged(const ui::MouseEvent& event) {
-  if (!event_delegate_)
-    return Button::OnMouseDragged(event);
-  event_delegate_->HandleMouseEvent(event);
+  if (!overview_item_)
+    return views::View::OnMouseDragged(event);
+  overview_item_->HandleMouseEvent(event);
   return true;
 }
 
 void OverviewItemView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (!event_delegate_) {
-    Button::OnMouseReleased(event);
+  if (!overview_item_) {
+    views::View::OnMouseReleased(event);
     return;
   }
-  event_delegate_->HandleMouseEvent(event);
+  overview_item_->HandleMouseEvent(event);
 }
 
 void OverviewItemView::OnGestureEvent(ui::GestureEvent* event) {
-  if (!event_delegate_)
+  if (!overview_item_)
     return;
 
-  if (event_delegate_->ShouldIgnoreGestureEvents()) {
+  if (overview_item_->ShouldIgnoreGestureEvents()) {
     event->SetHandled();
     return;
   }
 
-  event_delegate_->HandleGestureEvent(event);
+  overview_item_->HandleGestureEvent(event);
   event->SetHandled();
 }
 
@@ -235,11 +359,11 @@ bool OverviewItemView::CanAcceptEvent(const ui::Event& event) {
       accept_events = false;
   }
 
-  return accept_events && Button::CanAcceptEvent(event);
+  return accept_events && views::View::CanAcceptEvent(event);
 }
 
 void OverviewItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  views::Button::GetAccessibleNodeData(node_data);
+  WindowMiniView::GetAccessibleNodeData(node_data);
   node_data->AddStringAttribute(
       ax::mojom::StringAttribute::kDescription,
       l10n_util::GetStringUTF8(

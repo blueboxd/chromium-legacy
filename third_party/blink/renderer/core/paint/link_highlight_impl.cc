@@ -232,10 +232,29 @@ void LinkHighlightImpl::NotifyAnimationFinished(double, int) {
   UpdateOpacity(kStartOpacity);
 }
 
-void LinkHighlightImpl::UpdatePrePaint() {
+void LinkHighlightImpl::UpdateBeforePrePaint() {
   if (!node_ || !node_->GetLayoutObject() ||
       node_->GetLayoutObject()->GetFrameView()->ShouldThrottleRendering())
     ReleaseResources();
+}
+
+void LinkHighlightImpl::UpdateAfterPrePaint() {
+  if (!node_)
+    return;
+
+  const auto* object = node_->GetLayoutObject();
+  DCHECK(object);
+  DCHECK(!object->GetFrameView()->ShouldThrottleRendering());
+
+  size_t fragment_count = 0;
+  for (const auto* fragment = &object->FirstFragment(); fragment;
+       fragment = fragment->NextFragment())
+    ++fragment_count;
+
+  if (fragment_count != fragments_.size()) {
+    fragments_.resize(fragment_count);
+    SetPaintArtifactCompositorNeedsUpdate();
+  }
 }
 
 CompositorAnimation* LinkHighlightImpl::GetCompositorAnimation() const {
@@ -279,9 +298,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
         new_path.AddRect(snapped_rect);
     }
 
-    if (index == fragments_.size())
-      fragments_.emplace_back();
-
+    DCHECK_LT(index, fragments_.size());
     auto& link_highlight_fragment = fragments_[index];
     link_highlight_fragment.SetColor(color);
 
@@ -301,12 +318,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
                        bounding_rect.Location(), property_tree_state);
   }
 
-  if (index < fragments_.size()) {
-    fragments_.Shrink(index);
-    // PaintArtifactCompositor needs update for the cc::PictureLayers we just
-    // removed for the extra fragments.
-    SetPaintArtifactCompositorNeedsUpdate();
-  }
+  DCHECK_EQ(index, fragments_.size());
 }
 
 void LinkHighlightImpl::SetPaintArtifactCompositorNeedsUpdate() {

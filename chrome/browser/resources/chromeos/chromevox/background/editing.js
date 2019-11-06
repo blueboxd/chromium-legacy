@@ -43,8 +43,9 @@ editing.TextEditHandler = function(node) {
   /** @const {!AutomationNode} @private */
   this.node_ = node;
 
-  if (!node.state[StateType.EDITABLE])
+  if (!node.state[StateType.EDITABLE]) {
     throw '|node| must be editable.';
+  }
 
   chrome.automation.getDesktop(function(desktop) {
     // A rich text field is one where selection gets placed on a DOM descendant
@@ -125,8 +126,9 @@ editing.TextEditHandler.prototype = {
  * @extends {cvox.ChromeVoxEditableTextBase}
  */
 function AutomationEditableText(node) {
-  if (!node.state.editable)
+  if (!node.state.editable) {
     throw Error('Node must have editable state set to true.');
+  }
   var value = this.getProcessedValue_(node) || '';
   /** @private {!Array<number>} */
   this.lineBreaks_ = [];
@@ -189,8 +191,9 @@ AutomationEditableText.prototype = {
 
   /** @override */
   getLineStart: function(lineIndex) {
-    if (lineIndex == 0)
+    if (lineIndex == 0) {
       return 0;
+    }
 
     // The start of this line is defined as the line break of the previous line
     // + 1 (the hard line break).
@@ -207,15 +210,17 @@ AutomationEditableText.prototype = {
     var lineIndex = this.getLineIndex(this.start);
     // Output braille at the end of the selection that changed, if start and end
     // differ.
-    if (this.start != this.end && this.start == oldStart)
+    if (this.start != this.end && this.start == oldStart) {
       lineIndex = this.getLineIndex(this.end);
+    }
     var lineStart = this.getLineStart(lineIndex);
     var lineText =
         this.value.substr(lineStart, this.getLineEnd(lineIndex) - lineStart);
 
-    if (lineIndex == 0)
+    if (lineIndex == 0) {
       lineText += ' ' +
           Msgs.getMsg(this.multiline ? 'tag_textarea_brl' : 'role_textbox_brl');
+    }
 
     cvox.ChromeVox.braille.write(new cvox.NavBraille({
       text: lineText,
@@ -238,8 +243,9 @@ AutomationEditableText.prototype = {
    * @private
    */
   updateLineBreaks_: function(value) {
-    if (value == this.value)
+    if (value == this.value) {
       return;
+    }
 
     this.lineBreaks_ = [];
     var lines = value.split('\n');
@@ -320,8 +326,9 @@ AutomationRichEditableText.prototype = {
       deep = deep.previousOnLine;
     var next = AutomationUtil.findNextNode(
         deep, Dir.BACKWARD, AutomationPredicate.inlineTextBox);
-    if (!next)
+    if (!next) {
       return true;
+    }
     var exited = AutomationUtil.getUniqueAncestors(next, deep);
     return !!exited.find(function(item) {
       return item == this.node_;
@@ -335,8 +342,9 @@ AutomationRichEditableText.prototype = {
       deep = deep.nextOnLine;
     var next = AutomationUtil.findNextNode(
         deep, Dir.FORWARD, AutomationPredicate.inlineTextBox);
-    if (!next)
+    if (!next) {
       return true;
+    }
     var exited = AutomationUtil.getUniqueAncestors(next, deep);
     return !!exited.find(function(item) {
       return item == this.node_;
@@ -401,8 +409,9 @@ AutomationRichEditableText.prototype = {
 
       if (cur.hasTextSelection()) {
         var text = cur.text;
-        if (text == '\n')
+        if (text == '\n') {
           text = '';
+        }
         this.changed(new cvox.TextChangeEvent(
             text, cur.startOffset, cur.endOffset, true));
       } else {
@@ -417,14 +426,16 @@ AutomationRichEditableText.prototype = {
 
       // Finally, queue up any text markers/styles at bounds.
       var container = cur.startContainer_;
-      if (!container)
+      if (!container) {
         return;
+      }
 
       this.speakTextMarker_(
           container, cur.localStartOffset, cur.localEndOffset);
 
-      if (localStorage['announceRichTextAttributes'] == 'true')
+      if (localStorage['announceRichTextAttributes'] == 'true') {
         this.speakTextStyle_(container);
+      }
       return;
     }
 
@@ -542,8 +553,9 @@ AutomationRichEditableText.prototype = {
    * @return {string}
    */
   getTextSelection_: function(startNode, startOffset, endNode, endOffset) {
-    if (!startNode || !endNode)
+    if (!startNode || !endNode) {
       return '';
+    }
 
     if (startNode == endNode) {
       return startNode.name ? startNode.name.substring(startOffset, endOffset) :
@@ -551,20 +563,23 @@ AutomationRichEditableText.prototype = {
     }
 
     var text = '';
-    if (startNode.name)
+    if (startNode.name) {
       text = startNode.name.substring(startOffset);
+    }
 
     for (var node = startNode;
          (node = AutomationUtil.findNextNode(
               node, Dir.FORWARD, AutomationPredicate.leafOrStaticText)) &&
          node != endNode;) {
       // Padding needs to get added to break up speech utterances.
-      if (node.name)
+      if (node.name) {
         text += ' ' + node.name;
+      }
     }
 
-    if (endNode.name)
+    if (endNode.name) {
       text += ' ' + endNode.name.substring(0, endOffset);
+    }
     return text;
   },
 
@@ -688,8 +703,9 @@ AutomationRichEditableText.prototype = {
                 /** @type {function()} */ (this.node_.constructor)));
     var queueMode = cvox.QueueMode.CATEGORY_FLUSH;
     for (var i = 0, cur; cur = lineNodes[i]; i++) {
-      if (cur.children.length)
+      if (cur.children.length) {
         continue;
+      }
 
       var o = new Output()
                   .withRichSpeech(
@@ -700,8 +716,9 @@ AutomationRichEditableText.prototype = {
 
       // Ignore whitespace only output except if it is leading content on the
       // line.
-      if (!o.isOnlyWhitespace || i == 0)
+      if (!o.isOnlyWhitespace || i == 0) {
         o.go();
+      }
       prev = cur;
       queueMode = cvox.QueueMode.QUEUE;
     }
@@ -711,26 +728,33 @@ AutomationRichEditableText.prototype = {
   brailleCurrentRichLine_: function() {
     var isFirstLine = this.isSelectionOnFirstLine();
     var cur = this.line_;
-    if (cur.value_ === null)
+    if (cur.value_ === null) {
       return;
+    }
 
     var value = new MultiSpannable(cur.value_);
-    if (!this.node_.constructor)
+    if (!this.node_.constructor) {
       return;
+    }
     value.getSpansInstanceOf(this.node_.constructor).forEach(function(span) {
       var style = span.role == RoleType.INLINE_TEXT_BOX ? span.parent : span;
-      if (!style)
+      if (!style) {
         return;
+      }
       var formType = FormType.PLAIN_TEXT;
       // Currently no support for sub/superscript in 3rd party liblouis library.
-      if (style.bold)
+      if (style.bold) {
         formType |= FormType.BOLD;
-      if (style.italic)
+      }
+      if (style.italic) {
         formType |= FormType.ITALIC;
-      if (style.underline)
+      }
+      if (style.underline) {
         formType |= FormType.UNDERLINE;
-      if (formType == FormType.PLAIN_TEXT)
+      }
+      if (formType == FormType.PLAIN_TEXT) {
         return;
+      }
       var start = value.getSpanStart(span);
       var end = value.getSpanEnd(span);
       value.setSpan(
@@ -754,16 +778,18 @@ AutomationRichEditableText.prototype = {
         value.append(Output.SPACE);
         value.append(output.braille);
         if (suffix.length) {
-          if (suffix.toString()[0] != Output.SPACE)
+          if (suffix.toString()[0] != Output.SPACE) {
             value.append(Output.SPACE);
+          }
           value.append(suffix);
         }
       }
     }
 
     if (isFirstLine) {
-      if (!/\s/.test(value.toString()[value.length - 1]))
+      if (!/\s/.test(value.toString()[value.length - 1])) {
         value.append(Output.SPACE);
+      }
       value.append(Msgs.getMsg('tag_textarea_brl'));
     }
     value.setSpan(new cvox.ValueSpan(0), 0, cur.value_.length);
@@ -826,8 +852,9 @@ AutomationRichEditableText.prototype = {
  * @return {editing.TextEditHandler}
  */
 editing.TextEditHandler.createForNode = function(node) {
-  if (!node.state.editable)
+  if (!node.state.editable) {
     throw new Error('Expected editable node.');
+  }
 
   return new editing.TextEditHandler(node);
 };
@@ -944,23 +971,27 @@ editing.EditableLine.prototype = {
     var lineBase = opt_baseLineOnStart ? this.start_ : this.end_;
     var lineExtend = opt_baseLineOnStart ? this.end_ : this.start_;
 
-    if (lineBase.node.name)
+    if (lineBase.node.name) {
       nameLen = lineBase.node.name.length;
+    }
 
     this.value_ = new Spannable(lineBase.node.name || '', lineBase);
-    if (lineBase.node == lineExtend.node)
+    if (lineBase.node == lineExtend.node) {
       this.value_.setSpan(lineExtend, 0, nameLen);
+    }
 
     this.startContainer_ = this.start_.node;
-    if (this.startContainer_.role == RoleType.INLINE_TEXT_BOX)
+    if (this.startContainer_.role == RoleType.INLINE_TEXT_BOX) {
       this.startContainer_ = this.startContainer_.parent;
+    }
     this.startContainerValue_ =
         this.startContainer_.role == RoleType.TEXT_FIELD ?
         this.startContainer_.value || '' :
         this.startContainer_.name || '';
     this.endContainer_ = this.end_.node;
-    if (this.endContainer_.role == RoleType.INLINE_TEXT_BOX)
+    if (this.endContainer_.role == RoleType.INLINE_TEXT_BOX) {
       this.endContainer_ = this.endContainer_.parent;
+    }
 
     // Initialize defaults.
     this.lineStart_ = lineBase.node;
@@ -982,17 +1013,19 @@ editing.EditableLine.prototype = {
     while ((lineStart.previousOnLine && lineStart.previousOnLine.role) ||
            (lineStart.previousSibling && lineStart.previousSibling.lastChild &&
             lineStart.previousSibling.lastChild.nextOnLine == lineStart)) {
-      if (lineStart.previousOnLine)
+      if (lineStart.previousOnLine) {
         lineStart = lineStart.previousOnLine;
-      else
+      } else {
         lineStart = lineStart.previousSibling.lastChild;
+      }
 
       this.lineStart_ = lineStart;
 
-      if (lineStart.role != RoleType.INLINE_TEXT_BOX)
+      if (lineStart.role != RoleType.INLINE_TEXT_BOX) {
         parents.unshift(lineStart);
-      else if (parents[0] != lineStart.parent)
+      } else if (parents[0] != lineStart.parent) {
         parents.unshift(lineStart.parent);
+      }
 
       var prepend = new Spannable(lineStart.name, lineStart);
       prepend.append(this.value_);
@@ -1006,21 +1039,24 @@ editing.EditableLine.prototype = {
     while ((lineEnd.nextOnLine && lineEnd.nextOnLine.role) ||
            (lineEnd.nextSibling &&
             lineEnd.nextSibling.previousOnLine == lineEnd)) {
-      if (lineEnd.nextOnLine)
+      if (lineEnd.nextOnLine) {
         lineEnd = lineEnd.nextOnLine;
-      else
+      } else {
         lineEnd = lineEnd.nextSibling.firstChild;
+      }
 
       this.lineEnd_ = lineEnd;
 
-      if (lineEnd.role != RoleType.INLINE_TEXT_BOX)
+      if (lineEnd.role != RoleType.INLINE_TEXT_BOX) {
         parents.push(this.lineEnd_);
-      else if (parents[parents.length - 1] != lineEnd.parent)
+      } else if (parents[parents.length - 1] != lineEnd.parent) {
         parents.push(this.lineEnd_.parent);
+      }
 
       var annotation = lineEnd;
-      if (lineEnd == this.end_.node)
+      if (lineEnd == this.end_.node) {
         annotation = this.end_;
+      }
 
       this.value_.append(new Spannable(lineEnd.name, annotation));
     }
@@ -1058,8 +1094,9 @@ editing.EditableLine.prototype = {
     for (var i = 0; i < parents.length; i++) {
       var parent = parents[i];
 
-      if (!parent.name)
+      if (!parent.name) {
         continue;
+      }
 
       var prevLen = len;
 
@@ -1073,8 +1110,9 @@ editing.EditableLine.prototype = {
       }
 
       // Subtract text count after when at the end of the line.
-      if (i == parents.length - 1)
+      if (i == parents.length - 1) {
         currentLen -= textCountAfterLineEnd;
+      }
 
       len += currentLen;
 
@@ -1082,8 +1120,9 @@ editing.EditableLine.prototype = {
         this.value_.setSpan(new Output.NodeSpan(parent, offset), prevLen, len);
 
         // Also, annotate this span if it is associated with line containre.
-        if (parent == this.startContainer_)
+        if (parent == this.startContainer_) {
           this.value_.setSpan(parent, prevLen, len);
+        }
       } catch (e) {
       }
     }
@@ -1176,9 +1215,10 @@ editing.EditableLine.prototype = {
    * Returns whether this line has selection over text nodes.
    */
   hasTextSelection() {
-    if (this.start_.node && this.end_.node)
+    if (this.start_.node && this.end_.node) {
       return AutomationPredicate.text(this.start_.node) &&
           AutomationPredicate.text(this.end_.node);
+    }
   },
 
   /**
@@ -1233,8 +1273,9 @@ editing.EditableLine.prototype = {
    * internally tracked state.
    */
   isValidLine: function() {
-    if (!this.lineStartContainer_ || !this.lineEndContainer_)
+    if (!this.lineStartContainer_ || !this.lineEndContainer_) {
       return false;
+    }
 
     var start = new cursors.Cursor(
         this.lineStartContainer_, this.localLineStartContainerOffset_);
@@ -1249,34 +1290,38 @@ editing.EditableLine.prototype = {
     // in both directions.
     var testStartNode = localStartNode;
     do {
-      if (testStartNode == localEndNode)
+      if (testStartNode == localEndNode) {
         return true;
+      }
 
       // Hack/workaround for broken *OnLine links.
-      if (testStartNode.nextOnLine && testStartNode.nextOnLine.role)
+      if (testStartNode.nextOnLine && testStartNode.nextOnLine.role) {
         testStartNode = testStartNode.nextOnLine;
-      else if (
+      } else if (
           testStartNode.nextSibling &&
-          testStartNode.nextSibling.previousOnLine == testStartNode)
+          testStartNode.nextSibling.previousOnLine == testStartNode) {
         testStartNode = testStartNode.nextSibling;
-      else
+      } else {
         break;
+      }
     } while (testStartNode);
 
     var testEndNode = localEndNode;
     do {
-      if (testEndNode == localStartNode)
+      if (testEndNode == localStartNode) {
         return true;
+      }
 
       // Hack/workaround for broken *OnLine links.
-      if (testEndNode.previousOnLine && testEndNode.previousOnLine.role)
+      if (testEndNode.previousOnLine && testEndNode.previousOnLine.role) {
         testEndNode = testEndNode.previousOnLine;
-      else if (
+      } else if (
           testEndNode.previousSibling &&
-          testEndNode.previousSibling.nextOnLine == testEndNode)
+          testEndNode.previousSibling.nextOnLine == testEndNode) {
         testEndNode = testEndNode.previousSibling;
-      else
+      } else {
         break;
+      }
     } while (testEndNode);
 
     return false;

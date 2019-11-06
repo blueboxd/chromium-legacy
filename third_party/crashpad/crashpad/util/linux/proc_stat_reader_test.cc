@@ -19,6 +19,7 @@
 #include <unistd.h>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "gtest/gtest.h"
 #include "test/linux/fake_ptrace_connection.h"
 #include "util/thread/thread.h"
@@ -74,7 +75,13 @@ class StatTimeThread : public Thread {
   timeval* start_time_;
 };
 
-TEST(ProcStatReader, Threads) {
+// TODO(https://crbug.com/1016765): Flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_Threads DISABLED_Threads
+#else
+#define MAYBE_Threads Threads
+#endif
+TEST(ProcStatReader, MAYBE_Threads) {
   timeval main_time;
   ASSERT_NO_FATAL_FAILURE(GetStartTime(&main_time));
 

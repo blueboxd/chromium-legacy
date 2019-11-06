@@ -54,9 +54,21 @@ class Observer : public update_client::UpdateClient::Observer {
 }  // namespace
 
 int UpdateApps() {
-  auto installer = base::MakeRefCounted<Installer>(kUpdaterAppId);
-  installer->FindInstallOfApp();
-  const auto component = installer->MakeCrxComponent();
+  auto app_ids = Installer::FindAppIds();
+
+  // Include the app id for the updater if it is not found. This could happen
+  // before the first update for the updater has been handled. This is a
+  // temporary workaround until the source of truth for the registered
+  // version is resolved.
+  if (!base::Contains(app_ids, kUpdaterAppId))
+    app_ids.push_back(kUpdaterAppId);
+
+  std::vector<base::Optional<update_client::CrxComponent>> components;
+  for (const auto& app_id : app_ids) {
+    auto installer = base::MakeRefCounted<Installer>(app_id);
+    installer->FindInstallOfApp();
+    components.push_back(installer->MakeCrxComponent());
+  }
 
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   base::RunLoop runloop;
@@ -71,17 +83,16 @@ int UpdateApps() {
     Observer observer(update_client);
     update_client->AddObserver(&observer);
 
-    const std::vector<std::string> ids = {installer->app_id()};
     update_client->Update(
-        ids,
+        app_ids,
         base::BindOnce(
-            [](const update_client::CrxComponent& component,
-               const std::vector<std::string>& ids)
-                -> std::vector<base::Optional<update_client::CrxComponent>> {
-              DCHECK_EQ(1u, ids.size());
-              return {component};
+            [](const std::vector<base::Optional<update_client::CrxComponent>>&
+                   components,
+               const std::vector<std::string>& ids) {
+              DCHECK_EQ(components.size(), ids.size());
+              return components;
             },
-            component),
+            components),
         false,
         base::BindOnce(
             [](base::OnceClosure closure, update_client::Error error) {

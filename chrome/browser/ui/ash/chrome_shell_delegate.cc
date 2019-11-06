@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "content/public/browser/data_decoder_service.h"
 #include "ui/aura/window.h"
 #include "url/gurl.h"
 
@@ -76,7 +75,3 @@ ChromeShellDelegate::CreateScreenshotDelegate() {
   return std::make_unique<ChromeScreenshotGrabber>();
 }
 
-mojo::Remote<data_decoder::mojom::DataDecoderService>
-ChromeShellDelegate::LaunchDataDecoder() {
-  return content::LaunchDataDecoder();
-}

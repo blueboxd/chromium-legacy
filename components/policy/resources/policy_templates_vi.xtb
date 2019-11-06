@@ -3,9 +3,9 @@
 <translationbundle lang="vi">
 <translation id="1001649754854402482">Bật tùy chọn giảm thiểu kiểm tra <ph name="CORS" /> trong quy trình triển khai <ph name="CORS" /> mới, cho phép Tiện ích duy trì hành vi tương thích và cho phép <ph name="PRODUCT_NAME" /> gửi tiêu đề đã chỉ định mà không cần kiểm tra <ph name="CORS" />.
 
-      Nếu bạn đặt danh sách này thành trống, thì <ph name="PRODUCT_NAME" /> sẽ cố chạy Tiện ích theo cách thức tương thích và không đưa ra những thay đổi về <ph name="API" /> đối với <ph name="PRODUCT_NAME" /> 79 như giải thích tại <ph name="WEB_REQUEST_API_MANUAL" />.
+      Nếu bạn đặt danh sách này thành trống, thì <ph name="PRODUCT_NAME" /> sẽ cố chạy Tiện ích theo cách thức tương thích và không làm thay đổi <ph name="API" /> đối với <ph name="PRODUCT_NAME" /> 79 như giải thích tại <ph name="WEB_REQUEST_API_MANUAL" />.
 
-      Nếu bạn đặt danh sách này thành có tên tiêu đề yêu cầu <ph name="HTTP" />, thì quá trình kiểm tra <ph name="CORS" /> sẽ bỏ qua các tiêu đề có trong danh sách và bật tùy chọn giảm thiểu cho Tiện ích.
+      Nếu bạn đặt danh sách này thành có tên tiêu đề yêu cầu <ph name="HTTP" />, thì quá trình kiểm tra <ph name="CORS" /> sẽ bật tùy chọn giảm thiểu cho Tiện ích và bỏ qua các tiêu đề có trong danh sách.
 
       Nếu bạn không đặt danh sách này, thì cả hai tùy chọn giảm thiểu giải thích ở trên đều không áp dụng.
 
@@ -76,13 +76,13 @@
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình bị tắt khi chạy trên nguồn AC.
 
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> tắt màn hình.
+          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> tắt màn hình.
 
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không tắt màn hình khi người dùng ở chế độ không sử dụng.
+          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không tắt màn hình khi người dùng ở chế độ tạm vắng.
 
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
-          Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ không sử dụng.</translation>
+          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="1079801999187584280">Không cho phép sử dụng Công cụ dành cho nhà phát triển</translation>
 <translation id="1087437665304381368">Chính sách này chỉ kiểm soát chế độ nhà phát triển của <ph name="PRODUCT_OS_NAME" />. Nếu muốn ngăn khả năng truy cập vào Tùy chọn của nhà phát triển Android, bạn cần đặt chính sách <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
 <translation id="1087707496788636333">Danh sách chính sách của Chrome Enterprise sẽ chuyển sang vị trí mới! Vui lòng cập nhật dấu trang của bạn thành <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
@@ -240,7 +240,7 @@
       Nếu bạn không định cấu hình hoặc nếu bạn đặt tùy chọn cài đặt này thành true, thì người dùng có thể sử dụng tất cả các đầu ra âm thanh được hỗ trợ trên thiết bị của họ.</translation>
 <translation id="1358050607773151553">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Khi bạn đặt, chính sách này sẽ chỉ định hành động mà <ph name="PRODUCT_OS_NAME" /> thực hiện khi người dùng không sử dụng trong khoảng thời gian cho trước theo thời gian chờ khi không sử dụng. Bạn có thể định cấu hình riêng biệt khoảng thời gian này.
+          Khi bạn đặt, chính sách này sẽ chỉ định hành động mà <ph name="PRODUCT_OS_NAME" /> thực hiện khi người dùng tạm vắng trong khoảng thời gian cho trước theo thời gian chờ khi tạm vắng. Bạn có thể định cấu hình riêng biệt khoảng thời gian này.
 
           Khi bạn không đặt chính sách này, hành động mặc định là tạm ngưng sẽ được thực hiện.
 
@@ -256,9 +256,9 @@
 <translation id="1376119291123231789">Bật chế độ sạc pin nâng cao</translation>
 <translation id="1377134027840513298">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Chính sách này cung cấp giá trị dự phòng cho các chính sách <ph name="IDLE_ACTION_AC_POLICY_NAME" /> và <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> cụ thể hơn. Nếu bạn đặt chính sách này, giá trị của chính sách sẽ được sử dụng trong trường hợp bạn không đặt chính sách cụ thể hơn tương ứng.
+          Chính sách này cung cấp giá trị dự phòng cho các chính sách <ph name="IDLE_ACTION_AC_POLICY_NAME" /> và <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> cụ thể hơn. Nếu bạn đặt chính sách này, thì giá trị của chính sách sẽ được sử dụng trong trường hợp bạn không đặt chính sách cụ thể hơn tương ứng.
 
-          Khi bạn không đặt chính sách này, hoạt động của các chính sách cụ thể hơn sẽ không bị ảnh hưởng.</translation>
+          Khi bạn không đặt chính sách này, thì hoạt động của các chính sách cụ thể hơn sẽ không bị ảnh hưởng.</translation>
 <translation id="1383493480903114193">Chính sách này buộc mã nối mạng chạy trong quá trình chạy trình duyệt.
 
       Chính sách này được tắt theo mặc định. Nếu bạn bật chính sách này, người dùng sẽ dễ gặp phải các sự cố bảo mật sau khi quá trình nối mạng được chạy trong hộp cát.
@@ -618,13 +618,13 @@
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình bị tắt khi chạy trên nguồn pin.
 
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> tắt màn hình.
+          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> tắt màn hình.
 
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không tắt màn hình khi người dùng ở chế độ không sử dụng.
+          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không tắt màn hình khi người dùng ở chế độ tạm vắng.
 
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
-          Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ không sử dụng.</translation>
+          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="1962273523772270623">Cho phép thu thập nhật ký sự kiện WebRTC từ các dịch vụ của Google</translation>
 <translation id="1964634611280150550">Đã tắt chế độ ẩn danh</translation>
 <translation id="1964802606569741174">Chính sách này không ảnh hưởng đến ứng dụng YouTube trên Android. Nếu bị buộc phải sử dụng Chế độ an toàn trên YouTube thì việc cài đặt ứng dụng YouTube trên Android sẽ không được cho phép.</translation>
@@ -740,7 +740,7 @@
 <translation id="214901426630414675">Hạn chế chế độ in hai mặt</translation>
 <translation id="2149330464730004005">Bật chế độ in màu</translation>
 <translation id="2156132677421487971">Định cấu hình các chính sách cho <ph name="PRODUCT_NAME" />, một tính năng cho phép người dùng gửi nội dung của các tab, trang web hoặc màn hình từ trình duyệt đến màn hình và hệ thống âm thanh từ xa.</translation>
-<translation id="2156755242840687300">Đã bật máy chủ máy in bên ngoài</translation>
+<translation id="2156755242840687300">Máy chủ máy in bên ngoài được bật</translation>
 <translation id="2166472654199325139">Không lọc các trang web có nội dung người lớn</translation>
 <translation id="2168397434410358693">Độ trễ lúc không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="217013996107840632">Các tham số dòng lệnh để chuyển từ trình duyệt thay thế.</translation>
@@ -888,15 +888,15 @@
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình bị khóa khi chạy trên nguồn AC.
 
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> khóa màn hình.
+          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> khóa màn hình.
 
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không khóa màn hình khi người dùng ở chế độ không sử dụng.
+          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không khóa màn hình khi người dùng ở chế độ tạm vắng.
 
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
-          Để khóa màn hình khi ở chế độ không sử dụng, bạn nên bật phương thức khóa màn hình khi tạm ngưng và đặt <ph name="PRODUCT_OS_NAME" /> tạm ngưng sau thời gian chờ khi ở chế độ không sử dụng. Bạn chỉ nên sử dụng chính sách này khi muốn khóa màn hình sớm hơn đáng kể so với thời gian tạm ngưng hoặc khi không muốn tạm ngưng ở chế độ không sử dụng.
+          Để khóa màn hình khi ở chế độ tạm vắng, bạn nên bật phương thức khóa màn hình khi tạm ngưng và đặt <ph name="PRODUCT_OS_NAME" /> tạm ngưng sau thời gian chờ khi ở chế độ tạm vắng. Bạn chỉ nên sử dụng chính sách này khi muốn khóa màn hình sớm hơn đáng kể so với thời gian tạm ngưng hoặc khi không muốn tạm ngưng ở chế độ tạm vắng.
 
-          Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn thời gian chờ khi ở chế độ không sử dụng.</translation>
+          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="2433412232489478893">Chính sách này kiểm soát việc có cho phép người dùng sử dụng tính năng Chia sẻ tệp trong mạng cho <ph name="PRODUCT_NAME" /> hay không.
 
       Khi chưa định cấu hình chính sách này hoặc khi đặt chính sách thành True, người dùng sẽ có thể sử dụng tính năng Chia sẻ tệp trong mạng.
@@ -1010,7 +1010,7 @@
       Nếu cài đặt này được bật hoặc không được định cấu hình, người dùng có thể in.
 
       Nếu cài đặt này bị tắt, người dùng không thể in từ <ph name="PRODUCT_NAME" />. In bị tắt trong menu cờ lê, tiện ích, ứng dụng JavaScript, v.v.  <ph name="PRODUCT_NAME" /> trong khi in. Để biết ví dụ, ứng dụng Flash nhất định có tùy chọn in trong menu ngữ cảnh, không chịu sự điều chỉnh của chính sách này.</translation>
-<translation id="2517466659416174529">Cho phép đóng băng các tab chạy ngầm</translation>
+<translation id="2517466659416174529">Cho phép đóng băng các tab chạy trong nền</translation>
 <translation id="2518231489509538392">Cho phép phát âm thanh</translation>
 <translation id="2521581787935130926">Hiển thị lối tắt ứng dụng trong thanh dấu trang</translation>
 <translation id="2526082146909867346">Cho phép bạn chỉ định danh sách các mẫu url. Những mẫu url này chỉ định các trang web mà <ph name="PRODUCT_NAME" /> sẽ tự động chọn một chứng chỉ ứng dụng khách, nếu trang web yêu cầu chứng chỉ.
@@ -1274,7 +1274,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2873651257716068683">Ghi đè kích thước trang in mặc định. Nếu không có kích thước trang in này thì chính sách sẽ bị bỏ qua.</translation>
 <translation id="2874209944580848064">Lưu ý dành cho thiết bị <ph name="PRODUCT_OS_NAME" /> hỗ trợ ứng dụng Android:</translation>
-<translation id="2875192972412983412">Chỉ định tập hợp con các máy chủ máy in sẽ truy vấn cho máy chủ máy in.
+<translation id="2875192972412983412">Chỉ định tập hợp con các máy chủ máy in sẽ được truy vấn khi hệ thống tìm máy chủ máy in.
 
       Nếu bạn sử dụng chính sách này, thì chỉ những máy chủ máy in có mã nhận dạng khớp với các giá trị trong chính sách này mới được cung cấp cho người dùng.
 
@@ -1666,15 +1666,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình bị khóa khi chạy trên nguồn pin.
 
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> khóa màn hình.
+          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> khóa màn hình.
 
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không khóa màn hình khi người dùng ở chế độ không sử dụng.
+          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không khóa màn hình khi người dùng ở chế độ tạm vắng.
 
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
-          Để khóa màn hình khi ở chế độ không sử dụng, bạn nên bật phương thức khóa màn hình khi tạm ngưng và đặt <ph name="PRODUCT_OS_NAME" /> tạm ngưng sau thời gian chờ khi ở chế độ không sử dụng. Bạn chỉ nên sử dụng chính sách này khi muốn khóa màn hình sớm hơn đáng kể so với thời gian tạm ngưng hoặc khi không muốn tạm ngưng ở chế độ không sử dụng.
+          Để khóa màn hình khi ở chế độ tạm vắng, bạn nên bật phương thức khóa màn hình khi tạm ngưng và đặt <ph name="PRODUCT_OS_NAME" /> tạm ngưng sau thời gian chờ khi ở chế độ tạm vắng. Bạn chỉ nên sử dụng chính sách này khi muốn khóa màn hình sớm hơn đáng kể so với thời gian tạm ngưng hoặc khi không muốn tạm ngưng ở chế độ tạm vắng.
 
-          Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn thời gian chờ khi ở chế độ không sử dụng.</translation>
+          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="3624515566460517364">Kiểm tra tệp đã tải lên và tệp đã tải xuống để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không</translation>
 <translation id="3627678165642179114">Bật hoặc tắt dịch vụ web kiểm tra lỗi chính tả</translation>
 <translation id="3628480121685794414">Bật chế độ in một mặt</translation>
@@ -2326,7 +2326,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn chọn 'Bật' hoặc không đặt chính sách này, thì người dùng có thể mở trang ở chế độ ẩn danh.
 
-      Nếu bạn chọn 'Tắt', người dùng sẽ không thể mở trang ở chế độ ẩn danh.
+      Nếu bạn chọn 'Tắt', thì người dùng sẽ không thể mở trang ở chế độ ẩn danh.
 
       Nếu bạn chọn 'Bắt buộc', người dùng CHỈ có thể mở trang ở chế độ ẩn danh. Xin lưu ý rằng tùy chọn 'Bắt buộc' không hoạt động trên Android-on-Chrome</translation>
 <translation id="4600786265870346112">Bật con trỏ lớn</translation>
@@ -2693,13 +2693,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình giảm độ sáng khi chạy trên nguồn pin.
 
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> giảm độ sáng màn hình.
+          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> giảm độ sáng màn hình.
 
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không giảm độ sáng màn hình khi người dùng ở chế độ không sử dụng.
+          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không giảm độ sáng màn hình khi người dùng ở chế độ tạm vắng.
 
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
-          Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ tắt màn hình (nếu có đặt thời gian này) và thời gian chờ khi ở chế độ không sử dụng.</translation>
+          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ tắt màn hình (nếu có đặt thời gian này) và thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="527237119693897329">Cho phép bạn chỉ định máy chủ nhắn tin gốc nào không được tải.
 
           Giá trị danh sách cấm '*' nghĩa là tất cả máy chủ nhắn tin gốc được đưa vào danh sách cấm trừ khi chúng được liệt kê rõ ràng trong danh sách cho phép.
@@ -3316,12 +3316,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6224304369267200483">URL/miền đã tự động cho phép chứng thực Khóa bảo mật trực tiếp</translation>
 <translation id="6233173491898450179">Đặt thư mục tải xuống</translation>
 <translation id="6244210204546589761">Các URL sẽ mở khi khởi động</translation>
-<translation id="6247316685259031374">Chính sách này kiểm soát môi trường hộp cát của quy trình âm thanh.
-      Nếu bạn bật chính sách này, quy trình âm thanh sẽ chạy trong môi trường hộp cát.
-      Nếu bạn tắt chính sách này, quy trình âm thanh sẽ chạy mà không có môi trường hộp cát và mô-đun xử lý âm thanh WebRTC sẽ chạy trong quy trình kết xuất.
-      Điều này sẽ khiến người dùng có nguy cơ gặp phải các rủi ro bảo mật liên quan đến việc chạy hệ thống phụ âm thanh không ở trong môi trường hộp cát.
+<translation id="6247316685259031374">Chính sách này kiểm soát môi trường hộp cát của tiến trình âm thanh.
+      Nếu bạn bật chính sách này, tiến trình âm thanh sẽ chạy trong môi trường hộp cát.
+      Nếu bạn tắt chính sách này, tiến trình âm thanh sẽ chạy mà không có môi trường hộp cát và mô-đun xử lý âm thanh WebRTC sẽ chạy trong tiến trình kết xuất.
+      Điều này sẽ khiến người dùng có nguy cơ gặp phải các rủi ro bảo mật liên quan đến việc chạy hệ thống con âm thanh không ở trong môi trường hộp cát.
       Nếu bạn không đặt chính sách này, thì cấu hình mặc định cho hộp cát âm thanh sẽ được sử dụng. Cấu hình này có thể khác nhau tùy theo nền tảng.
-      Chính sách này nhằm giúp doanh nghiệp có thể tắt hộp cát âm thanh một cách linh hoạt nếu họ sử dụng các tùy chọn thiết lập phần mềm bảo mật gây cản trở hộp cát.</translation>
+      Chính sách này nhằm cho phép doanh nghiệp có thể tắt hộp cát âm thanh một cách linh hoạt nếu họ sử dụng các tùy chọn thiết lập phần mềm bảo mật gây cản trở hộp cát.</translation>
 <translation id="6255387031094435995">Cho phép hợp nhất các chính sách đã chọn khi các chính sách đó thuộc nhiều nguồn khác nhau, có cùng phạm vi và cấp độ.
 
         Nếu một chính sách có trong danh sách, trong trường hợp xảy ra xung đột giữa 2 nguồn có cùng phạm vi và cấp độ, thì các giá trị sẽ được hợp nhất thành một danh sách chính sách mới.
@@ -3342,13 +3342,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm hộp thoại cảnh báo hiển thị khi chạy trên nguồn AC.
 
-          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ không sử dụng đó sắp được thực hiện.
+          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ tạm vắng đó sắp được thực hiện.
 
           Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào hiển thị.
 
-          Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ không sử dụng.
+          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ tạm vắng.
 
-          Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ không sử dụng là hành động đăng xuất hoặc tắt nguồn.</translation>
+          Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ tạm vắng là hành động đăng xuất hoặc tắt nguồn.</translation>
 <translation id="6310223829319187614">Bật tự động hoàn tất tên miền trong khi người dùng đăng nhập</translation>
 <translation id="6315673513957120120">Chrome hiển thị trang cảnh báo khi người dùng truy cập các trang web gặp lỗi SSL. Theo mặc định hoặc khi chính sách này được đặt thành true, người dùng được phép nhấp qua các trang cảnh báo này.
       Đặt chính sách này thành false sẽ không cho phép người dùng nhấp qua bất kỳ trang cảnh báo nào.</translation>
@@ -4664,9 +4664,9 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn không đặt hoặc đặt chính sách thành true thì tất cả người dùng sẽ được phép sử dụng ARC (trừ khi ARC bị tắt bởi các phương tiện khác).
 
       Các thay đổi đối với chính sách sẽ chỉ được áp dụng trong khi ARC không chạy, ví dụ như khi Chrome OS đang khởi động.</translation>
-<translation id="8606263947930257189">Kiểm soát việc <ph name="PRODUCT_NAME" /> có thể đóng băng các tab chạy ngầm trong tối thiểu 5 phút hay không.
+<translation id="8606263947930257189">Kiểm soát việc <ph name="PRODUCT_NAME" /> có thể đóng băng các tab chạy trong nền trong tối thiểu 5 phút hay không.
 
-      Nếu bạn đặt chính sách này thành true, thì các tab chạy ngầm trong tối thiểu 5 phút có thể bị đóng băng. Việc đóng băng tab sẽ giúp giảm mức sử dụng CPU, pin và bộ nhớ. <ph name="PRODUCT_NAME" /> sử dụng kỹ thuật phỏng đoán để tránh đóng băng các tab chạy ngầm hữu ích (ví dụ: hiển thị thông báo, phát âm thanh, phát trực tuyến video). Các nhà phát triển web cũng có thể chọn không đóng băng trang web của mình (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
+      Nếu bạn đặt chính sách này thành true, thì các tab chạy trong nền trong tối thiểu 5 phút có thể bị đóng băng. Việc đóng băng tab sẽ giúp giảm mức sử dụng CPU, pin và bộ nhớ. <ph name="PRODUCT_NAME" /> sử dụng kỹ thuật "tự nghiệm học" để tránh đóng băng các tab hữu ích chạy trong nền (ví dụ: hiển thị thông báo, phát âm thanh, phát video trực tuyến). Các nhà phát triển web cũng có thể chọn không đóng băng trang web của mình (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
 
       Nếu bạn đặt chính sách thành false thì sẽ không có tab nào bị đóng băng.</translation>
 <translation id="8615400197788843468">Bật tính năng hạn chế đăng nhập của <ph name="PRODUCT_NAME" /> trong G Suite và ngăn người dùng thay đổi tùy chọn cài đặt này.
@@ -4692,13 +4692,13 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
           Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm màn hình giảm độ sáng khi chạy trên nguồn AC.
 
-          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> giảm độ sáng màn hình.
+          Khi bạn đặt chính sách này thành một giá trị lớn hơn 0, chính sách sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> giảm độ sáng màn hình.
 
-          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không giảm độ sáng màn hình khi người dùng ở chế độ không sử dụng.
+          Khi bạn đặt chính sách này thành 0, <ph name="PRODUCT_OS_NAME" /> sẽ không giảm độ sáng màn hình khi người dùng ở chế độ tạm vắng.
 
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
-          Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ tắt màn hình (nếu có đặt thời gian này) và thời gian chờ khi ở chế độ không sử dụng.</translation>
+          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ tắt màn hình (nếu có đặt thời gian này) và thời gian chờ khi ở chế độ tạm vắng.</translation>
 <translation id="8625234016727663537">Cho phép bạn đặt danh sách các URL chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng mã sản phẩm và mã nhà cung cấp trên màn hình đăng nhập. Mỗi mục trong danh sách phải chứa cả thiết bị và URL để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường mã sản phẩm và mã nhà cung cấp. Bất kỳ mã nào bị bỏ qua đều được coi là ký tự đại diện có ngoại lệ. Ngoại lệ đó là khi hệ thống không thể chỉ định mã sản phẩm nếu không có mã nhà cung cấp. Nếu không thuộc trường hợp ngoại lệ này thì chính sách sẽ không có hiệu lực và bị bỏ qua.
 
         Mô hình cấp phép của USB sử dụng URL của trang web yêu cầu ("URL yêu cầu") và URL của trang web khung cấp cao nhất ("URL nhúng") để cấp cho URL yêu cầu quyền truy cập vào thiết bị USB. URL yêu cầu có thể khác với URL nhúng khi bạn tải trang web yêu cầu trong khung nội tuyến. Do đó, trường "urls" có thể chứa tối đa 2 chuỗi URL phân tách bằng dấu phẩy để chỉ định URL yêu cầu và URL nhúng tương ứng. Nếu chỉ có một URL được chỉ định, thì quyền truy cập vào các thiết bị USB tương ứng sẽ được cấp khi URL của trang web yêu cầu khớp với URL này bất kể trạng thái nhúng. Các URL trong "urls" phải là các URL hợp lệ, nếu không, chính sách này sẽ bị bỏ qua.
@@ -4753,15 +4753,15 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu cài đặt này bị tắt, không thể xóa lịch sử duyệt web và lịch sử tải xuống.</translation>
 <translation id="8752541111574086388">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm hiển thị hộp thoại cảnh báo khi chạy trên nguồn pin.
+          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm hệ thống hiển thị hộp thoại cảnh báo khi chạy trên nguồn pin.
 
-          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ không sử dụng đó sắp được thực hiện.
+          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ tạm vắng đó sắp được thực hiện.
 
           Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào hiển thị.
 
-          Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ không sử dụng.
+          Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ tạm vắng.
 
-          Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ không sử dụng là hành động đăng xuất hoặc tắt nguồn.</translation>
+          Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ tạm vắng là hành động đăng xuất hoặc tắt nguồn.</translation>
 <translation id="8757552286070680084">Cấu hình bộ điều khiển chẩn đoán và đo từ xa (DTC) wilco</translation>
 <translation id="8758831693895931466">Bật đăng ký quản lý đám mây bắt buộc</translation>
 <translation id="8759829385824155666">Các loại mã hóa Kerberos được cho phép</translation>
@@ -4852,22 +4852,22 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8917070657147922192">Cho phép người dùng quản lý các chứng chỉ CA đã cài đặt.</translation>
 <translation id="8926275581598789324">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm thực hiện hành động ở chế độ không sử dụng đó khi chạy trên nguồn pin.
+          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm hệ thống thực hiện hành động ở chế độ tạm vắng khi chạy trên nguồn pin.
 
-          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> thực hiện hành động ở chế độ không sử dụng đó. Bạn có thể định cấu hình riêng biệt khoảng thời gian này.
+          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> thực hiện hành động ở chế độ tạm vắng mà bạn có thể định cấu hình riêng.
 
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
-          Phải chỉ định giá trị của chính sách bằng mili giây.</translation>
+          Bạn phải chỉ định giá trị của chính sách bằng mili giây.</translation>
 <translation id="8929997566627164343">Xin lưu ý rằng chính sách này không được dùng nữa và sẽ bị xóa trong <ph name="PRODUCT_OS_NAME" /> phiên bản 82. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm thực hiện hành động ở chế độ không sử dụng đó khi chạy trên nguồn AC.
+          Chỉ định khoảng thời gian kể từ khi người dùng không có thao tác nhập cho đến thời điểm thực hiện hành động ở chế độ tạm vắng đó khi chạy trên nguồn AC.
 
-          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> thực hiện hành động ở chế độ không sử dụng đó. Bạn có thể định cấu hình riêng biệt khoảng thời gian này.
+          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> thực hiện hành động ở chế độ tạm vắng mà bạn có thể định cấu hình riêng.
 
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
-          Phải chỉ định giá trị của chính sách bằng mili giây.</translation>
+          Bạn phải chỉ định giá trị của chính sách bằng mili giây.</translation>
 <translation id="8934944553121392674">Kiểm soát máy in người dùng được phép sử dụng từ <ph name="DEVICE_PRINTERS_POLICY" />.
 
       Chỉ định chính sách truy cập dùng cho cấu hình máy in số lượng lớn. Nếu bạn chọn <ph name="PRINTERS_ALLOW_ALL" />, thì tất cả máy in sẽ hiển thị. Nếu bạn chọn <ph name="PRINTERS_BLACKLIST" />, thì <ph name="DEVICE_PRINTERS_BLACKLIST" /> sẽ dùng để hạn chế truy cập vào các máy in đã chỉ định. Nếu bạn chọn <ph name="PRINTERS_WHITELIST" />, thì <ph name="DEVICE_PRINTERS_WHITELIST" /> sẽ chỉ chỉ định những máy in có thể chọn được.

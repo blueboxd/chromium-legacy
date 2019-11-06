@@ -298,8 +298,9 @@ cvox.KeySequence.prototype.getMetaKeyName_ = function() {
 cvox.KeySequence.prototype.checkKeyEquality_ = function(rhs) {
   for (var i in this.keys) {
     for (var j = this.keys[i].length; j--;) {
-      if (this.keys[i][j] !== rhs.keys[i][j])
+      if (this.keys[i][j] !== rhs.keys[i][j]) {
         return false;
+      }
     }
   }
   return true;

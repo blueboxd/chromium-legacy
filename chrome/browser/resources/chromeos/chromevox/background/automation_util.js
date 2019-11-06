@@ -31,17 +31,20 @@ var RoleType = chrome.automation.RoleType;
  * @return {AutomationNode}
  */
 AutomationUtil.findNodePre = function(cur, dir, pred) {
-  if (!cur)
+  if (!cur) {
     return null;
+  }
 
-  if (pred(cur) && !AutomationPredicate.shouldIgnoreNode(cur))
+  if (pred(cur) && !AutomationPredicate.shouldIgnoreNode(cur)) {
     return cur;
+  }
 
   var child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
   while (child) {
     var ret = AutomationUtil.findNodePre(child, dir, pred);
-    if (ret)
+    if (ret) {
       return ret;
+    }
     child = dir == Dir.BACKWARD ? child.previousSibling : child.nextSibling;
   }
   return null;
@@ -56,19 +59,22 @@ AutomationUtil.findNodePre = function(cur, dir, pred) {
  * @return {AutomationNode}
  */
 AutomationUtil.findNodePost = function(cur, dir, pred) {
-  if (!cur)
+  if (!cur) {
     return null;
+  }
 
   var child = dir == Dir.BACKWARD ? cur.lastChild : cur.firstChild;
   while (child) {
     var ret = AutomationUtil.findNodePost(child, dir, pred);
-    if (ret)
+    if (ret) {
       return ret;
+    }
     child = dir == Dir.BACKWARD ? child.previousSibling : child.nextSibling;
   }
 
-  if (pred(cur) && !AutomationPredicate.shouldIgnoreNode(cur))
+  if (pred(cur) && !AutomationPredicate.shouldIgnoreNode(cur)) {
     return cur;
+  }
 
   return null;
 };
@@ -169,11 +175,13 @@ AutomationUtil.getAncestors = function(node) {
  */
 AutomationUtil.getDivergence = function(ancestorsA, ancestorsB) {
   for (var i = 0; i < ancestorsA.length; i++) {
-    if (ancestorsA[i] !== ancestorsB[i])
+    if (ancestorsA[i] !== ancestorsB[i]) {
       return i;
+    }
   }
-  if (ancestorsA.length == ancestorsB.length)
+  if (ancestorsA.length == ancestorsB.length) {
     return -1;
+  }
   return ancestorsA.length;
 };
 
@@ -203,8 +211,9 @@ AutomationUtil.getDirection = function(nodeA, nodeB) {
   var divergence = AutomationUtil.getDivergence(ancestorsA, ancestorsB);
 
   // Default to Dir.FORWARD.
-  if (divergence == -1)
+  if (divergence == -1) {
     return Dir.FORWARD;
+  }
 
   var divA = ancestorsA[divergence];
   var divB = ancestorsB[divergence];
@@ -213,14 +222,18 @@ AutomationUtil.getDirection = function(nodeA, nodeB) {
   // the same way dfs would. nodeA <= nodeB if nodeA is a descendant of
   // nodeB. nodeA > nodeB if nodeB is a descendant of nodeA.
 
-  if (!divA)
+  if (!divA) {
     return Dir.FORWARD;
-  if (!divB)
+  }
+  if (!divB) {
     return Dir.BACKWARD;
-  if (divA.parent === nodeB)
+  }
+  if (divA.parent === nodeB) {
     return Dir.BACKWARD;
-  if (divB.parent === nodeA)
+  }
+  if (divB.parent === nodeA) {
     return Dir.FORWARD;
+  }
 
   return divA.indexInParent <= divB.indexInParent ? Dir.FORWARD : Dir.BACKWARD;
 };
@@ -232,8 +245,9 @@ AutomationUtil.getDirection = function(nodeA, nodeB) {
  * @return {boolean}
  */
 AutomationUtil.isInSameTree = function(a, b) {
-  if (!a || !b)
+  if (!a || !b) {
     return true;
+  }
 
   // Given two non-desktop roots, consider them in the "same" tree.
   return a.root === b.root ||
@@ -266,16 +280,18 @@ AutomationUtil.hitTest = function(node, point) {
   var child = node.firstChild;
   while (child) {
     var hit = AutomationUtil.hitTest(child, point);
-    if (hit)
+    if (hit) {
       return hit;
+    }
     child = child.nextSibling;
   }
 
   var loc = node.unclippedLocation;
 
   // When |node| is partially or fully offscreen, try to find a better match.
-  if (loc.left < 0 || loc.top < 0)
+  if (loc.left < 0 || loc.top < 0) {
     return null;
+  }
 
   if (point.x <= (loc.left + loc.width) && point.x >= loc.left &&
       point.y <= (loc.top + loc.height) && point.y >= loc.top)
@@ -290,8 +306,9 @@ AutomationUtil.hitTest = function(node, point) {
  */
 AutomationUtil.getTopLevelRoot = function(node) {
   var root = node.root;
-  if (!root || root.role == RoleType.DESKTOP)
+  if (!root || root.role == RoleType.DESKTOP) {
     return null;
+  }
 
   while (root && root.parent && root.parent.root &&
          root.parent.root.role != RoleType.DESKTOP) {
@@ -306,8 +323,9 @@ AutomationUtil.getTopLevelRoot = function(node) {
  * @return {AutomationNode}
  */
 AutomationUtil.getLeastCommonAncestor = function(prevNode, node) {
-  if (prevNode == node)
+  if (prevNode == node) {
     return node;
+  }
 
   var prevAncestors = AutomationUtil.getAncestors(prevNode);
   var ancestors = AutomationUtil.getAncestors(node);
@@ -322,11 +340,13 @@ AutomationUtil.getLeastCommonAncestor = function(prevNode, node) {
  * @return {string}
  */
 AutomationUtil.getText = function(node) {
-  if (!node)
+  if (!node) {
     return '';
+  }
 
-  if (node.role === RoleType.TEXT_FIELD)
+  if (node.role === RoleType.TEXT_FIELD) {
     return node.value || '';
+  }
   return node.name || '';
 };
 
@@ -339,8 +359,9 @@ AutomationUtil.getEditableRoot = function(node) {
   var testNode = node;
   var rootEditable;
   do {
-    if (testNode.state.editable && testNode.state.focused)
+    if (testNode.state.editable && testNode.state.focused) {
       rootEditable = testNode;
+    }
     testNode = testNode.parent;
   } while (testNode);
   return rootEditable;
@@ -370,15 +391,17 @@ AutomationUtil.findLastNode = function(root, pred) {
     node = node.lastChild;
 
   do {
-    if (AutomationPredicate.shouldIgnoreNode(node))
+    if (AutomationPredicate.shouldIgnoreNode(node)) {
       continue;
+    }
 
     // Get the shallowest node matching the predicate.
     var walker = node;
     var shallowest = null;
     while (walker) {
-      if (walker == root)
+      if (walker == root) {
         break;
+      }
 
       if (pred(walker) && !AutomationPredicate.shouldIgnoreNode(walker) &&
           (!shallowest || !AutomationPredicate.container(walker)))
@@ -387,8 +410,9 @@ AutomationUtil.findLastNode = function(root, pred) {
       walker = walker.parent;
     }
 
-    if (shallowest)
+    if (shallowest) {
       return shallowest;
+    }
   } while (node = AutomationUtil.findNextNode(node, Dir.BACKWARD, pred));
 
   return null;

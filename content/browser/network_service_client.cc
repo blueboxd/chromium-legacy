@@ -72,7 +72,7 @@ NetworkServiceClient::NetworkServiceClient(
             &NetworkServiceClient::OnMemoryPressure, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
-    DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
+    DCHECK(!net::NetworkChangeNotifier::CreateIfNeeded());
     GetNetworkService()->GetNetworkChangeManager(
         mojo::MakeRequest(&network_change_manager_));
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);

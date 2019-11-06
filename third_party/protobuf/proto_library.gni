@@ -107,6 +107,16 @@
 
 import("//build/config/sanitizers/sanitizers.gni")
 
+if (host_os == "win") {
+  _host_executable_suffix = ".exe"
+} else {
+  _host_executable_suffix = ""
+}
+
+_protoc_label = "//third_party/protobuf:protoc($host_toolchain)"
+_protoc_path = get_label_info(_protoc_label, "root_out_dir") + "/protoc" +
+               _host_executable_suffix
+
 template("proto_library") {
   assert(defined(invoker.sources), "Need sources for proto_library")
   proto_sources = invoker.sources
@@ -116,12 +126,6 @@ template("proto_library") {
   # when this template was invoked. If they weren't, it was on purpose and
   # this template shouldn't re-apply the filter.
   set_sources_assignment_filter([])
-
-  if (host_os == "win") {
-    host_executable_suffix = ".exe"
-  } else {
-    host_executable_suffix = ""
-  }
 
   if (defined(invoker.generate_cc)) {
     generate_cc = invoker.generate_cc
@@ -143,7 +147,7 @@ template("proto_library") {
     plugin_host_label = invoker.generator_plugin_label + "($host_toolchain)"
     plugin_path =
         get_label_info(plugin_host_label, "root_out_dir") + "/" +
-        get_label_info(plugin_host_label, "name") + host_executable_suffix
+        get_label_info(plugin_host_label, "name") + _host_executable_suffix
     generate_with_plugin = true
   } else if (defined(invoker.generator_plugin_script)) {
     plugin_path = invoker.generator_plugin_script
@@ -244,15 +248,12 @@ template("proto_library") {
     outputs = get_path_info(protogens + protogens_cc, "abspath")
     args = protos
 
-    protoc_label = "//third_party/protobuf:protoc($host_toolchain)"
-    protoc_path = get_label_info(protoc_label, "root_out_dir") + "/protoc" +
-                  host_executable_suffix
     args += [
       # Wrapper should never pick a system protoc.
       # Path should be rebased because |root_build_dir| for current toolchain
       # may be different from |root_out_dir| of protoc built on host toolchain.
       "--protoc",
-      "./" + rebase_path(protoc_path, root_build_dir),
+      "./" + rebase_path(_protoc_path, root_build_dir),
       "--proto-in-dir",
       rebase_path(proto_in_dir, root_build_dir),
     ]
@@ -306,10 +307,10 @@ template("proto_library") {
 
     # System protoc is not used so it's necessary to build a chromium one.
     inputs = [
-      protoc_path,
+      _protoc_path,
     ]
     deps = [
-      protoc_label,
+      _protoc_label,
     ]
 
     if (generate_with_plugin) {
@@ -480,7 +481,7 @@ template("protoc_convert") {
     inputs = invoker.inputs
 
     deps = [
-      "//third_party/protobuf:protoc",
+      _protoc_label,
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -492,7 +493,7 @@ template("protoc_convert") {
 
     args = [
              "--protoc",
-             rebase_path("$root_out_dir/protoc"),
+             "./" + rebase_path(_protoc_path, root_build_dir),
              "--infile",
              "{{source}}",
              "--outfile",

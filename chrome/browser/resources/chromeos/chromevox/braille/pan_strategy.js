@@ -140,10 +140,11 @@ cvox.PanStrategy.prototype = {
    *    corresponding text character.
    */
   get brailleToText() {
-    if (this.panStrategyWrapped_)
+    if (this.panStrategyWrapped_) {
       return this.wrappedBrailleToText_;
-    else
+    } else {
       return this.fixedBrailleToText_;
+    }
   },
 
   /**
@@ -342,10 +343,11 @@ cvox.PanStrategy.prototype = {
     if (this.cursor_.start != unwrappedIndex &&
         this.cursor_.end != unwrappedIndex)
       return;
-    if (this.cursor_.start == unwrappedIndex)
+    if (this.cursor_.start == unwrappedIndex) {
       this.wrappedCursor_.start = wrappedIndex;
-    else if (this.cursor_.end == unwrappedIndex)
+    } else if (this.cursor_.end == unwrappedIndex) {
       this.wrappedCursor_.end = wrappedIndex;
+    }
   },
 
   /**

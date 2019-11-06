@@ -96,24 +96,10 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     bool mock_network_change_notifier) {
   // There is a global singleton net::NetworkChangeNotifier if NetworkService
   // is running inside of the browser process.
-  if (!net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
-    if (mock_network_change_notifier)
-      return net::NetworkChangeNotifier::CreateMock();
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    // On Android and ChromeOS, network change events are synced from the
-    // browser process.
-    return std::make_unique<net::NetworkChangeNotifierPosix>(
-        initial_connection_type, initial_connection_subtype);
-#elif defined(OS_IOS)
-    // iOS doesn't embed //content.
-    // TODO(xunjieli): Figure out what to do for iOS.
-    NOTIMPLEMENTED();
-    return nullptr;
-#else
-    return net::NetworkChangeNotifier::Create();
-#endif
-  }
-  return nullptr;
+  if (mock_network_change_notifier)
+    return net::NetworkChangeNotifier::CreateMockIfNeeded();
+  return net::NetworkChangeNotifier::CreateIfNeeded(initial_connection_type,
+                                                    initial_connection_subtype);
 }
 
 void OnGetNetworkList(std::unique_ptr<net::NetworkInterfaceList> networks,

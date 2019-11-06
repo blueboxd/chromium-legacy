@@ -136,10 +136,11 @@ MockContentVerifierDelegate::~MockContentVerifierDelegate() = default;
 
 ContentVerifierDelegate::VerifierSourceType
 MockContentVerifierDelegate::GetVerifierSourceType(const Extension& extension) {
-  return VerifierSourceType::SIGNED_HASHES;
+  return verifier_source_type_;
 }
 
 ContentVerifierKey MockContentVerifierDelegate::GetPublicKey() {
+  DCHECK_EQ(VerifierSourceType::SIGNED_HASHES, verifier_source_type_);
   return ContentVerifierKey(kWebstoreSignaturesPublicKey,
                             kWebstoreSignaturesPublicKeySize);
 }
@@ -147,6 +148,7 @@ ContentVerifierKey MockContentVerifierDelegate::GetPublicKey() {
 GURL MockContentVerifierDelegate::GetSignatureFetchUrl(
     const ExtensionId& extension_id,
     const base::Version& version) {
+  DCHECK_EQ(VerifierSourceType::SIGNED_HASHES, verifier_source_type_);
   std::string url =
       base::StringPrintf("http://localhost/getsignature?id=%s&version=%s",
                          extension_id.c_str(), version.GetString().c_str());
@@ -155,7 +157,6 @@ GURL MockContentVerifierDelegate::GetSignatureFetchUrl(
 
 std::set<base::FilePath> MockContentVerifierDelegate::GetBrowserImagePaths(
     const extensions::Extension* extension) {
-  ADD_FAILURE() << "Unexpected call for this test";
   return std::set<base::FilePath>();
 }
 
@@ -166,6 +167,11 @@ void MockContentVerifierDelegate::VerifyFailed(
 }
 
 void MockContentVerifierDelegate::Shutdown() {}
+
+void MockContentVerifierDelegate::SetVerifierSourceType(
+    VerifierSourceType type) {
+  verifier_source_type_ = type;
+}
 
 // VerifierObserver -----------------------------------------------------------
 VerifierObserver::VerifierObserver() {

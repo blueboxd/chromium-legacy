@@ -406,17 +406,17 @@ UIImage* DefaultFaviconImage() {
     faviconColorName = @"tabstrip_inactive_tab_text_color";
   }
   _faviconView.tintColor = [UIColor colorNamed:faviconColorName];
-  self.titleLabel.textColor = _faviconView.tintColor;
+  _titleLabel.textColor = _faviconView.tintColor;
 
   // Update font weight and accessibility label.
   UIFontWeight fontWeight =
       selected ? UIFontWeightSemibold : UIFontWeightMedium;
-  self.titleLabel.font = [UIFont systemFontOfSize:kFontSize weight:fontWeight];
+  _titleLabel.font = [UIFont systemFontOfSize:kFontSize weight:fontWeight];
   // It would make more sense to set active/inactive on tab_view itself, but
   // tab_view is not an an accessible element, and making it one would add
   // several complicated layers to UIA.  Instead, simply set active/inactive
   // here to be used by UIA.
-  [self.titleLabel setAccessibilityValue:(selected ? @"active" : @"inactive")];
+  [_titleLabel setAccessibilityValue:(selected ? @"active" : @"inactive")];
 }
 
 #pragma mark - DropAndNavigateDelegate
@@ -433,6 +433,12 @@ UIImage* DefaultFaviconImage() {
 
 - (void)tabWasTapped {
   [_delegate tabViewTapped:self];
+}
+
+#pragma mark - Properties
+
+- (UILabel*)titleLabel {
+  return _titleLabel;
 }
 
 @end

@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -252,8 +253,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     private boolean isOnlySupportBasiccard(Map<String, PaymentMethodData> methodDataMap) {
         Set<String> requestMethods = new HashSet<>(methodDataMap.keySet());
         requestMethods.retainAll(mMethodNames);
-        return requestMethods.size() == 1
-                && requestMethods.contains(BasicCardUtils.BASIC_CARD_METHOD_NAME);
+        return requestMethods.size() == 1 && requestMethods.contains(MethodStrings.BASIC_CARD);
     }
 
     // Matches |requestMethodData|.supportedTypes and |requestMethodData|.supportedNetwokrs for
@@ -345,8 +345,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     @Override
     public boolean isValidForPaymentMethodData(String method, @Nullable PaymentMethodData data) {
         boolean isSupportedMethod = super.isValidForPaymentMethodData(method, data);
-        if (isSupportedMethod && BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)
-                && data != null) {
+        if (isSupportedMethod && MethodStrings.BASIC_CARD.equals(method) && data != null) {
             return matchBasiccardCapabilities(data);
         }
         return isSupportedMethod;

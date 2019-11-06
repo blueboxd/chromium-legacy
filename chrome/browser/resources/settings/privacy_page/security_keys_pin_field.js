@@ -14,16 +14,13 @@ Polymer({
   ],
 
   properties: {
-    /** The label of the input field. */
-    label: String,
-
-    /** The validation error label of the input field. */
+    // The validation error label of the input field.
     error: {
       type: String,
       observer: 'errorChanged_',
     },
 
-    /** The value of the input field. */
+    // The value of the input field.
     value: String,
 
     /**

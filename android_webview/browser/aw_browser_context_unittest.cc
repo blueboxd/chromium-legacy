@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
+#include "android_webview/browser/network_service/aw_network_change_notifier_factory.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
@@ -24,6 +25,8 @@ class AwBrowserContextTest : public testing::Test {
     AwFeatureListCreator* aw_feature_list_creator = new AwFeatureListCreator();
     aw_feature_list_creator->CreateLocalState();
     browser_process_ = new AwBrowserProcess(aw_feature_list_creator);
+    net::NetworkChangeNotifier::SetFactory(
+        new AwNetworkChangeNotifierFactory());
   }
 
   void TearDown() override {

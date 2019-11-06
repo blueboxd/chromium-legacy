@@ -79,6 +79,8 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
 #endif
 
  private:
+  void InitializeVulkan();
+
   GpuSandboxHelper* sandbox_helper_ = nullptr;
   std::unique_ptr<GpuWatchdogThread> watchdog_thread_;
   GPUInfo gpu_info_;

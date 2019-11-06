@@ -29,9 +29,7 @@ const int kDataTypeManufacturerData = 0xFF;
 const char kUuidPrefix[] = "0000";
 const char kUuidSuffix[] = "-0000-1000-8000-00805F9B34FB";
 
-BleScanParserImpl::BleScanParserImpl(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+BleScanParserImpl::BleScanParserImpl() = default;
 
 BleScanParserImpl::~BleScanParserImpl() = default;
 

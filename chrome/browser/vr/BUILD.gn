@@ -198,7 +198,7 @@ component("vr_ui") {
   if (use_native_partitions) {
     # Mark symbols in this library as belonging to the VR partition. Only
     # exported symbols (module entrypoints) are affected.
-    cflags = [ "-fsymbol-partition=libvr.so" ]
+    cflags = [ "-fsymbol-partition=vr_partition" ]
   }
 
   if (is_android) {

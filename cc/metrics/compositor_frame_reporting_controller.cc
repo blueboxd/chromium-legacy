@@ -207,6 +207,13 @@ void CompositorFrameReportingController::DidPresentCompositorFrame(
   }
 }
 
+void CompositorFrameReportingController::SetBlinkBreakdown(
+    std::unique_ptr<BeginMainFrameMetrics> details) {
+  DCHECK(reporters_[PipelineStage::kBeginMainFrame]);
+  reporters_[PipelineStage::kBeginMainFrame]->SetBlinkBreakdown(
+      std::move(details));
+}
+
 void CompositorFrameReportingController::AddActiveTracker(
     FrameSequenceTrackerType type) {
   active_trackers_.insert(type);

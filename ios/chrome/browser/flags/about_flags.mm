@@ -556,6 +556,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"use-WKWebView-loading", flag_descriptions::kUseWKWebViewLoadingName,
      flag_descriptions::kUseWKWebViewLoadingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kUseWKWebViewLoading)},
+    {"autofill-save-card-dismiss-on-navigation",
+     flag_descriptions::kAutofillSaveCardDismissOnNavigationName,
+     flag_descriptions::kAutofillSaveCardDismissOnNavigationDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillSaveCardDismissOnNavigation)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -55,19 +55,22 @@ BrailleCommandData.getDotShortcut = function(command, opt_chord) {
 BrailleCommandData.makeShortcutText = function(pattern, opt_chord) {
   var dots = [];
   for (var shifter = 0; shifter <= 7; shifter++) {
-    if ((1 << shifter) & pattern)
+    if ((1 << shifter) & pattern) {
       dots.push(shifter + 1);
+    }
   }
   var msgid;
-  if (dots.length > 1)
+  if (dots.length > 1) {
     msgid = 'braille_dots';
-  else if (dots.length == 1)
+  } else if (dots.length == 1) {
     msgid = 'braille_dot';
+  }
 
   if (msgid) {
     var dotText = Msgs.getMsg(msgid, [dots.join('-')]);
-    if (opt_chord)
+    if (opt_chord) {
       dotText = Msgs.getMsg('braille_chord', [dotText]);
+    }
     return dotText;
   }
   return '';
@@ -80,8 +83,9 @@ BrailleCommandData.makeShortcutText = function(pattern, opt_chord) {
 BrailleCommandData.getDots = function(command) {
   for (var key in BrailleCommandData.DOT_PATTERN_TO_COMMAND) {
     key = parseInt(key, 10);
-    if (command == BrailleCommandData.DOT_PATTERN_TO_COMMAND[key])
+    if (command == BrailleCommandData.DOT_PATTERN_TO_COMMAND[key]) {
       return key;
+    }
   }
   return 0;
 };

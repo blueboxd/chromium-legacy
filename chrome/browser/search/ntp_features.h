@@ -7,26 +7,26 @@
 
 #include "base/feature_list.h"
 
-namespace features {
+namespace ntp_features {
 
 // The features should be documented alongside the definition of their values in
 // the .cc file.
 
 extern const base::Feature kChromeColors;
 extern const base::Feature kChromeColorsCustomColorPicker;
-extern const base::Feature kConfirmNtpSuggestionRemovals;
-extern const base::Feature kDismissNtpPromos;
-extern const base::Feature kNtpCustomizationMenuV2;
-extern const base::Feature kNtpRealboxUseGoogleGIcon;
+extern const base::Feature kConfirmSuggestionRemovals;
+extern const base::Feature kCustomizationMenuV2;
+extern const base::Feature kDismissPromos;
+extern const base::Feature kRealboxUseGoogleGIcon;
 
 // Note: only exposed for about:flags. Use IsNtpRealboxEnabled() instead.
-extern const base::Feature kNtpRealbox;
+extern const base::Feature kRealbox;
 
-// Returns true if either kNtpRealbox or omnibox::kZeroSuggestionsOnNTPRealbox
+// Returns true if either kRealbox or omnibox::kZeroSuggestionsOnNTPRealbox
 // are enabled; or omnibox::kOnFocusSuggestions is enabled and configured to
 // show suggestions of some type in the NTP Realbox.
-bool IsNtpRealboxEnabled();
+bool IsRealboxEnabled();
 
-}  // namespace features
+}  // namespace ntp_features
 
 #endif  // CHROME_BROWSER_SEARCH_NTP_FEATURES_H_

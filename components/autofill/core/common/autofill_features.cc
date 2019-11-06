@@ -191,6 +191,10 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
     "AutofillUseImprovedLabelDisambiguation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Server predictions for CVC fields are used if the feature is enabled.
+const base::Feature kAutofillUseServerCVCPrediction{
+    "AutofillUseServerCVCPrediction", base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Controls whether the Autofill manual fallback for Addresses and Payments is
 // present on Android.

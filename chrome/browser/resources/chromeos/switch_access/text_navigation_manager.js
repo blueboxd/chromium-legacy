@@ -35,8 +35,9 @@ class TextNavigationManager {
    * if already at the beginning).
    */
   jumpToBeginning() {
-    if (this.currentlySelecting_)
+    if (this.currentlySelecting_) {
       this.setupDynamicSelection_(false /* resetCursor */);
+    }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.HOME, {ctrl: true});
   }
 
@@ -45,8 +46,9 @@ class TextNavigationManager {
    * already at the end).
    */
   jumpToEnd() {
-    if (this.currentlySelecting_)
+    if (this.currentlySelecting_) {
       this.setupDynamicSelection_(false /* resetCursor */);
+    }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.END, {ctrl: true});
   }
 
@@ -56,8 +58,9 @@ class TextNavigationManager {
    * location of the caret).
    */
   moveBackwardOneChar() {
-    if (this.currentlySelecting_)
+    if (this.currentlySelecting_) {
       this.setupDynamicSelection_(true /* resetCursor */);
+    }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.LEFT_ARROW);
   }
 
@@ -67,8 +70,9 @@ class TextNavigationManager {
    * location of the caret).
    */
   moveForwardOneChar() {
-    if (this.currentlySelecting_)
+    if (this.currentlySelecting_) {
       this.setupDynamicSelection_(true /* resetCursor */);
+    }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.RIGHT_ARROW);
   }
 
@@ -79,8 +83,9 @@ class TextNavigationManager {
    * to the beginning of that word.
    */
   moveBackwardOneWord() {
-    if (this.currentlySelecting_)
+    if (this.currentlySelecting_) {
       this.setupDynamicSelection_(false /* resetCursor */);
+    }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.LEFT_ARROW, {ctrl: true});
   }
 
@@ -91,8 +96,9 @@ class TextNavigationManager {
    * that word.
    */
   moveForwardOneWord() {
-    if (this.currentlySelecting_)
+    if (this.currentlySelecting_) {
       this.setupDynamicSelection_(false /* resetCursor */);
+    }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.RIGHT_ARROW, {ctrl: true});
   }
 
@@ -102,8 +108,9 @@ class TextNavigationManager {
    * the caret).
    */
   moveUpOneLine() {
-    if (this.currentlySelecting_)
+    if (this.currentlySelecting_) {
       this.setupDynamicSelection_(true /* resetCursor */);
+    }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.UP_ARROW);
   }
 
@@ -113,8 +120,9 @@ class TextNavigationManager {
    * the caret).
    */
   moveDownOneLine() {
-    if (this.currentlySelecting_)
+    if (this.currentlySelecting_) {
       this.setupDynamicSelection_(true /* resetCursor */);
+    }
     EventHelper.simulateKeyPress(EventHelper.KeyCode.DOWN_ARROW);
   }
 
@@ -256,8 +264,9 @@ class TextNavigationManager {
    */
   onNavChange_() {
     this.manageNavigationListener_(false);
-    if (this.currentlySelecting)
+    if (this.currentlySelecting) {
       this.saveSelectEnd();
+    }
   }
 
   /**

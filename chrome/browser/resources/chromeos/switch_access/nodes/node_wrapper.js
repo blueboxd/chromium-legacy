@@ -21,7 +21,9 @@ class NodeWrapper extends SAChildNode {
 
   /** @override */
   equals(other) {
-    if (!other || !(other instanceof NodeWrapper)) return false;
+    if (!other || !(other instanceof NodeWrapper)) {
+      return false;
+    }
 
     other = /** @type {!NodeWrapper} */ (other);
     return other.baseNode_ === this.baseNode_;
@@ -89,19 +91,27 @@ class NodeWrapper extends SAChildNode {
         return true;
       case SAConstants.MenuAction.SCROLL_DOWN:
         ancestor = this.getScrollableAncestor_();
-        if (ancestor.scrollable) ancestor.scrollDown(() => {});
+        if (ancestor.scrollable) {
+          ancestor.scrollDown(() => {});
+        }
         return true;
       case SAConstants.MenuAction.SCROLL_UP:
         ancestor = this.getScrollableAncestor_();
-        if (ancestor.scrollable) ancestor.scrollUp(() => {});
+        if (ancestor.scrollable) {
+          ancestor.scrollUp(() => {});
+        }
         return true;
       case SAConstants.MenuAction.SCROLL_RIGHT:
         ancestor = this.getScrollableAncestor_();
-        if (ancestor.scrollable) ancestor.scrollRight(() => {});
+        if (ancestor.scrollable) {
+          ancestor.scrollRight(() => {});
+        }
         return true;
       case SAConstants.MenuAction.SCROLL_LEFT:
         ancestor = this.getScrollableAncestor_();
-        if (ancestor.scrollable) ancestor.scrollLeft(() => {});
+        if (ancestor.scrollable) {
+          ancestor.scrollLeft(() => {});
+        }
         return true;
       default:
         if (Object.values(chrome.automation.ActionType).includes(action)) {
@@ -130,7 +140,9 @@ class NodeWrapper extends SAChildNode {
 
   /** @override */
   asRootNode() {
-    if (!this.isGroup()) return null;
+    if (!this.isGroup()) {
+      return null;
+    }
     return RootNodeWrapper.buildTree(this.baseNode_);
   }
 }
@@ -152,7 +164,9 @@ class RootNodeWrapper extends SARootNode {
 
   /** @override */
   equals(other) {
-    if (!(other instanceof RootNodeWrapper)) return false;
+    if (!(other instanceof RootNodeWrapper)) {
+      return false;
+    }
 
     other = /** @type {!RootNodeWrapper} */ (other);
     return super.equals(other) && this.baseNode_ === other.baseNode_;

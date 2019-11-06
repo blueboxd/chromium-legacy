@@ -241,7 +241,8 @@ public class NavigationTest {
 
         int curCompletedCount = mCallback.onCompletedCallback.getCallCount();
 
-        mActivityTestRule.executeScriptSync("history.pushState(null, '', '#bar');");
+        mActivityTestRule.executeScriptSync(
+                "history.pushState(null, '', '#bar');", true /* useSeparateIsolate */);
 
         mCallback.onCompletedCallback.assertCalledWith(
                 curCompletedCount, "data:text,foo#bar", true);

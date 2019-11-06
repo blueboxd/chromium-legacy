@@ -249,8 +249,9 @@ MockFeedback.prototype = {
     Array.prototype.forEach.call(arguments, function(text) {
       this.pendingActions_.push({
         perform: function() {
-          if (this.pendingUtterances_.length == 0)
+          if (this.pendingUtterances_.length == 0) {
             return false;
+          }
           if (MockFeedback.matchAndConsume_(
                   text, {}, this.pendingUtterances_)) {
             throw new Error('Got disallowed utterance "' + text + '".');
@@ -279,8 +280,9 @@ MockFeedback.prototype = {
       perform: function() {
         var match =
             MockFeedback.matchAndConsume_(text, props, this.pendingBraille_);
-        if (match)
+        if (match) {
           this.lastMatchedBraille_ = match;
+        }
         return !!match;
       }.bind(this),
       toString: function() {
@@ -410,8 +412,9 @@ MockFeedback.prototype = {
 
   /*** @private */
   process_: function() {
-    if (!this.replaying_ || this.inProcess_)
+    if (!this.replaying_ || this.inProcess_) {
       return;
+    }
     try {
       this.inProcess_ = true;
       while (this.pendingActions_.length > 0) {
@@ -446,22 +449,26 @@ MockFeedback.prototype = {
 
   /** @private */
   logPendingState_: function() {
-    if (this.pendingActions_.length > 0)
+    if (this.pendingActions_.length > 0) {
       console.log('Still waiting for ' + this.pendingActions_[0].toString());
+    }
     function logPending(desc, list) {
-      if (list.length > 0)
+      if (list.length > 0) {
         console.log(
             'Pending ' + desc + ':\n  ' +
             list.map(function(i) {
                   var ret = '\'' + i.text + '\'';
-                  if ('startIndex' in i)
+                  if ('startIndex' in i) {
                     ret += ' startIndex=' + i.startIndex;
-                  if ('endIndex' in i)
+                  }
+                  if ('endIndex' in i) {
                     ret += ' endIndex=' + i.endIndex;
+                  }
                   return ret;
                 })
                 .join('\n  ') +
             '\n  ');
+      }
     }
     logPending('speech utterances', this.pendingUtterances_);
     logPending('braille', this.pendingBraille_);
@@ -481,8 +488,9 @@ MockFeedback.prototype = {
 MockFeedback.matchAndConsume_ = function(text, props, pending) {
   for (var i = 0, candidate; candidate = pending[i]; ++i) {
     var candidateText = candidate.text;
-    if (typeof(candidateText) != 'string')
+    if (typeof (candidateText) != 'string') {
       candidateText = candidateText.toString();
+    }
 
     if (text === candidateText ||
         (text instanceof RegExp && text.test(candidateText)) ||
@@ -494,15 +502,17 @@ MockFeedback.matchAndConsume_ = function(text, props, pending) {
           break;
         }
       }
-      if (matched)
+      if (matched) {
         break;
+      }
     }
   }
   if (candidate) {
     var consumed = pending.splice(0, i + 1);
     consumed.forEach(function(item) {
-      if (item.callback)
+      if (item.callback) {
         item.callback();
+      }
     });
   }
   return candidate;

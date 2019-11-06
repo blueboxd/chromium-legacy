@@ -28,8 +28,9 @@ const GSUITE_APP_REGEXP =
  */
 function getGSuiteAppRoot(node) {
   while (node !== undefined && node.root !== undefined) {
-    if (node.root.url !== undefined && GSUITE_APP_REGEXP.exec(node.root.url))
+    if (node.root.url !== undefined && GSUITE_APP_REGEXP.exec(node.root.url)) {
       return node.root;
+    }
     node = node.root.parent;
   }
   return null;
@@ -298,12 +299,14 @@ SelectToSpeak.prototype = {
         selectedNode = AutomationUtil.findNextNode(
             selectedNode, constants.Dir.FORWARD,
             AutomationPredicate.leafWithText);
-        if (!selectedNode)
+        if (!selectedNode) {
           break;
+        }
       }
       if (!NodeUtils.shouldIgnoreNode(
-              selectedNode, /* include offscreen */ true))
+              selectedNode, /* include offscreen */ true)) {
         nodes.push(selectedNode);
+      }
     }
     if (nodes.length > 0) {
       if (lastPosition.node !== nodes[nodes.length - 1]) {
@@ -320,8 +323,9 @@ SelectToSpeak.prototype = {
           MetricsUtils.StartSpeechMethod.KEYSTROKE, this.prefsManager_);
     } else {
       let gsuiteAppRootNode = getGSuiteAppRoot(focusedNode);
-      if (!gsuiteAppRootNode)
+      if (!gsuiteAppRootNode) {
         return;
+      }
       chrome.tabs.query({active: true}, (tabs) => {
         // Closure doesn't realize that we did a !gsuiteAppRootNode earlier
         // so we check again here.
@@ -651,8 +655,9 @@ SelectToSpeak.prototype = {
         } else if (event.type == 'interrupted' || event.type == 'cancelled') {
           this.onStateChanged_(SelectToSpeakState.INACTIVE);
         } else if (event.type == 'end') {
-          if (isLast)
+          if (isLast) {
             this.onStateChanged_(SelectToSpeakState.INACTIVE);
+          }
         } else if (event.type == 'word') {
           this.onTtsWordEvent_(
               event, nodeGroup, isLast ? opt_endIndex : undefined);
@@ -692,10 +697,11 @@ SelectToSpeak.prototype = {
     let hasLength = event.length !== undefined && event.length >= 0;
     console.debug(nodeGroup.text + ' (index ' + event.charIndex + ')');
     let debug = '-'.repeat(event.charIndex);
-    if (hasLength)
+    if (hasLength) {
       debug += '^'.repeat(event.length);
-    else
+    } else {
       debug += '^';
+    }
     console.debug(debug);
 
     // First determine which node contains the word currently being spoken,
@@ -774,8 +780,9 @@ SelectToSpeak.prototype = {
     // Setting this.currentNodeWord_ to null signals it should be recalculated
     // later.
     this.currentNodeWord_ = null;
-    if (this.currentNodeGroupIndex_ + 1 >= nodeGroup.nodes.length)
+    if (this.currentNodeGroupIndex_ + 1 >= nodeGroup.nodes.length) {
       return null;
+    }
     return nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
   },
 
@@ -795,8 +802,9 @@ SelectToSpeak.prototype = {
         // is now resulting in an attempt to set the state inactive.
         return;
       }
-      if (state == SelectToSpeakState.INACTIVE)
+      if (state == SelectToSpeakState.INACTIVE) {
         this.clearFocusRingAndNode_();
+      }
       // Send state change event to Chrome.
       chrome.accessibilityPrivate.onSelectToSpeakStateChanged(state);
       this.state_ = state;

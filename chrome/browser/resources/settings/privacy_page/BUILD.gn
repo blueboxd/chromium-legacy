@@ -110,6 +110,7 @@ js_library("security_keys_bio_enroll_dialog") {
   deps = [
     ":security_keys_browser_proxy",
     ":security_keys_pin_field",
+    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/cr_elements/cr_fingerprint:cr_fingerprint_progress_arc",
     "//ui/webui/resources/js:i18n_behavior",
   ]

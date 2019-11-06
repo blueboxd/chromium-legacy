@@ -58,8 +58,7 @@ class BundledExchangesParserFuzzer {
     data_source_.AddReceiver(
         data_source_remote.InitWithNewPipeAndPassReceiver());
 
-    data_decoder::BundledExchangesParserFactory factory_impl(
-        /*service_ref=*/nullptr);
+    data_decoder::BundledExchangesParserFactory factory_impl;
     data_decoder::mojom::BundledExchangesParserFactory& factory = factory_impl;
     factory.GetParserForDataSource(parser_.BindNewPipeAndPassReceiver(),
                                    std::move(data_source_remote));

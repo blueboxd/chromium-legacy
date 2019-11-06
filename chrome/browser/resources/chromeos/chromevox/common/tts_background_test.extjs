@@ -60,10 +60,13 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
   // Asks this test to process the next task immediately.
   var flushNextTask = function() {
     var task = tasks.shift();
-    if (!task) return;
+    if (!task) {
+      return;
+    }
 
-    if (task.setup)
+    if (task.setup) {
       task.setup();
+    }
     tts.updateVoice_(task.testVoice, this.newCallback(function(actualVoice) {
       assertEquals(task.expectedVoice, actualVoice);
       flushNextTask();

@@ -21,8 +21,9 @@ function ChromeVoxNextE2ETest() {
   if (this.runtimeDeps.length > 0) {
     chrome.extension.getViews().forEach(function(w) {
       this.runtimeDeps.forEach(function(dep) {
-        if (w[dep])
+        if (w[dep]) {
           window[dep] = w[dep];
+        }
       }.bind(this));
     }.bind(this));
   }
@@ -63,11 +64,13 @@ ChromeVoxNextE2ETest.prototype = {
     chrome.automation.getDesktop(function(r) {
       var url = opt_url || TestUtils.createUrlForDoc(doc);
       var listener = function(evt) {
-        if (evt.target.root.url != url)
+        if (evt.target.root.url != url) {
           return;
+        }
 
-        if (!evt.target.root.docLoaded)
+        if (!evt.target.root.docLoaded) {
           return;
+        }
 
         r.removeEventListener('focus', listener, true);
         r.removeEventListener('loadComplete', listener, true);

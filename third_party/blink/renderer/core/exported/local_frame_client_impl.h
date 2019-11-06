@@ -295,8 +295,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void FrameRectsChanged(const IntRect&) override;
 
-  void LifecycleStateChanged(mojom::FrameLifecycleState state) override;
-
   bool IsPluginHandledExternally(HTMLPlugInElement&,
                                  const KURL&,
                                  const String&) override;
@@ -318,8 +316,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
-
-  void EvictFromBackForwardCache() override;
 
  private:
   struct DocumentInterfaceBrokerForwarderTraits {

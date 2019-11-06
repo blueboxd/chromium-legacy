@@ -51,11 +51,9 @@ function setModelHeader(model) {
       title += ' ';
       title += new Date(model.information.timestamp).toLocaleString();
     }
-    if (model.information.duration) {
-      title += ' ';
-      title += (model.information.duration * 0.000001).toFixed(2);
-      title += 's';
-    }
+    title += ' ';
+    title += (model.information.duration * 0.000001).toFixed(2);
+    title += 's';
     if (model.information.platform) {
       title += ' on ';
       title += model.information.platform;
@@ -77,6 +75,8 @@ function setGraphicBuffersModel(model) {
 
   setModelHeader(model);
 
+  var duration = model.information.duration;
+
   // Microseconds per pixel. 100% zoom corresponds to 100 mcs per pixel.
   var resolution = zooms[zoomLevel];
   var parent = $('arc-event-bands');
@@ -93,9 +93,9 @@ function setGraphicBuffersModel(model) {
       406 /* kVsyncTimestamp */);
 
   var cpusTitle = new EventBandTitle(parent, 'CPUs', 'arc-events-band-title');
-  var cpusBands = new CpuEventBands(
-      cpusTitle, 'arc-events-band', resolution, 0, model.duration);
-  cpusBands.setWidth(cpusBands.timestampToOffset(model.duration));
+  var cpusBands =
+      new CpuEventBands(cpusTitle, 'arc-events-band', resolution, 0, duration);
+  cpusBands.setWidth(cpusBands.timestampToOffset(duration));
   cpusBands.setModel(model);
   cpusBands.addChartToExistingArea(0 /* top */, cpusBands.height);
   cpusBands.addChartSources(
@@ -114,9 +114,9 @@ function setGraphicBuffersModel(model) {
 
   var memoryTitle =
       new EventBandTitle(parent, 'Memory', 'arc-events-band-title');
-  var memoryBands = new EventBands(
-      memoryTitle, 'arc-events-band', resolution, 0, model.duration);
-  memoryBands.setWidth(memoryBands.timestampToOffset(model.duration));
+  var memoryBands =
+      new EventBands(memoryTitle, 'arc-events-band', resolution, 0, duration);
+  memoryBands.setWidth(memoryBands.timestampToOffset(duration));
   memoryBands.addChart(chartHeight, topBandPadding);
   // Used memory chart.
   memoryBands.addChartSources(
@@ -146,9 +146,9 @@ function setGraphicBuffersModel(model) {
 
   var chromeTitle =
       new EventBandTitle(parent, 'Chrome graphics', 'arc-events-band-title');
-  var chromeBands = new EventBands(
-      chromeTitle, 'arc-events-band', resolution, 0, model.duration);
-  chromeBands.setWidth(chromeBands.timestampToOffset(model.duration));
+  var chromeBands =
+      new EventBands(chromeTitle, 'arc-events-band', resolution, 0, duration);
+  chromeBands.setWidth(chromeBands.timestampToOffset(duration));
   for (var i = 0; i < model.chrome.buffers.length; i++) {
     chromeBands.addBand(
         new Events(model.chrome.buffers[i], 500, 599), topBandHeight,
@@ -173,9 +173,9 @@ function setGraphicBuffersModel(model) {
 
   var androidTitle =
       new EventBandTitle(parent, 'Android graphics', 'arc-events-band-title');
-  var androidBands = new EventBands(
-      androidTitle, 'arc-events-band', resolution, 0, model.duration);
-  androidBands.setWidth(androidBands.timestampToOffset(model.duration));
+  var androidBands =
+      new EventBands(androidTitle, 'arc-events-band', resolution, 0, duration);
+  androidBands.setWidth(androidBands.timestampToOffset(duration));
   androidBands.addBand(
       new Events(model.android.buffers[0], 400, 499), topBandHeight,
       topBandPadding);
@@ -208,8 +208,8 @@ function setGraphicBuffersModel(model) {
     var activityTitle = new EventBandTitle(
         parent, activityTitleText, 'arc-events-band-title', icon);
     var activityBands = new EventBands(
-        activityTitle, 'arc-events-band', resolution, 0, model.duration);
-    activityBands.setWidth(activityBands.timestampToOffset(model.duration));
+        activityTitle, 'arc-events-band', resolution, 0, duration);
+    activityBands.setWidth(activityBands.timestampToOffset(duration));
     for (var j = 0; j < view.buffers.length; j++) {
       // Android buffer events.
       activityBands.addBand(
@@ -245,9 +245,9 @@ function setGraphicBuffersModel(model) {
   if (model.input && model.input.buffers.length > 0) {
     var inputTitle =
         new EventBandTitle(parent, 'Input', 'arc-events-band-title');
-    var inputBands = new EventBands(
-        inputTitle, 'arc-events-band', resolution, 0, model.duration);
-    inputBands.setWidth(inputBands.timestampToOffset(model.duration));
+    var inputBands =
+        new EventBands(inputTitle, 'arc-events-band', resolution, 0, duration);
+    inputBands.setWidth(inputBands.timestampToOffset(duration));
     for (var i = 0; i < model.input.buffers.length; i++) {
       inputBands.addBand(
           new Events(model.input.buffers[i], 700, 799), topBandHeight,
@@ -262,8 +262,8 @@ function setGraphicBuffersModel(model) {
   var timeRulerTitle =
       new EventBandTitle(parent, '' /* title */, 'arc-time-ruler-title');
   var timeRulerBands = new EventBands(
-      timeRulerTitle, 'arc-events-band', resolution, 0, model.duration);
-  timeRulerBands.setWidth(timeRulerBands.timestampToOffset(model.duration));
+      timeRulerTitle, 'arc-events-band', resolution, 0, duration);
+  timeRulerBands.setWidth(timeRulerBands.timestampToOffset(duration));
   // Reseve space for ticks and global events.
   timeRulerBands.updateHeight(timeRulerEventHeight, 0 /* padding */);
 
@@ -273,7 +273,7 @@ function setGraphicBuffersModel(model) {
   var timeTick = 0;
   var timeTickOffset = 20 * resolution;
   var timeTickIndex = 0;
-  while (timeTick < model.duration) {
+  while (timeTick < duration) {
     if ((timeTickIndex % 10) == 0) {
       timeEvents.push([kTimeMark, timeTick]);
     } else {
@@ -303,7 +303,7 @@ function setGraphicBuffersModel(model) {
   timeRulerBands.updateHeight(timeRulerLabelHeight, 0 /* padding */);
   timeTick = 0;
   timeTickOffset = 200 * resolution;
-  while (timeTick < model.duration) {
+  while (timeTick < duration) {
     SVG.addText(
         timeRulerBands.svg, timeRulerBands.timestampToOffset(timeTick),
         timeRulerEventHeight, timeRulerBands.fontSize,

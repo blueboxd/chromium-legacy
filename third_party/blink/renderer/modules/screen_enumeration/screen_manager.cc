@@ -5,40 +5,35 @@
 #include "third_party/blink/renderer/modules/screen_enumeration/screen_manager.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/modules/screen_enumeration/display.h"
+#include "third_party/blink/renderer/core/frame/screen.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/display/mojom/display.mojom-blink.h"
 
 namespace blink {
 
 namespace {
 
-void DidReceiveDisplays(ScriptPromiseResolver* resolver,
-                        WTF::Vector<mojom::blink::DisplayPtr> backend_displays,
-                        bool success) {
+void DidGetDisplays(
+    ScriptPromiseResolver* resolver,
+    WTF::Vector<display::mojom::blink::DisplayPtr> backend_displays,
+    int64_t primary_id,
+    bool success) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
 
-  HeapVector<Member<Display>> displays;
-  displays.ReserveInitialCapacity(backend_displays.size());
-  for (const auto& backend_display : backend_displays) {
-    auto* display = MakeGarbageCollected<Display>();
-    display->setName(backend_display->name);
-    display->setScaleFactor(backend_display->scale_factor);
-    display->setWidth(backend_display->width);
-    display->setHeight(backend_display->height);
-    display->setLeft(backend_display->left);
-    display->setTop(backend_display->top);
-    display->setColorDepth(backend_display->color_depth);
-    display->setIsPrimary(backend_display->is_primary);
-    display->setIsInternal(backend_display->is_internal);
-    displays.emplace_back(display);
+  HeapVector<Member<Screen>> screens;
+  screens.ReserveInitialCapacity(backend_displays.size());
+  for (display::mojom::blink::DisplayPtr& backend_display : backend_displays) {
+    const bool primary = backend_display->id == primary_id;
+    screens.emplace_back(
+        MakeGarbageCollected<Screen>(std::move(backend_display), primary));
   }
-  resolver->Resolve(std::move(displays));
+  resolver->Resolve(std::move(screens));
 }
 
 }  // namespace
@@ -50,8 +45,8 @@ ScreenManager::ScreenManager(
       &ScreenManager::OnBackendDisconnected, WrapWeakPersistent(this)));
 }
 
-ScriptPromise ScreenManager::requestDisplays(ScriptState* script_state,
-                                             ExceptionState& exception_state) {
+ScriptPromise ScreenManager::getScreens(ScriptState* script_state,
+                                        ExceptionState& exception_state) {
   if (!backend_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "ScreenManager backend went away");
@@ -59,8 +54,7 @@ ScriptPromise ScreenManager::requestDisplays(ScriptState* script_state,
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  backend_->RequestDisplays(
-      WTF::Bind(&DidReceiveDisplays, WrapPersistent(resolver)));
+  backend_->GetDisplays(WTF::Bind(&DidGetDisplays, WrapPersistent(resolver)));
 
   return resolver->Promise();
 }

@@ -1717,7 +1717,7 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
         return;
     }
   }
-  Client()->LifecycleStateChanged(state);
+  GetLocalFrameHostRemote().LifecycleStateChanged(state);
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {
@@ -1773,7 +1773,7 @@ bool LocalFrame::IsCapturingMedia() const {
 }
 
 void LocalFrame::EvictFromBackForwardCache() {
-  Client()->EvictFromBackForwardCache();
+  GetLocalFrameHostRemote().EvictFromBackForwardCache();
 }
 
 void LocalFrame::DidChangeVisibleToHitTesting() {

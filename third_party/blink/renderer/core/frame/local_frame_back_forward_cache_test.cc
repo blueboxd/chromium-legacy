@@ -9,15 +9,17 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/fake_local_frame_host.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-class TestLocalFrameBackForwardCacheClient : public EmptyLocalFrameClient {
+class TestLocalFrameBackForwardCacheClient : public FakeLocalFrameHost {
  public:
   TestLocalFrameBackForwardCacheClient() {}
   ~TestLocalFrameBackForwardCacheClient() override = default;
@@ -45,14 +47,16 @@ class LocalFrameBackForwardCacheTest : public testing::Test,
 // frame state is immutable when the frame is in the bfcache.
 // (https://www.chromestatus.com/feature/5815270035685376).
 TEST_F(LocalFrameBackForwardCacheTest, EvictionOnV8ExecutionAtMicrotask) {
-  auto* frame_client =
-      MakeGarbageCollected<TestLocalFrameBackForwardCacheClient>();
-  auto page_holder = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr, frame_client,
-      base::BindOnce(
-          [](Settings& settings) { settings.SetScriptEnabled(true); }));
+  TestLocalFrameBackForwardCacheClient frame_host;
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_test_helpers::WebViewHelper web_view_helper;
+  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
+  web_view_helper.Initialize(
+      &web_frame_client, nullptr, nullptr,
+      [](WebSettings* settings) { settings->SetJavaScriptEnabled(true); });
+  web_view_helper.Resize(WebSize(640, 480));
 
-  LocalFrame* frame = &page_holder->GetFrame();
+  LocalFrame* frame = web_view_helper.GetWebView()->MainFrameImpl()->GetFrame();
 
   // Freeze the frame and hook eviction.
   frame->SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
@@ -72,8 +76,7 @@ TEST_F(LocalFrameBackForwardCacheTest, EvictionOnV8ExecutionAtMicrotask) {
             "console.log('hi');");
       },
       frame));
-
-  frame_client->WaitUntilEvictedFromBackForwardCache();
+  frame_host.WaitUntilEvictedFromBackForwardCache();
 }
 
 }  // namespace blink

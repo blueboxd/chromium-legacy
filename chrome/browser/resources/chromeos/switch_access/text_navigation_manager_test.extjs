@@ -212,7 +212,9 @@ function setUpCursorChangeListener( testHelper, inputNode, initialTextIndex,
     if (inputNode.textSelStart != initialTextIndex ||
         inputNode.textSelEnd != initialTextIndex) {
       checkTextIndex();
-      if(callback) callback();
+      if(callback) {
+        callback();
+      }
     }
   };
 

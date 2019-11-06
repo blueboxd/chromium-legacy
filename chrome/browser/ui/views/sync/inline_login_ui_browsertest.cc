@@ -789,9 +789,16 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, Basic) {
   ui_test_utils::NavigateToURL(browser(), content::GetWebUIURL("foo/"));
 }
 
+// Flaky on MacOS - crbug.com/1021209
+#if defined(OS_MACOSX)
+#define MAYBE_NoWebUIInIframe DISABLED_NoWebUIInIframe
+#else
+#define MAYBE_NoWebUIInIframe NoWebUIInIframe
+#endif
 // Make sure that the foo webui handler does not get created when we try to
 // load it inside the iframe of the login ui.
-IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, NoWebUIInIframe) {
+IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
+                       MAYBE_NoWebUIInIframe) {
   GURL url = GetSigninPromoURL().Resolve(
       "?source=0&access_point=0&reason=5&frameUrl=chrome://foo");
   EXPECT_CALL(foo_provider(), NewWebUI(_, _)).Times(0);

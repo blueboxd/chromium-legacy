@@ -633,6 +633,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const std::vector<GlobalFrameRoutingId>& render_frames);
 
+  // Allow the embedder to control if access to Web Locks by a shared worker
+  // is allowed.
+  virtual bool AllowWorkerWebLocks(
+      const GURL& url,
+      BrowserContext* browser_context,
+      const std::vector<GlobalFrameRoutingId>& render_frames);
+
   // Allow the embedder to control if access to CacheStorage by a shared worker
   // is allowed.
   virtual bool AllowWorkerCacheStorage(

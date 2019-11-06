@@ -21,6 +21,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
@@ -522,21 +523,10 @@ void ExtensionAppShimHandler::OnShimProcessConnected(
   const std::string& app_id = bootstrap->GetAppId();
   DCHECK(crx_file::id_util::IdIsValid(app_id));
 
-  // TODO(https://crbug.com/982024): If no profile path is specified by the
-  // bootstrap, then load an appropriate profile.
-  base::FilePath profile_path = bootstrap->GetProfilePath();
-
-  if (delegate_->IsProfileLockedForPath(profile_path)) {
-    LOG(WARNING) << "Requested profile is locked.  Showing User Manager.";
-    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_PROFILE_LOCKED);
-    delegate_->LaunchUserManager();
-    return;
-  }
-
-  LoadProfileAndApp(
-      profile_path, app_id,
+  GetProfilesForAppAsync(
+      app_id,
       base::BindOnce(
-          &ExtensionAppShimHandler::OnShimProcessConnectedAndAppLoaded,
+          &ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesRetrieved,
           weak_factory_.GetWeakPtr(), std::move(bootstrap)));
 }
 
@@ -628,6 +618,63 @@ void ExtensionAppShimHandler::OnAppEnabled(const base::FilePath& profile_path,
   const Extension* extension =
       profile ? delegate_->MaybeGetAppExtension(profile, app_id) : nullptr;
   std::move(callback).Run(profile, extension);
+}
+
+base::FilePath ExtensionAppShimHandler::SelectProfileForApp(
+    const std::string& app_id,
+    const base::FilePath& specified_profile_path,
+    const std::vector<base::FilePath>& profile_paths) const {
+  // If the specified profile path is valid, and the app is installed for that
+  // profile, then use the specified profile.
+  if (!specified_profile_path.empty()) {
+    if (base::Contains(profile_paths, specified_profile_path))
+      return specified_profile_path;
+  }
+
+  // If the app is active for a profile, use the profile for which the app
+  // is active.
+  auto found_app = apps_.find(app_id);
+  if (found_app != apps_.end()) {
+    AppState* app_state = found_app->second.get();
+    DCHECK(app_state);
+    if (!app_state->profiles.empty()) {
+      Profile* active_profile = app_state->profiles.begin()->first;
+      return active_profile->GetPath();
+    }
+  }
+
+  // Otherwise, return the first profile. This assumes that |profile_paths|
+  // are sorted in most-recently-used order.
+  return profile_paths.front();
+}
+
+void ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesRetrieved(
+    std::unique_ptr<AppShimHostBootstrap> bootstrap,
+    const std::vector<base::FilePath>& profile_paths) {
+  // If the app is installed for no profiles, quit.
+  if (profile_paths.empty()) {
+    LOG(ERROR) << "App " << bootstrap->GetAppId()
+               << " installed for no profiles.";
+    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND);
+    return;
+  }
+
+  std::string app_id = bootstrap->GetAppId();
+  base::FilePath profile_path =
+      SelectProfileForApp(app_id, bootstrap->GetProfilePath(), profile_paths);
+
+  if (delegate_->IsProfileLockedForPath(profile_path)) {
+    LOG(WARNING) << "Requested profile is locked.  Showing User Manager.";
+    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_PROFILE_LOCKED);
+    delegate_->LaunchUserManager();
+    return;
+  }
+
+  LoadProfileAndApp(
+      profile_path, app_id,
+      base::BindOnce(
+          &ExtensionAppShimHandler::OnShimProcessConnectedAndAppLoaded,
+          weak_factory_.GetWeakPtr(), std::move(bootstrap)));
 }
 
 void ExtensionAppShimHandler::OnShimProcessConnectedAndAppLoaded(

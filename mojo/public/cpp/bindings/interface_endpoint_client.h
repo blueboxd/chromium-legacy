@@ -127,7 +127,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   // The following methods send interface control messages.
   // They must only be called when the handle is not in pending association
   // state.
-  void QueryVersion(const base::Callback<void(uint32_t)>& callback);
+  void QueryVersion(base::OnceCallback<void(uint32_t)> callback);
   void RequireVersion(uint32_t version);
   void FlushForTesting();
   void FlushAsyncForTesting(base::OnceClosure callback);

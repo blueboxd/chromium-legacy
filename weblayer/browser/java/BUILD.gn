@@ -17,6 +17,7 @@ generate_locale_config_srcjar("weblayer_locale_config") {
 
 java_cpp_enum("generated_enums") {
   sources = [
+    "//weblayer/public/new_browser_delegate.h",
     "//weblayer/public/profile.h",
   ]
 }
@@ -32,9 +33,11 @@ android_library("java") {
     "org/chromium/weblayer_private/ContentView.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/DownloadCallbackProxy.java",
+    "org/chromium/weblayer_private/ActionModeCallback.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
+    "org/chromium/weblayer_private/NewBrowserCallbackProxy.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
     "org/chromium/weblayer_private/FragmentAndroidPermissionDelegate.java",
     "org/chromium/weblayer_private/FragmentWindowAndroid.java",
@@ -61,8 +64,8 @@ android_library("java") {
     "//ui/android:ui_java",
   ]
   srcjar_deps = [
-    ":weblayer_locale_config",
     ":generated_enums",
+    ":weblayer_locale_config",
   ]
   jar_excluded_patterns = [ "*/LocaleConfig.class" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -81,6 +84,7 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
+    "org/chromium/weblayer_private/NewBrowserCallbackProxy.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
     "org/chromium/weblayer_private/TopControlsContainerView.java",
   ]
@@ -88,11 +92,12 @@ generate_jni("jni") {
 
 android_library("client_java") {
   java_files = [
-    "org/chromium/weblayer_private/aidl/ObjectWrapper.java",
-    "org/chromium/weblayer_private/aidl/WebLayerVersion.java",
     "org/chromium/weblayer_private/aidl/APICallException.java",
     "org/chromium/weblayer_private/aidl/BrowserFragmentArgs.java",
     "org/chromium/weblayer_private/aidl/BrowsingDataType.java",
+    "org/chromium/weblayer_private/aidl/NewBrowserType.java",
+    "org/chromium/weblayer_private/aidl/ObjectWrapper.java",
+    "org/chromium/weblayer_private/aidl/WebLayerVersion.java",
   ]
 
   deps = [

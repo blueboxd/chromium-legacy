@@ -504,7 +504,7 @@ const base::Feature kReorderBookmarks{"ReorderBookmarks",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRevampedContextMenu{"RevampedContextMenu",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kScrollToExpandPaymentHandler{
     "ScrollToExpandPaymentHandler", base::FEATURE_DISABLED_BY_DEFAULT};

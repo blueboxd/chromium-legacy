@@ -358,6 +358,54 @@ sk_sp<SkColorFilter> MakeOpacityFilter(float alpha, sk_sp<SkColorFilter> in) {
   }
 }
 
+// Porter-Duff blend mode utility functions, where the final color is
+// represented as a weighted sum of the incoming src and existing dst color.
+// See [https://skia.org/user/api/SkBlendMode_Reference]
+
+bool IsPorterDuffBlendMode(SkBlendMode blendMode) {
+  return blendMode <= SkBlendMode::kLastCoeffMode;
+}
+
+// Returns true if drawing transparent black with |blendMode| would modify the
+// destination buffer. If false is returned, the draw would have no discernible
+// effect on the pixel color so the entire draw can be skipped.
+bool TransparentBlackAffectsOutput(SkBlendMode blendMode) {
+  SkBlendModeCoeff src, dst;
+  if (!SkBlendMode_AsCoeff(blendMode, &src, &dst)) {
+    // An advanced blend mode that can't be represented as coefficients, so
+    // assume it modifies the output.
+    return true;
+  }
+  // True when the dst coefficient is not equal to 1 (when src = (0,0,0,0))
+  return dst != SkBlendModeCoeff::kOne && dst != SkBlendModeCoeff::kISA &&
+         dst != SkBlendModeCoeff::kISC;
+}
+
+// Returns true if src content drawn with |blendMode| into a RenderPass would
+// produce the exact same image as the original src content.
+bool RenderPassPreservesContent(SkBlendMode blendMode) {
+  SkBlendModeCoeff src, dst;
+  if (!SkBlendMode_AsCoeff(blendMode, &src, &dst)) {
+    return false;
+  }
+  // True when src coefficient is equal to 1 (when dst = (0,0,0,0))
+  return src == SkBlendModeCoeff::kOne || src == SkBlendModeCoeff::kIDA ||
+         src == SkBlendModeCoeff::kIDC;
+}
+
+// Returns true if src content draw with |blendMode| into an empty RenderPass
+// would produce a transparent black image.
+bool RenderPassRemainsTransparent(SkBlendMode blendMode) {
+  SkBlendModeCoeff src, dst;
+  if (!SkBlendMode_AsCoeff(blendMode, &src, &dst)) {
+    return false;
+  }
+
+  // True when src coefficient is equal to 0 (when dst = (0,0,0,0))
+  return src == SkBlendModeCoeff::kZero || src == SkBlendModeCoeff::kDA ||
+         src == SkBlendModeCoeff::kDC;
+}
+
 }  // namespace
 
 // chrome style prevents this from going in skia_renderer.h, but since it
@@ -484,6 +532,21 @@ SkiaRenderer::DrawQuadParams::DrawQuadParams(const gfx::Transform& cdt,
     this->draw_region.emplace(*draw_region);
   }
 }
+
+enum class SkiaRenderer::BypassMode {
+  // The RenderPass's contents' blendmode would have made a transparent black
+  // image
+  // and the RenderPass's own blend mode has no effect on transparent black.
+  kSkip,
+  // The renderPass's contents' creates a transparent image, but the
+  // RenderPass's
+  // own blend mode must still process the transparent pixels (e.g. certain
+  // filters
+  // affect transparent black).
+  kDrawTransparentQuad,
+  // Can draw the bypass quad with the modified parameters
+  kDrawBypassQuad
+};
 
 // Scoped helper class for building SkImage from resource id.
 class SkiaRenderer::ScopedSkImageBuilder {
@@ -1190,7 +1253,7 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
     const gfx::Transform& target_to_device,
     const gfx::Rect* scissor_rect,
     const DrawQuad* quad,
-    const gfx::QuadF* draw_region) {
+    const gfx::QuadF* draw_region) const {
   DrawQuadParams params(
       target_to_device * quad->shared_quad_state->quad_to_target_transform,
       gfx::RectF(quad->visible_rect), SkCanvas::kNone_QuadAAFlags,
@@ -1300,13 +1363,17 @@ const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
   if (!quad->shared_quad_state->quad_to_target_transform.IsInvertible())
     return nullptr;
 
-  // TODO(chrishtr): support could be added for opacity, but care needs
-  // to be taken to make sure it is correct w.r.t. non-commutative filters etc.
-  if (quad->shared_quad_state->opacity != 1.0f)
+  // A renderpass normally draws its content into a transparent destination,
+  // using the quad's blend mode, then that result is later drawn into the
+  // real dst with the RP's blend mode. In order to bypass the RP and draw
+  // correctly, CalculateBypassParams must be able to reason about the quad's
+  // blend mode.
+  if (!IsPorterDuffBlendMode(quad->shared_quad_state->blend_mode))
     return nullptr;
-
-  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
-    return nullptr;
+  // All Porter-Duff blending with transparent black should fall into one of
+  // these two categories:
+  DCHECK(RenderPassPreservesContent(quad->shared_quad_state->blend_mode) ||
+         RenderPassRemainsTransparent(quad->shared_quad_state->blend_mode));
 
   // The content must not have any rrect clipping, since skia_renderer applies
   // the rrect in device space, and in this case, the bypass quad's device space
@@ -1322,9 +1389,27 @@ const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
   return quad;
 }
 
-void SkiaRenderer::CalculateBypassParams(const DrawQuad* bypass_quad,
-                                         DrawRPDQParams* rpdq_params,
-                                         DrawQuadParams* params) {
+SkiaRenderer::BypassMode SkiaRenderer::CalculateBypassParams(
+    const DrawQuad* bypass_quad,
+    DrawRPDQParams* rpdq_params,
+    DrawQuadParams* params) const {
+  // Depending on bypass_quad's blend mode, its content may be irrelevant
+  if (RenderPassRemainsTransparent(
+          bypass_quad->shared_quad_state->blend_mode)) {
+    // NOTE: this uses the pass's blend mode since this refers to the final draw
+    // of the render pass itself
+    if (TransparentBlackAffectsOutput(params->blend_mode)) {
+      return BypassMode::kDrawTransparentQuad;
+    } else {
+      return BypassMode::kSkip;
+    }
+  }
+  // If we made it here, the bypass blend mode would have just preserved the
+  // bypass quad's content, so we can draw it directly using the render pass's
+  // blend mode instead.
+  DCHECK(
+      RenderPassPreservesContent(bypass_quad->shared_quad_state->blend_mode));
+
   // The bypass quad will be drawn directly, so update |params| and
   // |rpdq_params| to reflect the change of coordinate system and merge settings
   // between the inner and outer quads.
@@ -1367,6 +1452,11 @@ void SkiaRenderer::CalculateBypassParams(const DrawQuad* bypass_quad,
   // is preserved).
   params->aa_flags &= bypass_params.aa_flags;
 
+  // Blending will use the top-level RPDQ blend mode, but factor in the
+  // content's opacity as well, since that would have normally been baked into
+  // the RP's buffer.
+  params->opacity *= bypass_params.opacity;
+
   // Take the highest quality filter, since this single draw will reflect the
   // filtering decisions made both when drawing into the RP and when drawing the
   // RP results itself.
@@ -1376,11 +1466,13 @@ void SkiaRenderer::CalculateBypassParams(const DrawQuad* bypass_quad,
   // Rounded corner bounds are in device space, which gets tricky when bypassing
   // the device that the RP would have represented
   DCHECK(!bypass_params.rounded_corner_bounds.has_value());
+  return BypassMode::kDrawBypassQuad;
 }
 
-SkCanvas::ImageSetEntry SkiaRenderer::MakeEntry(const SkImage* image,
-                                                int matrix_index,
-                                                const DrawQuadParams& params) {
+SkCanvas::ImageSetEntry SkiaRenderer::MakeEntry(
+    const SkImage* image,
+    int matrix_index,
+    const DrawQuadParams& params) const {
   return SkCanvas::ImageSetEntry(
       {sk_ref_sp(image), gfx::RectFToSkRect(params.vis_tex_coords),
        gfx::RectFToSkRect(params.visible_rect), matrix_index, params.opacity,
@@ -1390,7 +1482,7 @@ SkCanvas::ImageSetEntry SkiaRenderer::MakeEntry(const SkImage* image,
 SkCanvas::SrcRectConstraint SkiaRenderer::ResolveTextureConstraints(
     const SkImage* image,
     const gfx::RectF& valid_texel_bounds,
-    DrawQuadParams* params) {
+    DrawQuadParams* params) const {
   if (params->aa_flags == SkCanvas::kNone_QuadAAFlags &&
       params->filter_quality == kNone_SkFilterQuality) {
     // Non-AA and no bilinear filtering so rendering won't filter outside the
@@ -1432,7 +1524,7 @@ SkCanvas::SrcRectConstraint SkiaRenderer::ResolveTextureConstraints(
 
 bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
                                          const DrawRPDQParams* rpdq_params,
-                                         const DrawQuadParams& params) {
+                                         const DrawQuadParams& params) const {
   if (batched_quads_.empty())
     return false;
 
@@ -2162,8 +2254,13 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
   // When Render Pass has a single quad inside we would draw that directly.
   if (bypass != render_pass_bypass_quads_.end()) {
-    CalculateBypassParams(bypass->second, &rpdq_params, params);
-    DrawQuadInternal(bypass->second, &rpdq_params, params);
+    BypassMode mode =
+        CalculateBypassParams(bypass->second, &rpdq_params, params);
+    if (mode == BypassMode::kDrawTransparentQuad) {
+      DrawColoredQuad(SK_ColorTRANSPARENT, &rpdq_params, params);
+    } else if (mode == BypassMode::kDrawBypassQuad) {
+      DrawQuadInternal(bypass->second, &rpdq_params, params);
+    }  // else mode == kSkip
     return;
   }
 

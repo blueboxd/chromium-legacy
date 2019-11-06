@@ -113,6 +113,32 @@ views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
   return reference_view;
 }
 
+std::unique_ptr<views::View> CreateSigninPromoView(
+    int bubble_options,
+    Profile* profile,
+    BubbleSyncPromoDelegate* delegate) {
+#if defined(OS_CHROMEOS)
+  // ChromeOS does not show the signin promo.
+  return nullptr;
+#else
+  if (!(bubble_options & ExtensionInstalledBubble::SIGN_IN_PROMO))
+    return nullptr;
+
+  BubbleSyncPromoViewParams params;
+  params.link_text_resource_id = IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW;
+  params.message_text_resource_id = IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW;
+  params.dice_no_accounts_promo_message_resource_id =
+      IDS_EXTENSION_INSTALLED_DICE_PROMO_SIGNIN_MESSAGE;
+  params.dice_accounts_promo_message_resource_id =
+      IDS_EXTENSION_INSTALLED_DICE_PROMO_SYNC_MESSAGE;
+
+  return CreateBubbleSyncPromoView(
+      profile, delegate,
+      signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE,
+      params);
+#endif
+}
+
 }  // namespace
 
 // Provides feedback to the user upon successful installation of an
@@ -145,7 +171,6 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowCloseButton() const override;
-  std::unique_ptr<View> CreateFootnoteView() override;
   int GetDialogButtons() const override;
   void Init() override;
 
@@ -181,6 +206,8 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
       bubble_reference_(bubble_reference),
       manage_shortcut_(nullptr) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_INSTALLED);
+  DialogDelegate::SetFootnoteView(CreateSigninPromoView(
+      controller->options(), controller->browser()->profile(), this));
 }
 
 ExtensionInstalledBubbleView::~ExtensionInstalledBubbleView() {}
@@ -225,30 +252,6 @@ gfx::ImageSkia ExtensionInstalledBubbleView::GetWindowIcon() {
 
 bool ExtensionInstalledBubbleView::ShouldShowWindowIcon() const {
   return true;
-}
-
-std::unique_ptr<views::View>
-ExtensionInstalledBubbleView::CreateFootnoteView() {
-#if defined(OS_CHROMEOS)
-  // ChromeOS does not show the signin promo.
-  return nullptr;
-#else
-  if (!(controller_->options() & ExtensionInstalledBubble::SIGN_IN_PROMO))
-    return nullptr;
-
-  BubbleSyncPromoViewParams params;
-  params.link_text_resource_id = IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW;
-  params.message_text_resource_id = IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW;
-  params.dice_no_accounts_promo_message_resource_id =
-      IDS_EXTENSION_INSTALLED_DICE_PROMO_SIGNIN_MESSAGE;
-  params.dice_accounts_promo_message_resource_id =
-      IDS_EXTENSION_INSTALLED_DICE_PROMO_SYNC_MESSAGE;
-
-  return CreateBubbleSyncPromoView(
-      browser()->profile(), this,
-      signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE,
-      params);
-#endif
 }
 
 int ExtensionInstalledBubbleView::GetDialogButtons() const {

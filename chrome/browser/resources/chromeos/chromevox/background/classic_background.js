@@ -161,8 +161,9 @@ cvox.ChromeVoxBackground.prototype.init = function() {
   cvox.ChromeVox.tts = this.tts;
   cvox.ChromeVox.braille = this.backgroundBraille_;
 
-  if (!cvox.ChromeVox.earcons)
+  if (!cvox.ChromeVox.earcons) {
     cvox.ChromeVox.earcons = new cvox.ClassicEarcons();
+  }
 
   if (cvox.ChromeVox.isChromeOS) {
     chrome.accessibilityPrivate.onIntroduceChromeVox.addListener(

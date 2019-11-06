@@ -14,8 +14,9 @@ goog.provide('Color');
  * @return {string}
  */
 Color.getColorDescription = function(color) {
-  if (!color)
+  if (!color) {
     return '';
+  }
   // Convert to unsigned integer.
   color = color >>> 0;
   // The following 24 bits represent the rgb value. Filter out first 8 bits.
@@ -52,8 +53,9 @@ Color.findClosestMatchingColor = function(target) {
     }
   });
   // Do not report color if most similar color is too inaccurate.
-  if (bestDistance > Color.DISTANCE_THRESHOLD)
+  if (bestDistance > Color.DISTANCE_THRESHOLD) {
     return '';
+  }
   return Msgs.getMsg(bestMessageId);
 };
 

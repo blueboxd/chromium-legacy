@@ -323,7 +323,8 @@ ConnectionFactoryImplTest::ConnectionFactoryImplTest()
                base::Bind(&ConnectionFactoryImplTest::ConnectionsComplete,
                           base::Unretained(this))),
       run_loop_(new base::RunLoop()),
-      network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
+      network_change_notifier_(
+          net::NetworkChangeNotifier::CreateMockIfNeeded()),
       network_service_(network::NetworkService::CreateForTesting()) {
   network::mojom::NetworkContextParamsPtr params =
       network::mojom::NetworkContextParams::New();

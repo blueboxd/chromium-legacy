@@ -109,6 +109,7 @@ class CONTENT_EXPORT SharedWorkerHost
   void AllowIndexedDB(const GURL& url, base::OnceCallback<void(bool)> callback);
   void AllowCacheStorage(const GURL& url,
                          base::OnceCallback<void(bool)> callback);
+  void AllowWebLocks(const GURL& url, base::OnceCallback<void(bool)> callback);
 
   void BindVideoDecodePerfHistory(
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver);

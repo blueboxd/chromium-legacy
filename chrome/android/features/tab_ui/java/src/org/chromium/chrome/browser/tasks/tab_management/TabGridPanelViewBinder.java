@@ -39,11 +39,11 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * ViewBinder for TabGridSheet and TabGridDialog.
+ * ViewBinder for TabGridDialog.
  */
 class TabGridPanelViewBinder {
     /**
-     * ViewHolder class to get access to all {@link View}s inside the TabGridSheet or TabGridDialog.
+     * ViewHolder class to get access to all {@link View}s inside the TabGridDialog.
      */
     public static class ViewHolder {
         public final TabGroupUiToolbarView toolbarView;

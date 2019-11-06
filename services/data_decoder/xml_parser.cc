@@ -103,9 +103,7 @@ void PopulateAttributes(base::Value* node_value, XmlReader* xml_reader) {
 
 }  // namespace
 
-XmlParser::XmlParser(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+XmlParser::XmlParser() = default;
 
 XmlParser::~XmlParser() = default;
 

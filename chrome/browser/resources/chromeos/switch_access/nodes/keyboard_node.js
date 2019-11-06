@@ -17,16 +17,24 @@ class KeyboardNode extends NodeWrapper {
 
   /** @override */
   get actions() {
-    if (this.isGroup()) return [];
+    if (this.isGroup()) {
+      return [];
+    }
     return [SAConstants.MenuAction.SELECT];
   }
 
   /** @override */
   performAction(action) {
-    if (this.isGroup()) return false;
-    if (action !== SAConstants.MenuAction.SELECT) return false;
+    if (this.isGroup()) {
+      return false;
+    }
+    if (action !== SAConstants.MenuAction.SELECT) {
+      return false;
+    }
     let keyLocation = this.location;
-    if (!keyLocation) return false;
+    if (!keyLocation) {
+      return false;
+    }
 
     // doDefault() does nothing on Virtual Keyboard buttons, so we must
     // simulate a mouse click.
@@ -39,7 +47,9 @@ class KeyboardNode extends NodeWrapper {
 
   /** @override */
   asRootNode() {
-    if (!this.isGroup()) return null;
+    if (!this.isGroup()) {
+      return null;
+    }
 
     const node = this.automationNode;
     if (!node) {

@@ -2427,7 +2427,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   bool BreakWords() const {
     return (WordBreak() == EWordBreak::kBreakWord ||
-            OverflowWrap() == EOverflowWrap::kBreakWord) &&
+            OverflowWrap() != EOverflowWrap::kNormal) &&
            IsNot(WhiteSpace(), EWhiteSpace::kPre | EWhiteSpace::kNowrap);
   }
 

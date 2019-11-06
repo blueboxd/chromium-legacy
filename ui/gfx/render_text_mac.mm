@@ -198,16 +198,6 @@ std::vector<Rect> RenderTextMac::GetSubstringBounds(const Range& range) {
   return std::vector<Rect>();
 }
 
-size_t RenderTextMac::TextIndexToDisplayIndex(size_t index) {
-  // TODO(asvitkine): Implement this. http://crbug.com/131618
-  return index;
-}
-
-size_t RenderTextMac::DisplayIndexToTextIndex(size_t index) {
-  // TODO(asvitkine): Implement this. http://crbug.com/131618
-  return index;
-}
-
 bool RenderTextMac::IsValidCursorIndex(size_t index) {
   // TODO(asvitkine): Implement this. http://crbug.com/131618
   return IsValidLogicalIndex(index);

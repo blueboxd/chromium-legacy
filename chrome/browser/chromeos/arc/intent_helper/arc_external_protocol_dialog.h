@@ -34,10 +34,6 @@ using GurlAndActivityInfo =
 
 // An enum returned from GetAction function. This is visible for testing.
 enum class GetActionResult {
-  // ARC cannot handle the |original_url|, and the URL does not have a fallback
-  // http(s) URL. Chrome should show the "Google Chrome OS can't open the page"
-  // dialog now.
-  SHOW_CHROME_OS_DIALOG,
   // ARC cannot handle the |original_url|, but the URL did have a fallback URL
   // which Chrome can handle. Chrome should show the fallback URL now.
   OPEN_URL_IN_CHROME,

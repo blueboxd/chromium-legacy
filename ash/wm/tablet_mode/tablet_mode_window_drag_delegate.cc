@@ -105,7 +105,10 @@ TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() {
     OverviewGrid* overview_grid = GetOverviewGrid(dragged_window_);
     if (overview_grid) {
       overview_grid->RemoveDropTarget();
-      overview_grid->PositionWindows(/*animate=*/true);
+      const gfx::Rect grid_bounds =
+          GetGridBoundsInScreenForSplitview(dragged_window_, base::nullopt);
+      overview_grid->SetBoundsAndUpdatePositions(
+          grid_bounds, /*ignored_items=*/{}, /*animate=*/true);
     }
   }
 

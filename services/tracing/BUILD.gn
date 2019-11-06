@@ -132,6 +132,8 @@ source_set("tests") {
     "perfetto/json_trace_exporter_unittest.cc",
     "perfetto/perfetto_integration_unittest.cc",
     "perfetto/track_event_json_exporter_unittest.cc",
+    "public/cpp/perfetto/java_heap_profiler/hprof_buffer_android_unittest.cc",
+    "public/cpp/perfetto/java_heap_profiler/hprof_parser_android_unittest.cc",
     "public/cpp/perfetto/task_runner_unittest.cc",
     "public/cpp/perfetto/trace_event_data_source_unittest.cc",
     "public/cpp/perfetto/traced_value_proto_writer_unittest.cc",

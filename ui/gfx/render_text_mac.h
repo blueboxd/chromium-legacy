@@ -56,8 +56,6 @@ class GFX_EXPORT RenderTextMac : public RenderText {
       VisualCursorDirection direction) override;
   RangeF GetCursorSpan(const Range& text_range) override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
-  size_t TextIndexToDisplayIndex(size_t index) override;
-  size_t DisplayIndexToTextIndex(size_t index) override;
   bool IsValidCursorIndex(size_t index) override;
   void OnLayoutTextAttributeChanged(bool text_changed) override;
   void OnDisplayTextAttributeChanged() override;

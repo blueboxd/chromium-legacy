@@ -570,10 +570,11 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
     // repeatedly until the window is selected.
     SendKeyPress(ui::VKEY_TAB);
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (base::MatchPattern(utterance, "Chrom* - about:blank"))
+    if (base::MatchPattern(utterance, "Chrom*"))
       break;
   }
-  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("about:blank,", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("window", speech_monitor_.GetNextUtterance());
 }
 
 #if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)

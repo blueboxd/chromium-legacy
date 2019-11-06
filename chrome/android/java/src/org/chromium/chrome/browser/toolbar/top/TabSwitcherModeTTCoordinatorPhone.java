@@ -163,8 +163,9 @@ class TabSwitcherModeTTCoordinatorPhone implements TemplateUrlServiceObserver {
     }
 
     void setTabSwitcherToolbarVisibility(boolean shouldShowTabSwitcherToolbar) {
-        if ((mTabSwitcherModeToolbar.getVisibility() == View.VISIBLE)
-                == shouldShowTabSwitcherToolbar) {
+        if (mTabSwitcherModeToolbar == null
+                || (mTabSwitcherModeToolbar.getVisibility() == View.VISIBLE)
+                        == shouldShowTabSwitcherToolbar) {
             return;
         }
 

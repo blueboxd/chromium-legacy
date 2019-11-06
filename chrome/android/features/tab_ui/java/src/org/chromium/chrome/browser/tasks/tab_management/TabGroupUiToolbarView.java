@@ -117,17 +117,9 @@ public class TabGroupUiToolbarView extends FrameLayout {
     }
 
     /**
-     * Setup the toolbar layout base on the component it belongs to. The toolbars for TabGridSheet
-     * and TabGridDialog are different.
+     * Setup the toolbar layout base on the component it belongs to.
      */
-    void setupToolbarLayout(boolean isDialog) {
-        if (!isDialog) {
-            // We don't support toolbar menu for TabGridSheet.
-            mMainContent.removeView(mMenuButton);
-            // We don't support tab group naming for TabGridSheet.
-            mTitleTextView.setFocusable(false);
-            return;
-        }
+    void setupToolbarLayout() {
         Context context = getContext();
         mLeftButton.setImageResource(org.chromium.chrome.R.drawable.ic_arrow_back_24dp);
         int topicMargin =

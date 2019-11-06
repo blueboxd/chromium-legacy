@@ -22,6 +22,9 @@ EVENTS_OZONE_EVDEV_EXPORT
 extern const base::Feature kEnableHeuristicPalmDetectionFilter;
 
 EVENTS_OZONE_EVDEV_EXPORT
+extern const base::Feature kEnableNeuralPalmDetectionFilter;
+
+EVENTS_OZONE_EVDEV_EXPORT
 extern const base::FeatureParam<double> kHeuristicCancelThresholdSeconds;
 
 EVENTS_OZONE_EVDEV_EXPORT

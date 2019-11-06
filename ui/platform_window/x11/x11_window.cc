@@ -443,6 +443,10 @@ bool X11Window::IsTranslucentWindowOpacitySupported() const {
   return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
 }
 
+void X11Window::LowerXWindow() {
+  XWindow::LowerWindow();
+}
+
 bool X11Window::HandleAsAtkEvent(XEvent* xev) {
 #if !BUILDFLAG(USE_ATK)
   // TODO(crbug.com/1014934): Support ATK in Ozone/X11.

@@ -45,8 +45,9 @@ class SwitchAccessPreferences {
     let updatedPreferences = {};
     for (const pref of preferences) {
       // Ignore preferences that are not used by Switch Access.
-      if (!Object.values(SAConstants.Preference).includes(pref.key))
+      if (!Object.values(SAConstants.Preference).includes(pref.key)) {
         continue;
+      }
 
       const key = /** @type {SAConstants.Preference} */ (pref.key);
       const oldPrefObject = this.preferences_.get(key);
@@ -55,11 +56,13 @@ class SwitchAccessPreferences {
         updatedPreferences[key] = pref.value;
       }
     }
-    if (Object.keys(updatedPreferences).length > 0)
+    if (Object.keys(updatedPreferences).length > 0) {
       this.switchAccess_.onPreferencesChanged(updatedPreferences);
+    }
 
-    if (opt_onUpdate)
+    if (opt_onUpdate) {
       opt_onUpdate();
+    }
   }
 
   /**
@@ -160,8 +163,9 @@ class SwitchAccessPreferences {
    */
   getNumberPreferenceIfDefined(name) {
     const pref = this.preferences_.get(name);
-    if (pref && pref.type === chrome.settingsPrivate.PrefType.NUMBER)
+    if (pref && pref.type === chrome.settingsPrivate.PrefType.NUMBER) {
       return /** @type {number} */ (pref.value);
+    }
     return null;
   }
 }

@@ -10,7 +10,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -142,18 +141,6 @@ public class RecordCastAction {
             RecordHistogram.recordEnumeratedHistogram(
                     "Cast.Sender.FullscreenControlsActionWithoutMediaElement", action,
                     FullScreenControls.NUM_ENTRIES);
-        }
-    }
-
-    /**
-     * Record the domain and registry of the URL of the frame where the user is casting the video
-     * from using Rappor.
-     *
-     * @param url The frame URL to record the domain and registry of.
-     */
-    public static void castDomainAndRegistry(String url) {
-        if (LibraryLoader.getInstance().isInitialized()) {
-            RapporServiceBridge.sampleDomainAndRegistryFromURL("Cast.Sender.MediaFrameUrl", url);
         }
     }
 

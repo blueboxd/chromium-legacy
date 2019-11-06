@@ -115,14 +115,15 @@ void JNI_CronetLibraryLoader_CronetInitOnInitThread(JNIEnv* env) {
 
 // In integrated mode, NetworkChangeNotifier has been initialized by the host.
 #if BUILDFLAG(INTEGRATED_MODE)
-  CHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
+  CHECK(!net::NetworkChangeNotifier::CreateIfNeeded());
 #else
   DCHECK(!g_network_change_notifier);
   if (!net::NetworkChangeNotifier::GetFactory()) {
     net::NetworkChangeNotifier::SetFactory(
         new net::NetworkChangeNotifierFactoryAndroid());
   }
-  g_network_change_notifier = net::NetworkChangeNotifier::Create();
+  g_network_change_notifier = net::NetworkChangeNotifier::CreateIfNeeded();
+  DCHECK(g_network_change_notifier);
 #endif
 
   g_init_thread_init_done.Signal();

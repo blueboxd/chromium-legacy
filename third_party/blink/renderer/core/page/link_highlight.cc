@@ -107,9 +107,14 @@ bool LinkHighlight::NeedsHighlightEffectInternal(
   return false;
 }
 
-void LinkHighlight::UpdatePrePaint() {
+void LinkHighlight::UpdateBeforePrePaint() {
   if (impl_)
-    impl_->UpdatePrePaint();
+    impl_->UpdateBeforePrePaint();
+}
+
+void LinkHighlight::UpdateAfterPrePaint() {
+  if (impl_)
+    impl_->UpdateAfterPrePaint();
 }
 
 void LinkHighlight::Paint(GraphicsContext& context) const {

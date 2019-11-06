@@ -11,40 +11,40 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace features {
+namespace ntp_features {
 
-TEST(NTPFeaturesTest, IsNtpRealboxEnabled) {
+TEST(NTPFeaturesTest, IsRealboxEnabled) {
   base::test::ScopedFeatureList feature_list;
-  EXPECT_FALSE(IsNtpRealboxEnabled());
+  EXPECT_FALSE(IsRealboxEnabled());
 
-  feature_list.InitAndEnableFeature(kNtpRealbox);
-  EXPECT_TRUE(IsNtpRealboxEnabled());
+  feature_list.InitAndEnableFeature(kRealbox);
+  EXPECT_TRUE(IsRealboxEnabled());
 
   feature_list.Reset();
-  EXPECT_FALSE(IsNtpRealboxEnabled());
+  EXPECT_FALSE(IsRealboxEnabled());
 
   feature_list.InitAndEnableFeature(omnibox::kZeroSuggestionsOnNTPRealbox);
-  EXPECT_TRUE(IsNtpRealboxEnabled());
+  EXPECT_TRUE(IsRealboxEnabled());
 
   feature_list.Reset();
-  EXPECT_FALSE(IsNtpRealboxEnabled());
+  EXPECT_FALSE(IsRealboxEnabled());
 
   // zero-prefix suggestions are configured for the NTP Omnibox.
   feature_list.InitWithFeaturesAndParameters(
       {{omnibox::kOnFocusSuggestions,
         {{"ZeroSuggestVariant:7:*", "Does not matter"}}}},
       {});
-  EXPECT_FALSE(IsNtpRealboxEnabled());
+  EXPECT_FALSE(IsRealboxEnabled());
 
   feature_list.Reset();
-  EXPECT_FALSE(IsNtpRealboxEnabled());
+  EXPECT_FALSE(IsRealboxEnabled());
 
   // zero-prefix suggestions are configured for the NTP Realbox.
   feature_list.InitWithFeaturesAndParameters(
       {{omnibox::kOnFocusSuggestions,
         {{"ZeroSuggestVariant:15:*", "Does not matter"}}}},
       {});
-  EXPECT_TRUE(IsNtpRealboxEnabled());
+  EXPECT_TRUE(IsRealboxEnabled());
 }
 
-}  // namespace features
+}  // namespace ntp_features

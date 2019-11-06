@@ -217,7 +217,22 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   // Close one specified app.
   void CloseShimForApp(Profile* profile, const std::string& app_id);
 
-  // Continuation of OnShimProcessConnected, once the profile has loaded.
+  // Return the profile that should be opened for |app_id|, preferring
+  // |specified_profile_path| if is valid, otherwise prefering the most recently
+  // used of |profile_paths|.
+  base::FilePath SelectProfileForApp(
+      const std::string& app_id,
+      const base::FilePath& specified_profile_path,
+      const std::vector<base::FilePath>& profile_paths) const;
+
+  // Continuation of OnShimProcessConnected, once the query for all profiles
+  // with the app installed has returned.profiles
+  void OnShimProcessConnectedAndProfilesRetrieved(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap,
+      const std::vector<base::FilePath>& profiles);
+
+  // Continuation of OnShimProcessConnectedAndProfilesRetrieved, once the
+  // decided profile has loaded.
   void OnShimProcessConnectedAndAppLoaded(
       std::unique_ptr<AppShimHostBootstrap> bootstrap,
       Profile* profile,

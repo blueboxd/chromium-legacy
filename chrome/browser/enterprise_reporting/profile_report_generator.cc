@@ -14,6 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
@@ -29,6 +31,10 @@ void ProfileReportGenerator::set_extensions_enabled(bool enabled) {
 
 void ProfileReportGenerator::set_policies_enabled(bool enabled) {
   policies_enabled_ = enabled;
+}
+
+void ProfileReportGenerator::set_extension_request_enabled(bool enabled) {
+  extension_request_enabled_ = enabled;
 }
 
 std::unique_ptr<em::ChromeUserProfileInfo>
@@ -47,6 +53,7 @@ ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
 
   GetSigninUserInfo();
   GetExtensionInfo();
+  GetExtensionRequest();
 
   if (policies_enabled_) {
     // TODO(crbug.com/983151): Upload policy error as their IDs.
@@ -91,5 +98,14 @@ void ProfileReportGenerator::GetPolicyFetchTimestampInfo() {
   AppendMachineLevelUserCloudPolicyFetchTimestamp(report_.get());
 }
 
+void ProfileReportGenerator::GetExtensionRequest() {
+  if (!extension_request_enabled_)
+    return;
+  const auto pending_list = profile_->GetPrefs()
+                                ->GetList(prefs::kCloudExtensionRequestIds)
+                                ->GetList();
+  for (const base::Value& pending_request : pending_list)
+    report_->add_extension_requests()->set_id(pending_request.GetString());
+}
 
 }  // namespace enterprise_reporting

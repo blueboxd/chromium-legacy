@@ -7,7 +7,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -99,26 +98,6 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
             static_cast<int>(AutoplaySource::kDualSource));
     } else {
       audio_histogram.Count(static_cast<int>(AutoplaySource::kDualSource));
-    }
-  }
-
-  // Record the child frame and top-level frame URLs for autoplay muted videos
-  // by attribute.
-  if (element_->IsHTMLVideoElement() && element_->muted()) {
-    if (sources_.size() ==
-        static_cast<size_t>(AutoplaySource::kNumberOfSources)) {
-      Platform::Current()->RecordRapporURL(
-          "Media.Video.Autoplay.Muted.DualSource.Frame",
-          element_->GetDocument().Url());
-    } else if (source == AutoplaySource::kAttribute) {
-      Platform::Current()->RecordRapporURL(
-          "Media.Video.Autoplay.Muted.Attribute.Frame",
-          element_->GetDocument().Url());
-    } else {
-      DCHECK(source == AutoplaySource::kMethod);
-      Platform::Current()->RecordRapporURL(
-          "Media.Video.Autoplay.Muted.PlayMethod.Frame",
-          element_->GetDocument().Url());
     }
   }
 

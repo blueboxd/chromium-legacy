@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "net/base/features.h"
 #include "net/base/host_port_pair.h"
@@ -41,12 +42,22 @@ namespace {
 const IPEndPoint kEndpoint(IPAddress(1, 2, 3, 4), 100);
 }
 
-class ContextHostResolverTest : public TestWithTaskEnvironment {
+class ContextHostResolverTest : public ::testing::Test,
+                                public WithTaskEnvironment {
  protected:
+  // Use mock time to prevent the HostResolverManager's injected IPv6 probe
+  // result from timing out.
+  ContextHostResolverTest()
+      : WithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
+  ~ContextHostResolverTest() override = default;
+
   void SetUp() override {
     manager_ = std::make_unique<HostResolverManager>(
         HostResolver::ManagerOptions(),
         nullptr /* system_dns_config_notifier */, nullptr /* net_log */);
+    manager_->SetLastIPv6ProbeResultForTesting(true);
   }
 
   void SetMockDnsRules(MockDnsClientRuleList rules) {
@@ -511,31 +522,30 @@ TEST_F(ContextHostResolverTest, ResultsAddedToCacheWithNetworkIsolationKey) {
                      MockDnsClientRule::Result(BuildTestDnsResponse(
                          "example.com", kEndpoint.address())),
                      false /* delay */);
+  rules.emplace_back("example.com", dns_protocol::kTypeAAAA, false /* secure */,
+                     MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
+                     false /* delay */);
   SetMockDnsRules(std::move(rules));
 
   auto resolver = std::make_unique<ContextHostResolver>(
       manager_.get(), HostCache::CreateDefaultCache());
 
-  // Use DnsQueryType::A to avoid running into issues with the IPv6
-  // availablility check, which affects the cache key used.
-  HostResolver::ResolveHostParameters parameters;
-  parameters.dns_query_type = DnsQueryType::A;
   std::unique_ptr<HostResolver::ResolveHostRequest> caching_request =
       resolver->CreateRequest(HostPortPair("example.com", 103),
                               kNetworkIsolationKey, NetLogWithSource(),
-                              parameters);
+                              base::nullopt);
   TestCompletionCallback caching_callback;
   int rv = caching_request->Start(caching_callback.callback());
   EXPECT_THAT(caching_callback.GetResult(rv), test::IsOk());
 
-  HostCache::Key cache_key("example.com", DnsQueryType::A,
+  HostCache::Key cache_key("example.com", DnsQueryType::UNSPECIFIED,
                            0 /* host_resolver_flags */, HostResolverSource::ANY,
                            kNetworkIsolationKey);
   EXPECT_TRUE(
       resolver->GetHostCache()->Lookup(cache_key, base::TimeTicks::Now()));
 
   HostCache::Key cache_key_with_empty_nik(
-      "example.com", DnsQueryType::A, 0 /* host_resolver_flags */,
+      "example.com", DnsQueryType::UNSPECIFIED, 0 /* host_resolver_flags */,
       HostResolverSource::ANY, NetworkIsolationKey());
   EXPECT_FALSE(resolver->GetHostCache()->Lookup(cache_key_with_empty_nik,
                                                 base::TimeTicks::Now()));

@@ -441,15 +441,7 @@ TEST_P(NGInlineCursorTest, Previous) {
   InsertStyleElement("b { background: gray; }");
   NGInlineCursor cursor =
       SetupCursor("<div id=root>abc<b>DEF</b><br>xyz</div>");
-  // TDOO(yosin): We'll use |MoveTo(*cursor.GetLayoutBlockFlow()->LastChild())|
-  // once |MoveTo()| works with rootless cursor.
-  while (cursor) {
-    NGInlineCursor next(cursor);
-    next.MoveToNext();
-    if (!next)
-      break;
-    cursor = next;
-  }
+  cursor.MoveTo(*cursor.GetLayoutBlockFlow()->LastChild());
   Vector<String> list;
   while (cursor) {
     list.push_back(ToDebugString(cursor));
@@ -464,15 +456,7 @@ TEST_P(NGInlineCursorTest, PreviousInlineLeaf) {
   InsertStyleElement("b { background: gray; }");
   NGInlineCursor cursor =
       SetupCursor("<div id=root>abc<b>DEF</b><br>xyz</div>");
-  // TDOO(yosin): We'll use |MoveTo(*cursor.GetLayoutBlockFlow()->LastChild())|
-  // once |MoveTo()| works with rootless cursor.
-  while (cursor) {
-    NGInlineCursor next(cursor);
-    next.MoveToNext();
-    if (!next)
-      break;
-    cursor = next;
-  }
+  cursor.MoveTo(*cursor.GetLayoutBlockFlow()->LastChild());
   Vector<String> list;
   while (cursor) {
     list.push_back(ToDebugString(cursor));
@@ -486,15 +470,7 @@ TEST_P(NGInlineCursorTest, PreviousInlineLeafIgnoringLineBreak) {
   InsertStyleElement("b { background: gray; }");
   NGInlineCursor cursor =
       SetupCursor("<div id=root>abc<b>DEF</b><br>xyz</div>");
-  // TDOO(yosin): We'll use |MoveTo(*cursor.GetLayoutBlockFlow()->LastChild())|
-  // once |MoveTo()| works with rootless cursor.
-  while (cursor) {
-    NGInlineCursor next(cursor);
-    next.MoveToNext();
-    if (!next)
-      break;
-    cursor = next;
-  }
+  cursor.MoveTo(*cursor.GetLayoutBlockFlow()->LastChild());
   Vector<String> list;
   while (cursor) {
     list.push_back(ToDebugString(cursor));

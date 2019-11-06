@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> हे डिव्हाइस व्यवस्थापित करते आणि तुमची अॅक्टिव्हिटी पाहू शकेल.</translation>
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> हे डिव्हाइस व्यवस्थापित करते आणि तुमची ॲक्टिव्हिटी पाहू शकेल.</translation>
 <translation id="1510238584712386396">लाँचर</translation>
 <translation id="1734367976349034509">या डिव्हाइसला संस्थेेने व्यवस्थापित केेले आहे</translation>
 <translation id="1930797645656624981">Chrome OS इनपुट पद्धत सेवा</translation>
@@ -13,7 +13,7 @@
 <translation id="2872961005593481000">बंद करा</translation>
 <translation id="3008341117444806826">रिफ्रेश करा</translation>
 <translation id="3838338534323494292">नवीन पासवर्ड</translation>
-<translation id="4003259559679196451">हे डिव्हाइस <ph name="ENROLLMENT_DOMAIN" />व्यवस्थापित करते आणि भेट दिलेली वेबपेज पासवर्ड आणि ईमेलसह सर्व वापरकर्ता अॅक्टिव्हिटीचा त्यांना अॅक्सेस आहे.</translation>
+<translation id="4003259559679196451">हे डिव्हाइस <ph name="ENROLLMENT_DOMAIN" />व्यवस्थापित करते आणि भेट दिलेली वेबपेज पासवर्ड आणि ईमेलसह सर्व वापरकर्ता ॲक्टिव्हिटीचा त्यांना ॲक्सेस आहे.</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> मध्ये पासवर्ड एक्स्पायर होईल</translation>
 <translation id="4429881212383817840">Kerberos तिकीट लवकरच एक्स्पायर होईल</translation>
 <translation id="445059817448385655">जुना पासवर्ड</translation>

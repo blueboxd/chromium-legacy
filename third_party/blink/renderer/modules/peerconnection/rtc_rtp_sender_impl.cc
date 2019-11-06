@@ -11,30 +11,31 @@
 #include "base/logging.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
 namespace {
 
-// TODO(hbos): Replace WebRTCVoidRequest with something resolving promises based
+// TODO(hbos): Replace RTCVoidRequest with something resolving promises based
 // on RTCError, as to surface both exception type and error message.
 // https://crbug.com/790007
-void OnReplaceTrackCompleted(blink::WebRTCVoidRequest request, bool result) {
+void OnReplaceTrackCompleted(blink::RTCVoidRequest* request, bool result) {
   if (result) {
-    request.RequestSucceeded();
+    request->RequestSucceeded();
   } else {
-    request.RequestFailed(
+    request->RequestFailed(
         webrtc::RTCError(webrtc::RTCErrorType::INVALID_MODIFICATION));
   }
 }
 
-void OnSetParametersCompleted(blink::WebRTCVoidRequest request,
+void OnSetParametersCompleted(blink::RTCVoidRequest* request,
                               webrtc::RTCError result) {
   if (result.ok())
-    request.RequestSucceeded();
+    request->RequestSucceeded();
   else
-    request.RequestFailed(result);
+    request->RequestFailed(result);
 }
 
 }  // namespace
@@ -450,10 +451,9 @@ blink::WebVector<blink::WebString> RTCRtpSenderImpl::StreamIds() const {
 }
 
 void RTCRtpSenderImpl::ReplaceTrack(blink::WebMediaStreamTrack with_track,
-                                    blink::WebRTCVoidRequest request) {
-  internal_->ReplaceTrack(
-      std::move(with_track),
-      base::BindOnce(&OnReplaceTrackCompleted, std::move(request)));
+                                    blink::RTCVoidRequest* request) {
+  internal_->ReplaceTrack(std::move(with_track),
+                          base::BindOnce(&OnReplaceTrackCompleted, request));
 }
 
 std::unique_ptr<blink::WebRTCDTMFSenderHandler>
@@ -468,7 +468,7 @@ std::unique_ptr<webrtc::RtpParameters> RTCRtpSenderImpl::GetParameters() const {
 void RTCRtpSenderImpl::SetParameters(
     blink::WebVector<webrtc::RtpEncodingParameters> encodings,
     webrtc::DegradationPreference degradation_preference,
-    blink::WebRTCVoidRequest request) {
+    blink::RTCVoidRequest* request) {
   internal_->SetParameters(
       std::move(encodings), degradation_preference,
       base::BindOnce(&OnSetParametersCompleted, std::move(request)));

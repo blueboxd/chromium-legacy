@@ -287,7 +287,8 @@ class NetExportFileWriterTest : public ::testing::Test {
  public:
   NetExportFileWriterTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
-        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
+        network_change_notifier_(
+            net::NetworkChangeNotifier::CreateMockIfNeeded()),
         network_service_(network::NetworkService::CreateForTesting()) {}
 
   // ::testing::Test implementation

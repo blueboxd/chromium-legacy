@@ -13,18 +13,53 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.weblayer_private.aidl.APICallException;
+import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Represents a browser fragment. Created from Profile.
+ * BrowserFragmentController contains any number of BrowserControllers, with one active
+ * BrowserController. The active BrowserController is visible to the user, all other
+ * BrowserControllers are hidden.
+ *
+ * By default BrowserFragmentController has a single active BrowserController.
  */
 public final class BrowserFragmentController {
     private final IBrowserFragmentController mImpl;
-    private BrowserController mController;
+    // Mapes from id (as returned from IBrowserController.getId() to BrowserController.
+    private final Map<Integer, BrowserController> mBrowserControllerMap;
 
     BrowserFragmentController(IBrowserFragmentController impl) {
         mImpl = impl;
+        mBrowserControllerMap = new HashMap<Integer, BrowserController>();
+        try {
+            for (Object browserController : impl.getBrowserControllers()) {
+                // getBrowserControllers() returns List<BrowserControllerImpl>, which isn't
+                // accessible from the client library.
+                IBrowserController iBrowserController =
+                        IBrowserController.Stub.asInterface((android.os.IBinder) browserController);
+                // BrowserController's constructor calls registerBrowserController().
+                new BrowserController(iBrowserController, this);
+            }
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    // This is called when a new BrowserController is created.
+    void registerBrowserController(BrowserController browserController) {
+        try {
+            int id = browserController.getIBrowserController().getId();
+            assert !mBrowserControllerMap.containsKey(id);
+            mBrowserControllerMap.put(id, browserController);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
     }
 
     /**
@@ -40,21 +75,67 @@ public final class BrowserFragmentController {
     }
 
     /**
-     * Returns the BrowserController associated with this BrowserFragmentController.
+     * Sets the active (visible) BrowserController. Only one BrowserController is visible at a time.
+     *
+     * @param browserController The BrowserController to make active.
+     *
+     * @throws IllegalStateException if {@link browserController} was not added to this
+     *         BrowserFragmentController.
+     *
+     * @see #addBrowserController()
+     */
+    public void setActiveBrowserController(@NonNull BrowserController browserController) {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            if (!mImpl.setActiveBrowserController(browserController.getIBrowserController())) {
+                throw new IllegalStateException("attachBrowserController() must be called before "
+                        + "setActiveBrowserController");
+            }
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Returns the active (visible) BrowserController associated with this
+     * BrowserFragmentController.
      *
      * @return The BrowserController.
      */
-    @NonNull
-    public BrowserController getBrowserController() {
+    @Nullable
+    public BrowserController getActiveBrowserController() {
         ThreadCheck.ensureOnUiThread();
-        if (mController == null) {
-            try {
-                mController = new BrowserController(mImpl.getBrowserController());
-            } catch (RemoteException e) {
-                throw new APICallException(e);
-            }
+        try {
+            return mBrowserControllerMap.get(mImpl.getActiveBrowserControllerId());
+        } catch (RemoteException e) {
+            throw new APICallException(e);
         }
-        return mController;
+    }
+
+    /**
+     * Returns the set of BrowserControllers contained in this BrowserFragmentController.
+     *
+     * @return The BrowserControllers
+     */
+    @NonNull
+    public List<BrowserController> getBrowserControllers() {
+        ThreadCheck.ensureOnUiThread();
+        return new ArrayList<BrowserController>(mBrowserControllerMap.values());
+    }
+
+    /**
+     * Disposes a BrowserController. If {@link browserController} is the active BrowserController,
+     * no BrowserController is made active. After this call {@link browserController} should not be
+     * used.
+     *
+     * @param browserController The BrowserController to dispose.
+     *
+     * @throws IllegalStateException is {@link browserController} is not in this
+     *         BrowserFragmentController.
+     */
+    public void disposeBrowserController(BrowserController browserController) {
+        ThreadCheck.ensureOnUiThread();
+        // TODO(sky): implement this.
     }
 
     /**

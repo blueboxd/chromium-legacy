@@ -23,7 +23,6 @@
 #include "components/services/storage/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes_test_utils.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
@@ -151,10 +150,11 @@ TEST_F(TransactionalLevelDBDatabaseTest, CorruptionTest) {
 }
 
 TEST(LevelDB, Locking) {
+  static base::NoDestructor<leveldb_env::ChromiumEnv> gTestEnv;
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
 
-  leveldb::Env* env = LevelDBEnv::Get();
+  leveldb::Env* env = gTestEnv.get();
   base::FilePath file = temp_directory.GetPath().AppendASCII("LOCK");
   leveldb::FileLock* lock;
   leveldb::Status status = env->LockFile(file.AsUTF8Unsafe(), &lock);

@@ -68,34 +68,29 @@ ChromeVoxDownloadTest.prototype = {
   },
 
   getTimeRemaining: function(units) {
-    if (!units)
+    if (!units) {
       console.error('Must specify time units before calling this function');
-    else if (units === 'second'){
+    } else if (units === 'second') {
       // 1 second.
       return new Date(new Date().getTime() + 1000).toISOString();
-    }
-    else if (units === 'seconds') {
+    } else if (units === 'seconds') {
       // 30 seconds.
       return new Date(new Date().getTime() + 30000).toISOString();
-    }
-    else if (units === 'minute') {
+    } else if (units === 'minute') {
       // 1 minute.
       return new Date(new Date().getTime() + 60000).toISOString();
-    }
-    else if (units === 'minutes') {
+    } else if (units === 'minutes') {
       // 30 minutes.
       return new Date(new Date().getTime() + 1800000).toISOString();
-    }
-    else if (units === 'hour') {
+    } else if (units === 'hour') {
       // 1 hour.
       return new Date(new Date().getTime() + 3600000).toISOString();
-    }
-    else if (units === 'hours') {
+    } else if (units === 'hours') {
       // 3 hours.
       return new Date(new Date().getTime() + 10800000).toISOString();
-    }
-    else
+    } else {
       console.error('Did not specify a valid unit type');
+    }
   },
 
   timeRemainingUnits: '',

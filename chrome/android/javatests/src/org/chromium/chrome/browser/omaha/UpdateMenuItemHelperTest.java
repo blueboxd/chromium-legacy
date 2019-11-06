@@ -19,15 +19,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuTestSupport;
+import org.chromium.chrome.browser.appmenu.TestAppMenuObserver;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -106,22 +105,6 @@ public class UpdateMenuItemHelperTest {
         }
     }
 
-    private static class TestAppMenuObserver implements AppMenuObserver {
-        CallbackHelper mMenuShownCallback = new CallbackHelper();
-        CallbackHelper mMenuHiddenCallback = new CallbackHelper();
-
-        @Override
-        public void onMenuVisibilityChanged(boolean isVisible) {
-            if (isVisible) {
-                mMenuShownCallback.notifyCalled();
-            } else {
-                mMenuHiddenCallback.notifyCalled();
-            }
-        }
-
-        @Override
-        public void onMenuHighlightChanged(boolean highlighting) {}
-    }
 
     private MockVersionNumberGetter mMockVersionNumberGetter;
     private MockMarketURLGetter mMockMarketURLGetter;
@@ -278,7 +261,7 @@ public class UpdateMenuItemHelperTest {
         Assert.assertEquals("Incorrect item not clicked histogram count after item clicked", 0,
                 getTotalItemNotClickedCount());
 
-        mMenuObserver.mMenuHiddenCallback.waitForCallback(0);
+        mMenuObserver.menuHiddenCallback.waitForCallback(0);
         waitForAppMenuDimissedRunnable();
 
         Assert.assertEquals("Incorrect item clicked histogram count after menu dismissed", 1,
@@ -311,21 +294,21 @@ public class UpdateMenuItemHelperTest {
     }
 
     private void showAppMenuAndAssertMenuShown() throws TimeoutException {
-        int currentCallCount = mMenuObserver.mMenuShownCallback.getCallCount();
+        int currentCallCount = mMenuObserver.menuShownCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AppMenuTestSupport.showAppMenu(
                     mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
-        mMenuObserver.mMenuShownCallback.waitForCallback(currentCallCount);
+        mMenuObserver.menuShownCallback.waitForCallback(currentCallCount);
     }
 
     private void hideAppMenuAndAssertMenuShown() throws TimeoutException {
-        int currentCallCount = mMenuObserver.mMenuHiddenCallback.getCallCount();
+        int currentCallCount = mMenuObserver.menuHiddenCallback.getCallCount();
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getAppMenuCoordinator().getAppMenuHandler().hideAppMenu());
 
-        mMenuObserver.mMenuHiddenCallback.waitForCallback(currentCallCount);
+        mMenuObserver.menuHiddenCallback.waitForCallback(currentCallCount);
     }
 
     private int getTotalItemClickedCount() {

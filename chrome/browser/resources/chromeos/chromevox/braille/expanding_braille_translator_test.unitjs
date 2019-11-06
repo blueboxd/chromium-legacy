@@ -52,8 +52,9 @@ FakeTranslator.prototype = {
     var brailleToText = [];
     for (var i = 0; i < text.length; ++i) {
       var formType = this.styleMap_[formTypeMap[i]];
-      if (formType)
+      if (formType) {
         formType = formType.charCodeAt(0);
+      }
       result[i] = formType || this.resultChar_.charCodeAt(0);
       textToBraille.push(i);
       brailleToText.push(i);
@@ -135,18 +136,21 @@ function doTranslationTest(name, contracted, valueExpansion, text,
           uncontractedTranslator);
     }
     var extraCellsSpan = text.getSpanInstanceOf(cvox.ExtraCellsSpan);
-    if (extraCellsSpan)
+    if (extraCellsSpan) {
       var extraCellsSpanPos = text.getSpanStart(extraCellsSpan);
+    }
     var expectedTextToBraille = [];
     var expectedBrailleToText = [];
     for (var i = 0, pos = 0; i < text.length; ++i, ++pos) {
-      if (i === extraCellsSpanPos)
+      if (i === extraCellsSpanPos) {
         ++pos;
+      }
       expectedTextToBraille.push(pos);
       expectedBrailleToText.push(i);
     }
-    if (extraCellsSpan)
+    if (extraCellsSpan) {
       expectedBrailleToText.splice(extraCellsSpanPos, 0, extraCellsSpanPos);
+    }
 
     expandingTranslator.translate(
         text, valueExpansion, function(cells, textToBraille, brailleToText) {
@@ -178,8 +182,9 @@ function runTranslationTestVariants(testCase, contracted, valueExpansion,
   // Construct the full name.
   var fullName = contracted ? 'Contracted_' : 'Uncontracted_';
   fullName += 'Expansion' + valueExpansion + '_';
-  if (withExtraCells)
+  if (withExtraCells) {
     fullName += 'ExtraCells_';
+  }
   fullName += testCase.name;
   var input = testCase.input;
   if (withExtraCells) {

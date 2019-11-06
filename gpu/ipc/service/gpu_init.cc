@@ -359,41 +359,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     }
   }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] ==
-      gpu::kGpuFeatureStatusEnabled) {
-    DCHECK_NE(gpu_preferences_.use_vulkan,
-              gpu::VulkanImplementationName::kNone);
-    bool vulkan_use_swiftshader = gpu_preferences_.use_vulkan ==
-                                  gpu::VulkanImplementationName::kSwiftshader;
-    const bool enforce_protected_memory =
-        gpu_preferences_.enforce_vulkan_protected_memory;
-    vulkan_implementation_ = gpu::CreateVulkanImplementation(
-        vulkan_use_swiftshader,
-        enforce_protected_memory ? true : false /* allow_protected_memory */,
-        enforce_protected_memory);
-    if (!vulkan_implementation_ ||
-        !vulkan_implementation_->InitializeVulkanInstance(
-            !gpu_preferences_.disable_vulkan_surface)) {
-      DLOG(ERROR) << "Failed to create and initialize Vulkan implementation.";
-      vulkan_implementation_ = nullptr;
-      CHECK(!gpu_preferences_.disable_vulkan_fallback_to_gl_for_testing);
-    }
-  }
-  if (!vulkan_implementation_) {
-    if (gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan) {
-      gpu_preferences_.gr_context_type = gpu::GrContextType::kGL;
-    }
-    gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
-    gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
-        gpu::kGpuFeatureStatusDisabled;
-  }
-
-#else
-  gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
-  gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
-      gpu::kGpuFeatureStatusDisabled;
-#endif
+  InitializeVulkan();
 
   // Collect GPU process info
   if (!gl_disabled) {
@@ -526,6 +492,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 
   InitializeGLThreadSafe(command_line, gpu_preferences_, &gpu_info_,
                          &gpu_feature_info_);
+  InitializeVulkan();
 
   default_offscreen_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
 
@@ -661,6 +628,43 @@ void GpuInit::AdjustInfoToSwiftShader() {
 
 scoped_refptr<gl::GLSurface> GpuInit::TakeDefaultOffscreenSurface() {
   return std::move(default_offscreen_surface_);
+}
+
+void GpuInit::InitializeVulkan() {
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] ==
+      gpu::kGpuFeatureStatusEnabled) {
+    DCHECK_NE(gpu_preferences_.use_vulkan,
+              gpu::VulkanImplementationName::kNone);
+    bool vulkan_use_swiftshader = gpu_preferences_.use_vulkan ==
+                                  gpu::VulkanImplementationName::kSwiftshader;
+    const bool enforce_protected_memory =
+        gpu_preferences_.enforce_vulkan_protected_memory;
+    vulkan_implementation_ = gpu::CreateVulkanImplementation(
+        vulkan_use_swiftshader,
+        enforce_protected_memory ? true : false /* allow_protected_memory */,
+        enforce_protected_memory);
+    if (!vulkan_implementation_ ||
+        !vulkan_implementation_->InitializeVulkanInstance(
+            !gpu_preferences_.disable_vulkan_surface)) {
+      DLOG(ERROR) << "Failed to create and initialize Vulkan implementation.";
+      vulkan_implementation_ = nullptr;
+      CHECK(!gpu_preferences_.disable_vulkan_fallback_to_gl_for_testing);
+    }
+  }
+  if (!vulkan_implementation_) {
+    if (gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan) {
+      gpu_preferences_.gr_context_type = gpu::GrContextType::kGL;
+    }
+    gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
+    gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
+        gpu::kGpuFeatureStatusDisabled;
+  }
+#else
+  gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
+  gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
+      gpu::kGpuFeatureStatusDisabled;
+#endif  // BUILDFLAG(ENABLE_VULKAN)
 }
 
 }  // namespace gpu

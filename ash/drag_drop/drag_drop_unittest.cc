@@ -117,13 +117,7 @@ using DragDropTest = AshTestBase;
 
 // Test if the mouse gets moved properly to another display
 // during drag & drop operation.
-// Fails in debug builds, crbug.com/1006101.
-#if !defined(NDEBUG)
-#define MAYBE_DragDropAcrossMultiDisplay DISABLED_DragDropAcrossMultiDisplay
-#else
-#define MAYBE_DragDropAcrossMultiDisplay DragDropAcrossMultiDisplay
-#endif
-TEST_F(DragDropTest, MAYBE_DragDropAcrossMultiDisplay) {
+TEST_F(DragDropTest, DragDropAcrossMultiDisplay) {
   ui_controls::InstallUIControlsAura(test::CreateAshUIControls());
 
   UpdateDisplay("400x400,400x400");

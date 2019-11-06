@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/stl_util.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
@@ -39,8 +40,6 @@ ToolbarIconContainerView::~ToolbarIconContainerView() {
   // destroying |observers_|.
   RemoveAllChildViews(true);
 }
-
-void ToolbarIconContainerView::UpdateAllIcons() {}
 
 void ToolbarIconContainerView::AddMainButton(views::Button* main_button) {
   DCHECK(!main_button_);
@@ -157,6 +156,18 @@ void ToolbarIconContainerView::UpdateHighlight() {
     return;
   for (Observer& observer : observers_)
     observer.OnHighlightChanged();
+}
+
+void ToolbarIconContainerView::OverrideIconColor(SkColor color) {
+  icon_color_ = color;
+  UpdateAllIcons();
+}
+
+SkColor ToolbarIconContainerView::GetIconColor() const {
+  if (icon_color_)
+    return icon_color_.value();
+  return GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 }
 
 bool ToolbarIconContainerView::IsHighlighted() {

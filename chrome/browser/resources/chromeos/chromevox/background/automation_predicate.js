@@ -26,8 +26,9 @@ var State = chrome.automation.StateType;
  */
 var hasActionableDescendant = function(node) {
   // DefaultActionVerb does not have value 'none' even though it gets set.
-  if (node.defaultActionVerb != 'none')
+  if (node.defaultActionVerb != 'none') {
     return true;
+  }
 
   var result = false;
   for (var i = 0; i < node.children.length; i++)
@@ -230,8 +231,9 @@ AutomationPredicate.leafWithText = function(node) {
  */
 AutomationPredicate.leafWithWordStop = function(node) {
   function hasWordStop(node) {
-    if (node.role == Role.INLINE_TEXT_BOX)
+    if (node.role == Role.INLINE_TEXT_BOX) {
       return node.wordStarts && node.wordStarts.length;
+    }
 
     // Non-text objects  are treated as having a single word stop.
     return true;
@@ -269,8 +271,9 @@ AutomationPredicate.object = function(node) {
     return false;
 
   // Descend into large nodes.
-  if (node.name && node.name.length > constants.OBJECT_MAX_CHARCOUNT)
+  if (node.name && node.name.length > constants.OBJECT_MAX_CHARCOUNT) {
     return false;
+  }
 
   // Given no other information, ChromeVox wants to visit focusable
   // (e.g. tabindex=0) nodes only when it has a name or is a control.
@@ -339,12 +342,14 @@ AutomationPredicate.linebreak = function(first, second) {
  */
 AutomationPredicate.container = function(node) {
   // Math is never a container.
-  if (AutomationPredicate.math(node))
+  if (AutomationPredicate.math(node)) {
     return false;
+  }
 
   // Clickables (on Android) are not containers.
-  if (node.clickable)
+  if (node.clickable) {
     return false;
+  }
 
   return AutomationPredicate.match({
     anyRole: [
@@ -390,8 +395,9 @@ AutomationPredicate.root = function(node) {
     case Role.WINDOW:
       return true;
     case Role.DIALOG:
-      if (node.root.role != Role.DESKTOP)
+      if (node.root.role != Role.DESKTOP) {
         return !!node.modal;
+      }
 
       // The below logic handles nested dialogs properly in the desktop tree
       // like that found in a bubble view.
@@ -444,8 +450,9 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
     return true;
 
   // Ignore structural containres.
-  if (AutomationPredicate.structuralContainer(node))
+  if (AutomationPredicate.structuralContainer(node)) {
     return true;
+  }
 
   // Ignore nodes acting as labels for another control, that don't
   // have actionable descendants.
@@ -459,12 +466,14 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
     return true;
 
   // Don't ignore nodes with names or name-like attribute.
-  if (node.name || node.value || node.description || node.url)
+  if (node.name || node.value || node.description || node.url) {
     return false;
+  }
 
   // Don't ignore math nodes.
-  if (AutomationPredicate.math(node))
+  if (AutomationPredicate.math(node)) {
     return false;
+  }
 
   // Ignore some roles.
   return AutomationPredicate.leaf(node) && (AutomationPredicate.roles([
@@ -523,8 +532,9 @@ AutomationPredicate.cellLike =
  * @return {?AutomationPredicate.Unary} Returns null if not in a table.
  */
 AutomationPredicate.makeTableCellPredicate = function(start, opts) {
-  if (!opts.row && !opts.col)
+  if (!opts.row && !opts.col) {
     throw new Error('You must set either row or col to true');
+  }
 
   var dir = opts.dir || Dir.FORWARD;
 
@@ -532,8 +542,9 @@ AutomationPredicate.makeTableCellPredicate = function(start, opts) {
   var rowIndex = 0, colIndex = 0;
   var tableNode = start;
   while (tableNode) {
-    if (AutomationPredicate.table(tableNode))
+    if (AutomationPredicate.table(tableNode)) {
       break;
+    }
 
     if (AutomationPredicate.cellLike(tableNode)) {
       rowIndex = tableNode.tableCellRowIndex;
@@ -542,13 +553,15 @@ AutomationPredicate.makeTableCellPredicate = function(start, opts) {
 
     tableNode = tableNode.parent;
   }
-  if (!tableNode)
+  if (!tableNode) {
     return null;
+  }
 
   // Only support making a predicate for column ends.
   if (opts.end) {
-    if (!opts.col)
+    if (!opts.col) {
       throw 'Unsupported option.';
+    }
 
     if (dir == Dir.FORWARD) {
       return function(node) {
@@ -566,10 +579,12 @@ AutomationPredicate.makeTableCellPredicate = function(start, opts) {
   }
 
   // Adjust for the next/previous row/col.
-  if (opts.row)
+  if (opts.row) {
     rowIndex = dir == Dir.FORWARD ? rowIndex + 1 : rowIndex - 1;
-  if (opts.col)
+  }
+  if (opts.col) {
     colIndex = dir == Dir.FORWARD ? colIndex + 1 : colIndex - 1;
+  }
 
   return function(node) {
     return AutomationPredicate.cellLike(node) &&

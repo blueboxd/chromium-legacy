@@ -77,8 +77,9 @@ EventStreamLogger.prototype = {
    */
   notifyEventStreamFilterChangedAll: function(checked) {
     for (var type in EventType) {
-      if (localStorage[EventType[type]] == 'true')
+      if (localStorage[EventType[type]] == 'true') {
         this.notifyEventStreamFilterChanged(EventType[type], checked);
+      }
     }
   },
 };

@@ -33,8 +33,7 @@ base::FilePath GetTestFilePath(const base::FilePath& path) {
 class BundledExchangesParserFactoryTest : public testing::Test {
  public:
   BundledExchangesParserFactoryTest()
-      : factory_(std::make_unique<BundledExchangesParserFactory>(
-            /*service_ref=*/nullptr)) {}
+      : factory_(std::make_unique<BundledExchangesParserFactory>()) {}
 
   std::unique_ptr<mojom::BundleDataSource> CreateFileDataSource(
       mojo::PendingReceiver<mojom::BundleDataSource> receiver,

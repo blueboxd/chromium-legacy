@@ -86,10 +86,8 @@ WindowEventDispatcher::ObserverNotifier::~ObserverNotifier() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, public:
 
-WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host,
-                                             bool are_events_in_pixels)
+WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
     : host_(host),
-      are_events_in_pixels_(are_events_in_pixels),
       observer_manager_(this),
       event_targeter_(std::make_unique<WindowTargeter>()) {
   Env::GetInstance()->gesture_recognizer()->AddGestureEventHelper(this);
@@ -480,10 +478,8 @@ void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
   // The held events are already in |window()|'s coordinate system. So it is
   // not necessary to apply the transform to convert from the host's
   // coordinate system to |window()|'s coordinate system.
-  if (event->IsLocatedEvent() && !is_dispatched_held_event(*event) &&
-      are_events_in_pixels_) {
+  if (event->IsLocatedEvent() && !is_dispatched_held_event(*event))
     TransformEventForDeviceScaleFactor(static_cast<ui::LocatedEvent*>(event));
-  }
 
   observer_notifiers_.push(std::make_unique<ObserverNotifier>(this, *event));
 }

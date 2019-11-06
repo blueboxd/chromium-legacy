@@ -104,8 +104,9 @@ SelectToSpeakE2ETest.prototype = {
             return;
           }
           rootNode.addEventListener('loadComplete', function(evt) {
-            if (evt.target.root.url != url)
+            if (evt.target.root.url != url) {
               return;
+            }
             callback && callback(desktopRootNode);
             callback = null;
           });

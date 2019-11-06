@@ -269,6 +269,55 @@ void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
   }
 }
 
+// Add shill's Device properties to the given mojo NetworkConfiguration objects.
+// This adds the network interface and current IP configurations.
+void AddDeviceProperties(arc::mojom::NetworkConfiguration* network,
+                         const std::string& device_path) {
+  const auto* device = GetStateHandler()->GetDeviceState(device_path);
+  if (!device)
+    return;
+
+  network->network_interface = device->interface();
+
+  // IP configurations were already obtained through cached ONC properties.
+  if (network->ip_configs)
+    return;
+
+  std::vector<arc::mojom::IPConfigurationPtr> ip_configs;
+  for (const auto& kv : device->ip_configs()) {
+    auto ip_config = arc::mojom::IPConfiguration::New();
+    if (const std::string* r =
+            kv.second->FindStringPath(shill::kAddressProperty))
+      ip_config->ip_address = *r;
+    if (const std::string* r =
+            kv.second->FindStringPath(shill::kGatewayProperty))
+      ip_config->gateway = *r;
+    ip_config->routing_prefix =
+        kv.second->FindIntPath(shill::kPrefixlenProperty).value_or(0);
+    ip_config->type = (ip_config->routing_prefix < 64)
+                          ? arc::mojom::IPAddressType::IPV4
+                          : arc::mojom::IPAddressType::IPV6;
+    if (const base::Value* dns_list =
+            kv.second->FindListKey(shill::kNameServersProperty)) {
+      for (const auto& dnsValue : dns_list->GetList()) {
+        const std::string& dns = dnsValue.GetString();
+        if (dns.empty())
+          continue;
+
+        // When manually setting DNS, up to 4 addresses can be specified in the
+        // UI. Unspecified entries can show up as 0.0.0.0 and should be removed.
+        if (dns == "0.0.0.0")
+          continue;
+
+        ip_config->name_servers.push_back(dns);
+      }
+    }
+    ip_configs.push_back(std::move(ip_config));
+  }
+
+  network->ip_configs = std::move(ip_configs);
+}
+
 arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
     const chromeos::NetworkState* network_state,
     const base::DictionaryValue* dict) {
@@ -305,10 +354,7 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
   if (network_state) {
     mojo->connection_state =
         TranslateConnectionState(network_state->connection_state());
-    const chromeos::DeviceState* device_state =
-        GetStateHandler()->GetDeviceState(network_state->device_path());
-    if (device_state)
-      mojo->network_interface = device_state->interface();
+    AddDeviceProperties(mojo.get(), network_state->device_path());
   }
 
   return mojo;
@@ -335,7 +381,6 @@ const chromeos::NetworkState* GetShillBackedNetwork(
 // Convenience helper for translating a vector of NetworkState objects to a
 // vector of mojo NetworkConfiguration objects.
 std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
-    const std::string& default_network_path,
     const std::string& arc_vpn_path,
     const chromeos::NetworkStateHandler::NetworkStateList& network_states) {
   std::vector<arc::mojom::NetworkConfigurationPtr> networks;
@@ -355,7 +400,8 @@ std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
     }
     auto network = TranslateONCConfiguration(
         state, chromeos::network_util::TranslateNetworkStateToONC(state).get());
-    network->is_default_network = network_path == default_network_path;
+    network->is_default_network =
+        (network_path == GetStateHandler()->default_network_path());
     networks.push_back(std::move(network));
   }
   return networks;
@@ -553,8 +599,8 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
         kGetNetworksListLimit, &network_states);
   }
 
-  std::vector<mojom::NetworkConfigurationPtr> networks = TranslateNetworkStates(
-      default_network_path_, arc_vpn_service_path_, network_states);
+  std::vector<mojom::NetworkConfigurationPtr> networks =
+      TranslateNetworkStates(arc_vpn_service_path_, network_states);
   std::move(callback).Run(mojom::GetNetworksResponseType::New(
       arc::mojom::NetworkResult::SUCCESS, std::move(networks)));
 }
@@ -797,7 +843,6 @@ void ArcNetHostImpl::UpdateDefaultNetwork() {
 
   if (!default_network) {
     VLOG(1) << "No default network";
-    default_network_path_.clear();
     auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
                                                      DefaultNetworkChanged);
     if (net_instance)
@@ -807,7 +852,6 @@ void ArcNetHostImpl::UpdateDefaultNetwork() {
 
   VLOG(1) << "New default network: " << default_network->path() << " ("
           << default_network->type() << ")";
-  default_network_path_ = default_network->path();
   std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
   GetManagedConfigurationHandler()->GetProperties(
       user_id_hash, default_network->path(),
@@ -819,6 +863,15 @@ void ArcNetHostImpl::UpdateDefaultNetwork() {
 void ArcNetHostImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
   UpdateDefaultNetwork();
+
+  // If the the default network switched between two networks, also send an
+  // ActiveNetworkChanged notification to let ARC observe the switch.
+  chromeos::NetworkStateHandler::NetworkStateList network_states;
+  GetStateHandler()->GetActiveNetworkListByType(
+      chromeos::NetworkTypePattern::Default(), &network_states);
+  if (network_states.size() > 1) {
+    ActiveNetworksChanged(network_states);
+  }
 }
 
 void ArcNetHostImpl::DeviceListChanged() {
@@ -1046,8 +1099,7 @@ void ArcNetHostImpl::ActiveNetworksChanged(
     return;
 
   std::vector<arc::mojom::NetworkConfigurationPtr> network_configurations =
-      TranslateNetworkStates(default_network_path_, arc_vpn_service_path_,
-                             active_networks);
+      TranslateNetworkStates(arc_vpn_service_path_, active_networks);
   net_instance->ActiveNetworksChanged(std::move(network_configurations));
 }
 

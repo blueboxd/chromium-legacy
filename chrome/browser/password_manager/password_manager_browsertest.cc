@@ -3876,14 +3876,19 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   autofill::AutofillPopupController* controller =
       autofill_client->popup_controller_for_testing().get();
   ASSERT_TRUE(controller);
-  // Two credentials and "Manage passwords" should be displyed.
+  // Two credentials and "Manage passwords" should be displayed.
   EXPECT_EQ(3, controller->GetLineCount());
+
+  // Trigger user gesture so that autofill happens.
+  ASSERT_TRUE(content::ExecuteScript(
+      WebContents(), "document.getElementById('username_field').click();"));
+  WaitForElementValue("username_field", "admin");
 
   // Delete one credential. It should not be in the dropdown.
   password_store->RemoveLogin(admin_form);
   WaitForPasswordStore();
 
-  // Wait wor the refetch to finish.
+  // Wait for the refetch to finish.
   EXPECT_FALSE(autofill_client->popup_controller_for_testing());
   WaitForPasswordStore();
   // Reshow the dropdown.
@@ -3895,17 +3900,23 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_EQ(base::ASCIIToUTF16("user"), controller->GetElidedValueAt(0));
   EXPECT_NE(base::ASCIIToUTF16("admin"), controller->GetElidedValueAt(1));
 
+  // TODO(crbug.com/1004777): Here the username_field should get re-filled with
+  // "user" instead of "admin".
+  // WaitForElementValue("username_field", "user");
+
   // Delete all the credentials.
   password_store->RemoveLogin(user_form);
   WaitForPasswordStore();
 
-  // Wait wor the refetch to finish.
+  // Wait for the refetch to finish.
   EXPECT_FALSE(autofill_client->popup_controller_for_testing());
   WaitForPasswordStore();
   // Reshow the dropdown won't work because there is nothing to suggest.
   driver->ShowPasswordSuggestions(base::i18n::LEFT_TO_RIGHT, base::string16(),
                                   0, gfx::RectF());
   EXPECT_FALSE(autofill_client->popup_controller_for_testing());
+
+  WaitForElementValue("username_field", "");
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, FormDynamicallyChanged) {

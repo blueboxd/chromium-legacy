@@ -115,8 +115,13 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
   scoped_refptr<SOCKSSocketParams> socks_params;
 
   if (!proxy_server.is_direct()) {
+    // No need to use a NetworkIsolationKey for looking up the proxy's IP
+    // address. Cached proxy IP addresses doesn't really expose useful
+    // information to destination sites, and not caching them has a performance
+    // cost.
     auto proxy_tcp_params = base::MakeRefCounted<TransportSocketParams>(
-        proxy_server.host_port_pair(), disable_secure_dns, resolution_callback);
+        proxy_server.host_port_pair(), NetworkIsolationKey(),
+        disable_secure_dns, resolution_callback);
 
     if (proxy_server.is_http() || proxy_server.is_https() ||
         proxy_server.is_quic()) {
@@ -151,7 +156,8 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
     scoped_refptr<TransportSocketParams> ssl_tcp_params;
     if (proxy_server.is_direct()) {
       ssl_tcp_params = base::MakeRefCounted<TransportSocketParams>(
-          endpoint, disable_secure_dns, resolution_callback);
+          endpoint, network_isolation_key, disable_secure_dns,
+          resolution_callback);
     }
     auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
         std::move(ssl_tcp_params), std::move(socks_params),
@@ -176,7 +182,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
 
   DCHECK(proxy_server.is_direct());
   auto tcp_params = base::MakeRefCounted<TransportSocketParams>(
-      endpoint, disable_secure_dns, resolution_callback);
+      endpoint, network_isolation_key, disable_secure_dns, resolution_callback);
   return TransportConnectJob::CreateTransportConnectJob(
       std::move(tcp_params), request_priority, socket_tag,
       common_connect_job_params, delegate, nullptr /* net_log */);

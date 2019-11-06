@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "device/bluetooth/public/mojom/uuid.mojom.h"
 #include "services/data_decoder/public/mojom/ble_scan_parser.mojom.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace data_decoder {
 
@@ -31,8 +30,7 @@ enum class UuidFormat {
 
 class BleScanParserImpl : public mojom::BleScanParser {
  public:
-  explicit BleScanParserImpl(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  BleScanParserImpl();
   ~BleScanParserImpl() override;
 
   // mojom::BleScanParser:
@@ -51,8 +49,6 @@ class BleScanParserImpl : public mojom::BleScanParser {
       std::vector<device::BluetoothUUID>* service_uuids);
 
  private:
-  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
-
   DISALLOW_COPY_AND_ASSIGN(BleScanParserImpl);
 };
 

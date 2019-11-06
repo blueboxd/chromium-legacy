@@ -30,13 +30,10 @@ class HomeScreenControllerTest : public AshTestBase,
   HomeScreenControllerTest() {
     if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
-          {features::kHomerviewGesture,
-           features::kDragFromShelfToHomeOrOverview},
-          {});
+          {features::kDragFromShelfToHomeOrOverview}, {});
     } else {
       scoped_feature_list_.InitWithFeatures(
-          {}, {features::kHomerviewGesture,
-               features::kDragFromShelfToHomeOrOverview});
+          {}, {features::kDragFromShelfToHomeOrOverview});
     }
   }
   ~HomeScreenControllerTest() override = default;

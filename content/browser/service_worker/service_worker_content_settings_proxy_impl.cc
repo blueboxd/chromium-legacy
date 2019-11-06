@@ -72,6 +72,27 @@ void ServiceWorkerContentSettingsProxyImpl::AllowCacheStorage(
           render_frames));
 }
 
+void ServiceWorkerContentSettingsProxyImpl::AllowWebLocks(
+    AllowWebLocksCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // May be shutting down.
+  if (!context_wrapper_->browser_context()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  if (origin_.opaque()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  // |render_frames| is used to show UI for the frames affected by the
+  // content setting. However, service worker is not necessarily associated
+  // with frames or making the request on behalf of frames,
+  // so just pass an empty |render_frames|.
+  std::vector<GlobalFrameRoutingId> render_frames;
+  std::move(callback).Run(GetContentClient()->browser()->AllowWorkerWebLocks(
+      origin_.GetURL(), context_wrapper_->browser_context(), render_frames));
+}
+
 void ServiceWorkerContentSettingsProxyImpl::RequestFileSystemAccessSync(
     RequestFileSystemAccessSyncCallback callback) {
   mojo::ReportBadMessage(

@@ -12,22 +12,34 @@
 namespace ash {
 
 class AssistantViewDelegate;
+class AssistantWebViewDelegate;
+class AssistantWebView;
 
 // The container of assistant_web_view when Assistant web container is enabled.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
     : public views::WidgetDelegateView {
  public:
-  explicit AssistantWebContainerView(AssistantViewDelegate* delegate);
+  AssistantWebContainerView(
+      AssistantViewDelegate* assistant_view_delegate,
+      AssistantWebViewDelegate* web_container_view_delegate);
   ~AssistantWebContainerView() override;
 
   // views::WidgetDelegateView:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
 
+  void OnBackButtonPressed();
+
+  views::View* GetCaptionBarForTesting();
+
  private:
   void InitLayout();
 
-  AssistantViewDelegate* const delegate_;
+  AssistantViewDelegate* const assistant_view_delegate_;
+  AssistantWebViewDelegate* const web_container_view_delegate_;
+
+  // Owned by the views hierarchy.
+  AssistantWebView* assistant_web_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantWebContainerView);
 };

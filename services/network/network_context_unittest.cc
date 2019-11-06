@@ -357,7 +357,8 @@ class NetworkContextTest : public testing::Test {
  public:
   NetworkContextTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
-        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
+        network_change_notifier_(
+            net::NetworkChangeNotifier::CreateMockIfNeeded()),
         network_service_(NetworkService::CreateForTesting()) {}
   ~NetworkContextTest() override {}
 
@@ -1339,6 +1340,10 @@ TEST_F(NetworkContextTest, MultipleClearHttpCacheCalls) {
 }
 
 TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
+
   net::MockHttpCache mock_cache;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->http_cache_enabled = true;
@@ -1366,13 +1371,7 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
     EXPECT_EQ(i + 1, mock_cache.disk_cache()->GetExternalCacheHits().size());
 
     // Note: if this breaks check HttpCache::GenerateCacheKey() for changes.
-    std::string expected_key_prefix =
-        base::FeatureList::IsEnabled(
-            net::features::kSplitCacheByNetworkIsolationKey)
-            ? base::StrCat({"_dk_", key.ToString(), " "})
-            : "";
-    EXPECT_EQ(expected_key_prefix + test_url.spec(),
-              mock_cache.disk_cache()->GetExternalCacheHits().back());
+    EXPECT_EQ(test_url, mock_cache.disk_cache()->GetExternalCacheHits().back());
   }
 }
 

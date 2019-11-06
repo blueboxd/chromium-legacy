@@ -169,6 +169,8 @@ class FakePasswordAutofillAgent
   void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override {}
 
+  void InformNoSavedCredentials() override {}
+
   void FillIntoFocusedField(bool is_password,
                             const base::string16& credential) override {}
   void AnnotateFieldsWithParsingResult(

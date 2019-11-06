@@ -50,7 +50,9 @@ class AutoScanManager {
         SAConstants.Preference.AUTO_SCAN_KEYBOARD_TIME);
     const enabled = this.switchAccess_.getBooleanPreference(
         SAConstants.Preference.AUTO_SCAN_ENABLED);
-    if (enabled) this.start_();
+    if (enabled) {
+      this.start_();
+    }
   }
 
   /**
@@ -78,8 +80,12 @@ class AutoScanManager {
    * @param {boolean} enabled
    */
   setEnabled(enabled) {
-    if (this.isRunning()) this.stop_();
-    if (enabled) this.start_();
+    if (this.isRunning()) {
+      this.stop_();
+    }
+    if (enabled) {
+      this.start_();
+    }
   }
 
   /**
@@ -100,7 +106,9 @@ class AutoScanManager {
    */
   setKeyboardScanTime(scanTime) {
     this.keyboardScanTime_ = scanTime;
-    if (this.inKeyboard_) this.restartIfRunning();
+    if (this.inKeyboard_) {
+      this.restartIfRunning();
+    }
   }
 
   /**
@@ -129,7 +137,9 @@ class AutoScanManager {
    * @private
    */
   start_() {
-    if (this.defaultScanTime_ === SCAN_TIME_NOT_INITIALIZED) return;
+    if (this.defaultScanTime_ === SCAN_TIME_NOT_INITIALIZED) {
+      return;
+    }
 
     let currentScanTime = this.defaultScanTime_;
 

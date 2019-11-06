@@ -136,8 +136,9 @@ cvox.BrailleInputHandler.prototype = {
   onDisplayContentChanged: function(text, listener) {
     var valueSpan = text.getSpanInstanceOf(cvox.ValueSpan);
     var selectionSpan = text.getSpanInstanceOf(cvox.ValueSelectionSpan);
-    if (!(valueSpan && selectionSpan))
+    if (!(valueSpan && selectionSpan)) {
       return;
+    }
     // Don't call the old listener any further, since new content is being
     // set.  If the old listener is not cleared here, it could be called
     // spuriously if the entry state is cleared below.
@@ -152,8 +153,9 @@ cvox.BrailleInputHandler.prototype = {
       return;
     }
     var newTextBefore = text.toString().substring(valueStart, selectionStart);
-    if (this.currentTextBefore_ !== newTextBefore && this.entryState_)
+    if (this.currentTextBefore_ !== newTextBefore && this.entryState_) {
       this.entryState_.onTextBeforeChanged(newTextBefore);
+    }
     this.currentTextBefore_ = newTextBefore;
     this.currentTextAfter_ = text.toString().substring(selectionEnd, valueEnd);
     this.uncommittedCellsSpan_ = new cvox.ExtraCellsSpan();
@@ -173,8 +175,9 @@ cvox.BrailleInputHandler.prototype = {
    *     if it should propagate further.
    */
   onBrailleKeyEvent: function(event) {
-    if (event.command === cvox.BrailleKeyCommand.DOTS)
+    if (event.command === cvox.BrailleKeyCommand.DOTS) {
       return this.onBrailleDots_(/** @type {number} */ (event.brailleDots));
+    }
     // Any other braille command cancels the pending cells.
     this.pendingCells_.length = 0;
     if (event.command === cvox.BrailleKeyCommand.STANDARD_KEY) {
@@ -197,8 +200,9 @@ cvox.BrailleInputHandler.prototype = {
    *     The current expansion type.
    */
   getExpansionType: function() {
-    if (this.inAlwaysUncontractedContext_())
+    if (this.inAlwaysUncontractedContext_()) {
       return cvox.ExpandingBrailleTranslator.ExpansionType.ALL;
+    }
     if (this.entryState_ &&
         this.entryState_.translator ===
             this.translatorManager_.getDefaultTranslator()) {
@@ -229,11 +233,13 @@ cvox.BrailleInputHandler.prototype = {
       this.pendingCells_.push(dots);
       return true;
     }
-    if (!this.inputContext_)
+    if (!this.inputContext_) {
       return false;
+    }
     if (!this.entryState_) {
-      if (!(this.entryState_ = this.createEntryState_()))
+      if (!(this.entryState_ = this.createEntryState_())) {
         return false;
+      }
     }
     this.entryState_.appendCell(dots);
     return true;
@@ -263,8 +269,9 @@ cvox.BrailleInputHandler.prototype = {
    */
   createEntryState_: function() {
     var translator = this.translatorManager_.getDefaultTranslator();
-    if (!translator)
+    if (!translator) {
       return null;
+    }
     var uncontractedTranslator =
         this.translatorManager_.getUncontractedTranslator();
     var constructor = cvox.BrailleInputHandler.EditsEntryState_;
@@ -302,8 +309,9 @@ cvox.BrailleInputHandler.prototype = {
    */
   clearEntryState_: function() {
     if (this.entryState_) {
-      if (this.entryState_.usesUncommittedCells)
+      if (this.entryState_.usesUncommittedCells) {
         this.updateUncommittedCells_(new ArrayBuffer(0));
+      }
       this.entryState_.inputHandler_ = null;
       this.entryState_ = null;
     }
@@ -314,10 +322,12 @@ cvox.BrailleInputHandler.prototype = {
    * @private
    */
   updateUncommittedCells_: function(cells) {
-    if (this.uncommittedCellsSpan_)
+    if (this.uncommittedCellsSpan_) {
       this.uncommittedCellsSpan_.cells = cells;
-    if (this.uncommittedCellsChangedListener_)
+    }
+    if (this.uncommittedCellsChangedListener_) {
       this.uncommittedCellsChangedListener_();
+    }
   },
 
   /**
@@ -332,8 +342,9 @@ cvox.BrailleInputHandler.prototype = {
         port.sender.id !== cvox.BrailleInputHandler.IME_EXTENSION_ID_) {
       return;
     }
-    if (this.imePort_)
+    if (this.imePort_) {
       this.imePort_.disconnect();
+    }
     port.onDisconnect.addListener(this.onImeDisconnect_.bind(this, port));
     port.onMessage.addListener(this.onImeMessage_.bind(this));
     this.imePort_ = port;
@@ -356,8 +367,9 @@ cvox.BrailleInputHandler.prototype = {
       case 'inputContext':
         this.inputContext_ = message.context;
         this.clearEntryState_();
-        if (this.imeActive_ && this.inputContext_)
+        if (this.imeActive_ && this.inputContext_) {
           this.pendingCells_.forEach(this.onBrailleDots_, this);
+        }
         this.pendingCells_.length = 0;
         break;
       case 'brailleDots':
@@ -423,8 +435,9 @@ cvox.BrailleInputHandler.prototype = {
       // so that these keys work even if the Braille IME is not active.
       var keyName = /** @type {string} */ (event.standardKeyCode);
       var numericCode = cvox.BrailleKeyEvent.keyCodeToLegacyCode(keyName);
-      if (!goog.isDef(numericCode))
+      if (!goog.isDef(numericCode)) {
         throw Error('Unknown key code in event: ' + JSON.stringify(event));
+      }
       var keyEvent = {
         type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
         keyCode: numericCode,
@@ -562,19 +575,22 @@ cvox.BrailleInputHandler.EntryState_.prototype = {
   updateText_: function() {
     var cellsBuffer = new Uint8Array(this.cells_).buffer;
     var commit = this.lastCellIsBlank_;
-    if (!commit && this.usesUncommittedCells)
+    if (!commit && this.usesUncommittedCells) {
       this.inputHandler_.updateUncommittedCells_(cellsBuffer);
+    }
     this.translator_.backTranslate(cellsBuffer, function(result) {
       if (result === null) {
         console.error('Error when backtranslating braille cells');
         return;
       }
-      if (!this.inputHandler_)
+      if (!this.inputHandler_) {
         return;
+      }
       this.sendTextChange_(result);
       this.text_ = result;
-      if (commit)
+      if (commit) {
         this.inputHandler_.commitAndClearEntryState_();
+      }
     }.bind(this));
   },
 

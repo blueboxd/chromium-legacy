@@ -51,7 +51,10 @@ std::string ResolveLibraryPath(const std::string& library_name) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_path = Java_BundleUtils_getNativeLibraryPath(
       env, base::android::ConvertUTF8ToJavaString(env, library_name));
-  DCHECK(java_path);
+  // TODO(https://crbug.com/1019853): Remove this tolerance.
+  if (!java_path) {
+    return std::string();
+  }
   return base::android::ConvertJavaStringToUTF8(env, java_path);
 }
 
@@ -63,10 +66,13 @@ bool BundleUtils::IsBundle() {
 }
 
 // static
-void* BundleUtils::DlOpenModuleLibraryPartition(
-    const std::string& library_name) {
+void* BundleUtils::DlOpenModuleLibraryPartition(const std::string& library_name,
+                                                const std::string& partition) {
+  // TODO(https://crbug.com/1019853): Remove this tolerance.
   std::string library_path = ResolveLibraryPath(library_name);
-  std::string partition = base::FilePath(library_path).BaseName().value();
+  if (library_path.empty()) {
+    return nullptr;
+  }
 
   // Linear search is required here because the partition descriptors are not
   // ordered. If a large number of partitions come into existence, lld could be

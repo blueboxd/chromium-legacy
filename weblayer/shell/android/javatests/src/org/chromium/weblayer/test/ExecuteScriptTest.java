@@ -34,7 +34,8 @@ public class ExecuteScriptTest {
     @SmallTest
     public void testBasicScript() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(DATA_URL);
-        JSONObject result = mActivityTestRule.executeScriptSync("document.body.innerHTML");
+        JSONObject result = mActivityTestRule.executeScriptSync(
+                "document.body.innerHTML", true /* useSeparateIsolate */);
         Assert.assertEquals(result.getString(BrowserController.SCRIPT_RESULT_KEY), "foo");
     }
 
@@ -42,16 +43,27 @@ public class ExecuteScriptTest {
     @SmallTest
     public void testScriptIsolatedFromPage() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(DATA_URL);
-        JSONObject result = mActivityTestRule.executeScriptSync("bar");
+        JSONObject result =
+                mActivityTestRule.executeScriptSync("bar", true /* useSeparateIsolate */);
         Assert.assertTrue(result.isNull(BrowserController.SCRIPT_RESULT_KEY));
+    }
+
+    @Test
+    @SmallTest
+    public void testMainWorldScriptNotIsolatedFromPage() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(DATA_URL);
+        JSONObject result =
+                mActivityTestRule.executeScriptSync("bar", false /* useSeparateIsolate */);
+        Assert.assertEquals(result.getInt(BrowserController.SCRIPT_RESULT_KEY), 10);
     }
 
     @Test
     @SmallTest
     public void testScriptNotIsolatedFromOtherScript() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(DATA_URL);
-        mActivityTestRule.executeScriptSync("var foo = 20;");
-        JSONObject result = mActivityTestRule.executeScriptSync("foo");
+        mActivityTestRule.executeScriptSync("var foo = 20;", true /* useSeparateIsolate */);
+        JSONObject result =
+                mActivityTestRule.executeScriptSync("foo", true /* useSeparateIsolate */);
         Assert.assertEquals(result.getInt(BrowserController.SCRIPT_RESULT_KEY), 20);
     }
 
@@ -59,11 +71,12 @@ public class ExecuteScriptTest {
     @SmallTest
     public void testClearedOnNavigate() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(DATA_URL);
-        mActivityTestRule.executeScriptSync("var foo = 20;");
+        mActivityTestRule.executeScriptSync("var foo = 20;", true /* useSeparateIsolate */);
 
         String newUrl = UrlUtils.encodeHtmlDataUri("<html></html>");
         mActivityTestRule.navigateAndWait(newUrl);
-        JSONObject result = mActivityTestRule.executeScriptSync("foo");
+        JSONObject result =
+                mActivityTestRule.executeScriptSync("foo", true /* useSeparateIsolate */);
         Assert.assertTrue(result.isNull(BrowserController.SCRIPT_RESULT_KEY));
     }
 
@@ -73,9 +86,10 @@ public class ExecuteScriptTest {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(DATA_URL);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Null callback should not crash.
-            activity.getBrowserController().executeScript("null", null);
+            activity.getBrowserController().executeScript(
+                    "null", true /* useSeparateIsolate */, null);
         });
         // Execute a sync script to make sure the other script finishes.
-        mActivityTestRule.executeScriptSync("null");
+        mActivityTestRule.executeScriptSync("null", true /* useSeparateIsolate */);
     }
 }

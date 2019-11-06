@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.ContactEditor;
 import org.chromium.chrome.browser.payments.PaymentInstrument;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
+import org.chromium.components.payments.MethodStrings;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -649,7 +650,7 @@ class AssistantCollectUserDataBinder
     private void updateAvailablePaymentMethods(AssistantCollectUserDataModel model) {
         // Only enable 'basic-card' payment method.
         PaymentMethodData methodData = new PaymentMethodData();
-        methodData.supportedMethod = BasicCardUtils.BASIC_CARD_METHOD_NAME;
+        methodData.supportedMethod = MethodStrings.BASIC_CARD;
 
         // Apply basic-card filter if specified
         List<String> supportedBasicCardNetworks =
@@ -669,7 +670,7 @@ class AssistantCollectUserDataBinder
         }
 
         Map<String, PaymentMethodData> supportedPaymentMethods = new HashMap<>();
-        supportedPaymentMethods.put(BasicCardUtils.BASIC_CARD_METHOD_NAME, methodData);
+        supportedPaymentMethods.put(MethodStrings.BASIC_CARD, methodData);
         model.set(AssistantCollectUserDataModel.SUPPORTED_PAYMENT_METHODS, supportedPaymentMethods);
     }
 

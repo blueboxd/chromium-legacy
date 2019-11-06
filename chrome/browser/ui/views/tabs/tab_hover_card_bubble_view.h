@@ -7,12 +7,10 @@
 
 #include <memory>
 
-#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
-#include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace gfx {
@@ -28,8 +26,7 @@ class Widget;
 class Tab;
 
 // Dialog that displays an informational hover card containing page information.
-class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
-                               public ThumbnailImage::Observer {
+class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
  public:
   explicit TabHoverCardBubbleView(Tab* tab);
 
@@ -71,6 +68,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
   class WidgetFadeAnimationDelegate;
   class WidgetSlideAnimationDelegate;
   class FadeLabel;
+  class ThumbnailWatcher;
 
   // Get delay in milliseconds based on tab width.
   base::TimeDelta GetDelay(int tab_width) const;
@@ -83,19 +81,13 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
   // Update the text fade to the given percent, which should be between 0 and 1.
   void UpdateTextFade(double percent);
 
-  void RegisterToThumbnailImageUpdates(
-      scoped_refptr<ThumbnailImage> thumbnail_image);
-
+  void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image);
   void ClearPreviewImage();
 
   // Called when a hover card lands on the tab it's supposed to be a preview
   // for; happens immediately if there is no slide animation, otherwise when the
   // animation completes.
   void OnHoverCardLanded();
-
-  // ThumbnailImage::Observer:
-  void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) override;
-  base::Optional<gfx::Size> GetThumbnailSizeHint() const override;
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
@@ -109,6 +101,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
   std::unique_ptr<WidgetFadeAnimationDelegate> fade_animation_delegate_;
   // Used to animate the tab hover card's movement between tabs.
   std::unique_ptr<WidgetSlideAnimationDelegate> slide_animation_delegate_;
+  std::unique_ptr<ThumbnailWatcher> thumbnail_watcher_;
 
   // Timestamp of the last time a hover card was visible, recorded before it is
   // hidden. This is used for metrics.
@@ -130,12 +123,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
   // Counter used to keep track of the number of tab hover cards seen before a
   // tab is selected by mouse press.
   size_t hover_cards_seen_count_ = 0;
-  scoped_refptr<ThumbnailImage> thumbnail_image_;
-  ScopedObserver<ThumbnailImage, ThumbnailImage::Observer> thumbnail_observer_{
-      this};
   bool waiting_for_decompress_ = false;
-
-  base::WeakPtrFactory<TabHoverCardBubbleView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleView);
 };

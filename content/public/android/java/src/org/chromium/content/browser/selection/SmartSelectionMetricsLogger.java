@@ -13,6 +13,7 @@ import android.view.textclassifier.TextClassificationManager;
 import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.VerifiesOnP;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionMetricsLogger;
 
@@ -26,6 +27,7 @@ import org.chromium.content_public.browser.SelectionMetricsLogger;
  * that, we single tap on "City", Smart Selection reset get triggered, we need to log [1, 2). Spaces
  * are ignored but we count each punctuation mark as a word.
  */
+@VerifiesOnP
 @TargetApi(Build.VERSION_CODES.P)
 public class SmartSelectionMetricsLogger implements SelectionMetricsLogger {
     private static final String TAG = "SmartSelectionLogger";
@@ -38,7 +40,7 @@ public class SmartSelectionMetricsLogger implements SelectionMetricsLogger {
     private SelectionIndicesConverter mConverter;
 
     public static SmartSelectionMetricsLogger create(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P || context == null) {
+        if (context == null) {
             return null;
         }
         return new SmartSelectionMetricsLogger(context);

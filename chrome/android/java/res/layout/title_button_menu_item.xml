@@ -40,6 +40,9 @@
         android:src="?android:attr/listChoiceIndicatorMultiple" />
 
     <!-- Displays an icon. -->
+    <!-- TODO(twellington): Consider setting a default tint that adjusts when the item is disabled.
+         currently there are no menu items with icons that are visible but disabled so this behavior
+         is currently unused. -->
     <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/button"
         android:layout_width="56dp"

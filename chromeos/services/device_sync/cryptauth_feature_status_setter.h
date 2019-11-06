@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chromeos/components/multidevice/software_feature.h"
+#include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/network_request_error.h"
 
 namespace chromeos {
@@ -23,20 +24,6 @@ namespace device_sync {
 // with the CryptAuth v1 DeviceSync interface.
 class CryptAuthFeatureStatusSetter {
  public:
-  enum class FeatureStatusChange {
-    // Enables a feature on a device and disables the feature on all other
-    // devices associated with the account.
-    kEnableExclusively,
-
-    // Enables a feature on a device; other devices on the account are
-    // unaffected.
-    kEnableNonExclusively,
-
-    // Disables a feature on a device; other devices on the account are
-    // unaffected.
-    kDisable
-  };
-
   CryptAuthFeatureStatusSetter() = default;
   virtual ~CryptAuthFeatureStatusSetter() = default;
 

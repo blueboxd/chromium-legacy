@@ -39,38 +39,25 @@ SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
 void SoftwareOutputDeviceX11::Resize(const gfx::Size& pixel_size,
                                      float scale_factor) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // See comment in X11SoftwareBitmapPresenter::Resize
-  if (x11_software_bitmap_presenter_.Resize(pixel_size)) {
-    viewport_pixel_size_ = pixel_size;
-    surface_ = nullptr;
-  } else {
-    SoftwareOutputDevice::Resize(pixel_size, scale_factor);
-  }
+  viewport_pixel_size_ = pixel_size;
+  x11_software_bitmap_presenter_.Resize(pixel_size);
 }
 
 SkCanvas* SoftwareOutputDeviceX11::BeginPaint(const gfx::Rect& damage_rect) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   damage_rect_ = damage_rect;
-
-  auto* sk_canvas = x11_software_bitmap_presenter_.GetSkCanvas();
-
-  if (!sk_canvas)
-    sk_canvas = SoftwareOutputDevice::BeginPaint(damage_rect);
-  return sk_canvas;
+  return x11_software_bitmap_presenter_.GetSkCanvas();
 }
 
 void SoftwareOutputDeviceX11::EndPaint() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SoftwareOutputDevice::EndPaint();
-  x11_software_bitmap_presenter_.EndPaint(surface_, damage_rect_);
+  x11_software_bitmap_presenter_.EndPaint(damage_rect_);
 }
 
 void SoftwareOutputDeviceX11::OnSwapBuffers(
     SwapBuffersCallback swap_ack_callback) {
-  if (x11_software_bitmap_presenter_.ShmPoolReady())
-    x11_software_bitmap_presenter_.OnSwapBuffers(std::move(swap_ack_callback));
-  else
-    SoftwareOutputDevice::OnSwapBuffers(std::move(swap_ack_callback));
+  x11_software_bitmap_presenter_.OnSwapBuffers(std::move(swap_ack_callback));
 }
 
 int SoftwareOutputDeviceX11::MaxFramesPending() const {

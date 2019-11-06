@@ -68,7 +68,7 @@
 <translation id="174173592514158117">सर्व Play फोल्डर दाखवा</translation>
 <translation id="174937106936716857">एकूण फाईल संख्या</translation>
 <translation id="1775381402323441512">व्हिडिओ माहिती</translation>
-<translation id="180035236176489073">या फायली अॅक्सेस करण्‍यासाठी तुम्ही ऑनलाइन असणे आवश्यक आहे.</translation>
+<translation id="180035236176489073">या फायली ॲक्सेस करण्‍यासाठी तुम्ही ऑनलाइन असणे आवश्यक आहे.</translation>
 <translation id="1807938677607439181">सर्व फायली</translation>
 <translation id="1810764548349082891">कोणतेही पूर्वावलोकन उपलब्ध नाही</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />ताकीद:<ph name="END_BOLD" />  या फायली तात्पुरत्या आहेत आणि डिस्क स्थान मुक्त करण्‍यासाठी कदाचित स्वयंचलितपणे हटविल्या जातील.  <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
@@ -262,7 +262,7 @@
 <translation id="4193154014135846272">Google दस्तऐवज</translation>
 <translation id="4195249722193633765">Linux (बीटा) सह ॲप इंस्टॉल करा</translation>
 <translation id="4197674956721858839">झिप निवड</translation>
-<translation id="421017592316736757">या फाइल अॅक्सेस करण्‍यासाठी तुम्ही ऑनलाइन असणे आवश्यक आहे.</translation>
+<translation id="421017592316736757">या फाइल ॲक्सेस करण्‍यासाठी तुम्ही ऑनलाइन असणे आवश्यक आहे.</translation>
 <translation id="4212740939091998969">"<ph name="FOLDER_NAME" />" नावाचे फोल्डर आधीच अस्तित्वात आहे. कृपया वेगळे नाव निवडा.</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> चा बॅकअप घेत आहे</translation>
 <translation id="426015154560005552">अरेबिक कीबोर्ड</translation>
@@ -291,13 +291,13 @@
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> साठी परिणाम दाखवत आहे.</translation>
 <translation id="4631887759990505102">कलाकार</translation>
 <translation id="4656293982926141856">हा कॉंप्युटर</translation>
-<translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' च्या सदस्यांशी हे आयटम शेअर केले जात नाही तोवर त्यांना अॅक्सेस असणार नाही.</translation>
+<translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' च्या सदस्यांशी हे आयटम शेअर केले जात नाही तोवर त्यांना ॲक्सेस असणार नाही.</translation>
 <translation id="4690246192099372265">स्वीडिश</translation>
 <translation id="4693155481716051732">सुशी</translation>
 <translation id="4694604912444486114">माकड</translation>
 <translation id="4697043402264950621"><ph name="COLUMN_NAME" /> नुसार चढत्या क्रमाने क्रमवारी लावलेली फाइल सूची.</translation>
 <translation id="4711094779914110278">तुर्की</translation>
-<translation id="4713544552769165154">ही फाइल Macintosh सॉफ्टवेअर वापरून एका कॉंप्युटरसाठी डिझाइन केली आहे. ही Chrome OS चालवणार्‍या तुमच्या डिव्हाइसशी सुसंगत नाही. कृपया एका सोयीस्कर रिप्लेसमेंट अॅप साठी <ph name="BEGIN_LINK" />Chrome वेब स्टोअर<ph name="END_LINK" /> शोधा.<ph name="BEGIN_LINK_HELP" />अधिक जाणून घ्या<ph name="END_LINK_HELP" /></translation>
+<translation id="4713544552769165154">ही फाइल Macintosh सॉफ्टवेअर वापरून एका कॉंप्युटरसाठी डिझाइन केली आहे. ही Chrome OS चालवणार्‍या तुमच्या डिव्हाइसशी सुसंगत नाही. कृपया एका सोयीस्कर रिप्लेसमेंट ॲप साठी <ph name="BEGIN_LINK" />Chrome वेब स्टोअर<ph name="END_LINK" /> शोधा.<ph name="BEGIN_LINK_HELP" />अधिक जाणून घ्या<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> फोटोंचा बॅकअप घेतला</translation>
 <translation id="4725511304875193254">कॉर्गी</translation>
 <translation id="4732760563705710320">क्षमस्‍व, आपल्‍या कास्‍ट डिव्‍हाइसद्वारे हा व्‍हिडिओ समर्थित नाही.</translation>
@@ -363,7 +363,7 @@
 <translation id="5241298539944515331">व्हिएतनामी कीबोर्ड (VIQR)</translation>
 <translation id="5253070652067921974">ने तयार केली</translation>
 <translation id="5257456363153333584">ड्रॅगनफ्लाय</translation>
-<translation id="5262311848634918433"><ph name="MARKUP_1" />फायली कुठूनही अॅक्सेस करा, अगदी ऑफलाइन सुद्धा.<ph name="MARKUP_2" />
+<translation id="5262311848634918433"><ph name="MARKUP_1" />फायली कुठूनही ॲक्सेस करा, अगदी ऑफलाइन सुद्धा.<ph name="MARKUP_2" />
 Google ड्राइव्ह मधील फायली अपडेट केलेल्या आहेत आणि कोणत्याही डिव्हाइसवरून उपलब्ध होतात.<ph name="MARKUP_3" />
 <ph name="MARKUP_4" />तुमच्या फायली सुरक्षित ठेवा.<ph name="MARKUP_5" />
 तुमच्या डिव्हाइसला काहीही झाले तरीही, तुमच्या फायली Google ड्राइव्ह मध्ये सुरक्षितपणे स्टोअर केल्या आहेत.<ph name="MARKUP_6" />
@@ -462,7 +462,7 @@ Google ड्राइव्ह मधील फायली अपडेट क
 <translation id="6305012486838822927">लाओ कीबोर्ड</translation>
 <translation id="6339034549827494595">रशियन ध्वन्यात्मक (AATSEEL) कीबोर्ड</translation>
 <translation id="6339145975392024142">युएस इंटरनॅशनल (PC)</translation>
-<translation id="6346310558342052870">अॅक्सेस प्रतिबंधित केला</translation>
+<translation id="6346310558342052870">ॲक्सेस प्रतिबंधित केला</translation>
 <translation id="6353618411602605519">क्रोएशियन कीबोर्ड</translation>
 <translation id="6356685157277930264">फाइल फीडबॅक विंडो</translation>
 <translation id="6358884629796491903">ड्रॅगन</translation>
@@ -576,7 +576,7 @@ Google ड्राइव्ह मधील फायली अपडेट क
 <translation id="7765158879357617694">हलवा</translation>
 <translation id="7774365994322694683">पक्षी</translation>
 <translation id="7788080748068240085">"<ph name="FILE_NAME" />" ऑफलाइन सेव्ह करण्यासाठी तुम्ही अतिरिक्त <ph name="TOTAL_FILE_SIZE" /> जागा मोकळी करणे आवश्‍यक आहे:<ph name="MARKUP_1" /> 
-        <ph name="MARKUP_2" />तुम्हाला ऑफलाइन अॅक्सेस करण्‍याची यापुढे आवश्यकता नसलेल्या फायली अनपिन करा<ph name="MARKUP_3" />
+        <ph name="MARKUP_2" />तुम्हाला ऑफलाइन ॲक्सेस करण्‍याची यापुढे आवश्यकता नसलेल्या फायली अनपिन करा<ph name="MARKUP_3" />
         <ph name="MARKUP_4" />तुमच्या डाउनलोड फोल्डरमधून फायली हटवा<ph name="MARKUP_5" /></translation>
 <translation id="7794058097940213561">डिव्हाइस स्वरूपित करा</translation>
 <translation id="7799329977874311193">HTML दस्तऐवज</translation>
@@ -672,11 +672,11 @@ Google ड्राइव्ह मधील फायली अपडेट क
 <translation id="8722421161699219904">यूएस आंतरराष्ट्रीय कीबोर्ड</translation>
 <translation id="872537912056138402">क्रोएशियन</translation>
 <translation id="874420130893181774">पारंपारिक पिनयिन इनपुट पद्धत</translation>
-<translation id="8775404590947523323">तुमची संपादने अॉटोमॅटिकली सेव्ह केली जातात.<ph name="BREAKS" /> मूळ प्रतिमेची प्रत ठेवण्यासाठी मूळवर खाडाखोड करा अनचेक करा</translation>
+<translation id="8775404590947523323">तुमची संपादने ऑटोमॅटिकली सेव्ह केली जातात.<ph name="BREAKS" /> मूळ प्रतिमेची प्रत ठेवण्यासाठी मूळवर खाडाखोड करा अनचेक करा</translation>
 <translation id="8803496343472038847">रशियन Phonetic कीबोर्ड</translation>
 <translation id="8808686172382650546">मांजर</translation>
 <translation id="8810671769985673465">झिप करता आले नाही, आयटम अस्तित्वात आहे: "<ph name="FILE_NAME" />"</translation>
-<translation id="8834164572807951958">या आयटमच्या कॉपीवर '<ph name="DESTINATION_NAME" />' चे सदस्य अॅक्सेस मिळवतील.</translation>
+<translation id="8834164572807951958">या आयटमच्या कॉपीवर '<ph name="DESTINATION_NAME" />' चे सदस्य ॲक्सेस मिळवतील.</translation>
 <translation id="885381502874625531">बेलारुशियन कीबोर्ड</translation>
 <translation id="8860454412039442620">Excel स्प्रेडशीट</translation>
 <translation id="8900820606136623064">हंगेरियन</translation>
@@ -694,7 +694,7 @@ Google ड्राइव्ह मधील फायली अपडेट क
 <translation id="9110990317705400362">आम्ही तुमचे ब्राउझिंग सुरक्षित करण्यासाठी सातत्याने मार्ग शोधत आहोत. मागे, तुमच्या ब्राउझरमध्ये एक्स्टेंशन जोडण्यासाठी कोणतीही वेबसाइट तुम्हाला सूचित करू शकत होती. Google Chrome च्या नवीनतम आवृत्तीमध्ये, एक्स्टेंशन पेजद्वारे ते जोडून हे एक्स्टेंशन तुम्ही इंस्टॉल करू इच्छित आहात हे तुम्ही Chrome ला स्पष्टपणे सांगणे आवश्यक आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">कोडेक</translation>
 <translation id="9129931661813833980">फोल्डर पिन करा</translation>
-<translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' चे सदस्य या आयटमचा अॅक्सेस मिळवतील.</translation>
+<translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' चे सदस्य या आयटमचा ॲक्सेस मिळवतील.</translation>
 <translation id="9131598836763251128">एक किंवा अधिक फायली निवडा</translation>
 <translation id="9133055936679483811">झिप करणे अयशस्वी. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="9134524245363717059">ही फाइल Macintosh सॉफ्टवेअर वापरणार्‍या कॉंप्युटरचा डीझाइन केली आहे. ही Chrome OS चालवणार्‍या तुमच्या डिव्हाइसशी सुसंगत नाही. कृपया एका योग्य रिप्लेसमेंट अ‍ॅपसाठी Chrome वेब स्टोअर शोधा.</translation>

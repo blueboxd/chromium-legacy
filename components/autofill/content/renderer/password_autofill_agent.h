@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -126,6 +127,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // mojom::PasswordAutofillAgent:
   void FillPasswordForm(const PasswordFormFillData& form_data) override;
+  void InformNoSavedCredentials() override;
   void FillIntoFocusedField(bool is_password,
                             const base::string16& credential) override;
   void SetLoggingState(bool active) override;
@@ -532,13 +534,13 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   bool prefilled_username_metrics_logged_ = false;
 
   // Keeps autofilled values for the form elements.
-  std::map<unsigned /*unique renderer element id*/, blink::WebString>
+  std::map<unsigned /*renderer id*/, blink::WebString>
       autofilled_elements_cache_;
+  std::set<unsigned /*renderer id*/> all_autofilled_elements_;
   // Keeps forms structure (amount of elements, element types etc).
   // TODO(crbug/898109): It's too expensive to keep the whole FormData
   // structure. Replace FormData with a smaller structure.
-  std::map<unsigned /*unique renderer element id*/, FormStructureInfo>
-      forms_structure_cache_;
+  std::map<unsigned /*renderer id*/, FormStructureInfo> forms_structure_cache_;
 
   // Flag to prevent that multiple PasswordManager.FirstRendererFillingResult
   // UMA metrics are recorded per page load. This is reset on

@@ -158,8 +158,9 @@ PanelMenu.prototype = {
    */
   activateItem: function(itemIndex) {
     this.activeIndex_ = itemIndex;
-    if (this.activeIndex_ >= 0 && this.activeIndex_ < this.items_.length)
+    if (this.activeIndex_ >= 0 && this.activeIndex_ < this.items_.length) {
       this.items_[this.activeIndex_].element.focus();
+    }
   },
 
   /**
@@ -172,10 +173,11 @@ PanelMenu.prototype = {
       this.activeIndex_ =
           (this.activeIndex_ + this.items_.length) % this.items_.length;
     } else {
-      if (delta >= 0)
+      if (delta >= 0) {
         this.activeIndex_ = 0;
-      else
+      } else {
         this.activeIndex_ = this.items_.length - 1;
+      }
     }
 
     this.items_[this.activeIndex_].element.focus();
@@ -215,8 +217,9 @@ PanelMenu.prototype = {
    */
   getCallbackForElement: function(element) {
     for (var i = 0; i < this.items_.length; i++) {
-      if (element == this.items_[i].element)
+      if (element == this.items_[i].element) {
         return this.items_[i].callback;
+      }
     }
     return null;
   },
@@ -225,8 +228,9 @@ PanelMenu.prototype = {
    * Handles key presses for first letter accelerators.
    */
   onKeyPress_: function(evt) {
-    if (!this.items_.length)
+    if (!this.items_.length) {
       return;
+    }
 
     var query = String.fromCharCode(evt.charCode).toLowerCase();
     for (var i = this.activeIndex_ + 1; i != this.activeIndex_;
@@ -313,8 +317,9 @@ PanelNodeMenu.prototype = {
   findMoreNodes_: function() {
     while (this.walker_.next().node) {
       var node = this.walker_.node;
-      if (node == this.node_)
+      if (node == this.node_) {
         this.selectNext_ = true;
+      }
       if (this.pred_(node)) {
         var output = new Output();
         var range = cursors.Range.fromNode(node);

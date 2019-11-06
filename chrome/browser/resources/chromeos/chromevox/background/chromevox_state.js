@@ -34,8 +34,9 @@ ChromeVoxStateObserver.prototype = {
  * @constructor
  */
 ChromeVoxState = function() {
-  if (ChromeVoxState.instance)
+  if (ChromeVoxState.instance) {
     throw 'Trying to create two instances of singleton ChromeVoxState.';
+  }
   ChromeVoxState.instance = this;
 };
 

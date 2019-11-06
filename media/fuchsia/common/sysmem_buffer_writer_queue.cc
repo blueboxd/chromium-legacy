@@ -126,6 +126,10 @@ void SysmemBufferWriterQueue::ResetBuffers() {
   writer_.reset();
   send_packet_cb_ = SendPacketCB();
   end_of_stream_cb_ = EndOfStreamCB();
+
+  // Invalidate weak pointers, so ReleaseBuffer() is not called for the old
+  // buffers.
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void SysmemBufferWriterQueue::ResetPositionAndPause() {

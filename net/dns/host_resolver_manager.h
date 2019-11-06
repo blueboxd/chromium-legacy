@@ -203,6 +203,11 @@ class NET_EXPORT HostResolverManager
   // setting DnsConfig.
   void SetDnsClientForTesting(std::unique_ptr<DnsClient> dns_client);
 
+  // Sets the last IPv6 probe result for testing. Uses the standard timeout
+  // duration, so it's up to the test fixture to ensure it doesn't expire by
+  // mocking time, if expiration would pose a problem.
+  void SetLastIPv6ProbeResultForTesting(bool last_ipv6_probe_result);
+
   // Allows the tests to catch slots leaking out of the dispatcher.  One
   // HostResolverManager::Job could occupy multiple PrioritizedDispatcher job
   // slots.
@@ -375,6 +380,9 @@ class NET_EXPORT HostResolverManager
   // Results are cached, i.e. when called repeatedly this method returns result
   // from the first probe for some time before probing again.
   bool IsIPv6Reachable(const NetLogWithSource& net_log);
+
+  // Sets |last_ipv6_probe_result_| and updates |last_ipv6_probe_time_|.
+  void SetLastIPv6ProbeResult(bool last_ipv6_probe_result);
 
   // Attempts to connect a UDP socket to |dest|:53. Virtual for testing.
   virtual bool IsGloballyReachable(const IPAddress& dest,

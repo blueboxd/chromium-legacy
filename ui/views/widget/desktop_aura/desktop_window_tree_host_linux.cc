@@ -132,6 +132,10 @@ bool DesktopWindowTreeHostLinux::ContainsPointInXRegion(
   return GetPlatformWindowLinux()->ContainsPointInXRegion(point);
 }
 
+void DesktopWindowTreeHostLinux::LowerXWindow() {
+  GetPlatformWindowLinux()->LowerXWindow();
+}
+
 base::OnceClosure DesktopWindowTreeHostLinux::DisableEventListening() {
   // Allows to open multiple file-pickers. See https://crbug.com/678982
   modal_dialog_counter_++;

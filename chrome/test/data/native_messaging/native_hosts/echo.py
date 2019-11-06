@@ -13,6 +13,7 @@ import os
 import platform
 import sys
 import struct
+import time
 
 def WriteMessage(message):
   try:
@@ -29,6 +30,10 @@ def ParseArgs():
   parser.add_argument('--parent-window', type=int)
   parser.add_argument('--reconnect-command')
   parser.add_argument('--native-messaging-connect-id')
+  parser.add_argument('--extension-not-installed', action='store_true',
+                      default=False)
+  parser.add_argument('--invalid-connect-id', action='store_true',
+                      default=False)
   parser.add_argument('origin')
   return parser.parse_args()
 
@@ -41,6 +46,25 @@ def Main():
   if sys.argv[1] != args.origin:
     sys.stderr.write(
         "URL of the calling application is not specified as the first arg.\n")
+    return 1
+
+  if args.extension_not_installed:
+    with open('connect_id.txt', 'w') as f:
+      if args.reconnect_command:
+        f.write('Unexpected reconnect command: ' + args.reconnect_command)
+      else:
+        f.write('--connect-id=' + args.native_messaging_connect_id)
+    # The timeout in the test is 2 seconds, so sleep for longer than that to
+    # force a timeout.
+    time.sleep(5)
+    return 1
+
+  if args.invalid_connect_id:
+    with open('invalid_connect_id.txt', 'w') as f:
+      if args.reconnect_command:
+        f.write('Unexpected reconnect command: ' + args.reconnect_command)
+      else:
+        f.write('--invalid-connect-id')
     return 1
 
   # Verify that the process was started in the correct directory.

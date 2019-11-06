@@ -1,4 +1,5 @@
 # Copyright 2019 The Chromium Authors. All rights reserved.
+
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,7 +18,7 @@ import("//build/config/clang/clang.gni")
 # segment.  After linking, the segments are split apart using objcopy into
 # separate libraries.  The main library is then packaged with the application
 # as usual, while feature libraries may be packaged, delivered and loaded
-# separately.
+# separately (via an Android Dynamic Feature Module).
 #
 # When loading a feature library, the intended address of the library must be
 # supplied to the loader, so that it can be mapped to the memory location.  The
@@ -27,18 +28,15 @@ import("//build/config/clang/clang.gni")
 # The template instantiates targets for the base library, as well as each
 # specified partition, based on the root target name.  Example:
 #
-#   - monochrome            (base library)
-#   - monochrome_foo        (partition library for feature 'foo')
-#   - monochrome_bar        (partition library for feature 'bar')
+#   - libmonochrome            (base library)
+#   - libmonochrome_foo        (partition library for feature 'foo')
+#   - libmonochrome_bar        (partition library for feature 'bar')
 #
-# The base library is placed in the root output directory, but additional
-# feature libraries are placed in a subdirectory named according to the base
-# library.  This avoids name collisions, since feature library names are not
-# sensitive to the base library to which they are paired.  Example:
-#
-#   - out/libmonochrome.so
-#   - out/monochrome_partitions/libfoo.so
-#   - out/monochrome_partitions/libbar.so
+# Note that the feature library filenames are chosen based on the main
+# library's name (eg. libmonochrome_foo.so), but the soname of the feature
+# library is based on the feature name (eg. "foo").  This should generally be
+# okay, with the caveat that loading the library multiple times *might* cause
+# problems in Android.
 #
 # This template uses shared_library's default configurations.
 #
@@ -101,7 +99,7 @@ template("partitioned_shared_library") {
       if (defined(invoker.partition) && invoker.partition != "") {
         args += [
           "--partition",
-          "lib${invoker.partition}.so",
+          "${invoker.partition}",
         ]
       }
       args += [ rebase_path(sources[0], root_build_dir) ]
@@ -129,10 +127,10 @@ template("partitioned_shared_library") {
   # same directory.
   foreach(_partition, invoker.partitions) {
     partition_action("${target_name}_${_partition}") {
-      partition = _partition
-      _partition_dir = "$root_out_dir/${invoker.target_name}_partitions"
-      unstripped_output = "$_partition_dir/lib.unstripped/lib${partition}.so"
-      stripped_output = "$_partition_dir/lib${partition}.so"
+      partition = "${_partition}_partition"
+      stripped_output = "$root_out_dir/lib${_output_name}_${partition}.so"
+      unstripped_output =
+          "$root_out_dir/lib.unstripped/lib${_output_name}_${partition}.so"
     }
   }
 }

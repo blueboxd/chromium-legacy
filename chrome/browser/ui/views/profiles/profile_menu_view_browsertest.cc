@@ -644,6 +644,11 @@ class ProfileMenuClickTest : public SyncTest,
     scoped_feature_list_.InitAndEnableFeature(features::kProfileMenuRevamp);
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    test_signin_client_factory_ =
+        secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
+  }
+
   void SetUpOnMainThread() override {
     SyncTest::SetUpOnMainThread();
 
@@ -739,6 +744,9 @@ class ProfileMenuClickTest : public SyncTest,
     return static_cast<ProfileMenuViewBase*>(
         ProfileMenuViewBase::GetBubbleForTesting());
   }
+
+  secondary_account_helper::ScopedSigninClientFactory
+      test_signin_client_factory_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
@@ -945,13 +953,10 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
-// TODO(crbug.com/1015429): Failing on Mac 10.12.
-PROFILE_MENU_CLICK_TEST(
-    kActionableItems_WithUnconsentedPrimaryAccount,
-    DISABLED_ProfileMenuClickTest_WithUnconsentedPrimaryAccount) {
-  signin::MakeAccountAvailableWithCookies(identity_manager(),
-                                          &test_url_loader_factory_,
-                                          "user@example.com", "gaia_id");
+PROFILE_MENU_CLICK_TEST(kActionableItems_WithUnconsentedPrimaryAccount,
+                        ProfileMenuClickTest_WithUnconsentedPrimaryAccount) {
+  secondary_account_helper::SignInSecondaryAccount(
+      browser()->profile(), &test_url_loader_factory_, "user@example.com");
   UnconsentedPrimaryAccountChecker(identity_manager()).Wait();
   // Check that the setup was successful.
   ASSERT_FALSE(identity_manager()->HasPrimaryAccount());

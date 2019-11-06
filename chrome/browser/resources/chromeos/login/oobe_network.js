@@ -21,21 +21,30 @@ Polymer({
      * setup.
      * @type {boolean}
      */
-    isDemoModeSetup: false,
+    isDemoModeSetup: {
+      type: Boolean,
+      value: false,
+    },
 
     /**
      * Whether offline demo mode is enabled. If it is enabled offline setup
      * option will be shown in UI.
      * @type {boolean}
      */
-    offlineDemoModeEnabled: false,
+    offlineDemoModeEnabled: {
+      type: Boolean,
+      value: false,
+    },
 
     /**
      * Whether device is connected to the network.
      * @type {boolean}
      * @private
      */
-    isConnected_: false,
+    isConnected_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** Called when dialog is shown. */

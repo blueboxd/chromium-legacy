@@ -67,8 +67,7 @@ MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       audible_metrics_(GetAudibleMetrics()),
       session_controllers_manager_(this),
-      power_experiment_manager_(MediaPowerExperimentManager::Instance()),
-      weak_factory_(this) {}
+      power_experiment_manager_(MediaPowerExperimentManager::Instance()) {}
 
 MediaWebContentsObserver::~MediaWebContentsObserver() {
   // Remove all players so that the experiment manager is notified.
@@ -97,6 +96,9 @@ void MediaWebContentsObserver::RenderFrameDeleted(
     picture_in_picture_allowed_in_fullscreen_.reset();
     fullscreen_player_.reset();
   }
+
+  // Cancel any pending callbacks for players from this frame.
+  per_frame_factory_.erase(render_frame_host);
 }
 
 void MediaWebContentsObserver::MaybeUpdateAudibleState() {
@@ -364,7 +366,7 @@ void MediaWebContentsObserver::AddMediaPlayerEntry(
     power_experiment_manager_->PlayerStarted(
         id,
         base::BindRepeating(&MediaWebContentsObserver::OnExperimentStateChanged,
-                            weak_factory_.GetWeakPtr(), id));
+                            GetWeakPtrForFrame(id.render_frame_host), id));
   }
 }
 
@@ -448,6 +450,19 @@ void MediaWebContentsObserver::RemoveAllPlayers(
 void MediaWebContentsObserver::RemoveAllPlayers() {
   RemoveAllPlayers(&active_audio_players_);
   RemoveAllPlayers(&active_video_players_);
+}
+
+base::WeakPtr<MediaWebContentsObserver>
+MediaWebContentsObserver::GetWeakPtrForFrame(
+    RenderFrameHost* render_frame_host) {
+  auto iter = per_frame_factory_.find(render_frame_host);
+  if (iter != per_frame_factory_.end())
+    return iter->second->GetWeakPtr();
+
+  auto result = per_frame_factory_.emplace(std::make_pair(
+      render_frame_host,
+      std::make_unique<base::WeakPtrFactory<MediaWebContentsObserver>>(this)));
+  return result.first->second->GetWeakPtr();
 }
 
 }  // namespace content

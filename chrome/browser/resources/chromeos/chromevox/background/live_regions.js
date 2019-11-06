@@ -94,11 +94,13 @@ LiveRegions.prototype = {
 
     var currentRange = this.chromeVoxState_.currentRange;
 
-    if (!cvox.ChromeVox.isActive)
+    if (!cvox.ChromeVox.isActive) {
       return;
+    }
 
-    if (!currentRange)
+    if (!currentRange) {
       return;
+    }
 
     var webView = AutomationUtil.getTopLevelRoot(node);
     webView = webView ? webView.parent : null;
@@ -123,11 +125,13 @@ LiveRegions.prototype = {
       this.queueLiveRegionChange_(node);
     }
 
-    if ((all || removals) && type == TreeChangeType.NODE_REMOVED)
+    if ((all || removals) && type == TreeChangeType.NODE_REMOVED) {
       this.outputLiveRegionChange_(node, '@live_regions_removed');
+    }
 
-    if (type == TreeChangeType.SUBTREE_UPDATE_END)
+    if (type == TreeChangeType.SUBTREE_UPDATE_END) {
       this.processQueuedTreeChanges_();
+    }
   },
 
   /**
@@ -163,8 +167,9 @@ LiveRegions.prototype = {
    * @private
    */
   outputLiveRegionChange_: function(node, opt_prependFormatStr) {
-    if (node.containerLiveBusy)
+    if (node.containerLiveBusy) {
       return;
+    }
 
     while (node.containerLiveAtomic && !node.liveAtomic && node.parent)
       node = node.parent;
@@ -199,20 +204,24 @@ LiveRegions.prototype = {
     var queueTime = LiveRegions.LIVE_REGION_QUEUE_TIME_MS;
     var currentTime = new Date();
     var delta = currentTime - this.lastLiveRegionTime_;
-    if (delta > queueTime && !forceQueue)
+    if (delta > queueTime && !forceQueue) {
       output.withQueueMode(cvox.QueueMode.CATEGORY_FLUSH);
-    else
+    } else {
       output.withQueueMode(cvox.QueueMode.QUEUE);
+    }
 
-    if (opt_prependFormatStr)
+    if (opt_prependFormatStr) {
       output.format(opt_prependFormatStr);
+    }
     output.withSpeech(range, range, Output.EventType.NAVIGATE);
 
-    if (!output.hasSpeech && node.liveAtomic)
+    if (!output.hasSpeech && node.liveAtomic) {
       output.format('$joinedDescendants', node);
+    }
 
-    if (!output.hasSpeech)
+    if (!output.hasSpeech) {
       return;
+    }
 
     // We also have to add recursively the children of this live region node
     // since all children could potentially get described and we don't want to

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -118,10 +119,22 @@ AutofillSaveCardInfoBarDelegateMobile::GetIdentifier() const {
 
 bool AutofillSaveCardInfoBarDelegateMobile::ShouldExpire(
     const NavigationDetails& details) const {
+#if defined(OS_IOS)
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardDismissOnNavigation)) {
+    // Expire the Infobar unless the navigation was triggered by the form that
+    // presented the Infobar, or the navigation is a redirect.
+    return !details.is_form_submission && !details.is_redirect;
+  } else {
+    // Use the default behavior used by Android.
+    return false;
+  }
+#else   // defined(OS_IOS)
   // The user has submitted a form, causing the page to navigate elsewhere. We
   // don't want the infobar to be expired at this point, because the user won't
   // get a chance to answer the question.
   return false;
+#endif  // defined(OS_IOS)
 }
 
 void AutofillSaveCardInfoBarDelegateMobile::InfoBarDismissed() {

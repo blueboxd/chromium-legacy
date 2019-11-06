@@ -76,8 +76,7 @@ InstallableInkDrop::InstallableInkDrop(View* view)
     // Using CompositorAnimationRunner keeps our animation updates in sync with
     // compositor frames and avoids jank.
     animation_container_->SetAnimationRunner(
-        std::make_unique<CompositorAnimationRunner>(
-            view_->GetWidget()->GetCompositor()));
+        std::make_unique<CompositorAnimationRunner>(view_->GetWidget()));
   }
 }
 

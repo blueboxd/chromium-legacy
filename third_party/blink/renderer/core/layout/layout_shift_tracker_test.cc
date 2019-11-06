@@ -41,57 +41,6 @@ class LayoutShiftTrackerTest : public RenderingTest {
   }
 };
 
-TEST_F(LayoutShiftTrackerTest, SimpleBlockMovement) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #j { position: relative; width: 300px; height: 100px; }
-    </style>
-    <div id='j'></div>
-  )HTML");
-
-  EXPECT_EQ(0.0, GetLayoutShiftTracker().Score());
-  EXPECT_EQ(0.0, GetLayoutShiftTracker().OverallMaxDistance());
-
-  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
-                                                  AtomicString("top: 60px"));
-  UpdateAllLifecyclePhases();
-  // 300 * (100 + 60) * (60 / 800) / (default viewport size 800 * 600)
-  EXPECT_FLOAT_EQ(0.1 * (60.0 / 800.0), GetLayoutShiftTracker().Score());
-  EXPECT_FLOAT_EQ(60.0, GetLayoutShiftTracker().OverallMaxDistance());
-}
-
-TEST_F(LayoutShiftTrackerTest, Transform) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      body { margin: 0; }
-      #c { transform: translateX(-300px) translateY(-40px); }
-      #j { position: relative; width: 600px; height: 140px; }
-    </style>
-    <div id='c'>
-      <div id='j'></div>
-    </div>
-  )HTML");
-
-  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
-                                                  AtomicString("top: 60px"));
-  UpdateAllLifecyclePhases();
-  // (600 - 300) * (140 - 40 + 60) * (60 / 800) / (800 * 600)
-  EXPECT_FLOAT_EQ(0.1 * (60.0 / 800.0), GetLayoutShiftTracker().Score());
-}
-
-TEST_F(LayoutShiftTrackerTest, RtlDistance) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #j { position: relative; width: 100px; height: 100px; direction: rtl; }
-    </style>
-    <div id='j'></div>
-  )HTML");
-  GetDocument().getElementById("j")->setAttribute(
-      html_names::kStyleAttr, AtomicString("width: 70px; left: 10px"));
-  UpdateAllLifecyclePhases();
-  EXPECT_FLOAT_EQ(20.0, GetLayoutShiftTracker().OverallMaxDistance());
-}
-
 TEST_F(LayoutShiftTrackerTest, IgnoreAfterInput) {
   SetBodyInnerHTML(R"HTML(
     <style>

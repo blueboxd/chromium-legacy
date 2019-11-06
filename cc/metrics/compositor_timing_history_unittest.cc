@@ -122,7 +122,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_Commit) {
   AdvanceNowBy(begin_main_frame_queue_duration);
   timing_history_.BeginMainFrameStarted(Now());
   AdvanceNowBy(begin_main_frame_start_to_ready_to_commit_duration);
-  timing_history_.NotifyReadyToCommit();
+  timing_history_.NotifyReadyToCommit(nullptr);
   timing_history_.WillCommit();
   AdvanceNowBy(commit_duration);
   timing_history_.DidCommit();

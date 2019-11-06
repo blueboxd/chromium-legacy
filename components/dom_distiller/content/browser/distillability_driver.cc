@@ -50,9 +50,6 @@ DistillabilityDriver::DistillabilityDriver(content::WebContents* web_contents)
       latest_result_(base::nullopt) {
   if (!web_contents)
     return;
-  frame_interfaces_.AddInterface(
-      base::BindRepeating(&DistillabilityDriver::CreateDistillabilityService,
-                          base::Unretained(this)));
 }
 
 DistillabilityDriver::~DistillabilityDriver() {
@@ -77,13 +74,6 @@ void DistillabilityDriver::OnDistillability(
   latest_result_ = result;
   for (auto& observer : observers_)
     observer.OnResult(result);
-}
-
-void DistillabilityDriver::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  frame_interfaces_.TryBindInterface(interface_name, interface_pipe);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(DistillabilityDriver)

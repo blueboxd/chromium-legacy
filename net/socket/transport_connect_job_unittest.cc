@@ -56,8 +56,8 @@ class TransportConnectJobTest : public WithTaskEnvironment,
 
   static scoped_refptr<TransportSocketParams> DefaultParams() {
     return base::MakeRefCounted<TransportSocketParams>(
-        HostPortPair(kHostName, 80), false /* disable_secure_dns */,
-        OnHostResolutionCallback());
+        HostPortPair(kHostName, 80), NetworkIsolationKey(),
+        false /* disable_secure_dns */, OnHostResolutionCallback());
   }
 
  protected:
@@ -262,9 +262,9 @@ TEST_F(TransportConnectJobTest, DisableSecureDns) {
     TestConnectJobDelegate test_delegate;
     TransportConnectJob transport_connect_job(
         DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
-        base::MakeRefCounted<TransportSocketParams>(HostPortPair(kHostName, 80),
-                                                    disable_secure_dns,
-                                                    OnHostResolutionCallback()),
+        base::MakeRefCounted<TransportSocketParams>(
+            HostPortPair(kHostName, 80), NetworkIsolationKey(),
+            disable_secure_dns, OnHostResolutionCallback()),
         &test_delegate, nullptr /* net_log */);
     test_delegate.StartJobExpectingResult(&transport_connect_job, OK,
                                           false /* expect_sync_result */);

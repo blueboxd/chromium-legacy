@@ -204,12 +204,12 @@ class TabListMediator {
         void onTabSelecting(int tabId);
     }
 
-    @IntDef({TabClosedFrom.TAB_STRIP, TabClosedFrom.TAB_GRID_SHEET, TabClosedFrom.GRID_TAB_SWITCHER,
+    @IntDef({TabClosedFrom.TAB_STRIP, TabClosedFrom.GRID_TAB_SWITCHER,
             TabClosedFrom.GRID_TAB_SWITCHER_GROUP})
     @Retention(RetentionPolicy.SOURCE)
     private @interface TabClosedFrom {
         int TAB_STRIP = 0;
-        int TAB_GRID_SHEET = 1;
+        // int TAB_GRID_SHEET = 1;  // Obsolete
         int GRID_TAB_SWITCHER = 2;
         int GRID_TAB_SWITCHER_GROUP = 3;
         int NUM_ENTRIES = 4;
@@ -419,9 +419,6 @@ class TabListMediator {
                     switch (from) {
                         case TabClosedFrom.TAB_STRIP:
                             RecordUserAction.record("TabStrip.UndoCloseTab");
-                            break;
-                        case TabClosedFrom.TAB_GRID_SHEET:
-                            RecordUserAction.record("TabGridSheet.UndoCloseTab");
                             break;
                         case TabClosedFrom.GRID_TAB_SWITCHER:
                             RecordUserAction.record("GridTabSwitch.UndoCloseTab");
@@ -710,8 +707,6 @@ class TabListMediator {
         int from;
         if (fromComponent.equals(TabGroupUiCoordinator.COMPONENT_NAME)) {
             from = TabClosedFrom.TAB_STRIP;
-        } else if (fromComponent.equals(TabGridSheetCoordinator.COMPONENT_NAME)) {
-            from = TabClosedFrom.TAB_GRID_SHEET;
         } else if (fromComponent.equals(TabSwitcherCoordinator.COMPONENT_NAME)) {
             from = TabClosedFrom.GRID_TAB_SWITCHER;
         } else {

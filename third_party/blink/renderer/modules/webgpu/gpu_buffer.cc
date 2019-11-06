@@ -165,13 +165,10 @@ void GPUBuffer::OnMapAsyncCallback(ScriptPromiseResolver* resolver,
       resolver->Resolve(mapped_buffer_);
       break;
     case WGPUBufferMapAsyncStatus_Error:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kOperationError));
-      break;
     case WGPUBufferMapAsyncStatus_Unknown:
     case WGPUBufferMapAsyncStatus_DeviceLost:
-      resolver->Reject(
-          MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kOperationError));
       break;
     default:
       NOTREACHED();

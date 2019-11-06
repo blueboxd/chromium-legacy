@@ -49,8 +49,9 @@ ChromeVoxAutomationTreeWalkerTest.prototype = {
 
   isAncestor: function(ancestor, node) {
     while (node = node.parent) {
-      if (node === ancestor)
-      return true;
+      if (node === ancestor) {
+        return true;
+      }
     }
     return false;
   },
@@ -75,12 +76,13 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'MAYBE_Forward', function() {
       var cur = it.next().node;
       while (cur) {
         var isDescendant = this.isDescendant(cur, start);
-        if (it.phase == 'descendant')
+        if (it.phase == 'descendant') {
           assertTrue(isDescendant);
-        else if (it.phase == 'other')
+        } else if (it.phase == 'other') {
           assertFalse(isDescendant);
-        else
+        } else {
           assertNotReached();
+        }
         cur = it.next().node;
       }
     }
@@ -102,12 +104,13 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'MAYBE_Backward', function() {
       var cur = it.next().node;
       while (cur) {
         var isAncestor = this.isAncestor(cur, start);
-        if (it.phase == 'ancestor')
+        if (it.phase == 'ancestor') {
           assertTrue(isAncestor);
-        else if (it.phase == 'other')
+        } else if (it.phase == 'other') {
           assertFalse(isAncestor);
-        else
+        } else {
           assertNotReached();
+        }
         cur = it.next().node;
       }
     }

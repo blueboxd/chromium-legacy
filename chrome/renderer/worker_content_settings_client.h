@@ -32,8 +32,8 @@ class WorkerContentSettingsClient : public blink::WebContentSettingsClient {
   bool RequestFileSystemAccessSync() override;
   bool AllowIndexedDB() override;
   bool AllowCacheStorage() override;
+  bool AllowWebLocks() override;
   bool AllowRunningInsecureContent(bool allowed_per_settings,
-                                   const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;
   bool AllowScriptFromSource(bool enabled_per_settings,
                              const blink::WebURL& script_url) override;

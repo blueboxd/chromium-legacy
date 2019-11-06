@@ -84,7 +84,9 @@ class FocusRingManager {
    * @param {!SARootNode} group
    */
   setFocusNodes(primary, group) {
-    if (this.rings_.size === 0) return;
+    if (this.rings_.size === 0) {
+      return;
+    }
 
     if (primary instanceof BackButtonNode) {
       // TODO(anastasi): Use standard focus rings.

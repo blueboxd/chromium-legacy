@@ -220,8 +220,8 @@ class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
       // Write a fresh message, making our channel readable again.
       Channel::MessagePtr message = CreateDefaultMessage(false);
       client_thread_->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&Channel::Write, client_channel_,
-                                    base::Passed(&message)));
+          FROM_HERE,
+          base::BindOnce(&Channel::Write, client_channel_, std::move(message)));
 
       // Close the channel and wait for it to shutdown.
       client_channel_->ShutDown();
@@ -269,7 +269,7 @@ TEST(ChannelTest, PeerShutdownDuringRead) {
   Channel::MessagePtr message = CreateDefaultMessage(false);
   client_thread->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&Channel::Write, client_channel, base::Passed(&message)));
+      base::BindOnce(&Channel::Write, client_channel, std::move(message)));
 
   // Create a "server" Channel with the other end of the pipe, and process the
   // messages from it. The |server_delegate| will ShutDown the client end of

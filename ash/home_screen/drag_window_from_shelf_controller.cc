@@ -149,6 +149,10 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
     overview_session->OnWindowDragStarted(window_, /*animate=*/false);
     if (ShouldAllowSplitView())
       overview_session->SetSplitViewDragIndicatorsDraggedWindow(window_);
+    // Hide overview windows first and fade in the windows after delaying
+    // kShowOverviewTimeWhenDragSuspend.
+    overview_session->SetVisibleDuringWindowDragging(/*visible=*/false,
+                                                     /*animate=*/false);
   }
 
   // If overview is active, update its splitview indicator during dragging if
@@ -178,7 +182,8 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
                std::abs(scroll_y) > kShowOverviewThreshold) {
       // If the dragging velocity is large enough, hide overview windows.
       show_overview_timer_.Stop();
-      overview_session->SetVisibleDuringWindowDragging(/*visible=*/false);
+      overview_session->SetVisibleDuringWindowDragging(/*visible=*/false,
+                                                       /*animate=*/false);
     } else {
       // Otherwise start the |show_overview_timer_| to show and update overview
       // when the dragging slows down or stops.
@@ -488,7 +493,7 @@ void DragWindowFromShelfController::ShowOverviewDuringOrAfterDrag() {
     return;
 
   overview_controller->overview_session()->SetVisibleDuringWindowDragging(
-      /*visible=*/true);
+      /*visible=*/true, /*animate=*/true);
 }
 
 void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
@@ -496,8 +501,10 @@ void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
   for (auto* window : GetTransientTreeIterator(window_)) {
     // self-destructed when window transform animation is done.
     new WindowTransformToHomeScreenAnimation(
-        window, window == window_ ? base::make_optional(original_backdrop_mode_)
-                                  : base::nullopt);
+        window,
+        window == window_ ? base::make_optional(original_backdrop_mode_)
+                          : base::nullopt,
+        base::NullCallback());
   }
 }
 

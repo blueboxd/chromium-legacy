@@ -402,14 +402,7 @@ def _ParseOptions(argv):
   parser.add_option(
       '--java-version',
       help='Java language version to use in -source and -target args to javac.')
-  parser.add_option(
-      '--full-classpath',
-      action='append',
-      help='Classpath to use when annotation processors are present.')
-  parser.add_option(
-      '--interface-classpath',
-      action='append',
-      help='Classpath to use when no annotation processors are present.')
+  parser.add_option('--classpath', action='append', help='Classpath to use.')
   parser.add_option(
       '--processors',
       action='append',
@@ -462,9 +455,7 @@ def _ParseOptions(argv):
   build_utils.CheckOptions(options, parser, required=('jar_path',))
 
   options.bootclasspath = build_utils.ParseGnList(options.bootclasspath)
-  options.full_classpath = build_utils.ParseGnList(options.full_classpath)
-  options.interface_classpath = build_utils.ParseGnList(
-      options.interface_classpath)
+  options.classpath = build_utils.ParseGnList(options.classpath)
   options.processorpath = build_utils.ParseGnList(options.processorpath)
   options.processors = build_utils.ParseGnList(options.processors)
   options.java_srcjars = build_utils.ParseGnList(options.java_srcjars)
@@ -558,14 +549,6 @@ def main(argv):
   if options.bootclasspath:
     javac_cmd.extend(['-bootclasspath', ':'.join(options.bootclasspath)])
 
-  # Annotation processors crash when given interface jars.
-  active_classpath = (
-      options.full_classpath
-      if options.processors else options.interface_classpath)
-  classpath = []
-  if active_classpath:
-    classpath.extend(active_classpath)
-
   if options.processorpath:
     javac_cmd.extend(['-processorpath', ':'.join(options.processorpath)])
   if options.processor_args:
@@ -574,8 +557,8 @@ def main(argv):
 
   javac_cmd.extend(options.javac_arg)
 
-  classpath_inputs = (options.bootclasspath + options.interface_classpath +
-                      options.processorpath)
+  classpath_inputs = (
+      options.bootclasspath + options.classpath + options.processorpath)
 
   # GN already knows of java_files, so listing them just make things worse when
   # they change.
@@ -588,11 +571,11 @@ def main(argv):
       options.jar_path + '.info',
   ]
 
-  input_strings = javac_cmd + classpath + java_files
+  input_strings = javac_cmd + options.classpath + java_files
   if options.jar_info_exclude_globs:
     input_strings.append(options.jar_info_exclude_globs)
   build_utils.CallAndWriteDepfileIfStale(
-      lambda: _OnStaleMd5(options, javac_cmd, java_files, classpath),
+      lambda: _OnStaleMd5(options, javac_cmd, java_files, options.classpath),
       options,
       depfile_deps=depfile_deps,
       input_paths=input_paths,

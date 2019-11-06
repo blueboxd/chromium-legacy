@@ -195,8 +195,9 @@ void SingleThreadProxy::DoCommit() {
 
     layer_tree_host_->FinishCommitOnImplThread(host_impl_.get());
 
-    if (scheduler_on_impl_thread_)
+    if (scheduler_on_impl_thread_) {
       scheduler_on_impl_thread_->DidCommit();
+    }
 
     IssueImageDecodeFinishedCallbacks();
     host_impl_->CommitComplete();
@@ -872,8 +873,10 @@ void SingleThreadProxy::DoPainting() {
   // TODO(enne): SingleThreadProxy does not support cancelling commits yet,
   // search for CommitEarlyOutReason::FINISHED_NO_UPDATES inside
   // thread_proxy.cc
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->NotifyReadyToCommit();
+  if (scheduler_on_impl_thread_) {
+    scheduler_on_impl_thread_->NotifyReadyToCommit(
+        layer_tree_host_->begin_main_frame_metrics());
+  }
 }
 
 void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(

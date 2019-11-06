@@ -55,7 +55,6 @@ device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
       device::mojom::XRRuntimeSessionOptions::New();
   runtime_options->immersive = options->immersive;
   runtime_options->environment_integration = options->environment_integration;
-  runtime_options->is_legacy_webvr = options->is_legacy_webvr;
   return runtime_options;
 }
 
@@ -392,14 +391,6 @@ void VRServiceImpl::ShowConsentPrompt(
 #if defined(OS_WIN)
   DCHECK(!options->environment_integration);
 #endif
-
-  // WebVR did not require permissions.
-  // TODO(crbug.com/968221): Address privacy requirements for inline sessions
-  if (options->is_legacy_webvr) {
-    DoRequestSession(std::move(options), std::move(callback), runtime,
-                     std::move(requested_features));
-    return;
-  }
 
   XrConsentPromptLevel consent_level =
       GetRequiredConsentLevel(options->immersive, runtime, requested_features);

@@ -7,15 +7,16 @@
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
-#include "chrome/browser/notifications/stub_notification_display_service.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_test_base.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/sync/protocol/sharing_shared_clipboard_message.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace {
 
@@ -33,7 +34,7 @@ class SharedClipboardMessageHandlerTest : public SharedClipboardTestBase {
   void SetUp() override {
     SharedClipboardTestBase::SetUp();
     message_handler_ = std::make_unique<SharedClipboardMessageHandlerDesktop>(
-        sharing_service_.get(), notification_display_service_.get());
+        sharing_service_.get(), &profile_);
   }
 
   chrome_browser_sharing::SharingMessage CreateMessage(std::string guid,

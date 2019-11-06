@@ -410,6 +410,8 @@ jumbo_static_library("extensions") {
     "api/webrtc_desktop_capture_private/webrtc_desktop_capture_private_api.h",
     "api/webrtc_logging_private/webrtc_logging_private_api.cc",
     "api/webrtc_logging_private/webrtc_logging_private_api.h",
+    "api/webstore_private/extension_install_status.cc",
+    "api/webstore_private/extension_install_status.h",
     "api/webstore_private/webstore_private_api.cc",
     "api/webstore_private/webstore_private_api.h",
     "app_data_migrator.cc",
@@ -1044,6 +1046,7 @@ jumbo_static_library("extensions") {
       "default_apps.cc",
       "default_apps.h",
     ]
+    deps += [ "//components/keep_alive_registry" ]
     if (is_posix) {
       sources += [ "api/messaging/native_process_launcher_posix.cc" ]
     }

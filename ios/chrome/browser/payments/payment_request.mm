@@ -21,6 +21,7 @@
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/features.h"
+#include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_item.h"
 #include "components/payments/core/payment_request_data_util.h"
@@ -386,7 +387,7 @@ PaymentRequest::CreateAndAddAutofillPaymentInstrument(
   // the name of the network directly.
   std::string method_name = basic_card_issuer_network;
   if (basic_card_specified_networks_.count(basic_card_issuer_network)) {
-    method_name = "basic-card";
+    method_name = methods::kBasicCard;
   }
 
   // The total number of card types: credit, debit, prepaid, unknown.
@@ -632,8 +633,8 @@ void PaymentRequest::RecordRequestedInformation() {
       request_payer_name());
 
   // Log metrics around which payment methods are requested by the merchant.
-  const GURL kGooglePayUrl("https://google.com/pay");
-  const GURL kAndroidPayUrl("https://android.com/pay");
+  const GURL kGooglePayUrl(methods::kGooglePay);
+  const GURL kAndroidPayUrl(methods::kAndroidPay);
 
   // Looking for payment methods that are NOT Google-related as well as the
   // Google-related ones.

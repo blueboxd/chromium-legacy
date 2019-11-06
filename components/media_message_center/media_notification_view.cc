@@ -157,12 +157,14 @@ MediaNotificationView::MediaNotificationView(
   title_label->SetFontList(base_font_list.Derive(
       0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM));
   title_label->SetLineHeight(kTitleArtistLineHeight);
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_ = title_artist_row_->AddChildView(std::move(title_label));
 
   auto artist_label = std::make_unique<views::Label>(
       base::string16(), views::style::CONTEXT_LABEL,
       views::style::STYLE_PRIMARY);
   artist_label->SetLineHeight(kTitleArtistLineHeight);
+  artist_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   artist_label_ = title_artist_row_->AddChildView(std::move(artist_label));
 
   // |button_row_| contains the buttons for controlling playback.

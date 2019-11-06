@@ -52,7 +52,7 @@ TEST_P(NativeStructTest, NativeStruct) {
   test::TestNativeStruct s("hello world", 5, 42);
   base::RunLoop loop;
   remote()->PassNativeStruct(
-      s, base::Bind(
+      s, base::BindOnce(
              [](test::TestNativeStruct* expected_struct, base::RunLoop* loop,
                 const test::TestNativeStruct& passed) {
                EXPECT_EQ(expected_struct->message(), passed.message());
@@ -72,7 +72,7 @@ TEST_P(NativeStructTest, NativeStructWithAttachments) {
   base::RunLoop loop;
   remote()->PassNativeStructWithAttachments(
       std::move(s),
-      base::Bind(
+      base::BindOnce(
           [](const std::string& expected_message,
              mojo::ScopedMessagePipeHandle peer_pipe, base::RunLoop* loop,
              test::TestNativeStructWithAttachments passed) {
@@ -90,7 +90,7 @@ TEST_P(NativeStructTest, NativeStructWithAttachments) {
             EXPECT_EQ("ping", std::string(bytes.begin(), bytes.end()));
             loop->Quit();
           },
-          kTestMessage, base::Passed(&pipe.handle1), &loop));
+          kTestMessage, std::move(pipe.handle1), &loop));
   loop.Run();
 }
 

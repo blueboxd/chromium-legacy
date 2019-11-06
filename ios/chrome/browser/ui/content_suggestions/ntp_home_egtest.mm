@@ -407,6 +407,11 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // and moved up, the scroll position restored is the position before the omnibox
 // is selected.
 - (void)testPositionRestoredWithOmniboxFocused {
+// TODO(crbug.com/1021649): Enable this test.
+#if defined(CHROME_EARL_GREY_2)
+  EARL_GREY_TEST_DISABLED(@"Fails with EG2");
+#endif
+
   [self addMostVisitedTile];
 
   // Add suggestions to be able to scroll on iPad.

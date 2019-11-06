@@ -9,7 +9,9 @@
 It can also be run stand-alone as a convenient way of installing a well-tested
 near-tip-of-tree clang version:
 
-  $ curl -s https://raw.githubusercontent.com/chromium/chromium/master/tools/clang/scripts/update.py | python - --clang-dir=.
+  $ curl -s https://raw.githubusercontent.com/chromium/chromium/master/tools/clang/scripts/update.py | python - --output-dir=/tmp/clang
+
+(Note that the output dir may be deleted and re-created if it exists.)
 """
 
 # TODO: Running stand-alone won't work on Windows due to the dia dll copying.
@@ -167,14 +169,29 @@ def GetPlatformUrlPrefix(platform):
   return CDS_URL + '/Linux_x64/'
 
 
-def DownloadAndUnpackClangPackage(platform, output_dir, path_prefixes=None):
+def DownloadAndUnpackPackage(package_file, output_dir):
+  cds_file = "%s-%s.tgz" % (package_file, PACKAGE_VERSION)
+  cds_full_url = GetPlatformUrlPrefix(sys.platform) + cds_file
+  try:
+    DownloadAndUnpack(cds_full_url, output_dir)
+  except URLError:
+    print('Failed to download prebuilt clang package %s' % cds_file)
+    print('Use build.py if you want to build locally.')
+    print('Exiting.')
+    sys.exit(1)
+
+
+# TODO(hans): Create a clang-win-runtime package instead.
+def DownloadAndUnpackClangWinRuntime(output_dir):
   cds_file = "clang-%s.tgz" %  PACKAGE_VERSION
-  cds_full_url = GetPlatformUrlPrefix(platform) + cds_file
+  cds_full_url = GetPlatformUrlPrefix('win32') + cds_file
+  path_prefixes =  [ 'lib/clang/' + RELEASE_VERSION + '/lib/',
+                     'bin/llvm-symbolizer.exe' ]
   try:
     DownloadAndUnpack(cds_full_url, output_dir, path_prefixes)
   except URLError:
     print('Failed to download prebuilt clang %s' % cds_file)
-    print('Use --force-local-build if you want to build locally.')
+    print('Use build.py if you want to build locally.')
     print('Exiting.')
     sys.exit(1)
 
@@ -231,19 +248,46 @@ def CopyDiaDllTo(target_dir):
   CopyFile(dia_dll, target_dir)
 
 
-def UpdateClang():
-  GCLIENT_CONFIG = os.path.join(os.path.dirname(CHROMIUM_DIR), '.gclient')
+def UpdatePackage(package_name):
+  stamp_file = None
+  package_file = None
 
-  # Read target_os from .gclient so we know which non-native runtimes we need.
-  # TODO(pcc): See if we can download just the runtimes instead of the entire
-  # clang package, and do that from DEPS instead of here.
+  stamp_file = os.path.join(LLVM_BUILD_DIR, package_name + '_revision')
+  if package_name == 'clang':
+    stamp_file = STAMP_FILE
+    package_file = 'clang'
+  elif package_name == 'lld_mac':
+    package_file = 'lld'
+    if sys.platform != 'darwin':
+      print('The lld_mac package cannot be downloaded on non-macs.')
+      print('On non-mac, lld is included in the clang package.')
+      return 1
+  elif package_name == 'objdump':
+    package_file = 'llvmobjdump'
+  elif package_name == 'translation_unit':
+    package_file = 'translation_unit'
+  elif package_name == 'coverage_tools':
+    stamp_file = os.path.join(LLVM_BUILD_DIR, 'cr_coverage_revision')
+    package_file = 'llvm-code-coverage'
+  elif package_name == 'libclang':
+    package_file = 'libclang'
+  else:
+    print('Unknown package: "%s".' % package_name)
+    return 1
+
+  assert stamp_file is not None
+  assert package_file is not None
+
+  # TODO(hans): Create a clang-win-runtime package and use separate DEPS hook.
   target_os = []
-  try:
-    env = {}
-    execfile(GCLIENT_CONFIG, env, env)
-    target_os = env.get('target_os', target_os)
-  except:
-    pass
+  if package_name == 'clang':
+    try:
+      GCLIENT_CONFIG = os.path.join(os.path.dirname(CHROMIUM_DIR), '.gclient')
+      env = {}
+      execfile(GCLIENT_CONFIG, env, env)
+      target_os = env.get('target_os', target_os)
+    except:
+      pass
 
   if os.path.exists(OLD_STAMP_FILE):
     # Delete the old stamp file so it doesn't look like an old version of clang
@@ -252,34 +296,35 @@ def UpdateClang():
     os.remove(OLD_STAMP_FILE)
 
   expected_stamp = ','.join([PACKAGE_VERSION] + target_os)
-  if ReadStampFile(STAMP_FILE) == expected_stamp:
+  if ReadStampFile(stamp_file) == expected_stamp:
     return 0
 
-  if os.path.exists(LLVM_BUILD_DIR):
+  # Updating the main clang package nukes the output dir. Any other packages
+  # need to be updated *after* the clang package.
+  if package_name == 'clang' and os.path.exists(LLVM_BUILD_DIR):
     RmTree(LLVM_BUILD_DIR)
 
-  DownloadAndUnpackClangPackage(sys.platform, LLVM_BUILD_DIR)
-  if 'win' in target_os:
-    # When doing win/cross builds on other hosts, get the Windows runtime
-    # libraries, and llvm-symbolizer.exe (needed in asan builds).
-    path_prefixes =  [ 'lib/clang/' + RELEASE_VERSION + '/lib/',
-                       'bin/llvm-symbolizer.exe' ]
-    DownloadAndUnpackClangPackage('win32', LLVM_BUILD_DIR,
-                                  path_prefixes=path_prefixes)
-  if sys.platform == 'win32':
-    CopyDiaDllTo(os.path.join(LLVM_BUILD_DIR, 'bin'))
-  WriteStampFile(expected_stamp, STAMP_FILE)
+  DownloadAndUnpackPackage(package_file, LLVM_BUILD_DIR)
 
+  if package_name == 'clang':
+    if sys.platform == 'win32':
+      CopyDiaDllTo(os.path.join(LLVM_BUILD_DIR, 'bin'))
+    if 'win' in target_os:
+      # When doing win/cross builds on other hosts, get the Windows runtime
+      # libraries, and llvm-symbolizer.exe (needed in asan builds).
+      DownloadAndUnpackClangWinRuntime(LLVM_BUILD_DIR)
+
+  WriteStampFile(expected_stamp, stamp_file)
   return 0
 
 
 def main():
-  # TODO: Add an argument to download optional packages and remove the various
-  # download_ scripts we currently have for that.
-
   parser = argparse.ArgumentParser(description='Update clang.')
-  parser.add_argument('--clang-dir',
-                      help='Where to extract the clang package.')
+  parser.add_argument('--output-dir',
+                      help='Where to extract the package.')
+  parser.add_argument('--package',
+                      help='What package to update (default: clang)',
+                      default='clang')
   parser.add_argument('--force-local-build', action='store_true',
                       help='(no longer used)')
   parser.add_argument('--print-revision', action='store_true',
@@ -324,12 +369,12 @@ def main():
     print('--llvm-force-head-revision can only be used for --print-revision')
     return 1
 
-  if args.clang_dir:
+  if args.output_dir:
     global LLVM_BUILD_DIR, STAMP_FILE
-    LLVM_BUILD_DIR = os.path.abspath(args.clang_dir)
+    LLVM_BUILD_DIR = os.path.abspath(args.output_dir)
     STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 
-  return UpdateClang()
+  return UpdatePackage(args.package)
 
 
 if __name__ == '__main__':

@@ -69,8 +69,7 @@ void NetworkFetcher::PostRequestComplete() {
 void NetworkFetcher::DownloadToFileComplete() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   std::move(download_to_file_complete_callback_)
-      .Run(network_fetcher_->GetFilePath(), network_fetcher_->GetNetError(),
-           network_fetcher_->GetContentSize());
+      .Run(network_fetcher_->GetNetError(), network_fetcher_->GetContentSize());
 }
 
 NetworkFetcherFactory::NetworkFetcherFactory()

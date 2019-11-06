@@ -680,7 +680,7 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
       return {"ObsoleteWebRtcCipherSuite", kM81,
               String::Format(
                   "Your partner is negotiating an obsolete (D)TLS version. "
-                  "Support for this will be removed in %s"
+                  "Support for this will be removed in %s. "
                   "Please check with your partner to have this fixed.",
                   MilestoneString(kM81))};
 

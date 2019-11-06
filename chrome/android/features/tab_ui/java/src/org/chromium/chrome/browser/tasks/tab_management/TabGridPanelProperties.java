@@ -14,7 +14,7 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * List of properties used by TabGridSheet and TabGridDialog.
+ * List of properties used by TabGridDialog.
  */
 class TabGridPanelProperties {
     public static final PropertyModel

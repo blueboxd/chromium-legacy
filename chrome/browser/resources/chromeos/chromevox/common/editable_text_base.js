@@ -650,8 +650,9 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChangedHelper = function(
   var triggeredByUser = evt.triggeredByUser;
 
   if (insertedLen > 1) {
-    if (!cvox.ChromeVoxEditableTextBase.shouldSpeakInsertions)
+    if (!cvox.ChromeVoxEditableTextBase.shouldSpeakInsertions) {
       return;
+    }
     utterance = inserted;
   } else if (insertedLen == 1) {
     if ((cvox.ChromeVox.typingEcho == cvox.TypingEcho.WORD ||

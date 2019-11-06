@@ -332,6 +332,29 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   self.shouldDismissAfterTouchesEnded = YES;
 }
 
+#pragma mark - Getters/Setters
+
+- (void)setTitleText:(NSString*)titleText {
+  _titleText = titleText;
+  if (self.titleLabel) {
+    self.titleLabel.text = _titleText;
+  }
+}
+
+- (void)setSubTitleText:(NSString*)subTitleText {
+  _subTitleText = subTitleText;
+  if (self.subTitleLabel) {
+    self.subTitleLabel.text = _subTitleText;
+  }
+}
+
+- (void)setButtonText:(NSString*)buttonText {
+  _buttonText = buttonText;
+  if (self.infobarButton) {
+    [self.infobarButton setTitle:_buttonText forState:UIControlStateNormal];
+  }
+}
+
 #pragma mark - Private Methods
 
 - (void)bannerInfobarButtonWasPressed:(UIButton*)sender {

@@ -47,6 +47,8 @@ enum OverviewAnimationType {
   OVERVIEW_ANIMATION_SELECTION_WINDOW,
   // Used to animate the clipping of the windows frame header.
   OVERVIEW_ANIMATION_FRAME_HEADER_CLIP,
+  // Used to fade in all windows when window drag starts or during window drag.
+  OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG,
 };
 
 }  // namespace ash

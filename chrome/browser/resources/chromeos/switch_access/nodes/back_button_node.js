@@ -33,7 +33,9 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   get location() {
-    if (this.node_) return this.node_.location;
+    if (this.node_) {
+      return this.node_.location;
+    }
   }
 
   /** @override */
@@ -48,9 +50,13 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   performAction(action) {
-    if (action !== SAConstants.MenuAction.SELECT) return false;
+    if (action !== SAConstants.MenuAction.SELECT) {
+      return false;
+    }
 
-    if (this.node_) this.node_.doDefault();
+    if (this.node_) {
+      this.node_.doDefault();
+    }
     return true;
   }
 

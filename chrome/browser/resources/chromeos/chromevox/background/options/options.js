@@ -189,8 +189,9 @@ cvox.OptionsPage.init = function() {
   cvox.OptionsPage.bluetoothBrailleDisplayUI = new BluetoothBrailleDisplayUI();
 
   var bluetoothBraille = $('bluetoothBraille');
-  if (bluetoothBraille)
+  if (bluetoothBraille) {
     cvox.OptionsPage.bluetoothBrailleDisplayUI.attach(bluetoothBraille);
+  }
 };
 
 /**
@@ -233,10 +234,11 @@ var handleNumericalInputPref = function(id, pref) {
   }, true);
 
   $(id).addEventListener('focusout', function(evt) {
-    if ($(id).value === '')
+    if ($(id).value === '') {
       chrome.storage.local.get(pref, function(items) {
         $(id).value = items[pref];
       });
+    }
   }, true);
 };
 
@@ -435,8 +437,9 @@ cvox.OptionsPage.eventListener = function(event) {
       chrome.storage.local.set({brailleWordWrap: target.checked});
     } else if (target.className.indexOf('logging') != -1) {
       cvox.OptionsPage.prefs.setLoggingPrefs(target.name, target.checked);
-      if (target.name == 'enableEventStreamLogging')
+      if (target.name == 'enableEventStreamLogging') {
         cvox.OptionsPage.disableEventStreamFilterCheckBoxes(!target.checked);
+      }
     } else if (target.className.indexOf('eventstream') != -1) {
       cvox.OptionsPage.setEventStreamFilter(target.name, target.checked);
     } else if (target.classList.contains('pref')) {

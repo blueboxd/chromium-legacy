@@ -245,11 +245,9 @@ const void* const kRenderFrameHostAndroidKey = &kRenderFrameHostAndroidKey;
 // The next value to use for the accessibility reset token.
 int g_next_accessibility_reset_token = 1;
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
 // Whether to allow injecting javascript into any kind of frame, for Android
-// WebView, Fuchsia web.ContextProvider and CastOS content shell.
+// WebView, WebLayer, Fuchsia web.ContextProvider and CastOS content shell.
 bool g_allow_injecting_javascript = false;
-#endif
 
 typedef std::unordered_map<GlobalFrameRoutingId,
                            RenderFrameHostImpl*,
@@ -818,12 +816,10 @@ RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
       GlobalFrameRoutingId(render_process_id, render_frame_id));
 }
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
 // static
 void RenderFrameHost::AllowInjectingJavaScript() {
   g_allow_injecting_javascript = true;
 }
-#endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
 
 // static
 RenderFrameHostImpl* RenderFrameHostImpl::FromID(int render_process_id,
@@ -932,6 +928,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       commit_callback_interceptor_(nullptr),
       media_device_id_salt_base_(
           BrowserContext::CreateRandomMediaDeviceIDSalt()) {
+  DCHECK(delegate_);
+
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
       GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_), this);
@@ -1050,7 +1048,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   const bool was_created = render_frame_created_;
   render_frame_created_ = false;
-  if (delegate_ && was_created)
+  if (was_created)
     delegate_->RenderFrameDeleted(this);
 
   // Ensure that the render process host has been notified that all audio
@@ -2113,7 +2111,7 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
   // We should not create new RenderFrames while our delegate is being destroyed
   // (e.g., via a WebContentsObserver during WebContents shutdown).  This seems
   // to have caused crashes in https://crbug.com/717650.
-  if (created && delegate_)
+  if (created)
     CHECK(!delegate_->IsBeingDestroyed());
 
   bool was_created = render_frame_created_;
@@ -2121,7 +2119,7 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
 
   // If the current status is different than the new status, the delegate
   // needs to be notified.
-  if (delegate_ && (created != was_created)) {
+  if (created != was_created) {
     if (created) {
       SetUpMojoIfNeeded();
       delegate_->RenderFrameCreated(this);
@@ -2465,7 +2463,7 @@ void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
 
 void RenderFrameHostImpl::UpdateRenderProcessHostFramePriorities() {
   const auto new_committed_document_priority =
-      (delegate_ && delegate_->IsFrameLowPriority(this))
+      delegate_->IsFrameLowPriority(this)
           ? RenderProcessHostImpl::FramePriority::kLow
           : RenderProcessHostImpl::FramePriority::kNormal;
   if (last_committed_document_priority_ != new_committed_document_priority) {
@@ -4617,19 +4615,17 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(
           GetProcess()->GetBrowserContext());
-  if (delegate_) {
-    auto* geolocation_context = delegate_->GetGeolocationContext();
-    if (geolocation_context) {
-      geolocation_service_.reset(new GeolocationServiceImpl(
-          geolocation_context, permission_controller, this));
-      // NOTE: Both the |interface_registry_| and |geolocation_service_| are
-      // owned by |this|, so their destruction will be triggered together.
-      // |interface_registry_| is declared after |geolocation_service_|, so it
-      // will be destroyed prior to |geolocation_service_|.
-      registry_->AddInterface(
-          base::BindRepeating(&GeolocationServiceImpl::Bind,
-                              base::Unretained(geolocation_service_.get())));
-    }
+  auto* geolocation_context = delegate_->GetGeolocationContext();
+  if (geolocation_context) {
+    geolocation_service_.reset(new GeolocationServiceImpl(
+        geolocation_context, permission_controller, this));
+    // NOTE: Both the |interface_registry_| and |geolocation_service_| are
+    // owned by |this|, so their destruction will be triggered together.
+    // |interface_registry_| is declared after |geolocation_service_|, so it
+    // will be destroyed prior to |geolocation_service_|.
+    registry_->AddInterface(
+        base::BindRepeating(&GeolocationServiceImpl::Bind,
+                            base::Unretained(geolocation_service_.get())));
   }
 
   registry_->AddInterface<media::mojom::InterfaceFactory>(base::BindRepeating(
@@ -6253,10 +6249,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
 }
 
 bool RenderFrameHostImpl::CanExecuteJavaScript() {
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
   if (g_allow_injecting_javascript)
     return true;
-#endif
   return !frame_tree_node_->current_url().is_valid() ||
          frame_tree_node_->current_url().SchemeIs(kChromeDevToolsScheme) ||
          ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
@@ -6530,8 +6524,7 @@ void RenderFrameHostImpl::BindNFCReceiver(
         "WebNFC is only allowed in a top-level browsing context.");
     return;
   }
-  if (delegate_)
-    delegate_->GetNFC(std::move(receiver));
+  delegate_->GetNFC(std::move(receiver));
 }
 #endif
 

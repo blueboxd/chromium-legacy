@@ -149,9 +149,6 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {USER_EVENTS, "USER_EVENT", "user_events", "User Events",
      sync_pb::EntitySpecifics::kUserEventFieldNumber,
      ModelTypeForHistograms::kUserEvents},
-    {MOUNTAIN_SHARES, "MOUNTAIN_SHARE", "mountain_shares", "Mountain Shares",
-     sync_pb::EntitySpecifics::kMountainShareFieldNumber,
-     ModelTypeForHistograms::kMountainShares},
     {USER_CONSENTS, "USER_CONSENT", "user_consent", "User Consents",
      sync_pb::EntitySpecifics::kUserConsentFieldNumber,
      ModelTypeForHistograms::kUserConsents},
@@ -189,11 +186,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(base::size(kModelTypeInfoMap) == ModelType::NUM_ENTRIES,
               "kModelTypeInfoMap should have ModelType::NUM_ENTRIES elements");
 
-static_assert(41 == syncer::ModelType::NUM_ENTRIES,
+static_assert(40 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(41 == syncer::ModelType::NUM_ENTRIES,
+static_assert(40 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update kAllocatorDumpNameWhitelist in "
               "base/trace_event/memory_infra_background_whitelist.cc.");
 
@@ -290,9 +287,6 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case SECURITY_EVENTS:
       specifics->mutable_security_event();
       break;
-    case MOUNTAIN_SHARES:
-      specifics->mutable_mountain_share();
-      break;
     case USER_CONSENTS:
       specifics->mutable_user_consent();
       break;
@@ -362,7 +356,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(41 == ModelType::NUM_ENTRIES,
+  static_assert(40 == ModelType::NUM_ENTRIES,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -421,8 +415,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return READING_LIST;
   if (specifics.has_user_event())
     return USER_EVENTS;
-  if (specifics.has_mountain_share())
-    return MOUNTAIN_SHARES;
   if (specifics.has_user_consent())
     return USER_CONSENTS;
   if (specifics.has_nigori())
@@ -446,7 +438,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(41 == ModelType::NUM_ENTRIES,
+  static_assert(40 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();

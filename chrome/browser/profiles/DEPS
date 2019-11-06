@@ -3,8 +3,5 @@ specific_include_rules = {
     # Profile embeds the Identity Service, but the dependence
     # should be used *only* for Identity Service creation.
     "+services/identity/identity_service.h",
-
-    # Profile embeds the image_annotation service.
-    "+services/image_annotation/image_annotation_service.h",
   ],
 }

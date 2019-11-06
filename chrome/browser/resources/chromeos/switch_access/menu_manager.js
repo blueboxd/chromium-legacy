@@ -149,7 +149,9 @@ class MenuManager {
     }
 
     // If the menu is already open, select the highlighted element.
-    if (this.selectCurrentNode()) return true;
+    if (this.selectCurrentNode()) {
+      return true;
+    }
 
     if (!this.openMenu_(navNode, SAConstants.MenuId.MAIN)) {
       // openMenu_ will return false (indicating that the menu was not opened
@@ -167,7 +169,9 @@ class MenuManager {
    * Exits the menu.
    */
   exit() {
-    if (!this.inMenu_) return;
+    if (!this.inMenu_) {
+      return;
+    }
 
     this.closeCurrentMenu_();
     this.inMenu_ = false;
@@ -202,7 +206,9 @@ class MenuManager {
     // Action currently highlighted in the menu (null if the menu was closed
     // before this function was called).
     let actionNode = null;
-    if (this.node_) actionNode = this.node_.automationNode;
+    if (this.node_) {
+      actionNode = this.node_.automationNode;
+    }
 
     const currentMenuId = this.menuPanel_.currentMenuId();
     const shouldReloadMenu = (currentMenuId === menuId);
@@ -281,7 +287,9 @@ class MenuManager {
    */
   closeCurrentMenu_() {
     this.clearFocusRing_();
-    if (this.node_) this.node_ = null;
+    if (this.node_) {
+      this.node_ = null;
+    }
     this.menuPanel_.clear();
     this.actions_ = [];
     this.menuNode_ = null;
@@ -330,7 +338,9 @@ class MenuManager {
    * @private
    */
   highlightFirstAction_() {
-    if (!this.menuNode_) return;
+    if (!this.menuNode_) {
+      return;
+    }
     this.node_ = this.menuNode_.firstChild;
     this.updateFocusRing_();
 
@@ -349,7 +359,9 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   moveForward() {
-    if (!this.inMenu_ || !this.node_) return false;
+    if (!this.inMenu_ || !this.node_) {
+      return false;
+    }
 
     this.clearFocusRing_();
     this.node_ = this.node_.next;
@@ -363,7 +375,9 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   moveBackward() {
-    if (!this.inMenu_ || !this.node_) return false;
+    if (!this.inMenu_ || !this.node_) {
+      return false;
+    }
 
     this.clearFocusRing_();
     this.node_ = this.node_.previous;
@@ -376,7 +390,9 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   selectCurrentNode() {
-    if (!this.inMenu_ || !this.node_) return false;
+    if (!this.inMenu_ || !this.node_) {
+      return false;
+    }
 
     if (this.node_ instanceof BackButtonNode) {
       // The back button was selected.
@@ -534,7 +550,9 @@ class MenuManager {
     }
 
     // If there is at most one available action, perform it by default.
-    if (actions.length <= 1) return null;
+    if (actions.length <= 1) {
+      return null;
+    }
 
 
     // Add global actions.
@@ -626,7 +644,9 @@ class MenuManager {
     }
 
     // Otherwise, ask the node to perform the action itself.
-    if (this.menuOriginNode_.performAction(action)) this.exit();
+    if (this.menuOriginNode_.performAction(action)) {
+      this.exit();
+    }
   }
 
   /**
@@ -642,7 +662,9 @@ class MenuManager {
       return;
     }
 
-    if (!this.inMenu_ || !this.node_) return;
+    if (!this.inMenu_ || !this.node_) {
+      return;
+    }
     let id = this.node_.automationNode.htmlAttributes.id;
 
     // If the selection will close the menu, highlight the back button.

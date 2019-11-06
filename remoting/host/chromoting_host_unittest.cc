@@ -63,7 +63,7 @@ class ChromotingHostTest : public testing::Test {
   ChromotingHostTest() = default;
 
   void SetUp() override {
-    network_change_notifier_ = net::NetworkChangeNotifier::Create();
+    network_change_notifier_ = net::NetworkChangeNotifier::CreateIfNeeded();
 
     task_runner_ = new AutoThreadTaskRunner(base::ThreadTaskRunnerHandle::Get(),
                                             base::DoNothing());

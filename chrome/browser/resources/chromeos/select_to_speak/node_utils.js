@@ -167,12 +167,14 @@ NodeUtils.getLastLeafChild = function(node) {
 NodeUtils.findAllMatching = function(node, rect, nodes) {
   var found = false;
   for (var c = node.firstChild; c; c = c.nextSibling) {
-    if (NodeUtils.findAllMatching(c, rect, nodes))
+    if (NodeUtils.findAllMatching(c, rect, nodes)) {
       found = true;
+    }
   }
 
-  if (found)
+  if (found) {
     return true;
+  }
 
   // Closure needs node.location check here to allow the next few
   // lines to compile.
@@ -215,8 +217,9 @@ NodeUtils.Position;
  * @return {!NodeUtils.Position} The node matching the selected offset.
  */
 NodeUtils.getDeepEquivalentForSelection = function(parent, offset, isStart) {
-  if (parent.children.length == 0)
+  if (parent.children.length == 0) {
     return {node: parent, offset: offset};
+  }
 
   // Non-text nodes with children.
   if (parent.role != RoleType.STATIC_TEXT &&
@@ -275,8 +278,9 @@ NodeUtils.getDeepEquivalentForSelection = function(parent, offset, isStart) {
   // one at this offset.
   while (nodesToCheck.length > 0) {
     node = nodesToCheck.pop();
-    if (node.state.invisible)
+    if (node.state.invisible) {
       continue;
+    }
     if (node.children.length > 0) {
       if (node.role != RoleType.STATIC_TEXT) {
         index += 1;

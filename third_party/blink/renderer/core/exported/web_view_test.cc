@@ -46,6 +46,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
@@ -4372,16 +4373,6 @@ class MojoTestHelper {
     web_view_helper_.Reset();  // Remove dependency on locally scoped client.
   }
 
-  // Bind the test API to a service with the given |name| and repeating Bind
-  // method given by |callback|.
-  void BindTestApi(
-      const String& name,
-      base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)> callback) {
-    // Set up our Mock Mojo API.
-    test_api_.reset(new service_manager::InterfaceProvider::TestApi(
-        web_frame_client_.GetInterfaceProvider()));
-    test_api_->SetBinderForName(name.Utf8(), callback);
-  }
   WebViewImpl* WebView() const { return web_view_; }
 
  private:
@@ -4450,10 +4441,22 @@ class ShowUnhandledTapTest : public WebViewTest {
         WebWidget::LifecycleUpdateReason::kTest);
     RunPendingTasks();
 
-    mojo_test_helper_->BindTestApi(
-        mojom::blink::UnhandledTapNotifier::Name_,
-        WTF::BindRepeating(&MockUnhandledTapNotifierImpl::Bind,
-                           WTF::Unretained(&mock_notifier_)));
+    WebLocalFrameImpl* web_local_frame = web_view_->MainFrameImpl();
+    web_local_frame->GetFrame()
+        ->GetBrowserInterfaceBroker()
+        .SetBinderForTesting(
+            mojom::blink::UnhandledTapNotifier::Name_,
+            WTF::BindRepeating(&MockUnhandledTapNotifierImpl::Bind,
+                               WTF::Unretained(&mock_notifier_)));
+  }
+
+  void TearDown() override {
+    WebLocalFrameImpl* web_local_frame = web_view_->MainFrameImpl();
+    web_local_frame->GetFrame()
+        ->GetBrowserInterfaceBroker()
+        .SetBinderForTesting(mojom::blink::UnhandledTapNotifier::Name_, {});
+
+    WebViewTest::TearDown();
   }
 
  protected:

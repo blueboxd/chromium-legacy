@@ -3912,10 +3912,6 @@ void RenderFrameImpl::UpdateSubresourceFactory(
   GetLoaderFactoryBundle()->Update(std::move(child_info));
 }
 
-void RenderFrameImpl::EvictFromBackForwardCache() {
-  GetFrameHost()->EvictFromBackForwardCache();
-}
-
 void RenderFrameImpl::BindToFrame(blink::WebNavigationControl* frame) {
   DCHECK(!frame_);
 
@@ -4437,11 +4433,6 @@ void RenderFrameImpl::SetHasReceivedUserGestureBeforeNavigation(bool value) {
 
 void RenderFrameImpl::SetMouseCapture(bool capture) {
   GetLocalRootRenderWidget()->SetMouseCapture(capture);
-}
-
-void RenderFrameImpl::LifecycleStateChanged(
-    blink::mojom::FrameLifecycleState state) {
-  GetFrameHost()->LifecycleStateChanged(state);
 }
 
 bool RenderFrameImpl::ShouldReportDetailedMessageForSource(

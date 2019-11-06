@@ -20,7 +20,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/image_annotation/image_annotation_metrics.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"

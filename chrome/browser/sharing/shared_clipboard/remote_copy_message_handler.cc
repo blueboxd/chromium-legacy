@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync/protocol/sharing_message.pb.h"
 #include "components/sync/protocol/sharing_remote_copy_message.pb.h"
@@ -22,9 +23,8 @@
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "url/gurl.h"
 
-RemoteCopyMessageHandler::RemoteCopyMessageHandler(
-    NotificationDisplayService* notification_display_service)
-    : notification_display_service_(notification_display_service) {}
+RemoteCopyMessageHandler::RemoteCopyMessageHandler(Profile* profile)
+    : profile_(profile) {}
 
 RemoteCopyMessageHandler::~RemoteCopyMessageHandler() = default;
 
@@ -43,8 +43,6 @@ void RemoteCopyMessageHandler::OnMessage(
 
 void RemoteCopyMessageHandler::ShowNotification(
     const std::string& device_name) {
-  DCHECK(notification_display_service_);
-
   std::string notification_id = base::GenerateGUID();
 
   // TODO(mvanouwerkerk): Adjust notification text and icon once we have mocks.
@@ -67,6 +65,6 @@ void RemoteCopyMessageHandler::ShowNotification(
       message_center::RichNotificationData(),
       /*delegate=*/nullptr);
 
-  notification_display_service_->Display(NotificationHandler::Type::SHARING,
-                                         notification, /*metadata=*/nullptr);
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+      NotificationHandler::Type::SHARING, notification, /*metadata=*/nullptr);
 }

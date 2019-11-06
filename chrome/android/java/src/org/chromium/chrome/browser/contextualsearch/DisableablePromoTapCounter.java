@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * Manages the Contextual Search disable-able promo tap counter.
@@ -29,7 +30,7 @@ class DisableablePromoTapCounter {
 
     private static DisableablePromoTapCounter sInstance;
 
-    private final ChromePreferenceManager mPrefsManager;
+    private final SharedPreferencesManager mPrefsManager;
     private int mCounter;
 
     /**
@@ -37,8 +38,7 @@ class DisableablePromoTapCounter {
      * @param prefsManager The ChromePreferenceManager to get prefs from.
      * @return the counter.
      */
-    static DisableablePromoTapCounter getInstance(
-            ChromePreferenceManager prefsManager) {
+    static DisableablePromoTapCounter getInstance(SharedPreferencesManager prefsManager) {
         if (sInstance == null) {
             sInstance = new DisableablePromoTapCounter(prefsManager);
         }
@@ -49,9 +49,10 @@ class DisableablePromoTapCounter {
      * Private constructor -- use {@link #getInstance} to get the singleton instance.
      * @param prefsManager The preferences manager to use.
      */
-    private DisableablePromoTapCounter(ChromePreferenceManager prefsManager) {
+    private DisableablePromoTapCounter(SharedPreferencesManager prefsManager) {
         mPrefsManager = prefsManager;
-        setRawCounter(prefsManager.getContextualSearchTapTriggeredPromoCount());
+        setRawCounter(prefsManager.readInt(
+                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT));
     }
 
     /**
@@ -106,7 +107,8 @@ class DisableablePromoTapCounter {
      * Writes the current counter's raw value to persistent storage.
      */
     private void writeRawCounter() {
-        mPrefsManager.setContextualSearchTapTriggeredPromoCount(mCounter);
+        mPrefsManager.writeInt(
+                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, mCounter);
     }
 
     /**

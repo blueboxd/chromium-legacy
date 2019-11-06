@@ -125,7 +125,7 @@ public class WebLayerShellActivity extends FragmentActivity {
 
         Fragment fragment = getOrCreateBrowserFragment(savedInstanceState);
         mBrowserFragmentController = BrowserFragmentController.fromFragment(fragment);
-        mBrowserFragmentController.getBrowserController().setFullscreenCallback(
+        mBrowserFragmentController.getActiveBrowserController().setFullscreenCallback(
                 new FullscreenCallback() {
                     private int mSystemVisibilityToRestore;
 
@@ -166,7 +166,7 @@ public class WebLayerShellActivity extends FragmentActivity {
 
         mBrowserFragmentController.setTopView(mTopContentsContainer);
 
-        mBrowserController = mBrowserFragmentController.getBrowserController();
+        mBrowserController = mBrowserFragmentController.getActiveBrowserController();
         String startupUrl = getUrlFromIntent(getIntent());
         if (TextUtils.isEmpty(startupUrl)) {
             startupUrl = "http://google.com";
@@ -265,7 +265,8 @@ public class WebLayerShellActivity extends FragmentActivity {
     public void onBackPressed() {
         if (mBrowserFragmentController != null) {
             NavigationController controller =
-                    mBrowserFragmentController.getBrowserController().getNavigationController();
+                    mBrowserFragmentController.getActiveBrowserController()
+                            .getNavigationController();
             if (controller.canGoBack()) {
                 controller.goBack();
                 return;

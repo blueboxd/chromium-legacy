@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "build/build_config.h"
+#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -192,6 +193,10 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
 };
 
 ProfileImpl::ProfileImpl(const base::FilePath& path) : path_(path) {
+  // Ensure WebCacheManager is created so that it starts observing
+  // OnRenderProcessHostCreated events.
+  web_cache::WebCacheManager::GetInstance();
+
   browser_context_ = std::make_unique<BrowserContextImpl>(path_);
 }
 
@@ -225,12 +230,26 @@ void ProfileImpl::ClearBrowsingData(
         break;
       case BrowsingDataType::CACHE:
         remove_mask |= content::BrowsingDataRemover::DATA_TYPE_CACHE;
+        ClearRendererCache();
         break;
       default:
         NOTREACHED();
     }
   }
   clearer->ClearData(remove_mask, from_time, to_time);
+}
+
+void ProfileImpl::ClearRendererCache() {
+  for (content::RenderProcessHost::iterator iter =
+           content::RenderProcessHost::AllHostsIterator();
+       !iter.IsAtEnd(); iter.Advance()) {
+    content::RenderProcessHost* render_process_host = iter.GetCurrentValue();
+    if (render_process_host->GetBrowserContext() == browser_context_.get() &&
+        render_process_host->IsInitializedAndNotDead()) {
+      web_cache::WebCacheManager::GetInstance()->ClearCacheForProcess(
+          render_process_host->GetID());
+    }
+  }
 }
 
 std::unique_ptr<Profile> Profile::Create(const base::FilePath& path) {

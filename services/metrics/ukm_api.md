@@ -73,11 +73,10 @@ Supported statistic types are:
 There can also be one or more `index` tags which define additional aggregation
 keys. These are a comma-separated list of keys that is appended to the standard
 set. These additional keys are optional but, if present, are always present
-together. In other words, "fields=profile.county,profile.form_factory" will
-cause all the standard aggregations plus each with *both* country *and*
-form_factor but **not** with all the standard aggregations (see above) plus only
-one of them. If individual and combined versions are desired, use multiple index
-tags.
+together. In other words, "fields=profile.county,profile.form_factor" will cause
+all the standard aggregations plus each with *both* country *and* form_factor
+but **not** with all the standard aggregations (see above) plus only one of
+them. If individual and combined versions are desired, use multiple index tags.
 
 Currently supported additional index fields are:
 

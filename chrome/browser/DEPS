@@ -81,6 +81,7 @@ include_rules = [
   "+components/device_event_log",
   "+components/domain_reliability",
   "+components/dom_distiller/content/browser",
+  "+components/dom_distiller/content/common",
   "+components/dom_distiller/core",
   "+components/dom_distiller/webui",
   "+components/download/content/factory",

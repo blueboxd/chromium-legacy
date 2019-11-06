@@ -170,7 +170,7 @@ void NetworkFetcherImpl::DownloadToFile(
              DownloadToFileCompleteCallback download_to_file_complete_callback,
              base::FilePath file_path) {
             std::move(download_to_file_complete_callback)
-                .Run(file_path, simple_url_loader->NetError(),
+                .Run(simple_url_loader->NetError(),
                      simple_url_loader->GetContentSize());
           },
           simple_url_loader_.get(),
@@ -183,8 +183,7 @@ void NetworkFetcherImpl::OnResponseStartedCallback(
     const GURL& final_url,
     const network::mojom::URLResponseHead& response_head) {
   std::move(response_started_callback)
-      .Run(final_url,
-           response_head.headers ? response_head.headers->response_code() : -1,
+      .Run(response_head.headers ? response_head.headers->response_code() : -1,
            response_head.content_length);
 }
 

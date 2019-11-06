@@ -348,18 +348,20 @@ class GC_PLUGIN_IGNORE(
           key_tracing_callback_(key_tracing_callback),
           value_tracing_callback_(value_tracing_callback) {}
 
-    void Process(V8EmbedderGraphBuilder* builder) {
+    bool Process(V8EmbedderGraphBuilder* builder) {
       Traceable key = nullptr;
       {
         TraceKeysScope scope(builder, &key);
         key_tracing_callback_(builder, const_cast<void*>(key_));
       }
       DCHECK(key);
-      DCHECK(builder->GetStateNotNull(key));
+      if (!builder->StateExists(key))
+        return false;
       {
         TraceValuesScope scope(builder, key);
         value_tracing_callback_(builder, const_cast<void*>(value_));
       }
+      return true;
     }
 
    private:
@@ -376,6 +378,10 @@ class GC_PLUGIN_IGNORE(
       states_.insert(traceable, new State(traceable, name, dom_tree_state));
     }
     return states_.at(traceable);
+  }
+
+  bool StateExists(Traceable traceable) const {
+    return states_.Contains(traceable);
   }
 
   State* GetStateNotNull(Traceable traceable) {
@@ -772,6 +778,12 @@ void V8EmbedderGraphBuilder::VisitTransitiveClosure() {
   // tracing can record new ephemerons, and tracing an ephemeron can add
   // items to the regular worklist, we need to repeatedly process the worklist
   // until a fixed point is reached.
+
+  // Because snapshots are processed in stages, there may be ephemerons that
+  // where key's do not have yet a state associated with them which prohibits
+  // them from being processed. Such ephemerons are stashed for later
+  // processing.
+  Deque<std::unique_ptr<EphemeronItem>> unprocessed_ephemerons_;
   do {
     // Step 1: Go through all items in the worklist using depth-first search.
     while (!worklist_.empty()) {
@@ -780,15 +792,29 @@ void V8EmbedderGraphBuilder::VisitTransitiveClosure() {
       item->Process(this);
     }
 
-    // Step 2: Go through ephemeron items. Only process an ephemeron item if
-    // its key was already observed.
+    // Step 2: Go through ephemeron items.
+
+    // Re-add unprocessed ephemerons from last loop iteration.
+    while (!unprocessed_ephemerons_.empty()) {
+      ephemeron_worklist_.push_back(unprocessed_ephemerons_.TakeFirst());
+    }
+
+    //  Only process an ephemeron item if its key was already observed.
     while (!ephemeron_worklist_.empty()) {
       std::unique_ptr<EphemeronItem> item =
           std::move(ephemeron_worklist_.front());
       ephemeron_worklist_.pop_front();
-      item->Process(this);
+      if (!item->Process(this)) {
+        unprocessed_ephemerons_.push_back(std::move(item));
+      }
     }
   } while (!worklist_.empty());
+
+  // Re-add unprocessed ephemerons. A later invocation of VisitTransitiveClosure
+  // must process them.
+  while (!unprocessed_ephemerons_.empty()) {
+    ephemeron_worklist_.push_back(unprocessed_ephemerons_.TakeFirst());
+  }
 }
 
 }  // namespace

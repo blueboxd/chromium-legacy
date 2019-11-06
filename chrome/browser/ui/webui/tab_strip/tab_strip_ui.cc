@@ -392,11 +392,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
       return;
     }
 
-    if (thumbnail_tracked) {
-      thumbnail_tracker_.WatchTab(tab);
-    } else {
-      // TODO(crbug.com/991393): un-watch tabs when we are done.
-    }
+    if (thumbnail_tracked)
+      thumbnail_tracker_.AddTab(tab);
+    else
+      thumbnail_tracker_.RemoveTab(tab);
   }
 
   // Callback passed to |thumbnail_tracker_|. Called when a tab's thumbnail

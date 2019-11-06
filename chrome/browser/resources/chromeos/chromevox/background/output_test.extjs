@@ -59,12 +59,14 @@ function checkOutput_(expectedText, expectedSpans, actualText, actualSpans) {
        i < max; ++i) {
     var expectedSpan = expectedSpans[i];
     var actualSpan = actualSpans[i];
-    if (!expectedSpan)
+    if (!expectedSpan) {
       throw Error('Unexpected span in ' + expectedText + ': ' +
           describeSpan(actualSpan) + describeActualSpans());
-    if (!actualSpan)
+    }
+    if (!actualSpan) {
       throw Error('Missing expected span in ' + expectedText + ': ' +
           describeSpan(expectedSpan) + describeActualSpans());
+    }
     var equal = true;
     if (expectedSpan.start !== actualSpan.start ||
         expectedSpan.end !== actualSpan.end) {
@@ -376,8 +378,9 @@ TEST_F('ChromeVoxOutputE2ETest', 'Input', function() {
         } else {
           var spans = [{value: new Output.NodeSpan(el), start: 0,
                         end: expectedValue.string_.length}];
-          if (expectedValue.spans_)
+          if (expectedValue.spans_) {
             spans = spans.concat(expectedValue.spans_);
+          }
 
           checkBrailleOutput(expectedValue.string_, spans, o);
         }
@@ -581,12 +584,14 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
     var value = Output.ROLE_INFO_[key];
     if (value.msgId) {
       Msgs.getMsg(value.msgId);
-      if (!kNoBrailleMessageRequired.has(key))
+      if (!kNoBrailleMessageRequired.has(key)) {
         Msgs.getMsg(value.msgId + '_brl');
+      }
       assertFalse(/[A-Z]+/.test(value.msgId));
     }
-    if (value.earconId)
+    if (value.earconId) {
       assertNotNullNorUndefined(cvox.Earcon[value.earconId]);
+    }
   }
   for (var key in Output.STATE_INFO_) {
     var value = Output.STATE_INFO_[key];
@@ -599,8 +604,9 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
       Msgs.getMsg(innerValue.msgId);
       Msgs.getMsg(innerValue.msgId + '_brl');
       assertFalse(/[A-Z]+/.test(innerValue.msgId));
-      if (innerValue.earconId)
+      if (innerValue.earconId) {
         assertNotNullNorUndefined(cvox.Earcon[innerValue.earconId]);
+      }
     }
   }
   for (var key in Output.INPUT_TYPE_MESSAGE_IDS_) {
@@ -899,15 +905,19 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'ValidateCommonProperties', function() {
   var missingDescription = [];
   for (var key in Output.RULES.navigate) {
     var speak = Output.RULES.navigate[key].speak;
-    if (!speak)
-    continue;
+    if (!speak) {
+      continue;
+    }
 
-    if (speak.indexOf(stateStr) == -1)
+    if (speak.indexOf(stateStr) == -1) {
       missingState.push(key);
-    if (speak.indexOf(restrictionStr) == -1)
+    }
+    if (speak.indexOf(restrictionStr) == -1) {
       missingRestriction.push(key);
-    if (speak.indexOf(descStr) == -1)
+    }
+    if (speak.indexOf(descStr) == -1) {
       missingDescription.push(key);
+    }
   }
 
   // This filters out known roles that don't have states or descriptions.

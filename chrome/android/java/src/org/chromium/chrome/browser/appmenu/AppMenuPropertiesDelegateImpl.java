@@ -384,6 +384,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                             : resources.getInteger(R.integer.reload_button_level_reload));
             mReloadMenuItem.setTitle(isLoading ? R.string.accessibility_btn_stop_loading
                                                : R.string.accessibility_btn_refresh);
+            mReloadMenuItem.setTitleCondensed(resources.getString(
+                    isLoading ? R.string.menu_stop_refresh : R.string.menu_refresh));
         }
     }
 
@@ -457,7 +459,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         } else {
             bookmarkMenuItem.setIcon(R.drawable.btn_star);
             bookmarkMenuItem.setChecked(false);
-            bookmarkMenuItem.setTitleCondensed(null);
+            bookmarkMenuItem.setTitleCondensed(mContext.getString(R.string.menu_bookmark));
         }
     }
 

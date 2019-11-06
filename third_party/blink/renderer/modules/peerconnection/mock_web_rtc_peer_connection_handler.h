@@ -29,19 +29,19 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
                   const WebMediaConstraints&) override;
 
   WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
-      const WebRTCSessionDescriptionRequest&,
+      RTCSessionDescriptionRequest*,
       const WebMediaConstraints&) override;
   WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
-      const WebRTCSessionDescriptionRequest&,
+      RTCSessionDescriptionRequest*,
       RTCOfferOptionsPlatform*) override;
-  void CreateAnswer(const WebRTCSessionDescriptionRequest&,
+  void CreateAnswer(RTCSessionDescriptionRequest*,
                     const WebMediaConstraints&) override;
-  void CreateAnswer(const WebRTCSessionDescriptionRequest&,
+  void CreateAnswer(RTCSessionDescriptionRequest*,
                     RTCAnswerOptionsPlatform*) override;
-  void SetLocalDescription(const WebRTCVoidRequest&) override;
-  void SetLocalDescription(const WebRTCVoidRequest&,
+  void SetLocalDescription(RTCVoidRequest*) override;
+  void SetLocalDescription(RTCVoidRequest*,
                            const WebRTCSessionDescription&) override;
-  void SetRemoteDescription(const WebRTCVoidRequest&,
+  void SetRemoteDescription(RTCVoidRequest*,
                             const WebRTCSessionDescription&) override;
   WebRTCSessionDescription LocalDescription() override;
   WebRTCSessionDescription RemoteDescription() override;

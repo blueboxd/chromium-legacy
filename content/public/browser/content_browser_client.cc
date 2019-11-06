@@ -372,6 +372,13 @@ bool ContentBrowserClient::AllowWorkerCacheStorage(
   return true;
 }
 
+bool ContentBrowserClient::AllowWorkerWebLocks(
+    const GURL& url,
+    BrowserContext* browser_context,
+    const std::vector<GlobalFrameRoutingId>& render_frames) {
+  return true;
+}
+
 ContentBrowserClient::AllowWebBluetoothResult
 ContentBrowserClient::AllowWebBluetooth(
     content::BrowserContext* browser_context,

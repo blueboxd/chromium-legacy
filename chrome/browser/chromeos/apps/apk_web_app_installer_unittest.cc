@@ -16,7 +16,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "services/data_decoder/public/cpp/test_data_decoder_service.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "url/gurl.h"
 
 namespace {
@@ -90,11 +90,7 @@ class ApkWebAppInstallerTest : public ChromeRenderViewHostTestHarness,
   ~ApkWebAppInstallerTest() override = default;
 
  protected:
-  service_manager::Connector* connector() const {
-    return test_data_decoder_service_.connector();
-  }
-
-  data_decoder::TestDataDecoderService test_data_decoder_service_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   // Must stay as last member.
   base::WeakPtrFactory<ApkWebAppInstallerTest> weak_ptr_factory_{this};
@@ -105,7 +101,7 @@ TEST_F(ApkWebAppInstallerTest, IconDecodeCallsWebAppInstallManager) {
   FakeApkWebAppInstaller apk_web_app_installer(
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());
 
-  apk_web_app_installer.Start(connector(), GetWebAppInfo(), GetIconBytes());
+  apk_web_app_installer.Start(GetWebAppInfo(), GetIconBytes());
   run_loop.Run();
 
   EXPECT_FALSE(apk_web_app_installer.complete_installation_called());
@@ -133,7 +129,7 @@ TEST_F(ApkWebAppInstallerTest,
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());
 
   weak_ptr_factory_.InvalidateWeakPtrs();
-  apk_web_app_installer.Start(connector(), GetWebAppInfo(), GetIconBytes());
+  apk_web_app_installer.Start(GetWebAppInfo(), GetIconBytes());
   run_loop.Run();
 
   EXPECT_EQ("", apk_web_app_installer.id());
@@ -149,7 +145,7 @@ TEST_F(ApkWebAppInstallerTest,
   FakeApkWebAppInstaller apk_web_app_installer(
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());
 
-  apk_web_app_installer.Start(connector(), GetWebAppInfo(), GetIconBytes());
+  apk_web_app_installer.Start(GetWebAppInfo(), GetIconBytes());
   weak_ptr_factory_.InvalidateWeakPtrs();
   run_loop.Run();
 
@@ -163,8 +159,7 @@ TEST_F(ApkWebAppInstallerTest, NullWebAppInfoCallsCompleteInstallation) {
   FakeApkWebAppInstaller apk_web_app_installer(
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());
 
-  apk_web_app_installer.Start(connector(), /*web_app_info=*/nullptr,
-                              GetIconBytes());
+  apk_web_app_installer.Start(/*web_app_info=*/nullptr, GetIconBytes());
   run_loop.Run();
 
   EXPECT_EQ("", apk_web_app_installer.id());
@@ -179,7 +174,7 @@ TEST_F(ApkWebAppInstallerTest, NullIconCallsCompleteInstallation) {
   FakeApkWebAppInstaller apk_web_app_installer(
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());
 
-  apk_web_app_installer.Start(connector(), GetWebAppInfo(), {});
+  apk_web_app_installer.Start(GetWebAppInfo(), {});
   run_loop.Run();
 
   EXPECT_EQ("", apk_web_app_installer.id());

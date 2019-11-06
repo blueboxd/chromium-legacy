@@ -43,13 +43,13 @@ class FakeRTCRtpSenderImpl : public blink::WebRTCRtpSender {
   blink::WebMediaStreamTrack Track() const override;
   blink::WebVector<blink::WebString> StreamIds() const override;
   void ReplaceTrack(blink::WebMediaStreamTrack with_track,
-                    blink::WebRTCVoidRequest request) override;
+                    blink::RTCVoidRequest* request) override;
   std::unique_ptr<blink::WebRTCDTMFSenderHandler> GetDtmfSender()
       const override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
   void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,
-                     blink::WebRTCVoidRequest) override;
+                     blink::RTCVoidRequest*) override;
   void GetStats(blink::WebRTCStatsReportCallback,
                 const blink::WebVector<webrtc::NonStandardGroupId>&) override;
   void SetStreams(

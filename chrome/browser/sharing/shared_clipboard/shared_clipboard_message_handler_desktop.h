@@ -8,23 +8,22 @@
 #include "base/macros.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler.h"
 
-class NotificationDisplayService;
+class Profile;
 class SharingService;
 
 // Handles incoming messages for the shared clipboard feature.
 class SharedClipboardMessageHandlerDesktop
     : public SharedClipboardMessageHandler {
  public:
-  SharedClipboardMessageHandlerDesktop(
-      SharingService* sharing_service,
-      NotificationDisplayService* notification_display_service);
+  SharedClipboardMessageHandlerDesktop(SharingService* sharing_service,
+                                       Profile* profile);
   ~SharedClipboardMessageHandlerDesktop() override;
 
  private:
   // SharedClipboardMessageHandler implementation.
   void ShowNotification(const std::string& device_name) override;
 
-  NotificationDisplayService* notification_display_service_ = nullptr;
+  Profile* profile_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SharedClipboardMessageHandlerDesktop);
 };

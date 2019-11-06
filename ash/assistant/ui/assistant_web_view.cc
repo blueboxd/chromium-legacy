@@ -9,8 +9,8 @@
 
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
+#include "ash/assistant/ui/assistant_web_view_delegate.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
@@ -29,24 +29,27 @@ namespace ash {
 
 // AssistantWebView ------------------------------------------------------------
 
-AssistantWebView::AssistantWebView(AssistantViewDelegate* delegate)
-    : delegate_(delegate) {
+AssistantWebView::AssistantWebView(
+    AssistantViewDelegate* assistant_view_delegate,
+    AssistantWebViewDelegate* web_container_view_delegate)
+    : assistant_view_delegate_(assistant_view_delegate),
+      web_container_view_delegate_(web_container_view_delegate) {
   SetID(AssistantViewID::kWebView);
   InitLayout();
 
-  delegate_->AddObserver(this);
+  assistant_view_delegate_->AddObserver(this);
 
   // |AssistantWebView| has its own separate container when Assistant web
   // container is enabled. The container will handle its own lifecycle.
   if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
-    delegate_->AddUiModelObserver(this);
+    assistant_view_delegate_->AddUiModelObserver(this);
 }
 
 AssistantWebView::~AssistantWebView() {
   if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
-    delegate_->RemoveUiModelObserver(this);
+    assistant_view_delegate_->RemoveUiModelObserver(this);
 
-  delegate_->RemoveObserver(this);
+  assistant_view_delegate_->RemoveObserver(this);
 }
 
 const char* AssistantWebView::GetClassName() const {
@@ -68,7 +71,7 @@ int AssistantWebView::GetHeightForWidth(int width) const {
   // |height| <= |kMaxHeightDip|.
   // |height| should not exceed the height of the usable work area.
   const gfx::Rect usable_work_area =
-      delegate_->GetUiModel()->usable_work_area();
+      assistant_view_delegate_->GetUiModel()->usable_work_area();
 
   return std::min(kMaxHeightDip, usable_work_area.height());
 }
@@ -95,6 +98,10 @@ void AssistantWebView::InitLayout() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
+  // Will use ash caption buttons when Assistant web container is enabled.
+  if (chromeos::assistant::features::IsAssistantWebContainerEnabled())
+    return;
+
   // Caption bar.
   caption_bar_ = new CaptionBar();
   caption_bar_->set_delegate(this);
@@ -114,7 +121,8 @@ bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
           // If we can't navigate back in the web contents' history stack we
           // defer back to our primary caption button delegate.
           if (!success && assistant_web_view) {
-            assistant_web_view->delegate_->GetCaptionBarDelegate()
+            assistant_web_view->assistant_view_delegate_
+                ->GetCaptionBarDelegate()
                 ->OnCaptionButtonPressed(AssistantButtonId::kBack);
           }
         },
@@ -123,7 +131,8 @@ bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
   }
 
   // For all other buttons we defer to our primary caption button delegate.
-  return delegate_->GetCaptionBarDelegate()->OnCaptionButtonPressed(id);
+  return assistant_view_delegate_->GetCaptionBarDelegate()
+      ->OnCaptionButtonPressed(id);
 }
 
 void AssistantWebView::OnDeepLinkReceived(
@@ -135,7 +144,7 @@ void AssistantWebView::OnDeepLinkReceived(
   RemoveContents();
 
   if (!contents_factory_.is_bound()) {
-    delegate_->GetNavigableContentsFactoryForView(
+    assistant_view_delegate_->GetNavigableContentsFactoryForView(
         contents_factory_.BindNewPipeAndPassReceiver());
   }
 
@@ -184,12 +193,21 @@ void AssistantWebView::DidSuppressNavigation(const GURL& url,
   // browser.
   if (assistant::util::IsDeepLinkUrl(url) ||
       disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
-    delegate_->OpenUrlFromView(url);
+    assistant_view_delegate_->OpenUrlFromView(url);
     return;
   }
 
   // Otherwise we'll allow our web contents to navigate freely.
   contents_->Navigate(url);
+}
+
+void AssistantWebView::UpdateCanGoBack(bool can_go_back) {
+  if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
+    return;
+
+  DCHECK(web_container_view_delegate_);
+  web_container_view_delegate_->UpdateBackButtonVisibility(GetWidget(),
+                                                           can_go_back);
 }
 
 void AssistantWebView::OnUiVisibilityChanged(
@@ -231,6 +249,11 @@ void AssistantWebView::RemoveContents() {
 void AssistantWebView::UpdateContentSize() {
   if (!contents_ || !contents_view_initialized_)
     return;
+
+  if (chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
+    contents_->GetView()->view()->SetPreferredSize(GetPreferredSize());
+    return;
+  }
 
   const gfx::Size preferred_size = gfx::Size(
       kPreferredWidthDip, GetHeightForWidth(kPreferredWidthDip) -

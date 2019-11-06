@@ -136,47 +136,15 @@ public class StatusView extends LinearLayout {
                                                     oldBottom) -> updateTouchDelegate());
     }
 
-    /**
-     * Start animating transition of status icon.
-     */
-    private void animateStatusIcon() {
-        Drawable targetIcon = null;
-        boolean wantIconHidden = false;
-
-        if (mIconRes != 0 && mIconTintRes != 0) {
-            targetIcon = UiUtils.getTintedDrawable(getContext(), mIconRes, mIconTintRes);
-        } else if (mIconRes != 0) {
-            targetIcon = AppCompatResources.getDrawable(getContext(), mIconRes);
-        } else if (mIconBitmap != null) {
-            targetIcon = new BitmapDrawable(getResources(), mIconBitmap);
-        } else {
-            // Do not specify any icon here and do not replace existing icon, either.
-            // TransitionDrawable uses different timing mechanism than Animations, and that may,
-            // depending on animation scale factor, produce a visible glitch.
-            targetIcon = null;
-            wantIconHidden = true;
+    private void setupAndRunStatusIconAnimations(boolean wantIconHidden, boolean isIconHidden) {
+        // This is to prevent the visibility of the view being changed both implicitly here and
+        // explicitly in setStatusIconShown. The visibility should only be set here through code not
+        // related to the dse icon.
+        if (mToolbarCommonPropertiesModel != null
+                && mDelegate.shouldShowSearchEngineLogo(
+                        mToolbarCommonPropertiesModel.isIncognito())) {
+            return;
         }
-
-        // Ensure proper handling of animations.
-        // Possible variants:
-        // 1. Is: shown,           want: hidden  => animate hiding,
-        // 2. Is: shown,           want: shown   => crossfade w/TransitionDrawable,
-        // 3. Is: animating(show), want: hidden  => cancel animation; animate hiding,
-        // 4. Is: animating(show), want: shown   => crossfade (carry on showing),
-        // 5. Is: animating(hide), want: hidden  => no op,
-        // 6. Is: animating(hide), want: shown   => cancel animation; animate showing; crossfade,
-        // 7. Is: hidden,          want: hidden  => no op,
-        // 8. Is: hidden,          want: shown   => animate showing.
-        //
-        // This gives 3 actions:
-        // - Animate showing, if hidden or previously hiding (6 + 8); cancel previous animation (6)
-        // - Animate hiding, if shown or previously showing (1 + 3); cancel previous animation (3)
-        // - crossfade w/TransitionDrawable, if visible (2, 4, 6), otherwise use image directly.
-        // All other options (5, 7) are no-op.
-        //
-        // Note: this will be compacted once we start using LayoutTransition with StatusView.
-
-        boolean isIconHidden = mIconView.getVisibility() == View.GONE || mIconView.getAlpha() == 0f;
 
         if (!wantIconHidden && (isIconHidden || mAnimatingStatusIconHide)) {
             // Action 1: animate showing, if icon was either hidden or hiding.
@@ -221,6 +189,53 @@ public class StatusView extends LinearLayout {
         } else {
             updateTouchDelegate();
         }
+    }
+
+    /**
+     * Start animating transition of status icon.
+     */
+    private void animateStatusIcon() {
+        Drawable targetIcon;
+        boolean wantIconHidden = false;
+
+        if (mIconRes != 0 && mIconTintRes != 0) {
+            targetIcon = UiUtils.getTintedDrawable(getContext(), mIconRes, mIconTintRes);
+        } else if (mIconRes != 0) {
+            targetIcon = AppCompatResources.getDrawable(getContext(), mIconRes);
+        } else if (mIconBitmap != null) {
+            targetIcon = new BitmapDrawable(getResources(), mIconBitmap);
+        } else {
+            // Do not specify any icon here and do not replace existing icon, either.
+            // TransitionDrawable uses different timing mechanism than Animations, and that may,
+            // depending on animation scale factor, produce a visible glitch.
+            targetIcon = null;
+            wantIconHidden = true;
+        }
+
+        // Ensure proper handling of animations.
+        // Possible variants:
+        // 1. Is: shown,           want: hidden  => animate hiding,
+        // 2. Is: shown,           want: shown   => crossfade w/TransitionDrawable,
+        // 3. Is: animating(show), want: hidden  => cancel animation; animate hiding,
+        // 4. Is: animating(show), want: shown   => crossfade (carry on showing),
+        // 5. Is: animating(hide), want: hidden  => no op,
+        // 6. Is: animating(hide), want: shown   => cancel animation; animate showing; crossfade,
+        // 7. Is: hidden,          want: hidden  => no op,
+        // 8. Is: hidden,          want: shown   => animate showing.
+        //
+        // This gives 3 actions:
+        // - Animate showing, if hidden or previously hiding (6 + 8); cancel previous animation (6)
+        // - Animate hiding, if shown or previously showing (1 + 3); cancel previous animation (3)
+        // - crossfade w/TransitionDrawable, if visible (2, 4, 6), otherwise use image directly.
+        // All other options (5, 7) are no-op.
+        //
+        // Note: this will be compacted once we start using LayoutTransition with StatusView.
+
+        boolean isIconHidden = mIconView.getVisibility() == View.GONE;
+
+        // Actions 1 and 2 occur in #setupAndRunStatusIconAnimations.
+        // TODO(crbug.com/1019488): Consolidate animation behavior once the dse icon feature ships.
+        setupAndRunStatusIconAnimations(wantIconHidden, isIconHidden);
 
         // Action 3: Specify icon content. Use TransitionDrawable whenever object is visible.
         if (targetIcon != null) {
@@ -321,7 +336,25 @@ public class StatusView extends LinearLayout {
     void setStatusIconAlpha(float alpha) {
         if (mIconView == null) return;
         mIconView.setAlpha(alpha);
-        mIconView.setVisibility(alpha > 0f ? VISIBLE : GONE);
+    }
+
+    /** Specify the status icon visibility. */
+    void setStatusIconShown(boolean showIcon) {
+        if (mIconView == null) return;
+
+        // This is to prevent the visibility of the view being changed both explicitly here and
+        // implicitly in animateStatusIcon. The visibility should only be set here through code
+        // related to the dse icon.
+        if (mToolbarCommonPropertiesModel != null
+                && !mDelegate.shouldShowSearchEngineLogo(
+                        mToolbarCommonPropertiesModel.isIncognito())) {
+            // Let developers know that they shouldn't use this code-path.
+            assert false : "Only DSE icon code should set the status icon visibility manually.";
+            return;
+        }
+
+        mIconView.setVisibility(showIcon ? VISIBLE : GONE);
+        updateTouchDelegate();
     }
 
     /**

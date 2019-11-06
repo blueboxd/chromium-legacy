@@ -7511,14 +7511,20 @@ interface Screen
     getter availWidth
     getter colorDepth
     getter height
+    getter internal
+    getter left
+    getter name
     getter orientation
     getter pixelDepth
+    getter primary
+    getter scaleFactor
+    getter top
     getter width
     method constructor
 interface ScreenManager
     attribute @@toStringTag
     method constructor
-    method requestDisplays
+    method getScreens
 interface ScreenOrientation : EventTarget
     attribute @@toStringTag
     getter angle

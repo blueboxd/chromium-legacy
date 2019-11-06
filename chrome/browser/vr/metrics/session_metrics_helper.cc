@@ -239,8 +239,7 @@ void SessionMetricsHelper::RecordInlineSessionStart(size_t session_id) {
   // replacement metrics once they are designed:
   // result.first->second->ukm_entry()->SetStartAction(
   //    PresentationStartAction::kOther);
-  // WebVR does not come through this path as it does not have a separate
-  // concept of inline sessions.
+  // TODO(crbug.com/1021212): Remove IsLegacyWebVR when safe.
   result.first->second->ukm_entry()->SetIsLegacyWebVR(false).SetMode(
       static_cast<int64_t>(device::SessionMode::kInline));
 }
@@ -263,7 +262,6 @@ void SessionMetricsHelper::RecordInlineSessionStop(size_t session_id) {
 void SessionMetricsHelper::RecordPresentationStartAction(
     PresentationStartAction action,
     const device::mojom::XRRuntimeSessionOptions& options) {
-  bool is_webvr = options.is_legacy_webvr;
   auto xr_session_mode = ConvertRuntimeOptionsToSessionMode(options);
 
   // TODO(https://crbug.com/965729): Ensure we correctly handle AR cases
@@ -271,9 +269,9 @@ void SessionMetricsHelper::RecordPresentationStartAction(
   if (!webxr_immersive_session_tracker_ ||
       mode_ != Mode::kWebXrVrPresentation) {
     pending_immersive_session_start_info_ =
-        PendingImmersiveSessionStartInfo{action, is_webvr, xr_session_mode};
+        PendingImmersiveSessionStartInfo{action, xr_session_mode};
   } else {
-    LogPresentationStartAction(action, is_webvr, xr_session_mode);
+    LogPresentationStartAction(action, xr_session_mode);
   }
 }
 
@@ -317,7 +315,6 @@ void SessionMetricsHelper::LogVrStartAction(VrStartAction action) {
 
 void SessionMetricsHelper::LogPresentationStartAction(
     PresentationStartAction action,
-    bool is_legacy_webvr,
     device::SessionMode xr_session_mode) {
   DCHECK(webxr_immersive_session_tracker_);
 
@@ -327,8 +324,9 @@ void SessionMetricsHelper::LogPresentationStartAction(
   // XR.WebXR.Session event. Remove this & change the below code with
   // replacement metrics once they are designed:
   // webxr_immersive_session_tracker_->ukm_entry()->SetStartAction(action);
+  // TODO(crbug.com/1021212): Remove IsLegacyWebVR when safe.
   webxr_immersive_session_tracker_->ukm_entry()
-      ->SetIsLegacyWebVR(is_legacy_webvr)
+      ->SetIsLegacyWebVR(false)
       .SetMode(static_cast<int64_t>(xr_session_mode));
 }
 
@@ -491,11 +489,10 @@ void SessionMetricsHelper::OnEnterPresentation() {
   // TODO(https://crbug.com/967764): Can pending_immersive_session_start_info_
   // be not set? What is the ordering of calls to RecordPresentationStartAction?
   auto start_info = pending_immersive_session_start_info_.value_or(
-      PendingImmersiveSessionStartInfo{PresentationStartAction::kOther, false,
+      PendingImmersiveSessionStartInfo{PresentationStartAction::kOther,
                                        device::SessionMode::kUnknown});
 
-  LogPresentationStartAction(start_info.action, start_info.is_legacy_webvr,
-                             start_info.mode);
+  LogPresentationStartAction(start_info.action, start_info.mode);
 }
 
 void SessionMetricsHelper::OnExitPresentation() {
@@ -655,9 +652,9 @@ void SessionMetricsHelper::DidFinishNavigation(
         // replacement metrics once they are designed:
         // webxr_immersive_session_tracker_->ukm_entry()->SetStartAction(
         //    pending_immersive_session_start_info_->action);
+        // TODO(crbug.com/1021212): Remove IsLegacyWebVR when safe.
         webxr_immersive_session_tracker_->ukm_entry()
-            ->SetIsLegacyWebVR(
-                pending_immersive_session_start_info_->is_legacy_webvr)
+            ->SetIsLegacyWebVR(false)
             .SetMode(static_cast<int64_t>(
                 pending_immersive_session_start_info_->mode));
         pending_immersive_session_start_info_ = base::nullopt;

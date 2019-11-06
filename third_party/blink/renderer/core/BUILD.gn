@@ -112,6 +112,7 @@ source_set("prerequisites") {
     "//third_party/snappy",
     "//third_party/zlib",
     "//ui/base/ime/mojom",
+    "//ui/display/mojom:mojom_blink",
     "//ui/events:dom_keycode_converter",
     "//ui/gfx/geometry",
     "//ui/native_theme",

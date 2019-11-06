@@ -67,6 +67,11 @@ const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{
 const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
     "AutofillNoLocalSaveOnUploadSuccess", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, the Save Card infobar will be dismissed by a user initiated
+// navigation other than one caused by submitted form.
+const base::Feature kAutofillSaveCardDismissOnNavigation{
+    "AutofillSaveCardDismissOnNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether to show updated UI for the card unmask prompt.
 const base::Feature kAutofillUpdatedCardUnmaskPromptUi{
     "AutofillUpdatedCardUnmaskPromptUi", base::FEATURE_DISABLED_BY_DEFAULT};

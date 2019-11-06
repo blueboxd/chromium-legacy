@@ -16,6 +16,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class WaitableEvent;
 }  // namespace base
 
 namespace net {
@@ -56,6 +57,7 @@ class CaptureServiceReceiver {
       int result);
   void OnConnectTimeout(
       ::media::AudioInputStream::AudioInputCallback* input_callback);
+  void StopOnTaskRunner(base::WaitableEvent* finished);
 
   const ::media::AudioParameters audio_params_;
 

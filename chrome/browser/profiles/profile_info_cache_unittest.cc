@@ -883,7 +883,9 @@ TEST_F(ProfileInfoCacheTest, MigrateLegacyProfileNamesAndRecomputeIfNeeded) {
   EXPECT_EQ(12U, GetCache()->GetNumberOfProfiles());
 
   ResetCache();
-  ProfileInfoCache::EnableLegacyProfileMigrationForTesting();
+  ProfileInfoCache::SetLegacyProfileMigrationForTesting(true);
+  GetCache();
+  ProfileInfoCache::SetLegacyProfileMigrationForTesting(false);
 
   EXPECT_EQ(name_5, GetCache()->GetNameToDisplayOfProfileAtIndex(
                         GetCache()->GetIndexOfProfileWithPath(path_5)));

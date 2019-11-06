@@ -5,18 +5,25 @@
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter_factory.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/touch_filter/heuristic_stylus_palm_detection_filter.h"
+#include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter.h"
+#include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_model.h"
 #include "ui/events/ozone/evdev/touch_filter/open_palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
+#include "ui/events/ozone/evdev/touch_filter/palm_model/onedevice_train_palm_detection_filter_model.h"
 
 namespace ui {
 
 const base::Feature kEnableHeuristicPalmDetectionFilter{
     "EnableHeuristicPalmDetectionFilter", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableNeuralPalmDetectionFilter{
+    "EnableNeuralPalmDetectionFilter", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<double> kHeuristicCancelThresholdSeconds{
     &kEnableHeuristicPalmDetectionFilter,
@@ -32,6 +39,16 @@ const base::FeatureParam<int> kHeuristicStrokeCount{
 std::unique_ptr<PalmDetectionFilter> CreatePalmDetectionFilter(
     const EventDeviceInfo& devinfo,
     SharedPalmDetectionFilterState* shared_palm_state) {
+  if (base::FeatureList::IsEnabled(kEnableNeuralPalmDetectionFilter) &&
+      NeuralStylusPalmDetectionFilter::
+          CompatibleWithNeuralStylusPalmDetectionFilter(devinfo)) {
+    // Theres only one model right now.
+    std::unique_ptr<NeuralStylusPalmDetectionFilterModel> model =
+        std::make_unique<OneDeviceTrainNeuralStylusPalmDetectionFilterModel>();
+    return std::make_unique<NeuralStylusPalmDetectionFilter>(
+        devinfo, std::move(model), shared_palm_state);
+  }
+
   if (base::FeatureList::IsEnabled(kEnableHeuristicPalmDetectionFilter)) {
     const base::TimeDelta hold_time =
         base::TimeDelta::FromSecondsD(kHeuristicHoldThresholdSeconds.Get());

@@ -11,10 +11,10 @@
 #include "components/services/storage/indexed_db/leveldb/leveldb_factory.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -61,7 +61,7 @@ leveldb_env::Options IndexedDBClassFactory::GetLevelDBOptions() {
   // For info about the troubles we've run into with this parameter, see:
   // https://crbug.com/227313#c11
   options.max_open_files = 80;
-  options.env = LevelDBEnv::Get();
+  options.env = IndexedDBLevelDBEnv::Get();
   options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
   return options;
 }

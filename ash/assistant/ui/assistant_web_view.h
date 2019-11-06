@@ -22,7 +22,7 @@
 namespace ash {
 
 enum class AssistantButtonId;
-class AssistantViewDelegate;
+class AssistantWebViewDelegate;
 
 // AssistantWebView is a child of AssistantBubbleView which allows Assistant UI
 // to render remotely hosted content within its bubble. It provides a CaptionBar
@@ -35,7 +35,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
       public content::NavigableContentsObserver,
       public AssistantUiModelObserver {
  public:
-  explicit AssistantWebView(AssistantViewDelegate* delegate);
+  AssistantWebView(AssistantViewDelegate* assistant_view_delegate,
+                   AssistantWebViewDelegate* web_container_view_delegate);
   ~AssistantWebView() override;
 
   // views::View:
@@ -59,6 +60,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override;
+  void UpdateCanGoBack(bool can_go_back) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(
@@ -67,6 +69,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
   void OnUsableWorkAreaChanged(const gfx::Rect& usable_work_area) override;
+
+  views::View* caption_bar_for_testing() { return caption_bar_; }
 
  private:
   void InitLayout();
@@ -77,9 +81,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
   // work area changed.
   void UpdateContentSize();
 
-  AssistantViewDelegate* const delegate_;
+  // TODO(b/143177141): Remove AssistantViewDelegate once standalone is
+  // deprecated.
+  AssistantViewDelegate* const assistant_view_delegate_;
+  AssistantWebViewDelegate* const web_container_view_delegate_;
 
-  CaptionBar* caption_bar_;  // Owned by view hierarchy.
+  CaptionBar* caption_bar_ = nullptr;  // Owned by view hierarchy.
 
   mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
   std::unique_ptr<content::NavigableContents> contents_;

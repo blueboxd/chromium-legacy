@@ -87,7 +87,7 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
         mProfile = mBrowserFragmentController.getProfile();
         mBrowserFragmentController.setTopView(topContentsContainer);
 
-        mBrowserController = mBrowserFragmentController.getBrowserController();
+        mBrowserController = mBrowserFragmentController.getActiveBrowserController();
         mBrowserController.registerBrowserCallback(new BrowserCallback() {
             @Override
             public void visibleUrlChanged(Uri uri) {

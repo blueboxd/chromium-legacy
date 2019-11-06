@@ -1202,7 +1202,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface ScreenManager
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker]     method requestDisplays
+[Worker]     method getScreens
 [Worker] interface SecurityPolicyViolationEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter blockedURI

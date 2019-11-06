@@ -92,7 +92,11 @@ const base::Feature kExcludedMediaSuffixes{"PreviewsExcludedMediaSuffixes",
 // Support for enabling DeferAllScript previews which includes a base feature
 // and a UserConsistent-specific experiment feature.
 const base::FeatureState kDeferAllScriptDefaultFeatureState =
+#if defined(OS_ANDROID)
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#else   // !defined(OS_ANDROID)
     base::FEATURE_DISABLED_BY_DEFAULT;
+#endif  // defined(OS_ANDROID)
 const base::Feature kDeferAllScriptPreviews{"DeferAllScript",
                                             kDeferAllScriptDefaultFeatureState};
 const base::Feature kDeferAllScriptPreviewsUserConsistentStudy{

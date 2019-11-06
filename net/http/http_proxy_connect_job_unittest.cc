@@ -109,8 +109,8 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     if (GetParam() != HTTP)
       return nullptr;
     return base::MakeRefCounted<TransportSocketParams>(
-        HostPortPair(kHttpProxyHost, 80), disable_secure_dns,
-        OnHostResolutionCallback());
+        HostPortPair(kHttpProxyHost, 80), NetworkIsolationKey(),
+        disable_secure_dns, OnHostResolutionCallback());
   }
 
   scoped_refptr<SSLSocketParams> CreateHttpsProxyParams(
@@ -119,8 +119,8 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
       return nullptr;
     return base::MakeRefCounted<SSLSocketParams>(
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair(kHttpsProxyHost, 443), disable_secure_dns,
-            OnHostResolutionCallback()),
+            HostPortPair(kHttpsProxyHost, 443), NetworkIsolationKey(),
+            disable_secure_dns, OnHostResolutionCallback()),
         nullptr, nullptr, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
         PRIVACY_MODE_DISABLED, NetworkIsolationKey());
   }
@@ -886,8 +886,8 @@ TEST_P(HttpProxyConnectJobTest, SpdySessionKeyDisableSecureDns) {
   TestConnectJobDelegate test_delegate;
   auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
       base::MakeRefCounted<TransportSocketParams>(
-          HostPortPair(kHttpsProxyHost, 443), true /* disable_secure_dns */,
-          OnHostResolutionCallback()),
+          HostPortPair(kHttpsProxyHost, 443), NetworkIsolationKey(),
+          true /* disable_secure_dns */, OnHostResolutionCallback()),
       nullptr, nullptr, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
       PRIVACY_MODE_DISABLED, NetworkIsolationKey());
   auto http_proxy_params = base::MakeRefCounted<HttpProxySocketParams>(

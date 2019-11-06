@@ -289,58 +289,42 @@ struct TraceTrait<base::Optional<T>> {
   }
 };
 
-// The parameter Strongify serve as an override for weak handling. If it is set
-// to true, we ignore the kWeakHandlingFlag provided by the traits and always
-// trace strongly (i.e. using kNoWeakHandling).
-template <typename Key,
-          typename Value,
-          typename KeyTraits,
-          typename ValueTraits,
-          bool Strongify>
-struct TraceKeyValuePairTraits {
-  static constexpr bool kKeyIsWeak =
-      KeyTraits::kWeakHandlingFlag == WTF::kWeakHandling;
-  static constexpr bool kValueIsWeak =
-      ValueTraits::kWeakHandlingFlag == WTF::kWeakHandling;
+// Reorders parameters for use in blink::Visitor::VisitEphemeronKeyValuePair.
+template <typename _KeyType,
+          typename _ValueType,
+          typename _KeyTraits,
+          typename _ValueTraits,
+          bool = WTF::IsWeak<_ValueType>::value>
+struct EphemeronKeyValuePair {
+  using KeyType = _KeyType;
+  using ValueType = _ValueType;
+  using KeyTraits = _KeyTraits;
+  using ValueTraits = _ValueTraits;
 
-  static bool IsAlive(Key& key, Value& value) {
-    return (blink::TraceCollectionIfEnabled < Strongify
-                ? WTF::kNoWeakHandling
-                : KeyTraits::kWeakHandlingFlag,
-            Key, KeyTraits > ::IsAlive(key)) &&
-                   blink::TraceCollectionIfEnabled < Strongify
-               ? WTF::kNoWeakHandling
-               : ValueTraits::kWeakHandlingFlag,
-           Value, ValueTraits > ::IsAlive(value);
-  }
+  EphemeronKeyValuePair(KeyType* k, ValueType* v) : key(k), value(v) {}
+  KeyType* key;
+  ValueType* value;
+};
 
-  // Trace the value only if the key is alive.
-  template <bool is_ephemeron = kKeyIsWeak && !kValueIsWeak>
-  static bool Trace(Visitor* visitor, Key& key, Value& value) {
-    const bool key_is_dead = blink::TraceCollectionIfEnabled < Strongify
-                                 ? WTF::kNoWeakHandling
-                                 : KeyTraits::kWeakHandlingFlag,
-               Key, KeyTraits > ::Trace(visitor, &key);
-    if (key_is_dead && !Strongify)
-      return true;
-    return TraceCollectionIfEnabled < Strongify
-               ? WTF::kNoWeakHandling
-               : ValueTraits::kWeakHandlingFlag,
-           Value, ValueTraits > ::Trace(visitor, &value);
-  }
-
-  // Specializations for ephemerons:
-  template <>
-  static bool Trace<true>(Visitor* visitor, Key& key, Value& value) {
-    return visitor->VisitEphemeronKeyValuePair(
-        &key, &value,
-        TraceCollectionIfEnabled < Strongify ? WTF::kNoWeakHandling
-                                             : KeyTraits::kWeakHandlingFlag,
-        Key, KeyTraits > ::Trace,
-        TraceCollectionIfEnabled < Strongify ? WTF::kNoWeakHandling
-                                             : ValueTraits::kWeakHandlingFlag,
-        Value, ValueTraits > ::Trace);
-  }
+template <typename _KeyType,
+          typename _ValueType,
+          typename _KeyTraits,
+          typename _ValueTraits>
+struct EphemeronKeyValuePair<_KeyType,
+                             _ValueType,
+                             _KeyTraits,
+                             _ValueTraits,
+                             true> : EphemeronKeyValuePair<_ValueType,
+                                                           _KeyType,
+                                                           _ValueTraits,
+                                                           _KeyTraits,
+                                                           false> {
+  EphemeronKeyValuePair(_KeyType* k, _ValueType* v)
+      : EphemeronKeyValuePair<_ValueType,
+                              _KeyType,
+                              _ValueTraits,
+                              _KeyTraits,
+                              false>(v, k) {}
 };
 
 }  // namespace blink
@@ -558,77 +542,75 @@ template <typename Key, typename Value, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling,
                               KeyValuePair<Key, Value>,
                               Traits> {
+  using EphemeronHelper =
+      blink::EphemeronKeyValuePair<Key,
+                                   Value,
+                                   typename Traits::KeyTraits,
+                                   typename Traits::ValueTraits>;
+
   static bool Trace(blink::Visitor* visitor, KeyValuePair<Key, Value>& self) {
-    static_assert(IsTraceableInCollectionTrait<Traits>::value ||
-                      Traits::kWeakHandlingFlag == WTF::kWeakHandling,
-                  "T should not be traced");
-    blink::TraceKeyValuePairTraits<Key, Value, typename Traits::KeyTraits,
-                                   typename Traits::ValueTraits,
-                                   true>::Trace(visitor, self.key, self.value);
+    if (WTF::IsWeak<Key>::value != WTF::IsWeak<Value>::value) {
+      // Strongification of Weak/Strong and Strong/Weak.
+      EphemeronHelper helper(&self.key, &self.value);
+      visitor->VisitEphemeronKeyValuePair(
+          helper.key, helper.value,
+          blink::TraceCollectionIfEnabled<
+              kNoWeakHandling, typename EphemeronHelper::KeyType,
+              typename EphemeronHelper::KeyTraits>::Trace,
+          blink::TraceCollectionIfEnabled<
+              kNoWeakHandling, typename EphemeronHelper::ValueType,
+              typename EphemeronHelper::ValueTraits>::Trace);
+    } else {
+      // Strongification of Strong/Strong or Weak/Weak. Order does not matter
+      // here.
+      blink::TraceCollectionIfEnabled<
+          kNoWeakHandling, Key, typename Traits::KeyTraits>::Trace(visitor,
+                                                                   &self.key);
+      blink::TraceCollectionIfEnabled<
+          kNoWeakHandling, Value,
+          typename Traits::ValueTraits>::Trace(visitor, &self.value);
+    }
     return false;
   }
 };
 
 template <typename Key, typename Value, typename Traits>
 struct TraceInCollectionTrait<kWeakHandling, KeyValuePair<Key, Value>, Traits> {
-  static constexpr bool kKeyIsWeak =
-      Traits::KeyTraits::kWeakHandlingFlag == kWeakHandling;
-  static constexpr bool kValueIsWeak =
-      Traits::ValueTraits::kWeakHandlingFlag == kWeakHandling;
-  static const bool kKeyHasStrongRefs =
-      IsTraceableInCollectionTrait<typename Traits::KeyTraits>::value;
-  static const bool kValueHasStrongRefs =
-      IsTraceableInCollectionTrait<typename Traits::ValueTraits>::value;
+  using EphemeronHelper =
+      blink::EphemeronKeyValuePair<Key,
+                                   Value,
+                                   typename Traits::KeyTraits,
+                                   typename Traits::ValueTraits>;
+
+  template <typename T>
+  static constexpr WeakHandlingFlag GetWeaknessFlag() {
+    return WTF::IsWeak<T>::value ? kWeakHandling : kNoWeakHandling;
+  }
 
   static bool IsAlive(KeyValuePair<Key, Value>& self) {
-    static_assert(!kKeyIsWeak || !kValueIsWeak || !kKeyHasStrongRefs ||
-                      !kValueHasStrongRefs,
-                  "this configuration is disallowed to avoid unexpected leaks");
-    if ((kValueIsWeak && !kKeyIsWeak) ||
-        (kValueIsWeak && kKeyIsWeak && !kValueHasStrongRefs)) {
-      // Check value first. The only difference between checking the key first
-      // or the checking the value first is the order in which we pass them.
-      return blink::TraceKeyValuePairTraits<
-          Value, Key, typename Traits::ValueTraits, typename Traits::KeyTraits,
-          false>::IsAlive(self.value, self.key);
-    }
-    // Check key first.
-    return blink::TraceKeyValuePairTraits<
-        Key, Value, typename Traits::KeyTraits, typename Traits::ValueTraits,
-        false>::IsAlive(self.key, self.value);
+    // Needed for Weak/Weak, Strong/Weak (reverse ephemeron), and Weak/Strong
+    // (ephemeron). Order of invocation does not matter as tracing weak key or
+    // value does not have any side effects.
+    return blink::TraceCollectionIfEnabled<
+               GetWeaknessFlag<Key>(), Key,
+               typename Traits::KeyTraits>::IsAlive(self.key) &&
+           blink::TraceCollectionIfEnabled<
+               GetWeaknessFlag<Value>(), Value,
+               typename Traits::ValueTraits>::IsAlive(self.value);
   }
 
   static bool Trace(blink::Visitor* visitor, KeyValuePair<Key, Value>& self) {
-    // This is the core of the ephemeron-like functionality.  If there is
-    // weakness on the key side then we first check whether there are
-    // dead weak pointers on that side, and if there are we don't mark the
-    // value side (yet).  Conversely if there is weakness on the value side
-    // we check that first and don't mark the key side yet if we find dead
-    // weak pointers.
-    // Corner case: If there is weakness on both the key and value side,
-    // and there are also strong pointers on the both sides then we could
-    // unexpectedly leak.  The scenario is that the weak pointer on the key
-    // side is alive, which causes the strong pointer on the key side to be
-    // marked.  If that then results in the object pointed to by the weak
-    // pointer on the value side being marked live, then the whole
-    // key-value entry is leaked.  To avoid unexpected leaking, we disallow
-    // this case, but if you run into this assert, please reach out to Blink
-    // reviewers, and we may relax it.
-    static_assert(!kKeyIsWeak || !kValueIsWeak || !kKeyHasStrongRefs ||
-                      !kValueHasStrongRefs,
-                  "this configuration is disallowed to avoid unexpected leaks");
-    if ((kValueIsWeak && !kKeyIsWeak) ||
-        (kValueIsWeak && kKeyIsWeak && !kValueHasStrongRefs)) {
-      // Check value first. The only difference between checking the key first
-      // or the checking the value first is the order in which we pass them.
-      return blink::TraceKeyValuePairTraits<
-          Value, Key, typename Traits::ValueTraits, typename Traits::KeyTraits,
-          false>::Trace(visitor, self.value, self.key);
-    }
-    // Check key first.
-    return blink::TraceKeyValuePairTraits<
-        Key, Value, typename Traits::KeyTraits, typename Traits::ValueTraits,
-        false>::Trace(visitor, self.key, self.value);
+    EphemeronHelper helper(&self.key, &self.value);
+    return visitor->VisitEphemeronKeyValuePair(
+        helper.key, helper.value,
+        blink::TraceCollectionIfEnabled<
+            GetWeaknessFlag<typename EphemeronHelper::KeyType>(),
+            typename EphemeronHelper::KeyType,
+            typename EphemeronHelper::KeyTraits>::Trace,
+        blink::TraceCollectionIfEnabled<
+            GetWeaknessFlag<typename EphemeronHelper::ValueType>(),
+            typename EphemeronHelper::ValueType,
+            typename EphemeronHelper::ValueTraits>::Trace);
   }
 };
 

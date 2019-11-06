@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view_observer.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
@@ -27,11 +27,10 @@ bool MediaDialogView::has_been_opened_ = false;
 
 // static
 void MediaDialogView::ShowDialog(views::View* anchor_view,
-                                 MediaToolbarButtonController* controller,
-                                 service_manager::Connector* connector) {
+                                 MediaNotificationService* service) {
   DCHECK(!instance_);
-  DCHECK(controller);
-  instance_ = new MediaDialogView(anchor_view, controller, connector);
+  DCHECK(service);
+  instance_ = new MediaDialogView(anchor_view, service);
 
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(instance_);
@@ -45,7 +44,7 @@ void MediaDialogView::ShowDialog(views::View* anchor_view,
 // static
 void MediaDialogView::HideDialog() {
   if (IsShowing()) {
-    instance_->controller_->SetDialogDelegate(nullptr);
+    instance_->service_->SetDialogDelegate(nullptr);
     instance_->GetWidget()->Close();
   }
 
@@ -110,7 +109,7 @@ void MediaDialogView::AddedToWidget() {
   SetPaintToLayer();
   layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(corner_radius));
 
-  controller_->SetDialogDelegate(this);
+  service_->SetDialogDelegate(this);
 }
 
 gfx::Size MediaDialogView::CalculatePreferredSize() const {
@@ -155,13 +154,12 @@ MediaDialogView::GetNotificationsForTesting() const {
 }
 
 MediaDialogView::MediaDialogView(views::View* anchor_view,
-                                 MediaToolbarButtonController* controller,
-                                 service_manager::Connector* connector)
+                                 MediaNotificationService* service)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      controller_(controller),
+      service_(service),
       active_sessions_view_(
           AddChildView(std::make_unique<MediaNotificationListView>())) {
-  DCHECK(controller_);
+  DCHECK(service_);
 }
 
 MediaDialogView::~MediaDialogView() {
@@ -179,6 +177,6 @@ void MediaDialogView::Init() {
 void MediaDialogView::WindowClosing() {
   if (instance_ == this) {
     instance_ = nullptr;
-    controller_->SetDialogDelegate(nullptr);
+    service_->SetDialogDelegate(nullptr);
   }
 }

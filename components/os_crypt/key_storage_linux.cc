@@ -34,6 +34,8 @@ const char KeyStorageLinux::kFolderName[] = "Chromium Keys";
 const char KeyStorageLinux::kKey[] = "Chromium Safe Storage";
 #endif
 
+#if defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
+
 namespace {
 
 const char* SelectedLinuxBackendToString(
@@ -59,6 +61,9 @@ const char* SelectedLinuxBackendToString(
 }
 
 }  // namespace
+
+#endif  // defined(USE_LIBSECRET) || defined(USE_KEYRING) ||
+        // defined(USE_KWALLET)
 
 // static
 std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(

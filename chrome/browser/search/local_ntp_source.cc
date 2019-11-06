@@ -613,13 +613,14 @@ class LocalNtpSource::SearchConfigurationProvider
     if (is_google) {
       config_data.SetBoolean(
           "richerPicker",
-          base::FeatureList::IsEnabled(features::kNtpCustomizationMenuV2));
+          base::FeatureList::IsEnabled(ntp_features::kCustomizationMenuV2));
       config_data.SetBoolean("chromeColors", base::FeatureList::IsEnabled(
-                                                 features::kChromeColors));
+                                                 ntp_features::kChromeColors));
       config_data.SetBoolean("chromeColorsCustomColorPicker",
                              base::FeatureList::IsEnabled(
-                                 features::kChromeColorsCustomColorPicker));
-      config_data.SetBoolean("realboxEnabled", features::IsNtpRealboxEnabled());
+                                 ntp_features::kChromeColorsCustomColorPicker));
+      config_data.SetBoolean("realboxEnabled",
+                             ntp_features::IsRealboxEnabled());
       config_data.SetBoolean(
           "suggestionTransparencyEnabled",
           base::FeatureList::IsEnabled(
@@ -1033,12 +1034,12 @@ void LocalNtpSource::StartDataRequest(
                                     "\" as=\"image\">";
     }
 
-    bool realbox_enabled = features::IsNtpRealboxEnabled();
+    bool realbox_enabled = ntp_features::IsRealboxEnabled();
     replacements["hiddenIfRealboxEnabled"] = realbox_enabled ? "hidden" : "";
     replacements["hiddenIfRealboxDisabled"] = realbox_enabled ? "" : "hidden";
 
     bool use_google_g_icon =
-        base::FeatureList::IsEnabled(features::kNtpRealboxUseGoogleGIcon);
+        base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon);
     replacements["realboxIconClass"] =
         use_google_g_icon ? "google-g-icon" : "search-icon";
 

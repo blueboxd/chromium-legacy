@@ -11,14 +11,19 @@
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/animation/animation_container.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
+class Widget;
 
 // An animation runner based on ui::Compositor.
 class CompositorAnimationRunner : public gfx::AnimationRunner,
-                                  public ui::CompositorAnimationObserver {
+                                  public ui::CompositorAnimationObserver,
+                                  public WidgetObserver {
  public:
-  explicit CompositorAnimationRunner(ui::Compositor* compositor);
+  explicit CompositorAnimationRunner(Widget* widget);
+  CompositorAnimationRunner(CompositorAnimationRunner&) = delete;
+  CompositorAnimationRunner& operator=(CompositorAnimationRunner&) = delete;
   ~CompositorAnimationRunner() override;
 
   // gfx::AnimationRunner:
@@ -28,37 +33,25 @@ class CompositorAnimationRunner : public gfx::AnimationRunner,
   void OnAnimationStep(base::TimeTicks timestamp) override;
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
+  // WidgetObserver:
+  void OnWidgetDestroying(Widget* widget) override;
+
  protected:
   // gfx::AnimationRunner:
   void OnStart(base::TimeDelta min_interval, base::TimeDelta elapsed) override;
 
  private:
-  // This observes Compositor's destruction and helps CompositorAnimationRunner
-  // to stop animation. we need this because CompositorAnimationRunner observes
-  // the Compositor only when it's animating.
-  class CompositorChecker : public ui::CompositorObserver {
-   public:
-    explicit CompositorChecker(CompositorAnimationRunner* runner);
-    CompositorChecker(const CompositorChecker& other) = delete;
-    CompositorChecker& operator=(const CompositorChecker& other) = delete;
-    ~CompositorChecker() override;
+  // When |widget_| is nullptr, it means the widget has been destroyed and
+  // |compositor_| must also be nullptr.
+  Widget* widget_;
 
-    // ui::CompositorObserver:
-    void OnCompositingShuttingDown(ui::Compositor* compositor) override;
-
-   private:
-    CompositorAnimationRunner* runner_;
-    ScopedObserver<ui::Compositor, ui::CompositorObserver> scoped_observer_{
-        this};
-  };
-
-  // When |compositor_| is nullptr, it means compositor has been shut down.
-  ui::Compositor* compositor_;
+  // When |compositor_| is nullptr, it means either the animation is not
+  // running, or the compositor or |widget_| associated with the compositor_ has
+  // been destroyed during animation.
+  ui::Compositor* compositor_ = nullptr;
 
   base::TimeDelta min_interval_ = base::TimeDelta::Max();
   base::TimeTicks last_tick_;
-
-  CompositorChecker checker_{this};
 };
 
 }  // namespace views

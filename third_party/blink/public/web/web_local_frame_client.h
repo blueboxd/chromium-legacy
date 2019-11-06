@@ -321,9 +321,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // is being dragged.
   virtual void SetMouseCapture(bool capture) {}
 
-  // Lifecycle of the frame has changed.
-  virtual void LifecycleStateChanged(mojom::FrameLifecycleState state) {}
-
   // Console messages ----------------------------------------------------
 
   // Whether or not we should report a detailed message for the given source.
@@ -838,10 +835,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Transfers user activation state from |source_frame| to the current frame.
   virtual void TransferUserActivationFrom(WebLocalFrame* source_frame) {}
-
-  // Evicts the page from the back forward cache due to e.g., JavaScript
-  // execution.
-  virtual void EvictFromBackForwardCache() {}
 };
 
 }  // namespace blink

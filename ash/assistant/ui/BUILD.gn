@@ -55,6 +55,7 @@ component("ui") {
     "assistant_web_container_view.h",
     "assistant_web_view.cc",
     "assistant_web_view.h",
+    "assistant_web_view_delegate.h",
     "base/assistant_button.cc",
     "base/assistant_button.h",
     "base/assistant_scroll_view.cc",

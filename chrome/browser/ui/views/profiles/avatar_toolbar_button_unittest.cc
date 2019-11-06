@@ -19,7 +19,7 @@ class AvatarToolbarButtonTest : public TestWithBrowserView {};
 #if !defined(OS_CHROMEOS)
 
 TEST_F(AvatarToolbarButtonTest, HighlightMeetsMinimumContrast) {
-  auto parent = std::make_unique<ToolbarIconContainerView>(browser());
+  auto parent = std::make_unique<ToolbarAccountIconContainerView>(browser());
   auto button = std::make_unique<AvatarToolbarButton>(browser(), parent.get());
   button->set_owned_by_client();
 

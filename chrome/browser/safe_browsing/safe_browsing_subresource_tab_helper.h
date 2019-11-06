@@ -22,7 +22,7 @@ class SafeBrowsingSubresourceTabHelper
   ~SafeBrowsingSubresourceTabHelper() override;
 
   // WebContentsObserver::
-  void DidFinishNavigation(
+  void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
 
  private:

@@ -27,7 +27,6 @@
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
-#include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "components/metrics/public/mojom/call_stack_profile_collector.mojom.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
@@ -160,7 +159,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 cros::mojom::CameraAppDeviceProvider,
 #endif
                 contextual_search::mojom::ContextualSearchJsApiService,
-                dom_distiller::mojom::DistillabilityService,
                 dom_distiller::mojom::DistillerJavaScriptService,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
                 extensions::KeepAlive,

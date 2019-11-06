@@ -11,8 +11,6 @@
 #include "ash/ash_export.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/data_decoder/public/mojom/data_decoder_service.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace aura {
@@ -44,12 +42,6 @@ class ASH_EXPORT ShellDelegate {
   virtual bool CanGoBack(gfx::NativeWindow window) const = 0;
 
   virtual void OpenKeyboardShortcutHelpPage() const {}
-
-  // Launches an instance of the Data Decoder service and returns a remote
-  // endpoint to communicate with it. In testing environments, this may return
-  // a disconnected Remote.
-  virtual mojo::Remote<data_decoder::mojom::DataDecoderService>
-  LaunchDataDecoder() = 0;
 };
 
 }  // namespace ash

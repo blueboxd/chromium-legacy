@@ -38,13 +38,6 @@ class X11CanvasSurface : public SurfaceOzoneCanvas {
   int MaxFramesPending() const override;
 
  private:
-  // Creates SkSurface associated to the |sk_canvas| if not nullptr. Otherwise,
-  // allocates raster SkSurface.
-  void CreateSkSurface(SkCanvas* sk_canvas);
-
-  // Current size of the software output device.
-  gfx::Size viewport_pixel_size_;
-
   // Current surface we paint to.
   sk_sp<SkSurface> surface_;
 

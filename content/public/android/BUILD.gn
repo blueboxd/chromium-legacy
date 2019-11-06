@@ -453,11 +453,6 @@ group("jni") {
 android_library("content_javatests") {
   testonly = true
 
-  srcjar_deps = [
-    "//content/shell/android:content_javatests_aidl",
-    "//ui/base:ui_base_cursor_type_java_enums_srcjar",
-  ]
-
   deps = [
     ":content_java",
     "//base:base_java",

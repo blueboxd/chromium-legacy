@@ -69,8 +69,8 @@ class SOCKSConnectJobTest : public testing::Test, public WithTaskEnvironment {
       bool disable_secure_dns = false) {
     return base::MakeRefCounted<SOCKSSocketParams>(
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair(kProxyHostName, kProxyPort), disable_secure_dns,
-            OnHostResolutionCallback()),
+            HostPortPair(kProxyHostName, kProxyPort), NetworkIsolationKey(),
+            disable_secure_dns, OnHostResolutionCallback()),
         socks_version == SOCKSVersion::V5,
         socks_version == SOCKSVersion::V4
             ? HostPortPair(kSOCKS4TestHost, kSOCKS4TestPort)

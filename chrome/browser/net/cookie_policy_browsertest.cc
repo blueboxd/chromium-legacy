@@ -36,10 +36,9 @@ const std::vector<std::string> kStorageTypes{
     "IndexedDb", "WebSql",       "CacheStorage", "ServiceWorker",
 };
 
-// TODO(crbug.com/1016355): WebLocks can't be blocked yet.
 const std::vector<std::string> kCrossTabCommunicationTypes{
     "SharedWorker",
-    //"WebLock",
+    "WebLock",
 };
 
 class CookiePolicyBrowserTest : public InProcessBrowserTest {

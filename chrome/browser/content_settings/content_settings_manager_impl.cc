@@ -145,6 +145,9 @@ void ContentSettingsManagerImpl::AllowStorageAccess(
       TabSpecificContentSettings::CacheStorageAccessed(
           render_process_id_, render_frame_id_, url, !allowed);
       break;
+    case StorageType::WEB_LOCKS:
+      // State not persisted, no need to record anything.
+      break;
   }
 
   std::move(callback).Run(allowed);

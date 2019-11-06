@@ -17,7 +17,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * Coordinator for the toolbar component that will be shown on top of the tab
- * grid components, used in {@link TabGridSheetCoordinator} and {@link TabGridDialogCoordinator}.
+ * grid components, used in {@link TabGridDialogCoordinator}.
  */
 class TabGridPanelToolbarCoordinator implements Destroyable {
     private final TabGroupUiToolbarView mToolbarView;
@@ -41,7 +41,7 @@ class TabGridPanelToolbarCoordinator implements Destroyable {
             PropertyModel toolbarPropertyModel, TabGridDialogParent dialog) {
         mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(context).inflate(
                 R.layout.bottom_tab_grid_toolbar, contentView, false);
-        mToolbarView.setupToolbarLayout(dialog != null);
+        mToolbarView.setupToolbarLayout();
         if (!FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
             mToolbarView.hideTabGroupsContinuationWidgets();
         }

@@ -1147,8 +1147,9 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest, TpmError) {
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
 
   test::OobeJS().ExpectVisiblePath({"tpm-error-message"});
-  test::OobeJS().ExpectVisiblePath({"reboot-button"});
-  test::OobeJS().Evaluate("document.getElementById('reboot-button').click()");
+  test::OobeJS().ExpectVisiblePath({"tpm-restart-button"});
+  test::OobeJS().Evaluate(
+      "document.getElementById('tpm-restart-button').click()");
 
   EXPECT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
 }

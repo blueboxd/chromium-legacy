@@ -25,10 +25,16 @@ namespace {
 class TestThumbnailImageDelegate : public ThumbnailImage::Delegate {
  public:
   TestThumbnailImageDelegate() = default;
-
   ~TestThumbnailImageDelegate() override = default;
 
-  void ThumbnailImageBeingObservedChanged(bool is_being_observed) override {}
+  void ThumbnailImageBeingObservedChanged(bool is_being_observed) override {
+    is_being_observed_ = is_being_observed;
+  }
+
+  bool is_being_observed() const { return is_being_observed_; }
+
+ private:
+  bool is_being_observed_ = false;
 };
 
 class ThumbnailTrackerTest : public ::testing::Test,
@@ -85,7 +91,7 @@ class ThumbnailTrackerTest : public ::testing::Test,
 
 using ::testing::_;
 
-TEST_F(ThumbnailTrackerTest, WatchTabGetsCurrentThumbnail) {
+TEST_F(ThumbnailTrackerTest, AddTabGetsCurrentThumbnail) {
   auto contents = CreateWebContents();
   auto thumbnail = GetTestingThumbnail(contents.get());
 
@@ -96,12 +102,13 @@ TEST_F(ThumbnailTrackerTest, WatchTabGetsCurrentThumbnail) {
   thumbnail->AssignSkBitmap(CreateTestingBitmap());
   encode_loop.Run();
 
-  // Verify that WatchTab() gets the current image, waiting for the decoding to
-  // happen.
+  // Verify that AddTab() gets the current image. This should happen
+  // immediately.
   EXPECT_CALL(thumbnail_updated_callback_, Run(contents.get(), _)).Times(1);
   thumbnail->set_async_operation_finished_callback_for_testing(
       base::RepeatingClosure());
-  thumbnail_tracker_.WatchTab(contents.get());
+  thumbnail_tracker_.AddTab(contents.get());
+  EXPECT_TRUE(tab_thumbnails_[contents.get()].delegate.is_being_observed());
 }
 
 TEST_F(ThumbnailTrackerTest, PropagatesThumbnailUpdate) {
@@ -111,8 +118,8 @@ TEST_F(ThumbnailTrackerTest, PropagatesThumbnailUpdate) {
   auto thumbnail2 = GetTestingThumbnail(contents2.get());
 
   // Since no thumbnail image exists yet, this shouldn't notify our callback.
-  thumbnail_tracker_.WatchTab(contents1.get());
-  thumbnail_tracker_.WatchTab(contents2.get());
+  thumbnail_tracker_.AddTab(contents1.get());
+  thumbnail_tracker_.AddTab(contents2.get());
 
   {
     ::testing::InSequence seq;
@@ -136,7 +143,7 @@ TEST_F(ThumbnailTrackerTest, PropagatesThumbnailUpdate) {
 TEST_F(ThumbnailTrackerTest, StopsObservingOnTabClose) {
   auto contents = CreateWebContents();
   auto thumbnail = GetTestingThumbnail(contents.get());
-  thumbnail_tracker_.WatchTab(contents.get());
+  thumbnail_tracker_.AddTab(contents.get());
 
   // |thumbnail| is still valid, but |thumbnail_tracker_| should stop watching
   // it when |contents| goes away.
@@ -148,4 +155,12 @@ TEST_F(ThumbnailTrackerTest, StopsObservingOnTabClose) {
       update_loop.QuitClosure());
   thumbnail->AssignSkBitmap(CreateTestingBitmap());
   update_loop.Run();
+}
+
+TEST_F(ThumbnailTrackerTest, RemoveTabStopsObservingThumbnail) {
+  auto contents = CreateWebContents();
+  auto thumbnail = GetTestingThumbnail(contents.get());
+  thumbnail_tracker_.AddTab(contents.get());
+  thumbnail_tracker_.RemoveTab(contents.get());
+  EXPECT_FALSE(tab_thumbnails_[contents.get()].delegate.is_being_observed());
 }

@@ -165,11 +165,9 @@ bool XShmImagePoolBase::Resize(const gfx::Size& pixel_size) {
   for (std::size_t i = 0; i < frame_states_.size(); ++i) {
     FrameState& state = frame_states_[i];
     state.image->data = state.shminfo_.shmaddr;
-    SkImageInfo image_info = SkImageInfo::Make(
-        state.image->width, state.image->height,
-        state.image->byte_order == LSBFirst ? kBGRA_8888_SkColorType
-                                            : kRGBA_8888_SkColorType,
-        kPremul_SkAlphaType);
+    SkImageInfo image_info =
+        SkImageInfo::Make(state.image->width, state.image->height,
+                          ColorTypeForVisual(visual_), kPremul_SkAlphaType);
     state.bitmap = SkBitmap();
     if (!state.bitmap.installPixels(image_info, state.image->data,
                                     state.image->bytes_per_line)) {

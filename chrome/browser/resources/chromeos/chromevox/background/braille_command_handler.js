@@ -31,8 +31,9 @@ BrailleCommandHandler.setEnabled = function(state) {
  * @return {boolean} True if evt was processed.
  */
 BrailleCommandHandler.onBrailleKeyEvent = function(evt, content) {
-  if (!BrailleCommandHandler.enabled_)
+  if (!BrailleCommandHandler.enabled_) {
     return true;
+  }
 
   EventSourceState.set(EventSourceType.BRAILLE_KEYBOARD);
 
@@ -64,13 +65,15 @@ BrailleCommandHandler.onBrailleKeyEvent = function(evt, content) {
           /** @type {number} */ (evt.displayPosition));
       break;
     case cvox.BrailleKeyCommand.CHORD:
-      if (!evt.brailleDots)
+      if (!evt.brailleDots) {
         return false;
+      }
 
       var command = BrailleCommandData.getCommand(evt.brailleDots);
       if (command) {
-        if (BrailleCommandHandler.onEditCommand_(command))
+        if (BrailleCommandHandler.onEditCommand_(command)) {
           CommandHandler.onCommand(command);
+        }
       }
       break;
     default:
@@ -109,21 +112,24 @@ BrailleCommandHandler.onRoutingCommand_ = function(text, position) {
     }
   }
 
-  if (!actionNodeSpan)
+  if (!actionNodeSpan) {
     return;
+  }
 
   var actionNode = actionNodeSpan.node;
   var offset = actionNodeSpan.offset;
-  if (actionNode.role === RoleType.INLINE_TEXT_BOX)
+  if (actionNode.role === RoleType.INLINE_TEXT_BOX) {
     actionNode = actionNode.parent;
+  }
   actionNode.doDefault();
 
   if (actionNode.role != RoleType.STATIC_TEXT &&
       !actionNode.state[StateType.EDITABLE])
     return;
 
-  if (!selectionSpan)
+  if (!selectionSpan) {
     selectionSpan = actionNodeSpan;
+  }
 
   if (actionNode.state.richlyEditable) {
     var start = interval ? interval.start : text.getSpanStart(selectionSpan);
@@ -155,8 +161,9 @@ BrailleCommandHandler.onEditCommand_ = function(command) {
     return true;
 
   var textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
-  if (!textEditHandler)
+  if (!textEditHandler) {
     return true;
+  }
 
   var isMultiline = AutomationPredicate.multiline(current.start.node);
   switch (command) {
@@ -177,14 +184,16 @@ BrailleCommandHandler.onEditCommand_ = function(command) {
       break;
     case 'previousObject':
     case 'previousLine':
-      if (!isMultiline || textEditHandler.isSelectionOnFirstLine())
+      if (!isMultiline || textEditHandler.isSelectionOnFirstLine()) {
         return true;
+      }
       BackgroundKeyboardHandler.sendKeyPress(38);
       break;
     case 'nextObject':
     case 'nextLine':
-      if (!isMultiline)
+      if (!isMultiline) {
         return true;
+      }
 
       if (textEditHandler.isSelectionOnLastLine()) {
         textEditHandler.moveToAfterEditText();

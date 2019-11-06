@@ -96,14 +96,7 @@ criteria:
 
 If you want to add something to the clang package that doesn't (yet?) meet
 these criteria, you can make package.py upload it to a separate zip file
-and then download it on an opt-in basis by requiring users to run a script
-to download the additional zip file. You can structure your script in a way that
-it downloads your additional zip automatically if the script detects an
-old version on disk, that way users have to run the download script just
-once. `tools/clang/scripts/download_lld_mac.py` is an example for this
-(It doesn't do the "only download if old version is on disk or if requested"
-bit, and hence doesn't run as a default DEPS hook. TODO(thakis): Make
-coverage stuff a better example and link to that.)
+and then download it on an opt-in basis by using update.py's --package option.
 
 If you're adding a new feature that you expect will meet the inclusion criteria
 eventually but doesn't yet, start by having your things in a separate zip

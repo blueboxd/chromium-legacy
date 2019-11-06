@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_event_response_util.h"
 #include "components/payments/content/payment_request_converter.h"
+#include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/payment_app_provider.h"
@@ -452,7 +453,7 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
 
   // Return true if 'basic-card' is not the only matched payment method. This
   // assumes that there is no duplicated payment methods.
-  if (method != "basic-card")
+  if (method != methods::kBasicCard)
     return true;
 
   // Checking the capabilities of this instrument against the modifier.

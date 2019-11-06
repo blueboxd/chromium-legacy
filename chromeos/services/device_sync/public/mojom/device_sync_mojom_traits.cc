@@ -43,4 +43,41 @@ bool EnumTraits<chromeos::device_sync::mojom::ConnectivityStatus,
   return false;
 }
 
+chromeos::device_sync::mojom::FeatureStatusChange
+EnumTraits<chromeos::device_sync::mojom::FeatureStatusChange,
+           chromeos::device_sync::FeatureStatusChange>::
+    ToMojom(chromeos::device_sync::FeatureStatusChange input) {
+  switch (input) {
+    case chromeos::device_sync::FeatureStatusChange::kEnableExclusively:
+      return chromeos::device_sync::mojom::FeatureStatusChange::
+          kEnableExclusively;
+    case chromeos::device_sync::FeatureStatusChange::kEnableNonExclusively:
+      return chromeos::device_sync::mojom::FeatureStatusChange::
+          kEnableNonExclusively;
+    case chromeos::device_sync::FeatureStatusChange::kDisable:
+      return chromeos::device_sync::mojom::FeatureStatusChange::kDisable;
+  }
+}
+
+bool EnumTraits<chromeos::device_sync::mojom::FeatureStatusChange,
+                chromeos::device_sync::FeatureStatusChange>::
+    FromMojom(chromeos::device_sync::mojom::FeatureStatusChange input,
+              chromeos::device_sync::FeatureStatusChange* out) {
+  switch (input) {
+    case chromeos::device_sync::mojom::FeatureStatusChange::kEnableExclusively:
+      *out = chromeos::device_sync::FeatureStatusChange::kEnableExclusively;
+      return true;
+    case chromeos::device_sync::mojom::FeatureStatusChange::
+        kEnableNonExclusively:
+      *out = chromeos::device_sync::FeatureStatusChange::kEnableNonExclusively;
+      return true;
+    case chromeos::device_sync::mojom::FeatureStatusChange::kDisable:
+      *out = chromeos::device_sync::FeatureStatusChange::kDisable;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace mojo

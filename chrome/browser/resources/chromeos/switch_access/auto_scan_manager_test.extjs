@@ -38,8 +38,9 @@ SwitchAccessAutoScanManagerTest.prototype = {
     };
 
     window.clearInterval = function(intervalId) {
-      if (intervalId)
+      if (intervalId) {
         window.intervalCount--;
+      }
       window.defaultClearInterval(intervalId);
     };
 

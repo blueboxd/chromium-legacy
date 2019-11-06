@@ -5,10 +5,13 @@
 #include "components/safe_browsing/realtime/url_lookup_service.h"
 
 #include "base/base64url.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -147,7 +150,23 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
 }
 
 bool RealTimeUrlLookupService::CanCheckUrl(const GURL& url) const {
-  return url.SchemeIsHTTPOrHTTPS();
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    return false;
+  }
+
+  if (net::IsLocalhost(url)) {
+    // Includes: "//localhost/", "//localhost.localdomain/", "//127.0.0.1/"
+    return false;
+  }
+
+  net::IPAddress ip_address;
+  if (url.HostIsIPAddress() && ip_address.AssignFromIPLiteral(url.host()) &&
+      !ip_address.IsPubliclyRoutable()) {
+    // Includes: "//192.168.1.1/", "//172.16.2.2/", "//10.1.1.1/"
+    return false;
+  }
+
+  return true;
 }
 
 std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(

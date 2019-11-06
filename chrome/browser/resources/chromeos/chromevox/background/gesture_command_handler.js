@@ -38,14 +38,17 @@ GestureCommandHandler.getEnabled = function() {
  * @private
  */
 GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
-  if (!GestureCommandHandler.enabled_ || !ChromeVoxState.instance.currentRange)
+  if (!GestureCommandHandler.enabled_ ||
+      !ChromeVoxState.instance.currentRange) {
     return;
+  }
 
   EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
   var commandData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
-  if (!commandData)
+  if (!commandData) {
     return;
+  }
 
   Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
 
@@ -72,8 +75,9 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
   }
 
   var command = commandData.command;
-  if (command)
+  if (command) {
     CommandHandler.onCommand(command);
+  }
 };
 
 /** @private {boolean} */

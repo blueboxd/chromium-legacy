@@ -66,10 +66,12 @@ LogStore.prototype.getLogsOfType = function(LogType) {
   var returnLogs = [];
   for (var i = 0; i < LogStore.LOG_LIMIT; i++) {
     var index = (this.startIndex_ + i) % LogStore.LOG_LIMIT;
-    if (!this.logs_[index])
+    if (!this.logs_[index]) {
       continue;
-    if (this.logs_[index].logType == LogType)
+    }
+    if (this.logs_[index].logType == LogType) {
       returnLogs.push(this.logs_[index]);
+    }
   }
   return returnLogs;
 };
@@ -84,8 +86,9 @@ LogStore.prototype.getLogs = function() {
   var returnLogs = [];
   for (var i = 0; i < LogStore.LOG_LIMIT; i++) {
     var index = (this.startIndex_ + i) % LogStore.LOG_LIMIT;
-    if (!this.logs_[index])
+    if (!this.logs_[index]) {
       continue;
+    }
     returnLogs.push(this.logs_[index]);
   }
   return returnLogs;
@@ -98,8 +101,9 @@ LogStore.prototype.getLogs = function() {
  * @param {!LogStore.LogType} LogType
  */
 LogStore.prototype.writeTextLog = function(logContent, LogType) {
-  if (this.shouldSkipOutput_())
+  if (this.shouldSkipOutput_()) {
     return;
+  }
 
   this.writeLog(new TextLog(logContent, LogType));
 };
@@ -110,8 +114,9 @@ LogStore.prototype.writeTextLog = function(logContent, LogType) {
  * @param {!TreeDumper} logContent
  */
 LogStore.prototype.writeTreeLog = function(logContent) {
-  if (this.shouldSkipOutput_())
+  if (this.shouldSkipOutput_()) {
     return;
+  }
 
   this.writeLog(new TreeLog(logContent));
 };
@@ -122,13 +127,15 @@ LogStore.prototype.writeTreeLog = function(logContent) {
  * @param {!BaseLog} log
  */
 LogStore.prototype.writeLog = function(log) {
-  if (this.shouldSkipOutput_())
+  if (this.shouldSkipOutput_()) {
     return;
+  }
 
   this.logs_[this.startIndex_] = log;
   this.startIndex_ += 1;
-  if (this.startIndex_ == LogStore.LOG_LIMIT)
+  if (this.startIndex_ == LogStore.LOG_LIMIT) {
     this.startIndex_ = 0;
+  }
 };
 
 /**
@@ -163,7 +170,8 @@ LogStore.instance;
  * @return {LogStore}
  */
 LogStore.getInstance = function() {
-  if (!LogStore.instance)
+  if (!LogStore.instance) {
     LogStore.instance = new LogStore();
+  }
   return LogStore.instance;
 };

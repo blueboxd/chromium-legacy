@@ -51,17 +51,20 @@ DownloadHandler.init = function() {
   chrome.downloads.search(
       {orderBy: ['-startTime'], limit: DownloadHandler.FILE_LIMIT_},
       function(results) {
-        if (!results || results.length == 0)
+        if (!results || results.length == 0) {
           return;
+        }
 
         for (var i = 0; i < results.length; ++i) {
           var item = results[i];
           var state = item.state;
-          if (!state)
+          if (!state) {
             continue;
+          }
           // If download is in progress, start tracking it.
-          if (state === chrome.downloads.State.IN_PROGRESS)
+          if (state === chrome.downloads.State.IN_PROGRESS) {
             DownloadHandler.startTrackingDownload(item);
+          }
         }
       });
 
@@ -99,12 +102,13 @@ DownloadHandler.init = function() {
       var msgId = '';
       // Only give notification for COMPLETE and INTERRUPTED.
       // IN_PROGRESS notifications are given by notifyProgress function.
-      if (currentState === chrome.downloads.State.COMPLETE)
+      if (currentState === chrome.downloads.State.COMPLETE) {
         msgId = 'download_completed';
-      else if (currentState === chrome.downloads.State.INTERRUPTED)
+      } else if (currentState === chrome.downloads.State.INTERRUPTED) {
         msgId = 'download_stopped';
-      else
+      } else {
         return;
+      }
 
       var optSubs = [storedItem.fileName];
       clearInterval(storedItem.notifyProgressId);
@@ -140,8 +144,9 @@ DownloadHandler.init = function() {
  */
 DownloadHandler.notifyProgress = function(id) {
   chrome.downloads.search({id: id}, function(results) {
-    if (!results || (results.length != 1))
+    if (!results || (results.length != 1)) {
       return;
+    }
     // Results should have only one item because IDs are unique.
     var updatedItem = results[0];
     var storedItem = DownloadHandler.downloadItemData_[updatedItem.id];
@@ -163,15 +168,16 @@ DownloadHandler.notifyProgress = function(id) {
       storedItem.percentComplete = percentComplete;
 
       // Determine time remaining and units.
-      if (!updatedItem.estimatedEndTime)
+      if (!updatedItem.estimatedEndTime) {
         return;
+      }
       var endTime = new Date(updatedItem.estimatedEndTime);
       var timeRemaining = Math.round((endTime.getTime() - Date.now()) / 1000);
       var timeUnit = '';
 
-      if (!timeRemaining || (timeRemaining < 0))
+      if (!timeRemaining || (timeRemaining < 0)) {
         return;
-      else if (timeRemaining < 60) {
+      } else if (timeRemaining < 60) {
         // Seconds. Use up until 1 minute remaining.
         timeUnit = new goog.i18n.MessageFormat(Msgs.getMsg('seconds')).format({
           COUNT: timeRemaining
@@ -210,8 +216,9 @@ DownloadHandler.notifyProgress = function(id) {
 DownloadHandler.startTrackingDownload = function(item) {
   var id = item.id;
   // Don't add if we are already tracking file.
-  if (DownloadHandler.downloadItemData_[id])
+  if (DownloadHandler.downloadItemData_[id]) {
     return;
+  }
 
   var fullPath = (item.filename.current || item.filename);
   var fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
@@ -219,8 +226,9 @@ DownloadHandler.startTrackingDownload = function(item) {
       DownloadHandler.notifyProgress.bind(DownloadHandler, id),
       DownloadHandler.INTERVAL_TIME_MILLISECONDS_);
   var percentComplete = 0;
-  if (item.bytesReceived && item.totalBytes)
+  if (item.bytesReceived && item.totalBytes) {
     percentComplete = Math.round((item.bytesReceived / item.totalBytes) * 100);
+  }
 
   DownloadHandler.downloadItemData_[id] = {
     fileName: fileName,

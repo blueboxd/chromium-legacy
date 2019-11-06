@@ -536,8 +536,9 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ActiveOrInactive', function() {
 
       function focusThen(toFocus, then) {
         toFocus.addEventListener('focus', function innerFocus(e) {
-          if (e.target != toFocus)
+          if (e.target != toFocus) {
             return;
+          }
           rootNode.removeEventListener('focus', innerFocus, true);
           then && then();
         }, true);
@@ -638,10 +639,11 @@ TEST_F('ChromeVoxBackgroundTest', 'Checkbox', function() {
       var go = document.getElementById('go');
       var isChecked = true;
       go.addEventListener('click', function(e) {
-        if (isChecked)
+        if (isChecked) {
           go.setAttribute('aria-checked', true);
-        else
+        } else {
           go.removeAttribute('aria-checked');
+        }
         isChecked = !isChecked;
       });
     </script>
@@ -680,14 +682,16 @@ TEST_F('ChromeVoxBackgroundTest', 'ForwardNavigationThroughIframeButtons', funct
 
   var running = false;
   var runTestIfIframeIsLoaded = function(rootNode) {
-    if (running)
+    if (running) {
       return;
+    }
 
     // Return if the iframe hasn't loaded yet.
     var iframe = rootNode.find({role: RoleType.IFRAME});
     var childDoc = iframe.firstChild;
-    if (!childDoc || childDoc.children.length == 0)
+    if (!childDoc || childDoc.children.length == 0) {
       return;
+    }
 
     running = true;
     var beforeButton = rootNode.find({role: RoleType.BUTTON,
@@ -722,14 +726,16 @@ TEST_F('ChromeVoxBackgroundTest', 'ForwardObjectNavigationThroughIframes', funct
 
   var running = false;
   var runTestIfIframeIsLoaded = function(rootNode) {
-    if (running)
+    if (running) {
       return;
+    }
 
     // Return if the iframe hasn't loaded yet.
     var iframe = rootNode.find({role: 'iframe'});
     var childDoc = iframe.firstChild;
-    if (!childDoc || childDoc.children.length == 0)
+    if (!childDoc || childDoc.children.length == 0) {
       return;
+    }
 
     running = true;
     var suppressFocusActionOutput = function() {
@@ -1038,8 +1044,9 @@ TEST_F('ChromeVoxBackgroundTest', 'Selection', function() {
   */}, function(root) {
     // Fakes a toggleSelection command.
     root.addEventListener('textSelectionChanged', function() {
-      if (root.focusOffset == 3)
+      if (root.focusOffset == 3) {
         CommandHandler.onCommand('toggleSelection');
+      }
     }, true);
 
     mockFeedback.call(doCmd('toggleSelection'))
@@ -1990,10 +1997,11 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_PopUpButtonSetSize', function() {
       var button = document.getElementById('button');
       var expanded = false;
       button.addEventListener('click', function(e) {
-        if (expanded)
+        if (expanded) {
           button.setAttribute('aria-expanded', false);
-        else
+        } else {
           button.setAttribute('aria-expanded', true);
+        }
         expanded = !expanded;
       });
     </script>

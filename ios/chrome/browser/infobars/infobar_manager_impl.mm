@@ -33,7 +33,8 @@ infobars::InfoBarDelegate::NavigationDetails CreateNavigationDetails(
   navigation_details.is_reload =
       ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD);
   navigation_details.is_redirect = ui::PageTransitionIsRedirect(transition);
-
+  navigation_details.is_form_submission =
+      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_FORM_SUBMIT);
   return navigation_details;
 }
 

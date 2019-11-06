@@ -10,4 +10,6 @@ package org.chromium.weblayer_private.aidl;
  */
 interface IBrowserControllerClient {
   void visibleUrlChanged(in String url) = 0;
+
+  void onNewBrowser(in IBrowserController controller, in int mode) = 1;
 }

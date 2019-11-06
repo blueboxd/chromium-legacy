@@ -1,6 +1,11 @@
 include_rules = [
   "+ios/third_party/earl_grey2/src",
   "+net",
-  "+third_party/google_toolbox_for_mac",
   "+third_party/ocmock",
 ]
+
+specific_include_rules = {
+  "ocmock_complex_type_helper\.h": [
+    "+third_party/google_toolbox_for_mac/src/Foundation/GTMLightweightProxy.h",
+  ],
+}

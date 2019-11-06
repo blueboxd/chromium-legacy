@@ -87,12 +87,14 @@ LanguageSwitching.init = function() {
  */
 LanguageSwitching.assignLanguagesForStringAttribute = function(
     node, stringAttribute, appendStringWithLanguage) {
-  if (!node)
+  if (!node) {
     return;
+  }
 
   var stringAttributeValue = node[stringAttribute];
-  if (!stringAttributeValue)
+  if (!stringAttributeValue) {
     return;
+  }
 
   var languageAnnotation;
   // Quick note:
@@ -183,19 +185,22 @@ LanguageSwitching.decideNewLanguage = function(
   // display their content in.
 
   // Use subNodeLanguage if probability exceeds threshold.
-  if (probability > LanguageSwitching.PROBABILITY_THRESHOLD_)
+  if (probability > LanguageSwitching.PROBABILITY_THRESHOLD_) {
     return subNodeLanguage;
+  }
 
   var nodeLevelLanguage = node.detectedLanguage || node.language;
   // We do not have enough information to make a confident language assignment,
   // so we fall back on the UI language of the browser.
-  if (!nodeLevelLanguage)
+  if (!nodeLevelLanguage) {
     return LanguageSwitching.browserUILanguage_;
+  }
 
   nodeLevelLanguage = nodeLevelLanguage.toLowerCase();
 
-  if (LanguageSwitching.isValidLanguageCode(nodeLevelLanguage))
+  if (LanguageSwitching.isValidLanguageCode(nodeLevelLanguage)) {
     return nodeLevelLanguage;
+  }
 
   return LanguageSwitching.browserUILanguage_;
 };
@@ -236,8 +241,9 @@ LanguageSwitching.didLanguageSwitch = function(newLanguage) {
   // Compare language components of current and new language codes.
   var newLanguageComponents = newLanguage.split('-');
   var currentLanguageComponents = LanguageSwitching.currentLanguage_.split('-');
-  if (newLanguageComponents[0] !== currentLanguageComponents[0])
+  if (newLanguageComponents[0] !== currentLanguageComponents[0]) {
     return true;
+  }
   return false;
 };
 
@@ -254,12 +260,15 @@ LanguageSwitching.isValidLanguageCode = function(languageCode) {
   // For example, given the language code 'en-US', 'en' is the language
   // component.
   var langComponentArray = languageCode.split('-');
-  if (!langComponentArray || (langComponentArray.length === 0))
+  if (!langComponentArray || (langComponentArray.length === 0)) {
     return false;
+  }
 
   // The language component should have length of either two or three.
-  if (langComponentArray[0].length !== 2 && langComponentArray[0].length !== 3)
+  if (langComponentArray[0].length !== 2 &&
+      langComponentArray[0].length !== 3) {
     return false;
+  }
 
   // Use the accessibilityPrivate.getDisplayLanguage() API to validate language
   // code. If the language code is invalid, then this API returns an empty
@@ -282,8 +291,9 @@ LanguageSwitching.isValidLanguageCode = function(languageCode) {
 LanguageSwitching.hasVoiceForLanguage = function(languageCode) {
   // Extract language from languageCode.
   var languageCodeComponents = languageCode.split('-');
-  if (!languageCodeComponents || (languageCodeComponents.length === 0))
+  if (!languageCodeComponents || (languageCodeComponents.length === 0)) {
     return false;
+  }
   var language = languageCodeComponents[0];
   for (var i = 0; i < LanguageSwitching.availableVoices_.length; ++i) {
     // Note: availableVoices_[i].lang is always in the form of
@@ -291,8 +301,9 @@ LanguageSwitching.hasVoiceForLanguage = function(languageCode) {
     // https://developer.chrome.com/apps/tts#type-TtsVoice
     var candidateLanguage =
         LanguageSwitching.availableVoices_[i].lang.toLowerCase().split('-')[0];
-    if (language === candidateLanguage)
+    if (language === candidateLanguage) {
       return true;
+    }
   }
   return false;
 };

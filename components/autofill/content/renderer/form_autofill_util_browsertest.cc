@@ -503,12 +503,12 @@ TEST_F(FormAutofillUtilsTest, FindFormControlByUniqueId) {
   auto input2 = doc.GetElementById("i2").To<WebInputElement>();
   uint32_t non_existing_id = input2.UniqueRendererFormControlId() + 1000;
 
-  EXPECT_EQ(input1, FindFormControlElementsByUniqueRendererId(
+  EXPECT_EQ(input1, FindFormControlElementByUniqueRendererId(
                         doc, input1.UniqueRendererFormControlId()));
-  EXPECT_EQ(input2, FindFormControlElementsByUniqueRendererId(
+  EXPECT_EQ(input2, FindFormControlElementByUniqueRendererId(
                         doc, input2.UniqueRendererFormControlId()));
   EXPECT_TRUE(
-      FindFormControlElementsByUniqueRendererId(doc, non_existing_id).IsNull());
+      FindFormControlElementByUniqueRendererId(doc, non_existing_id).IsNull());
 }
 
 TEST_F(FormAutofillUtilsTest, FindFormControlElementsByUniqueIdNoForm) {

@@ -78,8 +78,9 @@ ChromeVoxE2ETest.prototype = {
     var url = TestUtils.createUrlForDoc(doc);
     var createParams = {active: true, url: url};
     chrome.tabs.create(createParams, function(tab) {
-      if (opt_callback)
+      if (opt_callback) {
         opt_callback(tab.url);
+      }
     });
   },
 

@@ -100,6 +100,10 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // Returns all keystore keys from the server.
   const std::vector<std::string>& GetKeystoreKeys() const;
 
+  // Triggers the keystore key rotation events on the server side: generating
+  // new keystore key and touching the Nigori node.
+  void TriggerKeystoreKeyRotation();
+
   // Adds |entity| to the server's collection of entities. This method makes no
   // guarantees that the added entity will result in successful server
   // operations.

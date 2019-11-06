@@ -41,6 +41,15 @@ void SharedWorkerContentSettingsProxyImpl::AllowCacheStorage(
   }
 }
 
+void SharedWorkerContentSettingsProxyImpl::AllowWebLocks(
+    AllowCacheStorageCallback callback) {
+  if (!origin_.opaque()) {
+    owner_->AllowWebLocks(origin_.GetURL(), std::move(callback));
+  } else {
+    std::move(callback).Run(false);
+  }
+}
+
 void SharedWorkerContentSettingsProxyImpl::RequestFileSystemAccessSync(
     RequestFileSystemAccessSyncCallback callback) {
   if (!origin_.opaque()) {

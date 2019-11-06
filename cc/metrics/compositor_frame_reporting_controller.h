@@ -20,6 +20,7 @@ struct FrameTimingDetails;
 }
 
 namespace cc {
+struct BeginMainFrameMetrics;
 class RollingTimeDeltaHistory;
 
 // This is used for managing simultaneous CompositorFrameReporter instances
@@ -61,6 +62,8 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void DidPresentCompositorFrame(
       uint32_t frame_token,
       const viz::FrameTimingDetails& details);
+
+  void SetBlinkBreakdown(std::unique_ptr<BeginMainFrameMetrics> details);
 
   virtual void AddActiveTracker(FrameSequenceTrackerType type);
   virtual void RemoveActiveTracker(FrameSequenceTrackerType type);

@@ -67,9 +67,11 @@ class MockHostResolverBase::RequestImpl
     : public HostResolver::ResolveHostRequest {
  public:
   RequestImpl(const HostPortPair& request_host,
+              const NetworkIsolationKey& network_isolation_key,
               const base::Optional<ResolveHostParameters>& optional_parameters,
               base::WeakPtr<MockHostResolverBase> resolver)
       : request_host_(request_host),
+        network_isolation_key_(network_isolation_key),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
         priority_(parameters_.initial_priority),
@@ -177,6 +179,10 @@ class MockHostResolverBase::RequestImpl
 
   const HostPortPair& request_host() const { return request_host_; }
 
+  const NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
+
   const ResolveHostParameters& parameters() const { return parameters_; }
 
   int host_resolver_flags() const { return host_resolver_flags_; }
@@ -196,6 +202,7 @@ class MockHostResolverBase::RequestImpl
 
  private:
   const HostPortPair request_host_;
+  const NetworkIsolationKey network_isolation_key_;
   const ResolveHostParameters parameters_;
   RequestPriority priority_;
   int host_resolver_flags_;
@@ -306,7 +313,8 @@ MockHostResolverBase::CreateRequest(
     const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
-  return std::make_unique<RequestImpl>(host, optional_parameters, AsWeakPtr());
+  return std::make_unique<RequestImpl>(host, network_isolation_key,
+                                       optional_parameters, AsWeakPtr());
 }
 
 std::unique_ptr<HostResolver::MdnsListener>
@@ -321,6 +329,7 @@ HostCache* MockHostResolverBase::GetHostCache() {
 
 int MockHostResolverBase::LoadIntoCache(
     const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(cache_);
@@ -331,7 +340,7 @@ int MockHostResolverBase::LoadIntoCache(
   AddressList addresses;
   base::Optional<HostCache::EntryStaleness> stale_info;
   int rv = ResolveFromIPLiteralOrCache(
-      host, parameters.dns_query_type,
+      host, network_isolation_key, parameters.dns_query_type,
       ParametersToHostResolverFlags(parameters), parameters.source,
       parameters.cache_usage, &addresses, &stale_info);
   if (rv != ERR_DNS_CACHE_MISS) {
@@ -344,9 +353,10 @@ int MockHostResolverBase::LoadIntoCache(
   if (!IsValidDNSDomain(host.host()))
     return ERR_NAME_NOT_RESOLVED;
 
-  return ResolveProc(
-      host, DnsQueryTypeToAddressFamily(parameters.dns_query_type),
-      ParametersToHostResolverFlags(parameters), parameters.source, &addresses);
+  return ResolveProc(host, network_isolation_key,
+                     DnsQueryTypeToAddressFamily(parameters.dns_query_type),
+                     ParametersToHostResolverFlags(parameters),
+                     parameters.source, &addresses);
 }
 
 void MockHostResolverBase::ResolveAllPending() {
@@ -375,7 +385,7 @@ void MockHostResolverBase::ResolveNow(size_t id) {
 
   AddressList addresses;
   int error = ResolveProc(
-      req->request_host(),
+      req->request_host(), req->network_isolation_key(),
       DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
       req->host_resolver_flags(), req->parameters().source, &addresses);
   if (error == OK && !req->parameters().is_speculative)
@@ -398,6 +408,12 @@ MockHostResolverBase::RequestImpl* MockHostResolverBase::request(size_t id) {
 RequestPriority MockHostResolverBase::request_priority(size_t id) {
   DCHECK(request(id));
   return request(id)->priority();
+}
+
+const NetworkIsolationKey& MockHostResolverBase::request_network_isolation_key(
+    size_t id) {
+  DCHECK(request(id));
+  return request(id)->network_isolation_key();
 }
 
 void MockHostResolverBase::ResolveOnlyRequestNow() {
@@ -477,15 +493,17 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   last_request_priority_ = request->parameters().initial_priority;
+  last_request_network_isolation_key_ = request->network_isolation_key();
   last_secure_dns_mode_override_ =
       request->parameters().secure_dns_mode_override;
   num_resolve_++;
   AddressList addresses;
   base::Optional<HostCache::EntryStaleness> stale_info;
   int rv = ResolveFromIPLiteralOrCache(
-      request->request_host(), request->parameters().dns_query_type,
-      request->host_resolver_flags(), request->parameters().source,
-      request->parameters().cache_usage, &addresses, &stale_info);
+      request->request_host(), request->network_isolation_key(),
+      request->parameters().dns_query_type, request->host_resolver_flags(),
+      request->parameters().source, request->parameters().cache_usage,
+      &addresses, &stale_info);
   if (rv == OK && !request->parameters().is_speculative)
     request->set_address_results(addresses, std::move(stale_info));
   if (rv != ERR_DNS_CACHE_MISS ||
@@ -500,7 +518,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
 
   if (synchronous_mode_) {
     int rv = ResolveProc(
-        request->request_host(),
+        request->request_host(), request->network_isolation_key(),
         DnsQueryTypeToAddressFamily(request->parameters().dns_query_type),
         request->host_resolver_flags(), request->parameters().source,
         &addresses);
@@ -525,6 +543,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
 
 int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
     DnsQueryType dns_query_type,
     HostResolverFlags flags,
     HostResolverSource source,
@@ -559,7 +578,8 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     HostResolverSource effective_source =
         source == HostResolverSource::LOCAL_ONLY ? HostResolverSource::ANY
                                                  : source;
-    HostCache::Key key(host.host(), dns_query_type, flags, effective_source);
+    HostCache::Key key(host.host(), dns_query_type, flags, effective_source,
+                       network_isolation_key);
     const std::pair<const HostCache::Key, HostCache::Entry>* cache_result;
     HostCache::EntryStaleness stale_info = HostCache::kNotStale;
     if (cache_usage ==
@@ -594,11 +614,13 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
   return rv;
 }
 
-int MockHostResolverBase::ResolveProc(const HostPortPair& host,
-                                      AddressFamily requested_address_family,
-                                      HostResolverFlags flags,
-                                      HostResolverSource source,
-                                      AddressList* addresses) {
+int MockHostResolverBase::ResolveProc(
+    const HostPortPair& host,
+    const NetworkIsolationKey& network_isolation_key,
+    AddressFamily requested_address_family,
+    HostResolverFlags flags,
+    HostResolverSource source,
+    AddressList* addresses) {
   DCHECK(rules_map_.find(source) != rules_map_.end());
   ++num_non_local_resolves_;
 
@@ -608,7 +630,7 @@ int MockHostResolverBase::ResolveProc(const HostPortPair& host,
   if (cache_.get()) {
     HostCache::Key key(host.host(),
                        AddressFamilyToDnsQueryType(requested_address_family),
-                       flags, source);
+                       flags, source, network_isolation_key);
     // Storing a failure with TTL 0 so that it overwrites previous value.
     base::TimeDelta ttl;
     if (rv == OK) {

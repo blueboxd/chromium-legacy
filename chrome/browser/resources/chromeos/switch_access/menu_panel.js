@@ -50,10 +50,11 @@ class Panel {
     }
 
     const background = chrome.extension.getBackgroundPage();
-    if (background.document.readyState === 'complete')
+    if (background.document.readyState === 'complete') {
       this.connectToBackground();
-    else
+    } else {
       background.addEventListener('load', this.connectToBackground.bind(this));
+    }
 
     this.addTranslatedMessagesToDom_();
   }
@@ -212,10 +213,11 @@ class Panel {
    */
   updateClass_(id, className, shouldAdd) {
     const htmlNode = document.getElementById(id);
-    if (shouldAdd)
+    if (shouldAdd) {
       htmlNode.classList.add(className);
-    else
+    } else {
       htmlNode.classList.remove(className);
+    }
   }
 
   /**
@@ -280,8 +282,9 @@ class Panel {
 
 let switchAccessMenuPanel = new Panel();
 
-if (document.readyState === 'complete')
+if (document.readyState === 'complete') {
   switchAccessMenuPanel.init();
-else
+} else {
   window.addEventListener(
       'load', switchAccessMenuPanel.init.bind(switchAccessMenuPanel));
+}

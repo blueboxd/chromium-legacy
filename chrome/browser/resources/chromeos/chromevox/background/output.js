@@ -772,8 +772,9 @@ Output.prototype = {
    */
   get hasSpeech() {
     for (var i = 0; i < this.speechBuffer_.length; i++) {
-      if (this.speechBuffer_[i].length)
+      if (this.speechBuffer_[i].length) {
         return true;
+      }
     }
     return false;
   },
@@ -1005,8 +1006,9 @@ Output.prototype = {
    */
   onSpeechEnd: function(callback) {
     this.speechEndCallback_ = function(opt_cleanupOnly) {
-      if (!opt_cleanupOnly)
+      if (!opt_cleanupOnly) {
         callback();
+      }
     }.bind(this);
     return this;
   },
@@ -1024,8 +1026,9 @@ Output.prototype = {
       queueMode = /** @type{cvox.QueueMode} */ (this.queueMode_);
     }
 
-    if (this.speechBuffer_.length > 0)
+    if (this.speechBuffer_.length > 0) {
       Output.forceModeForNextSpeechUtterance_ = undefined;
+    }
 
     var encounteredNonWhitespace = false;
     for (var i = 0; i < this.speechBuffer_.length; i++) {
@@ -1039,8 +1042,9 @@ Output.prototype = {
 
       // Skip whitespace if we've already encountered non-whitespace. This
       // prevents output like 'foo', 'space', 'bar'.
-      if (!isNonWhitespace && encounteredNonWhitespace)
+      if (!isNonWhitespace && encounteredNonWhitespace) {
         continue;
+      }
 
       var speechProps = /** @type {Object} */ (
                             buff.getSpanInstanceOf(Output.SpeechProperties)) ||
@@ -1060,8 +1064,9 @@ Output.prototype = {
         };
       }());
 
-      if (i == this.speechBuffer_.length - 1)
+      if (i == this.speechBuffer_.length - 1) {
         speechProps['endCallback'] = this.speechEndCallback_;
+      }
 
       cvox.ChromeVox.tts.speak(buff.toString(), queueMode, speechProps);
       queueMode = cvox.QueueMode.QUEUE;
@@ -1099,12 +1104,13 @@ Output.prototype = {
     }
 
     // Display.
-    if (this.speechCategory_ != cvox.TtsCategory.LIVE)
+    if (this.speechCategory_ != cvox.TtsCategory.LIVE) {
       chrome.accessibilityPrivate.setFocusRings([{
         rects: this.locations_,
         type: chrome.accessibilityPrivate.FocusType.GLOW,
         color: constants.FOCUS_COLOR
       }]);
+    }
   },
 
   /**
@@ -1116,13 +1122,16 @@ Output.prototype = {
       return false;
 
     for (var i = 0; i < this.speechBuffer_.length; i++) {
-      if (this.speechBuffer_[i].toString() != rhs.speechBuffer_[i].toString())
+      if (this.speechBuffer_[i].toString() != rhs.speechBuffer_[i].toString()) {
         return false;
+      }
     }
 
     for (var j = 0; j < this.brailleBuffer_.length; j++) {
-      if (this.brailleBuffer_[j].toString() != rhs.brailleBuffer_[j].toString())
+      if (this.brailleBuffer_[j].toString() !=
+          rhs.brailleBuffer_[j].toString()) {
         return false;
+      }
     }
 
     return true;
@@ -1139,18 +1148,21 @@ Output.prototype = {
    * @private
    */
   render_: function(range, prevRange, type, buff, ruleStr) {
-    if (prevRange && !prevRange.isValid())
+    if (prevRange && !prevRange.isValid()) {
       prevRange = null;
+    }
 
     // Scan unique ancestors to get the value of |outputContextFirst|.
     var parent = range.start.node;
     var prevParent = prevRange ? prevRange.start.node : parent;
-    if (!parent || !prevParent)
+    if (!parent || !prevParent) {
       return;
+    }
     var uniqueAncestors = AutomationUtil.getUniqueAncestors(prevParent, parent);
     for (var i = 0; parent = uniqueAncestors[i]; i++) {
-      if (parent.role == RoleType.WINDOW)
+      if (parent.role == RoleType.WINDOW) {
         break;
+      }
       if (Output.ROLE_INFO_[parent.role] &&
           Output.ROLE_INFO_[parent.role].outputContextFirst) {
         this.outputContextFirst_ = true;
@@ -1158,10 +1170,11 @@ Output.prototype = {
       }
     }
 
-    if (range.isSubNode())
+    if (range.isSubNode()) {
       this.subNode_(range, prevRange, type, buff, ruleStr);
-    else
+    } else {
       this.range_(range, prevRange, type, buff, ruleStr);
+    }
 
     this.hint_(range, uniqueAncestors, type, buff, ruleStr);
   },
@@ -1193,15 +1206,17 @@ Output.prototype = {
     var speechProps = opt_properties || null;
     tokens.forEach(function(token) {
       // Ignore empty tokens.
-      if (!token)
+      if (!token) {
         return;
+      }
 
       // Parse the token.
       var tree;
-      if (typeof (token) == 'string')
+      if (typeof (token) == 'string') {
         tree = this.createParseTree_(token);
-      else
+      } else {
         tree = token;
+      }
 
       // Obtain the operator token.
       token = tree.value;
@@ -1210,8 +1225,9 @@ Output.prototype = {
       var options = {};
       options.annotation = [];
       options.isUnique = token[token.length - 1] == '=';
-      if (options.isUnique)
+      if (options.isUnique) {
         token = token.substring(0, token.length - 1);
+      }
 
       // Process token based on prefix.
       var prefix = token[0];
@@ -1219,13 +1235,15 @@ Output.prototype = {
 
       // All possible tokens based on prefix.
       if (prefix == '$') {
-        if (this.suppressions_[token])
+        if (this.suppressions_[token]) {
           return;
+        }
 
         if (token == 'value') {
           var text = node.value || '';
-          if (!node.state[StateType.EDITABLE] && node.name == text)
+          if (!node.state[StateType.EDITABLE] && node.name == text) {
             return;
+          }
 
           var selectedText = '';
           if (node.textSelStart !== undefined) {
@@ -1251,14 +1269,16 @@ Output.prototype = {
         } else if (token == 'name') {
           options.annotation.push(token);
           var earcon = node ? this.findEarcon_(node, opt_prevNode) : null;
-          if (earcon)
+          if (earcon) {
             options.annotation.push(earcon);
+          }
 
           // Place the selection on the first character of the name if the node
           // is the active descendant. This ensures the braille window is panned
           // appropriately.
-          if (node.activeDescendantFor && node.activeDescendantFor.length > 0)
+          if (node.activeDescendantFor && node.activeDescendantFor.length > 0) {
             options.annotation.push(new Output.SelectionSpan(0, 0));
+          }
 
           // Language Switching. Only execute if feature is enabled.
           if (localStorage['languageSwitching'] === 'true') {
@@ -1279,8 +1299,9 @@ Output.prototype = {
               // Append outputString to buff.
               this.append_(buff, outputString, options);
               // Attach associated SpeechProperties if the buffer is non-empty.
-              if (buff.length > 0)
+              if (buff.length > 0) {
                 buff[buff.length - 1].setSpan(speechProps, 0, 0);
+              }
             };
             // Cut up node name into multiple spans with different languages.
             LanguageSwitching.assignLanguagesForStringAttribute(
@@ -1295,8 +1316,9 @@ Output.prototype = {
           ruleStr.writeTokenWithValue(token, node.name);
 
         } else if (token == 'description') {
-          if (node.name == node.description)
+          if (node.name == node.description) {
             return;
+          }
 
           options.annotation.push(token);
           this.append_(buff, node.description || '', options);
@@ -1310,14 +1332,16 @@ Output.prototype = {
                 url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
 
             // Hack to not speak the filename if it's ridiculously long.
-            if (filename.length >= 30)
+            if (filename.length >= 30) {
               filename = filename.substring(0, 16) + '...';
+            }
           }
           this.append_(buff, filename, options);
           ruleStr.writeTokenWithValue(token, filename);
         } else if (token == 'nameFromNode') {
-          if (node.nameFrom == NameFromType.CONTENTS)
+          if (node.nameFrom == NameFromType.CONTENTS) {
             return;
+          }
 
           options.annotation.push('name');
           this.append_(buff, node.name || '', options);
@@ -1351,10 +1375,12 @@ Output.prototype = {
 
             var count = 0;
             for (var i = 0, child; child = node.parent.children[i]; i++) {
-              if (roles.has(child.role))
+              if (roles.has(child.role)) {
                 count++;
-              if (node === child)
+              }
+              if (node === child) {
                 break;
+              }
             }
             this.append_(buff, String(count));
             ruleStr.writeTokenWithValue(token, String(count));
@@ -1401,8 +1427,9 @@ Output.prototype = {
             }
           }
         } else if (token == 'descendants') {
-          if (!node)
+          if (!node) {
             return;
+          }
 
           var leftmost = node;
           var rightmost = node;
@@ -1410,8 +1437,9 @@ Output.prototype = {
             // Find any deeper leaves, if any, by starting from one level down.
             leftmost = node.firstChild;
             rightmost = node.lastChild;
-            if (!leftmost || !rightmost)
+            if (!leftmost || !rightmost) {
               return;
+            }
           }
 
           // Construct a range to the leftmost and rightmost leaves. This range
@@ -1421,15 +1449,17 @@ Output.prototype = {
               leftmost, Dir.FORWARD, AutomationPredicate.leafOrStaticText);
           rightmost = AutomationUtil.findNodePre(
               rightmost, Dir.BACKWARD, AutomationPredicate.leafOrStaticText);
-          if (!leftmost || !rightmost)
+          if (!leftmost || !rightmost) {
             return;
+          }
 
           var subrange = new cursors.Range(
               new cursors.Cursor(leftmost, cursors.NODE_INDEX),
               new cursors.Cursor(rightmost, cursors.NODE_INDEX));
           var prev = null;
-          if (node)
+          if (node) {
             prev = cursors.Range.fromNode(node);
+          }
           ruleStr.writeToken(token);
           this.render_(
               subrange, prev, Output.EventType.NAVIGATE, buff, ruleStr);
@@ -1441,8 +1471,9 @@ Output.prototype = {
           ruleStr.write(
               '}: ' + (unjoined.length ? unjoined.join(' ') : 'EMPTY') + '\n');
         } else if (token == 'role') {
-          if (localStorage['useVerboseMode'] == 'false')
+          if (localStorage['useVerboseMode'] == 'false') {
             return;
+          }
 
           if (this.formatOptions_.auralStyle) {
             speechProps = new Output.SpeechProperties();
@@ -1454,10 +1485,11 @@ Output.prototype = {
           if (node.roleDescription) {
             msg = node.roleDescription;
           } else if (info) {
-            if (this.formatOptions_.braille)
+            if (this.formatOptions_.braille) {
               msg = Msgs.getMsg(info.msgId + '_brl');
-            else if (info.msgId)
+            } else if (info.msgId) {
               msg = Msgs.getMsg(info.msgId);
+            }
           } else {
             // We can safely ignore this role. ChromeVox output tests cover
             // message id validity.
@@ -1466,20 +1498,23 @@ Output.prototype = {
           this.append_(buff, msg || '', options);
           ruleStr.writeTokenWithValue(token, msg);
         } else if (token == 'inputType') {
-          if (!node.inputType)
+          if (!node.inputType) {
             return;
+          }
           options.annotation.push(token);
           var msgId = Output.INPUT_TYPE_MESSAGE_IDS_[node.inputType] ||
               'input_type_text';
-          if (this.formatOptions_.braille)
+          if (this.formatOptions_.braille) {
             msgId = msgId + '_brl';
+          }
           this.append_(buff, Msgs.getMsg(msgId), options);
           ruleStr.writeTokenWithValue(token, Msgs.getMsg(msgId));
         } else if (
             token == 'tableCellRowIndex' || token == 'tableCellColumnIndex') {
           var value = node[token];
-          if (value == undefined)
+          if (value == undefined) {
             return;
+          }
           value = String(value + 1);
           options.annotation.push(token);
           this.append_(buff, value, options);
@@ -1490,8 +1525,9 @@ Output.prototype = {
             var row = node;
             while (row && row.role != RoleType.ROW)
               row = row.parent;
-            if (!row || !row.htmlAttributes['aria-rowtext'])
+            if (!row || !row.htmlAttributes['aria-rowtext']) {
               return;
+            }
             value += row.htmlAttributes['aria-rowtext'];
             this.append_(buff, value, options);
             ruleStr.writeTokenWithValue(token, value);
@@ -1505,8 +1541,9 @@ Output.prototype = {
                 buff, ruleStr);
           }
         } else if (token == 'node') {
-          if (!tree.firstChild)
+          if (!tree.firstChild) {
             return;
+          }
 
           var relationName = tree.firstChild.value;
           if (relationName == 'tableCellColumnHeaders') {
@@ -1554,8 +1591,9 @@ Output.prototype = {
             return;
           }
 
-          if (!node.firstChild)
+          if (!node.firstChild) {
             return;
+          }
 
           var root = node;
           var walker = new AutomationTreeWalker(node, Dir.FORWARD, {
@@ -1569,8 +1607,9 @@ Output.prototype = {
           });
           var outputStrings = [];
           while (walker.next().node) {
-            if (walker.node.name)
+            if (walker.node.name) {
               outputStrings.push(walker.node.name);
+            }
           }
           var finalOutput = outputStrings.join(' ');
           this.append_(buff, finalOutput, options);
@@ -1578,8 +1617,9 @@ Output.prototype = {
         } else if (node[token] !== undefined) {
           options.annotation.push(token);
           var value = node[token];
-          if (typeof value == 'number')
+          if (typeof value == 'number') {
             value = String(value);
+          }
           this.append_(buff, value, options);
           ruleStr.writeTokenWithValue(token, value);
         } else if (Output.STATE_INFO_[token]) {
@@ -1587,8 +1627,9 @@ Output.prototype = {
           var stateInfo = Output.STATE_INFO_[token];
           var resolvedInfo = {};
           resolvedInfo = node.state[token] ? stateInfo.on : stateInfo.off;
-          if (!resolvedInfo)
+          if (!resolvedInfo) {
             return;
+          }
           if (this.formatOptions_.speech && resolvedInfo.earconId) {
             options.annotation.push(
                 new Output.EarconAction(resolvedInfo.earconId),
@@ -1638,8 +1679,9 @@ Output.prototype = {
             }
           } else if (token == 'earcon') {
             // Ignore unless we're generating speech output.
-            if (!this.formatOptions_.speech)
+            if (!this.formatOptions_.speech) {
               return;
+            }
 
             options.annotation.push(new Output.EarconAction(
                 tree.firstChild.value, node.location || undefined));
@@ -1650,19 +1692,22 @@ Output.prototype = {
       } else if (prefix == '@') {
         ruleStr.write(' @');
         if (this.formatOptions_.auralStyle) {
-          if (!speechProps)
+          if (!speechProps) {
             speechProps = new Output.SpeechProperties();
+          }
           speechProps['relativePitch'] = -0.2;
         }
         var isPluralized = (token[0] == '@');
-        if (isPluralized)
+        if (isPluralized) {
           token = token.slice(1);
+        }
         // Tokens can have substitutions.
         var pieces = token.split('+');
         token = pieces.reduce(function(prev, cur) {
           var lookup = cur;
-          if (cur[0] == '$')
+          if (cur[0] == '$') {
             lookup = node[cur.slice(1)];
+          }
           return prev + lookup;
         }.bind(this), '');
         var msgId = token;
@@ -1680,16 +1725,18 @@ Output.prototype = {
             var msgBuff = [];
             this.format_(node, curArg, msgBuff, ruleStr);
             // Fill in empty string if nothing was formatted.
-            if (!msgBuff.length)
+            if (!msgBuff.length) {
               msgBuff = [''];
+            }
             msgArgs = msgArgs.concat(msgBuff);
             curArg = curArg.nextSibling;
           }
         }
         var msg = Msgs.getMsg(msgId, msgArgs);
         try {
-          if (this.formatOptions_.braille)
+          if (this.formatOptions_.braille) {
             msg = Msgs.getMsg(msgId + '_brl', msgArgs) || msg;
+          }
         } catch (e) {
         }
 
@@ -1737,10 +1784,11 @@ Output.prototype = {
 
           // Currently, speech params take either attributes or floats.
           var float = 0;
-          if (float = parseFloat(value))
+          if (float = parseFloat(value)) {
             value = float;
-          else
+          } else {
             value = parseFloat(node[value]) / -10.0;
+          }
           speechProps[token] = value;
           return;
         }
@@ -1778,24 +1826,29 @@ Output.prototype = {
    * @private
    */
   range_: function(range, prevRange, type, rangeBuff, ruleStr) {
-    if (!range.start.node || !range.end.node)
+    if (!range.start.node || !range.end.node) {
       return;
+    }
 
-    if (!prevRange && range.start.node.root)
+    if (!prevRange && range.start.node.root) {
       prevRange = cursors.Range.fromNode(range.start.node.root);
+    }
     var cursor = cursors.Cursor.fromNode(range.start.node);
     var prevNode = prevRange.start.node;
 
     var formatNodeAndAncestors = function(node, prevNode) {
       var buff = [];
 
-      if (this.outputContextFirst_)
+      if (this.outputContextFirst_) {
         this.ancestry_(node, prevNode, type, buff, ruleStr);
+      }
       this.node_(node, prevNode, type, buff, ruleStr);
-      if (!this.outputContextFirst_)
+      if (!this.outputContextFirst_) {
         this.ancestry_(node, prevNode, type, buff, ruleStr);
-      if (node.location)
+      }
+      if (node.location) {
         this.locations_.push(node.location);
+      }
       return buff;
     }.bind(this);
 
@@ -1819,15 +1872,17 @@ Output.prototype = {
       cursor = cursor.move(unit, cursors.Movement.DIRECTIONAL, Dir.FORWARD);
 
       // Reached a boundary.
-      if (cursor.node == prevNode)
+      if (cursor.node == prevNode) {
         break;
+      }
     }
 
     // Finally, add on ancestry announcements, if needed.
     if (!this.outputContextFirst_) {
       // No lca; the range was already fully described.
-      if (lca == null || !prevRange.start.node)
+      if (lca == null || !prevRange.start.node) {
         return;
+      }
 
       // Since the lca itself needs to be part of the ancestry output, use its
       // first child as a target.
@@ -1862,10 +1917,11 @@ Output.prototype = {
           contextFirst = [];
           rest = [];
         }
-        if ((Output.ROLE_INFO_[node.role] || {}).outputContextFirst)
+        if ((Output.ROLE_INFO_[node.role] || {}).outputContextFirst) {
           contextFirst.push(node);
-        else
+        } else {
           rest.push(node);
+        }
       }
       return rest.concat(contextFirst.reverse());
     }
@@ -1922,15 +1978,17 @@ Output.prototype = {
                                                                'default';
       if (eventBlock[rule.role].enter) {
         rule.navigation = 'enter';
-        if (enterRole[formatNode.role])
+        if (enterRole[formatNode.role]) {
           continue;
+        }
 
         rule.output = eventBlock[rule.role].enter.speak ? 'speak' : undefined;
         if (this.formatOptions_.braille) {
           buff = [];
           ruleStr.bufferClear();
-          if (eventBlock[rule.role].enter.braille)
+          if (eventBlock[rule.role].enter.braille) {
             rule.output = 'braille';
+          }
         }
 
         enterRole[formatNode.role] = true;
@@ -1976,12 +2034,13 @@ Output.prototype = {
      * If not, use Output.RULES for parentRole if exists.
      * If not, use Output.RULES for 'default'.
      */
-    if (node.role && (eventBlock[node.role] || {}).speak !== undefined)
+    if (node.role && (eventBlock[node.role] || {}).speak !== undefined) {
       rule.role = node.role;
-    else if ((eventBlock[parentRole] || {}).speak !== undefined)
+    } else if ((eventBlock[parentRole] || {}).speak !== undefined) {
       rule.role = parentRole;
-    else
+    } else {
       rule.role = 'default';
+    }
     rule.output = 'speak';
     if (this.formatOptions_.braille) {
       // Overwrite rule by braille rule if exists.
@@ -2013,13 +2072,15 @@ Output.prototype = {
    * @private
    */
   subNode_: function(range, prevRange, type, buff, ruleStr) {
-    if (!prevRange)
+    if (!prevRange) {
       prevRange = range;
+    }
     var dir = cursors.Range.getDirection(prevRange, range);
     var node = range.start.node;
     var prevNode = prevRange.getBound(dir).node;
-    if (!node || !prevNode)
+    if (!node || !prevNode) {
       return;
+    }
 
     var options = {annotation: ['name'], isUnique: true};
     var rangeStart = range.start.index;
@@ -2051,11 +2112,13 @@ Output.prototype = {
       }
     }
 
-    if (this.outputContextFirst_)
+    if (this.outputContextFirst_) {
       this.ancestry_(node, prevNode, type, buff, ruleStr);
+    }
     var earcon = this.findEarcon_(node, prevNode);
-    if (earcon)
+    if (earcon) {
       options.annotation.push(earcon);
+    }
     var text = '';
 
     if (this.formatOptions_.braille && !node.state[StateType.EDITABLE]) {
@@ -2070,12 +2133,14 @@ Output.prototype = {
     this.append_(buff, text, options);
     ruleStr.write('subNode_: ' + text + '\n');
 
-    if (!this.outputContextFirst_)
+    if (!this.outputContextFirst_) {
       this.ancestry_(node, prevNode, type, buff, ruleStr);
+    }
 
     range.start.node.boundsForRange(rangeStart, rangeEnd, (loc) => {
-      if (loc)
+      if (loc) {
         this.locations_.push(loc);
+      }
     });
   },
 
@@ -2090,16 +2155,19 @@ Output.prototype = {
    * @private
    */
   hint_: function(range, uniqueAncestors, type, buff, ruleStr) {
-    if (!this.enableHints_ || localStorage['useVerboseMode'] != 'true')
+    if (!this.enableHints_ || localStorage['useVerboseMode'] != 'true') {
       return;
+    }
 
     // No hints for alerts, which can be targeted at controls.
-    if (type == EventType.ALERT)
+    if (type == EventType.ALERT) {
       return;
+    }
 
     // Hints are not yet specialized for braille.
-    if (this.formatOptions_.braille)
+    if (this.formatOptions_.braille) {
       return;
+    }
 
     var node = range.start.node;
 
@@ -2137,23 +2205,26 @@ Output.prototype = {
 
       var isWithinVirtualKeyboard = AutomationUtil.getAncestors(node).find(
           (n) => n.role == RoleType.KEYBOARD);
-      if (node.defaultActionVerb != 'none' && !isWithinVirtualKeyboard)
+      if (node.defaultActionVerb != 'none' && !isWithinVirtualKeyboard) {
         this.format_(
             node, '@hint_double_tap', buff, ruleStr, undefined, hintProperties);
+      }
 
       var enteredVirtualKeyboard =
           uniqueAncestors.find((n) => n.role == RoleType.KEYBOARD);
-      if (enteredVirtualKeyboard)
+      if (enteredVirtualKeyboard) {
         this.format_(
             node, '@hint_touch_type', buff, ruleStr, undefined, hintProperties);
+      }
 
       return;
     }
 
-    if (node.state[StateType.EDITABLE] && cvox.ChromeVox.isStickyPrefOn)
+    if (node.state[StateType.EDITABLE] && cvox.ChromeVox.isStickyPrefOn) {
       this.format_(
           node, '@sticky_mode_enabled', buff, ruleStr, undefined,
           hintProperties);
+    }
 
     if (node.state[StateType.EDITABLE] && node.state[StateType.FOCUSED] &&
         !this.formatOptions_.braille) {
@@ -2164,14 +2235,16 @@ Output.prototype = {
             hintProperties);
     }
 
-    if (node.placeholder)
+    if (node.placeholder) {
       this.append_(buff, node.placeholder);
+    }
 
     // Only include tooltip as a hint as a last alternative. It may have been
     // included as the name or description previously. As a rule of thumb, only
     // include it if there's no name and no description.
-    if (node.tooltip && !node.name && !node.description)
+    if (node.tooltip && !node.name && !node.description) {
       this.append_(buff, node.tooltip);
+    }
 
     if (AutomationPredicate.checkable(node)) {
       this.format_(
@@ -2248,19 +2321,22 @@ Output.prototype = {
 
       var alreadyAnnotated = buff.some(function(s) {
         return annotationSansNodes.some(function(annotation) {
-          if (!s.hasSpan(annotation))
+          if (!s.hasSpan(annotation)) {
             return false;
+          }
           var start = s.getSpanStart(annotation);
           var end = s.getSpanEnd(annotation);
           var substr = s.substring(start, end);
-          if (substr && value)
+          if (substr && value) {
             return substr.toString() == value.toString();
-          else
+          } else {
             return false;
+          }
         });
       });
-      if (alreadyAnnotated)
+      if (alreadyAnnotated) {
         return;
+      }
     }
 
     buff.push(spannableToAdd);
@@ -2302,8 +2378,9 @@ Output.prototype = {
       index++;
     }
 
-    if (currentNode != root)
+    if (currentNode != root) {
       throw 'Unbalanced parenthesis: ' + inputStr;
+    }
 
     return root;
   },
@@ -2321,8 +2398,9 @@ Output.prototype = {
     return spans.reduce(function(result, cur) {
       // Ignore empty spans except when they contain a selection.
       var hasSelection = cur.getSpanInstanceOf(Output.SelectionSpan);
-      if (cur.length == 0 && !hasSelection)
+      if (cur.length == 0 && !hasSelection) {
         return result;
+      }
 
       // For empty selections, we just add the space separator to account for
       // showing the braille cursor.
@@ -2337,8 +2415,9 @@ Output.prototype = {
       // |cur|.
       var hasInlineNode =
           cur.getSpansInstanceOf(Output.NodeSpan).some(function(s) {
-            if (!s.node)
+            if (!s.node) {
               return false;
+            }
             return s.node.display == 'inline' ||
                 s.node.role == RoleType.INLINE_TEXT_BOX;
           });
@@ -2354,14 +2433,15 @@ Output.prototype = {
       // node's name. In all other cases, use the surrounding whitespace to
       // ensure we only have one separator between the node text.
       if (result.length == 0 ||
-          (hasInlineNode && prevHasInlineNode && isName && prevIsName))
+          (hasInlineNode && prevHasInlineNode && isName && prevIsName)) {
         separator = '';
-      else if (
+      } else if (
           result.toString()[result.length - 1] == Output.SPACE ||
-          cur.toString()[0] == Output.SPACE)
+          cur.toString()[0] == Output.SPACE) {
         separator = '';
-      else
+      } else {
         separator = Output.SPACE;
+      }
 
       prevHasInlineNode = hasInlineNode;
       prevIsName = isName;
@@ -2378,16 +2458,18 @@ Output.prototype = {
    * @return {Output.Action}
    */
   findEarcon_: function(node, opt_prevNode) {
-    if (node === opt_prevNode)
+    if (node === opt_prevNode) {
       return null;
+    }
 
     if (this.formatOptions_.speech) {
       var earconFinder = node;
       var ancestors;
-      if (opt_prevNode)
+      if (opt_prevNode) {
         ancestors = AutomationUtil.getUniqueAncestors(opt_prevNode, node);
-      else
+      } else {
         ancestors = AutomationUtil.getAncestors(node);
+      }
 
       while (earconFinder = ancestors.pop()) {
         var info = Output.ROLE_INFO_[earconFinder.role];
@@ -2408,8 +2490,9 @@ Output.prototype = {
    */
   toString: function() {
     return this.speechBuffer_.reduce(function(prev, cur) {
-      if (prev === null)
+      if (prev === null) {
         return cur.toString();
+      }
       prev += ' ' + cur.toString();
       return prev;
     }, null);
@@ -2421,8 +2504,9 @@ Output.prototype = {
    */
   get speechOutputForTest() {
     return this.speechBuffer_.reduce(function(prev, cur) {
-      if (prev === null)
+      if (prev === null) {
         return cur;
+      }
       prev.append('|');
       prev.append(cur);
       return prev;

@@ -116,7 +116,6 @@ include_rules = [
   "+services/network/public/cpp",
   "+third_party/breakpad/breakpad/src/client/ios",
   "+third_party/breakpad/breakpad/src/common",
-  "+third_party/google_toolbox_for_mac",
   "+third_party/libaddressinput",
   "+third_party/libxml/chromium/xml_writer.h",
   "+third_party/metrics_proto",

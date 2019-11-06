@@ -9,7 +9,7 @@ import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.TW
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 import javax.inject.Inject;
 
@@ -19,13 +19,12 @@ import dagger.Lazy;
  * Record the results of showing a clear data dialog on TWA client uninstall or data clear.
  */
 public class ClearDataDialogResultRecorder {
-    private final Lazy<ChromePreferenceManager> mPrefsManager;
+    private final Lazy<SharedPreferencesManager> mPrefsManager;
     private final ChromeBrowserInitializer mBrowserInitializer;
     private final TrustedWebActivityUmaRecorder mUmaRecorder;
 
     @Inject
-    public ClearDataDialogResultRecorder(
-            Lazy<ChromePreferenceManager> manager,
+    public ClearDataDialogResultRecorder(Lazy<SharedPreferencesManager> manager,
             ChromeBrowserInitializer browserInitializer,
             TrustedWebActivityUmaRecorder umaRecorder) {
         mPrefsManager = manager;

@@ -2823,6 +2823,11 @@ void HostResolverManager::SetDnsClientForTesting(
   dns_client_ = std::move(dns_client);
 }
 
+void HostResolverManager::SetLastIPv6ProbeResultForTesting(
+    bool last_ipv6_probe_result) {
+  SetLastIPv6ProbeResult(last_ipv6_probe_result);
+}
+
 void HostResolverManager::SetTaskRunnerForTesting(
     scoped_refptr<base::TaskRunner> task_runner) {
   proc_task_runner_ = std::move(task_runner);
@@ -3447,9 +3452,8 @@ bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
   bool cached = true;
   if ((tick_clock_->NowTicks() - last_ipv6_probe_time_).InMilliseconds() >
       kIPv6ProbePeriodMs) {
-    last_ipv6_probe_result_ =
-        IsGloballyReachable(IPAddress(kIPv6ProbeAddress), net_log);
-    last_ipv6_probe_time_ = tick_clock_->NowTicks();
+    SetLastIPv6ProbeResult(
+        IsGloballyReachable(IPAddress(kIPv6ProbeAddress), net_log));
     cached = false;
   }
   net_log.AddEvent(
@@ -3457,6 +3461,11 @@ bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
         return NetLogIPv6AvailableParams(last_ipv6_probe_result_, cached);
       });
   return last_ipv6_probe_result_;
+}
+
+void HostResolverManager::SetLastIPv6ProbeResult(bool last_ipv6_probe_result) {
+  last_ipv6_probe_result_ = last_ipv6_probe_result;
+  last_ipv6_probe_time_ = tick_clock_->NowTicks();
 }
 
 bool HostResolverManager::IsGloballyReachable(const IPAddress& dest,

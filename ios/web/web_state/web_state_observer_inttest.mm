@@ -1139,7 +1139,8 @@ TEST_P(WebStateObserverTest, FailedNavigation) {
   ASSERT_TRUE(test::WaitForWebViewContainingText(
       web_state(), testing::GetErrorText(web_state(), url, "NSURLErrorDomain",
                                          /*error_code=*/-1005,
-                                         /*is_post=*/false, /*is_otr=*/false)));
+                                         /*is_post=*/false, /*is_otr=*/false,
+                                         /*has_ssl_info=*/false)));
   DCHECK_EQ(item->GetTitle(), base::UTF8ToUTF16(kFailedTitle));
 }
 
@@ -1280,7 +1281,8 @@ TEST_P(WebStateObserverTest, WebViewUnsupportedSchemeNavigation) {
   ASSERT_TRUE(test::WaitForWebViewContainingText(
       web_state(), testing::GetErrorText(web_state(), url, "NSURLErrorDomain",
                                          /*error_code=*/-1002,
-                                         /*is_post=*/false, /*is_otr=*/false)));
+                                         /*is_post=*/false, /*is_otr=*/false,
+                                         /*has_ssl_info=*/false)));
 }
 
 // Tests failed navigation because URL with a space is not supported by
@@ -1332,7 +1334,8 @@ TEST_P(WebStateObserverTest, WebViewUnsupportedUrlNavigation) {
   ASSERT_TRUE(test::WaitForWebViewContainingText(
       web_state(), testing::GetErrorText(web_state(), url, "WebKitErrorDomain",
                                          /*error_code=*/101,
-                                         /*is_post=*/false, /*is_otr=*/false)));
+                                         /*is_post=*/false, /*is_otr=*/false,
+                                         /*has_ssl_info=*/false)));
 }
 
 // Tests failed navigation because URL scheme is not supported by WebState.

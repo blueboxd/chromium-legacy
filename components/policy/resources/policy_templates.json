@@ -123,6 +123,8 @@
 #     chrome.* -> Chrome policy definition list
 #     chrome_os -> Chrome policy definition list, when building OS_CHROMEOS
 #
+#   Note: chrome_frame is deprecated.
+#
 # Annotations:
 #   Additional information is specified under keys 'features' and
 #   'example_value'. These are used in the generated documentation and example
@@ -18963,6 +18965,28 @@
         |TIME_LIMITS| applies daily usage limit and makes app unavailable after the limit is reached on the given day. Usage limit is specified in |daily_limit_mins|. Usage limit is reset daily at the UTC time passed in |reset_at|.
         This policy is only used for child users.
         This policy is complementary to 'UsageTimeLimit'. Restrictions specified in 'UsageTimeLimit' like screen time and bedtime will be enforced regardless of 'PerAppTimeLimits'.'''
+    },
+    {
+      'name': 'WebComponentsV0Enabled',
+      'owners': ['masonfreed@chromium.org', 'chrishtr@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'example_value': True,
+      'id': 644,
+      'supported_on': ['chrome.*:80-84', 'chrome_os:80-84', 'android:80-84', 'webview_android:80-84'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'caption': '''Re-enable Web Components v0 API until M84.''',
+      'tags': [],
+      'desc': ''' The Web Components v0 APIs (Shadow DOM v0, Custom Elements v0, and HTML Imports) were deprecated in 2018, and have been disabled by default starting in M80. This policy allows these features to be selectively re-enabled until M84.
+
+      If this policy is set to True, the Web Components v0 features will be enabled for all sites.
+
+      If this policy is set to False or not set, the Web Components v0 features will be disabled by default, starting in M80.
+
+      This policy will be removed after Chrome 84.'''
     }
   ],
 
@@ -19787,6 +19811,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 643,
+  'highest_id_currently_used': 644,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -159,8 +159,8 @@ message NigoriSpecifics {
   // Boolean corresponding to whether reading list items should be encrypted.
   optional bool encrypt_reading_list = 43;
 
-  // Boolean corresponding to whether mountain shares should be encrypted.
-  optional bool encrypt_mountain_shares = 44;
+  reserved 44;
+  reserved "encrypt_mountain_shares";
 
   enum KeyDerivationMethod {
     // This comes from a <= M69 client, who does not know about the field

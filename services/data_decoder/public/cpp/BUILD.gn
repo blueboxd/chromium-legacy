@@ -31,11 +31,13 @@ source_set("cpp") {
   public = [
     "data_decoder.h",
     "json_sanitizer.h",
+    "safe_xml_parser.h",
   ]
 
   sources = [
     "data_decoder.cc",
     "json_sanitizer.cc",
+    "safe_xml_parser.cc",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -44,7 +46,6 @@ source_set("cpp") {
     ":service_provider",
     "//base",
     "//services/data_decoder/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
 
   if (is_android) {
@@ -68,12 +69,10 @@ source_set("cpp") {
     public += [
       "decode_image.h",
       "safe_bundled_exchanges_parser.h",
-      "safe_xml_parser.h",
     ]
     sources += [
       "decode_image.cc",
       "safe_bundled_exchanges_parser.cc",
-      "safe_xml_parser.cc",
     ]
   }
 
@@ -92,30 +91,4 @@ source_set("test_support") {
     "//base",
     "//services/data_decoder:lib",
   ]
-
-  if (!is_ios) {
-    sources += [
-      "test_data_decoder_service.cc",
-      "test_data_decoder_service.h",
-    ]
-
-    deps = [
-      "//services/service_manager/public/cpp/test:test_support",
-    ]
-  }
-}
-
-source_set("manifest") {
-  if (!is_ios) {
-    sources = [
-      "manifest.cc",
-      "manifest.h",
-    ]
-
-    deps = [
-      "//base",
-      "//services/data_decoder/public/mojom",
-      "//services/service_manager/public/cpp",
-    ]
-  }
 }

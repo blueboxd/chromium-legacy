@@ -637,7 +637,6 @@
 <translation id="1899826437968063457">Plugin VM necesita permiso para ejecutarse</translation>
 <translation id="1900305421498694955">Es posible que las apps de Google Play necesiten acceder a todo el sistema de archivos para leer y escribir archivos en dispositivos externos de almacenamiento. Cualquier persona que use la unidad externa podrá ver los archivos y carpetas creados en este dispositivo. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
-<translation id="1901984611178952431">Administrar los datos de acceso</translation>
 <translation id="1902576642799138955">Período de validez</translation>
 <translation id="1905375423839394163">Nombre de la Chromebook</translation>
 <translation id="1905710495812624430">Se superó la cantidad máxima de intentos permitidos.</translation>
@@ -688,7 +687,6 @@
 <translation id="1978006917103730774">Se instalarán automáticamente las futuras versiones del software y las actualizaciones de seguridad.</translation>
 <translation id="1979280758666859181">Estás por cambiar a un canal que tiene una versión anterior de <ph name="PRODUCT_NAME" />. El cambio de canal se aplicará cuando la versión del canal coincida con la versión que esté instalada en ese momento en tu dispositivo.</translation>
 <translation id="197989455406964291">KDC no es compatible con el tipo de encriptación</translation>
-<translation id="1981544341227357861">Quita la llave de seguridad del dispositivo y , luego, vuelve a colocarla y tócala.</translation>
 <translation id="1982354452682152483">No hay descripciones disponibles.</translation>
 <translation id="1987317783729300807">Cuentas</translation>
 <translation id="1989112275319619282">Navegar</translation>
@@ -1576,7 +1574,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3282568296779691940">Acceder a Chrome</translation>
 <translation id="3285322247471302225">Nueva pes&amp;taña en</translation>
 <translation id="328571385944182268">¿Quieres guardar tus contraseñas?</translation>
-<translation id="3286737518123001369">Visualiza y borra los datos de acceso almacenados en la llave de seguridad</translation>
 <translation id="3288047731229977326">Las extensiones que se ejecutan en modo de programador pueden dañar tu computadora. Si no eres programador, debes inhabilitar las extensiones que se ejecutan en modo de programador para mantenerte protegido.</translation>
 <translation id="3289856944988573801">Para comprobar si hay actualizaciones, utiliza una conexión Ethernet o Wi-Fi.</translation>
 <translation id="3293644607209440645">Enviar esta página</translation>
@@ -1746,7 +1743,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3543597750097719865">Firma X9.62 ECDSA con SHA-512</translation>
 <translation id="3544879808695557954">Nombre de usuario (opcional)</translation>
 <translation id="354602065659584722">Se quitó el software dañino</translation>
-<translation id="3547220315004609203">Activa o desactiva la barra de pestañas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3550915441744863158">Debido a que Chrome se actualiza automáticamente, siempre tendrás la versión más reciente</translation>
 <translation id="3551320343578183772">Cerrar pestaña</translation>
@@ -2121,7 +2117,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4031179711345676612">Micrófono permitido</translation>
 <translation id="4031527940632463547">Se bloqueó el acceso a los sensores</translation>
 <translation id="4033471457476425443">Agregar carpeta nueva</translation>
-<translation id="403456802563765809">Para administrar las huellas digitales, inserta y toca tu llave de seguridad.</translation>
 <translation id="4034824040120875894">Impresora</translation>
 <translation id="4035758313003622889">Adminis&amp;trador de &amp;tareas</translation>
 <translation id="4036778507053569103">La política descargada del servidor no es válida.</translation>
@@ -3164,7 +3159,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5636996382092289526">Para utilizar la red <ph name="NETWORK_ID" />, es posible que primero debas <ph name="LINK_START" />ingresar a la página de acceso a la red<ph name="LINK_END" />, que se abrirá de forma automática en unos segundos. Si no se abre, no podrás utilizar la red.</translation>
 <translation id="5637476008227280525">Habilitar o inhabilitar datos móviles</translation>
 <translation id="5638309510554459422">Encuentra extensiones y temas en <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /></translation>
-<translation id="5639152092474119692">Para administrar las huellas digitales, ingresa el PIN de tu llave de seguridad. Si no lo conoces, restablece la llave.</translation>
 <translation id="5639549361331209298">Vuelve a cargar esta página y espera para ver más opciones.</translation>
 <translation id="5640133431808313291">Administrar llaves de seguridad</translation>
 <translation id="5642508497713047">Firmante de la CRL</translation>
@@ -3407,7 +3401,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5985458664595100876">El formato de la URL no es válido. Los formatos compatibles son \\server\share y smb://server/share.</translation>
 <translation id="5990386583461751448">Traducida</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para asegurarte de que puedas seguir navegando en la Web, pídele a tu administrador que quite esta aplicación.}other{Para asegurarte de que puedas seguir navegando en la Web, pídele a tu administrador que quite estas aplicaciones.}}</translation>
-<translation id="5995884201513800557">Continúa tocando la llave de seguridad para guardar tus huellas digitales.</translation>
 <translation id="5997337190805127100">Más información sobre el acceso a sitios</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultados para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6002458620803359783">Voces preferidas</translation>
@@ -3417,7 +3410,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6010869025736512584">Accediendo a la entrada de video</translation>
 <translation id="6011193465932186973">Huella digital</translation>
 <translation id="6011449291337289699">Borrar los datos del sitio</translation>
-<translation id="6013505829696424563">Para ver los datos de acceso, ingresa el PIN de tu llave de seguridad. Si no lo conoces, deberás restablecer la llave.</translation>
 <translation id="6015266928248016057">PUK no válida. Intentos restantes: <ph name="RETRIES" />.</translation>
 <translation id="6015796118275082299">Año</translation>
 <translation id="6016551720757758985">Confirmar Powerwash con retorno a la versión anterior</translation>
@@ -3972,7 +3964,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6840155290835956714">Preguntar antes de enviar</translation>
 <translation id="6840184929775541289">No es una Entidad de certificación</translation>
 <translation id="6841186874966388268">Errores</translation>
-<translation id="6841187140911216178">Para ver los datos de acceso, inserta la llave de seguridad y tócala</translation>
 <translation id="6843423766595476978">Ok Google ya está configurado</translation>
 <translation id="6845038076637626672">Abrir de forma maximizada</translation>
 <translation id="6845325883481699275">Ayudar a mejorar la seguridad de Chrome</translation>
@@ -5377,7 +5368,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8838770651474809439">Hamburguesa</translation>
 <translation id="883911313571074303">Escribir en la imagen</translation>
 <translation id="8845001906332463065">Obtener ayuda</translation>
-<translation id="8845164297565101021">Inserta tu llave de seguridad y, luego, tócala para crear un PIN o cambiarlo.</translation>
 <translation id="8846132060409673887">Leer el fabricante y el modelo de esta computadora</translation>
 <translation id="8846141544112579928">Buscando teclado…</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -5450,7 +5440,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="894360074127026135">Suplemento especial internacional de Netscape</translation>
 <translation id="8944099748578356325">Usa la batería de forma más rápida (nivel actual: <ph name="BATTERY_PERCENTAGE" />%).</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> comparte una ventana con <ph name="TAB_NAME" />.</translation>
-<translation id="8945764661949477243">Agrega huellas digitales, renómbralas y borra las que estén guardadas en tu dispositivo</translation>
 <translation id="8946359700442089734">Las funciones de depuración no se habilitaron completamente en este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="894871326938397531">¿Deseas salir del modo de navegación incógnito?</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" /> desea ver la marca y el modelo de tu llave de seguridad</translation>

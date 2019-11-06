@@ -19,6 +19,7 @@ import org.chromium.weblayer_private.aidl.IProfile;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implementation of {@link IBrowserFragmentController}.
@@ -79,11 +80,6 @@ public class BrowserFragmentControllerImpl extends IBrowserFragmentController.St
                 (ValueCallback<Boolean>) ObjectWrapper.unwrap(valueCallback, ValueCallback.class));
     }
 
-    @Override
-    public BrowserControllerImpl getBrowserController() {
-        return getViewController().getBrowserController();
-    }
-
     public BrowserFragmentViewController getViewController() {
         if (mViewController == null) {
             throw new RuntimeException("Currently BrowserController requires Activity context, so "
@@ -121,7 +117,9 @@ public class BrowserFragmentControllerImpl extends IBrowserFragmentController.St
         // destroyed, or switching to a different fragment.
     }
 
-    public boolean setActiveBrowserController(BrowserControllerImpl browser) {
+    @Override
+    public boolean setActiveBrowserController(IBrowserController controller) {
+        BrowserControllerImpl browser = (BrowserControllerImpl) controller;
         if (browser.getFragment() != this) return false;
         mViewController.setActiveBrowserController(browser);
         return true;
@@ -129,6 +127,16 @@ public class BrowserFragmentControllerImpl extends IBrowserFragmentController.St
 
     public BrowserControllerImpl getActiveBrowserController() {
         return mViewController.getBrowserController();
+    }
+
+    @Override
+    public List getBrowserControllers() {
+        return new ArrayList(mBrowsers);
+    }
+
+    @Override
+    public int getActiveBrowserControllerId() {
+        return getActiveBrowserController() != null ? getActiveBrowserController().getId() : 0;
     }
 
     public View getFragmentView() {

@@ -41,7 +41,7 @@ const char kNewTabPromosApiPath[] = "/async/newtab_promos";
 const char kXSSIResponsePreamble[] = ")]}'";
 
 bool CanBlockPromos() {
-  return base::FeatureList::IsEnabled(features::kDismissNtpPromos);
+  return base::FeatureList::IsEnabled(ntp_features::kDismissPromos);
 }
 
 GURL GetGoogleBaseUrl() {

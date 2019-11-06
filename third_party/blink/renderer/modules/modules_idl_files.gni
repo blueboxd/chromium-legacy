@@ -776,7 +776,6 @@ modules_dictionary_idl_files =
           "quota/storage_usage_details.idl",
           "scheduler/scheduler_post_task_options.idl",
           "scheduler/task_queue_post_task_options.idl",
-          "screen_enumeration/display.idl",
           "sensor/sensor_error_event_init.idl",
           "sensor/sensor_options.idl",
           "sensor/spatial_sensor_options.idl",

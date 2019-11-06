@@ -32,7 +32,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
-#include "content/public/browser/system_connector.h"
 
 namespace app_list {
 
@@ -78,7 +77,7 @@ std::unique_ptr<SearchController> CreateSearchController(
                                          profile);
 
   // Set up rankers for search results.
-  controller->InitializeRankers(content::GetSystemConnector());
+  controller->InitializeRankers();
 
   // Add mixer groups. There are four main groups: answer card, apps
   // and omnibox. Each group has a "soft" maximum number of results. However, if

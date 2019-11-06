@@ -479,6 +479,15 @@ void OfflineAudioContext::RejectPendingResolvers() {
   RejectPendingDecodeAudioDataResolvers();
 }
 
+bool OfflineAudioContext::IsPullingAudioGraph() const {
+  DCHECK(IsMainThread());
+
+  // For an offline context, we're rendering only while the context is running.
+  // Unlike an AudioContext, there's no audio device that keeps pulling on graph
+  // after the context has finished rendering.
+  return ContextState() == BaseAudioContext::kRunning;
+}
+
 bool OfflineAudioContext::ShouldSuspend() {
   DCHECK(IsAudioThread());
 

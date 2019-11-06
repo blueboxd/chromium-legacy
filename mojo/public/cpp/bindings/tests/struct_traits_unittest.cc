@@ -490,8 +490,7 @@ TEST_F(StructTraitsTest, TypemapUniquePtr) {
     base::RunLoop loop;
     proxy->EchoStructWithTraitsForUniquePtr(
         std::make_unique<int>(12345),
-        base::BindOnce(&ExpectUniquePtr,
-                       base::Passed(std::make_unique<int>(12345)),
+        base::BindOnce(&ExpectUniquePtr, std::make_unique<int>(12345),
                        loop.QuitClosure()));
     loop.Run();
   }

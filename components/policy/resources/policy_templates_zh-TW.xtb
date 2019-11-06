@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1001649754854402482">在新版 <ph name="CORS" /> 導入作業中啟用 <ph name="CORS" /> 檢查安全防護措施，讓擴充功能保持相容行為，並允許 <ph name="PRODUCT_NAME" /> 不需經過 <ph name="CORS" /> 檢查即可傳送指定標頭。
+<translation id="1001649754854402482">在新版 <ph name="CORS" /> 模式中啟用 <ph name="CORS" /> 檢查安全防護措施，讓擴充功能保持相容行為，並允許 <ph name="PRODUCT_NAME" /> 不需經過 <ph name="CORS" /> 檢查即可傳送指定標頭。
 
       如果將這份清單設為空白，<ph name="PRODUCT_NAME" /> 會嘗試以相容方式執行擴充功能，且不會採用 <ph name="PRODUCT_NAME" /> 第 79 版的 <ph name="API" /> 變更，詳情請參閱 <ph name="WEB_REQUEST_API_MANUAL" />。
 
@@ -1082,7 +1082,7 @@
           您可以使用以下格式指定 Google 的搜尋網址：<ph name="GOOGLE_SEARCH_URL" />。
 
           啟用「DefaultSearchProviderEnabled」政策時必須設定這個選項，系統也只會在這種情況下遵循這項政策。</translation>
-<translation id="2658653824183107970">使用舊版 <ph name="CORS" /> 導入作業，而不使用新版 <ph name="CORS" /></translation>
+<translation id="2658653824183107970">使用舊版 <ph name="CORS" /> 模式，而不使用新版 <ph name="CORS" /></translation>
 <translation id="2659019163577049044">如果你啟用這項設定，使用者就可以自行設定裝置，讓簡訊在手機和 Chromebook 上保持同步。請注意，如果你允許這項政策，使用者必須完成設定流程來明確選擇啟用這項功能。設定流程完成後，使用者就可以在自己的 Chromebook 上收發簡訊。
 
       如果你停用這項設定，使用者將無法設置簡訊同步功能。
@@ -2245,9 +2245,9 @@
 
       如果將這項政策設為「啟用」或不予設定，使用者能夠以無痕模式開啟網頁。
 
-      如果設為「停用」，使用者可能無法以無痕模式開啟網頁。
+      如果設為「停用」，使用者將無法以無痕模式開啟網頁。
 
-      如果設為「強制」，使用者可能只能以無痕模式開啟網頁。請注意，[強制] 選項不適用於 Chrome Android 版。</translation>
+      如果設為「強制」，使用者只能以無痕模式開啟網頁。請注意，「強制」選項不適用於 Chrome Android 版。</translation>
 <translation id="4600786265870346112">啟用大型游標</translation>
 <translation id="4604931264910482931">設定內建訊息傳遞黑名單</translation>
 <translation id="4617338332148204752">在 <ph name="PRODUCT_FRAME_NAME" /> 內略過中繼標記檢查</translation>
@@ -3268,7 +3268,7 @@
 <translation id="6440051664870270040">允許同時在多個網站中進行瀏覽及開啟彈出式視窗</translation>
 <translation id="6447948611083700881">備份與還原功能已停用</translation>
 <translation id="6449476513004303784">不允許使用者管理憑證</translation>
-<translation id="6453641799812499182">在新版 <ph name="CORS" /> 導入作業中啟用 <ph name="CORS" /> 檢查安全防護措施</translation>
+<translation id="6453641799812499182">在新版 <ph name="CORS" /> 模式中啟用 <ph name="CORS" /> 檢查安全防護措施</translation>
 <translation id="645425387487868471">啟用 <ph name="PRODUCT_NAME" /> 的強制登入功能</translation>
 <translation id="6464074037294098618">啟用地址的自動填入功能</translation>
 <translation id="6467613372414922590">允許使用者層級的內建訊息傳遞主機 (在無管理員權限的情況下安裝)。</translation>
@@ -4673,7 +4673,7 @@
 <translation id="8917070657147922192">允許使用者管理已安裝的 CA 憑證。</translation>
 <translation id="8926275581598789324">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 82 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
-          指定電池供電時的閒置時間長度。如果使用者在這段時間內一直都沒有任何動作，系統就會執行閒置動作。
+          指定電池供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會執行閒置動作。
 
           設定這項政策後，只要使用者處於閒置狀態的時間達到這項政策指定的長度，<ph name="PRODUCT_OS_NAME" />就會採取閒置動作 (可另行設定)。
 

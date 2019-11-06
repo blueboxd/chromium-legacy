@@ -449,6 +449,7 @@ android_library("chrome_java") {
     "//components/offline_pages/core:offline_page_model_enums_java",
     "//components/password_manager/core/browser:password_manager_java_enums_srcjar",
     "//components/payments/content/android:error_strings_generated_srcjar",
+    "//components/payments/content/android:method_strings_generated_srcjar",
     "//components/search_engines:search_engine_type_java",
     "//components/security_state/core:security_state_enums_java",
     "//components/signin/core/browser:signin_enums_javagen",
@@ -823,6 +824,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/ui/android/widget:test_support_java",
     "//chrome/browser/util:java",
+    "//chrome/lib/lifecycle/public/android:java",
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
     "//components/autofill/android:autofill_java",
@@ -2432,6 +2434,11 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
   }
 
   chrome_bundle(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "static_library_proguard_disabled",
+                             "static_library_provider",
+                           ])
     base_module_target = ":$_base_module_target_name"
     bundle_name = _bundle_name
     include_32_bit_webview = defined(invoker.include_32_bit_webview) &&
@@ -2495,6 +2502,10 @@ if (public_android_sdk) {
   monochrome_or_trichrome_public_bundle_tmpl("trichrome_chrome_bundle") {
     bundle_suffix = ""
     use_trichrome_library = true
+    static_library_provider = ":trichrome_library_for_bundle_apk"
+    if (!is_java_debug) {
+      static_library_proguard_disabled = !trichrome_synchronized_proguard
+    }
   }
 
   if (android_64bit_target_cpu) {

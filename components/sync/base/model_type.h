@@ -122,8 +122,6 @@ enum ModelType {
   READING_LIST,
   // Commit only user events.
   USER_EVENTS,
-  // Shares in project Mountain.
-  MOUNTAIN_SHARES,
   // Commit only user consents.
   USER_CONSENTS,
   // Tabs sent between devices.
@@ -222,7 +220,7 @@ enum class ModelTypeForHistograms {
   kPrinters = 37,
   kReadingList = 38,
   kUserEvents = 39,
-  kMountainShares = 40,
+  // kDeprecatedMountainShares = 40,
   kUserConsents = 41,
   kSendTabToSelf = 42,
   kSecurityEvents = 43,
@@ -259,9 +257,8 @@ constexpr ModelTypeSet ProtocolTypes() {
       FAVICON_TRACKING, DEVICE_INFO, PRIORITY_PREFERENCES,
       SUPERVISED_USER_SETTINGS, APP_LIST, SUPERVISED_USER_WHITELISTS,
       ARC_PACKAGE, PRINTERS, READING_LIST, USER_EVENTS, NIGORI,
-      DEPRECATED_EXPERIMENTS, MOUNTAIN_SHARES, USER_CONSENTS, SEND_TAB_TO_SELF,
-      SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES,
-      OS_PRIORITY_PREFERENCES);
+      DEPRECATED_EXPERIMENTS, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
+      WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES, OS_PRIORITY_PREFERENCES);
 }
 
 // These are the normal user-controlled types. This is to distinguish from

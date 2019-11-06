@@ -18,6 +18,7 @@
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -276,8 +277,12 @@ int PacFileDecider::DoQuickCheck() {
 
   HostResolver* host_resolver =
       pac_file_fetcher_->GetRequestContext()->host_resolver();
-  resolve_request_ = host_resolver->CreateRequest(HostPortPair(host, 80),
-                                                  net_log_, parameters);
+  // It's safe to use an empty NetworkIsolationKey() here, since this is only
+  // for fetching the PAC script, so can't usefully leak data to web-initiated
+  // requests (Which can't use an empty NIK for resolving IPs other than that of
+  // the proxy).
+  resolve_request_ = host_resolver->CreateRequest(
+      HostPortPair(host, 80), NetworkIsolationKey(), net_log_, parameters);
 
   CompletionRepeatingCallback callback = base::BindRepeating(
       &PacFileDecider::OnIOCompletion, base::Unretained(this));

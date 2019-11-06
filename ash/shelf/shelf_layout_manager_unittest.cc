@@ -3661,6 +3661,56 @@ TEST_P(HotseatShelfLayoutManagerTest, DragActiveWindowInTabletMode) {
   EXPECT_TRUE(window->layer()->transform().IsIdentity());
 }
 
+// Tests that when hotseat and drag-window-to-overview features are both
+// enabled, hotseat is not extended after dragging a window to overview, and
+// then activating the window.
+TEST_P(HotseatShelfLayoutManagerTest, ExitingOvervieHidesHotseat) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(
+      features::kDragFromShelfToHomeOrOverview);
+
+  const ShelfAutoHideBehavior auto_hide_behavior = GetParam();
+  GetPrimaryShelf()->SetAutoHideBehavior(auto_hide_behavior);
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  // If the shelf is auto-hidden, swipe up to bring up shelf and hotseat first
+  // (otherwise, the window drag to overview will not be handled).
+  if (auto_hide_behavior == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
+    SwipeUpOnShelf();
+    ASSERT_EQ(HotseatState::kExtended,
+              GetShelfLayoutManager()->hotseat_state());
+  }
+
+  // Swipe up to start dragging the active window.
+  const gfx::Rect bottom_shelf_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  StartScroll(bottom_shelf_bounds.CenterPoint());
+
+  // Drag upward, to the center of the screen, and release (this should enter
+  // the overview).
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  UpdateScroll(display_bounds.CenterPoint().y() -
+               bottom_shelf_bounds.CenterPoint().y());
+  // Small scroll update, to simulate the user holding the pointer.
+  UpdateScroll(2);
+  EndScroll(/*is_fling=*/false, 0.f);
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // Activate the window - the overview session should exit, and hotseat should
+  // be hidden.
+  wm::ActivateWindow(window.get());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+}
+
 // Tests that swiping downward, towards the bezel, from a variety of points
 // results in hiding the hotseat.
 TEST_F(HotseatShelfLayoutManagerTest, HotseatHidesWhenSwipedToBezel) {

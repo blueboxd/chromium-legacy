@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="storage_external_entry.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -18,7 +19,7 @@
         $i18nRaw{storageAndroidAppsExternalDrivesNote}
       </span>
     </div>
-    <h2>$i18n{storageExternalStorageListHeader}</h2>
+    <h2>[[computeStorageListHeader_(externalStorages_)]]</h2>
     <iron-list id="removableDevices" preserve-focus
         items="[[externalStorages_]]">
       <template>

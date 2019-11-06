@@ -255,10 +255,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #endif  // !defined(OS_CHROMEOS)
 
   html_source->AddBoolean(
-      "a11yEnhancements",
-      base::FeatureList::IsEnabled(features::kWebUIA11yEnhancements));
-
-  html_source->AddBoolean(
       "privacySettingsRedesignEnabled",
       base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign));
 

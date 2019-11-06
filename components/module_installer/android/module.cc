@@ -41,7 +41,8 @@ namespace {
 
 typedef bool JniRegistrationFunction(JNIEnv* env);
 
-void* LoadLibrary(const std::string& library_name) {
+void* LoadLibrary(const std::string& library_name,
+                  const std::string& module_name) {
   void* library_handle = nullptr;
 
 #if defined(LOAD_FROM_PARTITIONS)
@@ -50,7 +51,9 @@ void* LoadLibrary(const std::string& library_name) {
   // operation on the Java side, because JNI registration is done explicitly
   // (hence there is no reason for the Java ClassLoader to be aware of the
   // library, for lazy JNI registration).
-  library_handle = BundleUtils::DlOpenModuleLibraryPartition(library_name);
+  const std::string partition_name = module_name + "_partition";
+  library_handle =
+      BundleUtils::DlOpenModuleLibraryPartition(library_name, partition_name);
 #elif defined(COMPONENT_BUILD)
   const std::string lib_name = "lib" + library_name + ".so";
   library_handle = dlopen(lib_name.c_str(), RTLD_LOCAL);
@@ -58,7 +61,7 @@ void* LoadLibrary(const std::string& library_name) {
 #error "Unsupported configuration."
 #endif  // defined(COMPONENT_BUILD)
   CHECK(library_handle != nullptr)
-      << "Could not open feature library: " << dlerror();
+      << "Could not open feature library " << library_name << ": " << dlerror();
 
   return library_handle;
 }
@@ -94,7 +97,7 @@ static void JNI_Module_LoadNative(
   if (libraries.size() > 0) {
     void* library_handle = nullptr;
     for (const auto& library : libraries) {
-      library_handle = LoadLibrary(library);
+      library_handle = LoadLibrary(library, name);
     }
     // module libraries are ordered such that the root library will be the last
     // item in the list. We expect this library to provide the JNI registration

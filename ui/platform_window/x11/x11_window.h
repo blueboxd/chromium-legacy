@@ -97,6 +97,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
                       const gfx::ImageSkia& app_icon) override;
   void SizeConstraintsChanged() override;
   bool IsTranslucentWindowOpacitySupported() const override;
+  void LowerXWindow() override;
 
  protected:
   PlatformWindowDelegateLinux* platform_window_delegate() const {

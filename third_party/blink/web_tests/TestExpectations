@@ -1265,6 +1265,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/tall-content-in-inne
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/tall-float1.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/tall-float2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/three-inner-rows.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/transform-inside-opacity.html [ Failure ]
 crbug.com/874506 virtual/layout_ng_block_frag/fast/multicol/unsplittable-inline-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/abspos-auto-position-on-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/break-properties.html [ Failure ]
@@ -1425,11 +1426,8 @@ crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/anonymo
 crbug.com/807497 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-basis-010.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-direction-row-vertical.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-004.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-005.xht [ Failure ]
-crbug.com/467127 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-006.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Failure ]
-crbug.com/467127 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-008.xht [ Failure ]
 crbug.com/996474 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-009.html [ Pass Failure ]
 crbug.com/998080 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-012.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-015.html [ Failure ]
@@ -1457,7 +1455,6 @@ crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/scrollb
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/scrollbars.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/table-as-item-auto-min-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/ttwf-reftest-flex-inline.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/ttwf-reftest-flex-order.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-margin.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
 
@@ -1906,25 +1903,6 @@ crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-sepa
 crbug.com/626703 [ Win7 ] external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/dom/documents/resource-metadata-management/document-lastModified-01.html [ Failure ]
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
-
-# The 'overflow-wrap: anywhere' feature is not implemented yet
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-001.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-002.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-003.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-004.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-005.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-span-001.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-span-002.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-fit-content-001.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-001.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-002.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-003.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-004.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/word-break/word-break-break-word-overflow-wrap-interactions.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-003.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-006.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-013.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-tab-004.html [ Skip ]
 
 # These are added to W3CImportExpectations as Skip, remove when next import is done.
 crbug.com/666657 external/wpt/css/css-text/hanging-punctuation [ Skip ]
@@ -2897,7 +2875,6 @@ crbug.com/626703 [ Win ] external/wpt/speech-api/SpeechSynthesisUtterance-volume
 crbug.com/626703 [ Mac10.11 ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-shaping-002.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/webrtc/no-media-call.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-table-001-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-009-manual.html [ Skip ]
@@ -2962,7 +2939,6 @@ crbug.com/626703 external/wpt/css/css-animations/animationevent-marker-pseudoele
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-016.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-atomic-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-replaced-005.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-cluster-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-keep-all-001.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/media-source/mediasource-config-change-webm-a-bitrate.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/media-elements/src_object_blob.html [ Timeout ]
@@ -3719,6 +3695,11 @@ crbug.com/626703 virtual/omt-worker-fetch/external/wpt/xhr/setrequestheader-head
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
+
+crbug.com/1020749 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-inline-002.html [ Failure ]
+crbug.com/1020749 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-inline-003.html [ Failure ]
+crbug.com/1020749 external/wpt/css/css-text/word-break/word-break-break-all-inline-009.html [ Failure ]
+crbug.com/1020749 external/wpt/css/css-text/word-break/word-break-break-all-inline-010.html [ Failure ]
 
 # Sheriff 2019-08-19:
 crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Failure ]
@@ -5205,7 +5186,7 @@ crbug.com/919789 fast/autoresize/turn-off-autoresize.html [ Pass Timeout ]
 crbug.com/919789 fast/autoresize/basic.html [ Pass Timeout ]
 crbug.com/919789 fast/dom/viewport/resize-event-fired-window-resized.html [ Pass Timeout ]
 crbug.com/919789 fast/dom/Window/window-resize-contents.html [ Pass Timeout ]
-crbug.com/919789 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Pass Timeout ]
+crbug.com/1021627 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Pass Failure Timeout ]
 crbug.com/919789 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout ]
 crbug.com/919789 fast/events/resize-events-count.html [ Pass Timeout ]
 crbug.com/919789 fast/css-grid-layout/flex-content-sized-columns-resize.html [ Pass Timeout ]
@@ -5744,7 +5725,23 @@ crbug.com/963183 http/tests/devtools/network/preview-searchable.js [ Pass Failur
 crbug.com/963183 http/tests/devtools/network/waterfall-header-height-updates.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/network/network-search.js [ Pass Timeout Failure ]
 
+# Temporarily disabled for landing productregistry removal in devtools
+crbug.com/1011466 http/tests/devtools/console/console-format-classes.js [ Pass Failure ]
+crbug.com/1011466 http/tests/devtools/modules-load-initial.js [ Pass Failure ]
+crbug.com/1011466 http/tests/devtools/tracing/timeline-misc/timeline-aggregated-details.js [ Pass Failure ]
+crbug.com/1011466 http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Pass Failure ]
+crbug.com/1011466 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-aggregated-details.js [ Pass Failure ]
+crbug.com/1011466 virtual/threaded/http/tests/devtools/tracing/timeline-network/timeline-network-resource-details.js [ Pass Failure ]
+
 # Sheriff 2019-11-04
 crbug.com/1021407 [ Retina Release ] virtual/audio-service/media/video-controls-rendering.html [ Pass Failure ]
 crbug.com/1021407 [ Mac10.11 ] virtual/audio-service/media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 crbug.com/1021407 [ Mac10.11 ] media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
+
+# Temporarily disabled to land accessibility changes in DevTools
+crbug.com/963183 http/tests/devtools/sources/debugger-ui/error-in-watch-expressions.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger/debugger-proto-property.js [ Pass Failure ]
+
+# Temporarily disabled to land scope changes in DevTools
+crbug.com/963183 http/tests/devtools/sources/debugger-pause/set-return-value.js [ Pass Failure ]

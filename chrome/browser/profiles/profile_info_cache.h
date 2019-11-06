@@ -186,7 +186,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // i.e. Two or more profiles with the profile name "Person 1" would be
   // recomputed to "Person 1" and "Person 2".
   void MigrateLegacyProfileNamesAndRecomputeIfNeeded();
-  static void EnableLegacyProfileMigrationForTesting();
+  static void SetLegacyProfileMigrationForTesting(bool value);
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
   std::vector<std::string> keys_;

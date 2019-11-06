@@ -19,6 +19,7 @@ class View;
 }  // namespace views
 
 namespace ash {
+class OverviewItem;
 
 // OverviewItemView covers the overview window and listens for events.
 class ASH_EXPORT OverviewItemView
@@ -33,24 +34,11 @@ class ASH_EXPORT OverviewItemView
     kVisible,
   };
 
-  class EventDelegate {
-   public:
-    virtual void HandleMouseEvent(const ui::MouseEvent& event) = 0;
-    virtual void HandleGestureEvent(ui::GestureEvent* event) = 0;
-    virtual bool ShouldIgnoreGestureEvents() = 0;
-    virtual void OnHighlightedViewActivated() = 0;
-    virtual void OnHighlightedViewClosed() = 0;
-
-   protected:
-    virtual ~EventDelegate() {}
-  };
-
   // If |show_preview| is true, this class will contain a child view which
   // mirrors |window|.
-  OverviewItemView(EventDelegate* event_delegate,
+  OverviewItemView(OverviewItem* overview_item,
                    aura::Window* window,
-                   bool show_preview,
-                   views::ImageButton* close_button);
+                   bool show_preview);
   ~OverviewItemView() override;
 
   // Fades the app icon and title out if |visibility| is kInvisible, in
@@ -65,11 +53,20 @@ class ASH_EXPORT OverviewItemView
   // not kInvisible.
   void HideCloseInstantlyAndThenShowItSlowly();
 
-  void ResetEventDelegate();
+  // Called when |overview_item_| is about to be restored to its original state
+  // outside of overview.
+  void OnOverviewItemWindowRestoring();
 
   // Refreshes |preview_view_| so that its content is up-to-date. Used by tab
   // dragging.
   void RefreshPreviewView();
+
+  // Sets or hides rounded corners on |preview_view_|, if it exists.
+  void UpdatePreviewRoundedCorners(bool show, float rounding);
+
+  // WindowMiniView:
+  int GetMargin() const override;
+  gfx::Rect GetHeaderBounds() const override;
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
@@ -77,6 +74,8 @@ class ASH_EXPORT OverviewItemView
   void MaybeActivateHighlightedView() override;
   void MaybeCloseHighlightedView() override;
   gfx::Point GetMagnifierFocusPointInScreen() override;
+
+  views::ImageButton* close_button() { return close_button_; }
 
  protected:
   // views::View:
@@ -89,8 +88,9 @@ class ASH_EXPORT OverviewItemView
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
-  // The delegate which all the events get forwarded to.
-  EventDelegate* event_delegate_;
+  // The OverviewItem which owns the widget which houses this view. Non-null
+  // until |OnOverviewItemWindowRestoring| is called.
+  OverviewItem* overview_item_;
 
   views::ImageButton* close_button_;
 

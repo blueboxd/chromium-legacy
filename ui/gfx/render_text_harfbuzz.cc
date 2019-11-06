@@ -1705,18 +1705,6 @@ SelectionModel RenderTextHarfBuzz::AdjacentLineSelectionModel(
   return next;
 }
 
-size_t RenderTextHarfBuzz::TextIndexToDisplayIndex(size_t index) {
-  return TextIndexToGivenTextIndex(GetDisplayText(), index);
-}
-
-size_t RenderTextHarfBuzz::DisplayIndexToTextIndex(size_t index) {
-  if (!obscured())
-    return index;
-  const size_t text_index = UTF16OffsetToIndex(text(), 0, index);
-  DCHECK_LE(text_index, text().length());
-  return text_index;
-}
-
 bool RenderTextHarfBuzz::IsValidCursorIndex(size_t index) {
   if (index == 0 || index == text().length())
     return true;
@@ -1976,7 +1964,8 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
             FindRunBreakingCharacter(text, breaking_run_start, script_run_end);
 
         // Break runs at style boundaries.
-        style.UpdatePosition(DisplayIndexToTextIndex(breaking_run_start));
+        style.UpdatePosition(
+            GivenTextIndexToTextIndex(text, breaking_run_start));
         size_t text_style_end =
             TextIndexToGivenTextIndex(text, style.GetRange().end());
 

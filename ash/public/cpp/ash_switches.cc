@@ -134,7 +134,7 @@ bool IsUsingViewsLock() {
 }
 
 bool IsUsingShelfAutoDim() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableDimShelf);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableDimShelf);
 }
 
 }  // namespace switches

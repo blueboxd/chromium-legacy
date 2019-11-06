@@ -20,7 +20,6 @@
 #include "media/mojo/services/cdm_manifest.h"
 #include "media/mojo/services/media_manifest.h"
 #include "services/audio/public/cpp/manifest.h"
-#include "services/data_decoder/public/cpp/manifest.h"
 #include "services/device/public/cpp/manifest.h"
 #include "services/media_session/public/cpp/manifest.h"
 #include "services/metrics/public/cpp/manifest.h"
@@ -63,7 +62,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
 #endif
           media::GetMediaManifest(),
           media::GetMediaRendererManifest(),
-          data_decoder::GetManifest(),
           device::GetManifest(),
           media_session::GetManifest(),
           metrics::GetManifest(),

@@ -112,10 +112,6 @@ void ConfigureTabGroupForNavigation(NavigateParams* nav_params) {
   if (nav_params->disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
       nav_params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     nav_params->group = model->GetTabGroupForTab(source_index);
-    // TODO(crbug.com / 997344): Re-evaluate implicit link creation, and either
-    // remove this or add tests.
-    if (!nav_params->group)
-      nav_params->group = model->AddToNewGroup({source_index});
   }
 }
 

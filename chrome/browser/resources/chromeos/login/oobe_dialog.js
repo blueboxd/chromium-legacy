@@ -55,6 +55,14 @@ Polymer({
       reflectToAttribute: true,
       observer: 'onfullScreenDialogChanged_',
     },
+
+    /**
+     * Shows overlay on top of the bottom buttons.
+     */
+    showButtonsOverlay: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   focus: function() {

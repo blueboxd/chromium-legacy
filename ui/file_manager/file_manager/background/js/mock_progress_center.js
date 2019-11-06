@@ -36,6 +36,7 @@ class MockProgressCenter {
   requestCancel() {}
   addPanel() {}
   removePanel() {}
+  neverNotifyCompleted() {}
 
   /**
    * Returns the number of unique keys in |this.items|.

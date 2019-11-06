@@ -28,8 +28,26 @@ std::unique_ptr<UiInterface> UiModuleFactory::Create(
   // Do not dlclose() the library. Doing so causes issues with cardboard on
   // Android M. It's not clear whether there is a use-after-free in VR code, or
   // a linker or system issue. See https://crbug.com/994029.
-  void* ui_library_handle =
-      base::android::BundleUtils::DlOpenModuleLibraryPartition("vr");
+
+  // TODO(https://crbug.com/1019853): When all VR native code moves into the
+  // feature module, this factory will completely disappear. In the meantime,
+  // make it tolerant of two different variants of the VR lib (one for Chrome,
+  // one for Monochrome).
+  const std::vector<const std::string> library_name_possibilities = {
+      "monochrome_vr",
+      "chrome_vr",
+  };
+
+  void* ui_library_handle = nullptr;
+  const std::string partition_name = "vr";
+  for (const auto& library_name : library_name_possibilities) {
+    ui_library_handle =
+        base::android::BundleUtils::DlOpenModuleLibraryPartition(
+            library_name, partition_name);
+    if (ui_library_handle != nullptr) {
+      break;
+    }
+  }
   DCHECK(ui_library_handle != nullptr)
       << "Could not open VR UI library:" << dlerror();
 

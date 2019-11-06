@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/unhandled_tap_notifier/unhandled_tap_notifier.mojom-blink.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -472,7 +472,7 @@ void GestureManager::ShowUnhandledTapUIIfNeeded(
   if (should_trigger) {
     // Start setting up the Mojo interface connection.
     mojo::Remote<mojom::blink::UnhandledTapNotifier> provider;
-    frame_->Client()->GetInterfaceProvider()->GetInterface(
+    frame_->GetBrowserInterfaceBroker().GetInterface(
         provider.BindNewPipeAndPassReceiver());
 
     // Extract text run-length.

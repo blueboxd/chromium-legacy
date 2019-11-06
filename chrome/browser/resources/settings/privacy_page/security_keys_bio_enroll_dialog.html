@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
@@ -52,15 +53,13 @@
         <iron-pages attr-for-selected="id" selected="[[dialogPage_]]"
             on-iron-select="onIronSelect_">
           <div id="initial">
-            <p>$i18n{securityKeysBioEnrollmentTouch}</p>
+            <p>$i18n{securityKeysTouchToContinue}</p>
             <paper-spinner-lite style="padding-bottom: 16px;" active>
             </paper-spinner-lite>
           </div>
 
           <div id="pinPrompt">
-            <p>$i18n{securityKeysBioEnrollmentPinPrompt}</p>
-            <settings-security-keys-pin-field
-                id="pin" label="$i18n{securityKeysPIN}">
+            <settings-security-keys-pin-field id="pin">
             </settings-security-keys-pin-field>
           </div>
 
@@ -110,7 +109,7 @@
           </div>
 
           <div id="enroll">
-            <p>$i18n{securityKeysBioEnrollmentEnrollingLabel}</p>
+            <p>[[progressArcLabel_]]</p>
             <cr-fingerprint-progress-arc id="arc"></cr-fingerprint-progress-arc>
           </div>
 

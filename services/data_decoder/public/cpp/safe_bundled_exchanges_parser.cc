@@ -5,7 +5,6 @@
 #include "services/data_decoder/public/cpp/safe_bundled_exchanges_parser.h"
 
 #include "base/bind.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
 
 namespace data_decoder {
 
@@ -14,26 +13,18 @@ constexpr char kConnectionError[] =
     "Cannot connect to the remote parser service";
 }  // namespace
 
-SafeBundledExchangesParser::SafeBundledExchangesParser(
-    mojo::Remote<data_decoder::mojom::DataDecoderService> service)
-    : service_(std::move(service)) {
-  if (service_.is_bound()) {
-    service_->BindBundledExchangesParserFactory(
-        factory_.BindNewPipeAndPassReceiver());
-  }
-}
+SafeBundledExchangesParser::SafeBundledExchangesParser() = default;
 
 SafeBundledExchangesParser::~SafeBundledExchangesParser() = default;
 
 base::File::Error SafeBundledExchangesParser::OpenFile(base::File file) {
   DCHECK(disconnected_);
-  DCHECK(factory_.is_connected());
 
   if (!file.IsValid())
     return file.error_details();
 
-  factory_->GetParserForFile(parser_.BindNewPipeAndPassReceiver(),
-                             std::move(file));
+  GetFactory()->GetParserForFile(parser_.BindNewPipeAndPassReceiver(),
+                                 std::move(file));
   parser_.set_disconnect_handler(base::BindOnce(
       &SafeBundledExchangesParser::OnDisconnect, base::Unretained(this)));
 
@@ -45,9 +36,8 @@ base::File::Error SafeBundledExchangesParser::OpenFile(base::File file) {
 void SafeBundledExchangesParser::OpenDataSource(
     mojo::PendingRemote<mojom::BundleDataSource> data_source) {
   DCHECK(disconnected_);
-  DCHECK(factory_.is_connected());
-  factory_->GetParserForDataSource(parser_.BindNewPipeAndPassReceiver(),
-                                   std::move(data_source));
+  GetFactory()->GetParserForDataSource(parser_.BindNewPipeAndPassReceiver(),
+                                       std::move(data_source));
   parser_.set_disconnect_handler(base::BindOnce(
       &SafeBundledExchangesParser::OnDisconnect, base::Unretained(this)));
 
@@ -91,6 +81,15 @@ void SafeBundledExchangesParser::ParseResponse(
       response_offset, response_length,
       base::BindOnce(&SafeBundledExchangesParser::OnResponseParsed,
                      base::Unretained(this), callback_id));
+}
+
+mojom::BundledExchangesParserFactory* SafeBundledExchangesParser::GetFactory() {
+  if (!factory_) {
+    data_decoder_.GetService()->BindBundledExchangesParserFactory(
+        factory_.BindNewPipeAndPassReceiver());
+    factory_.reset_on_disconnect();
+  }
+  return factory_.get();
 }
 
 void SafeBundledExchangesParser::OnDisconnect() {

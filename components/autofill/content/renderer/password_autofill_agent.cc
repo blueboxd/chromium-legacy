@@ -74,6 +74,7 @@ using blink::WebView;
 
 namespace autofill {
 
+using form_util::FindFormControlElementByUniqueRendererId;
 using form_util::FindFormControlElementsByUniqueRendererId;
 using form_util::IsFormControlVisible;
 using form_util::IsFormVisible;
@@ -389,7 +390,7 @@ void AnnotateFieldWithParsingResult(WebDocument doc,
                                     const std::string& text) {
   if (renderer_id == FormData::kNotSetFormRendererId)
     return;
-  auto element = FindFormControlElementsByUniqueRendererId(doc, renderer_id);
+  auto element = FindFormControlElementByUniqueRendererId(doc, renderer_id);
   if (element.IsNull())
     return;
   element.SetAttribute(
@@ -1280,6 +1281,30 @@ void PasswordAutofillAgent::AnnotateFieldsWithParsingResult(
                                  "confirmation_password_element");
 }
 
+void PasswordAutofillAgent::InformNoSavedCredentials() {
+  autofilled_elements_cache_.clear();
+
+  // Clear the actual field values.
+  WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
+  std::vector<WebFormControlElement> elements =
+      FindFormControlElementsByUniqueRendererId(
+          doc, std::vector<uint32_t>(all_autofilled_elements_.begin(),
+                                     all_autofilled_elements_.end()));
+  for (WebFormControlElement& element : elements) {
+    if (element.IsNull())
+      continue;
+    element.SetSuggestedValue(blink::WebString());
+    // Don't clear the actual value of fields that the user has edited manually
+    // (which changes the autofill state back to kNotFilled).
+    if (element.GetAutofillState() == WebAutofillState::kAutofilled)
+      element.SetValue(blink::WebString());
+    element.SetAutofillState(WebAutofillState::kNotFilled);
+  }
+  all_autofilled_elements_.clear();
+
+  field_data_manager_.ClearData();
+}
+
 void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
   DCHECK(!node.IsNull());
   focused_input_element_.Reset();
@@ -1422,6 +1447,7 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   username_detector_cache_.clear();
   forms_structure_cache_.clear();
   autofilled_elements_cache_.clear();
+  all_autofilled_elements_.clear();
   last_updated_field_renderer_id_ = FormData::kNotSetFormRendererId;
   last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
   touch_to_fill_state_ = TouchToFillState::kShouldShow;
@@ -1834,6 +1860,7 @@ void PasswordAutofillAgent::AutofillField(const base::string16& value,
       field, value, FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
   autofilled_elements_cache_.emplace(field.UniqueRendererFormControlId(),
                                      WebString::FromUTF16(value));
+  all_autofilled_elements_.insert(field.UniqueRendererFormControlId());
 }
 
 void PasswordAutofillAgent::SetLastUpdatedFormAndField(

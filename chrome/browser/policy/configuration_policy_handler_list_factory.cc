@@ -349,12 +349,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER},
   { key::kSafeBrowsingRealTimeLookupEnabled,
     prefs::kSafeBrowsingRealTimeLookupEnabled,
-    base::Value::Type::BOOLEAN
-  },
+    base::Value::Type::BOOLEAN },
   { key::kSendFilesForMalwareCheck,
     prefs::kSafeBrowsingSendFilesForMalwareCheck,
-    base::Value::Type::INTEGER
-  },
+    base::Value::Type::INTEGER },
+  { key::kWebComponentsV0Enabled,
+    prefs::kWebComponentsV0Enabled,
+    base::Value::Type::BOOLEAN },
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   { key::kAuthNegotiateDelegateByKdcPolicy,
     prefs::kAuthNegotiateDelegateByKdcPolicy,

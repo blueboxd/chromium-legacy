@@ -9,9 +9,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/test/task_environment.h"
-#include "services/data_decoder/public/cpp/test_data_decoder_service.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +27,7 @@ class RecurrenceRankerJsonConfigConverterTest : public testing::Test {
     base::RunLoop run_loop;
     done_callback_ = run_loop.QuitClosure();
     converter_ = JsonConfigConverter::Convert(
-        dd_service_.connector(), json, "",
+        json, "",
         base::BindOnce(
             [](RecurrenceRankerJsonConfigConverterTest* fixture,
                base::Optional<RecurrenceRankerConfigProto> config) {
@@ -56,7 +54,7 @@ class RecurrenceRankerJsonConfigConverterTest : public testing::Test {
   std::unique_ptr<JsonConfigConverter> converter_;
 
   base::Closure done_callback_;
-  data_decoder::TestDataDecoderService dd_service_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   base::Optional<RecurrenceRankerConfigProto> config_;
 };
 

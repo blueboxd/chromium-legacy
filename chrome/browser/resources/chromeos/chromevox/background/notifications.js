@@ -32,8 +32,9 @@ UpdateNotification.prototype = {
 
   /** Shows the notification. */
   show: function() {
-    if (!this.shouldShow())
+    if (!this.shouldShow()) {
       return;
+    }
     chrome.notifications.create('update', this.data);
     chrome.notifications.onClicked.addListener(this.onClicked);
     chrome.notifications.onClosed.addListener(this.onClosed);
@@ -75,8 +76,9 @@ Notifications.currentUpdate;
  */
 Notifications.onStartup = function() {
   // Only run on background page.
-  if (document.location.href.indexOf('background.html') == -1)
+  if (document.location.href.indexOf('background.html') == -1) {
     return;
+  }
 
   Notifications.currentUpdate = new UpdateNotification();
   Notifications.currentUpdate.show();

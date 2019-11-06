@@ -19,8 +19,8 @@
 #include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
@@ -68,7 +68,7 @@ class LevelDBLock {
 };
 
 std::unique_ptr<LevelDBLock> LockForTesting(const base::FilePath& file_name) {
-  leveldb::Env* env = LevelDBEnv::Get();
+  leveldb::Env* env = IndexedDBLevelDBEnv::Get();
   base::FilePath lock_path = file_name.AppendASCII("LOCK");
   leveldb::FileLock* lock = nullptr;
   leveldb::Status status = env->LockFile(lock_path.AsUTF8Unsafe(), &lock);

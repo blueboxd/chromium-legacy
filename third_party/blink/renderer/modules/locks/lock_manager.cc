@@ -9,11 +9,16 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_lock_granted_callback.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/locks/lock.h"
 #include "third_party/blink/renderer/modules/locks/lock_info.h"
 #include "third_party/blink/renderer/modules/locks/lock_manager_snapshot.h"
@@ -26,6 +31,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -223,7 +229,8 @@ ScriptPromise LockManager::request(ScriptState* script_state,
 
   // 5. If origin is an opaque origin, then reject promise with a
   // "SecurityError" DOMException.
-  if (!context->GetSecurityOrigin()->CanAccessLocks()) {
+  if (!context->GetSecurityOrigin()->CanAccessLocks() ||
+      !AllowLocks(script_state)) {
     exception_state.ThrowSecurityError(
         "Access to the Locks API is denied in this context.");
     return ScriptPromise();
@@ -343,7 +350,8 @@ ScriptPromise LockManager::query(ScriptState* script_state,
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
 
-  if (!context->GetSecurityOrigin()->CanAccessLocks()) {
+  if (!context->GetSecurityOrigin()->CanAccessLocks() ||
+      !AllowLocks(script_state)) {
     exception_state.ThrowSecurityError(
         "Access to the Locks API is denied in this context.");
     return ScriptPromise();
@@ -410,6 +418,36 @@ void LockManager::OnLockReleased(Lock* lock) {
   // Lock may be removed by an explicit call and/or when the context is
   // destroyed, so this must be idempotent.
   held_locks_.erase(lock);
+}
+
+bool LockManager::AllowLocks(ScriptState* script_state) {
+  if (!cached_allowed_.has_value()) {
+    ExecutionContext* execution_context = ExecutionContext::From(script_state);
+    DCHECK(execution_context->IsContextThread());
+    SECURITY_DCHECK(execution_context->IsDocument() ||
+                    execution_context->IsWorkerGlobalScope());
+    if (auto* document = DynamicTo<Document>(execution_context)) {
+      LocalFrame* frame = document->GetFrame();
+      if (!frame) {
+        cached_allowed_ = false;
+      } else if (auto* settings_client = frame->GetContentSettingsClient()) {
+        // This triggers a sync IPC.
+        cached_allowed_ = settings_client->AllowWebLocks();
+      } else {
+        cached_allowed_ = true;
+      }
+    } else {
+      WebContentSettingsClient* content_settings_client =
+          To<WorkerGlobalScope>(execution_context)->ContentSettingsClient();
+      if (!content_settings_client) {
+        cached_allowed_ = true;
+      } else {
+        // This triggers a sync IPC.
+        cached_allowed_ = content_settings_client->AllowWebLocks();
+      }
+    }
+  }
+  return cached_allowed_.value();
 }
 
 }  // namespace blink

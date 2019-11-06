@@ -93,12 +93,16 @@ public final class BrowserFragmentViewController
         mBrowserController = browserController;
         WebContents webContents =
                 mBrowserController != null ? mBrowserController.getWebContents() : null;
+        // Create the WebContentsGestureStateTracker before setting the WebContents on
+        // the views as they may call back to this class.
+        if (mBrowserController != null) {
+            mGestureStateTracker =
+                    new WebContentsGestureStateTracker(mContentView, webContents, this);
+        }
         mContentView.setWebContents(webContents);
         mContentViewRenderView.setWebContents(webContents);
         mTopControlsContainerView.setWebContents(webContents);
         if (mBrowserController != null) {
-            mGestureStateTracker =
-                    new WebContentsGestureStateTracker(mContentView, webContents, this);
             mBrowserController.onDidGainActive(mTopControlsContainerView.getNativeHandle());
             mContentView.requestFocus();
         }

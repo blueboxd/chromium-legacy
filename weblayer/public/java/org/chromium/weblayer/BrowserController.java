@@ -34,10 +34,14 @@ public final class BrowserController {
     private FullscreenCallbackClientImpl mFullscreenCallbackClient;
     private final NavigationController mNavigationController;
     private final ObserverList<BrowserCallback> mCallbacks;
+    private BrowserFragmentController mBrowserFragmentController;
     private DownloadCallbackClientImpl mDownloadCallbackClient;
+    private NewBrowserCallback mNewBrowserCallback;
 
-    BrowserController(IBrowserController impl) {
+    BrowserController(
+            IBrowserController impl, BrowserFragmentController browserFragmentController) {
         mImpl = impl;
+        mBrowserFragmentController = browserFragmentController;
         try {
             mImpl.setClient(new BrowserClientImpl());
         } catch (RemoteException e) {
@@ -46,6 +50,12 @@ public final class BrowserController {
 
         mCallbacks = new ObserverList<BrowserCallback>();
         mNavigationController = NavigationController.create(mImpl);
+        mBrowserFragmentController.registerBrowserController(this);
+    }
+
+    public BrowserFragmentController getBrowserFragmentController() {
+        ThreadCheck.ensureOnUiThread();
+        return mBrowserFragmentController;
     }
 
     public void setDownloadCallback(@Nullable DownloadCallback callback) {
@@ -84,12 +94,17 @@ public final class BrowserController {
     }
 
     /**
-     * Executes the script in an isolated world, and returns the result as a JSON object to the
-     * callback if provided. The object passed to the callback will have a single key
-     * SCRIPT_RESULT_KEY which will hold the result of running the script.
+     * Executes the script, and returns the result as a JSON object to the callback if provided. The
+     * object passed to the callback will have a single key SCRIPT_RESULT_KEY which will hold the
+     * result of running the script.
+     * @param useSeparateIsolate If true, runs the script in a separate v8 Isolate. This uses more
+     * memory, but separates the injected scrips from scripts in the page. This prevents any
+     * potentially malicious interaction between first-party scripts in the page, and injected
+     * scripts. Use with caution, only pass false for this argument if you know this isn't an issue
+     * or you need to interact with first-party scripts.
      */
-    public void executeScript(
-            @NonNull String script, @Nullable ValueCallback<JSONObject> callback) {
+    public void executeScript(@NonNull String script, boolean useSeparateIsolate,
+            @Nullable ValueCallback<JSONObject> callback) {
         ThreadCheck.ensureOnUiThread();
         try {
             ValueCallback<String> stringCallback = (String result) -> {
@@ -105,7 +120,17 @@ public final class BrowserController {
                     throw new RuntimeException(e);
                 }
             };
-            mImpl.executeScript(script, ObjectWrapper.wrap(stringCallback));
+            mImpl.executeScript(script, useSeparateIsolate, ObjectWrapper.wrap(stringCallback));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    public void setNewBrowserCallback(@Nullable NewBrowserCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        mNewBrowserCallback = callback;
+        try {
+            mImpl.setNewBrowsersEnabled(mNewBrowserCallback != null);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -144,6 +169,16 @@ public final class BrowserController {
             for (BrowserCallback callback : mCallbacks) {
                 callback.visibleUrlChanged(uri);
             }
+        }
+
+        @Override
+        public void onNewBrowser(IBrowserController browser, int mode) {
+            // This should only be hit if setNewBrowserCallback() has been called with a non-null
+            // value.
+            assert mNewBrowserCallback != null;
+            BrowserController browserController =
+                    new BrowserController(browser, mBrowserFragmentController);
+            mNewBrowserCallback.onNewBrowser(browserController, mode);
         }
     }
 

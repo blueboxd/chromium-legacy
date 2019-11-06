@@ -11,6 +11,7 @@
 
 MockSharingService::MockSharingService()
     : SharingService(
+          /*profile=*/nullptr,
           /*sync_prefs=*/nullptr,
           /*vapid_key_manager=*/nullptr,
           std::make_unique<SharingDeviceRegistration>(
@@ -26,7 +27,6 @@ MockSharingService::MockSharingService()
           /*gcm_driver=*/nullptr,
           /*device_info_tracker=*/nullptr,
           /*local_device_info_provider=*/nullptr,
-          /*sync_service*/ nullptr,
-          /*notification_display_service=*/nullptr) {}
+          /*sync_service*/ nullptr) {}
 
 MockSharingService::~MockSharingService() = default;

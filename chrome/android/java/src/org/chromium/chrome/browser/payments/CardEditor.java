@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.EditorFieldValidator;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.EditorValueIconGenerator;
 import org.chromium.chrome.browser.widget.prefeditor.EditorModel;
+import org.chromium.components.payments.MethodStrings;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -311,7 +312,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     public void addAcceptedPaymentMethodIfRecognized(PaymentMethodData data) {
         assert data != null;
         String method = data.supportedMethod;
-        if (BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)) {
+        if (MethodStrings.BASIC_CARD.equals(method)) {
             Set<String> basicCardNetworks = BasicCardUtils.convertBasicCardToNetworks(data);
             mAcceptedBasicCardIssuerNetworks.addAll(basicCardNetworks);
             for (String network : basicCardNetworks) {
@@ -416,7 +417,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
             String methodName = card.getBasicCardIssuerNetwork();
             if (mAcceptedBasicCardIssuerNetworks.contains(methodName)) {
-                methodName = BasicCardUtils.BASIC_CARD_METHOD_NAME;
+                methodName = MethodStrings.BASIC_CARD;
             }
             assert methodName != null;
 

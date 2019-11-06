@@ -43,8 +43,7 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
                            history::HistoryServiceObserver {
  public:
   SearchResultRanker(Profile* profile,
-                     history::HistoryService* history_service,
-                     service_manager::Connector* connector);
+                     history::HistoryService* history_service);
   ~SearchResultRanker() override;
 
   // Performs all setup of rankers. This is separated from the constructor for
@@ -176,7 +175,6 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   std::unique_ptr<RecurrenceRanker> app_ranker_;
   std::map<std::string, float> app_ranks_;
 
-  service_manager::Connector* connector_;
   // Testing-only closure to inform tests once a JSON config has been parsed.
   base::OnceClosure json_config_parsed_for_testing_;
 

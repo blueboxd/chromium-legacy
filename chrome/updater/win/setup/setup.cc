@@ -15,28 +15,33 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_com_initializer.h"
-#include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "chrome/updater/updater_constants.h"
 #include "chrome/updater/util.h"
+#include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/task_scheduler.h"
+#include "chrome/updater/win/util.h"
 
 namespace updater {
 
 namespace {
 
 const base::char16* kUpdaterFiles[] = {
+    L"icudtl.dat",
     L"updater.exe",
     L"uninstall.cmd",
 #if defined(COMPONENT_BUILD)
     // TODO(sorin): get the list of component dependencies from a build-time
     // file instead of hardcoding the names of the components here.
     L"base.dll",
+    L"base_i18n.dll",
     L"boringssl.dll",
     L"crcrypto.dll",
+    L"icui18n.dll",
     L"icuuc.dll",
     L"libc++.dll",
     L"prefs.dll",
@@ -90,18 +95,28 @@ int Setup() {
   for (const auto* file : kUpdaterFiles) {
     const base::FilePath target_path = product_dir.Append(file);
     const base::FilePath source_path = source_dir.Append(file);
-    install_list->AddWorkItem(
-        WorkItem::CreateCopyTreeWorkItem(source_path, target_path, temp_dir,
-                                         WorkItem::ALWAYS, base::FilePath()));
+    install_list->AddCopyTreeWorkItem(source_path.value(), target_path.value(),
+                                      temp_dir.value(), WorkItem::ALWAYS);
+  }
+
+  for (const auto& key_path :
+       {GetRegistryKeyClientsUpdater(), GetRegistryKeyClientStateUpdater()}) {
+    install_list->AddCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_path,
+                                          WorkItem::kWow64Default);
+    install_list->AddSetRegValueWorkItem(
+        HKEY_CURRENT_USER, key_path, WorkItem::kWow64Default, kRegistryValuePV,
+        base::ASCIIToUTF16(UPDATER_VERSION_STRING), true);
+    install_list->AddSetRegValueWorkItem(
+        HKEY_CURRENT_USER, key_path, WorkItem::kWow64Default,
+        kRegistryValueName, base::ASCIIToUTF16(PRODUCT_FULLNAME_STRING), true);
   }
 
   base::CommandLine run_updater_ua_command(product_dir.Append(L"updater.exe"));
   run_updater_ua_command.AppendSwitch(kUpdateAppsSwitch);
 #if !defined(NDEBUG)
   run_updater_ua_command.AppendSwitch(kEnableLoggingSwitch);
-  run_updater_ua_command.AppendSwitchASCII(kLoggingLevelSwitch, "1");
   run_updater_ua_command.AppendSwitchASCII(kLoggingModuleSwitch,
-                                           "*/chrome/updater/*");
+                                           "*/chrome/updater/*=2");
 #endif
   if (!install_list->Do() || !RegisterUpdateAppsTask(run_updater_ua_command)) {
     LOG(ERROR) << "Install failed, rolling back...";

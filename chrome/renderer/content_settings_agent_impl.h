@@ -84,6 +84,7 @@ class ContentSettingsAgentImpl
                   const blink::WebURL& image_url) override;
   bool AllowIndexedDB() override;
   bool AllowCacheStorage() override;
+  bool AllowWebLocks() override;
   bool AllowScript(bool enabled_per_settings) override;
   bool AllowScriptFromSource(bool enabled_per_settings,
                              const blink::WebURL& script_url) override;
@@ -94,7 +95,6 @@ class ContentSettingsAgentImpl
   void DidNotAllowPlugins() override;
   void DidNotAllowScript() override;
   bool AllowRunningInsecureContent(bool allowed_per_settings,
-                                   const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;
   bool AllowAutoplay(bool default_value) override;
   bool AllowPopupsAndRedirects(bool default_value) override;
@@ -160,6 +160,10 @@ class ContentSettingsAgentImpl
   static bool IsWhitelistedForContentSettings(
       const blink::WebSecurityOrigin& origin,
       const blink::WebURL& document_url);
+
+  // Common logic for AllowIndexedDB, AllowCacheStorage, etc.
+  bool AllowStorageAccess(
+      chrome::mojom::ContentSettingsManager::StorageType storage_type);
 
   mojo::Remote<chrome::mojom::ContentSettingsManager> content_settings_manager_;
 

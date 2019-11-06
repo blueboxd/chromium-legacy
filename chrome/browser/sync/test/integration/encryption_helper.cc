@@ -161,6 +161,28 @@ bool ServerNigoriChecker::IsExitConditionSatisfied(std::ostream* os) {
              expected_passphrase_type_;
 }
 
+ServerNigoriKeyNameChecker::ServerNigoriKeyNameChecker(
+    const std::string& expected_key_name,
+    syncer::ProfileSyncService* service,
+    fake_server::FakeServer* fake_server)
+    : SingleClientStatusChangeChecker(service),
+      fake_server_(fake_server),
+      expected_key_name_(expected_key_name) {}
+
+bool ServerNigoriKeyNameChecker::IsExitConditionSatisfied(std::ostream* os) {
+  std::vector<sync_pb::SyncEntity> nigori_entities =
+      fake_server_->GetPermanentSyncEntitiesByModelType(syncer::NIGORI);
+  DCHECK_EQ(nigori_entities.size(), 1U);
+
+  const std::string given_key_name =
+      nigori_entities[0].specifics().nigori().encryption_keybag().key_name();
+
+  *os << "Waiting for a Nigori node with proper key bag encryption key name ("
+      << expected_key_name_ << ") to become available on the server."
+      << "The server key bag encryption key name is " << given_key_name << ".";
+  return given_key_name == expected_key_name_;
+}
+
 PassphraseRequiredStateChecker::PassphraseRequiredStateChecker(
     syncer::ProfileSyncService* service,
     bool desired_state)

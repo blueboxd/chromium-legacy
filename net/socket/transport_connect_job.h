@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/host_resolver.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"
@@ -30,14 +31,19 @@ class NET_EXPORT_PRIVATE TransportSocketParams
     : public base::RefCounted<TransportSocketParams> {
  public:
   // |host_resolution_callback| will be invoked after the the hostname is
-  // resolved.  If |host_resolution_callback| does not return OK, then the
+  // resolved. |network_isolation_key| is passed to the HostResolver to prevent
+  // cross-NIK leaks. If |host_resolution_callback| does not return OK, then the
   // connection will be aborted with that value.
   TransportSocketParams(
       const HostPortPair& host_port_pair,
+      const NetworkIsolationKey& network_isolation_key,
       bool disable_secure_dns,
       const OnHostResolutionCallback& host_resolution_callback);
 
   const HostPortPair& destination() const { return destination_; }
+  const NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
   bool disable_secure_dns() const { return disable_secure_dns_; }
   const OnHostResolutionCallback& host_resolution_callback() const {
     return host_resolution_callback_;
@@ -48,6 +54,7 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   ~TransportSocketParams();
 
   const HostPortPair destination_;
+  const NetworkIsolationKey network_isolation_key_;
   const bool disable_secure_dns_;
   const OnHostResolutionCallback host_resolution_callback_;
 

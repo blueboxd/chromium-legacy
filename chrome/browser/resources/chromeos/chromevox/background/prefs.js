@@ -315,10 +315,11 @@ cvox.ChromeVoxPrefs.loggingPrefs = {
  */
 cvox.ChromeVoxPrefs.prototype.setLoggingPrefs = function(key, value) {
   localStorage[key] = value;
-  if (key == 'enableSpeechLogging')
+  if (key == 'enableSpeechLogging') {
     ConsoleTts.getInstance().setEnabled(value);
-  else if (key == 'enableEventStreamLogging')
+  } else if (key == 'enableEventStreamLogging') {
     EventStreamLogger.instance.notifyEventStreamFilterChangedAll(value);
+  }
 };
 
 /**

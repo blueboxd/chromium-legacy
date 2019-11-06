@@ -34,6 +34,7 @@
 #include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
@@ -660,8 +661,26 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
     return;
   }
 
-  if (reposition)
-    PositionWindows(/*animate=*/true);
+  if (reposition) {
+    // Update the grid bounds if needed and reposition the windows minus the
+    // currently overview dragged window, if there is one. Note: this does not
+    // update the grid bounds if the window being dragged from the top or shelf,
+    // the former being handled in TabletModeWindowDragDelegate's destructor.
+    base::flat_set<OverviewItem*> ignored_items;
+    if (overview_session_->window_drag_controller() &&
+        overview_session_->window_drag_controller()->item()) {
+      ignored_items.insert(overview_session_->window_drag_controller()->item());
+    }
+    auto* split_view_drag_indicators =
+        overview_session_->split_view_drag_indicators();
+    const gfx::Rect grid_bounds = GetGridBoundsInScreenForSplitview(
+        root_window_,
+        split_view_drag_indicators
+            ? base::make_optional(
+                  split_view_drag_indicators->current_window_dragging_state())
+            : base::nullopt);
+    SetBoundsAndUpdatePositions(grid_bounds, ignored_items, /*animate=*/true);
+  }
 }
 
 void OverviewGrid::AddDropTargetForDraggingFromOverview(
@@ -874,13 +893,26 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
                               /*animate=*/true);
 }
 
-void OverviewGrid::SetVisibleDuringWindowDragging(bool visible) {
+void OverviewGrid::SetVisibleDuringWindowDragging(bool visible, bool animate) {
   for (const auto& window_item : window_list_)
-    window_item->SetVisibleDuringWindowDragging(visible);
+    window_item->SetVisibleDuringWindowDragging(visible, animate);
 
   // Update |desks_widget_|.
-  if (desks_widget_)
-    desks_widget_->GetNativeWindow()->layer()->SetOpacity(visible ? 1.f : 0.f);
+  if (desks_widget_) {
+    ui::Layer* layer = desks_widget_->GetNativeWindow()->layer();
+    float new_opacity = visible ? 1.f : 0.f;
+    if (layer->GetTargetOpacity() == new_opacity)
+      return;
+
+    if (animate) {
+      ScopedOverviewAnimationSettings settings(
+          OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG,
+          desks_widget_->GetNativeWindow());
+      layer->SetOpacity(new_opacity);
+    } else {
+      layer->SetOpacity(new_opacity);
+    }
+  }
 }
 
 bool OverviewGrid::IsDropTargetWindow(aura::Window* window) const {

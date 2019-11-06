@@ -15,10 +15,6 @@
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 #ifdef OS_CHROMEOS
 #include "services/data_decoder/public/mojom/ble_scan_parser.mojom.h"
@@ -26,12 +22,9 @@
 
 namespace data_decoder {
 
-class DataDecoderService : public service_manager::Service,
-                           public mojom::DataDecoderService {
+class DataDecoderService : public mojom::DataDecoderService {
  public:
   DataDecoderService();
-  explicit DataDecoderService(
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
   explicit DataDecoderService(
       mojo::PendingReceiver<mojom::DataDecoderService> receiver);
   ~DataDecoderService() override;
@@ -40,11 +33,6 @@ class DataDecoderService : public service_manager::Service,
   // instance. May only be called once, and only if this instance was default-
   // constructed.
   void BindReceiver(mojo::PendingReceiver<mojom::DataDecoderService> receiver);
-
-  // service_manager::Service implementation:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // Configures the service to drop ImageDecoder receivers instead of binding
   // them. Useful for tests simulating service failures.
@@ -73,8 +61,6 @@ class DataDecoderService : public service_manager::Service,
       mojo::PendingReceiver<mojom::BleScanParser> receiver) override;
 #endif  // OS_CHROMEOS
 
-  service_manager::ServiceBinding binding_{this};
-  service_manager::ServiceKeepalive keepalive_;
   mojo::Receiver<mojom::DataDecoderService> receiver_{this};
 
   bool drop_image_decoders_ = false;

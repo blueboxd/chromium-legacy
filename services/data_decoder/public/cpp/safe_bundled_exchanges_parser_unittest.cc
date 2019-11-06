@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "services/data_decoder/data_decoder_service.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace data_decoder {
@@ -109,14 +109,6 @@ class MockDataSource final : public mojom::BundleDataSource {
 
 class SafeBundledExchangesParserTest : public testing::Test {
  public:
-  mojo::Remote<mojom::DataDecoderService> GetService() {
-    DCHECK(!service_);
-    mojo::Remote<mojom::DataDecoderService> remote;
-    service_ = std::make_unique<DataDecoderService>(
-        remote.BindNewPipeAndPassReceiver());
-    return remote;
-  }
-
   MockFactory* InitializeMockFactory(SafeBundledExchangesParser* parser) {
     std::unique_ptr<MockFactory> factory = std::make_unique<MockFactory>();
     MockFactory* raw_factory = factory.get();
@@ -129,11 +121,11 @@ class SafeBundledExchangesParserTest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<DataDecoderService> service_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 };
 
 TEST_F(SafeBundledExchangesParserTest, ParseGoldenFile) {
-  SafeBundledExchangesParser parser(GetService());
+  SafeBundledExchangesParser parser;
   base::File test_file =
       OpenTestFile(base::FilePath(FILE_PATH_LITERAL("hello.wbn")));
   ASSERT_EQ(base::File::FILE_OK, parser.OpenFile(std::move(test_file)));
@@ -191,12 +183,12 @@ TEST_F(SafeBundledExchangesParserTest, ParseGoldenFile) {
 }
 
 TEST_F(SafeBundledExchangesParserTest, OpenInvalidFile) {
-  SafeBundledExchangesParser parser(GetService());
+  SafeBundledExchangesParser parser;
   EXPECT_EQ(base::File::FILE_ERROR_FAILED, parser.OpenFile(base::File()));
 }
 
 TEST_F(SafeBundledExchangesParserTest, CallWithoutOpen) {
-  SafeBundledExchangesParser parser(GetService());
+  SafeBundledExchangesParser parser;
   bool metadata_parsed = false;
   parser.ParseMetadata(base::BindOnce(
       [](bool* metadata_parsed, mojom::BundleMetadataPtr metadata,
@@ -227,7 +219,7 @@ TEST_F(SafeBundledExchangesParserTest, CallWithoutOpen) {
 }
 
 TEST_F(SafeBundledExchangesParserTest, UseMockFactory) {
-  SafeBundledExchangesParser parser(GetService());
+  SafeBundledExchangesParser parser;
   MockFactory* raw_factory = InitializeMockFactory(&parser);
 
   EXPECT_FALSE(raw_factory->GetCreatedParser());
@@ -250,7 +242,7 @@ TEST_F(SafeBundledExchangesParserTest, UseMockFactory) {
 }
 
 TEST_F(SafeBundledExchangesParserTest, ConnectionError) {
-  SafeBundledExchangesParser parser(GetService());
+  SafeBundledExchangesParser parser;
   MockFactory* raw_factory = InitializeMockFactory(&parser);
 
   mojo::PendingRemote<mojom::BundleDataSource> remote_data_source;

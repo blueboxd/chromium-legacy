@@ -120,7 +120,3 @@
 :host(.saml) #signin-frame-container {
   padding-top: 44px;
 }
-
-#gaia-screen-buttons-overlay {
-  background: rgba(0, 0, 0, 0.6);
-}

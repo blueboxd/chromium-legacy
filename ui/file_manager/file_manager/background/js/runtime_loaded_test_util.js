@@ -1005,3 +1005,10 @@ test.util.sync.recordEnumMetric = (name, value, validValues) => {
 test.util.sync.reload = () => {
   chrome.runtime.reload();
 };
+
+/**
+ * Tells background page progress center to never notify a completed operation.
+ */
+test.util.sync.progressCenterNeverNotifyCompleted = () => {
+  window.background.progressCenter.neverNotifyCompleted();
+};

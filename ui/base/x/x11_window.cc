@@ -1559,6 +1559,10 @@ void XWindow::ConfineCursorTo(const gfx::Rect& bounds) {
   has_pointer_barriers_ = true;
 }
 
+void XWindow::LowerWindow() {
+  XLowerWindow(xdisplay_, xwindow_);
+}
+
 bool XWindow::ContainsPointInRegion(const gfx::Point& point) const {
   if (!shape())
     return true;

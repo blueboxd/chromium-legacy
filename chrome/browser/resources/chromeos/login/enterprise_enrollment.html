@@ -15,7 +15,8 @@
       <div id="step-signin" hidden$="[[!eq_(currentStep_, 'signin')]]">
         <oobe-dialog class="gaia-dialog" role="dialog"
                      id="enrollment-gaia-dialog" has-buttons no-header
-                     no-footer-padding>
+                     no-footer-padding
+                     show-buttons-overlay="[[authenticatorDialogDisplayed_]]">
           <div slot="footer" class="flex layout vertical">
             <webview id="oauth-enroll-auth-view"
                      name="oauth-enroll-auth-view">

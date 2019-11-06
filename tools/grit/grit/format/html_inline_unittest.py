@@ -538,7 +538,7 @@ class HtmlInlineUnittest(unittest.TestCase):
       'other.js': '// Copyright somebody\nalert(1);',
     }
 
-    expected_inlined = '// // Copyright somebody\nalert(1);'
+    expected_inlined = '// Copyright somebody\nalert(1);'
 
     source_resources = set()
     tmp_dir = util.TempDir(files)

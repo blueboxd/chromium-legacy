@@ -13,8 +13,10 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/process/process_iterator.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
-#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/updater/updater_constants.h"
 #include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/user_info.h"
 
@@ -168,7 +170,7 @@ HRESULT CreateUniqueEventInEnvironment(const base::string16& var_name,
                                        HANDLE* unique_event) {
   DCHECK(unique_event);
 
-  const base::string16 event_name = base::SysUTF8ToWide(base::GenerateGUID());
+  const base::string16 event_name = base::ASCIIToUTF16(base::GenerateGUID());
   NamedObjectAttributes attr;
   GetNamedObjectAttributes(event_name.c_str(), is_machine, &attr);
 
@@ -301,4 +303,13 @@ void GetAdminDaclSecurityAttributes(CSecurityAttributes* sec_attr,
   GetAdminDaclSecurityDescriptor(&sd, accessmask);
   sec_attr->Set(sd);
 }
+
+base::string16 GetRegistryKeyClientsUpdater() {
+  return base::ASCIIToUTF16(base::StrCat({CLIENTS_KEY, kUpdaterAppId}));
+}
+
+base::string16 GetRegistryKeyClientStateUpdater() {
+  return base::ASCIIToUTF16(base::StrCat({CLIENT_STATE_KEY, kUpdaterAppId}));
+}
+
 }  // namespace updater

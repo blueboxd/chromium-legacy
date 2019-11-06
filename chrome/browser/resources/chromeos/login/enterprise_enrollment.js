@@ -232,13 +232,11 @@ Polymer({
     this.authenticator_.addEventListener(
         'dialogShown', (function(e) {
                          this.authenticatorDialogDisplayed_ = true;
-                         // TODO(alemate): update the visual style.
                        }).bind(this));
 
     this.authenticator_.addEventListener(
         'dialogHidden', (function(e) {
                           this.authenticatorDialogDisplayed_ = false;
-                          // TODO(alemate): update the visual style.
                         }).bind(this));
 
     this.authenticator_.insecureContentBlockedCallback =

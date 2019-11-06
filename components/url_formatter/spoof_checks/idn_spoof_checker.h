@@ -61,8 +61,11 @@ class IDNSpoofChecker {
   // Returns true if |label| is safe to display as Unicode. In the event of
   // library failure, all IDN inputs will be treated as unsafe.
   // See the function body for details on the specific safety checks performed.
+  // top_level_domain_unicode can be empty if top_level_domain is not well
+  // formed punycode.
   bool SafeToDisplayAsUnicode(base::StringPiece16 label,
-                              base::StringPiece top_level_domain);
+                              base::StringPiece top_level_domain,
+                              base::StringPiece16 top_level_domain_unicode);
 
   // Returns the matching top domain if |hostname| or the last few components of
   // |hostname| looks similar to one of top domains listed i
@@ -93,6 +96,11 @@ class IDNSpoofChecker {
   // Returns true if all the Cyrillic letters in |label| belong to a set of
   // Cyrillic letters that look like ASCII Latin letters.
   bool IsMadeOfLatinAlikeCyrillic(const icu::UnicodeString& label);
+  // Returns true if |tld| is a top level domain most likely to contain a large
+  // number of Cyrillic domains. |tld_unicode| can be empty if |tld| is not well
+  // formed punycode.
+  bool IsCyrillicTopLevelDomain(base::StringPiece tld,
+                                base::StringPiece16 tld_unicode) const;
 
   USpoofChecker* checker_;
   icu::UnicodeSet deviation_characters_;

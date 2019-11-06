@@ -34,93 +34,79 @@
 
 namespace blink {
 
-ArrayBufferContents::ArrayBufferContents(void* data,
-                                         size_t length,
-                                         DataDeleter deleter,
-                                         SharingType is_shared) {
-  if (!data) {
-    return;
-  }
-  if (is_shared == kNotShared) {
-    backing_store_ =
-        v8::ArrayBuffer::NewBackingStore(data, length, deleter, nullptr);
-  } else {
-    backing_store_ =
-        v8::SharedArrayBuffer::NewBackingStore(data, length, deleter, nullptr);
-  }
-}
+ArrayBufferContents::ArrayBufferContents()
+    : holder_(base::AdoptRef(new DataHolder())) {}
 
 ArrayBufferContents::ArrayBufferContents(
     size_t num_elements,
-    size_t element_byte_size,
+    unsigned element_byte_size,
     SharingType is_shared,
     ArrayBufferContents::InitializationPolicy policy)
-    : ArrayBufferContents(
-          AllocateMemoryOrNull(num_elements * element_byte_size, policy),
-          num_elements * element_byte_size,
-          [](void* data, size_t, void*) { FreeMemory(data); },
-          is_shared) {}
-
-ArrayBufferContents::ArrayBufferContents(
-    std::shared_ptr<v8::BackingStore> backing_store) {
-  if (!backing_store || backing_store->Data()) {
-    backing_store_ = std::move(backing_store);
-    return;
+    : holder_(base::AdoptRef(new DataHolder())) {
+  // Do not allow 32-bit overflow of the total size.
+  size_t total_size = num_elements * element_byte_size;
+  if (num_elements) {
+    if (total_size / num_elements != element_byte_size) {
+      return;
+    }
   }
-  // ArrayBufferContents has to guarantee that Data() provides a valid pointer,
-  // even when DataSize() is '0'. That's why we create a new BackingStore here.
 
-  // TODO(ahaas): Remove this code here once nullptr is a valid result for
-  // Data().
-  CHECK_EQ(backing_store->ByteLength(), 0u);
-  void* data = AllocateMemoryOrNull(0, kDontInitialize);
-  CHECK_NE(data, nullptr);
-  DataDeleter deleter = [](void* data, size_t, void*) { FreeMemory(data); };
-  if (!backing_store->IsShared()) {
-    backing_store_ =
-        v8::ArrayBuffer::NewBackingStore(data, 0, deleter, nullptr);
+  holder_->AllocateNew(total_size, is_shared, policy);
+}
+
+ArrayBufferContents::ArrayBufferContents(DataHandle data, SharingType is_shared)
+    : holder_(base::AdoptRef(new DataHolder())) {
+  if (data) {
+    holder_->Adopt(std::move(data), is_shared);
   } else {
-    backing_store_ =
-        v8::SharedArrayBuffer::NewBackingStore(data, 0, deleter, nullptr);
+    // Allow null data if size is 0 bytes, make sure data is valid pointer.
+    // (PartitionAlloc guarantees valid pointer for size 0)
+    holder_->AllocateNew(0, is_shared, kZeroInitialize);
   }
+}
+
+ArrayBufferContents::ArrayBufferContents(void* data,
+                                         size_t length,
+                                         DataDeleter deleter,
+                                         SharingType is_shared)
+    : holder_(base::AdoptRef(new DataHolder())) {
+  holder_->Adopt(DataHandle(data, length, deleter, nullptr), is_shared);
 }
 
 ArrayBufferContents::~ArrayBufferContents() = default;
 
 void ArrayBufferContents::Detach() {
-  backing_store_.reset();
+  holder_ = nullptr;
 }
 
 void ArrayBufferContents::Reset() {
-  backing_store_.reset();
+  holder_ = base::MakeRefCounted<DataHolder>();
 }
 
 void ArrayBufferContents::Transfer(ArrayBufferContents& other) {
   DCHECK(!IsShared());
-  DCHECK(!other.Data());
-  other.backing_store_ = std::move(backing_store_);
+  DCHECK(!other.holder_->Data());
+  other.holder_ = holder_;
+  Detach();
 }
 
 void ArrayBufferContents::ShareWith(ArrayBufferContents& other) {
   DCHECK(IsShared());
-  DCHECK(!other.Data());
-  other.backing_store_ = backing_store_;
+  DCHECK(!other.holder_->Data());
+  other.holder_ = holder_;
 }
 
 void ArrayBufferContents::ShareNonSharedForInternalUse(
     ArrayBufferContents& other) {
   DCHECK(!IsShared());
-  DCHECK(!other.Data());
-  DCHECK(Data());
-  other.backing_store_ = backing_store_;
+  DCHECK(!other.holder_->Data());
+  DCHECK(holder_->Data());
+  other.holder_ = holder_;
 }
 
 void ArrayBufferContents::CopyTo(ArrayBufferContents& other) {
-  other = ArrayBufferContents(
-      DataLength(), 1, IsShared() ? kShared : kNotShared, kDontInitialize);
-  if (!IsValid() || !other.IsValid())
-    return;
-  memcpy(other.Data(), Data(), DataLength());
+  DCHECK(!holder_->IsShared() && !other.holder_->IsShared());
+  other.holder_->CopyMemoryFrom(*holder_);
 }
 
 void* ArrayBufferContents::AllocateMemoryWithFlags(size_t size,
@@ -142,6 +128,60 @@ void* ArrayBufferContents::AllocateMemoryOrNull(size_t size,
 
 void ArrayBufferContents::FreeMemory(void* data) {
   WTF::Partitions::ArrayBufferPartition()->Free(data);
+}
+
+ArrayBufferContents::DataHandle ArrayBufferContents::CreateDataHandle(
+    size_t size,
+    InitializationPolicy policy) {
+  return DataHandle(
+      ArrayBufferContents::AllocateMemoryOrNull(size, policy), size,
+      [](void* buffer, size_t, void*) { FreeMemory(buffer); }, nullptr);
+}
+
+ArrayBufferContents::DataHolder::DataHolder()
+    : data_(
+          nullptr,
+          0,
+          [](void*, size_t, void*) {},
+          nullptr),
+      is_shared_(kNotShared),
+      has_registered_external_allocation_(false) {}
+
+ArrayBufferContents::DataHolder::~DataHolder() {
+  is_shared_ = kNotShared;
+}
+
+void ArrayBufferContents::DataHolder::AllocateNew(size_t length,
+                                                  SharingType is_shared,
+                                                  InitializationPolicy policy) {
+  DCHECK(!data_);
+  DCHECK(!has_registered_external_allocation_);
+
+  data_ = CreateDataHandle(length, policy);
+  if (!data_)
+    return;
+
+  is_shared_ = is_shared;
+}
+
+void ArrayBufferContents::DataHolder::Adopt(DataHandle data,
+                                            SharingType is_shared) {
+  DCHECK(!data_);
+  DCHECK(!has_registered_external_allocation_);
+
+  data_ = std::move(data);
+  is_shared_ = is_shared;
+}
+
+void ArrayBufferContents::DataHolder::CopyMemoryFrom(const DataHolder& source) {
+  DCHECK(!data_);
+  DCHECK(!has_registered_external_allocation_);
+
+  data_ = CreateDataHandle(source.DataLength(), kDontInitialize);
+  if (!data_)
+    return;
+
+  memcpy(data_.Data(), source.Data(), source.DataLength());
 }
 
 }  // namespace blink

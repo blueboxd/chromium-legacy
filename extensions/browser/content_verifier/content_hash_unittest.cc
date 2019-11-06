@@ -231,4 +231,41 @@ TEST_F(ContentHashUnittest, ExtensionWithSignedHashes) {
   EXPECT_TRUE(result->success);
 }
 
+TEST_F(ContentHashUnittest, ExtensionWithUnsignedHashes) {
+  TestExtensionBuilder builder;
+  builder.WriteManifest();
+  builder.WriteResource(FILE_PATH_LITERAL("background.js"),
+                        "console.log('Nothing special');");
+  builder.WriteComputedHashes();
+
+  scoped_refptr<Extension> extension = LoadExtension(builder);
+  ASSERT_NE(nullptr, extension);
+
+  std::unique_ptr<ContentHashResult> result = CreateContentHash(
+      extension.get(),
+      ContentVerifierDelegate::VerifierSourceType::UNSIGNED_HASHES,
+      builder.GetTestContentVerifierPublicKey());
+  DCHECK(result);
+
+  EXPECT_TRUE(result->success);
+}
+
+TEST_F(ContentHashUnittest, ExtensionWithoutHashes) {
+  TestExtensionBuilder builder;
+  builder.WriteManifest();
+  builder.WriteResource(FILE_PATH_LITERAL("background.js"),
+                        "console.log('Nothing special');");
+
+  scoped_refptr<Extension> extension = LoadExtension(builder);
+  ASSERT_NE(nullptr, extension);
+
+  std::unique_ptr<ContentHashResult> result = CreateContentHash(
+      extension.get(),
+      ContentVerifierDelegate::VerifierSourceType::UNSIGNED_HASHES,
+      builder.GetTestContentVerifierPublicKey());
+  DCHECK(result);
+
+  EXPECT_FALSE(result->success);
+}
+
 }  // namespace extensions

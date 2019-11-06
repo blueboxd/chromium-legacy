@@ -10,13 +10,12 @@
 #include "base/macros.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 
-class NotificationDisplayService;
+class Profile;
 
 // Handles incoming messages for the remote copy feature.
 class RemoteCopyMessageHandler : public SharingMessageHandler {
  public:
-  explicit RemoteCopyMessageHandler(
-      NotificationDisplayService* notification_display_service);
+  explicit RemoteCopyMessageHandler(Profile* profile);
   ~RemoteCopyMessageHandler() override;
 
   // SharingMessageHandler implementation:
@@ -26,7 +25,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler {
  private:
   void ShowNotification(const std::string& device_name);
 
-  NotificationDisplayService* notification_display_service_ = nullptr;
+  Profile* profile_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCopyMessageHandler);
 };

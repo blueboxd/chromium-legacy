@@ -59,7 +59,8 @@ void DestroySingleThreadTaskExecutor() {
 void CreateNetworkChangeNotifier() {
   static dispatch_once_t once_token;
   dispatch_once(&once_token, ^{
-    g_network_change_notifer = net::NetworkChangeNotifier::Create().release();
+    g_network_change_notifer =
+        net::NetworkChangeNotifier::CreateIfNeeded().release();
   });
 }
 

@@ -16,6 +16,7 @@ namespace cc {
 namespace {
 
 using StageType = CompositorFrameReporter::StageType;
+using BlinkBreakdown = CompositorFrameReporter::BlinkBreakdown;
 using VizBreakdown = CompositorFrameReporter::VizBreakdown;
 
 constexpr int kMissedFrameReportTypeCount =
@@ -23,7 +24,13 @@ constexpr int kMissedFrameReportTypeCount =
                          kMissedFrameReportTypeCount);
 constexpr int kStageTypeCount = static_cast<int>(StageType::kStageTypeCount);
 constexpr int kAllBreakdownCount =
-    static_cast<int>(VizBreakdown::kBreakdownCount);
+    static_cast<int>(VizBreakdown::kBreakdownCount) +
+    static_cast<int>(BlinkBreakdown::kBreakdownCount);
+
+constexpr int kVizBreakdownInitialIndex = kStageTypeCount;
+constexpr int kBlinkBreakdownInitialIndex =
+    kVizBreakdownInitialIndex + static_cast<int>(VizBreakdown::kBreakdownCount);
+
 // For each possible FrameSequenceTrackerType there will be a UMA histogram
 // plus one for general case.
 constexpr int kFrameSequenceTrackerTypeCount =
@@ -47,19 +54,46 @@ constexpr const char* kStageNames[] = {
         "SubmitCompositorFrameToPresentationCompositorFrame",
     [static_cast<int>(StageType::kTotalLatency)] = "TotalLatency",
     [static_cast<int>(VizBreakdown::kSubmitToReceiveCompositorFrame) +
-        kStageTypeCount] =
+        kVizBreakdownInitialIndex] =
         "SubmitCompositorFrameToPresentationCompositorFrame."
         "SubmitToReceiveCompositorFrame",
     [static_cast<int>(VizBreakdown::kReceivedCompositorFrameToStartDraw) +
-        kStageTypeCount] =
+        kVizBreakdownInitialIndex] =
         "SubmitCompositorFrameToPresentationCompositorFrame."
         "ReceivedCompositorFrameToStartDraw",
-    [static_cast<int>(VizBreakdown::kStartDrawToSwapEnd) + kStageTypeCount] =
+    [static_cast<int>(VizBreakdown::kStartDrawToSwapEnd) +
+        kVizBreakdownInitialIndex] =
         "SubmitCompositorFrameToPresentationCompositorFrame.StartDrawToSwapEnd",
     [static_cast<int>(VizBreakdown::kSwapEndToPresentationCompositorFrame) +
-        kStageTypeCount] =
+        kVizBreakdownInitialIndex] =
         "SubmitCompositorFrameToPresentationCompositorFrame."
-        "SwapEndToPresentationCompositorFrame"};
+        "SwapEndToPresentationCompositorFrame",
+    [static_cast<int>(BlinkBreakdown::kHandleInputEvents) +
+        kBlinkBreakdownInitialIndex] =
+        "SendBeginMainFrameToCommit.HandleInputEvents",
+    [static_cast<int>(BlinkBreakdown::kAnimate) + kBlinkBreakdownInitialIndex] =
+        "SendBeginMainFrameToCommit.Animate",
+    [static_cast<int>(BlinkBreakdown::kStyleUpdate) +
+        kBlinkBreakdownInitialIndex] = "SendBeginMainFrameToCommit.StyleUpdate",
+    [static_cast<int>(BlinkBreakdown::kLayoutUpdate) +
+        kBlinkBreakdownInitialIndex] =
+        "SendBeginMainFrameToCommit.LayoutUpdate",
+    [static_cast<int>(BlinkBreakdown::kPrepaint) +
+        kBlinkBreakdownInitialIndex] = "SendBeginMainFrameToCommit.Prepaint",
+    [static_cast<int>(BlinkBreakdown::kComposite) +
+        kBlinkBreakdownInitialIndex] = "SendBeginMainFrameToCommit.Composite",
+    [static_cast<int>(BlinkBreakdown::kPaint) + kBlinkBreakdownInitialIndex] =
+        "SendBeginMainFrameToCommit.Paint",
+    [static_cast<int>(BlinkBreakdown::kScrollingCoordinator) +
+        kBlinkBreakdownInitialIndex] =
+        "SendBeginMainFrameToCommit.ScrollingCoordinator",
+    [static_cast<int>(BlinkBreakdown::kCompositeCommit) +
+        kBlinkBreakdownInitialIndex] =
+        "SendBeginMainFrameToCommit.CompositeCommit",
+    [static_cast<int>(BlinkBreakdown::kUpdateLayers) +
+        kBlinkBreakdownInitialIndex] =
+        "SendBeginMainFrameToCommit.UpdateLayers"};
+
 static_assert(sizeof(kStageNames) / sizeof(kStageNames[0]) ==
                   kStageTypeCount + kAllBreakdownCount,
               "Compositor latency stages has changed.");
@@ -164,6 +198,14 @@ void CompositorFrameReporter::OnAbortBeginMainFrame() {
   did_abort_main_frame_ = false;
 }
 
+void CompositorFrameReporter::SetBlinkBreakdown(
+    std::unique_ptr<BeginMainFrameMetrics> blink_breakdown) {
+  if (blink_breakdown)
+    current_stage_.blink_breakdown = *blink_breakdown;
+  else
+    current_stage_.blink_breakdown = BeginMainFrameMetrics();
+}
+
 void CompositorFrameReporter::SetVizBreakdown(
     const viz::FrameTimingDetails& viz_breakdown) {
   DCHECK(current_stage_.viz_breakdown.received_compositor_frame_timestamp
@@ -240,11 +282,15 @@ void CompositorFrameReporter::ReportStageHistograms(bool missed_frame) const {
 void CompositorFrameReporter::ReportStageHistogramWithBreakdown(
     CompositorFrameReporter::MissedFrameReportTypes report_type,
     FrameSequenceTrackerType frame_sequence_tracker_type,
-    CompositorFrameReporter::StageData stage) const {
+    const CompositorFrameReporter::StageData& stage) const {
   base::TimeDelta stage_delta = stage.end_time - stage.start_time;
   ReportHistogram(report_type, frame_sequence_tracker_type,
                   static_cast<int>(stage.stage_type), stage_delta);
   switch (stage.stage_type) {
+    case StageType::kSendBeginMainFrameToCommit: {
+      ReportBlinkBreakdown(report_type, frame_sequence_tracker_type, stage);
+      break;
+    }
     case StageType::kSubmitCompositorFrameToPresentationCompositorFrame: {
       ReportVizBreakdown(report_type, frame_sequence_tracker_type, stage);
       break;
@@ -254,28 +300,79 @@ void CompositorFrameReporter::ReportStageHistogramWithBreakdown(
   }
 }
 
+void CompositorFrameReporter::ReportBlinkBreakdown(
+    CompositorFrameReporter::MissedFrameReportTypes report_type,
+    FrameSequenceTrackerType frame_sequence_tracker_type,
+    const CompositorFrameReporter::StageData& stage) const {
+  ReportHistogram(report_type, frame_sequence_tracker_type,
+                  kBlinkBreakdownInitialIndex +
+                      static_cast<int>(BlinkBreakdown::kHandleInputEvents),
+                  stage.blink_breakdown.handle_input_events);
+  ReportHistogram(
+      report_type, frame_sequence_tracker_type,
+      kBlinkBreakdownInitialIndex + static_cast<int>(BlinkBreakdown::kAnimate),
+      stage.blink_breakdown.animate);
+  ReportHistogram(report_type, frame_sequence_tracker_type,
+                  kBlinkBreakdownInitialIndex +
+                      static_cast<int>(BlinkBreakdown::kStyleUpdate),
+                  stage.blink_breakdown.style_update);
+  ReportHistogram(report_type, frame_sequence_tracker_type,
+                  kBlinkBreakdownInitialIndex +
+                      static_cast<int>(BlinkBreakdown::kLayoutUpdate),
+                  stage.blink_breakdown.layout_update);
+  ReportHistogram(
+      report_type, frame_sequence_tracker_type,
+      kBlinkBreakdownInitialIndex + static_cast<int>(BlinkBreakdown::kPrepaint),
+      stage.blink_breakdown.prepaint);
+  ReportHistogram(report_type, frame_sequence_tracker_type,
+                  kBlinkBreakdownInitialIndex +
+                      static_cast<int>(BlinkBreakdown::kComposite),
+                  stage.blink_breakdown.composite);
+  ReportHistogram(
+      report_type, frame_sequence_tracker_type,
+      kBlinkBreakdownInitialIndex + static_cast<int>(BlinkBreakdown::kPaint),
+      stage.blink_breakdown.paint);
+  ReportHistogram(report_type, frame_sequence_tracker_type,
+                  kBlinkBreakdownInitialIndex +
+                      static_cast<int>(BlinkBreakdown::kScrollingCoordinator),
+                  stage.blink_breakdown.scrolling_coordinator);
+  ReportHistogram(report_type, frame_sequence_tracker_type,
+                  kBlinkBreakdownInitialIndex +
+                      static_cast<int>(BlinkBreakdown::kCompositeCommit),
+                  stage.blink_breakdown.composite_commit);
+  ReportHistogram(report_type, frame_sequence_tracker_type,
+                  kBlinkBreakdownInitialIndex +
+                      static_cast<int>(BlinkBreakdown::kUpdateLayers),
+                  stage.blink_breakdown.update_layers);
+}
+
 void CompositorFrameReporter::ReportVizBreakdown(
     CompositorFrameReporter::MissedFrameReportTypes report_type,
     FrameSequenceTrackerType frame_sequence_tracker_type,
-    CompositorFrameReporter::StageData stage) const {
+    const CompositorFrameReporter::StageData& stage) const {
   // Check if viz_breakdown is set.
   if (stage.viz_breakdown.received_compositor_frame_timestamp.is_null())
     return;
 
-  int index_origin = static_cast<int>(StageType::kStageTypeCount);
   base::TimeDelta submit_to_receive_compositor_frame_delta =
       stage.viz_breakdown.received_compositor_frame_timestamp -
       stage.start_time;
-  ReportHistogram(report_type, frame_sequence_tracker_type, index_origin,
-                  submit_to_receive_compositor_frame_delta);
+  ReportHistogram(
+      report_type, frame_sequence_tracker_type,
+      kVizBreakdownInitialIndex +
+          static_cast<int>(VizBreakdown::kSubmitToReceiveCompositorFrame),
+      submit_to_receive_compositor_frame_delta);
 
   if (stage.viz_breakdown.draw_start_timestamp.is_null())
     return;
   base::TimeDelta received_compositor_frame_to_start_draw_delta =
       stage.viz_breakdown.draw_start_timestamp -
       stage.viz_breakdown.received_compositor_frame_timestamp;
-  ReportHistogram(report_type, frame_sequence_tracker_type, index_origin + 1,
-                  received_compositor_frame_to_start_draw_delta);
+  ReportHistogram(
+      report_type, frame_sequence_tracker_type,
+      kVizBreakdownInitialIndex +
+          static_cast<int>(VizBreakdown::kReceivedCompositorFrameToStartDraw),
+      received_compositor_frame_to_start_draw_delta);
 
   if (stage.viz_breakdown.swap_timings.is_null())
     return;
@@ -283,14 +380,19 @@ void CompositorFrameReporter::ReportVizBreakdown(
       stage.viz_breakdown.swap_timings.swap_end -
       stage.viz_breakdown.draw_start_timestamp;
 
-  ReportHistogram(report_type, frame_sequence_tracker_type, index_origin + 2,
+  ReportHistogram(report_type, frame_sequence_tracker_type,
+                  kVizBreakdownInitialIndex +
+                      static_cast<int>(VizBreakdown::kStartDrawToSwapEnd),
                   start_draw_to_swap_end_delta);
 
   base::TimeDelta swap_end_to_presentation_compositor_frame_delta =
       stage.end_time - stage.viz_breakdown.swap_timings.swap_end;
 
-  ReportHistogram(report_type, frame_sequence_tracker_type, index_origin + 3,
-                  swap_end_to_presentation_compositor_frame_delta);
+  ReportHistogram(
+      report_type, frame_sequence_tracker_type,
+      kVizBreakdownInitialIndex +
+          static_cast<int>(VizBreakdown::kSwapEndToPresentationCompositorFrame),
+      swap_end_to_presentation_compositor_frame_delta);
 }
 
 void CompositorFrameReporter::ReportHistogram(

@@ -9,16 +9,9 @@
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
-namespace base {
-class UnguessableToken;
-}  // namespace base
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 class Browser;
 class GlobalMediaControlsPromoController;
+class MediaNotificationService;
 class MediaToolbarButtonController;
 class MediaToolbarButtonObserver;
 
@@ -29,9 +22,7 @@ class MediaToolbarButtonView : public ToolbarButton,
                                public MediaToolbarButtonControllerDelegate,
                                public views::ButtonListener {
  public:
-  MediaToolbarButtonView(const base::UnguessableToken& source_id,
-                         service_manager::Connector* connector,
-                         const Browser* browser);
+  explicit MediaToolbarButtonView(const Browser* browser);
   ~MediaToolbarButtonView() override;
 
   void AddObserver(MediaToolbarButtonObserver* observer);
@@ -81,7 +72,7 @@ class MediaToolbarButtonView : public ToolbarButton,
   // True if the in-product help bubble is currently showing.
   bool is_promo_showing_ = false;
 
-  service_manager::Connector* const connector_;
+  MediaNotificationService* const service_;
   std::unique_ptr<MediaToolbarButtonController> controller_;
   const Browser* const browser_;
 

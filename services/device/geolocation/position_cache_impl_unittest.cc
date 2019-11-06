@@ -21,7 +21,8 @@ class PositionCacheImplTest : public ::testing::Test {
  public:
   PositionCacheImplTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
+        network_change_notifier_(
+            net::NetworkChangeNotifier::CreateMockIfNeeded()),
         cache_(task_environment_.GetMockTickClock()) {}
 
  protected:

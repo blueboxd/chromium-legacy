@@ -104,7 +104,7 @@ def MaybeUpload(do_upload, filename, platform, extra_gsutil_args=[]):
     print('gsutil %s' % ' '.join(gsutil_args))
 
 
-def UploadPDBToSymbolServer():
+def UploadPDBsToSymbolServer(binaries):
   assert sys.platform == 'win32'
   # Upload PDB and binary to the symbol server on Windows.  Put them into the
   # chromium-browser-symsrv bucket, since chrome devs have that in their
@@ -117,7 +117,7 @@ def UploadPDBToSymbolServer():
   #    can compute this ABCDEFAB01234 string for us, so use that.
   #    The .ex_ instead of .exe at the end means that the file is compressed.
   # PDB:
-  # gs://chromium-browser-symsrv/clang-cl.exe.pdb/AABBCCDD/clang-cl.dll.pd_
+  # gs://chromium-browser-symsrv/clang-cl.exe.pdb/AABBCCDD/clang-cl.exe.pd_
   #   AABBCCDD here is computed from the output of
   #      dumpbin /all mybinary.exe | find "Format: RSDS"
   #   but tools/symsrc/pdb_fingerprint_from_img.py can compute it already, so
@@ -125,7 +125,6 @@ def UploadPDBToSymbolServer():
   sys.path.insert(0, os.path.join(CHROMIUM_DIR, 'tools', 'symsrc'))
   import img_fingerprint, pdb_fingerprint_from_img
 
-  binaries = [ 'bin/clang-cl.exe', 'bin/lld-link.exe' ]
   for binary_path in binaries:
     binary_path = os.path.join(LLVM_RELEASE_DIR, binary_path)
     binary_id = img_fingerprint.GetImgFingerprint(binary_path)
@@ -507,7 +506,10 @@ def main():
   MaybeUpload(args.upload, libclang_dir + '.tgz', platform)
 
   if sys.platform == 'win32' and args.upload:
-    UploadPDBToSymbolServer()
+    binaries = [f for f in want if f.endswith('.exe') or f.endswith('.dll')]
+    assert 'bin/clang-cl.exe' in binaries
+    assert 'bin/lld-link.exe' in binaries
+    UploadPDBsToSymbolServer(binaries)
 
   # FIXME: Warn if the file already exists on the server.
 

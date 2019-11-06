@@ -83,6 +83,7 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override;
+  void UpdateCanGoBack(bool can_go_back) override;
   void UpdateContentAXTree(const ui::AXTreeID& id) override;
 
   void OnEmbedTokenReceived(const base::UnguessableToken& token);

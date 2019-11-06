@@ -868,6 +868,42 @@ class NativeWinEventWaiter {
   base::RunLoop run_loop_;
 };
 
+// Helper class that reproduces a specific crash when UIA parent navigation
+// is performed during the destruction of its WebContents.
+class WebContentsUIAParentNavigationInDestroyedWatcher
+    : public WebContentsObserver {
+ public:
+  explicit WebContentsUIAParentNavigationInDestroyedWatcher(
+      WebContents* web_contents,
+      IUIAutomationElement* root,
+      IUIAutomationTreeWalker* tree_walker)
+      : WebContentsObserver(web_contents),
+        root_(root),
+        tree_walker_(tree_walker) {
+    CHECK(web_contents);
+  }
+
+  ~WebContentsUIAParentNavigationInDestroyedWatcher() override {}
+
+  // Waits until the WebContents is destroyed.
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  // Overridden WebContentsObserver methods.
+  void WebContentsDestroyed() override {
+    // Test navigating to the parent node via UIA
+    Microsoft::WRL::ComPtr<IUIAutomationElement> parent;
+    tree_walker_->GetParentElement(root_.Get(), &parent);
+    CHECK(parent.Get());
+
+    run_loop_.Quit();
+  }
+
+  Microsoft::WRL::ComPtr<IUIAutomationElement> root_;
+  Microsoft::WRL::ComPtr<IUIAutomationTreeWalker> tree_walker_;
+  base::RunLoop run_loop_;
+};
+
 }  // namespace
 
 // Tests ----------------------------------------------------------------------
@@ -4029,6 +4065,51 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
   EXPECT_EQ(FALSE, result);
   ASSERT_HRESULT_SUCCEEDED(element->get_CurrentIsContentElement(&result));
   EXPECT_EQ(FALSE, result);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
+                       UIAParentNavigationDuringWebContentsClose) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+        <html>
+        </html>)HTML");
+
+  // Request an automation element for UIA tree traversal.
+  Microsoft::WRL::ComPtr<IUIAutomation> uia;
+  ASSERT_HRESULT_SUCCEEDED(CoCreateInstance(CLSID_CUIAutomation, nullptr,
+                                            CLSCTX_INPROC_SERVER,
+                                            IID_IUIAutomation, &uia));
+
+  RenderWidgetHostViewAura* view = static_cast<RenderWidgetHostViewAura*>(
+      shell()->web_contents()->GetRenderWidgetHostView());
+  ASSERT_NE(nullptr, view);
+
+  // Start by getting the root element for the HWND hosting the web content.
+  HWND hwnd = view->host()
+                  ->GetRootBrowserAccessibilityManager()
+                  ->GetRoot()
+                  ->GetTargetForNativeAccessibilityEvent();
+  ASSERT_NE(gfx::kNullAcceleratedWidget, hwnd);
+  Microsoft::WRL::ComPtr<IUIAutomationElement> root;
+  uia->ElementFromHandle(hwnd, &root);
+  ASSERT_NE(nullptr, root.Get());
+
+  Microsoft::WRL::ComPtr<IUIAutomationTreeWalker> tree_walker;
+  uia->get_RawViewWalker(&tree_walker);
+  ASSERT_NE(nullptr, tree_walker.Get());
+
+  // Navigate to the root's first child before closing the WebContents.
+  Microsoft::WRL::ComPtr<IUIAutomationElement> first_child;
+  tree_walker->GetFirstChildElement(root.Get(), &first_child);
+  ASSERT_NE(nullptr, first_child.Get());
+
+  // The bug only reproduces during the WebContentsDestroyed event, so create
+  // an observer that will do UIA parent navigation (on the first child that
+  // was just obtained) while the WebContents is being destroyed.
+  content::WebContentsUIAParentNavigationInDestroyedWatcher destroyed_watcher(
+      shell()->web_contents(), first_child.Get(), tree_walker.Get());
+  shell()->CloseContents(shell()->web_contents());
+  destroyed_watcher.Wait();
 }
 
 }  // namespace content

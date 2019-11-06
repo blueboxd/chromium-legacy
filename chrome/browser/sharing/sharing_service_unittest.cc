@@ -20,6 +20,7 @@
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -215,14 +216,14 @@ class SharingServiceTest : public testing::Test {
   SharingService* GetSharingService() {
     if (!sharing_service_) {
       sharing_service_ = std::make_unique<SharingService>(
-          base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
+          &profile_, base::WrapUnique(sync_prefs_),
+          base::WrapUnique(vapid_key_manager_),
           base::WrapUnique(sharing_device_registration_), nullptr,
           base::WrapUnique(fcm_handler_),
           base::WrapUnique(sharing_message_sender_), nullptr,
           fake_device_info_sync_service.GetDeviceInfoTracker(),
           fake_device_info_sync_service.GetLocalDeviceInfoProvider(),
-          &test_sync_service_,
-          /* notification_display_service= */ nullptr);
+          &test_sync_service_);
     }
     task_environment_.RunUntilIdle();
     return sharing_service_.get();
@@ -231,6 +232,7 @@ class SharingServiceTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  TestingProfile profile_;
 
   syncer::FakeDeviceInfoSyncService fake_device_info_sync_service;
   syncer::TestSyncService test_sync_service_;

@@ -9,6 +9,7 @@
 
 namespace content {
 
+// A backend for the proposed interface to query the device's screen space.
 class ScreenEnumerationImpl : public blink::mojom::ScreenEnumeration {
  public:
   static void Create(
@@ -21,7 +22,7 @@ class ScreenEnumerationImpl : public blink::mojom::ScreenEnumeration {
   ScreenEnumerationImpl& operator=(const ScreenEnumerationImpl&) = delete;
 
   // blink::mojom::ScreenEnumeration:
-  void RequestDisplays(RequestDisplaysCallback callback) override;
+  void GetDisplays(GetDisplaysCallback callback) override;
 };
 
 }  // namespace content

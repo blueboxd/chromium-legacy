@@ -82,7 +82,7 @@ blink::WebVector<blink::WebString> FakeRTCRtpSenderImpl::StreamIds() const {
 }
 
 void FakeRTCRtpSenderImpl::ReplaceTrack(blink::WebMediaStreamTrack with_track,
-                                        blink::WebRTCVoidRequest request) {
+                                        blink::RTCVoidRequest* request) {
   NOTIMPLEMENTED();
 }
 
@@ -101,7 +101,7 @@ std::unique_ptr<webrtc::RtpParameters> FakeRTCRtpSenderImpl::GetParameters()
 void FakeRTCRtpSenderImpl::SetParameters(
     blink::WebVector<webrtc::RtpEncodingParameters>,
     webrtc::DegradationPreference,
-    blink::WebRTCVoidRequest) {
+    blink::RTCVoidRequest*) {
   NOTIMPLEMENTED();
 }
 

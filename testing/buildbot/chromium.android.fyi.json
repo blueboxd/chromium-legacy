@@ -304,6 +304,74 @@
         },
         "test": "webview_ui_test_app_test_apk"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--enable-features=OutOfBlinkCors"
+        ],
+        "isolate_name": "chrome_public_wpt",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "chrome_public_wpt",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/chrome/test/chromedriver/cipd",
+              "location": "chrome/test/chromedriver/cipd",
+              "revision": "PCCG9OmVmpDaf9oaKhJ3sSxXgINilZ9qpl4oaRU0R60C"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "expiration": 18000,
+          "hard_timeout": 14400,
+          "shards": 15
+        }
+      },
+      {
+        "args": [
+          "--enable-features=OutOfBlinkCors"
+        ],
+        "isolate_name": "system_webview_wpt",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "system_webview_wpt",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/chrome/test/chromedriver/cipd",
+              "location": "chrome/test/chromedriver/cipd",
+              "revision": "PCCG9OmVmpDaf9oaKhJ3sSxXgINilZ9qpl4oaRU0R60C"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "expiration": 18000,
+          "hard_timeout": 14400,
+          "shards": 15
+        }
+      }
     ]
   },
   "Memory Infra Tester": {

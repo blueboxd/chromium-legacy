@@ -75,17 +75,17 @@ OverviewSession::EnterExitOverviewType MaybeOverrideEnterExitTypeForHomeScreen(
     }
   }
 
-  // If homerview gesture is enabled, overview is expected to fade in or out to
-  // home screen (when all windows are minimized).
-  if (ash::features::IsHomerviewGestureEnabled()) {
+  // If kDragFromShelfToHomeOrOverview is enabled, overview is expected to fade
+  // in or out to home screen (when all windows are minimized).
+  if (ash::features::IsDragFromShelfToHomeOrOverviewEnabled()) {
     return enter ? OverviewSession::EnterExitOverviewType::kFadeInEnter
                  : OverviewSession::EnterExitOverviewType::kFadeOutExit;
   }
 
-  // When HomerviewGesture is enabled, the original type is overriden even if
-  // the list of windows is empty so home screen knows to animate in during
-  // overview exit animation (home screen controller uses different show/hide
-  // animations depending on the overview exit/enter types).
+  // When kDragFromShelfToHomeOrOverview is enabled, the original type is
+  // overridden even if the list of windows is empty so home screen knows to
+  // animate in during overview exit animation (home screen controller uses
+  // different show/hide animations depending on the overview exit/enter types).
   if (windows.empty())
     return original_type;
 

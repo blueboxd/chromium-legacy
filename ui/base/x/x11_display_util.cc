@@ -6,6 +6,9 @@
 
 #include <dlfcn.h>
 
+#include <bitset>
+
+#include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "ui/base/x/x11_util.h"
@@ -113,6 +116,39 @@ float GetRefreshRateFromXRRModeInfo(XRRModeInfo* modes,
   return 0;
 }
 
+int DefaultScreenDepth(XDisplay* xdisplay) {
+  return DefaultDepth(xdisplay, DefaultScreen(xdisplay));
+}
+
+int DefaultBitsPerComponent(XDisplay* xdisplay) {
+  Visual* visual = DefaultVisual(xdisplay, DefaultScreen(xdisplay));
+
+  // The mask fields are only valid for DirectColor and TrueColor classes.
+  if (visual->c_class == DirectColor || visual->c_class == TrueColor) {
+    // RGB components are packed into fixed size integers for each visual.  The
+    // layout of bits in the packing is given by
+    // |visual->{red,green,blue}_mask|.  Count the number of bits to get the
+    // number of bits per component.
+    auto bits = [](auto mask) {
+      return std::bitset<sizeof(mask) * 8>{mask}.count();
+    };
+    size_t red_bits = bits(visual->red_mask);
+    size_t green_bits = bits(visual->green_mask);
+    size_t blue_bits = bits(visual->blue_mask);
+    if (red_bits == green_bits && red_bits == blue_bits)
+      return red_bits;
+  }
+
+  // Next, try getting the number of colormap entries per subfield.  If it's a
+  // power of 2, log2 is a possible guess for the number of bits per component.
+  if (base::bits::IsPowerOfTwo(visual->map_entries))
+    return base::bits::Log2Ceiling(visual->map_entries);
+
+  // |bits_per_rgb| can sometimes be unreliable (may be 11 for 30bpp visuals),
+  // so only use it as a last resort.
+  return visual->bits_per_rgb;
+}
+
 }  // namespace
 
 int GetXrandrVersion(XDisplay* xdisplay) {
@@ -147,6 +183,9 @@ std::vector<display::Display> GetFallbackDisplayList(float scale) {
     scale = 1;
   }
 
+  gfx_display.set_color_depth(DefaultScreenDepth(display));
+  gfx_display.set_depth_per_component(DefaultBitsPerComponent(display));
+
   std::vector<display::Display> displays{gfx_display};
   ClipWorkArea(&displays, 0, scale);
   return displays;
@@ -169,6 +208,9 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
     LOG(ERROR) << "XRandR returned no displays; falling back to root window";
     return GetFallbackDisplayList(scale);
   }
+
+  const int depth = DefaultScreenDepth(xdisplay);
+  const int bits_per_component = DefaultBitsPerComponent(xdisplay);
 
   std::map<RROutput, int> output_to_monitor =
       GetMonitors(version, xdisplay, x_root_window);
@@ -246,6 +288,9 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
         icc_profile.HistogramDisplay(display.id());
         display.set_color_space(icc_profile.GetPrimariesOnlyColorSpace());
       }
+
+      display.set_color_depth(depth);
+      display.set_depth_per_component(bits_per_component);
 
       // Set monitor refresh rate
       int refresh_rate = static_cast<int>(GetRefreshRateFromXRRModeInfo(

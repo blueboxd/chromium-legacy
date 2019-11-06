@@ -35,6 +35,7 @@
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -284,6 +285,14 @@ class WallpaperControllerTest : public AshTestBase {
     fake_user_manager_ = fake_user_manager.get();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(fake_user_manager));
+
+    // This is almost certainly not what was originally intended for these
+    // tests, but they have never actually exercised properly decoded
+    // wallpapers, as they've never actually been connected to a Data Decoder.
+    // We simulate a "crashing" ImageDcoder to get the behavior the tests were
+    // written around, but at some point they should probably be fixed.
+    in_process_data_decoder_.service().SimulateImageDecoderCrashForTesting(
+        true);
 
     // Ash shell initialization creates wallpaper. Reset it so we can manually
     // control wallpaper creation and animation in our tests.
@@ -535,6 +544,8 @@ class WallpaperControllerTest : public AshTestBase {
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 
  private:
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
+
   DISALLOW_COPY_AND_ASSIGN(WallpaperControllerTest);
 };
 

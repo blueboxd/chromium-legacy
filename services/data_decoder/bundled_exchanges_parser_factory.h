@@ -12,15 +12,13 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace data_decoder {
 
 class BundledExchangesParserFactory
     : public mojom::BundledExchangesParserFactory {
  public:
-  explicit BundledExchangesParserFactory(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  BundledExchangesParserFactory();
   ~BundledExchangesParserFactory() override;
 
   std::unique_ptr<mojom::BundleDataSource> CreateFileDataSourceForTesting(
@@ -35,8 +33,6 @@ class BundledExchangesParserFactory
   void GetParserForDataSource(
       mojo::PendingReceiver<mojom::BundledExchangesParser> receiver,
       mojo::PendingRemote<mojom::BundleDataSource> data_source) override;
-
-  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(BundledExchangesParserFactory);
 };

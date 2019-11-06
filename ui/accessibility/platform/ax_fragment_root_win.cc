@@ -196,8 +196,8 @@ class AXFragmentRootMapWin {
   ui::AXFragmentRootWin* GetFragmentRootParentOf(
       gfx::NativeViewAccessible accessible) const {
     for (const auto& entry : map_) {
-      if (entry.second->GetChildNodeDelegate()->GetNativeViewAccessible() ==
-          accessible)
+      AXPlatformNodeDelegate* child = entry.second->GetChildNodeDelegate();
+      if (child && (child->GetNativeViewAccessible() == accessible))
         return entry.second;
     }
     return nullptr;

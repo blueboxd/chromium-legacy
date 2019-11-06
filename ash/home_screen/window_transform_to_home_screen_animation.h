@@ -5,6 +5,7 @@
 #ifndef ASH_HOME_SCREEN_WINDOW_TRANSFORM_TO_HOME_SCREEN_ANIMATION_H_
 #define ASH_HOME_SCREEN_WINDOW_TRANSFORM_TO_HOME_SCREEN_ANIMATION_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -28,7 +29,8 @@ class WindowTransformToHomeScreenAnimation
  public:
   WindowTransformToHomeScreenAnimation(
       aura::Window* window,
-      base::Optional<BackdropWindowMode> original_backdrop_mode);
+      base::Optional<BackdropWindowMode> original_backdrop_mode,
+      base::OnceClosure opt_callback);
   ~WindowTransformToHomeScreenAnimation() override;
 
   // ui::ImplicitAnimationObserver:
@@ -44,6 +46,8 @@ class WindowTransformToHomeScreenAnimation
 
   aura::Window* window_;
   base::Optional<BackdropWindowMode> original_backdrop_mode_;
+  base::OnceClosure opt_callback_;
+
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowTransformToHomeScreenAnimation);

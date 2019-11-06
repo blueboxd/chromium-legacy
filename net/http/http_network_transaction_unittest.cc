@@ -16570,7 +16570,8 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
 
   // Preload mail.example.com into HostCache.
   rv = session_deps_.host_resolver->LoadIntoCache(
-      HostPortPair("mail.example.com", 443), base::nullopt);
+      HostPortPair("mail.example.com", 443), NetworkIsolationKey(),
+      base::nullopt);
   EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request2;
@@ -16742,7 +16743,8 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
 
   // Preload mail.example.org into HostCache.
   int rv = session_deps_.host_resolver->LoadIntoCache(
-      HostPortPair("mail.example.com", 443), base::nullopt);
+      HostPortPair("mail.example.com", 443), NetworkIsolationKey(),
+      base::nullopt);
   EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request1;
@@ -16867,7 +16869,8 @@ TEST_F(HttpNetworkTransactionTest, ReturnHTTP421OnRetry) {
 
   // Preload mail.example.org into HostCache.
   int rv = session_deps_.host_resolver->LoadIntoCache(
-      HostPortPair("mail.example.com", 443), base::nullopt);
+      HostPortPair("mail.example.com", 443), NetworkIsolationKey(),
+      base::nullopt);
   EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request1;
@@ -16981,7 +16984,8 @@ TEST_F(HttpNetworkTransactionTest,
 
   // Preload cache entries into HostCache.
   rv = session_deps_.host_resolver->LoadIntoCache(
-      HostPortPair("mail.example.com", 443), base::nullopt);
+      HostPortPair("mail.example.com", 443), NetworkIsolationKey(),
+      base::nullopt);
   EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request2;
@@ -20184,7 +20188,8 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
 
   // Preload mail.example.org into HostCache.
   int rv = session_deps_.host_resolver->LoadIntoCache(
-      HostPortPair("mail.example.com", 443), base::nullopt);
+      HostPortPair("mail.example.com", 443), NetworkIsolationKey(),
+      base::nullopt);
   EXPECT_THAT(rv, IsOk());
 
   HttpRequestInfo request1;

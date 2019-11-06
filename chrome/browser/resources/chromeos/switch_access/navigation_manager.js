@@ -39,7 +39,9 @@ class NavigationManager {
    * Enters |this.node_|.
    */
   enterGroup() {
-    if (!this.node_.isGroup()) return;
+    if (!this.node_.isGroup()) {
+      return;
+    }
 
     const newGroup = this.node_.asRootNode();
     if (newGroup) {
@@ -67,7 +69,9 @@ class NavigationManager {
    * is selected.
    */
   enterMenu() {
-    if (this.menuManager_.enter(this.node_)) return;
+    if (this.menuManager_.enter(this.node_)) {
+      return;
+    }
 
     // If the menu does not or cannot open, select the current node.
     this.selectCurrentNode();
@@ -165,7 +169,9 @@ class NavigationManager {
    * @private
    */
   onFocusChange_(event) {
-    if (this.node_.isEquivalentTo(event.target)) return;
+    if (this.node_.isEquivalentTo(event.target)) {
+      return;
+    }
     this.moveTo_(event.target);
   }
 
@@ -222,7 +228,9 @@ class NavigationManager {
     this.group_ = RootNodeWrapper.buildDesktopTree(this.desktop_);
     while (ancestorList.length > 0) {
       let ancestor = ancestorList.pop();
-      if (ancestor.role === chrome.automation.RoleType.DESKTOP) continue;
+      if (ancestor.role === chrome.automation.RoleType.DESKTOP) {
+        continue;
+      }
 
       if (SwitchAccessPredicate.isGroup(ancestor, this.group_)) {
         this.groupStack_.push(this.group_);
@@ -236,7 +244,9 @@ class NavigationManager {
    * @private
    */
   exitGroup_() {
-    if (this.groupStack_.length === 0) return;
+    if (this.groupStack_.length === 0) {
+      return;
+    }
 
     this.group_.onExit();
 
@@ -295,9 +305,13 @@ class NavigationManager {
     this.buildGroupStack_(automationNode);
     let node = this.group_.firstChild;
     for (const child of this.group_.children) {
-      if (child.isEquivalentTo(automationNode)) node = child;
+      if (child.isEquivalentTo(automationNode)) {
+        node = child;
+      }
     }
-    if (node.equals(this.node_)) return;
+    if (node.equals(this.node_)) {
+      return;
+    }
 
     this.menuManager_.exit();
     this.setNode_(node);
@@ -309,7 +323,9 @@ class NavigationManager {
    * @private
    */
   moveToValidNode_() {
-    if (this.node_.role && this.group_.isValid()) return;
+    if (this.node_.role && this.group_.isValid()) {
+      return;
+    }
 
     if (this.node_.role) {
       // Our group has been invalidated. Move to this node to repair the group
@@ -341,7 +357,9 @@ class NavigationManager {
 
     const desktop = RootNodeWrapper.buildDesktopTree(this.desktop_);
     const nextNode = desktop.firstChild.automationNode;
-    if (nextNode) this.moveTo_(nextNode);
+    if (nextNode) {
+      this.moveTo_(nextNode);
+    }
   }
 
   /**

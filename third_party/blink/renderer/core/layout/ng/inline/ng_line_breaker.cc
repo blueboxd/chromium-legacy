@@ -2047,10 +2047,12 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
         line_break_type = LineBreakType::kKeepAll;
         break;
     }
+    EOverflowWrap overflow_wrap = style.OverflowWrap();
     break_anywhere_if_overflow_ =
         word_break == EWordBreak::kBreakWord ||
+        overflow_wrap == EOverflowWrap::kAnywhere ||
         // `overflow-/word-wrap: break-word` affects layout but not min-content.
-        (style.OverflowWrap() == EOverflowWrap::kBreakWord &&
+        (overflow_wrap == EOverflowWrap::kBreakWord &&
          mode_ == NGLineBreakerMode::kContent);
     if (UNLIKELY((override_break_anywhere_ && break_anywhere_if_overflow_) ||
                  style.GetLineBreak() == LineBreak::kAnywhere)) {

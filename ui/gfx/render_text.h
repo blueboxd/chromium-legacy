@@ -682,8 +682,8 @@ class GFX_EXPORT RenderText {
   // GetDisplayText(), which differ when the text is obscured,
   // truncated or elided. Regardless of whether or not the text is
   // obscured, the character (code point) offsets always match.
-  virtual size_t TextIndexToDisplayIndex(size_t index) = 0;
-  virtual size_t DisplayIndexToTextIndex(size_t index) = 0;
+  size_t TextIndexToDisplayIndex(size_t index);
+  size_t DisplayIndexToTextIndex(size_t index);
 
   // Notifies that layout text, or attributes that affect the layout text
   // shape have changed. |text_changed| is true if the content of the
@@ -736,6 +736,12 @@ class GFX_EXPORT RenderText {
   // |given_text| should be either |display_text_| or |layout_text_|
   // depending on the elide state.
   size_t TextIndexToGivenTextIndex(const base::string16& given_text,
+                                   size_t index) const;
+
+  // Convert an index in |given_text_| to the index in |text|. The
+  // |given_text| should be either |display_text_| or |layout_text_|
+  // depending on the elide state.
+  size_t GivenTextIndexToTextIndex(const base::string16& given_text,
                                    size_t index) const;
 
   // Adjust ranged styles to accommodate a new text length.

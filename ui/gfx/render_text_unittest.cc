@@ -14,6 +14,7 @@
 
 #include "base/format_macros.h"
 #include "base/i18n/break_iterator.h"
+#include "base/i18n/char_iterator.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -766,7 +767,7 @@ TEST_F(RenderTextTest, ObscuredText) {
 
   // Test index conversion and cursor validity with a valid surrogate pair.
   EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(0U));
-  EXPECT_EQ(1U, test_api()->TextIndexToDisplayIndex(1U));
+  EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(1U));
   EXPECT_EQ(1U, test_api()->TextIndexToDisplayIndex(2U));
   EXPECT_EQ(0U, test_api()->DisplayIndexToTextIndex(0U));
   EXPECT_EQ(2U, test_api()->DisplayIndexToTextIndex(1U));
@@ -789,7 +790,7 @@ TEST_F(RenderTextTest, ObscuredText) {
 
   // GetCursorSpan() should yield the entire string bounds for text index 0.
   EXPECT_EQ(render_text->GetStringSize().width(),
-            std::ceil(render_text->GetCursorSpan({0, 1}).length()));
+            std::ceil(render_text->GetCursorSpan({0, 2}).length()));
 
   // Cursoring is independent of underlying characters when text is obscured.
   const char* const texts[] = {
@@ -900,11 +901,140 @@ TEST_F(RenderTextTest, ObscuredEmoji) {
   // Windows requires wide strings for \Unnnnnnnn universal character names.
   render_text->SetText(WideToUTF16(L"\U0001F601y"));
   render_text->Draw(canvas());
+
+  // Emoji codepoints are replaced by bullets (e.g. "\u2022\u2022").
+  EXPECT_EQ(WideToUTF16(L"\u2022\u2022"), render_text->GetDisplayText());
+  EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(0U));
+  EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(1U));
+  EXPECT_EQ(1U, test_api()->TextIndexToDisplayIndex(2U));
+
+  EXPECT_EQ(0U, test_api()->DisplayIndexToTextIndex(0U));
+  EXPECT_EQ(2U, test_api()->DisplayIndexToTextIndex(1U));
+
+  // Out of bound accesses.
+  EXPECT_EQ(2U, test_api()->TextIndexToDisplayIndex(3U));
+  EXPECT_EQ(3U, test_api()->DisplayIndexToTextIndex(2U));
+
   // Test two U+1F4F7 📷 "Camera" characters in a row.
   // Windows requires wide strings for \Unnnnnnnn universal character names.
   render_text->SetText(WideToUTF16(L"\U0001F4F7\U0001F4F7"));
   render_text->Draw(canvas());
+
+  // Emoji codepoints are replaced by bullets (e.g. "\u2022\u2022").
+  EXPECT_EQ(WideToUTF16(L"\u2022\u2022"), render_text->GetDisplayText());
+  EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(0U));
+  EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(1U));
+  EXPECT_EQ(1U, test_api()->TextIndexToDisplayIndex(2U));
+  EXPECT_EQ(1U, test_api()->TextIndexToDisplayIndex(3U));
+
+  EXPECT_EQ(0U, test_api()->DisplayIndexToTextIndex(0U));
+  EXPECT_EQ(2U, test_api()->DisplayIndexToTextIndex(1U));
+
+  // Reveal the first emoji.
+  render_text->SetObscuredRevealIndex(0);
+  render_text->Draw(canvas());
+
+  EXPECT_EQ(WideToUTF16(L"\U0001F4F7\u2022"), render_text->GetDisplayText());
+  EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(0U));
+  EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(1U));
+  EXPECT_EQ(2U, test_api()->TextIndexToDisplayIndex(2U));
+  EXPECT_EQ(2U, test_api()->TextIndexToDisplayIndex(3U));
+
+  EXPECT_EQ(0U, test_api()->DisplayIndexToTextIndex(0U));
+  EXPECT_EQ(0U, test_api()->DisplayIndexToTextIndex(1U));
+  EXPECT_EQ(2U, test_api()->DisplayIndexToTextIndex(2U));
 }
+
+TEST_F(RenderTextTest, ObscuredEmojiRevealed) {
+  RenderText* render_text = GetRenderText();
+
+  base::string16 text = WideToUTF16(L"123\U0001F4F7\U0001F4F7x\U0001F601-");
+  for (size_t i = 0; i < text.length(); ++i) {
+    render_text->SetText(text);
+    render_text->SetObscured(true);
+    render_text->SetObscuredRevealIndex(i);
+    render_text->Draw(canvas());
+  }
+}
+
+struct TextIndexConversionCase {
+  const char* test_name;
+  const wchar_t* text;
+};
+
+using TextIndexConversionParam =
+    std::tuple<TextIndexConversionCase, bool, size_t>;
+
+class RenderTextTestWithTextIndexConversionCase
+    : public RenderTextTest,
+      public ::testing::WithParamInterface<TextIndexConversionParam> {
+ public:
+  static std::string ParamInfoToString(
+      ::testing::TestParamInfo<TextIndexConversionParam> param_info) {
+    TextIndexConversionCase param = std::get<0>(param_info.param);
+    bool obscured = std::get<1>(param_info.param);
+    size_t reveal_index = std::get<2>(param_info.param);
+    return base::StringPrintf("%s%s%zu", param.test_name,
+                              (obscured ? "Obscured" : ""), reveal_index);
+  }
+};
+
+TEST_P(RenderTextTestWithTextIndexConversionCase, TextIndexConversion) {
+  TextIndexConversionCase param = std::get<0>(GetParam());
+  bool obscured = std::get<1>(GetParam());
+  size_t reveal_index = std::get<2>(GetParam());
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(param.text));
+  render_text->SetObscured(obscured);
+  render_text->SetObscuredRevealIndex(reveal_index);
+  render_text->Draw(canvas());
+
+  base::string16 text = render_text->text();
+  base::string16 display_text = render_text->GetDisplayText();
+
+  // Adjust reveal_index to point to the beginning of the surrogate pair, if
+  // needed.
+  U16_SET_CP_START(text.c_str(), 0, reveal_index);
+
+  // Validate that codepoints still match.
+  base::i18n::UTF16CharIterator iter(&render_text->text());
+  while (!iter.end()) {
+    size_t text_index = iter.array_pos();
+    size_t display_index = test_api()->TextIndexToDisplayIndex(text_index);
+    EXPECT_EQ(text_index, test_api()->DisplayIndexToTextIndex(display_index));
+    if (obscured && reveal_index != text_index) {
+      EXPECT_EQ(display_text[display_index],
+                RenderText::kPasswordReplacementChar);
+    } else {
+      EXPECT_EQ(display_text[display_index], text[text_index]);
+    }
+
+    iter.Advance();
+  }
+}
+
+const TextIndexConversionCase kTextIndexConversionCases[] = {
+    {"simple", L"abc"},
+    {"simple_obscured1", L"abc"},
+    {"simple_obscured2", L"abc"},
+    {"emoji_asc", L"\U0001F6281234"},
+    {"emoji_asc_obscured0", L"\U0001F6281234"},
+    {"emoji_asc_obscured2", L"\U0001F6281234"},
+    {"picto_title", L"x☛"},
+    {"simple_mixed", L"aaڭڭcc"},
+    {"simple_rtl", L"أسكي"},
+};
+
+// Validate that conversion text and between display text indexes are consistent
+// even when text obscured and reveal character features are used.
+INSTANTIATE_TEST_SUITE_P(
+    ItemizeTextToRunsConversion,
+    RenderTextTestWithTextIndexConversionCase,
+    ::testing::Combine(::testing::ValuesIn(kTextIndexConversionCases),
+                       testing::Values(false, true),
+                       testing::Values(0, 1, 4)),
+    RenderTextTestWithTextIndexConversionCase::ParamInfoToString);
 
 struct RunListCase {
   const char* test_name;

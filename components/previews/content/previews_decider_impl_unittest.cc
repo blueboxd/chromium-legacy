@@ -1536,7 +1536,7 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
   }
 }
 
-TEST_F(PreviewsDeciderImplTest, DeferAllScriptNotAllowedByDefault) {
+TEST_F(PreviewsDeciderImplTest, DeferAllScriptDefaultBehavior) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, optimization_guide::features::kOptimizationHints},
@@ -1549,8 +1549,15 @@ TEST_F(PreviewsDeciderImplTest, DeferAllScriptNotAllowedByDefault) {
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://www.google.com"));
 
-  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-      &user_data, &navigation_handle, false, PreviewsType::DEFER_ALL_SCRIPT));
+#if defined(OS_ANDROID)
+  bool expected = true;
+#else   // !defined(OS_ANDROID)
+  bool expected = false;
+#endif  // defined(OS_ANDROID)
+  EXPECT_EQ(expected,
+            previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+                &user_data, &navigation_handle, false,
+                PreviewsType::DEFER_ALL_SCRIPT));
 }
 
 TEST_F(PreviewsDeciderImplTest,

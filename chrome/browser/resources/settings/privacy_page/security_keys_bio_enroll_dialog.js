@@ -54,6 +54,9 @@ Polymer({
     enrollments_: Array,
 
     /** @private */
+    progressArcLabel_: String,
+
+    /** @private */
     recentEnrollmentName_: String,
   },
 
@@ -68,6 +71,10 @@ Polymer({
 
   /** @override */
   attached: function() {
+    Polymer.RenderStatus.afterNextRender(this, function() {
+      Polymer.IronA11yAnnouncer.requestAvailability();
+    });
+
     this.$.dialog.showModal();
     this.addWebUIListener(
         'security-keys-bio-enroll-error', this.onError_.bind(this));
@@ -171,6 +178,8 @@ Polymer({
 
     this.maxSamples_ = -1;  // Reset maxSamples_ before enrolling starts.
     this.$.arc.reset();
+    this.progressArcLabel_ =
+        this.i18n('securityKeysBioEnrollmentEnrollingLabel');
 
     this.recentEnrollmentId_ = '';
     this.recentEnrollmentName_ = '';
@@ -216,7 +225,11 @@ Polymer({
       this.cancelButtonVisible_ = false;
       this.confirmButtonVisible_ = true;
       this.confirmButtonDisabled_ = false;
+      this.progressArcLabel_ =
+          this.i18n('securityKeysBioEnrollmentEnrollingCompleteLabel');
       this.$.confirmButton.focus();
+      // Make screen-readers announce enrollment completion.
+      this.fire('iron-announce', {text: this.progressArcLabel_});
     }
     this.fire('bio-enroll-dialog-ready-for-testing');
   },

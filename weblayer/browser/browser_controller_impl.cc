@@ -9,6 +9,7 @@
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
@@ -39,24 +40,24 @@ namespace weblayer {
 
 namespace {
 
-NewBrowserDisposition NewBrowserDispositionFromWindowDisposition(
+NewBrowserType NewBrowserTypeFromWindowDisposition(
     WindowOpenDisposition disposition) {
   // WindowOpenDisposition has a *ton* of types, but the following are really
   // the only ones that should be hit for this code path.
   switch (disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
-      return NewBrowserDisposition::kForeground;
+      return NewBrowserType::FOREGROUND_TAB;
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
-      return NewBrowserDisposition::kBackground;
+      return NewBrowserType::BACKGROUND_TAB;
     case WindowOpenDisposition::NEW_POPUP:
-      return NewBrowserDisposition::kNewPopup;
+      return NewBrowserType::NEW_POPUP;
     case WindowOpenDisposition::NEW_WINDOW:
-      return NewBrowserDisposition::kNewWindow;
+      return NewBrowserType::NEW_WINDOW;
     default:
       // The set of allowed types are in
       // ContentBrowserClientImpl::CanCreateWindow().
       NOTREACHED();
-      return NewBrowserDisposition::kForeground;
+      return NewBrowserType::FOREGROUND_TAB;
   }
 }
 
@@ -119,8 +120,10 @@ BrowserControllerImpl::BrowserControllerImpl(
 }
 
 BrowserControllerImpl::~BrowserControllerImpl() {
-  // Destruct this now to avoid it calling back when this object is partially
-  // destructed.
+  // Destruct WebContents now to avoid it calling back when this object is
+  // partially destructed. DidFinishNavigation can be called while destroying
+  // WebContents, so stop observing first.
+  Observe(nullptr);
   web_contents_.reset();
 }
 
@@ -176,9 +179,16 @@ NavigationController* BrowserControllerImpl::GetNavigationController() {
 }
 
 void BrowserControllerImpl::ExecuteScript(const base::string16& script,
+                                          bool use_separate_isolate,
                                           JavaScriptResultCallback callback) {
-  web_contents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
-      script, std::move(callback), ISOLATED_WORLD_ID_WEBLAYER);
+  if (use_separate_isolate) {
+    web_contents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
+        script, std::move(callback), ISOLATED_WORLD_ID_WEBLAYER);
+  } else {
+    content::RenderFrameHost::AllowInjectingJavaScript();
+    web_contents_->GetMainFrame()->ExecuteJavaScript(script,
+                                                     std::move(callback));
+  }
 }
 
 #if !defined(OS_ANDROID)
@@ -221,10 +231,20 @@ void BrowserControllerImpl::SetTopControlsContainerView(
 void BrowserControllerImpl::ExecuteScript(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& script,
+    bool use_separate_isolate,
     const base::android::JavaParamRef<jobject>& callback) {
   base::android::ScopedJavaGlobalRef<jobject> jcallback(env, callback);
   ExecuteScript(base::android::ConvertJavaStringToUTF16(script),
+                use_separate_isolate,
                 base::BindOnce(&HandleJavaScriptResult, jcallback));
+}
+
+void BrowserControllerImpl::SetJavaImpl(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& impl) {
+  // This should only be called early on and only once.
+  DCHECK(!java_impl_);
+  java_impl_ = impl;
 }
 
 #endif
@@ -270,7 +290,9 @@ void BrowserControllerImpl::RunFileChooser(
 
 int BrowserControllerImpl::GetTopControlsHeight() {
 #if defined(OS_ANDROID)
-  return top_controls_container_view_->GetTopControlsHeight();
+  return top_controls_container_view_
+             ? top_controls_container_view_->GetTopControlsHeight()
+             : 0;
 #else
   return 0;
 #endif
@@ -333,8 +355,7 @@ void BrowserControllerImpl::AddNewContents(
       std::make_unique<BrowserControllerImpl>(profile_,
                                               std::move(new_contents));
   new_browser_delegate_->OnNewBrowser(
-      std::move(browser),
-      NewBrowserDispositionFromWindowDisposition(disposition));
+      std::move(browser), NewBrowserTypeFromWindowDisposition(disposition));
 }
 
 void BrowserControllerImpl::DidFinishNavigation(

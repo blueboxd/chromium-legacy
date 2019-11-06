@@ -26,6 +26,8 @@ source_set("unit_tests") {
     ":mojom",
     "//base",
     "//base/test:test_support",
+    "//chromeos/services/device_sync:feature_status_change",
+    "//chromeos/services/device_sync/proto",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
   ]

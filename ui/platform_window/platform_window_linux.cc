@@ -37,4 +37,6 @@ bool PlatformWindowLinux::ContainsPointInXRegion(
 
 void PlatformWindowLinux::SetOpacityForXWindow(float opacity) {}
 
+void PlatformWindowLinux::LowerXWindow() {}
+
 }  // namespace ui

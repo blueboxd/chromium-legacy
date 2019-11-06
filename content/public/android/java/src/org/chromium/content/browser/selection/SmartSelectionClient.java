@@ -74,8 +74,10 @@ public class SmartSelectionClient implements SelectionClient {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         mProvider = new SmartSelectionProvider(callback, windowAndroid);
         mCallback = callback;
-        mSmartSelectionMetricLogger =
-                SmartSelectionMetricsLogger.create(windowAndroid.getContext().get());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            mSmartSelectionMetricLogger =
+                    SmartSelectionMetricsLogger.create(windowAndroid.getContext().get());
+        }
         mNativeSmartSelectionClient =
                 SmartSelectionClientJni.get().init(SmartSelectionClient.this, webContents);
     }

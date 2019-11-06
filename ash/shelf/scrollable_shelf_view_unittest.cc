@@ -10,6 +10,7 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/display/manager/display_manager.h"
@@ -410,6 +411,60 @@ TEST_F(ScrollableShelfViewTest, DragIconToNewPage) {
   EXPECT_EQ(ScrollableShelfView::kShowRightArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
   EXPECT_EQ(0, view_model->GetIndexOfView(dragged_view));
+}
+
+// Verifies that the scrollable shelf in oveflow mode has the correct layout
+// after switching to tablet mode (https://crbug.com/1017979).
+TEST_F(ScrollableShelfViewTest, CorrectUIAfterSwitchingToTablet) {
+  // Add enough app shortcuts to ensure that at least three pages of icons show.
+  for (int i = 0; i < 25; i++)
+    AddAppShortcut();
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+  GetEventGenerator()->GestureTapAt(
+      scrollable_shelf_view_->right_arrow()->GetBoundsInScreen().CenterPoint());
+  ASSERT_EQ(ScrollableShelfView::kShowButtons,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  base::RunLoop().RunUntilIdle();
+
+  views::ViewModel* view_model = shelf_view_->view_model();
+  views::View* first_tappable_view =
+      view_model->view_at(scrollable_shelf_view_->first_tappable_app_index());
+
+  // Verifies that the gap between the left arrow button and the first tappable
+  // icon is expected.
+  const gfx::Rect left_arrow_bounds =
+      scrollable_shelf_view_->left_arrow()->GetBoundsInScreen();
+  EXPECT_EQ(left_arrow_bounds.right() + 2,
+            first_tappable_view->GetBoundsInScreen().x());
+}
+
+// Verifies that the scrollable shelf without overflow has the correct layout in
+// tablet mode.
+TEST_F(ScrollableShelfViewTest, CorrectUIInTabletWithoutOverflow) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  for (int i = 0; i < 3; i++)
+    AddAppShortcut();
+  ASSERT_EQ(ScrollableShelfView::kNotShowArrowButtons,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  gfx::Rect hotseat_background =
+      scrollable_shelf_view_->GetHotseatBackgroundBounds();
+  views::View::ConvertRectToScreen(scrollable_shelf_view_, &hotseat_background);
+
+  views::ViewModel* view_model = shelf_view_->view_model();
+  const gfx::Rect first_tappable_view_bounds =
+      view_model->view_at(scrollable_shelf_view_->first_tappable_app_index())
+          ->GetBoundsInScreen();
+  const gfx::Rect last_tappable_view_bounds =
+      view_model->view_at(scrollable_shelf_view_->last_tappable_app_index())
+          ->GetBoundsInScreen();
+
+  EXPECT_EQ(hotseat_background.x() + 4, first_tappable_view_bounds.x());
+  EXPECT_EQ(hotseat_background.right() - 4, last_tappable_view_bounds.right());
 }
 
 }  // namespace ash

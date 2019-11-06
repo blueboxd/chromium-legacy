@@ -335,6 +335,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
+  if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
+    return;
   [self.suggestionHelper
       checkIfSuggestionsAvailableForForm:formName
                          fieldIdentifier:fieldIdentifier
@@ -385,7 +387,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                            frameID:(NSString*)frameID
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
-  DCHECK(GetPageURLAndCheckTrustLevel(webState, nullptr));
+  if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
+    return;
   NSArray<FormSuggestion*>* rawSuggestions =
       [self.suggestionHelper retrieveSuggestionsWithFormName:formName
                                              fieldIdentifier:fieldIdentifier

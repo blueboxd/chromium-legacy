@@ -60,10 +60,12 @@ FakeISearchHandler.prototype = {
     this.expect_.push(this.test.newCallback(function(args) {
       var node = args.node;
       var actual = node.name || node.role;
-      if (args.start && args.end)
+      if (args.start && args.end) {
         actual = 'start=' + args.start + ' end=' + args.end + ' text=' + actual;
-      if (args.isBoundary)
+      }
+      if (args.isBoundary) {
         actual = 'boundary=' + actual;
+      }
       assertEquals(str, actual);
       opt_callback && opt_callback();
     }));

@@ -992,6 +992,43 @@ class AutotestPrivateWaitForLauncherStateFunction : public ExtensionFunction {
   void Done();
 };
 
+class AutotestPrivateCreateNewDeskFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateCreateNewDeskFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.createNewDesk",
+                             AUTOTESTPRIVATE_CREATENEWDESK)
+
+ private:
+  ~AutotestPrivateCreateNewDeskFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateActivateDeskAtIndexFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateActivateDeskAtIndexFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.activateDeskAtIndex",
+                             AUTOTESTPRIVATE_ACTIVATEDESKATINDEX)
+
+ private:
+  ~AutotestPrivateActivateDeskAtIndexFunction() override;
+  ResponseAction Run() override;
+
+  void OnAnimationComplete();
+};
+
+class AutotestPrivateRemoveActiveDeskFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateRemoveActiveDeskFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.removeActiveDesk",
+                             AUTOTESTPRIVATE_REMOVEACTIVEDESK)
+
+ private:
+  ~AutotestPrivateRemoveActiveDeskFunction() override;
+  ResponseAction Run() override;
+
+  void OnAnimationComplete();
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

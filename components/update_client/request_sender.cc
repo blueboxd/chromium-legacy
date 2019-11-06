@@ -139,8 +139,7 @@ void RequestSender::SendInternalComplete(int error,
   HandleSendError(error, retry_after_sec);
 }
 
-void RequestSender::OnResponseStarted(const GURL& final_url,
-                                      int response_code,
+void RequestSender::OnResponseStarted(int response_code,
                                       int64_t content_length) {
   response_code_ = response_code;
 }

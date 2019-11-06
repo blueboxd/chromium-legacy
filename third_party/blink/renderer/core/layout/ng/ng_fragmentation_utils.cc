@@ -368,8 +368,10 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
       // If the block-offset is past the fragmentainer boundary (or exactly at
       // the boundary), no part of the fragment is going to fit in the current
       // fragmentainer. Fragments may be pushed past the fragmentainer boundary
-      // by margins.
-      need_break = space_left <= LayoutUnit();
+      // by margins. We shouldn't break before a zero-size block that's exactly
+      // at a fragmentainer boundary, though.
+      need_break = space_left < LayoutUnit() ||
+                   (space_left == LayoutUnit() && fragment.BlockSize());
     }
     if (need_break) {
       // If we haven't used any space at all in the fragmentainer yet, though,

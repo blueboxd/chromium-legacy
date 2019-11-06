@@ -80,6 +80,7 @@ class TemplateURLFetcher::RequestDelegate {
   base::string16 keyword() const { return keyword_; }
 
  private:
+  void OnTemplateURLParsed(std::unique_ptr<TemplateURL> template_url);
   void OnLoaded();
   void AddSearchProvider();
 
@@ -140,6 +141,25 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
       50000 /* max_body_size */);
 }
 
+void TemplateURLFetcher::RequestDelegate::OnTemplateURLParsed(
+    std::unique_ptr<TemplateURL> template_url) {
+  template_url_ = std::move(template_url);
+
+  if (!template_url_ ||
+      !template_url_->url_ref().SupportsReplacement(
+          fetcher_->template_url_service_->search_terms_data())) {
+    fetcher_->RequestCompleted(this);
+    // WARNING: RequestCompleted deletes us.
+    return;
+  }
+
+  // Wait for the model to be loaded before adding the provider.
+  if (!fetcher_->template_url_service_->loaded())
+    return;
+  AddSearchProvider();
+  // WARNING: AddSearchProvider deletes us.
+}
+
 void TemplateURLFetcher::RequestDelegate::OnLoaded() {
   template_url_subscription_.reset();
   if (!template_url_)
@@ -158,23 +178,11 @@ void TemplateURLFetcher::RequestDelegate::OnSimpleLoaderComplete(
     return;
   }
 
-  template_url_ = TemplateURLParser::Parse(
-      fetcher_->template_url_service_->search_terms_data(),
-      response_body->data(), response_body->length(),
-      TemplateURLParser::ParameterFilter());
-  if (!template_url_ ||
-      !template_url_->url_ref().SupportsReplacement(
-          fetcher_->template_url_service_->search_terms_data())) {
-    fetcher_->RequestCompleted(this);
-    // WARNING: RequestCompleted deletes us.
-    return;
-  }
-
-  // Wait for the model to be loaded before adding the provider.
-  if (!fetcher_->template_url_service_->loaded())
-    return;
-  AddSearchProvider();
-  // WARNING: AddSearchProvider deletes us.
+  TemplateURLParser::Parse(
+      &fetcher_->template_url_service_->search_terms_data(),
+      *response_body.get(), TemplateURLParser::ParameterFilter(),
+      base::BindOnce(&RequestDelegate::OnTemplateURLParsed,
+                     base::Unretained(this)));
 }
 
 void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {

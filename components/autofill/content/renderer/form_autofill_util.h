@@ -284,7 +284,7 @@ blink::WebFormElement FindFormByUniqueRendererId(blink::WebDocument doc,
 
 // Returns form control element by unique renderer id. Return null element if
 // there is no element with given renderer id.
-blink::WebFormControlElement FindFormControlElementsByUniqueRendererId(
+blink::WebFormControlElement FindFormControlElementByUniqueRendererId(
     blink::WebDocument doc,
     uint32_t form_control_renderer_id);
 

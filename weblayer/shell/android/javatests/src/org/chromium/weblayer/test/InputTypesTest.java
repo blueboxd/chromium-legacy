@@ -30,8 +30,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -49,6 +51,7 @@ public class InputTypesTest {
 
     private EmbeddedTestServer mTestServer;
     private File mTempFile;
+    private int mCameraPermission = PackageManager.PERMISSION_GRANTED;
 
     private class FileIntentInterceptor implements InstrumentationActivity.IntentInterceptor {
         public Intent mLastIntent;
@@ -94,9 +97,7 @@ public class InputTypesTest {
             new Handler().post(() -> {
                 int[] results = new int[permissions.length];
                 Arrays.fill(results, mResult);
-                if (mResult == PackageManager.PERMISSION_GRANTED) {
-                    grantCameraPermission();
-                }
+                mCameraPermission = mResult;
                 activity.onRequestPermissionsResult(requestCode, permissions, results);
                 mCallbackHelper.notifyCalled();
             });
@@ -132,8 +133,22 @@ public class InputTypesTest {
         mTestServer.addDefaultHandlers("weblayer/test/data");
         Assert.assertTrue(mTestServer.start(0));
 
-        InstrumentationActivity activity =
-                mActivityTestRule.launchShellWithUrl(mTestServer.getURL("/input_types.html"));
+        InstrumentationActivity activity = mActivityTestRule.launchShell(new Bundle());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            activity.createWebLayer(
+                            new InMemorySharedPreferencesContext(activity.getApplication()) {
+                                @Override
+                                public int checkPermission(String permission, int pid, int uid) {
+                                    if (permission.equals(Manifest.permission.CAMERA)) {
+                                        return mCameraPermission;
+                                    }
+                                    return getBaseContext().checkPermission(permission, pid, uid);
+                                }
+                            },
+                            null)
+                    .get();
+        });
+        mActivityTestRule.navigateAndWait(mTestServer.getURL("/input_types.html"));
         mTempFile = File.createTempFile("file", null);
         activity.setIntentInterceptor(mIntentInterceptor);
         ActivityCompat.setPermissionCompatDelegate(mPermissionCompatDelegate);
@@ -146,8 +161,6 @@ public class InputTypesTest {
     @After
     public void tearDown() {
         mTempFile.delete();
-        // The test may have revoked camera permission, so grant it back now.
-        grantCameraPermission();
         ActivityCompat.setPermissionCompatDelegate(null);
     }
 
@@ -165,9 +178,9 @@ public class InputTypesTest {
 
     @Test
     @SmallTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.P)
-    public void testFileInputCameraPermissionGranted() {
-        revokeCameraPermission();
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    public void testFileInputCameraPermissionGranted() throws Exception {
+        mCameraPermission = PackageManager.PERMISSION_DENIED;
         mPermissionCompatDelegate.setResult(PackageManager.PERMISSION_GRANTED);
         String id = "input_file";
 
@@ -184,9 +197,9 @@ public class InputTypesTest {
 
     @Test
     @SmallTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.P)
-    public void testFileInputCameraPermissionDenied() {
-        revokeCameraPermission();
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    public void testFileInputCameraPermissionDenied() throws Exception {
+        mCameraPermission = PackageManager.PERMISSION_DENIED;
         mPermissionCompatDelegate.setResult(PackageManager.PERMISSION_DENIED);
         String id = "input_file";
 
@@ -294,7 +307,8 @@ public class InputTypesTest {
     public void testColorInput() {
         // Just make sure we don't crash when opening the color picker.
         mActivityTestRule.executeScriptSync("var done = false; document.onclick = function() {"
-                + "document.getElementById('input_color').click(); done = true;}");
+                        + "document.getElementById('input_color').click(); done = true;}",
+                true /* useSeparateIsolate */);
         EventUtils.simulateTouchCenterOfView(
                 mActivityTestRule.getActivity().getWindow().getDecorView());
         CriteriaHelper.pollInstrumentationThread(
@@ -305,7 +319,8 @@ public class InputTypesTest {
         // We need to click the input after user input, otherwise it won't open due to security
         // policy.
         mActivityTestRule.executeScriptSync(
-                "document.onclick = function() {document.getElementById('" + id + "').click()}");
+                "document.onclick = function() {document.getElementById('" + id + "').click()}",
+                true /* useSeparateIsolate */);
         EventUtils.simulateTouchCenterOfView(
                 mActivityTestRule.getActivity().getWindow().getDecorView());
         mIntentInterceptor.waitForIntent();
@@ -325,21 +340,5 @@ public class InputTypesTest {
                 (Intent) mIntentInterceptor.mLastIntent.getParcelableExtra(Intent.EXTRA_INTENT);
         Assert.assertNotNull(contentIntent);
         return contentIntent;
-    }
-
-    @TargetApi(Build.VERSION_CODES.P)
-    private void revokeCameraPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return;
-        String packageName = InstrumentationRegistry.getTargetContext().getPackageName();
-        InstrumentationRegistry.getInstrumentation().getUiAutomation().revokeRuntimePermission(
-                packageName, Manifest.permission.CAMERA);
-    }
-
-    @TargetApi(Build.VERSION_CODES.P)
-    private void grantCameraPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return;
-        String packageName = InstrumentationRegistry.getTargetContext().getPackageName();
-        InstrumentationRegistry.getInstrumentation().getUiAutomation().grantRuntimePermission(
-                packageName, Manifest.permission.CAMERA);
     }
 }

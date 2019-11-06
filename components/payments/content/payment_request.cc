@@ -21,6 +21,7 @@
 #include "components/payments/core/can_make_payment_query.h"
 #include "components/payments/core/error_strings.h"
 #include "components/payments/core/features.h"
+#include "components/payments/core/method_strings.h"
 #include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_details_validation.h"
@@ -45,8 +46,8 @@ using ::payments::mojom::CanMakePaymentQueryResult;
 using ::payments::mojom::HasEnrolledInstrumentQueryResult;
 
 bool IsGooglePaymentMethodInstrumentSelected(const std::string& method_name) {
-  return method_name == kGooglePayMethodName ||
-         method_name == kAndroidPayMethodName;
+  return method_name == methods::kGooglePay ||
+         method_name == methods::kAndroidPay;
 }
 
 std::string GetNotSupportedErrorMessage(PaymentRequestSpec* spec) {
@@ -196,8 +197,8 @@ void PaymentRequest::Init(
       spec_->request_payer_phone(), spec_->request_payer_name());
 
   // Log metrics around which payment methods are requested by the merchant.
-  GURL google_pay_url(kGooglePayMethodName);
-  GURL android_pay_url(kAndroidPayMethodName);
+  GURL google_pay_url(methods::kGooglePay);
+  GURL android_pay_url(methods::kAndroidPay);
   // Looking for payment methods that are NOT google-related payment methods.
   auto non_google_it =
       std::find_if(spec_->url_payment_method_identifiers().begin(),

@@ -236,8 +236,8 @@ _NM_PATH = os.path.join(_SRC_PATH, 'third_party', 'llvm-build',
 
 def CheckLlvmNmExists():
   assert os.path.exists(_NM_PATH), (
-      'llvm-nm not found. Please run //tools/clang/scripts/download_objdump.py'
-      ' to install it.')
+      'llvm-nm not found. Please run '
+      '//tools/clang/scripts/update.py --package=objdump to install it.')
 
 
 def SymbolNamesFromLlvmBitcodeFile(filename):

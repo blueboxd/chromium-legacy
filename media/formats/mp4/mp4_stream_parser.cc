@@ -51,29 +51,23 @@ EncryptionScheme GetEncryptionScheme(const ProtectionSchemeInfo& sinf) {
   FourCC fourcc = sinf.type.type;
   EncryptionScheme::CipherMode mode = EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
   EncryptionPattern pattern;
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
   bool uses_pattern_encryption = false;
-#endif
   switch (fourcc) {
     case FOURCC_CENC:
       mode = EncryptionScheme::CIPHER_MODE_AES_CTR;
       break;
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
     case FOURCC_CBCS:
       mode = EncryptionScheme::CIPHER_MODE_AES_CBC;
       uses_pattern_encryption = true;
       break;
-#endif
     default:
       NOTREACHED();
       break;
   }
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
   if (uses_pattern_encryption) {
     pattern = {sinf.info.track_encryption.default_crypt_byte_block,
                sinf.info.track_encryption.default_skip_byte_block};
   }
-#endif
   return EncryptionScheme(mode, pattern);
 }
 }  // namespace

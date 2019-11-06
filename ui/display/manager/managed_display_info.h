@@ -334,6 +334,7 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // The size of the display in use. The size can be different from the size
   // of |bounds_in_native_| if the display has overscan insets and/or rotation.
   gfx::Size size_in_pixel_;
+  // TODO(oshima): Change this to store pixel.
   gfx::Insets overscan_insets_in_dip_;
 
   // The zoom level currently applied to the display. This value is appended

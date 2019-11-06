@@ -25,12 +25,6 @@ namespace payments {
 
 class PaymentInstrument;
 
-// Identifier for the basic card payment method and google-related payment
-// methods in the PaymentMethodData.
-extern const char kBasicCardMethodName[];
-extern const char kGooglePayMethodName[];
-extern const char kAndroidPayMethodName[];
-
 // The spec contains all the options that the merchant has specified about this
 // Payment Request. It's a (mostly) read-only view, which can be updated in
 // certain occasions by the merchant (see API).

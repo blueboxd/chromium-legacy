@@ -8,7 +8,6 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewConfiguration;
 
-
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 
@@ -51,10 +50,13 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
      * @param appMenuDelegate The {@link AppMenuDelegate} for the containing activity.
      * @param decorView The decor {@link View}, e.g. from Window#getDecorView(), for the containing
      *         activity.
+     * @param hardwareButtonAnchorView The {@link View} used as an anchor for the menu when it is
+     *            displayed using a hardware button.
      */
     public AppMenuCoordinatorImpl(Context context,
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
-            MenuButtonDelegate buttonDelegate, AppMenuDelegate appMenuDelegate, View decorView) {
+            MenuButtonDelegate buttonDelegate, AppMenuDelegate appMenuDelegate, View decorView,
+            View hardwareButtonAnchorView) {
         mContext = context;
         mButtonDelegate = buttonDelegate;
         mAppMenuDelegate = appMenuDelegate;
@@ -62,7 +64,7 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
 
         mAppMenuHandler = new AppMenuHandlerImpl(mAppMenuPropertiesDelegate, mAppMenuDelegate,
                 mAppMenuPropertiesDelegate.getAppMenuLayoutId(), decorView,
-                activityLifecycleDispatcher);
+                activityLifecycleDispatcher, hardwareButtonAnchorView);
     }
 
     @Override
@@ -106,7 +108,7 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
     // Testing methods
 
     @VisibleForTesting
-    public AppMenuHandlerImpl getAppMenuHandlerImplForTesting() {
+    AppMenuHandlerImpl getAppMenuHandlerImplForTesting() {
         return mAppMenuHandler;
     }
 }

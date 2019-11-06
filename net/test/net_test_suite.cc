@@ -35,7 +35,7 @@ void NetTestSuite::Shutdown() {
 }
 
 void NetTestSuite::InitializeTestThread() {
-  network_change_notifier_ = net::NetworkChangeNotifier::CreateMock();
+  network_change_notifier_ = net::NetworkChangeNotifier::CreateMockIfNeeded();
 
   InitializeTestThreadNoNetworkChangeNotifier();
 }

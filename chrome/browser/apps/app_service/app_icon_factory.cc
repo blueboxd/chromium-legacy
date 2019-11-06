@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -286,9 +285,8 @@ void RunCallbackWithFallback(
     return;
   }
 
-  data_decoder::DecodeImage(
-      content::GetSystemConnector(), data,
-      data_decoder::mojom::ImageCodec::DEFAULT, false,
+  data_decoder::DecodeImageIsolated(
+      data, data_decoder::mojom::ImageCodec::DEFAULT, false,
       data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
       base::BindOnce(&RunCallbackWithSkBitmap, size_hint_in_dip,
                      is_placeholder_icon, icon_effects, icon_compression,

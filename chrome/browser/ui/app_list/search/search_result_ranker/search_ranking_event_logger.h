@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_SEARCH_RANKING_EVENT_LOGGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_types.h"

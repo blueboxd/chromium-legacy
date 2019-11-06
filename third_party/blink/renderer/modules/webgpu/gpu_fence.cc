@@ -39,13 +39,10 @@ void GPUFence::OnCompletionCallback(ScriptPromiseResolver* resolver,
       resolver->Resolve();
       break;
     case WGPUFenceCompletionStatus_Error:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kOperationError));
-      break;
     case WGPUFenceCompletionStatus_Unknown:
     case WGPUFenceCompletionStatus_DeviceLost:
-      resolver->Reject(
-          MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kOperationError));
       break;
     default:
       NOTREACHED();

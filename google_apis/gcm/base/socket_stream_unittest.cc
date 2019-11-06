@@ -106,7 +106,8 @@ class GCMSocketStreamTest : public testing::Test {
 
 GCMSocketStreamTest::GCMSocketStreamTest()
     : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
-      network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
+      network_change_notifier_(
+          net::NetworkChangeNotifier::CreateMockIfNeeded()),
       network_service_(network::NetworkService::CreateForTesting()),
       url_request_context_(true /* delay_initialization */) {
   address_list_ = net::AddressList::CreateFromIPAddress(

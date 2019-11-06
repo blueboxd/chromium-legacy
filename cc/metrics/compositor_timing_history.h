@@ -23,7 +23,7 @@ struct FrameTimingDetails;
 }
 
 namespace cc {
-
+struct BeginMainFrameMetrics;
 class CompositorFrameReportingController;
 class RenderingStatsInstrumentation;
 
@@ -76,7 +76,7 @@ class CC_EXPORT CompositorTimingHistory {
                           base::TimeTicks main_frame_time);
   void BeginMainFrameStarted(base::TimeTicks main_thread_start_time);
   void BeginMainFrameAborted();
-  void NotifyReadyToCommit();
+  void NotifyReadyToCommit(std::unique_ptr<BeginMainFrameMetrics> details);
   void WillCommit();
   void DidCommit();
   void WillPrepareTiles();

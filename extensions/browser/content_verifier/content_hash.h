@@ -150,24 +150,50 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
  private:
   friend class base::RefCountedThreadSafe<ContentHash>;
 
+  using GetVerifiedContentsCallback = base::OnceCallback<void(
+      FetchKey key,
+      std::unique_ptr<VerifiedContents> verified_contents,
+      bool did_attempt_fetch)>;
+
   ContentHash(const ExtensionId& id,
               const base::FilePath& root,
+              ContentVerifierDelegate::VerifierSourceType source_type,
               std::unique_ptr<VerifiedContents> verified_contents,
               std::unique_ptr<ComputedHashes::Reader> computed_hashes);
   ~ContentHash();
 
+  // Step 1/2: verified_contents.json.
+  static void GetVerifiedContents(
+      FetchKey key,
+      ContentVerifierDelegate::VerifierSourceType source_type,
+      const IsCancelledCallback& is_cancelled,
+      GetVerifiedContentsCallback);
   static void FetchVerifiedContents(FetchKey key,
                                     const IsCancelledCallback& is_cancelled,
-                                    CreatedCallback created_callback);
+                                    GetVerifiedContentsCallback callback);
+  static std::unique_ptr<VerifiedContents> StoreAndRetrieveVerifiedContents(
+      std::unique_ptr<std::string> fetched_contents,
+      const FetchKey& key);
   static void DidFetchVerifiedContents(
-      CreatedCallback created_callback,
-      const IsCancelledCallback& is_cancelled,
+      GetVerifiedContentsCallback callback,
       FetchKey key,
       std::unique_ptr<std::string> fetched_contents);
 
-  static void DispatchFetchFailure(FetchKey key,
-                                   CreatedCallback created_callback,
-                                   const IsCancelledCallback& is_cancelled);
+  // Step 2/2: computed_hashes.json.
+  static void GetComputedHashes(
+      ContentVerifierDelegate::VerifierSourceType source_type,
+      const IsCancelledCallback& is_cancelled,
+      CreatedCallback created_callback,
+      FetchKey key,
+      std::unique_ptr<VerifiedContents> verified_contents,
+      bool did_attempt_fetch);
+
+  static void DispatchFetchFailure(
+      const ExtensionId& extension_id,
+      const base::FilePath& extension_root,
+      ContentVerifierDelegate::VerifierSourceType source_type,
+      CreatedCallback created_callback,
+      const IsCancelledCallback& is_cancelled);
 
   static void RecordFetchResult(bool success);
 
@@ -183,14 +209,24 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   bool CreateHashes(const base::FilePath& hashes_file,
                     const IsCancelledCallback& is_cancelled);
 
+  // Builds hashes for one resource and checks them against
+  // verified_contents.json if needed. Returns nullopt if nothing should be
+  // added to computed_hashes.json for this resource.
+  base::Optional<std::vector<std::string>> ComputeAndCheckResourceHash(
+      const base::FilePath& full_path,
+      const base::FilePath& relative_unix_path);
+
   // Builds computed_hashes. Possibly after creating computed_hashes.json file
   // if necessary.
-  void BuildComputedHashes(bool attempted_fetching_verified_contents,
+  void BuildComputedHashes(bool did_fetch_verified_contents,
                            bool force_build,
                            const IsCancelledCallback& is_cancelled);
 
+  bool has_verified_contents() const { return verified_contents_ != nullptr; }
+
   const ExtensionId extension_id_;
   const base::FilePath extension_root_;
+  ContentVerifierDelegate::VerifierSourceType source_type_;
 
   bool succeeded_ = false;
 

@@ -22,8 +22,8 @@ void InterfacePtrStateBase::QueryVersion(
   // It is safe to capture |this| because the callback won't be run after this
   // object goes away.
   endpoint_client_->QueryVersion(
-      base::BindRepeating(&InterfacePtrStateBase::OnQueryVersion,
-                          base::Unretained(this), base::Passed(&callback)));
+      base::BindOnce(&InterfacePtrStateBase::OnQueryVersion,
+                     base::Unretained(this), std::move(callback)));
 }
 
 void InterfacePtrStateBase::RequireVersion(uint32_t version) {

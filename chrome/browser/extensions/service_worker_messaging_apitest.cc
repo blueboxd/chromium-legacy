@@ -19,6 +19,9 @@ class ServiceWorkerMessagingTest : public ExtensionApiTest {
   ServiceWorkerMessagingTest() = default;
   ~ServiceWorkerMessagingTest() override = default;
 
+ protected:
+  extensions::ScopedTestNativeMessagingHost test_host_;
+
  private:
   ScopedWorkerBasedExtensionsChannel current_channel_;
 
@@ -76,8 +79,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, TabToWorker) {
 // Tests chrome.runtime.sendNativeMessage from SW extension to a native
 // messaging host.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, NativeMessagingBasic) {
-  extensions::ScopedTestNativeMessagingHost test_host;
-  ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(false));
+  ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(false));
   ASSERT_TRUE(RunExtensionTest("service_worker/messaging/send_native_message"))
       << message_;
 }
@@ -85,8 +87,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, NativeMessagingBasic) {
 // Tests chrome.runtime.connectNative from SW extension to a native messaging
 // host.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, ConnectNative) {
-  extensions::ScopedTestNativeMessagingHost test_host;
-  ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(false));
+  ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(false));
   ASSERT_TRUE(RunExtensionTest("service_worker/messaging/connect_native"))
       << message_;
 }

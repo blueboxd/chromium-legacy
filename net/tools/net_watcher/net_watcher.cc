@@ -176,7 +176,7 @@ int main(int argc, char* argv[]) {
       new net::NetworkChangeNotifierLinux(ignored_interfaces));
 #else
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
+      net::NetworkChangeNotifier::CreateIfNeeded());
 #endif
 
   // Use the network loop as the file loop also.

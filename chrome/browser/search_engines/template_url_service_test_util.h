@@ -15,6 +15,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service_observer.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 
 class KeywordWebDataService;
 class TemplateURLService;
@@ -83,6 +84,7 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   base::string16 search_term_;
   scoped_refptr<KeywordWebDataService> web_data_service_;
   std::unique_ptr<TemplateURLService> model_;
+  data_decoder::test::InProcessDataDecoder data_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTestUtil);
 };

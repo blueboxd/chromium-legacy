@@ -1890,6 +1890,31 @@ IN_PROC_BROWSER_TEST_P(
       browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
+// Tests that commands work in a subframe triggered interstitial if a different
+// interstitial has been shown previously on the same webcontents. Regression
+// test for crbug.com/1021334
+IN_PROC_BROWSER_TEST_P(
+    SafeBrowsingBlockingPageBrowserTestWithCommittedSBInterstitials,
+    IframeProceedAfterMainFrameInterstitial) {
+  // Navigate to a site that triggers an interstitial due to a bad main frame
+  // URL.
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(kChromeUISafeBrowsingMatchMalwareUrl));
+  EXPECT_TRUE(WaitForReady(browser()));
+  EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
+  AssertNoInterstitial(false);
+
+  // Navigate to a site that triggers an interstitial due to a bad iframe.
+  GURL url = SetupThreatIframeWarningAndNavigate();
+
+  // Commands should work.
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone
+
+  EXPECT_EQ(url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
 INSTANTIATE_TEST_SUITE_P(
     SafeBrowsingBlockingPageBrowserTestWithThreatTypeAndIsolationSetting,
     SafeBrowsingBlockingPageBrowserTestWithCommittedSBInterstitials,

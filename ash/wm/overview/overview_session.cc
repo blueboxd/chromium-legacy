@@ -502,9 +502,10 @@ void OverviewSession::OnWindowDragEnded(aura::Window* dragged_window,
                                  should_drop_window_into_overview, snap);
 }
 
-void OverviewSession::SetVisibleDuringWindowDragging(bool visible) {
+void OverviewSession::SetVisibleDuringWindowDragging(bool visible,
+                                                     bool animate) {
   for (auto& grid : grid_list_)
-    grid->SetVisibleDuringWindowDragging(visible);
+    grid->SetVisibleDuringWindowDragging(visible, animate);
 }
 
 void OverviewSession::PositionWindows(

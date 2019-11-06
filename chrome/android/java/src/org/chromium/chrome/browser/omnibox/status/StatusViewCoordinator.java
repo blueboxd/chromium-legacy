@@ -28,7 +28,6 @@ public class StatusViewCoordinator implements View.OnClickListener, TextWatcher 
     private final StatusMediator mMediator;
     private final PropertyModel mModel;
     private final boolean mIsTablet;
-
     private ToolbarDataProvider mToolbarDataProvider;
     private boolean mUrlHasFocus;
 
@@ -92,6 +91,16 @@ public class StatusViewCoordinator implements View.OnClickListener, TextWatcher 
         mMediator.setUrlHasFocus(urlHasFocus);
         mUrlHasFocus = urlHasFocus;
         updateVerboseStatusVisibility();
+    }
+
+    /** @param urlHasFocus Whether the url currently has focus. */
+    public void onUrlAnimationFinished(boolean urlHasFocus) {
+        mMediator.setUrlAnimationFinished(urlHasFocus);
+    }
+
+    /** @param show Whether the status icon should be VISIBLE, otherwise GONE. */
+    public void setStatusIconShown(boolean show) {
+        mMediator.setStatusIconShown(show);
     }
 
     /**

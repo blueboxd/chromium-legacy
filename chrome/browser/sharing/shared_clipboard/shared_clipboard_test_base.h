@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockSharingService;
-class StubNotificationDisplayService;
+class NotificationDisplayServiceTester;
 
 namespace chrome_browser_sharing {
 class SharingMessage;
@@ -42,9 +42,9 @@ class SharedClipboardTestBase : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<StubNotificationDisplayService> notification_display_service_;
-  std::unique_ptr<MockSharingService> sharing_service_;
   TestingProfile profile_;
+  std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
+  std::unique_ptr<MockSharingService> sharing_service_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SharedClipboardTestBase);

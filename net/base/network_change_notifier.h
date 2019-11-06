@@ -278,17 +278,17 @@ class NET_EXPORT NetworkChangeNotifier {
   // The method will take over the ownership of |factory| object.
   static void SetFactory(NetworkChangeNotifierFactory* factory);
 
-  // Creates the process-wide, platform-specific NetworkChangeNotifier.  The
-  // caller owns the returned pointer.  You may call this on any thread.  You
-  // may also avoid creating this entirely (in which case nothing will be
-  // monitored), but if you do create it, you must do so before any other
-  // threads try to access the API below, and it must outlive all other threads
-  // which might try to use it.
-  static std::unique_ptr<NetworkChangeNotifier> Create();
-
-  // Returns whether the process-wide, platform-specific NetworkChangeNotifier
-  // has been created.
-  static bool HasNetworkChangeNotifier();
+  // Creates the process-wide, platform-specific NetworkChangeNotifier if it
+  // hasn't been created. The caller owns the returned pointer.  You may call
+  // this on any thread. If the process-wide NetworkChangeNotifier already
+  // exists, this call will return a nullptr. Otherwise, it will guaranteed
+  // to return a valid instance. You may also avoid creating this entirely
+  // (in which case nothing will be monitored), but if you do create it, you
+  // must do so before any other threads try to access the API below, and it
+  // must outlive all other threads which might try to use it.
+  static std::unique_ptr<NetworkChangeNotifier> CreateIfNeeded(
+      NetworkChangeNotifier::ConnectionType initial_type = CONNECTION_NONE,
+      NetworkChangeNotifier::ConnectionSubtype initial_subtype = SUBTYPE_NONE);
 
   // Returns the connection type.
   // A return value of |CONNECTION_NONE| is a pretty strong indicator that the
@@ -395,9 +395,9 @@ class NET_EXPORT NetworkChangeNotifier {
   static ConnectionType ConnectionTypeFromInterfaceList(
       const NetworkInterfaceList& interfaces);
 
-  // Like Create(), but for use in tests.  The mock object doesn't monitor any
-  // events, it merely rebroadcasts notifications when requested.
-  static std::unique_ptr<NetworkChangeNotifier> CreateMock();
+  // Like CreateIfNeeded(), but for use in tests. The mock object doesn't
+  // monitor any events, it merely rebroadcasts notifications when requested.
+  static std::unique_ptr<NetworkChangeNotifier> CreateMockIfNeeded();
 
   // Registers |observer| to receive notifications of network changes.  The
   // thread on which this is called is the thread on which |observer| will be

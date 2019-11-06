@@ -98,8 +98,8 @@ base::LazyInstance<BlinkInitializer>::Leaky g_blink_initializer =
 
 class ImageDecoderImplTest : public testing::Test {
  public:
-  ImageDecoderImplTest() : decoder_(nullptr) {}
-  ~ImageDecoderImplTest() override {}
+  ImageDecoderImplTest() = default;
+  ~ImageDecoderImplTest() override = default;
 
   void SetUp() override { g_blink_initializer.Get(); }
 

@@ -1588,12 +1588,16 @@ TEST_F(WebMediaPlayerImplTest, Encrypted) {
   // To avoid PreloadMetadataLazyLoad.
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
 
-  EXPECT_CALL(encrypted_client_, DidBlockPlaybackWaitingForKey());
-  EXPECT_CALL(encrypted_client_, DidResumePlaybackBlockedForKey());
-  EXPECT_CALL(encrypted_client_,
-              Encrypted(EmeInitDataType::WEBM, NotNull(), Gt(0u)));
-  LoadAndWaitForReadyState(kEncryptedVideoOnlyTestFile,
-                           blink::WebMediaPlayer::kReadyStateHaveMetadata);
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(encrypted_client_,
+                Encrypted(EmeInitDataType::WEBM, NotNull(), Gt(0u)));
+    EXPECT_CALL(encrypted_client_, DidBlockPlaybackWaitingForKey());
+    EXPECT_CALL(encrypted_client_, DidResumePlaybackBlockedForKey())
+        .WillRepeatedly(RunClosure(run_loop.QuitClosure()));
+    Load(kEncryptedVideoOnlyTestFile);
+    run_loop.Run();
+  }
 
   CreateCdm();
 
@@ -1603,15 +1607,18 @@ TEST_F(WebMediaPlayerImplTest, Encrypted) {
       .WillRepeatedly(Return(nullptr));
   mock_cdm_context_.set_cdm_id(CdmContext::kInvalidCdmId);
 
-  // Wait for kNetworkStateFormatError caused by Renderer initialization error.
-  base::RunLoop run_loop;
-  EXPECT_CALL(client_, NetworkStateChanged()).WillOnce(Invoke([&] {
-    if (wmpi_->GetNetworkState() ==
-        blink::WebMediaPlayer::kNetworkStateFormatError)
-      run_loop.QuitClosure().Run();
-  }));
-  SetCdm();
-  run_loop.Run();
+  {
+    // Wait for kNetworkStateFormatError caused by Renderer initialization
+    // error.
+    base::RunLoop run_loop;
+    EXPECT_CALL(client_, NetworkStateChanged()).WillOnce(Invoke([&] {
+      if (wmpi_->GetNetworkState() ==
+          blink::WebMediaPlayer::kNetworkStateFormatError)
+        run_loop.QuitClosure().Run();
+    }));
+    SetCdm();
+    run_loop.Run();
+  }
 }
 
 TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {

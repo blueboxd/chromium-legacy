@@ -195,7 +195,7 @@
         domAutomationController.send(locks.held[0].name === "foo");
       else
         failure_();
-    });
+    }).catch(failure_);
   }
 </script>
 

@@ -297,15 +297,10 @@ bool SchemeType::Parse(BoxReader* reader) {
 
 TrackEncryption::TrackEncryption()
     : is_encrypted(false),
-      default_iv_size(0)
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
-      ,
+      default_iv_size(0),
       default_crypt_byte_block(0),
       default_skip_byte_block(0),
-      default_constant_iv_size(0)
-#endif
-{
-}
+      default_constant_iv_size(0) {}
 TrackEncryption::TrackEncryption(const TrackEncryption& other) = default;
 TrackEncryption::~TrackEncryption() = default;
 FourCC TrackEncryption::BoxType() const { return FOURCC_TENC; }
@@ -320,7 +315,6 @@ bool TrackEncryption::Parse(BoxReader* reader) {
          reader->ReadVec(&default_kid, kKeyIdSize));
   is_encrypted = (flag != 0);
   if (is_encrypted) {
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
     if (reader->version() > 0) {
       default_crypt_byte_block = (possible_pattern_info >> 4) & 0x0f;
       default_skip_byte_block = possible_pattern_info & 0x0f;
@@ -334,9 +328,6 @@ bool TrackEncryption::Parse(BoxReader* reader) {
     } else {
       RCHECK(default_iv_size == 8 || default_iv_size == 16);
     }
-#else
-    RCHECK(default_iv_size == 8 || default_iv_size == 16);
-#endif
   } else {
     RCHECK(default_iv_size == 0);
   }
@@ -373,22 +364,12 @@ bool ProtectionSchemeInfo::Parse(BoxReader* reader) {
 
 bool ProtectionSchemeInfo::HasSupportedScheme() const {
   FourCC four_cc = type.type;
-  if (four_cc == FOURCC_CENC)
-    return true;
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
-  if (four_cc == FOURCC_CBCS)
-    return true;
-#endif
-  return false;
+  return (four_cc == FOURCC_CENC || four_cc == FOURCC_CBCS);
 }
 
 bool ProtectionSchemeInfo::IsCbcsEncryptionScheme() const {
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
   FourCC four_cc = type.type;
   return (four_cc == FOURCC_CBCS);
-#else
-  return false;
-#endif
 }
 
 MovieHeader::MovieHeader()
@@ -1614,15 +1595,10 @@ bool SampleToGroup::Parse(BoxReader* reader) {
 
 CencSampleEncryptionInfoEntry::CencSampleEncryptionInfoEntry()
     : is_encrypted(false),
-      iv_size(0)
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
-      ,
+      iv_size(0),
       crypt_byte_block(0),
       skip_byte_block(0),
-      constant_iv_size(0)
-#endif
-{
-}
+      constant_iv_size(0) {}
 CencSampleEncryptionInfoEntry::CencSampleEncryptionInfoEntry(
     const CencSampleEncryptionInfoEntry& other) = default;
 CencSampleEncryptionInfoEntry::~CencSampleEncryptionInfoEntry() = default;
@@ -1636,7 +1612,6 @@ bool CencSampleEncryptionInfoEntry::Parse(BoxReader* reader) {
 
   is_encrypted = (flag != 0);
   if (is_encrypted) {
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
     crypt_byte_block = (possible_pattern_info >> 4) & 0x0f;
     skip_byte_block = possible_pattern_info & 0x0f;
     if (iv_size == 0) {
@@ -1648,9 +1623,6 @@ bool CencSampleEncryptionInfoEntry::Parse(BoxReader* reader) {
     } else {
       RCHECK(iv_size == 8 || iv_size == 16);
     }
-#else
-    RCHECK(iv_size == 8 || iv_size == 16);
-#endif
   } else {
     RCHECK(iv_size == 0);
   }

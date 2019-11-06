@@ -1222,8 +1222,8 @@ class EventBands {
   showTooltipForEvent_(event, svg, height, width) {
     svg.setAttribute('height', height + 'px');
     svg.setAttribute('width', width + 'px');
-    this.tooltip.style.left = event.clientX + 'px';
-    this.tooltip.style.top = event.clientY + 'px';
+    this.tooltip.style.left = event.pageX + 'px';
+    this.tooltip.style.top = event.pageY + 'px';
     this.tooltip.style.height = height + 'px';
     this.tooltip.style.width = width + 'px';
     this.tooltip.classList.add('active');

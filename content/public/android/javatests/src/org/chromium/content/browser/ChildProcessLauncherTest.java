@@ -38,7 +38,7 @@ import java.util.concurrent.TimeoutException;
 public class ChildProcessLauncherTest {
     private static final long CONDITION_WAIT_TIMEOUT_MS = 5000;
 
-    private static final String SERVICE_PACKAGE_NAME = "org.chromium.content_shell_apk";
+    private static final String SERVICE_PACKAGE_NAME = "org.chromium.content_shell_apk.tests";
     private static final String SERVICE_NAME =
             "org.chromium.content_shell_apk.TestChildProcessService";
     private static final String SERVICE_COUNT_META_DATA_KEY =

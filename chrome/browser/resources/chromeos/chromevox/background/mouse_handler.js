@@ -81,7 +81,8 @@ BackgroundMouseHandler.prototype = {
     this.mouseX_ = evt.mouseX;
     this.mouseY_ = evt.mouseY;
     this.hasPendingEvents_ = true;
-    if (!this.isWaitingBeforeHitTest_)
+    if (!this.isWaitingBeforeHitTest_) {
       this.runHitTest();
+    }
   },
 };

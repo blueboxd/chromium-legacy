@@ -76,6 +76,11 @@
                forWebState:(web::WebState*)webState {
   self.infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted(infobarType);
 }
+
+- (void)infobarWasReverted:(InfobarType)infobarType
+               forWebState:(web::WebState*)webState {
+  self.infobarBadgeTabHelper->UpdateBadgeForInfobarReverted(infobarType);
+}
 @end
 
 // Fake Infobar Container.
@@ -241,6 +246,11 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeState) {
             infobar_badge_tab_delegate_.badgeState & BadgeStateAccepted);
   EXPECT_EQ(BadgeStateRead,
             infobar_badge_tab_delegate_.badgeState & BadgeStateRead);
+
+  tab_helper()->UpdateBadgeForInfobarReverted(
+      InfobarType::kInfobarTypePasswordSave);
+  EXPECT_NE(BadgeStateAccepted,
+            infobar_badge_tab_delegate_.badgeState & BadgeStateAccepted);
 }
 
 // Test the badge state after doesn't change after adding an Infobar with no

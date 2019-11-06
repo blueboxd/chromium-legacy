@@ -109,6 +109,10 @@ void ContentPasswordManagerDriver::FillPasswordForm(
       autofill::MaybeClearPasswordValues(form_data));
 }
 
+void ContentPasswordManagerDriver::InformNoSavedCredentials() {
+  GetPasswordAutofillAgent()->InformNoSavedCredentials();
+}
+
 void ContentPasswordManagerDriver::FormEligibleForGenerationFound(
     const autofill::PasswordFormGenerationData& form) {
   if (GetPasswordGenerationHelper()->IsGenerationEnabled(

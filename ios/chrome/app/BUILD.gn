@@ -311,7 +311,6 @@ source_set("main") {
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/common",
     "//ios/testing/perf:startup",
-    "//third_party/google_toolbox_for_mac",
   ]
 }
 

@@ -11,14 +11,10 @@
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 class MediaDialogViewObserver;
 class MediaNotificationContainerImplView;
 class MediaNotificationListView;
-class MediaToolbarButtonController;
+class MediaNotificationService;
 
 // Dialog that shows media controls that control the active media session.
 class MediaDialogView : public views::BubbleDialogDelegateView,
@@ -26,8 +22,7 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
                         public MediaNotificationContainerObserver {
  public:
   static void ShowDialog(views::View* anchor_view,
-                         MediaToolbarButtonController* controller,
-                         service_manager::Connector* connector);
+                         MediaNotificationService* service);
   static void HideDialog();
   static bool IsShowing();
 
@@ -62,8 +57,7 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
 
  private:
   explicit MediaDialogView(views::View* anchor_view,
-                           MediaToolbarButtonController* controller,
-                           service_manager::Connector* connector);
+                           MediaNotificationService* service);
   ~MediaDialogView() override;
 
   static MediaDialogView* instance_;
@@ -75,7 +69,7 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   void Init() override;
   void WindowClosing() override;
 
-  MediaToolbarButtonController* const controller_;
+  MediaNotificationService* const service_;
 
   MediaNotificationListView* const active_sessions_view_;
 

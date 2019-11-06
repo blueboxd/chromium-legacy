@@ -26,6 +26,7 @@
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/error_strings.h"
 #include "components/payments/core/features.h"
+#include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_experimental_features.h"
@@ -178,8 +179,8 @@ void PaymentRequestState::OnSWPaymentInstrumentValidated(
 
   std::vector<std::string> instrument_method_names =
       instrument->GetInstrumentMethodNames();
-  if (base::Contains(instrument_method_names, kGooglePayMethodName) ||
-      base::Contains(instrument_method_names, kAndroidPayMethodName)) {
+  if (base::Contains(instrument_method_names, methods::kGooglePay) ||
+      base::Contains(instrument_method_names, methods::kAndroidPay)) {
     journey_logger_->SetEventOccurred(
         JourneyLogger::EVENT_AVAILABLE_METHOD_GOOGLE);
   } else {
@@ -301,7 +302,8 @@ void PaymentRequestState::CheckRequestedMethodsSupported(
   // used for canMakePayment().
   bool supported = are_requested_methods_supported_;
   if (supported && is_show_user_gesture_ &&
-      base::Contains(spec_->payment_method_identifiers_set(), "basic-card") &&
+      base::Contains(spec_->payment_method_identifiers_set(),
+                     methods::kBasicCard) &&
       !has_non_autofill_instrument_ && !has_enrolled_instrument_ &&
       PaymentsExperimentalFeatures::IsEnabled(
           features::kStrictHasEnrolledAutofillInstrument)) {

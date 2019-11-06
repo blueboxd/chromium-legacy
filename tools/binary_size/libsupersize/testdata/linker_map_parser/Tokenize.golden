@@ -226,8 +226,8 @@
  2F56008        4 (3)        0 WebRtcSpl_MaxAbsValueW16
  2F56008        4 (3)        0 WebRtcSpl_MaxAbsValueW16
  2F56008        4 (3)        4 WebRtcSpl_MaxAbsValueW16
- 34BE000       34 (1) -------- libvr.so
- 34BE000       34 (2) -------- <internal>:(libvr.so)
+ 34BE000       34 (1) -------- vr_partition
+ 34BE000       34 (2) -------- <internal>:(vr_partition)
  34BE034      140 (1) -------- .phdrs
  34BE034      140 (2) -------- <internal>:(.phdrs)
  34BE174       13 (1) -------- .interp

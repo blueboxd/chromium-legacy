@@ -362,7 +362,7 @@ TEST_F(NavigationRequestTest, CancelDeferredWillFail) {
   // Simulate WillFailRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillFailRequest(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST, state());
+  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST, request_state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 1, 0));
 
@@ -411,7 +411,7 @@ TEST_F(NavigationRequestTest, CancelDeferredWillFailNoIgnore) {
   // Simulate WillFailRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillFailRequest(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST, state());
+  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST, request_state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 1, 0));
 
@@ -501,9 +501,9 @@ TEST_F(NavigationRequestTest, WillFailRequestCanAccessRenderFrameHost) {
   navigation->SetAutoAdvance(false);
   navigation->Start();
   navigation->Fail(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST,
-            NavigationRequest::From(navigation->GetNavigationHandle())
-                ->handle_state());
+  EXPECT_EQ(
+      NavigationRequest::WILL_FAIL_REQUEST,
+      NavigationRequest::From(navigation->GetNavigationHandle())->state());
   EXPECT_TRUE(navigation->GetNavigationHandle()->GetRenderFrameHost());
   NavigationRequest::From(navigation->GetNavigationHandle())
       ->CallResumeForTesting();

@@ -73,17 +73,20 @@ class AppMenuHandlerImpl
      *            activity.
      * @param activityLifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the containing
      *            activity.
+     * @param hardwareButtonAnchorView The {@link View} used as an anchor for the menu when it is
+     *            displayed using a hardware button.
      */
     public AppMenuHandlerImpl(AppMenuPropertiesDelegate delegate, AppMenuDelegate appMenuDelegate,
             int menuResourceId, View decorView,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher,
+            View hardwareButtonAnchorView) {
         mAppMenuDelegate = appMenuDelegate;
         mDelegate = delegate;
         mDecorView = decorView;
         mBlockers = new ArrayList<>();
         mObservers = new ArrayList<>();
         mMenuResourceId = menuResourceId;
-        mHardwareButtonMenuAnchor = mDecorView.findViewById(R.id.menu_anchor_stub);
+        mHardwareButtonMenuAnchor = hardwareButtonAnchorView;
 
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mActivityLifecycleDispatcher.register(this);
@@ -278,7 +281,7 @@ class AppMenuHandlerImpl
     }
 
     @VisibleForTesting
-    public void onOptionsItemSelected(MenuItem item) {
+    void onOptionsItemSelected(MenuItem item) {
         if (mTestOptionsItemSelectedListener != null) {
             mTestOptionsItemSelectedListener.onResult(item);
             return;

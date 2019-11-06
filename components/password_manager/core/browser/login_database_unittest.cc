@@ -2304,7 +2304,7 @@ INSTANTIATE_TEST_SUITE_P(MigrationToVCurrent,
                          testing::Values(9));
 INSTANTIATE_TEST_SUITE_P(MigrationToVCurrent,
                          LoginDatabaseMigrationTestBroken,
-                         testing::Range(1, 4));
+                         testing::Values(1, 2, 3, 24));
 
 class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
  protected:

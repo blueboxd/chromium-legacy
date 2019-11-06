@@ -101,8 +101,9 @@ AutomationTreeWalker = function(node, dir, opt_restrictions) {
         this.phase != AutomationTreeWalkerPhase.OTHER)
       return false;
 
-    if (restrictions.visit)
+    if (restrictions.visit) {
       return restrictions.visit(node);
+    }
 
     return true;
   };
@@ -144,18 +145,20 @@ AutomationTreeWalker.prototype = {
    *                                 chaining.
    */
   next: function() {
-    if (!this.node_)
+    if (!this.node_) {
       return this;
+    }
 
     do {
       if (this.rootPred_(this.node_) && this.dir_ == constants.Dir.BACKWARD) {
         this.node_ = null;
         return this;
       }
-      if (this.dir_ == constants.Dir.FORWARD)
+      if (this.dir_ == constants.Dir.FORWARD) {
         this.forward_(this.node_);
-      else
+      } else {
         this.backward_(this.node_);
+      }
     } while (this.node_ && !this.visitPred_(this.node_));
     return this;
   },
@@ -166,8 +169,9 @@ AutomationTreeWalker.prototype = {
    */
   forward_: function(node) {
     if (!this.leafPred_(node) && node.firstChild) {
-      if (this.phase_ == AutomationTreeWalkerPhase.INITIAL)
+      if (this.phase_ == AutomationTreeWalkerPhase.INITIAL) {
         this.phase_ = AutomationTreeWalkerPhase.DESCENDANT;
+      }
 
       if (!this.skipInitialSubtree_ ||
           this.phase != AutomationTreeWalkerPhase.DESCENDANT) {
@@ -180,8 +184,9 @@ AutomationTreeWalker.prototype = {
     while (searchNode) {
       // We have crossed out of the initial node's subtree for either a
       // sibling or parent move.
-      if (searchNode == this.initialNode_)
+      if (searchNode == this.initialNode_) {
         this.phase_ = AutomationTreeWalkerPhase.OTHER;
+      }
 
       if (searchNode.nextSibling) {
         this.node_ = searchNode.nextSibling;
@@ -189,8 +194,9 @@ AutomationTreeWalker.prototype = {
       }
 
       // Update the phase based on the parent if needed since we may exit below.
-      if (searchNode.parent == this.initialNode_)
+      if (searchNode.parent == this.initialNode_) {
         this.phase_ = AutomationTreeWalkerPhase.OTHER;
+      }
 
       // Exit if we encounter a root-like node and are not searching descendants
       // of the initial node.

@@ -7,7 +7,6 @@
 #include <memory>
 #include "base/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_handler.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -322,12 +321,8 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   frame->GetBrowserInterfaceBroker().GetInterface(
       service_.BindNewPipeAndPassReceiver());
-  if (service_.get()) {
-    // Record the eTLD+1 of the frame using the API.
-    Platform::Current()->RecordRapporURL("Media.Session.APIUsage.Origin",
-                                         document->Url());
+  if (service_.get())
     service_->SetClient(client_receiver_.BindNewPipeAndPassRemote(task_runner));
-  }
 
   return service_.get();
 }

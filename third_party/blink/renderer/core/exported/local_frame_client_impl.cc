@@ -1162,11 +1162,6 @@ void LocalFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
   web_frame_->Client()->FrameRectsChanged(frame_rect);
 }
 
-void LocalFrameClientImpl::LifecycleStateChanged(
-    mojom::FrameLifecycleState state) {
-  web_frame_->Client()->LifecycleStateChanged(state);
-}
-
 bool LocalFrameClientImpl::IsPluginHandledExternally(
     HTMLPlugInElement& plugin_element,
     const KURL& resource_url,
@@ -1222,11 +1217,6 @@ void LocalFrameClientImpl::UpdateSubresourceFactory(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {
   DCHECK(web_frame_->Client());
   web_frame_->Client()->UpdateSubresourceFactory(std::move(info));
-}
-
-void LocalFrameClientImpl::EvictFromBackForwardCache() {
-  DCHECK(web_frame_->Client());
-  return web_frame_->Client()->EvictFromBackForwardCache();
 }
 
 }  // namespace blink

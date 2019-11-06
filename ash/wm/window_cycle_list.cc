@@ -4,7 +4,6 @@
 
 #include "ash/wm/window_cycle_list.h"
 
-#include <list>
 #include <map>
 #include <memory>
 
@@ -12,6 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/window_mini_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -47,32 +47,19 @@ bool g_disable_initial_delay = false;
 // at 14% opacity.
 constexpr SkColor kHighlightAndBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
 
-// The color of the window title.
-constexpr SkColor kTitleColor = SkColorSetRGB(241, 243, 244);
-
 // Used for the shield (black background).
 constexpr float kBackgroundCornerRadius = 4.f;
 
 // Corner radius applied to the alt-tab selector border.
 constexpr gfx::RoundedCornersF kWindowSelectionCornerRadii{9};
 
-// Horizontal spacing between header child views.
-constexpr int kHeaderChildPaddingDp = 12;
-
-// Vertical padding for the label views.
-constexpr int kVerticalLabelPaddingDp = 12;
-
-// The size in dp of the window icon shown on the alt tab window next to the
-// title.
-constexpr gfx::Size kIconSize{24, 24};
-
-// The font delta of the window title. The base font is 12pt (for English) so
-// this comes out to 14pt.
-constexpr int kLabelFontDelta = 2;
-
 // All previews are the same height (this is achieved via a combination of
 // scaling and padding).
 constexpr int kFixedPreviewHeightDp = 256;
+
+// The min and max width for preview size are in relation to the fixed height.
+constexpr int kMinPreviewWidthDp = kFixedPreviewHeightDp / 2;
+constexpr int kMaxPreviewWidthDp = kFixedPreviewHeightDp * 2;
 
 // Padding between the alt-tab bandshield and the window previews.
 constexpr int kInsideBorderHorizontalPaddingDp = 64;
@@ -81,138 +68,64 @@ constexpr int kInsideBorderVerticalPaddingDp = 60;
 // Padding between the window previews within the alt-tab bandshield.
 constexpr int kBetweenChildPaddingDp = 10;
 
-// The min and max width for preview size are in relation to the fixed height.
-constexpr int kMinPreviewWidthDp = kFixedPreviewHeightDp / 2;
-constexpr int kMaxPreviewWidthDp = kFixedPreviewHeightDp * 2;
-
 }  // namespace
 
 // This view represents a single aura::Window by displaying a title and a
 // thumbnail of the window's contents.
-class WindowCycleItemView : public views::View, public aura::WindowObserver {
+class WindowCycleItemView : public WindowMiniView {
  public:
   explicit WindowCycleItemView(aura::Window* window)
-      : window_title_(new views::Label),
-        window_thumbnail_backdrop_(new views::View),
-        preview_view_(
-            new WindowPreviewView(window,
-                                  /*trilinear_filtering_on_init=*/
-                                  features::IsTrilinearFilteringEnabled())) {
-    header_view_ = new views::View();
-    views::BoxLayout* layout =
-        header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-            kHeaderChildPaddingDp));
-    AddChildView(header_view_);
-
-    gfx::ImageSkia* icon = window->GetProperty(aura::client::kAppIconKey);
-    if (!icon || icon->size().IsEmpty())
-      icon = window->GetProperty(aura::client::kWindowIconKey);
-    if (icon && !icon->size().IsEmpty()) {
-      image_view_ = new views::ImageView();
-      image_view_->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
-          *icon, skia::ImageOperations::RESIZE_BEST, kIconSize));
-      image_view_->SetSize(kIconSize);
-      header_view_->AddChildView(image_view_);
-    }
-
-    window_observer_.Add(window);
-    window_title_->SetText(window->GetTitle());
-    window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    window_title_->SetEnabledColor(kTitleColor);
-    window_title_->SetAutoColorReadabilityEnabled(false);
-    // Background is not fully opaque, so subpixel rendering won't look good.
-    window_title_->SetSubpixelRenderingEnabled(false);
-    window_title_->SetFontList(gfx::FontList().Derive(
-        kLabelFontDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
-    window_title_->SetBorder(views::CreateEmptyBorder(
-        kVerticalLabelPaddingDp, 0, kVerticalLabelPaddingDp,
-        kHeaderChildPaddingDp));
-    header_view_->AddChildView(window_title_);
-    layout->SetFlexForView(window_title_, 1);
-
-    window_thumbnail_backdrop_->SetBackground(
-        views::CreateSolidBackground(kHighlightAndBackdropColor));
-    AddChildView(window_thumbnail_backdrop_);
-
-    AddChildView(preview_view_);
-
+      : WindowMiniView(window, /*views_should_paint_to_layers=*/false) {
+    SetShowPreview(/*show=*/true);
     SetFocusBehavior(FocusBehavior::ALWAYS);
   }
   ~WindowCycleItemView() override = default;
 
+ private:
+  // WindowMiniView:
+  // Returns the size for the preview view, scaled to fit within the max bounds.
+  // Scaling is always 1:1 and we only scale down, never up.
+  gfx::Size GetPreviewViewSize() const override {
+    gfx::Size preview_pref_size = preview_view()->GetPreferredSize();
+    if (preview_pref_size.width() > kMaxPreviewWidthDp ||
+        preview_pref_size.height() > kFixedPreviewHeightDp) {
+      const float scale =
+          std::min(kMaxPreviewWidthDp / float{preview_pref_size.width()},
+                   kFixedPreviewHeightDp / float{preview_pref_size.height()});
+      preview_pref_size =
+          gfx::ScaleToFlooredSize(preview_pref_size, scale, scale);
+    }
+
+    return preview_pref_size;
+  }
+
   // views::View:
+  void Layout() override {
+    WindowMiniView::Layout();
+
+    // Show the backdrop if the preview view does not take up all the bounds
+    // allocated for it.
+    gfx::Rect preview_max_bounds = GetLocalBounds();
+    preview_max_bounds.Subtract(GetHeaderBounds());
+    const gfx::Rect preview_area_bounds = preview_view()->bounds();
+    SetBackdropVisibility(preview_max_bounds.size() !=
+                          preview_area_bounds.size());
+  }
+
   gfx::Size CalculatePreferredSize() const override {
     gfx::Size size = GetSizeForPreviewArea();
-    size.Enlarge(0, window_title_->GetPreferredSize().height());
+    const int header_height = title_label()->GetPreferredSize().height();
+    size.Enlarge(0, header_height);
     return size;
   }
 
-  void Layout() override {
-    const gfx::Size preview_area_size = GetSizeForPreviewArea();
-    // The header view is positioned above the preview area.
-    header_view_->SetBounds(0, 0, width(),
-                            height() - preview_area_size.height());
-
-    gfx::Rect preview_area_bounds(preview_area_size);
-    preview_area_bounds.set_y(height() - preview_area_size.height());
-    preview_view_->SetSize(GetMirrorViewScaledSize());
-    if (preview_view_->size() == preview_area_size) {
-      // Padding is not needed, hide the background and set the mirror view
-      // to take up the entire preview area.
-      preview_view_->SetPosition(preview_area_bounds.origin());
-      window_thumbnail_backdrop_->SetVisible(false);
-      return;
-    }
-
-    // Padding is needed, so show the background and set the mirror view to be
-    // centered within it.
-    window_thumbnail_backdrop_->SetBoundsRect(preview_area_bounds);
-    window_thumbnail_backdrop_->SetVisible(true);
-    preview_area_bounds.ClampToCenteredSize(preview_view_->size());
-    preview_view_->SetPosition(preview_area_bounds.origin());
-  }
-
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ax::mojom::Role::kWindow;
-    node_data->SetName(window_title_->GetText());
-  }
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override {
-    window_observer_.Remove(window);
-  }
-
-  void OnWindowTitleChanged(aura::Window* window) override {
-    window_title_->SetText(window->GetTitle());
-  }
-
- private:
-  // Returns the size for the mirror view, scaled to fit within the max bounds.
-  // Scaling is always 1:1 and we only scale down, never up.
-  gfx::Size GetMirrorViewScaledSize() const {
-    gfx::Size mirror_pref_size = preview_view_->GetPreferredSize();
-
-    if (mirror_pref_size.width() > kMaxPreviewWidthDp ||
-        mirror_pref_size.height() > kFixedPreviewHeightDp) {
-      const float scale = std::min(
-          kMaxPreviewWidthDp / static_cast<float>(mirror_pref_size.width()),
-          kFixedPreviewHeightDp /
-              static_cast<float>(mirror_pref_size.height()));
-      mirror_pref_size =
-          gfx::ScaleToFlooredSize(mirror_pref_size, scale, scale);
-    }
-
-    return mirror_pref_size;
-  }
-
-  // Returns the size for the entire preview area (mirror view and additional
-  // padding). All previews will be the same height, so if the mirror view isn't
-  // tall enough we will add top and bottom padding. Previews can range in width
-  // from half to double of kFixedPreviewHeightDp. Again, padding will be added
-  // to the sides to achieve this if the preview is too narrow.
+  // Returns the size for the entire preview area (preview view and additional
+  // padding). All previews will be the same height, so if the preview view
+  // isn't tall enough we will add top and bottom padding. Previews can range
+  // in width from half to double of |kFixedPreviewHeightDp|. Again, padding
+  // will be added to the sides to achieve this if the preview is too narrow.
   gfx::Size GetSizeForPreviewArea() const {
-    gfx::Size preview_size = GetMirrorViewScaledSize();
+    gfx::Size preview_size = GetPreviewViewSize();
 
     // All previews are the same height (this may add padding on top and
     // bottom).
@@ -225,19 +138,6 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
 
     return preview_size;
   }
-
-  // Views which contains the icon, title.
-  views::View* header_view_ = nullptr;
-  views::ImageView* image_view_ = nullptr;
-  // Displays the title of the window above the preview.
-  views::Label* window_title_;
-  // When visible, shows a darkened backdrop area behind |preview_view_|
-  // (effectively padding the preview to fit the desired bounds).
-  views::View* window_thumbnail_backdrop_;
-  // The view that actually renders a thumbnail version of the window.
-  WindowPreviewView* preview_view_;
-
-  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleItemView);
 };
@@ -273,8 +173,8 @@ class WindowCycleView : public views::WidgetDelegateView {
     mirror_container_->layer()->SetFillsBoundsOpaquely(false);
 
     for (auto* window : windows) {
-      // |mirror_container_| owns |view|. The |preview_view_| in |view| will use
-      // trilinear filtering in InitLayerOwner().
+      // |mirror_container_| owns |view|. The |preview_view_| in |view| will
+      // use trilinear filtering in InitLayerOwner().
       views::View* view = new WindowCycleItemView(window);
       window_view_map_[window] = view;
       mirror_container_->AddChildView(view);
@@ -309,9 +209,10 @@ class WindowCycleView : public views::WidgetDelegateView {
     DCHECK_EQ(mirror_container_, parent);
     window_view_map_.erase(view_iter);
     delete preview;
-    // With one of its children now gone, we must re-layout |mirror_container_|.
-    // This must happen before SetTargetWindow() to make sure our own Layout()
-    // works correctly when it's calculating highlight bounds.
+    // With one of its children now gone, we must re-layout
+    // |mirror_container_|. This must happen before SetTargetWindow() to make
+    // sure our own Layout() works correctly when it's calculating highlight
+    // bounds.
     parent->Layout();
     SetTargetWindow(new_target);
   }
@@ -332,9 +233,9 @@ class WindowCycleView : public views::WidgetDelegateView {
       return;
 
     bool first_layout = mirror_container_->bounds().IsEmpty();
-    // If |mirror_container_| has not yet been laid out, we must lay it and its
-    // descendants out so that the calculations based on |target_view| work
-    // properly.
+    // If |mirror_container_| has not yet been laid out, we must lay it and
+    // its descendants out so that the calculations based on |target_view|
+    // work properly.
     if (first_layout)
       mirror_container_->SizeToPreferredSize();
 
@@ -348,8 +249,8 @@ class WindowCycleView : public views::WidgetDelegateView {
     int x_offset = (width() - container_bounds.width()) / 2;
     if (x_offset < 0) {
       // Case two: the container is wider than the screen. Center the target
-      // view by moving the list just enough to ensure the target view is in the
-      // center.
+      // view by moving the list just enough to ensure the target view is in
+      // the center.
       x_offset = width() / 2 - mirror_container_->GetMirroredXInView(
                                    target_bounds.CenterPoint().x());
 
@@ -458,8 +359,8 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   if (windows_.empty())
     return;
 
-  // When there is only one window, we should give feedback to the user. If the
-  // window is minimized, we should also show it.
+  // When there is only one window, we should give feedback to the user. If
+  // the window is minimized, we should also show it.
   if (windows_.size() == 1) {
     ::wm::AnimateWindow(windows_[0], ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
     SelectWindow(windows_[0]);
@@ -469,9 +370,9 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   DCHECK(static_cast<size_t>(current_index_) < windows_.size());
 
   if (!cycle_view_ && current_index_ == 0) {
-    // Special case the situation where we're cycling forward but the MRU window
-    // is not active. This occurs when all windows are minimized. The starting
-    // window should be the first one rather than the second.
+    // Special case the situation where we're cycling forward but the MRU
+    // window is not active. This occurs when all windows are minimized. The
+    // starting window should be the first one rather than the second.
     if (direction == WindowCycleController::FORWARD &&
         !wm::IsActiveWindow(windows_[0]))
       current_index_ = -1;

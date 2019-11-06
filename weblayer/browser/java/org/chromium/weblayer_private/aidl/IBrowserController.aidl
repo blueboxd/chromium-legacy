@@ -18,5 +18,12 @@ interface IBrowserController {
 
   void setFullscreenCallbackClient(in IFullscreenCallbackClient client) = 3;
 
-  void executeScript(in String script, in IObjectWrapper callback) = 4;
+  void executeScript(in String script, boolean useSeparateIsolate, in IObjectWrapper callback) = 4;
+
+  void setNewBrowsersEnabled(in boolean enabled) = 5;
+
+  // Returns a unique identifier for this BrowserController. The id is *not* unique across
+  // restores. The id is intended for the client library to avoid creating duplicate client objects
+  // for the same IBrowserController.
+  int getId() = 6;
 }

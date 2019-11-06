@@ -16,7 +16,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
 
 /**
@@ -29,7 +29,7 @@ public class GlobalNightModeStateProviderHolderTest {
     public void tearDown() {
         FeatureUtilities.setNightModeAvailableForTesting(null);
         GlobalNightModeStateProviderHolder.resetInstanceForTesting();
-        ChromePreferenceManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
+        SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
     }
 
     @Test
@@ -40,7 +40,7 @@ public class GlobalNightModeStateProviderHolderTest {
         assertFalse(GlobalNightModeStateProviderHolder.getInstance().isInNightMode());
 
         // Verify that night mode cannot be enabled.
-        ChromePreferenceManager.getInstance().writeInt(
+        SharedPreferencesManager.getInstance().writeInt(
                 UI_THEME_SETTING_KEY, ThemePreferences.ThemeSetting.DARK);
         assertFalse(GlobalNightModeStateProviderHolder.getInstance().isInNightMode());
     }

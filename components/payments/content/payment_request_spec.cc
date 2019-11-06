@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/core/features.h"
+#include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_method_data.h"
 #include "components/payments/core/payment_request_data_util.h"
@@ -77,10 +78,6 @@ std::string ToString(bool value) {
 
 }  // namespace
 
-const char kBasicCardMethodName[] = "basic-card";
-const char kGooglePayMethodName[] = "https://google.com/pay";
-const char kAndroidPayMethodName[] = "https://android.com/pay";
-
 PaymentRequestSpec::PaymentRequestSpec(
     mojom::PaymentOptionsPtr options,
     mojom::PaymentDetailsPtr details,
@@ -109,7 +106,7 @@ PaymentRequestSpec::PaymentRequestSpec(
       &stringified_method_data_);
 
   query_for_quota_ = stringified_method_data_;
-  if (base::Contains(payment_method_identifiers_set_, "basic-card") &&
+  if (base::Contains(payment_method_identifiers_set_, methods::kBasicCard) &&
       PaymentsExperimentalFeatures::IsEnabled(
           features::kStrictHasEnrolledAutofillInstrument)) {
     query_for_quota_["basic-card-payment-options"] = {

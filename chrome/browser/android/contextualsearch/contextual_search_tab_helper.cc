@@ -18,6 +18,7 @@
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using contextual_search::UnhandledTapWebContentsObserver;
 
 ContextualSearchTabHelper::ContextualSearchTabHelper(JNIEnv* env,
                                                      jobject obj,
@@ -62,15 +63,21 @@ void ContextualSearchTabHelper::InstallUnhandledTapNotifierIfNeeded(
   content::WebContents* base_web_contents =
       content::WebContents::FromJavaWebContents(j_base_web_contents);
   DCHECK(base_web_contents);
-  if (!unhandled_tap_web_contents_observer_ ||
-      base_web_contents !=
-          unhandled_tap_web_contents_observer_->web_contents()) {
-    unhandled_tap_web_contents_observer_.reset(
-        new contextual_search::UnhandledTapWebContentsObserver(
-            base_web_contents, device_scale_factor,
-            base::BindRepeating(
-                &ContextualSearchTabHelper::OnShowUnhandledTapUIIfNeeded,
-                weak_factory_.GetWeakPtr())));
+
+  if (!UnhandledTapWebContentsObserver::FromWebContents(base_web_contents)) {
+    // Create an UnhandledTapWebContentsObserver owned by |base_web_contents|.
+    UnhandledTapWebContentsObserver::CreateForWebContents(base_web_contents);
+
+    // As per WebContentsUserData::CreateForWebContents(), the constructor of
+    // UnhandledTapWebContentsObserver must only accept one parameter holding a
+    // pointer to the WebContents that will own it (i.e. |base_web_contents|),
+    // forcing us to defer the rest of the initialization to the setters below.
+    auto* utwc_observer =
+        UnhandledTapWebContentsObserver::FromWebContents(base_web_contents);
+    utwc_observer->set_device_scale_factor(device_scale_factor);
+    utwc_observer->set_unhandled_tap_callback(base::BindRepeating(
+        &ContextualSearchTabHelper::OnShowUnhandledTapUIIfNeeded,
+        weak_factory_.GetWeakPtr()));
   }
 }
 

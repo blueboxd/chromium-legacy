@@ -155,15 +155,28 @@ TestChromeBrowserState::TestChromeBrowserState(
 }
 
 TestChromeBrowserState::~TestChromeBrowserState() {
+  // Allows blocking in this scope for testing.
+  base::ScopedAllowBlockingForTesting allow_bocking;
+
   // If this TestChromeBrowserState owns an incognito TestChromeBrowserState,
   // tear it down first.
   otr_browser_state_.reset();
 
   BrowserStateDependencyManager::GetInstance()->DestroyBrowserStateServices(
       this);
+  // The destructor of temp_dir_ will perform IO, so it needs to be deleted
+  // here while |allow_bocking| is still in scope. Keeps the same logic as
+  // ScopedTempDir::~ScopedTempDir().
+  if (temp_dir_.IsValid()) {
+    ignore_result(temp_dir_.Delete());
+  }
 }
 
 void TestChromeBrowserState::Init() {
+  // Allows blocking in this scope so directory manipulation can happen in this
+  // scope for testing.
+  base::ScopedAllowBlockingForTesting allow_bocking;
+
   // If threads have been initialized, we should be on the UI thread.
   DCHECK(!web::WebThread::IsThreadInitialized(web::WebThread::UI) ||
          web::WebThread::CurrentlyOn(web::WebThread::UI));

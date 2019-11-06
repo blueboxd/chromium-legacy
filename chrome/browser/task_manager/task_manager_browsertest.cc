@@ -516,7 +516,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyApp()));
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabAfterReload) {
+// Flaky - crbug.com/102553
+#if defined(OS_LINUX)
+#define MAYBE_NoticeHostedAppTabAfterReload \
+  DISABLED_NoticeHostedAppTabAfterReload
+#else
+#define MAYBE_NoticeHostedAppTabAfterReload NoticeHostedAppTabAfterReload
+#endif
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
+                       MAYBE_NoticeHostedAppTabAfterReload) {
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
   GURL base_url = embedded_test_server()->GetURL(
@@ -546,7 +554,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabAfterReload) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabBeforeReload) {
+// Flaky - crbug.com/102553
+#if defined(OS_LINUX)
+#define MAYBE_NoticeHostedAppTabBeforeReload \
+  DISABLED_NoticeHostedAppTabBeforeReload
+#else
+#define MAYBE_NoticeHostedAppTabBeforeReload NoticeHostedAppTabBeforeReload
+#endif
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
+                       MAYBE_NoticeHostedAppTabBeforeReload) {
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
   GURL base_url = embedded_test_server()->GetURL(

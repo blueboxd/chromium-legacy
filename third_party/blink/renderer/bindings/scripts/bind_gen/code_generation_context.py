@@ -4,7 +4,7 @@
 
 import copy
 
-from blinkbuild.name_style_converter import NameStyleConverter
+from . import name_style
 
 
 class CodeGenerationContext(object):
@@ -196,9 +196,7 @@ class CodeGenerationContext(object):
     def v8_class(self):
         if not self.idl_definition:
             return None
-        return "V8{}".format(
-            NameStyleConverter(
-                self.idl_definition.identifier).to_upper_camel_case())
+        return name_style.class_("v8", self.idl_definition.identifier)
 
 
 CodeGenerationContext.init()

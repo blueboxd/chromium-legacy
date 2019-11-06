@@ -53,8 +53,9 @@ ISearchHandler.prototype = {
  * @constructor
  */
 ISearch = function(cursor) {
-  if (!cursor.node)
+  if (!cursor.node) {
     throw 'Incremental search started from invalid range.';
+  }
 
   var leaf = AutomationUtil.findNodePre(
                  cursor.node, Dir.FORWARD, AutomationPredicate.leaf) ||
@@ -147,11 +148,13 @@ ISearchUI = function(input) {
  * @return {ISearchUI}
  */
 ISearchUI.init = function(input) {
-  if (ISearchUI.instance_)
+  if (ISearchUI.instance_) {
     ISearchUI.instance_.destroy();
+  }
 
-  if (!input)
+  if (!input) {
     throw 'Expected search input';
+  }
 
   ISearchUI.instance_ = new ISearchUI(input);
   input.focus();
@@ -179,8 +182,9 @@ ISearchUI.prototype = {
       case 'Enter':
         Panel.setPendingCallback(function() {
           var node = this.iSearch_.cursor.node;
-          if (!node)
+          if (!node) {
             return;
+          }
           chrome.extension.getBackgroundPage()
               .ChromeVoxState.instance['navigateToRange'](
                   cursors.Range.fromNode(node));

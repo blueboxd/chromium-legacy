@@ -16,7 +16,8 @@ IN_PROC_BROWSER_TEST_F(WebLayerWebUIBrowserTest, WebUI) {
   base::RunLoop run_loop;
   bool result =
       ExecuteScript(shell(),
-                    "document.getElementById('remote-debug-label').hidden")
+                    "document.getElementById('remote-debug-label').hidden",
+                    true /* use_separate_isolate */)
           .GetBool();
   // The remote debug checkbox should only be visible on Android.
 #if defined(OS_ANDROID)

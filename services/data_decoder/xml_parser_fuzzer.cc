@@ -32,7 +32,7 @@ static ScopedXmlErrorFunc scoped_xml_error_func(nullptr, &ignore);
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const char* data_ptr = reinterpret_cast<const char*>(data);
 
-  data_decoder::XmlParser xml_parser_impl(/*service_ref=*/nullptr);
+  data_decoder::XmlParser xml_parser_impl;
   data_decoder::mojom::XmlParser& xml_parser = xml_parser_impl;
 
   base::SingleThreadTaskExecutor main_thread_task_executor;

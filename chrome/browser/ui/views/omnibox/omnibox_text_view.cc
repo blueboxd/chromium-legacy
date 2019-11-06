@@ -95,10 +95,11 @@ void ApplyTextStyleForType(SuggestionAnswer::TextStyle text_style,
       style = {gfx::kGoogleRed600};
       break;
     case SuggestionAnswer::TextStyle::SUPERIOR:
-      style = {part_color, .baseline = gfx::SUPERIOR};
+      style = {.color = part_color, .baseline = gfx::SUPERIOR};
       break;
     case SuggestionAnswer::TextStyle::BOLD:
-      style = {part_color, .baseline = gfx::NORMAL_BASELINE,
+      style = {.color = part_color,
+               .baseline = gfx::NORMAL_BASELINE,
                .weight = gfx::Font::Weight::BOLD};
       break;
     case SuggestionAnswer::TextStyle::NORMAL:

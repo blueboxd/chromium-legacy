@@ -267,10 +267,6 @@
       name: "CacheInlineScriptCode"
     },
     {
-      name: "CacheStorageAddAllRejectsDuplicates",
-      status: "stable",
-    },
-    {
       name: "Canvas2dContextLostRestored",
       status: "experimental",
     },

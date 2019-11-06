@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "ash/wm/window_state_observer.h"
@@ -26,17 +25,18 @@ class Shadow;
 }  // namespace ui
 
 namespace views {
+class ImageButton;
 class Widget;
 }  // namespace views
 
 namespace ash {
 class DragWindowController;
 class OverviewGrid;
+class OverviewItemView;
 class RoundedLabelWidget;
 
 // This class represents an item in overview mode.
-class ASH_EXPORT OverviewItem : public OverviewItemView::EventDelegate,
-                                public views::ButtonListener,
+class ASH_EXPORT OverviewItem : public views::ButtonListener,
                                 public aura::WindowObserver,
                                 public WindowStateObserver {
  public:
@@ -120,7 +120,7 @@ class ASH_EXPORT OverviewItem : public OverviewItemView::EventDelegate,
 
   // Shows/Hides window item during window dragging. Used when swiping up a
   // window from shelf.
-  void SetVisibleDuringWindowDragging(bool visible);
+  void SetVisibleDuringWindowDragging(bool visible, bool animate);
 
   ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType()
       const;
@@ -194,12 +194,12 @@ class ASH_EXPORT OverviewItem : public OverviewItemView::EventDelegate,
   // If kNewOverviewLayout is on, use this function for handling events.
   void HandleGestureEventForTabletModeLayout(ui::GestureEvent* event);
 
-  // OverviewItemView::EventDelegate:
-  void HandleMouseEvent(const ui::MouseEvent& event) override;
-  void HandleGestureEvent(ui::GestureEvent* event) override;
-  bool ShouldIgnoreGestureEvents() override;
-  void OnHighlightedViewActivated() override;
-  void OnHighlightedViewClosed() override;
+  // Handles events forwarded from |overview_item_view_|.
+  void HandleMouseEvent(const ui::MouseEvent& event);
+  void HandleGestureEvent(ui::GestureEvent* event);
+  bool ShouldIgnoreGestureEvents();
+  void OnHighlightedViewActivated();
+  void OnHighlightedViewClosed();
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -213,7 +213,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemView::EventDelegate,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
   void OnWindowDestroying(aura::Window* window) override;
-  void OnWindowTitleChanged(aura::Window* window) override;
 
   // WindowStateObserver:
   void OnPostWindowStateTypeChange(WindowState* window_state,
@@ -262,7 +261,7 @@ class ASH_EXPORT OverviewItem : public OverviewItemView::EventDelegate,
   }
 
   views::ImageButton* GetCloseButtonForTesting();
-  float GetCloseButtonVisibilityForTesting() const;
+  float GetCloseButtonOpacityForTesting() const;
   float GetTitlebarOpacityForTesting() const;
   gfx::Rect GetShadowBoundsForTesting();
   RoundedLabelWidget* cannot_snap_widget_for_testing() {
@@ -275,7 +274,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemView::EventDelegate,
  private:
   friend class OverviewSessionRoundedCornerTest;
   friend class OverviewSessionTest;
-  class OverviewCloseButton;
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
 
@@ -367,8 +365,6 @@ class ASH_EXPORT OverviewItem : public OverviewItemView::EventDelegate,
   // The view associated with |item_widget_|. Contains a title, close button and
   // maybe a backdrop. Forwards certain events to |this|.
   OverviewItemView* overview_item_view_ = nullptr;
-
-  OverviewCloseButton* close_button_ = nullptr;
 
   // A widget with text that may show up on top of |transform_window_| to notify
   // users this window cannot be snapped.

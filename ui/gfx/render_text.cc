@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/break_iterator.h"
+#include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
@@ -235,6 +236,41 @@ void ReplaceControlCharactersWithSymbols(bool multiline, base::string16* text) {
       }
     }
   }
+}
+
+// Determines the equivalent codepoint (same rank) at |text[index]| in
+// |other_text|. The size of each codepoint may no longer match due to elision,
+// truncation or revision but their ordering is still the same. The following
+// code assumes that |other_text| is a transformation from |text| that preserves
+// the number and ordering of codepoints. Replacing a 1x with a 2x character
+// codepoint is valid, however replacing one codepoint with two codepoints is
+// not (see http://crbug.com/1021720).
+size_t GetTextIndexForOtherText(const base::string16& text,
+                                size_t index,
+                                const base::string16& other_text) {
+  // Iterates through codepoints in both strings until we reach |index| in
+  // |text|.
+  base::i18n::UTF16CharIterator text_iter(&text);
+  base::i18n::UTF16CharIterator other_text_iter(&other_text);
+  size_t previous_index = 0;
+  do {
+    // Codepoint at |index| is found, returns the corresponding index in
+    // |other_text|.
+    if (text_iter.array_pos() == static_cast<int32_t>(index))
+      return other_text_iter.array_pos();
+    // The character at index is part of the previous codepoint (e.g. Surrogate
+    // pair). Returns the previous index.
+    if (text_iter.array_pos() > static_cast<int32_t>(index))
+      return previous_index;
+
+    // Move both iterator to the next codepoints.
+    previous_index = other_text_iter.array_pos();
+    if (!other_text_iter.Advance())
+      break;
+  } while (text_iter.Advance());
+
+  // The index is out-of-bound. Returns the end of other_text.
+  return other_text.length();
 }
 
 }  // namespace
@@ -1565,10 +1601,24 @@ size_t RenderText::TextIndexToGivenTextIndex(const base::string16& given_text,
                                              size_t index) const {
   DCHECK(given_text == layout_text() || given_text == display_text());
   DCHECK_LE(index, text().length());
-  ptrdiff_t i = obscured() ? UTF16IndexToOffset(text(), 0, index) : index;
-  CHECK_GE(i, 0);
-  // Clamp indices to the length of the given layout or display text.
-  return std::min<size_t>(given_text.length(), i);
+  return GetTextIndexForOtherText(text(), index, given_text);
+}
+
+size_t RenderText::GivenTextIndexToTextIndex(const base::string16& given_text,
+                                             size_t index) const {
+  DCHECK(given_text == layout_text() || given_text == display_text());
+  DCHECK_LE(index, text().length());
+  return GetTextIndexForOtherText(given_text, index, text());
+}
+
+size_t RenderText::TextIndexToDisplayIndex(size_t index) {
+  DCHECK_LE(index, text().length());
+  return GetTextIndexForOtherText(text(), index, GetDisplayText());
+}
+
+size_t RenderText::DisplayIndexToTextIndex(size_t index) {
+  DCHECK_LE(index, GetDisplayText().length());
+  return GetTextIndexForOtherText(GetDisplayText(), index, text());
 }
 
 void RenderText::UpdateStyleLengths() {

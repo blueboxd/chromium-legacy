@@ -640,7 +640,6 @@
 <translation id="1899826437968063457">Plugin VM 需要取得權限才能執行</translation>
 <translation id="1900305421498694955">透過 Google Play 下載的應用程式可能會要求取得檔案系統的完整存取權，以讀取和寫入外部儲存裝置上的檔案。外接式磁碟的任何使用者都能看見在此裝置上建立的檔案和資料夾。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">選取全部(&amp;A)</translation>
-<translation id="1901984611178952431">管理登入資料</translation>
 <translation id="1902576642799138955">有效期間</translation>
 <translation id="1905375423839394163">Chromebook 裝置名稱</translation>
 <translation id="1905710495812624430">超過嘗試次數上限。</translation>
@@ -691,7 +690,6 @@
 <translation id="1978006917103730774">日後系統會自動安裝新版軟體和安全性更新。</translation>
 <translation id="1979280758666859181">你即將變更為較舊版本的 <ph name="PRODUCT_NAME" />。該版本的版本號與你電腦上所安裝的版本號必須相符，系統才會套用版本變更。</translation>
 <translation id="197989455406964291">KDC 不支援加密類型</translation>
-<translation id="1981544341227357861">請從裝置上移除安全金鑰，然後重新插入並輕觸安全金鑰。</translation>
 <translation id="1982354452682152483">沒有說明。</translation>
 <translation id="1987317783729300807">帳戶</translation>
 <translation id="1989112275319619282">瀏覽</translation>
@@ -1578,7 +1576,6 @@
 <translation id="3282568296779691940">登入 Chrome</translation>
 <translation id="3285322247471302225">新增分頁(&amp;T)</translation>
 <translation id="328571385944182268">要儲存密碼嗎？</translation>
-<translation id="3286737518123001369">查看並刪除安全金鑰儲存的登入資料</translation>
 <translation id="3288047731229977326">在開發人員模式中執行擴充功能可能會損害你的電腦。如果你不是開發人員，最好在開發人員模式中停用這些擴充功能，以策安全。</translation>
 <translation id="3289856944988573801">如要檢查更新，請使用乙太網路或 Wi-Fi。</translation>
 <translation id="3293644607209440645">傳送這個頁面</translation>
@@ -1748,7 +1745,6 @@
 <translation id="3543597750097719865">使用 SHA-512 的 X9.62 ECDSA 簽章</translation>
 <translation id="3544879808695557954">使用者名稱 (選填)</translation>
 <translation id="354602065659584722">有害軟體已移除</translation>
-<translation id="3547220315004609203">切換分頁列</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3550915441744863158">Chrome 會自動更新，隨時讓你使用最新版本</translation>
 <translation id="3551320343578183772">關閉分頁</translation>
@@ -2122,7 +2118,6 @@
 <translation id="4031179711345676612">可使用麥克風</translation>
 <translation id="4031527940632463547">禁止使用感應器</translation>
 <translation id="4033471457476425443">新增資料夾</translation>
-<translation id="403456802563765809">如要管理你的指紋，請插入並輕觸安全金鑰。</translation>
 <translation id="4034824040120875894">印表機</translation>
 <translation id="4035758313003622889">工作管理員(&amp;T)</translation>
 <translation id="4036778507053569103">從伺服器下載的政策無效。</translation>
@@ -3165,7 +3160,6 @@
 <translation id="5636996382092289526">如要使用 <ph name="NETWORK_ID" />，你必須先<ph name="LINK_START" />造訪網路的登入頁面<ph name="LINK_END" />，系統隨即會自動開啟登入頁面；如果沒有，你就無法使用這個網路。</translation>
 <translation id="5637476008227280525">啟用行動數據</translation>
 <translation id="5638309510554459422">歡迎前往 <ph name="BEGIN_LINK" />Chrome 線上應用程式商店<ph name="END_LINK" />尋找擴充功能和主題</translation>
-<translation id="5639152092474119692">如要管理你的指紋，請輸入安全金鑰的 PIN 碼。如果你不知道 PIN 碼，則必須重設安全金鑰。</translation>
 <translation id="5639549361331209298">重新載入這個網頁 (按住即可查看更多選項)</translation>
 <translation id="5640133431808313291">管理安全金鑰</translation>
 <translation id="5642508497713047">CRL 簽署者</translation>
@@ -3408,7 +3402,6 @@
 <translation id="5985458664595100876">網址格式無效。支援的格式為 \\server\share 和 smb://server/share。</translation>
 <translation id="5990386583461751448">已翻譯</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{為確保你可以持續瀏覽網路，請要求你的管理員移除這個應用程式。}other{為確保你可以持續瀏覽網路，請要求你的管理員移除這些應用程式。}}</translation>
-<translation id="5995884201513800557">如要儲存指紋，請持續輕觸安全金鑰。</translation>
 <translation id="5997337190805127100">進一步瞭解網站存取權</translation>
 <translation id="6000758707621254961">有 <ph name="RESULT_COUNT" /> 個與「<ph name="SEARCH_TEXT" />」相符的搜尋結果</translation>
 <translation id="6002458620803359783">聲音偏好</translation>
@@ -3418,7 +3411,6 @@
 <translation id="6010869025736512584">正在存取視訊輸入</translation>
 <translation id="6011193465932186973">指紋</translation>
 <translation id="6011449291337289699">清除網站資料</translation>
-<translation id="6013505829696424563">如要查看登入資料，請輸入安全金鑰的 PIN 碼。如果你不知道 PIN 碼，則必須重設安全金鑰。</translation>
 <translation id="6015266928248016057">PUK 無效。剩餘重試次數：<ph name="RETRIES" /> 次。</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6016551720757758985">確認執行 Powerwash 並還原至上一個版本</translation>
@@ -3973,7 +3965,6 @@
 <translation id="6840155290835956714">傳送前詢問我</translation>
 <translation id="6840184929775541289">這不是憑證授權單位</translation>
 <translation id="6841186874966388268">錯誤</translation>
-<translation id="6841187140911216178">如要查看登入資料，請插入並輕觸安全金鑰</translation>
 <translation id="6843423766595476978">Ok Google 設定完成</translation>
 <translation id="6845038076637626672">最大化開啟</translation>
 <translation id="6845325883481699275">協助改善 Chrome 安全性</translation>
@@ -5377,7 +5368,6 @@
 <translation id="8838770651474809439">漢堡</translation>
 <translation id="883911313571074303">為圖片加註</translation>
 <translation id="8845001906332463065">尋求協助</translation>
-<translation id="8845164297565101021">請插入並輕觸你的安全金鑰，以建立或變更 PIN 碼。</translation>
 <translation id="8846132060409673887">閱讀這部電腦的製造商和型號資訊</translation>
 <translation id="8846141544112579928">正在搜尋鍵盤...</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -5450,7 +5440,6 @@
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">更快耗盡電量 (目前為 <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> 正在與 <ph name="TAB_NAME" /> 共用視窗。</translation>
-<translation id="8945764661949477243">新增、重新命名及刪除裝置上儲存的指紋</translation>
 <translation id="8946359700442089734">尚未在這個 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置上完整啟用偵錯功能。</translation>
 <translation id="894871326938397531">要退出無痕模式嗎？</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" /> 要求查看安全金鑰的製造商和型號</translation>

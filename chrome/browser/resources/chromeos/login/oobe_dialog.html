@@ -84,6 +84,8 @@
       <div id="oobe-bottom" hideShadow$="[[hideShadow]]"
           class="slot-container layout horizontal center">
         <slot name="bottom-buttons"></slot>
+        <div id="buttons-overlay" class="fit" hidden="[[!showButtonsOverlay]]">
+        </div>
       </div>
     </template>
   </template>

@@ -52,8 +52,9 @@ cvox.ScriptInstaller.installScript = function(
  */
 cvox.ScriptInstaller.uninstallScript = function(uid) {
   var scriptNode;
-  if (scriptNode = document.querySelector('script[' + uid + ']'))
+  if (scriptNode = document.querySelector('script[' + uid + ']')) {
     scriptNode.remove();
+  }
 };
 
 /**

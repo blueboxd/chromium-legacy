@@ -293,11 +293,6 @@ identity::mojom::IdentityService* Profile::GetIdentityService() {
   return nullptr;
 }
 
-image_annotation::mojom::ImageAnnotationService*
-Profile::GetImageAnnotationService() {
-  return nullptr;
-}
-
 bool Profile::IsNewProfile() {
 #if !defined(OS_ANDROID)
   // The profile is new if the preference files has just been created, except on

@@ -161,8 +161,7 @@ class MockBundledExchangesReaderFactoryImpl final
 
     auto reader = base::MakeRefCounted<BundledExchangesReader>(
         BundledExchangesSource::MaybeCreateFromTrustedFileUrl(
-            net::FilePathToFileURL(temp_file_path_)),
-        mojo::Remote<data_decoder::mojom::DataDecoderService>());
+            net::FilePathToFileURL(temp_file_path_)));
 
     std::unique_ptr<MockParserFactory> factory =
         std::make_unique<MockParserFactory>();

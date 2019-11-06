@@ -51,15 +51,15 @@ namespace blink {
 
 class RTCAnswerOptionsPlatform;
 class RTCOfferOptionsPlatform;
+class RTCSessionDescriptionRequest;
+class RTCVoidRequest;
 class WebLocalFrame;
 class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
 class WebRTCRtpSender;
 class WebRTCSessionDescription;
-class WebRTCSessionDescriptionRequest;
 class WebRTCStatsRequest;
-class WebRTCVoidRequest;
 class WebString;
 struct WebRTCDataChannelInit;
 
@@ -89,19 +89,19 @@ class WebRTCPeerConnectionHandler {
   // https://w3c.github.io/webrtc-pc/#legacy-configuration-extensions
   // Plan B: Returns an empty list.
   virtual WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
-      const WebRTCSessionDescriptionRequest&,
+      RTCSessionDescriptionRequest*,
       const WebMediaConstraints&) = 0;
   virtual WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
-      const WebRTCSessionDescriptionRequest&,
+      RTCSessionDescriptionRequest*,
       RTCOfferOptionsPlatform*) = 0;
-  virtual void CreateAnswer(const WebRTCSessionDescriptionRequest&,
+  virtual void CreateAnswer(RTCSessionDescriptionRequest*,
                             const WebMediaConstraints&) = 0;
-  virtual void CreateAnswer(const WebRTCSessionDescriptionRequest&,
+  virtual void CreateAnswer(RTCSessionDescriptionRequest*,
                             RTCAnswerOptionsPlatform*) = 0;
-  virtual void SetLocalDescription(const WebRTCVoidRequest&) = 0;
-  virtual void SetLocalDescription(const WebRTCVoidRequest&,
+  virtual void SetLocalDescription(RTCVoidRequest*) = 0;
+  virtual void SetLocalDescription(RTCVoidRequest*,
                                    const WebRTCSessionDescription&) = 0;
-  virtual void SetRemoteDescription(const WebRTCVoidRequest&,
+  virtual void SetRemoteDescription(RTCVoidRequest*,
                                     const WebRTCSessionDescription&) = 0;
   virtual WebRTCSessionDescription LocalDescription() = 0;
   virtual WebRTCSessionDescription RemoteDescription() = 0;
@@ -119,7 +119,7 @@ class WebRTCPeerConnectionHandler {
     return false;
   }
 
-  virtual bool AddICECandidate(const WebRTCVoidRequest&,
+  virtual bool AddICECandidate(RTCVoidRequest*,
                                scoped_refptr<WebRTCICECandidate>) {
     return false;
   }

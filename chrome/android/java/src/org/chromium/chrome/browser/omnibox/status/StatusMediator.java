@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFa
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -93,6 +94,13 @@ class StatusMediator {
     private String mUrlBarTextWithAutocomplete = "";
     private boolean mUrlBarTextIsValidUrl;
     private float mUrlFocusPercent;
+    // Factors used to offset the animation of the status icon's alpha adjustment. The full formula
+    // used: alpha = (focusAnimationProgress - mTextOffsetThreshold) / (1 - mTextOffsetThreshold)
+    // mTextOffsetThreshold will be the % space that the icon takes up during the focus animation.
+    // When un/focused padding(s) change, this formula shouldn't need to change.
+    private final float mTextOffsetThreshold;
+    // The denominator for the above formula, which will adjust the scale for the alpha.
+    private final float mTextOffsetAdjustedScale;
 
     StatusMediator(PropertyModel model, Resources resources,
             UrlBarEditingTextStateProvider urlBarEditingTextStateProvider) {
@@ -102,6 +110,15 @@ class StatusMediator {
 
         mResources = resources;
         mUrlBarEditingTextStateProvider = urlBarEditingTextStateProvider;
+
+        int iconWidth = resources.getDimensionPixelSize(R.dimen.location_bar_status_icon_width);
+        mTextOffsetThreshold = (float) iconWidth
+                / (iconWidth
+                        + resources.getDimensionPixelSize(
+                                R.dimen.sei_location_bar_icon_end_padding_focused)
+                        - resources.getDimensionPixelSize(
+                                R.dimen.sei_location_bar_icon_end_padding));
+        mTextOffsetAdjustedScale = mTextOffsetThreshold == 1 ? 1 : (1 - mTextOffsetThreshold);
     }
 
     /**
@@ -230,6 +247,30 @@ class StatusMediator {
         mUrlHasFocus = urlHasFocus;
         updateStatusVisibility();
         updateLocationBarIcon();
+
+        // Show the icon when the url focus animation starts.
+        if (urlHasFocus
+                && SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                        mToolbarCommonPropertiesModel.isIncognito())
+                && SearchEngineLogoUtils.currentlyOnNTP(mToolbarCommonPropertiesModel)) {
+            setStatusIconShown(true);
+        }
+    }
+
+    void setUrlAnimationFinished(boolean urlHasFocus) {
+        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                    mToolbarCommonPropertiesModel.isIncognito())) {
+            return;
+        }
+
+        // Hide the icon when the url unfocus animation finishes.
+        if (!urlHasFocus && SearchEngineLogoUtils.currentlyOnNTP(mToolbarCommonPropertiesModel)) {
+            setStatusIconShown(false);
+        }
+    }
+
+    void setStatusIconShown(boolean show) {
+        mModel.set(StatusProperties.SHOW_STATUS_ICON, show);
     }
 
     /**
@@ -243,10 +284,16 @@ class StatusMediator {
             return;
         }
 
-        if (mToolbarCommonPropertiesModel.getNewTabPageForCurrentTab() != null
-                && mToolbarCommonPropertiesModel.getNewTabPageForCurrentTab()
-                           .isLocationBarShownInNTP()) {
-            mModel.set(StatusProperties.STATUS_ALPHA, percent);
+        // Only fade the animation on the new tab page.
+        if (SearchEngineLogoUtils.currentlyOnNTP(mToolbarCommonPropertiesModel)) {
+            float focusAnimationProgress = percent;
+            if (!mUrlHasFocus) {
+                focusAnimationProgress = MathUtils.clamp(
+                        (percent - mTextOffsetThreshold) / mTextOffsetAdjustedScale, 0f, 1f);
+            }
+            mModel.set(StatusProperties.STATUS_ALPHA, focusAnimationProgress);
+        } else {
+            mModel.set(StatusProperties.STATUS_ALPHA, 1f);
         }
 
         updateLocationBarIcon();

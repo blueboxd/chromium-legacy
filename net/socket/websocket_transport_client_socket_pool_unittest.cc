@@ -15,8 +15,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "net/base/features.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -39,6 +41,8 @@
 #include "net/test/test_with_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -1123,6 +1127,40 @@ TEST_F(WebSocketTransportClientSocketPoolTest, EndpointLockIsOnlyReleasedOnce) {
   ASSERT_FALSE(request(2)->handle()->is_initialized());
   EXPECT_EQ(LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET,
             request(2)->handle()->GetLoadState());
+}
+
+// Make sure that WebSocket requests use the correct NetworkIsolationKey.
+TEST_F(WebSocketTransportClientSocketPoolTest, NetworkIsolationKey) {
+  const auto kOrigin = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionConnectionsByNetworkIsolationKey,
+       features::kSplitHostCacheByNetworkIsolationKey},
+      // disabled_features
+      {});
+
+  host_resolver_->set_ondemand_mode(true);
+
+  TestCompletionCallback callback;
+  ClientSocketHandle handle;
+  ClientSocketPool::GroupId group_id(
+      HostPortPair("www.google.com", 80), ClientSocketPool::SocketType::kHttp,
+      PrivacyMode::PRIVACY_MODE_DISABLED, kNetworkIsolationKey,
+      false /* disable_secure_dns */);
+  EXPECT_THAT(
+      handle.Init(group_id, params_, base::nullopt /* proxy_annotation_tag */,
+                  kDefaultPriority, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), &pool_,
+                  NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+
+  ASSERT_EQ(1u, host_resolver_->last_id());
+  EXPECT_EQ(kNetworkIsolationKey,
+            host_resolver_->request_network_isolation_key(1));
 }
 
 }  // namespace

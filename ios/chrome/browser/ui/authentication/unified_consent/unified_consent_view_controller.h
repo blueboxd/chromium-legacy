@@ -9,8 +9,6 @@
 
 #include <vector>
 
-#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
-
 @protocol UnifiedConsentViewControllerDelegate;
 
 // UnifiedConsentViewController is a sub view controller to ask for the user

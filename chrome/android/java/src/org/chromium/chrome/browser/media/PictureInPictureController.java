@@ -25,7 +25,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -51,7 +50,6 @@ public class PictureInPictureController {
     private static final String TAG = "VideoPersist";
 
     // Metrics
-    private static final String METRICS_URL = "Media.VideoPersistence.TopFrame";
     private static final String METRICS_DURATION = "Media.VideoPersistence.Duration";
 
     private static final String METRICS_ATTEMPT_RESULT = "Media.VideoPersistence.AttemptResult";
@@ -210,8 +208,6 @@ public class PictureInPictureController {
 
         // Setup observers to dismiss the Activity on events that should end PiP.
         final Tab activityTab = activity.getActivityTab();
-
-        RapporServiceBridge.sampleDomainAndRegistryFromURL(METRICS_URL, activityTab.getUrl());
 
         final TabObserver tabObserver = new DismissActivityOnTabEventObserver(activity);
         final TabModelSelectorObserver tabModelSelectorObserver =

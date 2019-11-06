@@ -48,6 +48,7 @@ static_library("utility") {
     "//media",
     "//net:net_with_v8",
     "//printing/buildflags",
+    "//services/data_decoder:lib",
     "//services/network:network_service",
     "//services/service_manager/public/cpp",
     "//skia",
@@ -100,7 +101,6 @@ static_library("utility") {
       "//chrome/common:mojo_bindings",
       "//chrome/common/importer:interfaces",
       "//components/autofill/core/common",
-      "//services/data_decoder:lib",
       "//services/proxy_resolver:lib",
     ]
   }

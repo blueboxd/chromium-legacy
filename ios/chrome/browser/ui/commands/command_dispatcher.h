@@ -18,9 +18,9 @@
 // be passed into objects that need to call, but not configure, the dispatcher
 // (anything other than a coordinator). To create such a pointer in a way that
 // both compiles and is checked for correctness at runtime, use the provided
-// function-like macro CallableDispatcher, defined below. Usage is as follows:
+// function-like macro HandlerForProtocol, defined below. Usage is as follows:
 //
-//   id<SomeProtocol> callable = CallableDispatcher(dispatcher, SomeProtocol);
+//   id<SomeProtocol> handler = HandlerForProtocol(dispatcher, SomeProtocol);
 //
 //     |dispatcher| should be a CommandDispatcher object, and SomeProtocol is
 //     the *name* of a protocol (not a string, not a Protocol* pointer, and not
@@ -29,9 +29,9 @@
 // This will typecast |dispatcher| to an id<SomeProtocol> (for compile-time
 // type checking), and verify that |dispatcher| is currently dispatching
 // for |protocol| (for run-time verification). If |dispatcher| isn't dispatching
-// for |protocol|, CallableDispatcher() returns nil and DCHECKs.
+// for |protocol|, HandlerForProtocol() returns nil and DCHECKs.
 //
-#define CallableDispatcher(Dispatcher, ProtocolName) \
+#define HandlerForProtocol(Dispatcher, ProtocolName) \
   static_cast<id<ProtocolName>>(                     \
       [Dispatcher strictCallableForProtocol:@protocol(ProtocolName)])
 

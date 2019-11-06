@@ -273,8 +273,8 @@ void GPUDevice::OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
       break;
     case WGPUErrorType_Unknown:
     case WGPUErrorType_DeviceLost:
-      resolver->Reject(
-          MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kOperationError));
       break;
     default:
       NOTREACHED();

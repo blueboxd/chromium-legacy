@@ -5,16 +5,22 @@
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/common/content_features.h"
+#include "google_apis/google_api_keys.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
+#include "services/image_annotation/image_annotation_service.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
@@ -23,6 +29,41 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #endif
+
+namespace {
+
+// Returns the Chrome Google API key for the channel of this build.
+std::string APIKeyForChannel() {
+  if (chrome::GetChannel() == version_info::Channel::STABLE)
+    return google_apis::GetAPIKey();
+  return google_apis::GetNonStableAPIKey();
+}
+
+AccessibilityLabelsService::ImageAnnotatorBinder&
+GetImageAnnotatorBinderOverride() {
+  static base::NoDestructor<AccessibilityLabelsService::ImageAnnotatorBinder>
+      binder;
+  return *binder;
+}
+
+class ImageAnnotatorClient : public image_annotation::Annotator::Client {
+ public:
+  ImageAnnotatorClient() = default;
+  ~ImageAnnotatorClient() override = default;
+
+  // image_annotation::Annotator::Client implementation:
+  void BindJsonParser(mojo::PendingReceiver<data_decoder::mojom::JsonParser>
+                          receiver) override {
+    data_decoder_.GetService()->BindJsonParser(std::move(receiver));
+  }
+
+ private:
+  data_decoder::DataDecoder data_decoder_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageAnnotatorClient);
+};
+
+}  // namespace
 
 AccessibilityLabelsService::~AccessibilityLabelsService() {}
 
@@ -107,6 +148,29 @@ void AccessibilityLabelsService::EnableLabelsServiceOnce() {
       frame->AccessibilityPerformAction(action_data);
   }
 #endif
+}
+
+void AccessibilityLabelsService::BindImageAnnotator(
+    mojo::PendingReceiver<image_annotation::mojom::Annotator> receiver) {
+  if (!remote_service_) {
+    auto service_receiver = remote_service_.BindNewPipeAndPassReceiver();
+    auto& binder = GetImageAnnotatorBinderOverride();
+    if (binder) {
+      binder.Run(std::move(service_receiver));
+    } else {
+      service_ = std::make_unique<image_annotation::ImageAnnotationService>(
+          std::move(service_receiver), APIKeyForChannel(),
+          profile_->GetURLLoaderFactory(),
+          std::make_unique<ImageAnnotatorClient>());
+    }
+  }
+
+  remote_service_->BindAnnotator(std::move(receiver));
+}
+
+void AccessibilityLabelsService::OverrideImageAnnotatorBinderForTesting(
+    ImageAnnotatorBinder binder) {
+  GetImageAnnotatorBinderOverride() = std::move(binder);
 }
 
 void AccessibilityLabelsService::OnImageLabelsEnabledChanged() {

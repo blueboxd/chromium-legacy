@@ -135,6 +135,10 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
   void OnBlockingPageComplete(bool proceed);
 
+  // Helper method that checks whether |url|'s reputation can be checked using
+  // real time lookups.
+  bool CanPerformFullURLLookup(const GURL& url);
+
   SBThreatType CheckWebUIUrls(const GURL& url);
 
   // Returns false if this object has been destroyed by the callback. In that

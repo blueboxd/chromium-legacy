@@ -27,6 +27,7 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsObserver
   virtual void DidSuppressNavigation(const GURL& url,
                                      WindowOpenDisposition disposition,
                                      bool from_user_gesture) {}
+  virtual void UpdateCanGoBack(bool can_go_back) {}
 };
 
 }  // namespace content

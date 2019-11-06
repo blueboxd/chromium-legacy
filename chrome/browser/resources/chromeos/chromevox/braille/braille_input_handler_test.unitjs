@@ -428,8 +428,9 @@ FakeTranslatorManager.prototype = {
  *     pattern (dot 1 uses bit 0, etc).
  */
 function cellsToArray(cells) {
-  if (!cells)
+  if (!cells) {
     return [];
+  }
   return cells.split(/\s+/).map(function(cellString) {
     var cell = 0;
     assertTrue(cellString.length > 0);

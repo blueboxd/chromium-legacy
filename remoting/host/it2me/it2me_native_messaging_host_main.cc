@@ -206,7 +206,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
 
   // NetworkChangeNotifier must be initialized after SingleThreadTaskExecutor.
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
+      net::NetworkChangeNotifier::CreateIfNeeded());
 
   std::unique_ptr<It2MeHostFactory> factory(new It2MeHostFactory());
 

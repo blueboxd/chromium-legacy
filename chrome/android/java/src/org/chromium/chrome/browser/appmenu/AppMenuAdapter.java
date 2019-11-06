@@ -245,6 +245,7 @@ class AppMenuAdapter extends BaseAdapter {
                 holder.title.setEnabled(titleItem.isEnabled());
                 holder.title.setFocusable(titleItem.isEnabled());
                 holder.title.setOnClickListener(v -> mOnClickHandler.onItemClick(titleItem));
+
                 if (TextUtils.isEmpty(titleItem.getTitleCondensed())) {
                     holder.title.setContentDescription(null);
                 } else {

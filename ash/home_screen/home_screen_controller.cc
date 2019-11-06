@@ -22,6 +22,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "base/barrier_closure.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
@@ -85,7 +86,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   const bool split_view_active = split_view_controller->InSplitViewMode();
 
-  if (!features::IsHomerviewGestureEnabled()) {
+  if (!features::IsDragFromShelfToHomeOrOverviewEnabled()) {
     if (home_launcher_gesture_handler_->ShowHomeLauncher(
             Shell::Get()->display_manager()->GetDisplayForId(display_id))) {
       return true;
@@ -156,6 +157,9 @@ bool HomeScreenController::GoHome(int64_t display_id) {
     return true;
   }
 
+  delegate_->OnHomeLauncherTargetPositionChanged(true /* showing */,
+                                                 display_id);
+
   // First minimize all inactive windows.
   const bool window_minimized =
       MinimizeAllWindows(windows, active_windows /*windows_to_ignore*/);
@@ -163,22 +167,44 @@ bool HomeScreenController::GoHome(int64_t display_id) {
   // Animate currently active windows into the home screen - they will be
   // minimized by WindowTransformToHomeScreenAnimation when the transition
   // finishes.
-  for (auto* active_window : active_windows) {
-    BackdropWindowMode original_backdrop_mode =
-        active_window->GetProperty(kBackdropWindowMode);
-    active_window->SetProperty(kBackdropWindowMode,
-                               BackdropWindowMode::kDisabled);
 
-    // Do the scale-down transform for the entire transient tree.
-    for (auto* window : GetTransientTreeIterator(active_window)) {
-      // Self-destructed when window transform animation is done.
-      new WindowTransformToHomeScreenAnimation(
-          window, window == active_window
-                      ? base::make_optional(original_backdrop_mode)
-                      : base::nullopt);
+  if (!active_windows.empty()) {
+    base::RepeatingClosure window_transforms_callback = base::BarrierClosure(
+        active_windows.size(),
+        base::BindOnce(&HomeScreenController::NotifyHomeLauncherTransitionEnded,
+                       weak_ptr_factory_.GetWeakPtr(), true /*shown*/,
+                       display_id));
+
+    for (auto* active_window : active_windows) {
+      BackdropWindowMode original_backdrop_mode =
+          active_window->GetProperty(kBackdropWindowMode);
+      active_window->SetProperty(kBackdropWindowMode,
+                                 BackdropWindowMode::kDisabled);
+
+      // Do the scale-down transform for the entire transient tree.
+      for (auto* window : GetTransientTreeIterator(active_window)) {
+        // Self-destructed when window transform animation is done.
+        new WindowTransformToHomeScreenAnimation(
+            window,
+            window == active_window
+                ? base::make_optional(original_backdrop_mode)
+                : base::nullopt,
+            window == active_window ? window_transforms_callback
+                                    : base::NullCallback());
+      }
     }
+  } else {
+    delegate_->OnHomeLauncherAnimationComplete(true /*shown*/, display_id);
   }
+
   return window_minimized || !active_windows.empty();
+}
+
+void HomeScreenController::NotifyHomeLauncherTransitionEnded(
+    bool shown,
+    int64_t display_id) {
+  if (delegate_)
+    delegate_->OnHomeLauncherAnimationComplete(shown, display_id);
 }
 
 void HomeScreenController::SetDelegate(HomeScreenDelegate* delegate) {

@@ -2820,8 +2820,7 @@ if (enable_java_templates) {
         "--jar-path=$_rebased_javac_jar_path",
         "--java-srcjars=$_rebased_java_srcjars",
         "--java-version=1.8",
-        "--full-classpath=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
-        "--interface-classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
+        "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
         "--processorpath=@FileArg($_rebased_build_config:javac:processor_classpath)",
         "--processors=@FileArg($_rebased_build_config:javac:processor_classes)",
       ]
@@ -3770,11 +3769,13 @@ template("dexsplitter") {
 # Allots native libraries depended on by feature modules to the module the
 # libraries should be packaged into. The packaging module may be different from
 # the dependee module in case a library is depended on by multiple modules. In
-# that case the library will be allotted to base.
+# that case the library will be allotted to the closest ancestor given a module
+# dependency tree (see |parent| below).
 #
 # Variables:
 #   modules: List of scopes with the following format:
 #     name: The module's name.
+#     parent: The module's parent's name.
 #     build_config: Path to the module's build config.
 #     build_config_target: Target creating |build_config|.
 #   native_libraries_filearg_keys: Keys to be used in
@@ -3804,6 +3805,12 @@ template("allot_native_libraries") {
         args += [
           "--libraries",
           "${_module.name},@FileArg($_rebased_build_config:$_key)",
+        ]
+      }
+      if (defined(_module.parent)) {
+        args += [
+          "--dep",
+          "${_module.parent}:${_module.name}",
         ]
       }
     }

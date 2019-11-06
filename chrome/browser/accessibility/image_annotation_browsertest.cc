@@ -8,8 +8,9 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/accessibility/accessibility_labels_service.h"
+#include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -207,8 +208,9 @@ class ImageAnnotationBrowserTest : public InProcessBrowserTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    ProfileImpl::OverrideImageAnnotationServiceBinderForTesting(
-        base::BindRepeating(&BindImageAnnotatorService));
+    AccessibilityLabelsServiceFactory::GetForProfile(browser()->profile())
+        ->OverrideImageAnnotatorBinderForTesting(
+            base::BindRepeating(&BindImageAnnotatorService));
 
     ui::AXMode mode = ui::kAXModeComplete;
     mode.set_mode(ui::AXMode::kLabelImages, true);
@@ -218,8 +220,8 @@ class ImageAnnotationBrowserTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    ProfileImpl::OverrideImageAnnotationServiceBinderForTesting(
-        base::NullCallback());
+    AccessibilityLabelsServiceFactory::GetForProfile(browser()->profile())
+        ->OverrideImageAnnotatorBinderForTesting(base::NullCallback());
     InProcessBrowserTest::TearDownOnMainThread();
   }
 

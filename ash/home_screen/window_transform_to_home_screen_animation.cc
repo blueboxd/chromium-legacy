@@ -39,8 +39,11 @@ constexpr float kWindowScaleDownFactor = 0.001f;
 
 WindowTransformToHomeScreenAnimation::WindowTransformToHomeScreenAnimation(
     aura::Window* window,
-    base::Optional<BackdropWindowMode> original_backdrop_mode)
-    : window_(window), original_backdrop_mode_(original_backdrop_mode) {
+    base::Optional<BackdropWindowMode> original_backdrop_mode,
+    base::OnceClosure opt_callback)
+    : window_(window),
+      original_backdrop_mode_(original_backdrop_mode),
+      opt_callback_(std::move(opt_callback)) {
   window_observer_.Add(window);
 
   ui::ScopedLayerAnimationSettings settings(window_->layer()->GetAnimator());
@@ -55,8 +58,10 @@ WindowTransformToHomeScreenAnimation::WindowTransformToHomeScreenAnimation(
   window_->layer()->SetOpacity(0.f);
 }
 
-WindowTransformToHomeScreenAnimation::~WindowTransformToHomeScreenAnimation() =
-    default;
+WindowTransformToHomeScreenAnimation::~WindowTransformToHomeScreenAnimation() {
+  if (!opt_callback_.is_null())
+    std::move(opt_callback_).Run();
+}
 
 void WindowTransformToHomeScreenAnimation::OnImplicitAnimationsCompleted() {
   // Minimize the dragged window after transform animation is completed.

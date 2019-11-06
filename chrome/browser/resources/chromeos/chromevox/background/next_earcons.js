@@ -71,10 +71,11 @@ NextEarcons.prototype = {
       var node = ChromeVoxState.instance.currentRange.start.node;
       var rect = opt_location || node.location;
       var container = node.root.location;
-      if (this.shouldPan_)
+      if (this.shouldPan_) {
         this.engine_.setPositionForRect(rect, container);
-      else
+      } else {
         this.engine_.resetPan();
+      }
     }
     switch (earcon) {
       case cvox.Earcon.ALERT_MODAL:

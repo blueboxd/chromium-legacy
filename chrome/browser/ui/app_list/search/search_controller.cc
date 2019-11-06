@@ -78,14 +78,11 @@ SearchController::SearchController(AppListModelUpdater* model_updater,
 
 SearchController::~SearchController() {}
 
-void SearchController::InitializeRankers(
-    service_manager::Connector* connector) {
+void SearchController::InitializeRankers() {
   std::unique_ptr<SearchResultRanker> ranker =
       std::make_unique<SearchResultRanker>(
-          profile_,
-          HistoryServiceFactory::GetForProfile(
-              profile_, ServiceAccessType::EXPLICIT_ACCESS),
-          connector);
+          profile_, HistoryServiceFactory::GetForProfile(
+                        profile_, ServiceAccessType::EXPLICIT_ACCESS));
   ranker->InitializeRankers(this);
   mixer_->SetNonAppSearchResultRanker(std::move(ranker));
 }

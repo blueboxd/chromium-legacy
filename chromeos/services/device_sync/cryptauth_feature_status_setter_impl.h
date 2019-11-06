@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/services/device_sync/cryptauth_feature_status_setter.h"
+#include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/network_request_error.h"
 #include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"

@@ -174,7 +174,6 @@ source_set("browser_view") {
     "//ios/web/public",
     "//ios/web/public/deprecated",
     "//ios/web/public/deprecated:deprecated_web_util",
-    "//third_party/google_toolbox_for_mac",
     "//ui/base",
     "//ui/gfx",
     "//url",

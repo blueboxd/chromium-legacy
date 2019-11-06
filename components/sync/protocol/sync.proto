@@ -40,7 +40,6 @@ import "managed_user_setting_specifics.proto";
 import "managed_user_shared_setting_specifics.proto";
 import "managed_user_specifics.proto";
 import "managed_user_whitelist_specifics.proto";
-import "mountain_share_specifics.proto";
 import "nigori_specifics.proto";
 import "os_preference_specifics.proto";
 import "os_priority_preference_specifics.proto";
@@ -159,7 +158,6 @@ message EntitySpecifics {
     ReadingListSpecifics reading_list = 411028;
     UserEventSpecifics user_event = 455206;
     UserConsentSpecifics user_consent = 556014;
-    MountainShareSpecifics mountain_share = 545005;
     SendTabToSelfSpecifics send_tab_to_self = 601980;
     SecurityEventSpecifics security_event = 600372;
     WebAppSpecifics web_app = 673225;
@@ -171,6 +169,8 @@ message EntitySpecifics {
   reserved "wifi_credential";
   reserved 223759;
   reserved "article";
+  reserved 545005;
+  reserved "mountain_share";
 }
 
 message SyncEntity {

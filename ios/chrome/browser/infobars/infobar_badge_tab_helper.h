@@ -34,6 +34,9 @@ class InfobarBadgeTabHelper
   // Updates Infobar badge for the case where Infobar of |infobar_type| was
   // accepted.
   void UpdateBadgeForInfobarAccepted(InfobarType infobar_type);
+  // Updates Infobar badge for the case where Infobar action of |infobar_type|
+  // was reverted. This will negate the accepted state of the badge.
+  void UpdateBadgeForInfobarReverted(InfobarType infobar_type);
   // Updates Infobar badge for the case where an Infobar banner of
   // |infobar_type| was presented.
   void UpdateBadgeForInfobarBannerPresented(InfobarType infobar_type);

@@ -3406,7 +3406,7 @@
   {
     "name": "translate-ui-bubble-options",
     "owners": [ "hhw", "anthonyvd", "chrome-language@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "treat-unsafe-downloads-as-active-content",

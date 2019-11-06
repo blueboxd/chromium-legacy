@@ -55,12 +55,6 @@ void AnimationDelegateViews::AnimationContainerShuttingDown(
 }
 
 void AnimationDelegateViews::UpdateAnimationRunner() {
-#if defined(OS_CHROMEOS)
-  // TODO(crbug.com/969788): Re-enable this function with better ui::Compositor
-  // switching support.
-  return;
-#endif  // defined(OS_CHROMEOS)
-
   if (!container_)
     return;
 
@@ -74,8 +68,8 @@ void AnimationDelegateViews::UpdateAnimationRunner() {
   if (container_->has_custom_animation_runner())
     return;
 
-  container_->SetAnimationRunner(std::make_unique<CompositorAnimationRunner>(
-      view_->GetWidget()->GetCompositor()));
+  container_->SetAnimationRunner(
+      std::make_unique<CompositorAnimationRunner>(view_->GetWidget()));
 }
 
 }  // namespace views

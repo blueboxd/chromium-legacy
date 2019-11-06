@@ -353,8 +353,8 @@
 
 # Partitions should be ignored at this point. Otherwise, their .text, .rodata,
 # etc. sections will overwrite those of the main partition.
- 34be000  34be000       34     1 libvr.so
- 34be000  34be000       34     1         <internal>:(libvr.so)
+ 34be000  34be000       34     1 vr_partition
+ 34be000  34be000       34     1         <internal>:(vr_partition)
  34be034  34be034      140     1 .phdrs
  34be034  34be034      140     1         <internal>:(.phdrs)
  34be174  34be174       13     1 .interp

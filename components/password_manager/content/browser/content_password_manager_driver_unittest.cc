@@ -84,6 +84,7 @@ class FakePasswordAutofillAgent
 
   // autofill::mojom::PasswordAutofillAgent:
   MOCK_METHOD1(FillPasswordForm, void(const PasswordFormFillData&));
+  MOCK_METHOD0(InformNoSavedCredentials, void());
   MOCK_METHOD2(FillIntoFocusedField, void(bool, const base::string16&));
   MOCK_METHOD1(TouchToFillClosed, void(bool));
   MOCK_METHOD1(AnnotateFieldsWithParsingResult, void(const ParsingResult&));

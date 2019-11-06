@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
 #include "chrome/browser/prefs/browser_prefs.h"

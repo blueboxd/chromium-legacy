@@ -14,9 +14,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
+#include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_parser.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/libfuzzer/libfuzzer_exports.h"
 
 bool PseudoRandomFilter(std::mt19937* generator,
@@ -45,7 +48,11 @@ void ignore(void* ctx, const char* msg, ...) {
 
 class Env {
  public:
-  Env() { xmlSetGenericErrorFunc(NULL, &ignore); }
+  Env() { xmlSetGenericErrorFunc(nullptr, &ignore); }
+
+ private:
+  base::SingleThreadTaskExecutor executor_;
+  data_decoder::test::InProcessDataDecoder data_decoder_;
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
@@ -63,11 +70,22 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // does not support 8 bit types on Windows.
   std::uniform_int_distribution<uint16_t> pool(0, 1);
 
+  base::RunLoop run_loop;
+
+  SearchTermsData search_terms_data;
+  std::string string_data(reinterpret_cast<const char*>(params + 1), size);
   TemplateURLParser::ParameterFilter filter =
       base::BindRepeating(&PseudoRandomFilter, base::Unretained(&generator),
                           base::Unretained(&pool));
+  TemplateURLParser::Parse(&search_terms_data, string_data, filter,
+                           base::BindOnce(
+                               [](base::OnceClosure quit_closure,
+                                  std::unique_ptr<TemplateURL> ignored) {
+                                 std::move(quit_closure).Run();
+                               },
+                               run_loop.QuitClosure()));
 
-  const char* char_data = reinterpret_cast<const char*>(params + 1);
-  TemplateURLParser::Parse(SearchTermsData(), char_data, size, filter);
+  run_loop.Run();
+
   return 0;
 }

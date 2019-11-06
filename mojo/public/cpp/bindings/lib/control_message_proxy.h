@@ -25,7 +25,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) ControlMessageProxy {
   explicit ControlMessageProxy(InterfaceEndpointClient* owner);
   ~ControlMessageProxy();
 
-  void QueryVersion(const base::Callback<void(uint32_t)>& callback);
+  void QueryVersion(base::OnceCallback<void(uint32_t)> callback);
   void RequireVersion(uint32_t version);
 
   void FlushForTesting();

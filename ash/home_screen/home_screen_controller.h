@@ -13,6 +13,7 @@
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_session.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 
 namespace ash {
@@ -68,6 +69,11 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // in overview mode.
   void UpdateVisibility();
 
+  // Notifies home screen delegate that a home launcher transition has ended.
+  // |shown| - whether the final home state was shown.
+  // |display_id| - the home screen display ID.
+  void NotifyHomeLauncherTransitionEnded(bool shown, int64_t display_id);
+
   // Whether the wallpaper is being previewed. The home screen should be hidden
   // during wallpaper preview.
   bool in_wallpaper_preview_ = false;
@@ -90,6 +96,8 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // animations are finished (at which point this information will not be
   // available).
   base::Optional<OverviewSession::EnterExitOverviewType> overview_exit_type_;
+
+  base::WeakPtrFactory<HomeScreenController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HomeScreenController);
 };

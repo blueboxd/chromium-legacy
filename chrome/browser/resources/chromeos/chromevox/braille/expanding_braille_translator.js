@@ -114,8 +114,9 @@ cvox.ExpandingBrailleTranslator.prototype.translate = function(
 
   var chunks = [];
   function maybeAddChunkToTranslate(translator, start, end) {
-    if (start < end)
+    if (start < end) {
       chunks.push({translator: translator, start: start, end: end});
+    }
   }
   function addExtraCellsChunk(pos, cells) {
     var chunk = {
@@ -158,8 +159,9 @@ cvox.ExpandingBrailleTranslator.prototype.translate = function(
     chunk.cells = cells;
     chunk.textToBraille = textToBraille;
     chunk.brailleToText = brailleToText;
-    if (--numPendingCallbacks <= 0)
+    if (--numPendingCallbacks <= 0) {
       finish();
+    }
   }
 
   function finish() {

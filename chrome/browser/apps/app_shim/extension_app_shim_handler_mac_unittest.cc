@@ -178,6 +178,7 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
   void SetProfileMenuItems(
       std::vector<chrome::mojom::ProfileMenuItemPtr> new_profile_menu_items) {
     new_profile_menu_items_ = std::move(new_profile_menu_items);
+    OnAvatarMenuChanged(nullptr);
   }
   void UpdateProfileMenuItems() override {
     profile_menu_items_.clear();
@@ -325,6 +326,14 @@ class ExtensionAppShimHandlerTest : public testing::Test {
                          profile_path_a_, kTestAppIdA,
                          true /* is_from_bookmark */, &bootstrap_aa_result_))
                         ->GetWeakPtr();
+    bootstrap_ba_ = (new TestingAppShimHostBootstrap(
+                         profile_path_b_, kTestAppIdA,
+                         true /* is_from_bookmark */, &bootstrap_ba_result_))
+                        ->GetWeakPtr();
+    bootstrap_xa_ = (new TestingAppShimHostBootstrap(
+                         base::FilePath(), kTestAppIdA,
+                         true /* is_from_bookmark */, &bootstrap_xa_result_))
+                        ->GetWeakPtr();
     bootstrap_ab_ = (new TestingAppShimHostBootstrap(
                          profile_path_a_, kTestAppIdB,
                          false /* is_from_bookmark */, &bootstrap_ab_result_))
@@ -375,6 +384,19 @@ class ExtensionAppShimHandlerTest : public testing::Test {
                        .SetID(kTestAppIdB)
                        .Build();
 
+    {
+      auto item_a = chrome::mojom::ProfileMenuItem::New();
+      item_a->profile_path = profile_path_a_;
+      item_a->menu_index = 0;
+      auto item_b = chrome::mojom::ProfileMenuItem::New();
+      item_b->profile_path = profile_path_b_;
+      item_b->menu_index = 1;
+      std::vector<chrome::mojom::ProfileMenuItemPtr> items;
+      items.push_back(std::move(item_a));
+      items.push_back(std::move(item_b));
+      handler_->SetProfileMenuItems(std::move(items));
+    }
+
     EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_a_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
@@ -411,6 +433,8 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     // deleted yet. Note that this must be done after the profiles and hosts
     // have been destroyed (because they may now own the bootstraps).
     delete bootstrap_aa_.get();
+    delete bootstrap_ba_.get();
+    delete bootstrap_xa_.get();
     delete bootstrap_ab_.get();
     delete bootstrap_bb_.get();
     delete bootstrap_aa_duplicate_.get();
@@ -426,6 +450,7 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     if (host)
       delegate_->SetHostForCreate(std::move(host));
     bootstrap->DoTestLaunch(launch_type, files);
+    EXPECT_TRUE(delegate_->RunGetProfilesForAppCallback());
   }
 
   void NormalLaunch(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
@@ -471,12 +496,16 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   TestingProfile profile_b_;
 
   base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_aa_;
+  base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_ba_;
+  base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_xa_;
   base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_ab_;
   base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_bb_;
   base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_aa_duplicate_;
   base::WeakPtr<TestingAppShimHostBootstrap> bootstrap_aa_thethird_;
 
   base::Optional<apps::AppShimLaunchResult> bootstrap_aa_result_;
+  base::Optional<apps::AppShimLaunchResult> bootstrap_ba_result_;
+  base::Optional<apps::AppShimLaunchResult> bootstrap_xa_result_;
   base::Optional<apps::AppShimLaunchResult> bootstrap_ab_result_;
   base::Optional<apps::AppShimLaunchResult> bootstrap_bb_result_;
   base::Optional<apps::AppShimLaunchResult> bootstrap_aa_duplicate_result_;
@@ -973,6 +1002,7 @@ TEST_F(ExtensionAppShimHandlerTest, ProfileMenuOneProfile) {
   delegate_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), false));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
+  EXPECT_TRUE(delegate_->RunGetProfilesForAppCallback());
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Launch the shim.
@@ -984,7 +1014,6 @@ TEST_F(ExtensionAppShimHandlerTest, ProfileMenuOneProfile) {
   const auto& menu_items = host_aa_->test_app_shim_->profile_menu_items_;
 
   // We should have no menu items, because there is only one installed profile.
-  EXPECT_TRUE(delegate_->RunGetProfilesForAppCallback());
   EXPECT_FALSE(delegate_->RunGetProfilesForAppCallback());
   EXPECT_TRUE(menu_items.empty());
 
@@ -1004,7 +1033,6 @@ TEST_F(ExtensionAppShimHandlerTest, ProfileMenuOneProfile) {
     items.push_back(std::move(item_b));
     handler_->SetProfileMenuItems(std::move(items));
   }
-  handler_->OnAvatarMenuChanged(nullptr);
   EXPECT_TRUE(delegate_->RunGetProfilesForAppCallback());
   EXPECT_FALSE(delegate_->RunGetProfilesForAppCallback());
 
@@ -1020,4 +1048,59 @@ TEST_F(ExtensionAppShimHandlerTest, ProfileMenuOneProfile) {
   EXPECT_FALSE(delegate_->RunGetProfilesForAppCallback());
 }
 
+TEST_F(ExtensionAppShimHandlerTest, FindProfileFromBadProfile) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAppShimMultiProfile},
+      /*disabled_features=*/{});
+
+  // Set this app to be installed for profile A.
+  {
+    auto item_a = chrome::mojom::ProfileMenuItem::New();
+    item_a->profile_path = profile_path_a_;
+    item_a->menu_index = 999;
+
+    std::vector<chrome::mojom::ProfileMenuItemPtr> items;
+    items.push_back(std::move(item_a));
+    handler_->SetProfileMenuItems(std::move(items));
+  }
+
+  // Launch the shim requesting profile B.
+  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get(), _))
+      .Times(1);
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_b_, extension_a_.get(), _))
+      .Times(0);
+  NormalLaunch(bootstrap_ba_, nullptr);
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_ba_result_);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
+}
+
+TEST_F(ExtensionAppShimHandlerTest, FindProfileFromNoProfile) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAppShimMultiProfile},
+      /*disabled_features=*/{});
+
+  // Set this app to be installed for profile A.
+  {
+    auto item_a = chrome::mojom::ProfileMenuItem::New();
+    item_a->profile_path = profile_path_a_;
+    item_a->menu_index = 999;
+
+    std::vector<chrome::mojom::ProfileMenuItemPtr> items;
+    items.push_back(std::move(item_a));
+    handler_->SetProfileMenuItems(std::move(items));
+  }
+
+  // Launch the shim without specifying a profile.
+  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_a_, extension_a_.get(), _))
+      .Times(1);
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_b_, extension_a_.get(), _))
+      .Times(0);
+  NormalLaunch(bootstrap_xa_, nullptr);
+  EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_xa_result_);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
+}
 }  // namespace apps

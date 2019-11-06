@@ -33,11 +33,4 @@ bool TestShellDelegate::CanGoBack(gfx::NativeWindow window) const {
   return true;
 }
 
-mojo::Remote<data_decoder::mojom::DataDecoderService>
-TestShellDelegate::LaunchDataDecoder() {
-  mojo::Remote<data_decoder::mojom::DataDecoderService> remote;
-  ignore_result(remote.BindNewPipeAndPassReceiver());
-  return remote;
-}
-
 }  // namespace ash

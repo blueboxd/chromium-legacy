@@ -8,4 +8,7 @@ namespace cc {
 
 BeginMainFrameMetrics::BeginMainFrameMetrics() = default;
 
+BeginMainFrameMetrics::BeginMainFrameMetrics(
+    const BeginMainFrameMetrics& other) = default;
+
 }  // namespace cc

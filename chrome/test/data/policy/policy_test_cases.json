@@ -2949,6 +2949,12 @@
     ]
   },
 
+  "WebComponentsV0Enabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "WebComponentsV0Enabled": true },
+    "pref_mappings": [{ "pref": "web_components_v0_enabled" }]
+  },
+
   "GloballyScopeHTTPAuthCacheEnabled": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "GloballyScopeHTTPAuthCacheEnabled": true },

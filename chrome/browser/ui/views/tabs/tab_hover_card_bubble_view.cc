@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/containers/mru_cache.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -308,6 +309,75 @@ class TabHoverCardBubbleView::FadeLabel : public views::Label {
   }
 };
 
+// Maintains a set of thumbnails to watch, ensuring the capture count on the
+// associated WebContents stays nonzero until a valid thumbnail has been
+// captured.
+class TabHoverCardBubbleView::ThumbnailWatcher {
+ public:
+  explicit ThumbnailWatcher(TabHoverCardBubbleView* hover_card)
+      : hover_card_(hover_card) {}
+  ~ThumbnailWatcher() = default;
+
+  // Begin watching the specified thumbnail image for updates. Ideally, should
+  // trigger the associated WebContents to load (if not loaded already) and
+  // retrieve a valid thumbnail. If too many thumbnails are being watched, the
+  // least-recently watched will be unwatched.
+  void Watch(scoped_refptr<ThumbnailImage> thumbnail_image) {
+    ThumbnailImage* const ptr = thumbnail_image.get();
+    auto it = recent_observers_.Get(ptr);
+    if (it == recent_observers_.end()) {
+      recent_observers_.Put(ptr, std::make_unique<ThumbnailObserver>(
+                                     this, std::move(thumbnail_image)));
+    }
+    ptr->RequestThumbnailImage();
+  }
+
+  // Returns the current (most recent) thumbnail being watched.
+  ThumbnailImage* current_image() const {
+    return recent_observers_.empty() ? nullptr
+                                     : recent_observers_.begin()->first;
+  }
+
+  void OnNewImage(const ThumbnailImage* thumbnail, gfx::ImageSkia image) {
+    DCHECK(!recent_observers_.empty());
+    if (recent_observers_.begin()->first == thumbnail)
+      hover_card_->OnThumbnailImageAvailable(std::move(image));
+  }
+
+ private:
+  // Actually does the work of watching a single thumbnail. Cleans itself up
+  // (including unregistering as an observer) on destruction.
+  class ThumbnailObserver : public ThumbnailImage::Observer {
+   public:
+    ThumbnailObserver(ThumbnailWatcher* thumbnail_watcher,
+                      scoped_refptr<ThumbnailImage> thumbnail_image)
+        : thumbnail_watcher_(thumbnail_watcher),
+          thumbnail_image_(std::move(thumbnail_image)) {
+      scoped_observer_.Add(thumbnail_image_.get());
+    }
+    ~ThumbnailObserver() override = default;
+
+    base::Optional<gfx::Size> GetThumbnailSizeHint() const override {
+      return TabStyle::GetPreviewImageSize();
+    }
+
+    void OnThumbnailImageAvailable(gfx::ImageSkia preview_image) override {
+      thumbnail_watcher_->OnNewImage(thumbnail_image_.get(),
+                                     std::move(preview_image));
+    }
+
+   private:
+    ThumbnailWatcher* const thumbnail_watcher_;
+    scoped_refptr<ThumbnailImage> thumbnail_image_;
+    ScopedObserver<ThumbnailImage, ThumbnailImage::Observer> scoped_observer_{
+        this};
+  };
+
+  TabHoverCardBubbleView* const hover_card_;
+  base::MRUCache<ThumbnailImage*, std::unique_ptr<ThumbnailObserver>>
+      recent_observers_{5};
+};
+
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     : BubbleDialogDelegateView(tab, views::BubbleBorder::TOP_LEFT) {
   // We'll do all of our own layout inside the bubble, so no need to inset this
@@ -403,6 +473,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       std::make_unique<WidgetSlideAnimationDelegate>(this);
   fade_animation_delegate_ =
       std::make_unique<WidgetFadeAnimationDelegate>(widget_);
+  thumbnail_watcher_ = std::make_unique<ThumbnailWatcher>(this);
 
   constexpr int kFootnoteVerticalMargin = 8;
   GetBubbleFrameView()->set_footnote_margins(
@@ -504,7 +575,6 @@ bool TabHoverCardBubbleView::IsVisible() {
 
 void TabHoverCardBubbleView::FadeOutToHide() {
   delayed_show_timer_.Stop();
-  RegisterToThumbnailImageUpdates(nullptr);
   if (!widget_->IsVisible())
     return;
   slide_animation_delegate_->StopAnimation();
@@ -665,35 +735,19 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
 
   // If the preview image feature is not enabled, |preview_image_| will be null.
   if (preview_image_ && preview_image_->GetVisible()) {
-    RegisterToThumbnailImageUpdates(tab->data().thumbnail);
+    auto thumbnail = tab->data().thumbnail;
+    if (!thumbnail) {
+      ClearPreviewImage();
+    } else if (thumbnail != thumbnail_watcher_->current_image()) {
+      waiting_for_decompress_ = true;
+      thumbnail_watcher_->Watch(thumbnail);
+    }
   }
 }
 
 void TabHoverCardBubbleView::UpdateTextFade(double percent) {
   title_fade_label_->SetFade(percent);
   domain_fade_label_->SetFade(percent);
-}
-
-void TabHoverCardBubbleView::RegisterToThumbnailImageUpdates(
-    scoped_refptr<ThumbnailImage> thumbnail_image) {
-  if (thumbnail_image_ == thumbnail_image)
-    return;
-
-  if (thumbnail_image_) {
-    thumbnail_observer_.Remove(thumbnail_image_.get());
-    thumbnail_image_.reset();
-  }
-
-  if (thumbnail_image) {
-    if (!thumbnail_image->has_data())
-      ClearPreviewImage();
-    else
-      waiting_for_decompress_ = true;
-
-    thumbnail_image_ = thumbnail_image;
-    thumbnail_observer_.Add(thumbnail_image_.get());
-    thumbnail_image->RequestThumbnailImage();
-  }
 }
 
 void TabHoverCardBubbleView::ClearPreviewImage() {
@@ -746,10 +800,6 @@ void TabHoverCardBubbleView::OnThumbnailImageAvailable(
   preview_image_->SetPreferredSize(preview_size);
   preview_image_->SetBackground(nullptr);
   waiting_for_decompress_ = false;
-}
-
-base::Optional<gfx::Size> TabHoverCardBubbleView::GetThumbnailSizeHint() const {
-  return TabStyle::GetPreviewImageSize();
 }
 
 gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {

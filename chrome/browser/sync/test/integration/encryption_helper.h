@@ -64,6 +64,21 @@ class ServerNigoriChecker : public SingleClientStatusChangeChecker {
   const syncer::PassphraseType expected_passphrase_type_;
 };
 
+// Checker used to block until a Nigori with a given keybag encryption key name
+// is available on the server.
+class ServerNigoriKeyNameChecker : public SingleClientStatusChangeChecker {
+ public:
+  ServerNigoriKeyNameChecker(const std::string& expected_key_name,
+                             syncer::ProfileSyncService* service,
+                             fake_server::FakeServer* fake_server);
+
+  bool IsExitConditionSatisfied(std::ostream* os) override;
+
+ private:
+  fake_server::FakeServer* const fake_server_;
+  const std::string expected_key_name_;
+};
+
 // Checker used to block until Sync requires or stops requiring a passphrase.
 class PassphraseRequiredStateChecker : public SingleClientStatusChangeChecker {
  public:

@@ -37,6 +37,7 @@ source_set("payments") {
     "//components/keyed_service/ios",
     "//components/payments/core",
     "//components/payments/core:error_strings",
+    "//components/payments/core:method_strings",
     "//components/payments/mojom",
     "//components/prefs",
     "//components/security_state/core",

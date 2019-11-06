@@ -613,6 +613,8 @@ void WebAppFrameToolbarView::UpdateChildrenColor() {
     web_app_origin_text_->SetTextColor(icon_color);
   if (content_settings_container_)
     content_settings_container_->SetIconColor(icon_color);
+  if (extensions_container_)
+    extensions_container_->OverrideIconColor(icon_color);
   page_action_icon_container_view_->SetIconColor(icon_color);
   web_app_menu_button_->SetColor(icon_color);
 }

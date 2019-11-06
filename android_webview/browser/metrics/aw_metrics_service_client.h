@@ -127,6 +127,9 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
       override;
   base::TimeDelta GetStandardUploadInterval() override;
   bool ShouldStartUpFastForTesting() const override;
+
+  // Gets the embedding app's package name if it's OK to log. Otherwise, this
+  // returns the empty string.
   std::string GetAppPackageName() override;
 
  protected:

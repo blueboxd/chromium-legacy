@@ -196,7 +196,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeDefaultDevice_Ok) {
           base::UnguessableToken(), kDefaultDeviceId, listener.Get()));
 
   SyncWithAllThreads();
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, handler.release());
   SyncWithAllThreads();
 }
 
@@ -218,7 +218,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           base::UnguessableToken(), kEmptyDeviceId, listener.Get()));
 
   SyncWithAllThreads();
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, handler.release());
   SyncWithAllThreads();
 }
 
@@ -254,7 +254,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           base::UnguessableToken(), hashed_id, listener.Get()));
 
   SyncWithAllThreads();
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, handler.release());
   SyncWithAllThreads();
 }
 
@@ -288,7 +288,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           base::UnguessableToken(), hashed_id, listener.Get()));
 
   SyncWithAllThreads();
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, handler.release());
   SyncWithAllThreads();
 }
 
@@ -313,7 +313,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeInvalidDeviceId_NotFound) {
   // It is possible to request an invalid device id from JS APIs,
   // so we don't want to crash the renderer for this.
   EXPECT_EQ(process()->bad_msg_count(), 0);
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, handler.release());
   SyncWithAllThreads();
 }
 
@@ -346,7 +346,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   SyncWithAllThreads();
 
   EXPECT_EQ(process()->bad_msg_count(), 0);
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, handler.release());
   SyncWithAllThreads();
 }
 
@@ -369,7 +369,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           base::UnguessableToken::Create(), std::string(), listener.Get()));
 
   SyncWithAllThreads();
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, handler.release());
   SyncWithAllThreads();
 }
 
@@ -417,7 +417,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
           base::UnguessableToken(), hashed_id, listener.Get()));
 
   SyncWithAllThreads();
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
+  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, handler.release());
   SyncWithAllThreads();
 }
 

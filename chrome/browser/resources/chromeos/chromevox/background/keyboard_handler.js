@@ -41,8 +41,9 @@ BackgroundKeyboardHandler.prototype = {
   onKeyDown: function(evt) {
     EventSourceState.set(EventSourceType.STANDARD_KEYBOARD);
     evt.stickyMode = cvox.ChromeVox.isStickyModeOn() && cvox.ChromeVox.isActive;
-    if (cvox.ChromeVox.passThroughMode)
+    if (cvox.ChromeVox.passThroughMode) {
       return false;
+    }
 
     Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
 

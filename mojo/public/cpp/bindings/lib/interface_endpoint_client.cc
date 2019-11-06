@@ -385,8 +385,8 @@ void InterfaceEndpointClient::NotifyError(
 }
 
 void InterfaceEndpointClient::QueryVersion(
-    const base::Callback<void(uint32_t)>& callback) {
-  control_message_proxy_.QueryVersion(callback);
+    base::OnceCallback<void(uint32_t)> callback) {
+  control_message_proxy_.QueryVersion(std::move(callback));
 }
 
 void InterfaceEndpointClient::RequireVersion(uint32_t version) {

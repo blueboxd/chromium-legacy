@@ -43,7 +43,8 @@ class ThumbnailTracker {
 
   // Registers a tab to receive thumbnail updates for. Also immediately requests
   // the current thumbnail.
-  void WatchTab(content::WebContents* contents);
+  void AddTab(content::WebContents* contents);
+  void RemoveTab(content::WebContents* contents);
 
  private:
   void ThumbnailUpdated(content::WebContents* contents,

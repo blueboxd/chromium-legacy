@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
+#include "extensions/browser/content_verifier_delegate.h"
 
 namespace extensions {
 
@@ -26,11 +27,13 @@ class ContentVerifierIOData {
     // Set of file paths used as background scripts, pages or content scripts.
     std::unique_ptr<std::set<base::FilePath>> background_or_content_paths;
     base::Version version;
+    ContentVerifierDelegate::VerifierSourceType source_type;
 
     ExtensionData(
         std::unique_ptr<std::set<base::FilePath>> browser_image_paths,
         std::unique_ptr<std::set<base::FilePath>> background_or_content_paths,
-        const base::Version& version);
+        const base::Version& version,
+        ContentVerifierDelegate::VerifierSourceType source_type);
     ~ExtensionData();
   };
 

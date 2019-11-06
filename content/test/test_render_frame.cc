@@ -195,9 +195,6 @@ class MockFrameHost : public mojom::FrameHost {
 
   void FrameSizeChanged(const gfx::Size& frame_size) override {}
 
-  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override {
-  }
-
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override {}
 
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override {}
@@ -218,8 +215,6 @@ class MockFrameHost : public mojom::FrameHost {
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override {}
 #endif
-
-  void EvictFromBackForwardCache() override {}
 
   void DidChangeThemeColor(
       const base::Optional<::SkColor>& theme_color) override {}

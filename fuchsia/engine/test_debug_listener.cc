@@ -4,7 +4,9 @@
 
 #include "fuchsia/engine/test_debug_listener.h"
 
+#include "base/auto_reset.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TestDebugListener::TestDebugListener() {}
@@ -17,22 +19,29 @@ void TestDebugListener::DestroyListener(TestPerContextListener* listener) {
 void TestDebugListener::AddPort(uint16_t port) {
   EXPECT_EQ(debug_ports_.find(port), debug_ports_.end());
   debug_ports_.insert(port);
-  if (run_ack_)
-    std::move(run_ack_).Run();
+  if (on_debug_ports_changed_)
+    on_debug_ports_changed_.Run();
 }
 
 void TestDebugListener::RemovePort(uint16_t port) {
   EXPECT_EQ(debug_ports_.erase(port), 1u);
-  if (run_ack_)
-    std::move(run_ack_).Run();
+  if (on_debug_ports_changed_)
+    on_debug_ports_changed_.Run();
 }
 
 void TestDebugListener::RunUntilNumberOfPortsIs(size_t size) {
-  while (debug_ports_.size() != size) {
-    base::RunLoop run_loop;
-    run_ack_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
+  if (debug_ports_.size() == size)
+    return;
+
+  base::RunLoop run_loop;
+  base::AutoReset<base::RepeatingClosure> set_on_debug_ports_changed(
+      &on_debug_ports_changed_,
+      base::BindLambdaForTesting([this, &run_loop, size]() {
+        if (debug_ports_.size() == size)
+          run_loop.Quit();
+      }));
+  run_loop.Run();
+  EXPECT_EQ(debug_ports_.size(), size);
 }
 
 TestDebugListener::TestPerContextListener::TestPerContextListener(

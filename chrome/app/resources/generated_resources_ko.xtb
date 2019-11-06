@@ -640,7 +640,6 @@
 <translation id="1899826437968063457">플러그인 VM에 실행 권한 필요</translation>
 <translation id="1900305421498694955">Google Play의 앱이 외부 저장장치에 있는 파일을 읽고 쓰기 위해 전체 파일 시스템 액세스 권한을 요구할 수도 있습니다. 이 기기에서 생성된 파일 및 폴더는 외장 드라이브를 사용하는 모든 사람이 볼 수 있습니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">전체 선택(&amp;A)</translation>
-<translation id="1901984611178952431">로그인 데이터 관리</translation>
 <translation id="1902576642799138955">유효성 기간</translation>
 <translation id="1905375423839394163">Chromebook 기기 이름</translation>
 <translation id="1905710495812624430">허용되는 최대 시도 횟수를 초과했습니다.</translation>
@@ -691,7 +690,6 @@
 <translation id="1978006917103730774">향후 소프트웨어 및 보안 업데이트가 자동 설치됩니다.</translation>
 <translation id="1979280758666859181"><ph name="PRODUCT_NAME" />의 이전 버전으로 채널을 변경하려 합니다. 채널 버전이 현재 기기에 설치되어 있는 버전과 일치할 때 채널 변경이 적용됩니다.</translation>
 <translation id="197989455406964291">KDC가 암호화 유형을 지원하지 않습니다.</translation>
-<translation id="1981544341227357861">기기에서 보안 키를 제거한 후 다시 삽입하고 터치하세요.</translation>
 <translation id="1982354452682152483">설명이 없습니다.</translation>
 <translation id="1987317783729300807">계정</translation>
 <translation id="1989112275319619282">찾아보기</translation>
@@ -1579,7 +1577,6 @@
 <translation id="3282568296779691940">Chrome에 로그인</translation>
 <translation id="3285322247471302225">새 탭(&amp;T)</translation>
 <translation id="328571385944182268">비밀번호를 저장하시겠습니까?</translation>
-<translation id="3286737518123001369">보안 키에 저장된 로그인 데이터를 보고 삭제합니다.</translation>
 <translation id="3288047731229977326">개발자 모드로 실행 중인 확장 프로그램은 컴퓨터에 해를 줄 수 있습니다. 개발자가 아닌 경우 컴퓨터를 안전하게 사용하려면 개발자 모드로 실행 중인 확장 프로그램을 사용 중지해야 합니다.</translation>
 <translation id="3289856944988573801">업데이트를 확인하려면 이더넷 또는 Wi-Fi를 사용하세요.</translation>
 <translation id="3293644607209440645">이 페이지 전송</translation>
@@ -1749,7 +1746,6 @@
 <translation id="3543597750097719865">SHA-512를 포함한 X9.62 ECDSA 서명</translation>
 <translation id="3544879808695557954">사용자 이름(선택사항)</translation>
 <translation id="354602065659584722">유해한 소프트웨어가 삭제됨</translation>
-<translation id="3547220315004609203">탭 표시줄 전환</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
 <translation id="3550915441744863158">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="3551320343578183772">탭 닫기</translation>
@@ -2124,7 +2120,6 @@
 <translation id="4031179711345676612">마이크 허용됨</translation>
 <translation id="4031527940632463547">센서 차단됨</translation>
 <translation id="4033471457476425443">새 폴더 추가</translation>
-<translation id="403456802563765809">지문을 관리하려면 보안 키를 삽입한 다음 터치하세요.</translation>
 <translation id="4034824040120875894">프린터</translation>
 <translation id="4035758313003622889">작업 관리자(&amp;T)</translation>
 <translation id="4036778507053569103">서버에서 다운로드한 정책이 올바르지 않습니다.</translation>
@@ -3165,7 +3160,6 @@
 <translation id="5636996382092289526"><ph name="NETWORK_ID" />을(를) 사용하려면 먼저 몇 초 뒤에 자동으로 열리는 <ph name="LINK_START" />네트워크 로그인 페이지로 이동<ph name="LINK_END" />해야 합니다. 네트워크 로그인 페이지가 자동으로 열리지 않으면 네트워크를 사용할 수 없습니다.</translation>
 <translation id="5637476008227280525">모바일 데이터 사용</translation>
 <translation id="5638309510554459422"><ph name="BEGIN_LINK" />Chrome 웹 스토어<ph name="END_LINK" />에서 확장 프로그램과 테마를 찾아보세요</translation>
-<translation id="5639152092474119692">지문을 관리하려면 보안 키의 PIN을 입력하세요. PIN을 모른다면 보안 키를 재설정해야 합니다.</translation>
 <translation id="5639549361331209298">옵션을 더 보려면 이 페이지를 새로고친 다음 누르기</translation>
 <translation id="5640133431808313291">보안 키 관리</translation>
 <translation id="5642508497713047">CRL 서명자</translation>
@@ -3408,7 +3402,6 @@
 <translation id="5985458664595100876">URL 형식이 잘못되었습니다. \\server\share 및 smb://server/share 형식이 지원됩니다.</translation>
 <translation id="5990386583461751448">번역됨</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{계속 웹을 탐색하려면 관리자에게 이 애플리케이션을 삭제해 달라고 요청하세요.}other{계속 웹을 탐색하려면 관리자에게 이 애플리케이션을 삭제해 달라고 요청하세요.}}</translation>
-<translation id="5995884201513800557">지문을 저장하려면 보안 키를 계속해서 터치하세요.</translation>
 <translation id="5997337190805127100">사이트 액세스 권한 자세히 알아보기</translation>
 <translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' 검색결과 <ph name="RESULT_COUNT" />개</translation>
 <translation id="6002458620803359783">선호하는 음성</translation>
@@ -3418,7 +3411,6 @@
 <translation id="6010869025736512584">비디오 입력 장치에 액세스 중</translation>
 <translation id="6011193465932186973">지문</translation>
 <translation id="6011449291337289699">사이트 데이터 삭제</translation>
-<translation id="6013505829696424563">로그인 데이터를 보려면 보안 키의 PIN을 입력하세요. PIN을 모른다면 보안 키를 재설정해야 합니다.</translation>
 <translation id="6015266928248016057">잘못된 PUK입니다. 남은 재시도 횟수는 <ph name="RETRIES" />회입니다.</translation>
 <translation id="6015796118275082299">연도</translation>
 <translation id="6016551720757758985">이전 버전으로 돌아가서 Powerwash 확인</translation>
@@ -3973,7 +3965,6 @@
 <translation id="6840155290835956714">보내기 전에 확인</translation>
 <translation id="6840184929775541289">인증 기관 아님</translation>
 <translation id="6841186874966388268">오류</translation>
-<translation id="6841187140911216178">보안 키를 삽입 및 터치하여 로그인 데이터 보기</translation>
 <translation id="6843423766595476978">Ok Google 설정 완료</translation>
 <translation id="6845038076637626672">최대화 상태로 열기</translation>
 <translation id="6845325883481699275">Chrome 보안 강화 개선에 참여하기</translation>
@@ -5378,7 +5369,6 @@
 <translation id="8838770651474809439">햄버거</translation>
 <translation id="883911313571074303">이미지에 주석 달기</translation>
 <translation id="8845001906332463065">도움말 보기</translation>
-<translation id="8845164297565101021">보안 키를 삽입하고 터치하여 PIN을 만들거나 변경하세요.</translation>
 <translation id="8846132060409673887">이 컴퓨터의 제조업체 및 모델을 읽습니다.</translation>
 <translation id="8846141544112579928">키보드 검색 중...</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -5451,7 +5441,6 @@
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">배터리 소모가 빨라짐(현재 <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" />에서 <ph name="TAB_NAME" />와(과) 창을 공유 중입니다.</translation>
-<translation id="8945764661949477243">기기에 저장된 지문 추가, 이름 변경 및 삭제</translation>
 <translation id="8946359700442089734">이 <ph name="IDS_SHORT_PRODUCT_NAME" /> 기기에서 디버깅 기능의 사용 설정을 완료하지 못했습니다.</translation>
 <translation id="894871326938397531">시크릿 모드를 종료할까요?</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" />에서 보안 키 제조업체와 모델을 확인하려고 합니다.</translation>

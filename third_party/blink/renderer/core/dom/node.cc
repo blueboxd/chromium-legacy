@@ -1253,6 +1253,29 @@ class AllowDirtyShadowV0TraversalScope {
 #define ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(document)
 #endif  // DCHECK_IS_ON()
 
+bool Node::ShouldSkipMarkingStyleDirty() const {
+  if (GetComputedStyle())
+    return false;
+
+  ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(GetDocument());
+
+  // If we don't have a computed style, and our parent element does not have a
+  // computed style it's not necessary to mark this node for style recalc.
+  if (auto* parent = GetStyleRecalcParent()) {
+    while (parent && !parent->CanParticipateInFlatTree())
+      parent = parent->GetStyleRecalcParent();
+    return !parent || !parent->GetComputedStyle();
+  }
+  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
+    return false;
+  // If this is the root element, and it does not have a computed style, we
+  // still need to mark it for style recalc since it may change from
+  // display:none. Otherwise, the node is not in the flat tree, and we can
+  // skip marking it dirty.
+  auto* root_element = GetDocument().documentElement();
+  return root_element && root_element != this;
+}
+
 void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(GetDocument());
   ContainerNode* ancestor = GetStyleRecalcParent();
@@ -1308,6 +1331,7 @@ Element* Node::FlatTreeParentForChildDirty() const {
   if (IsChildOfV1ShadowHost()) {
     if (auto* data = GetFlatTreeNodeData())
       return data->AssignedSlot();
+    return nullptr;
   }
   if (IsInV0ShadowTree() || IsChildOfV0ShadowHost()) {
     if (ShadowRootWhereNodeCanBeDistributedForV0(*this)) {
@@ -1366,25 +1390,8 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
 
   if (!InActiveDocument())
     return;
-  if (!GetComputedStyle()) {
-    ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(GetDocument());
-    // If we don't have a computed style, and our parent element does not have a
-    // computed style it's not necessary to mark this node for style recalc.
-    if (auto* parent = GetStyleRecalcParent()) {
-      while (parent && !parent->CanParticipateInFlatTree())
-        parent = parent->GetStyleRecalcParent();
-      DCHECK(parent);
-      if (!parent->GetComputedStyle())
-        return;
-    } else if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled() &&
-               GetDocument().documentElement() != this) {
-      // If this is the root element, and it does not have a computed style, we
-      // still need to mark it for style recalc since it may change from
-      // display:none. Otherwise, the node is not in the flat tree, and we can
-      // return here.
-      return;
-    }
-  }
+  if (ShouldSkipMarkingStyleDirty())
+    return;
 
   TRACE_EVENT_INSTANT1(
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
@@ -1643,9 +1650,15 @@ void Node::SetForceReattachLayoutTree() {
     return;
   if (!InActiveDocument())
     return;
-  if (IsElementNode() && !GetComputedStyle()) {
-    DCHECK(!GetLayoutObject());
-    return;
+  if (IsElementNode()) {
+    if (!GetComputedStyle()) {
+      DCHECK(!GetLayoutObject());
+      return;
+    }
+  } else {
+    DCHECK(IsTextNode());
+    if (!GetLayoutObject() && ShouldSkipMarkingStyleDirty())
+      return;
   }
   SetFlag(kForceReattachLayoutTree);
   if (!NeedsStyleRecalc()) {

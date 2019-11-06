@@ -91,7 +91,8 @@ std::string GetCpuUarch(const CPUIdentity& cpuid) {
   auto* bound = std::lower_bound(internal::kCpuUarchTable,
                                  internal::kCpuUarchTableEnd, search_elem,
                                  internal::CpuUarchTableCmp);
-  if (bound->family_model != family_model)
+  if (bound == internal::kCpuUarchTableEnd ||
+      bound->family_model != family_model)
     return std::string();  // Unknown uarch
   return bound->uarch;
 }

@@ -303,8 +303,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebPerformance Performance() const override;
   bool IsAdSubframe() const override;
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) override;
-  WebString GetLayerTreeAsTextForTesting(
-      bool show_debug_info = false) const override;
   void PrintPagesForTesting(cc::PaintCanvas*, const WebSize&) override;
   WebRect GetSelectionBoundsRectForTesting() const override;
   void PerformMediaPlayerAction(const WebPoint&,

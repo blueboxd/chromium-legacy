@@ -293,6 +293,47 @@ TEST_F(NetworkDeviceHandlerTest,
       "usb_adapter_mac"));
 }
 
+TEST_F(NetworkDeviceHandlerTest, UsbEthernetMacAddressSourceNotSupported) {
+  ShillDeviceClient::TestInterface* device_test =
+      fake_device_client_->GetTestInterface();
+
+  constexpr char kSourceToOverride[] = "source_to_override";
+  constexpr char kUsbEthernetDevicePath[] = "usb_ethernet_device1";
+  device_test->AddDevice(kUsbEthernetDevicePath, shill::kTypeEthernet, "eth1");
+  device_test->SetDeviceProperty(
+      kUsbEthernetDevicePath, shill::kDeviceBusTypeProperty,
+      base::Value(shill::kDeviceBusTypeUsb), /*notify_changed=*/true);
+  device_test->SetDeviceProperty(kUsbEthernetDevicePath, shill::kLinkUpProperty,
+                                 base::Value(true),
+                                 /*notify_changed=*/true);
+  device_test->SetDeviceProperty(kUsbEthernetDevicePath,
+                                 shill::kUsbEthernetMacAddressSourceProperty,
+                                 base::Value(kSourceToOverride),
+                                 /*notify_changed=*/true);
+  device_test->SetUsbEthernetMacAddressSourceError(kUsbEthernetDevicePath,
+                                                   "not-supported");
+
+  network_device_handler_->SetUsbEthernetMacAddressSource("some_source1");
+  base::RunLoop().RunUntilIdle();
+
+  // Expect to do not change MAC address source property, because eth1 does not
+  // support |some_source1|.
+  ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
+      kUsbEthernetDevicePath, shill::kUsbEthernetMacAddressSourceProperty,
+      kSourceToOverride));
+
+  constexpr char kSource2[] = "some_source2";
+  device_test->SetUsbEthernetMacAddressSourceError(kUsbEthernetDevicePath, "");
+  network_device_handler_->SetUsbEthernetMacAddressSource(kSource2);
+  base::RunLoop().RunUntilIdle();
+
+  // Expect to change MAC address source property, because eth1 supports
+  // |some_source2|.
+  ASSERT_NO_FATAL_FAILURE(ExpectDeviceProperty(
+      kUsbEthernetDevicePath, shill::kUsbEthernetMacAddressSourceProperty,
+      kSource2));
+}
+
 TEST_F(NetworkDeviceHandlerTest, UsbEthernetMacAddressSource) {
   ShillDeviceClient::TestInterface* device_test =
       fake_device_client_->GetTestInterface();

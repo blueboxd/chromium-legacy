@@ -239,6 +239,7 @@ if (is_android) {
       "//base:base_java",
       "//base:jni_java",
       "//components/signin/core/browser/android:java",
+      "//components/signin/public/identity_manager/android:java",
       "//components/sync/android:sync_java",
       "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
       "//third_party/cacheinvalidation:cacheinvalidation_javalib",

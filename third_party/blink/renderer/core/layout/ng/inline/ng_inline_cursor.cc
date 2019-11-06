@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -357,6 +358,45 @@ TextDirection NGInlineCursor::CurrentBaseDirection() const {
   return TextDirection::kLtr;
 }
 
+UBiDiLevel NGInlineCursor::CurrentBidiLevel() const {
+  if (IsText()) {
+    const LayoutText& layout_text = *ToLayoutText(CurrentLayoutObject());
+    DCHECK(!layout_text.NeedsLayout()) << this;
+    const auto* const items = layout_text.GetNGInlineItems();
+    if (!items || items->size() == 0) {
+      // In case of <br>, <wbr>, text-combine-upright, etc.
+      return 0;
+    }
+    const auto& item = std::find_if(
+        items->begin(), items->end(), [this](const NGInlineItem& item) {
+          return item.StartOffset() <= CurrentTextStartOffset() &&
+                 item.EndOffset() >= CurrentTextEndOffset();
+        });
+    DCHECK(item != items->end()) << this;
+    return item->BidiLevel();
+  }
+
+  if (IsAtomicInline()) {
+    const NGPhysicalBoxFragment* fragmentainer =
+        CurrentLayoutObject()->ContainingBlockFlowFragment();
+    DCHECK(fragmentainer);
+    const LayoutBlockFlow& block_flow =
+        *To<LayoutBlockFlow>(fragmentainer->GetLayoutObject());
+    const Vector<NGInlineItem> items =
+        block_flow.GetNGInlineNodeData()->ItemsData(UsesFirstLineStyle()).items;
+    const LayoutObject* const layout_object = CurrentLayoutObject();
+    const auto* const item = std::find_if(
+        items.begin(), items.end(), [layout_object](const NGInlineItem& item) {
+          return item.GetLayoutObject() == layout_object;
+        });
+    DCHECK(item != items.end()) << this;
+    return item->BidiLevel();
+  }
+
+  NOTREACHED();
+  return 0;
+}
+
 const NGPhysicalBoxFragment* NGInlineCursor::CurrentBoxFragment() const {
   if (current_paint_fragment_) {
     return DynamicTo<NGPhysicalBoxFragment>(
@@ -439,6 +479,16 @@ const ComputedStyle& NGInlineCursor::CurrentStyle() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->Style();
   return current_item_->Style();
+}
+
+NGStyleVariant NGInlineCursor::CurrentStyleVariant() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->PhysicalFragment().StyleVariant();
+  return current_item_->StyleVariant();
+}
+
+bool NGInlineCursor::UsesFirstLineStyle() const {
+  return CurrentStyleVariant() == NGStyleVariant::kFirstLine;
 }
 
 unsigned NGInlineCursor::CurrentTextStartOffset() const {
@@ -598,6 +648,25 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   MoveToFirst();
   while (IsNotNull() && !IsInclusiveDescendantOf(layout_object))
     MoveToNext();
+}
+
+void NGInlineCursor::MoveTo(const NGInlineCursor& cursor) {
+  if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment()) {
+    MoveTo(*paint_fragment);
+    return;
+  }
+  if (cursor.current_item_) {
+    if (!fragment_items_)
+      SetRoot(*cursor.fragment_items_);
+    // Note: We use address instead of iterato because we can't compare
+    // iterators in different span. See |base::CheckedContiguousIterator<T>|.
+    const ptrdiff_t index = &*cursor.item_iter_ - &*items_.begin();
+    DCHECK_GE(index, 0);
+    DCHECK_LT(static_cast<size_t>(index), items_.size());
+    MoveToItem(items_.begin() + index);
+    return;
+  }
+  *this = cursor;
 }
 
 void NGInlineCursor::MoveTo(const NGPaintFragment& paint_fragment) {

@@ -21250,6 +21250,7 @@ Called by update_net_error_codes.py.-->
   <int value="1401" label="AUTOTESTPRIVATE_CREATENEWDESK"/>
   <int value="1402" label="AUTOTESTPRIVATE_ACTIVATEDESKATINDEX"/>
   <int value="1403" label="AUTOTESTPRIVATE_REMOVEACTIVEDESK"/>
+  <int value="1404" label="TERMINALPRIVATE_GETCROSHSETTINGS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -36449,6 +36450,7 @@ from previous Chrome versions.
   <int value="-1019967332" label="VrBrowsing:enabled"/>
   <int value="-1019492310"
       label="OmniboxUIExperimentJogTextfieldOnPopup:enabled"/>
+  <int value="-1018454657" label="SharingPeerConnectionReceiver:enabled"/>
   <int value="-1016669222" label="CloudPrinterHandler:enabled"/>
   <int value="-1016202433" label="disable-add-to-shelf"/>
   <int value="-1015006759" label="ImportantSitesInCBD:disabled"/>
@@ -37379,6 +37381,7 @@ from previous Chrome versions.
   <int value="194895489" label="passive-listeners-default"/>
   <int value="195335115" label="AudioWorkletRealtimeThread:disabled"/>
   <int value="195570937" label="EnableHomeLauncher:disabled"/>
+  <int value="198762155" label="SharingPeerConnectionSender:enabled"/>
   <int value="200347243" label="WebVRExperimentalRendering:disabled"/>
   <int value="201343576" label="enable-password-change-support:enabled"/>
   <int value="203239167" label="ImprovedGeoLanguageData:enabled"/>
@@ -37756,6 +37759,7 @@ from previous Chrome versions.
   <int value="695385040" label="enable-external-drive-rename"/>
   <int value="696261973" label="GaiaActionButtons:enabled"/>
   <int value="696600628" label="VibrateRequiresUserGesture:disabled"/>
+  <int value="697503858" label="SharingPeerConnectionSender:disabled"/>
   <int value="698273842" label="SyncSendTabToSelf:enabled"/>
   <int value="698809951" label="WebRtcHWVP8Encoding:enabled"/>
   <int value="699149897" label="ContentSuggestionsDebugLog:disabled"/>
@@ -37994,6 +37998,7 @@ from previous Chrome versions.
   <int value="1042202617" label="RemoteCopyReceiver:enabled"/>
   <int value="1043291220" label="OverviewSwipeToClose:disabled"/>
   <int value="1043334401" label="disable-slimming-paint-invalidation"/>
+  <int value="1044210009" label="SharingPeerConnectionReceiver:disabled"/>
   <int value="1044928476"
       label="AllowDownloadResumptionWithoutStrongValidators:enabled"/>
   <int value="1046878091" label="PasswordForceSaving:enabled"/>

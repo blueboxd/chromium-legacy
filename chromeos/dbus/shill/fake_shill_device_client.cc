@@ -414,7 +414,7 @@ void FakeShillDeviceClient::SetUsbEthernetMacAddressSource(
           device_path.value());
   if (error_name_iter !=
           set_usb_ethernet_mac_address_source_error_names_.end() &&
-      !error_name_iter->first.empty()) {
+      !error_name_iter->second.empty()) {
     PostError(error_name_iter->second, error_callback);
     return;
   }

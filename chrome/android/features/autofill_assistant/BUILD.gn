@@ -39,6 +39,7 @@ android_library("java") {
     "//chrome/browser/util:java",
     "//components/policy/android:policy_java",
     "//components/signin/core/browser/android:java",
+    "//components/signin/public/identity_manager/android:java",
     "//components/url_formatter/android:url_formatter_java",
     "//content/public/android:content_java",
     "//mojo/public/java:bindings_java",

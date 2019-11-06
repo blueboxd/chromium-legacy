@@ -474,10 +474,7 @@ struct IsTraceable<blink::Member<T>> {
 };
 
 template <typename T>
-struct IsWeak<blink::WeakMember<T>> {
-  STATIC_ONLY(IsWeak);
-  static const bool value = true;
-};
+struct IsWeak<blink::WeakMember<T>> : std::true_type {};
 
 template <typename T>
 struct IsTraceable<blink::WeakMember<T>> {

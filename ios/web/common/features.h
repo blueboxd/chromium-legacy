@@ -45,6 +45,9 @@ extern const base::Feature kUseWKWebViewLoading;
 // Feature flag to move -LogLoadStarted() to WebStateDidStartNavigation().
 extern const base::Feature kLogLoadStartedInDidStartNavigation;
 
+// Feature flag enabling persistent downloads.
+extern const base::Feature kEnablePersistentDownloads;
+
 // Use WKWebView.loading to update WebState::IsLoading.
 // TODO(crbug.com/1006012): Clean up this flag after experiment.
 bool UseWKWebViewLoading();

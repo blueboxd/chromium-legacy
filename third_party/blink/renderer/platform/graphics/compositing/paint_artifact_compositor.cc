@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -87,11 +88,32 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (!tracks_raster_invalidations_)
       flags &= ~kLayerTreeIncludesPaintInvalidations;
-    for (const auto& client : content_layer_clients_) {
-      layers_as_json.AddLayer(
-          client->Layer(),
-          FloatPoint(client->Layer().offset_to_transform_parent()),
-          client->State().Transform(), client.get());
+    for (const auto& layer : root_layer_->children()) {
+      if (!layer->DrawsContent() && !(flags & kLayerTreeIncludesRootLayer))
+        continue;
+      const LayerAsJSONClient* json_client = nullptr;
+      const TransformPaintPropertyNode* transform = nullptr;
+      for (const auto& client : content_layer_clients_) {
+        if (&client->Layer() == layer.get()) {
+          json_client = client.get();
+          transform = &client->State().Transform();
+          break;
+        }
+      }
+      if (!transform) {
+        for (const auto& pending_layer : pending_layers_) {
+          if (pending_layer.property_tree_state.Transform().CcNodeId(
+                  layer->property_tree_sequence_number()) ==
+              layer->transform_tree_index()) {
+            transform = &pending_layer.property_tree_state.Transform();
+            break;
+          }
+        }
+      }
+      DCHECK(transform);
+      layers_as_json.AddLayer(*layer,
+                              FloatPoint(layer->offset_to_transform_parent()),
+                              *transform, json_client);
     }
   } else {
     for (const auto& paint_chunk : paint_artifact->PaintChunks()) {
@@ -220,6 +242,47 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   return scroll_layer;
 }
 
+scoped_refptr<cc::Layer> PaintArtifactCompositor::ScrollbarLayerForPendingLayer(
+    const PaintArtifact& paint_artifact,
+    const PendingLayer& pending_layer) {
+  auto paint_chunks =
+      paint_artifact.GetPaintChunkSubset(pending_layer.paint_chunk_indices);
+  if (paint_chunks.size() != 1)
+    return nullptr;
+  const auto& paint_chunk = paint_chunks[0];
+  if (paint_chunk.size() != 1)
+    return nullptr;
+
+  const auto& item =
+      paint_artifact.GetDisplayItemList()[paint_chunk.begin_index];
+  if (!item.IsScrollbar())
+    return nullptr;
+
+  const auto& scrollbar_item = static_cast<const ScrollbarDisplayItem&>(item);
+  scoped_refptr<cc::Layer> scrollbar_layer;
+  for (auto& existing_layer : scrollbar_layers_) {
+    if (existing_layer->element_id() == scrollbar_item.ElementId())
+      scrollbar_layer = existing_layer;
+  }
+  if (scrollbar_layer) {
+    cc::Scrollbar* scrollbar = scrollbar_item.GetScrollbar();
+    if (scrollbar->NeedsRepaintPart(cc::THUMB) ||
+        scrollbar->NeedsRepaintPart(cc::TRACK_BUTTONS_TICKMARKS))
+      scrollbar_layer->SetNeedsDisplay();
+  } else {
+    scrollbar_layer = scrollbar_item.CreateLayer();
+  }
+
+  // We should never decomposite scroll translations, so we don't need to adjust
+  // the layer's offset for decomposited transforms.
+  DCHECK_EQ(FloatPoint(), pending_layer.offset_of_decomposited_transforms);
+  const IntRect& rect = scrollbar_item.GetRect();
+  scrollbar_layer->SetOffsetToTransformParent(
+      gfx::Vector2dF(FloatPoint(rect.Location())));
+  scrollbar_layer->SetBounds(gfx::Size(rect.Size()));
+  return scrollbar_layer;
+}
+
 std::unique_ptr<ContentLayerClientImpl>
 PaintArtifactCompositor::ClientForPaintChunk(const PaintChunk& paint_chunk) {
   // TODO(chrishtr): for now, just using a linear walk. In the future we can
@@ -241,7 +304,8 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
     scoped_refptr<const PaintArtifact> paint_artifact,
     const PendingLayer& pending_layer,
     Vector<std::unique_ptr<ContentLayerClientImpl>>& new_content_layer_clients,
-    Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers) {
+    Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers,
+    Vector<scoped_refptr<cc::Layer>>& new_scrollbar_layers) {
   auto paint_chunks =
       paint_artifact->GetPaintChunkSubset(pending_layer.paint_chunk_indices);
   DCHECK(paint_chunks.size());
@@ -265,6 +329,14 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
     if (extra_data_for_testing_enabled_)
       extra_data_for_testing_->scroll_hit_test_layers.push_back(scroll_layer);
     return scroll_layer;
+  }
+
+  if (scoped_refptr<cc::Layer> scrollbar_layer =
+          ScrollbarLayerForPendingLayer(*paint_artifact, pending_layer)) {
+    new_scrollbar_layers.push_back(scrollbar_layer);
+    if (extra_data_for_testing_enabled_)
+      extra_data_for_testing_->scrollbar_layers.push_back(scrollbar_layer);
+    return scrollbar_layer;
   }
 
   // The common case: create or reuse a PictureLayer for painted content.
@@ -417,6 +489,7 @@ void PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
 
 static bool CanUpcastTo(const PropertyTreeState& guest,
                         const PropertyTreeState& home);
+
 bool PaintArtifactCompositor::PendingLayer::CanMerge(
     const PendingLayer& guest,
     const PropertyTreeState& guest_state) const {
@@ -619,6 +692,15 @@ static bool SkipGroupIfEffectivelyInvisible(
   return true;
 }
 
+static bool IsCompositedScrollbar(const DisplayItem& item) {
+  if (!item.IsScrollbar())
+    return false;
+  const auto* scroll_translation =
+      static_cast<const ScrollbarDisplayItem&>(item).ScrollTranslation();
+  return scroll_translation &&
+         scroll_translation->HasDirectCompositingReasons();
+}
+
 void PaintArtifactCompositor::LayerizeGroup(
     const PaintArtifact& paint_artifact,
     const Settings& settings,
@@ -666,7 +748,8 @@ void PaintArtifactCompositor::LayerizeGroup(
       bool requires_own_layer = last_display_item.IsForeignLayer() ||
                                 // TODO(pdr): This should require a direct
                                 // compositing reason.
-                                item_for_scrolling;
+                                item_for_scrolling ||
+                                IsCompositedScrollbar(last_display_item);
       pending_layers_.emplace_back(
           *chunk_it, chunk_it - paint_artifact.PaintChunks().begin(),
           requires_own_layer);
@@ -995,6 +1078,7 @@ void PaintArtifactCompositor::Update(
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers_.size());
   Vector<scoped_refptr<cc::Layer>> new_scroll_hit_test_layers;
+  Vector<scoped_refptr<cc::Layer>> new_scrollbar_layers;
 
   // Maps from cc effect id to blink effects. Containing only the effects
   // having composited layers.
@@ -1024,7 +1108,7 @@ void PaintArtifactCompositor::Update(
 
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
         paint_artifact, pending_layer, new_content_layer_clients,
-        new_scroll_hit_test_layers);
+        new_scroll_hit_test_layers, new_scrollbar_layers);
 
     // In Pre-CompositeAfterPaint, touch action rects and non-fast scrollable
     // regions are updated through ScrollingCoordinator.
@@ -1084,6 +1168,7 @@ void PaintArtifactCompositor::Update(
   property_tree_manager.Finalize();
   content_layer_clients_.swap(new_content_layer_clients);
   scroll_hit_test_layers_.swap(new_scroll_hit_test_layers);
+  scrollbar_layers_.swap(new_scrollbar_layers);
 
   auto pos = std::remove_if(synthesized_clip_cache_.begin(),
                             synthesized_clip_cache_.end(),

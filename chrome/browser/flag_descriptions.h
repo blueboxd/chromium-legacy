@@ -1098,6 +1098,12 @@ extern const char kSharedClipboardUIDescription[];
 extern const char kSharingDeviceRegistrationName[];
 extern const char kSharingDeviceRegistrationDescription[];
 
+extern const char kSharingPeerConnectionReceiverName[];
+extern const char kSharingPeerConnectionReceiverDescription[];
+
+extern const char kSharingPeerConnectionSenderName[];
+extern const char kSharingPeerConnectionSenderDescription[];
+
 extern const char kSharingUseDeviceInfoName[];
 extern const char kSharingUseDeviceInfoDescription[];
 

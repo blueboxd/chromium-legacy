@@ -153,6 +153,10 @@ extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 extern const char kEnableClipboardProviderTextSuggestionsName[];
 extern const char kEnableClipboardProviderTextSuggestionsDescription[];
 
+// Title and description for the flag to enable persistent downloads.
+extern const char kEnablePersistentDownloadsName[];
+extern const char kEnablePersistentDownloadsDescription[];
+
 extern const char kEnableSyncUSSPasswordsName[];
 extern const char kEnableSyncUSSPasswordsDescription[];
 

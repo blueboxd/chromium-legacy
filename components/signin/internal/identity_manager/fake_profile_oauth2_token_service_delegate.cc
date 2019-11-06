@@ -172,7 +172,6 @@ void FakeProfileOAuth2TokenServiceDelegate::UpdateAuthError(
 #if defined(OS_ANDROID)
 base::android::ScopedJavaLocalRef<jobject>
 FakeProfileOAuth2TokenServiceDelegate::GetJavaObject() {
-  NOTREACHED();
   return base::android::ScopedJavaLocalRef<jobject>();
 }
 #endif

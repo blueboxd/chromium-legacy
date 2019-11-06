@@ -179,14 +179,10 @@ void BackForwardCacheMetrics::CollectFeatureUsageFromSubtree(
   }
 }
 
-void BackForwardCacheMetrics::MarkNotRestoredWithReasons(
-    const BackForwardCacheMetrics::NotRestoredReasons& reasons) {
-  not_restored_reasons_ |= reasons;
-}
-
-void BackForwardCacheMetrics::MarkNotRestoredWithBlocklistedFeatures(
-    uint64_t blocklisted_features) {
-  blocklisted_features_ |= blocklisted_features;
+void BackForwardCacheMetrics::MarkNotRestoredWithReason(
+    const BackForwardCacheCanStoreDocumentResult& can_store) {
+  not_restored_reasons_ |= can_store.not_stored_reasons();
+  blocklisted_features_ |= can_store.blocklisted_features();
 }
 
 void BackForwardCacheMetrics::MarkDisableForRenderFrameHost(

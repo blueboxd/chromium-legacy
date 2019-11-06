@@ -251,10 +251,10 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
     return PP_ERROR_FAILED;
   }
 
-  web_request.SetRequestContext(blink::mojom::RequestContextType::PLUGIN);
-
-  // Requests from plug-ins must skip service workers, see the comment in
-  // CreateWebURLRequest.
+  // Requests from plug-ins must be marked as PLUGIN, and must skip service
+  // workers, see the comment in CreateWebURLRequest.
+  DCHECK_EQ(blink::mojom::RequestContextType::PLUGIN,
+            web_request.GetRequestContext());
   DCHECK(web_request.GetSkipServiceWorker());
 
   WebAssociatedURLLoaderOptions options;

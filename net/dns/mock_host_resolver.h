@@ -156,8 +156,8 @@ class MockHostResolverBase
   // Detach cancelled request.
   void DetachRequest(size_t id);
 
-  // Returns the request with the given id.
-  RequestImpl* request(size_t id);
+  // Returns the hostname of the request with the given id.
+  const std::string& request_host(size_t id);
 
   // Returns the priority of the request with the given id.
   RequestPriority request_priority(size_t id);
@@ -228,6 +228,9 @@ class MockHostResolverBase
   friend class MockHostResolverFactory;
 
   typedef std::map<size_t, RequestImpl*> RequestMap;
+
+  // Returns the request with the given id.
+  RequestImpl* request(size_t id);
 
   // If > 0, |cache_invalidation_num| is the number of times a cached entry can
   // be read before it invalidates itself. Useful to force cache expiration

@@ -397,6 +397,9 @@ Polymer({
     this.isCancelDisabled =
         (step == ENROLLMENT_STEP.SIGNIN && !this.isManualEnrollment_) ||
         step == ENROLLMENT_STEP.AD_JOIN || step == ENROLLMENT_STEP.WORKING;
+
+    this.currentStep_ = step;
+
     if (this.isErrorStep_(step)) {
       this.$['oauth-enroll-error-card'].submitButton.focus();
     } else if (step == ENROLLMENT_STEP.SIGNIN) {
@@ -413,7 +416,6 @@ Polymer({
       this.offlineAdUi_.focus();
     }
 
-    this.currentStep_ = step;
     this.lastBackMessageValue_ = false;
     this.updateControlsState();
   },

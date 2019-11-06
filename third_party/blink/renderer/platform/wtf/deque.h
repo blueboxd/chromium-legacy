@@ -691,19 +691,19 @@ Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
       if (start_ <= end_) {
         for (const T* buffer_entry = buffer_begin + start_; buffer_entry != end;
              buffer_entry++) {
-          Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+          Allocator::template Trace<T, VectorTraits<T>>(
               visitor, *const_cast<T*>(buffer_entry));
         }
       } else {
         for (const T* buffer_entry = buffer_begin; buffer_entry != end;
              buffer_entry++) {
-          Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+          Allocator::template Trace<T, VectorTraits<T>>(
               visitor, *const_cast<T*>(buffer_entry));
         }
         const T* buffer_end = buffer_.Buffer() + buffer_.capacity();
         for (const T* buffer_entry = buffer_begin + start_;
              buffer_entry != buffer_end; buffer_entry++) {
-          Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+          Allocator::template Trace<T, VectorTraits<T>>(
               visitor, *const_cast<T*>(buffer_entry));
         }
       }

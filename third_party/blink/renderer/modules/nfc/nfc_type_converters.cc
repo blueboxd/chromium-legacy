@@ -21,7 +21,6 @@ using device::mojom::blink::NDEFPushOptions;
 using device::mojom::blink::NDEFPushOptionsPtr;
 using device::mojom::blink::NDEFRecord;
 using device::mojom::blink::NDEFRecordPtr;
-using device::mojom::blink::NDEFRecordTypeFilter;
 using device::mojom::blink::NDEFScanOptions;
 using device::mojom::blink::NDEFScanOptionsPtr;
 
@@ -83,8 +82,7 @@ TypeConverter<NDEFScanOptionsPtr, const blink::NDEFScanOptions*>::Convert(
   scanOptionsPtr->media_type = scanOptions->mediaType();
 
   if (scanOptions->hasRecordType()) {
-    scanOptionsPtr->record_filter = NDEFRecordTypeFilter::New();
-    scanOptionsPtr->record_filter->record_type = scanOptions->recordType();
+    scanOptionsPtr->record_type = scanOptions->recordType();
   }
 
   return scanOptionsPtr;

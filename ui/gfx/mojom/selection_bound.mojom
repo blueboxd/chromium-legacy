@@ -19,6 +19,8 @@ struct SelectionBound {
   SelectionBoundType type;
   gfx.mojom.PointF edge_top;
   gfx.mojom.PointF edge_bottom;
+  gfx.mojom.PointF visible_edge_top;
+  gfx.mojom.PointF visible_edge_bottom;
   bool visible;
 };
 

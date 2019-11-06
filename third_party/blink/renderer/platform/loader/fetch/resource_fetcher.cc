@@ -1891,7 +1891,6 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
   DCHECK(resource);
   DCHECK(resource->StillNeedsLoad());
 
-  ResourceRequest request(resource->GetResourceRequest());
   ResourceLoader* loader = nullptr;
 
   {
@@ -1906,6 +1905,7 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
       return false;
     }
 
+    const auto& request = resource->GetResourceRequest();
     ResourceResponse response;
 
     resource->VirtualTimePauser().PauseVirtualTime();
@@ -1915,10 +1915,6 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
           resource->InspectorId(), request, response, resource->GetType(),
           resource->Options().initiator_info);
     }
-    // TODO(shaochuan): Saving modified ResourceRequest back to |resource|,
-    // remove once dispatchWillSendRequest() takes const ResourceRequest.
-    // crbug.com/632580
-    resource->SetResourceRequest(request);
 
     using QuotaType = decltype(inflight_keepalive_bytes_);
     QuotaType size = 0;

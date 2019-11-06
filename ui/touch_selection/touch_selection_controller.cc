@@ -271,6 +271,15 @@ gfx::RectF TouchSelectionController::GetRectBetweenBounds() const {
   return RectFBetweenSelectionBounds(start_, end_);
 }
 
+gfx::RectF TouchSelectionController::GetVisibleRectBetweenBounds() const {
+  // Short-circuit for efficiency.
+  if (active_status_ == INACTIVE)
+    return gfx::RectF();
+
+  // Returns the rect of the entire visible selection rect.
+  return RectFBetweenVisibleSelectionBounds(start_, end_);
+}
+
 gfx::RectF TouchSelectionController::GetStartHandleRect() const {
   if (active_status_ == INSERTION_ACTIVE)
     return insertion_handle_->GetVisibleBounds();

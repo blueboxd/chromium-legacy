@@ -270,8 +270,14 @@ void OverviewWallpaperController::OnBlurChangeCrossFade(
 
     ui::Layer* original_layer = wallpaper_window->layer();
     original_layer->GetAnimator()->StopAnimating();
+    // Tablet mode wallpaper is already dimmed, so no need to change the
+    // opacity.
+    const float dimming =
+        Shell::Get()->tablet_mode_controller()->InTabletMode() || !should_blur
+            ? 1.f
+            : kShieldOpacity;
     wallpaper_widget_controller->wallpaper_view()->RepaintBlurAndOpacity(
-        should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma, 1.f);
+        should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma, dimming);
     original_layer->SetOpacity(should_blur ? 0.f : 1.f);
 
     ui::Layer* copy_layer = copy_layer_tree ? copy_layer_tree->root() : nullptr;
@@ -292,7 +298,7 @@ void OverviewWallpaperController::OnBlurChangeCrossFade(
           copy_layer->GetAnimator());
       copy_settings->SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kBlurSlideDurationMs));
-      copy_settings->SetTweenType(gfx::Tween::EASE_OUT);
+      copy_settings->SetTweenType(gfx::Tween::EASE_IN);
       copy_settings->AddObserver(this);
 
       animating_copies_.emplace_back(std::move(copy_layer_tree));
@@ -300,12 +306,7 @@ void OverviewWallpaperController::OnBlurChangeCrossFade(
       state_ = WallpaperAnimationState::kNormal;
     }
 
-    // Tablet mode wallpaper is already dimmed, so no need to change the
-    // opacity.
-    float target_opacity =
-        Shell::Get()->tablet_mode_controller()->InTabletMode() ? 1.f
-                                                               : kShieldOpacity;
-    original_layer->SetOpacity(should_blur ? target_opacity : 1.f);
+    original_layer->SetOpacity(1.f);
     if (copy_layer)
       copy_layer->SetOpacity(0.f);
   }

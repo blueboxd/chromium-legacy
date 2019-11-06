@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -258,7 +257,6 @@ void EventHandler::Clear() {
   frame_set_being_resized_ = nullptr;
   drag_target_ = nullptr;
   should_only_fire_drag_over_event_ = false;
-  last_mouse_down_user_gesture_token_ = nullptr;
   capturing_mouse_events_element_ = nullptr;
   capturing_subframe_element_ = nullptr;
   pointer_event_manager_->Clear();
@@ -755,15 +753,12 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   }
 
   if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
-                                                            *frame_))
+                                                            *frame_)) {
     return WebInputEventResult::kHandledSuppressed;
+  }
 
-  std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(frame_, true);
-  frame_->LocalFrameRoot()
-      .GetEventHandler()
-      .last_mouse_down_user_gesture_token_ =
-      UserGestureIndicator::CurrentToken();
+  LocalFrame::NotifyUserActivation(frame_, true);
+
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
     // We store whether middle click autoscroll is in progress before calling
     // stopAutoscroll() because it will set m_autoscrollType to NoAutoscroll on
@@ -1144,25 +1139,10 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
 
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
 
-  std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
                                                             *frame_)) {
     event_result = WebInputEventResult::kHandledSuppressed;
   } else {
-    // Mouse events will be associated with the Document where mousedown
-    // occurred. If, e.g., there is a mousedown, then a drag to a different
-    // Document and mouseup there, the mouseup's gesture will be associated with
-    // the mousedown's Document. It's not absolutely certain that this is the
-    // correct behavior.
-    if (frame_->LocalFrameRoot()
-            .GetEventHandler()
-            .last_mouse_down_user_gesture_token_) {
-      gesture_indicator = std::make_unique<UserGestureIndicator>(
-          std::move(frame_->LocalFrameRoot()
-                        .GetEventHandler()
-                        .last_mouse_down_user_gesture_token_));
-    }
-
     event_result = DispatchMousePointerEvent(
         WebInputEvent::kPointerUp, mev.InnerElement(), mev.CanvasRegionId(),
         mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>(),

@@ -379,7 +379,7 @@ struct VectorTypeOperations {
 //
 // Not meant for general consumption.
 
-template <typename T, bool hasInlineCapacity, typename Allocator>
+template <typename T, typename Allocator>
 class VectorBufferBase {
   DISALLOW_NEW();
 
@@ -391,16 +391,7 @@ class VectorBufferBase {
     size_t size_to_allocate = AllocationSize(new_capacity);
     buffer_ = Allocator::template AllocateVectorBacking<T>(size_to_allocate);
     capacity_ = static_cast<wtf_size_t>(size_to_allocate / sizeof(T));
-    Allocator::BackingWriteBarrier(buffer_, 0);
-  }
-
-  void AllocateExpandedBuffer(wtf_size_t new_capacity) {
-    DCHECK(new_capacity);
-    size_t size_to_allocate = AllocationSize(new_capacity);
-    buffer_ =
-        Allocator::template AllocateExpandedVectorBacking<T>(size_to_allocate);
-    capacity_ = static_cast<wtf_size_t>(size_to_allocate / sizeof(T));
-    Allocator::BackingWriteBarrier(buffer_, 0);
+    Allocator::BackingWriteBarrier(buffer_);
   }
 
   size_t AllocationSize(size_t capacity) const {
@@ -469,10 +460,9 @@ template <typename T,
 class VectorBuffer;
 
 template <typename T, typename Allocator>
-class VectorBuffer<T, 0, Allocator>
-    : protected VectorBufferBase<T, false, Allocator> {
+class VectorBuffer<T, 0, Allocator> : protected VectorBufferBase<T, Allocator> {
  private:
-  using Base = VectorBufferBase<T, false, Allocator>;
+  using Base = VectorBufferBase<T, Allocator>;
 
  public:
   using OffsetRange = typename Base::OffsetRange;
@@ -530,8 +520,8 @@ class VectorBuffer<T, 0, Allocator>
     std::swap(buffer_, other.buffer_);
     std::swap(capacity_, other.capacity_);
     std::swap(size_, other.size_);
-    Allocator::BackingWriteBarrier(buffer_, size_);
-    Allocator::BackingWriteBarrier(other.buffer_, other.size_);
+    Allocator::BackingWriteBarrier(buffer_);
+    Allocator::BackingWriteBarrier(other.buffer_);
   }
 
   using Base::AllocateBuffer;
@@ -560,9 +550,9 @@ class VectorBuffer<T, 0, Allocator>
 };
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
-class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
+class VectorBuffer : protected VectorBufferBase<T, Allocator> {
  private:
-  using Base = VectorBufferBase<T, true, Allocator>;
+  using Base = VectorBufferBase<T, Allocator>;
 
  public:
   using OffsetRange = typename Base::OffsetRange;
@@ -636,13 +626,6 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       ResetBufferPointer();
   }
 
-  void AllocateExpandedBuffer(wtf_size_t new_capacity) {
-    if (new_capacity > inlineCapacity)
-      Base::AllocateExpandedBuffer(new_capacity);
-    else
-      ResetBufferPointer();
-  }
-
   size_t AllocationSize(size_t capacity) const {
     if (capacity <= inlineCapacity)
       return kInlineBufferSize;
@@ -677,8 +660,8 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       std::swap(buffer_, other.buffer_);
       std::swap(capacity_, other.capacity_);
       std::swap(size_, other.size_);
-      Allocator::BackingWriteBarrier(buffer_, size_);
-      Allocator::BackingWriteBarrier(other.buffer_, other.size_);
+      Allocator::BackingWriteBarrier(buffer_);
+      Allocator::BackingWriteBarrier(other.buffer_);
       return;
     }
 
@@ -739,7 +722,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       other.buffer_ = other.InlineBuffer();
       std::swap(size_, other.size_);
       ANNOTATE_NEW_BUFFER(other.buffer_, inlineCapacity, other.size_);
-      Allocator::BackingWriteBarrier(buffer_, size_);
+      Allocator::BackingWriteBarrier(buffer_);
     } else if (!this_source_begin &&
                other_source_begin) {  // Their buffer is inline, ours is not.
       DCHECK_NE(Buffer(), InlineBuffer());
@@ -749,7 +732,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       buffer_ = InlineBuffer();
       std::swap(size_, other.size_);
       ANNOTATE_NEW_BUFFER(buffer_, inlineCapacity, size_);
-      Allocator::BackingWriteBarrier(other.buffer_, other.size_);
+      Allocator::BackingWriteBarrier(other.buffer_);
     } else {  // Both buffers are inline.
       DCHECK(this_source_begin);
       DCHECK(other_source_begin);
@@ -1651,7 +1634,7 @@ void Vector<T, inlineCapacity, Allocator>::ReserveCapacity(
   CHECK(Allocator::IsAllocationAllowed());
 
   T* old_end = end();
-  Base::AllocateExpandedBuffer(new_capacity);
+  Base::AllocateBuffer(new_capacity);
   ANNOTATE_NEW_BUFFER(begin(), capacity(), size_);
   TypeOperations::Move(old_buffer, old_end, begin());
   ClearUnusedSlots(old_buffer, old_end);
@@ -1987,7 +1970,7 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
     if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {
       for (const T* buffer_entry = buffer_begin; buffer_entry != buffer_end;
            buffer_entry++) {
-        Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+        Allocator::template Trace<T, VectorTraits<T>>(
             visitor, *const_cast<T*>(buffer_entry));
       }
       CheckUnusedSlots(Buffer() + size(), Buffer() + capacity());

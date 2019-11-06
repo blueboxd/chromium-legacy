@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/platform_thread.h"
@@ -49,6 +50,7 @@
 #include "ui/ozone/public/mojom/drm_device.mojom.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+#include "ui/ozone/public/platform_screen.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -92,6 +94,11 @@ class OzonePlatformGbm : public OzonePlatform {
     } else {
       return gpu_message_filter_.get();
     }
+  }
+
+  std::unique_ptr<PlatformScreen> CreateScreen() override {
+    NOTREACHED();
+    return nullptr;
   }
 
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {

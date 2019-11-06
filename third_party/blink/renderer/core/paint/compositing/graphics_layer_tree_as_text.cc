@@ -14,9 +14,10 @@ namespace blink {
 namespace {
 
 std::unique_ptr<JSONObject> GraphicsLayerAsJSON(const GraphicsLayer* layer,
-                                                LayerTreeFlags flags,
-                                                const FloatPoint& position) {
-  auto json = CCLayerAsJSON(layer->CcLayer(), flags, position);
+                                                LayerTreeFlags flags) {
+  // Intentionally passing through 0, 0 for the offset from the transform node
+  // as this dump implementation doesn't support transform/position information.
+  auto json = CCLayerAsJSON(layer->CcLayer(), flags, FloatPoint());
 
   // Content dumped after this point, down to AppendAdditionalInfoAsJSON, is
   // specific to GraphicsLayer tree dumping when called from one of the methods
@@ -40,9 +41,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(const GraphicsLayer* layer,
   // dumping code paths.
   if (layer->MaskLayer()) {
     auto mask_layer_json = std::make_unique<JSONArray>();
-    mask_layer_json->PushObject(
-        GraphicsLayerAsJSON(layer->MaskLayer(), flags,
-                            FloatPoint(layer->MaskLayer()->GetPosition())));
+    mask_layer_json->PushObject(GraphicsLayerAsJSON(layer->MaskLayer(), flags));
     json->SetArray("maskLayer", std::move(mask_layer_json));
   }
 
@@ -63,8 +62,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(const GraphicsLayer* layer,
 std::unique_ptr<JSONObject> GraphicsLayerTreeAsJSON(const GraphicsLayer* layer,
                                                     LayerTreeFlags flags) {
   DCHECK(flags & kOutputAsLayerTree);
-  std::unique_ptr<JSONObject> json =
-      GraphicsLayerAsJSON(layer, flags, FloatPoint(layer->GetPosition()));
+  std::unique_ptr<JSONObject> json = GraphicsLayerAsJSON(layer, flags);
   if (layer->Children().size()) {
     auto children_json = std::make_unique<JSONArray>();
     for (wtf_size_t i = 0; i < layer->Children().size(); i++) {

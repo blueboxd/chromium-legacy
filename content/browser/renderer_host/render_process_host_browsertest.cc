@@ -1274,6 +1274,53 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, LowPriorityFramesDisabled) {
   RenderProcessHost::SetRunRendererInProcess(false);
 }
 
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, PriorityOverride) {
+  // RenderProcessHostImpl::UpdateProcessPriority has an early check of
+  // run_renderer_in_process and exits for RenderProcessHosts without a child
+  // process launcher.  In order to skip initializing that here and the layer of
+  // indirection, we explicitly run in-process, which we must also disable once
+  // the test has finished to prevent crashing on exit.
+  RenderProcessHost::SetRunRendererInProcess(true);
+  RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
+      RenderProcessHostImpl::CreateRenderProcessHost(
+          ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
+          false /* is_for_guests_only */));
+
+  // It starts off as normal priority with no override.
+  EXPECT_FALSE(process->HasPriorityOverride());
+  EXPECT_FALSE(process->IsProcessBackgrounded());
+
+  process->SetPriorityOverride(false /* foreground */);
+  EXPECT_TRUE(process->HasPriorityOverride());
+  EXPECT_TRUE(process->IsProcessBackgrounded());
+
+  process->SetPriorityOverride(true /* foreground */);
+  EXPECT_TRUE(process->HasPriorityOverride());
+  EXPECT_FALSE(process->IsProcessBackgrounded());
+
+  process->SetPriorityOverride(false /* foreground */);
+  EXPECT_TRUE(process->HasPriorityOverride());
+  EXPECT_TRUE(process->IsProcessBackgrounded());
+
+  // Add a pending view, and expect the process to *stay* backgrounded.
+  process->AddPendingView();
+  EXPECT_TRUE(process->HasPriorityOverride());
+  EXPECT_TRUE(process->IsProcessBackgrounded());
+
+  // Clear the override. The pending view should cause the process to go back to
+  // being foregrounded.
+  process->ClearPriorityOverride();
+  EXPECT_FALSE(process->HasPriorityOverride());
+  EXPECT_FALSE(process->IsProcessBackgrounded());
+
+  // Clear the pending view so the test doesn't explode.
+  process->RemovePendingView();
+  EXPECT_FALSE(process->HasPriorityOverride());
+  EXPECT_TRUE(process->IsProcessBackgrounded());
+
+  RenderProcessHost::SetRunRendererInProcess(false);
+}
+
 // This test verifies properties of RenderProcessHostImpl *before* Init method
 // is called.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ConstructedButNotInitializedYet) {

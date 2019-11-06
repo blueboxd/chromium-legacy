@@ -6,6 +6,13 @@
 #ifndef NET_QUIC_QUIC_CHROMIUM_PACKET_READER_H_
 #define NET_QUIC_QUIC_CHROMIUM_PACKET_READER_H_
 
+#include "build/build_config.h"
+
+// TODO(zhongyi): Temporary while investigating https://crbug.com/1014092.
+#ifndef OS_ANDROID
+#define TEMP_INSTRUMENTATION_1014092
+#include "base/debug/stack_trace.h"
+#endif
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
@@ -58,9 +65,20 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   void SetShouldStopReading() {
     DCHECK(!should_stop_reading_);
     should_stop_reading_ = true;
+    socket_ = nullptr;
   }
 
  private:
+#ifdef TEMP_INSTRUMENTATION_1014092
+  // TODO(zhongyi): Temporary while investigating http://crbug.com/1014092.
+  enum Liveness {
+    ALIVE = 0xCA11AB13,
+    DEAD = 0xDEADBEEF,
+  };
+#endif
+  // TODO(zhongyi): Temporary while investigating http://crbug.com/1014092.
+  void CrashIfInvalid() const;
+
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
   // Return true if reading should continue.
@@ -79,6 +97,12 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   quic::QuicTime yield_after_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
   NetLogWithSource net_log_;
+
+#ifdef TEMP_INSTRUMENTATION_1014092
+  // TODO(zhongyi): Temporary while investigating http://crbug.com/1014092.
+  Liveness liveness_ = ALIVE;
+  base::debug::StackTrace stack_trace_;
+#endif
 
   base::WeakPtrFactory<QuicChromiumPacketReader> weak_factory_{this};
 

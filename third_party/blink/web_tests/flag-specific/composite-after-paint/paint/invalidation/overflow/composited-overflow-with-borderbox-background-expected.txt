@@ -29,6 +29,18 @@
     },
     {
       "name": "HorizontalScrollbar",
+      "position": [10, 195],
+      "bounds": [185, 15],
+      "transform": 1
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [195, 10],
+      "bounds": [15, 185],
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='scroller'",
       "bounds": [220, 220],
       "paintInvalidations": [
         {

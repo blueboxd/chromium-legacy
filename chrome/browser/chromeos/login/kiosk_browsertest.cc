@@ -1660,8 +1660,16 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
               /*wait_for_app_data=*/true);
 }
 
+// crbug.com/949490
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_LaunchCachedOfflineEnabledAppNoNetwork \
+  DISABLED_LaunchCachedOfflineEnabledAppNoNetwork
+#else
+#define MAYBE_LaunchCachedOfflineEnabledAppNoNetwork \
+  LaunchCachedOfflineEnabledAppNoNetwork
+#endif
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
-                       LaunchCachedOfflineEnabledAppNoNetwork) {
+                       MAYBE_LaunchCachedOfflineEnabledAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   EXPECT_TRUE(
       KioskAppManager::Get()->HasCachedCrx(kTestOfflineEnabledKioskApp));

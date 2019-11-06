@@ -12,6 +12,11 @@
           "reason": "geometry"
         },
         {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [8, 50, 320, 120],
+          "reason": "geometry"
+        },
+        {
           "object": "HorizontalScrollbar",
           "rect": [18, 145, 285, 15],
           "reason": "scroll control"

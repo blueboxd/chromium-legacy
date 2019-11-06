@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.util.UrlConstants;
 import androidx.annotation.Nullable;
 
 /**
- * A class to canonically represent a web origin in Java. In comparison to
+ * A class to canonically represent a HTTP or HTTPS web origin in Java. In comparison to
  * {@link org.chromium.net.GURLUtils#getOrigin} it can be used before native is loaded and lets us
  * ensure conversion to an origin has been done with the type system.
  *
@@ -32,7 +32,8 @@ public class Origin {
     }
 
     /**
-     * Constructs a canonical Origin from a String.
+     * Constructs a canonical Origin from a String. Will return {@code null} for origins that are
+     * not HTTP or HTTPS.
      */
     @Nullable
     public static Origin create(String uri) {
@@ -40,7 +41,8 @@ public class Origin {
     }
 
     /**
-     * Constructs a canonical Origin from an Uri.
+     * Constructs a canonical Origin from an Uri. Will return {@code null} for origins that are not
+     * HTTP or HTTPS.
      */
     @Nullable
     public static Origin create(Uri uri) {
@@ -48,9 +50,14 @@ public class Origin {
             return null;
         }
 
+        // This class can only correctly handle certain origins, see https://crbug.com/1019244.
+        String scheme = uri.getScheme();
+        if (!scheme.equals(UrlConstants.HTTP_SCHEME) && !scheme.equals(UrlConstants.HTTPS_SCHEME)) {
+            return null;
+        }
+
         // Make explicit ports implicit and remove any user:password.
         int port = uri.getPort();
-        String scheme = uri.getScheme();
         if (scheme.equals(UrlConstants.HTTP_SCHEME) && port == HTTP_DEFAULT_PORT) port = -1;
         if (scheme.equals(UrlConstants.HTTPS_SCHEME) && port == HTTPS_DEFAULT_PORT) port = -1;
 

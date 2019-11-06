@@ -238,20 +238,26 @@ public final class OAuth2TokenService
 
     /**
      * Invalidates the old token (if non-null/non-empty) and asynchronously generates a new one.
+     *
+     * @deprecated Use invalidateAccessToken and getAccessToken instead. crbug.com/1002894: This
+     *         method is needed by InvalidationClientService which is not necessary anymore.
+     *
      * @param account the account to get the access token for.
      * @param oldToken The old token to be invalidated or null.
      * @param scope The scope to get an auth token for (with Android-style 'oauth2:' prefix).
      * @param callback called on successful and unsuccessful fetching of auth token.
      */
-    public static void getNewAccessToken(Account account, @Nullable String oldToken, String scope,
+    @Deprecated
+    public static void getNewAccessTokenWithFacade(AccountManagerFacade accountManagerFacade,
+            Account account, @Nullable String oldToken, String scope,
             GetAccessTokenCallback callback) {
         ConnectionRetry.runAuthTask(new AuthTask<String>() {
             @Override
             public String run() throws AuthException {
                 if (!TextUtils.isEmpty(oldToken)) {
-                    AccountManagerFacade.get().invalidateAccessToken(oldToken);
+                    accountManagerFacade.invalidateAccessToken(oldToken);
                 }
-                return AccountManagerFacade.get().getAccessToken(account, scope);
+                return accountManagerFacade.getAccessToken(account, scope);
             }
             @Override
             public void onSuccess(String token) {

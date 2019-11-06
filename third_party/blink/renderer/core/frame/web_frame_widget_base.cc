@@ -13,7 +13,6 @@
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -338,7 +337,6 @@ void WebFrameWidgetBase::DidNotAcquirePointerLock() {
 }
 
 void WebFrameWidgetBase::DidLosePointerLock() {
-  pointer_lock_gesture_token_ = nullptr;
   GetPage()->GetPointerLockController().DidLosePointerLock();
 }
 
@@ -363,25 +361,20 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(local_root_->GetFrameView(), mouse_event);
 
-  std::unique_ptr<UserGestureIndicator> gesture_indicator;
   AtomicString event_type;
   switch (input_event.GetType()) {
     case WebInputEvent::kMouseDown:
       event_type = event_type_names::kMousedown;
       if (!GetPage() || !GetPage()->GetPointerLockController().GetElement())
         break;
-      gesture_indicator =
-          LocalFrame::NotifyUserActivation(GetPage()
-                                               ->GetPointerLockController()
-                                               .GetElement()
-                                               ->GetDocument()
-                                               .GetFrame());
-      pointer_lock_gesture_token_ = gesture_indicator->CurrentToken();
+      LocalFrame::NotifyUserActivation(GetPage()
+                                           ->GetPointerLockController()
+                                           .GetElement()
+                                           ->GetDocument()
+                                           .GetFrame());
       break;
     case WebInputEvent::kMouseUp:
       event_type = event_type_names::kMouseup;
-      gesture_indicator = std::make_unique<UserGestureIndicator>(
-          std::move(pointer_lock_gesture_token_));
       break;
     case WebInputEvent::kMouseMove:
       event_type = event_type_names::kMousemove;

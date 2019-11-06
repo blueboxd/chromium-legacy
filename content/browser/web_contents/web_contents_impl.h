@@ -340,6 +340,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsLoading() override;
   double GetLoadProgress() override;
   bool IsLoadingToDifferentDocument() override;
+  bool IsDocumentOnLoadCompletedInMainFrame() override;
   bool IsWaitingForResponse() override;
   const net::LoadStateWithParam& GetLoadState() override;
   const base::string16& GetLoadStateHost() override;

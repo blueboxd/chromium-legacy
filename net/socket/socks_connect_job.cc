@@ -26,10 +26,12 @@ SOCKSSocketParams::SOCKSSocketParams(
     scoped_refptr<TransportSocketParams> proxy_server_params,
     bool socks_v5,
     const HostPortPair& host_port_pair,
+    const NetworkIsolationKey& network_isolation_key,
     const NetworkTrafficAnnotationTag& traffic_annotation)
     : transport_params_(std::move(proxy_server_params)),
       destination_(host_port_pair),
       socks_v5_(socks_v5),
+      network_isolation_key_(network_isolation_key),
       traffic_annotation_(traffic_annotation) {}
 
 SOCKSSocketParams::~SOCKSSocketParams() = default;
@@ -165,7 +167,7 @@ int SOCKSConnectJob::DoSOCKSConnect() {
   } else {
     socket_.reset(new SOCKSClientSocket(
         transport_connect_job_->PassSocket(), socks_params_->destination(),
-        priority(), host_resolver(),
+        socks_params_->network_isolation_key(), priority(), host_resolver(),
         socks_params_->transport_params()->disable_secure_dns(),
         socks_params_->traffic_annotation()));
   }

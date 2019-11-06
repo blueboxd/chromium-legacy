@@ -27,14 +27,21 @@ class GFX_EXPORT SelectionBound {
   void set_type(Type value) { type_ = value; }
 
   const gfx::PointF& edge_top() const { return edge_top_; }
+  const gfx::PointF& visible_edge_top() const { return visible_edge_top_; }
   const gfx::Point& edge_top_rounded() const { return edge_top_rounded_; }
   void SetEdgeTop(const gfx::PointF& value);
+  void SetVisibleEdgeTop(const gfx::PointF& value);
 
   const gfx::PointF& edge_bottom() const { return edge_bottom_; }
+  const gfx::PointF& visible_edge_bottom() const {
+    return visible_edge_bottom_;
+  }
   const gfx::Point& edge_bottom_rounded() const { return edge_bottom_rounded_; }
   void SetEdgeBottom(const gfx::PointF& value);
+  void SetVisibleEdgeBottom(const gfx::PointF& value);
 
   void SetEdge(const gfx::PointF& top, const gfx::PointF& bottom);
+  void SetVisibleEdge(const gfx::PointF& top, const gfx::PointF& bottom);
 
   bool visible() const { return visible_; }
   void set_visible(bool value) { visible_ = value; }
@@ -46,8 +53,14 @@ class GFX_EXPORT SelectionBound {
 
  private:
   Type type_;
+  // The actual bounds of a selection end-point mgiht be invisible for
+  // occlusion.
   gfx::PointF edge_top_;
   gfx::PointF edge_bottom_;
+  // The visible bounds of a selection, which are equal to the above, when there
+  // is no occlusion.
+  gfx::PointF visible_edge_top_;
+  gfx::PointF visible_edge_bottom_;
   gfx::Point edge_top_rounded_;
   gfx::Point edge_bottom_rounded_;
   bool visible_;
@@ -64,6 +77,9 @@ GFX_EXPORT gfx::Rect RectBetweenSelectionBounds(const SelectionBound& b1,
 GFX_EXPORT gfx::RectF RectFBetweenSelectionBounds(const SelectionBound& b1,
                                                   const SelectionBound& b2);
 
+GFX_EXPORT gfx::RectF RectFBetweenVisibleSelectionBounds(
+    const SelectionBound& b1,
+    const SelectionBound& b2);
 }  // namespace ui
 
 #endif  // UI_GFX_SELECTION_BOUND_H_

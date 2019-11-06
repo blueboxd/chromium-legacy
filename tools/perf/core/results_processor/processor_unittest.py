@@ -20,22 +20,42 @@ from tracing.value import histogram_set
 
 class ResultsProcessorUnitTests(unittest.TestCase):
   def testAddDiagnosticsToHistograms(self):
-    test_result = testing.TestResult('benchmark/story')
-    test_result['_histograms'] = histogram_set.HistogramSet()
-    test_result['_histograms'].CreateHistogram('a', 'unitless', [0])
-
     start_ts = 1500000000
     start_iso = datetime.datetime.utcfromtimestamp(start_ts).isoformat() + 'Z'
 
+    test_result = testing.TestResult(
+        'benchmark/story',
+        output_artifacts={
+            'trace.html': testing.Artifact('/trace.html', 'gs://trace.html'),
+        },
+        start_time=start_iso,
+        tags=['story_tag:test'],
+        result_id='3',
+    )
+    test_result['_histograms'] = histogram_set.HistogramSet()
+    test_result['_histograms'].CreateHistogram('a', 'unitless', [0])
 
     processor.AddDiagnosticsToHistograms(
-        test_result, test_suite_start=start_iso, results_label='label')
+        test_result, test_suite_start=start_iso, results_label='label',
+        test_path_format='telemetry')
 
     hist = test_result['_histograms'].GetFirstHistogram()
     self.assertEqual(hist.diagnostics['labels'],
                      generic_set.GenericSet(['label']))
+    self.assertEqual(hist.diagnostics['benchmarks'],
+                     generic_set.GenericSet(['benchmark']))
     self.assertEqual(hist.diagnostics['benchmarkStart'],
                      date_range.DateRange(start_ts * 1e3))
+    self.assertEqual(hist.diagnostics['traceStart'],
+                     date_range.DateRange(start_ts * 1e3))
+    self.assertEqual(hist.diagnostics['stories'],
+                     generic_set.GenericSet(['story']))
+    self.assertEqual(hist.diagnostics['storyTags'],
+                     generic_set.GenericSet(['test']))
+    self.assertEqual(hist.diagnostics['storysetRepeats'],
+                     generic_set.GenericSet([3]))
+    self.assertEqual(hist.diagnostics['traceUrls'],
+                     generic_set.GenericSet(['gs://trace.html']))
 
   def testUploadArtifacts(self):
     test_result = testing.TestResult(

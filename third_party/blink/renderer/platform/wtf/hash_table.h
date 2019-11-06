@@ -1359,7 +1359,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 
   if (ShouldExpand()) {
     entry = Expand(entry);
-  } else if (Traits::kWeakHandlingFlag == kWeakHandling && ShouldShrink()) {
+  } else if (WTF::IsWeak<ValueType>::value && ShouldShrink()) {
     // When weak hash tables are processed by the garbage collector,
     // elements with no other strong references to them will have their
     // table entries cleared. But no shrinking of the backing store is
@@ -2097,9 +2097,11 @@ template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     Trace(VisitorDispatcher visitor) {
-  if (Traits::kWeakHandlingFlag == kNoWeakHandling) {
+  static_assert(WTF::IsWeak<ValueType>::value ||
+                    IsTraceableInCollectionTrait<Traits>::value,
+                "Value should not be traced");
+  if (!WTF::IsWeak<ValueType>::value) {
     // Strong HashTable.
-    DCHECK(IsTraceableInCollectionTrait<Traits>::value);
     Allocator::template TraceHashTableBackingStrongly<ValueType, HashTable>(
         visitor, table_, &table_);
   } else {
@@ -2111,8 +2113,8 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     // weakly multiple times.
     Allocator::template TraceHashTableBackingWeakly<ValueType, HashTable>(
         visitor, table_, &table_,
-        WeakProcessingHashTableHelper<Traits::kWeakHandlingFlag, Key, Value,
-                                      Extractor, HashFunctions, Traits,
+        WeakProcessingHashTableHelper<WeakHandlingTrait<ValueType>::value, Key,
+                                      Value, Extractor, HashFunctions, Traits,
                                       KeyTraits, Allocator>::Process,
         this);
   }

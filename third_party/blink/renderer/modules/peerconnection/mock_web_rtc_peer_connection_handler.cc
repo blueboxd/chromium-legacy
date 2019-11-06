@@ -9,12 +9,12 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 
@@ -72,7 +72,7 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
     return std::vector<WebString>({WebString::FromUTF8("DummyStringId")});
   }
   void ReplaceTrack(WebMediaStreamTrack, RTCVoidRequest*) override {}
-  std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const override {
+  std::unique_ptr<RtcDtmfSenderHandler> GetDtmfSender() const override {
     return nullptr;
   }
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override {

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_layer_delegate.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 
 namespace blink {
 
@@ -79,7 +81,7 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
 
 void ScrollableAreaPainter::DrawPlatformResizerImage(
     GraphicsContext& context,
-    IntRect resizer_corner_rect) {
+    const IntRect& resizer_corner_rect) {
   IntPoint points[4];
   bool on_left = false;
   if (GetScrollableArea()
@@ -166,17 +168,15 @@ void ScrollableAreaPainter::PaintOverflowControls(
     }
   }
 
-  CullRect adjusted_cull_rect = paint_info.GetCullRect();
-  adjusted_cull_rect.MoveBy(-paint_offset);
-
   if (GetScrollableArea().HorizontalScrollbar() &&
       !GetScrollableArea().GraphicsLayerForHorizontalScrollbar()) {
-    GetScrollableArea().HorizontalScrollbar()->Paint(context,
-                                                     adjusted_cull_rect);
+    PaintScrollbar(context, *GetScrollableArea().HorizontalScrollbar(),
+                   paint_info.GetCullRect(), paint_offset);
   }
   if (GetScrollableArea().VerticalScrollbar() &&
       !GetScrollableArea().GraphicsLayerForVerticalScrollbar()) {
-    GetScrollableArea().VerticalScrollbar()->Paint(context, adjusted_cull_rect);
+    PaintScrollbar(context, *GetScrollableArea().VerticalScrollbar(),
+                   paint_info.GetCullRect(), paint_offset);
   }
 
   if (!GetScrollableArea().GraphicsLayerForScrollCorner()) {
@@ -187,6 +187,46 @@ void ScrollableAreaPainter::PaintOverflowControls(
     // Paint our resizer last, since it sits on top of the scroll corner.
     PaintResizer(context, paint_offset, paint_info.GetCullRect());
   }
+}
+
+void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
+                                           Scrollbar& scrollbar,
+                                           const CullRect& cull_rect,
+                                           const IntPoint& paint_offset) {
+  // We create PaintOffsetTranslation for scrollable area, so the rounded
+  // paint offset is always zero.
+  // TODO(crbug.com/1020913): We should not round paint_offset but should
+  // consider subpixel accumulation when painting scrollbars.
+  DCHECK_EQ(paint_offset, IntPoint());
+  IntRect rect = scrollbar.FrameRect();
+  if (!cull_rect.Intersects(rect))
+    return;
+
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+      scrollbar.IsCustomScrollbar()) {
+    scrollbar.Paint(context);
+    return;
+  }
+
+  auto type = scrollbar.Orientation() == kHorizontalScrollbar
+                  ? DisplayItem::kScrollbarHorizontal
+                  : DisplayItem::kScrollbarVertical;
+  if (context.GetPaintController().UseCachedItemIfPossible(scrollbar, type))
+    return;
+
+  const TransformPaintPropertyNode* scroll_translation = nullptr;
+  // Use ScrollTranslation only if the scrollbar is scrollable, to prevent
+  // non-scrollable scrollbars from being unnecessarily composited.
+  if (scrollbar.Maximum()) {
+    auto* properties =
+        GetScrollableArea().GetLayoutBox()->FirstFragment().PaintProperties();
+    DCHECK(properties);
+    scroll_translation = properties->ScrollTranslation();
+  }
+  auto delegate = base::MakeRefCounted<ScrollbarLayerDelegate>(
+      scrollbar, context.DeviceScaleFactor());
+  ScrollbarDisplayItem::Record(context, scrollbar, type, delegate, rect,
+                               scroll_translation, scrollbar.GetElementId());
 }
 
 void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,

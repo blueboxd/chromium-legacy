@@ -329,7 +329,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void EvictFromBackForwardCacheWithReason(
       BackForwardCacheMetrics::NotRestoredReason reason);
   void EvictFromBackForwardCacheWithReasons(
-      const BackForwardCacheMetrics::NotRestoredReasons& reasons);
+      const BackForwardCacheCanStoreDocumentResult& can_store);
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;

@@ -1615,6 +1615,7 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
 TEST_F(TransportClientSocketPoolTest, NetworkIsolationKey) {
   const auto kOrigin = url::Origin::Create(GURL("https://foo.test/"));
   const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const char kHost[] = "bar.test";
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -1627,7 +1628,7 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKey) {
   session_deps_.host_resolver->set_ondemand_mode(true);
 
   TransportClientSocketPool::GroupId group_id(
-      HostPortPair("bar.test", 80), ClientSocketPool::SocketType::kHttp,
+      HostPortPair(kHost, 80), ClientSocketPool::SocketType::kHttp,
       PrivacyMode::PRIVACY_MODE_DISABLED, kNetworkIsolationKey,
       false /* disable_secure_dns */);
   ClientSocketHandle handle;
@@ -1644,6 +1645,7 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKey) {
       IsError(ERR_IO_PENDING));
 
   ASSERT_EQ(1u, session_deps_.host_resolver->last_id());
+  EXPECT_EQ(kHost, session_deps_.host_resolver->request_host(1));
   EXPECT_EQ(kNetworkIsolationKey,
             session_deps_.host_resolver->request_network_isolation_key(1));
 }
@@ -1651,6 +1653,7 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKey) {
 TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeySsl) {
   const auto kOrigin = url::Origin::Create(GURL("https://foo.test/"));
   const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const char kHost[] = "bar.test";
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -1663,7 +1666,7 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeySsl) {
   session_deps_.host_resolver->set_ondemand_mode(true);
 
   TransportClientSocketPool::GroupId group_id(
-      HostPortPair("bar.test", 443), ClientSocketPool::SocketType::kSsl,
+      HostPortPair(kHost, 443), ClientSocketPool::SocketType::kSsl,
       PrivacyMode::PRIVACY_MODE_DISABLED, kNetworkIsolationKey,
       false /* disable_secure_dns */);
   ClientSocketHandle handle;
@@ -1680,6 +1683,7 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeySsl) {
       IsError(ERR_IO_PENDING));
 
   ASSERT_EQ(1u, session_deps_.host_resolver->last_id());
+  EXPECT_EQ(kHost, session_deps_.host_resolver->request_host(1));
   EXPECT_EQ(kNetworkIsolationKey,
             session_deps_.host_resolver->request_network_isolation_key(1));
 }
@@ -1688,6 +1692,9 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeySsl) {
 TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeyHttpProxy) {
   const auto kOrigin = url::Origin::Create(GURL("https://foo.test/"));
   const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const char kHost[] = "bar.test";
+  const ProxyServer kProxyServer = ProxyServer::FromURI(
+      "http://proxy.test", ProxyServer::SCHEME_HTTP /* default_scheme */);
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -1700,13 +1707,11 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeyHttpProxy) {
   session_deps_.host_resolver->set_ondemand_mode(true);
 
   TransportClientSocketPool proxy_pool(
-      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-      ProxyServer::FromURI("http://proxy.test",
-                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout, kProxyServer,
       false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   TransportClientSocketPool::GroupId group_id(
-      HostPortPair("bar.test", 80), ClientSocketPool::SocketType::kHttp,
+      HostPortPair(kHost, 80), ClientSocketPool::SocketType::kHttp,
       PrivacyMode::PRIVACY_MODE_DISABLED, kNetworkIsolationKey,
       false /* disable_secure_dns */);
   ClientSocketHandle handle;
@@ -1723,6 +1728,8 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeyHttpProxy) {
       IsError(ERR_IO_PENDING));
 
   ASSERT_EQ(1u, session_deps_.host_resolver->last_id());
+  EXPECT_EQ(kProxyServer.host_port_pair().host(),
+            session_deps_.host_resolver->request_host(1));
   EXPECT_EQ(NetworkIsolationKey(),
             session_deps_.host_resolver->request_network_isolation_key(1));
 }
@@ -1732,6 +1739,9 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeyHttpProxy) {
 TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeyHttpsProxy) {
   const auto kOrigin = url::Origin::Create(GURL("https://foo.test/"));
   const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const char kHost[] = "bar.test";
+  const ProxyServer kProxyServer = ProxyServer::FromURI(
+      "https://proxy.test", ProxyServer::SCHEME_HTTP /* default_scheme */);
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -1744,13 +1754,11 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeyHttpsProxy) {
   session_deps_.host_resolver->set_ondemand_mode(true);
 
   TransportClientSocketPool proxy_pool(
-      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-      ProxyServer::FromURI("https://proxy.test",
-                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout, kProxyServer,
       false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   TransportClientSocketPool::GroupId group_id(
-      HostPortPair("bar.test", 80), ClientSocketPool::SocketType::kHttp,
+      HostPortPair(kHost, 80), ClientSocketPool::SocketType::kHttp,
       PrivacyMode::PRIVACY_MODE_DISABLED, kNetworkIsolationKey,
       false /* disable_secure_dns */);
   ClientSocketHandle handle;
@@ -1767,8 +1775,72 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeyHttpsProxy) {
       IsError(ERR_IO_PENDING));
 
   ASSERT_EQ(1u, session_deps_.host_resolver->last_id());
+  EXPECT_EQ(kProxyServer.host_port_pair().host(),
+            session_deps_.host_resolver->request_host(1));
   EXPECT_EQ(NetworkIsolationKey(),
             session_deps_.host_resolver->request_network_isolation_key(1));
+}
+
+// Test that, in the case of a SOCKS5 proxy, the NetworkIsolationKey is only
+// used for the destination DNS lookup, not the proxy DNS lookup.
+TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeySocks4Proxy) {
+  const auto kOrigin = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const char kHost[] = "bar.test";
+  const ProxyServer kProxyServer = ProxyServer::FromURI(
+      "socks4://proxy.test", ProxyServer::SCHEME_HTTP /* default_scheme */);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionConnectionsByNetworkIsolationKey,
+       features::kSplitHostCacheByNetworkIsolationKey},
+      // disabled_features
+      {});
+
+  session_deps_.host_resolver->set_ondemand_mode(true);
+
+  // Test will establish a connection, but never use it to transfer data, since
+  // it stalls at the second DNS lookup.
+  StaticSocketDataProvider data;
+  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  tagging_client_socket_factory_.AddSocketDataProvider(&data);
+
+  TransportClientSocketPool proxy_pool(
+      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout, kProxyServer,
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get());
+
+  TransportClientSocketPool::GroupId group_id(
+      HostPortPair(kHost, 80), ClientSocketPool::SocketType::kHttp,
+      PrivacyMode::PRIVACY_MODE_DISABLED, kNetworkIsolationKey,
+      false /* disable_secure_dns */);
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  EXPECT_THAT(
+      handle.Init(group_id,
+                  base::MakeRefCounted<ClientSocketPool::SocketParams>(
+                      nullptr /* ssl_config_for_origin */,
+                      nullptr /* ssl_config_for_proxy */),
+                  TRAFFIC_ANNOTATION_FOR_TESTS, LOW, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), &proxy_pool,
+                  NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+
+  // First lookup is for the proxy's hostname, and should not use the NIK.
+  ASSERT_EQ(1u, session_deps_.host_resolver->last_id());
+  EXPECT_EQ(kProxyServer.host_port_pair().host(),
+            session_deps_.host_resolver->request_host(1));
+  EXPECT_EQ(NetworkIsolationKey(),
+            session_deps_.host_resolver->request_network_isolation_key(1));
+
+  // First lookup completes, starting the second one. The second lookup is for
+  // the destination's hostname, and should use the NIK.
+  session_deps_.host_resolver->ResolveOnlyRequestNow();
+  ASSERT_EQ(2u, session_deps_.host_resolver->last_id());
+  EXPECT_EQ(kHost, session_deps_.host_resolver->request_host(2));
+  EXPECT_EQ(kNetworkIsolationKey,
+            session_deps_.host_resolver->request_network_isolation_key(2));
 }
 
 // Test that, in the case of a SOCKS5 proxy, the NetworkIsolationKey is not
@@ -1776,6 +1848,9 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeyHttpsProxy) {
 TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeySocks5Proxy) {
   const auto kOrigin = url::Origin::Create(GURL("https://foo.test/"));
   const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const char kHost[] = "bar.test";
+  const ProxyServer kProxyServer = ProxyServer::FromURI(
+      "socks5://proxy.test", ProxyServer::SCHEME_HTTP /* default_scheme */);
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -1788,13 +1863,11 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeySocks5Proxy) {
   session_deps_.host_resolver->set_ondemand_mode(true);
 
   TransportClientSocketPool proxy_pool(
-      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-      ProxyServer::FromURI("socks5://proxy.test",
-                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout, kProxyServer,
       false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   TransportClientSocketPool::GroupId group_id(
-      HostPortPair("bar.test", 80), ClientSocketPool::SocketType::kHttp,
+      HostPortPair(kHost, 80), ClientSocketPool::SocketType::kHttp,
       PrivacyMode::PRIVACY_MODE_DISABLED, kNetworkIsolationKey,
       false /* disable_secure_dns */);
   ClientSocketHandle handle;
@@ -1811,6 +1884,8 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeySocks5Proxy) {
       IsError(ERR_IO_PENDING));
 
   ASSERT_EQ(1u, session_deps_.host_resolver->last_id());
+  EXPECT_EQ(kProxyServer.host_port_pair().host(),
+            session_deps_.host_resolver->request_host(1));
   EXPECT_EQ(NetworkIsolationKey(),
             session_deps_.host_resolver->request_network_isolation_key(1));
 }

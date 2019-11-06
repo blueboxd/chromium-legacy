@@ -12,13 +12,13 @@
       "transform": 2
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='inner'",
+      "name": "VerticalScrollbar",
       "position": [94, 1],
       "bounds": [7, 100],
       "transform": 2
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='outer'",
+      "name": "VerticalScrollbar",
       "position": [394, 1],
       "bounds": [7, 300]
     }

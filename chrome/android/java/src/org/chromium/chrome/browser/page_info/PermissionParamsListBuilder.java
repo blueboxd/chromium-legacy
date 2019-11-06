@@ -128,8 +128,10 @@ class PermissionParamsListBuilder {
         String managedBy = null;
         if (permission.type == ContentSettingsType.NOTIFICATIONS) {
             TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
-            Origin origin = Origin.createOrThrow(mFullUrl);
-            managedBy = manager.getDelegateAppName(origin);
+            Origin origin = Origin.create(mFullUrl);
+            if (origin != null) {
+                managedBy = manager.getDelegateAppName(origin);
+            }
         }
         if (managedBy != null) {
             status_text = String.format(

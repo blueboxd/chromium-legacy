@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "third_party/blink/renderer/modules/peerconnection/fake_rtc_rtp_transceiver_impl.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 
 namespace blink {
 
@@ -86,7 +87,7 @@ void FakeRTCRtpSenderImpl::ReplaceTrack(blink::WebMediaStreamTrack with_track,
   NOTIMPLEMENTED();
 }
 
-std::unique_ptr<blink::WebRTCDTMFSenderHandler>
+std::unique_ptr<blink::RtcDtmfSenderHandler>
 FakeRTCRtpSenderImpl::GetDtmfSender() const {
   NOTIMPLEMENTED();
   return nullptr;

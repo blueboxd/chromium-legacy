@@ -25,6 +25,7 @@ class CORE_EXPORT ScrollbarLayerDelegate : public cc::Scrollbar {
   cc::ScrollbarOrientation Orientation() const override;
   bool IsLeftSideVerticalScrollbar() const override;
   bool HasThumb() const override;
+  bool IsSolidColor() const override;
   bool IsOverlay() const override;
   bool SupportsDragSnapBack() const override;
 

@@ -80,14 +80,14 @@ UserGestureIndicator::~UserGestureIndicator() {
 }
 
 // static
-UserGestureToken* UserGestureIndicator::CurrentToken() {
+UserGestureToken* UserGestureIndicator::CurrentTokenForTest() {
   DCHECK(IsMainThread());
   return root_token_;
 }
 
 // static
 UserGestureToken* UserGestureIndicator::CurrentTokenThreadSafe() {
-  return IsMainThread() ? CurrentToken() : nullptr;
+  return IsMainThread() ? root_token_ : nullptr;
 }
 
 }  // namespace blink

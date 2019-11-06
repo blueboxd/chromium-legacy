@@ -36,6 +36,9 @@
         "browse:media:youtube": {
             "DEFAULT": "system_health_mobile_037.wprgo"
         },
+        "browse:media:youtube:2019": {
+            "DEFAULT": "system_health_mobile_d70a6c0a79.wprgo"
+        },
         "browse:news:cnn": {
             "DEFAULT": "system_health_mobile_014.wprgo"
         },

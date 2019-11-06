@@ -432,13 +432,6 @@ class IdentityManager : public KeyedService,
   base::android::ScopedJavaLocalRef<jobject>
   LegacyGetAccountTrackerServiceJavaObject();
 
-  // Returns a pointer to the OAuth2TokenService Java instance associated
-  // with this object.
-  // TODO(https://crbug.com/934688): Eliminate this method once
-  // OAuth2TokenService.java has no more client usage.
-  base::android::ScopedJavaLocalRef<jobject>
-  LegacyGetOAuth2TokenServiceJavaObject();
-
   // Get the reference on the java IdentityManager.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
@@ -464,6 +457,9 @@ class IdentityManager : public KeyedService,
   FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& j_email) const;
+
+  base::android::ScopedJavaLocalRef<jobjectArray> GetAccountsWithRefreshTokens(
+      JNIEnv* env) const;
 #endif
 
  private:

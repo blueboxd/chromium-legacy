@@ -473,8 +473,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   friend class LinkHeaderServiceWorkerTest;
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
-  friend class service_worker_controllee_request_handler_unittest::
-      ServiceWorkerControlleeRequestHandlerTest;
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest, Update_SameScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
@@ -664,9 +662,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // whose scheme is granted an exception that allows bypassing the ancestor
   // secure context check. If the provider is not created for a document, or the
   // document does not have a parent frame, is_parent_frame_secure_| is true.
-  // TODO(leonhsl): make it be const, currently only some test code wants to
-  // change its value.
-  bool is_parent_frame_secure_;
+  const bool is_parent_frame_secure_;
 
   // FrameTreeNode id if this is a service worker window client.
   // Otherwise, |FrameTreeNode::kFrameTreeNodeInvalidId|.

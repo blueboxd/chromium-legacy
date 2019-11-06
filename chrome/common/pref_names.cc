@@ -1783,6 +1783,11 @@ const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
 const char kSystemWebAppLastUpdateVersion[] =
     "web_apps.system_web_app_last_update";
 
+// A string representing the last locale that System Web Apps were installed in.
+// This is used to refresh System Web Apps i18n when the locale is changed.
+const char kSystemWebAppLastInstalledLocale[] =
+    "web_apps.system_web_app_last_installed_language";
+
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
 

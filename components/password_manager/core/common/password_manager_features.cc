@@ -25,6 +25,10 @@ const base::Feature kDeleteCorruptedPasswords = {
 const base::Feature kEnablePasswordsAccountStorage = {
     "EnablePasswordsAccountStorage", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature KEnablePasswordGenerationForClearTextFields = {
+    "EnablePasswordGenerationForClearTextFields",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",

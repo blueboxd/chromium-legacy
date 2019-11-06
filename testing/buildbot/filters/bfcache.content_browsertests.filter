@@ -39,8 +39,5 @@
 # happen when the BackForwardCache is used to store the old document.
 -RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill
 
-# https://crbug.com/1020884
--ServiceWorkerVersionBrowserTest.ReadResourceFailure_WaitingWorker
-
 # https://crbug.com/1021409
 -NavigationControllerBrowserTest.BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion

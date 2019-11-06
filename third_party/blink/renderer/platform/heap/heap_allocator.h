@@ -98,19 +98,6 @@ class PLATFORM_EXPORT HeapAllocator {
             state, ThreadHeap::AllocationSizeFromSize(size),
             BlinkGC::kVectorArenaIndex, gc_info_index, type_name)));
   }
-  template <typename T>
-  static T* AllocateExpandedVectorBacking(size_t size) {
-    ThreadState* state =
-        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    DCHECK(state->IsAllocationAllowed());
-    uint32_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
-    const char* type_name =
-        WTF_HEAP_PROFILER_TYPE_NAME(HeapHashTableBacking<HeapVectorBacking<T>>);
-    return reinterpret_cast<T*>(
-        MarkAsConstructed(state->Heap().AllocateOnArenaIndex(
-            state, ThreadHeap::AllocationSizeFromSize(size),
-            BlinkGC::kVectorArenaIndex, gc_info_index, type_name)));
-  }
   static void FreeVectorBacking(void*);
   static bool ExpandVectorBacking(void*, size_t);
   static bool ShrinkVectorBacking(void* address,
@@ -153,16 +140,6 @@ class PLATFORM_EXPORT HeapAllocator {
     }
   }
 
-  template <typename T>
-  static void BackingWriteBarrier(Member<T>* address, size_t size) {
-    MarkingVisitor::WriteBarrier(address);
-  }
-
-  template <typename T>
-  static void BackingWriteBarrier(T* address, size_t size) {
-    MarkingVisitor::WriteBarrier(address);
-  }
-
   template <typename Return, typename Metadata>
   static Return Malloc(size_t size, const char* type_name) {
     return reinterpret_cast<Return>(
@@ -194,10 +171,10 @@ class PLATFORM_EXPORT HeapAllocator {
     return ThreadHeap::IsHeapObjectAlive(object);
   }
 
-  template <typename VisitorDispatcher, typename T, typename Traits>
-  static void Trace(VisitorDispatcher visitor, T& t) {
-    TraceCollectionIfEnabled<Traits::kWeakHandlingFlag, T, Traits>::Trace(
-        visitor, &t);
+  template <typename T, typename Traits>
+  static void Trace(blink::Visitor* visitor, T& t) {
+    TraceCollectionIfEnabled<WTF::WeakHandlingTrait<T>::value, T,
+                             Traits>::Trace(visitor, &t);
   }
 
   template <typename T, typename VisitorDispatcher>

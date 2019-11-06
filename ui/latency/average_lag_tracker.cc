@@ -51,7 +51,10 @@ void AverageLagTracker::AddLatencyInFrame(
     is_begin_ = true;
   } else if (scroll_name == "ScrollUpdate" &&
              !last_event_timestamp_.is_null()) {
-    DCHECK((event_timestamp - last_event_timestamp_).InMilliseconds() >= 0);
+    // Only accept events in nondecreasing order.
+    if ((event_timestamp - last_event_timestamp_).InMilliseconds() < 0)
+      return;
+
     // Pop all frames where frame_time <= event_timestamp.
     while (!frame_lag_infos_.empty() &&
            frame_lag_infos_.front().frame_time <= event_timestamp) {

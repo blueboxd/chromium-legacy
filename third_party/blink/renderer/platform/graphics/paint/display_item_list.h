@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/contiguous_container.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -19,8 +19,8 @@ struct PaintChunk;
 // each derived display item; the ideal value is the least common multiple.
 // The validity of kDisplayItemAlignment and kMaximumDisplayItemSize are checked
 // in PaintController::CreateAndAppend().
-static const size_t kDisplayItemAlignment = alignof(HitTestDisplayItem);
-static const size_t kMaximumDisplayItemSize = sizeof(HitTestDisplayItem);
+static const size_t kDisplayItemAlignment = alignof(ScrollbarDisplayItem);
+static const size_t kMaximumDisplayItemSize = sizeof(ScrollbarDisplayItem);
 
 // A container for a list of display items.
 class PLATFORM_EXPORT DisplayItemList

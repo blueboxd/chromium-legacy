@@ -1410,6 +1410,10 @@ bool WebContentsImpl::IsLoadingToDifferentDocument() {
   return IsLoading() && is_load_to_different_document_;
 }
 
+bool WebContentsImpl::IsDocumentOnLoadCompletedInMainFrame() {
+  return GetRenderViewHost()->IsDocumentOnLoadCompletedInMainFrame();
+}
+
 bool WebContentsImpl::IsWaitingForResponse() {
   NavigationRequest* ongoing_navigation_request =
       frame_tree_.root()->navigation_request();
@@ -6087,6 +6091,8 @@ void WebContentsImpl::FrameSizeChanged(RenderFrameHost* render_frame_host,
 void WebContentsImpl::DocumentOnLoadCompleted(
     RenderFrameHost* render_frame_host) {
   ShowInsecureLocalhostWarningIfNeeded();
+
+  GetRenderViewHost()->DocumentOnLoadCompletedInMainFrame();
 
   is_notifying_observers_ = true;
   for (auto& observer : observers_)

@@ -95,6 +95,7 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
             new SOCKSSocketParams(proxy_transport_socket_params_,
                                   true,
                                   HostPortPair("sockshost", 443),
+                                  NetworkIsolationKey(),
                                   TRAFFIC_ANNOTATION_FOR_TESTS)),
         http_proxy_socket_params_(
             new HttpProxySocketParams(proxy_transport_socket_params_,

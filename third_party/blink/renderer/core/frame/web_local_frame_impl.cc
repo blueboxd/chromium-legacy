@@ -1579,15 +1579,6 @@ WebRect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
              : WebRect();
 }
 
-WebString WebLocalFrameImpl::GetLayerTreeAsTextForTesting(
-    bool show_debug_info) const {
-  if (!GetFrame())
-    return WebString();
-
-  return WebString(GetFrame()->GetLayerTreeAsTextForTesting(
-      show_debug_info ? kLayerTreeIncludesDebugInfo : kLayerTreeNormal));
-}
-
 // WebLocalFrameImpl public --------------------------------------------------
 
 WebLocalFrame* WebLocalFrame::CreateMainFrame(

@@ -120,8 +120,8 @@ void FakeHostResolverNetworkContext::CreateHostResolver(
 }
 
 FakeDnsConfigChangeManager::FakeDnsConfigChangeManager(
-    network::mojom::DnsConfigChangeManagerRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<network::mojom::DnsConfigChangeManager> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 FakeDnsConfigChangeManager::~FakeDnsConfigChangeManager() = default;
 

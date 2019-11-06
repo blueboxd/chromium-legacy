@@ -2,7 +2,7 @@ include_rules = [
   "+third_party/libyuv",
 ]
 specific_include_rules = {
-  "gl_tests_main.cc": [
+  "gpu_tests_main.cc": [
     "+mojo/core/embedder",
   ],
   "webgpu_test.cc": [

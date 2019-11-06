@@ -483,7 +483,8 @@
       "id": "xkb:es::spa",
       "description": "",
       "language": [
-        "es"
+        "es",
+        "es-ES"
       ],
       "layouts": [
         "es"

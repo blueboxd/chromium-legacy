@@ -334,6 +334,9 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();
 
+  gfx::Point ConvertPointToScreenCoordinates(const gfx::Point& point,
+                                             AtkCoordType atk_coord_type);
+
   // Keep information of latest AtkInterfaces mask to refresh atk object
   // interfaces accordingly if needed.
   int interface_mask_ = 0;

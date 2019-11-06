@@ -35,6 +35,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
+    "//components/password_manager/core/common",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

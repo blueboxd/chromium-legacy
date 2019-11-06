@@ -453,6 +453,11 @@ class WebContents : public PageNavigator,
   // is also true.
   virtual bool IsLoadingToDifferentDocument() = 0;
 
+  // Returns whether the current main document has reached and finished
+  // executing its onload() handler. Corresponds to
+  // WebContentsObserver::DocumentOnLoadCompletedInMainFrame().
+  virtual bool IsDocumentOnLoadCompletedInMainFrame() = 0;
+
   // Returns whether this WebContents is waiting for a first-response for the
   // main resource of the page.
   virtual bool IsWaitingForResponse() = 0;

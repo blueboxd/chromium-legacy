@@ -74,7 +74,8 @@ public class SigninManagerTest {
 
         mIdentityMutator = mock(IdentityMutator.class);
 
-        mIdentityManager = spy(new IdentityManager(0 /* nativeIdentityManager */));
+        mIdentityManager = spy(
+                new IdentityManager(0 /* nativeIdentityManager */, null /* OAuth2TokenService */));
 
         AndroidSyncSettings androidSyncSettings = mock(AndroidSyncSettings.class);
 

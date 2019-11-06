@@ -15,6 +15,7 @@ class DisplayItemClient;
 class GraphicsContext;
 class IntPoint;
 class IntRect;
+class Scrollbar;
 struct PaintInfo;
 class PaintLayerScrollableArea;
 
@@ -35,7 +36,12 @@ class ScrollableAreaPainter {
                          const CullRect&);
 
  private:
-  void DrawPlatformResizerImage(GraphicsContext&, IntRect resizer_corner_rect);
+  void DrawPlatformResizerImage(GraphicsContext&,
+                                const IntRect& resizer_corner_rect);
+  void PaintScrollbar(GraphicsContext&,
+                      Scrollbar&,
+                      const CullRect&,
+                      const IntPoint& paint_offset);
 
   PaintLayerScrollableArea& GetScrollableArea() const;
   const DisplayItemClient& DisplayItemClientForCorner() const;

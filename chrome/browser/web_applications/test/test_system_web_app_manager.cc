@@ -30,4 +30,8 @@ const base::Version& TestSystemWebAppManager::CurrentVersion() const {
   return current_version_;
 }
 
+const std::string& TestSystemWebAppManager::CurrentLocale() const {
+  return current_locale_;
+}
+
 }  // namespace web_app

@@ -1878,8 +1878,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       OnUpdateScroll(properties_->UpdateScroll(*context_.current.scroll,
                                                std::move(state)));
 
-      if (scrollable_area->VerticalScrollbar() ||
-          scrollable_area->HasLayerForVerticalScrollbar()) {
+      // Create opacity effect nodes for overlay scrollbars for their fade
+      // animation in the compositor.
+      if (scrollable_area->VerticalScrollbar() &&
+          scrollable_area->VerticalScrollbar()->IsOverlayScrollbar()) {
         EffectPaintPropertyNode::State effect_state;
         effect_state.local_transform_space = context_.current.transform;
         effect_state.direct_compositing_reasons =
@@ -1894,8 +1896,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         OnClear(properties_->ClearVerticalScrollbarEffect());
       }
 
-      if (scrollable_area->HorizontalScrollbar() ||
-          scrollable_area->HasLayerForHorizontalScrollbar()) {
+      if (scrollable_area->HorizontalScrollbar() &&
+          scrollable_area->HorizontalScrollbar()->IsOverlayScrollbar()) {
         EffectPaintPropertyNode::State effect_state;
         effect_state.local_transform_space = context_.current.transform;
         effect_state.direct_compositing_reasons =
@@ -2271,7 +2273,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
         DCHECK(full_context_.container_for_fixed_position ==
                box_model_object.Container());
         context_.current = context_.fixed_position;
-        // Fixed-position elements that are fixed to the vieport have a
+        // Fixed-position elements that are fixed to the viewport have a
         // transform above the scroll of the LayoutView. Child content is
         // relative to that transform, and hence the fixed-position element.
         if (context_.fixed_position.fixed_position_children_fixed_to_root)

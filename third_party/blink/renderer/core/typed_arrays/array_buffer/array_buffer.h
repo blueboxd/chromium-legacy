@@ -139,7 +139,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::Create(const void* source,
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::Create(ArrayBufferContents& contents) {
-  CHECK(contents.DataMaybeShared());
+  CHECK(contents.DataLength() == 0 || contents.DataMaybeShared());
   return base::AdoptRef(new ArrayBuffer(contents));
 }
 

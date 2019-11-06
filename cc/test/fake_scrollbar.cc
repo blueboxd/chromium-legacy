@@ -43,6 +43,10 @@ bool FakeScrollbar::IsLeftSideVerticalScrollbar() const {
   return is_left_side_vertical_scrollbar_;
 }
 
+bool FakeScrollbar::IsSolidColor() const {
+  return false;
+}
+
 bool FakeScrollbar::IsOverlay() const { return is_overlay_; }
 
 bool FakeScrollbar::HasThumb() const { return has_thumb_; }

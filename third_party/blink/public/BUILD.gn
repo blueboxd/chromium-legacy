@@ -267,7 +267,6 @@ source_set("blink_headers") {
     "platform/web_resource_timing_info.h",
     "platform/web_rtc_api_name.h",
     "platform/web_rtc_data_channel_init.h",
-    "platform/web_rtc_dtmf_sender_handler.h",
     "platform/web_rtc_dtmf_sender_handler_client.h",
     "platform/web_rtc_ice_candidate.h",
     "platform/web_rtc_legacy_stats.h",

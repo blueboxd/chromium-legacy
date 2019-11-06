@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -277,11 +278,11 @@ class AdapterTest : public testing::Test {
   }
 
  protected:
+  base::ScopedTempDir temp_dir_;
   content::BrowserTaskEnvironment task_environment_;
 
   TestObserver test_observer_;
 
-  base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
 
   base::Optional<MonotoneCubicSpline> global_curve_;

@@ -30,8 +30,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.components.signin.OAuth2TokenService;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelTypeHelper;
 import org.chromium.components.sync.SyncConstants;
@@ -258,9 +259,9 @@ public class InvalidationClientService extends AndroidListener {
         ThreadUtils.runOnUiThread(() -> {
             // Attempt to retrieve a token for the user. This method will also invalidate
             // invalidAuthToken if it is non-null.
-            OAuth2TokenService.getNewAccessToken(account, invalidAuthToken,
-                    SyncConstants.CHROME_SYNC_OAUTH2_SCOPE,
-                    new OAuth2TokenService.GetAccessTokenCallback() {
+            IdentityManager.getNewAccessTokenWithFacade(AccountManagerFacade.get(), account,
+                    invalidAuthToken, SyncConstants.CHROME_SYNC_OAUTH2_SCOPE,
+                    new IdentityManager.GetAccessTokenCallback() {
                         @Override
                         public void onGetTokenSuccess(String token) {
                             setAuthToken(InvalidationClientService.this.getApplicationContext(),

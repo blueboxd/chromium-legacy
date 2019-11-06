@@ -59,6 +59,10 @@ bool ScrollbarLayerDelegate::HasThumb() const {
   return scrollbar_->GetTheme().HasThumb(*scrollbar_);
 }
 
+bool ScrollbarLayerDelegate::IsSolidColor() const {
+  return scrollbar_->GetTheme().IsSolidColor();
+}
+
 bool ScrollbarLayerDelegate::IsOverlay() const {
   return scrollbar_->IsOverlayScrollbar();
 }

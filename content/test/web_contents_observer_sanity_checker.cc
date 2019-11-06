@@ -244,6 +244,7 @@ void WebContentsObserverSanityChecker::DocumentAvailableInMainFrame() {
 }
 
 void WebContentsObserverSanityChecker::DocumentOnLoadCompletedInMainFrame() {
+  CHECK(web_contents()->IsDocumentOnLoadCompletedInMainFrame());
   AssertMainFrameExists();
 }
 

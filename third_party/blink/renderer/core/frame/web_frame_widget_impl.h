@@ -61,7 +61,6 @@ class Element;
 class HTMLPlugInElement;
 class LocalFrame;
 class PaintLayerCompositor;
-class UserGestureToken;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebFrameWidgetImpl;
@@ -180,7 +179,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // If set, the (plugin) element which has mouse capture.
   Member<HTMLPlugInElement> mouse_capture_element_;
-  scoped_refptr<UserGestureToken> mouse_capture_gesture_token_;
 
   cc::AnimationHost* animation_host_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;

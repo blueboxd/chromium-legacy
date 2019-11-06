@@ -1,11 +1,6 @@
 {
   "layers": [
     {
-      "name": "Inner Viewport Scroll Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,

@@ -10,10 +10,19 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler_client.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/dtmf_sender_interface.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
+
+namespace webrtc {
+class DtmfSenderInterface;
+}
 
 namespace blink {
 
@@ -23,19 +32,18 @@ namespace blink {
 // WebKit call all of these methods on the main render thread.
 // Callbacks to the webrtc::DtmfSenderObserverInterface implementation also
 // occur on the main render thread.
-class RtcDtmfSenderHandler : public blink::WebRTCDTMFSenderHandler {
+class PLATFORM_EXPORT RtcDtmfSenderHandler final {
  public:
   RtcDtmfSenderHandler(scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                        webrtc::DtmfSenderInterface* dtmf_sender);
-  ~RtcDtmfSenderHandler() override;
+  ~RtcDtmfSenderHandler();
 
-  // blink::WebRTCDTMFSenderHandler implementation.
-  void SetClient(blink::WebRTCDTMFSenderHandlerClient* client) override;
-  blink::WebString CurrentToneBuffer() override;
-  bool CanInsertDTMF() override;
+  void SetClient(blink::WebRTCDTMFSenderHandlerClient* client);
+  blink::WebString CurrentToneBuffer();
+  bool CanInsertDTMF();
   bool InsertDTMF(const blink::WebString& tones,
                   int duration,
-                  int interToneGap) override;
+                  int interToneGap);
 
   void OnToneChange(const String& tone);
 

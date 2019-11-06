@@ -608,6 +608,7 @@ extern const char kWebAppInstallMetrics[];
 
 extern const char kWebAppsExtensionIDs[];
 extern const char kSystemWebAppLastUpdateVersion[];
+extern const char kSystemWebAppLastInstalledLocale[];
 
 extern const char kDefaultAudioCaptureDevice[];
 extern const char kDefaultVideoCaptureDevice[];

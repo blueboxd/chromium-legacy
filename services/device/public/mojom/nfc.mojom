@@ -37,7 +37,7 @@ struct NDEFError {
 // https://w3c.github.io/web-nfc/#dom-ndefrecord
 struct NDEFRecord {
   // The type of NDEFRecord.
-  string? record_type;
+  string record_type;
 
   // Represents the IANA media type of the NDEFRecord data field.
   string? media_type;
@@ -87,16 +87,12 @@ struct NDEFPushOptions {
   bool ignore_read;
 };
 
-struct NDEFRecordTypeFilter {
-  string? record_type;
-};
-
 struct NDEFScanOptions {
   // Defines filtering constraint for NFC messages with specified |url|.
   string? url;
 
-  // Defines filtering constraint for NFC records with specified record type.
-  NDEFRecordTypeFilter? record_filter;
+  // Defines record type filtering constraint.
+  string? record_type;
 
   // Defines media type filtering constraint.
   string? media_type;

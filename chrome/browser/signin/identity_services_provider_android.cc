@@ -31,16 +31,6 @@ JNI_IdentityServicesProvider_GetAccountTrackerService(
 }
 
 static ScopedJavaLocalRef<jobject>
-JNI_IdentityServicesProvider_GetOAuth2TokenService(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_profile_android) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
-  return identity_manager->LegacyGetOAuth2TokenServiceJavaObject();
-}
-
-static ScopedJavaLocalRef<jobject>
 JNI_IdentityServicesProvider_GetSigninManager(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile_android) {

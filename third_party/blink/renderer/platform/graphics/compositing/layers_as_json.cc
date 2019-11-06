@@ -27,9 +27,10 @@ String PointerAsString(const void* ptr) {
 }  // namespace
 
 // Create a JSON version of the specified |layer|.
-std::unique_ptr<JSONObject> CCLayerAsJSON(const cc::Layer* layer,
-                                          LayerTreeFlags flags,
-                                          const FloatPoint& position) {
+std::unique_ptr<JSONObject> CCLayerAsJSON(
+    const cc::Layer* layer,
+    LayerTreeFlags flags,
+    const FloatPoint& offset_from_transform_node) {
   auto json = std::make_unique<JSONObject>();
 
   if (flags & kLayerTreeIncludesDebugInfo) {
@@ -39,8 +40,8 @@ std::unique_ptr<JSONObject> CCLayerAsJSON(const cc::Layer* layer,
 
   json->SetString("name", String(layer->DebugName().c_str()));
 
-  if (position != FloatPoint())
-    json->SetArray("position", PointAsJSONArray(position));
+  if (offset_from_transform_node != FloatPoint())
+    json->SetArray("position", PointAsJSONArray(offset_from_transform_node));
 
   // This is testing against gfx::Size(), *not* whether the size is empty.
   if (layer->bounds() != gfx::Size())

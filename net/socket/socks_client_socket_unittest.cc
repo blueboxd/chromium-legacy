@@ -94,8 +94,8 @@ std::unique_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
   // non-owning pointer to it.
   tcp_sock_ = socket.get();
   return std::make_unique<SOCKSClientSocket>(
-      std::move(socket), HostPortPair(hostname, port), DEFAULT_PRIORITY,
-      host_resolver, false /* disable_secure_dns */,
+      std::move(socket), HostPortPair(hostname, port), NetworkIsolationKey(),
+      DEFAULT_PRIORITY, host_resolver, false /* disable_secure_dns */,
       TRAFFIC_ANNOTATION_FOR_TESTS);
 }
 
@@ -435,8 +435,9 @@ TEST_F(SOCKSClientSocketTest, Tag) {
   // non-owning pointer to it.
   MockHostResolver host_resolver;
   SOCKSClientSocket socket(std::unique_ptr<StreamSocket>(tagging_sock),
-                           HostPortPair("localhost", 80), DEFAULT_PRIORITY,
-                           &host_resolver, false /* disable_secure_dns */,
+                           HostPortPair("localhost", 80), NetworkIsolationKey(),
+                           DEFAULT_PRIORITY, &host_resolver,
+                           false /* disable_secure_dns */,
                            TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_EQ(tagging_sock->tag(), SocketTag());
@@ -454,8 +455,8 @@ TEST_F(SOCKSClientSocketTest, SetDisableSecureDns) {
     MockHostResolver host_resolver;
     SOCKSClientSocket socket(
         std::make_unique<MockTCPClientSocket>(address_list_, &log, &data),
-        HostPortPair("localhost", 80), DEFAULT_PRIORITY, &host_resolver,
-        disable_secure_dns, TRAFFIC_ANNOTATION_FOR_TESTS);
+        HostPortPair("localhost", 80), NetworkIsolationKey(), DEFAULT_PRIORITY,
+        &host_resolver, disable_secure_dns, TRAFFIC_ANNOTATION_FOR_TESTS);
 
     EXPECT_EQ(ERR_IO_PENDING, socket.Connect(callback_.callback()));
     EXPECT_EQ(disable_secure_dns,

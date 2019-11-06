@@ -14,6 +14,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
 #include "net/socket/client_socket_factory.h"
@@ -75,7 +76,7 @@ class SOCKSConnectJobTest : public testing::Test, public WithTaskEnvironment {
         socks_version == SOCKSVersion::V4
             ? HostPortPair(kSOCKS4TestHost, kSOCKS4TestPort)
             : HostPortPair(kSOCKS5TestHost, kSOCKS5TestPort),
-        TRAFFIC_ANNOTATION_FOR_TESTS);
+        NetworkIsolationKey(), TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
  protected:

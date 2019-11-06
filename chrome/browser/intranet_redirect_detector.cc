@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -224,10 +225,10 @@ void IntranetRedirectDetector::OnDnsConfigChanged() {
 void IntranetRedirectDetector::SetupDnsConfigClient() {
   DCHECK(!dns_config_client_receiver_.is_bound());
 
-  network::mojom::DnsConfigChangeManagerPtr manager_ptr;
+  mojo::Remote<network::mojom::DnsConfigChangeManager> manager_remote;
   content::GetNetworkService()->GetDnsConfigChangeManager(
-      mojo::MakeRequest(&manager_ptr));
-  manager_ptr->RequestNotifications(
+      manager_remote.BindNewPipeAndPassReceiver());
+  manager_remote->RequestNotifications(
       dns_config_client_receiver_.BindNewPipeAndPassRemote());
   dns_config_client_receiver_.set_disconnect_handler(base::BindRepeating(
       &IntranetRedirectDetector::OnDnsConfigClientConnectionError,

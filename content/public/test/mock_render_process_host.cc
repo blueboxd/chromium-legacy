@@ -305,6 +305,14 @@ void MockRenderProcessHost::RemovePriorityClient(
   priority_clients_.erase(priority_client);
 }
 
+void MockRenderProcessHost::SetPriorityOverride(bool foreground) {}
+
+bool MockRenderProcessHost::HasPriorityOverride() {
+  return false;
+}
+
+void MockRenderProcessHost::ClearPriorityOverride() {}
+
 #if defined(OS_ANDROID)
 ChildProcessImportance MockRenderProcessHost::GetEffectiveImportance() {
   NOTIMPLEMENTED();

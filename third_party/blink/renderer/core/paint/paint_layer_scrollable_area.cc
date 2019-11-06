@@ -2203,6 +2203,16 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
   if (did_scroll_overflow == ScrollsOverflow())
     return;
 
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // Change of scrolls_overflow may affect whether we create ScrollTranslation
+    // which is referenced from ScrollDisplayItem. Invalidate scrollbars (but
+    // not their parts) to repaint the display item.
+    if (auto* scrollbar = HorizontalScrollbar())
+      scrollbar->SetNeedsPaintInvalidation(kNoPart);
+    if (auto* scrollbar = VerticalScrollbar())
+      scrollbar->SetNeedsPaintInvalidation(kNoPart);
+  }
+
   if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled() &&
       scrolls_overflow_) {
     if (GetLayoutBox()->IsLayoutView()) {

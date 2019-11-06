@@ -341,7 +341,8 @@ TEST_F(NodeTest, MutationOutsideFlatTreeStyleDirty) {
   GetDocument()
       .getElementById("nonslotted")
       ->setAttribute("style", "color:green");
-  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_EQ(!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled(),
+            GetDocument().NeedsLayoutTreeUpdate());
 }
 
 TEST_F(NodeTest, SkipStyleDirtyHostChild) {
@@ -429,6 +430,77 @@ TEST_F(NodeTest, UpdateChildDirtyAncestorsOnSlotAssignment) {
   span->setAttribute(html_names::kSlotAttr, "target");
   GetDocument().GetSlotAssignmentEngine().RecalcSlotAssignments();
   EXPECT_TRUE(ancestor->ChildNeedsStyleRecalc());
+}
+
+TEST_F(NodeTest, UpdateChildDirtySlotAfterRemoval) {
+  ScopedFlatTreeStyleRecalcForTest scope(true);
+
+  SetBodyContent("<div id=host><span></span></div>");
+  Element* host = GetDocument().getElementById("host");
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString("<slot></slot>");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* span = To<Element>(host->firstChild());
+  auto* slot = shadow_root.firstChild();
+
+  // Make sure the span is dirty, and the slot marked child-dirty before the
+  // removal.
+  span->setAttribute("style", "color:green");
+  EXPECT_TRUE(span->NeedsStyleRecalc());
+  EXPECT_TRUE(slot->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(host->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsStyleRecalc());
+
+  // The StyleRecalcRoot is now the span. Removing the span should clear the
+  // root and the child-dirty bits on the ancestors.
+  span->remove();
+
+  EXPECT_FALSE(slot->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(host->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(GetDocument().body()->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(GetDocument().GetStyleEngine().NeedsStyleRecalc());
+}
+
+TEST_F(NodeTest, UpdateChildDirtyAfterSlotRemoval) {
+  ScopedFlatTreeStyleRecalcForTest scope(true);
+
+  SetBodyContent("<div id=host><span></span></div>");
+  Element* host = GetDocument().getElementById("host");
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString("<div><slot></slot></div>");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* span = To<Element>(host->firstChild());
+  auto* div = shadow_root.firstChild();
+  auto* slot = div->firstChild();
+
+  // Make sure the span is dirty, and the slot marked child-dirty before the
+  // removal.
+  span->setAttribute("style", "color:green");
+  EXPECT_TRUE(span->NeedsStyleRecalc());
+  EXPECT_TRUE(slot->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(div->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(host->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsStyleRecalc());
+
+  // The StyleRecalcRoot is now the span. Removing the slot would break the flat
+  // tree ancestor chain so that when removing the span we would no longer be
+  // able to clear the dirty bits for all of the previous ancestor chain. Thus,
+  // we fall back to use the host as the style recalc root to be able to
+  // traverse and clear the dirty bit of the shadow tree div element on the next
+  // style recalc.
+  slot->remove();
+  span->remove();
+
+  EXPECT_TRUE(div->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(host->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsStyleRecalc());
 }
 
 }  // namespace blink

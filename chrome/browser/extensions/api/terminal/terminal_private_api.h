@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/value_store/value_store.h"
 
 namespace extensions {
 
@@ -17,8 +18,6 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("terminalPrivate.openTerminalProcess",
                              TERMINALPRIVATE_OPENTERMINALPROCESS)
-
-  TerminalPrivateOpenTerminalProcessFunction();
 
  protected:
   ~TerminalPrivateOpenTerminalProcessFunction() override;
@@ -107,6 +106,22 @@ class TerminalPrivateAckOutputFunction : public ExtensionFunction {
 
  private:
   void AckOutputOnRegistryTaskRunner(const std::string& terminal_id);
+};
+
+// TODO(crbug.com/1019021): Remove this function after M-83.
+// Be sure to first remove the callsite in the terminal system app.
+class TerminalPrivateGetCroshSettingsFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.getCroshSettings",
+                             TERMINALPRIVATE_GETCROSHSETTINGS)
+
+ protected:
+  ~TerminalPrivateGetCroshSettingsFunction() override;
+
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  void AsyncRunWithStorage(ValueStore* storage);
 };
 
 }  // namespace extensions

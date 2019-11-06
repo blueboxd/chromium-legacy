@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.signin.metrics.SignoutReason;
 
 import java.io.IOException;
@@ -102,8 +101,6 @@ public class SigninHelper {
 
     private final AccountTrackerService mAccountTrackerService;
 
-    private final OAuth2TokenService mOAuth2TokenService;
-
     public static SigninHelper get() {
         synchronized (LOCK) {
             if (sInstance == null) {
@@ -117,7 +114,6 @@ public class SigninHelper {
         mProfileSyncService = ProfileSyncService.get();
         mSigninManager = IdentityServicesProvider.getSigninManager();
         mAccountTrackerService = IdentityServicesProvider.getAccountTrackerService();
-        mOAuth2TokenService = IdentityServicesProvider.getOAuth2TokenService();
         mChromeSigninController = ChromeSigninController.get();
     }
 

@@ -53,7 +53,8 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   DCHECK(current_properties_.IsInitialized());
 #endif
 
-  bool item_forces_new_chunk = item.IsForeignLayer() || item.IsScrollHitTest();
+  bool item_forces_new_chunk =
+      item.IsForeignLayer() || item.IsScrollHitTest() || item.IsScrollbar();
   if (item_forces_new_chunk)
     force_new_chunk_ = true;
 

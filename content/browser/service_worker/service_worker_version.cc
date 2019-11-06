@@ -711,9 +711,14 @@ void ServiceWorkerVersion::RunAfterStartWorker(
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  // TODO(crbug.com/1021718): Remove this CHECK once we figure out the cause of
+  // crash.
+  CHECK(provider_host);
   const std::string& uuid = provider_host->client_uuid();
   CHECK(!provider_host->client_uuid().empty());
-  DCHECK(!base::Contains(controllee_map_, uuid));
+  // TODO(crbug.com/1021718): Change to DCHECK once we figure out the cause of
+  // crash.
+  CHECK(!base::Contains(controllee_map_, uuid));
   // TODO(crbug.com/951571): Change to DCHECK once we figured out the cause of
   // invalid controller status.
   CHECK(status_ == ACTIVATING || status_ == ACTIVATED);
@@ -764,9 +769,11 @@ void ServiceWorkerVersion::MoveControlleeToBackForwardCacheMap(
 
 void ServiceWorkerVersion::RestoreControlleeFromBackForwardCacheMap(
     const std::string& client_uuid) {
-  DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(!base::Contains(controllee_map_, client_uuid));
-  DCHECK(base::Contains(bfcached_controllee_map_, client_uuid));
+  // TODO(crbug.com/1021718): Change these to DCHECK once we figure out the
+  // cause of crash.
+  CHECK(IsBackForwardCacheEnabled());
+  CHECK(!base::Contains(controllee_map_, client_uuid));
+  CHECK(base::Contains(bfcached_controllee_map_, client_uuid));
   AddControllee(bfcached_controllee_map_[client_uuid]);
   bfcached_controllee_map_.erase(client_uuid);
 }
@@ -781,18 +788,19 @@ void ServiceWorkerVersion::RemoveControlleeFromBackForwardCacheMap(
 void ServiceWorkerVersion::OnControlleeDestroyed(
     const std::string& client_uuid) {
   if (!IsBackForwardCacheEnabled() ||
-      !ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
+      !ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     RemoveControllee(client_uuid);
-
-  if (base::Contains(controllee_map_, client_uuid)) {
-    RemoveControllee(client_uuid);
-  } else if (base::Contains(bfcached_controllee_map_, client_uuid)) {
-    RemoveControlleeFromBackForwardCacheMap(client_uuid);
+  } else {
+    if (base::Contains(controllee_map_, client_uuid)) {
+      RemoveControllee(client_uuid);
+    } else if (base::Contains(bfcached_controllee_map_, client_uuid)) {
+      RemoveControlleeFromBackForwardCacheMap(client_uuid);
+    }
+    // It is possible that the controllee belongs to neither |controllee_map_|
+    // or |bfcached_controllee_map_|. This happens when a BackForwardCached
+    // controllee is deleted after eviction, which has already removed it from
+    // |bfcached_controllee_map_|.
   }
-  // It is possible that the controllee belongs to neither |controllee_map_| or
-  // |bfcached_controllee_map_|. This happens when a BackForwardCached
-  // controllee is deleted after eviction, which has already removed it from
-  // |bfcached_controllee_map_|.
 }
 
 void ServiceWorkerVersion::EvictBackForwardCachedControllees() {

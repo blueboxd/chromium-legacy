@@ -43,6 +43,7 @@
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
+#include "chrome/browser/sharing/webrtc/webrtc_flags.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -3806,6 +3807,16 @@ const FeatureEntry kFeatureEntries[] = {
     {"sharing-use-device-info", flag_descriptions::kSharingUseDeviceInfoName,
      flag_descriptions::kSharingUseDeviceInfoDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingUseDeviceInfo)},
+
+    {"sharing-peer-connection-receiver",
+     flag_descriptions::kSharingPeerConnectionReceiverName,
+     flag_descriptions::kSharingPeerConnectionReceiverDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharingPeerConnectionReceiver)},
+
+    {"sharing-peer-connection-sender",
+     flag_descriptions::kSharingPeerConnectionSenderName,
+     flag_descriptions::kSharingPeerConnectionSenderDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharingPeerConnectionSender)},
 
 #if defined(OS_CHROMEOS)
     {"discover-app", flag_descriptions::kEnableDiscoverAppName,

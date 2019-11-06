@@ -23,6 +23,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/dns/public/dns_protocol.h"
@@ -90,11 +91,13 @@ network::mojom::NetworkContext* GetNetworkContextForProfile(
       ->GetNetworkContext();
 }
 
-network::mojom::DnsConfigChangeManagerPtr GetDnsConfigChangeManager() {
-  network::mojom::DnsConfigChangeManagerPtr dns_config_change_manager_ptr;
+mojo::Remote<network::mojom::DnsConfigChangeManager>
+GetDnsConfigChangeManager() {
+  mojo::Remote<network::mojom::DnsConfigChangeManager>
+      dns_config_change_manager_remote;
   content::GetNetworkService()->GetDnsConfigChangeManager(
-      mojo::MakeRequest(&dns_config_change_manager_ptr));
-  return dns_config_change_manager_ptr;
+      dns_config_change_manager_remote.BindNewPipeAndPassReceiver());
+  return dns_config_change_manager_remote;
 }
 
 net::DnsConfigOverrides SystemOverrides() {

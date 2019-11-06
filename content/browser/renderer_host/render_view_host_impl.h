@@ -234,6 +234,11 @@ class CONTENT_EXPORT RenderViewHostImpl
     return main_frame_theme_color_;
   }
 
+  // Notifies that / returns whether main document's onload() handler was
+  // completed.
+  void DocumentOnLoadCompletedInMainFrame();
+  bool IsDocumentOnLoadCompletedInMainFrame();
+
   // Manual RTTI to ensure safe downcasts in tests.
   virtual bool IsTestRenderViewHost() const;
 
@@ -395,6 +400,9 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
+
+  // True if the current main document finished executing onload() handler.
+  bool is_document_on_load_completed_in_main_frame_ = false;
 
   base::WeakPtrFactory<RenderViewHostImpl> weak_factory_{this};
 

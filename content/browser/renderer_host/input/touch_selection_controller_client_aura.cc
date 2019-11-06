@@ -241,7 +241,8 @@ void TouchSelectionControllerClientAura::ShowQuickMenu() {
   if (!ui::TouchSelectionMenuRunner::GetInstance())
     return;
 
-  gfx::RectF rect = rwhva_->selection_controller()->GetRectBetweenBounds();
+  gfx::RectF rect =
+      rwhva_->selection_controller()->GetVisibleRectBetweenBounds();
 
   // Clip rect, which is in |rwhva_|'s window's coordinate space, to client
   // bounds.
@@ -472,7 +473,7 @@ void TouchSelectionControllerClientAura::ExecuteCommand(int command_id,
 
 void TouchSelectionControllerClientAura::RunContextMenu() {
   gfx::RectF anchor_rect =
-      rwhva_->selection_controller()->GetRectBetweenBounds();
+      rwhva_->selection_controller()->GetVisibleRectBetweenBounds();
   gfx::PointF anchor_point =
       gfx::PointF(anchor_rect.CenterPoint().x(), anchor_rect.y());
   RenderWidgetHostImpl* host = rwhva_->host();

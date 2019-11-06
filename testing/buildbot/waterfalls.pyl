@@ -1733,7 +1733,7 @@
         ],
         'mixins': [
           'fuchsia_aemu',
-	  'linux-xenial',
+          'linux-xenial',
         ],
         'swarming': {
           'dimension_sets': [
@@ -1751,7 +1751,7 @@
           'all',
         ],
         'mixins': [
-	        'fuchsia_aemu',
+          'fuchsia_aemu',
           'linux-xenial',
         ],
         'swarming': {
@@ -4426,6 +4426,9 @@
           'kitkat',
           'hammerhead',
         ],
+        'test_suites': {
+          'gtest_tests': 'opus_tests',
+        },
         'os_type': 'android',
       },
       'android_blink_rel': {

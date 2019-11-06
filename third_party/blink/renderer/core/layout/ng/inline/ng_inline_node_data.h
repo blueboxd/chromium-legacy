@@ -23,12 +23,13 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
 
   bool IsBlockLevel() const { return is_block_level_; }
 
- private:
   const NGInlineItemsData& ItemsData(bool is_first_line) const {
     return !is_first_line || !first_line_items_
                ? (const NGInlineItemsData&)*this
                : *first_line_items_;
   }
+
+ private:
   void SetBaseDirection(TextDirection direction) {
     base_direction_ = static_cast<unsigned>(direction);
   }

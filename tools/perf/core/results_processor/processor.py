@@ -24,7 +24,7 @@ from core.results_processor import formatters
 from core.results_processor import util
 
 from tracing.trace_data import trace_data
-from tracing.value.diagnostics import date_range
+from tracing.value.diagnostics import all_diagnostics
 from tracing.value.diagnostics import generic_set
 from tracing.value.diagnostics import reserved_infos
 from tracing.value import histogram
@@ -62,6 +62,7 @@ def ProcessResults(options):
   upload_bucket = options.upload_bucket
   results_label = options.results_label
   max_num_values = options.max_values_per_test_case
+  test_path_format = options.test_path_format
   test_suite_start = (test_results[0]['startTime']
       if test_results and 'startTime' in test_results[0]
       else datetime.datetime.utcnow().isoformat() + 'Z')
@@ -72,7 +73,8 @@ def ProcessResults(options):
   util.ApplyInParallel(
       lambda result: ProcessTestResult(
           result, upload_bucket, results_label, run_identifier,
-          test_suite_start, should_compute_metrics, max_num_values),
+          test_suite_start, should_compute_metrics, max_num_values,
+          test_path_format),
       test_results,
       on_failure=util.SetUnexpectedFailure,
   )
@@ -94,7 +96,7 @@ def ProcessResults(options):
 
 def ProcessTestResult(test_result, upload_bucket, results_label,
                       run_identifier, test_suite_start, should_compute_metrics,
-                      max_num_values):
+                      max_num_values, test_path_format):
   AggregateTraces(test_result)
   if upload_bucket is not None:
     UploadArtifacts(test_result, upload_bucket, run_identifier)
@@ -110,7 +112,8 @@ def ProcessTestResult(test_result, upload_bucket, results_label,
       util.SetUnexpectedFailure(test_result)
       del test_result['_histograms']
     else:
-      AddDiagnosticsToHistograms(test_result, test_suite_start, results_label)
+      AddDiagnosticsToHistograms(test_result, test_suite_start, results_label,
+                                 test_path_format)
 
 
 def ExtractHistograms(test_results):
@@ -210,10 +213,28 @@ def UploadArtifacts(test_result, upload_bucket, run_identifier):
                  artifact['remoteUrl'])
 
 
-def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label):
-  """Add diagnostics to all histograms of a test run.
+def _GetTraceUrl(test_result):
+  artifacts = test_result.get('outputArtifacts', {})
+  trace_artifact = artifacts.get(compute_metrics.HTML_TRACE_NAME, {})
+  return (trace_artifact['remoteUrl'] if 'remoteUrl' in trace_artifact
+               else trace_artifact.get('filePath'))
+
+
+def _SplitTestPath(test_result, test_path_format):
+  if test_path_format == command_line.TELEMETRY_TEST_PATH_FORMAT:
+    return test_result['testPath'].split('/', 1)
+  elif test_path_format == command_line.GTEST_TEST_PATH_FORMAT:
+    return test_result['testPath'].split('.', 1)
+  else:
+    raise ValueError('Unknown test path format: %s', test_path_format)
+
+
+def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label,
+                               test_path_format):
+  """Add diagnostics to all histograms of a test result.
 
   Reads diagnostics from the test artifact and adds them to all histograms.
+  Also sets additional diagnostics based on test result metadata.
   This overwrites the corresponding diagnostics previously set by e.g.
   run_metrics.
   """
@@ -228,15 +249,29 @@ def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label):
       test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
           name, generic_set.GenericSet(diag))
 
-  timestamp_ms = util.IsoTimestampToEpoch(test_suite_start) * 1e3
-  test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
-      reserved_infos.BENCHMARK_START.name, date_range.DateRange(timestamp_ms))
+  test_suite, test_case = _SplitTestPath(test_result, test_path_format)
+  if 'startTime' in test_result:
+    test_start_ms = util.IsoTimestampToEpoch(test_result['startTime']) * 1e3
+  else:
+    test_start_ms = None
+  test_suite_start_ms = util.IsoTimestampToEpoch(test_suite_start) * 1e3
+  story_tags = [tag['value'] for tag in test_result.get('tags', [])
+                if tag['key'] == 'story_tag']
+  result_id = int(test_result.get('resultId', 0))
+  trace_url = _GetTraceUrl(test_result)
 
-
-  if results_label is not None:
-    test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
-        reserved_infos.LABELS.name,
-        generic_set.GenericSet([results_label]))
+  additional_diagnostics = [
+      (reserved_infos.BENCHMARKS, test_suite),
+      (reserved_infos.BENCHMARK_START, test_suite_start_ms),
+      (reserved_infos.LABELS, results_label),
+      (reserved_infos.STORIES, test_case),
+      (reserved_infos.STORYSET_REPEATS, result_id),
+      (reserved_infos.STORY_TAGS, story_tags),
+      (reserved_infos.TRACE_START, test_start_ms),
+      (reserved_infos.TRACE_URLS, trace_url),
+  ]
+  for name, value in _WrapDiagnostics(additional_diagnostics):
+    test_result['_histograms'].AddSharedDiagnosticToAllHistograms(name, value)
 
 
 def MeasurementToHistogram(name, measurement):
@@ -253,20 +288,24 @@ def MeasurementToHistogram(name, measurement):
                                     description=description)
 
 
-def _StoryDiagnostics(test_result):
-  """Extract diagnostics information about the specific story.
+def _WrapDiagnostics(info_value_pairs):
+  """Wrap diagnostic values in corresponding Diagnostics classes.
 
-  These diagnostics will be added only to ad-hoc measurements recorded by
-  benchmarks.
+  Args:
+    info_value_pairs: any iterable of pairs (info, value), where info is one
+        of reserved infos defined in tracing.value.diagnostics.reserved_infos,
+        and value can be any json-serializable object.
+
+  Returns:
+    An iterator over pairs (diagnostic name, diagnostic value).
   """
-  benchmark_name, story_name = test_result['testPath'].split('/', 1)
-  story_tags = [tag['value'] for tag in test_result.get('tags', [])
-                if tag['key'] == 'story_tag']
-  return {
-      reserved_infos.BENCHMARKS.name: generic_set.GenericSet([benchmark_name]),
-      reserved_infos.STORIES.name: generic_set.GenericSet([story_name]),
-      reserved_infos.STORY_TAGS.name: generic_set.GenericSet(story_tags),
-  }
+  for info, value in info_value_pairs:
+    if value is None or value == []:
+      continue
+    if info.type == 'GenericSet' and not isinstance(value, list):
+      value = [value]
+    diag_class = all_diagnostics.GetDiagnosticClassForName(info.type)
+    yield info.name, diag_class(value)
 
 
 def ExtractMeasurements(test_result):
@@ -275,10 +314,9 @@ def ExtractMeasurements(test_result):
   if MEASUREMENTS_NAME in artifacts:
     with open(artifacts[MEASUREMENTS_NAME]['filePath']) as f:
       measurements = json.load(f)['measurements']
-    diagnostics = _StoryDiagnostics(test_result)
     for name, measurement in measurements.iteritems():
       test_result['_histograms'].AddHistogram(
-          MeasurementToHistogram(name, measurement), diagnostics=diagnostics)
+          MeasurementToHistogram(name, measurement))
 
 
 def main(args=None):

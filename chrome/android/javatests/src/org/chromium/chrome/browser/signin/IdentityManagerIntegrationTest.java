@@ -20,9 +20,9 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.signin.identitymanager.CoreAccountId;
 import org.chromium.components.signin.identitymanager.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.identitymanager.IdentityMutator;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
@@ -58,6 +58,7 @@ public class IdentityManagerIntegrationTest {
     private CoreAccountInfo mTestAccount2;
 
     private IdentityMutator mIdentityMutator;
+    private IdentityManager mIdentityManager;
     private ChromeSigninController mChromeSigninController;
 
     @Before
@@ -78,6 +79,7 @@ public class IdentityManagerIntegrationTest {
 
             // Get a reference to the service.
             mIdentityMutator = IdentityServicesProvider.getSigninManager().getIdentityMutator();
+            mIdentityManager = IdentityServicesProvider.getIdentityManager();
         });
     }
 
@@ -137,15 +139,15 @@ public class IdentityManagerIntegrationTest {
     @Test
     @MediumTest
     public void testUpdateAccountListNoAccountsRegisteredAndNoSignedInUser() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertArrayEquals("Initial state: getAccounts must be empty", new String[] {},
-                    OAuth2TokenService.getAccounts());
+        Assert.assertArrayEquals("Initial state: getAccounts must be empty",
+                new CoreAccountInfo[] {}, mIdentityManager.getAccountsWithRefreshTokens());
 
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Run test.
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null);
 
-            Assert.assertArrayEquals("No account: getAccounts must be empty", new String[] {},
-                    OAuth2TokenService.getAccounts());
+            Assert.assertArrayEquals("No account: getAccounts must be empty",
+                    new CoreAccountInfo[] {}, mIdentityManager.getAccountsWithRefreshTokens());
         });
     }
 
@@ -159,7 +161,7 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null);
 
             Assert.assertArrayEquals("No signed in account: getAccounts must be empty",
-                    new String[] {}, OAuth2TokenService.getAccounts());
+                    new CoreAccountInfo[] {}, mIdentityManager.getAccountsWithRefreshTokens());
         });
     }
 
@@ -173,7 +175,8 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertArrayEquals("Signed in: one account should be available",
-                    new String[] {mTestAccount1.getId().getId()}, OAuth2TokenService.getAccounts());
+                    new CoreAccountInfo[] {mTestAccount1},
+                    mIdentityManager.getAccountsWithRefreshTokens());
         });
     }
 
@@ -188,7 +191,7 @@ public class IdentityManagerIntegrationTest {
 
             Assert.assertArrayEquals(
                     "Signed in but different account, getAccounts must remain empty",
-                    new String[] {}, OAuth2TokenService.getAccounts());
+                    new CoreAccountInfo[] {}, mIdentityManager.getAccountsWithRefreshTokens());
         });
     }
 
@@ -202,7 +205,8 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertArrayEquals("Signed in and one account available",
-                    new String[] {mTestAccount1.getId().getId()}, OAuth2TokenService.getAccounts());
+                    new CoreAccountInfo[] {mTestAccount1},
+                    mIdentityManager.getAccountsWithRefreshTokens());
         });
 
         // Add another account.
@@ -213,9 +217,9 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
-                    new HashSet<String>(Arrays.asList(
-                            mTestAccount1.getId().getId(), mTestAccount2.getId().getId())),
-                    new HashSet<String>(Arrays.asList(OAuth2TokenService.getAccounts())));
+                    new HashSet<CoreAccountInfo>(Arrays.asList(mTestAccount1, mTestAccount2)),
+                    new HashSet<CoreAccountInfo>(
+                            Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
         });
     }
 
@@ -231,9 +235,9 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
-                    new HashSet<String>(Arrays.asList(
-                            mTestAccount1.getId().getId(), mTestAccount2.getId().getId())),
-                    new HashSet<String>(Arrays.asList(OAuth2TokenService.getAccounts())));
+                    new HashSet<CoreAccountInfo>(Arrays.asList(mTestAccount1, mTestAccount2)),
+                    new HashSet<CoreAccountInfo>(
+                            Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
         });
 
         removeAccount(TEST_ACCOUNT_HOLDER_2);
@@ -243,7 +247,8 @@ public class IdentityManagerIntegrationTest {
 
             Assert.assertArrayEquals(
                     "Only one account available, account2 should not be returned anymore",
-                    new String[] {mTestAccount1.getId().getId()}, OAuth2TokenService.getAccounts());
+                    new CoreAccountInfo[] {mTestAccount1},
+                    mIdentityManager.getAccountsWithRefreshTokens());
         });
     }
 
@@ -258,9 +263,9 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
-                    new HashSet<String>(Arrays.asList(
-                            mTestAccount1.getId().getId(), mTestAccount2.getId().getId())),
-                    new HashSet<String>(Arrays.asList(OAuth2TokenService.getAccounts())));
+                    new HashSet<CoreAccountInfo>(Arrays.asList(mTestAccount1, mTestAccount2)),
+                    new HashSet<CoreAccountInfo>(
+                            Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
         });
 
         // Remove all.
@@ -271,8 +276,8 @@ public class IdentityManagerIntegrationTest {
             // Re-validate and run checks.
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
-            Assert.assertArrayEquals(
-                    "No account available", new String[] {}, OAuth2TokenService.getAccounts());
+            Assert.assertArrayEquals("No account available", new CoreAccountInfo[] {},
+                    mIdentityManager.getAccountsWithRefreshTokens());
         });
     }
 
@@ -288,9 +293,9 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
-                    new HashSet<String>(Arrays.asList(
-                            mTestAccount1.getId().getId(), mTestAccount2.getId().getId())),
-                    new HashSet<String>(Arrays.asList(OAuth2TokenService.getAccounts())));
+                    new HashSet<CoreAccountInfo>(Arrays.asList(mTestAccount1, mTestAccount2)),
+                    new HashSet<CoreAccountInfo>(
+                            Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
         });
 
         removeAccount(TEST_ACCOUNT_HOLDER_1);
@@ -300,8 +305,8 @@ public class IdentityManagerIntegrationTest {
             // Re-validate and run checks.
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null);
 
-            Assert.assertEquals("Not signed in and no accounts available", new String[] {},
-                    OAuth2TokenService.getAccounts());
+            Assert.assertEquals("Not signed in and no accounts available", new CoreAccountInfo[] {},
+                    mIdentityManager.getAccountsWithRefreshTokens());
         });
     }
 
@@ -317,9 +322,9 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
-                    new HashSet<String>(Arrays.asList(
-                            mTestAccount1.getId().getId(), mTestAccount2.getId().getId())),
-                    new HashSet<String>(Arrays.asList(OAuth2TokenService.getAccounts())));
+                    new HashSet<CoreAccountInfo>(Arrays.asList(mTestAccount1, mTestAccount2)),
+                    new HashSet<CoreAccountInfo>(
+                            Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
         });
     }
 
@@ -330,8 +335,8 @@ public class IdentityManagerIntegrationTest {
             // Run test.
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
-            Assert.assertEquals(
-                    "No accounts available", new String[] {}, OAuth2TokenService.getAccounts());
+            Assert.assertEquals("No accounts available", new CoreAccountInfo[] {},
+                    mIdentityManager.getAccountsWithRefreshTokens());
         });
     }
 }

@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
@@ -209,12 +209,13 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
                        base::Unretained(webrtc_track), std::move(callback)));
   }
 
-  std::unique_ptr<blink::WebRTCDTMFSenderHandler> GetDtmfSender() const {
+  std::unique_ptr<blink::RtcDtmfSenderHandler> GetDtmfSender() const {
     // The webrtc_sender() is a proxy, so this is a blocking call to the
     // webrtc signalling thread.
     DCHECK(main_task_runner_->BelongsToCurrentThread());
     auto dtmf_sender = webrtc_sender_->GetDtmfSender();
-    return blink::CreateRTCDTMFSenderHandler(main_task_runner_, dtmf_sender);
+    return std::make_unique<RtcDtmfSenderHandler>(main_task_runner_,
+                                                  dtmf_sender);
   }
 
   std::unique_ptr<webrtc::RtpParameters> GetParameters() {
@@ -456,8 +457,8 @@ void RTCRtpSenderImpl::ReplaceTrack(blink::WebMediaStreamTrack with_track,
                           base::BindOnce(&OnReplaceTrackCompleted, request));
 }
 
-std::unique_ptr<blink::WebRTCDTMFSenderHandler>
-RTCRtpSenderImpl::GetDtmfSender() const {
+std::unique_ptr<blink::RtcDtmfSenderHandler> RTCRtpSenderImpl::GetDtmfSender()
+    const {
   return internal_->GetDtmfSender();
 }
 

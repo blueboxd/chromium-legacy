@@ -694,6 +694,28 @@ There are two types of hit test painting:
     This is also used for CompositeAfterPaint to force a special cc::Layer that
     is marked as being scrollable.
 
+### Scrollbar painting
+
+For now in pre-CompositeAfterPaint, we have distinct paths for composited
+scrollbars and non-composited scrollbars. For a composited scrollbar,
+PaintArtifactCompositor creates a GraphicsLayer, then ScrollingCoordinator
+creates the cc scrollbar layer which is set as the content layer of the
+GraphicsLayer. For a non-composited scrollbar, ScrollableAreaPainter paints
+the scrollbar into various drawing display items.
+
+In CompositeAfterPaint, during painting, for a non-custom scrollbar we create a
+[ScrollbarDisplayItem](../../platform/graphics/paint/scrollbar_display_item.h)
+which contains a [cc::Scrollbar](../../../../cc/input/scrollbar.h) and other
+information that are needed to actually paint the scrollbar into a paint record
+or to create a cc scrollbar layer. During PaintArtifactCompositor update,
+we decide whether to composite the scrollbar and, if not composited, actually
+paint the scrollbar as a paint record, otherwise create a cc scrollbar layer
+of type cc::SolidColorScrollbarLayer, cc::PaintedScrollbarLayer or
+cc::PaintedOverlayScrollbarLayer depending on the type of the scrollbar.
+
+In CompositeAfterPaint, custom scrollbars are still painted into drawing
+display items directly.
+
 ### PaintNG
 
 [LayoutNG](../layout/ng/README.md]) is a project that will change how Layout

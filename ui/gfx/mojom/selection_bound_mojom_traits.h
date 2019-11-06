@@ -61,6 +61,14 @@ struct StructTraits<gfx::mojom::SelectionBoundDataView, gfx::SelectionBound> {
     return input.edge_bottom();
   }
 
+  static gfx::PointF visible_edge_top(const gfx::SelectionBound& input) {
+    return input.visible_edge_top();
+  }
+
+  static gfx::PointF visible_edge_bottom(const gfx::SelectionBound& input) {
+    return input.visible_edge_bottom();
+  }
+
   static bool visible(const gfx::SelectionBound& input) {
     return input.visible();
   }
@@ -69,9 +77,14 @@ struct StructTraits<gfx::mojom::SelectionBoundDataView, gfx::SelectionBound> {
                    gfx::SelectionBound* out) {
     gfx::PointF edge_top;
     gfx::PointF edge_bottom;
-    if (!data.ReadEdgeTop(&edge_top) || !data.ReadEdgeBottom(&edge_bottom))
+    gfx::PointF visible_edge_top;
+    gfx::PointF visible_edge_bottom;
+    if (!data.ReadEdgeTop(&edge_top) || !data.ReadEdgeBottom(&edge_bottom) ||
+        !data.ReadVisibleEdgeTop(&visible_edge_top) ||
+        !data.ReadVisibleEdgeBottom(&visible_edge_bottom))
       return false;
     out->SetEdge(edge_top, edge_bottom);
+    out->SetVisibleEdge(visible_edge_top, visible_edge_bottom);
     out->set_type(MojoSelectionBoundTypeToGfx(data.type()));
     out->set_visible(data.visible());
     return true;

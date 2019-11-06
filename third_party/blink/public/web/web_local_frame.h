@@ -733,11 +733,6 @@ class WebLocalFrame : public WebFrame {
 
   // Testing ------------------------------------------------------------------
 
-  // Dumps the layer tree, used by the accelerated compositor, in
-  // text form. This is used only by web tests.
-  virtual WebString GetLayerTreeAsTextForTesting(
-      bool show_debug_info = false) const = 0;
-
   // Prints the frame into the canvas, with page boundaries drawn as one pixel
   // wide blue lines. This method exists to support web tests.
   virtual void PrintPagesForTesting(cc::PaintCanvas*, const WebSize&) = 0;

@@ -43,11 +43,12 @@ class NGInlineCursorTest : public NGLayoutTest,
         cursor.GetLayoutBlockFlow()->GetNGInlineNodeData()->text_content;
     if (const LayoutObject* layout_object = cursor.CurrentLayoutObject()) {
       if (layout_object->IsText()) {
-        return text_content
-            .Substring(
-                cursor.CurrentTextStartOffset(),
-                cursor.CurrentTextEndOffset() - cursor.CurrentTextStartOffset())
-            .StripWhiteSpace();
+        String result = text_content
+                            .Substring(cursor.CurrentTextStartOffset(),
+                                       cursor.CurrentTextEndOffset() -
+                                           cursor.CurrentTextStartOffset())
+                            .StripWhiteSpace();
+        return result;
       }
       if (const Element* element =
               DynamicTo<Element>(layout_object->GetNode())) {
@@ -60,11 +61,69 @@ class NGInlineCursorTest : public NGLayoutTest,
 
     return "#null";
   }
+
+  Vector<String> ToDebugStringListWithBidiLevel(const NGInlineCursor& start) {
+    Vector<String> list;
+    for (NGInlineCursor cursor(start); cursor; cursor.MoveToNext())
+      list.push_back(ToDebugStringWithBidiLevel(cursor));
+    return list;
+  }
+
+  String ToDebugStringWithBidiLevel(const NGInlineCursor& cursor) {
+    if (!cursor.IsText() && !cursor.IsAtomicInline())
+      return ToDebugString(cursor);
+    StringBuilder result;
+    result.Append(ToDebugString(cursor));
+    result.Append(':');
+    result.AppendNumber(cursor.CurrentBidiLevel());
+    return result.ToString();
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(NGInlineCursorTest,
                          NGInlineCursorTest,
                          testing::Bool());
+
+TEST_P(NGInlineCursorTest, BidiLevelInlineBoxLTR) {
+  InsertStyleElement("b { display: inline-block; }");
+  NGInlineCursor cursor = SetupCursor(
+      "<div id=root dir=ltr>"
+      "abc<b id=def>def</b><bdo dir=rtl><b id=ghi>GHI</b></bdo>jkl</div>");
+  Vector<String> list = ToDebugStringListWithBidiLevel(cursor);
+  EXPECT_THAT(list, ElementsAre("#linebox", "abc:0", "#def:0",
+                                "LayoutInline BDO", "#ghi:1", "jkl:0"));
+}
+
+TEST_P(NGInlineCursorTest, BidiLevelInlineBoxRTL) {
+  InsertStyleElement("b { display: inline-block; }");
+  NGInlineCursor cursor = SetupCursor(
+      "<div id=root dir=rtl>"
+      "abc<b id=def>def</b><bdo dir=rtl><b id=ghi>GHI</b></bdo>jkl</div>");
+  Vector<String> list = ToDebugStringListWithBidiLevel(cursor);
+  EXPECT_THAT(list, ElementsAre("#linebox", "LayoutInline BDO", "#ghi:3",
+                                "jkl:2", "#def:1", "abc:2"));
+}
+
+TEST_P(NGInlineCursorTest, BidiLevelSimpleLTR) {
+  NGInlineCursor cursor = SetupCursor(
+      "<div id=root dir=ltr>"
+      "<bdo dir=rtl>GHI<bdo dir=ltr>abc</bdo>DEF</bdo><br>"
+      "123, jkl <bdo dir=rtl>MNO</bdo></div>");
+  Vector<String> list = ToDebugStringListWithBidiLevel(cursor);
+  EXPECT_THAT(list, ElementsAre("#linebox", "DEF:1", "abc:2", "GHI:1", ":0",
+                                "#linebox", "123, jkl:0", "MNO:1"));
+}
+
+TEST_P(NGInlineCursorTest, BidiLevelSimpleRTL) {
+  NGInlineCursor cursor = SetupCursor(
+      "<div id=root dir=rtl>"
+      "<bdo dir=rtl>GHI<bdo dir=ltr>abc</bdo>DEF</bdo><br>"
+      "123, jkl <bdo dir=rtl>MNO</bdo></div>");
+  Vector<String> list = ToDebugStringListWithBidiLevel(cursor);
+  EXPECT_THAT(
+      list, ElementsAre("#linebox", ":0", "DEF:3", "abc:4", "GHI:3", "#linebox",
+                        "MNO:3", ":1", "jkl:2", ",:1", "123:2"));
+}
 
 TEST_P(NGInlineCursorTest, GetLayoutBlockFlowWithScopedCursor) {
   NGInlineCursor line = SetupCursor("<div id=root>line1<br>line2</div>");

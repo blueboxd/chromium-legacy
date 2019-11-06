@@ -28,10 +28,13 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/storage/settings_namespace.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/extension.h"
 
 namespace terminal_private = extensions::api::terminal_private;
 namespace OnTerminalResize =
@@ -118,10 +121,7 @@ int GetTabOrWindowSessionId(content::BrowserContext* browser_context,
 namespace extensions {
 
 TerminalPrivateOpenTerminalProcessFunction::
-    TerminalPrivateOpenTerminalProcessFunction() {}
-
-TerminalPrivateOpenTerminalProcessFunction::
-    ~TerminalPrivateOpenTerminalProcessFunction() {}
+    ~TerminalPrivateOpenTerminalProcessFunction() = default;
 
 ExtensionFunction::ResponseAction
 TerminalPrivateOpenTerminalProcessFunction::Run() {
@@ -243,7 +243,7 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenOnRegistryTaskRunner(
                  base::BindOnce(callback, success, terminal_id));
 }
 
-TerminalPrivateSendInputFunction::~TerminalPrivateSendInputFunction() {}
+TerminalPrivateSendInputFunction::~TerminalPrivateSendInputFunction() = default;
 
 void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(
     bool success,
@@ -285,7 +285,7 @@ void TerminalPrivateSendInputFunction::RespondOnUIThread(bool success) {
 }
 
 TerminalPrivateCloseTerminalProcessFunction::
-    ~TerminalPrivateCloseTerminalProcessFunction() {}
+    ~TerminalPrivateCloseTerminalProcessFunction() = default;
 
 ExtensionFunction::ResponseAction
 TerminalPrivateCloseTerminalProcessFunction::Run() {
@@ -320,7 +320,7 @@ void TerminalPrivateCloseTerminalProcessFunction::RespondOnUIThread(
 }
 
 TerminalPrivateOnTerminalResizeFunction::
-    ~TerminalPrivateOnTerminalResizeFunction() {}
+    ~TerminalPrivateOnTerminalResizeFunction() = default;
 
 ExtensionFunction::ResponseAction
 TerminalPrivateOnTerminalResizeFunction::Run() {
@@ -356,7 +356,7 @@ void TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread(bool success) {
   Respond(OneArgument(std::make_unique<base::Value>(success)));
 }
 
-TerminalPrivateAckOutputFunction::~TerminalPrivateAckOutputFunction() {}
+TerminalPrivateAckOutputFunction::~TerminalPrivateAckOutputFunction() = default;
 
 ExtensionFunction::ResponseAction TerminalPrivateAckOutputFunction::Run() {
   std::unique_ptr<AckOutput::Params> params(AckOutput::Params::Create(*args_));
@@ -386,6 +386,34 @@ ExtensionFunction::ResponseAction TerminalPrivateAckOutputFunction::Run() {
 void TerminalPrivateAckOutputFunction::AckOutputOnRegistryTaskRunner(
     const std::string& terminal_id) {
   chromeos::ProcessProxyRegistry::Get()->AckOutput(terminal_id);
+}
+
+TerminalPrivateGetCroshSettingsFunction::
+    ~TerminalPrivateGetCroshSettingsFunction() = default;
+
+ExtensionFunction::ResponseAction
+TerminalPrivateGetCroshSettingsFunction::Run() {
+  const Extension* crosh_extension =
+      TerminalExtensionHelper::GetTerminalExtension(
+          Profile::FromBrowserContext(browser_context()));
+  StorageFrontend* frontend = StorageFrontend::Get(browser_context());
+  frontend->RunWithStorage(
+      crosh_extension, settings_namespace::SYNC,
+      base::Bind(&TerminalPrivateGetCroshSettingsFunction::AsyncRunWithStorage,
+                 this));
+  return RespondLater();
+}
+
+void TerminalPrivateGetCroshSettingsFunction::AsyncRunWithStorage(
+    ValueStore* storage) {
+  ValueStore::ReadResult result = storage->Get();
+  ExtensionFunction::ResponseValue response =
+      result.status().ok() ? OneArgument(result.PassSettings())
+                           : Error(result.status().message);
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&TerminalPrivateGetCroshSettingsFunction::Respond, this,
+                     std::move(response)));
 }
 
 }  // namespace extensions

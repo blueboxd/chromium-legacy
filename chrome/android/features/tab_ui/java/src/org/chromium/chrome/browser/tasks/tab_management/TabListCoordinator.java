@@ -110,8 +110,11 @@ public class TabListCoordinator implements Destroyable {
         RecyclerView.RecyclerListener recyclerListener = null;
         if (mMode == TabListMode.GRID || mMode == TabListMode.CAROUSEL) {
             mAdapter.registerType(UiType.SELECTABLE, () -> {
-                return (ViewGroup) LayoutInflater.from(context).inflate(
+                ViewGroup group = (ViewGroup) LayoutInflater.from(context).inflate(
                         R.layout.selectable_tab_grid_card_item, parentView, false);
+                group.setClickable(true);
+
+                return group;
             }, TabGridViewBinder::bindSelectableTab);
 
             mAdapter.registerType(UiType.CLOSABLE, () -> {
@@ -121,6 +124,7 @@ public class TabListCoordinator implements Destroyable {
                     group.getLayoutParams().width = context.getResources().getDimensionPixelSize(
                             R.dimen.tab_carousel_card_width);
                 }
+                group.setClickable(true);
                 return group;
             }, TabGridViewBinder::bindClosableTab);
 

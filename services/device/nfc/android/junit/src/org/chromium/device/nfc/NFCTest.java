@@ -49,7 +49,6 @@ import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefPushOptions;
 import org.chromium.device.mojom.NdefPushTarget;
 import org.chromium.device.mojom.NdefRecord;
-import org.chromium.device.mojom.NdefRecordTypeFilter;
 import org.chromium.device.mojom.NdefScanOptions;
 import org.chromium.device.mojom.Nfc.CancelAllWatchesResponse;
 import org.chromium.device.mojom.Nfc.CancelPushResponse;
@@ -755,9 +754,7 @@ public class NFCTest {
 
         // Should match by record type.
         NdefScanOptions options3 = createNdefScanOptions();
-        NdefRecordTypeFilter typeFilter = new NdefRecordTypeFilter();
-        typeFilter.recordType = NdefMessageUtils.RECORD_TYPE_URL;
-        options3.recordFilter = typeFilter;
+        options3.recordType = NdefMessageUtils.RECORD_TYPE_URL;
         int watchId3 = mNextWatchId++;
         WatchResponse mockWatchCallback3 = mock(WatchResponse.class);
         nfc.watch(options3, watchId3, mockWatchCallback3);
@@ -1336,7 +1333,6 @@ public class NFCTest {
         NdefScanOptions options = new NdefScanOptions();
         options.url = "";
         options.mediaType = "";
-        options.recordFilter = null;
         return options;
     }
 

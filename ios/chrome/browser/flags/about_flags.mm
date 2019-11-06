@@ -562,6 +562,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSaveCardDismissOnNavigation)},
+    {"enable-persistent-downloads",
+     flag_descriptions::kEnablePersistentDownloadsName,
+     flag_descriptions::kEnablePersistentDownloadsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kEnablePersistentDownloads)},
 };
 
 // Add all switches from experimental flags to |command_line|.

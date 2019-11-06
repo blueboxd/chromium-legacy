@@ -1464,6 +1464,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_CREATENEWDESK = 1401,
   AUTOTESTPRIVATE_ACTIVATEDESKATINDEX = 1402,
   AUTOTESTPRIVATE_REMOVEACTIVEDESK = 1403,
+  TERMINALPRIVATE_GETCROSHSETTINGS = 1404,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

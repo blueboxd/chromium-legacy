@@ -127,6 +127,11 @@ class WallpaperWidgetController::WidgetHandler
       parent_window_->layer()->RemoveCacheRenderSurfaceRequest();
       has_blur_cache_ = false;
     }
+
+    // No need to repaint if blur is already zero.
+    if (blur == 0.f)
+      return;
+
     widget_->GetLayer()->SetLayerBlur(0.f);
     wallpaper_view_->RepaintBlurAndOpacity(blur, 1.f);
   }

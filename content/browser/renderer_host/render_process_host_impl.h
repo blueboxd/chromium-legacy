@@ -207,6 +207,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void RemovePendingView() override;
   void AddPriorityClient(PriorityClient* priority_client) override;
   void RemovePriorityClient(PriorityClient* priority_client) override;
+  void SetPriorityOverride(bool foreground) override;
+  bool HasPriorityOverride() override;
+  void ClearPriorityOverride() override;
 #if defined(OS_ANDROID)
   ChildProcessImportance GetEffectiveImportance() override;
   void DumpProcessStack() override;
@@ -916,6 +919,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::flat_set<PriorityClient*> priority_clients_;
 
   ChildProcessLauncherPriority priority_;
+
+  // If this is set then the built-in process priority calculation system is
+  // ignored, and an externally computed process priority is used. Set to true
+  // and the process will stay foreground priority; set to false and it will
+  // stay background priority.
+  base::Optional<bool> priority_override_;
 
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.

@@ -47,7 +47,7 @@ class MergeProfilesTest(unittest.TestCase):
         'llvm-profdata', 'a.json', 'b.json', 'c.json'
     ]
     with mock.patch.object(merger, 'merge_profiles') as mock_merge:
-      mock_merge.return_value = None
+      mock_merge.return_value = None, None
       with mock.patch.object(sys, 'argv', args):
         merge_results.main()
         self.assertEqual(
@@ -91,6 +91,8 @@ class MergeProfilesTest(unittest.TestCase):
         '/b/some/path/1/default-2.profdata',
     ], [
         '/b/some/path/0/default-2.profraw',
+        '/b/some/path/1/default-1.profraw',
+    ], [
         '/b/some/path/1/default-1.profraw',
     ]
 

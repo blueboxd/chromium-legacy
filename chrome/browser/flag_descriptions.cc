@@ -1874,6 +1874,18 @@ const char kSharingDeviceRegistrationDescription[] =
     "Enables device registration with Sharing infrastructure. Required to use "
     "cross-device Sharing features.";
 
+const char kSharingPeerConnectionReceiverName[] =
+    "Enable receiver device to handle peer connection requests.";
+const char kSharingPeerConnectionReceiverDescription[] =
+    "Enables receiver device to connect and share data using a peer to peer "
+    "connection.";
+
+const char kSharingPeerConnectionSenderName[] =
+    "Enable sender device to initiate peer connection requests.";
+const char kSharingPeerConnectionSenderDescription[] =
+    "Enables the sender devices to connect with chosen device using a peer to "
+    "peer connection for transferring data.";
+
 const char kSharingUseDeviceInfoName[] =
     "Enable Sharing device registration in DeviceInfo";
 const char kSharingUseDeviceInfoDescription[] =

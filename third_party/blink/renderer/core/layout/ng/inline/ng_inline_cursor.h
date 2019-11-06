@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_CURSOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_CURSOR_H_
 
+#include <unicode/ubidi.h>
+
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -23,6 +25,7 @@ class NGFragmentItems;
 class NGInlineBreakToken;
 class NGPaintFragment;
 class NGPhysicalBoxFragment;
+enum class NGStyleVariant;
 class Node;
 struct PhysicalOffset;
 struct PhysicalRect;
@@ -156,6 +159,11 @@ class CORE_EXPORT NGInlineCursor {
   const NGPhysicalBoxFragment* CurrentBoxFragment() const;
   const LayoutObject* CurrentLayoutObject() const;
   Node* CurrentNode() const;
+
+  // Returns bidi level of current position. It is error to call other than
+  // text and atomic inline.
+  UBiDiLevel CurrentBidiLevel() const;
+
   // Returns text direction of current text or atomic inline. It is error to
   // call at other than text or atomic inline. Note: <span> doesn't have
   // reserved direction.
@@ -201,6 +209,11 @@ class CORE_EXPORT NGInlineCursor {
   //
   // Functions to move the current position.
   //
+
+  // Move the current position at |cursor|. Unlinke copy constrcutr, this
+  // function doesn't copy root. Note: The current position in |cursor|
+  // should be part of |this| cursor.
+  void MoveTo(const NGInlineCursor& cursor);
 
   // Move the current posint at |paint_fragment|.
   void MoveTo(const NGPaintFragment& paint_fragment);
@@ -274,6 +287,10 @@ class CORE_EXPORT NGInlineCursor {
   // Returns break token for line box. It is error to call other than line box.
   const NGInlineBreakToken& CurrentInlineBreakToken() const;
 
+  // Returns style variant of the current position.
+  NGStyleVariant CurrentStyleVariant() const;
+  bool UsesFirstLineStyle() const;
+
   // True if current position is descendant or self of |layout_object|.
   // Note: This function is used for moving cursor in culled inline boxes.
   bool IsInclusiveDescendantOf(const LayoutObject& layout_object) const;
@@ -307,9 +324,9 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToNextPaintFragment();
   void MoveToNextSiblingPaintFragment();
   void MoveToNextPaintFragmentSkippingChildren();
-
   void MoveToPreviousPaintFragment();
   void MoveToPreviousSiblingPaintFragment();
+
   ItemsSpan items_;
   ItemsSpan::iterator item_iter_;
   const NGFragmentItem* current_item_ = nullptr;

@@ -10,7 +10,7 @@ import plistlib
 import subprocess
 import time
 
-from . import commands
+from . import commands, logger
 
 # python2 support.
 if not hasattr(plistlib, 'loads'):
@@ -44,7 +44,7 @@ def submit(path, config):
     output = commands.run_command_output(command)
     plist = plistlib.loads(output)
     uuid = plist['notarization-upload']['RequestUUID']
-    print('Submitted {} for notarization, request UUID: {}.'.format(path, uuid))
+    logger.info('Submitted %s for notarization, request UUID: %s.', path, uuid)
     return uuid
 
 
@@ -102,13 +102,14 @@ def wait_for_results(uuids, config):
             if status == 'in progress':
                 continue
             elif status == 'success':
-                print('Successfully notarized request {}. Log file: {}'.format(
-                    uuid, info[_LOG_FILE_URL]))
+                logger.info('Successfully notarized request %s. Log file: %s',
+                            uuid, info[_LOG_FILE_URL])
                 wait_set.remove(uuid)
                 yield uuid
             else:
-                print('Failed to notarize request {}. Log file: {}. Output:\n{}'
-                      .format(uuid, info[_LOG_FILE_URL], output))
+                logger.error(
+                    'Failed to notarize request %s. Log file: %s. Output:\n%s',
+                    uuid, info[_LOG_FILE_URL], output)
                 raise NotarizationError(
                     'Notarization request {} failed with status: "{}". '
                     'Log file: {}.'.format(uuid, status, info[_LOG_FILE_URL]))

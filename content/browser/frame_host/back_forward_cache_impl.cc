@@ -9,6 +9,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -79,7 +80,15 @@ bool IsServiceWorkerSupported() {
 
 bool IsGeolocationSupported() {
   static constexpr base::FeatureParam<bool> geolocation_supported(
-      &features::kBackForwardCache, "geolocation_supported", false);
+      &features::kBackForwardCache, "geolocation_supported",
+#if defined(OS_ANDROID)
+      true
+#else
+      // TODO(crbug.com/989847): Omnibox icon should be updated when the page
+      //                         enters or is restored from BackForwardCache.
+      false
+#endif
+  );
   return geolocation_supported.Get();
 }
 
@@ -136,18 +145,6 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
   return result;
 }
 
-std::string DescribeFeatures(uint64_t blocklisted_features) {
-  std::vector<std::string> features;
-  for (size_t i = 0;
-       i <= static_cast<size_t>(WebSchedulerTrackedFeature::kMaxValue); ++i) {
-    if (blocklisted_features & (1 << i)) {
-      features.push_back(blink::scheduler::FeatureToString(
-          static_cast<WebSchedulerTrackedFeature>(i)));
-    }
-  }
-  return base::JoinString(features, ", ");
-}
-
 // The BackForwardCache feature is controlled via an experiment. This function
 // returns the allowed URLs where it is enabled. To enter the BackForwardCache
 // the URL of a document must have a host and a path matching with at least
@@ -177,102 +174,6 @@ BackForwardCacheImpl::Entry::Entry(
       proxy_hosts(std::move(proxies)),
       render_view_hosts(std::move(render_view_hosts)) {}
 BackForwardCacheImpl::Entry::~Entry() {}
-
-bool BackForwardCacheImpl::CanStoreDocumentResult::CanStore() const {
-  return not_stored_reasons.none();
-}
-
-std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() const {
-  using Reason = BackForwardCacheMetrics::NotRestoredReason;
-
-  if (CanStore())
-    return "Yes";
-
-  std::vector<std::string> reason_strs;
-
-  for (int i = 0; i <= static_cast<int>(Reason::kMaxValue); i++) {
-    if (!not_stored_reasons.test(static_cast<size_t>(i)))
-      continue;
-
-    reason_strs.push_back(NotRestoredReasonToString(static_cast<Reason>(i)));
-  }
-
-  return "No: " + base::JoinString(reason_strs, ", ");
-}
-
-std::string
-BackForwardCacheImpl::CanStoreDocumentResult::NotRestoredReasonToString(
-    BackForwardCacheMetrics::NotRestoredReason reason) const {
-  using Reason = BackForwardCacheMetrics::NotRestoredReason;
-
-  switch (reason) {
-    case Reason::kNotMainFrame:
-      return "not a main frame";
-    case Reason::kBackForwardCacheDisabled:
-      return "BackForwardCache disabled";
-    case Reason::kRelatedActiveContentsExist:
-      return "related active contents exist";
-    case Reason::kHTTPStatusNotOK:
-      return "HTTP status is not OK";
-    case Reason::kSchemeNotHTTPOrHTTPS:
-      return "scheme is not HTTP or HTTPS";
-    case Reason::kLoading:
-      return "frame is not fully loaded";
-    case Reason::kWasGrantedMediaAccess:
-      return "frame was granted microphone or camera access";
-    case Reason::kBlocklistedFeatures:
-      return "blocklisted features: " + DescribeFeatures(blocklisted_features);
-    case Reason::kDisableForRenderFrameHostCalled:
-      return "BackForwardCache::DisableForRenderFrameHost() was called";
-    case Reason::kDomainNotAllowed:
-      return "This domain is not allowed to be stored in BackForwardCache";
-    case Reason::kHTTPMethodNotGET:
-      return "HTTP method is not GET";
-    case Reason::kSubframeIsNavigating:
-      return "subframe navigation is in progress";
-    case Reason::kTimeout:
-      return "timeout";
-    case Reason::kCacheLimit:
-      return "cache limit";
-    case Reason::kJavaScriptExecution:
-      return "JavaScript execution";
-    case Reason::kRendererProcessKilled:
-      return "renderer process is killed";
-    case Reason::kRendererProcessCrashed:
-      return "renderer process crashed";
-    case Reason::kDialog:
-      return "dialog";
-    case Reason::kGrantedMediaStreamAccess:
-      return "granted media stream access";
-    case Reason::kSchedulerTrackedFeatureUsed:
-      return "scheduler tracked feature is used";
-    case Reason::kConflictingBrowsingInstance:
-      return "conflicting BrowsingInstance";
-    case Reason::kCacheFlushed:
-      return "cache flushed";
-    case Reason::kServiceWorkerVersionActivation:
-      return "service worker version is activated";
-  }
-}
-
-void BackForwardCacheImpl::CanStoreDocumentResult::No(
-    BackForwardCacheMetrics::NotRestoredReason reason) {
-  not_stored_reasons.set(static_cast<size_t>(reason));
-}
-
-void BackForwardCacheImpl::CanStoreDocumentResult::NoDueToFeatures(
-    uint64_t features) {
-  not_stored_reasons.set(static_cast<size_t>(
-      BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures));
-  blocklisted_features |= features;
-}
-
-BackForwardCacheImpl::CanStoreDocumentResult::CanStoreDocumentResult() =
-    default;
-BackForwardCacheImpl::CanStoreDocumentResult::CanStoreDocumentResult(
-    const CanStoreDocumentResult&) = default;
-BackForwardCacheImpl::CanStoreDocumentResult::~CanStoreDocumentResult() =
-    default;
 
 BackForwardCacheTestDelegate::BackForwardCacheTestDelegate() {
   DCHECK(!g_bfcache_disabled_test_observer);
@@ -305,9 +206,9 @@ base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
       kDefaultTimeToLiveInBackForwardCacheInSeconds));
 }
 
-BackForwardCacheImpl::CanStoreDocumentResult
-BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
-  CanStoreDocumentResult result;
+BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStoreDocument(
+    RenderFrameHostImpl* rfh) {
+  BackForwardCacheCanStoreDocumentResult result;
 
   // Use the BackForwardCache only for the main frame.
   if (rfh->GetParent())
@@ -360,7 +261,7 @@ BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
 // Recursively checks whether this RenderFrameHost and all child frames
 // can be cached.
 void BackForwardCacheImpl::CanStoreRenderFrameHost(
-    CanStoreDocumentResult* result,
+    BackForwardCacheCanStoreDocumentResult* result,
     RenderFrameHostImpl* rfh) {
   if (!rfh->dom_content_loaded())
     result->No(BackForwardCacheMetrics::NotRestoredReason::kLoading);

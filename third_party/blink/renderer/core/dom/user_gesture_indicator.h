@@ -53,11 +53,10 @@ class CORE_EXPORT UserGestureIndicator final {
   USING_FAST_MALLOC(UserGestureIndicator);
 
  public:
-  // Note: All *ThreadSafe methods are safe to call from any thread. Their
-  // non-suffixed counterparts *must* be called on the main thread. Consider
-  // always using the non-suffixed one unless the code really
-  // needs to be thread-safe
-  static UserGestureToken* CurrentToken();
+  // This method is for testing only.
+  static UserGestureToken* CurrentTokenForTest();
+
+  // This method is safe to call from any thread.
   static UserGestureToken* CurrentTokenThreadSafe();
 
   explicit UserGestureIndicator(scoped_refptr<UserGestureToken>);

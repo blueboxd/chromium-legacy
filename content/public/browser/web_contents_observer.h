@@ -238,6 +238,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
 
   // This method is invoked once the onload handler of the main frame has
   // completed.
+  // Prefer using WebContents::IsDocumentOnLoadCompletedInMainFrame instead
+  // of saving this state in your component.
   virtual void DocumentOnLoadCompletedInMainFrame() {}
 
   // This method is invoked when the document in the given frame finished

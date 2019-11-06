@@ -27,6 +27,7 @@ class FakeScrollbar : public Scrollbar {
   // Scrollbar implementation.
   ScrollbarOrientation Orientation() const override;
   bool IsLeftSideVerticalScrollbar() const override;
+  bool IsSolidColor() const override;
   bool IsOverlay() const override;
   bool HasThumb() const override;
   gfx::Rect ThumbRect() const override;

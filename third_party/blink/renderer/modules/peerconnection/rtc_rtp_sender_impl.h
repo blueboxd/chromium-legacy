@@ -137,8 +137,7 @@ class MODULES_EXPORT RTCRtpSenderImpl : public blink::WebRTCRtpSender {
   blink::WebVector<blink::WebString> StreamIds() const override;
   void ReplaceTrack(blink::WebMediaStreamTrack with_track,
                     blink::RTCVoidRequest* request) override;
-  std::unique_ptr<blink::WebRTCDTMFSenderHandler> GetDtmfSender()
-      const override;
+  std::unique_ptr<blink::RtcDtmfSenderHandler> GetDtmfSender() const override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
   void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,

@@ -312,6 +312,46 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   EXPECT_TRUE(IsInstalled(kAppUrl3));
 }
 
+TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
+  const std::vector<ExternalInstallOptions>& install_requests =
+      pending_app_manager()->install_requests();
+
+  system_web_app_manager()->SetUpdatePolicy(
+      SystemWebAppManager::UpdatePolicy::kOnVersionChange);
+
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
+  system_web_app_manager()->SetSystemApps(system_apps);
+
+  // Simulate first execution.
+  pending_app_manager()->SetInstallResultCode(
+      InstallResultCode::kSuccessNewInstall);
+  system_web_app_manager()->set_current_locale("en-US");
+  system_web_app_manager()->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, install_requests.size());
+  EXPECT_TRUE(IsInstalled(kAppUrl1));
+
+  // Change locale setting, should trigger reinstall.
+  pending_app_manager()->SetInstallResultCode(
+      InstallResultCode::kSuccessNewInstall);
+  system_web_app_manager()->set_current_locale("ja");
+  system_web_app_manager()->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2u, install_requests.size());
+  EXPECT_TRUE(install_requests[1].force_reinstall);
+  EXPECT_TRUE(IsInstalled(kAppUrl1));
+
+  // Do not reinstall because locale is not changed.
+  system_web_app_manager()->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(3u, install_requests.size());
+  EXPECT_FALSE(install_requests[2].force_reinstall);
+}
+
 TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
   base::HistogramTester histograms;
   {

@@ -63,8 +63,6 @@ struct VectorTraitsBase {
   struct IsTraceableInCollection {
     static const bool value = IsTraceable<T>::value;
   };
-  // We don't support weak handling in vectors.
-  static const WeakHandlingFlag kWeakHandlingFlag = kNoWeakHandling;
 
   // Vectors do not support deleting values.
   static constexpr bool kCanHaveDeletedValue = false;
@@ -145,8 +143,6 @@ struct VectorTraits<std::pair<First, Second>> {
         IsTraceableInCollectionTrait<FirstTraits>::value ||
         IsTraceableInCollectionTrait<SecondTraits>::value;
   };
-  // We don't support weak handling in vectors.
-  static const WeakHandlingFlag kWeakHandlingFlag = kNoWeakHandling;
 
   // Vectors do not support deleting values.
   static constexpr bool kCanHaveDeletedValue = false;

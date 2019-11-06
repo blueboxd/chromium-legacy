@@ -8,9 +8,11 @@
 #import <WebKit/WebKit.h>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #import "ios/net/cookies/system_cookie_util.h"
+#include "ios/web/common/features.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/download/download_task_observer.h"
@@ -475,6 +477,11 @@ void DownloadTaskImpl::OnDownloadUpdated() {
 }
 
 void DownloadTaskImpl::OnDownloadFinished(int error_code) {
+  // If downloads manager's flag is enabled, keeps the downloaded file. The
+  // writer deletes it if it owns it, that's why it shouldn't owns it anymore
+  // when the current download is finished.
+  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads))
+    writer_->AsFileWriter()->DisownFile();
   error_code_ = error_code;
   state_ = State::kComplete;
   session_task_ = nil;

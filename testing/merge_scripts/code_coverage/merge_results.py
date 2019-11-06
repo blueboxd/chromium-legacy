@@ -76,10 +76,20 @@ def main():
   # test results merge script such as layout tests will treat them as json test
   # results files and result in errors.
   logging.info('Merging code coverage profraw data')
-  invalid_profiles = coverage_merger.merge_profiles(
+  invalid_profiles, counter_overflows = coverage_merger.merge_profiles(
       params.task_output_dir,
       os.path.join(params.profdata_dir, 'default.profdata'), '.profraw',
       params.llvm_profdata)
+
+  # At the moment counter overflows overlap with invalid profiles, but this is
+  # not guaranteed to remain the case indefinitely. To avoid future conflicts
+  # treat these separately.
+  if counter_overflows:
+    with open(
+        os.path.join(params.profdata_dir, 'profiles_with_overflows.json'),
+        'w') as f:
+      json.dump(counter_overflows, f)
+
   if invalid_profiles:
     with open(os.path.join(params.profdata_dir, 'invalid_profiles.json'),
               'w') as f:

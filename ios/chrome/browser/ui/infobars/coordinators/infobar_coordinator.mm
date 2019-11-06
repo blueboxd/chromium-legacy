@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_presentation_state.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
@@ -50,6 +51,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     InfobarModalTransitionDriver* modalTransitionDriver;
 // Readwrite redefinition.
 @property(nonatomic, assign, readwrite) BOOL bannerWasPresented;
+// Completion block used to dismiss the banner after a set period of time.
+@property(nonatomic, copy) dispatch_block_t dismissBannerBlock;
 
 @end
 
@@ -141,6 +144,26 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                    if (completion)
                      completion();
                  }];
+
+  // Dismisses the presented banner after a certain number of seconds.
+  if (!UIAccessibilityIsVoiceOverRunning()) {
+    NSTimeInterval timeInterval =
+        self.highPriorityPresentation
+            ? kInfobarBannerLongPresentationDurationInSeconds
+            : kInfobarBannerDefaultPresentationDurationInSeconds;
+    dispatch_time_t popTime =
+        dispatch_time(DISPATCH_TIME_NOW, timeInterval * NSEC_PER_SEC);
+    if (self.dismissBannerBlock) {
+      // TODO:(crbug.com/1021805): Write unittest to cover this situation.
+      dispatch_block_cancel(self.dismissBannerBlock);
+    }
+    __weak InfobarCoordinator* weakSelf = self;
+    self.dismissBannerBlock = ^(void) {
+      [weakSelf dismissInfobarBannerAfterInteraction];
+      weakSelf.dismissBannerBlock = nil;
+    };
+    dispatch_after(popTime, dispatch_get_main_queue(), self.dismissBannerBlock);
+  }
 }
 
 - (void)presentInfobarModal {

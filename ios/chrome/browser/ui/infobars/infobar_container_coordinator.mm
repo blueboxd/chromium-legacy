@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
-#import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
@@ -295,20 +294,6 @@
   [infobarCoordinator presentInfobarBannerAnimated:YES completion:nil];
   self.infobarViewController = infobarCoordinator.bannerViewController;
   [self.infobarCoordinatorsToPresent removeObject:infobarCoordinator];
-
-  // Dismisses the presented InfobarCoordinator banner after
-  // kInfobarBannerPresentationDurationInSeconds seconds.
-  if (!UIAccessibilityIsVoiceOverRunning()) {
-    NSTimeInterval timeInterval =
-        infobarCoordinator.highPriorityPresentation
-            ? kInfobarBannerLongPresentationDurationInSeconds
-            : kInfobarBannerDefaultPresentationDurationInSeconds;
-    dispatch_time_t popTime =
-        dispatch_time(DISPATCH_TIME_NOW, timeInterval * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
-      [infobarCoordinator dismissInfobarBannerAfterInteraction];
-    });
-  }
 }
 
 // Returns the InfobarCoordinator for |infobarType|. If there's more than one

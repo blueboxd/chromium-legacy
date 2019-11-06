@@ -39,8 +39,8 @@ _DISABLED_TESTS = frozenset({
   # crbug.com/983326 - flaky.
   'system_health.memory_desktop/browse_accessibility:media:youtube',
 
-  # crbug.com/878390 - These stories are already covered by their 2018 versions
-  # and will later be removed.
+  # crbug.com/878390 - These stories are already covered by their 2018 or
+  # 2019 versions and will later be removed.
   'system_health.memory_mobile/browse:tech:discourse_infinite_scroll',
   'system_health.memory_mobile/browse:shopping:amazon',
   'system_health.memory_mobile/browse:social:facebook_infinite_scroll',
@@ -51,6 +51,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_mobile/browse:tools:maps',
   'system_health.memory_mobile/browse:news:cnn',
   'system_health.memory_mobile/browse:news:washingtonpost',
+  'system_health.memory_mobile/browse:media:youtube',
   'system_health.memory_mobile/load:media:facebook_photos',
   'system_health.memory_mobile/load:news:cnn',
   'system_health.memory_mobile/load:news:nytimes',

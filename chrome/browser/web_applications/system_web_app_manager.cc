@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/version.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -243,18 +244,27 @@ bool SystemWebAppManager::IsEnabled() {
 void SystemWebAppManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kSystemWebAppLastUpdateVersion, "");
+  registry->RegisterStringPref(prefs::kSystemWebAppLastInstalledLocale, "");
 }
 
 const base::Version& SystemWebAppManager::CurrentVersion() const {
   return version_info::GetVersion();
 }
 
+const std::string& SystemWebAppManager::CurrentLocale() const {
+  return g_browser_process->GetApplicationLocale();
+}
+
 void SystemWebAppManager::OnAppsSynchronized(
     std::map<GURL, InstallResultCode> install_results,
     std::map<GURL, bool> uninstall_results) {
   if (IsEnabled()) {
+    // TODO(qjw): Figure out where install_results come from, decide if
+    // installation failures need to be handled
     pref_service_->SetString(prefs::kSystemWebAppLastUpdateVersion,
                              CurrentVersion().GetString());
+    pref_service_->SetString(prefs::kSystemWebAppLastInstalledLocale,
+                             CurrentLocale());
   }
 
   RecordExternalAppInstallResultCode(kInstallResultHistogramName,
@@ -280,10 +290,20 @@ bool SystemWebAppManager::NeedsUpdate() const {
 
   base::Version last_update_version(
       pref_service_->GetString(prefs::kSystemWebAppLastUpdateVersion));
-  // This also updates if the version rolls back for some reason to ensure that
-  // the System Web Apps are always in sync with the Chrome version.
-  return !last_update_version.IsValid() ||
-         last_update_version != CurrentVersion();
+
+  const std::string& last_installed_locale(
+      pref_service_->GetString(prefs::kSystemWebAppLastInstalledLocale));
+
+  // If Chrome version rolls back for some reason, ensure System Web Apps are
+  // always in sync with Chrome version.
+  bool versionIsDifferent =
+      !last_update_version.IsValid() || last_update_version != CurrentVersion();
+
+  // If system language changes, ensure System Web Apps launcher localization
+  // are in sync with current language.
+  bool localeIsDifferent = last_installed_locale != CurrentLocale();
+
+  return versionIsDifferent || localeIsDifferent;
 }
 
 }  // namespace web_app

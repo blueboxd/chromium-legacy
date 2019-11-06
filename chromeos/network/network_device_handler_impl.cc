@@ -334,8 +334,13 @@ void NetworkDeviceHandlerImpl::SetMACAddressRandomizationEnabled(
 
 void NetworkDeviceHandlerImpl::SetUsbEthernetMacAddressSource(
     const std::string& source) {
+  if (source == usb_ethernet_mac_address_source_) {
+    return;
+  }
+
   usb_ethernet_mac_address_source_ = source;
   usb_ethernet_mac_address_source_needs_update_ = true;
+  mac_address_change_not_supported_.clear();
   ApplyUsbEthernetMacAddressSourceToShill();
 }
 
@@ -569,18 +574,20 @@ void NetworkDeviceHandlerImpl::ApplyUsbEthernetMacAddressSourceToShill() {
           weak_ptr_factory_.GetWeakPtr(),
           primary_enabled_usb_ethernet_device_path_,
           primary_enabled_usb_ethernet_device_state->mac_address(),
-          network_handler::ErrorCallback()));
+          usb_ethernet_mac_address_source_, network_handler::ErrorCallback()));
 }
 
 void NetworkDeviceHandlerImpl::OnSetUsbEthernetMacAddressSourceError(
     const std::string& device_path,
     const std::string& device_mac_address,
+    const std::string& mac_address_source,
     const network_handler::ErrorCallback& error_callback,
     const std::string& shill_error_name,
     const std::string& shill_error_message) {
   HandleShillCallFailure(device_path, error_callback, shill_error_name,
                          shill_error_message);
-  if (shill_error_name == NetworkDeviceHandler::kErrorNotSupported) {
+  if (shill_error_name == NetworkDeviceHandler::kErrorNotSupported &&
+      mac_address_source == usb_ethernet_mac_address_source_) {
     mac_address_change_not_supported_.insert(device_mac_address);
     ApplyUsbEthernetMacAddressSourceToShill();
   }

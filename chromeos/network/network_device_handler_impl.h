@@ -152,9 +152,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   // specified yet.
   void ApplyUsbEthernetMacAddressSourceToShill();
 
+  // Callback to be called on MAC address source change request failure.
+  // The request was called on device with |device_path| path and
+  // |device_mac_address| MAC address to change MAC address source to the new
+  // |mac_address_source| value.
   void OnSetUsbEthernetMacAddressSourceError(
       const std::string& device_path,
       const std::string& device_mac_address,
+      const std::string& mac_address_source,
       const network_handler::ErrorCallback& error_callback,
       const std::string& shill_error_name,
       const std::string& shill_error_message);
@@ -188,8 +193,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   std::string usb_ethernet_mac_address_source_;
   bool usb_ethernet_mac_address_source_needs_update_ = false;
   std::string primary_enabled_usb_ethernet_device_path_;
-  // Set of device's MAC addresses that do not support MAC address change. Use
-  // MAC address as unique device identifier, because link name can change.
+  // Set of device's MAC addresses that do not support MAC address source change
+  // to |usb_ethernet_mac_address_source_|. Use MAC address as unique device
+  // identifier, because link name can change.
   std::unordered_set<std::string> mac_address_change_not_supported_;
 
   base::WeakPtrFactory<NetworkDeviceHandlerImpl> weak_ptr_factory_{this};

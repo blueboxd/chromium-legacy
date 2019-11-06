@@ -604,7 +604,7 @@ public class NfcImpl implements Nfc {
 
         // Matches any record / media type.
         if ((options.mediaType == null || options.mediaType.isEmpty())
-                && options.recordFilter == null) {
+                && options.recordType == null) {
             return true;
         }
 
@@ -620,12 +620,11 @@ public class NfcImpl implements Nfc {
                 matchedMediaType = options.mediaType.equals(message.data[i].mediaType);
             }
 
-            if (options.recordFilter == null) {
-                // If record type filter for the watch options is null, match all record types.
+            if (options.recordType == null) {
+                // If record type for the watch options is null, match all record types.
                 matchedRecordType = true;
             } else {
-                matchedRecordType =
-                        options.recordFilter.recordType.equals(message.data[i].recordType);
+                matchedRecordType = options.recordType.equals(message.data[i].recordType);
             }
 
             if (matchedMediaType && matchedRecordType) return true;

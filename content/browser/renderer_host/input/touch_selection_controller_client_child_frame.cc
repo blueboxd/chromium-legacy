@@ -181,7 +181,7 @@ void TouchSelectionControllerClientChildFrame::ExecuteCommand(int command_id,
 
 void TouchSelectionControllerClientChildFrame::RunContextMenu() {
   gfx::RectF anchor_rect =
-      manager_->GetTouchSelectionController()->GetRectBetweenBounds();
+      manager_->GetTouchSelectionController()->GetVisibleRectBetweenBounds();
   gfx::PointF anchor_point =
       gfx::PointF(anchor_rect.CenterPoint().x(), anchor_rect.y());
   gfx::PointF origin = rwhv_->TransformPointToRootCoordSpaceF(gfx::PointF());

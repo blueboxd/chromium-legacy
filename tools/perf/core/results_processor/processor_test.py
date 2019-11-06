@@ -571,8 +571,8 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         ('builds', ''), ('deviceIds', ''), ('displayLabel', 'label'),
         ('masters', ''), ('memoryAmounts', ''), ('osNames', 'linux'),
         ('osVersions', ''), ('productVersions', ''),
-        ('stories', ''), ('storysetRepeats', ''),
-        ('traceStart', ''), ('traceUrls', '')
+        ('stories', 'story'), ('storysetRepeats', '0'),
+        ('traceStart', '2009-02-13 23:31:30'), ('traceUrls', '')
     ]
     self.assertEqual(actual, expected)
 

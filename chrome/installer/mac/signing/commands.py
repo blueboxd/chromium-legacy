@@ -11,6 +11,8 @@ import shutil
 import subprocess
 import tempfile
 
+from . import logger
+
 
 def file_exists(path):
     return os.path.exists(path)
@@ -62,12 +64,12 @@ def write_file(path, contents):
 
 
 def run_command(args, **kwargs):
-    print('Running command: {}'.format(args))
+    logger.info('Running command: %s', args)
     subprocess.check_call(args, **kwargs)
 
 
 def run_command_output(args, **kwargs):
-    print('Running command: {}'.format(args))
+    logger.info('Running command: %s', args)
     return subprocess.check_output(args, **kwargs)
 
 

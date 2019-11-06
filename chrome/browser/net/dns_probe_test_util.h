@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -106,7 +105,7 @@ class FakeDnsConfigChangeManager
     : public network::mojom::DnsConfigChangeManager {
  public:
   explicit FakeDnsConfigChangeManager(
-      network::mojom::DnsConfigChangeManagerRequest request);
+      mojo::PendingReceiver<network::mojom::DnsConfigChangeManager> receiver);
   ~FakeDnsConfigChangeManager() override;
 
   // mojom::DnsConfigChangeManager implementation:
@@ -117,7 +116,7 @@ class FakeDnsConfigChangeManager
   void SimulateDnsConfigChange();
 
  private:
-  mojo::Binding<network::mojom::DnsConfigChangeManager> binding_;
+  mojo::Receiver<network::mojom::DnsConfigChangeManager> receiver_;
   mojo::Remote<network::mojom::DnsConfigChangeManagerClient> client_;
 };
 

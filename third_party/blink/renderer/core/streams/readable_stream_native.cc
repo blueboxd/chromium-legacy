@@ -6,7 +6,10 @@
 
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abort_signal.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
@@ -20,16 +23,102 @@
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_native.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
+
+ReadableStreamNative::PipeOptions::PipeOptions()
+    : prevent_close_(false), prevent_abort_(false), prevent_cancel_(false) {}
+
+ReadableStreamNative::PipeOptions::PipeOptions(
+    ScriptState* script_state,
+    ScriptValue options,
+    ExceptionState& exception_state) {
+  auto* isolate = script_state->GetIsolate();
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Value> options_value = options.V8Value();
+  v8::Local<v8::Object> options_object;
+  if (options_value->IsUndefined()) {
+    options_object = v8::Object::New(isolate);
+  } else if (!options_value->ToObject(script_state->GetContext())
+                  .ToLocal(&options_object)) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return;
+  }
+
+  // 4. Set preventClose to ! ToBoolean(preventClose), set preventAbort to !
+  // ToBoolean(preventAbort), and set preventCancel to !
+  // ToBoolean(preventCancel).
+  prevent_close_ =
+      GetBoolean(script_state, options_object, "preventClose", exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  prevent_abort_ =
+      GetBoolean(script_state, options_object, "preventAbort", exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  prevent_cancel_ = GetBoolean(script_state, options_object, "preventCancel",
+                               exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  v8::Local<v8::Value> signal_value;
+  if (!options_object
+           ->Get(script_state->GetContext(), V8AtomicString(isolate, "signal"))
+           .ToLocal(&signal_value)) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return;
+  }
+
+  // 5. If signal is not undefined, and signal is not an instance of the
+  // AbortSignal interface, throw a TypeError exception.
+  if (signal_value->IsUndefined())
+    return;
+
+  signal_ = V8AbortSignal::ToImplWithTypeCheck(isolate, signal_value);
+  if (!signal_) {
+    exception_state.ThrowTypeError(
+        "'signal' must be an AbortSignal object or undefined");
+    return;
+  }
+}
+
+void ReadableStreamNative::PipeOptions::Trace(Visitor* visitor) {
+  visitor->Trace(signal_);
+}
+
+bool ReadableStreamNative::PipeOptions::GetBoolean(
+    ScriptState* script_state,
+    v8::Local<v8::Object> dictionary,
+    const char* property_name,
+    ExceptionState& exception_state) {
+  auto* isolate = script_state->GetIsolate();
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Value> property_value;
+  if (!dictionary
+           ->Get(script_state->GetContext(),
+                 V8AtomicString(isolate, property_name))
+           .ToLocal(&property_value)) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return false;
+  }
+  return property_value->ToBoolean(isolate)->Value();
+}
 
 // PipeToEngine implements PipeTo(). All standard steps in this class come from
 // https://streams.spec.whatwg.org/#readable-stream-pipe-to
@@ -44,7 +133,7 @@ namespace blink {
 class ReadableStreamNative::PipeToEngine final
     : public GarbageCollected<PipeToEngine> {
  public:
-  PipeToEngine(ScriptState* script_state, PipeOptions pipe_options)
+  PipeToEngine(ScriptState* script_state, PipeOptions* pipe_options)
       : script_state_(script_state), pipe_options_(pipe_options) {}
 
   // This is the main entrypoint for ReadableStreamPipeTo().
@@ -95,8 +184,19 @@ class ReadableStreamNative::PipeToEngine final
     // 11. Let promise be a new promise.
     promise_ = MakeGarbageCollected<StreamPromiseResolver>(script_state_);
 
-    // TODO(ricea): Implement abort:
-    // 12. If signal is not undefined, ...
+    // 12. If signal is not undefined,
+    if (auto* signal = pipe_options_->Signal()) {
+      //   b. If signal’s aborted flag is set, perform abortAlgorithm and
+      //      return promise.
+      if (signal->aborted()) {
+        AbortAlgorithm();
+        return promise_->GetScriptPromise(script_state_);
+      }
+
+      //   c. Add abortAlgorithm to signal.
+      signal->AddAlgorithm(
+          WTF::Bind(&PipeToEngine::AbortAlgorithm, WrapWeakPersistent(this)));
+    }
 
     // 13. In parallel ...
     // The rest of the algorithm is described in terms of a series of
@@ -133,6 +233,7 @@ class ReadableStreamNative::PipeToEngine final
 
   void Trace(Visitor* visitor) {
     visitor->Trace(script_state_);
+    visitor->Trace(pipe_options_);
     visitor->Trace(reader_);
     visitor->Trace(writer_);
     visitor->Trace(promise_);
@@ -226,6 +327,57 @@ class ReadableStreamNative::PipeToEngine final
     return true;
   }
 
+  void AbortAlgorithm() {
+    // a. Let abortAlgorithm be the following steps:
+    //    i. Let error be a new "AbortError" DOMException.
+    v8::Local<v8::Value> error = V8ThrowDOMException::CreateOrEmpty(
+        script_state_->GetIsolate(), DOMExceptionCode::kAbortError,
+        "Pipe aborted.");
+
+    // Steps ii. to iv. are implemented in AbortAlgorithmAction.
+
+    //    v. Shutdown with an action consisting of getting a promise to wait for
+    //       all of the actions in actions, and with error.
+    ShutdownWithAction(&PipeToEngine::AbortAlgorithmAction, error);
+  }
+
+  v8::Local<v8::Promise> AbortAlgorithmAction() {
+    v8::Local<v8::Value> error =
+        shutdown_error_.NewLocal(script_state_->GetIsolate());
+
+    // ii. Let actions be an empty ordered set.
+    HeapVector<ScriptPromise> actions;
+
+    // This method runs later than the equivalent steps in the standard. This
+    // means that it is safe to do the checks of the state of the destination
+    // and source synchronously, simplifying the logic.
+
+    // iii. If preventAbort is false, append the following action to actions:
+    //      1. If dest.[[state]] is "writable", return !
+    //         WritableStreamAbort(dest, error).
+    //      2. Otherwise, return a promise resolved with undefined.
+    if (!pipe_options_->PreventAbort() && Destination()->IsWritable()) {
+      actions.push_back(ScriptPromise(
+          script_state_,
+          WritableStreamNative::Abort(script_state_, Destination(), error)));
+    }
+
+    //  iv. If preventCancel is false, append the following action action to
+    //      actions:
+    //      1. If source.[[state]] is "readable", return !
+    //         ReadableStreamCancel(source, error).
+    //      2. Otherwise, return a promise resolved with undefined.
+    if (!pipe_options_->PreventCancel() && IsReadable(Readable())) {
+      actions.push_back(ScriptPromise(
+          script_state_,
+          ReadableStreamNative::Cancel(script_state_, Readable(), error)));
+    }
+
+    return ScriptPromise::All(script_state_, actions)
+        .V8Value()
+        .As<v8::Promise>();
+  }
+
   // HandleNextEvent() has an unused argument and return value because it is a
   // PromiseReaction. HandleNextEvent() and ReadFulfilled() call each other
   // asynchronously in a loop until the pipe completes.
@@ -312,7 +464,7 @@ class ReadableStreamNative::PipeToEngine final
     //    source.[[storedError]].
     DCHECK(error->SameValue(
         Readable()->GetStoredError(script_state_->GetIsolate())));
-    if (!pipe_options_.prevent_abort) {
+    if (!pipe_options_->PreventAbort()) {
       ShutdownWithAction(&PipeToEngine::WritableStreamAbortAction, error);
     } else {
       // b. Otherwise, shutdown with source.[[storedError]].
@@ -335,7 +487,7 @@ class ReadableStreamNative::PipeToEngine final
     //    dest.[[storedError]].
     DCHECK(error->SameValue(
         Destination()->GetStoredError(script_state_->GetIsolate())));
-    if (!pipe_options_.prevent_cancel) {
+    if (!pipe_options_->PreventCancel()) {
       ShutdownWithAction(&PipeToEngine::ReadableStreamCancelAction, error);
     } else {
       // b. Otherwise, shutdown with dest.[[storedError]].
@@ -349,7 +501,7 @@ class ReadableStreamNative::PipeToEngine final
   void ReadableClosed() {
     // a. If preventClose is false, shutdown with an action of !
     //    WritableStreamDefaultWriterCloseWithErrorPropagation(writer).
-    if (!pipe_options_.prevent_close) {
+    if (!pipe_options_->PreventClose()) {
       ShutdownWithAction(
           &PipeToEngine::
               WritableStreamDefaultWriterCloseWithErrorPropagationAction,
@@ -374,7 +526,7 @@ class ReadableStreamNative::PipeToEngine final
 
     // c. If preventCancel is false, shutdown with an action of !
     //    ReadableStreamCancel(source, destClosed) and with destClosed.
-    if (!pipe_options_.prevent_cancel) {
+    if (!pipe_options_->PreventCancel()) {
       ShutdownWithAction(&PipeToEngine::ReadableStreamCancelAction,
                          dest_closed);
     } else {
@@ -585,7 +737,7 @@ class ReadableStreamNative::PipeToEngine final
   }
 
   Member<ScriptState> script_state_;
-  PipeOptions pipe_options_;
+  Member<PipeOptions> pipe_options_;
   Member<ReadableStreamReader> reader_;
   Member<WritableStreamDefaultWriter> writer_;
   Member<StreamPromiseResolver> promise_;
@@ -1147,8 +1299,11 @@ ScriptValue ReadableStreamNative::pipeThrough(ScriptState* script_state,
     return ScriptValue();
   }
 
-  PipeOptions pipe_options;
-  UnpackPipeOptions(script_state, options, &pipe_options, exception_state);
+  auto* pipe_options =
+      MakeGarbageCollected<PipeOptions>(script_state, options, exception_state);
+  if (exception_state.HadException()) {
+    return ScriptValue();
+  }
 
   // This cast is safe because the following code will only be run when the
   // native version of WritableStream is in use.
@@ -1189,8 +1344,11 @@ ScriptPromise ReadableStreamNative::pipeTo(ScriptState* script_state,
   }
   CHECK(destination);
 
-  PipeOptions pipe_options;
-  UnpackPipeOptions(script_state, options, &pipe_options, exception_state);
+  auto* pipe_options =
+      MakeGarbageCollected<PipeOptions>(script_state, options, exception_state);
+  if (exception_state.HadException()) {
+    return ScriptPromise();
+  }
 
   // This cast is safe because the following code will only be run when the
   // native version of WritableStream is in use.
@@ -1399,7 +1557,8 @@ void ReadableStreamNative::Serialize(ScriptState* script_state,
     return;
   }
 
-  auto promise = PipeTo(script_state, this, writable, PipeOptions());
+  auto promise =
+      PipeTo(script_state, this, writable, MakeGarbageCollected<PipeOptions>());
   promise.MarkAsHandled();
 }
 
@@ -1422,7 +1581,7 @@ ReadableStreamNative* ReadableStreamNative::Deserialize(
 ScriptPromise ReadableStreamNative::PipeTo(ScriptState* script_state,
                                            ReadableStreamNative* readable,
                                            WritableStreamNative* destination,
-                                           PipeOptions pipe_options) {
+                                           PipeOptions* pipe_options) {
   auto* engine = MakeGarbageCollected<PipeToEngine>(script_state, pipe_options);
   return engine->Start(readable, destination);
 }
@@ -1673,59 +1832,5 @@ int ReadableStreamNative::GetNumReadRequests(
 // TODO(ricea): Functions for transferable streams.
 //
 
-void ReadableStreamNative::UnpackPipeOptions(ScriptState* script_state,
-                                             ScriptValue options,
-                                             PipeOptions* pipe_options,
-                                             ExceptionState& exception_state) {
-  auto* isolate = script_state->GetIsolate();
-  v8::TryCatch block(isolate);
-  v8::Local<v8::Value> options_value = options.V8Value();
-  v8::Local<v8::Object> options_object;
-  if (options_value->IsUndefined()) {
-    options_object = v8::Object::New(isolate);
-  } else if (!options_value->ToObject(script_state->GetContext())
-                  .ToLocal(&options_object)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return;
-  }
-
-  // 4. Set preventClose to ! ToBoolean(preventClose), set preventAbort to !
-  // ToBoolean(preventAbort), and set preventCancel to !
-  // ToBoolean(preventCancel).
-  pipe_options->prevent_close =
-      GetBoolean(script_state, options_object, "preventClose", exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  pipe_options->prevent_abort =
-      GetBoolean(script_state, options_object, "preventAbort", exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-
-  pipe_options->prevent_cancel = GetBoolean(script_state, options_object,
-                                            "preventCancel", exception_state);
-  if (exception_state.HadException()) {
-    return;
-  }
-}
-
-bool ReadableStreamNative::GetBoolean(ScriptState* script_state,
-                                      v8::Local<v8::Object> dictionary,
-                                      const char* property_name,
-                                      ExceptionState& exception_state) {
-  auto* isolate = script_state->GetIsolate();
-  v8::TryCatch block(isolate);
-  v8::Local<v8::Value> property_value;
-  if (!dictionary
-           ->Get(script_state->GetContext(),
-                 V8AtomicString(isolate, property_name))
-           .ToLocal(&property_value)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return false;
-  }
-  return property_value->ToBoolean(isolate)->Value();
-}
 
 }  // namespace blink

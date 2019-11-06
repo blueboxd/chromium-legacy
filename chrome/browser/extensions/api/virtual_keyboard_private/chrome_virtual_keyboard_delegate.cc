@@ -398,6 +398,10 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(GenerateFeatureFlag(
       "borderedkey", base::FeatureList::IsEnabled(
                          chromeos::features::kVirtualKeyboardBorderedKey)));
+  features->AppendString(GenerateFeatureFlag(
+      "resizablefloatingkeyboard",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kVirtualKeyboardFloatingResizable)));
 
   results->Set("features", std::move(features));
 

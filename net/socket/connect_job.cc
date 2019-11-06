@@ -146,7 +146,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
       socks_params = base::MakeRefCounted<SOCKSSocketParams>(
           std::move(proxy_tcp_params),
           proxy_server.scheme() == ProxyServer::SCHEME_SOCKS5, endpoint,
-          *proxy_annotation_tag);
+          network_isolation_key, *proxy_annotation_tag);
     }
   }
 

@@ -19,7 +19,6 @@ class StyleTraversalRootTestImpl : public StyleTraversalRoot {
  public:
   StyleTraversalRootTestImpl() = default;
   void MarkDirty(const Node* node) { dirty_nodes_.insert(node); }
-  void MarkChildDirty(const Node* node) { child_dirty_nodes_.insert(node); }
   bool IsSingleRoot() const { return root_type_ == RootType::kSingleRoot; }
   bool IsCommonRoot() const { return root_type_ == RootType::kCommonRoot; }
 
@@ -31,22 +30,15 @@ class StyleTraversalRootTestImpl : public StyleTraversalRoot {
   ContainerNode* Parent(const Node& node) const override {
     return ParentInternal(node);
   }
-  bool IsChildDirty(const ContainerNode& node) const final {
-    return child_dirty_nodes_.Contains(&node);
-  }
 #endif  // DCHECK_IS_ON()
   bool IsDirty(const Node& node) const final {
     return dirty_nodes_.Contains(&node);
   }
-  void ClearChildDirtyForAncestors(ContainerNode& parent) const override {
-    for (ContainerNode* ancestor = &parent; ancestor;
-         ancestor = ParentInternal(*ancestor)) {
-      child_dirty_nodes_.erase(ancestor);
-    }
+  void RootRemoved(ContainerNode& parent) override {
+    Clear();
   }
 
   HeapHashSet<Member<const Node>> dirty_nodes_;
-  mutable HeapHashSet<Member<const Node>> child_dirty_nodes_;
 };
 
 class StyleTraversalRootTest : public testing::Test {
@@ -85,7 +77,6 @@ class StyleTraversalRootTest : public testing::Test {
 
 TEST_F(StyleTraversalRootTest, Update_SingleRoot) {
   StyleTraversalRootTestImpl root;
-  root.MarkChildDirty(&GetDocument());
   root.MarkDirty(DivElement(kA));
 
   // A single dirty node becomes a single root.
@@ -96,8 +87,6 @@ TEST_F(StyleTraversalRootTest, Update_SingleRoot) {
 
 TEST_F(StyleTraversalRootTest, Update_CommonRoot) {
   StyleTraversalRootTestImpl root;
-  root.MarkChildDirty(&GetDocument());
-  root.MarkChildDirty(DivElement(kA));
   root.MarkDirty(DivElement(kC));
 
   // Initially make B a single root.
@@ -115,14 +104,11 @@ TEST_F(StyleTraversalRootTest, Update_CommonRoot) {
 
 TEST_F(StyleTraversalRootTest, Update_CommonRootDirtySubtree) {
   StyleTraversalRootTestImpl root;
-  root.MarkChildDirty(&GetDocument());
   root.MarkDirty(DivElement(kA));
   root.Update(nullptr, DivElement(kA));
 
   // Marking descendants of a single dirty root makes the single root a common
   // root as long as the new common ancestor is the current root.
-  root.MarkChildDirty(DivElement(kA));
-  root.MarkChildDirty(DivElement(kB));
   root.MarkDirty(DivElement(kD));
   root.Update(DivElement(kA), DivElement(kD));
   EXPECT_EQ(DivElement(kA), root.GetRootNode());
@@ -134,9 +120,6 @@ TEST_F(StyleTraversalRootTest, Update_CommonRootDocumentFallback) {
   StyleTraversalRootTestImpl root;
 
   // Initially make B a common root for D and E.
-  root.MarkChildDirty(&GetDocument());
-  root.MarkChildDirty(DivElement(kA));
-  root.MarkChildDirty(DivElement(kB));
   root.MarkDirty(DivElement(kD));
   root.Update(nullptr, DivElement(kD));
   root.MarkDirty(DivElement(kE));
@@ -157,9 +140,6 @@ TEST_F(StyleTraversalRootTest, Update_CommonRootDocumentFallback) {
 TEST_F(StyleTraversalRootTest, ChildrenRemoved) {
   StyleTraversalRootTestImpl root;
   // Initially make E a single root.
-  root.MarkChildDirty(&GetDocument());
-  root.MarkChildDirty(DivElement(kA));
-  root.MarkChildDirty(DivElement(kB));
   root.MarkDirty(DivElement(kE));
   root.Update(nullptr, DivElement(kE));
   EXPECT_EQ(DivElement(kE), root.GetRootNode());
@@ -190,8 +170,6 @@ TEST_F(StyleTraversalRootTest, Update_CommonRoot_FlatTree) {
   StyleTraversalRootFlatTreeTestImpl root;
 
   // The single dirty node D becomes a single root.
-  root.MarkChildDirty(DivElement(kA));
-  root.MarkChildDirty(DivElement(kB));
   root.MarkDirty(DivElement(kD));
   root.Update(nullptr, DivElement(kD));
 

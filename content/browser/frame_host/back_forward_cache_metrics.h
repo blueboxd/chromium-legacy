@@ -21,6 +21,7 @@ class Origin;
 }
 
 namespace content {
+class BackForwardCacheCanStoreDocumentResult;
 class NavigationEntryImpl;
 class NavigationRequest;
 class RenderFrameHostImpl;
@@ -132,8 +133,8 @@ class BackForwardCacheMetrics
 
   // Marks when the page is not cached, or evicted. This information is useful
   // e.g., to prioritize the tasks to improve cache-hit rate.
-  void MarkNotRestoredWithReasons(const NotRestoredReasons& reasons);
-  void MarkNotRestoredWithBlocklistedFeatures(uint64_t blocklisted_features);
+  void MarkNotRestoredWithReason(
+      const BackForwardCacheCanStoreDocumentResult& can_store);
 
   // Marks the frame disabled the back forward cache with the reason.
   void MarkDisableForRenderFrameHost(const base::StringPiece& reason);

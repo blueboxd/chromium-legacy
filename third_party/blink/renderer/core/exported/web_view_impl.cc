@@ -62,7 +62,6 @@
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_range.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
@@ -74,7 +73,6 @@
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -372,11 +370,6 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
   }
 
   PageWidgetEventHandler::HandleMouseDown(main_frame, event);
-
-  if (event.button == WebMouseEvent::Button::kLeft && mouse_capture_element_) {
-    mouse_capture_gesture_token_ =
-        main_frame.GetEventHandler().TakeLastMouseDownGestureToken();
-  }
 
   if (page_popup_ && page_popup &&
       page_popup_->HasSamePopupClient(page_popup.get())) {
@@ -1826,8 +1819,6 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
   if (input_event.GetType() == WebInputEvent::kMouseUp)
     MouseCaptureLost();
 
-  std::unique_ptr<UserGestureIndicator> gesture_indicator;
-
   AtomicString event_type;
   switch (input_event.GetType()) {
     case WebInputEvent::kMouseEnter:
@@ -1845,14 +1836,10 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
       break;
     case WebInputEvent::kMouseDown:
       event_type = event_type_names::kMousedown;
-      gesture_indicator =
-          LocalFrame::NotifyUserActivation(element->GetDocument().GetFrame());
-      mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
+      LocalFrame::NotifyUserActivation(element->GetDocument().GetFrame());
       break;
     case WebInputEvent::kMouseUp:
       event_type = event_type_names::kMouseup;
-      gesture_indicator = std::make_unique<UserGestureIndicator>(
-          std::move(mouse_capture_gesture_token_));
       break;
     default:
       NOTREACHED();
@@ -3437,10 +3424,16 @@ void WebViewImpl::PutPageIntoBackForwardCache() {
   SetIsHidden(/*is_hidden=*/true, /*is_initial_state=*/false);
 
   Page* page = AsView().page;
-  if (page && page->MainFrame() && page->MainFrame()->DomWindow() &&
-      page->MainFrame()->DomWindow()->IsLocalDOMWindow())
-    page->MainFrame()->DomWindow()->ToLocalDOMWindow()->DispatchPagehideEvent(
-        PageTransitionEventPersistence::kPageTransitionEventPersisted);
+  if (page) {
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
+        frame->DomWindow()->ToLocalDOMWindow()->DispatchPagehideEvent(
+            PageTransitionEventPersistence::kPageTransitionEventPersisted);
+      }
+    }
+  }
+
   // Freeze the page.
   Scheduler()->SetPageFrozen(/*frozen =*/true);
   // Hook eviction.
@@ -3470,10 +3463,15 @@ void WebViewImpl::RestorePageFromBackForwardCache() {
 
   // Resume the page.
   Scheduler()->SetPageFrozen(/*frozen =*/false);
-  if (page && page->MainFrame() && page->MainFrame()->DomWindow() &&
-      page->MainFrame()->DomWindow()->IsLocalDOMWindow())
-    page->MainFrame()->DomWindow()->ToLocalDOMWindow()->DispatchPageshowEvent(
-        PageTransitionEventPersistence::kPageTransitionEventPersisted);
+  if (page) {
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
+        frame->DomWindow()->ToLocalDOMWindow()->DispatchPageshowEvent(
+            PageTransitionEventPersistence::kPageTransitionEventPersisted);
+      }
+    }
+  }
   SetIsHidden(/*is_hidden=*/false, /*is_initial_state=*/false);
 }
 

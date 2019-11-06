@@ -185,6 +185,10 @@ const char kEnableClipboardProviderTextSuggestionsName[] =
 const char kEnableClipboardProviderTextSuggestionsDescription[] =
     "Enable suggesting a search for text copied to the clipboard";
 
+const char kEnablePersistentDownloadsName[] = "Enable persistent downloads";
+const char kEnablePersistentDownloadsDescription[] =
+    "Enables the new, experimental implementation of persistent downloads";
+
 const char kEnableSyncUSSPasswordsName[] = "Enable USS for passwords sync";
 const char kEnableSyncUSSPasswordsDescription[] =
     "Enables the new, experimental implementation of password sync";

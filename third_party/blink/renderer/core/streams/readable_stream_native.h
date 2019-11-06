@@ -10,10 +10,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
+class AbortSignal;
 class ExceptionState;
 class ReadableStreamDefaultController;
 class ReadableStreamReader;
@@ -30,11 +32,30 @@ class WritableStreamNative;
 // See https://streams.spec.whatwg.org/#rs-model for background.
 class ReadableStreamNative : public ReadableStream {
  public:
-  struct PipeOptions {
-    PipeOptions() = default;
-    bool prevent_close = false;
-    bool prevent_abort = false;
-    bool prevent_cancel = false;
+  class PipeOptions : public GarbageCollected<PipeOptions> {
+   public:
+    PipeOptions();
+    PipeOptions(ScriptState* script_state,
+                ScriptValue options,
+                ExceptionState& exception_state);
+
+    bool PreventClose() const { return prevent_close_; }
+    bool PreventAbort() const { return prevent_abort_; }
+    bool PreventCancel() const { return prevent_cancel_; }
+    AbortSignal* Signal() const { return signal_; }
+
+    void Trace(Visitor*);
+
+   private:
+    bool GetBoolean(ScriptState* script_state,
+                    v8::Local<v8::Object> dictionary,
+                    const char* property_name,
+                    ExceptionState& exception_state);
+
+    bool prevent_close_ = false;
+    bool prevent_abort_ = false;
+    bool prevent_cancel_ = false;
+    Member<AbortSignal> signal_;
   };
 
   enum State : uint8_t { kReadable, kClosed, kErrored };
@@ -167,7 +188,7 @@ class ReadableStreamNative : public ReadableStream {
   static ScriptPromise PipeTo(ScriptState*,
                               ReadableStreamNative*,
                               WritableStreamNative*,
-                              PipeOptions);
+                              PipeOptions*);
 
   //
   // Functions exported for use by TransformStream. Not part of the standard.

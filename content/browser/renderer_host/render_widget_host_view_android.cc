@@ -131,11 +131,11 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
 }
 
 gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
-  // When the touch handles are on the same line, or one of them is invisible,
-  // the rect may become a line, and still need to union the handle rect to
-  // avoid the context menu covering the touch handle. See detailed comments in
+  // When the touch handles are on the same line, the rect may become simply a
+  // one-dimensional rect, and still need to union the handle rect to avoid the
+  // context menu covering the touch handle. See detailed comments in
   // TouchSelectionController::GetRectBetweenBounds().
-  gfx::RectF rect = controller.GetRectBetweenBounds();
+  gfx::RectF rect = controller.GetVisibleRectBetweenBounds();
   rect.Union(controller.GetStartHandleRect());
   rect.Union(controller.GetEndHandleRect());
   return rect;

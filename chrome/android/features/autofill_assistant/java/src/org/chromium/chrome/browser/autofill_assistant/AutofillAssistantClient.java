@@ -19,7 +19,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.OAuth2TokenService;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.Arrays;
@@ -292,8 +292,8 @@ class AutofillAssistantClient {
             return;
         }
 
-        IdentityServicesProvider.getOAuth2TokenService().getAccessToken(
-                mAccount, AUTH_TOKEN_TYPE, new OAuth2TokenService.GetAccessTokenCallback() {
+        IdentityServicesProvider.getIdentityManager().getAccessToken(
+                mAccount, AUTH_TOKEN_TYPE, new IdentityManager.GetAccessTokenCallback() {
                     @Override
                     public void onGetTokenSuccess(String token) {
                         if (mNativeClientAndroid != 0) {
@@ -318,7 +318,7 @@ class AutofillAssistantClient {
             return;
         }
 
-        IdentityServicesProvider.getOAuth2TokenService().invalidateAccessToken(accessToken);
+        IdentityServicesProvider.getIdentityManager().invalidateAccessToken(accessToken);
     }
 
     /** Returns the e-mail address that corresponds to the access token or an empty string. */

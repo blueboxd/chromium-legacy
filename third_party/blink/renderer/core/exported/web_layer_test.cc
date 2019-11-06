@@ -65,6 +65,12 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
         ->content_layers.size();
   }
 
+  size_t ScrollbarLayerCount() {
+    return paint_artifact_compositor()
+        ->GetExtraDataForTesting()
+        ->scrollbar_layers.size();
+  }
+
   cc::Layer* ContentLayerAt(size_t index) {
     return paint_artifact_compositor()
         ->GetExtraDataForTesting()
@@ -134,6 +140,7 @@ TEST_P(WebLayerListTest, DidScrollCallbackAfterScrollableAreaChanges) {
   EXPECT_NE(nullptr, scrollable_area);
 
   auto initial_content_layer_count = ContentLayerCount();
+  auto initial_scrollbar_layer_count = ScrollbarLayerCount();
   auto initial_scroll_hit_test_layer_count = ScrollHitTestLayerCount();
 
   cc::Layer* overflow_scroll_layer = nullptr;
@@ -167,14 +174,20 @@ TEST_P(WebLayerListTest, DidScrollCallbackAfterScrollableAreaChanges) {
   // The web scroll layer has not been deleted yet and we should be able to
   // apply impl-side offsets without crashing.
   EXPECT_EQ(ContentLayerCount(), initial_content_layer_count);
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(ScrollbarLayerCount(), initial_scrollbar_layer_count);
     EXPECT_EQ(ScrollHitTestLayerCount(), initial_scroll_hit_test_layer_count);
+  }
   overflow_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
 
   UpdateAllLifecyclePhases();
-  EXPECT_LT(ContentLayerCount(), initial_content_layer_count);
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(ContentLayerCount(), initial_content_layer_count);
+    EXPECT_LT(ScrollbarLayerCount(), initial_scrollbar_layer_count);
     EXPECT_LT(ScrollHitTestLayerCount(), initial_scroll_hit_test_layer_count);
+  } else {
+    EXPECT_LT(ContentLayerCount(), initial_content_layer_count);
+  }
 }
 
 TEST_P(WebLayerListTest, FrameViewScroll) {

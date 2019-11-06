@@ -89,12 +89,10 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   ServiceWorkerControlleeRequestHandlerTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
-  void SetUp() override {
-    SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath()));
-  }
+  void SetUp() override { SetUpWithHelper(/*is_parent_frame_secure=*/true); }
 
-  void SetUpWithHelper(EmbeddedWorkerTestHelper* helper) {
-    helper_.reset(helper);
+  void SetUpWithHelper(bool is_parent_frame_secure) {
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
     // A new unstored registration/version.
     scope_ = GURL("https://host/scope/");
@@ -120,7 +118,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     // An empty host.
     remote_endpoints_.emplace_back();
     provider_host_ = CreateProviderHostForWindow(
-        helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
+        helper_->mock_render_process_id(), is_parent_frame_secure,
         helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
   }
 
@@ -131,11 +129,6 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   }
 
   ServiceWorkerContextCore* context() const { return helper_->context(); }
-
-  void SetProviderHostIsSecure(ServiceWorkerProviderHost* host,
-                               bool is_secure) {
-    host->is_parent_frame_secure_ = is_secure;
-  }
 
  protected:
   BrowserTaskEnvironment task_environment_;
@@ -285,6 +278,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
 }
 
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, InsecureContext) {
+  // Reset the provider host as insecure.
+  SetUpWithHelper(/*is_parent_frame_secure=*/false);
+
   // Store an activated worker.
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -293,8 +289,6 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InsecureContext) {
   context()->storage()->StoreRegistration(registration_.get(), version_.get(),
                                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
-
-  SetProviderHostIsSecure(provider_host_.get(), false);
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(

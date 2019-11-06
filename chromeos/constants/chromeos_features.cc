@@ -272,6 +272,10 @@ const base::Feature kVideoPlayerNativeControls{
 const base::Feature kVirtualKeyboardBorderedKey{
     "VirtualKeyboardBorderedKey", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable resizable floating virtual keyboard on Chrome OS.
+const base::Feature kVirtualKeyboardFloatingResizable{
+    "VirtualKeyboardFloatingResizable", base::FEATURE_DISABLED_BY_DEFAULT};
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool IsAmbientModeEnabled() {

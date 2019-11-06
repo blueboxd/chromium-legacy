@@ -13,21 +13,3 @@
 # https://crbug.com/1019077
 # navigation_simulator_impl.cc(581)] Check failed: state_ <= READY_TO_COMMIT
 -RenderFrameHostManagerTest.NavigateAfterMissingSwapOutACK
-
-# https://crbug.com/1020884
--ServiceWorkerProviderHostTest.*
--ServiceWorkerNavigationLoaderTest.*
--ServiceWorkerRegistrationObjectHostUpdateTestP/ServiceWorkerRegistrationObjectHostUpdateTest.*
--ServiceWorkerControlleeRequestHandlerTest.*
--ServiceWorkerActivationTestWithDevTools/ServiceWorkerActivationTest.*
--ServiceWorkerUpdateJobTestP/ServiceWorkerUpdateJobTest.*
--ServiceWorkerRegistrationObjectHostTest.*
--ServiceWorkerJobTest.*
--ServiceWorkerVersionTest.*
--ServiceWorkerContextTest.*
--ServiceWorkerObjectHostTest.*
--ServiceWorkerResourceStorageTest.*
--ServiceWorkerVersionNoFetchHandlerTest.*
--ServiceWorkerRegistrationTest.*
--ServiceWorkerResourceStorageDiskTest.*
--ServiceWorkerProviderHostTestWithPlzDedicatedWorker.*

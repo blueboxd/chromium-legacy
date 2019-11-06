@@ -23,11 +23,19 @@ Bug tracker: [Internals>WebLayer](https://bugs.chromium.org/p/chromium/issues/li
 
 `shell` sample app
 
+'test' test harnesses and test-only helper code
+
+'tools' helper scripts
+
+'app' internal code which runs at the beginning of each process
+
 `browser` internal code which runs in the browser process
 
 `common` internal code which runs in the browser and child processes
 
 `renderer` internal code which runs in the renderer process
+
+`utility` internal code which runs in the utility process
 
 ## Setting Up Your Build Environment
 

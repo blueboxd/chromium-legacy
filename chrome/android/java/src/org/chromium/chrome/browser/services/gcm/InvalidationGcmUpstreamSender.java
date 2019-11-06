@@ -24,7 +24,7 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.components.signin.OAuth2TokenService;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.sync.SyncConstants;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -70,9 +70,9 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
         // Attempt to retrieve a token for the user.
         // crbug.com/1014098: Do not use IdentityServicesProvider because the profile may not be
         // initialized yet.
-        OAuth2TokenService.getAccessTokenWithFacade(AccountManagerFacade.get(), account,
+        IdentityManager.getAccessTokenWithFacade(AccountManagerFacade.get(), account,
                 SyncConstants.CHROME_SYNC_OAUTH2_SCOPE,
-                new OAuth2TokenService.GetAccessTokenCallback() {
+                new IdentityManager.GetAccessTokenCallback() {
                     @Override
                     public void onGetTokenSuccess(final String token) {
                         PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {

@@ -1166,9 +1166,11 @@
     "label": "//gin:gin_unittests",
     "type": "console_test_launcher",
   },
+  # Temporary entry for a 3-way patch to rename in Clank's repo as well.
   "gl_tests": {
     "args": [],
-    "label": "//gpu:gl_tests",
+    "label": "//gpu:gpu_tests",
+    "skip_usage_check": True,
     "type": "raw",
   },
   "gl_unittests": {
@@ -1231,6 +1233,11 @@
   "gpu_swiftshader_fuzzer": {
     "label": "//gpu:gpu_swiftshader_fuzzer",
     "type": "fuzzer",
+  },
+  "gpu_tests": {
+    "args": [],
+    "label": "//gpu:gpu_tests",
+    "type": "raw",
   },
   "gpu_unittests": {
     "label": "//gpu:gpu_unittests",
@@ -2115,6 +2122,10 @@
   "notification_helper_unittests": {
     "label": "//chrome/notification_helper:notification_helper_unittests",
     "type": "windowed_test_launcher",
+  },
+  "opus_tests": {
+    "label": "//third_party/opus:opus_tests",
+    "type": "console_test_launcher",
   },
   "ocmock_support_unittests": {
     "args": [],

@@ -3763,9 +3763,19 @@ gfx::Rect AXPlatformNodeAuraLinux::GetExtentsRelativeToAtkCoordinateType(
     AtkCoordType coord_type) const {
   gfx::Rect extents = delegate_->GetBoundsRect(AXCoordinateSystem::kScreen,
                                                AXClippingBehavior::kUnclipped);
-  if (coord_type == ATK_XY_WINDOW) {
-    gfx::Vector2d frame_origin = -GetParentOriginInScreenCoordinates();
-    extents.Offset(frame_origin);
+  switch (coord_type) {
+    case ATK_XY_SCREEN:
+      break;
+    case ATK_XY_WINDOW: {
+      gfx::Vector2d window_origin = -GetParentFrameOriginInScreenCoordinates();
+      extents.Offset(window_origin);
+      break;
+    }
+    case ATK_XY_PARENT: {
+      gfx::Vector2d parent_origin = -GetParentOriginInScreenCoordinates();
+      extents.Offset(parent_origin);
+      break;
+    }
   }
 
   return extents;
@@ -3806,15 +3816,9 @@ void AXPlatformNodeAuraLinux::GetSize(gint* width, gint* height) {
 
 gfx::NativeViewAccessible
 AXPlatformNodeAuraLinux::HitTestSync(gint x, gint y, AtkCoordType coord_type) {
-  if (coord_type == ATK_XY_WINDOW) {
-    if (AtkObject* atk_object = GetParent()) {
-      gfx::Point window_coords = FindAtkObjectParentCoords(atk_object);
-      x += window_coords.x();
-      y += window_coords.y();
-    }
-  }
-
-  return delegate_->HitTestSync(x, y);
+  gfx::Point scroll_to(x, y);
+  scroll_to = ConvertPointToScreenCoordinates(scroll_to, coord_type);
+  return delegate_->HitTestSync(scroll_to.x(), scroll_to.y());
 }
 
 bool AXPlatformNodeAuraLinux::GrabFocus() {
@@ -4173,16 +4177,7 @@ void AXPlatformNodeAuraLinux::ScrollToPoint(AtkCoordType atk_coord_type,
                                             int x,
                                             int y) {
   gfx::Point scroll_to(x, y);
-  switch (atk_coord_type) {
-    case ATK_XY_SCREEN:
-      break;
-    case ATK_XY_WINDOW:
-      scroll_to += GetParentFrameOriginInScreenCoordinates();
-      break;
-    case ATK_XY_PARENT:
-      scroll_to += GetParentOriginInScreenCoordinates();
-      break;
-  }
+  scroll_to = ConvertPointToScreenCoordinates(scroll_to, atk_coord_type);
 
   ui::AXActionData action_data;
   action_data.target_node_id = GetData().id;
@@ -4410,6 +4405,20 @@ AXPlatformNodeAuraLinux::GetSelectionOffsetsFromFindInPage() {
     return base::nullopt;
 
   return iterator->second;
+}
+
+gfx::Point AXPlatformNodeAuraLinux::ConvertPointToScreenCoordinates(
+    const gfx::Point& point,
+    AtkCoordType atk_coord_type) {
+  switch (atk_coord_type) {
+    case ATK_XY_WINDOW:
+      return point + GetParentFrameOriginInScreenCoordinates();
+    case ATK_XY_PARENT:
+      return point + GetParentOriginInScreenCoordinates();
+    case ATK_XY_SCREEN:
+    default:
+      return point;
+  }
 }
 
 }  // namespace ui

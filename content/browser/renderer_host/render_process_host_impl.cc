@@ -3638,6 +3638,20 @@ void RenderProcessHostImpl::RemovePriorityClient(
   UpdateProcessPriorityInputs();
 }
 
+void RenderProcessHostImpl::SetPriorityOverride(bool foregrounded) {
+  priority_override_ = foregrounded;
+  UpdateProcessPriority();
+}
+
+bool RenderProcessHostImpl::HasPriorityOverride() {
+  return priority_override_.has_value();
+}
+
+void RenderProcessHostImpl::ClearPriorityOverride() {
+  priority_override_.reset();
+  UpdateProcessPriority();
+}
+
 void RenderProcessHostImpl::SetSuddenTerminationAllowed(bool enabled) {
   sudden_termination_allowed_ = enabled;
 }
@@ -4492,7 +4506,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     has_recorded_media_stream_frame_depth_metric_ = true;
   }
 
-  const ChildProcessLauncherPriority priority(
+  ChildProcessLauncherPriority priority(
       visible_clients_ > 0 || base::CommandLine::ForCurrentProcess()->HasSwitch(
                                   switches::kDisableRendererBackgrounding),
       media_stream_count_ > 0, foreground_service_worker_count_ > 0,
@@ -4503,6 +4517,28 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
       GetEffectiveImportance()
 #endif
   );
+
+  // If a priority override has been specified, use it instead.
+  // TODO(chrisha): After experimentation, either integrate the experimental
+  // logic into this class, or rip out the existing logic entirely.
+  if (priority_override_.has_value()) {
+    bool foregrounded = priority_override_.value();
+    priority = ChildProcessLauncherPriority(
+        foregrounded, /* is_visible */
+        foregrounded, /* has_media_stream */
+        foregrounded, /* has_foreground_service_worker */
+        false,        /* has_only_low_priority_frames */
+        0,            /* frame_depth */
+        foregrounded, /* intersects_viewport */
+        false         /* boost_for_pending_views */
+#if defined(OS_ANDROID)
+        ,
+        foregrounded ? ChildProcessImportance::NORMAL
+                     : ChildProcessImportance::MODERATE /* importance */
+#endif
+    );
+    DCHECK_EQ(!foregrounded, priority.is_background());
+  }
 
   if (priority_ == priority)
     return;

@@ -121,7 +121,9 @@ template("trichrome_library_apk_tmpl") {
           deps += [ "//chrome/android:chrome_public_v8_assets" ]
         }
         loadable_modules = [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
-        if (build_apk_secondary_abi) {
+        if (build_apk_secondary_abi &&
+            defined(invoker.include_32_bit_webview) &&
+            invoker.include_32_bit_webview) {
           secondary_native_lib_placeholders = [ "libdummy.so" ]
         }
       } else {

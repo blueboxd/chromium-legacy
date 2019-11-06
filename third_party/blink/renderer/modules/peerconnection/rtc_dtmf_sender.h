@@ -35,7 +35,7 @@
 namespace blink {
 
 class ExceptionState;
-class WebRTCDTMFSenderHandler;
+class RtcDtmfSenderHandler;
 
 class RTCDTMFSender final : public EventTargetWithInlineData,
                             public WebRTCDTMFSenderHandlerClient,
@@ -46,9 +46,9 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
 
  public:
   static RTCDTMFSender* Create(ExecutionContext*,
-                               std::unique_ptr<WebRTCDTMFSenderHandler>);
+                               std::unique_ptr<RtcDtmfSenderHandler>);
 
-  RTCDTMFSender(ExecutionContext*, std::unique_ptr<WebRTCDTMFSenderHandler>);
+  RTCDTMFSender(ExecutionContext*, std::unique_ptr<RtcDtmfSenderHandler>);
   ~RTCDTMFSender() override;
 
   bool canInsertDTMF() const;
@@ -79,7 +79,7 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
   void PlayoutTask();
   void DidPlayTone(const WebString&) override;
 
-  std::unique_ptr<WebRTCDTMFSenderHandler> handler_;
+  std::unique_ptr<RtcDtmfSenderHandler> handler_;
 
   bool stopped_;
   String tone_buffer_;

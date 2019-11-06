@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class CullRect;
 class GraphicsContext;
 class WebMouseEvent;
 
@@ -56,7 +55,7 @@ class CORE_EXPORT ScrollbarTheme {
   virtual void UpdateEnabledState(const Scrollbar&) {}
 
   // |context|'s current space is the space of the scrollbar's FrameRect().
-  void Paint(const Scrollbar&, GraphicsContext& context, const CullRect&);
+  void Paint(const Scrollbar&, GraphicsContext& context);
 
   virtual ScrollbarPart HitTest(const Scrollbar&, const IntPoint&);
 

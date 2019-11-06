@@ -98,6 +98,18 @@ class ViewportAnchor {
   LayerTreeImpl* tree_impl_;
   gfx::ScrollOffset viewport_in_content_coordinates_;
 };
+
+std::pair<gfx::PointF, gfx::PointF> GetVisibleSelectionEndPoints(
+    const gfx::RectF& rect,
+    const gfx::PointF& top,
+    const gfx::PointF& bottom) {
+  gfx::PointF start(base::ClampToRange(top.x(), rect.x(), rect.right()),
+                    base::ClampToRange(top.y(), rect.y(), rect.bottom()));
+  gfx::PointF end =
+      start + gfx::Vector2dF(bottom.x() - top.x(), bottom.y() - top.y());
+  return {start, end};
+}
+
 }  // namespace
 
 void LayerTreeLifecycle::AdvanceTo(LifecycleState next_state) {
@@ -2325,6 +2337,31 @@ static gfx::SelectionBound ComputeViewportSelectionBound(
     float intersect_distance = 0.f;
     viewport_bound.set_visible(
         PointHitsLayer(layer, visibility_point, &intersect_distance));
+  }
+
+  if (viewport_bound.visible()) {
+    viewport_bound.SetVisibleEdge(viewport_bound.edge_top(),
+                                  viewport_bound.edge_bottom());
+  } else {
+    // The |layer_top| and |layer_bottom| might be clipped.
+    gfx::RectF visible_layer_rect(layer->visible_layer_rect());
+    auto visible_layer_start = layer_top;
+    auto visible_layer_end = layer_bottom;
+    if (!visible_layer_rect.Contains(visible_layer_start) &&
+        !visible_layer_rect.Contains(visible_layer_end))
+      std::tie(visible_layer_start, visible_layer_end) =
+          GetVisibleSelectionEndPoints(visible_layer_rect, layer_top,
+                                       layer_bottom);
+
+    gfx::PointF visible_screen_start = MathUtil::MapPoint(
+        screen_space_transform, visible_layer_start, &clipped);
+    gfx::PointF visible_screen_end =
+        MathUtil::MapPoint(screen_space_transform, visible_layer_end, &clipped);
+
+    viewport_bound.SetVisibleEdgeTop(
+        gfx::ScalePoint(visible_screen_start, inv_scale));
+    viewport_bound.SetVisibleEdgeBottom(
+        gfx::ScalePoint(visible_screen_end, inv_scale));
   }
 
   return viewport_bound;

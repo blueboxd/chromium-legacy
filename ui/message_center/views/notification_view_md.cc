@@ -1246,28 +1246,24 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
       list_items_count_ -
       (expanded ? item_views_.size() : kMaxLinesForMessageView));
 
-  right_content_->SetVisible(icon_view_ &&
-                             (!hide_icon_on_expanded_ || !expanded));
-  if (right_content_->GetVisible()) {
-    left_content_->SetBorder(
-        views::CreateEmptyBorder(kLeftContentPaddingWithIcon));
+  bool has_icon = icon_view_ && (!hide_icon_on_expanded_ || !expanded);
+  right_content_->SetVisible(has_icon);
+  left_content_->SetBorder(views::CreateEmptyBorder(
+      has_icon ? kLeftContentPaddingWithIcon : kLeftContentPadding));
 
-    // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
-    // the width.
-    // Ideally, we should fix the original bug, but it seems there's no obvious
-    // solution for the bug according to https://crbug.com/678337#c7, we should
-    // ensure that the change won't break any of the users of BoxLayout class.
-    if (title_view_)
-      title_view_->SizeToFit(kMessageViewWidthWithIcon);
-    if (message_view_)
-      message_view_->SizeToFit(kMessageViewWidthWithIcon);
-  } else {
-    left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
-    if (title_view_)
-      title_view_->SizeToFit(kMessageViewWidth);
-    if (message_view_)
-      message_view_->SizeToFit(kMessageViewWidth);
-  }
+  // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
+  // the width.
+  // Ideally, we should fix the original bug, but it seems there's no obvious
+  // solution for the bug according to https://crbug.com/678337#c7, we should
+  // ensure that the change won't break any of the users of BoxLayout class.
+  const int message_view_width =
+      (has_icon ? kMessageViewWidthWithIcon : kMessageViewWidth) -
+      GetInsets().width();
+  if (title_view_)
+    title_view_->SizeToFit(message_view_width);
+  if (message_view_)
+    message_view_->SizeToFit(message_view_width);
+
   content_row_->InvalidateLayout();
 }
 

@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "url/origin.h"
 
 #if !defined(OS_ANDROID)
@@ -199,11 +200,9 @@ void PermissionRequestManager::DidFinishNavigation(
   }
 
   CleanUpRequests();
-  main_frame_has_fully_loaded_ = false;
 }
 
 void PermissionRequestManager::DocumentOnLoadCompletedInMainFrame() {
-  main_frame_has_fully_loaded_ = true;
   // This is scheduled because while all calls to the browser have been
   // issued at DOMContentLoaded, they may be bouncing around in scheduled
   // callbacks finding the UI thread still. This makes sure we allow those
@@ -255,7 +254,7 @@ void PermissionRequestManager::OnVisibilityChanged(
     return;
   }
 
-  if (!main_frame_has_fully_loaded_)
+  if (!web_contents()->IsDocumentOnLoadCompletedInMainFrame())
     return;
 
   if (requests_.empty()) {
@@ -354,7 +353,6 @@ PermissionRequestManager::PermissionRequestManager(
     : content::WebContentsObserver(web_contents),
       view_factory_(base::Bind(&PermissionPrompt::Create)),
       view_(nullptr),
-      main_frame_has_fully_loaded_(false),
       tab_is_hidden_(web_contents->GetVisibility() ==
                      content::Visibility::HIDDEN),
       auto_response_for_test_(NONE) {}
@@ -362,7 +360,7 @@ PermissionRequestManager::PermissionRequestManager(
 void PermissionRequestManager::ScheduleShowBubble() {
   // ::ScheduleShowBubble() will be called again when the main frame will be
   // loaded.
-  if (!main_frame_has_fully_loaded_)
+  if (!web_contents()->IsDocumentOnLoadCompletedInMainFrame())
     return;
 
   base::PostTask(
@@ -374,7 +372,7 @@ void PermissionRequestManager::ScheduleShowBubble() {
 void PermissionRequestManager::DequeueRequestsAndShowBubble() {
   if (view_)
     return;
-  if (!main_frame_has_fully_loaded_ || tab_is_hidden_)
+  if (!web_contents()->IsDocumentOnLoadCompletedInMainFrame() || tab_is_hidden_)
     return;
   if (queued_requests_.empty())
     return;
@@ -395,7 +393,7 @@ void PermissionRequestManager::DequeueRequestsAndShowBubble() {
 void PermissionRequestManager::ShowBubble(bool is_reshow) {
   DCHECK(!view_);
   DCHECK(!requests_.empty());
-  DCHECK(main_frame_has_fully_loaded_);
+  DCHECK(web_contents()->IsDocumentOnLoadCompletedInMainFrame());
   DCHECK(!tab_is_hidden_);
 
   view_ = view_factory_.Run(web_contents(), this);

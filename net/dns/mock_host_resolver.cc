@@ -399,10 +399,9 @@ void MockHostResolverBase::DetachRequest(size_t id) {
   requests_.erase(it);
 }
 
-MockHostResolverBase::RequestImpl* MockHostResolverBase::request(size_t id) {
-  RequestMap::iterator request = requests_.find(id);
-  DCHECK(request != requests_.end());
-  return (*request).second;
+const std::string& MockHostResolverBase::request_host(size_t id) {
+  DCHECK(request(id));
+  return request(id)->request_host().host();
 }
 
 RequestPriority MockHostResolverBase::request_priority(size_t id) {
@@ -462,6 +461,12 @@ void MockHostResolverBase::TriggerMdnsListeners(
     if (listener->host() == host && listener->query_type() == query_type)
       listener->TriggerUnhandledResult(update_type);
   }
+}
+
+MockHostResolverBase::RequestImpl* MockHostResolverBase::request(size_t id) {
+  RequestMap::iterator request = requests_.find(id);
+  DCHECK(request != requests_.end());
+  return (*request).second;
 }
 
 // start id from 1 to distinguish from NULL RequestHandle

@@ -428,16 +428,19 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
 
     private void setUpNotificationsPreference(Preference preference) {
         TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
-        Origin origin = Origin.createOrThrow(mSite.getAddress().getOrigin());
-        String managedBy = manager.getDelegateAppName(origin);
-        if (managedBy != null) {
-            final Intent notificationSettingsIntent =
-                    getNotificationSettingsIntent(manager.getDelegatePackageName(origin));
-            String summaryText = getString(R.string.website_notification_managed_by_app, managedBy);
-            ChromeImageViewPreference newPreference =
-                    replaceWithReadOnlyCopyOf(preference, summaryText);
-            setupNotificationManagedByPreference(newPreference, notificationSettingsIntent);
-            return;
+        Origin origin = Origin.create(mSite.getAddress().getOrigin());
+        if (origin != null) {
+            String managedBy = manager.getDelegateAppName(origin);
+            if (managedBy != null) {
+                final Intent notificationSettingsIntent =
+                        getNotificationSettingsIntent(manager.getDelegatePackageName(origin));
+                String summaryText = getString(R.string.website_notification_managed_by_app,
+                        managedBy);
+                ChromeImageViewPreference newPreference =
+                        replaceWithReadOnlyCopyOf(preference, summaryText);
+                setupNotificationManagedByPreference(newPreference, notificationSettingsIntent);
+                return;
+            }
         }
 
         final @ContentSettingValues @Nullable Integer value =

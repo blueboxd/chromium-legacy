@@ -9,12 +9,9 @@
 #include "base/sequenced_task_runner.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/buildflags.h"
-
-#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
 #include "media/gpu/chromeos/platform_video_frame_pool.h"
 #include "media/gpu/chromeos/video_decoder_pipeline.h"
-#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_video_decoder.h"
@@ -28,7 +25,6 @@ namespace media {
 
 namespace {
 
-#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 // Get a list of the available functions for creating VideoDeocoder.
 base::queue<VideoDecoderPipeline::CreateVDFunc> GetCreateVDFunctions(
     VideoDecoderPipeline::CreateVDFunc cur_create_vd_func) {
@@ -49,7 +45,6 @@ base::queue<VideoDecoderPipeline::CreateVDFunc> GetCreateVDFunctions(
   }
   return ret;
 }
-#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 }  // namespace
 
@@ -80,14 +75,10 @@ std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
     gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory) {
-#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   return VideoDecoderPipeline::Create(
       std::move(client_task_runner), std::move(frame_pool),
       std::move(frame_converter), gpu_memory_buffer_factory,
       base::BindRepeating(&GetCreateVDFunctions));
-#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-
-  return nullptr;
 }
 
 }  // namespace media

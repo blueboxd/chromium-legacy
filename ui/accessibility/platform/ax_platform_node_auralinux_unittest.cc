@@ -698,6 +698,11 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentsGetExtentsPositionSize) {
   EXPECT_EQ(800, width);
   EXPECT_EQ(600, height);
 
+  AtkObject* hit_test_result = atk_component_ref_accessible_at_point(
+      ATK_COMPONENT(root_obj), x_left, y_top, ATK_XY_SCREEN);
+  ASSERT_EQ(hit_test_result, root_obj);
+  g_object_unref(hit_test_result);
+
   atk_component_get_position(ATK_COMPONENT(root_obj), &x_left, &y_top,
                              ATK_XY_SCREEN);
   EXPECT_EQ(110, x_left);
@@ -705,15 +710,20 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentsGetExtentsPositionSize) {
 
   atk_component_get_extents(ATK_COMPONENT(root_obj), &x_left, &y_top, &width,
                             &height, ATK_XY_WINDOW);
-  EXPECT_EQ(110, x_left);
-  EXPECT_EQ(240, y_top);
+  EXPECT_EQ(0, x_left);
+  EXPECT_EQ(0, y_top);
   EXPECT_EQ(800, width);
   EXPECT_EQ(600, height);
 
+  hit_test_result = atk_component_ref_accessible_at_point(
+      ATK_COMPONENT(root_obj), x_left + 2, y_top + 2, ATK_XY_WINDOW);
+  ASSERT_EQ(hit_test_result, root_obj);
+  g_object_unref(hit_test_result);
+
   atk_component_get_position(ATK_COMPONENT(root_obj), &x_left, &y_top,
                              ATK_XY_WINDOW);
-  EXPECT_EQ(110, x_left);
-  EXPECT_EQ(240, y_top);
+  EXPECT_EQ(0, x_left);
+  EXPECT_EQ(0, y_top);
 
   atk_component_get_size(ATK_COMPONENT(root_obj), &width, &height);
   EXPECT_EQ(800, width);
@@ -732,12 +742,22 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentsGetExtentsPositionSize) {
   EXPECT_EQ(200, width);
   EXPECT_EQ(200, height);
 
+  hit_test_result = atk_component_ref_accessible_at_point(
+      ATK_COMPONENT(root_obj), x_left, y_top, ATK_XY_SCREEN);
+  ASSERT_EQ(hit_test_result, child_obj);
+  g_object_unref(hit_test_result);
+
   atk_component_get_extents(ATK_COMPONENT(child_obj), &x_left, &y_top, &width,
                             &height, ATK_XY_WINDOW);
   EXPECT_EQ(90, x_left);
   EXPECT_EQ(110, y_top);
   EXPECT_EQ(200, width);
   EXPECT_EQ(200, height);
+
+  hit_test_result = atk_component_ref_accessible_at_point(
+      ATK_COMPONENT(root_obj), x_left, y_top, ATK_XY_WINDOW);
+  ASSERT_EQ(hit_test_result, child_obj);
+  g_object_unref(hit_test_result);
 
   atk_component_get_extents(ATK_COMPONENT(child_obj), nullptr, &y_top, &width,
                             &height, ATK_XY_SCREEN);

@@ -211,7 +211,8 @@ void WritableStreamNative::Serialize(ScriptState* script_state,
   }
 
   auto promise = ReadableStreamNative::PipeTo(
-      script_state, readable, this, ReadableStreamNative::PipeOptions());
+      script_state, readable, this,
+      MakeGarbageCollected<ReadableStreamNative::PipeOptions>());
   promise.MarkAsHandled();
 }
 

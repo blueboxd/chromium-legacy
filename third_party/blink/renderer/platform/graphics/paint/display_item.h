@@ -82,6 +82,9 @@ class PLATFORM_EXPORT DisplayItem {
     kSVGFilter,
     kSVGMask,
     kScrollCorner,
+    // The following 3 types are used during cc::Scrollbar::PaintPart() only.
+    // During Paint stage of document lifecycle update, we record
+    // ScrollbarDisplayItem instead of DrawingItems of these types.
     kScrollbarTrackAndButtons,
     kScrollbarThumb,
     kScrollbarTickmarks,
@@ -136,6 +139,10 @@ class PLATFORM_EXPORT DisplayItem {
     kLayerChunkFloat,
     kLayerChunkForeground,
     kLayerChunkNormalFlowAndPositiveZOrderChildren,
+
+    // The following 2 types are For ScrollbarDisplayItem.
+    kScrollbarHorizontal,
+    kScrollbarVertical,
 
     kUninitializedType,
     kTypeLast = kUninitializedType
@@ -249,6 +256,10 @@ class PLATFORM_EXPORT DisplayItem {
   }
   bool IsResizerScrollHitTest() const { return type_ == kResizerScrollHitTest; }
   bool IsPluginScrollHitTest() const { return type_ == kPluginScrollHitTest; }
+
+  bool IsScrollbar() const {
+    return type_ == kScrollbarHorizontal || type_ == kScrollbarVertical;
+  }
 
   bool IsCacheable() const { return is_cacheable_; }
   void SetUncacheable() { is_cacheable_ = false; }

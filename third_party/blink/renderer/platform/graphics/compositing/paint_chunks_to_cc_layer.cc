@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -719,11 +720,14 @@ void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
     bool switched_to_chunk_state = false;
 
     for (const auto& item : display_items.ItemsInPaintChunk(chunk)) {
-      if (!item.IsDrawing())
+      sk_sp<const PaintRecord> record;
+      if (item.IsScrollbar())
+        record = static_cast<const ScrollbarDisplayItem&>(item).Paint();
+      else if (item.IsDrawing())
+        record = static_cast<const DrawingDisplayItem&>(item).GetPaintRecord();
+      else
         continue;
 
-      auto record =
-          static_cast<const DrawingDisplayItem&>(item).GetPaintRecord();
       // If we have an empty paint record, then we would prefer not to draw it.
       // However, if we also have a non-root effect, it means that the filter
       // applied might draw something even if the record is empty. We need to

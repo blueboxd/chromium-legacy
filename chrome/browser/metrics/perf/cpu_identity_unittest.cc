@@ -79,6 +79,16 @@ TEST(CpuIdentityTest, DefaultCommandsBasedOnArch_Unknown) {
   EXPECT_EQ("", GetCpuUarch(cpuid));
 }
 
+TEST(CpuIdentityTest, DefaultCommandsBasedOnArch_UnknownUpperBound) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "GenuineIntel";
+  cpuid.family = 0xff;
+  cpuid.model = 0xff;
+  cpuid.model_name = "";
+  EXPECT_EQ("", GetCpuUarch(cpuid));
+}
+
 TEST(CpuIdentityTest, SimplifyCPUModelName) {
   EXPECT_EQ("", SimplifyCPUModelName(""));
   EXPECT_EQ("intel-celeron-2955u-@-1.40ghz",

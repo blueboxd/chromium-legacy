@@ -18,13 +18,8 @@
 
 namespace WTF {
 
-class PartitionAllocatorDummyVisitor {
-  DISALLOW_NEW();
-};
-
 class WTF_EXPORT PartitionAllocator {
  public:
-  typedef PartitionAllocatorDummyVisitor Visitor;
   static constexpr bool kIsGarbageCollected = false;
 
   template <typename T>
@@ -39,11 +34,6 @@ class WTF_EXPORT PartitionAllocator {
   }
   template <typename T>
   static T* AllocateVectorBacking(size_t size) {
-    return reinterpret_cast<T*>(
-        AllocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T)));
-  }
-  template <typename T>
-  static T* AllocateExpandedVectorBacking(size_t size) {
     return reinterpret_cast<T*>(
         AllocateBacking(size, WTF_HEAP_PROFILER_TYPE_NAME(T)));
   }
@@ -88,7 +78,6 @@ class WTF_EXPORT PartitionAllocator {
 
   static void TraceMarkedBackingStore(void*) {}
   static void BackingWriteBarrier(void*) {}
-  static void BackingWriteBarrier(void*, size_t) {}
   template <typename>
   static void BackingWriteBarrierForHashTable(void*) {}
 
@@ -114,9 +103,6 @@ class WTF_EXPORT PartitionAllocator {
 // heap.)
 template <>
 WTF_EXPORT char* PartitionAllocator::AllocateVectorBacking<char>(size_t);
-template <>
-WTF_EXPORT char* PartitionAllocator::AllocateExpandedVectorBacking<char>(
-    size_t);
 
 }  // namespace WTF
 

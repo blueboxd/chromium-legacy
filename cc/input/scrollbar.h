@@ -46,6 +46,7 @@ class Scrollbar : public base::RefCounted<Scrollbar> {
  public:
   virtual ScrollbarOrientation Orientation() const = 0;
   virtual bool IsLeftSideVerticalScrollbar() const = 0;
+  virtual bool IsSolidColor() const = 0;
   virtual bool IsOverlay() const = 0;
   virtual bool HasThumb() const = 0;
   virtual bool SupportsDragSnapBack() const = 0;

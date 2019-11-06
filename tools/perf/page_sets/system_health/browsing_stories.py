@@ -604,6 +604,20 @@ class YouTubeMobileStory(_MediaBrowsingStory):
           story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
+class YouTubeMobileStory2019(_MediaBrowsingStory):
+  """Load a typical YouTube video then navigate to a next few videos. Stop and
+  watch each video for few seconds.
+  """
+  NAME = 'browse:media:youtube:2019'
+  URL = 'https://m.youtube.com/watch?v=TcMBFSGVi1c&autoplay=false'
+  ITEM_SELECTOR = '.compact-media-item > a'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR_INDEX = 3
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.EMERGING_MARKET,
+          story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
+
+
 class YouTubeDesktopStory2019(_MediaBrowsingStory):
   """Load a typical YouTube video then navigate to a next few videos. Stop and
   watch each video for a few seconds.

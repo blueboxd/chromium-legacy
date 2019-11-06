@@ -25,6 +25,11 @@
           "object": "InlineTextBox 'FAILED'",
           "rect": [10, 11, 45, 16],
           "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment ' '",
+          "rect": [189, 9, 4, 19],
+          "reason": "geometry"
         }
       ]
     }

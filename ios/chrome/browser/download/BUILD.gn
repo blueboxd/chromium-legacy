@@ -11,8 +11,8 @@ source_set("download") {
     "browser_download_service.mm",
     "browser_download_service_factory.h",
     "browser_download_service_factory.mm",
-    "download_directory_util.cc",
     "download_directory_util.h",
+    "download_directory_util.mm",
     "download_manager_metric_names.h",
     "download_manager_tab_helper.h",
     "download_manager_tab_helper.mm",
@@ -34,6 +34,7 @@ source_set("download") {
     "//components/keyed_service/ios",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/network_activity",
+    "//ios/web/common",
     "//ios/web/public",
     "//ios/web/public/download",
   ]

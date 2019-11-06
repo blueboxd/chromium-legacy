@@ -295,6 +295,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void AddPriorityClient(PriorityClient* priority_client) = 0;
   virtual void RemovePriorityClient(PriorityClient* priority_client) = 0;
 
+  // Sets a process priority override. This overrides the entire built-in
+  // priority setting mechanism for the process.
+  virtual void SetPriorityOverride(bool foreground) = 0;
+  virtual bool HasPriorityOverride() = 0;
+  virtual void ClearPriorityOverride() = 0;
+
 #if defined(OS_ANDROID)
   // Return the highest importance of all widgets in this process.
   virtual ChildProcessImportance GetEffectiveImportance() = 0;

@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 
 namespace blink {
@@ -176,12 +175,8 @@ void Scrollbar::SetProportion(int visible_size, int total_size) {
   SetNeedsPaintInvalidation(kAllParts);
 }
 
-void Scrollbar::Paint(GraphicsContext& context,
-                      const CullRect& cull_rect) const {
-  if (!cull_rect.Intersects(FrameRect()))
-    return;
-
-  GetTheme().Paint(*this, context, cull_rect);
+void Scrollbar::Paint(GraphicsContext& context) const {
+  GetTheme().Paint(*this, context);
 }
 
 void Scrollbar::AutoscrollTimerFired(TimerBase*) {

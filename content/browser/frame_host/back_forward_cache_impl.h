@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_IMPL_H_
 #define CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_IMPL_H_
 
-#include <bitset>
 #include <list>
 #include <memory>
 #include <unordered_map>
@@ -17,7 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/browser/frame_host/back_forward_cache_metrics.h"
+#include "content/browser/frame_host/back_forward_cache_can_store_document_result.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/global_routing_id.h"
@@ -74,37 +73,10 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   BackForwardCacheImpl();
   ~BackForwardCacheImpl();
 
-  struct CanStoreDocumentResult {
-    using NotStoredReasons =
-        std::bitset<static_cast<size_t>(
-                        BackForwardCacheMetrics::NotRestoredReason::kMaxValue) +
-                    1ul>;
-
-    CanStoreDocumentResult();
-    CanStoreDocumentResult(const CanStoreDocumentResult&);
-    ~CanStoreDocumentResult();
-
-    NotStoredReasons not_stored_reasons;
-    uint64_t blocklisted_features = 0;
-
-    bool CanStore() const;
-
-    std::string ToString() const;
-
-    void No(BackForwardCacheMetrics::NotRestoredReason reason);
-    void NoDueToFeatures(uint64_t features);
-
-    operator bool() const { return CanStore(); }
-
-   private:
-    std::string NotRestoredReasonToString(
-        BackForwardCacheMetrics::NotRestoredReason reason) const;
-  };
-
   // Returns whether a RenderFrameHost can be stored into the
   // BackForwardCache. Depends on the |render_frame_host| and its children's
   // state.
-  CanStoreDocumentResult CanStoreDocument(
+  BackForwardCacheCanStoreDocumentResult CanStoreDocument(
       RenderFrameHostImpl* render_frame_host);
 
   // Moves the specified BackForwardCache entry into the BackForwardCache. It
@@ -185,7 +157,7 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   void DestroyEvictedFrames();
 
   // Helper for recursively checking each child.
-  void CanStoreRenderFrameHost(CanStoreDocumentResult* result,
+  void CanStoreRenderFrameHost(BackForwardCacheCanStoreDocumentResult* result,
                                RenderFrameHostImpl* render_frame_host);
 
   // Contains the set of stored Entries.

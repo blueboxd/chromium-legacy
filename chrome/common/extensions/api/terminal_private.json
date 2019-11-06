@@ -155,6 +155,30 @@
             "description": "The id of the process to which |onProcessOutput| was dispatched."
           }
         ]
+      },
+      {
+        "name": "getCroshSettings",
+        "type": "function",
+        "description": "Returns settings used by the crosh extension.  This function is called by the terminal system app the first time it is run to migrate any previous settings.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Callback that will be called with settings.",
+            "parameters": [
+              {
+                "name": "settings",
+                "type": "object",
+                "additionalProperties":
+                  {
+                    "type": "any" ,
+                    "preserveNull": true
+                  },
+                "preserveNull": true
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

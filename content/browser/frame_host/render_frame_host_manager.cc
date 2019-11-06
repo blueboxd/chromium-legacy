@@ -534,16 +534,8 @@ void RenderFrameHostManager::SwapOutOldFrame(
       return;
     }
 
-    if (old_page_back_forward_cache_metrics) {
-      // TODO(hajimehoshi): For code readability, BackForwardCacheMetrics should
-      // take CanStoreDocumentResult directly and rename
-      // MarkNotRestoredWithReason to DidNotStoreDocument.
-      old_page_back_forward_cache_metrics->MarkNotRestoredWithReasons(
-          can_store.not_stored_reasons);
-      old_page_back_forward_cache_metrics
-          ->MarkNotRestoredWithBlocklistedFeatures(
-              can_store.blocklisted_features);
-    }
+    if (old_page_back_forward_cache_metrics)
+      old_page_back_forward_cache_metrics->MarkNotRestoredWithReason(can_store);
   }
 
   // Create a replacement proxy for the old RenderFrameHost. (There should not

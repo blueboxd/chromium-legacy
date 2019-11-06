@@ -11,13 +11,13 @@
 namespace blink {
 
 TEST(UserGestureIndicatorTest, InitialState) {
-  EXPECT_EQ(nullptr, UserGestureIndicator::CurrentToken());
+  EXPECT_EQ(nullptr, UserGestureIndicator::CurrentTokenForTest());
 }
 
 TEST(UserGestureIndicatorTest, ConstructedWithNewUserGesture) {
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
       LocalFrame::NotifyUserActivation(nullptr);
-  EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
+  EXPECT_NE(nullptr, UserGestureIndicator::CurrentTokenForTest());
 }
 
 // Check that after UserGestureIndicator destruction state will be cleared.
@@ -25,9 +25,9 @@ TEST(UserGestureIndicatorTest, DestructUserGestureIndicator) {
   {
     std::unique_ptr<UserGestureIndicator> user_gesture_scope =
         LocalFrame::NotifyUserActivation(nullptr);
-    EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
+    EXPECT_NE(nullptr, UserGestureIndicator::CurrentTokenForTest());
   }
-  EXPECT_EQ(nullptr, UserGestureIndicator::CurrentToken());
+  EXPECT_EQ(nullptr, UserGestureIndicator::CurrentTokenForTest());
 }
 
 // Tests creation of scoped UserGestureIndicator objects.
@@ -36,31 +36,32 @@ TEST(UserGestureIndicatorTest, ScopedNewUserGestureIndicators) {
   std::unique_ptr<UserGestureIndicator> user_gesture_scope =
       LocalFrame::NotifyUserActivation(nullptr);
 
-  EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
+  EXPECT_NE(nullptr, UserGestureIndicator::CurrentTokenForTest());
   {
     // Construct inner UserGestureIndicator.
     // It should share GestureToken with the root indicator.
     std::unique_ptr<UserGestureIndicator> inner_user_gesture =
         LocalFrame::NotifyUserActivation(nullptr);
-    EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
+    EXPECT_NE(nullptr, UserGestureIndicator::CurrentTokenForTest());
   }
 
-  EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
+  EXPECT_NE(nullptr, UserGestureIndicator::CurrentTokenForTest());
 }
 
 TEST(UserGestureIndicatorTest, MultipleGesturesWithTheSameToken) {
   std::unique_ptr<UserGestureIndicator> indicator =
       LocalFrame::NotifyUserActivation(nullptr);
-  EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
+  EXPECT_NE(nullptr, UserGestureIndicator::CurrentTokenForTest());
   {
     // Construct an inner indicator that shares the same token.
-    UserGestureIndicator inner_indicator(UserGestureIndicator::CurrentToken());
-    EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
+    UserGestureIndicator inner_indicator(
+        UserGestureIndicator::CurrentTokenForTest());
+    EXPECT_NE(nullptr, UserGestureIndicator::CurrentTokenForTest());
   }
   // Though the inner indicator was destroyed, the outer is still present (and
   // the gesture hasn't been consumed), so it should still be processing a user
   // gesture.
-  EXPECT_NE(nullptr, UserGestureIndicator::CurrentToken());
+  EXPECT_NE(nullptr, UserGestureIndicator::CurrentTokenForTest());
 }
 
 TEST(UserGestureIndicatorTest, Timeouts) {
@@ -69,7 +70,8 @@ TEST(UserGestureIndicatorTest, Timeouts) {
     // Token times out after 1 second.
     std::unique_ptr<UserGestureIndicator> user_gesture_scope =
         LocalFrame::NotifyUserActivation(nullptr);
-    scoped_refptr<UserGestureToken> token = user_gesture_scope->CurrentToken();
+    scoped_refptr<UserGestureToken> token =
+        user_gesture_scope->CurrentTokenForTest();
     token->SetClockForTesting(test_task_runner->GetMockClock());
     // Timestamp is initialized to Now() in constructor using the default clock,
     // reset it so it gets the Now() of the mock clock.
@@ -88,7 +90,7 @@ TEST(UserGestureIndicatorTest, Timeouts) {
     {
       std::unique_ptr<UserGestureIndicator> user_gesture_scope =
           LocalFrame::NotifyUserActivation(nullptr);
-      token = user_gesture_scope->CurrentToken();
+      token = user_gesture_scope->CurrentTokenForTest();
       token->SetClockForTesting(test_task_runner->GetMockClock());
       // Timestamp is initialized to Now() in constructor using the default
       // clock, reset it so it gets the Now() of the mock clock.

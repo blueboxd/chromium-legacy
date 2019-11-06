@@ -3204,11 +3204,30 @@ class DOMContentLoadedObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(DOMContentLoadedObserver);
 };
 
+// Calls |callback| whenever a DocumentOnLoad is reached in
+// |render_frame_host|.
+class DocumentOnLoadObserver : public WebContentsObserver {
+ public:
+  DocumentOnLoadObserver(WebContents* web_contents,
+                         base::RepeatingClosure callback)
+      : WebContentsObserver(web_contents), callback_(callback) {}
+
+ protected:
+  // WebContentsObserver:
+  void DocumentOnLoadCompletedInMainFrame() override { callback_.Run(); }
+
+ private:
+  base::RepeatingClosure callback_;
+  DISALLOW_COPY_AND_ASSIGN(DocumentOnLoadObserver);
+};
+
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DocumentLoaded) {
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadCallbacks) {
   net::test_server::ControllableHttpResponse main_document_response(
       embedded_test_server(), "/main_document");
+  net::test_server::ControllableHttpResponse image_response(
+      embedded_test_server(), "/img");
 
   EXPECT_TRUE(embedded_test_server()->Start());
   GURL main_document_url(embedded_test_server()->GetURL("/main_document"));
@@ -3223,6 +3242,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DocumentLoaded) {
   shell()->LoadURL(main_document_url);
 
   EXPECT_FALSE(rfhi->dom_content_loaded());
+  EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 
   main_document_response.WaitForRequest();
   main_document_response.Send(
@@ -3230,10 +3250,11 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DocumentLoaded) {
       "Connection: close\r\n"
       "Content-Type: text/html; charset=utf-8\r\n"
       "\r\n"
-      "<img src='/hung'>");
+      "<img src='/img'>");
 
   load_observer.WaitForNavigationFinished();
   EXPECT_FALSE(rfhi->dom_content_loaded());
+  EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 
   main_document_response.Done();
 
@@ -3242,6 +3263,97 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DocumentLoaded) {
   loop_until_dcl.Run();
   EXPECT_TRUE(rfhi->is_loading());
   EXPECT_TRUE(rfhi->dom_content_loaded());
+  EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+
+  base::RunLoop loop_until_onload;
+  DocumentOnLoadObserver onload_observer(web_contents,
+                                         loop_until_onload.QuitClosure());
+
+  image_response.WaitForRequest();
+  image_response.Done();
+
+  // And now onload() should be reached.
+  loop_until_onload.Run();
+  EXPECT_TRUE(rfhi->dom_content_loaded());
+  EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+}
+
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadingStateResetOnNavigation) {
+  net::test_server::ControllableHttpResponse document2_response(
+      embedded_test_server(), "/document2");
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+  GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("/document2"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
+
+  base::RunLoop loop_until_onload;
+  DocumentOnLoadObserver onload_observer(web_contents,
+                                         loop_until_onload.QuitClosure());
+  shell()->LoadURL(url1);
+  loop_until_onload.Run();
+
+  EXPECT_TRUE(rfhi->dom_content_loaded());
+  EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+
+  // Expect that the loading state will be reset after a navigation.
+
+  TestNavigationObserver navigation_observer(web_contents);
+  shell()->LoadURL(url2);
+
+  document2_response.WaitForRequest();
+  document2_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n");
+  navigation_observer.WaitForNavigationFinished();
+
+  EXPECT_FALSE(rfhi->dom_content_loaded());
+  EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+}
+
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest,
+                       LoadingStateIsNotResetOnFailedNavigation) {
+  net::test_server::ControllableHttpResponse document2_response(
+      embedded_test_server(), "/document2");
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+  GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("/document2"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
+
+  base::RunLoop loop_until_onload;
+  DocumentOnLoadObserver onload_observer(web_contents,
+                                         loop_until_onload.QuitClosure());
+  shell()->LoadURL(url1);
+  loop_until_onload.Run();
+
+  EXPECT_TRUE(rfhi->dom_content_loaded());
+  EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
+
+  // Expect that the loading state will NOT be reset after a cancelled
+  // navigation.
+
+  TestNavigationManager navigation_manager(web_contents, url2);
+  shell()->LoadURL(url2);
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+  document2_response.WaitForRequest();
+
+  document2_response.Send(
+      "HTTP/1.1 204 No Content\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n");
+  navigation_manager.WaitForNavigationFinished();
+
+  EXPECT_TRUE(rfhi->dom_content_loaded());
+  EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 }
 
 }  // namespace content

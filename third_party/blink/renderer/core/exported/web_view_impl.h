@@ -85,7 +85,6 @@ class Frame;
 class FullscreenController;
 class HTMLPlugInElement;
 class PageScaleConstraintsSet;
-class UserGestureToken;
 class WebDevToolsAgentImpl;
 class WebElement;
 class WebInputMethodController;
@@ -645,7 +644,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // If set, the (plugin) element which has mouse capture.
   Persistent<HTMLPlugInElement> mouse_capture_element_;
-  scoped_refptr<UserGestureToken> mouse_capture_gesture_token_;
 
   // WebViews, and WebWidgets, are used to host a Page. The WidgetClient()
   // provides compositing support for the WebView.

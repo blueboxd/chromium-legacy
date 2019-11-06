@@ -129,6 +129,7 @@ class SystemWebAppManager {
 
  protected:
   virtual const base::Version& CurrentVersion() const;
+  virtual const std::string& CurrentLocale() const;
 
  private:
   void OnAppsSynchronized(std::map<GURL, InstallResultCode> install_results,

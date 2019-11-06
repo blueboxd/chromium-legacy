@@ -187,6 +187,33 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     EXPECT_FALSE(ExecJs(rfh, "console.log('hi');"));
   }
 
+  void StartRecordingEvents(RenderFrameHostImpl* rfh) {
+    EXPECT_TRUE(ExecJs(rfh, R"(
+      window.testObservedEvents = [];
+      let event_list = [
+        'visibilitychange',
+        'pagehide',
+        'pageshow',
+        'freeze',
+        'resume',
+      ];
+      for (event_name of event_list) {
+        let result = event_name;
+        window.addEventListener(event_name, event => {
+          if (event.persisted)
+            result +='.persisted';
+          window.testObservedEvents.push(result);
+        });
+        document.addEventListener(event_name,
+            () => window.testObservedEvents.push(result));
+      }
+    )"));
+  }
+
+  void MatchEventList(RenderFrameHostImpl* rfh, base::ListValue list) {
+    EXPECT_EQ(list, EvalJs(rfh, "window.testObservedEvents"));
+  }
+
  private:
   void AddSampleToBuckets(std::vector<base::Bucket>* buckets,
                           base::HistogramBase::Sample sample) {
@@ -1865,26 +1892,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
-  EXPECT_TRUE(ExecJs(shell(), R"(
-    window.testObservedEvents = [];
-    let event_list = [
-      'visibilitychange',
-      'pagehide',
-      'pageshow',
-      'freeze',
-      'resume',
-    ];
-    for (event_name of event_list) {
-      let result = event_name;
-      window.addEventListener(event_name, event => {
-        if (event.persisted)
-          result +='.persisted';
-        window.testObservedEvents.push(result);
-      });
-      document.addEventListener(event_name,
-          () => window.testObservedEvents.push(result));
-    }
-  )"));
+  StartRecordingEvents(rfh_a);
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
@@ -1906,11 +1914,61 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
   EXPECT_EQ(rfh_a, current_frame_host());
   // visibilitychange events are added twice per each because it is fired for
   // both window and document.
-  EXPECT_EQ(
-      ListValueOf("visibilitychange", "visibilitychange", "pagehide.persisted",
-                  "freeze", "resume", "pageshow.persisted", "visibilitychange",
-                  "visibilitychange"),
-      EvalJs(shell(), "window.testObservedEvents"));
+  MatchEventList(rfh_a, ListValueOf("visibilitychange", "visibilitychange",
+                                    "pagehide.persisted", "freeze", "resume",
+                                    "pageshow.persisted", "visibilitychange",
+                                    "visibilitychange"));
+}
+
+// Tests the events are fired for subframes when going back from the cache.
+// Test case: a(b) -> c -> a(b)
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EventsForSubframes) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  // 1) Navigate to A(B).
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+  StartRecordingEvents(rfh_a);
+  StartRecordingEvents(rfh_b);
+
+  // 2) Navigate to C.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  RenderFrameHostImpl* rfh_c = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_c(rfh_c);
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_c->is_in_back_forward_cache());
+  // TODO(yuzus): Post message to the frozen page, and make sure that the
+  // messages arrive after the page visibility events, not before them.
+
+  // 3) Go back to A(B). Confirm that expected events are fired on the subframe.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_FALSE(delete_observer_rfh_c.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_c->is_in_back_forward_cache());
+  // visibilitychange events are added twice per each because it is fired for
+  // both window and document.
+  MatchEventList(rfh_a, ListValueOf("visibilitychange", "visibilitychange",
+                                    "pagehide.persisted", "freeze", "resume",
+                                    "pageshow.persisted", "visibilitychange",
+                                    "visibilitychange"));
+  MatchEventList(rfh_b, ListValueOf("visibilitychange", "visibilitychange",
+                                    "pagehide.persisted", "freeze", "resume",
+                                    "pageshow.persisted", "visibilitychange",
+                                    "visibilitychange"));
 }
 
 // Tests the events are fired when going back from the cache.
@@ -1926,26 +1984,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
-  EXPECT_TRUE(ExecJs(shell(), R"(
-    window.testObservedEvents = [];
-    let event_list = [
-      'visibilitychange',
-      'pagehide',
-      'pageshow',
-      'freeze',
-      'resume',
-    ];
-    for (event_name of event_list) {
-      let result = event_name;
-      window.addEventListener(event_name, event => {
-        if (event.persisted)
-          result +='.persisted';
-        window.testObservedEvents.push(result);
-      });
-      document.addEventListener(event_name,
-          () => window.testObservedEvents.push(result));
-    }
-  )"));
+  StartRecordingEvents(rfh_a);
 
   // 2) Navigate to B.
   EXPECT_TRUE(ExecJs(shell(), JsReplace("location = $1;", url_b.spec())));
@@ -1968,11 +2007,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_EQ(rfh_a, current_frame_host());
   // visibilitychange events are added twice per each because it is fired for
   // both window and document.
-  EXPECT_EQ(
-      ListValueOf("visibilitychange", "visibilitychange", "pagehide.persisted",
-                  "freeze", "resume", "pageshow.persisted", "visibilitychange",
-                  "visibilitychange"),
-      EvalJs(shell(), "window.testObservedEvents"));
+  MatchEventList(rfh_a, ListValueOf("visibilitychange", "visibilitychange",
+                                    "pagehide.persisted", "freeze", "resume",
+                                    "pageshow.persisted", "visibilitychange",
+                                    "visibilitychange"));
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,

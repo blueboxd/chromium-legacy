@@ -125,6 +125,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kVideoPlayerNativeControls;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kVirtualKeyboardBorderedKey;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kVirtualKeyboardFloatingResizable;
 
 // Keep alphabetized.
 

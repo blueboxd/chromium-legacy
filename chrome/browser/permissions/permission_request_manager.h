@@ -172,8 +172,7 @@ class PermissionRequestManager
   // the object alive. The infobar system hides the actual infobar UI and modals
   // prevent tab switching.
   std::unique_ptr<PermissionPrompt> view_;
-  // We only show new prompts when both of these are true.
-  bool main_frame_has_fully_loaded_;
+  // We only show new prompts when |tab_is_hidden_| is false.
   bool tab_is_hidden_;
 
   std::vector<PermissionRequest*> requests_;

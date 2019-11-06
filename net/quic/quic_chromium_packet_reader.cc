@@ -5,6 +5,9 @@
 #include "net/quic/quic_chromium_packet_reader.h"
 
 #include "base/bind.h"
+#ifdef TEMP_INSTRUMENTATION_1014092
+#include "base/debug/alias.h"
+#endif
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -35,7 +38,16 @@ QuicChromiumPacketReader::QuicChromiumPacketReader(
           static_cast<size_t>(quic::kMaxIncomingPacketSize))),
       net_log_(net_log) {}
 
-QuicChromiumPacketReader::~QuicChromiumPacketReader() {}
+QuicChromiumPacketReader::~QuicChromiumPacketReader() {
+#ifdef TEMP_INSTRUMENTATION_1014092
+  liveness_ = DEAD;
+  stack_trace_ = base::debug::StackTrace();
+  // Probably not necessary, but just in case compiler tries to optimize out the
+  // writes to liveness_ and stack_trace_.
+  base::debug::Alias(&liveness_);
+  base::debug::Alias(&stack_trace_);
+#endif
+}
 
 void QuicChromiumPacketReader::StartReading() {
   CHECK(!should_stop_reading_);
@@ -47,8 +59,9 @@ void QuicChromiumPacketReader::StartReading() {
     if (num_packets_read_ == 0)
       yield_after_ = clock_->Now() + yield_after_duration_;
 
-    DCHECK(socket_);
     read_pending_ = true;
+    CrashIfInvalid();
+    CHECK(socket_);
     int rv =
         socket_->Read(read_buffer_.get(), read_buffer_->size(),
                       base::BindOnce(&QuicChromiumPacketReader::OnReadComplete,
@@ -88,12 +101,15 @@ size_t QuicChromiumPacketReader::EstimateMemoryUsage() const {
 }
 
 bool QuicChromiumPacketReader::ProcessReadResult(int result) {
+  CrashIfInvalid();
+
   read_pending_ = false;
   if (result == 0)
     result = ERR_CONNECTION_CLOSED;
 
   if (result < 0) {
-    visitor_->OnReadError(result, socket_);
+    if (socket_ != nullptr)
+      visitor_->OnReadError(result, socket_);
     return false;
   }
 
@@ -107,6 +123,8 @@ bool QuicChromiumPacketReader::ProcessReadResult(int result) {
 }
 
 void QuicChromiumPacketReader::OnReadComplete(int result) {
+  CrashIfInvalid();
+
   if (ProcessReadResult(result)) {
     if (should_stop_reading_) {
       UMA_HISTOGRAM_BOOLEAN(
@@ -116,6 +134,24 @@ void QuicChromiumPacketReader::OnReadComplete(int result) {
       StartReading();
     }
   }
+}
+
+void QuicChromiumPacketReader::CrashIfInvalid() const {
+#ifdef TEMP_INSTRUMENTATION_1014092
+  Liveness liveness = liveness_;
+
+  if (liveness == ALIVE)
+    return;
+
+  // Copy relevant variables onto the stack to guarantee they will be available
+  // in minidumps, and then crash.
+  base::debug::StackTrace stack_trace = stack_trace_;
+
+  base::debug::Alias(&liveness);
+  base::debug::Alias(&stack_trace);
+
+  CHECK_EQ(ALIVE, liveness);
+#endif
 }
 
 }  // namespace net

@@ -593,14 +593,75 @@
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
     ],
   },
-  'gl_tests': {
+  'gl_unittests': {
+    'remove_from': [
+      # chromium.gpu.fyi
+      # On Android, these are already run on the main waterfall.
+      # Run them on the one-off Android FYI bots, though.
+      'Android FYI Release (Nexus 5X)',
+      # Temporarily disabled due to AMDGPU-PRO issues crbug.com/786219
+      'Linux FYI Release (AMD R7 240)',
+    ],
+    'modifications': {
+      # chromium.clang
+      'CFI Linux ToT': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
+      },
+      # chromium.memory
+      'Linux CFI': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'Chrome-GPU',
+            },
+          ],
+        },
+        'use_xvfb': False,
+      },
+    },
+  },
+  'gl_unittests_ozone': {
+    'remove_from': [
+      # Can't run on MSAN because gl_unittests_ozone uses the hardware driver,
+      # which isn't instrumented.
+      'Linux ChromiumOS MSan Tests',
+    ],
+  },
+  'gpu_process_launch_tests': {
+    # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
+    # exception once there is enough capacity to run these tests.
+    'remove_from': [
+      # chromium.gpu.fyi
+      'Android FYI Release (Pixel 2)',
+    ],
+  },
+  'gpu_tests': {
     'remove_from': [
       # chromium.clang
       'CFI Linux ToT',
       # chromium.gpu.fyi
       'Android FYI Release (Nexus 5X)',
       # chromium.memory
-      # Can't run on MSAN because gl_tests uses the hardware driver,
+      # Can't run on MSAN because gpu_tests uses the hardware driver,
       # which isn't instrumented.
       'Linux MSan Tests',
     ],
@@ -676,67 +737,6 @@
         'experiment_percentage': 100, # https://crbug.com/1010211
       },
     },
-  },
-  'gl_unittests': {
-    'remove_from': [
-      # chromium.gpu.fyi
-      # On Android, these are already run on the main waterfall.
-      # Run them on the one-off Android FYI bots, though.
-      'Android FYI Release (Nexus 5X)',
-      # Temporarily disabled due to AMDGPU-PRO issues crbug.com/786219
-      'Linux FYI Release (AMD R7 240)',
-    ],
-    'modifications': {
-      # chromium.clang
-      'CFI Linux ToT': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'Chrome-GPU',
-            },
-          ],
-        },
-        'use_xvfb': False,
-      },
-      # chromium.memory
-      'Linux CFI': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'Chrome-GPU',
-            },
-          ],
-        },
-        'use_xvfb': False,
-      },
-    },
-  },
-  'gl_unittests_ozone': {
-    'remove_from': [
-      # Can't run on MSAN because gl_unittests_ozone uses the hardware driver,
-      # which isn't instrumented.
-      'Linux ChromiumOS MSan Tests',
-    ],
-  },
-  'gpu_process_launch_tests': {
-    # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
-    # exception once there is enough capacity to run these tests.
-    'remove_from': [
-      # chromium.gpu.fyi
-      'Android FYI Release (Pixel 2)',
-    ],
   },
   'hardware_accelerated_feature_tests': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)

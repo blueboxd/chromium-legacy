@@ -8,7 +8,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.signin.AccountTrackerService;
-import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 
 /**
@@ -34,14 +33,6 @@ public final class IdentityServicesProvider {
         return result;
     }
 
-    public static OAuth2TokenService getOAuth2TokenService() {
-        ThreadUtils.assertOnUiThread();
-        OAuth2TokenService result = IdentityServicesProviderJni.get().getOAuth2TokenService(
-                Profile.getLastUsedProfile());
-        assert result != null;
-        return result;
-    }
-
     public static SigninManager getSigninManager() {
         ThreadUtils.assertOnUiThread();
         SigninManager result =
@@ -54,7 +45,6 @@ public final class IdentityServicesProvider {
     interface Natives {
         public IdentityManager getIdentityManager(Profile profile);
         public AccountTrackerService getAccountTrackerService(Profile profile);
-        public OAuth2TokenService getOAuth2TokenService(Profile profile);
         public SigninManager getSigninManager(Profile profile);
     }
 }

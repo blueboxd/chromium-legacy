@@ -79,7 +79,8 @@ IdentityManager::IdentityManager(
 
 #if defined(OS_ANDROID)
   java_identity_manager_ = Java_IdentityManager_create(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      token_service_->GetDelegate()->GetJavaObject());
 #endif
 }
 
@@ -380,11 +381,6 @@ IdentityManager::LegacyGetAccountTrackerServiceJavaObject() {
   return account_tracker_service_->GetJavaObject();
 }
 
-base::android::ScopedJavaLocalRef<jobject>
-IdentityManager::LegacyGetOAuth2TokenServiceJavaObject() {
-  return token_service_->GetDelegate()->GetJavaObject();
-}
-
 base::android::ScopedJavaLocalRef<jobject> IdentityManager::GetJavaObject() {
   DCHECK(java_identity_manager_);
   return base::android::ScopedJavaLocalRef<jobject>(java_identity_manager_);
@@ -430,6 +426,27 @@ base::android::ScopedJavaLocalRef<jobject> IdentityManager::
   if (!account_info.has_value())
     return nullptr;
   return ConvertToJavaCoreAccountInfo(env, account_info.value());
+}
+
+base::android::ScopedJavaLocalRef<jobjectArray>
+IdentityManager::GetAccountsWithRefreshTokens(JNIEnv* env) const {
+  std::vector<CoreAccountInfo> accounts = GetAccountsWithRefreshTokens();
+
+  base::android::ScopedJavaLocalRef<jclass> coreaccountinfo_clazz =
+      base::android::GetClass(
+          env,
+          "org/chromium/components/signin/identitymanager/CoreAccountInfo");
+  base::android::ScopedJavaLocalRef<jobjectArray> array(
+      env, env->NewObjectArray(accounts.size(), coreaccountinfo_clazz.obj(),
+                               nullptr));
+  base::android::CheckException(env);
+
+  for (size_t i = 0; i < accounts.size(); ++i) {
+    base::android::ScopedJavaLocalRef<jobject> item =
+        ConvertToJavaCoreAccountInfo(env, accounts[i]);
+    env->SetObjectArrayElement(array.obj(), i, item.obj());
+  }
+  return array;
 }
 #endif
 

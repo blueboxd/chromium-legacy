@@ -49,20 +49,12 @@
 
 namespace blink {
 
-static inline bool ShouldPaintScrollbarPart(const IntRect& part_rect,
-                                            const CullRect& cull_rect) {
-  return (!part_rect.IsEmpty()) || cull_rect.Intersects(part_rect);
-}
-
 void ScrollbarTheme::Paint(const Scrollbar& scrollbar,
-                           GraphicsContext& graphics_context,
-                           const CullRect& cull_rect) {
-  if (!ShouldPaintScrollbarPart(scrollbar.FrameRect(), cull_rect))
-    return;
+                           GraphicsContext& graphics_context) {
   PaintTrackButtonsTickmarks(graphics_context, scrollbar, IntPoint());
 
   IntRect thumb_rect = ThumbRect(scrollbar);
-  if (HasThumb(scrollbar) && ShouldPaintScrollbarPart(thumb_rect, cull_rect))
+  if (HasThumb(scrollbar))
     PaintThumbWithOpacity(graphics_context, scrollbar, thumb_rect);
 }
 

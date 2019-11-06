@@ -34,6 +34,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -386,7 +387,8 @@ class DnsProbeBrowserTest : public InProcessBrowserTest {
     return network_context_.get();
   }
 
-  network::mojom::DnsConfigChangeManagerPtr GetDnsConfigChangeManager();
+  mojo::Remote<network::mojom::DnsConfigChangeManager>
+  GetDnsConfigChangeManager();
 
   std::unique_ptr<FakeHostResolverNetworkContext> network_context_;
   std::unique_ptr<FakeDnsConfigChangeManager> dns_config_change_manager_;
@@ -616,12 +618,13 @@ void DnsProbeBrowserTest::OnDnsProbeStatusSent(
     awaiting_dns_probe_status_run_loop_->Quit();
 }
 
-network::mojom::DnsConfigChangeManagerPtr
+mojo::Remote<network::mojom::DnsConfigChangeManager>
 DnsProbeBrowserTest::GetDnsConfigChangeManager() {
-  network::mojom::DnsConfigChangeManagerPtr dns_config_change_manager_ptr;
+  mojo::Remote<network::mojom::DnsConfigChangeManager>
+      dns_config_change_manager_remote;
   dns_config_change_manager_ = std::make_unique<FakeDnsConfigChangeManager>(
-      mojo::MakeRequest(&dns_config_change_manager_ptr));
-  return dns_config_change_manager_ptr;
+      dns_config_change_manager_remote.BindNewPipeAndPassReceiver());
+  return dns_config_change_manager_remote;
 }
 
 // Test Fixture for tests where the DNS probes should succeed.

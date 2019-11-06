@@ -14,16 +14,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-using webrtc::DtmfSenderInterface;
-
 namespace blink {
-
-std::unique_ptr<WebRTCDTMFSenderHandler> CreateRTCDTMFSenderHandler(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-    webrtc::DtmfSenderInterface* dtmf_sender) {
-  return std::make_unique<RtcDtmfSenderHandler>(std::move(main_thread),
-                                                dtmf_sender);
-}
 
 class RtcDtmfSenderHandler::Observer
     : public base::RefCountedThreadSafe<Observer>,
@@ -58,7 +49,7 @@ class RtcDtmfSenderHandler::Observer
 
 RtcDtmfSenderHandler::RtcDtmfSenderHandler(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-    DtmfSenderInterface* dtmf_sender)
+    webrtc::DtmfSenderInterface* dtmf_sender)
     : dtmf_sender_(dtmf_sender), webkit_client_(nullptr) {
   DVLOG(1) << "::ctor";
   observer_ = new Observer(std::move(main_thread), weak_factory_.GetWeakPtr());

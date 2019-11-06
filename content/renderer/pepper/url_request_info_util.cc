@@ -248,6 +248,8 @@ bool CreateWebURLRequest(PP_Instance instance,
     dest->SetExtraData(std::move(extra_data));
   }
 
+  dest->SetRequestContext(blink::mojom::RequestContextType::PLUGIN);
+
   return true;
 }
 

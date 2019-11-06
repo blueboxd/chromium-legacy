@@ -24,15 +24,29 @@ void SelectionBound::SetEdgeTop(const gfx::PointF& value) {
   edge_top_rounded_ = gfx::ToRoundedPoint(value);
 }
 
+void SelectionBound::SetVisibleEdgeTop(const gfx::PointF& value) {
+  visible_edge_top_ = value;
+}
+
 void SelectionBound::SetEdgeBottom(const gfx::PointF& value) {
   edge_bottom_ = value;
   edge_bottom_rounded_ = gfx::ToRoundedPoint(value);
+}
+
+void SelectionBound::SetVisibleEdgeBottom(const gfx::PointF& value) {
+  visible_edge_bottom_ = value;
 }
 
 void SelectionBound::SetEdge(const gfx::PointF& top,
                              const gfx::PointF& bottom) {
   SetEdgeTop(top);
   SetEdgeBottom(bottom);
+}
+
+void SelectionBound::SetVisibleEdge(const gfx::PointF& top,
+                                    const gfx::PointF& bottom) {
+  SetVisibleEdgeTop(top);
+  SetVisibleEdgeBottom(bottom);
 }
 
 int SelectionBound::GetHeight() const {
@@ -49,7 +63,9 @@ std::string SelectionBound::ToString() const {
 bool operator==(const SelectionBound& lhs, const SelectionBound& rhs) {
   return lhs.type() == rhs.type() && lhs.visible() == rhs.visible() &&
          lhs.edge_top() == rhs.edge_top() &&
-         lhs.edge_bottom() == rhs.edge_bottom();
+         lhs.edge_bottom() == rhs.edge_bottom() &&
+         lhs.visible_edge_top() == rhs.visible_edge_top() &&
+         lhs.visible_edge_bottom() == rhs.visible_edge_bottom();
 }
 
 bool operator!=(const SelectionBound& lhs, const SelectionBound& rhs) {
@@ -83,6 +99,25 @@ gfx::RectF RectFBetweenSelectionBounds(const SelectionBound& b1,
   bottom_right.SetToMax(b1.edge_bottom());
   bottom_right.SetToMax(b2.edge_top());
   bottom_right.SetToMax(b2.edge_bottom());
+
+  gfx::Vector2dF diff = bottom_right - top_left;
+  return gfx::RectF(top_left, gfx::SizeF(diff.x(), diff.y()));
+}
+
+gfx::RectF RectFBetweenVisibleSelectionBounds(const SelectionBound& b1,
+                                              const SelectionBound& b2) {
+  // The selection bound is determined by the |top| and |bottom| points. For the
+  // writing-mode is vertical-*, the bounds are horizontal, the |bottom| might
+  // be on the left side of the |top|.
+  gfx::PointF top_left(b1.visible_edge_top());
+  top_left.SetToMin(b1.visible_edge_bottom());
+  top_left.SetToMin(b2.visible_edge_top());
+  top_left.SetToMin(b2.visible_edge_bottom());
+
+  gfx::PointF bottom_right(b1.visible_edge_top());
+  bottom_right.SetToMax(b1.visible_edge_bottom());
+  bottom_right.SetToMax(b2.visible_edge_top());
+  bottom_right.SetToMax(b2.visible_edge_bottom());
 
   gfx::Vector2dF diff = bottom_right - top_left;
   return gfx::RectF(top_left, gfx::SizeF(diff.x(), diff.y()));

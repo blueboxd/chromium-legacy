@@ -53,10 +53,8 @@ void StyleTraversalRoot::Update(ContainerNode* common_ancestor,
 }
 
 void StyleTraversalRoot::ChildrenRemoved(ContainerNode& parent) {
-  if (!root_node_ || root_node_->isConnected())
-    return;
-  ClearChildDirtyForAncestors(parent);
-  Clear();
+  if (root_node_ && !root_node_->isConnected())
+    RootRemoved(parent);
 }
 
 }  // namespace blink

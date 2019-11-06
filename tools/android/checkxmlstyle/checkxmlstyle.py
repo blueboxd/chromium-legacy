@@ -6,9 +6,8 @@
 
 This file checks for the following:
   - Colors are defined as RRGGBB or AARRGGBB
-  - No (A)RGB values are referenced outside color_palette.xml
-  - No duplicate (A)RGB values are referenced in color_palette.xml
-  - Colors in semantic_colors are only referecing colors in color_palette.xml
+  - No (A)RGB values are referenced outside colors.xml
+  - No duplicate (A)RGB values are referenced in colors.xml
   - XML namspace "app" is used for "http://schemas.android.com/apk/res-auto"
   - Android text attributes are only defined in text appearance styles
   - Warning on adding new text appearance styles
@@ -19,7 +18,16 @@ import os
 import re
 import xml.etree.ElementTree as ET
 
-import helpers
+COLOR_PATTERN = re.compile(r'(>|")(#[0-9A-Fa-f]+)(<|")')
+VALID_COLOR_PATTERN = re.compile(
+    r'^#([0-9A-F][0-9A-E]|[0-9A-E][0-9A-F])?[0-9A-F]{6}$')
+XML_APP_NAMESPACE_PATTERN = re.compile(
+    r'xmlns:(\w+)="http://schemas.android.com/apk/res-auto"')
+TEXT_APPEARANCE_STYLE_PATTERN = re.compile(r'^TextAppearance\.')
+INCLUDED_PATHS = [
+    r'^(chrome|ui|components|content)[\\/](.*[\\/])?java[\\/]res.+\.xml$'
+]
+
 
 def CheckStyleOnUpload(input_api, output_api):
   """Returns result for all the presubmit upload checks for XML files."""
@@ -35,8 +43,7 @@ def CheckStyleOnCommit(input_api, output_api):
 
 def IncludedFiles(input_api):
   # Filter out XML files outside included paths and files that were deleted.
-  files = lambda f: input_api.FilterSourceFile(
-      f, white_list=helpers.INCLUDED_PATHS)
+  files = lambda f: input_api.FilterSourceFile(f, white_list=INCLUDED_PATHS)
   return input_api.AffectedFiles(include_deletes=False, file_filter=files)
 
 
@@ -46,13 +53,12 @@ def _CommonChecks(input_api, output_api):
   result.extend(_CheckColorFormat(input_api, output_api))
   result.extend(_CheckColorReferences(input_api, output_api))
   result.extend(_CheckDuplicateColors(input_api, output_api))
-  result.extend(_CheckSemanticColorsReferences(input_api, output_api))
   result.extend(_CheckXmlNamespacePrefixes(input_api, output_api))
   result.extend(_CheckTextAppearance(input_api, output_api))
   # Add more checks here
   return result
 
-### color resources below ###
+
 def _CheckColorFormat(input_api, output_api):
   """Checks color (A)RGB values are of format either RRGGBB or AARRGGBB."""
   errors = []
@@ -62,8 +68,8 @@ def _CheckColorFormat(input_api, output_api):
     if '<vector' in contents:
       continue
     for line_number, line in f.ChangedContents():
-      color = helpers.COLOR_PATTERN.search(line)
-      if color and not helpers.VALID_COLOR_PATTERN.match(color.group(2)):
+      color = COLOR_PATTERN.search(line)
+      if color and not VALID_COLOR_PATTERN.match(color.group(2)):
         errors.append(
             '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
   if errors:
@@ -84,17 +90,18 @@ def _CheckColorFormat(input_api, output_api):
 
 
 def _CheckColorReferences(input_api, output_api):
-  """Checks no (A)RGB values are defined outside color_palette.xml."""
+  """Checks no (A)RGB values are defined outside colors.xml."""
   errors = []
   warnings = []
   for f in IncludedFiles(input_api):
-    if f.LocalPath() == helpers.COLOR_PALETTE_RELATIVE_PATH:
+    if (f.LocalPath().endswith('/colors.xml') or
+        f.LocalPath().endswith('/color_palette.xml')):
       continue
     # Ignore new references in vector/shape drawable xmls
     contents = input_api.ReadFile(f)
     is_vector_drawable = '<vector' in contents or '<shape' in contents
     for line_number, line in f.ChangedContents():
-      if helpers.COLOR_PATTERN.search(line):
+      if COLOR_PATTERN.search(line):
         issue = '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip())
         if is_vector_drawable:
           warnings.append(issue)
@@ -106,7 +113,7 @@ def _CheckColorReferences(input_api, output_api):
   '''
   Android Color Reference Check failed:
     Your new code added new color references that are not color resources from
-    ui/android/java/res/values/color_palette.xml, listed below.
+    chrome/android/java/res/values/colors.xml, listed below.
 
     This is banned, please use the existing color resources or create a new
     color resource in colors.xml, and reference the color by @color/....
@@ -119,7 +126,7 @@ def _CheckColorReferences(input_api, output_api):
   '''
   Android Color Reference Check warning:
     Your new code added new color references that are not color resources from
-    ui/android/java/res/values/color_palette.xml, listed below.
+    chrome/android/java/res/values/colors.xml, listed below.
 
     This is typically not needed even in vector/shape drawables. Please consider
     using an existing color resources if possible.
@@ -135,22 +142,23 @@ def _CheckColorReferences(input_api, output_api):
 
 
 def _CheckDuplicateColors(input_api, output_api):
-  """Checks colors defined by (A)RGB values in color_palette.xml are unique."""
+  """Checks colors defined by (A)RGB values in colors.xml are unique."""
   errors = []
   for f in IncludedFiles(input_api):
-    if f.LocalPath() != helpers.COLOR_PALETTE_RELATIVE_PATH:
+    if not (f.LocalPath().endswith('/colors.xml')
+            or f.LocalPath().endswith('/color_palette.xml')):
       continue
     colors = defaultdict(int)
     contents = input_api.ReadFile(f)
     # Get count for each color defined.
     for line in contents.splitlines(False):
-      color = helpers.COLOR_PATTERN.search(line)
+      color = COLOR_PATTERN.search(line)
       if color:
         colors[color.group(2)] += 1
 
     # Check duplicates in changed contents.
     for line_number, line in f.ChangedContents():
-      color = helpers.COLOR_PATTERN.search(line)
+      color = COLOR_PATTERN.search(line)
       if color and colors[color.group(2)] > 1:
         errors.append(
             '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
@@ -159,49 +167,11 @@ def _CheckDuplicateColors(input_api, output_api):
   '''
   Android Duplicate Color Declaration Check failed:
     Your new code added new colors by (A)RGB values that are already defined in
-    ui/android/java/res/values/color_palette.xml, listed below.
+    chrome/android/java/res/values/colors.xml, listed below.
 
     This is banned, please reference the existing color resource from colors.xml
     using @color/... and if needed, give the existing color resource a more
     general name (e.g. modern_grey_100).
-
-    See https://crbug.com/775198 for more information.
-  ''',
-        errors)]
-  return []
-
-
-def _CheckSemanticColorsReferences(input_api, output_api):
-  """
-  Checks colors defined in semantic_colors.xml only referencing
-  resources in color_palette.xml
-  """
-  color_palette = _colorXml2Dict(
-      input_api.ReadFile(helpers.COLOR_PALETTE_PATH))
-  errors = []
-
-  for f in IncludedFiles(input_api):
-    if not f.LocalPath().endswith('/semantic_colors.xml'):
-      continue
-
-    for line_number, line in f.ChangedContents():
-      r = helpers.COLOR_REFERENCE_PATTERN.search(line)
-      if not r:
-        continue
-      color = r.group()
-      if _removePrefix(color) not in color_palette:
-        errors.append(
-            '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
-
-  if errors:
-    return [output_api.PresubmitError(
-  '''
-  Android Semantic Color Reference Check failed:
-    Your new color values added in semantic_colors are not defined in
-    ui/android/java/res/values/color_palette.xml, listed below.
-
-    This is banned. Colors in semantic colors can only reference
-    the existing color resource from color_palette.xml.
 
     See https://crbug.com/775198 for more information.
   ''',
@@ -214,7 +184,7 @@ def _CheckXmlNamespacePrefixes(input_api, output_api):
   errors = []
   for f in IncludedFiles(input_api):
     for line_number, line in f.ChangedContents():
-      xml_app_namespace = helpers.XML_APP_NAMESPACE_PATTERN.search(line)
+      xml_app_namespace = XML_APP_NAMESPACE_PATTERN.search(line)
       if xml_app_namespace and not xml_app_namespace.group(1) == 'app':
         errors.append(
             '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
@@ -234,7 +204,6 @@ def _CheckXmlNamespacePrefixes(input_api, output_api):
   return []
 
 
-### text appearance below ###
 def _CheckTextAppearance(input_api, output_api):
   """Checks text attributes are only used for text appearance styles in XMLs."""
   text_attributes = [
@@ -250,7 +219,7 @@ def _CheckTextAppearance(input_api, output_api):
       invalid_styles = []
       for style in root.findall('style') + root.findall('.//style'):
         name = style.get('name')
-        is_text_appearance = helpers.TEXT_APPEARANCE_STYLE_PATTERN.search(name)
+        is_text_appearance = TEXT_APPEARANCE_STYLE_PATTERN.search(name)
         item = style.find(".//item[@name='"+attribute+"']")
         if is_text_appearance is None and item is not None:
           invalid_styles.append(name)
@@ -332,17 +301,3 @@ def _CheckNewTextAppearance(input_api, output_api):
   ''',
         errors)]
   return []
-
-### helpers ###
-def _colorXml2Dict(content):
-  dct = dict()
-  tree = ET.fromstring(content)
-  for child in tree:
-    dct[child.attrib['name']] = child.text
-  return dct
-
-
-def _removePrefix(color, prefix = '@color/'):
-    if color.startswith(prefix):
-        return color[len(prefix):]
-    return color

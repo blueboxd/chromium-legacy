@@ -2505,6 +2505,39 @@ Unknown properties are collapsed to zero. -->
   <int value="10" label="Component app (downloaded)"/>
 </enum>
 
+<enum name="AppManagementEntryPoint">
+  <int value="0" label="App list context menu app info (ARC)"/>
+  <int value="1" label="App list context menu app info (Chrome app)"/>
+  <int value="2" label="App list context menu app info (Web App)"/>
+  <int value="3" label="Launcher context menu app info (ARC)"/>
+  <int value="4" label="Launcher context menu app info (Chrome app)"/>
+  <int value="5" label="Launcher context menu app info (Web App)"/>
+  <int value="6" label="App Management main view (ARC)"/>
+  <int value="7" label="App Management main view (Chrome app)"/>
+  <int value="8" label="App Management main view (Web App)"/>
+  <int value="9" label="OS Settings main page"/>
+</enum>
+
+<enum name="AppManagementUserAction">
+  <int value="0" label="View opened"/>
+  <int value="1" label="Native settings opened"/>
+  <int value="2" label="Uninstall dialog launched"/>
+  <int value="3" label="Pin to shelf turned on"/>
+  <int value="4" label="Pin to shelf turned off"/>
+  <int value="5" label="Notifications turned on"/>
+  <int value="6" label="Notifications turned off"/>
+  <int value="7" label="Location turned on"/>
+  <int value="8" label="Location turned off"/>
+  <int value="9" label="Camera turned on"/>
+  <int value="10" label="Camera turned off"/>
+  <int value="11" label="Microphone turned on"/>
+  <int value="12" label="Microphone turned off"/>
+  <int value="13" label="Contacts turned on"/>
+  <int value="14" label="Contacts turned off"/>
+  <int value="15" label="Storage turned on"/>
+  <int value="16" label="Storage turned off"/>
+</enum>
+
 <enum name="AppPromoAction">
   <int value="0" label="PROMO_LAUNCH_APP"/>
   <int value="1" label="PROMO_LAUNCH_WEB_STORE"/>

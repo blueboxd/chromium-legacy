@@ -205,6 +205,35 @@ cr.define('app_management.util', function() {
     settings.navigateTo(settings.routes.APP_MANAGEMENT);
   }
 
+  /**
+   * @param {AppType} appType
+   * @return {string}
+   * @private
+   */
+  function getUserActionHistogramNameForAppType_(appType) {
+    switch (appType) {
+      case AppType.kArc:
+        return 'AppManagement.AppDetailViews.ArcApp';
+      case AppType.kExtension:
+        return 'AppManagement.AppDetailViews.ChromeApp';
+      case AppType.kWeb:
+        return 'AppManagement.AppDetailViews.WebApp';
+      default:
+        assertNotReached();
+    }
+  }
+
+  /**
+   * @param {AppType} appType
+   * @param {AppManagementUserAction} userAction
+   */
+  function recordAppManagementUserAction(appType, userAction) {
+    const histogram = getUserActionHistogramNameForAppType_(appType);
+    const enumLength = Object.keys(AppManagementUserAction).length;
+    chrome.metricsPrivate.recordEnumerationValue(
+        histogram, userAction, enumLength);
+  }
+
   return {
     addIfNeeded: addIfNeeded,
     alphabeticalSort: alphabeticalSort,
@@ -219,6 +248,7 @@ cr.define('app_management.util', function() {
     openAppDetailPage: openAppDetailPage,
     openMainPage: openMainPage,
     permissionTypeHandle: permissionTypeHandle,
+    recordAppManagementUserAction: recordAppManagementUserAction,
     removeIfNeeded: removeIfNeeded,
     toggleOptionalBool: toggleOptionalBool,
   };

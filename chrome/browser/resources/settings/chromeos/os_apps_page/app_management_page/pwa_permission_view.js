@@ -37,6 +37,8 @@ Polymer({
   onClickSiteSettingsButton_: function() {
     app_management.BrowserProxy.getInstance().handler.openNativeSettings(
         this.app_.id);
+    app_management.util.recordAppManagementUserAction(
+        this.app_.type, AppManagementUserAction.NativeSettingsOpened);
   },
 
   /**

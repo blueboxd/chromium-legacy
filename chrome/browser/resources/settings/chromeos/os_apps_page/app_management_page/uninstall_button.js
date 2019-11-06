@@ -79,5 +79,7 @@ Polymer({
    */
   onClick_: function() {
     app_management.BrowserProxy.getInstance().handler.uninstall(this.app_.id);
+    app_management.util.recordAppManagementUserAction(
+        this.app_.type, AppManagementUserAction.UninstallDialogLaunched);
   },
 });

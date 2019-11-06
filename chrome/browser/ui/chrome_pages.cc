@@ -500,7 +500,6 @@ void ShowAppManagementPage(Profile* profile, const std::string& app_id) {
   DCHECK(base::FeatureList::IsEnabled(features::kAppManagement));
   std::string sub_page =
       base::StrCat({chrome::kAppManagementDetailSubPage, "?id=", app_id});
-  base::RecordAction(base::UserMetricsAction("ShowAppManagementDetailPage"));
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
                                                                sub_page);
 }

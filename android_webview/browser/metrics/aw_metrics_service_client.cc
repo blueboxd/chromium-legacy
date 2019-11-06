@@ -51,10 +51,18 @@ namespace {
 // as a separate client).
 const double kStableSampledInRate = 0.02;
 
-// Sample non-stable channels also at 2%. We intend to raise this to 99% in the
-// future (for consistency with Chrome and to exercise the out-of-sample code
-// path).
-const double kBetaDevCanarySampledInRate = 0.02;
+// Sample non-stable channels at 99%, to boost volume for pre-stable
+// experiments. We choose 99% instead of 100% for consistency with Chrome and to
+// exercise the out-of-sample code path.
+const double kBetaDevCanarySampledInRate = 0.99;
+
+// As a mitigation to preserve use privacy, the privacy team has asked that we
+// upload package name with no more than 10% of UMA records. This is to mitigate
+// fingerprinting for users on low-usage applications (if an app only has a
+// a small handful of users, there's a very good chance many of them won't be
+// uploading UMA records due to sampling). Do not change this constant without
+// consulting with the privacy team.
+const double kPackageNameLimitRate = 0.10;
 
 // Callbacks for metrics::MetricsStateManager::Create. Store/LoadClientInfo
 // allow Windows Chrome to back up ClientInfo. They're no-ops for WebView.
@@ -66,40 +74,18 @@ std::unique_ptr<metrics::ClientInfo> LoadClientInfo() {
   return client_info;
 }
 
-// WebView metrics are sampled at (possibly) different rates depending on
-// channel, based on the client ID. Sampling is hard-coded (rather than
-// controlled via variations, as in Chrome) because:
-// - WebView is slow to download the variations seed and propagate it to each
-//   app, so we'd miss metrics from the first few runs of each app.
-// - WebView uses the low-entropy source for all studies, so there would be
-//   crosstalk between the metrics sampling study and all other studies.
-bool IsInSample(const std::string& client_id) {
-  DCHECK(!client_id.empty());
-
-  double sampled_in_rate = kBetaDevCanarySampledInRate;
-
-  // Down-sample unknown channel as a precaution in case it ends up being
-  // shipped to Stable users.
-  version_info::Channel channel = version_info::android::GetChannel();
-  if (channel == version_info::Channel::STABLE ||
-      channel == version_info::Channel::UNKNOWN) {
-    sampled_in_rate = kStableSampledInRate;
-  }
-
-  // client_id comes from base::GenerateGUID(), so its value is random/uniform,
-  // except for a few bit positions with fixed values, and some hyphens. Rather
-  // than separating the random payload from the fixed bits, just hash the whole
-  // thing, to produce a new random/~uniform value.
-  uint32_t hash = base::PersistentHash(client_id);
+bool UintFallsInBottomPercentOfValues(uint32_t value, double percent) {
+  DCHECK_GT(percent, 0);
+  DCHECK_LT(percent, 1.00);
 
   // Since hashing is ~uniform, the chance that the value falls in the bottom
   // X% of possible values is X%. UINT32_MAX fits within the range of integers
   // that can be expressed precisely by a 64-bit double. Casting back to a
-  // uint32_t means the effective sample rate is within a 1/UINT32_MAX error
-  // margin.
-  uint32_t sampled_in_threshold =
-      static_cast<uint32_t>(static_cast<double>(UINT32_MAX) * sampled_in_rate);
-  return hash < sampled_in_threshold;
+  // uint32_t means we can determine if the value falls within the bottom X%,
+  // within a 1/UINT32_MAX error margin.
+  uint32_t value_threshold =
+      static_cast<uint32_t>(static_cast<double>(UINT32_MAX) * percent);
+  return value < value_threshold;
 }
 
 std::unique_ptr<metrics::MetricsService> CreateMetricsService(
@@ -315,7 +301,7 @@ bool AwMetricsServiceClient::ShouldStartUpFastForTesting() const {
 }
 
 std::string AwMetricsServiceClient::GetAppPackageName() {
-  if (CanRecordPackageName()) {
+  if (IsInPackageNameSample() && CanRecordPackageNameForAppType()) {
     JNIEnv* env = base::android::AttachCurrentThread();
     base::android::ScopedJavaLocalRef<jstring> j_app_name =
         Java_AwMetricsServiceClient_getAppPackageName(env);
@@ -325,16 +311,55 @@ std::string AwMetricsServiceClient::GetAppPackageName() {
   return std::string();
 }
 
-bool AwMetricsServiceClient::IsInSample() {
-  // Called in MaybeStartMetrics(), after metrics_service_ is created.
-  return ::android_webview::IsInSample(metrics_service_->GetClientId());
+// WebView metrics are sampled at (possibly) different rates depending on
+// channel, based on the client ID. Sampling is hard-coded (rather than
+// controlled via variations, as in Chrome) because:
+// - WebView is slow to download the variations seed and propagate it to each
+//   app, so we'd miss metrics from the first few runs of each app.
+// - WebView uses the low-entropy source for all studies, so there would be
+//   crosstalk between the metrics sampling study and all other studies.
+double AwMetricsServiceClient::GetSampleRate() {
+  double sampled_in_rate = kBetaDevCanarySampledInRate;
+
+  // Down-sample unknown channel as a precaution in case it ends up being
+  // shipped to Stable users.
+  version_info::Channel channel = version_info::android::GetChannel();
+  if (channel == version_info::Channel::STABLE ||
+      channel == version_info::Channel::UNKNOWN) {
+    sampled_in_rate = kStableSampledInRate;
+  }
+  return sampled_in_rate;
 }
 
-bool AwMetricsServiceClient::CanRecordPackageName() {
+bool AwMetricsServiceClient::IsInSample() {
+  // Called in MaybeStartMetrics(), after metrics_service_ is created.
+  return IsInSample(base::PersistentHash(metrics_service_->GetClientId()));
+}
+
+bool AwMetricsServiceClient::IsInSample(uint32_t value) {
+  return UintFallsInBottomPercentOfValues(value, GetSampleRate());
+}
+
+bool AwMetricsServiceClient::CanRecordPackageNameForAppType() {
   // Check with Java side, to see if it's OK to log the package name for this
   // type of app (see Java side for the specific requirements).
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_AwMetricsServiceClient_canRecordPackageName(env);
+  return Java_AwMetricsServiceClient_canRecordPackageNameForAppType(env);
+}
+
+bool AwMetricsServiceClient::IsInPackageNameSample() {
+  // Check if this client falls within the group for which it's acceptable to
+  // log package name. This guarantees we enforce the privacy requirement
+  // because we never log package names for more than kPackageNameLimitRate
+  // percent of clients. We'll actually log package name for less than this,
+  // because we also filter out packages for certain types of apps (see
+  // CanRecordPackageNameForAppType()).
+  return IsInPackageNameSample(
+      base::PersistentHash(metrics_service_->GetClientId()));
+}
+
+bool AwMetricsServiceClient::IsInPackageNameSample(uint32_t value) {
+  return UintFallsInBottomPercentOfValues(value, kPackageNameLimitRate);
 }
 
 // static

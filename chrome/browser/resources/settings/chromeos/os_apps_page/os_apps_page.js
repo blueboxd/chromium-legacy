@@ -95,7 +95,10 @@ Polymer({
 
   /** @private */
   onClickAppManagement_: function() {
-    chrome.metricsPrivate.recordUserAction('SettingsPage.OpenAppManagement');
+    chrome.metricsPrivate.recordEnumerationValue(
+        AppManagementEntryPointsHistogramName,
+        AppManagementEntryPoint.OsSettingsMainPage,
+        Object.keys(AppManagementEntryPoint).length);
     settings.navigateTo(settings.routes.APP_MANAGEMENT);
   },
 

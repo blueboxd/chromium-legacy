@@ -78,13 +78,18 @@ Polymer({
   toggleSetting_: function() {
     const newState =
         assert(app_management.util.toggleOptionalBool(this.app_.isPinned));
-    assert(
-        app_management.util.convertOptionalBoolToBool(newState) ===
-        this.$['toggle-row'].isChecked());
+    const newStateBool =
+        app_management.util.convertOptionalBoolToBool(newState);
+    assert(newStateBool === this.$['toggle-row'].isChecked());
     app_management.BrowserProxy.getInstance().handler.setPinned(
         this.app_.id,
         newState,
     );
+    const userAction = newStateBool ?
+        AppManagementUserAction.PinToShelfTurnedOn :
+        AppManagementUserAction.PinToShelfTurnedOff;
+    app_management.util.recordAppManagementUserAction(
+        this.app_.type, userAction);
   },
 
   /**

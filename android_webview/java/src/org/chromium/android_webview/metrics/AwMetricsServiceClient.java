@@ -49,7 +49,7 @@ public class AwMetricsServiceClient {
     }
 
     @CalledByNative
-    private static boolean canRecordPackageName() {
+    private static boolean canRecordPackageNameForAppType() {
         // Only record if it's a system app or it was installed from Play Store.
         Context ctx = ContextUtils.getApplicationContext();
         String packageName = ctx.getPackageName();

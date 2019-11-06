@@ -133,8 +133,34 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   std::string GetAppPackageName() override;
 
  protected:
-  virtual bool IsInSample();  // virtual for testing
-  virtual bool CanRecordPackageName();  // virtual for testing
+  // Returns the metrics sampling rate, to be used by IsInSample(). This is a
+  // double in the non-inclusive range (0.00, 1.00). Virtual for testing.
+  virtual double GetSampleRate();
+
+  // Determines if the client is within the random sample of clients for which
+  // we log metrics. If this returns false, AwMetricsServiceClient should
+  // indicate reporting is disabled. Sampling is due to storage/bandwidth
+  // considerations. Virtual for testing.
+  virtual bool IsInSample();
+
+  // Prefer calling the IsInSample() which takes no arguments. Virtual for
+  // testing.
+  virtual bool IsInSample(uint32_t value);
+
+  // Determines if the embedder app is the type of app for which we may log the
+  // package name. If this returns false, GetAppPackageName() must return empty
+  // string. Virtual for testing.
+  virtual bool CanRecordPackageNameForAppType();
+
+  // Determines if this client falls within the group for which it's acceptable
+  // to include the embedding app's package name. If this returns false,
+  // GetAppPackageName() must return the empty string (for
+  // privacy/fingerprintability reasons). Virtual for testing.
+  virtual bool IsInPackageNameSample();
+
+  // Prefer calling the IsInPackageNameSample() which takes no arguments.
+  // Virtual for testing.
+  virtual bool IsInPackageNameSample(uint32_t value);
 
  private:
   void MaybeStartMetrics();

@@ -18563,6 +18563,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SettingsPage.OpenAppManagement">
+  <obsolete>
+    Removed in M79, replaced by the histogram AppManagement.EntryPoints.
+  </obsolete>
   <owner>jshikaram@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <description>
@@ -18658,6 +18661,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ShowAppManagementDetailPage">
+  <obsolete>
+    Removed in M79, replaced by the histogram AppManagement.EntryPoints.
+  </obsolete>
   <owner>jshikaram@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <description>

@@ -19,6 +19,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -69,6 +70,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -867,6 +869,16 @@ void ChromeLauncherController::DoShowAppInfoFlow(
 
   if (base::FeatureList::IsEnabled(features::kAppManagement)) {
     chrome::ShowAppManagementPage(profile, extension_id);
+
+    if (extension->is_hosted_app() && extension->from_bookmark()) {
+      base::UmaHistogramEnumeration(
+          kAppManagementEntryPointsHistogramName,
+          AppManagementEntryPoint::kLauncherContextMenuAppInfoWebApp);
+    } else {
+      base::UmaHistogramEnumeration(
+          kAppManagementEntryPointsHistogramName,
+          AppManagementEntryPoint::kLauncherContextMenuAppInfoChromeApp);
+    }
     return;
   }
 

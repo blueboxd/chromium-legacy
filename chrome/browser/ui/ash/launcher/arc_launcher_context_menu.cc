@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 
@@ -139,6 +141,9 @@ void ArcLauncherContextMenu::ShowPackageInfo() {
   }
   if (base::FeatureList::IsEnabled(features::kAppManagement)) {
     chrome::ShowAppManagementPage(controller()->profile(), item().id.app_id);
+    base::UmaHistogramEnumeration(
+        kAppManagementEntryPointsHistogramName,
+        AppManagementEntryPoint::kLauncherContextMenuAppInfoArc);
     return;
   }
   arc::ShowPackageInfo(app_info->package_name,

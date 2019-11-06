@@ -129,15 +129,19 @@ Polymer({
     /** @type {!Permission} */
     let newPermission;
 
+    let newBoolState;
+
     switch (app_management.util.getPermission(this.app_, this.permissionType)
                 .valueType) {
       case PermissionValueType.kBool:
         newPermission =
             this.getNewPermissionBoolean_(this.app_, this.permissionType);
+        newBoolState = newPermission.value === Bool.kTrue;
         break;
       case PermissionValueType.kTriState:
         newPermission =
             this.getNewPermissionTriState_(this.app_, this.permissionType);
+        newBoolState = newPermission.value === TriState.kAllow;
         break;
       default:
         assertNotReached();
@@ -145,6 +149,11 @@ Polymer({
 
     app_management.BrowserProxy.getInstance().handler.setPermission(
         this.app_.id, newPermission);
+
+    app_management.util.recordAppManagementUserAction(
+        this.app_.type,
+        this.getUserMetricActionForPermission_(
+            newBoolState, this.permissionType));
   },
 
   /**
@@ -210,5 +219,45 @@ Polymer({
         app_management.util.permissionTypeHandle(app, permissionType),
         PermissionValueType.kTriState, newPermissionValue,
         currentPermission.isManaged);
+  },
+
+  /**
+   * @param {boolean} permissionValue
+   * @param {string} permissionType
+   * @return {AppManagementUserAction}
+   * @private
+   */
+  getUserMetricActionForPermission_: function(permissionValue, permissionType) {
+    switch (permissionType) {
+      case 'NOTIFICATIONS':
+        return permissionValue ? AppManagementUserAction.NotificationsTurnedOn :
+                                 AppManagementUserAction.NotificationsTurnedOff;
+
+      case 'GEOLOCATION':
+      case 'LOCATION':
+        return permissionValue ? AppManagementUserAction.LocationTurnedOn :
+                                 AppManagementUserAction.LocationTurnedOff;
+
+      case 'MEDIASTREAM_CAMERA':
+      case 'CAMERA':
+        return permissionValue ? AppManagementUserAction.CameraTurnedOn :
+                                 AppManagementUserAction.CameraTurnedOff;
+
+      case 'MEDIASTREAM_MIC':
+      case 'MICROPHONE':
+        return permissionValue ? AppManagementUserAction.MicrophoneTurnedOn :
+                                 AppManagementUserAction.MicrophoneTurnedOff;
+
+      case 'CONTACTS':
+        return permissionValue ? AppManagementUserAction.ContactsTurnedOn :
+                                 AppManagementUserAction.ContactsTurnedOff;
+
+      case 'STORAGE':
+        return permissionValue ? AppManagementUserAction.StorageTurnedOn :
+                                 AppManagementUserAction.StorageTurnedOff;
+
+      default:
+        assertNotReached();
+    }
   },
 });

@@ -42,6 +42,10 @@ Polymer({
   onClickExtensionsSettingsButton_: function() {
     app_management.BrowserProxy.getInstance().handler.openNativeSettings(
         this.app_.id);
+    chrome.metricsPrivate.recordEnumerationValue(
+        app_management.util.getAppHistogram(this.app_.type),
+        AppManagementUserAction.NativeSettingsOpened,
+        Object.keys(AppManagementUserAction).length);
   },
 
   /**

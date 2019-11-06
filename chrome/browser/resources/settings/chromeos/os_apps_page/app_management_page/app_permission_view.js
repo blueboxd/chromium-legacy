@@ -19,11 +19,21 @@ Polymer({
     app_: {
       type: Object,
       observer: 'appChanged_',
-    }
+    },
+
+    /**
+     * @type {string}
+     * @private
+     */
+    selectedAppId_: {
+      type: String,
+      observer: 'selectedAppIdChanged_',
+    },
   },
 
   attached: function() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
+    this.watch('selectedAppId_', state => state.selectedAppId);
     this.updateFromStore();
   },
 
@@ -85,6 +95,13 @@ Polymer({
   appChanged_: function(app) {
     if (app === null) {
       app_management.util.openMainPage();
+    }
+  },
+
+  selectedAppIdChanged_: function(appId) {
+    if (appId && this.app_) {
+      app_management.util.recordAppManagementUserAction(
+          this.app_.type, AppManagementUserAction.ViewOpened);
     }
   }
 });

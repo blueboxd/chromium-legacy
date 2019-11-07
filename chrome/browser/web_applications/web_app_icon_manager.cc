@@ -32,6 +32,11 @@ constexpr base::FilePath::CharType kTempDirectoryName[] =
 constexpr base::FilePath::CharType kIconsDirectoryName[] =
     FILE_PATH_LITERAL("Icons");
 
+base::FilePath GetAppDirectory(const base::FilePath& web_apps_directory,
+                               const AppId& app_id) {
+  return web_apps_directory.AppendASCII(app_id);
+}
+
 base::FilePath GetTempDir(FileUtilsWrapper* utils,
                           const base::FilePath& web_apps_dir) {
   // Create the temp directory as a sub-directory of the WebApps directory.
@@ -127,8 +132,8 @@ bool WriteDataBlocking(std::unique_ptr<FileUtilsWrapper> utils,
     return false;
 
   // Commit: move whole app data dir to final destination in one mv operation.
-  const base::FilePath app_id_dir = web_apps_directory.AppendASCII(app_id);
-  if (!utils->Move(app_temp_dir.GetPath(), app_id_dir)) {
+  const base::FilePath app_dir = GetAppDirectory(web_apps_directory, app_id);
+  if (!utils->Move(app_temp_dir.GetPath(), app_dir)) {
     LOG(ERROR) << "Could not move temp WebApp directory to final destination.";
     return false;
   }
@@ -138,12 +143,21 @@ bool WriteDataBlocking(std::unique_ptr<FileUtilsWrapper> utils,
 }
 
 // Performs blocking I/O. May be called on another thread.
+// Returns true if no errors occurred.
+bool DeleteDataBlocking(std::unique_ptr<FileUtilsWrapper> utils,
+                        base::FilePath web_apps_directory,
+                        AppId app_id) {
+  const base::FilePath app_dir = GetAppDirectory(web_apps_directory, app_id);
+  return utils->DeleteFileRecursively(app_dir);
+}
+
+// Performs blocking I/O. May be called on another thread.
 // Returns empty SkBitmap if any errors occurred.
 SkBitmap ReadIconBlocking(std::unique_ptr<FileUtilsWrapper> utils,
                           base::FilePath web_apps_directory,
                           AppId app_id,
                           int icon_size_px) {
-  const base::FilePath app_dir = web_apps_directory.AppendASCII(app_id);
+  const base::FilePath app_dir = GetAppDirectory(web_apps_directory, app_id);
   const base::FilePath icons_dir = app_dir.Append(kIconsDirectoryName);
 
   base::FilePath icon_file =
@@ -191,6 +205,16 @@ void WebAppIconManager::WriteData(
       FROM_HERE, kTaskTraits,
       base::BindOnce(WriteDataBlocking, utils_->Clone(), web_apps_directory_,
                      std::move(app_id), std::move(icon_infos)),
+      std::move(callback));
+}
+
+void WebAppIconManager::DeleteData(AppId app_id, WriteDataCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce(DeleteDataBlocking, utils_->Clone(), web_apps_directory_,
+                     std::move(app_id)),
       std::move(callback));
 }
 

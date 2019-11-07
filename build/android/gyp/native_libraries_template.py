@@ -10,16 +10,16 @@ NATIVE_LIBRARIES_TEMPLATE = """\
 package org.chromium.base.library_loader;
 
 public class NativeLibraries {{
-    public static final int CPU_FAMILY_UNKNOWN = 0;
-    public static final int CPU_FAMILY_ARM = 1;
-    public static final int CPU_FAMILY_MIPS = 2;
-    public static final int CPU_FAMILY_X86 = 3;
+    static final int CPU_FAMILY_UNKNOWN = 0;
+    static final int CPU_FAMILY_ARM = 1;
+    static final int CPU_FAMILY_MIPS = 2;
+    static final int CPU_FAMILY_X86 = 3;
 
     // Set to true to enable the use of the Chromium Linker.
-    public static {MAYBE_FINAL}boolean sUseLinker{USE_LINKER};
-    public static {MAYBE_FINAL}boolean sUseLibraryInZipFile{USE_LIBRARY_IN_ZIP_FILE};
-    public static {MAYBE_FINAL}boolean sEnableLinkerTests{ENABLE_LINKER_TESTS};
-    public static {MAYBE_FINAL}boolean sUseModernLinker{USE_MODERN_LINKER};
+    static {MAYBE_FINAL}boolean sUseLinker{USE_LINKER};
+    static {MAYBE_FINAL}boolean sUseLibraryInZipFile{USE_LIBRARY_IN_ZIP_FILE};
+    static {MAYBE_FINAL}boolean sEnableLinkerTests{ENABLE_LINKER_TESTS};
+    static {MAYBE_FINAL}boolean sUseModernLinker{USE_MODERN_LINKER};
 
     // This is the list of native libraries to be loaded (in the correct order)
     // by LibraryLoader.java.
@@ -30,11 +30,8 @@ public class NativeLibraries {{
     // This is the expected version of the 'main' native library, which is the one that
     // implements the initial set of base JNI functions including
     // base::android::nativeGetVersionName()
-    // TODO(torne): This is public to work around classloader issues in Trichrome
-    // where NativeLibraries is not in the same dex as LibraryLoader.
-    // We should instead split up Java code along package boundaries.
-    public static {MAYBE_FINAL}String sVersionNumber = {VERSION_NUMBER};
+    static {MAYBE_FINAL}String sVersionNumber = {VERSION_NUMBER};
 
-    public static {MAYBE_FINAL}int sCpuFamily = {CPU_FAMILY};
+    static {MAYBE_FINAL}int sCpuFamily = {CPU_FAMILY};
 }}
 """

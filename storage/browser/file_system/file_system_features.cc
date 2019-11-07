@@ -10,7 +10,7 @@ namespace features {
 
 // Enables persistent Filesystem API in incognito mode.
 const base::Feature kEnablePersistentFilesystemInIncognito{
-    "EnablePersistentFilesystemInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnablePersistentFilesystemInIncognito", base::FEATURE_ENABLED_BY_DEFAULT};
 }  // namespace features
 
 }  // namespace storage

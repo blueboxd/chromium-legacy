@@ -135,6 +135,7 @@ void SwipeHomeToOverviewController::Drag(const gfx::Point& location_in_screen,
       ->home_screen_controller()
       ->delegate()
       ->UpdateScaleAndOpacityForHomeLauncher(scale, 1.0f /*opacity*/,
+                                             base::nullopt /*animation_info*/,
                                              base::NullCallback());
 }
 
@@ -161,7 +162,7 @@ void SwipeHomeToOverviewController::CancelDrag() {
       ->home_screen_controller()
       ->delegate()
       ->UpdateScaleAndOpacityForHomeLauncher(
-          1.0f /*scale*/, 1.0f /*opacity*/,
+          1.0f /*scale*/, 1.0f /*opacity*/, base::nullopt /*animation_info*/,
           base::BindRepeating(&UpdateHomeAnimationForGestureCancel));
 }
 

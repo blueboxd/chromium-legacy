@@ -9,9 +9,9 @@
 #include "components/omnibox/common/omnibox_features.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
+#import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_view.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -45,9 +45,9 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 // Stack view containing all text labels.
 @property(nonatomic, strong) UIStackView* textStackView;
 // Truncating label for the main text.
-@property(nonatomic, strong) OmniboxPopupTruncatingLabel* textTruncatingLabel;
+@property(nonatomic, strong) FadeTruncatingLabel* textTruncatingLabel;
 // Truncating label for the detail text.
-@property(nonatomic, strong) OmniboxPopupTruncatingLabel* detailTruncatingLabel;
+@property(nonatomic, strong) FadeTruncatingLabel* detailTruncatingLabel;
 // Regular UILabel for the detail text when the suggestion is an answer.
 // Answers have slightly different display requirements, like possibility of
 // multiple lines and truncating with ellipses instead of a fade gradient.
@@ -74,7 +74,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
         [UIColor colorNamed:kTableViewRowHighlightDarkColor]);
 
     _textTruncatingLabel =
-        [[OmniboxPopupTruncatingLabel alloc] initWithFrame:CGRectZero];
+        [[FadeTruncatingLabel alloc] initWithFrame:CGRectZero];
     _textTruncatingLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [_textTruncatingLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
@@ -87,7 +87,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     _textStackView.alignment = UIStackViewAlignmentLeading;
 
     _detailTruncatingLabel =
-        [[OmniboxPopupTruncatingLabel alloc] initWithFrame:CGRectZero];
+        [[FadeTruncatingLabel alloc] initWithFrame:CGRectZero];
     _detailTruncatingLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
     // Answers use a UILabel with NSLineBreakByTruncatingTail to produce a

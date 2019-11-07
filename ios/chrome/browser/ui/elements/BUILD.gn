@@ -7,6 +7,8 @@ source_set("elements") {
   sources = [
     "extended_touch_target_button.h",
     "extended_touch_target_button.mm",
+    "fade_truncating_label.h",
+    "fade_truncating_label.mm",
     "gray_highlight_button.h",
     "gray_highlight_button.mm",
     "selector_coordinator.h",

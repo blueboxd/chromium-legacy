@@ -121,7 +121,7 @@ class FakeSyncEngineNoReturn : public FakeSyncEngine {
 class FakeSyncEngineCollectCredentials : public FakeSyncEngine {
  public:
   explicit FakeSyncEngineCollectCredentials(
-      std::string* init_account_id,
+      CoreAccountId* init_account_id,
       const base::RepeatingClosure& invalidate_credentials_callback)
       : init_account_id_(init_account_id),
         invalidate_credentials_callback_(invalidate_credentials_callback) {}
@@ -139,7 +139,7 @@ class FakeSyncEngineCollectCredentials : public FakeSyncEngine {
   }
 
  private:
-  std::string* init_account_id_;
+  CoreAccountId* init_account_id_;
   base::RepeatingClosure invalidate_credentials_callback_;
 };
 
@@ -589,7 +589,7 @@ TEST_F(ProfileSyncServiceTest, EnableSyncSignOutAndChangeAccount) {
             service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             service()->GetTransportState());
-  EXPECT_EQ("", identity_provider()->GetActiveAccountId());
+  EXPECT_EQ(CoreAccountId(), identity_provider()->GetActiveAccountId());
 
   identity_test_env()->MakePrimaryAccountAvailable("new_user@gmail.com");
   EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
@@ -646,7 +646,7 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
 }
 
 TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
@@ -658,7 +658,7 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -689,7 +689,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_StopSync) {
   base::test::ScopedFeatureList feature;
   feature.InitAndEnableFeature(switches::kStopSyncInPausedState);
 
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
@@ -704,7 +704,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_StopSync) {
   TestSyncServiceObserver observer;
   service()->AddObserver(&observer);
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -748,7 +748,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_DoNotStopSync) {
   base::test::ScopedFeatureList feature;
   feature.InitAndDisableFeature(switches::kStopSyncInPausedState);
 
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   bool invalidate_credentials_called = false;
   base::RepeatingClosure invalidate_credentials_callback =
@@ -768,7 +768,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_DoNotStopSync) {
   TestSyncServiceObserver observer;
   service()->AddObserver(&observer);
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -811,7 +811,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_DoNotStopSync) {
 // CrOS does not support signout.
 #if !defined(OS_CHROMEOS)
 TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
@@ -823,7 +823,7 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -959,7 +959,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
   // automatic replies to access token requests.
   identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
 
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
@@ -971,7 +971,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.
@@ -1020,7 +1020,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   // automatic replies to access token requests.
   identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
 
-  std::string init_account_id;
+  CoreAccountId init_account_id;
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
@@ -1032,7 +1032,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 
-  const std::string primary_account_id =
+  const CoreAccountId primary_account_id =
       identity_manager()->GetPrimaryAccountId();
 
   // Make sure the expected account_id was passed to the SyncEngine.

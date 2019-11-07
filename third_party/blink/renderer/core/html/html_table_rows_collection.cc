@@ -141,7 +141,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::LastRow(HTMLTableElement& table) {
 // evaluation is undefined and can differ between compilers.
 HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
     : HTMLCollection(table, kTableRows, kOverridesItemAfter) {
-  DCHECK(IsHTMLTableElement(table));
+  DCHECK(IsA<HTMLTableElement>(table));
 }
 
 HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table,
@@ -151,7 +151,7 @@ HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table,
 }
 
 Element* HTMLTableRowsCollection::VirtualItemAfter(Element* previous) const {
-  return RowAfter(ToHTMLTableElement(ownerNode()),
+  return RowAfter(To<HTMLTableElement>(ownerNode()),
                   ToHTMLTableRowElement(previous));
 }
 

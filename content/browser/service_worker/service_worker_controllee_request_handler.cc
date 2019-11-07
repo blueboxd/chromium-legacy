@@ -164,7 +164,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   resource_context_ = resource_context;
 
   // Look up a registration.
-  context_->storage()->FindRegistrationForDocument(
+  context_->storage()->FindRegistrationForClientUrl(
       stripped_url_,
       base::BindOnce(
           &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
@@ -492,7 +492,7 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
       !original_registration->installing_version()) {
     // Update failed. Look up the registration again since the original
     // registration was possibly unregistered in the meantime.
-    context_->storage()->FindRegistrationForDocument(
+    context_->storage()->FindRegistrationForClientUrl(
         stripped_url_,
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,
@@ -548,7 +548,7 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     // When the status is REDUNDANT, the update failed (eg: script error), we
     // continue with the incumbent version.
     // In case unregister job may have run, look up the registration again.
-    context_->storage()->FindRegistrationForDocument(
+    context_->storage()->FindRegistrationForClientUrl(
         stripped_url_,
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::ContinueWithRegistration,

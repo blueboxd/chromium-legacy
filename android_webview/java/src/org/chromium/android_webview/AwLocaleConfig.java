@@ -12,6 +12,6 @@ public final class AwLocaleConfig {
     private AwLocaleConfig() {}
 
     public static String[] getWebViewSupportedPakLocales() {
-        return LocaleConfig.UNCOMPRESSED_LOCALES;
+        return ProductConfig.UNCOMPRESSED_LOCALES;
     }
 }

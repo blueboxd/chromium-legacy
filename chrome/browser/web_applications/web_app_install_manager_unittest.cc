@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
+#include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -148,6 +149,10 @@ class WebAppInstallManagerTest : public WebAppTest {
   TestAppShortcutManager& shortcut_manager() { return *shortcut_manager_; }
   WebAppInstallFinalizer& finalizer() { return *install_finalizer_; }
   TestWebAppUrlLoader& url_loader() { return *test_url_loader_; }
+  TestFileUtils& file_utils() {
+    DCHECK(file_utils_);
+    return *file_utils_;
+  }
 
   std::unique_ptr<WebApplicationInfo> CreateWebAppInfo(const GURL& url) {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
@@ -554,6 +559,57 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
   EXPECT_EQ(app_in_sync_install->sync_data(), app->sync_data());
 
   EXPECT_EQ(*expected_app, *app);
+}
+
+TEST_F(WebAppInstallManagerTest, UninstallWebAppsAfterSync) {
+  std::unique_ptr<WebApp> app =
+      CreateWebApp(GURL("https://example.com/path"), Source::kSync,
+                   /*user_display_mode=*/DisplayMode::kStandalone);
+
+  const AppId app_id = app->app_id();
+  InitRegistrarWithApp(std::move(app));
+
+  // Remove app from the in-memory registry.
+  std::vector<std::unique_ptr<WebApp>> apps_unregistered;
+  {
+    Registry& registry = controller().mutable_registrar().registry();
+    auto it = registry.find(app_id);
+    DCHECK(it != registry.end());
+    apps_unregistered.push_back(std::move(it->second));
+    registry.erase(it);
+  }
+
+  file_utils().SetNextDeleteFileRecursivelyResult(true);
+
+  enum Event {
+    kObserver_OnWebAppUninstalled,
+    kUninstallWebAppsAfterSync_Callback
+  };
+  std::vector<Event> event_order;
+
+  WebAppInstallObserver observer(&registrar());
+  observer.SetWebAppUninstalledDelegate(
+      base::BindLambdaForTesting([&](const AppId& uninstalled_app_id) {
+        EXPECT_EQ(uninstalled_app_id, app_id);
+        event_order.push_back(Event::kObserver_OnWebAppUninstalled);
+      }));
+
+  base::RunLoop run_loop;
+  install_manager().UninstallWebAppsAfterSync(
+      std::move(apps_unregistered),
+      base::BindLambdaForTesting(
+          [&](const AppId& uninstalled_app_id, bool uninstalled) {
+            EXPECT_EQ(uninstalled_app_id, app_id);
+            EXPECT_TRUE(uninstalled);
+            event_order.push_back(Event::kUninstallWebAppsAfterSync_Callback);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  const std::vector<Event> expected_event_order{
+      Event::kObserver_OnWebAppUninstalled,
+      Event::kUninstallWebAppsAfterSync_Callback};
+  EXPECT_EQ(expected_event_order, event_order);
 }
 
 }  // namespace web_app

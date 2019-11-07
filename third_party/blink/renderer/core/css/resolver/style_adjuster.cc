@@ -220,7 +220,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLTableElement(element)) {
+  if (IsA<HTMLTableElement>(element)) {
     // Tables never support the -webkit-* values for text-align and will reset
     // back to the default.
     if (style.GetTextAlign() == ETextAlign::kWebkitLeft ||

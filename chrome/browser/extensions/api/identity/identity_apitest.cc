@@ -356,10 +356,10 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
         IdentityManagerFactory::GetForProfile(GetProfile());
     std::vector<CoreAccountInfo> accounts =
         identity_manager->GetAccountsWithRefreshTokens();
-    std::string primary_id = identity_manager->GetPrimaryAccountId();
+    CoreAccountId primary_id = identity_manager->GetPrimaryAccountId();
     bool fixed_auth_error = false;
     for (const auto& account_info : accounts) {
-      std::string account_id = account_info.account_id;
+      CoreAccountId account_id = account_info.account_id;
       if (account_id == primary_id)
         continue;
       if (identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
@@ -724,8 +724,8 @@ class GetAuthTokenFunctionTest
 #endif
   }
 
-  std::string IssueLoginAccessTokenForAccount(const std::string& account_id) {
-    std::string access_token = "access_token-" + account_id;
+  std::string IssueLoginAccessTokenForAccount(const CoreAccountId& account_id) {
+    std::string access_token = "access_token-" + account_id.id;
     identity_test_env()
         ->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
             account_id, access_token,
@@ -2494,7 +2494,7 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest, FireForSecondaryAccount) {
   AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
 
   // Make a secondary account available again and check that the callback fires.
-  std::string secondary_account_id =
+  CoreAccountId secondary_account_id =
       identity_test_env()
           ->MakeAccountAvailable("secondary@example.com")
           .account_id;

@@ -8,9 +8,13 @@
 
 namespace web_app {
 
-WebAppInstallObserver::WebAppInstallObserver(Profile* profile) {
-  observer_.Add(&WebAppProviderBase::GetProviderBase(profile)->registrar());
+WebAppInstallObserver::WebAppInstallObserver(AppRegistrar* registrar) {
+  observer_.Add(registrar);
 }
+
+WebAppInstallObserver::WebAppInstallObserver(Profile* profile)
+    : WebAppInstallObserver(
+          &WebAppProviderBase::GetProviderBase(profile)->registrar()) {}
 
 WebAppInstallObserver::~WebAppInstallObserver() = default;
 
@@ -19,9 +23,19 @@ AppId WebAppInstallObserver::AwaitNextInstall() {
   return std::move(app_id_);
 }
 
+void WebAppInstallObserver::SetWebAppUninstalledDelegate(
+    WebAppUninstalledDelegate delegate) {
+  app_uninstalled_delegate_ = delegate;
+}
+
 void WebAppInstallObserver::OnWebAppInstalled(const AppId& app_id) {
   app_id_ = app_id;
   run_loop_.Quit();
+}
+
+void WebAppInstallObserver::OnWebAppUninstalled(const AppId& app_id) {
+  if (app_uninstalled_delegate_)
+    app_uninstalled_delegate_.Run(app_id);
 }
 
 }  // namespace web_app

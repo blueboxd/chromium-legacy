@@ -66,6 +66,9 @@ bool NGFlexLayoutAlgorithm::IsColumnContainerMainSizeDefinite() const {
   DCHECK(is_column_);
   // If this flex container is also a flex item, it might have a definite size
   // imposed on it by its parent flex container.
+  // We can't rely on BlockLengthUnresolvable for this case because that
+  // considers Auto as unresolvable even when the block size is fixed and
+  // definite.
   if (ConstraintSpace().IsFixedBlockSize() &&
       !ConstraintSpace().IsFixedBlockSizeIndefinite())
     return true;
@@ -80,6 +83,8 @@ bool NGFlexLayoutAlgorithm::IsContainerCrossSizeDefinite() const {
     return true;
   // If this flex container is also a flex item, it might have a definite size
   // imposed on it by its parent flex container.
+  // TODO(dgrogan): Removing this check doesn't cause any tests to fail. Remove
+  // it if unneeded or add a test that needs it.
   if (ConstraintSpace().IsFixedBlockSize() &&
       !ConstraintSpace().IsFixedBlockSizeIndefinite())
     return true;
@@ -216,10 +221,9 @@ NGFlexLayoutAlgorithm::BuildConstraintSpaceForDeterminingFlexBasis(
     }
   }
 
-  // TODO(dgrogan): Change SetPercentageResolutionSize everywhere in this file
-  // to use CalculateChildPercentageSize.
   space_builder.SetAvailableSize(content_box_size_);
-  space_builder.SetPercentageResolutionSize(content_box_size_);
+  space_builder.SetPercentageResolutionSize(CalculateChildPercentageSize(
+      ConstraintSpace(), Node(), content_box_size_));
   return space_builder.ToConstraintSpace();
 }
 
@@ -558,13 +562,19 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       }
 
       space_builder.SetAvailableSize(available_size);
+      // CalculateChildPercentageSize probably has no effect here:
+      // content_box_size_ would already be indefinite without
+      // CalculateChildPercentageSize checking IsFixedBlockSizeIndefinite.
+      space_builder.SetPercentageResolutionSize(CalculateChildPercentageSize(
+          ConstraintSpace(), Node(), content_box_size_));
+
       // https://drafts.csswg.org/css-flexbox/#algo-cross-item
       // Determine the hypothetical cross size of each item by performing layout
       // with the used main size and the available space, treating auto as
       // fit-content.
       if (ShouldItemShrinkToFit(flex_item.ng_input_node))
         space_builder.SetIsShrinkToFit(true);
-      space_builder.SetPercentageResolutionSize(content_box_size_);
+
       NGConstraintSpace child_space = space_builder.ToConstraintSpace();
       flex_item.layout_result =
           flex_item.ng_input_node.Layout(child_space, nullptr /*break token*/);
@@ -616,7 +626,8 @@ void NGFlexLayoutAlgorithm::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
     }
   }
   space_builder.SetAvailableSize(available_size);
-  space_builder.SetPercentageResolutionSize(content_box_size_);
+  space_builder.SetPercentageResolutionSize(CalculateChildPercentageSize(
+      ConstraintSpace(), Node(), content_box_size_));
   space_builder.SetIsFixedInlineSize(true);
   space_builder.SetIsFixedBlockSize(true);
   NGConstraintSpace child_space = space_builder.ToConstraintSpace();

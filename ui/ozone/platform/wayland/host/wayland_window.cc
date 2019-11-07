@@ -174,6 +174,9 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
       break;
   }
 
+  if (xdg_surface_ && !properties.wm_class_class.empty())
+    xdg_surface_->SetAppId(properties.wm_class_class);
+
   connection_->ScheduleFlush();
 
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);

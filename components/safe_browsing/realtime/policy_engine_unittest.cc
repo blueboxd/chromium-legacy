@@ -48,36 +48,32 @@ class RealTimePolicyEngineTest : public PlatformTest {
 #if defined(OS_ANDROID)
 // Real time URL check on Android is controlled by system memory size, the
 // following tests test that logic.
-TEST_F(RealTimePolicyEngineTest,
-       TestCanPerformFullURLLookup_DisabledFetchAllowlistWithLargeMemorySize) {
+TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_LargeMemorySize) {
   base::test::ScopedFeatureList feature_list;
   int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
   int memory_size_threshold = system_memory_size - 1;
-  // Should not be controlled by allowlist flag on Android.
   feature_list.InitWithFeaturesAndParameters(
       /* enabled_features */ {{kRealTimeUrlLookupEnabled,
                                {{kRealTimeUrlLookupMemoryThresholdMb,
                                  base::NumberToString(
                                      memory_size_threshold)}}}},
-      /* disabled_features */ {kRealTimeUrlLookupFetchAllowlist});
+      /* disabled_features */ {});
   pref_service_.SetUserPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
       std::make_unique<base::Value>(true));
   EXPECT_TRUE(CanPerformFullURLLookup());
 }
 
-TEST_F(RealTimePolicyEngineTest,
-       TestCanPerformFullURLLookup_DisabledFetchAllowlistWithSmallMemorySize) {
+TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_SmallMemorySize) {
   base::test::ScopedFeatureList feature_list;
   int system_memory_size = base::SysInfo::AmountOfPhysicalMemoryMB();
   int memory_size_threshold = system_memory_size + 1;
-  // Should not be controlled by allowlist flag on Android.
   feature_list.InitWithFeaturesAndParameters(
       /* enabled_features */ {{kRealTimeUrlLookupEnabled,
                                {{kRealTimeUrlLookupMemoryThresholdMb,
                                  base::NumberToString(
                                      memory_size_threshold)}}}},
-      /* disabled_features */ {kRealTimeUrlLookupFetchAllowlist});
+      /* disabled_features */ {});
   pref_service_.SetUserPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
       std::make_unique<base::Value>(true));
@@ -89,22 +85,13 @@ TEST_F(RealTimePolicyEngineTest,
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       /* enabled_features */ {},
-      /* disabled_features */ {kRealTimeUrlLookupFetchAllowlist,
-                               kRealTimeUrlLookupEnabled});
-  EXPECT_FALSE(CanPerformFullURLLookup());
-}
-#else   // !defined(OS_ANDROID)
-TEST_F(RealTimePolicyEngineTest,
-       TestCanPerformFullURLLookup_DisabledFetchAllowlist) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(kRealTimeUrlLookupFetchAllowlist);
+      /* disabled_features */ {kRealTimeUrlLookupEnabled});
   EXPECT_FALSE(CanPerformFullURLLookup());
 }
 #endif  // defined(OS_ANDROID)
 
 TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledByPolicy) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kRealTimeUrlLookupFetchAllowlist);
   pref_service_.SetManagedPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
                                std::make_unique<base::Value>(true));
   EXPECT_TRUE(CanPerformFullURLLookup());
@@ -131,9 +118,6 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledUserOptin) {
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_EnabledMainFrameOnly) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kRealTimeUrlLookupFetchAllowlist);
-
   for (int i = 0; i <= static_cast<int>(content::ResourceType::kMaxValue);
        i++) {
     content::ResourceType resource_type = static_cast<content::ResourceType>(i);

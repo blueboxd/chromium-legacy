@@ -347,22 +347,6 @@ const FeatureEntry::Choice kUseAngleChoices[] = {
      gl::kANGLEImplementationD3D11on12Name}};
 #endif
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-const FeatureEntry::FeatureParam kAccountConsistencyDice[] = {
-    {kAccountConsistencyFeatureMethodParameter,
-     kAccountConsistencyFeatureMethodDice}};
-
-const FeatureEntry::FeatureParam kAccountConsistencyDiceMigration[] = {
-    {kAccountConsistencyFeatureMethodParameter,
-     kAccountConsistencyFeatureMethodDiceMigration}};
-
-const FeatureEntry::FeatureVariation kAccountConsistencyFeatureVariations[] = {
-    {"Dice", kAccountConsistencyDice, base::size(kAccountConsistencyDice),
-     nullptr /* variation_id */},
-    {"Dice (migration)", kAccountConsistencyDiceMigration,
-     base::size(kAccountConsistencyDiceMigration), nullptr /* variation_id */}};
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
-
 #if defined(OS_ANDROID)
 const FeatureEntry::Choice kReaderModeHeuristicsChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1804,10 +1788,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-virtual-desks", flag_descriptions::kEnableVirtualDesksName,
      flag_descriptions::kEnableVirtualDesksDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kVirtualDesks)},
-    {"enable-virtual-desks-gestures",
-     flag_descriptions::kEnableVirtualDesksGesturesName,
-     flag_descriptions::kEnableVirtualDesksGesturesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kVirtualDesksGestures)},
     {"trim-on-all-frames-frozen", flag_descriptions::kTrimOnFreezeName,
      flag_descriptions::kTrimOnFreezeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnFreeze)},
@@ -1945,11 +1925,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebglDraftExtensionsDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebGLDraftExtensions)},
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    {"account-consistency", flag_descriptions::kAccountConsistencyName,
-     flag_descriptions::kAccountConsistencyDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kAccountConsistencyFeature,
-                                    kAccountConsistencyFeatureVariations,
-                                    "AccountConsistencyVariations")},
     {"force-dice-migration", flag_descriptions::kForceDiceMigrationName,
      flag_descriptions::kForceDiceMigrationDescription, kOsAll,
      FEATURE_VALUE_TYPE(kForceDiceMigration)},

@@ -20,7 +20,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryLoaderConfig;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.memory.MemoryPressureUma;
@@ -83,7 +82,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         mCpuFeatures = connectionBundle.getLong(ContentChildProcessConstants.EXTRA_CPU_FEATURES);
         assert mCpuCount > 0;
 
-        if (LibraryLoaderConfig.useChromiumLinker()
+        if (LibraryLoader.getInstance().useChromiumLinker()
                 && !LibraryLoader.getInstance().isLoadedByZygote()) {
             Bundle sharedRelros = connectionBundle.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
             if (sharedRelros != null) getLinker().provideSharedRelros(sharedRelros);
@@ -109,7 +108,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
         Linker linker = null;
         boolean requestedSharedRelro = false;
-        if (LibraryLoaderConfig.useChromiumLinker()) {
+        if (LibraryLoader.getInstance().useChromiumLinker()) {
             assert mLinkerParams != null;
             linker = getLinker();
             if (mLinkerParams.mWaitForSharedRelro) {
@@ -167,7 +166,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
     // Return a Linker instance. If testing, the Linker needs special setup.
     private Linker getLinker() {
-        if (LibraryLoaderConfig.areTestsEnabled()) {
+        if (LibraryLoader.getInstance().areTestsEnabled()) {
             // For testing, set the Linker implementation and the test runner
             // class name to match those used by the parent.
             assert mLinkerParams != null;

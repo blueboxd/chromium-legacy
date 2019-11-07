@@ -231,7 +231,8 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
                                           actions_view()->GetSelectedAction()),
                                       event.flags());
       } else {
-        list_view_->SearchResultActivated(this, event.flags());
+        list_view_->SearchResultActivated(this, event.flags(),
+                                          false /* by_button_press */);
       }
       return true;
     case ui::VKEY_UP:
@@ -370,7 +371,8 @@ void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
 void SearchResultView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   DCHECK(sender == this);
-  list_view_->SearchResultActivated(this, event.flags());
+  list_view_->SearchResultActivated(this, event.flags(),
+                                    true /* by_button_press */);
 }
 
 void SearchResultView::OnMetadataChanged() {

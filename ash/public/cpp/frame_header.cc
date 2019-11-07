@@ -217,9 +217,12 @@ void FrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
   }
 
   if (!text.empty()) {
+    int flags = gfx::Canvas::NO_SUBPIXEL_RENDERING;
+    if (target_widget_delegate->ShouldCenterWindowTitleText())
+      flags |= gfx::Canvas::TEXT_ALIGN_CENTER;
     canvas->DrawStringRectWithFlags(text, gfx::FontList(), GetTitleColor(),
                                     view_->GetMirroredRect(GetTitleBounds()),
-                                    gfx::Canvas::NO_SUBPIXEL_RENDERING);
+                                    flags);
   }
 }
 

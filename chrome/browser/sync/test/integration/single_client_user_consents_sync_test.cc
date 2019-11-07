@@ -25,13 +25,13 @@ using SyncConsent = sync_pb::UserConsentTypes::SyncConsent;
 
 namespace {
 
-std::string GetAccountId() {
+CoreAccountId GetAccountId() {
 #if defined(OS_CHROMEOS)
   // TODO(vitaliii): Unify the two, because it takes ages to debug and
   // impossible to discover otherwise.
-  return "user@gmail.com";
+  return CoreAccountId("user@gmail.com");
 #else
-  return "gaia_id_for_user_gmail.com";
+  return CoreAccountId("gaia_id_for_user_gmail.com");
 #endif
 }
 
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest, ShouldSubmit) {
       ConsentAuditorFactory::GetForProfile(GetProfile(0));
   UserConsentSpecifics specifics;
   specifics.mutable_sync_consent()->set_confirmation_grd_id(1);
-  specifics.set_account_id(GetAccountId());
+  specifics.set_account_id(GetAccountId().id);
 
   SyncConsent sync_consent;
   sync_consent.set_confirmation_grd_id(1);
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(
   specifics.mutable_sync_consent()->set_confirmation_grd_id(1);
   // Account id may be compared to the synced account, thus, we need them to
   // match.
-  specifics.set_account_id(GetAccountId());
+  specifics.set_account_id(GetAccountId().id);
 
   ASSERT_TRUE(SetupSync());
   consent_auditor::ConsentAuditor* consent_service =
@@ -159,10 +159,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
 
   UserConsentSpecifics specifics1;
   *specifics1.mutable_sync_consent() = consent1;
-  specifics1.set_account_id(GetAccountId());
+  specifics1.set_account_id(GetAccountId().id);
   UserConsentSpecifics specifics2;
   *specifics2.mutable_sync_consent() = consent2;
-  specifics2.set_account_id(GetAccountId());
+  specifics2.set_account_id(GetAccountId().id);
 
   // Set up the clients (profiles), but do *not* set up Sync yet.
   ASSERT_TRUE(SetupClients());
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
   expected_sync_consent->set_status(UserConsentTypes::GIVEN);
   // Account id may be compared to the synced account, thus, we need them to
   // match.
-  specifics.set_account_id(GetAccountId());
+  specifics.set_account_id(GetAccountId().id);
   EXPECT_TRUE(ExpectUserConsents({specifics}));
 }
 #endif  // !defined(OS_CHROMEOS)

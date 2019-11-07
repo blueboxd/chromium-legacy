@@ -36,8 +36,7 @@ var TabStripTabListTest = class extends TabStripBrowserTest {
   }
 };
 
-// Flaky on debug builds - crbug.com/1022008
-TEST_F('TabStripTabListTest', 'DISABLED_All', function() {
+TEST_F('TabStripTabListTest', 'All', function() {
   mocha.run();
 });
 

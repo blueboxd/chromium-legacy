@@ -193,6 +193,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     layout_object_ = node.GetLayoutBox();
   }
 
+  void PropagateChildData(const NGPhysicalContainerFragment& child,
+                          const LogicalOffset& child_offset,
+                          const LayoutInline* inline_container = nullptr);
+
   void AddChildInternal(scoped_refptr<const NGPhysicalFragment>,
                         const LogicalOffset&);
 

@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "storage/browser/quota/quota_disk_info_helper.h"
+#include "storage/browser/quota/quota_device_info_helper.h"
 
 namespace storage {
 
@@ -79,13 +79,10 @@ using GetQuotaSettingsFunc =
 COMPONENT_EXPORT(STORAGE_BROWSER)
 void GetNominalDynamicSettings(const base::FilePath& partition_path,
                                bool is_incognito,
-                               QuotaDiskInfoHelper* diskInfoHelper,
+                               QuotaDeviceInfoHelper* deviceInfoHelper,
                                OptionalQuotaSettingsCallback callback);
 
 COMPONENT_EXPORT(STORAGE_BROWSER)
-// TODO(https://crbug.com/1017120): Add memory size mocking support to
-// QuotaDiskInfoHelper and remove this function.
-int64_t GetIncognitoPoolSizeForTesting(int64_t physical_memory_amount);
 
 // Returns settings with a poolsize of zero and no per host quota.
 inline QuotaSettings GetNoQuotaSettings() {
@@ -102,7 +99,7 @@ inline QuotaSettings GetHardCodedSettings(int64_t per_host_quota) {
 // Returns object that can fetch actual total disk space; instance lives
 // as long as the process is a live.
 COMPONENT_EXPORT(STORAGE_BROWSER)
-QuotaDiskInfoHelper* GetDefaultDiskInfoHelper();
+QuotaDeviceInfoHelper* GetDefaultDeviceInfoHelper();
 }  // namespace storage
 
 #endif  // STORAGE_BROWSER_QUOTA_QUOTA_SETTINGS_H_

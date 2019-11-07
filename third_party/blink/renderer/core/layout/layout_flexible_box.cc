@@ -761,7 +761,7 @@ bool LayoutFlexibleBox::MainAxisLengthIsDefinite(const LayoutBox& child,
         child.ContainingBlockLogicalHeightForPercentageResolution(&cb) != -1;
     if (add_to_cb)
       cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(&child));
-    if (in_layout_) {
+    if (in_layout_ && !child.HasOverrideContainingBlockContentLogicalHeight()) {
       // We can reach this code even while we're not laying ourselves out, such
       // as from mainSizeForPercentageResolution.
       has_definite_height_ = definite ? SizeDefiniteness::kDefinite

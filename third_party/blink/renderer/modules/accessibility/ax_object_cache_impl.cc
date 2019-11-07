@@ -605,7 +605,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(ax::mojom::Role role) {
 
 ContainerNode* FindParentTable(Node* node) {
   ContainerNode* parent = node->parentNode();
-  while (parent && !IsHTMLTableElement(*parent))
+  while (parent && !IsA<HTMLTableElement>(*parent))
     parent = parent->parentNode();
   return parent;
 }

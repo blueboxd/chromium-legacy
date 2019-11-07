@@ -425,6 +425,11 @@ HeapVector<Member<Element>>* GetExplicitlySetElementsForAttr(
 bool ElementIsDescendantOfShadowIncludingAncestor(
     const Element& attribute_element,
     const Element& candidate) {
+  // TODO(meredithl): Update this to allow setting relationships for elements
+  // outside of the DOM once the spec is finalized. For consistency and
+  // simplicity, for now it is disallowed.
+  if (!attribute_element.IsInTreeScope() || !candidate.IsInTreeScope())
+    return false;
   ShadowRoot* nearest_root = attribute_element.ContainingShadowRoot();
   const Element* shadow_host = &attribute_element;
   while (nearest_root) {
@@ -757,20 +762,35 @@ void Element::SetElementArrayAttribute(
   SpaceSplitString value;
 
   for (auto element : given_elements) {
+    // Elements that are not descendants of this element's shadow including
+    // ancestors are dropped.
     if (!ElementIsDescendantOfShadowIncludingAncestor(*this, *element))
       continue;
+
+    // If |value| is null, this means a previous element must have been invalid,
+    // and the content attribute should reflect the empty string, so we don't
+    // continue trying to compute it.
     if (value.IsNull() && !elements->IsEmpty()) {
       elements->push_back(element);
       continue;
     }
+
     elements->push_back(element);
     const AtomicString given_element_id = element->GetIdAttribute();
+
+    // We compute the content attribute string as a space separated string of
+    // the given |element| ids. Every |element| in |given_elements| must have an
+    // id, must be in the same tree scope and must be the first id in tree order
+    // with that id, otherwise the content attribute should reflect the empty
+    // string.
     if (given_element_id.IsNull() ||
         GetTreeScope() != element->GetTreeScope() ||
         GetTreeScope().getElementById(given_element_id) != element) {
       value.Clear();
       continue;
     }
+
+    // Whitespace between elements is added when the string is serialized.
     value.Add(given_element_id);
   }
 

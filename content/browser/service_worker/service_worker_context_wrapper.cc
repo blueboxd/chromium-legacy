@@ -897,19 +897,19 @@ ServiceWorkerContextWrapper::GetProviderHostIds(const GURL& origin) const {
   return provider_host_ids;
 }
 
-void ServiceWorkerContextWrapper::FindReadyRegistrationForDocument(
-    const GURL& document_url,
+void ServiceWorkerContextWrapper::FindReadyRegistrationForClientUrl(
+    const GURL& client_url,
     FindRegistrationCallback callback) {
   RunOrPostTaskOnCoreThread(
       FROM_HERE,
       base::BindOnce(&ServiceWorkerContextWrapper::
-                         FindReadyRegistrationForDocumentOnCoreThread,
-                     this, document_url, std::move(callback),
+                         FindReadyRegistrationForClientUrlOnCoreThread,
+                     this, client_url, std::move(callback),
                      base::ThreadTaskRunnerHandle::Get()));
 }
 
-void ServiceWorkerContextWrapper::FindReadyRegistrationForDocumentOnCoreThread(
-    const GURL& document_url,
+void ServiceWorkerContextWrapper::FindReadyRegistrationForClientUrlOnCoreThread(
+    const GURL& client_url,
     FindRegistrationCallback callback,
     scoped_refptr<base::TaskRunner> callback_runner) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
@@ -920,8 +920,8 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForDocumentOnCoreThread(
                        blink::ServiceWorkerStatusCode::kErrorAbort, nullptr));
     return;
   }
-  context_core_->storage()->FindRegistrationForDocument(
-      net::SimplifyUrlForRequest(document_url),
+  context_core_->storage()->FindRegistrationForClientUrl(
+      net::SimplifyUrlForRequest(client_url),
       base::BindOnce(
           &ServiceWorkerContextWrapper::DidFindRegistrationForFindReady, this,
           std::move(callback), std::move(callback_runner)));
@@ -1695,7 +1695,7 @@ void ServiceWorkerContextWrapper::
     std::move(callback).Run(StartServiceWorkerForNavigationHintResult::FAILED);
     return;
   }
-  context_core_->storage()->FindRegistrationForDocument(
+  context_core_->storage()->FindRegistrationForClientUrl(
       net::SimplifyUrlForRequest(document_url),
       base::BindOnce(
           &ServiceWorkerContextWrapper::DidFindRegistrationForNavigationHint,

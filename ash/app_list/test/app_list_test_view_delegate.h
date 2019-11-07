@@ -66,7 +66,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                         int event_flags,
                         ash::AppListLaunchedFrom launched_from,
                         ash::AppListLaunchType launch_type,
-                        int suggestion_index) override;
+                        int suggestion_index,
+                        bool launch_as_default) override;
   void LogResultLaunchHistogram(SearchResultLaunchLocation launch_location,
                                 int suggestion_index) override {}
   void LogSearchAbandonHistogram() override {}

@@ -18,6 +18,7 @@
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sms/sms_flags.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
+#include "chrome/browser/sharing/webrtc/webrtc_flags.h"
 #include "chrome/common/pref_names.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
@@ -204,6 +205,8 @@ SharingDeviceRegistration::GetEnabledFeatures() const {
     enabled_features.insert(SharingSpecificFields::SMS_FETCHER);
   if (IsRemoteCopySupported())
     enabled_features.insert(SharingSpecificFields::REMOTE_COPY);
+  if (IsPeerConnectionSupported())
+    enabled_features.insert(SharingSpecificFields::PEER_CONNECTION);
 
   return enabled_features;
 }
@@ -243,6 +246,10 @@ bool SharingDeviceRegistration::IsRemoteCopySupported() const {
 #endif
 
   return false;
+}
+
+bool SharingDeviceRegistration::IsPeerConnectionSupported() const {
+  return base::FeatureList::IsEnabled(kSharingPeerConnectionReceiver);
 }
 
 void SharingDeviceRegistration::SetEnabledFeaturesForTesting(

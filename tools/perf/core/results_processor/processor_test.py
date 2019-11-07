@@ -31,6 +31,16 @@ from tracing.value import histogram
 from tracing.value import histogram_set
 from tracing_build import render_histograms_viewer
 
+import mock
+
+# We use sampleMetric defined in
+# third_party/catapult/tracing/tracing/metrics/sample_metric.html
+# to test processing of test results.
+# This metric ignores the trace data and outputs a histogram with
+# the following name and unit:
+SAMPLE_HISTOGRAM_NAME = 'foo'
+SAMPLE_HISTOGRAM_UNIT = 'sizeInBytes_smallerIsBetter'
+
 
 class ResultsProcessorIntegrationTests(unittest.TestCase):
   def setUp(self):
@@ -46,13 +56,12 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     testing.SerializeIntermediateResults(test_results, os.path.join(
         self.intermediate_dir, processor.TEST_RESULTS))
 
-  def CreateHistogramsArtifact(self, hist):
-    """Create an artifact with histograms."""
-    histogram_dicts = [hist.AsDict()]
+  def CreateHtmlTraceArtifact(self):
+    """Create an empty file as a fake html trace."""
     with tempfile.NamedTemporaryFile(
         dir=self.intermediate_dir, delete=False) as artifact_file:
-      json.dump(histogram_dicts, artifact_file)
-    return (compute_metrics.HISTOGRAM_DICTS_FILE,
+      pass
+    return (compute_metrics.HTML_TRACE_NAME,
             testing.Artifact(artifact_file.name))
 
   def CreateDiagnosticsArtifact(self, **diagnostics):
@@ -67,6 +76,13 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         dir=self.intermediate_dir, delete=False) as artifact_file:
       json.dump({'measurements': measurements}, artifact_file)
     return processor.MEASUREMENTS_NAME, testing.Artifact(artifact_file.name)
+
+  def ReadSampleHistogramsFromCsv(self):
+    with open(os.path.join(self.output_dir, csv_output.OUTPUT_FILENAME)) as f:
+      # Filtering out rows with histograms other than SAMPLE_HISTOGRAM_NAME,
+      # e.g. metrics_duration.
+      return [row for row in csv.DictReader(f)
+              if row['name'] == SAMPLE_HISTOGRAM_NAME]
 
   def testJson3Output(self):
     self.SerializeIntermediateResults(
@@ -169,23 +185,26 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         testing.TestResult(
             'benchmark/story',
             output_artifacts=[
-                self.CreateHistogramsArtifact(
-                    histogram.Histogram('a', 'unitless')),
+                self.CreateHtmlTraceArtifact(),
                 self.CreateDiagnosticsArtifact(
                     benchmarks=['benchmark'],
                     osNames=['linux'],
                     documentationUrls=[['documentation', 'url']])
             ],
+            tags=['tbmv2:sampleMetric'],
             start_time='2009-02-13T23:31:30.987000Z',
         ),
     )
 
-    processor.main([
-        '--output-format', 'histograms',
-        '--output-dir', self.output_dir,
-        '--intermediate-dir', self.intermediate_dir,
-        '--results-label', 'label',
-    ])
+    with mock.patch('py_utils.cloud_storage.Insert') as cloud_patch:
+      cloud_patch.return_value = 'gs://trace.html'
+      processor.main([
+          '--output-format', 'histograms',
+          '--output-dir', self.output_dir,
+          '--intermediate-dir', self.intermediate_dir,
+          '--results-label', 'label',
+          '--upload-results',
+      ])
 
     with open(os.path.join(
         self.output_dir, histograms_output.OUTPUT_FILENAME)) as f:
@@ -193,11 +212,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
-    self.assertEqual(len(out_histograms), 1)
 
-    hist = out_histograms.GetFirstHistogram()
-    self.assertEqual(hist.name, 'a')
-    self.assertEqual(hist.unit, 'unitless')
+    hist = out_histograms.GetHistogramNamed(SAMPLE_HISTOGRAM_NAME)
+    self.assertEqual(hist.unit, SAMPLE_HISTOGRAM_UNIT)
 
     self.assertEqual(hist.diagnostics['benchmarks'],
                      generic_set.GenericSet(['benchmark']))
@@ -209,15 +226,17 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
                      generic_set.GenericSet(['label']))
     self.assertEqual(hist.diagnostics['benchmarkStart'],
                      date_range.DateRange(1234567890987))
+    self.assertEqual(hist.diagnostics['traceUrls'],
+                     generic_set.GenericSet(['gs://trace.html']))
 
   def testHistogramsOutputResetResults(self):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
             output_artifacts=[
-                self.CreateHistogramsArtifact(
-                    histogram.Histogram('a', 'unitless')),
+                self.CreateHtmlTraceArtifact(),
             ],
+            tags=['tbmv2:sampleMetric'],
         ),
     )
 
@@ -242,9 +261,8 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
-    self.assertEqual(len(out_histograms), 1)
 
-    hist = out_histograms.GetFirstHistogram()
+    hist = out_histograms.GetHistogramNamed(SAMPLE_HISTOGRAM_NAME)
     self.assertEqual(hist.diagnostics['labels'],
                      generic_set.GenericSet(['label2']))
 
@@ -253,9 +271,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         testing.TestResult(
             'benchmark/story',
             output_artifacts=[
-                self.CreateHistogramsArtifact(
-                    histogram.Histogram('a', 'unitless')),
+                self.CreateHtmlTraceArtifact(),
             ],
+            tags=['tbmv2:sampleMetric'],
         ),
     )
 
@@ -279,47 +297,14 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
-    self.assertEqual(len(out_histograms), 2)
+
+    sample_histograms = out_histograms.GetHistogramsNamed(SAMPLE_HISTOGRAM_NAME)
+    self.assertEqual(len(sample_histograms), 2)
 
     expected_labels = set(['label1', 'label2'])
-    observed_labels = set(label for hist in out_histograms
-                           for label in hist.diagnostics['labels'])
+    observed_labels = set(label for hist in sample_histograms
+                          for label in hist.diagnostics['labels'])
     self.assertEqual(observed_labels, expected_labels)
-
-  def testHistogramsOutputNoMetricsFromTelemetry(self):
-    trace_file = os.path.join(self.output_dir, compute_metrics.HTML_TRACE_NAME)
-    with open(trace_file, 'w') as f:
-      pass
-
-    self.SerializeIntermediateResults(
-        testing.TestResult(
-            'benchmark/story',
-            output_artifacts={
-                compute_metrics.HTML_TRACE_NAME:
-                    testing.Artifact(trace_file, 'gs://trace.html')
-            },
-            tags=['tbmv2:sampleMetric'],
-        ),
-    )
-
-    processor.main([
-        '--output-format', 'histograms',
-        '--output-dir', self.output_dir,
-        '--intermediate-dir', self.intermediate_dir,
-    ])
-
-    with open(os.path.join(
-        self.output_dir, histograms_output.OUTPUT_FILENAME)) as f:
-      results = json.load(f)
-
-    out_histograms = histogram_set.HistogramSet()
-    out_histograms.ImportDicts(results)
-
-    # sampleMetric records a histogram with the name 'foo'.
-    hist = out_histograms.GetHistogramNamed('foo')
-    self.assertIsNotNone(hist)
-    self.assertEqual(hist.diagnostics['traceUrls'],
-                     generic_set.GenericSet(['gs://trace.html']))
 
   def testHistogramsOutputNoAggregatedTrace(self):
     json_trace = os.path.join(self.output_dir, 'trace.json')
@@ -347,8 +332,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
 
-    # sampleMetric records a histogram with the name 'foo'.
-    hist = out_histograms.GetHistogramNamed('foo')
+    hist = out_histograms.GetHistogramNamed(SAMPLE_HISTOGRAM_NAME)
     self.assertIsNotNone(hist)
     self.assertIn('traceUrls', hist.diagnostics)
 
@@ -418,13 +402,13 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         testing.TestResult(
             'benchmark/story',
             output_artifacts=[
-                self.CreateHistogramsArtifact(
-                    histogram.Histogram('a', 'unitless')),
+                self.CreateHtmlTraceArtifact(),
                 self.CreateDiagnosticsArtifact(
                     benchmarks=['benchmark'],
                     osNames=['linux'],
                     documentationUrls=[['documentation', 'url']]),
             ],
+            tags=['tbmv2:sampleMetric'],
             start_time='2009-02-13T23:31:30.987000Z',
         ),
     )
@@ -442,11 +426,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
-    self.assertEqual(len(out_histograms), 1)
 
-    hist = out_histograms.GetFirstHistogram()
-    self.assertEqual(hist.name, 'a')
-    self.assertEqual(hist.unit, 'unitless')
+    hist = out_histograms.GetHistogramNamed(SAMPLE_HISTOGRAM_NAME)
+    self.assertEqual(hist.unit, SAMPLE_HISTOGRAM_UNIT)
 
     self.assertEqual(hist.diagnostics['benchmarks'],
                      generic_set.GenericSet(['benchmark']))
@@ -464,9 +446,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         testing.TestResult(
             'benchmark/story',
             output_artifacts=[
-                self.CreateHistogramsArtifact(
-                    histogram.Histogram('a', 'unitless')),
+                self.CreateHtmlTraceArtifact(),
             ],
+            tags=['tbmv2:sampleMetric'],
         ),
     )
 
@@ -491,9 +473,8 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
-    self.assertEqual(len(out_histograms), 1)
 
-    hist = out_histograms.GetFirstHistogram()
+    hist = out_histograms.GetHistogramNamed(SAMPLE_HISTOGRAM_NAME)
     self.assertEqual(hist.diagnostics['labels'],
                      generic_set.GenericSet(['label2']))
 
@@ -502,9 +483,9 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         testing.TestResult(
             'benchmark/story',
             output_artifacts=[
-                self.CreateHistogramsArtifact(
-                    histogram.Histogram('a', 'unitless')),
+                self.CreateHtmlTraceArtifact(),
             ],
+            tags=['tbmv2:sampleMetric'],
         ),
     )
 
@@ -528,11 +509,12 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
-    self.assertEqual(len(out_histograms), 2)
+    sample_histograms = out_histograms.GetHistogramsNamed(SAMPLE_HISTOGRAM_NAME)
+    self.assertEqual(len(sample_histograms), 2)
 
     expected_labels = set(['label1', 'label2'])
-    observed_labels = set(label for hist in out_histograms
-                           for label in hist.diagnostics['labels'])
+    observed_labels = set(label for hist in sample_histograms
+                          for label in hist.diagnostics['labels'])
     self.assertEqual(observed_labels, expected_labels)
 
   def testCsvOutput(self):
@@ -542,12 +524,13 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         testing.TestResult(
             'benchmark/story',
             output_artifacts=[
-                self.CreateHistogramsArtifact(test_hist),
+                self.CreateHtmlTraceArtifact(),
                 self.CreateDiagnosticsArtifact(
                     benchmarks=['benchmark'],
                     osNames=['linux'],
                     documentationUrls=[['documentation', 'url']]),
             ],
+            tags=['tbmv2:sampleMetric'],
             start_time='2009-02-13T23:31:30.987000Z',
         ),
     )
@@ -559,31 +542,28 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         '--results-label', 'label',
     ])
 
-    with open(os.path.join(self.output_dir, csv_output.OUTPUT_FILENAME)) as f:
-      lines = [line for line in f]
+    sample_rows = self.ReadSampleHistogramsFromCsv()
+    self.assertEqual(len(sample_rows), 1)
 
-    actual = list(zip(*csv.reader(lines)))
-    expected = [
-        ('name', 'a'), ('unit', 'ms'), ('avg', '3000'), ('count', '1'),
-        ('max', '3000'), ('min', '3000'), ('std', '0'), ('sum', '3000'),
-        ('architectures', ''), ('benchmarks', 'benchmark'),
-        ('benchmarkStart', '2009-02-13 23:31:30'), ('bots', ''),
-        ('builds', ''), ('deviceIds', ''), ('displayLabel', 'label'),
-        ('masters', ''), ('memoryAmounts', ''), ('osNames', 'linux'),
-        ('osVersions', ''), ('productVersions', ''),
-        ('stories', 'story'), ('storysetRepeats', '0'),
-        ('traceStart', '2009-02-13 23:31:30'), ('traceUrls', '')
-    ]
-    self.assertEqual(actual, expected)
+    actual = sample_rows[0]
+    self.assertEqual(actual['name'], SAMPLE_HISTOGRAM_NAME)
+    self.assertEqual(actual['unit'], 'B')
+    self.assertEqual(actual['avg'], '50')
+    self.assertEqual(actual['count'], '2')
+    self.assertEqual(actual['benchmarks'], 'benchmark')
+    self.assertEqual(actual['benchmarkStart'], '2009-02-13 23:31:30')
+    self.assertEqual(actual['displayLabel'], 'label')
+    self.assertEqual(actual['osNames'], 'linux')
+    self.assertEqual(actual['traceStart'], '2009-02-13 23:31:30')
 
   def testCsvOutputResetResults(self):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
             output_artifacts=[
-                self.CreateHistogramsArtifact(
-                    histogram.Histogram('a', 'unitless')),
+                self.CreateHtmlTraceArtifact(),
             ],
+            tags=['tbmv2:sampleMetric'],
         ),
     )
 
@@ -602,20 +582,18 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         '--reset-results',
     ])
 
-    with open(os.path.join(self.output_dir, csv_output.OUTPUT_FILENAME)) as f:
-      lines = [line for line in f]
-
-    self.assertEqual(len(lines), 2)
-    self.assertIn('label2', lines[1])
+    sample_rows = self.ReadSampleHistogramsFromCsv()
+    self.assertEqual(len(sample_rows), 1)
+    self.assertEqual(sample_rows[0]['displayLabel'], 'label2')
 
   def testCsvOutputAppendResults(self):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
             output_artifacts=[
-                self.CreateHistogramsArtifact(
-                    histogram.Histogram('a', 'unitless')),
+                self.CreateHtmlTraceArtifact(),
             ],
+            tags=['tbmv2:sampleMetric'],
         ),
     )
 
@@ -633,12 +611,10 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         '--results-label', 'label2',
     ])
 
-    with open(os.path.join(self.output_dir, csv_output.OUTPUT_FILENAME)) as f:
-      lines = [line for line in f]
-
-    self.assertEqual(len(lines), 3)
-    self.assertIn('label2', lines[1])
-    self.assertIn('label1', lines[2])
+    sample_rows = self.ReadSampleHistogramsFromCsv()
+    self.assertEqual(len(sample_rows), 2)
+    self.assertEqual(sample_rows[0]['displayLabel'], 'label2')
+    self.assertEqual(sample_rows[1]['displayLabel'], 'label1')
 
   def testExitCodeHasFailures(self):
     self.SerializeIntermediateResults(

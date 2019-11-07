@@ -91,7 +91,7 @@ class CORE_EXPORT MatchedPropertiesCache {
                             DefaultHash<unsigned>::Hash,
                             HashTraits<unsigned>>;
 
-  void RemoveCachedMatchedPropertiesWithDeadEntries(Visitor*);
+  void RemoveCachedMatchedPropertiesWithDeadEntries(const WeakCallbackInfo&);
 
   Cache cache_;
   DISALLOW_COPY_AND_ASSIGN(MatchedPropertiesCache);

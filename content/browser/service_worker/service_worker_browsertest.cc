@@ -3069,7 +3069,7 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
   void FindRegistrationOnCoreThread(const GURL& document_url,
                                     blink::ServiceWorkerStatusCode* status,
                                     base::OnceClosure continuation) {
-    wrapper()->FindReadyRegistrationForDocument(
+    wrapper()->FindReadyRegistrationForClientUrl(
         document_url,
         base::BindOnce(
             &ServiceWorkerBlackBoxBrowserTest::DidFindRegistrationOnCoreThread,

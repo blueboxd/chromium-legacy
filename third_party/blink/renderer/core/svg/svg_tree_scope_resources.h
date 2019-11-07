@@ -30,7 +30,7 @@ class SVGTreeScopeResources final
   void Trace(Visitor*);
 
  private:
-  void ClearWeakMembers(Visitor*);
+  void ProcessCustomWeakness(const WeakCallbackInfo&);
 
   HeapHashMap<AtomicString, WeakMember<LocalSVGResource>> resources_;
   Member<TreeScope> tree_scope_;

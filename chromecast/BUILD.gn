@@ -661,7 +661,7 @@ if (is_android) {
 
     shared_libraries = [ "//chromecast/android:libcast_shell_android" ]
 
-    locale_config_java_packages = [ "org.chromium.chromecast.shell" ]
+    product_config_java_packages = [ "org.chromium.chromecast.shell" ]
 
     deps = [
       ":cast_shell_apk_assets",

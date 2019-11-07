@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
@@ -21,6 +22,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -70,6 +72,22 @@ class XRSession final
     kBlendModeOpaque = 0,
     kBlendModeAdditive,
     kBlendModeAlphaBlend
+  };
+
+  struct MetricsReporter {
+    explicit MetricsReporter(
+        mojo::Remote<device::mojom::blink::XRSessionMetricsRecorder> recorder);
+
+    // Reports a use (or attempted use) of the given feature to the underlying
+    // metrics recorder.
+    void ReportFeatureUsed(device::mojom::blink::XRSessionFeature feature);
+
+   private:
+    mojo::Remote<device::mojom::blink::XRSessionMetricsRecorder> recorder_;
+
+    // Keeps track of which features have already been reported, to reduce
+    // redundant mojom calls.
+    WTF::HashSet<device::mojom::blink::XRSessionFeature> reported_features_;
   };
 
   XRSession(XR* xr,
@@ -256,6 +274,12 @@ class XRSession final
   // provider endpoint.
   void OnEnvironmentProviderCreated();
 
+  // Returns whether the given feature is enabled for this session.
+  bool IsFeatureEnabled(device::mojom::XRSessionFeature feature) const;
+
+  // Sets the metrics reporter for this session. This should only be done once.
+  void SetMetricsReporter(std::unique_ptr<MetricsReporter> reporter);
+
  private:
   class XRSessionResizeObserverDelegate;
 
@@ -334,6 +358,7 @@ class XRSession final
   bool waiting_for_shutdown_ = false;
 
   XRSessionFeatureSet enabled_features_;
+  std::unique_ptr<MetricsReporter> metrics_reporter_;
 
   bool is_tracked_anchors_null_ = true;
   HeapHashMap<uint64_t, Member<XRAnchor>> anchor_ids_to_anchors_;

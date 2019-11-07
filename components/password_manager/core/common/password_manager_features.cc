@@ -20,6 +20,11 @@ const base::Feature kEditPasswordsInDesktopSettings = {
 const base::Feature kDeleteCorruptedPasswords = {
     "DeleteCorruptedPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the overwriting of prefilled username fields if the server predicted
+// the field to contain a placeholder value.
+const base::Feature kEnableOverwritingPlaceholderUsernames{
+    "EnableOverwritingPlaceholderUsernames", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables a second, Gaia-account-scoped password store for users who are signed
 // in but not syncing.
 const base::Feature kEnablePasswordsAccountStorage = {

@@ -172,7 +172,7 @@ android_apk("weblayer_support_apk") {
   android_manifest_dep = ":weblayer_support_manifest"
   shared_resources = true
 
-  locale_config_java_packages = [ weblayer_locale_config_java_package ]
+  product_config_java_packages = [ weblayer_product_config_java_package ]
 
   native_lib_version_rule = "//build/util:chrome_version_json"
   _native_lib_file =

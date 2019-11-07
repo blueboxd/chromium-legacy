@@ -145,7 +145,6 @@ source_set("application_delegate_internal") {
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/web",
     "//net",
-    "//third_party/google_toolbox_for_mac",
     "//ui/base",
     "//url",
   ]

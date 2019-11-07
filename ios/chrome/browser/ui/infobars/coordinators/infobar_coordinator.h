@@ -66,10 +66,6 @@ enum class InfobarBannerPresentationState;
 // Present the InfobarModal using |self.baseViewController|.
 - (void)presentInfobarModal;
 
-// Dismisses the InfobarBanner after the user is no longer interacting with it.
-// e.g. No in progress touch gestures,etc. The dismissal will be animated.
-- (void)dismissInfobarBannerAfterInteraction;
-
 // Dismisses the InfobarBanner immediately, if none is being presented
 // |completion| will still run.
 - (void)dismissInfobarBannerAnimated:(BOOL)animated

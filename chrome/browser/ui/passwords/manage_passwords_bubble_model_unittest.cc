@@ -425,7 +425,7 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
   EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
 
   AccountInfo account;
-  account.account_id = "foo_account_id";
+  account.account_id = CoreAccountId("foo_account_id");
   account.gaia = "foo_gaia_id";
   account.email = "foo@bar.com";
   EXPECT_CALL(*controller(), EnableSync(AccountEq(account), false));

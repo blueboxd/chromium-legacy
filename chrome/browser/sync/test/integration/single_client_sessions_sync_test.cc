@@ -186,7 +186,7 @@ class SingleClientSessionsSyncTest : public SyncTest {
   // Simulates receiving list of accounts in the cookie jar from ListAccounts
   // endpoint. Adds |account_ids| into signed in accounts, notifies
   // ProfileSyncService and waits for change to propagate to sync engine.
-  void UpdateCookieJarAccountsAndWait(std::vector<std::string> account_ids,
+  void UpdateCookieJarAccountsAndWait(std::vector<CoreAccountId> account_ids,
                                       bool expected_cookie_jar_mismatch) {
     std::vector<gaia::ListedAccount> accounts;
     for (const auto& account_id : account_ids) {

@@ -282,7 +282,7 @@ class MockService : public TestExtensionService {
     return identity_test_env_.get();
   }
 
-  const std::string& account_id() { return account_info_.account_id.id; }
+  const CoreAccountId& account_id() { return account_info_.account_id; }
 
   // Creates test extensions and inserts them into list. The name and
   // version are all based on their index. If |update_url| is non-null, it

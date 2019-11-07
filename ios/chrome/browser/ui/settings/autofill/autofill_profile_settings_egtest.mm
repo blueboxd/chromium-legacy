@@ -45,6 +45,7 @@ const DisplayStringIDToExpectedResult kExpectedFields[] = {
     {IDS_IOS_AUTOFILL_CITY, @"Elysium"},
     {IDS_IOS_AUTOFILL_STATE, @"CA"},
     {IDS_IOS_AUTOFILL_ZIP, @"91111"},
+    {IDS_IOS_AUTOFILL_COUNTRY, @"United States"},
     {IDS_IOS_AUTOFILL_PHONE, @"16502111111"},
     {IDS_IOS_AUTOFILL_EMAIL, @"johndoe@hades.com"}};
 
@@ -136,8 +137,7 @@ id<GREYMatcher> NavigationBarEditButton() {
 }
 
 // Test that the page for viewing Autofill profile details is as expected.
-// TODO(crbug.com/922117): Reenable test.
-- (void)FLAKY_testAutofillProfileViewPage {
+- (void)testAutofillProfileViewPage {
   [AutofillAppInterface saveExampleProfile];
   [self openEditProfile:kProfileLabel];
 
@@ -147,13 +147,18 @@ id<GREYMatcher> NavigationBarEditButton() {
         stringWithFormat:@"%@, %@",
                          l10n_util::GetNSString(expectation.display_string_id),
                          expectation.expected_result]);
+    BOOL mustBePresent = YES;
+    if (expectation.display_string_id == IDS_IOS_AUTOFILL_COMPANY_NAME &&
+        ![ChromeEarlGrey isAutofillCompanyNameEnabled]) {
+      mustBePresent = NO;
+    }
     [[[EarlGrey
         selectElementWithMatcher:grey_allOf(elementMatcher,
                                             grey_sufficientlyVisible(), nil)]
            usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
         onElementWithMatcher:grey_accessibilityID(
                                  kAutofillProfileEditTableViewId)]
-        assertWithMatcher:grey_notNil()];
+        assertWithMatcher:mustBePresent ? grey_notNil() : grey_nil()];
   }
 
   // Go back to the list view page.

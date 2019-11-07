@@ -56,7 +56,7 @@ TEST_F(DiagnosticsProviderTest, GetDelayBeforeMakingAccessTokenRequests) {
   base::TimeDelta zero;
   EXPECT_EQ(diagnostics_provider()->GetDelayBeforeMakingAccessTokenRequests(),
             zero);
-  std::string account_id =
+  CoreAccountId account_id =
       identity_test_env()->MakeAccountAvailable(kAccountId).account_id;
   identity_test_env()->UpdatePersistentErrorOfRefreshTokenForAccount(
       account_id, GoogleServiceAuthError(
@@ -70,7 +70,7 @@ TEST_F(DiagnosticsProviderTest, GetDelayBeforeMakingCookieRequests) {
   identity_test_env()
       ->identity_manager()
       ->GetAccountsCookieMutator()
-      ->AddAccountToCookie(kAccountId, gaia::GaiaSource::kChrome,
+      ->AddAccountToCookie(CoreAccountId(kAccountId), gaia::GaiaSource::kChrome,
                            base::DoNothing());
   EXPECT_EQ(diagnostics_provider()->GetDelayBeforeMakingCookieRequests(), zero);
 

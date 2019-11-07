@@ -33,6 +33,7 @@ class WebAppIconManager : public AppIconManager {
   void WriteData(AppId app_id,
                  std::vector<WebApplicationIconInfo> icon_infos,
                  WriteDataCallback callback);
+  void DeleteData(AppId app_id, WriteDataCallback callback);
 
   // AppIconManager:
   bool ReadIcon(const AppId& app_id,

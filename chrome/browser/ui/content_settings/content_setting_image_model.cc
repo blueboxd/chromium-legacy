@@ -329,6 +329,10 @@ void ContentSettingImageModel::Update(content::WebContents* contents) {
       ContentSettingImageModelStates::Get(contents)->SetAccessibilityNotified(
           image_type(), false);
     }
+    if (should_auto_open_bubble_) {
+      ContentSettingImageModelStates::Get(contents)->SetBubbleWasAutoOpened(
+          image_type(), false);
+    }
   }
 }
 
@@ -356,6 +360,19 @@ bool ContentSettingImageModel::ShouldNotifyAccessibility(
 void ContentSettingImageModel::AccessibilityWasNotified(
     content::WebContents* contents) {
   ContentSettingImageModelStates::Get(contents)->SetAccessibilityNotified(
+      image_type(), true);
+}
+
+bool ContentSettingImageModel::ShouldAutoOpenBubble(
+    content::WebContents* contents) {
+  return should_auto_open_bubble_ &&
+         !ContentSettingImageModelStates::Get(contents)->BubbleWasAutoOpened(
+             image_type());
+}
+
+void ContentSettingImageModel::SetBubbleWasAutoOpened(
+    content::WebContents* contents) {
+  ContentSettingImageModelStates::Get(contents)->SetBubbleWasAutoOpened(
       image_type(), true);
 }
 
@@ -611,13 +628,15 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
                  DidMicAccessFailBecauseOfSystemLevelBlock()) {
         set_icon(vector_icons::kVideocamIcon, kBlockedBadgeIcon);
         set_tooltip(l10n_util::GetStringUTF16(IDS_MICROPHONE_CAMERA_BLOCKED));
-        if (!content_settings->camera_was_just_granted_on_site_level() ||
-            !content_settings->mic_was_just_granted_on_site_level()) {
+        if (content_settings->camera_was_just_granted_on_site_level() ||
+            content_settings->mic_was_just_granted_on_site_level()) {
+          // Automatically trigger the new bubble, if the camera
+          // and/or mic was just granted on a site level, but blocked on a
+          // system level.
+          set_should_auto_open_bubble(true);
+        } else {
           set_explanatory_string_id(IDS_CAMERA_TURNED_OFF);
         }
-        // TODO(hkamila): Automatically trigger the new bubble, if the camera
-        // and/or mic was just granted on a site level, but blocked on a system
-        // level.
       } else {
         set_icon(vector_icons::kVideocamIcon, gfx::kNoneIcon);
         set_tooltip(l10n_util::GetStringUTF16(IDS_MICROPHONE_CAMERA_ALLOWED));
@@ -632,7 +651,9 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
       } else if (DidCameraAccessFailBecauseOfSystemLevelBlock()) {
         set_icon(vector_icons::kVideocamIcon, kBlockedBadgeIcon);
         set_tooltip(l10n_util::GetStringUTF16(IDS_CAMERA_BLOCKED));
-        if (!content_settings->camera_was_just_granted_on_site_level()) {
+        if (content_settings->camera_was_just_granted_on_site_level()) {
+          set_should_auto_open_bubble(true);
+        } else {
           set_explanatory_string_id(IDS_CAMERA_TURNED_OFF);
         }
       } else {
@@ -649,7 +670,9 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
       } else if (DidMicAccessFailBecauseOfSystemLevelBlock()) {
         set_icon(vector_icons::kMicIcon, kBlockedBadgeIcon);
         set_tooltip(l10n_util::GetStringUTF16(IDS_MICROPHONE_BLOCKED));
-        if (!content_settings->mic_was_just_granted_on_site_level()) {
+        if (content_settings->mic_was_just_granted_on_site_level()) {
+          set_should_auto_open_bubble(true);
+        } else {
           set_explanatory_string_id(IDS_MIC_TURNED_OFF);
         }
       } else {

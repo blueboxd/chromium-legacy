@@ -10,6 +10,7 @@ import android.content.Context;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.ui.base.ResourceBundle;
 
 /**
@@ -28,7 +29,9 @@ public class CastApplication extends Application {
         super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
         ResourceBundle.setAvailablePakLocales(
-                LocaleConfig.COMPRESSED_LOCALES, LocaleConfig.UNCOMPRESSED_LOCALES);
+                ProductConfig.COMPRESSED_LOCALES, ProductConfig.UNCOMPRESSED_LOCALES);
+        LibraryLoader.getInstance().setConfiguration(
+                ProductConfig.USE_CHROMIUM_LINKER, ProductConfig.USE_MODERN_LINKER);
     }
 
     @Override

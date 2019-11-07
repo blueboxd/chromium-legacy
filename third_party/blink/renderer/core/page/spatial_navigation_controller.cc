@@ -457,10 +457,10 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
     element = interest_element_;
   }
 
-  DispatchMouseMoveAt(element);
-
-  if (!element)
+  if (!element) {
+    DispatchMouseMoveAt(nullptr);
     return;
+  }
 
   // Before focusing the new element, check if we're leaving an iframe (= moving
   // focus out of an iframe). In this case, we want the exited [nested] iframes
@@ -470,6 +470,7 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
 
   element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
                              kWebFocusTypeSpatialNavigation, nullptr));
+  DispatchMouseMoveAt(element);
 }
 
 void SpatialNavigationController::DispatchMouseMoveAt(Element* element) {

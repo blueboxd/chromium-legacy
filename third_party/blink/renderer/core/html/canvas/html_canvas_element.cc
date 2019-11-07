@@ -1357,7 +1357,7 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
 
   // A non-interactive table, caption, thead, tbody, tfoot, tr, td, or th
   // element.
-  if (IsHTMLTableElement(element) ||
+  if (IsA<HTMLTableElement>(element) ||
       element.HasTagName(html_names::kCaptionTag) ||
       element.HasTagName(html_names::kTheadTag) ||
       element.HasTagName(html_names::kTbodyTag) ||

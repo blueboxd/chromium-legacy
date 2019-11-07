@@ -90,6 +90,10 @@ bool WidgetDelegate::ShouldShowWindowTitle() const {
   return true;
 }
 
+bool WidgetDelegate::ShouldCenterWindowTitleText() const {
+  return false;
+}
+
 bool WidgetDelegate::ShouldShowCloseButton() const {
   return true;
 }

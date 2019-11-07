@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -212,9 +213,17 @@ void WebAppInstallManager::InstallWebAppsAfterSync(
 }
 
 void WebAppInstallManager::UninstallWebAppsAfterSync(
-    std::vector<std::unique_ptr<WebApp>> web_apps) {
-  // TODO(crbug.com/860583): Implement sync-initiated app uninstalls.
-  NOTIMPLEMENTED();
+    std::vector<std::unique_ptr<WebApp>> web_apps,
+    RepeatingUninstallCallback callback) {
+  for (std::unique_ptr<WebApp>& web_app : web_apps) {
+    const AppId& app_id = web_app->app_id();
+
+    finalizer()->FinalizeUninstallAfterSync(
+        app_id,
+        base::BindOnce(&WebAppInstallManager::OnWebAppUninstalledAfterSync,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(web_app),
+                       callback));
+  }
 }
 
 void WebAppInstallManager::SetUrlLoaderForTesting(
@@ -324,6 +333,15 @@ void WebAppInstallManager::OnWebAppInstalledAfterSync(
     finalizer()->FinalizeFallbackInstallAfterSync(app_in_sync_install_id,
                                                   std::move(callback));
   }
+}
+
+void WebAppInstallManager::OnWebAppUninstalledAfterSync(
+    std::unique_ptr<WebApp> web_app,
+    OnceUninstallCallback callback,
+    bool uninstalled) {
+  UMA_HISTOGRAM_BOOLEAN("Webapp.SyncInitiatedUninstallResult", uninstalled);
+  std::move(callback).Run(web_app->app_id(), uninstalled);
+  // web_app data is destroyed here.
 }
 
 content::WebContents* WebAppInstallManager::EnsureWebContentsCreated() {

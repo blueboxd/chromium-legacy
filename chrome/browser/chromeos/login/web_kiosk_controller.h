@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chromeos/login/auth/login_performer.h"
@@ -29,18 +30,13 @@ class UserContext;
 // kiosk profile, and updating the splash screen UI.
 class WebKioskController : public LoginPerformer::Delegate,
                            public UserSessionManagerDelegate,
-                           public AppLaunchSplashScreenView::Delegate {
+                           public AppLaunchSplashScreenView::Delegate,
+                           public WebKioskAppLauncher::Delegate {
  public:
   WebKioskController(LoginDisplayHost* host, OobeUI* oobe_ui);
   ~WebKioskController() override;
 
   void StartWebKiosk(const AccountId& account_id);
-
-  // Callbacks to Web Kiosk Launcher
-  void OnAppStartedInstalling();
-  void OnAppPrepared();
-  void OnAppLaunched();
-  void OnAppLaunchFailed();
 
  private:
   // LoginPerformer::Delegate:
@@ -63,6 +59,13 @@ class WebKioskController : public LoginPerformer::Delegate,
   void OnDeletingSplashScreenView() override;
   KioskAppManagerBase::App GetAppData() override;
 
+  // WebKioskAppLauncher:
+  void InitializeNetwork() override;
+  void OnAppStartedInstalling() override;
+  void OnAppPrepared() override;
+  void OnAppLaunched() override;
+  void OnAppLaunchFailed() override;
+
   void CleanUp();
   void OnTimerFire();
   void CloseSplashScreen();
@@ -75,6 +78,9 @@ class WebKioskController : public LoginPerformer::Delegate,
   bool app_prepared_ = false;
   bool launch_on_install_ = false;
 
+  // Used to prepare and launch the actual web kiosk app, is created after
+  // profile initialization.
+  std::unique_ptr<WebKioskAppLauncher> app_launcher_;
   // Used to execute login operations.
   std::unique_ptr<LoginPerformer> login_performer_;
 

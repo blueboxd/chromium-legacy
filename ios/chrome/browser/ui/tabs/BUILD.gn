@@ -48,6 +48,7 @@ source_set("tabs") {
     "//ios/chrome/browser/ui/bubble",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/favicon/resources:default_world_favicon",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/image_util",
@@ -64,7 +65,6 @@ source_set("tabs") {
     "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios",
     "//ios/web",
-    "//third_party/google_toolbox_for_mac",
     "//ui/base",
     "//ui/gfx",
   ]

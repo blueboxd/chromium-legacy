@@ -200,7 +200,7 @@ class GC_PLUGIN_IGNORE(
                  WeakCallback callback) final {}
   void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void*, MovingObjectCallback) final {}
-  void RegisterWeakCallback(void*, WeakCallback) final {}
+  void RegisterWeakCallback(WeakCallback, void*) final {}
 
  private:
   class ParentScope {

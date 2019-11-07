@@ -51,8 +51,8 @@ class AdvancedProtectionStatusManagerTest : public TestWithPrefService {
       : identity_test_env_(/*test_url_loader_factory=*/nullptr,
                            &pref_service_) {}
 
-  std::string SignIn(const std::string& email,
-                     bool is_under_advanced_protection) {
+  CoreAccountId SignIn(const std::string& email,
+                       bool is_under_advanced_protection) {
     AccountInfo account_info = identity_test_env_.MakeAccountAvailable(email);
 
     account_info.is_under_advanced_protection = is_under_advanced_protection;
@@ -62,7 +62,7 @@ class AdvancedProtectionStatusManagerTest : public TestWithPrefService {
     return account_info.account_id;
   }
 
-  void MakeOAuthTokenFetchSucceed(const std::string& account_id,
+  void MakeOAuthTokenFetchSucceed(const CoreAccountId& account_id,
                                   bool is_under_advanced_protection) {
     identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         account_id, "access_token",
@@ -71,7 +71,7 @@ class AdvancedProtectionStatusManagerTest : public TestWithPrefService {
                                      : kIdTokenAdvancedProtectionDisabled);
   }
 
-  void MakeOAuthTokenFetchFail(const std::string& account_id,
+  void MakeOAuthTokenFetchFail(const CoreAccountId& account_id,
                                bool is_transient_error) {
     identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
         account_id,
@@ -111,8 +111,8 @@ TEST_F(AdvancedProtectionStatusManagerTest,
 
   // Simulates the situation where user signed in long time ago, thus
   // has no advanced protection status.
-  std::string account_id = SignIn("test@test.com",
-                                  /* is_under_advanced_protection = */ false);
+  CoreAccountId account_id = SignIn("test@test.com",
+                                    /* is_under_advanced_protection = */ false);
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
@@ -142,8 +142,8 @@ TEST_F(AdvancedProtectionStatusManagerTest,
   base::HistogramTester histograms;
   // Simulates the situation where user signed in long time ago, thus
   // has no advanced protection status.
-  std::string account_id = SignIn("test@test.com",
-                                  /* is_under_advanced_protection = */ false);
+  CoreAccountId account_id = SignIn("test@test.com",
+                                    /* is_under_advanced_protection = */ false);
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
@@ -173,8 +173,8 @@ TEST_F(AdvancedProtectionStatusManagerTest, SignedInLongTimeAgoNotUnderAP) {
   base::HistogramTester histograms;
   // Simulates the situation where user signed in long time ago, thus
   // has no advanced protection status.
-  std::string account_id = SignIn("test@test.com",
-                                  /* is_under_advanced_protection = */ false);
+  CoreAccountId account_id = SignIn("test@test.com",
+                                    /* is_under_advanced_protection = */ false);
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
@@ -201,8 +201,8 @@ TEST_F(AdvancedProtectionStatusManagerTest, SignedInLongTimeAgoNotUnderAP) {
 TEST_F(AdvancedProtectionStatusManagerTest, SignedInLongTimeAgoUnderAP) {
   // Simulates the situation where user signed in long time ago, thus
   // has no advanced protection status yet.
-  std::string account_id = SignIn("test@test.com",
-                                  /* is_under_advanced_protection = */ false);
+  CoreAccountId account_id = SignIn("test@test.com",
+                                    /* is_under_advanced_protection = */ false);
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
@@ -226,8 +226,8 @@ TEST_F(AdvancedProtectionStatusManagerTest, AlreadySignedInAndUnderAP) {
 
   // Simulates the situation where the user has already signed in and is
   // under advanced protection.
-  std::string account_id = SignIn("test@test.com",
-                                  /* is_under_advanced_protection = */ true);
+  CoreAccountId account_id = SignIn("test@test.com",
+                                    /* is_under_advanced_protection = */ true);
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
@@ -246,8 +246,8 @@ TEST_F(AdvancedProtectionStatusManagerTest, AlreadySignedInAndNotUnderAP) {
 
   // Simulates the situation where the user has already signed in and is
   // NOT under advanced protection.
-  std::string account_id = SignIn("test@test.com",
-                                  /* is_under_advanced_protection = */ false);
+  CoreAccountId account_id = SignIn("test@test.com",
+                                    /* is_under_advanced_protection = */ false);
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
@@ -264,8 +264,8 @@ TEST_F(AdvancedProtectionStatusManagerTest, StayInAdvancedProtection) {
       prefs::kAdvancedProtectionLastRefreshInUs,
       last_update.ToDeltaSinceWindowsEpoch().InMicroseconds());
 
-  std::string account_id = SignIn("test@test.com",
-                                  /* is_under_advanced_protection = */ true);
+  CoreAccountId account_id = SignIn("test@test.com",
+                                    /* is_under_advanced_protection = */ true);
   AdvancedProtectionStatusManager aps_manager(
       &pref_service_, identity_test_env_.identity_manager(),
       base::TimeDelta() /*no min delay*/);
@@ -312,8 +312,8 @@ TEST_F(AdvancedProtectionStatusManagerTest, AccountRemoval) {
   ASSERT_FALSE(aps_manager.is_under_advanced_protection());
   ASSERT_TRUE(aps_manager.GetUnconsentedPrimaryAccountId().empty());
 
-  std::string account_id = SignIn("test@test.com",
-                                  /* is_under_advanced_protection = */ false);
+  CoreAccountId account_id = SignIn("test@test.com",
+                                    /* is_under_advanced_protection = */ false);
   EXPECT_FALSE(aps_manager.is_under_advanced_protection());
   EXPECT_FALSE(aps_manager.IsRefreshScheduled());
 
@@ -347,8 +347,8 @@ TEST_F(AdvancedProtectionStatusManagerTest,
   // There is no account, so the timer should not run at startup.
   EXPECT_FALSE(aps_manager.IsRefreshScheduled());
 
-  std::string account_id = SignIn("test@test.com",
-                                  /* is_under_advanced_protection = */ true);
+  CoreAccountId account_id = SignIn("test@test.com",
+                                    /* is_under_advanced_protection = */ true);
 
   // Now that we've signed into Advanced Protection, we should have a scheduled
   // refresh.
@@ -368,8 +368,8 @@ TEST_F(AdvancedProtectionStatusManagerTest,
 
 TEST_F(AdvancedProtectionStatusManagerTest,
        StartupAfterLongWaitRefreshesImmediately) {
-  std::string account_id = SignIn("test@test.com",
-                                  /* is_under_advanced_protection = */ true);
+  CoreAccountId account_id = SignIn("test@test.com",
+                                    /* is_under_advanced_protection = */ true);
   base::RunLoop().RunUntilIdle();
 
   base::Time last_refresh_time =

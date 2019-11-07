@@ -419,6 +419,7 @@ suite('TabList', () => {
     // Wait for slideIn animations to complete updating widths and reset
     // resolvers to track new calls.
     await tabList.animationPromises;
+    await testTabsApiProxy.whenCalled('setThumbnailTracked');
     testTabsApiProxy.reset();
     const tabElements = getUnpinnedTabs();
 
@@ -460,6 +461,7 @@ suite('TabList', () => {
 
   test('tracks and untracks thumbnails based on pinned state', async () => {
     await tabList.animationPromises;
+    await testTabsApiProxy.whenCalled('setThumbnailTracked');
     testTabsApiProxy.reset();
 
     // Update width such that at all tabs can fit and do not fire the
@@ -480,18 +482,13 @@ suite('TabList', () => {
     [tabId, thumbnailTracked] =
         await testTabsApiProxy.whenCalled('setThumbnailTracked');
 
-    // TODO(johntlee): Remove debug logs if tests are no longer flaky.
-    console.log(`Window width is ${window.innerWidth}px`);
-    for (const tabElement of getUnpinnedTabs()) {
-      console.log(`Tab ${tabElement.tab.id} is at ${tabElement.offsetLeft}`);
-    }
-
     assertEquals(tabId, tabs[2].id);
     assertEquals(thumbnailTracked, true);
   });
 
   test('should update thumbnail track status on visibilitychange', async () => {
     await tabList.animationPromises;
+    await testTabsApiProxy.whenCalled('setThumbnailTracked');
     testTabsApiProxy.reset();
 
     testTabStripEmbedderProxy.setVisible(false);

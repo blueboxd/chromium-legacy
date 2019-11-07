@@ -19,6 +19,8 @@ var ACTIVE_DIRECTORY_PASSWORD_CHANGE_ERROR_STATE = {
 Polymer({
   is: 'active-directory-password-change',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * The user principal name.
@@ -50,15 +52,6 @@ Polymer({
       default:
         console.error('Not handled error: ' + error);
     }
-  },
-
-  /**
-   * @param {string} username
-   * @return {string}
-   * @private
-   */
-  computeWelcomeMessage_: function(username) {
-    return loadTimeData.getStringF('adPassChangeMessage', username);
   },
 
   /** @private */

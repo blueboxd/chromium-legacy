@@ -207,6 +207,9 @@ without changes to the corresponding grd file. -->
                  compress="gzip" />
 
       <if expr="chromeos">
+        <structure name="IDR_WEBUI_CSS_CROS_COLORS"
+                   file="css/cros_colors.css" type="chrome_html"
+                   compress="gzip" />
         <structure name="IDR_WEBUI_HTML_CHROMEOS_ONC_MOJO"
                    file="html/chromeos/onc_mojo.html" type="chrome_html"
                    compress="gzip" />

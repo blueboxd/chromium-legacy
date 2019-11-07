@@ -386,9 +386,11 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
 
   if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    // Reset selection to first when things change.
+    // Reset selection to first when things change. The first result is set as
+    // as the default result.
     result_selection_controller_->set_block_selection_changes(false);
-    result_selection_controller_->ResetSelection(nullptr /*key_event*/);
+    result_selection_controller_->ResetSelection(nullptr /*key_event*/,
+                                                 true /* default_selection */);
   } else {
     // Highlight the first result after search results are updated. Note that
     // the focus is not set on the first result to prevent frequent focus switch

@@ -75,8 +75,8 @@ class WebAppInstallManager final : public InstallManager,
   // For the new USS-based system only. SyncInstallDelegate:
   void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
                                RepeatingInstallCallback callback) override;
-  void UninstallWebAppsAfterSync(
-      std::vector<std::unique_ptr<WebApp>> web_apps) override;
+  void UninstallWebAppsAfterSync(std::vector<std::unique_ptr<WebApp>> web_apps,
+                                 RepeatingUninstallCallback callback) override;
 
   using DataRetrieverFactory =
       base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>;
@@ -105,6 +105,9 @@ class WebAppInstallManager final : public InstallManager,
                                   OnceInstallCallback callback,
                                   const AppId& installed_app_id,
                                   InstallResultCode code);
+  void OnWebAppUninstalledAfterSync(std::unique_ptr<WebApp> web_app,
+                                    OnceUninstallCallback callback,
+                                    bool uninstalled);
 
   void OnLoadWebAppAndCheckInstallabilityCompleted(
       WebAppInstallTask* task,

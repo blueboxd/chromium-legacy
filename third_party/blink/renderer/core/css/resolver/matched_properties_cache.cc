@@ -180,14 +180,14 @@ bool MatchedPropertiesCache::IsCacheable(const StyleResolverState& state) {
 
 void MatchedPropertiesCache::Trace(blink::Visitor* visitor) {
   visitor->Trace(cache_);
-  visitor->RegisterWeakMembers<
+  visitor->RegisterWeakCallbackMethod<
       MatchedPropertiesCache,
       &MatchedPropertiesCache::RemoveCachedMatchedPropertiesWithDeadEntries>(
       this);
 }
 
 void MatchedPropertiesCache::RemoveCachedMatchedPropertiesWithDeadEntries(
-    Visitor* visitor) {
+    const WeakCallbackInfo& broker) {
   Vector<unsigned> to_remove;
   for (const auto& entry_pair : cache_) {
     // A nullptr value indicates that the entry is currently being created; see
@@ -196,7 +196,7 @@ void MatchedPropertiesCache::RemoveCachedMatchedPropertiesWithDeadEntries(
       continue;
     for (const auto& matched_properties :
          entry_pair.value->matched_properties) {
-      if (!ThreadHeap::IsHeapObjectAlive(matched_properties)) {
+      if (!broker.IsHeapObjectAlive(matched_properties)) {
         to_remove.push_back(entry_pair.key);
         break;
       }

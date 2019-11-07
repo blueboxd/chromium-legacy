@@ -39,9 +39,9 @@ void MarkingVisitorCommon::FlushCompactionWorklists() {
   backing_store_callback_worklist_.FlushToGlobal();
 }
 
-void MarkingVisitorCommon::RegisterWeakCallback(void* object,
-                                                WeakCallback callback) {
-  weak_callback_worklist_.Push({object, callback});
+void MarkingVisitorCommon::RegisterWeakCallback(WeakCallback callback,
+                                                void* object) {
+  weak_callback_worklist_.Push({callback, object});
 }
 
 void MarkingVisitorCommon::RegisterBackingStoreReference(void** slot) {
@@ -76,7 +76,7 @@ void MarkingVisitorCommon::VisitWeak(void* object,
       HeapObjectHeader::FromPayload(desc.base_object_payload)
           ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>())
     return;
-  RegisterWeakCallback(object_weak_ref, callback);
+  RegisterWeakCallback(callback, object_weak_ref);
 }
 
 void MarkingVisitorCommon::VisitBackingStoreStrongly(void* object,
@@ -99,7 +99,7 @@ void MarkingVisitorCommon::VisitBackingStoreWeakly(
   RegisterBackingStoreReference(object_slot);
   if (!object)
     return;
-  RegisterWeakCallback(weak_callback_parameter, weak_callback);
+  RegisterWeakCallback(weak_callback, weak_callback_parameter);
 
   if (weak_desc.callback) {
     weak_table_worklist_.Push(

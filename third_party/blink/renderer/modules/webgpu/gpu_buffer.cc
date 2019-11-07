@@ -61,12 +61,11 @@ WGPUBufferDescriptor AsDawnType(const GPUBufferDescriptor* webgpu_desc) {
 DOMArrayBuffer* CreateArrayBufferForMappedData(void* data, size_t data_length) {
   DCHECK(data);
 
-  ArrayBufferContents contents(
-      data, data_length,
-      [](void* data, size_t length, void* info) {
-        // DataDeleter does nothing because Dawn wire owns the memory.
-      },
-      ArrayBufferContents::SharingType::kNotShared);
+  ArrayBufferContents contents(data, data_length,
+                               [](void* data, size_t length, void* info) {
+                                 // DataDeleter does nothing because Dawn wire
+                                 // owns the memory.
+                               });
 
   return DOMArrayBuffer::Create(contents);
 }

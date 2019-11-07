@@ -235,7 +235,8 @@ void ExampleAppListClient::OpenSearchResult(
     int event_flags,
     ash::AppListLaunchedFrom launched_from,
     ash::AppListLaunchType launch_type,
-    int suggestion_index) {
+    int suggestion_index,
+    bool launch_as_default) {
   auto it = std::find_if(
       search_results_.begin(), search_results_.end(),
       [&result_id](const std::unique_ptr<ExampleSearchResult>& result) {

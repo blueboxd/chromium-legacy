@@ -98,7 +98,8 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
                                          int event_flags,
                                          ash::AppListLaunchedFrom launched_from,
                                          ash::AppListLaunchType launch_type,
-                                         int suggestion_index) {
+                                         int suggestion_index,
+                                         bool launch_as_default) {
   if (!search_controller_)
     return;
 
@@ -126,6 +127,9 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
 
   RecordSearchResultOpenTypeHistogram(
       launched_from, result->GetSearchResultType(), IsTabletMode());
+
+  if (launch_as_default)
+    RecordDefaultSearchResultOpenTypeHistogram(result->GetSearchResultType());
 
   if (!search_controller_->GetLastQueryLength() &&
       launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox)

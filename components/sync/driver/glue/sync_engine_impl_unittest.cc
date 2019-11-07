@@ -234,7 +234,7 @@ class SyncEngineImplTest : public testing::Test {
     params.registrar = std::make_unique<SyncBackendRegistrar>(
         std::string(), base::Bind(&CreateModelWorkerForGroup));
     params.http_factory_getter = std::move(http_post_provider_factory_getter);
-    params.authenticated_account_id = "user@example.com";
+    params.authenticated_account_id = CoreAccountId("account_id");
     params.sync_manager_factory = std::move(fake_manager_factory_);
     params.unrecoverable_error_handler =
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),

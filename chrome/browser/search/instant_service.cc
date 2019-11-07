@@ -446,6 +446,7 @@ void InstantService::SetCustomBackgroundInfo(
     const std::string& attribution_line_2,
     const GURL& action_url,
     const std::string& collection_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bool is_backdrop_collection =
       background_service_ &&
       background_service_->IsValidBackdropCollection(collection_id);
@@ -548,6 +549,7 @@ void InstantService::OnNextCollectionImageAvailable() {
       image.image_url, attribution1, attribution2, image.attribution_action_url,
       image.collection_id, resume_token, timestamp);
 
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   pref_service_->Set(prefs::kNtpCustomBackgroundDict, background_info);
 }
 
@@ -775,6 +777,7 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
 }
 
 void InstantService::ApplyCustomBackgroundThemeInfo() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::DictionaryValue* background_info =
       pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
   GURL custom_background_url(
@@ -822,6 +825,7 @@ void InstantService::ApplyCustomBackgroundThemeInfo() {
 }
 
 void InstantService::ResetCustomBackgroundThemeInfo() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   pref_service_->ClearPref(prefs::kNtpCustomBackgroundDict);
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
   RemoveLocalBackgroundImageCopy();
@@ -915,6 +919,7 @@ void InstantService::FetchCustomBackground(base::TimeTicks timestamp,
 }
 
 bool InstantService::IsCustomBackgroundPrefValid(GURL& custom_background_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::DictionaryValue* background_info =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
   if (!background_info)
@@ -966,14 +971,13 @@ void InstantService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 void InstantService::UpdateCustomBackgroundPrefsWithColor(
     base::TimeTicks timestamp,
     SkColor color) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Update background color only if the selected background is still the same.
   const base::DictionaryValue* background_info =
       pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
   if (!background_info)
     return;
 
-  GURL current_bg_url(
-      background_info->FindKey(kNtpCustomBackgroundURL)->GetString());
   if (timestamp == background_updated_timestamp_) {
     pref_service_->Set(prefs::kNtpCustomBackgroundDict,
                        GetBackgroundInfoWithColor(background_info, color));
@@ -981,6 +985,7 @@ void InstantService::UpdateCustomBackgroundPrefsWithColor(
 }
 
 void InstantService::RefreshBackgroundIfNeeded() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::DictionaryValue* background_info =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
   int64_t refresh_timestamp = 0;

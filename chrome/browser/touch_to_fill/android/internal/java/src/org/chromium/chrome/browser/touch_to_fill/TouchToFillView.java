@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.touch_to_fill;
 
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON;
+
 import android.content.Context;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
@@ -14,6 +16,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
@@ -176,8 +179,15 @@ class TouchToFillView implements BottomSheetContent {
     // TODO(crbug.com/1009331): This should add up the height of all items up to the 2nd credential.
     private @DimenRes int getDesiredSheetHeight() {
         if (mSheetItemListView.getAdapter() != null
-                && mSheetItemListView.getAdapter().getItemCount() > 2) {
+                && mSheetItemListView.getAdapter().getItemCount() > 2
+                && mSheetItemListView.getAdapter().getItemViewType(2)
+                        == TouchToFillProperties.ItemType.CREDENTIAL) {
             return R.dimen.touch_to_fill_sheet_height_multiple_credentials;
+        }
+        if (ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                    ChromeFeatureList.TOUCH_TO_FILL_ANDROID,
+                    FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON, false)) {
+            return R.dimen.touch_to_fill_sheet_height_single_credential_with_button;
         }
         return R.dimen.touch_to_fill_sheet_height_single_credential;
     }

@@ -67,13 +67,12 @@ MemoryCache* ReplaceMemoryCacheForTesting(MemoryCache* cache) {
 }
 
 void MemoryCacheEntry::Trace(blink::Visitor* visitor) {
-  visitor->template RegisterWeakMembers<MemoryCacheEntry,
-                                        &MemoryCacheEntry::ClearResourceWeak>(
-      this);
+  visitor->template RegisterWeakCallbackMethod<
+      MemoryCacheEntry, &MemoryCacheEntry::ClearResourceWeak>(this);
 }
 
-void MemoryCacheEntry::ClearResourceWeak(Visitor* visitor) {
-  if (!resource_ || ThreadHeap::IsHeapObjectAlive(resource_))
+void MemoryCacheEntry::ClearResourceWeak(const WeakCallbackInfo& broker) {
+  if (!resource_ || broker.IsHeapObjectAlive(resource_))
     return;
   GetMemoryCache()->Remove(resource_.Get());
   resource_.Clear();

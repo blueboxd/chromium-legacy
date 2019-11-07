@@ -138,6 +138,16 @@ void LogAppListShowSource(AppListShowSource show_source) {
   UMA_HISTOGRAM_ENUMERATION(kAppListToggleMethodHistogram, show_source);
 }
 
+base::Optional<TabletModeAnimationTransition>
+GetTransitionFromMetricsAnimationInfo(
+    base::Optional<HomeScreenDelegate::AnimationInfo> animation_info) {
+  if (!animation_info.has_value())
+    return base::nullopt;
+
+  return CalculateAnimationTransitionForMetrics(animation_info->trigger,
+                                                animation_info->showing);
+}
+
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
@@ -825,17 +835,27 @@ aura::Window* AppListControllerImpl::GetHomeScreenWindow() {
 void AppListControllerImpl::UpdateYPositionAndOpacityForHomeLauncher(
     int y_position_in_screen,
     float opacity,
+    base::Optional<AnimationInfo> animation_info,
     UpdateAnimationSettingsCallback callback) {
+  DCHECK(!animation_info.has_value() || !callback.is_null());
+
   presenter_.UpdateYPositionAndOpacityForHomeLauncher(
-      y_position_in_screen, opacity, std::move(callback));
+      y_position_in_screen, opacity,
+      GetTransitionFromMetricsAnimationInfo(std::move(animation_info)),
+      std::move(callback));
 }
 
 void AppListControllerImpl::UpdateScaleAndOpacityForHomeLauncher(
     float scale,
     float opacity,
+    base::Optional<AnimationInfo> animation_info,
     UpdateAnimationSettingsCallback callback) {
-  presenter_.UpdateScaleAndOpacityForHomeLauncher(scale, opacity,
-                                                  std::move(callback));
+  DCHECK(!animation_info.has_value() || !callback.is_null());
+
+  presenter_.UpdateScaleAndOpacityForHomeLauncher(
+      scale, opacity,
+      GetTransitionFromMetricsAnimationInfo(std::move(animation_info)),
+      std::move(callback));
 }
 
 void AppListControllerImpl::UpdateAfterHomeLauncherShown() {
@@ -981,7 +1001,8 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
                                              int event_flags,
                                              AppListLaunchedFrom launched_from,
                                              AppListLaunchType launch_type,
-                                             int suggestion_index) {
+                                             int suggestion_index,
+                                             bool launch_as_default) {
   SearchResult* result = search_model_.FindSearchResult(result_id);
   if (!result)
     return;
@@ -1044,7 +1065,8 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
   } else {
     if (client_)
       client_->OpenSearchResult(result_id, event_flags, launched_from,
-                                launch_type, suggestion_index);
+                                launch_type, suggestion_index,
+                                launch_as_default);
   }
 
   ResetHomeLauncherIfShown();
@@ -1574,18 +1596,6 @@ void AppListControllerImpl::Shutdown() {
   shell->tablet_mode_controller()->RemoveObserver(this);
   shell->session_controller()->RemoveObserver(this);
   model_->RemoveObserver(this);
-}
-
-void AppListControllerImpl::NotifyHomeLauncherAnimationTransition(
-    AnimationTrigger trigger,
-    bool launcher_will_show) {
-  // The AppListView may not exist if this is happening after tablet mode
-  // has started, but before the view is created.
-  if (!presenter_.GetView())
-    return;
-
-  presenter_.GetView()->OnTabletModeAnimationTransitionNotified(
-      CalculateAnimationTransitionForMetrics(trigger, launcher_will_show));
 }
 
 bool AppListControllerImpl::IsHomeScreenVisible() {

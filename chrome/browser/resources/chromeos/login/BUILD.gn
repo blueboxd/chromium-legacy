@@ -146,6 +146,9 @@ js_library("multidevice_setup_first_run") {
 }
 
 js_library("active_directory_password_change") {
+  deps = [
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
 }
 
 js_library("app_downloading") {
@@ -157,7 +160,9 @@ js_library("app_downloading") {
 
 js_library("arc_terms_of_service") {
   deps = [
+    ":html-echo",
     ":oobe_dialog_host_behavior",
+    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 
@@ -214,6 +219,9 @@ js_library("gaia_input") {
 }
 
 js_library("gaia_password_changed") {
+  deps = [
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
 }
 
 js_library("hd-iron-icon") {

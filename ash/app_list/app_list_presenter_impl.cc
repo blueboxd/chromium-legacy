@@ -36,6 +36,12 @@
 namespace ash {
 namespace {
 
+constexpr std::array<int, 6> kIdsOfContainersThatWontHideAppList = {
+    kShellWindowId_AppListContainer,     kShellWindowId_HomeScreenContainer,
+    kShellWindowId_MenuContainer,        kShellWindowId_SettingBubbleContainer,
+    kShellWindowId_ShelfBubbleContainer, kShellWindowId_ShelfContainer,
+};
+
 inline ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -59,12 +65,6 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
 }
 
 }  // namespace
-
-constexpr std::array<int, 6> kIdsOfContainersThatWontHideAppList = {
-    kShellWindowId_AppListContainer,     kShellWindowId_HomeScreenContainer,
-    kShellWindowId_MenuContainer,        kShellWindowId_SettingBubbleContainer,
-    kShellWindowId_ShelfBubbleContainer, kShellWindowId_ShelfContainer,
-};
 
 AppListPresenterImpl::AppListPresenterImpl(
     std::unique_ptr<AppListPresenterDelegate> delegate)
@@ -241,6 +241,7 @@ void AppListPresenterImpl::ProcessMouseWheelOffset(
 void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
     int y_position_in_screen,
     float opacity,
+    base::Optional<TabletModeAnimationTransition> transition,
     UpdateHomeLauncherAnimationSettingsCallback callback) {
   if (!view_)
     return;
@@ -270,12 +271,14 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
     settings.emplace(layer->GetAnimator());
     callback.Run(&settings.value());
   }
+
+  // The animation metrics reporter will run for opacity and transform
+  // animations separately - to avoid reporting duplicated values, add the
+  // reported for transform animation only.
   layer->SetOpacity(opacity);
 
-  // Only record animation metrics for transformation animation. Because the
-  // animation triggered by setting opacity should have the same metrics values
-  // with the transformation animation.
-  if (settings.has_value()) {
+  if (settings.has_value() && transition.has_value()) {
+    view_->OnTabletModeAnimationTransitionNotified(transition.value());
     settings->SetAnimationMetricsReporter(
         view_->GetStateTransitionMetricsReporter());
   }
@@ -289,6 +292,7 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
 void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
     float scale,
     float opacity,
+    base::Optional<TabletModeAnimationTransition> transition,
     UpdateHomeLauncherAnimationSettingsCallback callback) {
   if (!view_)
     return;
@@ -315,11 +319,20 @@ void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
     callback.Run(&settings.value());
   }
 
+  // The animation metrics reporter will run for opacity and transform
+  // animations separately - to avoid reporting duplicated values, add the
+  // reported for transform animation only.
+  layer->SetOpacity(opacity);
+
+  if (settings.has_value() && transition.has_value()) {
+    view_->OnTabletModeAnimationTransitionNotified(*transition);
+    settings->SetAnimationMetricsReporter(
+        view_->GetStateTransitionMetricsReporter());
+  }
+
   gfx::Transform transform =
       gfx::GetScaleTransform(gfx::Rect(layer->size()).CenterPoint(), scale);
   layer->SetTransform(transform);
-
-  layer->SetOpacity(opacity);
 }
 
 void AppListPresenterImpl::ShowEmbeddedAssistantUI(bool show) {

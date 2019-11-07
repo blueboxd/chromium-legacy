@@ -243,12 +243,10 @@ MojoMapBufferResult* MojoHandle::mapBuffer(unsigned offset,
   result_dict->setResult(result);
   if (result == MOJO_RESULT_OK) {
     ArrayBufferContents contents(
-        data, num_bytes,
-        [](void* buffer, size_t length, void* alloc_data) {
+        data, num_bytes, [](void* buffer, size_t length, void* alloc_data) {
           MojoResult result = MojoUnmapBuffer(buffer);
           DCHECK_EQ(result, MOJO_RESULT_OK);
-        },
-        ArrayBufferContents::kNotShared);
+        });
     result_dict->setBuffer(DOMArrayBuffer::Create(contents));
   }
   return result_dict;

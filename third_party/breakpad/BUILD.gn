@@ -1048,6 +1048,10 @@ if (is_ios) {
     ]
 
     deps = [
+      # Breakpad includes its own copy of GTMLogger (in the file
+      # breakpad/src/common/mac/GTMLogger.m). As Chromium links
+      # to both on iOS, do not use the copy shipped with breakpad
+      # but instead use the version from google_toolbox_for_mac.
       "//third_party/google_toolbox_for_mac",
     ]
 

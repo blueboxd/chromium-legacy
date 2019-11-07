@@ -403,7 +403,8 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
   // Do a full follow up uninstall for all deleted remote entities that exist
   // locally and not needed by other sources. We need to clean up disk data
   // (icons).
-  install_delegate_->UninstallWebAppsAfterSync(std::move(apps_unregistered));
+  install_delegate_->UninstallWebAppsAfterSync(std::move(apps_unregistered),
+                                               base::DoNothing());
 }
 
 std::unique_ptr<syncer::MetadataChangeList>

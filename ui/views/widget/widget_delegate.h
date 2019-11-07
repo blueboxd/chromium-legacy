@@ -94,6 +94,9 @@ class VIEWS_EXPORT WidgetDelegate {
   // Returns true if the window should show a title in the title bar.
   virtual bool ShouldShowWindowTitle() const;
 
+  // Returns true if the title text should be centered. Default is false.
+  virtual bool ShouldCenterWindowTitleText() const;
+
   // Returns true if the window should show a close button in the title bar.
   virtual bool ShouldShowCloseButton() const;
 

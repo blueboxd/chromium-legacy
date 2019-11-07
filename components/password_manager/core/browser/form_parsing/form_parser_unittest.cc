@@ -1197,6 +1197,33 @@ TEST(FormParserTest, ServerPredictionsForClearTextPasswordFields) {
   });
 }
 
+TEST(FormParserTest, ServerHintsForDisabledPrefilledPlaceholderFeature) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      password_manager::features::kEnableOverwritingPlaceholderUsernames);
+  CheckTestData({
+      {
+          .description_for_logging = "Simple predictions work",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS,
+                                  .may_use_prefilled_placeholder = true}},
+                  {.form_control_type = "text"},
+                  {.role_saving = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password"},
+                  {.role_filling = ElementRole::CURRENT_PASSWORD,
+                   .role_saving = ElementRole::NEW_PASSWORD,
+                   .form_control_type = "password",
+                   .prediction = {.type = autofill::PASSWORD,
+                                  .may_use_prefilled_placeholder = true}},
+              },
+          .username_may_use_prefilled_placeholder = false,
+      },
+  });
+}
+
 TEST(FormParserTest, ServerHints) {
   CheckTestData({
       {

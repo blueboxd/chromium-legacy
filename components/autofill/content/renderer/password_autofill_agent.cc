@@ -1558,6 +1558,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
                                         possible_email_domain) ||
          fill_data.username_may_use_prefilled_placeholder);
     if (!username_element.Value().IsEmpty() &&
+        username_element.GetAutofillState() == WebAutofillState::kNotFilled &&
         !prefilled_placeholder_username) {
       // Username is filled with content that was not on a list of known
       // placeholder texts (e.g. "username or email") nor there is server-side
@@ -1605,8 +1606,10 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
 
   // Input matches the username, fill in required values.
   if (!username_element.IsNull() && IsElementEditable(username_element)) {
-    if (!username.empty() && (username_element.Value().IsEmpty() ||
-                              prefilled_placeholder_username)) {
+    if (!username.empty() &&
+        (username_element.Value().IsEmpty() ||
+         username_element.GetAutofillState() != WebAutofillState::kNotFilled ||
+         prefilled_placeholder_username)) {
       AutofillField(username, username_element);
       if (prefilled_placeholder_username) {
         LogPrefilledUsernameFillOutcome(

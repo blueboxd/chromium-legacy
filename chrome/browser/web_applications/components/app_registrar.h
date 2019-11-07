@@ -104,11 +104,11 @@ class AppRegistrar {
   void RemoveObserver(AppRegistrarObserver* observer);
 
   void NotifyWebAppInstalled(const AppId& app_id);
+  void NotifyWebAppUninstalled(const AppId& app_id);
 
  protected:
   Profile* profile() const { return profile_; }
 
-  void NotifyWebAppUninstalled(const AppId& app_id);
   void NotifyWebAppProfileWillBeDeleted(const AppId& app_id);
   void NotifyAppRegistrarShutdown();
 

@@ -29,9 +29,6 @@ class RealTimePolicyEngine {
   RealTimePolicyEngine() = delete;
   ~RealTimePolicyEngine() = delete;
 
-  // Is the feature to sync high confidence allowlist enabled?
-  static bool IsFetchAllowlistEnabled();
-
   // Return true if full URL lookups are enabled for |resource_type|.
   static bool CanPerformFullURLLookupForResourceType(
       content::ResourceType resource_type);

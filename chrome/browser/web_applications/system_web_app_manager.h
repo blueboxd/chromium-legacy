@@ -42,6 +42,7 @@ enum class SystemAppType {
   CAMERA,
   TERMINAL,
   MEDIA,
+  HELP,
 };
 
 // The configuration options for a System App.

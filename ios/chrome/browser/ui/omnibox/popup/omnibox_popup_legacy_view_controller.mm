@@ -9,10 +9,10 @@
 
 #include "base/ios/ios_util.h"
 #include "base/metrics/histogram_macros.h"
+#import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #import "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #include "ios/chrome/browser/ui/util/animation_util.h"
@@ -214,7 +214,7 @@ const CGFloat kAnswerRowHeight = 64.0;
 
   [detailTextLabel setNeedsDisplay];
 
-  OmniboxPopupTruncatingLabel* textLabel = row.textTruncatingLabel;
+  FadeTruncatingLabel* textLabel = row.textTruncatingLabel;
   [textLabel setTextAlignment:self.alignment];
   LayoutRect textLabelLayout =
       LayoutRectMake(kTextCellLeadingPadding, CGRectGetWidth(rowBounds), 0,

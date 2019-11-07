@@ -9259,6 +9259,7 @@ be describing additional metrics about the same event.
   <owner>billorr@chromium.org</owner>
   <owner>bialpio@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
+  <owner>cassew@google.com</owner>
   <summary>
     When session ends, records data for a WebXR / WebVR session.
   </summary>
@@ -9277,6 +9278,61 @@ be describing additional metrics about the same event.
         </statistics>
       </history>
     </aggregation>
+  </metric>
+  <metric name="FeatureRequest.BoundedFloor" enum="XRFeatureRequestStatus">
+    <summary>
+      State of the 'bounded-floor' feature request.
+    </summary>
+  </metric>
+  <metric name="FeatureRequest.Local" enum="XRFeatureRequestStatus">
+    <summary>
+      State of the 'local' feature request.
+    </summary>
+  </metric>
+  <metric name="FeatureRequest.LocalFloor" enum="XRFeatureRequestStatus">
+    <summary>
+      State of the 'local-floor' feature request.
+    </summary>
+  </metric>
+  <metric name="FeatureRequest.Unbounded" enum="XRFeatureRequestStatus">
+    <summary>
+      State of the 'unbounded' feature request.
+    </summary>
+  </metric>
+  <metric name="FeatureRequest.Viewer" enum="XRFeatureRequestStatus">
+    <summary>
+      State of the 'viewer' feature request.
+    </summary>
+  </metric>
+  <metric name="FeatureUse.BoundedFloor" enum="Boolean">
+    <summary>
+      Whether the 'bounded-floor' feature was used during this session,
+      regardless of whether it was used successfully.
+    </summary>
+  </metric>
+  <metric name="FeatureUse.Local" enum="Boolean">
+    <summary>
+      Whether the 'local' feature was used during this session, regardless of
+      whether it was used successfully.
+    </summary>
+  </metric>
+  <metric name="FeatureUse.LocalFloor" enum="Boolean">
+    <summary>
+      Whether the 'local-floor' feature was used during this session, regardless
+      of whether it was used successfully.
+    </summary>
+  </metric>
+  <metric name="FeatureUse.Unbounded" enum="Boolean">
+    <summary>
+      Whether the 'unbounded' feature was used during this session, regardless
+      of whether it was used successfully.
+    </summary>
+  </metric>
+  <metric name="FeatureUse.Viewer" enum="Boolean">
+    <summary>
+      Whether the 'viewer' feature was used during this session, regardless of
+      whether it was used successfully.
+    </summary>
   </metric>
   <metric name="IsLegacyWebVR" enum="Boolean">
     <summary>
@@ -9309,9 +9365,35 @@ be describing additional metrics about the same event.
 
 <event name="XR.WebXR.SessionRequest">
   <owner>xr-dev@chromium.org</owner>
+  <owner>cassew@google.com</owner>
   <summary>
     Recorded when promise returned by `requestSession` gets resolved / rejected.
   </summary>
+  <metric name="Feature.BoundedFloor" enum="XRFeatureRequestStatus">
+    <summary>
+      State of the 'bounded-floor' feature request.
+    </summary>
+  </metric>
+  <metric name="Feature.Local" enum="XRFeatureRequestStatus">
+    <summary>
+      State of the 'local' feature request.
+    </summary>
+  </metric>
+  <metric name="Feature.LocalFloor" enum="XRFeatureRequestStatus">
+    <summary>
+      State of the 'local-floor' feature request.
+    </summary>
+  </metric>
+  <metric name="Feature.Unbounded" enum="XRFeatureRequestStatus">
+    <summary>
+      State of the 'unbounded' feature request.
+    </summary>
+  </metric>
+  <metric name="Feature.Viewer" enum="XRFeatureRequestStatus">
+    <summary>
+      State of the 'viewer' feature request.
+    </summary>
+  </metric>
   <metric name="Mode" enum="XRSessionModeRequest">
     <summary>
       An enum value that indicates that the `requestSession` API was called to

@@ -51,11 +51,14 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // |suggestion_index|: the position of the result as a suggestion chip in
   // the AppsGridView or the position of the result in the zero state search
   // page.
+  // |launch_as_default|: True if the result is launched as the default result
+  // by user pressing ENTER key.
   virtual void OpenSearchResult(const std::string& result_id,
                                 int event_flags,
                                 ash::AppListLaunchedFrom launched_from,
                                 ash::AppListLaunchType launch_type,
-                                int suggestion_index) = 0;
+                                int suggestion_index,
+                                bool launch_as_default) = 0;
   // Invokes a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an action on the search result,
   // for example, installing. They are stored in SearchResult::actions_.

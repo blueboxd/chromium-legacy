@@ -3739,12 +3739,12 @@
       },
       {
         "isolate_coverage_data": true,
-        "isolate_name": "devtools_closure_compile",
+        "isolate_name": "devtools_lint_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_closure_compile",
+        "name": "devtools_lint_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3756,12 +3756,12 @@
       },
       {
         "isolate_coverage_data": true,
-        "isolate_name": "devtools_eslint",
+        "isolate_name": "devtools_type_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_eslint",
+        "name": "devtools_type_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5452,12 +5452,12 @@
         }
       },
       {
-        "isolate_name": "devtools_closure_compile",
+        "isolate_name": "devtools_lint_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_closure_compile",
+        "name": "devtools_lint_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5468,12 +5468,12 @@
         }
       },
       {
-        "isolate_name": "devtools_eslint",
+        "isolate_name": "devtools_type_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_eslint",
+        "name": "devtools_type_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7210,12 +7210,12 @@
         }
       },
       {
-        "isolate_name": "devtools_closure_compile",
+        "isolate_name": "devtools_lint_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_closure_compile",
+        "name": "devtools_lint_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -7226,12 +7226,12 @@
         }
       },
       {
-        "isolate_name": "devtools_eslint",
+        "isolate_name": "devtools_type_check",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "devtools_eslint",
+        "name": "devtools_type_check",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

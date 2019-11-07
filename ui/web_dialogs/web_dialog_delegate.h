@@ -123,6 +123,10 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // have a title bar.  This is useful when presenting branded interfaces.
   virtual bool ShouldShowDialogTitle() const = 0;
 
+  // A callback to allow the delegate to center title text. Default is
+  // false.
+  virtual bool ShouldCenterDialogTitleText() const;
+
   // Returns true if the dialog should show a close button in the title bar.
   // Default implementation returns true.
   virtual bool ShouldShowCloseButton() const;

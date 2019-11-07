@@ -1127,6 +1127,11 @@ class TextureStateTrackingGLES2Interface : public TestGLES2Interface {
   GLenum active_texture_;
 };
 
+#define EXPECT_FILTER_CALL(filter)                                          \
+  EXPECT_CALL(*gl,                                                          \
+              TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter)); \
+  EXPECT_CALL(*gl, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter));
+
 TEST_F(GLRendererTest, ActiveTextureState) {
   auto child_gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
   auto child_context_provider =
@@ -1194,17 +1199,34 @@ TEST_F(GLRendererTest, ActiveTextureState) {
     EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(_)).Times(7);
 
     // yuv_quad is drawn with the default linear filter.
+    for (int i = 0; i < 4; ++i) {
+      EXPECT_FILTER_CALL(GL_LINEAR);
+    }
     EXPECT_CALL(*gl, DrawElements(_, _, _, _));
 
     // tile_quad is drawn with GL_NEAREST because it is not transformed or
     // scaled.
-    EXPECT_CALL(
-        *gl, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    EXPECT_CALL(
-        *gl, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    // The remaining quads also use GL_LINEAR because nearest neighbor
-    // filtering is currently only used with tile quads.
-    EXPECT_CALL(*gl, DrawElements(_, _, _, _)).Times(8);
+    EXPECT_FILTER_CALL(GL_NEAREST);
+    EXPECT_CALL(*gl, DrawElements(_, _, _, _));
+
+    // transformed tile_quad
+    EXPECT_FILTER_CALL(GL_LINEAR);
+    EXPECT_CALL(*gl, DrawElements(_, _, _, _));
+
+    // scaled tile_quad
+    EXPECT_FILTER_CALL(GL_LINEAR);
+    EXPECT_CALL(*gl, DrawElements(_, _, _, _));
+
+    // texture_quad without nearest neighbor
+    EXPECT_FILTER_CALL(GL_LINEAR);
+    EXPECT_CALL(*gl, DrawElements(_, _, _, _));
+
+    // texture_quad without nearest neighbor
+    EXPECT_FILTER_CALL(GL_LINEAR);
+    EXPECT_CALL(*gl, DrawElements(_, _, _, _));
+
+    // stream video, solid color and debug draw quads
+    EXPECT_CALL(*gl, DrawElements(_, _, _, _)).Times(3);
   }
 
   gfx::Size viewport_size(100, 100);

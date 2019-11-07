@@ -56,6 +56,14 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
       // We'll get here after the successful online authentication.
       Oobe.showScreen({id: SCREEN_PASSWORD_CHANGED});
       Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.PASSWORD_CHANGED);
-    }
+    },
+
+    /**
+     * Updates localized content of the screen that is not updated via template.
+     */
+    updateLocalizedContent: function() {
+      this.gaiaPasswordChanged_.i18nUpdateLocale();
+    },
+
   };
 });

@@ -84,4 +84,8 @@ bool LoginScreenExtensionUiDialogDelegate::ShouldShowDialogTitle() const {
   return true;
 }
 
+bool LoginScreenExtensionUiDialogDelegate::ShouldCenterDialogTitleText() const {
+  return true;
+}
+
 }  // namespace chromeos

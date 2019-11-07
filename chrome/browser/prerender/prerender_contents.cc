@@ -206,8 +206,6 @@ PrerenderContents::PrerenderContents(
   }
 
   DCHECK(prerender_manager);
-  registry_.AddInterface(base::Bind(
-      &PrerenderContents::OnPrerenderCancelerReceiver, base::Unretained(this)));
 }
 
 bool PrerenderContents::Init() {
@@ -508,13 +506,6 @@ void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {
     Destroy(FINAL_STATUS_APP_TERMINATING);
   }
   Destroy(FINAL_STATUS_RENDERER_CRASHED);
-}
-
-void PrerenderContents::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void PrerenderContents::RenderFrameCreated(

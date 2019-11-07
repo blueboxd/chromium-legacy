@@ -67,10 +67,10 @@ int HTMLTableRowElement::rowIndex() const {
     // Skip THEAD, TBODY and TFOOT.
     maybe_table = maybe_table->parentNode();
   }
-  if (!(maybe_table && IsHTMLTableElement(maybe_table)))
+  auto* html_table_element = DynamicTo<HTMLTableElement>(maybe_table);
+  if (!html_table_element)
     return -1;
-  return FindIndexInRowCollection(*ToHTMLTableElement(maybe_table)->rows(),
-                                  *this);
+  return FindIndexInRowCollection(*html_table_element->rows(), *this);
 }
 
 int HTMLTableRowElement::sectionRowIndex() const {
@@ -80,7 +80,7 @@ int HTMLTableRowElement::sectionRowIndex() const {
   HTMLCollection* rows = nullptr;
   if (auto* section = ToHTMLTableSectionElementOrNull(maybe_table))
     rows = section->rows();
-  else if (auto* table = ToHTMLTableElementOrNull(maybe_table))
+  else if (auto* table = DynamicTo<HTMLTableElement>(maybe_table))
     rows = table->rows();
   if (!rows)
     return -1;

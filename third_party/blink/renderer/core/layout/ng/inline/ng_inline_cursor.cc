@@ -843,13 +843,13 @@ void NGInlineCursor::MoveToPreviousInlineLeafIgnoringLineBreak() {
 }
 
 void NGInlineCursor::MoveToPreviousLine() {
+  // Note: List marker is sibling of line box.
   DCHECK(IsLineBox());
   if (current_paint_fragment_) {
-    // TODO(yosin): We should implement |PreviousLineOf()| here.
-    if (auto* paint_fragment =
-            NGPaintFragmentTraversal::PreviousLineOf(*current_paint_fragment_))
-      return MoveTo(*paint_fragment);
-    return MakeNull();
+    do {
+      MoveToPreviousSiblingPaintFragment();
+    } while (IsNotNull() && !IsLineBox());
+    return;
   }
   if (current_item_) {
     do {

@@ -26,6 +26,7 @@ class SharedURLLoaderFactory;
 namespace safe_browsing {
 class UrlCheckerDelegate;
 class RemoteSafeBrowsingDatabaseManager;
+class SafeBrowsingApiHandler;
 class SafeBrowsingNetworkContext;
 }  // namespace safe_browsing
 
@@ -80,6 +81,9 @@ class SafeBrowsingService {
 
   scoped_refptr<safe_browsing::UrlCheckerDelegate>
       safe_browsing_url_checker_delegate_;
+
+  std::unique_ptr<safe_browsing::SafeBrowsingApiHandler>
+      safe_browsing_api_handler_;
 
   std::string user_agent_;
 

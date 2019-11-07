@@ -69,13 +69,14 @@ class AccessTokenFetcherTest
     token_service_.RemoveAccessTokenDiagnosticsObserver(this);
   }
 
-  std::string AddAccount(const std::string& gaia_id, const std::string& email) {
+  CoreAccountId AddAccount(const std::string& gaia_id,
+                           const std::string& email) {
     account_tracker()->SeedAccountInfo(gaia_id, email);
     return account_tracker()->FindAccountInfoByGaiaId(gaia_id).account_id;
   }
 
   std::unique_ptr<AccessTokenFetcher> CreateFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode) {
     std::set<std::string> scopes{"scope"};
@@ -85,7 +86,7 @@ class AccessTokenFetcherTest
   }
 
   std::unique_ptr<AccessTokenFetcher> CreateFetcherWithURLLoaderFactory(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode) {
@@ -132,7 +133,7 @@ TEST_F(AccessTokenFetcherTest, OneShotShouldCallBackOnFulfilledRequest) {
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
@@ -160,7 +161,7 @@ TEST_F(AccessTokenFetcherTest,
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // Since the refresh token is already available, this should result in an
@@ -190,7 +191,7 @@ TEST_F(AccessTokenFetcherTest,
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
 
   // Since the refresh token is not available yet, this should just start
   // waiting for it.
@@ -231,8 +232,8 @@ TEST_F(AccessTokenFetcherTest,
   MockCallback<base::OnceClosure> access_token_request_callback;
   set_on_access_token_request_callback(access_token_request_callback.Get());
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
-  std::string other_account_id = AddAccount(kTestGaiaId2, kTestEmail2);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId other_account_id = AddAccount(kTestGaiaId2, kTestEmail2);
 
   // Since the refresh token is not available yet, this should just start
   // waiting for it.
@@ -254,7 +255,7 @@ TEST_F(AccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
@@ -280,8 +281,9 @@ TEST_F(AccessTokenFetcherTest, ReturnsErrorWhenAccountIsUnknown) {
   base::RunLoop run_loop;
 
   // Account not present -> we should get called back.
-  auto fetcher = CreateFetcher("dummy_account_id", callback.Get(),
-                               AccessTokenFetcher::Mode::kImmediate);
+  auto fetcher =
+      CreateFetcher(CoreAccountId("dummy_account_id"), callback.Get(),
+                    AccessTokenFetcher::Mode::kImmediate);
 
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError(
@@ -297,7 +299,7 @@ TEST_F(AccessTokenFetcherTest, ReturnsErrorWhenAccountHasNoRefreshToken) {
 
   base::RunLoop run_loop;
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
 
   // Account has no refresh token -> we should get called back.
   auto fetcher = CreateFetcher(account_id, callback.Get(),
@@ -318,7 +320,7 @@ TEST_F(AccessTokenFetcherTest, CanceledAccessTokenRequest) {
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
@@ -348,7 +350,7 @@ TEST_F(AccessTokenFetcherTest, RefreshTokenRevoked) {
 
   TestTokenCallback callback;
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
@@ -372,7 +374,7 @@ TEST_F(AccessTokenFetcherTest, FailedAccessTokenRequest) {
 
   TestTokenCallback callback;
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
@@ -398,7 +400,7 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForSameAccountFulfilled) {
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
@@ -434,7 +436,7 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForDifferentAccountsFulfilled) {
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
@@ -444,7 +446,7 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForDifferentAccountsFulfilled) {
   run_loop.Run();
 
   // Add a second account and request an access token for it.
-  std::string account_id2 = AddAccount(kTestGaiaId2, kTestEmail2);
+  CoreAccountId account_id2 = AddAccount(kTestGaiaId2, kTestEmail2);
   token_service()->UpdateCredentials(account_id2, "refresh token");
   TestTokenCallback callback2;
   base::RunLoop run_loop2;
@@ -481,7 +483,7 @@ TEST_F(AccessTokenFetcherTest,
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   // This should result in a request for an access token.
@@ -490,7 +492,7 @@ TEST_F(AccessTokenFetcherTest,
   run_loop.Run();
 
   // Add a second account and request an access token for it.
-  std::string account_id2 = AddAccount(kTestGaiaId2, kTestEmail2);
+  CoreAccountId account_id2 = AddAccount(kTestGaiaId2, kTestEmail2);
   token_service()->UpdateCredentials(account_id2, "refresh token");
 
   base::RunLoop run_loop2;
@@ -535,7 +537,7 @@ TEST_F(AccessTokenFetcherTest, FetcherWithCustomURLLoaderFactory) {
   base::RunLoop run_loop;
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
-  std::string account_id = AddAccount(kTestGaiaId, kTestEmail);
+  CoreAccountId account_id = AddAccount(kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(account_id, "refresh token");
 
   network::TestURLLoaderFactory test_url_loader_factory;
@@ -577,7 +579,7 @@ TEST_F(AccessTokenFetcherTest, FetcherWithCustomURLLoaderFactory) {
   TestTokenCallback callback2;
 
   set_on_access_token_request_callback(run_loop2.QuitClosure());
-  std::string account_id2 = AddAccount(kTestGaiaId2, kTestEmail2);
+  CoreAccountId account_id2 = AddAccount(kTestGaiaId2, kTestEmail2);
   token_service()->UpdateCredentials(account_id2, "refresh token");
 
   // CreateFetcher will create an AccessTokenFetcher without specifying

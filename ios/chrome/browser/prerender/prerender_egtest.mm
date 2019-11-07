@@ -115,12 +115,12 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Open the suggestion. The suggestion needs to be the first suggestion to
   // have the prerenderer activated.
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(pageString),
-                                          grey_kindOfClassName(
-                                              @"OmniboxPopupTruncatingLabel"),
-                                          grey_ancestor(grey_accessibilityID(
-                                              @"omnibox suggestion 0")),
-                                          grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityLabel(pageString),
+                                   grey_kindOfClassName(@"FadeTruncatingLabel"),
+                                   grey_ancestor(grey_accessibilityID(
+                                       @"omnibox suggestion 0")),
+                                   grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];

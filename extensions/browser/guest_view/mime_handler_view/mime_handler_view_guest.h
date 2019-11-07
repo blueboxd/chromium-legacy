@@ -110,6 +110,8 @@ class MimeHandlerViewGuest
 
   base::WeakPtr<MimeHandlerViewGuest> GetWeakPtr();
 
+  base::WeakPtr<StreamContainer> GetStreamWeakPtr();
+
  protected:
   explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);
   ~MimeHandlerViewGuest() override;

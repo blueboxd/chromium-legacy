@@ -118,7 +118,7 @@ class AuthenticatedLeakCheckTest : public testing::Test {
 
 PayloadAndCallback AuthenticatedLeakCheckTest::ImitateNetworkRequest() {
   AccountInfo info = identity_env().MakeAccountAvailable(kTestEmail);
-  identity_env().SetCookieAccounts({{info.email, info.account_id}});
+  identity_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
 
   leak_check().Start(GURL(kExampleCom), base::ASCIIToUTF16(kUsername),
@@ -158,7 +158,7 @@ TEST_F(AuthenticatedLeakCheckTest, Create) {
 
 TEST_F(AuthenticatedLeakCheckTest, HasAccountForRequest_SignedIn) {
   AccountInfo info = identity_env().MakeAccountAvailable(kTestEmail);
-  identity_env().SetCookieAccounts({{info.email, info.account_id}});
+  identity_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
   EXPECT_TRUE(AuthenticatedLeakCheck::HasAccountForRequest(
       identity_env().identity_manager()));
@@ -172,7 +172,7 @@ TEST_F(AuthenticatedLeakCheckTest, HasAccountForRequest_Syncing) {
 
 TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenBeforeEncryption) {
   AccountInfo info = identity_env().MakeAccountAvailable(kTestEmail);
-  identity_env().SetCookieAccounts({{info.email, info.account_id}});
+  identity_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
   const std::string access_token = "access_token";
 
@@ -205,7 +205,7 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenBeforeEncryption) {
 
 TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenAfterEncryption) {
   AccountInfo info = identity_env().MakeAccountAvailable(kTestEmail);
-  identity_env().SetCookieAccounts({{info.email, info.account_id}});
+  identity_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
 
   leak_check().Start(GURL(kExampleCom), base::ASCIIToUTF16(kUsername),
@@ -239,7 +239,7 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenAfterEncryption) {
 
 TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenFailure) {
   AccountInfo info = identity_env().MakeAccountAvailable(kTestEmail);
-  identity_env().SetCookieAccounts({{info.email, info.account_id}});
+  identity_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
 
   leak_check().Start(GURL(kExampleCom), base::ASCIIToUTF16(kUsername),

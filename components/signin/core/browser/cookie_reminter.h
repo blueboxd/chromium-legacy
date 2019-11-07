@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 // Stores accounts with invalid cookies, which cannot be detected by
@@ -16,7 +17,8 @@
 // |AccountsCookieMutator::LogOutAllAccounts| after refresh token update of
 // any of the accounts that have been added to
 // |ForceCookieRemintingOnNextTokenUpdate|.
-class CookieReminter : public signin::IdentityManager::Observer {
+class CookieReminter : public KeyedService,
+                       public signin::IdentityManager::Observer {
  public:
   explicit CookieReminter(signin::IdentityManager* identity_manager);
   ~CookieReminter() override;
@@ -26,17 +28,11 @@ class CookieReminter : public signin::IdentityManager::Observer {
   void ForceCookieRemintingOnNextTokenUpdate(
       const CoreAccountInfo& account_info);
 
-  // If there are accounts that require cookie reminting, calls
-  // |AccountsCookieMutator::LogOutAllAccounts| and returns true. Otherwise
-  // returns false.
-  bool RemintCookieIfRequired();
-
+ private:
   // Overridden from signin::IdentityManager::Observer.
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
 
- private:
-  bool is_forced_cookie_reminting_required_ = false;
   signin::IdentityManager* identity_manager_;
   std::vector<CoreAccountInfo> accounts_requiring_cookie_remint_;
 };

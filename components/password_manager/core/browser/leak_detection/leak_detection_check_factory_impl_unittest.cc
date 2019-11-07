@@ -68,7 +68,7 @@ TEST_F(LeakDetectionCheckFactoryImplTest, SignedIn) {
   feature_list.InitAndEnableFeature(features::kLeakDetection);
 
   AccountInfo info = identity_env().MakeAccountAvailable(kTestAccount);
-  identity_env().SetCookieAccounts({{info.email, info.account_id}});
+  identity_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
   EXPECT_TRUE(request_factory().TryCreateLeakCheck(
       &delegate(), identity_env().identity_manager(), url_loader_factory()));

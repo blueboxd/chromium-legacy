@@ -27,6 +27,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SH
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
 import android.graphics.Bitmap;
+import android.support.test.espresso.core.deps.guava.collect.ImmutableMap;
 
 import androidx.annotation.Px;
 
@@ -46,6 +47,7 @@ import org.chromium.base.metrics.RecordHistogramJni;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
@@ -97,6 +99,8 @@ public class TouchToFillControllerTest {
     @Before
     public void setUp() {
         ShadowRecordHistogram.reset();
+        ChromeFeatureList.setTestFeatures(
+                ImmutableMap.of(ChromeFeatureList.TOUCH_TO_FILL_ANDROID, true));
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
         mJniMocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogram);

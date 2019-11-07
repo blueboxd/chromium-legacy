@@ -159,7 +159,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     }
     __weak InfobarCoordinator* weakSelf = self;
     self.dismissBannerBlock = ^(void) {
-      [weakSelf dismissInfobarBannerAfterInteraction];
+      [weakSelf dismissInfobarBannerIfReady];
       weakSelf.dismissBannerBlock = nil;
     };
     dispatch_after(popTime, dispatch_get_main_queue(), self.dismissBannerBlock);
@@ -190,12 +190,6 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     [self dismissInfobarBanner:self animated:NO completion:modalPresentation];
   } else {
     modalPresentation();
-  }
-}
-
-- (void)dismissInfobarBannerAfterInteraction {
-  if (!self.modalTransitionDriver) {
-    [self dismissBannerWhenInteractionIsFinished];
   }
 }
 
@@ -285,7 +279,13 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.bannerTransitionDriver = nil;
   animatedFullscreenDisabler_ = nullptr;
   [self infobarWasDismissed];
-  [self.infobarContainer childCoordinatorBannerWasDismissed:self];
+  if (!self.infobarActionInProgress) {
+    // Only inform InfobarContainer that the Infobar banner presentation is
+    // finished if it is not still executing the Infobar action. That way, the
+    // container won't start presenting a queued Infobar's banner when the
+    // current Infobar hasn't finished.
+    [self.infobarContainer childCoordinatorBannerFinishedPresented:self];
+  }
 }
 
 #pragma mark InfobarBannerPositioner
@@ -398,8 +398,13 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   NOTREACHED() << "Subclass must implement.";
 }
 
-- (void)dismissBannerWhenInteractionIsFinished {
+- (void)dismissBannerIfReady {
   NOTREACHED() << "Subclass must implement.";
+}
+
+- (BOOL)infobarActionInProgress {
+  NOTREACHED() << "Subclass must implement.";
+  return NO;
 }
 
 - (void)performInfobarAction {
@@ -420,6 +425,15 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 }
 
 #pragma mark - Private
+
+// Dismisses the Infobar banner if it is ready. i.e. the user is no longer
+// interacting with it or the Infobar action is still in progress. The dismissal
+// will be animated.
+- (void)dismissInfobarBannerIfReady {
+  if (!self.modalTransitionDriver) {
+    [self dismissBannerIfReady];
+  }
+}
 
 // |presentingViewController| presents the InfobarModal using |driver|. If
 // Modal is presented successfully |completion| will be executed.

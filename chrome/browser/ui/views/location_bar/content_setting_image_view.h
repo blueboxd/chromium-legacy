@@ -67,6 +67,8 @@ class ContentSettingImageView : public IconLabelBubbleView,
 
   void disable_animation() { can_animate_ = false; }
 
+  bool ShowBubbleImpl();
+
   // IconLabelBubbleView:
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

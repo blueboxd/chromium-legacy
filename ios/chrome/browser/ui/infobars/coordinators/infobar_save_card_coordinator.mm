@@ -129,8 +129,12 @@
   // between automatic and manual presentation.
 }
 
-- (void)dismissBannerWhenInteractionIsFinished {
+- (void)dismissBannerIfReady {
   [self.bannerViewController dismissWhenInteractionIsFinished];
+}
+
+- (BOOL)infobarActionInProgress {
+  return NO;
 }
 
 - (void)infobarBannerWillBeDismissed:(BOOL)userInitiated {

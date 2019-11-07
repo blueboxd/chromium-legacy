@@ -6,12 +6,14 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -28,7 +30,10 @@ class ServiceWorkerProcessBrowserTest
     : public ContentBrowserTest,
       public ::testing::WithParamInterface<bool> {
  public:
-  ServiceWorkerProcessBrowserTest() = default;
+  ServiceWorkerProcessBrowserTest() {
+    feature_list_.InitAndEnableFeature(
+        features::kServiceWorkerPrefersUnusedProcess);
+  }
   ~ServiceWorkerProcessBrowserTest() override = default;
 
   ServiceWorkerProcessBrowserTest(const ServiceWorkerProcessBrowserTest&) =
@@ -111,6 +116,7 @@ class ServiceWorkerProcessBrowserTest
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
 };
 

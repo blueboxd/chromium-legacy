@@ -10,12 +10,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback_list.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_thread.h"
 #include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
 
 namespace app_list {
@@ -69,6 +72,14 @@ class AppListLaunchRecorder {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     static_assert(std::is_enum<T>::value,
                   "Non enum passed to AppListLaunchRecorder::Log");
+
+    if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+      base::PostTask(
+          FROM_HERE, {content::BrowserThread::UI},
+          base::BindOnce(&AppListLaunchRecorder::Log<T>, base::Unretained(this),
+                         client, hashed, unhashed));
+      return;
+    }
 
     LaunchInfo event;
     event.client = client;

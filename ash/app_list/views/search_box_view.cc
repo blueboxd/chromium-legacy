@@ -634,7 +634,8 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
         selection_controller->selected_result();
     if (selected_result && selected_result->result())
       selected_result->OnKeyEvent(&event);
-    selection_controller->ResetSelection(nullptr);
+    // Reset the selected result to the default result.
+    selection_controller->ResetSelection(nullptr, true /* default_selection */);
     search_box()->SetText(base::string16());
     return true;
   }

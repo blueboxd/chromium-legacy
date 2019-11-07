@@ -28,7 +28,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "url/gurl.h"
 
@@ -55,7 +55,7 @@ chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(int render_frame_id) {
     return nullptr;
 
   auto* canceler = new mojo::Remote<chrome::mojom::PrerenderCanceler>;
-  render_frame->GetRemoteInterfaces()->GetInterface(
+  render_frame->GetBrowserInterfaceBroker()->GetInterface(
       canceler->BindNewPipeAndPassReceiver());
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, canceler);
   return canceler->get();

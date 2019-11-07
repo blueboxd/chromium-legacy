@@ -89,6 +89,9 @@ ASH_PUBLIC_EXPORT void RecordSearchResultOpenTypeHistogram(
     SearchResultType type,
     bool is_tablet_mode);
 
+ASH_PUBLIC_EXPORT void RecordDefaultSearchResultOpenTypeHistogram(
+    SearchResultType type);
+
 ASH_PUBLIC_EXPORT void RecordZeroStateSuggestionOpenTypeHistogram(
     SearchResultType type);
 

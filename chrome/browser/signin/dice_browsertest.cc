@@ -366,14 +366,14 @@ class DiceBrowserTest : public InProcessBrowserTest,
 
   // Returns the account ID associated with |main_email_| and its associated
   // gaia ID.
-  std::string GetMainAccountID() {
+  CoreAccountId GetMainAccountID() {
     return GetIdentityManager()->PickAccountIdForAccount(
         signin::GetTestGaiaIdForEmail(main_email_), main_email_);
   }
 
   // Returns the account ID associated with kSecondaryEmail and its associated
   // gaia ID.
-  std::string GetSecondaryAccountID() {
+  CoreAccountId GetSecondaryAccountID() {
     return GetIdentityManager()->PickAccountIdForAccount(
         signin::GetTestGaiaIdForEmail(kSecondaryEmail), kSecondaryEmail);
   }

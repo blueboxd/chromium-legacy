@@ -13,7 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
-#include "storage/browser/quota/quota_disk_info_helper.h"
+#include "storage/browser/quota/quota_device_info_helper.h"
 #include "storage/browser/quota/quota_features.h"
 #include "storage/browser/quota/quota_macros.h"
 
@@ -60,13 +60,13 @@ storage::QuotaSettings CalculateIncognitoDynamicSettings(
 base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
     const base::FilePath& partition_path,
     bool is_incognito,
-    QuotaDiskInfoHelper* disk_info_helper) {
+    QuotaDeviceInfoHelper* device_info_helper) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
   if (is_incognito) {
     return CalculateIncognitoDynamicSettings(
-        base::SysInfo::AmountOfPhysicalMemory());
+        device_info_helper->AmountOfPhysicalMemory());
   }
 
   // The fraction of the device's storage the browser is willing to
@@ -124,7 +124,7 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
 
   storage::QuotaSettings settings;
 
-  int64_t total = disk_info_helper->AmountOfTotalDiskSpace(partition_path);
+  int64_t total = device_info_helper->AmountOfTotalDiskSpace(partition_path);
   if (total == -1) {
     LOG(ERROR) << "Unable to compute QuotaSettings.";
     return base::nullopt;
@@ -150,25 +150,21 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
 
 }  // namespace
 
-int64_t GetIncognitoPoolSizeForTesting(int64_t physical_memory_amount) {
-  return CalculateIncognitoDynamicSettings(physical_memory_amount).pool_size;
-}
-
 void GetNominalDynamicSettings(const base::FilePath& partition_path,
                                bool is_incognito,
-                               QuotaDiskInfoHelper* disk_info_helper,
+                               QuotaDeviceInfoHelper* device_info_helper,
                                OptionalQuotaSettingsCallback callback) {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CalculateNominalDynamicSettings, partition_path,
-                     is_incognito, base::Unretained(disk_info_helper)),
+                     is_incognito, base::Unretained(device_info_helper)),
       std::move(callback));
 }
 
-QuotaDiskInfoHelper* GetDefaultDiskInfoHelper() {
-  static base::NoDestructor<QuotaDiskInfoHelper> singleton;
+QuotaDeviceInfoHelper* GetDefaultDeviceInfoHelper() {
+  static base::NoDestructor<QuotaDeviceInfoHelper> singleton;
   return singleton.get();
 }
 

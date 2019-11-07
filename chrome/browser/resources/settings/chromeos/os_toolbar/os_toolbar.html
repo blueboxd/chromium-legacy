@@ -12,9 +12,14 @@
   <template>
     <style include="cr-icons cr-hidden-style">
       :host {
+        --cr-toolbar-search-field-background:
+            var(--cros-default-toolbar-search-bg-color);
+        --cr-toolbar-search-field-border-radius: 4px;
+        --cr-toolbar-search-field-input-color:
+            var(--cros-default-text-color-secondary);
         align-items: center;
-        background-color: var(--google-blue-700);
-        color: #fff;
+        background-color: var(--cros-default-toolbar-bg-color);
+        color: var(--cros-default-text-color-secondary);
         display: flex;
         height: var(--cr-toolbar-height);
       }

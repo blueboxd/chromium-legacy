@@ -32,6 +32,8 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void FinalizeFallbackInstallAfterSync(
       const AppId& app_id,
       InstallFinalizedCallback callback) override;
+  void FinalizeUninstallAfterSync(const AppId& app_id,
+                                  UninstallWebAppCallback callback) override;
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                       InstallFinalizedCallback callback) override;
   void UninstallExternalWebApp(const GURL& app_url,
@@ -44,6 +46,9 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
  private:
   void OnIconsDataWritten(InstallFinalizedCallback callback,
                           std::unique_ptr<WebApp> web_app,
+                          bool success);
+  void OnIconsDataDeleted(const AppId& app_id,
+                          UninstallWebAppCallback callback,
                           bool success);
   void OnDatabaseCommitCompleted(InstallFinalizedCallback callback,
                                  const AppId& app_id,

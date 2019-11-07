@@ -92,7 +92,7 @@ class ProfileDownloaderTest
   ProfileDownloader profile_downloader_;
 
   base::OnceClosure on_access_token_request_callback_;
-  std::string account_id_for_access_token_request_;
+  CoreAccountId account_id_for_access_token_request_;
 };
 
 TEST_F(ProfileDownloaderTest, FetchAccessToken) {

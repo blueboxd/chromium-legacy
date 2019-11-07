@@ -92,9 +92,9 @@ NetworkResourcesData::ResourceData::ResourceData(
 void NetworkResourcesData::ResourceData::Trace(blink::Visitor* visitor) {
   visitor->Trace(network_resources_data_);
   visitor->Trace(xhr_replay_data_);
-  visitor->template RegisterWeakMembers<
+  visitor->template RegisterWeakCallbackMethod<
       NetworkResourcesData::ResourceData,
-      &NetworkResourcesData::ResourceData::ClearWeakMembers>(this);
+      &NetworkResourcesData::ResourceData::ProcessCustomWeakness>(this);
 }
 
 void NetworkResourcesData::ResourceData::SetContent(const String& content,
@@ -142,8 +142,9 @@ void NetworkResourcesData::ResourceData::SetResource(
   cached_resource_ = cached_resource;
 }
 
-void NetworkResourcesData::ResourceData::ClearWeakMembers(Visitor* visitor) {
-  if (!cached_resource_ || ThreadHeap::IsHeapObjectAlive(cached_resource_))
+void NetworkResourcesData::ResourceData::ProcessCustomWeakness(
+    const WeakCallbackInfo& broker) {
+  if (!cached_resource_ || broker.IsHeapObjectAlive(cached_resource_))
     return;
 
   // Mark loaded resources or resources without the buffer as loaded.

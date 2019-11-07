@@ -62,7 +62,7 @@ class PrimaryAccountAccessTokenFetcherTest : public testing::Test,
   IdentityTestEnvironment* identity_test_env() { return &identity_test_env_; }
 
   // Signs the user in to the primary account, returning the account ID.
-  std::string SignIn() {
+  CoreAccountId SignIn() {
     return identity_test_env_.MakePrimaryAccountAvailable("me@gmail.com")
         .account_id;
   }
@@ -82,7 +82,7 @@ class PrimaryAccountAccessTokenFetcherTest : public testing::Test,
 TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotShouldReturnAccessToken) {
   TestTokenCallback callback;
 
-  std::string account_id = SignIn();
+  CoreAccountId account_id = SignIn();
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -102,7 +102,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
        WaitAndRetryShouldReturnAccessToken) {
   TestTokenCallback callback;
 
-  std::string account_id = SignIn();
+  CoreAccountId account_id = SignIn();
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -122,7 +122,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
   TestTokenCallback callback;
 
-  std::string account_id = SignIn();
+  CoreAccountId account_id = SignIn();
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -192,7 +192,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
       callback.Get(),
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
-  std::string account_id = SignIn();
+  CoreAccountId account_id = SignIn();
 
   // Once the access token request is fulfilled, we should get called back with
   // the access token.
@@ -211,7 +211,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
 TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
   TestTokenCallback callback;
 
-  std::string account_id =
+  CoreAccountId account_id =
       identity_test_env()->SetPrimaryAccount("me@gmail.com").account_id;
 
   // Signed in, but there is no refresh token -> we should not get called back
@@ -241,9 +241,9 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   // Signed-in to account_id, but there's only a refresh token for a different
   // account.
-  std::string account_id =
+  CoreAccountId account_id =
       identity_test_env()->SetPrimaryAccount("me@gmail.com").account_id;
-  identity_test_env()->MakeAccountAvailable(account_id + "2");
+  identity_test_env()->MakeAccountAvailable(account_id.id + "2");
 
   // The fetcher should wait for the correct refresh token.
   auto fetcher = CreateFetcher(
@@ -251,12 +251,12 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
   // A refresh token for yet another account shouldn't matter either.
-  identity_test_env()->MakeAccountAvailable(account_id + "3");
+  identity_test_env()->MakeAccountAvailable(account_id.id + "3");
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,
        OneShotCanceledAccessTokenRequest) {
-  std::string account_id = SignIn();
+  CoreAccountId account_id = SignIn();
 
   base::RunLoop run_loop;
 
@@ -278,7 +278,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
        WaitAndRetryCanceledAccessTokenRequest) {
   TestTokenCallback callback;
 
-  std::string account_id = SignIn();
+  CoreAccountId account_id = SignIn();
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -303,7 +303,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
        ShouldRetryCanceledAccessTokenRequestOnlyOnce) {
   TestTokenCallback callback;
 
-  std::string account_id = SignIn();
+  CoreAccountId account_id = SignIn();
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -331,7 +331,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
        ShouldNotRetryCanceledAccessTokenRequestIfSignedOut) {
   TestTokenCallback callback;
 
-  std::string account_id = SignIn();
+  CoreAccountId account_id = SignIn();
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -356,7 +356,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
        ShouldNotRetryCanceledAccessTokenRequestIfRefreshTokenRevoked) {
   TestTokenCallback callback;
 
-  std::string account_id = SignIn();
+  CoreAccountId account_id = SignIn();
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -377,7 +377,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
        ShouldNotRetryFailedAccessTokenRequest) {
   TestTokenCallback callback;
 
-  std::string account_id = SignIn();
+  CoreAccountId account_id = SignIn();
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.

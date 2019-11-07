@@ -29,7 +29,8 @@ class TestAppListClient : public AppListClient {
                         int event_flags,
                         ash::AppListLaunchedFrom launched_from,
                         ash::AppListLaunchType launch_type,
-                        int suggestion_index) override {}
+                        int suggestion_index,
+                        bool launch_as_default) override {}
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override {}

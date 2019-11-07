@@ -52,20 +52,3 @@ def init(runtime_enabled_features_paths):
             runtime-enabled features ("runtime_enabled_features.json5").
     """
     RuntimeEnabledFeatures.init(filepaths=runtime_enabled_features_paths)
-
-
-__all__ = [
-    "AstGroup",
-    "CallbackFunction",
-    "CallbackInterface",
-    "Component",
-    "Database",
-    "Dictionary",
-    "Enumeration",
-    "IdlType",
-    "Interface",
-    "Namespace",
-    "Typedef",
-    "Union",
-    "build_database",
-]

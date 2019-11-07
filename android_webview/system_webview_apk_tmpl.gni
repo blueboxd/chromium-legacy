@@ -34,9 +34,9 @@ template("system_webview_apk_tmpl") {
     ]
 
     target_sdk_version = android_sdk_version
-    locale_config_java_packages = [
-      webview_locale_config_java_package,
-      weblayer_locale_config_java_package,
+    product_config_java_packages = [
+      webview_product_config_java_package,
+      weblayer_product_config_java_package,
     ]
 
     if (!defined(alternative_android_sdk_dep)) {
@@ -87,14 +87,14 @@ template("system_webview_apk_tmpl") {
           }
         } else {
           shared_libraries = [ "//android_webview:monochrome" ]
-          deps += [
-            "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
-          ]
-          loadable_modules = [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
+          deps += [ "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline" ]
+          loadable_modules =
+              [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
           if (build_apk_secondary_abi) {
             secondary_native_lib_placeholders = [ "libdummy.so" ]
             if (use_v8_context_snapshot) {
-              deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
+              deps +=
+                  [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
             } else {
               deps += [ "//v8:v8_external_startup_data_assets" ]
             }

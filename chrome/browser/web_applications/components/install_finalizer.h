@@ -47,6 +47,9 @@ class InstallFinalizer {
   virtual void FinalizeFallbackInstallAfterSync(
       const AppId& app_id,
       InstallFinalizedCallback callback) = 0;
+  // Delete app data from disk (icon .png files). |app_id| must be unregistered.
+  virtual void FinalizeUninstallAfterSync(const AppId& app_id,
+                                          UninstallWebAppCallback callback) = 0;
 
   // Write the new WebApp data to disk and update the app.
   virtual void FinalizeUpdate(const WebApplicationInfo& web_app_info,

@@ -310,6 +310,12 @@ bool WebDialogView::ShouldShowDialogTitle() const {
   return true;
 }
 
+bool WebDialogView::ShouldCenterDialogTitleText() const {
+  if (delegate_)
+    return delegate_->ShouldCenterDialogTitleText();
+  return false;
+}
+
 bool WebDialogView::ShouldShowCloseButton() const {
   if (delegate_)
     return delegate_->ShouldShowCloseButton();

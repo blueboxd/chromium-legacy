@@ -71,22 +71,6 @@ void UmaHistogramExactLinearWithSuffix(const char* histogram_name,
                           static_cast<int>(max_sample));
 }
 
-// Helper function to write samples to a histogram with a dynamically assigned
-// histogram name.  Works with short timings from 1 ms up to 10 seconds (50
-// buckets) which is the actual argument type of UmaHistogramTimes.
-void UmaHistogramTimesWithSuffix(const char* histogram_name,
-                                 StringPiece histogram_suffix,
-                                 TimeDelta sample) {
-  DCHECK(histogram_name);
-  std::string histogram_full_name(histogram_name);
-  if (!histogram_suffix.empty()) {
-    histogram_full_name.append(".");
-    histogram_full_name.append(histogram_suffix.data(),
-                               histogram_suffix.length());
-  }
-  UmaHistogramTimes(histogram_full_name, sample);
-}
-
 void LogFailure(const FilePath& path,
                 StringPiece histogram_suffix,
                 TempFileFailure failure_code,
@@ -108,13 +92,8 @@ void WriteScopedStringToFileAtomically(
   if (!before_write_callback.is_null())
     std::move(before_write_callback).Run();
 
-  TimeTicks start_time = TimeTicks::Now();
   bool result =
       ImportantFileWriter::WriteFileAtomically(path, *data, histogram_suffix);
-  if (result) {
-    UmaHistogramTimesWithSuffix("ImportantFile.TimeToWrite", histogram_suffix,
-                                TimeTicks::Now() - start_time);
-  }
 
   if (!after_write_callback.is_null())
     std::move(after_write_callback).Run(result);

@@ -393,10 +393,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void UpgradeArc(UpgradeParams params,
                   chromeos::VoidDBusMethodCallback callback) override {
-    VLOG(1) << "Starting arcvm-server-proxy";
-    chromeos::UpstartClient::Get()->StartJob(
-        kArcVmServerProxyJobName, /*environment=*/{},
-        base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStarted,
+    VLOG(1) << "Starting Concierge service";
+    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
+        base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
                        weak_factory_.GetWeakPtr(), std::move(params),
                        std::move(callback)));
   }
@@ -464,22 +463,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     std::move(callback).Run(true);
   }
 
-  void OnArcVmServerProxyJobStarted(UpgradeParams params,
-                                    chromeos::VoidDBusMethodCallback callback,
-                                    bool result) {
-    if (!result) {
-      LOG(ERROR) << "Failed to start arcvm-server-proxy job";
-      std::move(callback).Run(false);
-      return;
-    }
-
-    VLOG(1) << "Starting Concierge service";
-    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
-        base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
-                       weak_factory_.GetWeakPtr(), std::move(params),
-                       std::move(callback)));
-  }
-
   void OnConciergeStarted(UpgradeParams params,
                           chromeos::VoidDBusMethodCallback callback,
                           bool success) {
@@ -488,8 +471,22 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       std::move(callback).Run(false);
       return;
     }
-    VLOG(1) << "Concierge service started for arcvm.";
+    VLOG(1) << "Starting arcvm-server-proxy";
+    chromeos::UpstartClient::Get()->StartJob(
+        kArcVmServerProxyJobName, /*environment=*/{},
+        base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStarted,
+                       weak_factory_.GetWeakPtr(), std::move(params),
+                       std::move(callback)));
+  }
 
+  void OnArcVmServerProxyJobStarted(UpgradeParams params,
+                                    chromeos::VoidDBusMethodCallback callback,
+                                    bool result) {
+    if (!result) {
+      LOG(ERROR) << "Failed to start arcvm-server-proxy job";
+      std::move(callback).Run(false);
+      return;
+    }
     // TODO(pliard): Export host-side /data to the VM, and remove the call. Note
     // that ArcSessionImpl checks low disk conditions before calling UpgradeArc.
     base::PostTaskAndReplyWithResult(

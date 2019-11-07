@@ -57,6 +57,17 @@ enum XRSessionFeature {
   DOM_OVERLAY_FOR_HANDHELD_AR = 6,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// This enum corresponds to 'XRFeatureRequestStatus' in
+// tools/metrics/histograms/enums.xml
+enum XRSessionFeatureRequestStatus {
+  kNotRequested = 0,
+  kRequired = 1,
+  kOptionalAccepted = 2,
+  kOptionalRejected = 3,
+};
+
 struct XRSessionOptions {
   bool immersive;
   bool environment_integration;
@@ -470,8 +481,16 @@ enum RequestSessionError {
   UNKNOWN_RUNTIME_ERROR = 6
 };
 
-union RequestSessionResult {
+struct RequestSessionSuccess {
   XRSession session;
+
+  // Used to report metrics during the session to the browser process.
+  // See the note on |XRSessionMetricsRecorder| for context.
+  pending_remote<XRSessionMetricsRecorder> metrics_recorder;
+};
+
+union RequestSessionResult {
+  RequestSessionSuccess success;
   RequestSessionError failure_reason;
 };
 
@@ -511,6 +530,15 @@ interface VRService {
   // renderer can (and may) still decide to submit frames and that should not be
   // treated as illegal or clear the throttled state.
   SetFramesThrottled(bool throttled);
+};
+
+// Any metrics that must be recorded throughout the duration of an XR session
+// should be reported through this interface, so that the UKM event may still
+// be recorded even if the session is shut down via user navigation.
+interface XRSessionMetricsRecorder {
+  // Records a use (or attempted use - the feature request
+  // may not have been granted) of a feature.
+  ReportFeatureUsed(XRSessionFeature feature);
 };
 
 // The interface for the renderer to listen to top level XR events, events that

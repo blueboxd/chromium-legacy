@@ -212,7 +212,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
     syncer::DataTypeActivationRequest request;
     request.error_handler = base::DoNothing();
     request.cache_guid = "TestCacheGuid";
-    request.authenticated_account_id = "SomeAccountId";
+    request.authenticated_account_id = CoreAccountId("SomeAccountId");
 
     base::RunLoop loop;
     real_processor_->OnSyncStarting(

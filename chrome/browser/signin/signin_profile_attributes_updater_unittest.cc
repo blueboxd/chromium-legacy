@@ -124,7 +124,7 @@ TEST_F(SigninProfileAttributesUpdaterTest, AuthError) {
   ASSERT_TRUE(profile_manager_.profile_attributes_storage()
                   ->GetProfileAttributesWithPath(profile_->GetPath(), &entry));
 
-  std::string account_id =
+  CoreAccountId account_id =
       identity_test_env_.MakePrimaryAccountAvailable(kEmail).account_id;
 
 #if defined(OS_CHROMEOS)

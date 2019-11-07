@@ -141,7 +141,7 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoNotSignedIn) {
 // Check that the primary account info has expected values if signed in without
 // a refresh token available.
 TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInNoRefreshToken) {
-  std::string primary_account_id =
+  CoreAccountId primary_account_id =
       identity_test_environment()->SetPrimaryAccount(kTestEmail).account_id;
 
   base::RunLoop run_loop;
@@ -161,9 +161,10 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInNoRefreshToken) {
 // Check that the primary account info has expected values if signed in with a
 // refresh token available.
 TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInRefreshToken) {
-  std::string primary_account_id = identity_test_environment()
-                                       ->MakePrimaryAccountAvailable(kTestEmail)
-                                       .account_id;
+  CoreAccountId primary_account_id =
+      identity_test_environment()
+          ->MakePrimaryAccountAvailable(kTestEmail)
+          .account_id;
 
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetPrimaryAccountInfo(base::BindRepeating(
@@ -182,9 +183,10 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInRefreshToken) {
 // Check that GetPrimaryAccountWhenAvailable() returns immediately in the
 // case where the primary account is available when the call is received.
 TEST_F(IdentityAccessorImplTest, GetPrimaryAccountWhenAvailableSignedIn) {
-  std::string primary_account_id = identity_test_environment()
-                                       ->MakePrimaryAccountAvailable(kTestEmail)
-                                       .account_id;
+  CoreAccountId primary_account_id =
+      identity_test_environment()
+          ->MakePrimaryAccountAvailable(kTestEmail)
+          .account_id;
 
   AccountInfo account_info;
   AccountState account_state;
@@ -227,9 +229,10 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountWhenAvailableSignInLater) {
 
   // Make the primary account available and check that the callback is invoked
   // as expected.
-  std::string primary_account_id = identity_test_environment()
-                                       ->MakePrimaryAccountAvailable(kTestEmail)
-                                       .account_id;
+  CoreAccountId primary_account_id =
+      identity_test_environment()
+          ->MakePrimaryAccountAvailable(kTestEmail)
+          .account_id;
   run_loop.Run();
 
   EXPECT_EQ(primary_account_id, account_info.account_id);
@@ -248,7 +251,7 @@ TEST_F(IdentityAccessorImplTest,
   AccountState account_state;
 
   // Sign in, but don't set the refresh token yet.
-  std::string primary_account_id =
+  CoreAccountId primary_account_id =
       identity_test_environment()->SetPrimaryAccount(kTestEmail).account_id;
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
@@ -294,7 +297,7 @@ TEST_F(IdentityAccessorImplTest,
   AccountState account_state;
 
   // Set the refresh token, but don't sign in yet.
-  std::string account_id_to_use =
+  CoreAccountId account_id_to_use =
       identity_test_environment()->MakeAccountAvailable(kTestEmail).account_id;
   identity_test_environment()->SetRefreshTokenForAccount(account_id_to_use);
 
@@ -306,7 +309,7 @@ TEST_F(IdentityAccessorImplTest,
 
   // Sign the user in and check that the callback is invoked as expected (i.e.,
   // the primary account is now considered available).
-  std::string primary_account_id =
+  CoreAccountId primary_account_id =
       identity_test_environment()->SetPrimaryAccount(kTestEmail).account_id;
 
   run_loop.Run();
@@ -352,9 +355,10 @@ TEST_F(IdentityAccessorImplTest,
 
   // Make the primary account available and check that the callbacks are invoked
   // as expected.
-  std::string primary_account_id = identity_test_environment()
-                                       ->MakePrimaryAccountAvailable(kTestEmail)
-                                       .account_id;
+  CoreAccountId primary_account_id =
+      identity_test_environment()
+          ->MakePrimaryAccountAvailable(kTestEmail)
+          .account_id;
 
   run_loop.Run();
   run_loop2.Run();
@@ -376,9 +380,10 @@ TEST_F(IdentityAccessorImplTest,
 // available if the refresh token has an auth error.
 TEST_F(IdentityAccessorImplTest,
        GetPrimaryAccountWhenAvailableRefreshTokenHasAuthError) {
-  std::string primary_account_id = identity_test_environment()
-                                       ->MakePrimaryAccountAvailable(kTestEmail)
-                                       .account_id;
+  CoreAccountId primary_account_id =
+      identity_test_environment()
+          ->MakePrimaryAccountAvailable(kTestEmail)
+          .account_id;
   identity_test_environment()->UpdatePersistentErrorOfRefreshTokenForAccount(
       primary_account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
@@ -414,7 +419,7 @@ TEST_F(IdentityAccessorImplTest,
 TEST_F(IdentityAccessorImplTest, GetAccessTokenNotSignedIn) {
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetAccessToken(
-      kTestGaiaId, ScopeSet(), "dummy_consumer",
+      CoreAccountId(kTestGaiaId), ScopeSet(), "dummy_consumer",
       base::BindRepeating(&IdentityAccessorImplTest::OnReceivedAccessToken,
                           base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
@@ -426,9 +431,10 @@ TEST_F(IdentityAccessorImplTest, GetAccessTokenNotSignedIn) {
 // Check that the expected access token is received if requesting an access
 // token when signed in.
 TEST_F(IdentityAccessorImplTest, GetAccessTokenSignedIn) {
-  std::string primary_account_id = identity_test_environment()
-                                       ->MakePrimaryAccountAvailable(kTestEmail)
-                                       .account_id;
+  CoreAccountId primary_account_id =
+      identity_test_environment()
+          ->MakePrimaryAccountAvailable(kTestEmail)
+          .account_id;
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetAccessToken(
       primary_account_id, ScopeSet(), "dummy_consumer",

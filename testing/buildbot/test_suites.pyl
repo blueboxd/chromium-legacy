@@ -2696,8 +2696,8 @@
 
     'client_v8_chromium_isolated_scripts': {
       'content_shell_crash_test': {},
-      'devtools_closure_compile': {},
-      'devtools_eslint': {},
+      'devtools_type_check': {},
+      'devtools_lint_check': {},
       'telemetry_gpu_unittests': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
@@ -4242,8 +4242,8 @@
     },
 
     'linux_specific_chromium_isolated_scripts': {
-      'devtools_closure_compile': {},
-      'devtools_eslint': {},
+      'devtools_type_check': {},
+      'devtools_lint_check': {},
       'not_site_per_process_webkit_layout_tests': {
         # not_site_per_process_webkit_layout_tests provides coverage for
         # running Layout Tests without site-per-process.  This is the mode used

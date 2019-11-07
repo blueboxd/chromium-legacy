@@ -68008,6 +68008,13 @@ Full version information for the fingerprint enum values:
   <int value="8" label="OPENXR_DEVICE_ID"/>
 </enum>
 
+<enum name="XRFeatureRequestStatus">
+  <int value="0" label="NotRequested"/>
+  <int value="1" label="Required"/>
+  <int value="2" label="OptionalAccepted"/>
+  <int value="3" label="OptionalRejected"/>
+</enum>
+
 <enum name="XRReferenceSpaceType">
   <int value="0" label="Viewer"/>
   <int value="1" label="Local"/>

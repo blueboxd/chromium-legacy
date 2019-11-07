@@ -163,10 +163,10 @@ class CORE_EXPORT IntersectionObserver final
   static void SetThrottleDelayEnabledForTesting(bool);
 
  private:
-  void ClearWeakMembers(Visitor*);
+  void ProcessCustomWeakness(const WeakCallbackInfo&);
 
   const Member<IntersectionObserverDelegate> delegate_;
-  WeakMember<Element> root_;
+  UntracedMember<Element> root_;
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
   Vector<float> thresholds_;
   DOMHighResTimeStamp delay_;

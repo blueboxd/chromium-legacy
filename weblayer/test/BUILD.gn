@@ -126,6 +126,6 @@ test("weblayer_browsertests") {
     android_manifest_dep = ":weblayer_browsertests_manifest"
     use_default_launcher = false
     shared_resources = true
-    locale_config_java_packages = [ weblayer_locale_config_java_package ]
+    product_config_java_packages = [ weblayer_product_config_java_package ]
   }
 }

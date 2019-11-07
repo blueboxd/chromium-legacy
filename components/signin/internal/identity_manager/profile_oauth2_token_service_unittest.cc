@@ -682,14 +682,14 @@ TEST_F(ProfileOAuth2TokenServiceTest, RequestParametersOrderTest) {
   const CoreAccountId account_id0("0");
   const CoreAccountId account_id1("1");
   OAuth2AccessTokenManager::RequestParameters params[] = {
-      OAuth2AccessTokenManager::RequestParameters("0", "0", set_0),
-      OAuth2AccessTokenManager::RequestParameters("0", "0", set_1),
-      OAuth2AccessTokenManager::RequestParameters("0", "1", set_0),
-      OAuth2AccessTokenManager::RequestParameters("0", "1", set_1),
-      OAuth2AccessTokenManager::RequestParameters("1", "0", set_0),
-      OAuth2AccessTokenManager::RequestParameters("1", "0", set_1),
-      OAuth2AccessTokenManager::RequestParameters("1", "1", set_0),
-      OAuth2AccessTokenManager::RequestParameters("1", "1", set_1),
+      OAuth2AccessTokenManager::RequestParameters("0", account_id0, set_0),
+      OAuth2AccessTokenManager::RequestParameters("0", account_id0, set_1),
+      OAuth2AccessTokenManager::RequestParameters("0", account_id1, set_0),
+      OAuth2AccessTokenManager::RequestParameters("0", account_id1, set_1),
+      OAuth2AccessTokenManager::RequestParameters("1", account_id0, set_0),
+      OAuth2AccessTokenManager::RequestParameters("1", account_id0, set_1),
+      OAuth2AccessTokenManager::RequestParameters("1", account_id1, set_0),
+      OAuth2AccessTokenManager::RequestParameters("1", account_id1, set_1),
   };
 
   for (size_t i = 0; i < base::size(params); i++) {

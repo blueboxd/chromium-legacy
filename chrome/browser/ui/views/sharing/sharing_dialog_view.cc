@@ -156,13 +156,32 @@ std::unique_ptr<views::View> MaybeCreateImageView(
   return image_view;
 }
 
+std::unique_ptr<views::View> CreateFootnoteView(
+    const SharingDialogData& data,
+    content::WebContents* web_contents,
+    views::StyledLabelListener* listener) {
+  bool show_origin = ShouldShowOrigin(data, web_contents);
+  switch (data.type) {
+    case SharingDialogType::kDialogWithoutDevicesWithApp:
+      return CreateHelpText(data, listener, show_origin);
+    case SharingDialogType::kDialogWithDevicesMaybeApps:
+      return show_origin ? CreateOriginView(data) : nullptr;
+    case SharingDialogType::kErrorDialog:
+    case SharingDialogType::kEducationalDialog:
+      return nullptr;
+  }
+}
+
 }  // namespace
 
 SharingDialogView::SharingDialogView(views::View* anchor_view,
                                      content::WebContents* web_contents,
                                      SharingDialogData data)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
-      data_(std::move(data)) {}
+      data_(std::move(data)) {
+  DialogDelegate::SetFootnoteView(
+      ::CreateFootnoteView(data_, web_contents, this));
+}
 
 SharingDialogView::~SharingDialogView() = default;
 
@@ -172,19 +191,6 @@ void SharingDialogView::Hide() {
 
 int SharingDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
-}
-
-std::unique_ptr<views::View> SharingDialogView::CreateFootnoteView() {
-  bool show_origin = ShouldShowOrigin(data_, web_contents());
-  switch (GetDialogType()) {
-    case SharingDialogType::kDialogWithoutDevicesWithApp:
-      return CreateHelpText(data_, this, show_origin);
-    case SharingDialogType::kDialogWithDevicesMaybeApps:
-      return show_origin ? CreateOriginView(data_) : nullptr;
-    case SharingDialogType::kErrorDialog:
-    case SharingDialogType::kEducationalDialog:
-      return nullptr;
-  }
 }
 
 void SharingDialogView::StyledLabelLinkClicked(views::StyledLabel* label,

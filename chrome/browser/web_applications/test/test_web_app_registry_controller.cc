@@ -60,7 +60,11 @@ void TestWebAppRegistryController::InstallWebAppsAfterSync(
 }
 
 void TestWebAppRegistryController::UninstallWebAppsAfterSync(
-    std::vector<std::unique_ptr<WebApp>> web_apps) {}
+    std::vector<std::unique_ptr<WebApp>> web_apps,
+    RepeatingUninstallCallback callback) {
+  for (const std::unique_ptr<WebApp>& web_app : web_apps)
+    callback.Run(web_app->app_id(), /*uninstalled=*/true);
+}
 
 void TestWebAppRegistryController::DestroySubsystems() {
   mutable_registrar_.reset();

@@ -2,9 +2,8 @@
 # Almost all changes should be made in the upstream repository at
 # https://github.com/web-platform-tests/wpt and then be imported into the
 # Chromium repo.
-# Team alias: ecosystem-infra@chromium.org
-set noparent
 foolip@chromium.org
 lpz@chromium.org
 robertma@chromium.org
 
+# Team alias: ecosystem-infra@chromium.org

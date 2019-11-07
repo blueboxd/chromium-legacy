@@ -312,6 +312,9 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   // TODO(crbug.com/992953): Add a simplified layout pass for custom layout.
   if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
       block_flow && !GetFlowThread(block_flow) &&
+      // TODO(kojii): Enable simplified layout for fragment items.
+      !(block_flow->ChildrenInline() &&
+        RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) &&
       !block_flow->IsLayoutNGCustom()) {
     // A child may have changed size while performing "simplified" layout (it
     // may have gained or removed scrollbars, changing its size). In these

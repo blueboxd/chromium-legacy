@@ -484,6 +484,13 @@ const base::Feature kServiceWorkerOnUI{"ServiceWorkerOnUI",
 const base::Feature kServiceWorkerPaymentApps{"ServiceWorkerPaymentApps",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If enabled, prefer to start service workers in an unused renderer process if
+// available. This helps let navigations and service workers use the same
+// process when a process was already created for a navigation but not yet
+// claimed by it (as is common for navigations from the Android New Tab Page).
+const base::Feature kServiceWorkerPrefersUnusedProcess{
+    "ServiceWorkerPrefersUnusedProcess", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // http://tc39.github.io/ecmascript_sharedmem/shmem.html
 const base::Feature kSharedArrayBuffer {
   "SharedArrayBuffer",

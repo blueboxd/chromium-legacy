@@ -40,14 +40,14 @@ class TestIdentityManagerDiagnosticsObserver
     identity_manager_->RemoveDiagnosticsObserver(this);
   }
 
-  const std::string& token_updator_account_id() {
+  const CoreAccountId& token_updator_account_id() {
     return token_updator_account_id_;
   }
   const std::string& token_updator_source() { return token_updator_source_; }
   bool is_token_updator_refresh_token_valid() {
     return is_token_updator_refresh_token_valid_;
   }
-  const std::string& token_remover_account_id() {
+  const CoreAccountId& token_remover_account_id() {
     return token_remover_account_id_;
   }
   const std::string& token_remover_source() { return token_remover_source_; }
@@ -71,9 +71,9 @@ class TestIdentityManagerDiagnosticsObserver
   }
 
   signin::IdentityManager* identity_manager_;
-  std::string token_updator_account_id_;
+  CoreAccountId token_updator_account_id_;
   std::string token_updator_source_;
-  std::string token_remover_account_id_;
+  CoreAccountId token_remover_account_id_;
   std::string token_remover_source_;
   bool is_token_updator_refresh_token_valid_;
 };
@@ -134,7 +134,7 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_AddNewAccount) {
   identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
       run_loop.QuitClosure());
 
-  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+  CoreAccountId account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
       /*is_under_advanced_protection=*/false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -168,7 +168,7 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
   identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
       run_loop.QuitClosure());
 
-  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+  CoreAccountId account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
       /*is_under_advanced_protection=*/false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -196,7 +196,7 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
   // The internals of IdentityService is migrating from email to gaia id
   // as the account id. Detect whether the current plaform has completed
   // the migration.
-  const bool use_gaia_as_account_id = account_id == account_info.gaia;
+  const bool use_gaia_as_account_id = account_id.id == account_info.gaia;
 
   // If the system uses gaia id as account_id, then change the email and
   // the |is_under_advanced_protection| field. Otherwise only change the
@@ -244,7 +244,7 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
   identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
       run_loop.QuitClosure());
 
-  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+  CoreAccountId account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
       /*is_under_advanced_protection=*/false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -375,7 +375,7 @@ TEST_F(
   identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
       run_loop.QuitClosure());
 
-  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+  CoreAccountId account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
       /*is_under_advanced_protection=*/false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -457,13 +457,15 @@ TEST_F(AccountsMutatorTest, RemoveAccount_NonExistingAccount) {
       }));
 
   accounts_mutator()->RemoveAccount(
-      kTestGaiaId, signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+      CoreAccountId(kTestGaiaId),
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop.RunUntilIdle();
 
-  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(kTestGaiaId));
+  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
+      CoreAccountId(kTestGaiaId)));
   EXPECT_FALSE(
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
-          kTestGaiaId));
+          CoreAccountId(kTestGaiaId)));
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 0U);
 }
 
@@ -479,7 +481,7 @@ TEST_F(AccountsMutatorTest, RemoveAccount_ExistingAccount) {
   identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
       run_loop.QuitClosure());
 
-  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+  CoreAccountId account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
       /*is_under_advanced_protection=*/false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -523,7 +525,7 @@ TEST_F(AccountsMutatorTest, RemoveAllAccounts) {
   identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
       run_loop.QuitClosure());
 
-  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+  CoreAccountId account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
       /*is_under_advanced_protection=*/false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -540,7 +542,7 @@ TEST_F(AccountsMutatorTest, RemoveAllAccounts) {
   identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
       run_loop2.QuitClosure());
 
-  std::string account_id2 = accounts_mutator()->AddOrUpdateAccount(
+  CoreAccountId account_id2 = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId2, kTestEmail2, kRefreshToken2,
       /*is_under_advanced_protection=*/false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -559,8 +561,8 @@ TEST_F(AccountsMutatorTest, RemoveAllAccounts) {
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop3.RunUntilIdle();
 
-  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(kTestGaiaId));
-  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(kTestGaiaId2));
+  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
+  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id2));
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 0U);
 }
 
@@ -614,7 +616,7 @@ TEST_F(AccountsMutatorTest, UpdateAccessTokenFromSource) {
     return;
 
   // Add a default account.
-  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+  CoreAccountId account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   EXPECT_EQ(
@@ -644,13 +646,13 @@ TEST_F(AccountsMutatorTest, RemoveRefreshTokenFromSource) {
     return;
 
   // Add a default account.
-  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+  CoreAccountId account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, "refresh_token", false,
       signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
 
   // Remove the default account.
   accounts_mutator()->RemoveAccount(
-      kTestGaiaId,
+      account_id,
       signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
   EXPECT_EQ("Settings::Signout",
             identity_manager_diagnostics_observer()->token_remover_source());

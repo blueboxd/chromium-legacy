@@ -16,6 +16,22 @@
 
 namespace libgtkui {
 
+namespace {
+
+// Xkb Events stores group attribute into XKeyEvent::state bit field while
+// GdkEventKey objects has separate fields for that purpose, they are ::state
+// and ::group respectively. So recompose them when build XKeyEvent from
+// GdkEventKey here. This is similar to XkbBuildCoreState(), but takes takes a
+// uint instead of assuming a 8-bit Xkb state.
+//
+// More details:
+// https://code.woboq.org/qt5/include/X11/extensions/XKB.h.html#_M/XkbBuildCoreState
+int BuildXkbStateFromGdkEvent(const GdkEventKey& keyev) {
+  return keyev.state | ((keyev.group & 0x3) << 13);
+}
+
+}  // namespace
+
 // static
 GtkEventLoopX11* GtkEventLoopX11::GetInstance() {
   return base::Singleton<GtkEventLoopX11>::get();
@@ -69,7 +85,7 @@ void GtkEventLoopX11::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   x_event.xkey.window = GDK_WINDOW_XID(gdk_event_key.window);
   x_event.xkey.root = DefaultRootWindow(x_event.xkey.display);
   x_event.xkey.time = gdk_event_key.time;
-  x_event.xkey.state = gdk_event_key.state;
+  x_event.xkey.state = BuildXkbStateFromGdkEvent(gdk_event_key);
   x_event.xkey.keycode = gdk_event_key.hardware_keycode;
   x_event.xkey.same_screen = true;
 

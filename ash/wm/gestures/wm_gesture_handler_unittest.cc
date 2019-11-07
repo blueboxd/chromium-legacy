@@ -30,11 +30,6 @@ bool InOverviewSession() {
   return Shell::Get()->overview_controller()->InOverviewSession();
 }
 
-bool CanHandleVirtualDesksGestures() {
-  return features::IsVirtualDesksEnabled() &&
-         features::IsVirtualDesksGesturesEnabled();
-}
-
 const aura::Window* GetHighlightedWindow() {
   return InOverviewSession() ? GetOverviewHighlightedWindow() : nullptr;
 }
@@ -51,8 +46,7 @@ class WmGestureHandlerTest : public AshTestBase,
   void SetUp() override {
     if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
-          /*enabled_features=*/{features::kVirtualDesks,
-                                features::kVirtualDesksGestures},
+          /*enabled_features=*/{features::kVirtualDesks},
           /*disabled_features=*/{});
     }
 
@@ -66,7 +60,7 @@ class WmGestureHandlerTest : public AshTestBase,
   }
 
   void ScrollToSwitchDesks(bool scroll_left) {
-    DCHECK(CanHandleVirtualDesksGestures());
+    DCHECK(features::IsVirtualDesksEnabled());
 
     DeskSwitchAnimationWaiter waiter;
     const float x_offset =

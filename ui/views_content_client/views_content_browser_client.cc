@@ -30,7 +30,7 @@ void ViewsContentBrowserClient::GetQuotaSettings(
     storage::OptionalQuotaSettingsCallback callback) {
   storage::GetNominalDynamicSettings(
       partition->GetPath(), context->IsOffTheRecord(),
-      storage::GetDefaultDiskInfoHelper(), std::move(callback));
+      storage::GetDefaultDeviceInfoHelper(), std::move(callback));
 }
 
 }  // namespace ui

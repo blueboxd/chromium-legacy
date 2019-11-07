@@ -198,8 +198,8 @@ class SearchResultAnswerCardView::AnswerCardResultView
       // Shouldn't eat Space; we want Space to go to the search box.
       return false;
     }
-
-    return Button::OnKeyPressed(event);
+    ActivateResult(event.flags(), false /* by_button_press */);
+    return true;
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -217,17 +217,22 @@ class SearchResultAnswerCardView::AnswerCardResultView
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK(sender == this);
+    ActivateResult(event.flags(), true /* by_button_press */);
+  }
+
+ private:
+  void ActivateResult(int event_flags, bool by_button_press) {
     if (result()) {
       RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                    view_delegate_->GetSearchModel());
       view_delegate_->OpenSearchResult(
-          result()->id(), event.flags(),
+          result()->id(), event_flags,
           ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
-          ash::AppListLaunchType::kSearchResult, -1 /* suggestion_index */);
+          ash::AppListLaunchType::kSearchResult, -1 /* suggestion_index */,
+          !by_button_press && is_default_result() /* launch_as_default */);
     }
   }
 
- private:
   // content::NavigableContentsObserver overrides:
   void DidFinishNavigation(
       const GURL& url,

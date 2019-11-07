@@ -36,6 +36,8 @@ class InstallManager {
   // |app_id| may be empty on failure.
   using OnceInstallCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
+  using OnceUninstallCallback =
+      base::OnceCallback<void(const AppId& app_id, bool uninstalled)>;
 
   // Callback used to indicate whether a user has accepted the installation of a
   // web app.

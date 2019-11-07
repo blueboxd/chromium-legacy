@@ -53,8 +53,6 @@ class ASH_EXPORT HomeScreenPresenter {
   void ScheduleOverviewModeAnimation(TransitionType transition, bool animate);
 
  private:
-  class OverviewAnimationMetricsReporter;
-
   // Updates the home screen state to match the final state for |transition|.
   // If |animation_duration| is 0, the update will be immediate, otherwise the
   // update will be animated.
@@ -62,10 +60,6 @@ class ASH_EXPORT HomeScreenPresenter {
                                           base::TimeDelta animation_duration);
 
   HomeScreenController* controller_;
-
-  // Metric reporter for entering/exiting overview.
-  const std::unique_ptr<OverviewAnimationMetricsReporter>
-      overview_animation_metrics_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeScreenPresenter);
 };

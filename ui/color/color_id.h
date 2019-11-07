@@ -5,6 +5,8 @@
 #ifndef UI_COLOR_COLOR_ID_H_
 #define UI_COLOR_COLOR_ID_H_
 
+#include "build/build_config.h"
+
 namespace ui {
 
 // ColorId contains identifiers for all input, intermediary, and output colors
@@ -18,6 +20,40 @@ enum ColorIds : ColorId {
 
   // TODO(pkasting): Define this list.
   kColorX = kUiColorsStart,
+
+#if defined(OS_WIN)
+  // Windows native colors
+  kColorNative3dDkShadow,
+  kColorNative3dLight,
+  kColorNativeActiveBorder,
+  kColorNativeActiveCaption,
+  kColorNativeAppWorkspace,
+  kColorNativeBackground,
+  kColorNativeBtnFace,
+  kColorNativeBtnHighlight,
+  kColorNativeBtnShadow,
+  kColorNativeBtnText,
+  kColorNativeCaptionText,
+  kColorNativeGradientActiveCaption,
+  kColorNativeGradientInactiveCaption,
+  kColorNativeGrayText,
+  kColorNativeHighlight,
+  kColorNativeHighlightText,
+  kColorNativeHotlight,
+  kColorNativeInactiveBorder,
+  kColorNativeInactiveCaption,
+  kColorNativeInactiveCaptionText,
+  kColorNativeInfoBk,
+  kColorNativeInfoText,
+  kColorNativeMenu,
+  kColorNativeMenuBar,
+  kColorNativeMenuHilight,
+  kColorNativeMenuText,
+  kColorNativeScrollbar,
+  kColorNativeWindow,
+  kColorNativeWindowFrame,
+  kColorNativeWindowText,
+#endif  // defined(OS_WIN)
 
   // Embedders must start color IDs from this value.
   kUiColorsEnd,
@@ -37,7 +73,10 @@ enum ColorSetIds : ColorSetId {
   kUiColorSetsStart = kUiColorsLast + 1,
 
   // TODO(pkasting): Define this list.
-  kColorSetX = kUiColorSetsStart,
+
+  // A set of color IDs whose values match the native platform as closely as
+  // possible.
+  kColorSetNative = kUiColorSetsStart,
 
   // Embedders must start color set IDs from this value.
   kUiColorSetsEnd,

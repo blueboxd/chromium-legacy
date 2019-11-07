@@ -344,6 +344,10 @@ const char kForceFirstRun[]                 = "force-first-run";
 // Forces Chrome to use a stacked tab strip layout.
 const char kForceStackedTabStripLayout[]    = "force-stacked-tab-strip-layout";
 
+// Forces web-application mode. This hides certain system UI elements and forces
+// the app to be installed if it hasn't been already.
+const char kForceWebAppMode[]               = "force-web-app-mode";
+
 // Specifies which page will be displayed in newly-opened tabs. We need this
 // for testing purposes so that the UI tests don't depend on what comes up for
 // http://google.com.

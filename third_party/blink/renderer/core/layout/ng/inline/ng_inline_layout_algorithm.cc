@@ -975,7 +975,7 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
   if (NGFragmentItemsBuilder* items_builder = context_->ItemsBuilder()) {
     DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
-    container_builder_.AddOutOfFlowChildren(line_box_);
+    container_builder_.PropagateChildrenData(line_box_);
     scoped_refptr<const NGLayoutResult> layout_result =
         container_builder_.ToLineBoxFragment();
     if (items_builder->TextContent(false).IsNull())

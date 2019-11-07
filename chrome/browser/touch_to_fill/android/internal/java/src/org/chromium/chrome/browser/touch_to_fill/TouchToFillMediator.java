@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ON_CLICK_MANAGE;
@@ -17,6 +18,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VI
 import androidx.annotation.Px;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
@@ -57,7 +59,6 @@ class TouchToFillMediator {
     void showCredentials(String url, boolean isOriginSecure, List<Credential> credentials) {
         assert credentials != null;
         mModel.set(ON_CLICK_MANAGE, this::onManagePasswordSelected);
-        mModel.set(VISIBLE, true);
 
         ListModel<ListItem> sheetItems = mModel.get(SHEET_ITEMS);
         sheetItems.clear();
@@ -71,18 +72,16 @@ class TouchToFillMediator {
 
         mCredentials = credentials;
         for (Credential credential : credentials) {
-            PropertyModel propertyModel =
-                    new PropertyModel.Builder(CredentialProperties.ALL_KEYS)
-                            .with(CREDENTIAL, credential)
-                            .with(FORMATTED_ORIGIN,
-                                    UrlFormatter.formatUrlForDisplayOmitScheme(
-                                            credential.getOriginUrl()))
-                            .with(ON_CLICK_LISTENER, this::onSelectedCredential)
-                            .build();
-            sheetItems.add(new ListItem(TouchToFillProperties.ItemType.CREDENTIAL, propertyModel));
+            final PropertyModel model = createCredentialModel(credential);
+            sheetItems.add(new ListItem(TouchToFillProperties.ItemType.CREDENTIAL, model));
             mDelegate.fetchFavicon(credential.getOriginUrl(), url, mDesiredFaviconSize,
-                    (bitmap) -> propertyModel.set(FAVICON, bitmap));
+                    (bitmap) -> model.set(FAVICON, bitmap));
+            if (shouldCreateConfirmationButton(credentials)) {
+                sheetItems.add(new ListItem(TouchToFillProperties.ItemType.FILL_BUTTON,
+                        createCredentialModel(credential)));
+            }
         }
+        mModel.set(VISIBLE, true);
     }
 
     private void onSelectedCredential(Credential credential) {
@@ -115,5 +114,25 @@ class TouchToFillMediator {
         RecordHistogram.recordEnumeratedHistogram(UMA_TOUCH_TO_FILL_USER_ACTION,
                 UserAction.SELECT_MANAGE_PASSWORDS, UserAction.MAX_VALUE + 1);
         mDelegate.onManagePasswordsSelected();
+    }
+
+    /**
+     * @param credentials The available credentials. Show the confirmation for a lone credential.
+     * @return True if a confirmation button should be shown at the end of the bottom sheet.
+     */
+    private boolean shouldCreateConfirmationButton(List<Credential> credentials) {
+        return credentials.size() == 1
+                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        ChromeFeatureList.TOUCH_TO_FILL_ANDROID,
+                        FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON, false);
+    }
+
+    private PropertyModel createCredentialModel(Credential credential) {
+        return new PropertyModel.Builder(CredentialProperties.ALL_KEYS)
+                .with(CREDENTIAL, credential)
+                .with(ON_CLICK_LISTENER, this::onSelectedCredential)
+                .with(FORMATTED_ORIGIN,
+                        UrlFormatter.formatUrlForDisplayOmitScheme(credential.getOriginUrl()))
+                .build();
     }
 }

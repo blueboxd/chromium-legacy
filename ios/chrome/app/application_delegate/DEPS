@@ -1,5 +1,0 @@
-specific_include_rules = {
-  "metrics_mediator\.mm": [
-    "+third_party/google_toolbox_for_mac/src/Foundation/GTMTimeUtils.h",
-  ],
-}

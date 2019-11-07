@@ -1146,7 +1146,7 @@ void ServiceWorkerProviderHost::GetRegistration(
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerProviderHost::GetRegistration",
                            trace_id, "Client URL", client_url.spec());
-  context_->storage()->FindRegistrationForDocument(
+  context_->storage()->FindRegistrationForClientUrl(
       client_url, base::AdaptCallbackForRepeating(base::BindOnce(
                       &ServiceWorkerProviderHost::GetRegistrationComplete,
                       AsWeakPtr(), std::move(callback), trace_id)));

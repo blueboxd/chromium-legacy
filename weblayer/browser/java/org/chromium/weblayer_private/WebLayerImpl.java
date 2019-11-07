@@ -99,7 +99,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         // other expensive startup tasks.
         R.onResourcesLoaded(resourcesPackageId);
 
-        ResourceBundle.setAvailablePakLocales(new String[] {}, LocaleConfig.UNCOMPRESSED_LOCALES);
+        ResourceBundle.setAvailablePakLocales(new String[] {}, ProductConfig.UNCOMPRESSED_LOCALES);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
 
         ChildProcessCreationParams.set(appContext.getPackageName(), false /* isExternalService */,

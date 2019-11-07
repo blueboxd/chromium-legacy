@@ -62,8 +62,6 @@ ListInfos GetListInfos() {
 #endif
   const bool kSyncAlways = true;
   const bool kSyncNever = false;
-  const bool kSyncRealTimeLookupList =
-      RealTimePolicyEngine::IsFetchAllowlistEnabled();
   return ListInfos({
       ListInfo(kSyncAlways, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
@@ -93,7 +91,7 @@ ListInfos GetListInfos() {
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlSuspiciousSite.store",
                GetUrlSuspiciousSiteId(), SB_THREAT_TYPE_SUSPICIOUS_SITE),
       ListInfo(kSyncNever, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
-      ListInfo(kSyncRealTimeLookupList, "UrlHighConfidenceAllowlist.store",
+      ListInfo(kSyncOnlyOnChromeBuilds, "UrlHighConfidenceAllowlist.store",
                GetUrlHighConfidenceAllowlistId(),
                SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST),
   });

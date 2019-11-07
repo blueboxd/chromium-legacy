@@ -85,7 +85,7 @@ class BackingVisitor : public Visitor {
                                void*) final {}
   void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void* slot, MovingObjectCallback) final {}
-  void RegisterWeakCallback(void* closure, WeakCallback) final {}
+  void RegisterWeakCallback(WeakCallback, void*) final {}
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 
  private:

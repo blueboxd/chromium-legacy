@@ -79,7 +79,6 @@ class CORE_EXPORT EventHandlerRegistry final
   void DocumentDetached(Document&);
 
   void Trace(blink::Visitor*);
-  void ClearWeakMembers(Visitor*);
 
  private:
   enum ChangeOperation {
@@ -129,6 +128,8 @@ class CORE_EXPORT EventHandlerRegistry final
   void CheckConsistency(EventHandlerClass) const;
 
   Page* GetPage() const;
+
+  void ProcessCustomWeakness(const WeakCallbackInfo&);
 
   Member<LocalFrame> frame_;
   EventTargetSet targets_[kEventHandlerClassCount];

@@ -110,6 +110,11 @@ void ContentSettingImageView::Update() {
     content_setting_image_model_->AccessibilityWasNotified(web_contents);
   }
 
+  if (content_setting_image_model_->ShouldAutoOpenBubble(web_contents)) {
+    ShowBubbleImpl();
+    content_setting_image_model_->SetBubbleWasAutoOpened(web_contents);
+  }
+
   // If the content usage or blockage should be indicated to the user, start the
   // animation and record that the icon has been shown.
   if (!can_animate_ ||
@@ -174,6 +179,10 @@ bool ContentSettingImageView::ShouldShowSeparator() const {
 }
 
 bool ContentSettingImageView::ShowBubble(const ui::Event& event) {
+  return ShowBubbleImpl();
+}
+
+bool ContentSettingImageView::ShowBubbleImpl() {
   PauseAnimation();
   content::WebContents* web_contents =
       delegate_->GetContentSettingWebContents();

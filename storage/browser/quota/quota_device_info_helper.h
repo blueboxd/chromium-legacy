@@ -6,26 +6,28 @@
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 
-#ifndef STORAGE_BROWSER_QUOTA_QUOTA_DISK_INFO_HELPER_H_
-#define STORAGE_BROWSER_QUOTA_QUOTA_DISK_INFO_HELPER_H_
+#ifndef STORAGE_BROWSER_QUOTA_QUOTA_DEVICE_INFO_HELPER_H_
+#define STORAGE_BROWSER_QUOTA_QUOTA_DEVICE_INFO_HELPER_H_
 
 namespace storage {
 
 // Interface used by the quota system to gather disk space information.
 // Can be overridden in tests.
 // Subclasses must be thread-safe.
-// QuotaSettings instances own a singleton instance of QuotaDiskInfoHelper.
-class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDiskInfoHelper {
+// QuotaSettings instances own a singleton instance of QuotaDeviceInfoHelper.
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDeviceInfoHelper {
  public:
-  QuotaDiskInfoHelper() = default;
-  virtual ~QuotaDiskInfoHelper();
+  QuotaDeviceInfoHelper() = default;
+  virtual ~QuotaDeviceInfoHelper();
 
   virtual int64_t AmountOfTotalDiskSpace(const base::FilePath& path) const;
 
+  virtual int64_t AmountOfPhysicalMemory() const;
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(QuotaDiskInfoHelper);
-};  // class QuotaDiskInfoHelper
+  DISALLOW_COPY_AND_ASSIGN(QuotaDeviceInfoHelper);
+};  // class QuotaDeviceInfoHelper
 
 }  // namespace storage
 
-#endif  // STORAGE_BROWSER_QUOTA_QUOTA_DISK_INFO_HELPER_H_
+#endif  // STORAGE_BROWSER_QUOTA_QUOTA_DEVICE_INFO_HELPER_H_

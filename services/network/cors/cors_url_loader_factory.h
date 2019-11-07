@@ -56,6 +56,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // URLLoaders.
   void ClearBindings();
 
+  uint32_t process_id() const { return process_id_; }
+
   // Set whether the factory allows CORS preflights. See IsSane.
   static void SetAllowExternalPreflightsForTesting(bool allow) {
     allow_external_preflights_for_testing_ = allow;

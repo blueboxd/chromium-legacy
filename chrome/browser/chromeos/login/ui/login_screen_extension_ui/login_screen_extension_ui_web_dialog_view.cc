@@ -40,6 +40,10 @@ bool LoginScreenExtensionUiWebDialogView::TakeFocus(
   return true;
 }
 
+bool LoginScreenExtensionUiWebDialogView::ShouldCenterWindowTitleText() const {
+  return !delegate_ || delegate_->ShouldCenterDialogTitleText();
+}
+
 void LoginScreenExtensionUiWebDialogView::OnFocusLeavingSystemTray(
     bool reverse) {
   web_contents()->FocusThroughTabTraversal(reverse);

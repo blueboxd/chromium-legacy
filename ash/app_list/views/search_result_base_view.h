@@ -71,6 +71,12 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
     return result_display_start_time_;
   }
 
+  void set_is_default_result(bool is_default) {
+    is_default_result_ = is_default;
+  }
+
+  bool is_default_result() const { return is_default_result_; }
+
   // views::Button:
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
 
@@ -114,6 +120,9 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   // The starting time when |result_| is being displayed.
   base::TimeTicks result_display_start_time_;
 
+  // True if |result_| is selected as the default result which can be
+  // activated by user by pressing ENTER key.
+  bool is_default_result_ = false;
   SearchResult* result_ = nullptr;  // Owned by SearchModel::SearchResults.
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultBaseView);

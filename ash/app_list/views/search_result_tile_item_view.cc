@@ -247,7 +247,7 @@ void SearchResultTileItemView::SetParentBackgroundColor(SkColor color) {
 
 void SearchResultTileItemView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
-  ActivateResult(event.flags());
+  ActivateResult(event.flags(), true /* by_button_press */);
 }
 
 void SearchResultTileItemView::GetAccessibleNodeData(
@@ -275,7 +275,7 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
 
   if (event.key_code() == ui::VKEY_RETURN) {
-    ActivateResult(event.flags());
+    ActivateResult(event.flags(), false /* by_button_press */);
     return true;
   }
   return false;
@@ -387,7 +387,8 @@ void SearchResultTileItemView::OnMenuClosed() {
   OnBlur();
 }
 
-void SearchResultTileItemView::ActivateResult(int event_flags) {
+void SearchResultTileItemView::ActivateResult(int event_flags,
+                                              bool by_button_press) {
   if (result()->result_type() == AppListSearchResultType::kPlayStoreApp) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Arc.PlayStoreSearch.ResultClickLatency",
@@ -404,7 +405,8 @@ void SearchResultTileItemView::ActivateResult(int event_flags) {
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(
       result()->id(), event_flags, AppListLaunchedFrom::kLaunchedFromSearchBox,
-      AppListLaunchType::kAppSearchResult, index_in_container());
+      AppListLaunchType::kAppSearchResult, index_in_container(),
+      is_default_result() && !by_button_press /* launch_as_default */);
   view_delegate_->LogResultLaunchHistogram(
       SearchResultLaunchLocation::kTileList, index_in_container());
 }

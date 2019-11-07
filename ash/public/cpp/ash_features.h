@@ -98,11 +98,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
 // Enables the Virtual Desks feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kVirtualDesks;
 
-// Enables the touchpad 4-finger gestures to switch desks.
-// This flag is only effective if the Virtual Desks feature is enabled (see
-// `kVirtualDesks`).
-ASH_PUBLIC_EXPORT extern const base::Feature kVirtualDesksGestures;
-
 // Enables using the BluetoothSystem Mojo interface for Bluetooth operations.
 ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 
@@ -159,8 +154,6 @@ ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 ASH_PUBLIC_EXPORT bool IsViewsLoginEnabled();
 
 ASH_PUBLIC_EXPORT bool IsVirtualDesksEnabled();
-
-ASH_PUBLIC_EXPORT bool IsVirtualDesksGesturesEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 

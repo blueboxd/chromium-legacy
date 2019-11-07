@@ -866,6 +866,10 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
         extension->GetType() == extensions::Manifest::TYPE_EXTENSION) {
       return true;
     }
+  } else if (account_type_ == policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP) {
+    if (extension->GetType() == extensions::Manifest::TYPE_EXTENSION) {
+      return true;
+    }
   }
 
   // Disallow all other extensions.

@@ -35,6 +35,7 @@ class XDGSurfaceWrapperV5 : public XDGSurfaceWrapper {
   void SetTitle(const base::string16& title) override;
   void AckConfigure() override;
   void SetWindowGeometry(const gfx::Rect& bounds) override;
+  void SetAppId(const std::string& app_id) override;
 
   // xdg_surface_listener
   static void Configure(void* data,

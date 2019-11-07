@@ -47,6 +47,12 @@ void TestInstallFinalizer::FinalizeFallbackInstallAfterSync(
   NOTREACHED();
 }
 
+void TestInstallFinalizer::FinalizeUninstallAfterSync(
+    const AppId& app_id,
+    UninstallWebAppCallback callback) {
+  NOTREACHED();
+}
+
 void TestInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
     UninstallWebAppCallback callback) {

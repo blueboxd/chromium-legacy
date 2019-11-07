@@ -112,7 +112,7 @@ android_library("reactive_android_java") {
   ]
 }
 
-generate_locale_config_srcjar("chromecast_locale_config") {
+generate_product_config_srcjar("chromecast_product_config") {
   java_package = "org.chromium.chromecast.shell"
 }
 
@@ -148,12 +148,12 @@ android_library("cast_shell_java") {
 
   srcjar_deps = [
     ":cast_shell_build_config_gen",
-    ":chromecast_locale_config",
+    ":chromecast_product_config",
     ":logs_provider_aidl",
     "//chromecast/browser:java_enums",
   ]
 
-  jar_excluded_patterns = [ "*/LocaleConfig.class" ]
+  jar_excluded_patterns = [ "*/ProductConfig.class" ]
 
   deps = [
     ":cast_audio_manager_java",

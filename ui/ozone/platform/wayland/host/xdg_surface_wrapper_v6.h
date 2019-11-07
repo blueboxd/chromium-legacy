@@ -23,6 +23,7 @@ class XDGSurfaceWrapperV6 : public XDGSurfaceWrapper {
   XDGSurfaceWrapperV6(WaylandWindow* wayland_window);
   ~XDGSurfaceWrapperV6() override;
 
+  // XDGSurfaceWrapper overrides:
   bool Initialize(WaylandConnection* connection,
                   wl_surface* surface,
                   bool with_toplevel) override;
@@ -36,6 +37,7 @@ class XDGSurfaceWrapperV6 : public XDGSurfaceWrapper {
   void SetTitle(const base::string16& title) override;
   void AckConfigure() override;
   void SetWindowGeometry(const gfx::Rect& bounds) override;
+  void SetAppId(const std::string& app_id) override;
 
   // xdg_surface_listener
   static void Configure(void* data,

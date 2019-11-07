@@ -48,6 +48,18 @@ bool ContentSettingImageModelStates::GetAccessibilityNotified(
   return accessibility_notified_[static_cast<int>(type)];
 }
 
+void ContentSettingImageModelStates::SetBubbleWasAutoOpened(
+    ImageType type,
+    bool bubble_was_auto_opened) {
+  VerifyType(type);
+  auto_opened_bubbles_[static_cast<int>(type)] = bubble_was_auto_opened;
+}
+
+bool ContentSettingImageModelStates::BubbleWasAutoOpened(ImageType type) const {
+  VerifyType(type);
+  return auto_opened_bubbles_[static_cast<int>(type)];
+}
+
 ContentSettingImageModelStates::ContentSettingImageModelStates(
     content::WebContents* contents) {}
 

@@ -310,7 +310,8 @@ int SearchResultListView::GetHeightForWidth(int w) const {
 }
 
 void SearchResultListView::SearchResultActivated(SearchResultView* view,
-                                                 int event_flags) {
+                                                 int event_flags,
+                                                 bool by_button_press) {
   if (view_delegate_ && view->result()) {
     RecordSearchResultOpenSource(view->result(), view_delegate_->GetModel(),
                                  view_delegate_->GetSearchModel());
@@ -323,7 +324,8 @@ void SearchResultListView::SearchResultActivated(SearchResultView* view,
     view_delegate_->OpenSearchResult(
         view->result()->id(), event_flags,
         AppListLaunchedFrom::kLaunchedFromSearchBox,
-        AppListLaunchType::kSearchResult, -1 /* suggestion_index */);
+        AppListLaunchType::kSearchResult, -1 /* suggestion_index */,
+        !by_button_press && view->is_default_result() /* launch_as_default */);
   }
 }
 

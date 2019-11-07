@@ -56,6 +56,7 @@ class LoginScreenExtensionUiDialogDelegate : public ui::WebDialogDelegate {
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
+  bool ShouldCenterDialogTitleText() const override;
 
  private:
   const std::string extension_name_;

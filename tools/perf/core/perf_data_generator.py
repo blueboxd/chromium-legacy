@@ -912,25 +912,8 @@ OTHER_BENCHMARKS = {
 }
 
 
-# If you change this dictionary, run tools/perf/generate_perf_data
-NON_WATERFALL_BENCHMARKS = {
-    'sizes (mac)':
-        BenchmarkMetadata('tapted@chromium.org'),
-    'sizes (win)': BenchmarkMetadata('grt@chromium.org',
-                                     'Internals>PlatformIntegration'),
-    'sizes (linux)': BenchmarkMetadata(
-        'thestig@chromium.org', 'thomasanderson@chromium.org',
-        'Internals>PlatformIntegration'),
-    'supersize_archive': BenchmarkMetadata('agrieve@chromium.org'),
-}
-
 # Valid test suite (benchmark) names should match this regex.
 RE_VALID_TEST_SUITE_NAME = r'^[\w._-]+$'
-
-# Do not add names to this list. TODO(crbug.com/1020510): Rename these so all
-# test suites match the regex above.
-BAD_TEST_SUITE_NAMES = frozenset(
-    ['sizes (mac)', 'sizes (win)', 'sizes (linux)'])
 
 
 def _get_telemetry_perf_benchmarks_metadata():
@@ -1041,14 +1024,12 @@ def update_benchmark_csv(file_path):
 
   csv_data = []
   benchmark_metadatas = merge_dicts(
-      GTEST_BENCHMARKS, OTHER_BENCHMARKS, TELEMETRY_PERF_BENCHMARKS,
-      NON_WATERFALL_BENCHMARKS)
+      GTEST_BENCHMARKS, OTHER_BENCHMARKS, TELEMETRY_PERF_BENCHMARKS)
   _verify_benchmark_owners(benchmark_metadatas)
 
   undocumented_benchmarks = set()
   for benchmark_name in benchmark_metadatas:
-    if (not re.match(RE_VALID_TEST_SUITE_NAME, benchmark_name) and
-        benchmark_name not in BAD_TEST_SUITE_NAMES):
+    if not re.match(RE_VALID_TEST_SUITE_NAME, benchmark_name):
       raise ValueError('Invalid benchmark name: %s' % benchmark_name)
     if not benchmark_metadatas[benchmark_name].documentation_url:
       undocumented_benchmarks.add(benchmark_name)

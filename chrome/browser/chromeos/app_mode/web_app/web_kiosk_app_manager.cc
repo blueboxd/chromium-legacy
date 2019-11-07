@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/common/web_application_info.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_registry_simple.h"
 
@@ -52,7 +53,7 @@ void WebKioskAppManager::GetApps(std::vector<App>* apps) const {
   apps->reserve(apps_.size());
   for (auto& web_app : apps_) {
     App app(*web_app);
-    app.url = web_app->url();
+    app.url = web_app->install_url();
     apps->push_back(std::move(app));
   }
 }
@@ -69,6 +70,18 @@ const WebKioskAppData* WebKioskAppManager::GetAppByAccountId(
     }
   }
   return nullptr;
+}
+
+void WebKioskAppManager::UpdateAppByAccountId(
+    const AccountId& account_id,
+    std::unique_ptr<WebApplicationInfo> app_info) {
+  for (auto& web_app : apps_) {
+    if (web_app->account_id() == account_id) {
+      web_app->UpdateFromWebAppInfo(std::move(app_info));
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 void WebKioskAppManager::UpdateAppsFromPolicy() {

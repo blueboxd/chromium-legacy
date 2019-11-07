@@ -934,6 +934,7 @@ test.realbox.testArrowUpDownShowsMatchesWhenHidden = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
+  assertEquals(1, test.realbox.queries.length);
   chrome.embeddedSearch.searchBox.onqueryautocompletedone({
     input: test.realbox.realboxEl.value,
     matches: [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()],
@@ -962,6 +963,15 @@ test.realbox.testArrowUpDownShowsMatchesWhenHidden = function() {
   });
   test.realbox.realboxEl.dispatchEvent(arrowDown);
   assertTrue(arrowDown.defaultPrevented);
+
+  assertFalse(test.realbox.wrapperEl.classList.contains(
+      test.realbox.CLASSES.SHOW_MATCHES));
+
+  assertEquals(2, test.realbox.queries.length);
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()],
+  });
 
   assertTrue(test.realbox.wrapperEl.classList.contains(
       test.realbox.CLASSES.SHOW_MATCHES));

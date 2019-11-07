@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
+#include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
@@ -44,6 +45,11 @@ void SafeBrowsingService::Initialize() {
     // already initialized
     return;
   }
+
+  safe_browsing_api_handler_.reset(
+      new safe_browsing::SafeBrowsingApiHandlerBridge());
+  safe_browsing::SafeBrowsingApiHandler::SetInstance(
+      safe_browsing_api_handler_.get());
 
   base::FilePath user_data_dir;
   bool result =

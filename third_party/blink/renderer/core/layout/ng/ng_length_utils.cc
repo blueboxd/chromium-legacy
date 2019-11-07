@@ -96,9 +96,6 @@ bool BlockLengthUnresolvable(
     if (phase == LengthResolvePhase::kIntrinsic)
       return true;
 
-    // TODO(dgrogan): Make this account for constraint_space.IsFixedSizeBlock &&
-    // constraint_space.IsFixedBlockSizeIndefinite?
-
     LayoutUnit percentage_resolution_block_size =
         opt_percentage_resolution_block_size_for_min_max
             ? *opt_percentage_resolution_block_size_for_min_max

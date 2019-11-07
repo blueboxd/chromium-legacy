@@ -74,5 +74,14 @@ login.createScreen(
               $('ad-password-change'), cr.ui.Bubble.Attachment.BOTTOM, error,
               BUBBLE_HORIZONTAL_PADDING, BUBBLE_VERTICAL_PADDING);
         },
+
+        /**
+         * Updates localized content of the screen that is not updated via
+         * template.
+         */
+        updateLocalizedContent: function() {
+          $('active-directory-password-change').i18nUpdateLocale();
+        },
+
       };
     });

@@ -51,8 +51,3 @@ _setup_clang_format()
 
 from .example import run_example
 from .interface import generate_interfaces
-
-__all__ = [
-    "generate_interfaces",
-    "run_example",
-]

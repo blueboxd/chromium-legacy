@@ -182,7 +182,7 @@ class NetworkResourcesData final
     uint64_t DataLength() const;
     void AppendData(const char* data, size_t data_length);
     size_t DecodeDataToContent();
-    void ClearWeakMembers(Visitor*);
+    void ProcessCustomWeakness(const WeakCallbackInfo&);
 
     Member<NetworkResourcesData> network_resources_data_;
     String request_id_;
@@ -203,7 +203,7 @@ class NetworkResourcesData final
     int64_t pending_encoded_data_length_;
 
     scoped_refptr<SharedBuffer> buffer_;
-    WeakMember<const Resource> cached_resource_;
+    UntracedMember<const Resource> cached_resource_;
     scoped_refptr<BlobDataHandle> downloaded_file_blob_;
     Vector<AtomicString> certificate_;
     scoped_refptr<EncodedFormData> post_data_;

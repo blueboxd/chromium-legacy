@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.touch_to_fill;
 import android.support.annotation.LayoutRes;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.ui.modelutil.PropertyKey;
@@ -15,10 +16,10 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
 
 class TouchToFillViewHolder extends RecyclerView.ViewHolder {
-    final ViewBinder<PropertyModel, ViewGroup, PropertyKey> mViewBinder;
+    private final ViewBinder<PropertyModel, View, PropertyKey> mViewBinder;
 
     TouchToFillViewHolder(ViewGroup parent, @LayoutRes int layout,
-            ViewBinder<PropertyModel, ViewGroup, PropertyKey> viewBinder) {
+            ViewBinder<PropertyModel, View, PropertyKey> viewBinder) {
         super(LayoutInflater.from(parent.getContext()).inflate(layout, parent, false));
         mViewBinder = viewBinder;
     }
@@ -30,6 +31,6 @@ class TouchToFillViewHolder extends RecyclerView.ViewHolder {
      * @param model The {@link PropertyModel} whose data needs to be displayed.
      */
     void setupModelChangeProcessor(PropertyModel model) {
-        PropertyModelChangeProcessor.create(model, (ViewGroup) itemView, mViewBinder, true);
+        PropertyModelChangeProcessor.create(model, itemView, mViewBinder, true);
     }
 }

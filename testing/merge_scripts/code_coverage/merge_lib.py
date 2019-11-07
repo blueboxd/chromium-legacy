@@ -248,7 +248,7 @@ def merge_profiles(input_dir, output_file, input_extension, profdata_tool_path):
 
   # The list of input files could be empty in the following scenarios:
   # 1. The test target is pure Python scripts test which doesn't execute any
-  #    C/C++ binaries, such as devtools_closure_compile.
+  #    C/C++ binaries, such as devtools_type_check.
   # 2. The test target executes binary and does dumps coverage profile data
   #    files, however, all of them turned out to be invalid.
   if not profile_input_file_paths:

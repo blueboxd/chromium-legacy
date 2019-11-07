@@ -61,7 +61,7 @@ KioskAppManagerBase::App WebKioskController::GetAppData() {
 void WebKioskController::OnTimerFire() {
   // Start launching now.
   if (app_prepared_) {
-    // TODO(crbug.com/1006230): Implement LaunchApp();
+    app_launcher_->LaunchApp();
   } else {
     launch_on_install_ = true;
   }
@@ -152,8 +152,16 @@ void WebKioskController::OnProfilePrepared(Profile* profile,
   // Reset virtual keyboard to use IME engines in app profile early.
   ChromeKeyboardControllerClient::Get()->RebuildKeyboardIfEnabled();
 
-  // TODO(crbug.com/1006230): Implement app installation/initalization start
-  // here.
+  app_launcher_.reset(new WebKioskAppLauncher(profile, this));
+  app_launcher_->Initialize(account_id_);
+}
+
+void WebKioskController::InitializeNetwork() {
+  if (!web_kiosk_splash_screen_view_)
+    return;
+
+  // TODO(crbug.com/1006230): Implement network dialog flow.
+  app_launcher_->ContinueWithNetworkReady();
 }
 
 void WebKioskController::OnAppStartedInstalling() {
@@ -167,14 +175,14 @@ void WebKioskController::OnAppStartedInstalling() {
 
 void WebKioskController::OnAppPrepared() {
   app_prepared_ = true;
-  if (web_kiosk_splash_screen_view_)
+  if (!web_kiosk_splash_screen_view_)
     return;
   web_kiosk_splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::AppLaunchState::
           APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   web_kiosk_splash_screen_view_->Show();
   if (launch_on_install_) {
-    // TODO(crbug.com/1006230): Launch app here.
+    app_launcher_->LaunchApp();
   }
 }
 
@@ -183,6 +191,7 @@ void WebKioskController::OnAppLaunched() {
   // more seconds to give the user ability to exit Web kiosk.
   SYSLOG(INFO) << "Kiosk launch succeeded, wait for app window.";
   session_manager::SessionManager::Get()->SessionStarted();
+  CloseSplashScreen();
 }
 
 void WebKioskController::OnAppLaunchFailed() {

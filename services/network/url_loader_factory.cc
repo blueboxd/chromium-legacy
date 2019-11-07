@@ -79,15 +79,6 @@ URLLoaderFactory::~URLLoaderFactory() {
   if (context_->network_service()) {
     context_->network_service()->keepalive_statistics_recorder()->Unregister(
         params_->process_id);
-    // Reset bytes transferred for the process if this is the last
-    // |URLLoaderFactory|.
-    if (!context_->network_service()
-             ->keepalive_statistics_recorder()
-             ->HasRecordForProcess(params_->process_id)) {
-      context_->network_service()
-          ->network_usage_accumulator()
-          ->ClearBytesTransferredForProcess(params_->process_id);
-    }
   }
 }
 

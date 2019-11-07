@@ -25,7 +25,6 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
@@ -526,20 +525,9 @@ IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest, InvokeUi_Guest) {
   ShowAndVerifyUi();
 }
 
-class ProfileMenuViewExtensionsParamTestWithScopedAccountConsistency
-    : public ProfileMenuViewExtensionsParamTest {
- public:
-  ProfileMenuViewExtensionsParamTestWithScopedAccountConsistency() = default;
-
- private:
-  ScopedAccountConsistencyDice scoped_dice_;
-};
-
 // Shows the |ProfileMenuView| during a Guest browsing session when the DICE
 // flag is enabled.
-IN_PROC_BROWSER_TEST_P(
-    ProfileMenuViewExtensionsParamTestWithScopedAccountConsistency,
-    InvokeUi_DiceGuest) {
+IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest, InvokeUi_DiceGuest) {
   ShowAndVerifyUi();
 }
 
@@ -564,20 +552,10 @@ IN_PROC_BROWSER_TEST_P(ProfileMenuViewExtensionsParamTest,
   ShowAndVerifyUi();
 }
 
-class ProfileMenuViewExtensionsTestWithScopedAccountConsistency
-    : public ProfileMenuViewExtensionsTest {
- public:
-  ProfileMenuViewExtensionsTestWithScopedAccountConsistency() = default;
-
- private:
-  ScopedAccountConsistencyDice scoped_dice_;
-};
-
 // Open the profile chooser to increment the Dice sign-in promo show counter
 // below the threshold.
-IN_PROC_BROWSER_TEST_F(
-    ProfileMenuViewExtensionsTestWithScopedAccountConsistency,
-    IncrementDiceSigninPromoShowCounter) {
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
+                       IncrementDiceSigninPromoShowCounter) {
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 7);
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));
@@ -586,9 +564,8 @@ IN_PROC_BROWSER_TEST_F(
 
 // The DICE sync illustration is shown only the first 10 times. This test
 // ensures that the profile chooser is shown correctly above this threshold.
-IN_PROC_BROWSER_TEST_F(
-    ProfileMenuViewExtensionsTestWithScopedAccountConsistency,
-    DiceSigninPromoWithoutIllustration) {
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
+                       DiceSigninPromoWithoutIllustration) {
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDiceSigninUserMenuPromoCount, 10);
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenuView(browser()));

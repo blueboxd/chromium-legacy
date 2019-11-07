@@ -52,6 +52,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
   void SetTaskDelay(base::TimeDelta delay) override;
   void StartRecordingFunctionCalls() override;
   std::string StopRecordingAndGetRecordedFunctionCalls() override;
+  std::size_t GetNumberOfAccounts() const override;
 
  private:
   struct AccountData {

@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
-#include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -31,7 +30,6 @@
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "url/gurl.h"
 

@@ -52,6 +52,7 @@ namespace blink {
 
 template <typename T>
 class GarbageCollected;
+class WeakCallbackInfo;
 template <typename T>
 struct TraceTrait;
 class ThreadState;
@@ -73,6 +74,14 @@ struct TraceMethodDelegate {
   STATIC_ONLY(TraceMethodDelegate);
   static void Trampoline(Visitor* visitor, void* self) {
     (reinterpret_cast<T*>(self)->*method)(visitor);
+  }
+};
+
+template <typename T, void (T::*method)(const WeakCallbackInfo&)>
+struct WeakCallbackMethodDelegate {
+  STATIC_ONLY(WeakCallbackMethodDelegate);
+  static void Trampoline(const WeakCallbackInfo& broker, void* self) {
+    (reinterpret_cast<T*>(self)->*method)(broker);
   }
 };
 
@@ -202,20 +211,12 @@ class PLATFORM_EXPORT Visitor {
     TraceTrait<T>::Trace(this, &const_cast<T&>(t));
   }
 
-  // Registers a callback for custom weakness.
-  template <typename T, void (T::*method)(Visitor*)>
-  void RegisterWeakMembers(const T* obj) {
-    RegisterWeakCallback(const_cast<T*>(obj),
-                         &TraceMethodDelegate<T, method>::Trampoline);
-  }
-
-  using EphemeronTracingCallback = bool (*)(Visitor*, void*);
-  virtual bool VisitEphemeronKeyValuePair(
-      void* key,
-      void* value,
-      EphemeronTracingCallback key_trace_callback,
-      EphemeronTracingCallback value_trace_callback) {
-    return true;
+  // Registers an instance method using |RegisterWeakCallback|. See description
+  // below.
+  template <typename T, void (T::*method)(const WeakCallbackInfo&)>
+  void RegisterWeakCallbackMethod(const T* obj) {
+    RegisterWeakCallback(&WeakCallbackMethodDelegate<T, method>::Trampoline,
+                         const_cast<T*>(obj));
   }
 
   // Cross-component tracing interface.
@@ -247,6 +248,17 @@ class PLATFORM_EXPORT Visitor {
                                        void*) = 0;
   virtual void VisitBackingStoreOnly(void*, void**) = 0;
 
+  // Visits ephemeron pairs which are a combination of weak and strong keys and
+  // values.
+  using EphemeronTracingCallback = bool (*)(Visitor*, void*);
+  virtual bool VisitEphemeronKeyValuePair(
+      void* key,
+      void* value,
+      EphemeronTracingCallback key_trace_callback,
+      EphemeronTracingCallback value_trace_callback) {
+    return true;
+  }
+
   // Visits cross-component references to V8.
 
   virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) = 0;
@@ -256,15 +268,19 @@ class PLATFORM_EXPORT Visitor {
   virtual void RegisterBackingStoreCallback(void* backing,
                                             MovingObjectCallback) = 0;
 
-  // |WeakCallback| will usually use |ObjectAliveTrait| to figure out liveness
-  // of any children of |closure|. Upon return from the callback all references
-  // to dead objects must have been purged. Any operation that extends the
-  // object graph, including allocation or reviving objects, is prohibited.
-  // Clearing out additional pointers is allowed. Note that removing elements
-  // from heap collections such as HeapHashSet can cause an allocation if the
-  // backing store requires resizing. These collections know how to deal with
-  // WeakMember elements though.
-  virtual void RegisterWeakCallback(void* closure, WeakCallback) = 0;
+  // Adds a |callback| that is invoked with |parameter| after liveness has been
+  // computed on the whole object graph. The |callback| may use the provided
+  // |WeakCallbackInfo| to determine whether an object is considered alive or
+  // dead.
+  //
+  // - Upon returning from the callback all references to dead objects must have
+  //   been cleared.
+  // - Any operation that extends the object graph, including allocation
+  //   or reviving objects, is prohibited.
+  // - Clearing out pointers is allowed.
+  // - Removing elements from heap collections is allowed as these collections
+  //   are aware of custom weakness and won't resize their backings.
+  virtual void RegisterWeakCallback(WeakCallback callback, void* parameter) = 0;
 
  protected:
   template <typename T>
@@ -279,7 +295,7 @@ class PLATFORM_EXPORT Visitor {
 
  private:
   template <typename T>
-  static void HandleWeakCell(Visitor* self, void*);
+  static void HandleWeakCell(const WeakCallbackInfo&, void*);
 
   ThreadState* const state_;
 };

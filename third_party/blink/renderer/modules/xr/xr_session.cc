@@ -157,6 +157,41 @@ class XRSession::XRSessionResizeObserverDelegate final
   Member<XRSession> session_;
 };
 
+XRSession::MetricsReporter::MetricsReporter(
+    mojo::Remote<device::mojom::blink::XRSessionMetricsRecorder> recorder)
+    : recorder_(std::move(recorder)) {}
+
+void XRSession::MetricsReporter::ReportFeatureUsed(
+    device::mojom::blink::XRSessionFeature feature) {
+  using device::mojom::blink::XRSessionFeature;
+
+  // If we've already reported using this feature, no need to report again.
+  if (!reported_features_.insert(feature).is_new_entry) {
+    return;
+  }
+
+  switch (feature) {
+    case XRSessionFeature::REF_SPACE_VIEWER:
+      recorder_->ReportFeatureUsed(XRSessionFeature::REF_SPACE_VIEWER);
+      break;
+    case XRSessionFeature::REF_SPACE_LOCAL:
+      recorder_->ReportFeatureUsed(XRSessionFeature::REF_SPACE_LOCAL);
+      break;
+    case XRSessionFeature::REF_SPACE_LOCAL_FLOOR:
+      recorder_->ReportFeatureUsed(XRSessionFeature::REF_SPACE_LOCAL_FLOOR);
+      break;
+    case XRSessionFeature::REF_SPACE_BOUNDED_FLOOR:
+      recorder_->ReportFeatureUsed(XRSessionFeature::REF_SPACE_BOUNDED_FLOOR);
+      break;
+    case XRSessionFeature::REF_SPACE_UNBOUNDED:
+      recorder_->ReportFeatureUsed(XRSessionFeature::REF_SPACE_UNBOUNDED);
+      break;
+    case XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR:
+      // Not recording metrics for this feature currently
+      break;
+  }
+}
+
 XRSession::XRSession(
     XR* xr,
     mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
@@ -330,8 +365,18 @@ ScriptPromise XRSession::requestReferenceSpace(
   // If the session feature required by this reference space type is not
   // enabled, reject the session.
   auto type_as_feature = MapReferenceSpaceTypeToFeature(requested_type);
-  if (!type_as_feature ||
-      !enabled_features_.Contains(type_as_feature.value())) {
+  if (!type_as_feature) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kReferenceSpaceNotSupported);
+    return ScriptPromise();
+  }
+
+  // Report attempt to use this feature
+  if (metrics_reporter_) {
+    metrics_reporter_->ReportFeatureUsed(type_as_feature.value());
+  }
+
+  if (!IsFeatureEnabled(type_as_feature.value())) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       kReferenceSpaceNotSupported);
     return ScriptPromise();
@@ -1175,6 +1220,16 @@ void XRSession::UpdatePresentationFrameState(
     ProcessAnchorsData(nullptr, timestamp);
     ProcessHitTestData(nullptr);
   }
+}
+
+bool XRSession::IsFeatureEnabled(
+    device::mojom::XRSessionFeature feature) const {
+  return enabled_features_.Contains(feature);
+}
+
+void XRSession::SetMetricsReporter(std::unique_ptr<MetricsReporter> reporter) {
+  DCHECK(!metrics_reporter_);
+  metrics_reporter_ = std::move(reporter);
 }
 
 void XRSession::OnFrame(

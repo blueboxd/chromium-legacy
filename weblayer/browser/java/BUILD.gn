@@ -11,8 +11,8 @@ android_resources("weblayer_resources") {
   custom_package = "org.chromium.weblayer_private"
 }
 
-generate_locale_config_srcjar("weblayer_locale_config") {
-  java_package = weblayer_locale_config_java_package
+generate_product_config_srcjar("weblayer_product_config") {
+  java_package = weblayer_product_config_java_package
 }
 
 java_cpp_enum("generated_enums") {
@@ -65,9 +65,9 @@ android_library("java") {
   ]
   srcjar_deps = [
     ":generated_enums",
-    ":weblayer_locale_config",
+    ":weblayer_product_config",
   ]
-  jar_excluded_patterns = [ "*/LocaleConfig.class" ]
+  jar_excluded_patterns = [ "*/ProductConfig.class" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   # Needed for android.webkit.WebView(Delegate|Factory)

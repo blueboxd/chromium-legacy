@@ -17,11 +17,6 @@ namespace ash {
 
 namespace {
 
-bool CanHandleVirtualDesksGestures() {
-  return features::IsVirtualDesksEnabled() &&
-         features::IsVirtualDesksGesturesEnabled();
-}
-
 // Handles vertical 3-finger scroll gesture by entering overview on scrolling
 // up, and exiting it on scrolling down.
 // Returns true if the gesture was handled.
@@ -50,7 +45,7 @@ bool Handle3FingerVerticalScroll(float scroll_y) {
 // Handles horizontal 4-finger scroll by switching desks if possible.
 // Returns true if the gesture was handled.
 bool HandleDesksSwitchHorizontalScroll(float scroll_x) {
-  DCHECK(CanHandleVirtualDesksGestures());
+  DCHECK(features::IsVirtualDesksEnabled());
 
   if (std::fabs(scroll_x) < WmGestureHandler::kHorizontalThresholdDp)
     return false;
@@ -66,7 +61,7 @@ bool HandleDesksSwitchHorizontalScroll(float scroll_x) {
 }  // namespace
 
 WmGestureHandler::WmGestureHandler()
-    : can_handle_desks_gestures_(CanHandleVirtualDesksGestures()) {}
+    : can_handle_desks_gestures_(features::IsVirtualDesksEnabled()) {}
 
 WmGestureHandler::~WmGestureHandler() = default;
 

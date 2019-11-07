@@ -22,6 +22,8 @@ import java.lang.annotation.RetentionPolicy;
  * Properties defined here reflect the visible state of the TouchToFill-components.
  */
 class TouchToFillProperties {
+    static final String FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON = "show_confirmation_button";
+
     static final PropertyModel.WritableBooleanPropertyKey VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey("visible");
     static final PropertyModel
@@ -73,7 +75,7 @@ class TouchToFillProperties {
         private HeaderProperties() {}
     }
 
-    @IntDef({ItemType.HEADER, ItemType.CREDENTIAL})
+    @IntDef({ItemType.HEADER, ItemType.CREDENTIAL, ItemType.FILL_BUTTON})
     @Retention(RetentionPolicy.SOURCE)
     @interface ItemType {
         /**
@@ -85,6 +87,11 @@ class TouchToFillProperties {
          * A section containing a user's name and password.
          */
         int CREDENTIAL = 2;
+
+        /**
+         * The fill button at the end of the sheet that filling more obvious for one suggestion.
+         */
+        int FILL_BUTTON = 3;
     }
 
     /**

@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class OmniboxPopupTruncatingLabel;
+@class FadeTruncatingLabel;
 
 @class OmniboxPopupRow;
 
@@ -23,11 +23,10 @@
 @interface OmniboxPopupRow : UITableViewCell
 
 // A truncate-by-fading version of the textLabel of a UITableViewCell.
-@property(nonatomic, readonly, strong)
-    OmniboxPopupTruncatingLabel* textTruncatingLabel;
+@property(nonatomic, readonly, strong) FadeTruncatingLabel* textTruncatingLabel;
 // A truncate-by-fading version of the detailTextLabel of a UITableViewCell.
 @property(nonatomic, readonly, strong)
-    OmniboxPopupTruncatingLabel* detailTruncatingLabel;
+    FadeTruncatingLabel* detailTruncatingLabel;
 // A standard UILabel for answers, which truncates with ellipses to support
 // multi-line text.
 @property(nonatomic, readonly, strong) UILabel* detailAnswerLabel;

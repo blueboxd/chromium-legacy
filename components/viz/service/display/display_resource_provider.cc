@@ -684,9 +684,10 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       image_contexts_to_return.emplace_back(std::move(resource.image_context));
 
     if (resource.is_gpu_resource_type() &&
+        resource.gl_id &&
         resource.filter != resource.transferable.filter) {
       DCHECK(resource.transferable.mailbox_holder.texture_target);
-      DCHECK(resource.gl_id);
+      DCHECK(!resource.ShouldWaitSyncToken());
       DCHECK(gl);
       gl->BindTexture(resource.transferable.mailbox_holder.texture_target,
                       resource.gl_id);
@@ -1045,9 +1046,7 @@ DisplayResourceProvider::Child::~Child() = default;
 DisplayResourceProvider::ChildResource::ChildResource(
     int child_id,
     const TransferableResource& transferable)
-    : child_id(child_id),
-      transferable(transferable),
-      filter(transferable.filter) {
+    : child_id(child_id), transferable(transferable), filter(GL_NONE) {
   if (is_gpu_resource_type())
     UpdateSyncToken(transferable.mailbox_holder.sync_token);
   else

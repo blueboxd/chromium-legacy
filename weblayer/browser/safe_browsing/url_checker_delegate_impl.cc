@@ -13,7 +13,12 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
     scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager,
     scoped_refptr<SafeBrowsingUIManager> ui_manager)
     : database_manager_(std::move(database_manager)),
-      ui_manager_(std::move(ui_manager)) {}
+      ui_manager_(std::move(ui_manager)),
+      threat_types_(safe_browsing::CreateSBThreatTypeSet(
+          {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
+           safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+           safe_browsing::SB_THREAT_TYPE_URL_UNWANTED,
+           safe_browsing::SB_THREAT_TYPE_BILLING})) {}
 
 UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
 

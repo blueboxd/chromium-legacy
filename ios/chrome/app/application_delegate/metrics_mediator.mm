@@ -4,6 +4,8 @@
 
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 
+#include <sys/sysctl.h>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
@@ -35,12 +37,6 @@
 #import "ios/web/public/web_state.h"
 #include "url/gurl.h"
 
-// Make sure symbols for GTMTimeUtils are decorated as C otherwise the linker
-// looks for CPP decorated symbols and fails.
-extern "C" {
-#include "third_party/google_toolbox_for_mac/src/Foundation/GTMTimeUtils.h"
-}
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -48,6 +44,22 @@ extern "C" {
 namespace {
 // The amount of time (in seconds) to wait for the user to start a new task.
 const NSTimeInterval kFirstUserActionTimeout = 30.0;
+
+// Returns time delta since app launch as retrieved from kernel info about
+// the current process.
+base::TimeDelta TimeDeltaSinceAppLaunchFromProcess() {
+  struct kinfo_proc info;
+  size_t length = sizeof(struct kinfo_proc);
+  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, (int)getpid()};
+  const int kr = sysctl(mib, base::size(mib), &info, &length, nullptr, 0);
+  DCHECK_EQ(KERN_SUCCESS, kr);
+
+  const struct timeval time = info.kp_proc.p_starttime;
+  const NSTimeInterval time_since_1970 =
+      time.tv_sec + (time.tv_usec / (double)USEC_PER_SEC);
+  NSDate* date = [NSDate dateWithTimeIntervalSince1970:time_since_1970];
+  return base::TimeDelta::FromSecondsD(-date.timeIntervalSinceNow);
+}
 }  // namespace
 
 namespace metrics_mediator {
@@ -105,11 +117,11 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   if (![startupInformation isColdStart])
     return;
 
-  base::TimeDelta startDuration =
+  const base::TimeDelta startDuration =
       base::TimeTicks::Now() - [startupInformation appLaunchTime];
 
-  base::TimeDelta startDurationFromProcess =
-      base::TimeDelta::FromSecondsD(-GTMAppLaunchDate().timeIntervalSinceNow);
+  const base::TimeDelta startDurationFromProcess =
+      TimeDeltaSinceAppLaunchFromProcess();
 
   UMA_HISTOGRAM_TIMES("Startup.ColdStartFromProcessCreationTime",
                       startDurationFromProcess);

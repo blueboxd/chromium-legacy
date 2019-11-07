@@ -336,6 +336,10 @@ std::string FakeKerberosClient::StopRecordingAndGetRecordedFunctionCalls() {
   return result;
 }
 
+std::size_t FakeKerberosClient::GetNumberOfAccounts() const {
+  return accounts_.size();
+}
+
 void FakeKerberosClient::MaybeRecordFunctionCallForTesting(
     const char* function_name) {
   if (!recorded_function_calls_)

@@ -1426,7 +1426,7 @@ String AXLayoutObject::StringValue() const {
     // This has to be overridden in the case where the selected item has an ARIA
     // label.
     auto* select_element = To<HTMLSelectElement>(layout_object_->GetNode());
-    int selected_index = select_element->selectedIndex();
+    int selected_index = select_element->SelectedListIndex();
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
     if (selected_index >= 0 &&
@@ -2080,8 +2080,8 @@ void AXLayoutObject::AddChildren() {
         !IsA<HTMLMapElement>(
             *element) &&                 // Handled in AddImageMapChildren (img)
         !IsHTMLRubyElement(*element) &&  // Special layout handling
-        !IsHTMLTableElement(*element) &&  // thead/tfoot move around
-        !element->IsPseudoElement()) {    // Not visited in layout traversal
+        !IsA<HTMLTableElement>(*element) &&  // thead/tfoot move around
+        !element->IsPseudoElement()) {       // Not visited in layout traversal
       AXNodeObject::AddChildren();
       return;
     }
@@ -2450,14 +2450,14 @@ bool AXLayoutObject::IsDataTable() const {
       ToInterface<LayoutNGTableInterface>(layout_object_);
   table->RecalcSectionsIfNeeded();
   Node* table_node = layout_object_->GetNode();
-  if (!table_node || !IsHTMLTableElement(table_node))
-    return false;
 
   // This employs a heuristic to determine if this table should appear.
   // Only "data" tables should be exposed as tables.
   // Unfortunately, there is no good way to determine the difference
   // between a "layout" table and a "data" table.
-  HTMLTableElement* table_element = ToHTMLTableElement(table_node);
+  auto* table_element = DynamicTo<HTMLTableElement>(table_node);
+  if (!table_element)
+    return false;
 
   // If there is a caption element, summary, THEAD, or TFOOT section, it's most
   // certainly a data table
@@ -3134,9 +3134,8 @@ void AXLayoutObject::AddTableChildren() {
         ToInterface<LayoutNGTableInterface>(layout_object_);
     table->RecalcSectionsIfNeeded();
     Node* table_node = table->ToLayoutObject()->GetNode();
-    if (IsHTMLTableElement(table_node)) {
-      if (HTMLTableCaptionElement* caption =
-              ToHTMLTableElement(table_node)->caption()) {
+    if (auto* html_table_element = DynamicTo<HTMLTableElement>(table_node)) {
+      if (HTMLTableCaptionElement* caption = html_table_element->caption()) {
         AXObject* caption_object = ax_cache.GetOrCreate(caption);
         if (caption_object && caption_object->AccessibilityIsIncludedInTree())
           children_.push_front(caption_object);

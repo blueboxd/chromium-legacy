@@ -35,7 +35,7 @@ class MarkingVerifier final : public Visitor {
   // Unused overrides.
   void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void*, MovingObjectCallback) final {}
-  void RegisterWeakCallback(void*, WeakCallback) final {}
+  void RegisterWeakCallback(WeakCallback, void*) final {}
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 
  private:

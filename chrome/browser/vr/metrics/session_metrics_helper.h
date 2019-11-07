@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_METRICS_SESSION_METRICS_HELPER_H_
 
 #include <memory>
+#include <set>
 
 #include "base/time/time.h"
 #include "chrome/browser/vr/mode.h"
@@ -14,6 +15,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
@@ -111,6 +114,36 @@ class SessionTracker {
   DISALLOW_COPY_AND_ASSIGN(SessionTracker);
 };
 
+class VR_BASE_EXPORT WebXRSessionTracker
+    : public SessionTracker<ukm::builders::XR_WebXR_Session>,
+      device::mojom::XRSessionMetricsRecorder {
+ public:
+  explicit WebXRSessionTracker(
+      std::unique_ptr<ukm::builders::XR_WebXR_Session> entry);
+  ~WebXRSessionTracker() override;
+
+  // Records which features for the session have been requested as required or
+  // optional, which were accepted/rejeceted, and which weren't requested at
+  // all. This assumes that the session as a whole was accepted.
+  void RecordRequestedFeatures(
+      const device::mojom::XRSessionOptions& session_options,
+      const std::set<device::mojom::XRSessionFeature>& enabled_features);
+
+  // |XRSessionMetricsRecorder| implementation
+  void ReportFeatureUsed(device::mojom::XRSessionFeature feature) override;
+
+  // Binds this tracker's |XRSessionMetricsRecorder| receiver to a new pipe, and
+  // returns the |PendingRemote|.
+  mojo::PendingRemote<device::mojom::XRSessionMetricsRecorder>
+  BindMetricsRecorderPipe();
+
+ private:
+  void SetFeatureRequest(device::mojom::XRSessionFeature feature,
+                         device::mojom::XRSessionFeatureRequestStatus status);
+
+  mojo::Receiver<device::mojom::XRSessionMetricsRecorder> receiver_;
+};
+
 // This class is not thread-safe and must only be used from the main thread.
 // This class tracks metrics for various kinds of sessions, including VR
 // browsing sessions, WebXR presentation sessions, and others. It mainly tracks
@@ -147,9 +180,18 @@ class VR_BASE_EXPORT SessionMetricsHelper
       const device::mojom::XRRuntimeSessionOptions& options);
 
   // Records that inline session was started.
-  void RecordInlineSessionStart(size_t session_id);
+  WebXRSessionTracker* RecordInlineSessionStart(size_t session_id);
   // Records that inline session was stopped. Will record an UKM entry.
   void RecordInlineSessionStop(size_t session_id);
+
+  WebXRSessionTracker* GetImmersiveSessionTracker();
+
+  // Records that an immersive session was started. Two immersive sessions
+  // may not exist simultaneously.
+  WebXRSessionTracker* RecordImmersiveSessionStart();
+
+  // Records that an immersive session was stopped. Will record a UKM entry.
+  void RecordImmersiveSessionStop();
 
  private:
   SessionMetricsHelper(content::WebContents* contents, Mode initial_mode);
@@ -192,15 +234,12 @@ class VR_BASE_EXPORT SessionMetricsHelper
 
   std::unique_ptr<SessionTracker<ukm::builders::XR_PageSession>>
       page_session_tracker_;
-  std::unique_ptr<SessionTracker<ukm::builders::XR_WebXR_Session>>
-      webxr_immersive_session_tracker_;
+  std::unique_ptr<WebXRSessionTracker> webxr_immersive_session_tracker_;
 
-  // Map containing inline session trackers. The contents of the map are
-  // affected by calls to |RecordInlineSessionStart| & |RecordInlineSessionStop|
-  // public methods.
-  std::unordered_map<
-      size_t,
-      std::unique_ptr<SessionTracker<ukm::builders::XR_WebXR_Session>>>
+  // Map associating active inline session Ids to their trackers. The contents
+  // of the map are managed by |RecordInlineSessionStart| and
+  // |RecordInlineSessionStop|.
+  std::unordered_map<size_t, std::unique_ptr<WebXRSessionTracker>>
       webxr_inline_session_trackers_;
 
   Mode mode_ = Mode::kNoVr;

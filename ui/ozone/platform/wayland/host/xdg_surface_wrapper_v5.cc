@@ -80,6 +80,10 @@ void XDGSurfaceWrapperV5::SetWindowGeometry(const gfx::Rect& bounds) {
                                   bounds.width(), bounds.height());
 }
 
+void XDGSurfaceWrapperV5::SetAppId(const std::string& app_id) {
+  xdg_surface_set_app_id(xdg_surface_.get(), app_id.c_str());
+}
+
 // static
 void XDGSurfaceWrapperV5::Configure(void* data,
                                     xdg_surface* obj,

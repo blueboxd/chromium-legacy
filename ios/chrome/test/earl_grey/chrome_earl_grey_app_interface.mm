@@ -7,6 +7,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/payments/core/features.h"
 #import "components/ukm/ios/features.h"
@@ -582,6 +583,11 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 + (BOOL)isCreditCardScannerEnabled {
   return base::FeatureList::IsEnabled(kCreditCardScanner);
+}
+
++ (BOOL)isAutofillCompanyNameEnabled {
+  return base::FeatureList::IsEnabled(
+      autofill::features::kAutofillEnableCompanyName);
 }
 
 + (BOOL)isCustomWebKitLoadedIfRequested {

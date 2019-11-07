@@ -755,7 +755,7 @@ void DocumentMarkerController::InvalidateRectsForAllTextMatchMarkers() {
   }
 }
 
-void DocumentMarkerController::DidProcessMarkerMap(Visitor* visitor) {
+void DocumentMarkerController::DidProcessMarkerMap(const WeakCallbackInfo&) {
   if (markers_.IsEmpty())
     Clear();
 }
@@ -763,7 +763,7 @@ void DocumentMarkerController::DidProcessMarkerMap(Visitor* visitor) {
 void DocumentMarkerController::Trace(Visitor* visitor) {
   // Note: To make |DidProcessMarkerMap()| called after weak members callback
   // of |markers_|, we should register it before tracing |markers_|.
-  visitor->template RegisterWeakMembers<
+  visitor->template RegisterWeakCallbackMethod<
       DocumentMarkerController, &DocumentMarkerController::DidProcessMarkerMap>(
       this);
   visitor->Trace(markers_);

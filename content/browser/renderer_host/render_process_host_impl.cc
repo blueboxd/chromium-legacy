@@ -4166,8 +4166,11 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
   // service worker, try to use an unused process host. One might have been
   // created for a navigation and this will let the navigation and the service
   // worker share the same process.
-  if (!render_process_host && is_unmatched_service_worker)
+  if (base::FeatureList::IsEnabled(
+          features::kServiceWorkerPrefersUnusedProcess) &&
+      !render_process_host && is_unmatched_service_worker) {
     render_process_host = GetUnusedProcessHostForServiceWorker(site_instance);
+  }
 
   // See if the spare RenderProcessHost can be used.
   auto& spare_process_manager = SpareRenderProcessHostManager::GetInstance();

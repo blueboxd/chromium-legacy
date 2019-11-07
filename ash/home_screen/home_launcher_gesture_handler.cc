@@ -355,7 +355,8 @@ bool HomeLauncherGestureHandler::ShowHomeLauncher(
   mode_ = Mode::kSlideUpToShow;
 
   PauseBackdropUpdatesForActiveWindow();
-  UpdateWindowsForSlideUpOrDown(0.0, /*animate=*/false);
+  UpdateWindowsForSlideUpOrDown(0.0 /*progress*/,
+                                base::nullopt /*animation_trigger*/);
   AnimateToFinalState(AnimationTrigger::kLauncherButton);
   return true;
 }
@@ -378,7 +379,8 @@ bool HomeLauncherGestureHandler::HideHomeLauncherForWindow(
   mode_ = Mode::kSlideDownToHide;
 
   PauseBackdropUpdatesForActiveWindow();
-  UpdateWindowsForSlideUpOrDown(1.0, /*animate=*/false);
+  UpdateWindowsForSlideUpOrDown(1.0 /*progress*/,
+                                base::nullopt /*animation_trigger*/);
   AnimateToFinalState(AnimationTrigger::kHideForWindow);
   return true;
 }
@@ -451,8 +453,8 @@ void HomeLauncherGestureHandler::OnTabletModeEnded() {
     if (secondary_window_)
       secondary_window_->StopAnimating();
 
-    UpdateWindowsForSlideUpOrDown(/*progress=*/IsFinalStateShow() ? 1.0 : 0.0,
-                                  /*animate=*/false);
+    UpdateWindowsForSlideUpOrDown(IsFinalStateShow() ? 1.0 : 0.0 /*progress*/,
+                                  base::nullopt /*animation_trigger*/);
     OnImplicitAnimationsCompleted();
   }
 }
@@ -482,7 +484,8 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   // animation.
   DCHECK(display_.is_valid());
   home_screen_delegate->UpdateYPositionAndOpacityForHomeLauncher(
-      display_.work_area().y(), home_launcher_opacity, base::NullCallback());
+      display_.work_area().y(), home_launcher_opacity,
+      base::nullopt /*metrics_reporter_info*/, base::NullCallback());
 
   if (!active_window_) {
     RemoveObserversAndStopTracking();
@@ -556,10 +559,8 @@ bool HomeLauncherGestureHandler::IsAnimating() {
 
 void HomeLauncherGestureHandler::AnimateToFinalState(AnimationTrigger trigger) {
   const bool is_final_state_show = IsFinalStateShow();
-  GetHomeScreenDelegate()->NotifyHomeLauncherAnimationTransition(
-      trigger, is_final_state_show);
   UpdateWindowsForSlideUpOrDown(is_final_state_show ? 1.0 : 0.0,
-                                /*animate=*/true);
+                                trigger /**animation_trigger*/);
 
   if (!is_final_state_show && mode_ == Mode::kSlideDownToHide) {
     NotifyHomeLauncherTargetPositionChanged(false /*showing*/, display_.id());
@@ -589,8 +590,9 @@ void HomeLauncherGestureHandler::UpdateSettings(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 }
 
-void HomeLauncherGestureHandler::UpdateWindowsForSlideUpOrDown(double progress,
-                                                               bool animate) {
+void HomeLauncherGestureHandler::UpdateWindowsForSlideUpOrDown(
+    double progress,
+    base::Optional<AnimationTrigger> animation_trigger) {
   // Update full screen applist.
   DCHECK(display_.is_valid());
   const gfx::Rect work_area = display_.work_area();
@@ -610,11 +612,19 @@ void HomeLauncherGestureHandler::UpdateWindowsForSlideUpOrDown(double progress,
   if (!home_screen_window->TargetVisibility())
     home_screen_delegate->GetHomeScreenWindow()->Show();
 
-  home_screen_delegate->UpdateYPositionAndOpacityForHomeLauncher(
-      y_position, opacity,
-      animate ? base::BindRepeating(&HomeLauncherGestureHandler::UpdateSettings,
-                                    base::Unretained(this))
-              : base::NullCallback());
+  const bool animate = animation_trigger.has_value();
+  if (animate) {
+    home_screen_delegate->UpdateYPositionAndOpacityForHomeLauncher(
+        y_position, opacity,
+        HomeScreenDelegate::AnimationInfo(*animation_trigger,
+                                          progress == 1.0 /*showing*/),
+        base::BindRepeating(&HomeLauncherGestureHandler::UpdateSettings,
+                            base::Unretained(this)));
+  } else {
+    home_screen_delegate->UpdateYPositionAndOpacityForHomeLauncher(
+        y_position, opacity, base::nullopt /*animation_info*/,
+        base::NullCallback());
+  }
 
   // Update the overview grid if needed. If |active_window_| is null, then
   // observe the animation of a window in overview.
@@ -917,7 +927,8 @@ void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
     home_screen_delegate->OnHomeLauncherDragStart();
 
     PauseBackdropUpdatesForActiveWindow();
-    UpdateWindowsForSlideUpOrDown(/*progress=*/0.0, /*animate=*/false);
+    UpdateWindowsForSlideUpOrDown(0.0 /*progress*/,
+                                  base::nullopt /*animation_trigger*/);
   }
 }
 
@@ -933,7 +944,7 @@ void HomeLauncherGestureHandler::OnDragContinued(const gfx::Point& location,
 
     UpdateWindowsForSlideUpOrDown(
         GetHeightInWorkAreaAsRatio(location, display_.work_area()),
-        /*animate=*/false);
+        base::nullopt /*animation_trigger*/);
   }
 }
 

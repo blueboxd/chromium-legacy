@@ -121,7 +121,7 @@ void BackgroundSyncBaseBrowserTest::RegistrationPendingOnCoreThread(
     const std::string& tag,
     const GURL& url,
     base::OnceCallback<void(bool)> callback) {
-  sw_context->FindReadyRegistrationForDocument(
+  sw_context->FindReadyRegistrationForClientUrl(
       url, base::BindOnce(&BackgroundSyncBaseBrowserTest::
                               RegistrationPendingDidGetSWRegistration,
                           base::Unretained(this), sync_context, tag,

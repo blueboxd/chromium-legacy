@@ -338,6 +338,9 @@
 // Returns YES if CreditCardScanner feature is enabled.
 + (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;
 
+// Returns YES if AutofillEnableCompanyName feature is enabled.
++ (BOOL)isAutofillCompanyNameEnabled WARN_UNUSED_RESULT;
+
 // Returns YES if custom WebKit frameworks were properly loaded, rather than
 // system frameworks. Always returns YES if the app was not requested to run
 // with custom WebKit frameworks.

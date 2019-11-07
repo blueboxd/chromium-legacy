@@ -403,7 +403,7 @@ void ManagePasswordsUIController::OnNopeUpdateClicked() {
 
 void ManagePasswordsUIController::NeverSavePassword() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
-  NeverSavePasswordInternal();
+  passwords_data_.form_manager()->OnNeverClicked();
   ClearPopUpFlagForBubble();
   if (passwords_data_.GetCurrentForms().empty())
     passwords_data_.OnInactive();
@@ -431,11 +431,13 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
   }
 
   save_fallback_timer_.Stop();
-  SavePasswordInternal();
+  passwords_data_.form_manager()->Save();
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   // The icon is to be updated after the bubble (either "Save password" or "Sign
   // in to Chrome") is closed.
   bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
+  if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents()))
+    browser->window()->GetAutofillBubbleHandler()->OnPasswordSaved();
 }
 
 void ManagePasswordsUIController::ChooseCredential(
@@ -514,21 +516,6 @@ bool ManagePasswordsUIController::AuthenticateUser() {
 bool ManagePasswordsUIController::ArePasswordsRevealedWhenBubbleIsOpened()
     const {
   return are_passwords_revealed_when_next_bubble_is_opened_;
-}
-
-void ManagePasswordsUIController::SavePasswordInternal() {
-  passwords_data_.form_manager()->Save();
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  if (!browser)
-    return;
-  browser->window()->GetAutofillBubbleHandler()->OnPasswordSaved();
-}
-
-void ManagePasswordsUIController::NeverSavePasswordInternal() {
-  password_manager::PasswordFormManagerForUI* form_manager =
-      passwords_data_.form_manager();
-  DCHECK(form_manager);
-  form_manager->OnNeverClicked();
 }
 
 void ManagePasswordsUIController::HidePasswordBubble() {

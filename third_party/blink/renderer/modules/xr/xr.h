@@ -134,7 +134,12 @@ class XR final : public EventTargetWithInlineData,
     virtual ~PendingRequestSessionQuery() = default;
 
     // Resolves underlying promise with passed in XR session.
-    void Resolve(XRSession* session);
+    // If metrics are to be recorded for this session, an
+    // |XRSessionMetricsRecorded| may be passed in as well.
+    void Resolve(
+        XRSession* session,
+        mojo::PendingRemote<device::mojom::blink::XRSessionMetricsRecorder>
+            metrics_recorder = mojo::NullRemote());
 
     // Rejects underlying promise with a DOMException.
     // Do not call this with |DOMExceptionCode::kSecurityError|, use
@@ -173,8 +178,15 @@ class XR final : public EventTargetWithInlineData,
     virtual void Trace(blink::Visitor*);
 
    private:
-    void ReportRequestSessionResult(SessionRequestStatus status);
     void ParseSensorRequirement();
+    device::mojom::XRSessionFeatureRequestStatus GetFeatureRequestStatus(
+        device::mojom::XRSessionFeature feature,
+        const XRSession* session) const;
+    void ReportRequestSessionResult(
+        SessionRequestStatus status,
+        XRSession* session = nullptr,
+        mojo::PendingRemote<device::mojom::blink::XRSessionMetricsRecorder>
+            metrics_recorder = mojo::NullRemote());
 
     Member<ScriptPromiseResolver> resolver_;
     const XRSession::SessionMode mode_;

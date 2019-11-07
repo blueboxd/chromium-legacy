@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import logging
 import os
 import time
@@ -14,14 +13,6 @@ from tracing.metrics import metric_runner
 
 # Aggregated trace is saved under this name.
 HTML_TRACE_NAME = 'trace.html'
-
-# Results of metric computation are stored under this key in test_results.
-HISTOGRAM_DICTS_KEY = 'histogram_dicts'
-
-# This file is written by telemetry, it contains output of metric computation.
-# This is a temporary hack to keep things working while we gradually move
-# code from Telemetry to Results Processor.
-HISTOGRAM_DICTS_FILE = 'histogram_dicts.json'
 
 
 def _RunMetric(test_result):
@@ -61,18 +52,9 @@ def ComputeTBMv2Metrics(test_result):
 
   For each test run that has an aggregate trace and some TBMv2 metrics listed
   in its tags, compute the metrics and return the list of all resulting
-  histograms. Note: the order of histograms in the results may be different
-  from the order of tests in intermediate_results.
+  histograms.
   """
   artifacts = test_result.get('outputArtifacts', {})
-  # TODO(crbug.com/981349): If metrics have already been computed in
-  # Telemetry, we read it from the file. Remove this branch after Telemetry
-  # does not compute metrics anymore.
-  if HISTOGRAM_DICTS_FILE in artifacts:
-    with open(artifacts[HISTOGRAM_DICTS_FILE]['filePath']) as f:
-      test_result['_histograms'].ImportDicts(json.load(f))
-    del artifacts[HISTOGRAM_DICTS_FILE]
-    return
 
   if test_result['status'] == 'SKIP':
     return
@@ -85,7 +67,6 @@ def ComputeTBMv2Metrics(test_result):
                        / (2 ** 20))
   # Bails out on traces that are too big. See crbug.com/812631 for more
   # details.
-  # TODO(crbug.com/1010041): Return a non-zero exit code in this case.
   if trace_size_in_mib > 400:
     util.SetUnexpectedFailure(test_result)
     logging.error('%s: Trace size is too big: %s MiB',

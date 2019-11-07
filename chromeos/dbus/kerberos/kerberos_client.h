@@ -58,6 +58,9 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
     // comma separated list, e.g. "AddAccount,ListAccounts".
     virtual std::string StopRecordingAndGetRecordedFunctionCalls() = 0;
 
+    // Returns the number of accounts currently saved.
+    virtual std::size_t GetNumberOfAccounts() const = 0;
+
    protected:
     virtual ~TestInterface() {}
   };

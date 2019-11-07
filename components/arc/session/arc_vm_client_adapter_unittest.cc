@@ -346,7 +346,8 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmProxyFailure) {
   upstart_client->set_start_job_result(false);
 
   UpgradeArc(false);
-  EXPECT_FALSE(GetStartConciergeCalled());
+  EXPECT_TRUE(GetStartConciergeCalled());
+  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
   EXPECT_FALSE(arc_instance_stopped_called());
   upstart_client->set_start_job_result(true);
 

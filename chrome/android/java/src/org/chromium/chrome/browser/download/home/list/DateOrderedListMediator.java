@@ -12,8 +12,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
-import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
@@ -242,8 +242,10 @@ class DateOrderedListMediator {
         mPaginator.reset();
         Comparator<OfflineItem> comparator = mDateComparator;
         LabelAdder labelAdder = mDateLabelAdder;
-        if (filter == FilterType.PREFETCHED && DownloadUtils.shouldShowOfflineHome()) {
-            comparator = mScoreComparator;
+        if (filter == FilterType.PREFETCHED) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_HOME)) {
+                comparator = mScoreComparator;
+            }
             labelAdder = mNoopLabelAdder;
         }
         mListMutator.setMutators(comparator, labelAdder);

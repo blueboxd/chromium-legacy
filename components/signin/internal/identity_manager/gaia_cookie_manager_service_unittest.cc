@@ -34,9 +34,10 @@
 
 namespace {
 
-const char kAccountId1[] = "acc1@gmail.com";
-const char kAccountId2[] = "acc2@gmail.com";
-const char kAccountId3[] = "acc3@gmail.com";
+const char kAccountId1[] = "account_id1";
+const char kAccountId2[] = "account_id2";
+const char kAccountId3[] = "account_id3";
+const char kAccountId4[] = "account_id4";
 
 using MockAddAccountToCookieCompletedCallback = base::MockCallback<
     GaiaCookieManagerService::AddAccountToCookieCompletedCallback>;
@@ -117,6 +118,7 @@ class GaiaCookieManagerServiceTest : public testing::Test {
       : account_id1_(kAccountId1),
         account_id2_(kAccountId2),
         account_id3_(kAccountId3),
+        account_id4_(kAccountId4),
         no_error_(GoogleServiceAuthError::NONE),
         error_(GoogleServiceAuthError::SERVICE_ERROR),
         canceled_(GoogleServiceAuthError::REQUEST_CANCELED) {
@@ -226,6 +228,7 @@ class GaiaCookieManagerServiceTest : public testing::Test {
   const CoreAccountId account_id1_;
   const CoreAccountId account_id2_;
   const CoreAccountId account_id3_;
+  const CoreAccountId account_id4_;
 
  private:
   base::test::TaskEnvironment task_environment_;
@@ -431,7 +434,7 @@ TEST_F(GaiaCookieManagerServiceTest, AllRequestsInMultipleGoes) {
   SimulateMergeSessionSuccess(&helper, "token2");
   SimulateMergeSessionSuccess(&helper, "token3");
 
-  helper.AddAccountToCookie("acc4@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id4_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
 
   SimulateMergeSessionSuccess(&helper, "token4");

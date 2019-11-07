@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/heartbeat_scheduler.h"
+#include "chrome/browser/chromeos/policy/policy_pref_names.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_commands_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/rsu/lookup_key_uploader.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
@@ -243,6 +244,7 @@ void DeviceCloudPolicyManagerChromeOS::RegisterPrefs(
   registry->RegisterDictionaryPref(prefs::kServerBackedDeviceState);
   registry->RegisterBooleanPref(prefs::kRemoveUsersRemoteCommand, false);
   registry->RegisterStringPref(prefs::kLastRsuDeviceIdUploaded, std::string());
+  registry->RegisterListPref(prefs::kStoreLogStatesAcrossReboots);
 }
 
 // static

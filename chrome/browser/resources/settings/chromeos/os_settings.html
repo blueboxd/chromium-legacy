@@ -7,23 +7,13 @@
 <if expr="not optimize_webui">
   <base href="chrome://os-settings">
 </if>
-  <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
+  <link rel="stylesheet" href="chrome://resources/css/cros_colors.css">
   <style>
     html {
-      background-color: #fff;
+      background-color: var(--cros-default-bg-color);
       overflow: hidden;
       /* Remove 300ms delay for 'click' event, when using touch interface. */
       touch-action: manipulation;
-    }
-
-    html.loading::before {
-      /* TODO(hsuregan): update for dark mode when needed. */
-      background-color: #fff;
-      border-bottom: var(--md-toolbar-border);
-      box-sizing: border-box;
-      content: '';
-      display: block;
-      height: var(--md-toolbar-height);
     }
   </style>
 </head>

@@ -6,9 +6,13 @@
  * @fileoverview Library providing basic test framework functionality.
  */
 
-// See assert.js for where this is used.
+/**
+ * See assert.js for where this is used.
+ * @suppress {globalThis}
+ */
 this.traceAssertionsForTesting = true;
 
+/** @suppress {globalThis} */
 var hasWindow = !!this.window;
 
 /**
@@ -101,7 +105,7 @@ Test.prototype = {
    * When set to a string value representing a url, generate BrowsePreload
    * call, which will browse to the url and call fixture.preLoad of the
    * currentTestCase.
-   * @type {string}
+   * @type {?string}
    */
   browsePreload: null,
 
@@ -110,7 +114,7 @@ Test.prototype = {
    * directory, generate BrowsePrintPreload call, which will browse to a url
    * representing the file, cause print, and call fixture.preLoad of the
    * currentTestCase.
-   * @type {string}
+   * @type {?string}
    */
   browsePrintPreload: null,
 
@@ -118,14 +122,14 @@ Test.prototype = {
    * When set to a function, will be called in the context of the test
    * generation inside the function, after AddLibrary calls and before
    * generated C++.
-   * @type {function(string,string)}
+   * @type {?function(string,string)}
    */
   testGenPreamble: null,
 
   /**
    * When set to a function, will be called in the context of the test
    * generation inside the function, and after any generated C++.
-   * @type {function(string,string)}
+   * @type {?function(string,string)}
    */
   testGenPostamble: null,
 
@@ -139,7 +143,7 @@ Test.prototype = {
   /**
    * This should be initialized by the test fixture and can be referenced
    * during the test run. It holds any mocked handler methods.
-   * @type {?Mock4JS.Mock}
+   * @type {?Mock}
    */
   mockHandler: null,
 
@@ -180,14 +184,17 @@ Test.prototype = {
 
   /**
    * Configuration for the accessibility audit.
-   * @type {axs.AuditConfiguration}
+   * TODO(crbug/1000989): Enable type checks for axs.
+   * @type {Object} an axs.AuditConfiguration
    */
   accessibilityAuditConfig_: null,
 
   /**
    * Returns the configuration for the accessibility audit, creating it
    * on-demand.
-   * @return {!axs.AuditConfiguration}
+   * TODO(crbug/1000989): Enable type checks for axs.
+   * @suppress {undefinedVars|missingProperties}
+   * @return {Object} an axs.AuditConfiguration!
    */
   get accessibilityAuditConfig() {
     if (!this.accessibilityAuditConfig_) {
@@ -294,6 +301,8 @@ Test.prototype = {
 
   /**
    * Override this method to perform tasks before running your test.
+   * TODO(crbug/1000989): Enable type checks for axs.
+   * @suppress {missingProperties}
    * @type {Function}
    */
   setUp: function() {
@@ -357,12 +366,12 @@ Test.prototype = {
    * used as a listener function.
    * @param {WhenTestDone} whenTestDone Call testDone() at the appropriate
    *     time.
-   * @param {Function} completion The function to call to complete the test.
+   * @param {!Function} completion The function to call to complete the test.
    * @param {...*} var_args Arguments to pass when calling completionAction.
    * @return {function(): void} Return a function, bound to this test fixture,
    *     which continues the test.
    */
-  continueTest: function(whenTestDone, completion) {
+  continueTest: function(whenTestDone, completion, var_args) {
     var savedArgs = new SaveMockArguments();
     var completionAction = new CallFunctionAction(
         this, savedArgs, completion, Array.prototype.slice.call(arguments, 2));
@@ -379,7 +388,6 @@ Test.prototype = {
   /**
    * Call this during setUp to defer the call to runTest() until later. The
    * caller must call the returned function at some point to run the test.
-   * @type {Function}
    * @param {WhenTestDone} whenTestDone Call testDone() at the appropriate
    *     time.
    * @param {...*} var_args Arguments to pass when running the
@@ -387,7 +395,7 @@ Test.prototype = {
    * @return {function(): void} A function which will run the current body of
    *     the currentTestCase.
    */
-  deferRunTest: function(whenTestDone) {
+  deferRunTest: function(whenTestDone, var_args) {
     if (whenTestDone === WhenTestDone.DEFAULT) {
       whenTestDone = WhenTestDone.ALWAYS;
     }
@@ -415,13 +423,13 @@ function TestCase(name, fixture, body) {
 TestCase.prototype = {
   /**
    * The name of this test.
-   * @type {string}
+   * @type {?string}
    */
   name: null,
 
   /**
    * The test fixture to set |this| to when running the test |body|.
-   * @type {testing.Test}
+   * @type {Test}
    */
   fixture: null,
 
@@ -512,7 +520,6 @@ TestCase.prototype = {
   /**
    * Cause this TestCase to be deferred (don't call runTest()) until the
    * returned function is called.
-   * @type {Function}
    * @param {WhenTestDone} whenTestDone Call testDone() at the appropriate
    *     time.
    * @param {...*} var_args Arguments to pass when running the
@@ -520,7 +527,7 @@ TestCase.prototype = {
    * @return {function(): void} A function that will run this TestCase when
    *     called.
    */
-  deferRunTest: function(whenTestDone) {
+  deferRunTest: function(whenTestDone, var_args) {
     this.deferred_ = true;
     var savedArgs = new SaveMockArguments();
     var completionAction = new CallFunctionAction(
@@ -556,8 +563,8 @@ function registerMessageCallback(name, messageHandler, callback) {
  * Register all methods of {@code mockClass.prototype} with messages of the
  * same name as the method, using the proxy of the |mockObject| as the
  * |messageHandler| when registering.
- * @param {Mock4JS.Mock} mockObject The mock to register callbacks against.
- * @param {function(new:Object)} mockClAss Constructor for the mocked class.
+ * @param {Mock} mockObject The mock to register callbacks against.
+ * @param {Function} mockClass Constructor for the mocked class.
  * @see registerMessageCallback
  * @see overrideChrome
  */
@@ -670,8 +677,8 @@ function resetTestState() {
 
 /**
  * Notifies the running browser test of the test results. Clears |errors|.
- * @param {Array<boolean, string>=} result When passed, this is used for the
- *     testResult message.
+ * No tuple type: b/131114945 (result should be {[boolean, string]}).
+ * @param {Array=} result When passed, this is used for the testResult message.
  */
 function testDone(result) {
   if (!testIsDone) {
@@ -701,9 +708,15 @@ function testDone(result) {
       if (webUiTest.mojom.TestRunnerPtr) {
         // For mojo WebUI tests.
         testRunner = new webUiTest.mojom.TestRunnerPtr();
+
+        /**
+         * @suppress {missingProperties} for mojo.makeRequest - internal method
+         * declared in mojo/public/js/bindings.js.
+         */
+        const mojoMakeRequest = () => mojo.makeRequest(testRunner);
+
         Mojo.bindInterface(
-            webUiTest.mojom.TestRunner.name,
-            mojo.makeRequest(testRunner).handle);
+            webUiTest.mojom.TestRunner.name, mojoMakeRequest().handle);
       } else if (webUiTest.mojom.TestRunnerRemote) {
         // For mojo-lite WebUI tests.
         testRunner = webUiTest.mojom.TestRunner.getRemote();
@@ -721,7 +734,7 @@ function testDone(result) {
       chrome.send('testResult', result);
     } else if (window.domAutomationController.send) {
       // For extension tests.
-      valueResult = {'result': result[0], message: result[1]};
+      const valueResult = {'result': result[0], message: result[1]};
       window.domAutomationController.send(JSON.stringify(valueResult));
     } else {
       assertNotReached('No test framework available');
@@ -747,16 +760,20 @@ function errorsToMessage(errors, opt_message) {
 
   for (var i = 0; i < errors.length; ++i) {
     var errorMessage = errors[i].stack || errors[i].message;
+    // Cast JSON.stringify to Function to avoid formal parameter mismatch.
     message += 'Failed: ' + currentTestFunction + '(' +
-        currentTestArguments.map(JSON.stringify) + ')\n' + errorMessage;
+        currentTestArguments.map(/** @type{Function} */ (JSON.stringify)) +
+        ')\n' + errorMessage;
   }
   return message;
 }
 
 /**
  * Returns [success, message] & clears |errors|.
- * @param {boolean} errorsOk When true, errors are ok.
- * @return {Array<boolean, string>}
+ * @param {boolean=} errorsOk When true, errors are ok.
+ *
+ * No tuple type: b/131114945 (result should be {[boolean, string]}).
+ * @return {Array}
  */
 function testResult(errorsOk) {
   var result = [true, ''];
@@ -867,22 +884,39 @@ function assertNotReached(opt_message) {
 }
 
 /**
- * @param {Function} testFunction
- * @param {Function=|string=|RegExp=} opt_expected The expected Error
- *     constructor, partial or complete error message string, or RegExp to
+ * @param {function()} testFunction
+ * @param {(Function|string|RegExp)=} opt_expected_or_constructor The expected
+ *     Error constructor, partial or complete error message string, or RegExp to
  *     test the error message.
  * @param {string=} opt_message Additional error message.
  * @throws {Error}
  */
-function assertThrows(testFunction, opt_expected, opt_message) {
-  chai.assert.throws(testFunction, opt_expected, opt_message);
+function assertThrows(testFunction, opt_expected_or_constructor, opt_message) {
+  // The implementation of assert.throws goes like:
+  //  function (fn, errt, errs, msg) {
+  //    if ('string' === typeof errt || errt instanceof RegExp) {
+  //      errs = errt;
+  //      errt = null;
+  //    }
+  //    ...
+  // That is, if the second argument is string or RegExp, the type of the
+  // exception is not checked: only the error message. This is achieved by
+  // partially "shifting" parameters (the "additional error message" is not
+  // shifted and will be lost). "Shifting" isn't a thing Closure understands, so
+  // just cast to string.
+  // TODO(crbug/1000989): Refactor this into something that makes sense when
+  // tests are actually compiled and we can do that safely.
+  chai.assert.throws(
+      testFunction,
+      /** @type{string} */ (opt_expected_or_constructor), opt_message);
 }
 
 /**
  * Run an accessibility audit on the current page state.
- * @type {Function}
+ * TODO(crbug/1000989): Enable type checks for axs.
+ * @suppress {checkTypes}
  * @param {Array} a11yResults
- * @param {axs.AuditConfiguration=} opt_config
+ * @param {Object=} opt_config, an axs.AuditConfiguration=
  * @return {boolean} Whether there were any errors or warnings
  * @private
  */
@@ -907,11 +941,14 @@ function runAccessibilityAudit(a11yResults, opt_config) {
  * |a11yResults| and
  * |a11yWarnings| in to an accessibility report, appends it to the given
  * |message| and returns the resulting message string.
- * @param {Array<string>} a11yResults The list of accessibility results
+ * TODO(crbug/1000989): Enable type checks for axs.
+ * @suppress {missingProperties}
+ * @param {Array<Object>} a11yResults The list of accessibility results
+ * @param {string=} opt_message
  * @return {string} |message| + accessibility report.
  */
-function accessibilityAuditReport(a11yResults, message) {
-  message = message ? message + '\n\n' : '\n';
+function accessibilityAuditReport(a11yResults, opt_message) {
+  let message = opt_message ? opt_message + '\n\n' : '\n';
   message += 'Accessibility issues found on ' + window.location.href + '\n';
   message += axs.Audit.createReport(a11yResults);
   return message;
@@ -935,7 +972,7 @@ function assertAccessibilityOk(opt_results) {
  * checking by runTest. This allows tests to continue running other checks,
  * while failing the overall test if any errors occurred.
  * @param {Function} assertFunc The function which may throw an Error.
- * @return {function(...*):bool} A function that applies its arguments to
+ * @return {function(...*):boolean} A function that applies its arguments to
  *     |assertFunc| and returns true if |assertFunc| passes.
  * @see errors
  * @see runTestFunction
@@ -976,6 +1013,7 @@ function runTest(isAsync, testFunction, testArguments) {
 
   // Avoid eval() if at all possible, since it will not work on pages
   // that have enabled content-security-policy.
+  /** @type {?Function} */
   var testBody = this[testFunction];  // global object -- not a method.
   var testName = testFunction;
 
@@ -986,7 +1024,7 @@ function runTest(isAsync, testFunction, testArguments) {
   }
 
   if (typeof testBody === 'undefined') {
-    testBody = eval(testFunction);
+    testBody = /** @type{Function} */ (eval(testFunction));
     testName = testBody.toString();
   }
   if (testBody != RUN_TEST_F) {
@@ -1012,7 +1050,9 @@ function runTest(isAsync, testFunction, testArguments) {
  * @param {Array} testArguments The arguments to call |testBody| with.
  * @param {boolean} onlyAssertFails When true, only assertions cause failing
  *     testResult.
- * @return {Array<boolean, string>} [test-succeeded, message-if-failed]
+ *
+ * No tuple type: b/131114945 (result should be {[boolean, string]}).
+ * @return {Array} [test-succeeded, message-if-failed]
  * @see createExpect
  * @see testResult
  */
@@ -1054,6 +1094,7 @@ function overrideChrome() {
   }
 
   originalChrome = chrome;
+  /** @suppress {const|checkTypes} */
   chrome = {
     __proto__: originalChrome,
     send: send,
@@ -1202,7 +1243,6 @@ function RUN_TEST_F(testFixture, testName) {
  * @param {Array} args The array to push |actualArgument| onto.
  * @param {Object} realMatcher The real matcher check arguments with.
  * @constructor
- * @extends {realMatcher}
  */
 function SaveMockArgumentMatcher(args, realMatcher) {
   this.arguments_ = args;
@@ -1253,7 +1293,6 @@ SaveMockArgumentMatcher.prototype = {
  * the mocked method. This class works with SaveMockArgumentMatcher to save
  * arguments so that the invoked Action can pass arguments through to the
  * invoked function.
- * @param {!Object} realMatcher The real matcher to perform matching with.
  * @constructor
  */
 function SaveMockArguments() {
@@ -1284,44 +1323,39 @@ SaveMockArguments.prototype = {
  * @param {Object} obj The object to set |this| to when calling |func_|.
  * @param {?SaveMockArguments} savedArgs when non-null, saved arguments are
  *     passed to |func|.
- * @param {Function} func The function to call.
+ * @param {!Function} func The function to call.
  * @param {Array=} args Any arguments to pass to func.
  * @constructor
  */
 function CallFunctionAction(obj, savedArgs, func, args) {
-  this.obj_ = obj;
-  this.savedArgs_ = savedArgs;
-  this.func_ = func;
-  this.args_ = args ? args : [];
-}
-
-CallFunctionAction.prototype = {
   /**
    * Set |this| to |obj_| when calling |func_|.
    * @type {?Object}
    */
-  obj_: null,
+  this.obj_ = obj;
 
   /**
    * The SaveMockArguments to hold arguments when invoking |func_|.
    * @type {?SaveMockArguments}
    * @private
    */
-  savedArgs_: null,
+  this.savedArgs_ = savedArgs;
 
   /**
    * The function to call when invoked.
    * @type {!Function}
    * @private
    */
-  func_: null,
+  this.func_ = func;
 
   /**
    * Arguments to pass to |func_| when invoked.
    * @type {!Array}
    */
-  args_: null,
+  this.args_ = args || [];
+}
 
+CallFunctionAction.prototype = {
   /**
    * Accessor for |func_|.
    * @return {Function} The function to invoke.
@@ -1356,11 +1390,11 @@ CallFunctionAction.prototype = {
 
 /**
  * Syntactic sugar for use with will() on a Mock4JS.Mock.
- * @param {Function} func The function to call when the method is invoked.
+ * @param {!Function} func The function to call when the method is invoked.
  * @param {...*} var_args Arguments to pass when calling func.
  * @return {CallFunctionAction} Action for use in will.
  */
-function callFunction(func) {
+function callFunction(func, var_args) {
   return new CallFunctionAction(
       null, null, func, Array.prototype.slice.call(arguments, 1));
 }
@@ -1369,11 +1403,11 @@ function callFunction(func) {
  * Syntactic sugar for use with will() on a Mock4JS.Mock.
  * @param {SaveMockArguments} savedArgs Arguments saved with this object
  *     are passed to |func|.
- * @param {Function} func The function to call when the method is invoked.
+ * @param {!Function} func The function to call when the method is invoked.
  * @param {...*} var_args Arguments to pass when calling func.
  * @return {CallFunctionAction} Action for use in will.
  */
-function callFunctionWithSavedArgs(savedArgs, func) {
+function callFunctionWithSavedArgs(savedArgs, func, var_args) {
   return new CallFunctionAction(
       null, savedArgs, func, Array.prototype.slice.call(arguments, 2));
 }
@@ -1491,10 +1525,10 @@ RunAllAction.prototype = {
 
 /**
  * Syntactic sugar for use with will() on a Mock4JS.Mock.
- * @param {...Object} var_actions Actions to run.
+ * @param {...*} var_args Actions to run.
  * @return {RunAllAction} Action for use in will.
  */
-function runAllActions() {
+function runAllActions(var_args) {
   return new RunAllAction(
       false, WhenTestDone.NEVER, Array.prototype.slice.call(arguments));
 }
@@ -1503,10 +1537,10 @@ function runAllActions() {
  * Syntactic sugar for use with will() on a Mock4JS.Mock.
  * @param {WhenTestDone} whenTestDone Call testDone() at the appropriate
  *     time.
- * @param {...Object} var_actions Actions to run.
+ * @param {...*} var_args Actions to run.
  * @return {RunAllAction} Action for use in will.
  */
-function runAllActionsAsync(whenTestDone) {
+function runAllActionsAsync(whenTestDone, var_args) {
   return new RunAllAction(
       true, whenTestDone, Array.prototype.slice.call(arguments, 1));
 }

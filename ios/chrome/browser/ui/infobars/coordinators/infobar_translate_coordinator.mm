@@ -47,6 +47,9 @@
 // Tracks user actions taken throughout Translate lifetime.
 @property(nonatomic, assign) UserAction userAction;
 
+// YES if translate is currently in progress
+@property(nonatomic, assign) BOOL translateInProgress;
+
 @end
 
 @implementation TranslateInfobarCoordinator
@@ -54,6 +57,8 @@
 @synthesize bannerViewController = _bannerViewController;
 // Synthesize since readonly property from superclass is changed to readwrite.
 @synthesize modalViewController = _modalViewController;
+// Synthesized from InfobarCoordinatorImplementation
+@synthesize translateInProgress = _translateInProgress;
 
 - (instancetype)initWithInfoBarDelegate:
     (translate::TranslateInfoBarDelegate*)infoBarDelegate {
@@ -142,8 +147,15 @@
   // TODO(crbug.com/1014959): implement
 }
 
-- (void)dismissBannerWhenInteractionIsFinished {
-  [self.bannerViewController dismissWhenInteractionIsFinished];
+- (void)dismissBannerIfReady {
+  if (!self.translateInProgress) {
+    // Only attempt to dismiss banner if Translate is not in progress.
+    [self.bannerViewController dismissWhenInteractionIsFinished];
+  }
+}
+
+- (BOOL)infobarActionInProgress {
+  return self.translateInProgress;
 }
 
 - (void)infobarBannerWillBeDismissed:(BOOL)userInitiated {

@@ -1240,7 +1240,7 @@ Element* EnclosingAnchorElement(const Position& p) {
 }
 
 bool IsDisplayInsideTable(const Node* node) {
-  return node && node->GetLayoutObject() && IsHTMLTableElement(node);
+  return node && node->GetLayoutObject() && IsA<HTMLTableElement>(node);
 }
 
 bool IsTableCell(const Node* node) {

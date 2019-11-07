@@ -164,7 +164,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     ]
 
     if (!_is_monochrome) {
-      locale_config_java_packages = [ "org.chromium.chrome.browser" ]
+      product_config_java_packages = [ "org.chromium.chrome.browser" ]
     }
 
     # Use zh-TW strings for zh-HK (https://crbug.com/780847).
@@ -339,10 +339,10 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     ]
 
     if (is_monochrome) {
-      locale_config_java_packages = [
+      product_config_java_packages = [
         "org.chromium.chrome.browser",
-        webview_locale_config_java_package,
-        weblayer_locale_config_java_package,
+        webview_product_config_java_package,
+        weblayer_product_config_java_package,
       ]
       if (android_64bit_target_cpu) {
         # Build //android_webview:monochrome with the opposite bitness that

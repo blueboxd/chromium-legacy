@@ -11,7 +11,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "storage/browser/quota/quota_disk_info_helper.h"
+#include "storage/browser/quota/quota_device_info_helper.h"
 #include "storage/browser/quota/quota_features.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,10 +20,11 @@ using ::testing::_;
 
 namespace storage {
 
-class MockQuotaDiskInfoHelper : public QuotaDiskInfoHelper {
+class MockQuotaDeviceInfoHelper : public QuotaDeviceInfoHelper {
  public:
-  MockQuotaDiskInfoHelper() = default;
+  MockQuotaDeviceInfoHelper() = default;
   MOCK_CONST_METHOD1(AmountOfTotalDiskSpace, int64_t(const base::FilePath&));
+  MOCK_CONST_METHOD0(AmountOfPhysicalMemory, int64_t());
 };
 
 class QuotaSettingsTest : public testing::Test {
@@ -43,13 +44,13 @@ class QuotaSettingsTest : public testing::Test {
 };
 
 TEST_F(QuotaSettingsTest, Default) {
-  MockQuotaDiskInfoHelper disk_info_helper;
-  ON_CALL(disk_info_helper, AmountOfTotalDiskSpace(_))
+  MockQuotaDeviceInfoHelper device_info_helper;
+  ON_CALL(device_info_helper, AmountOfTotalDiskSpace(_))
       .WillByDefault(::testing::Return(2000));
 
   bool callback_executed = false;
   GetNominalDynamicSettings(
-      profile_path(), false, &disk_info_helper,
+      profile_path(), false, &device_info_helper,
       base::BindLambdaForTesting([&](base::Optional<QuotaSettings> settings) {
         callback_executed = true;
         ASSERT_NE(settings, base::nullopt);
@@ -63,8 +64,8 @@ TEST_F(QuotaSettingsTest, Default) {
 }
 
 TEST_F(QuotaSettingsTest, ExpandedTempPool) {
-  MockQuotaDiskInfoHelper disk_info_helper;
-  ON_CALL(disk_info_helper, AmountOfTotalDiskSpace(_))
+  MockQuotaDeviceInfoHelper device_info_helper;
+  ON_CALL(device_info_helper, AmountOfTotalDiskSpace(_))
       .WillByDefault(::testing::Return(2000));
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       features::kQuotaExpandPoolSize,
@@ -72,7 +73,7 @@ TEST_F(QuotaSettingsTest, ExpandedTempPool) {
 
   bool callback_executed = false;
   GetNominalDynamicSettings(
-      profile_path(), false, &disk_info_helper,
+      profile_path(), false, &device_info_helper,
       base::BindLambdaForTesting([&](base::Optional<QuotaSettings> settings) {
         callback_executed = true;
         ASSERT_NE(settings, base::nullopt);
@@ -86,14 +87,14 @@ TEST_F(QuotaSettingsTest, ExpandedTempPool) {
 }
 
 TEST_F(QuotaSettingsTest, UnlimitedTempPool) {
-  MockQuotaDiskInfoHelper disk_info_helper;
-  ON_CALL(disk_info_helper, AmountOfTotalDiskSpace(_))
+  MockQuotaDeviceInfoHelper device_info_helper;
+  ON_CALL(device_info_helper, AmountOfTotalDiskSpace(_))
       .WillByDefault(::testing::Return(2000));
   scoped_feature_list_.InitAndEnableFeature(features::kQuotaUnlimitedPoolSize);
 
   bool callback_executed = false;
   GetNominalDynamicSettings(
-      profile_path(), false, &disk_info_helper,
+      profile_path(), false, &device_info_helper,
       base::BindLambdaForTesting([&](base::Optional<QuotaSettings> settings) {
         callback_executed = true;
         ASSERT_NE(settings, base::nullopt);
@@ -108,30 +109,124 @@ TEST_F(QuotaSettingsTest, IncognitoQuotaCapped) {
   const int64_t kMBytes = 1024 * 1024;
   const int64_t kMaxIncognitoPoolSize = 330 * kMBytes;  // 300 MB + 10%
 
+  MockQuotaDeviceInfoHelper device_info_helper;
+  ON_CALL(device_info_helper, AmountOfPhysicalMemory())
+      .WillByDefault(::testing::Return(kMaxIncognitoPoolSize));
+
   scoped_feature_list_.InitAndDisableFeature(features::kIncognitoDynamicQuota);
-  EXPECT_GE(kMaxIncognitoPoolSize,
-            GetIncognitoPoolSizeForTesting(kMaxIncognitoPoolSize * 1000));
+  bool callback_executed = false;
+  GetNominalDynamicSettings(
+      profile_path(), true, &device_info_helper,
+      base::BindLambdaForTesting([&](base::Optional<QuotaSettings> settings) {
+        callback_executed = true;
+        EXPECT_GE(kMaxIncognitoPoolSize, settings->pool_size);
+      }));
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_executed);
 }
 
-TEST_F(QuotaSettingsTest, IncognitoQuotaDynamic) {
+TEST_F(QuotaSettingsTest, IncognitoDynamicQuota1) {
   const int64_t kMBytes = 1024 * 1024;
   const int64_t kMaxIncognitoPoolSize = 330 * kMBytes;  // 300 MB + 10%
-  const int64_t test_cases[] = {
-      kMaxIncognitoPoolSize / 10, kMaxIncognitoPoolSize,
-      kMaxIncognitoPoolSize * 100, kMaxIncognitoPoolSize * 1000};
+  const int64_t physical_memory_amount = kMaxIncognitoPoolSize / 10;
+
+  MockQuotaDeviceInfoHelper device_info_helper;
+  ON_CALL(device_info_helper, AmountOfPhysicalMemory())
+      .WillByDefault(::testing::Return(physical_memory_amount));
 
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       features::kIncognitoDynamicQuota,
       {{"IncognitoQuotaRatioLowerBound", "0.1"},
-       {"IncognitoQuotaRatioLowerBound", "0.2"}});
+       {"IncognitoQuotaRatioUpperBound", "0.2"}});
 
-  for (const int64_t physical_memory_amount : test_cases) {
-    EXPECT_LE(physical_memory_amount / 10,
-              GetIncognitoPoolSizeForTesting(physical_memory_amount))
-        << physical_memory_amount;
-    EXPECT_GE(physical_memory_amount / 5,
-              GetIncognitoPoolSizeForTesting(physical_memory_amount))
-        << physical_memory_amount;
-  }
+  bool callback_executed = false;
+  GetNominalDynamicSettings(
+      profile_path(), true, &device_info_helper,
+      base::BindLambdaForTesting([&](base::Optional<QuotaSettings> settings) {
+        callback_executed = true;
+        EXPECT_LE(physical_memory_amount / 10, settings->pool_size);
+        EXPECT_GE(physical_memory_amount / 5, settings->pool_size);
+      }));
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_executed);
 }
+
+TEST_F(QuotaSettingsTest, IncognitoDynamicQuota2) {
+  const int64_t kMBytes = 1024 * 1024;
+  const int64_t kMaxIncognitoPoolSize = 330 * kMBytes;  // 300 MB + 10%
+  const int64_t physical_memory_amount = kMaxIncognitoPoolSize;
+
+  MockQuotaDeviceInfoHelper device_info_helper;
+  ON_CALL(device_info_helper, AmountOfPhysicalMemory())
+      .WillByDefault(::testing::Return(physical_memory_amount));
+
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kIncognitoDynamicQuota,
+      {{"IncognitoQuotaRatioLowerBound", "0.1"},
+       {"IncognitoQuotaRatioUpperBound", "0.2"}});
+
+  bool callback_executed = false;
+  GetNominalDynamicSettings(
+      profile_path(), true, &device_info_helper,
+      base::BindLambdaForTesting([&](base::Optional<QuotaSettings> settings) {
+        callback_executed = true;
+        EXPECT_LE(physical_memory_amount / 10, settings->pool_size);
+        EXPECT_GE(physical_memory_amount / 5, settings->pool_size);
+      }));
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_executed);
+}
+
+TEST_F(QuotaSettingsTest, IncognitoDynamicQuota3) {
+  const int64_t kMBytes = 1024 * 1024;
+  const int64_t kMaxIncognitoPoolSize = 330 * kMBytes;  // 300 MB + 10%
+  const int64_t physical_memory_amount = kMaxIncognitoPoolSize * 100;
+
+  MockQuotaDeviceInfoHelper device_info_helper;
+  ON_CALL(device_info_helper, AmountOfPhysicalMemory())
+      .WillByDefault(::testing::Return(physical_memory_amount));
+
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kIncognitoDynamicQuota,
+      {{"IncognitoQuotaRatioLowerBound", "0.1"},
+       {"IncognitoQuotaRatioUpperBound", "0.2"}});
+
+  bool callback_executed = false;
+  GetNominalDynamicSettings(
+      profile_path(), true, &device_info_helper,
+      base::BindLambdaForTesting([&](base::Optional<QuotaSettings> settings) {
+        callback_executed = true;
+        EXPECT_LE(physical_memory_amount / 10, settings->pool_size);
+        EXPECT_GE(physical_memory_amount / 5, settings->pool_size);
+      }));
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_executed);
+}
+
+TEST_F(QuotaSettingsTest, IncognitoDynamicQuota4) {
+  const int64_t kMBytes = 1024 * 1024;
+  const int64_t kMaxIncognitoPoolSize = 330 * kMBytes;  // 300 MB + 10%
+  const int64_t physical_memory_amount = kMaxIncognitoPoolSize * 1000;
+
+  MockQuotaDeviceInfoHelper device_info_helper;
+  ON_CALL(device_info_helper, AmountOfPhysicalMemory())
+      .WillByDefault(::testing::Return(physical_memory_amount));
+
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      features::kIncognitoDynamicQuota,
+      {{"IncognitoQuotaRatioLowerBound", "0.1"},
+       {"IncognitoQuotaRatioUpperBound", "0.2"}});
+
+  bool callback_executed = false;
+  GetNominalDynamicSettings(
+      profile_path(), true, &device_info_helper,
+      base::BindLambdaForTesting([&](base::Optional<QuotaSettings> settings) {
+        callback_executed = true;
+        EXPECT_LE(physical_memory_amount / 10, settings->pool_size);
+        EXPECT_GE(physical_memory_amount / 5, settings->pool_size);
+      }));
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_executed);
+}
+
 }  // namespace storage

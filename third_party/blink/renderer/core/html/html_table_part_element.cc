@@ -113,9 +113,9 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
 
 HTMLTableElement* HTMLTablePartElement::FindParentTable() const {
   ContainerNode* parent = FlatTreeTraversal::Parent(*this);
-  while (parent && !IsHTMLTableElement(*parent))
+  while (parent && !IsA<HTMLTableElement>(*parent))
     parent = FlatTreeTraversal::Parent(*parent);
-  return ToHTMLTableElement(parent);
+  return To<HTMLTableElement>(parent);
 }
 
 }  // namespace blink

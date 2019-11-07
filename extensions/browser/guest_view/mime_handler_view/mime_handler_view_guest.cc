@@ -19,7 +19,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
@@ -223,8 +222,6 @@ void MimeHandlerViewGuest::CreateWebContents(
           owner_web_contents()->GetController().GetSessionStorageNamespaceMap())
           .release());
 
-  registry_.AddInterface(
-      base::Bind(&MimeHandlerServiceImpl::Create, stream_->GetWeakPtr()));
   registry_.AddInterface(base::BindRepeating(
       &MimeHandlerViewGuest::FuseBeforeUnloadControl, base::Unretained(this)));
 }
@@ -490,6 +487,10 @@ content::RenderFrameHost* MimeHandlerViewGuest::GetEmbedderFrame() {
 
 base::WeakPtr<MimeHandlerViewGuest> MimeHandlerViewGuest::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+base::WeakPtr<StreamContainer> MimeHandlerViewGuest::GetStreamWeakPtr() {
+  return stream_->GetWeakPtr();
 }
 
 }  // namespace extensions

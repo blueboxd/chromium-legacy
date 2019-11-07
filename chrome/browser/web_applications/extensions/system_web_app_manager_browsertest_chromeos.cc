@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_ui.h"
@@ -31,7 +32,47 @@ class SystemWebAppManagerBrowserTestChromeos
  public:
   SystemWebAppManagerBrowserTestChromeos()
       : SystemWebAppManagerBrowserTest(false /* install_mock */) {
-    scoped_feature_list_.InitAndEnableFeature(chromeos::features::kMediaApp);
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kHelpAppV2, chromeos::features::kMediaApp}, {});
+  }
+
+  // Runs basic tests on a System Web App. E.g. ensures it exists, and
+  // loads/navigates with an expected title that matches the manifest app name.
+  void ExpectSystemWebAppValid(SystemAppType app_type,
+                               const GURL& url,
+                               const std::string& title) {
+    Browser* app_browser = WaitForSystemAppInstallAndLaunch(app_type);
+    const extensions::Extension* installed_app =
+        extensions::util::GetInstalledPwaForUrl(browser()->profile(), url);
+
+    EXPECT_TRUE(GetManager().IsSystemWebApp(installed_app->id()));
+    EXPECT_TRUE(installed_app->from_bookmark());
+
+    EXPECT_EQ(title, installed_app->name());
+    EXPECT_EQ(base::ASCIIToUTF16(title),
+              app_browser->window()->GetNativeWindow()->GetTitle());
+    EXPECT_EQ(extensions::Manifest::EXTERNAL_COMPONENT,
+              installed_app->location());
+
+    // The installed app should match the opened app window.
+    EXPECT_EQ(installed_app, GetExtensionForAppBrowser(app_browser));
+    content::WebContents* web_contents =
+        app_browser->tab_strip_model()->GetActiveWebContents();
+
+    // The opened window should be showing the url with attached WebUI.
+    EXPECT_EQ(url, web_contents->GetVisibleURL());
+
+    content::TestNavigationObserver observer(web_contents);
+    observer.WaitForNavigationFinished();
+    EXPECT_EQ(url, web_contents->GetLastCommittedURL());
+
+    content::WebUI* web_ui = web_contents->GetCommittedWebUI();
+    ASSERT_TRUE(web_ui);
+    EXPECT_TRUE(web_ui->GetController());
+
+    // A completed navigation could change the window title. Check again.
+    EXPECT_EQ(base::ASCIIToUTF16(title),
+              app_browser->window()->GetNativeWindow()->GetTitle());
   }
 
  private:
@@ -43,41 +84,17 @@ class SystemWebAppManagerBrowserTestChromeos
 // Test that the Media App installs and launches correctly. Runs some spot
 // checks on the manifest.
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTestChromeos, MediaApp) {
-  Browser* app_browser = WaitForSystemAppInstallAndLaunch(SystemAppType::MEDIA);
-  const extensions::Extension* installed_app =
-      extensions::util::GetInstalledPwaForUrl(
-          browser()->profile(),
-          content::GetWebUIURL(chromeos::kChromeUIMediaAppHost));
+  const GURL* url = new GURL(chromeos::kChromeUIMediaAppURL);
+  EXPECT_NO_FATAL_FAILURE(
+      ExpectSystemWebAppValid(SystemAppType::MEDIA, *url, "Media App"));
+}
 
-  EXPECT_TRUE(GetManager().IsSystemWebApp(installed_app->id()));
-  EXPECT_TRUE(installed_app->from_bookmark());
-
-  EXPECT_EQ("Media App", installed_app->name());
-  EXPECT_EQ(base::ASCIIToUTF16("Media App"),
-            app_browser->window()->GetNativeWindow()->GetTitle());
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_COMPONENT,
-            installed_app->location());
-
-  // The installed app should match the opened app window.
-  EXPECT_EQ(installed_app, GetExtensionForAppBrowser(app_browser));
-  content::WebContents* web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-
-  // The opened window should be showing chrome://media-app with attached WebUI.
-  EXPECT_EQ(chromeos::kChromeUIMediaAppURL, web_contents->GetVisibleURL());
-
-  content::TestNavigationObserver observer(web_contents);
-  observer.WaitForNavigationFinished();
-  EXPECT_EQ(chromeos::kChromeUIMediaAppURL,
-            web_contents->GetLastCommittedURL());
-
-  content::WebUI* web_ui = web_contents->GetCommittedWebUI();
-  ASSERT_TRUE(web_ui);
-  EXPECT_TRUE(web_ui->GetController());
-
-  // A completed navigation could change the window title. Check again.
-  EXPECT_EQ(base::ASCIIToUTF16("Media App"),
-            app_browser->window()->GetNativeWindow()->GetTitle());
+// Test that the Help App installs and launches correctly. Runs some spot
+// checks on the manifest.
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTestChromeos, HelpAppV2) {
+  const GURL* url = new GURL(chromeos::kChromeUIHelpAppURL);
+  EXPECT_NO_FATAL_FAILURE(
+      ExpectSystemWebAppValid(SystemAppType::HELP, *url, "Help App"));
 }
 
 }  // namespace web_app

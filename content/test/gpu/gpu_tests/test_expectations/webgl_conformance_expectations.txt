@@ -8,7 +8,7 @@
 # tags: [ d3d11 d3d9 no-angle opengl opengles vulkan ]
 # tags: [ no-passthrough passthrough ]
 # tags: [ webgl-version-1 ]
-# tags: [ angle_lt_25.20.100.6444 ]
+# tags: [ angle_lt_25.20.100.6444 mesa_eq_18.0.5 ]
 # results: [ Failure RetryOnFailure Skip ]
 
 
@@ -18,7 +18,6 @@
 # It's expected that not all extensions will be available on all platforms.
 # Having a test listed here is not necessarily a problem.
 [ win vulkan passthrough ] WebglExtension_EXT_float_blend [ Failure ]
-crbug.com/angleproject/2672 [ vulkan passthrough ] WebglExtension_WEBGL_multi_draw_instanced [ Failure ]
 
 # Skip these, rather than expect them to fail, to speed up test
 # execution. The browser is restarted even after expected test
@@ -78,7 +77,7 @@ crbug.com/890539 conformance/extensions/webgl-multi-draw.html [ Skip ]
 
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607
-crbug.com/849572 conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
+crbug.com/849572 [ passthrough ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 
 # Nvidia bugs fixed in latest driver
 # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
@@ -283,6 +282,9 @@ crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/smooths
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/sqrt/sqrt_001_to_006.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/step/step_001_to_006.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/struct/struct_001_to_008.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/struct/struct_009_to_016.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/struct/struct_017_to_024.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/struct/struct_025_to_032.html [ Failure ]
 
 # Vulkan / Win / AMD / Passthrough command decoder
 crbug.com/angleproject/2898 [ win amd vulkan passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]
@@ -352,9 +354,19 @@ crbug.com/992231 [ mac passthrough amd-0x679e ] conformance/context/context-size
 # Linux failures   #
 ####################
 
+# Intel failed issues
+crbug.com/1021428 [ linux intel vulkan ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] conformance/textures/misc/texture-mips.html [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] conformance/rendering/clipping-wide-points.html [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] WebglExtension_EXT_shader_texture_lod [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] WebglExtension_EXT_float_blend [ Failure ]
+crbug.com/1021428 [ linux intel vulkan ] WebglExtension_WEBGL_depth_texture [ Failure ]
+
 # The following two tests only fail on Linux/Intel with Mesa 18.0.5,
 # not on Mesa 17.1.4 with the same Intel HD 630 GPU.
-crbug.com/928530 [ linux intel no-passthrough ] conformance/programs/program-test.html [ Failure ]
+crbug.com/928530 [ linux intel mesa_eq_18.0.5 no-passthrough ] conformance/programs/program-test.html [ Failure ]
 
 # NVIDIA
 crbug.com/524144 [ linux nvidia no-passthrough ] conformance/extensions/oes-element-index-uint.html [ RetryOnFailure ]

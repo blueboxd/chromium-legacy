@@ -248,7 +248,7 @@ public abstract class Linker {
                         ContextUtils.getApplicationContext().getApplicationInfo().className;
                 boolean isIncrementalInstall =
                         appClass != null && appClass.contains("incrementalinstall");
-                if (NativeLibraries.sUseModernLinker && !isIncrementalInstall) {
+                if (LibraryLoader.getInstance().useModernLinker() && !isIncrementalInstall) {
                     sSingleton = new ModernLinker();
                 } else {
                     sSingleton = new LegacyLinker();

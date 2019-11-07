@@ -5,6 +5,8 @@
 Polymer({
   is: 'gaia-password-changed',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     email: String,
 

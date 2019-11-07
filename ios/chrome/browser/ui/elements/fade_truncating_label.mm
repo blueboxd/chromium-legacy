@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
+#import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
 
 #include <algorithm>
 
-#include "base/mac/scoped_cftyperef.h"
+#include "base/logging.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface OmniboxPopupTruncatingLabel ()
+@interface FadeTruncatingLabel ()
 
 // Gradient used to create fade effect. Changes based on view.frame size.
 @property(nonatomic, strong) UIImage* gradient;
 
 @end
 
-@implementation OmniboxPopupTruncatingLabel
+@implementation FadeTruncatingLabel
 
 - (void)setup {
   self.backgroundColor = [UIColor clearColor];
-  _truncateMode = OmniboxPopupTruncatingTail;
+  _truncateMode = FadeTruncatingTail;
 }
 
 - (id)initWithFrame:(CGRect)frame {
@@ -83,11 +83,11 @@
 
 - (void)setTextAlignment:(NSTextAlignment)textAlignment {
   if (textAlignment == NSTextAlignmentLeft) {
-    self.truncateMode = OmniboxPopupTruncatingTail;
+    self.truncateMode = FadeTruncatingTail;
   } else if (textAlignment == NSTextAlignmentRight) {
-    self.truncateMode = OmniboxPopupTruncatingHead;
+    self.truncateMode = FadeTruncatingHead;
   } else if (textAlignment == NSTextAlignmentNatural) {
-    self.truncateMode = OmniboxPopupTruncatingTail;
+    self.truncateMode = FadeTruncatingTail;
   } else {
     NOTREACHED();
   }
@@ -103,7 +103,7 @@
   // Create an opaque context.
   CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
   CGContextRef context =
-      CGBitmapContextCreate(NULL, rect.size.width, rect.size.height, 8,
+      CGBitmapContextCreate(nullptr, rect.size.width, rect.size.height, 8,
                             4 * rect.size.width, colorSpace, kCGImageAlphaNone);
 
   // White background will mask opaque, black gradient will mask transparent.
@@ -122,13 +122,13 @@
       std::min(rect.size.height * 2, (CGFloat)floor(rect.size.width / 4));
   CGFloat minX = CGRectGetMinX(rect);
   CGFloat maxX = CGRectGetMaxX(rect);
-  if (self.truncateMode & OmniboxPopupTruncatingTail) {
+  if (self.truncateMode & FadeTruncatingTail) {
     CGFloat startX = maxX - fadeWidth;
     CGPoint startPoint = CGPointMake(startX, CGRectGetMidY(rect));
     CGPoint endPoint = CGPointMake(maxX, CGRectGetMidY(rect));
     CGContextDrawLinearGradient(context, gradient, startPoint, endPoint, 0);
   }
-  if (self.truncateMode & OmniboxPopupTruncatingHead) {
+  if (self.truncateMode & FadeTruncatingHead) {
     CGFloat startX = minX + fadeWidth;
     CGPoint startPoint = CGPointMake(startX, CGRectGetMidY(rect));
     CGPoint endPoint = CGPointMake(minX, CGRectGetMidY(rect));

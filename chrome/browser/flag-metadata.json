@@ -3540,11 +3540,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "use-pdf-compositor-service-for-print",
-    "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "use-search-click-for-right-click",
     "owners": [ "zentaro" ],
     "expiry_milestone": 80

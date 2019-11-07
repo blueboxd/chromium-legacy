@@ -3598,7 +3598,7 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
       break;
 
     if (!IsPositioned() &&
-        (IsHTMLTableElement(*node) || IsHTMLTableCellElement(*node)))
+        (IsA<HTMLTableElement>(*node) || IsHTMLTableCellElement(*node)))
       break;
 
     // Webkit specific extension where offsetParent stops at zoom level changes.

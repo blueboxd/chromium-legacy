@@ -24,6 +24,8 @@ const char kAppListSuggestionChipOpenTypeHistogramInTablet[] =
     "Apps.AppListSuggestedChipOpenType.TabletMode";
 const char kAppListZeroStateSuggestionOpenTypeHistogram[] =
     "Apps.AppList.ZeroStateSuggestionOpenType";
+const char kAppListDefaultSearchResultOpenTypeHistogram[] =
+    "Apps.AppListDefaultSearchResultOpenType";
 // The UMA histogram that logs the length of user typed queries app list
 // launcher issues to the search providers.
 constexpr char kAppListLauncherIssuedSearchQueryLength[] =
@@ -82,6 +84,15 @@ void RecordSearchResultOpenTypeHistogram(
       NOTREACHED();
       break;
   }
+}
+
+void RecordDefaultSearchResultOpenTypeHistogram(SearchResultType type) {
+  if (type == SEARCH_RESULT_TYPE_BOUNDARY) {
+    NOTREACHED();
+    return;
+  }
+  UMA_HISTOGRAM_ENUMERATION(kAppListDefaultSearchResultOpenTypeHistogram, type,
+                            SEARCH_RESULT_TYPE_BOUNDARY);
 }
 
 void RecordZeroStateSuggestionOpenTypeHistogram(SearchResultType type) {

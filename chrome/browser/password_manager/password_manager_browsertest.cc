@@ -3900,9 +3900,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_EQ(base::ASCIIToUTF16("user"), controller->GetElidedValueAt(0));
   EXPECT_NE(base::ASCIIToUTF16("admin"), controller->GetElidedValueAt(1));
 
-  // TODO(crbug.com/1004777): Here the username_field should get re-filled with
-  // "user" instead of "admin".
-  // WaitForElementValue("username_field", "user");
+  // The username_field should get re-filled with "user" instead of "admin".
+  WaitForElementValue("username_field", "user");
 
   // Delete all the credentials.
   password_store->RemoveLogin(user_form);

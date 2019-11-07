@@ -34,13 +34,15 @@
             <hd-iron-icon slot="oobe-icon"
                 icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
             </hd-iron-icon>
-            <h1 slot="title" i18n-content="oauthEnrollScreenTitle"></h1>
+            <h1 slot="title">
+              [[i18nDynamic(locale, 'oauthEnrollScreenTitle')]]
+            </h1>
             <paper-progress slot="progress" indeterminate>
             </paper-progress>
 
             <div slot="footer" class="flex layout vertical" role="alert">
               <div class="oauth-enroll-step-message">
-                <span i18n-content="oauthEnrollWorking"></span>
+                [[i18nDynamic(locale, 'oauthEnrollWorking')]]
               </div>
             </div>
           </oobe-dialog>
@@ -72,15 +74,17 @@
           <hd-iron-icon slot="oobe-icon"
               icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
           </hd-iron-icon>
-          <h1 slot="title" i18n-content="oauthEnrollSuccessTitle"></h1>
+          <h1 slot="title">
+            [[i18nDynamic(locale, 'oauthEnrollSuccessTitle')]]
+          </h1>
           <div slot="subtitle">
             <div hidden="[[!isEmpty_(enrolledDomain_)]]">
               [[i18nDynamic(locale,'oauthEnrollSuccessTitle')]]
             </div>
             <div hidden="[[isEmpty_(enrolledDomain_)]]">
-              <div inner-h-t-m-l=
+              <html-echo content=
                   "[[successText_(locale, deviceName_, enrolledDomain_)]]">
-              </div>
+              </html-echo>
               <div>[[i18nDynamic(locale, 'oauthEnrollAbeSuccessSupport')]]</div>
             </div>
           </div>
@@ -94,7 +98,7 @@
             <oobe-text-button inverse id="success-done-button"
                 on-tap="onEnrollmentFinished_"
                 class="focus-on-show">
-              <div i18n-content="oauthEnrollDone"></div>
+              <div>[[i18nDynamic(locale, 'oauthEnrollDone')]]</div>
             </oobe-text-button>
           </div>
         </oobe-dialog>
@@ -105,31 +109,39 @@
           <hd-iron-icon slot="oobe-icon"
               icon1x="oobe-32:briefcase" icon2x="oobe-64:briefcase">
           </hd-iron-icon>
-          <h1 slot="title" i18n-content="oauthEnrollScreenTitle"></h1>
-          <div slot="subtitle" i18n-content="oauthEnrollDeviceInformation">
+          <h1 slot="title">
+            [[i18nDynamic(locale, 'oauthEnrollScreenTitle')]]
+          </h1>
+          <div slot="subtitle">
+            [[i18nDynamic(locale, 'oauthEnrollDeviceInformation')]]
           </div>
           <div slot="footer" class="layout vertical start">
             <div class="oauth-enroll-step-message">
-                      <span id="oauth-enroll-attribute-prompt-message"
-                            i18n-content="oauthEnrollAttributeExplanation">
-                      </span>
+              <span id="oauth-enroll-attribute-prompt-message">
+                [[i18nDynamic(locale, 'oauthEnrollAttributeExplanation')]]
+              </span>
               <a href="#" id="oauth-enroll-learn-more-link"
-                 class="oauth-enroll-link"
-                 i18n-content="oauthEnrollExplainAttributeLink"></a>
+                 class="oauth-enroll-link">
+                [[i18nDynamic(locale, 'oauthEnrollExplainAttributeLink')]]
+              </a>
             </div>
             <gaia-input id="oauth-enroll-asset-id" type="text"
                         class="focus-on-show">
-              <div slot="label" i18n-content="oauthEnrollAssetIdLabel">
+              <div slot="label">
+                [[i18nDynamic(locale, 'oauthEnrollAssetIdLabel')]]
               </div>
             </gaia-input>
             <gaia-input id="oauth-enroll-location" type="text">
-              <div slot="label" i18n-content="oauthEnrollLocationLabel">
+              <div slot="label">
+                [[i18nDynamic(locale, 'oauthEnrollLocationLabel')]]
               </div>
             </gaia-input>
           </div>
           <div slot="bottom-buttons" class="layout horizontal end-justified">
             <oobe-text-button id="attributes-skip" on-tap="skipAttributes_">
-              <div i18n-content="oauthEnrollSkip"></div>
+              <div>
+                [[i18nDynamic(locale, 'oauthEnrollSkip')]]
+              </div>
             </oobe-text-button>
             <div class="flex"></div>
             <oobe-next-button id="attributes-submit"

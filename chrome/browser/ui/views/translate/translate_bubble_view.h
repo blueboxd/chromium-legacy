@@ -92,7 +92,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   base::string16 GetWindowTitle() const override;
   void Init() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-  std::unique_ptr<views::View> CreateFootnoteView() override;
 
   // views::WidgetDelegate methods.
   View* GetInitiallyFocusedView() override;

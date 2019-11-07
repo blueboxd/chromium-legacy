@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 
+#include <algorithm>
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -19,7 +21,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/policy_pref_names.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
@@ -30,6 +34,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/feedback/anonymizer_tool.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -273,6 +278,13 @@ const int64_t SystemLogUploader::kDefaultUploadDelayMs =
 const int64_t SystemLogUploader::kErrorUploadDelayMs =
     120 * 1000;  // 120 seconds
 
+// Determines max number of logs to be uploaded in kLogThrottleWindowDuration.
+const int64_t SystemLogUploader::kLogThrottleCount = 100;
+
+// Determines the time window for which the upload times should be stored.
+const base::TimeDelta SystemLogUploader::kLogThrottleWindowDuration =
+    base::TimeDelta::FromHours(24);
+
 // String constant identifying the header field which stores the file type.
 const char* const SystemLogUploader::kFileTypeHeaderName = "File-Type";
 
@@ -500,6 +512,55 @@ void SystemLogUploader::OnSystemLogsLoaded(
   }
 }
 
+// Update the list of logs within kLogThrottleWindowDuration window and add the
+// latest log upload time if any.
+base::Time SystemLogUploader::UpdateLocalStateForLogs() {
+  const base::Time now = base::Time::NowFromSystemTime();
+  PrefService* local_state = g_browser_process->local_state();
+
+  const base::ListValue* prev_log_uploads =
+      local_state->GetList(prefs::kStoreLogStatesAcrossReboots);
+
+  std::vector<base::Time> updated_log_uploads;
+
+  for (const base::Value& item : *prev_log_uploads) {
+    // ListValue stores Value type and Value does not support base::Time,
+    // so we store double and convert to base::Time here.
+    const base::Time current_item_time =
+        base::Time::FromDoubleT(item.GetDouble());
+
+    // Logs are valid only if they occur in previous kLogThrottleWindowDuration
+    // time window.
+    if (now - current_item_time <= kLogThrottleWindowDuration)
+      updated_log_uploads.push_back(current_item_time);
+  }
+
+  if (!last_upload_attempt_.is_null() &&
+      (updated_log_uploads.empty() ||
+       last_upload_attempt_ > updated_log_uploads.back())) {
+    updated_log_uploads.push_back(last_upload_attempt_);
+  }
+
+  // This happens only in case of ScheduleNextSystemLogUploadImmediately. It is
+  // sufficient to delete only one entry as at most 1 entry is appended on the
+  // method call, hence the list size would exceed by at most 1.
+  if (updated_log_uploads.size() > kLogThrottleCount)
+    updated_log_uploads.erase(updated_log_uploads.begin());
+
+  // Create a list to be updated for the pref.
+  base::Value updated_prev_log_uploads(base::Value::Type::LIST);
+  for (auto it : updated_log_uploads) {
+    updated_prev_log_uploads.Append(it.ToDoubleT());
+  }
+  local_state->Set(prefs::kStoreLogStatesAcrossReboots,
+                   updated_prev_log_uploads);
+
+  // Write the changes to the disk to prevent loss of changes.
+  local_state->CommitPendingWrite();
+  // If there are no log entries till now, return zero value.
+  return updated_log_uploads.empty() ? base::Time() : updated_log_uploads[0];
+}
+
 void SystemLogUploader::ScheduleNextSystemLogUpload(base::TimeDelta frequency) {
   // Don't schedule a new system log upload if there's a log upload in progress
   // (it will be scheduled once the current one completes).
@@ -508,14 +569,25 @@ void SystemLogUploader::ScheduleNextSystemLogUpload(base::TimeDelta frequency) {
                  << "next one until this one finishes.";
     return;
   }
-
+  base::Time last_valid_log_upload = UpdateLocalStateForLogs();
   // Calculate when to fire off the next update.
   base::TimeDelta delay = std::max(
       (last_upload_attempt_ + frequency) - base::Time::NowFromSystemTime(),
       base::TimeDelta());
+
+  // To ensure at most kLogThrottleCount logs are uploaded in
+  // kLogThrottleWindowDuration time.
+  if (g_browser_process->local_state()
+              ->GetList(prefs::kStoreLogStatesAcrossReboots)
+              ->GetSize() >= kLogThrottleCount &&
+      !frequency.is_zero()) {
+    delay = std::max(delay, last_valid_log_upload + kLogThrottleWindowDuration -
+                                base::Time::NowFromSystemTime());
+  }
+
   SYSLOG(INFO) << "Scheduling next system log upload " << delay << " from now.";
   // Ensure that we never have more than one pending delayed task
-  // (InvalidateWeakPtrs() will cancel any pending log uploads).
+  // (InvalidateWeakPtrs() will cancel any pending calls to log uploads).
   weak_factory_.InvalidateWeakPtrs();
   task_runner_->PostDelayedTask(
       FROM_HERE,

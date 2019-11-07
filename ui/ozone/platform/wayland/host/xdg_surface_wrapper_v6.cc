@@ -116,6 +116,10 @@ void XDGSurfaceWrapperV6::SetWindowGeometry(const gfx::Rect& bounds) {
                                       bounds.height());
 }
 
+void XDGSurfaceWrapperV6::SetAppId(const std::string& app_id) {
+  zxdg_toplevel_v6_set_app_id(zxdg_toplevel_v6_.get(), app_id.c_str());
+}
+
 // static
 void XDGSurfaceWrapperV6::Configure(void* data,
                                     struct zxdg_surface_v6* zxdg_surface_v6,

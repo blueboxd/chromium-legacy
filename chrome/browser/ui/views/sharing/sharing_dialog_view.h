@@ -44,7 +44,6 @@ class SharingDialogView : public SharingDialog,
   void WindowClosing() override;
   void WebContentsDestroyed() override;
   int GetDialogButtons() const override;
-  std::unique_ptr<views::View> CreateFootnoteView() override;
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
   void OnThemeChanged() override;

@@ -116,17 +116,26 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   bool InternalSupportsSession(device::mojom::XRSessionOptions* options);
   void OnInlineSessionCreated(
+      device::mojom::XRSessionOptionsPtr options,
       device::mojom::XRDeviceId session_runtime_id,
       device::mojom::VRService::RequestSessionCallback callback,
       const std::set<device::mojom::XRSessionFeature>& enabled_features,
       device::mojom::XRSessionPtr session,
       mojo::PendingRemote<device::mojom::XRSessionController> controller);
-
-  void OnSessionCreated(
+  void OnImmersiveSessionCreated(
+      device::mojom::XRSessionOptionsPtr options,
       device::mojom::XRDeviceId session_runtime_id,
       device::mojom::VRService::RequestSessionCallback callback,
       const std::set<device::mojom::XRSessionFeature>& enabled_features,
       device::mojom::XRSessionPtr session);
+
+  void OnSessionCreated(
+      device::mojom::XRSessionOptionsPtr options,
+      device::mojom::XRDeviceId session_runtime_id,
+      device::mojom::VRService::RequestSessionCallback callback,
+      const std::set<device::mojom::XRSessionFeature>& enabled_features,
+      device::mojom::XRSessionPtr session,
+      WebXRSessionTracker* session_metrics_tracker);
   void DoRequestSession(
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::VRService::RequestSessionCallback callback,

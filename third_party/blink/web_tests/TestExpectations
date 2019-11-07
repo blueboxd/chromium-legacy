@@ -1681,7 +1681,9 @@ crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delet
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
-crbug.com/771233 [ Win10 ] http/tests/devtools/audits/ [ Skip ]
+# Temporarily disable to land Audits Panel changes in DevTools
+crbug.com/772558 http/tests/devtools/audits/ [ Pass Failure ]
+# crbug.com/771233 [ Win10 ] http/tests/devtools/audits/ [ Skip ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]

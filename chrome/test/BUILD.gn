@@ -6585,3 +6585,12 @@ if (is_win) {
     ]
   }
 }
+
+group("closure_compile") {
+  testonly = true
+
+  deps = [
+    "data:closure_compile",
+    # TODO(crbug/1000989): Add a dep for base/js2gtest.js.
+  ]
+}

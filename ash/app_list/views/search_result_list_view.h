@@ -31,7 +31,9 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
                        AppListViewDelegate* view_delegate);
   ~SearchResultListView() override;
 
-  void SearchResultActivated(SearchResultView* view, int event_flags);
+  void SearchResultActivated(SearchResultView* view,
+                             int event_flags,
+                             bool by_button_press);
 
   void SearchResultActionActivated(SearchResultView* view,
                                    size_t action_index,

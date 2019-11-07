@@ -633,7 +633,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   // Chrome exposes both table markup and table CSS as a tables, letting
   // the screen reader determine what to do for CSS tables.
-  if (IsHTMLTableElement(*GetNode())) {
+  if (IsA<HTMLTableElement>(*GetNode())) {
     return IsDataTable() ? ax::mojom::Role::kTable
                          : ax::mojom::Role::kLayoutTable;
   }
@@ -2041,7 +2041,7 @@ String AXNodeObject::StringValue() const {
     return String();
 
   if (auto* select_element = DynamicTo<HTMLSelectElement>(*node)) {
-    int selected_index = select_element->selectedIndex();
+    int selected_index = select_element->SelectedListIndex();
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
     if (selected_index >= 0 &&
@@ -3331,7 +3331,7 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   // 5.9 table Element
-  if (auto* table_element = ToHTMLTableElementOrNull(GetNode())) {
+  if (auto* table_element = DynamicTo<HTMLTableElement>(GetNode())) {
     // caption
     name_from = ax::mojom::NameFrom::kCaption;
     if (name_sources) {
@@ -3632,10 +3632,8 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
 
   // table caption, 5.9.2 from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  if (name_from != ax::mojom::NameFrom::kCaption &&
-      IsHTMLTableElement(GetNode())) {
-    HTMLTableElement* table_element = ToHTMLTableElement(GetNode());
-
+  auto* table_element = DynamicTo<HTMLTableElement>(GetNode());
+  if (name_from != ax::mojom::NameFrom::kCaption && table_element) {
     description_from = ax::mojom::DescriptionFrom::kRelatedElement;
     if (description_sources) {
       description_sources->push_back(DescriptionSource(found_description));

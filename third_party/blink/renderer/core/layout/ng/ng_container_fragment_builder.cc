@@ -28,6 +28,16 @@ void NGContainerFragmentBuilder::AddChild(
     const NGPhysicalContainerFragment& child,
     const LogicalOffset& child_offset,
     const LayoutInline* inline_container) {
+  PropagateChildData(child, child_offset, inline_container);
+  AddChildInternal(&child, child_offset);
+}
+
+// Propagate data in |child| to this fragment. The |child| will then be added as
+// a child fragment or a child fragment item.
+void NGContainerFragmentBuilder::PropagateChildData(
+    const NGPhysicalContainerFragment& child,
+    const LogicalOffset& child_offset,
+    const LayoutInline* inline_container) {
   // Collect the child's out of flow descendants.
   // child_offset is offset of inline_start/block_start vertex.
   // Candidates need offset of top/left vertex.
@@ -138,8 +148,6 @@ void NGContainerFragmentBuilder::AddChild(
       }
     }
   }
-
-  AddChildInternal(&child, child_offset);
 }
 
 void NGContainerFragmentBuilder::AddChildInternal(

@@ -354,7 +354,7 @@ android_library("chrome_java") {
     ":chrome_android_java_enums_srcjar",
     ":chrome_android_java_switches_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
-    ":chrome_locale_config",
+    ":chrome_product_config",
     ":photo_picker_aidl",
     ":resource_id_javagen",
     ":sync_user_settings_enums_java",
@@ -429,7 +429,7 @@ android_library("chrome_java") {
   # can provide their own implementations.
   jar_excluded_patterns = [
     "*/AppHooksImpl.class",
-    "*/LocaleConfig.class",
+    "*/ProductConfig.class",
   ]
 
   annotation_processor_deps = [
@@ -445,7 +445,7 @@ android_library("chrome_java") {
   java_files += share_java_sources
 }
 
-generate_locale_config_srcjar("chrome_locale_config") {
+generate_product_config_srcjar("chrome_product_config") {
   java_package = "org.chromium.chrome.browser"
 }
 
@@ -1738,6 +1738,8 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "resource_ids_provider_dep",
                              "static_library_provider",
                              "target_type",
+                             "use_chromium_linker",
+                             "use_modern_linker",
                              "use_trichrome_library",
                              "verify_manifest",
                              "failed_manifest_expectation_file",

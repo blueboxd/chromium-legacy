@@ -169,6 +169,7 @@ jumbo_static_library("weblayer_lib") {
       "//components/crash/android:crashpad_main",
       "//components/safe_browsing",
       "//components/safe_browsing/android:remote_database_manager",
+      "//components/safe_browsing/android:safe_browsing_api_handler",
       "//components/safe_browsing/browser",
       "//components/safe_browsing/browser:network_context",
       "//components/safe_browsing/db:database_manager",

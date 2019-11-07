@@ -62,9 +62,6 @@ import javax.annotation.concurrent.GuardedBy;
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";
 
-    // Set to true to enable debug logs.
-    private static final boolean DEBUG = false;
-
     // Experience shows that on some devices, the PackageManager fails to properly extract
     // native shared libraries to the /data partition at installation or upgrade time,
     // which creates all kind of chaos (https://crbug.com/806998).
@@ -103,6 +100,15 @@ public class LibraryLoader {
 
     private NativeLibraryPreloader mLibraryPreloader;
     private boolean mLibraryPreloaderCalled;
+
+    // Whether to use the Chromium linker vs system linker.
+    private boolean mUseChromiumLinker;
+
+    // Whether to use ModernLinker, vs LegacyLinker.
+    private boolean mUseModernLinker;
+
+    // Whether the configuration has been set.
+    private boolean mConfigurationSet;
 
     // One-way switch becomes true when the libraries are loaded.
     private boolean mLoaded;
@@ -150,11 +156,55 @@ public class LibraryLoader {
         }
     }
 
+    @GuardedBy("mLock")
+    private void setConfigurationIfNeeded() {
+        if (mConfigurationSet) return;
+
+        // Cannot use initializers for the variables below, as this makes roboelectric tests fail,
+        // since they don't have a NativeLibraries class.
+        mUseChromiumLinker = NativeLibraries.sUseLinker;
+        mUseModernLinker = NativeLibraries.sUseModernLinker;
+        mConfigurationSet = true;
+    }
+
     public static LibraryLoader getInstance() {
         return sInstance;
     }
 
     private LibraryLoader() {}
+
+    /**
+     * Sets the configuration for library loading.
+     *
+     * Must be called before loading the library.
+     *
+     * @param useChromiumLinker Whether to use the chromium linker.
+     * @param useModernLinker Whether to use ModernLinker.
+     */
+    public void setConfiguration(boolean useChromiumLinker, boolean useModernLinker) {
+        synchronized (mLock) {
+            assert !mInitialized;
+
+            mUseChromiumLinker = useChromiumLinker;
+            mUseModernLinker = useModernLinker;
+
+            Log.d(TAG, "Configuration, useChromiumLinker = %b, useModernLinker = %b",
+                    mUseChromiumLinker, mUseModernLinker);
+            mConfigurationSet = true;
+        }
+    }
+
+    public boolean useChromiumLinker() {
+        return mUseChromiumLinker;
+    }
+
+    public boolean useModernLinker() {
+        return mUseModernLinker;
+    }
+
+    public boolean areTestsEnabled() {
+        return NativeLibraries.sEnableLinkerTests;
+    }
 
     /**
      * Return if library is already loaded successfully by the zygote.
@@ -193,7 +243,8 @@ public class LibraryLoader {
      */
     public void preloadNowOverrideApplicationContext(Context appContext) {
         synchronized (mLock) {
-            if (LibraryLoaderConfig.useChromiumLinker()) return;
+            setConfigurationIfNeeded();
+            if (mUseChromiumLinker) return;
             preloadAlreadyLocked(appContext.getApplicationInfo());
         }
     }
@@ -201,7 +252,7 @@ public class LibraryLoader {
     private void preloadAlreadyLocked(ApplicationInfo appInfo) {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.preloadAlreadyLocked")) {
             // Preloader uses system linker, we shouldn't preload if Chromium linker is used.
-            assert !LibraryLoaderConfig.useChromiumLinker();
+            assert !mUseChromiumLinker;
             if (mLibraryPreloader != null && !mLibraryPreloaderCalled) {
                 mLibraryPreloader.loadLibrary(appInfo);
                 mLibraryPreloaderCalled = true;
@@ -384,16 +435,19 @@ public class LibraryLoader {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadAlreadyLocked")) {
             if (mLoaded) return;
             assert !mInitialized;
+            setConfigurationIfNeeded();
 
             long startTime = SystemClock.uptimeMillis();
 
-            if (LibraryLoaderConfig.useChromiumLinker() && !inZygote) {
+            if (mUseChromiumLinker && !inZygote) {
+                Log.d(TAG, "Loading with the Chromium linker.");
                 // See base/android/linker/config.gni, the chromium linker is only enabled when
                 // we have a single library.
                 assert NativeLibraries.LIBRARIES.length == 1;
                 String library = NativeLibraries.LIBRARIES[0];
                 loadWithChromiumLinker(appInfo, library);
             } else {
+                Log.d(TAG, "Loading with the System linker.");
                 loadWithSystemLinkerAlreadyLocked(appInfo);
             }
 
@@ -552,7 +606,7 @@ public class LibraryLoader {
 
     // Called after all native initializations are complete.
     public void onBrowserNativeInitializationComplete() {
-        if (LibraryLoaderConfig.useChromiumLinker()) {
+        if (mUseChromiumLinker) {
             RecordHistogram.recordTimesHistogram(
                     "ChromiumAndroidLinker.BrowserLoadTime", mLibraryLoadTimeMs);
         }
@@ -563,7 +617,7 @@ public class LibraryLoader {
     // time they are captured. This function stores a pending value, so that a later call to
     // RecordChromiumAndroidLinkerRendererHistogram() will record it correctly.
     public void registerRendererProcessHistogram() {
-        if (!LibraryLoaderConfig.useChromiumLinker()) return;
+        if (!mUseChromiumLinker) return;
         synchronized (mLock) {
             LibraryLoaderJni.get().recordRendererLibraryLoadTime(mLibraryLoadTimeMs);
         }

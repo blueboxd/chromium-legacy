@@ -26,7 +26,7 @@ skia_support_pdf = !is_ios && enable_basic_printing
 skia_support_skottie = true
 
 declare_args() {
-  enable_skia_wuffs_gif = false
+  enable_skia_wuffs_gif = true
   skia_whitelist_serialized_typefaces = false
 }
 

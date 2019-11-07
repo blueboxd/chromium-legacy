@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -22,7 +23,6 @@
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
-#include "third_party/google_toolbox_for_mac/src/iPhone/GTMFadeTruncatingLabel.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -70,7 +70,7 @@ UIImage* DefaultFaviconImage() {
   UIButton* _closeButton;
 
   // View that draws the tab title.
-  GTMFadeTruncatingLabel* _titleLabel;
+  FadeTruncatingLabel* _titleLabel;
 
   // Background image for this tab.
   UIImageView* _backgroundImageView;
@@ -157,9 +157,9 @@ UIImage* DefaultFaviconImage() {
     return;
   if (base::i18n::GetStringDirection(base::SysNSStringToUTF16(title)) ==
       base::i18n::RIGHT_TO_LEFT) {
-    [_titleLabel setTruncateMode:GTMFadeTruncatingHead];
+    _titleLabel.truncateMode = FadeTruncatingHead;
   } else {
-    [_titleLabel setTruncateMode:GTMFadeTruncatingTail];
+    _titleLabel.truncateMode = FadeTruncatingTail;
   }
   _titleLabel.text = title;
   [_closeButton setAccessibilityValue:title];
@@ -301,15 +301,8 @@ UIImage* DefaultFaviconImage() {
   [self addSubview:_closeButton];
 
   // Add fade truncating label.
-  _titleLabel = [[GTMFadeTruncatingLabel alloc] initWithFrame:CGRectZero];
+  _titleLabel = [[FadeTruncatingLabel alloc] initWithFrame:CGRectZero];
   [_titleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
-
-  // Setting NSLineBreakByCharWrapping fixes an issue where the beginning of the
-  // text is truncated for RTL text writing direction. Anyway since the label is
-  // only one line and the end of the text is faded behind a gradient mask, it
-  // is visually almost equivalent to NSLineBreakByClipping.
-  [_titleLabel setLineBreakMode:NSLineBreakByCharWrapping];
-
   [_titleLabel setTextAlignment:NSTextAlignmentNatural];
   [self addSubview:_titleLabel];
 

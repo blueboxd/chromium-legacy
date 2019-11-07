@@ -19,6 +19,9 @@ content::WebUIDataSource* CreateDataSource() {
   // TODO(crbug.com/1012578): This is a placeholder only, update with the
   // actual app content.
   source->SetDefaultResource(IDR_HELP_APP_INDEX_HTML);
+  source->AddResourcePath("pwa.html", IDR_HELP_APP_PWA_HTML);
+  source->AddResourcePath("manifest.json", IDR_HELP_APP_MANIFEST);
+  source->AddResourcePath("app_icon_192.png", IDR_HELP_APP_ICON_192);
   return source;
 }
 }  // namespace

@@ -180,23 +180,6 @@ TEST_F(NGPaintFragmentTraversalTest, MoveToWithRoot) {
               ElementsAreArray({span, span->FirstChild(), br}));
 }
 
-TEST_F(NGPaintFragmentTraversalTest, PreviousLineOf) {
-  SetUpHtml("t", "<div id=t>foo<br>bar</div>");
-  ASSERT_EQ(2u, RootChildren().size());
-  EXPECT_EQ(nullptr, NGPaintFragmentTraversal::PreviousLineOf(
-                         *ToList(RootChildren())[0]));
-  EXPECT_EQ(ToList(RootChildren())[0], NGPaintFragmentTraversal::PreviousLineOf(
-                                           *ToList(RootChildren())[1]));
-}
-
-TEST_F(NGPaintFragmentTraversalTest, PreviousLineInListItem) {
-  SetUpHtml("t", "<ul><li id=t>foo</li></ul>");
-  ASSERT_EQ(2u, RootChildren().size());
-  ASSERT_TRUE(ToList(RootChildren())[0]->PhysicalFragment().IsListMarker());
-  EXPECT_EQ(nullptr, NGPaintFragmentTraversal::PreviousLineOf(
-                         *ToList(RootChildren())[1]));
-}
-
 TEST_F(NGPaintFragmentTraversalTest, InlineDescendantsOf) {
   SetUpHtml("t",
             "<ul>"

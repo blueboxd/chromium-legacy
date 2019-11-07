@@ -428,6 +428,11 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
   // Contains pins from sync regardless either real app available on device or
   // not.
   std::set<std::string> pins_from_sync_raw;
+
+  // Check that the camera app was pinned by a real app id or mapped internal
+  // app id.
+  bool has_pinned_camera_app = false;
+
   for (const auto& sync_peer : syncable_service->sync_items()) {
     if (!sync_peer.second->item_pin_ordinal.IsValid())
       continue;
@@ -440,12 +445,26 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
       continue;
     }
 
-    // Prevent old app camera pinning.
-    if (IsCameraApp(sync_peer.first))
-      continue;
+    std::string pinned_app_id;
 
-    pin_infos.emplace_back(
-        PinInfo(sync_peer.first, sync_peer.second->item_pin_ordinal));
+    // Map any real camera app id to the internal camera app id.
+    if (IsCameraApp(sync_peer.first) ||
+        sync_peer.first == ash::kInternalAppIdCamera) {
+      // Prevent internal camera app being pinned twice.
+      if (has_pinned_camera_app) {
+        continue;
+      }
+      // Check the validity of internal camera app id.
+      if (!helper->IsValidIDForCurrentUser(ash::kInternalAppIdCamera)) {
+        continue;
+      }
+      has_pinned_camera_app = true;
+      pinned_app_id = ash::kInternalAppIdCamera;
+    } else {
+      pinned_app_id = sync_peer.first;
+    }
+
+    pin_infos.emplace_back(pinned_app_id, sync_peer.second->item_pin_ordinal);
   }
 
   // Make sure Chrome is always pinned.

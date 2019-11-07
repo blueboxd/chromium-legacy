@@ -129,7 +129,11 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // original opacity and transform, and 1.0 means the window will be faded out
   // and transformed offscreen. This function is used by kSlideUpToShow and
   // kSlideDownToHide mode.
-  void UpdateWindowsForSlideUpOrDown(double progress, bool animate);
+  // If and only if |animation_trigger| is set, the windows updates will be
+  // animated. |animation_trigger| should indicate what triggered the animation.
+  void UpdateWindowsForSlideUpOrDown(
+      double progress,
+      base::Optional<AnimationTrigger> animation_trigger);
 
   // Stop observing all windows and remove their local pointers.
   void RemoveObserversAndStopTracking();

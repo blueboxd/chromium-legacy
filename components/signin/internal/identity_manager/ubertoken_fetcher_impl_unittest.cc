@@ -57,7 +57,7 @@ class UbertokenFetcherImplTest : public testing::Test {
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &url_loader_factory_)) {
     fetcher_ = std::make_unique<signin::UbertokenFetcherImpl>(
-        kTestAccountId, &token_service_,
+        CoreAccountId(kTestAccountId), &token_service_,
         base::BindOnce(&MockUbertokenConsumer::OnUbertokenFetchComplete,
                        base::Unretained(&consumer_)),
         gaia::GaiaSource::kChrome, test_shared_loader_factory_);

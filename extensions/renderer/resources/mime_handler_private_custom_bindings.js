@@ -19,7 +19,7 @@ loadScript('extensions/common/api/mime_handler.mojom');
 
 var servicePtr = new extensions.mimeHandler.MimeHandlerServicePtr;
 Mojo.bindInterface(extensions.mimeHandler.MimeHandlerService.name,
-                   mojo.makeRequest(servicePtr).handle);
+                   mojo.makeRequest(servicePtr).handle, "context", true);
 var beforeUnloadControlPtr =
     new extensions.mimeHandler.BeforeUnloadControlPtr;
 Mojo.bindInterface(

@@ -74,7 +74,9 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
  private:
   // Launch the result and log to various histograms.
-  void ActivateResult(int event_flags);
+  // |by_button_press|: True if |result_| is activated by button pressing;
+  //                    otherwise |result| is activated by ENTER key pressing.
+  void ActivateResult(int event_flags, bool by_button_press);
 
   // Bound by ShowContextMenuForViewImpl().
   void OnGetContextMenuModel(views::View* source,

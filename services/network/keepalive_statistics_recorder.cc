@@ -104,13 +104,4 @@ int KeepaliveStatisticsRecorder::GetTotalRequestSizePerProcess(
   return it->second.total_request_size;
 }
 
-bool KeepaliveStatisticsRecorder::HasRecordForProcess(int process_id) const {
-  auto it = per_process_records_.find(process_id);
-  if (it != per_process_records_.end()) {
-    DCHECK(it->second.num_registrations > 0);
-    return true;
-  }
-  return false;
-}
-
 }  // namespace network

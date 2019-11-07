@@ -280,7 +280,7 @@ class PersonalDataManagerTestBase {
   AccountInfo SetActiveSecondaryAccount() {
     AccountInfo account_info;
     account_info.email = kSyncTransportAccountEmail;
-    account_info.account_id = "account_id";
+    account_info.account_id = CoreAccountId("account_id");
     sync_service_.SetAuthenticatedAccountInfo(account_info);
     sync_service_.SetIsAuthenticatedAccountPrimary(false);
     return account_info;
@@ -7451,8 +7451,8 @@ TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
 
 TEST_F(PersonalDataManagerTest, OnAccountsCookieDeletedByUserAction) {
   // Set up some sync transport opt-ins in the prefs.
-  ::autofill::prefs::SetUserOptedInWalletSyncTransport(prefs_.get(), "account1",
-                                                       true);
+  ::autofill::prefs::SetUserOptedInWalletSyncTransport(
+      prefs_.get(), CoreAccountId("account1"), true);
   EXPECT_FALSE(
       prefs_->GetDictionary(prefs::kAutofillSyncTransportOptIn)->DictEmpty());
 
@@ -7478,7 +7478,7 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   // Set an an active secondary account.
   AccountInfo active_info;
   active_info.email = kPrimaryAccountEmail;
-  active_info.account_id = "account_id";
+  active_info.account_id = CoreAccountId("account_id");
   sync_service_.SetAuthenticatedAccountInfo(active_info);
   sync_service_.SetIsAuthenticatedAccountPrimary(false);
 

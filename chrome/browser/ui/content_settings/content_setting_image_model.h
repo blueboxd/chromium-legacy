@@ -82,6 +82,13 @@ class ContentSettingImageModel {
   // so that we do not restart it when the parent view is updated.
   void SetAnimationHasRun(content::WebContents* web_contents);
 
+  // Whether to automatically trigger the new bubble.
+  bool ShouldAutoOpenBubble(content::WebContents* contents);
+
+  // Remembers that the bubble was auto-opened for the given |web_contents|,
+  // so that we do not auto-open it again when the parent view is updated.
+  void SetBubbleWasAutoOpened(content::WebContents* contents);
+
   bool is_visible() const { return is_visible_; }
 
   // Retrieve the icon that represents this content setting. Blocked content
@@ -125,6 +132,9 @@ class ContentSettingImageModel {
   }
 
   void set_tooltip(const base::string16& tooltip) { tooltip_ = tooltip; }
+  void set_should_auto_open_bubble(const bool should_auto_open_bubble) {
+    should_auto_open_bubble_ = should_auto_open_bubble;
+  }
 
  private:
   bool is_visible_ = false;
@@ -135,7 +145,7 @@ class ContentSettingImageModel {
   base::string16 tooltip_;
   const ImageType image_type_;
   const bool image_type_should_notify_accessibility_;
-
+  bool should_auto_open_bubble_ = false;
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModel);
 };
 

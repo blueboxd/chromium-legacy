@@ -128,6 +128,9 @@
       <message name="IDS_MANAGE_PASSWORDS" desc="Title of the button at the end of a touch to fill sheet that will open the password preferences when tapped.">
         Manage Passwords
       </message>
+      <message name="IDS_TOUCH_TO_FILL_CONFIRM" desc="Title of the button that confirms filling the only available set of credentials.">
+        Use Password
+      </message>
     </messages>
   </release>
 </grit>

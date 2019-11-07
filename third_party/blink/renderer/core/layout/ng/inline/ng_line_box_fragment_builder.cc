@@ -108,9 +108,12 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
   }
 }
 
-void NGLineBoxFragmentBuilder::AddOutOfFlowChildren(ChildList& children) {
+void NGLineBoxFragmentBuilder::PropagateChildrenData(ChildList& children) {
   for (auto& child : children) {
-    if (child.out_of_flow_positioned_box) {
+    if (child.layout_result) {
+      DCHECK(!child.fragment);
+      PropagateChildData(child.layout_result->PhysicalFragment(), child.offset);
+    } else if (child.out_of_flow_positioned_box) {
       AddOutOfFlowChildCandidate(
           NGBlockNode(ToLayoutBox(child.out_of_flow_positioned_box)),
           child.offset, child.container_direction);

@@ -82,7 +82,7 @@ class SigninGlobalErrorTest : public testing::Test {
   void SetAuthError(GoogleServiceAuthError::State state) {
     signin::IdentityTestEnvironment* identity_test_env =
         identity_test_env_profile_adaptor_->identity_test_env();
-    std::string primary_account_id =
+    CoreAccountId primary_account_id =
         identity_test_env->identity_manager()->GetPrimaryAccountId();
 
     signin::UpdatePersistentErrorOfRefreshTokenForAccount(

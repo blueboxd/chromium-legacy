@@ -26,11 +26,6 @@ const int kDefaultMemoryThresholdMb = 4096;
 #endif
 
 // static
-bool RealTimePolicyEngine::IsFetchAllowlistEnabled() {
-  return base::FeatureList::IsEnabled(kRealTimeUrlLookupFetchAllowlist);
-}
-
-// static
 bool RealTimePolicyEngine::IsUrlLookupEnabled() {
   if (!base::FeatureList::IsEnabled(kRealTimeUrlLookupEnabled))
     return false;
@@ -67,12 +62,6 @@ bool RealTimePolicyEngine::IsEnabledByPolicy(
 // static
 bool RealTimePolicyEngine::CanPerformFullURLLookup(
     content::BrowserContext* browser_context) {
-#if !defined(OS_ANDROID)
-  // TODO(crbug.com/963165): Remove this flag in M80.
-  if (!IsFetchAllowlistEnabled())
-    return false;
-#endif
-
   if (IsEnabledByPolicy(browser_context))
     return true;
 

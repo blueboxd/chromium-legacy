@@ -31,8 +31,6 @@
 
 namespace {
 
-const char kTestUnavailableAccountId[] = "unavailable_account_id";
-const char kTestOtherUnavailableAccountId[] = "other_unavailable_account_id";
 const char kTestAccountEmail[] = "test_user@test.com";
 const char kTestOtherAccountEmail[] = "test_other_user@test.com";
 const char kTestAccountGaiaId[] = "gaia_id_for_test_user_test.com";
@@ -63,8 +61,13 @@ enum class AccountsCookiesMutatorAction {
 namespace signin {
 class AccountsCookieMutatorTest : public testing::Test {
  public:
+  const CoreAccountId kTestUnavailableAccountId;
+  const CoreAccountId kTestOtherUnavailableAccountId;
+
   AccountsCookieMutatorTest()
-      : test_signin_client_(&prefs_),
+      : kTestUnavailableAccountId("unavailable_account_id"),
+        kTestOtherUnavailableAccountId("other_unavailable_account_id"),
+        test_signin_client_(&prefs_),
         identity_test_env_(/*test_url_loader_factory=*/nullptr,
                            &prefs_,
                            AccountConsistencyMethod::kDisabled,
@@ -73,7 +76,7 @@ class AccountsCookieMutatorTest : public testing::Test {
   ~AccountsCookieMutatorTest() override {}
 
   // Make an account available and returns the account ID.
-  std::string AddAcountWithRefreshToken(const std::string& email) {
+  CoreAccountId AddAcountWithRefreshToken(const std::string& email) {
     return identity_test_env_.MakeAccountAvailable(email).account_id;
   }
 
@@ -155,7 +158,7 @@ class AccountsCookieMutatorTest : public testing::Test {
 // results in an error due to such account not being available.
 TEST_F(AccountsCookieMutatorTest, AddAccountToCookie_NonExistingAccount) {
   base::RunLoop run_loop;
-  std::string account_id_from_add_account_to_cookie_completed_callback;
+  CoreAccountId account_id_from_add_account_to_cookie_completed_callback;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
   auto completion_callback =
       base::BindLambdaForTesting([&](const CoreAccountId& account_id,
@@ -185,9 +188,9 @@ TEST_F(AccountsCookieMutatorTest, AddAccountToCookie_ExistingAccount) {
   PrepareURLLoaderResponsesForAction(
       AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
 
-  std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
+  CoreAccountId account_id = AddAcountWithRefreshToken(kTestAccountEmail);
   base::RunLoop run_loop;
-  std::string account_id_from_add_account_to_cookie_completed_callback;
+  CoreAccountId account_id_from_add_account_to_cookie_completed_callback;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
   auto completion_callback =
       base::BindLambdaForTesting([&](const CoreAccountId& account_id,
@@ -219,7 +222,7 @@ TEST_F(AccountsCookieMutatorTest,
       AccountsCookiesMutatorAction::kAddAccountToCookie);
 
   base::RunLoop run_loop;
-  std::string account_id_from_add_account_to_cookie_completed_callback;
+  CoreAccountId account_id_from_add_account_to_cookie_completed_callback;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
   auto completion_callback =
       base::BindLambdaForTesting([&](const CoreAccountId& account_id,
@@ -250,9 +253,9 @@ TEST_F(AccountsCookieMutatorTest,
   PrepareURLLoaderResponsesForAction(
       AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
 
-  std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
+  CoreAccountId account_id = AddAcountWithRefreshToken(kTestAccountEmail);
   base::RunLoop run_loop;
-  std::string account_id_from_add_account_to_cookie_completed_callback;
+  CoreAccountId account_id_from_add_account_to_cookie_completed_callback;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
   auto completion_callback =
       base::BindLambdaForTesting([&](const CoreAccountId& account_id,
@@ -305,7 +308,7 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_SomeNonExistingAccounts) {
   PrepareURLLoaderResponsesForAction(
       AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
 
-  std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
+  CoreAccountId account_id = AddAcountWithRefreshToken(kTestAccountEmail);
   base::RunLoop run_loop;
   MultiloginParameters parameters = {
       gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
@@ -331,8 +334,8 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllExistingAccounts) {
   PrepareURLLoaderResponsesForAction(
       AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
 
-  std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
-  std::string other_account_id =
+  CoreAccountId account_id = AddAcountWithRefreshToken(kTestAccountEmail);
+  CoreAccountId other_account_id =
       AddAcountWithRefreshToken(kTestOtherAccountEmail);
   base::RunLoop run_loop;
   MultiloginParameters parameters = {

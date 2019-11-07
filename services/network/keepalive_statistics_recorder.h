@@ -44,8 +44,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) KeepaliveStatisticsRecorder
   const std::unordered_map<int, PerProcessStats>& per_process_records() const {
     return per_process_records_;
   }
-  // Returns true iff. number of Register calls > Unregister calls.
-  bool HasRecordForProcess(int process_id) const;
   int NumInflightRequestsPerProcess(int process_id) const;
   int GetTotalRequestSizePerProcess(int process_id) const;
   int num_inflight_requests() const { return num_inflight_requests_; }

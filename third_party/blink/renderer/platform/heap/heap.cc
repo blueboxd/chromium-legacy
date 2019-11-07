@@ -398,8 +398,9 @@ void ThreadHeap::WeakProcessing(MarkingVisitor* visitor) {
 
   // Call weak callbacks on objects that may now be pointing to dead objects.
   CustomCallbackItem item;
+  WeakCallbackInfo broker;
   while (weak_callback_worklist_->Pop(WorklistTaskId::MutatorThread, &item)) {
-    item.callback(visitor, item.base_object_payload);
+    item.callback(broker, item.parameter);
   }
   // Weak callbacks should not add any new objects for marking.
   DCHECK(marking_worklist_->IsGlobalEmpty());

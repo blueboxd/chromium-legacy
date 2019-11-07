@@ -114,11 +114,24 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
 
         case MOJO_RESULT_SHOULD_WAIT: {
           {
+            TRACE_EVENT_END0(
+                "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                "v8.parseOnBackgroundParsing");
+            TRACE_EVENT_BEGIN0(
+                "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                "v8.parseOnBackgroundWaiting");
             base::ScopedAllowBaseSyncPrimitives
                 scoped_allow_base_sync_primitives;
             base::ScopedBlockingCall scoped_blocking_call(
                 FROM_HERE, base::BlockingType::WILL_BLOCK);
+
             result = mojo::Wait(data_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE);
+            TRACE_EVENT_END0(
+                "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                "v8.parseOnBackgroundWaiting");
+            TRACE_EVENT_BEGIN0(
+                "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+                "v8.parseOnBackgroundParsing");
           }
 
           if (result != MOJO_RESULT_OK) {
@@ -333,12 +346,16 @@ void RunScriptStreamingTask(
     std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
     ScriptStreamer* streamer,
     SourceStream* stream) {
-  TRACE_EVENT_WITH_FLOW1(
+  // TODO(leszeks): Add flow event data again
+  TRACE_EVENT_BEGIN1(
       "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
-      "v8.parseOnBackground", streamer,
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "data",
+      "v8.parseOnBackground", "data",
       inspector_parse_script_event::Data(streamer->ScriptResourceIdentifier(),
                                          streamer->ScriptURLString()));
+
+  TRACE_EVENT_BEGIN0(
+      "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+      "v8.parseOnBackgroundParsing");
   // Running the task can and will block: SourceStream::GetSomeData will get
   // called and it will block and wait for data from the network.
   task->Run();
@@ -348,7 +365,21 @@ void RunScriptStreamingTask(
   // TODO(leszeks): This could be done asynchronously, using a mojo watcher.
   stream->DrainRemainingDataWithoutStreaming();
 
+  TRACE_EVENT_END0(
+      "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+      "v8.parseOnBackgroundParsing");
+
   streamer->StreamingCompleteOnBackgroundThread();
+
+  TRACE_EVENT_END0(
+      "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+      "v8.parseOnBackground");
+
+  // TODO(crbug.com/1021571); Remove this once the last event stops being
+  // dropped.
+  TRACE_EVENT_END0(
+      "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
+      "v8.parseOnBackground2");
 }
 
 }  // namespace

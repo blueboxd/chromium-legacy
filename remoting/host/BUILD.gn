@@ -425,10 +425,7 @@ static_library("common") {
       "Carbon.framework",
     ]
 
-    deps += [
-      ":remoting_version",
-      "//third_party/google_toolbox_for_mac",
-    ]
+    deps += [ ":remoting_version" ]
   }
 
   if (is_win) {

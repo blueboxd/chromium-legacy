@@ -65,7 +65,7 @@ SetUpDistinctCase(syncer::TestSyncService* service,
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
 
       // Make sure to fail authentication with an error in this case.
-      std::string account_id =
+      CoreAccountId account_id =
           test_environment->identity_manager()->GetPrimaryAccountId();
       test_environment->SetRefreshTokenForPrimaryAccount();
       service->SetAuthenticatedAccountInfo(

@@ -789,7 +789,9 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
       DCHECK(!temp_begin.IsIndefinite());
       return SMILInterval(temp_begin, temp_end);
     }
-
+    // Ensure forward progress.
+    if (begin_after == temp_end)
+      temp_end = begin_after + SMILTime::Epsilon();
     begin_after = temp_end;
   }
   return SMILInterval::Unresolved();

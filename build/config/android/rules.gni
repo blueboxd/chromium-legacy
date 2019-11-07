@@ -1973,19 +1973,40 @@ if (enable_java_templates) {
     }
   }
 
-  # Creates LocaleConfig.java, a file containing the list of compressed and
-  # uncompressed locale .pak files in an APK.
+  # Creates ProductConfig.java, a file containing product-specific configuration.
+  #
+  # Currently, this includes the list of locales, both in their compressed and
+  # uncompressed format, as well as library loading
   #
   # Variables:
   #   build_config: Path to build_config used for locale lists.
   #   java_package: Java package for the generated class.
-  template("generate_locale_config_srcjar") {
+  #   use_chromium_linker:
+  #   use_modern_linker:
+  template("generate_product_config_srcjar") {
     java_cpp_template(target_name) {
+      defines = []
+      _use_final = defined(invoker.build_config) ||
+                   defined(invoker.use_chromium_linker) ||
+                   defined(invoker.use_modern_linker)
+      if (_use_final) {
+        defines += [ "USE_FINAL" ]
+      }
+
       package_path = string_replace(invoker.java_package, ".", "/")
       sources = [
-        "//build/android/java/templates/LocaleConfig.template",
+        "//build/android/java/templates/ProductConfig.template",
       ]
-      defines = [ "PACKAGE=${invoker.java_package}" ]
+      defines += [ "PACKAGE=${invoker.java_package}" ]
+
+      _use_chromium_linker =
+          defined(invoker.use_chromium_linker) && invoker.use_chromium_linker
+      _use_modern_linker =
+          defined(invoker.use_modern_linker) && invoker.use_modern_linker
+      defines += [
+        "USE_CHROMIUM_LINKER_VALUE=$_use_chromium_linker",
+        "USE_MODERN_LINKER_VALUE=$_use_modern_linker",
+      ]
       if (defined(invoker.build_config)) {
         forward_variables_from(invoker,
                                [
@@ -2099,9 +2120,8 @@ if (enable_java_templates) {
   #   enable_native_mocks: Allow native calls using
   #     org.chromium.base.annotations.NativeMethods to be mocked in tests
   #     (optional).
-  #   locale_config_java_packages: Optional list of java packages. If given, a
-  #     LocaleConfig.java file will be generated for each package, and will
-  #     contain the list of compressed and uncompressed locale pak files.
+  #   product_config_java_packages: Optional list of java packages. If given, a
+  #     ProductConfig.java file will be generated for each package.
   #   disable_r8_outlining: Turn off outlining during the proguard step.
   #   annotation_processor_deps: List of java_annotation_processor targets to
   #     use when compiling the java_files given to this target (optional).
@@ -2316,7 +2336,7 @@ if (enable_java_templates) {
       _generate_buildconfig_java = invoker.generate_buildconfig_java
     }
 
-    _generate_localeconfig_java = defined(invoker.locale_config_java_packages)
+    _generate_productconfig_java = defined(invoker.product_config_java_packages)
 
     # JNI generation usually goes hand-in-hand with buildconfig generation.
     _generate_final_jni = _generate_buildconfig_java
@@ -2699,13 +2719,15 @@ if (enable_java_templates) {
       _srcjar_deps += [ ":${_template_name}__build_config_srcjar" ]
     }
 
-    if (_generate_localeconfig_java) {
-      foreach(_package, invoker.locale_config_java_packages) {
+    if (_generate_productconfig_java) {
+      foreach(_package, invoker.product_config_java_packages) {
         _locale_target_name =
-            "${_template_name}_${_package}__locale_config_srcjar"
-        generate_locale_config_srcjar("$_locale_target_name") {
+            "${_template_name}_${_package}__product_config_srcjar"
+        generate_product_config_srcjar("$_locale_target_name") {
           build_config = _build_config
           java_package = _package
+          use_chromium_linker = _use_chromium_linker
+          use_modern_linker = _use_modern_linker
           deps = [
             ":$_build_config_target",
           ]
@@ -3404,7 +3426,7 @@ if (enable_java_templates) {
                                "loadable_modules",
                                "manifest_package",
                                "max_sdk_version",
-                               "locale_config_java_packages",
+                               "product_config_java_packages",
                                "min_sdk_version",
                                "native_lib_placeholders",
                                "native_lib_version_arg",
@@ -3528,7 +3550,7 @@ if (enable_java_templates) {
                                "jni_sources_blacklist",
                                "load_library_from_apk",
                                "loadable_modules",
-                               "locale_config_java_packages",
+                               "product_config_java_packages",
                                "manifest_package",
                                "max_sdk_version",
                                "min_sdk_version",
@@ -3565,6 +3587,7 @@ if (enable_java_templates) {
                                "testonly",
                                "uncompress_shared_libraries",
                                "use_chromium_linker",
+                               "use_modern_linker",
                                "verify_manifest",
                                "version_code",
                                "version_name",

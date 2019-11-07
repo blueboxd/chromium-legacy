@@ -1021,19 +1021,19 @@
     "label": "//device:device_unittests",
     "type": "console_test_launcher",
   },
-  "devtools_closure_compile": {
+  "devtools_type_check": {
     "args": [
-      "../../third_party/devtools-frontend/src/scripts/compile_frontend.py",
+      "../../third_party/devtools-frontend/src/scripts/test/run_type_check.py",
     ],
-    "label": "//third_party/devtools-frontend/src:devtools_closure_compile",
+    "label": "//third_party/devtools-frontend/src:devtools_type_check",
     "script": "//testing/scripts/run_devtools_check.py",
     "type": "script",
   },
-  "devtools_eslint": {
+  "devtools_lint_check": {
     "args": [
-      "../../third_party/devtools-frontend/src/scripts/lint_javascript.py",
+      "../../third_party/devtools-frontend/src/scripts/test/run_lint_check.py",
     ],
-    "label": "//third_party/devtools-frontend/src:devtools_eslint",
+    "label": "//third_party/devtools-frontend/src:devtools_lint_check",
     "script": "//testing/scripts/run_devtools_check.py",
     "type": "script",
   },

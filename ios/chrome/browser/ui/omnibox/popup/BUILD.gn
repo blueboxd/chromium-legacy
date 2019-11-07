@@ -74,8 +74,6 @@ source_set("popup_ui") {
     "omnibox_popup_row.mm",
     "omnibox_popup_row_cell.h",
     "omnibox_popup_row_cell.mm",
-    "omnibox_popup_truncating_label.h",
-    "omnibox_popup_truncating_label.mm",
     "omnibox_popup_view_controller.h",
     "omnibox_popup_view_controller.mm",
     "self_sizing_table_view.h",

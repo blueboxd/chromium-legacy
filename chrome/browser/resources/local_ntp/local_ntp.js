@@ -1151,8 +1151,9 @@ function onMostVisitedChange() {
 
 /** @param {!AutocompleteResult} result */
 function onQueryAutocompleteDone(result) {
+  const realboxEl = $(IDS.REALBOX);
   if (result.status === AutocompleteResultStatus.SKIPPED ||
-      result.input !== lastOutput.text) {
+      result.input !== realboxEl.value) {
     return;  // Stale or skipped result; ignore.
   }
 
@@ -1245,9 +1246,8 @@ function onRealboxWrapperFocusOut(e) {
   if (!realboxWrapper.contains(relatedTarget)) {
     setRealboxMatchesVisible(false);
     // Note: intentionally leaving keydown listening (see
-    // onRealboxWrapperKeydown) and match data intact.
-    window.chrome.embeddedSearch.searchBox.stopAutocomplete(
-        /*clearResult=*/ true);
+    // onRealboxWrapperKeydown) intact.
+    setAutocompleteMatches([]);
 
     // Clear the input if it was empty when displaying the matches.
     if (lastInput === '') {
@@ -1258,8 +1258,6 @@ function onRealboxWrapperFocusOut(e) {
 
 /** @param {Event} e */
 function onRealboxWrapperKeydown(e) {
-  assert(autocompleteMatches.length > 0);
-
   const key = e.key;
 
   const realboxEl = $(IDS.REALBOX);
@@ -1290,27 +1288,12 @@ function onRealboxWrapperKeydown(e) {
 
   const realboxMatchesEl = $(IDS.REALBOX_MATCHES);
   const matchEls = Array.from(realboxMatchesEl.children);
+  assert(matchEls.length > 0);
   const selected = matchEls.findIndex(matchEl => {
     return matchEl.classList.contains(CLASSES.SELECTED);
   });
 
-  if (key === 'Delete') {
-    if (e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
-      const selectedMatch = autocompleteMatches[selected];
-      if (selectedMatch && selectedMatch.supportsDeletion) {
-        window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(
-            selected);
-        e.preventDefault();
-      }
-    }
-    return;
-  }
-
-  const hasMods = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
-  if (hasMods && key !== 'Enter') {
-    return;
-  }
-
+  // Enter should work whether or not matches are visible.
   if (key === 'Enter') {
     if (matchEls[selected] && matchEls.concat(realboxEl).includes(e.target)) {
       // Note: dispatching a MouseEvent here instead of using e.g. .click() as
@@ -1324,9 +1307,31 @@ function onRealboxWrapperKeydown(e) {
 
   if (!areRealboxMatchesVisible()) {
     if (key === 'ArrowUp' || key === 'ArrowDown') {
-      setRealboxMatchesVisible(true);
+      const realboxValue = $(IDS.REALBOX).value;
+      if (realboxValue.trim()) {
+        queryAutocomplete(realboxValue);
+      }
       e.preventDefault();
     }
+    return;
+  }
+
+  // If the matches are visible, the autocomplete results must also be intact.
+  assert(autocompleteMatches.length === matchEls.length);
+
+  if (key === 'Delete') {
+    if (e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
+      const selectedMatch = autocompleteMatches[selected];
+      if (selectedMatch && selectedMatch.supportsDeletion) {
+        window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(
+            selected);
+        e.preventDefault();
+      }
+    }
+    return;
+  }
+
+  if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
     return;
   }
 
@@ -1805,6 +1810,10 @@ function setAttributionVisibility(show) {
 /** @param {!Array<!AutocompleteMatch>} matches */
 function setAutocompleteMatches(matches) {
   autocompleteMatches = matches;
+  if (matches.length === 0) {
+    window.chrome.embeddedSearch.searchBox.stopAutocomplete(
+        /*clearResult=*/ true);
+  }
 }
 
 /**

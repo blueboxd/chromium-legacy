@@ -26,9 +26,15 @@
 // Performs any actions related to an Infobar Modal presentation.
 - (void)infobarModalPresentedFromBanner:(BOOL)presentedFromBanner;
 
-// Dismisses the InfobarBanner once there's no interaction in progress. An
-// interaction is any user initiated behavior with the Banner.
-- (void)dismissBannerWhenInteractionIsFinished;
+// Dismisses the InfobarBanner if not currently being used. A user could be
+// interacting with the banner or the Infobar may still be using the banner to
+// present information (i.e. infobarActionInProgress is YES).
+- (void)dismissBannerIfReady;
+
+// YES if the infobar action has been started and has not finished yet (i.e.
+// Translate is in progress). If the Infobar action is not async, this should
+// most likely always return NO.
+- (BOOL)infobarActionInProgress;
 
 // Performs the main Infobar action. e.g. "Save Password", "Restore",etc.
 - (void)performInfobarAction;

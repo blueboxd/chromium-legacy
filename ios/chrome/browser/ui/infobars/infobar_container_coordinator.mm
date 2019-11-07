@@ -245,7 +245,7 @@
 
 #pragma mark InfobarContainer
 
-- (void)childCoordinatorBannerWasDismissed:
+- (void)childCoordinatorBannerFinishedPresented:
     (InfobarCoordinator*)infobarCoordinator {
   InfobarCoordinator* coordinator =
       [self.infobarCoordinatorsToPresent firstObject];

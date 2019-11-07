@@ -60,6 +60,7 @@ TEST_F(LoginScreenExtensionUiDialogDelegateUnittest, Test) {
             delegate->GetDialogContentURL());
   EXPECT_FALSE(delegate->CanResizeDialog());
   EXPECT_TRUE(delegate->ShouldShowDialogTitle());
+  EXPECT_TRUE(delegate->ShouldCenterDialogTitleText());
 
   EXPECT_FALSE(delegate->CanCloseDialog());
   delegate->set_can_close(true);

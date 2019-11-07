@@ -4,10 +4,20 @@
 
 package PACKAGE;
 
+#if defined(USE_FINAL)
+#define MAYBE_FINAL final
+#define MAYBE_USE_CHROMIUM_LINKER = USE_CHROMIUM_LINKER_VALUE
+#define MAYBE_USE_MODERN_LINKER = USE_MODERN_LINKER_VALUE
+#else
+#define MAYBE_FINAL
+#define MAYBE_USE_CHROMIUM_LINKER
+#define MAYBE_USE_MODERN_LINKER
+#endif
+
 /**
- *  Locale configuration. Generated on a per-target basis.
+ *  Product configuration. Generated on a per-target basis.
  */
-public class LocaleConfig {
+public class ProductConfig {
 
     // Sorted list of locales that have a compressed .pak within assets.
     // Stored as an array because AssetManager.list() is slow.
@@ -24,4 +34,7 @@ public class LocaleConfig {
 #else
     public static final String[] UNCOMPRESSED_LOCALES = {};
 #endif
+
+   public static MAYBE_FINAL boolean USE_CHROMIUM_LINKER MAYBE_USE_CHROMIUM_LINKER;
+   public static MAYBE_FINAL boolean USE_MODERN_LINKER MAYBE_USE_MODERN_LINKER;
 }

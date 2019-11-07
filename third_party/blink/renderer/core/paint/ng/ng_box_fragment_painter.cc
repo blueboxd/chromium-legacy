@@ -383,9 +383,9 @@ void NGBoxFragmentPainter::PaintObject(
       (!physical_box_fragment.Children().empty() ||
        physical_box_fragment.HasItems()) &&
       !paint_info.DescendantPaintingBlocked()) {
-    if (physical_box_fragment.ChildrenInline()) {
-      DCHECK(paint_fragment_ || PhysicalFragment().HasItems());
-      if (paint_phase != PaintPhase::kFloat) {
+    if (paint_phase != PaintPhase::kFloat) {
+      if (physical_box_fragment.ChildrenInline()) {
+        DCHECK(paint_fragment_ || PhysicalFragment().HasItems());
         if (physical_box_fragment.IsBlockFlow()) {
           PaintBlockFlowContents(paint_info, paint_offset);
         } else if (ShouldPaintDescendantOutlines(paint_info.phase)) {
@@ -398,24 +398,16 @@ void NGBoxFragmentPainter::PaintObject(
           PaintInlineChildren(paint_fragment_->Children(), paint_info,
                               paint_offset);
         }
-      }
-
-      if (paint_phase == PaintPhase::kFloat ||
-          paint_phase == PaintPhase::kSelection ||
-          paint_phase == PaintPhase::kTextClip) {
-        if (physical_box_fragment.HasFloatingDescendantsForPaint())
-          PaintFloats(paint_info);
-      }
-    } else {
-      if (paint_phase != PaintPhase::kFloat)
+      } else {
         PaintBlockChildren(paint_info);
-
-      if (paint_phase == PaintPhase::kFloat ||
-          paint_phase == PaintPhase::kSelection ||
-          paint_phase == PaintPhase::kTextClip) {
-        if (physical_box_fragment.HasFloatingDescendantsForPaint())
-          PaintFloats(paint_info);
       }
+    }
+
+    if (paint_phase == PaintPhase::kFloat ||
+        paint_phase == PaintPhase::kSelection ||
+        paint_phase == PaintPhase::kTextClip) {
+      if (physical_box_fragment.HasFloatingDescendantsForPaint())
+        PaintFloats(paint_info);
     }
   }
 

@@ -37,7 +37,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -587,9 +586,6 @@ class DiceBrowsingDataRemoverBrowserTest
         identity_manager->HasAccountWithRefreshToken(account_info.account_id));
     return account_info;
   }
-
- private:
-  ScopedAccountConsistencyDice dice_;
 };
 #endif
 

@@ -671,10 +671,11 @@ class BaseAccountReconcilorTestTable : public AccountReconcilorTest {
                   PerformMergeAction(account_id_for_cookie))
           .Times(1);
       // MergeSession fixes an existing cookie or appends it at the end.
-      auto it = std::find(cookies.begin(), cookies.end(),
-                          Cookie{account_id_for_cookie, false /* is_valid */});
+      auto it =
+          std::find(cookies.begin(), cookies.end(),
+                    Cookie{accounts_[cookie[0]].gaia_id, false /* is_valid */});
       if (it == cookies.end())
-        cookies.push_back({account_id_for_cookie, true});
+        cookies.push_back({accounts_[cookie[0]].gaia_id, true});
       else
         it->is_valid = true;
     }

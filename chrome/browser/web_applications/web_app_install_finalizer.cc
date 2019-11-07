@@ -205,6 +205,27 @@ void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
                      std::move(fallback_install_callback), std::move(web_app)));
 }
 
+void WebAppInstallFinalizer::FinalizeUninstallAfterSync(
+    const AppId& app_id,
+    UninstallWebAppCallback callback) {
+  // WebAppSyncBridge::ApplySyncChangesToRegistrar does the actual
+  // unregistration of the app from the registry.
+  DCHECK(!sync_bridge_->registrar().GetAppById(app_id));
+
+  icon_manager_->DeleteData(
+      app_id, base::BindOnce(&WebAppInstallFinalizer::OnIconsDataDeleted,
+                             weak_ptr_factory_.GetWeakPtr(), app_id,
+                             std::move(callback)));
+}
+
+void WebAppInstallFinalizer::OnIconsDataDeleted(
+    const AppId& app_id,
+    UninstallWebAppCallback callback,
+    bool success) {
+  registrar().NotifyWebAppUninstalled(app_id);
+  std::move(callback).Run(success);
+}
+
 void WebAppInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
     UninstallWebAppCallback callback) {

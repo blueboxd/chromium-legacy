@@ -55,10 +55,6 @@ const base::Feature kPasswordProtectionForSignedInUsers{
 const base::Feature kRealTimeUrlLookupEnabled{
     "SafeBrowsingRealTimeUrlLookupEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kRealTimeUrlLookupFetchAllowlist{
-    "SafeBrowsingRealTimeUrlLookupFetchAllowlist",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kSendOnFocusPing {
   "SafeBrowsingSendOnFocusPing",
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -122,7 +118,6 @@ constexpr struct {
     {&kPasswordProtectionForSavedPasswords, true},
     {&kPasswordProtectionForSignedInUsers, true},
     {&kRealTimeUrlLookupEnabled, true},
-    {&kRealTimeUrlLookupFetchAllowlist, true},
     {&kSendOnFocusPing, true},
     {&kSendPasswordReusePing, true},
     {&kSendSampledPingsForAllowlistDomains, false},

@@ -64,13 +64,17 @@ class ProcessHeapReporter;
 class RegionTree;
 
 using MarkingItem = TraceDescriptor;
-using CustomCallbackItem = MarkingItem;
 using NotFullyConstructedItem = void*;
 using WeakTableItem = MarkingItem;
 
 struct BackingStoreCallbackItem {
   void* backing;
   MovingObjectCallback callback;
+};
+
+struct CustomCallbackItem {
+  WeakCallback callback;
+  void* parameter;
 };
 
 using V8Reference = const TraceWrapperV8Reference<v8::Value>*;
@@ -612,7 +616,7 @@ Address ThreadHeap::Allocate(size_t size) {
 }
 
 template <typename T>
-void Visitor::HandleWeakCell(Visitor* self, void* object) {
+void Visitor::HandleWeakCell(const WeakCallbackInfo&, void* object) {
   WeakMember<T>* weak_member = reinterpret_cast<WeakMember<T>*>(object);
   if (weak_member->Get()) {
     if (weak_member->IsHashTableDeletedValue()) {
@@ -624,6 +628,37 @@ void Visitor::HandleWeakCell(Visitor* self, void* object) {
     if (!ThreadHeap::IsHeapObjectAlive(weak_member->Get()))
       weak_member->Clear();
   }
+}
+
+class PLATFORM_EXPORT WeakCallbackInfo final {
+ public:
+  template <typename T>
+  bool IsHeapObjectAlive(const T*) const;
+  template <typename T>
+  bool IsHeapObjectAlive(const WeakMember<T>&) const;
+  template <typename T>
+  bool IsHeapObjectAlive(const UntracedMember<T>&) const;
+
+ private:
+  WeakCallbackInfo() = default;
+  friend class ThreadHeap;
+};
+
+template <typename T>
+bool WeakCallbackInfo::IsHeapObjectAlive(const T* object) const {
+  return ThreadHeap::IsHeapObjectAlive(object);
+}
+
+template <typename T>
+bool WeakCallbackInfo::IsHeapObjectAlive(
+    const WeakMember<T>& weak_member) const {
+  return ThreadHeap::IsHeapObjectAlive(weak_member);
+}
+
+template <typename T>
+bool WeakCallbackInfo::IsHeapObjectAlive(
+    const UntracedMember<T>& untraced_member) const {
+  return ThreadHeap::IsHeapObjectAlive(untraced_member.Get());
 }
 
 }  // namespace blink

@@ -220,6 +220,8 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
             AnonymizeCustomPatterns("[2001:db8:0:0:0:ff00:42:8329]"));
   EXPECT_EQ("[<IPv6: 3>]", AnonymizeCustomPatterns("[2001:db8::ff00:42:8329]"));
   EXPECT_EQ("[<IPv6: 4>]", AnonymizeCustomPatterns("[aa::bb]"));
+  EXPECT_EQ("State::Abort", AnonymizeCustomPatterns("State::Abort"));
+
   EXPECT_EQ("<IPv4: 1>", AnonymizeCustomPatterns("192.160.0.1"));
 
   EXPECT_EQ("<URL: 1>",
@@ -359,7 +361,7 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
     {"100.115.92.92",  // ChromeOS.
      "100.115.92.92"},
     {"100.115.91.92",  // IP address.
-     "<IPv4: 23>"},
+     "<IPv4: 21>"},
     {"1.1.1.1",  // DNS
      "1.1.1.1"},
     {"8.8.8.8",  // DNS
@@ -367,13 +369,13 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
     {"8.8.4.4",  // DNS
      "8.8.4.4"},
     {"8.8.8.4",  // IP address.
-     "<IPv4: 27>"},
+     "<IPv4: 22>"},
     {"255.255.259.255",  // Not an IP address.
      "255.255.259.255"},
     {"255.300.255.255",  // Not an IP address.
      "255.300.255.255"},
     {"aaaa123.123.45.4aaa",  // IP address.
-     "aaaa<IPv4: 28>aaa"},
+     "aaaa<IPv4: 23>aaa"},
     {"11:11;11::11",  // IP address.
      "11:11;<IPv6: 5>"},
     {"11::11",  // IP address.
@@ -395,37 +397,37 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
     {"ff01::2",  // All routers (interface local).
      "ff01::2"},
     {"ff01::3",  // Multicast (interface local).
-     "<ff01::/16: 13>"},
+     "<ff01::/16: 6>"},
     {"ff02::1",  // All nodes address (link local).
      "ff02::1"},
     {"ff02::2",  // All routers (link local).
      "ff02::2"},
     {"ff02::3",  // Multicast (link local).
-     "<ff02::/16: 16>"},
+     "<ff02::/16: 7>"},
     {"ff02::fb",  // mDNSv6 (link local).
-     "<ff02::/16: 17>"},
+     "<ff02::/16: 8>"},
     {"ff08::fb",  // mDNSv6.
-     "<IPv6: 18>"},
+     "<IPv6: 9>"},
     {"ff0f::101",  // All NTP servers.
-     "<IPv6: 19>"},
+     "<IPv6: 10>"},
     {"::ffff:cb0c:10ea",  // IPv4-mapped IPV6 (IP address).
-     "<IPv6: 20>"},
+     "<IPv6: 11>"},
     {"::ffff:a0a:a0a",  // IPv4-mapped IPV6 (private class A).
-     "<M 10.0.0.0/8: 21>"},
+     "<M 10.0.0.0/8: 12>"},
     {"::ffff:a0a:a0a",  // Intentional duplicate.
-     "<M 10.0.0.0/8: 21>"},
+     "<M 10.0.0.0/8: 12>"},
     {"::ffff:ac1e:1e1e",  // IPv4-mapped IPV6 (private class B).
-     "<M 172.16.0.0/12: 22>"},
+     "<M 172.16.0.0/12: 13>"},
     {"::ffff:c0a8:640a",  // IPv4-mapped IPV6 (private class C).
-     "<M 192.168.0.0/16: 23>"},
+     "<M 192.168.0.0/16: 14>"},
     {"::ffff:6473:5c01",  // IPv4-mapped IPV6 (Chrome).
-     "<M 100.115.92.1: 24>"},
+     "<M 100.115.92.1: 15>"},
     {"64:ff9b::a0a:a0a",  // IPv4-translated 6to4 IPV6 (private class A).
-     "<T 10.0.0.0/8: 25>"},
+     "<T 10.0.0.0/8: 16>"},
     {"64:ff9b::6473:5c01",  // IPv4-translated 6to4 IPV6 (Chrome).
-     "<T 100.115.92.1: 26>"},
+     "<T 100.115.92.1: 17>"},
     {"::0101:ffff:c0a8:640a",  // IP address.
-     "<IPv6: 27>"},
+     "<IPv6: 18>"},
     {"aa:aa:aa:aa:aa:aa",  // MAC address (BSSID).
      "[MAC OUI=aa:aa:aa IFACE=1]"},
     {"chrome://resources/foo",  // Secure chrome resource, whitelisted.

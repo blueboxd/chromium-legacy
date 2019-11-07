@@ -14,7 +14,7 @@ TEST_F(AccountInfoTest, IsEmpty) {
   }
   {
     AccountInfo info_with_account_id;
-    info_with_account_id.account_id = "test_id";
+    info_with_account_id.account_id = CoreAccountId("test_id");
     EXPECT_FALSE(info_with_account_id.IsEmpty());
   }
   {
@@ -34,7 +34,9 @@ TEST_F(AccountInfoTest, IsValid) {
   AccountInfo info;
   EXPECT_FALSE(info.IsValid());
 
-  info.account_id = info.gaia = info.email = "test_id";
+  info.gaia = info.email = "test_id";
+  info.account_id = CoreAccountId("test_id");
+
   EXPECT_FALSE(info.IsValid());
 
   info.full_name = info.given_name = "test_name";
@@ -51,10 +53,11 @@ TEST_F(AccountInfoTest, IsValid) {
 // account / id.
 TEST_F(AccountInfoTest, UpdateWithDifferentAccountId) {
   AccountInfo info;
-  info.account_id = "test_id";
+  info.account_id = CoreAccountId("test_id");
 
   AccountInfo other;
-  other.account_id = other.gaia = other.email = "test_other_id";
+  other.gaia = other.email = "test_other_id";
+  other.account_id = CoreAccountId("test_other_id");
 
   EXPECT_FALSE(info.UpdateWith(other));
   EXPECT_TRUE(info.gaia.empty());
@@ -65,11 +68,12 @@ TEST_F(AccountInfoTest, UpdateWithDifferentAccountId) {
 // to the correct value.
 TEST_F(AccountInfoTest, UpdateWithNoModification) {
   AccountInfo info;
-  info.account_id = info.gaia = info.email = "test_id";
+  info.gaia = info.email = "test_id";
+  info.account_id = CoreAccountId("test_id");
   info.is_child_account = true;
 
   AccountInfo other;
-  other.account_id = "test_id";
+  other.account_id = CoreAccountId("test_id");
   other.gaia = other.email = "test_id";
   other.is_child_account = false;
 
@@ -82,10 +86,11 @@ TEST_F(AccountInfoTest, UpdateWithNoModification) {
 // Tests that UpdateWith() correctly updates its fields that were not set.
 TEST_F(AccountInfoTest, UpdateWithSuccessfulUpdate) {
   AccountInfo info;
-  info.account_id = info.gaia = info.email = "test_id";
+  info.gaia = info.email = "test_id";
+  info.account_id = CoreAccountId("test_id");
 
   AccountInfo other;
-  other.account_id = "test_id";
+  other.account_id = CoreAccountId("test_id");
   other.full_name = other.given_name = "test_name";
   other.is_child_account = true;
 
@@ -101,10 +106,11 @@ TEST_F(AccountInfoTest, UpdateWithSuccessfulUpdate) {
 // picture_url if the properties are unset.
 TEST_F(AccountInfoTest, UpdateWithDefaultValues) {
   AccountInfo info;
-  info.account_id = info.gaia = info.email = "test_id";
+  info.gaia = info.email = "test_id";
+  info.account_id = CoreAccountId("test_id");
 
   AccountInfo other;
-  other.account_id = "test_id";
+  other.account_id = CoreAccountId("test_id");
   other.hosted_domain = kNoHostedDomainFound;
   other.picture_url = kNoPictureURLFound;
 
@@ -117,12 +123,13 @@ TEST_F(AccountInfoTest, UpdateWithDefaultValues) {
 // picture_url if they are already set.
 TEST_F(AccountInfoTest, UpdateWithDefaultValuesNoOverride) {
   AccountInfo info;
-  info.account_id = info.gaia = info.email = "test_id";
+  info.gaia = info.email = "test_id";
+  info.account_id = CoreAccountId("test_id");
   info.hosted_domain = "test_domain";
   info.picture_url = "test_url";
 
   AccountInfo other;
-  other.account_id = "test_id";
+  other.account_id = CoreAccountId("test_id");
   other.hosted_domain = kNoHostedDomainFound;
   other.picture_url = kNoPictureURLFound;
 

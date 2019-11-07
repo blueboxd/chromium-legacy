@@ -173,10 +173,6 @@ class CORE_EXPORT NGPaintFragmentTraversal {
   static InlineDescendantsRange InlineDescendantsOf(
       const NGPaintFragment& container);
 
-  // Returns the line box paint fragment of |line|. |line| itself must be the
-  // paint fragment of a line box.
-  static NGPaintFragment* PreviousLineOf(const NGPaintFragment& line);
-
  private:
   void EnsureIndex();
   bool IsInlineLeaf() const;

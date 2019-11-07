@@ -167,7 +167,8 @@ class ASH_EXPORT AppListControllerImpl
                         int event_flags,
                         AppListLaunchedFrom launched_from,
                         AppListLaunchType launch_type,
-                        int suggestion_index) override;
+                        int suggestion_index,
+                        bool launch_as_default) override;
   void LogResultLaunchHistogram(SearchResultLaunchLocation launch_location,
                                 int suggestion_index) override;
   void LogSearchAbandonHistogram() override;
@@ -275,15 +276,15 @@ class ASH_EXPORT AppListControllerImpl
   void UpdateYPositionAndOpacityForHomeLauncher(
       int y_position_in_screen,
       float opacity,
+      base::Optional<AnimationInfo> animation_info,
       UpdateAnimationSettingsCallback callback) override;
   void UpdateScaleAndOpacityForHomeLauncher(
       float scale,
       float opacity,
+      base::Optional<AnimationInfo> animation_info,
       UpdateAnimationSettingsCallback callback) override;
   void UpdateAfterHomeLauncherShown() override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
-  void NotifyHomeLauncherAnimationTransition(AnimationTrigger trigger,
-                                             bool launcher_will_show) override;
   void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
   void OnHomeLauncherTargetPositionChanged(bool showing,
                                            int64_t display_id) override;

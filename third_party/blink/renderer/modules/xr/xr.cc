@@ -317,9 +317,13 @@ XR::PendingRequestSessionQuery::PendingRequestSessionQuery(
   ParseSensorRequirement();
 }
 
-void XR::PendingRequestSessionQuery::Resolve(XRSession* session) {
+void XR::PendingRequestSessionQuery::Resolve(
+    XRSession* session,
+    mojo::PendingRemote<device::mojom::blink::XRSessionMetricsRecorder>
+        metrics_recorder) {
   resolver_->Resolve(session);
-  ReportRequestSessionResult(SessionRequestStatus::kSuccess);
+  ReportRequestSessionResult(SessionRequestStatus::kSuccess, session,
+                             std::move(metrics_recorder));
 }
 
 void XR::PendingRequestSessionQuery::RejectWithDOMException(
@@ -367,17 +371,69 @@ void XR::PendingRequestSessionQuery::RejectWithTypeError(
   ReportRequestSessionResult(SessionRequestStatus::kOtherError);
 }
 
+device::mojom::XRSessionFeatureRequestStatus
+XR::PendingRequestSessionQuery::GetFeatureRequestStatus(
+    device::mojom::XRSessionFeature feature,
+    const XRSession* session) const {
+  using device::mojom::XRSessionFeatureRequestStatus;
+
+  if (RequiredFeatures().Contains(feature)) {
+    // In the case of required features, accepted/rejected state is
+    // the same as the entire session.
+    return XRSessionFeatureRequestStatus::kRequired;
+  }
+
+  if (OptionalFeatures().Contains(feature)) {
+    if (!session || !session->IsFeatureEnabled(feature)) {
+      return XRSessionFeatureRequestStatus::kOptionalRejected;
+    }
+
+    return XRSessionFeatureRequestStatus::kOptionalAccepted;
+  }
+
+  return XRSessionFeatureRequestStatus::kNotRequested;
+}
+
 void XR::PendingRequestSessionQuery::ReportRequestSessionResult(
-    SessionRequestStatus status) {
+    SessionRequestStatus status,
+    XRSession* session,
+    mojo::PendingRemote<device::mojom::blink::XRSessionMetricsRecorder>
+        metrics_recorder) {
+  using device::mojom::XRSessionFeature;
+
   LocalFrame* frame = resolver_->GetFrame();
   Document* doc = frame ? frame->GetDocument() : nullptr;
   if (!doc)
     return;
 
+  auto feature_request_viewer =
+      GetFeatureRequestStatus(XRSessionFeature::REF_SPACE_VIEWER, session);
+  auto feature_request_local =
+      GetFeatureRequestStatus(XRSessionFeature::REF_SPACE_LOCAL, session);
+  auto feature_request_local_floor =
+      GetFeatureRequestStatus(XRSessionFeature::REF_SPACE_LOCAL_FLOOR, session);
+  auto feature_request_bounded_floor = GetFeatureRequestStatus(
+      XRSessionFeature::REF_SPACE_BOUNDED_FLOOR, session);
+  auto feature_request_unbounded =
+      GetFeatureRequestStatus(XRSessionFeature::REF_SPACE_UNBOUNDED, session);
+
   ukm::builders::XR_WebXR_SessionRequest(ukm_source_id_)
       .SetMode(static_cast<int64_t>(mode_))
       .SetStatus(static_cast<int64_t>(status))
+      .SetFeature_Viewer(static_cast<int64_t>(feature_request_viewer))
+      .SetFeature_Local(static_cast<int64_t>(feature_request_local))
+      .SetFeature_LocalFloor(static_cast<int64_t>(feature_request_local_floor))
+      .SetFeature_BoundedFloor(
+          static_cast<int64_t>(feature_request_bounded_floor))
+      .SetFeature_Unbounded(static_cast<int64_t>(feature_request_unbounded))
       .Record(doc->UkmRecorder());
+
+  if (session && metrics_recorder) {
+    mojo::Remote<device::mojom::blink::XRSessionMetricsRecorder> recorder(
+        std::move(metrics_recorder));
+    session->SetMetricsReporter(
+        std::make_unique<XRSession::MetricsReporter>(std::move(recorder)));
+  }
 }
 
 XRSession::SessionMode XR::PendingRequestSessionQuery::mode() const {
@@ -918,12 +974,9 @@ void XR::OnRequestSessionReturned(
     has_outstanding_immersive_request_ = false;
   }
 
-  device::mojom::blink::XRSessionPtr session_ptr =
-      result->is_session() ? std::move(result->get_session()) : nullptr;
-
   // TODO(https://crbug.com/872316) Improve the error messaging to indicate why
   // a request failed.
-  if (!session_ptr) {
+  if (!result->is_success()) {
     // |service_| does not support the requested mode. Attempt to create a
     // sensorless session.
     if (query->GetSensorRequirement() != SensorRequirement::kRequired) {
@@ -940,6 +993,9 @@ void XR::OnRequestSessionReturned(
                                   kSessionNotSupported, nullptr);
     return;
   }
+
+  auto session_ptr = std::move(result->get_success()->session);
+  auto metrics_recorder = std::move(result->get_success()->metrics_recorder);
 
   bool environment_integration = query->mode() == XRSession::kModeImmersiveAR;
 
@@ -1039,7 +1095,7 @@ void XR::OnRequestSessionReturned(
   UseCounter::Count(ExecutionContext::From(query->GetScriptState()),
                     WebFeature::kWebXrSessionCreated);
 
-  query->Resolve(session);
+  query->Resolve(session, std::move(metrics_recorder));
 }
 
 void XR::ReportImmersiveSupported(bool supported) {

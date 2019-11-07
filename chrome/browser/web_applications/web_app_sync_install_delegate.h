@@ -25,13 +25,16 @@ class SyncInstallDelegate {
   using RepeatingInstallCallback =
       base::RepeatingCallback<void(const AppId& app_id,
                                    InstallResultCode code)>;
+  using RepeatingUninstallCallback =
+      base::RepeatingCallback<void(const AppId& app_id, bool uninstalled)>;
 
   // |web_apps| are already registered and owned by the registrar.
   virtual void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
                                        RepeatingInstallCallback callback) = 0;
   // |web_apps| are already unregistered and not owned by the registrar.
   virtual void UninstallWebAppsAfterSync(
-      std::vector<std::unique_ptr<WebApp>> web_apps) = 0;
+      std::vector<std::unique_ptr<WebApp>> web_apps,
+      RepeatingUninstallCallback callback) = 0;
 };
 
 }  // namespace web_app

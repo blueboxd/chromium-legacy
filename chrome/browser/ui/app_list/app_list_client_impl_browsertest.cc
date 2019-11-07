@@ -284,7 +284,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
   // Open the app result.
   client->OpenSearchResult(app_result_id, ui::EF_NONE,
                            ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
-                           ash::AppListLaunchType::kAppSearchResult, 0);
+                           ash::AppListLaunchType::kAppSearchResult, 0,
+                           false /* launch_as_default */);
 
   // App list should be dismissed.
   EXPECT_FALSE(client->app_list_target_visibility());

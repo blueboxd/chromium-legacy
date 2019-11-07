@@ -161,11 +161,6 @@ cr.define('multidevice_setup', function() {
       this.webviewSrc_ = event.detail;
       this.webviewOverlayHidden_ = false;
     },
-
-    /** @private */
-    getOverlayCloseTopTitle_: function() {
-      return this.i18n('arcOverlayClose');
-    },
   });
 
   return {

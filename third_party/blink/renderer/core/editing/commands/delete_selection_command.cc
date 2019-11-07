@@ -598,7 +598,7 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
   // merge content in.
   if (start_node == start_block_.Get() && !start_offset &&
       CanHaveChildrenForEditing(start_node) &&
-      !IsHTMLTableElement(*start_node)) {
+      !IsA<HTMLTableElement>(*start_node)) {
     start_offset = 0;
     start_node = NodeTraversal::Next(*start_node);
     if (!start_node)

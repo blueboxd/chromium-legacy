@@ -59,6 +59,12 @@ class XDGSurfaceWrapper {
 
   // Sets a desired window geometry once wayland requests client to do so.
   virtual void SetWindowGeometry(const gfx::Rect& bounds) = 0;
+
+  // Sets an app id of the native window that is shown as an application name
+  // and hints the compositor that it can group application surfaces together by
+  // their app id. This also helps the compositor to identify application's
+  // .desktop file and use the icon set there.
+  virtual void SetAppId(const std::string& app_id) = 0;
 };
 
 bool CheckIfWlArrayHasValue(struct wl_array* wl_array, uint32_t value);

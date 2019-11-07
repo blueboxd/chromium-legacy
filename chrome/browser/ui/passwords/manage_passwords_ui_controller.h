@@ -151,11 +151,6 @@ class ManagePasswordsUIController
   explicit ManagePasswordsUIController(
       content::WebContents* web_contents);
 
-  // The pieces of saving and blacklisting passwords that interact with
-  // FormManager, split off into internal functions for testing/mocking.
-  virtual void SavePasswordInternal();
-  virtual void NeverSavePasswordInternal();
-
   // Hides the bubble if opened. Mocked in the tests.
   virtual void HidePasswordBubble();
 

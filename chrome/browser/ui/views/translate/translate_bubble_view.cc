@@ -89,6 +89,39 @@ bool UseGoogleTranslateBranding() {
 #endif
 }
 
+std::unique_ptr<views::View> CreateWordmarkView(
+    language::TranslateUIBubbleModel bubble_model) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (bubble_model != language::TranslateUIBubbleModel::TAB) {
+    return nullptr;
+  }
+
+  auto view = std::make_unique<views::View>();
+  views::GridLayout* layout =
+      view->SetLayoutManager(std::make_unique<views::GridLayout>());
+
+  // Translate icon
+  const int translate_icon_id = IDR_TRANSLATE_TAB_WORDMARK;
+  std::unique_ptr<views::ImageView> translate_icon =
+      std::make_unique<views::ImageView>();
+  gfx::ImageSkia* translate_icon_image =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          translate_icon_id);
+  translate_icon->SetImage(*translate_icon_image);
+
+  views::ColumnSet* cs = layout->AddColumnSet(0);
+  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
+                0);
+  layout->StartRow(1, 0);
+  layout->AddView(std::move(translate_icon));
+
+  return view;
+#else
+  return nullptr;
+#endif
+}
+
 }  // namespace
 
 // static
@@ -342,38 +375,6 @@ void TranslateBubbleView::ButtonPressed(views::Button* sender,
       break;
     }
   }
-}
-
-std::unique_ptr<views::View> TranslateBubbleView::CreateFootnoteView() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (bubble_ui_model_ != language::TranslateUIBubbleModel::TAB) {
-    return nullptr;
-  }
-
-  auto view = std::make_unique<views::View>();
-  views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>());
-
-  // Translate icon
-  const int translate_icon_id = IDR_TRANSLATE_TAB_WORDMARK;
-  std::unique_ptr<views::ImageView> translate_icon =
-      std::make_unique<views::ImageView>();
-  gfx::ImageSkia* translate_icon_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          translate_icon_id);
-  translate_icon->SetImage(*translate_icon_image);
-
-  views::ColumnSet* cs = layout->AddColumnSet(0);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-  layout->StartRow(1, 0);
-  layout->AddView(std::move(translate_icon));
-
-  return view;
-#else
-  return nullptr;
-#endif
 }
 
 views::View* TranslateBubbleView::GetInitiallyFocusedView() {
@@ -658,6 +659,7 @@ TranslateBubbleView::TranslateBubbleView(
   if (web_contents)  // web_contents can be null in unit_tests.
     mouse_handler_ =
         std::make_unique<WebContentMouseHandler>(this, web_contents);
+  DialogDelegate::SetFootnoteView(CreateWordmarkView(bubble_ui_model_));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TRANSLATE);
 }
 

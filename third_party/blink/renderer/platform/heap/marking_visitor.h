@@ -49,7 +49,7 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
   // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
   // relies on this feature.
   void RegisterBackingStoreCallback(void*, MovingObjectCallback) final;
-  void RegisterWeakCallback(void*, WeakCallback) final;
+  void RegisterWeakCallback(WeakCallback, void*) final;
 
   // Flush private segments remaining in visitor's worklists to global pools.
   void FlushCompactionWorklists();

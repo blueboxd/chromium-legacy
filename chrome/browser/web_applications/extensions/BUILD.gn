@@ -112,6 +112,7 @@ source_set("browser_tests") {
 
   if (is_chromeos) {
     deps += [
+      "//chromeos/components/help_app_ui",
       "//chromeos/components/media_app_ui",
       "//chromeos/constants",
     ]

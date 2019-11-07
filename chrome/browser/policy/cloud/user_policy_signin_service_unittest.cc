@@ -109,7 +109,7 @@ class UserPolicySigninServiceTest : public testing::Test {
                    base::Unretained(this));
     AccountInfo account_info =
         identity_test_env()->MakeAccountAvailable(kTestUser);
-    service->RegisterForPolicyWithAccountId(kTestUser, account_info.gaia,
+    service->RegisterForPolicyWithAccountId(kTestUser, account_info.account_id,
                                             callback);
     ASSERT_TRUE(IsRequestActive());
   }

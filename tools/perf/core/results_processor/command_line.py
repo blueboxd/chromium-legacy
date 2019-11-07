@@ -19,19 +19,15 @@ from py_utils import cloud_storage
 from core.results_processor import formatters
 
 
-# These formats are always handled natively, and never handed over to Telemetry.
-HANDLED_NATIVELY = ['none', 'json-test-results', 'histograms', 'html', 'csv']
-
 TELEMETRY_TEST_PATH_FORMAT = 'telemetry'
 GTEST_TEST_PATH_FORMAT = 'gtest'
 
-def ArgumentParser(standalone=False, legacy_formats=None):
+
+def ArgumentParser(standalone=False):
   """Create an ArgumentParser defining options required by the processor."""
-  if standalone:
-    all_output_formats = formatters.FORMATTERS.keys()
-  else:
-    all_output_formats = sorted(
-        set(HANDLED_NATIVELY).union(legacy_formats or ()))
+  all_output_formats = formatters.FORMATTERS.keys()
+  if not standalone:
+    all_output_formats.append('none')
   parser, group = _CreateTopLevelParser(standalone)
   parser.add_argument(
       '-v', '--verbose', action='count', dest='verbosity',
@@ -42,7 +38,7 @@ def ArgumentParser(standalone=False, legacy_formats=None):
       help=Sentences(
           'Output format to produce.',
           'May be used multiple times to produce multiple outputs.',
-          'Avaliable formats: %s.' % ', '.join(all_output_formats),
+          'Avaliable formats: %(choices)s.',
           '' if standalone else 'Defaults to: html.'))
   group.add_argument(
       '--intermediate-dir', metavar='DIR_PATH', required=standalone,
@@ -89,7 +85,7 @@ def ArgumentParser(standalone=False, legacy_formats=None):
   return parser
 
 
-def ProcessOptions(options, standalone=False):
+def ProcessOptions(options):
   """Adjust result processing options as needed before running benchmarks.
 
   Note: The intended scope of this function is limited to only adjust options
@@ -102,8 +98,6 @@ def ProcessOptions(options, standalone=False):
 
   Args:
     options: An options object with values parsed from the command line.
-    standalone: Whether this is a standalone Results Processor run (as
-      opposed to the run with Telemetry).
   """
   if options.verbosity >= 2:
     logging.getLogger().setLevel(logging.DEBUG)
@@ -140,19 +134,10 @@ def ProcessOptions(options, standalone=False):
   else:
     options.upload_bucket = None
 
-  if options.output_formats:
-    chosen_formats = sorted(set(options.output_formats))
-  else:
-    chosen_formats = ['html']
-
-  options.output_formats = []
-  for output_format in chosen_formats:
-    if output_format == 'none':
-      continue
-    elif standalone or output_format in HANDLED_NATIVELY:
-      options.output_formats.append(output_format)
-    else:
-      options.legacy_output_formats.append(output_format)
+  if not options.output_formats:
+    options.output_formats = ['html']
+  elif 'none' in options.output_formats:
+    options.output_formats.remove('none')
 
 
 def _CreateTopLevelParser(standalone):

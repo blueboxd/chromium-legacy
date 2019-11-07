@@ -47,7 +47,7 @@ using PrimaryAccountClearedCallback =
 // method OnRefreshTokenRemoved is invoked. The parameter will be a reference
 // to the account_id whose token was removed.
 using RefreshTokenRemovedCallback =
-    base::RepeatingCallback<void(const std::string&)>;
+    base::RepeatingCallback<void(const CoreAccountId&)>;
 
 // Helper IdentityManager::Observer that forwards some events to the
 // callback passed to the constructor.
@@ -154,11 +154,11 @@ void RunClearPrimaryAccountTest(
                           run_loop.QuitClosure());
 
   // Track Observer token removal notification.
-  base::flat_set<std::string> observed_removals;
+  base::flat_set<CoreAccountId> observed_removals;
   RefreshTokenRemovedCallback refresh_token_removed_callback =
       base::BindRepeating(
-          [](base::flat_set<std::string>* observed_removals,
-             const std::string& removed_account) {
+          [](base::flat_set<CoreAccountId>* observed_removals,
+             const CoreAccountId& removed_account) {
             observed_removals->insert(removed_account);
           },
           &observed_removals);
@@ -190,20 +190,20 @@ void RunClearPrimaryAccountTest(
           former_primary_account.account_id));
       EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(
           secondary_account_info.account_id));
-      EXPECT_TRUE(base::Contains(observed_removals,
-                                 former_primary_account.account_id.id));
-      EXPECT_FALSE(base::Contains(observed_removals,
-                                  secondary_account_info.account_id.id));
+      EXPECT_TRUE(
+          base::Contains(observed_removals, former_primary_account.account_id));
+      EXPECT_FALSE(
+          base::Contains(observed_removals, secondary_account_info.account_id));
       break;
     case RemoveAccountExpectation::kRemoveAll:
       EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
           former_primary_account.account_id));
       EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
           secondary_account_info.account_id));
-      EXPECT_TRUE(base::Contains(observed_removals,
-                                 former_primary_account.account_id.id));
-      EXPECT_TRUE(base::Contains(observed_removals,
-                                 secondary_account_info.account_id.id));
+      EXPECT_TRUE(
+          base::Contains(observed_removals, former_primary_account.account_id));
+      EXPECT_TRUE(
+          base::Contains(observed_removals, secondary_account_info.account_id));
       break;
   }
 }
@@ -260,7 +260,8 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_NoAccount) {
     return;
 
   EXPECT_FALSE(identity_manager->HasPrimaryAccount());
-  EXPECT_FALSE(primary_account_mutator->SetPrimaryAccount(kUnknownAccountId));
+  EXPECT_FALSE(primary_account_mutator->SetPrimaryAccount(
+      CoreAccountId(kUnknownAccountId)));
 }
 
 // Checks that setting the primary account fails if the account is unknown.
@@ -281,7 +282,8 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_UnknownAccount) {
       environment.MakeAccountAvailable(kPrimaryAccountEmail);
 
   EXPECT_FALSE(identity_manager->HasPrimaryAccount());
-  EXPECT_FALSE(primary_account_mutator->SetPrimaryAccount(kUnknownAccountId));
+  EXPECT_FALSE(primary_account_mutator->SetPrimaryAccount(
+      CoreAccountId(kUnknownAccountId)));
 }
 
 // Checks that trying to set the primary account fails when there is already a

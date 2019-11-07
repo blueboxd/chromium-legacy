@@ -51,7 +51,7 @@ ResultSelectionController::MoveResult ResultSelectionController::MoveSelection(
 
   ResultLocationDetails next_location;
   if (!selected_location_details_) {
-    ResetSelection(&event);
+    ResetSelection(&event, false /* default_selection */);
     return MoveResult::kResultChanged;
   }
 
@@ -61,7 +61,8 @@ ResultSelectionController::MoveResult ResultSelectionController::MoveSelection(
   return result;
 }
 
-void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event) {
+void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event,
+                                               bool default_selection) {
   // Prevents crash on start up
   if (result_selection_model_->size() == 0)
     return;
@@ -99,16 +100,22 @@ void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event) {
 
   selected_result_ = new_selection;
 
-  if (selected_result_)
+  // Set the state of the new selected result.
+  if (selected_result_) {
     selected_result_->SetSelected(true, is_shift_tab);
+    selected_result_->set_is_default_result(default_selection);
+  }
 
   selection_change_callback_.Run();
 }
 
 void ResultSelectionController::ClearSelection() {
   selected_location_details_ = nullptr;
-  if (selected_result_)
+  if (selected_result_) {
+    // Reset the state of the previous selected result.
     selected_result_->SetSelected(false, base::nullopt);
+    selected_result_->set_is_default_result(false);
+  }
   selected_result_ = nullptr;
 }
 
@@ -231,6 +238,10 @@ void ResultSelectionController::SetSelection(
   ClearSelection();
 
   selected_result_ = GetResultAtLocation(location);
+  // SetSelection is only called by MoveSelection when user changes
+  // selected result, therefore, the result selected by user is not
+  // a default result.
+  selected_result_->set_is_default_result(false);
   selected_location_details_ =
       std::make_unique<ResultLocationDetails>(location);
   selected_result_->SetSelected(true, reverse_tab_order);

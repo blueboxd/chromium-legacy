@@ -927,8 +927,10 @@ public class BottomSheet
                 mContainerHeight > 0 ? offsetWithBrowserControls / (float) mContainerHeight : 0;
 
         // This ratio is relative to the peek and full positions of the sheet.
-        float hiddenFullRatio = MathUtils.clamp(
-                (screenRatio - getHiddenRatio()) / (getFullRatio() - getHiddenRatio()), 0, 1);
+        float maxHiddenFullRatio = getFullRatio() - getHiddenRatio();
+        float hiddenFullRatio = maxHiddenFullRatio == 0
+                ? 0
+                : MathUtils.clamp((screenRatio - getHiddenRatio()) / maxHiddenFullRatio, 0, 1);
 
         if (offsetWithBrowserControls < getSheetHeightForState(SheetState.HIDDEN)) {
             mLastOffsetRatioSent = 0;

@@ -14,8 +14,8 @@
 @protocol InfobarContainer
 
 // Informs the InfobarContainerCoordinator that |infobarCoordinator| has
-// dismissed its banner.
-- (void)childCoordinatorBannerWasDismissed:
+// finished presenting its banner(s).
+- (void)childCoordinatorBannerFinishedPresented:
     (InfobarCoordinator*)infobarCoordinator;
 
 // Informs the InfobarContainerCoordinator that |infobarCoordinator| has

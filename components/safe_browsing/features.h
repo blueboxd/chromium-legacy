@@ -66,14 +66,8 @@ extern const base::Feature kSendPasswordReusePing;
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 
-// Controls whether the real time URL lookup is enabled. Only works if
-// |kRealTimeUrlLookupFetchAllowlist| is also enabled.
+// Controls whether the real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabled;
-
-// Controls whether the high confidence allowlist for real time URL lookup be
-// fetched.
-// Note: it is not applicable on Android.
-extern const base::Feature kRealTimeUrlLookupFetchAllowlist;
 
 // Controls whether to send sample pings of allowlist domains on
 // the allowlist to Safe Browsing.

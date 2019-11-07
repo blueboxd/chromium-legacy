@@ -31,6 +31,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
+#include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #endif  // defined(OS_CHROMEOS)
@@ -72,6 +73,10 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
     constexpr char kChromeTerminalPWAURL[] = "chrome://terminal/html/pwa.html";
     infos[SystemAppType::TERMINAL].install_url = GURL(kChromeTerminalPWAURL);
+  }
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::HELP)) {
+    constexpr char kChromeHelpAppPWAURL[] = "chrome://help-app/pwa.html";
+    infos[SystemAppType::HELP].install_url = {GURL(kChromeHelpAppPWAURL)};
   }
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::MEDIA)) {
     constexpr char kChromeMediaAppURL[] = "chrome://media-app/pwa.html";
@@ -128,6 +133,8 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
       return base::FeatureList::IsEnabled(features::kTerminalSystemApp);
     case SystemAppType::MEDIA:
       return base::FeatureList::IsEnabled(chromeos::features::kMediaApp);
+    case SystemAppType::HELP:
+      return base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2);
   }
 #else
   return false;

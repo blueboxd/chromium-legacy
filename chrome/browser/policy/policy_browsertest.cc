@@ -5780,10 +5780,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangePolicyTest, SignedExchangeEnabled) {
 class PolicyTestWithRealTimeUrlLookupFetchAllowList : public PolicyTest {
  public:
   PolicyTestWithRealTimeUrlLookupFetchAllowList() {
-    feature_list_.InitWithFeatures(
-        {safe_browsing::kRealTimeUrlLookupEnabled,
-         safe_browsing::kRealTimeUrlLookupFetchAllowlist},
-        {});
+    feature_list_.InitWithFeatures({safe_browsing::kRealTimeUrlLookupEnabled},
+                                   {});
   }
 
  private:

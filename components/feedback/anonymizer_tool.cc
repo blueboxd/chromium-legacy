@@ -210,17 +210,18 @@ std::string MaybeScrubIPAddress(const std::string& addr) {
 
 #define H16 NCG(HEXDIG) "{1,4}"
 #define LS32 NCG(H16 ":" H16 "|" IPV4ADDRESS)
+#define WB "\\b"
 
 #define IPV6ADDRESS NCG( \
-                                          NCG(H16 ":") "{6}" LS32 "|" \
-                                     "::" NCG(H16 ":") "{5}" LS32 "|" \
-  OPT_NCG(                      H16) "::" NCG(H16 ":") "{4}" LS32 "|" \
-  OPT_NCG( NCG(H16 ":") "{0,1}" H16) "::" NCG(H16 ":") "{3}" LS32 "|" \
-  OPT_NCG( NCG(H16 ":") "{0,2}" H16) "::" NCG(H16 ":") "{2}" LS32 "|" \
-  OPT_NCG( NCG(H16 ":") "{0,3}" H16) "::" NCG(H16 ":")       LS32 "|" \
-  OPT_NCG( NCG(H16 ":") "{0,4}" H16) "::"                    LS32 "|" \
-  OPT_NCG( NCG(H16 ":") "{0,5}" H16) "::"                    H16 "|" \
-  OPT_NCG( NCG(H16 ":") "{0,6}" H16) "::")
+                                          WB NCG(H16 ":") "{6}" LS32 WB "|" \
+                                        "::" NCG(H16 ":") "{5}" LS32 WB "|" \
+  OPT_NCG( WB                      H16) "::" NCG(H16 ":") "{4}" LS32 WB "|" \
+  OPT_NCG( WB NCG(H16 ":") "{0,1}" H16) "::" NCG(H16 ":") "{3}" LS32 WB "|" \
+  OPT_NCG( WB NCG(H16 ":") "{0,2}" H16) "::" NCG(H16 ":") "{2}" LS32 WB "|" \
+  OPT_NCG( WB NCG(H16 ":") "{0,3}" H16) "::" NCG(H16 ":")       LS32 WB "|" \
+  OPT_NCG( WB NCG(H16 ":") "{0,4}" H16) "::"                    LS32 WB "|" \
+  OPT_NCG( WB NCG(H16 ":") "{0,5}" H16) "::"                    H16  WB "|" \
+  OPT_NCG( WB NCG(H16 ":") "{0,6}" H16) "::")
 
 #define IPVFUTURE                     \
   "v" HEXDIG                          \
@@ -593,14 +594,16 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithContext(
   while (FindAndConsumeAndGetSkipped(&text, *re, &skipped, &pre_matched_id,
                                      &matched_id, &post_matched_id)) {
     std::string matched_id_as_string = matched_id.as_string();
-    std::string replacement_id = (*identifier_space)[matched_id_as_string];
-    if (replacement_id.empty()) {
+    std::string replacement_id;
+    if (identifier_space->count(matched_id_as_string) == 0) {
       // The weird NumberToString trick is because Windows does not like
       // to deal with %zu and a size_t in printf, nor does it support %llu.
       replacement_id = base::StringPrintf(
           "<%s: %s>", pattern.alias,
-          base::NumberToString(identifier_space->size()).c_str());
+          base::NumberToString(identifier_space->size() + 1).c_str());
       (*identifier_space)[matched_id_as_string] = replacement_id;
+    } else {
+      replacement_id = (*identifier_space)[matched_id_as_string];
     }
 
     skipped.AppendToString(&result);
@@ -680,8 +683,8 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
       continue;
     }
     std::string matched_id_as_string = matched_id.as_string();
-    std::string replacement_id = (*identifier_space)[matched_id_as_string];
-    if (replacement_id.empty()) {
+    std::string replacement_id;
+    if (identifier_space->count(matched_id_as_string) == 0) {
       replacement_id = MaybeScrubIPAddress(matched_id_as_string);
       if (replacement_id != matched_id_as_string) {
         // The weird NumberToString trick is because Windows does not like
@@ -689,9 +692,11 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
         replacement_id = base::StringPrintf(
             "<%s: %s>",
             replacement_id.empty() ? pattern.alias : replacement_id.c_str(),
-            base::NumberToString(identifier_space->size()).c_str());
+            base::NumberToString(identifier_space->size() + 1).c_str());
         (*identifier_space)[matched_id_as_string] = replacement_id;
       }
+    } else {
+      replacement_id = (*identifier_space)[matched_id_as_string];
     }
 
     skipped.AppendToString(&result);

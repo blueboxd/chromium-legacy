@@ -555,7 +555,7 @@ bool EndsOfNodeAreVisuallyDistinctPositions(const Node* node) {
     return true;
 
   // Don't include inline tables.
-  if (IsHTMLTableElement(*node))
+  if (IsA<HTMLTableElement>(*node))
     return false;
 
   // A Marquee elements are moving so we should assume their ends are always

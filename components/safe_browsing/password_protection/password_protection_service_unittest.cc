@@ -904,7 +904,7 @@ TEST_P(PasswordProtectionServiceTest,
 
   // Initiate a saved password entry request (w/ no sync password).
   AccountInfo account_info;
-  account_info.account_id = "account_id";
+  account_info.account_id = CoreAccountId("account_id");
   account_info.email = "email";
   account_info.gaia = "gaia";
   EXPECT_CALL(*password_protection_service_, GetSignedInNonSyncAccount(_))
@@ -1121,7 +1121,7 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
   EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSignedIn())
       .WillRepeatedly(Return(true));
   AccountInfo account_info;
-  account_info.account_id = "account_id";
+  account_info.account_id = CoreAccountId("account_id");
   account_info.email = "email";
   account_info.gaia = "gaia";
   EXPECT_CALL(*password_protection_service_, GetSignedInNonSyncAccount(_))
@@ -1275,7 +1275,7 @@ TEST_P(PasswordProtectionServiceTest, VerifyIsSupportedPasswordTypeForPinging) {
   EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSignedIn())
       .WillRepeatedly(Return(true));
   AccountInfo account_info;
-  account_info.account_id = "account_id";
+  account_info.account_id = CoreAccountId("account_id");
   account_info.email = "email";
   account_info.gaia = "gaia";
   EXPECT_CALL(*password_protection_service_, GetSignedInNonSyncAccount(_))

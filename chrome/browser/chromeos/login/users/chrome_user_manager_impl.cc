@@ -1042,6 +1042,7 @@ void ChromeUserManagerImpl::WebKioskAppLoggedIn(user_manager::User* user) {
       user_manager::User::USER_IMAGE_INVALID, false);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(::switches::kForceWebAppMode);
   command_line->AppendSwitch(
       ::switches::kSilentLaunch);  // To open no extra windows.
 

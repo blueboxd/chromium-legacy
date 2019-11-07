@@ -229,8 +229,6 @@ class ReadableStreamNative::PipeToEngine final
     return promise_->GetScriptPromise(script_state_);
   }
 
-  StreamPromiseResolver* Promise() { return promise_; }
-
   void Trace(Visitor* visitor) {
     visitor->Trace(script_state_);
     visitor->Trace(pipe_options_);

@@ -628,7 +628,7 @@ TEST_F(AccountTrackerServiceTest, FindAccountInfoByGaiaId) {
 
   const std::string gaia_id_beta = AccountKeyToGaiaId(kAccountKeyBeta);
   info = account_tracker()->FindAccountInfoByGaiaId(gaia_id_beta);
-  EXPECT_EQ(std::string(), info.account_id);
+  EXPECT_TRUE(info.account_id.empty());
 }
 
 TEST_F(AccountTrackerServiceTest, FindAccountInfoByEmail) {
@@ -969,8 +969,8 @@ TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
   EXPECT_EQ(account_info.gaia, gaia_alpha);
   EXPECT_EQ(account_info.email, email_alpha);
 
-  account_info = account_tracker()->GetAccountInfo(gaia_beta);
-  EXPECT_EQ(account_info.account_id, gaia_beta);
+  account_info = account_tracker()->GetAccountInfo(CoreAccountId(gaia_beta));
+  EXPECT_EQ(account_info.account_id, CoreAccountId(gaia_beta));
   EXPECT_EQ(account_info.gaia, gaia_beta);
   EXPECT_EQ(account_info.email, email_beta);
 

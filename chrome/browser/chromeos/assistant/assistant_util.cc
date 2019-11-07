@@ -41,8 +41,7 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
 
-  if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
-      user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
+  if (user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE;
   }
 

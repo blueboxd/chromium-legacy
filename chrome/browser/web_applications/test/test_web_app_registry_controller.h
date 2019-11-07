@@ -40,8 +40,8 @@ class TestWebAppRegistryController : public SyncInstallDelegate {
   // SyncInstallDelegate:
   void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
                                RepeatingInstallCallback callback) override;
-  void UninstallWebAppsAfterSync(
-      std::vector<std::unique_ptr<WebApp>> web_apps) override;
+  void UninstallWebAppsAfterSync(std::vector<std::unique_ptr<WebApp>> web_apps,
+                                 RepeatingUninstallCallback callback) override;
 
   void DestroySubsystems();
 

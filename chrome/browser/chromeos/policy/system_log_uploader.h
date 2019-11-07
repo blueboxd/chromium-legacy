@@ -48,6 +48,9 @@ class SystemLogUploader : public UploadJob::Delegate {
   static const int64_t kDefaultUploadDelayMs;
   static const int64_t kErrorUploadDelayMs;
 
+  static const int64_t kLogThrottleCount;
+  static const base::TimeDelta kLogThrottleWindowDuration;
+
   // Http header constants to upload non-zipped logs.
   static const char* const kNameFieldTemplate;
   static const char* const kFileTypeHeaderName;
@@ -118,6 +121,12 @@ class SystemLogUploader : public UploadJob::Delegate {
   base::Time last_upload_attempt() const { return last_upload_attempt_; }
 
   void ScheduleNextSystemLogUploadImmediately();
+
+  // Removes the log upload times before the particular time window ( which were
+  // uploaded before kLogThrottleWindowDuration time from now), add the latest
+  // log upload time if any and return the oldest log upload time in the
+  // particular time window.
+  base::Time UpdateLocalStateForLogs();
 
   // UploadJob::Delegate:
   // Callbacks handle success and failure results of upload, destroy the

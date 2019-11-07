@@ -320,7 +320,6 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
     bool mailbox_needs_new_sync_token = true;
     gpu::Mailbox shared_image_mailbox;
     gpu::SyncToken sync_token;
-    bool needs_gl_filter_reset = true;
     size_t bitmap_image_read_refs = 0u;
     MailboxSyncMode mailbox_sync_mode = kVerifiedSyncToken;
     bool is_lost = false;
@@ -359,7 +358,6 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
                             bool is_origin_top_left,
                             bool allow_concurrent_read_write_access,
                             bool is_accelerated);
-  void SetGLFilterIfNeeded();
 
   OwningThreadData& owning_thread_data() {
     DCHECK_EQ(base::PlatformThread::CurrentId(), owning_thread_id_);

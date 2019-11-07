@@ -110,6 +110,13 @@ void BookmarkAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
   NOTREACHED();
 }
 
+void BookmarkAppInstallFinalizer::FinalizeUninstallAfterSync(
+    const web_app::AppId& app_id,
+    UninstallWebAppCallback callback) {
+  // Used only by the new USS-based sync system.
+  NOTREACHED();
+}
+
 void BookmarkAppInstallFinalizer::FinalizeUpdate(
     const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback) {

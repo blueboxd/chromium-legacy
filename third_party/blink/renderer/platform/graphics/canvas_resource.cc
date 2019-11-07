@@ -99,6 +99,9 @@ static void ReleaseFrameResources(
     bool lost_resource) {
   resource->WaitSyncToken(sync_token);
 
+  if (resource_provider)
+    resource_provider->NotifyTexParamsModified(resource.get());
+
   // TODO(khushalsagar): If multiple readers had access to this resource, losing
   // it once should make sure subsequent releases don't try to recycle this
   // resource.
@@ -465,10 +468,6 @@ void CanvasResourceSharedImage::WillDraw() {
   if (!is_accelerated_)
     return;
 
-  // If skia is accessing the resource, it can modify the texture's filter
-  // params. Make sure to set them to the desired value before sending the
-  // resource to the display compositor.
-  owning_thread_data().needs_gl_filter_reset = true;
   owning_thread_data().mailbox_needs_new_sync_token = true;
 }
 
@@ -499,11 +498,6 @@ void CanvasResourceSharedImage::OnBitmapImageDestroyed(
     }
   }
 
-  // The StaticBitmapImage is used for readbacks which may modify the texture
-  // params. Note that this is racy, since the modification and resetting of the
-  // param is not atomic so the display may draw with incorrect params, but its
-  // a good enough fix for now.
-  resource->owning_thread_data().needs_gl_filter_reset = true;
   auto weak_provider = resource->WeakProvider();
   ReleaseFrameResources(std::move(weak_provider), std::move(resource),
                         sync_token, is_lost);
@@ -512,10 +506,6 @@ void CanvasResourceSharedImage::OnBitmapImageDestroyed(
 void CanvasResourceSharedImage::Transfer() {
   if (is_cross_thread() || !ContextProviderWrapper())
     return;
-
-  // Initialize GLFilter first so that the generated sync token includes this
-  // update.
-  SetGLFilterIfNeeded();
 
   // TODO(khushalsagar): This is for consistency with MailboxTextureHolder
   // transfer path. Its unclear why the verification can not be deferred until
@@ -578,13 +568,6 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
       context_provider_wrapper_, owning_thread_id_, is_origin_top_left_,
       std::move(release_callback));
 
-  // The StaticBitmapImage is used for readbacks which may modify the texture
-  // params. We reset this when the image is destroyed but it is important to
-  // also do it here in case we try to send the resource to the display
-  // compositor while the |image| is still alive.
-  if (!is_cross_thread())
-    owning_thread_data().needs_gl_filter_reset = true;
-
   DCHECK(image);
   return image;
 }
@@ -610,28 +593,9 @@ void CanvasResourceSharedImage::CopyRenderingResultsToGpuMemoryBuffer(
 const gpu::Mailbox& CanvasResourceSharedImage::GetOrCreateGpuMailbox(
     MailboxSyncMode sync_mode) {
   if (!is_cross_thread()) {
-    SetGLFilterIfNeeded();
     owning_thread_data().mailbox_sync_mode = sync_mode;
   }
   return mailbox();
-}
-
-void CanvasResourceSharedImage::SetGLFilterIfNeeded() {
-  DCHECK(!is_cross_thread());
-
-  if (!owning_thread_data().needs_gl_filter_reset || !ContextGL() ||
-      !WeakProvider())
-    return;
-
-  ContextGL()->BindTexture(texture_target_, GetTextureIdForReadAccess());
-  ContextGL()->TexParameteri(texture_target_, GL_TEXTURE_MIN_FILTER,
-                             GLFilter());
-  ContextGL()->TexParameteri(texture_target_, GL_TEXTURE_MAG_FILTER,
-                             GLFilter());
-  ContextGL()->BindTexture(texture_target_, 0u);
-  owning_thread_data().mailbox_needs_new_sync_token = true;
-  owning_thread_data().needs_gl_filter_reset = false;
-  Provider()->NotifyTexParamsModified(this);
 }
 
 bool CanvasResourceSharedImage::HasGpuMailbox() const {
@@ -673,9 +637,6 @@ const gpu::SyncToken CanvasResourceSharedImage::GetSyncToken() {
 void CanvasResourceSharedImage::NotifyResourceLost() {
   owning_thread_data().is_lost = true;
 
-  // Since the texture params are in an unknown state, reset the cached tex
-  // params state for the resource.
-  owning_thread_data().needs_gl_filter_reset = true;
   if (WeakProvider())
     Provider()->NotifyTexParamsModified(this);
 }

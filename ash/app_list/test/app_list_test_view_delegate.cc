@@ -42,7 +42,8 @@ void AppListTestViewDelegate::OpenSearchResult(
     int event_flags,
     ash::AppListLaunchedFrom launched_from,
     ash::AppListLaunchType launch_type,
-    int suggestion_index) {
+    int suggestion_index,
+    bool launch_as_default) {
   const SearchModel::SearchResults* results = search_model_->results();
   for (size_t i = 0; i < results->item_count(); ++i) {
     if (results->GetItemAt(i)->id() == result_id) {

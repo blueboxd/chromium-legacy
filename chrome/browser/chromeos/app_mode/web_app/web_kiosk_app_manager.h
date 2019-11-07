@@ -14,6 +14,7 @@
 #include "components/account_id/account_id.h"
 
 class PrefRegistrySimple;
+struct WebApplicationInfo;
 
 namespace chromeos {
 
@@ -38,6 +39,10 @@ class WebKioskAppManager : public KioskAppManagerBase {
 
   // Obtains an app associated with given |account_id|.
   const WebKioskAppData* GetAppByAccountId(const AccountId& account_id) const;
+
+  // Updates app by the data obtained during installation.
+  void UpdateAppByAccountId(const AccountId& account_id,
+                            std::unique_ptr<WebApplicationInfo> app_info);
 
  private:
   // KioskAppManagerBase:

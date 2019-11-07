@@ -282,8 +282,9 @@ IntersectionObserver::IntersectionObserver(
   }
 }
 
-void IntersectionObserver::ClearWeakMembers(Visitor* visitor) {
-  if (RootIsImplicit() || (root() && ThreadHeap::IsHeapObjectAlive(root())))
+void IntersectionObserver::ProcessCustomWeakness(
+    const WeakCallbackInfo& broker) {
+  if (RootIsImplicit() || (root() && broker.IsHeapObjectAlive(root())))
     return;
   DummyExceptionStateForTesting exception_state;
   disconnect(exception_state);
@@ -441,8 +442,8 @@ bool IntersectionObserver::HasPendingActivity() const {
 }
 
 void IntersectionObserver::Trace(blink::Visitor* visitor) {
-  visitor->template RegisterWeakMembers<
-      IntersectionObserver, &IntersectionObserver::ClearWeakMembers>(this);
+  visitor->template RegisterWeakCallbackMethod<
+      IntersectionObserver, &IntersectionObserver::ProcessCustomWeakness>(this);
   visitor->Trace(delegate_);
   visitor->Trace(observations_);
   ScriptWrappable::Trace(visitor);

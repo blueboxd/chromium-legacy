@@ -102,7 +102,9 @@ class APP_LIST_EXPORT ResultSelectionController {
   // Resets the selection to the first result.
   // |key_event| - The key event that triggered reselect, if any. Used to
   //     determine whether selection should start at the last element.
-  void ResetSelection(const ui::KeyEvent* key_event);
+  // |default_selection| - True if it resets the first result as default
+  //     selection.
+  void ResetSelection(const ui::KeyEvent* key_event, bool default_selection);
 
   // Clears the |selected_result_|, |selected_location_details_|.
   void ClearSelection();

@@ -859,11 +859,12 @@ class Weak : public Bar {
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(strong_bar_);
-    visitor->template RegisterWeakMembers<Weak, &Weak::ZapWeakMembers>(this);
+    visitor->template RegisterWeakCallbackMethod<Weak, &Weak::ZapWeakMembers>(
+        this);
   }
 
-  void ZapWeakMembers(Visitor* visitor) {
-    if (!ThreadHeap::IsHeapObjectAlive(weak_bar_))
+  void ZapWeakMembers(const WeakCallbackInfo& broker) {
+    if (!broker.IsHeapObjectAlive(weak_bar_))
       weak_bar_ = nullptr;
   }
 
@@ -1007,13 +1008,13 @@ class FinalizationObserver : public GarbageCollected<FinalizationObserver<T>> {
   bool DidCallWillFinalize() const { return did_call_will_finalize_; }
 
   void Trace(blink::Visitor* visitor) {
-    visitor->template RegisterWeakMembers<
+    visitor->template RegisterWeakCallbackMethod<
         FinalizationObserver<T>, &FinalizationObserver<T>::ZapWeakMembers>(
         this);
   }
 
-  void ZapWeakMembers(Visitor* visitor) {
-    if (data_ && !ThreadHeap::IsHeapObjectAlive(data_)) {
+  void ZapWeakMembers(const WeakCallbackInfo& broker) {
+    if (data_ && !broker.IsHeapObjectAlive(data_)) {
       data_->WillFinalize();
       data_ = nullptr;
       did_call_will_finalize_ = true;

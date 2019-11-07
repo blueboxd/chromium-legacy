@@ -42,6 +42,21 @@ class HomeScreenDelegate {
     kOverviewModeFade
   };
 
+  // Information used to configure animation metrics reporter when animating
+  // home screen using UpdateYPositionAndOpacityForHomeLauncher() or
+  // UpdateScaleAndOpacityForHomeLauncher().
+  struct AnimationInfo {
+    AnimationInfo(AnimationTrigger trigger, bool showing)
+        : trigger(trigger), showing(showing) {}
+    ~AnimationInfo() = default;
+
+    // The animation trigger.
+    const AnimationTrigger trigger;
+
+    // Whether the home screen will be shown at the end of the animation.
+    const bool showing;
+  };
+
   virtual ~HomeScreenDelegate() = default;
 
   // Shows the home screen view.
@@ -54,17 +69,25 @@ class HomeScreenDelegate {
 
   // Updates the y position and opacity of the home launcher view. If |callback|
   // is non-null, it should be called with animation settings.
+  // |animation_info| - Information about the transition trigger that will be
+  // used to report animation metrics. Should be set only if |callback| is
+  // not null (otherwise the transition will not be animated).
   virtual void UpdateYPositionAndOpacityForHomeLauncher(
       int y_position_in_screen,
       float opacity,
+      base::Optional<AnimationInfo> animation_info,
       UpdateAnimationSettingsCallback callback) = 0;
 
   // Scales the home launcher view maintaining the view center point, and
   // updates its opacity. If |callback| is non-null, the update should be
   // animated, and the |callback| should be called with the animation settings.
+  // |animation_info| - Information about the transition trigger that will be
+  // used to report animation metrics. Should be set only if |callback| is
+  // not null (otherwise the transition will not be animated).
   virtual void UpdateScaleAndOpacityForHomeLauncher(
       float scale,
       float opacity,
+      base::Optional<AnimationInfo> animation_info,
       UpdateAnimationSettingsCallback callback) = 0;
 
   // Updates the home launcher view after its show animation has completed.
@@ -92,12 +115,6 @@ class HomeScreenDelegate {
   virtual void OnHomeLauncherDragStart() {}
   virtual void OnHomeLauncherDragInProgress() {}
   virtual void OnHomeLauncherDragEnd() {}
-
-  // Propagates the home launcher animation transition. |trigger| is what
-  // triggers the home launcher animation; |launcher_will_show| indicates
-  // whether the launcher will show by the end of animation.
-  virtual void NotifyHomeLauncherAnimationTransition(AnimationTrigger trigger,
-                                                     bool launcher_will_show) {}
 
   // Called when the HomeLauncher has started to be dragged, or a positional
   // animation has begun.

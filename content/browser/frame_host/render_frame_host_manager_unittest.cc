@@ -1091,6 +1091,10 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
 // Ensure that we can go back and forward even if a SwapOut ACK isn't received.
 // See http://crbug.com/93427.
 TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
+  // When a page enters the BackForwardCache, the RenderFrameHost is not
+  // deleted.  Similarly, no SwapOutACK message is sent.
+  contents()->GetController().GetBackForwardCache().DisableForTesting(
+      BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -1575,6 +1579,10 @@ TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
 // received.  (SwapOut and the corresponding ACK always occur after commit.)
 // Also tests that an early SwapOutACK is properly ignored.
 TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
+  // When a page enters the BackForwardCache, the RenderFrameHost is not
+  // deleted.  Similarly, no SwapOutACK message is sent.
+  contents()->GetController().GetBackForwardCache().DisableForTesting(
+      BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
 
@@ -1618,6 +1626,10 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
 // Tests that the RenderFrameHost is properly swapped out when the SwapOut ACK
 // is received.  (SwapOut and the corresponding ACK always occur after commit.)
 TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
+  // When a page enters the BackForwardCache, the RenderFrameHost is not
+  // deleted.  Similarly, no SwapOutACK message is sent.
+  contents()->GetController().GetBackForwardCache().DisableForTesting(
+      BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
 
@@ -1660,6 +1672,10 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
 // This simulates a cross-site navigation to a synchronously committing URL
 // (e.g., a data URL) and ensures it works properly.
 TEST_F(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingSwapOut) {
+  // When a page enters the BackForwardCache, the RenderFrameHost is not
+  // deleted.  Similarly, no SwapOutACK message is sent.
+  contents()->GetController().GetBackForwardCache().DisableForTesting(
+      BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
 

@@ -3659,6 +3659,24 @@
             ]
         }
     ],
+    "NavigationPredictorMultiplePrerenders": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_Limit_5",
+                    "params": {
+                        "prerender_limit": "5"
+                    },
+                    "enable_features": [
+                        "NavigationPredictorMultiplePrerenders"
+                    ]
+                }
+            ]
+        }
+    ],
     "NetworkServiceSandbox": [
         {
             "platforms": [
@@ -5313,24 +5331,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingRealTimeUrlLookupEnabled"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SafeBrowsingRealTimeUrlLookupFetchAllowlist": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingRealTimeUrlLookupFetchAllowlist"
                     ]
                 }
             ]

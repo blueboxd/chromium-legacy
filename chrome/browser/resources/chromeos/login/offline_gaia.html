@@ -108,11 +108,13 @@
     </oobe-dialog>
     <cr-dialog id="forgotPasswordDlg"
         on-close="onDialogOverlayClosed_">
-      <div slot="body"
-          i18n-content="offlineLoginForgotPasswordDlg"></div>
+      <div slot="body">
+        [[i18nDynamic(locale, 'offlineLoginForgotPasswordDlg')]]
+      </div>
       <div slot="button-container">
         <cr-button autofocus on-tap="onForgotPasswordCloseTap_"
-            i18n-content="offlineLoginCloseBtn" class="action-button">
+            class="action-button">
+          [[i18nDynamic(locale, 'offlineLoginCloseBtn')]]
         </cr-button>
       </div>
     </cr-dialog>

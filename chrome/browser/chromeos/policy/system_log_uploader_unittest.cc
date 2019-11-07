@@ -12,8 +12,11 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "components/feedback/anonymizer_tool.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/http/http_request_headers.h"
@@ -26,6 +29,10 @@ namespace {
 // Pseudo-location of policy dump file.
 constexpr char kPolicyDumpFileLocation[] = "/var/log/policy_dump.json";
 constexpr char kPolicyDump[] = "{}";
+
+// A small time interval to check log throttling.
+constexpr base::TimeDelta kLogThrottleDeltaTime =
+    base::TimeDelta::FromMilliseconds(100);
 
 // The list of tested system log file names.
 const char* const kTestSystemLogFileNames[] = {"name1.txt", "name32.txt"};
@@ -220,18 +227,21 @@ class MockSystemLogDelegate : public SystemLogUploader::Delegate {
 
 class SystemLogUploaderTest : public testing::TestWithParam<bool> {
  public:
+  TestingPrefServiceSimple local_state_;
   SystemLogUploaderTest()
       : task_runner_(new base::TestSimpleTaskRunner()),
         is_zipped_upload_(GetParam()) {
     feature_list.InitWithFeatureState(features::kUploadZippedSystemLogs,
                                       is_zipped_upload_);
   }
-
   void SetUp() override {
+    RegisterLocalState(local_state_.registry());
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     settings_helper_.ReplaceDeviceSettingsProviderWithStub();
   }
 
   void TearDown() override {
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     settings_helper_.RestoreRealDeviceSettingsProvider();
     content::RunAllTasksUntilIdle();
   }
@@ -285,6 +295,62 @@ class SystemLogUploaderTest : public testing::TestWithParam<bool> {
   base::HistogramTester histogram_tester_;
 };
 
+// Verify log throttling. Try successive kLogThrottleCount log uploads by
+// creating a new task. First kLogThrottleCount logs should have 0 delay.
+// Successive logs should have approx. kLogThrottleWindowDuration delay.
+TEST_P(SystemLogUploaderTest, LogThrottleTest) {
+  for (int upload_num = 0;
+       upload_num < SystemLogUploader::kLogThrottleCount + 3; upload_num++) {
+    EXPECT_FALSE(task_runner_->HasPendingTask());
+    auto syslog_delegate = std::make_unique<MockSystemLogDelegate>(
+        false, SystemLogUploader::SystemLogs(), is_zipped_upload_);
+
+    syslog_delegate->set_upload_allowed(true);
+    settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
+
+    SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
+
+    EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+
+    if (upload_num < SystemLogUploader::kLogThrottleCount) {
+      EXPECT_EQ(task_runner_->NextPendingTaskDelay(),
+                base::TimeDelta::FromMilliseconds(0));
+    } else {
+      // The delay would be in a small delta range of
+      // kLogThrottleWindowDuration.
+      EXPECT_GE(task_runner_->NextPendingTaskDelay(),
+                SystemLogUploader::kLogThrottleWindowDuration -
+                    kLogThrottleDeltaTime);
+      EXPECT_LE(task_runner_->NextPendingTaskDelay(),
+                SystemLogUploader::kLogThrottleWindowDuration +
+                    kLogThrottleDeltaTime);
+    }
+
+    task_runner_->RunPendingTasks();
+    task_runner_->ClearPendingTasks();
+  }
+}
+
+// Verify that we never throttle immediate log upload.
+TEST_P(SystemLogUploaderTest, ImmediateLogUpload) {
+  EXPECT_FALSE(task_runner_->HasPendingTask());
+  auto syslog_delegate = std::make_unique<MockSystemLogDelegate>(
+      false, SystemLogUploader::SystemLogs(), is_zipped_upload_);
+
+  syslog_delegate->set_upload_allowed(true);
+  settings_helper_.SetBoolean(chromeos::kSystemLogUploadEnabled, true);
+
+  SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
+  for (int upload_num = 0;
+       upload_num < SystemLogUploader::kLogThrottleCount + 3; upload_num++) {
+    uploader.ScheduleNextSystemLogUploadImmediately();
+    EXPECT_EQ(task_runner_->NextPendingTaskDelay(),
+              base::TimeDelta::FromMilliseconds(0));
+    task_runner_->RunPendingTasks();
+    task_runner_->ClearPendingTasks();
+  }
+}
+
 // Check disabled system log uploads by default.
 TEST_P(SystemLogUploaderTest, Basic) {
   EXPECT_FALSE(task_runner_->HasPendingTask());
@@ -321,7 +387,7 @@ TEST_P(SystemLogUploaderTest, SuccessTest) {
   ExpectSuccessHistogram(/*amount=*/1);
 }
 
-// Three failed responses recieved.
+// Three failed responses received.
 TEST_P(SystemLogUploaderTest, ThreeFailureTest) {
   EXPECT_FALSE(task_runner_->HasPendingTask());
 

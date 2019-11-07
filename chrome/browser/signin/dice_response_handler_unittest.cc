@@ -82,7 +82,7 @@ class DiceResponseHandlerTest : public testing::Test,
                                 public AccountReconcilor::Observer {
  public:
   // Called after the refresh token was fetched and added in the token service.
-  void EnableSync(const std::string& account_id) {
+  void EnableSync(const CoreAccountId& account_id) {
     enable_sync_account_id_ = account_id;
   }
 
@@ -190,7 +190,7 @@ class DiceResponseHandlerTest : public testing::Test,
   std::unique_ptr<DiceResponseHandler> dice_response_handler_;
   int reconcilor_blocked_count_;
   int reconcilor_unblocked_count_;
-  std::string enable_sync_account_id_;
+  CoreAccountId enable_sync_account_id_;
   GoogleServiceAuthError auth_error_;
   std::string auth_error_email_;
 };
@@ -222,7 +222,7 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->PickAccountIdForAccount(
+  CoreAccountId account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -257,7 +257,7 @@ TEST_F(DiceResponseHandlerTest, SigninFailure) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->PickAccountIdForAccount(
+  CoreAccountId account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -285,7 +285,7 @@ TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->PickAccountIdForAccount(
+  CoreAccountId account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -322,9 +322,9 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   dice_params_2.signin_info->account_info.email = "other_email";
   dice_params_2.signin_info->account_info.gaia_id = "other_gaia_id";
   const auto& account_info_2 = dice_params_2.signin_info->account_info;
-  std::string account_id_1 = identity_manager()->PickAccountIdForAccount(
+  CoreAccountId account_id_1 = identity_manager()->PickAccountIdForAccount(
       account_info_1.gaia_id, account_info_1.email);
-  std::string account_id_2 = identity_manager()->PickAccountIdForAccount(
+  CoreAccountId account_id_2 = identity_manager()->PickAccountIdForAccount(
       account_info_2.gaia_id, account_info_2.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id_1));
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id_2));
@@ -376,7 +376,7 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncAfterRefreshTokenFetched) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->PickAccountIdForAccount(
+  CoreAccountId account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -391,7 +391,7 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncAfterRefreshTokenFetched) {
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id));
   // Check that delegate was not called to enable sync.
-  EXPECT_EQ("", enable_sync_account_id_);
+  EXPECT_TRUE(enable_sync_account_id_.empty());
 
   // Enable sync.
   dice_response_handler_->ProcessDiceHeader(
@@ -408,7 +408,7 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncBeforeRefreshTokenFetched) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->PickAccountIdForAccount(
+  CoreAccountId account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -422,7 +422,7 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncBeforeRefreshTokenFetched) {
       MakeDiceParams(DiceAction::ENABLE_SYNC),
       std::make_unique<TestProcessDiceHeaderDelegate>(this));
   // Check that delegate was not called to enable sync.
-  EXPECT_EQ("", enable_sync_account_id_);
+  EXPECT_TRUE(enable_sync_account_id_.empty());
 
   // Simulate GaiaAuthFetcher success.
   consumer->OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
@@ -438,7 +438,7 @@ TEST_F(DiceResponseHandlerTest, Timeout) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->PickAccountIdForAccount(
+  CoreAccountId account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -652,9 +652,9 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutDifferentAccount) {
   signin_params_2.signin_info->account_info.gaia_id = "other_gaia_id";
   const auto& signin_account_info_1 = signin_params_1.signin_info->account_info;
   const auto& signin_account_info_2 = signin_params_2.signin_info->account_info;
-  std::string account_id_1 = identity_manager()->PickAccountIdForAccount(
+  CoreAccountId account_id_1 = identity_manager()->PickAccountIdForAccount(
       signin_account_info_1.gaia_id, signin_account_info_1.email);
-  std::string account_id_2 = identity_manager()->PickAccountIdForAccount(
+  CoreAccountId account_id_2 = identity_manager()->PickAccountIdForAccount(
       signin_account_info_2.gaia_id, signin_account_info_2.email);
   dice_response_handler_->ProcessDiceHeader(
       signin_params_1, std::make_unique<TestProcessDiceHeaderDelegate>(this));

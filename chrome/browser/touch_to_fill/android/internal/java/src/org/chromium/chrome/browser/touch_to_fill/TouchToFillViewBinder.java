@@ -74,6 +74,9 @@ class TouchToFillViewBinder {
             case ItemType.CREDENTIAL:
                 return new TouchToFillViewHolder(parent, R.layout.touch_to_fill_credential_item,
                         TouchToFillViewBinder::bindCredentialView);
+            case ItemType.FILL_BUTTON:
+                return new TouchToFillViewHolder(parent, R.layout.touch_to_fill_fill_button,
+                        TouchToFillViewBinder::bindFillButtonView);
         }
         assert false : "Cannot create view for ItemType: " + itemType;
         return null;
@@ -98,7 +101,7 @@ class TouchToFillViewBinder {
      * @param propertyKey The key of the property to be bound
      */
     private static void bindCredentialView(
-            PropertyModel model, ViewGroup view, PropertyKey propertyKey) {
+            PropertyModel model, View view, PropertyKey propertyKey) {
         Credential credential = model.get(CREDENTIAL);
         if (propertyKey == FAVICON) {
             ImageView imageView = view.findViewById(R.id.favicon);
@@ -132,19 +135,39 @@ class TouchToFillViewBinder {
     }
 
     /**
+     * Called whenever a fill button for a single credential is bound to this view holder.
+     * @param model The model containing the data for the view
+     * @param view The view to be bound
+     * @param propertyKey The key of the property to be bound
+     */
+    private static void bindFillButtonView(
+            PropertyModel model, View view, PropertyKey propertyKey) {
+        Credential credential = model.get(CREDENTIAL);
+        if (propertyKey == ON_CLICK_LISTENER) {
+            view.setOnClickListener(
+                    clickedView -> { model.get(ON_CLICK_LISTENER).onResult(credential); });
+        } else if (propertyKey == FAVICON || propertyKey == FORMATTED_ORIGIN
+                || propertyKey == CREDENTIAL) {
+            // The button appearance is static.
+        } else {
+            assert false : "Unhandled update to property:" + propertyKey;
+        }
+    }
+
+    /**
      * Called whenever a property in the given model changes. It updates the given view accordingly.
      * @param model The observed {@link PropertyModel}. Its data need to be reflected in the view.
-     * @param viewGroup The {@link ViewGroup} containing the header to update.
+     * @param view The {@link View} of the header to update.
      * @param key The {@link PropertyKey} which changed.
      */
-    private static void bindHeaderView(PropertyModel model, ViewGroup viewGroup, PropertyKey key) {
+    private static void bindHeaderView(PropertyModel model, View view, PropertyKey key) {
         if (key == FORMATTED_URL || key == ORIGIN_SECURE) {
-            TextView sheetSubtitleText = viewGroup.findViewById(R.id.touch_to_fill_sheet_subtitle);
+            TextView sheetSubtitleText = view.findViewById(R.id.touch_to_fill_sheet_subtitle);
             if (model.get(ORIGIN_SECURE)) {
                 sheetSubtitleText.setText(model.get(FORMATTED_URL));
             } else {
                 sheetSubtitleText.setText(
-                        String.format(viewGroup.getContext().getString(
+                        String.format(view.getContext().getString(
                                               R.string.touch_to_fill_sheet_subtitle_not_secure),
                                 model.get(FORMATTED_URL)));
             }

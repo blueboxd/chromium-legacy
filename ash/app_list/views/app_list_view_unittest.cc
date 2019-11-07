@@ -1224,7 +1224,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
     contents_view()
         ->search_results_page_view()
         ->result_selection_controller()
-        ->ResetSelection(nullptr);
+        ->ResetSelection(nullptr, false);
   }
 
   if (app_list_features::IsSearchBoxSelectionEnabled()) {

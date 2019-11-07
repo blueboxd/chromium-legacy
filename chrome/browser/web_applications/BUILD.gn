@@ -63,6 +63,7 @@ source_set("web_applications") {
   if (is_chromeos) {
     deps += [
       "//ash/public/cpp:cpp",
+      "//chromeos/components/help_app_ui",
       "//chromeos/components/media_app_ui",
       "//chromeos/constants",
       "//components/arc:arc_base",

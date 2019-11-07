@@ -1844,6 +1844,8 @@ jumbo_static_library("ui") {
       "webui/chromeos/smb_shares/smb_share_dialog.h",
       "webui/chromeos/smb_shares/smb_shares_localized_strings_provider.cc",
       "webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h",
+      "webui/chromeos/sync/os_sync_handler.cc",
+      "webui/chromeos/sync/os_sync_handler.h",
       "webui/chromeos/sys_internals/sys_internals_message_handler.cc",
       "webui/chromeos/sys_internals/sys_internals_message_handler.h",
       "webui/chromeos/sys_internals/sys_internals_ui.cc",

@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -28,6 +29,9 @@
 namespace policy {
 
 namespace {
+
+constexpr char kInvalidTokenValue[] = "INVALID_DM_TOKEN";
+
 void OnHardwarePlatformInfo(base::OnceClosure quit_closure,
                             std::string* out,
                             base::SysInfo::HardwareInfo info) {
@@ -36,10 +40,48 @@ void OnHardwarePlatformInfo(base::OnceClosure quit_closure,
 }
 }  // namespace
 
+using BrowserDMToken = BrowserDMTokenStorage::BrowserDMToken;
+
 // static
 BrowserDMTokenStorage* BrowserDMTokenStorage::storage_for_testing_ = nullptr;
 
-BrowserDMTokenStorage::BrowserDMTokenStorage() : is_initialized_(false) {
+BrowserDMToken BrowserDMToken::CreateValidToken(const std::string& dm_token) {
+  DCHECK_NE(dm_token, kInvalidTokenValue);
+  DCHECK(!dm_token.empty());
+  return BrowserDMToken(Status::kValid, dm_token);
+}
+
+BrowserDMToken BrowserDMToken::CreateInvalidToken() {
+  return BrowserDMToken(Status::kInvalid, "");
+}
+
+BrowserDMToken BrowserDMToken::CreateEmptyToken() {
+  return BrowserDMToken(Status::kEmpty, "");
+}
+
+const std::string& BrowserDMToken::value() const {
+  // TODO(domfc): Uncomment DCHECK(is_valid()) after migrating code.
+  // DCHECK(is_valid());
+  return value_;
+}
+
+bool BrowserDMToken::is_valid() const {
+  return status_ == Status::kValid;
+}
+
+bool BrowserDMToken::is_invalid() const {
+  return status_ == Status::kInvalid;
+}
+
+bool BrowserDMToken::is_empty() const {
+  return status_ == Status::kEmpty;
+}
+
+BrowserDMToken::BrowserDMToken(Status status, const base::StringPiece value)
+    : status_(status), value_(value) {}
+
+BrowserDMTokenStorage::BrowserDMTokenStorage()
+    : is_initialized_(false), dm_token_(BrowserDMToken::CreateEmptyToken()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
   // We don't call InitIfNeeded() here so that the global instance can be
@@ -78,6 +120,17 @@ std::string BrowserDMTokenStorage::RetrieveEnrollmentToken() {
 
 void BrowserDMTokenStorage::StoreDMToken(const std::string& dm_token,
                                          StoreCallback callback) {
+  if (dm_token.empty())
+    StoreDMToken(BrowserDMToken::CreateEmptyToken(), std::move(callback));
+  else if (dm_token == kInvalidTokenValue)
+    StoreDMToken(BrowserDMToken::CreateInvalidToken(), std::move(callback));
+  else
+    StoreDMToken(BrowserDMToken::CreateValidToken(dm_token),
+                 std::move(callback));
+}
+
+void BrowserDMTokenStorage::StoreDMToken(const BrowserDMToken& dm_token,
+                                         StoreCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!store_callback_);
   InitIfNeeded();
@@ -86,10 +139,17 @@ void BrowserDMTokenStorage::StoreDMToken(const std::string& dm_token,
 
   store_callback_ = std::move(callback);
 
-  SaveDMToken(dm_token);
+  if (dm_token_.is_invalid())
+    SaveDMToken(kInvalidTokenValue);
+  else
+    SaveDMToken(dm_token_.value());
 }
 
 std::string BrowserDMTokenStorage::RetrieveDMToken() {
+  return RetrieveBrowserDMToken().value();
+}
+
+BrowserDMToken BrowserDMTokenStorage::RetrieveBrowserDMToken() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!store_callback_);
 
@@ -129,8 +189,22 @@ void BrowserDMTokenStorage::InitIfNeeded() {
   enrollment_token_ = InitEnrollmentToken();
   DVLOG(1) << "Enrollment token = " << enrollment_token_;
 
-  dm_token_ = InitDMToken();
-  DVLOG(1) << "DM Token = " << dm_token_;
+  std::string init_dm_token = InitDMToken();
+  if (init_dm_token.empty())
+    dm_token_ = BrowserDMToken::CreateEmptyToken();
+  else if (init_dm_token == kInvalidTokenValue)
+    dm_token_ = BrowserDMToken::CreateInvalidToken();
+  else
+    dm_token_ = BrowserDMToken::CreateValidToken(init_dm_token);
+
+  if (dm_token_.is_valid())
+    DVLOG(1) << "DM Token = " << dm_token_.value();
+  else if (dm_token_.is_empty())
+    DVLOG(1) << "DM Token = empty";
+  else if (dm_token_.is_invalid())
+    DVLOG(1) << "DM Token = invalid";
+  else
+    DVLOG(1) << "DM Token = unknown status";
 
   should_display_error_message_on_failure_ = InitEnrollmentErrorOption();
 }

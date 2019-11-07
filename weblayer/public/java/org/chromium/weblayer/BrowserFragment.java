@@ -18,12 +18,12 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IBrowserFragment;
-import org.chromium.weblayer_private.aidl.IObjectWrapper;
-import org.chromium.weblayer_private.aidl.IRemoteFragment;
-import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IRemoteFragment;
+import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 import java.util.concurrent.Future;
 
@@ -31,12 +31,12 @@ import java.util.concurrent.Future;
  * WebLayer's fragment implementation.
  *
  * This class is an implementation detail and will eventually be hidden. Use
- * {@link BrowserFragmentController#fromFragment} to get the BrowserFragmentController from a
+ * {@link Browser#fromFragment} to get the Browser from a
  * Fragment created by WebLayer.
  *
  * All the browser APIs, such as loading pages can be accessed via
- * {@link BrowserFragmentController}, which can be retrieved with {@link
- * FragmentSupport#getBrowserFragmentControllerForFragment} after the fragment received onCreate the
+ * {@link Browser}, which can be retrieved with {@link
+ * FragmentSupport#getBrowserForFragment} after the fragment received onCreate the
  * call.
  *
  * Attaching a BrowserFragment to an Activity requires WebLayer to be initialized, so
@@ -154,7 +154,7 @@ public final class BrowserFragment extends Fragment {
     private WebLayer mWebLayer;
 
     // Nonnull between onCreate() and onDestroy().
-    private BrowserFragmentController mBrowserFragmentController;
+    private Browser mBrowser;
 
     /**
      * This constructor is for the system FragmentManager only. Please use
@@ -166,17 +166,17 @@ public final class BrowserFragment extends Fragment {
     }
 
     /**
-     * Returns the {@link BrowserFragmentController} associated with this fragment.
-     * The controller is available only between BrowserFragment's onCreate() and onDestroy().
+     * Returns the {@link Browser} associated with this fragment.
+     * The browser is available only between BrowserFragment's onCreate() and onDestroy().
      */
     @NonNull
-    BrowserFragmentController getController() {
+    Browser getBrowser() {
         ThreadCheck.ensureOnUiThread();
-        if (mBrowserFragmentController == null) {
-            throw new RuntimeException("BrowserFragmentController is available only between "
+        if (mBrowser == null) {
+            throw new RuntimeException("Browser is available only between "
                     + "BrowserFragment's onCreate() and onDestroy().");
         }
-        return mBrowserFragmentController;
+        return mBrowser;
     }
 
     @Override
@@ -207,13 +207,12 @@ public final class BrowserFragment extends Fragment {
     public void onAttach(Context context) {
         ThreadCheck.ensureOnUiThread();
         // This is the first lifecycle event and also the first time we can get app context (unless
-        // the embedder has already called getController). So it's the latest and at the same time
+        // the embedder has already called getBrowser()). So it's the latest and at the same time
         // the earliest moment when we can initialize WebLayer without missing any lifecycle events.
         ensureConnectedToWebLayer(context.getApplicationContext());
         try {
             mRemoteFragment.handleOnAttach(ObjectWrapper.wrap(context));
-            // handleOnAttach results in creating BrowserFragmentControllerImpl on the other side.
-            // Now we retrieve it, and build BrowserFragmentController on this side.
+            // handleOnAttach results in creating BrowserImpl on the other side.
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -243,7 +242,7 @@ public final class BrowserFragment extends Fragment {
         ThreadCheck.ensureOnUiThread();
         try {
             mRemoteFragment.handleOnCreate(ObjectWrapper.wrap(savedInstanceState));
-            mBrowserFragmentController = new BrowserFragmentController(mImpl.getController());
+            mBrowser = new Browser(mImpl.getBrowser());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -347,7 +346,7 @@ public final class BrowserFragment extends Fragment {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
-        mBrowserFragmentController = null;
+        mBrowser = null;
     }
 
     @SuppressWarnings("MissingSuperCall")

@@ -29,7 +29,7 @@ class MemoryMetricsLogger {
  private:
   struct State;
 
-  friend jboolean JNI_MemoryMetricsLoggerTest_ForceRecordHistograms(
+  friend jboolean JNI_MemoryMetricsLoggerUtils_ForceRecordHistograms(
       JNIEnv* env);
 
   // Returns the single instance, if one was created.

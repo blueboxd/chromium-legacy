@@ -109,7 +109,7 @@ class VideoWakeLockTest : public PageTestBase {
     video_->SetReadyState(HTMLMediaElement::ReadyState::kHaveMetadata);
     video_wake_lock_ = MakeGarbageCollected<VideoWakeLock>(*video_.Get());
 
-    GetPage().SetIsHidden(false, true);
+    GetPage().SetVisibilityState(PageVisibilityState::kVisible, true);
   }
 
   void TearDown() override {
@@ -191,32 +191,32 @@ TEST_F(VideoWakeLockTest, HiddingPageCancelsLock) {
   SimulatePlaying();
   EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
 
-  GetPage().SetIsHidden(true, false);
+  GetPage().SetVisibilityState(PageVisibilityState::kHidden, false);
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 }
 
 TEST_F(VideoWakeLockTest, PlayingWhileHiddenDoesNotRequestLock) {
-  GetPage().SetIsHidden(true, false);
+  GetPage().SetVisibilityState(PageVisibilityState::kHidden, false);
   SimulatePlaying();
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 }
 
 TEST_F(VideoWakeLockTest, ShowingPageRequestsLock) {
   SimulatePlaying();
-  GetPage().SetIsHidden(true, false);
+  GetPage().SetVisibilityState(PageVisibilityState::kHidden, false);
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 
-  GetPage().SetIsHidden(false, false);
+  GetPage().SetVisibilityState(PageVisibilityState::kVisible, false);
   EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
 }
 
 TEST_F(VideoWakeLockTest, ShowingPageDoNotRequestsLockIfPaused) {
   SimulatePlaying();
-  GetPage().SetIsHidden(true, false);
+  GetPage().SetVisibilityState(PageVisibilityState::kHidden, false);
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 
   SimulatePause();
-  GetPage().SetIsHidden(false, false);
+  GetPage().SetVisibilityState(PageVisibilityState::kVisible, false);
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 }
 
@@ -265,7 +265,7 @@ TEST_F(VideoWakeLockTest, PictureInPictureLocksWhenPageNotVisible) {
   test::RunPendingTasks();
 
   SimulatePlaying();
-  GetPage().SetIsHidden(true, false);
+  GetPage().SetVisibilityState(PageVisibilityState::kHidden, false);
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 
   SimulateEnterPictureInPicture();
@@ -281,7 +281,7 @@ TEST_F(VideoWakeLockTest, PictureInPictureDoesNoLockWhenPaused) {
   test::RunPendingTasks();
 
   SimulatePlaying();
-  GetPage().SetIsHidden(true, false);
+  GetPage().SetVisibilityState(PageVisibilityState::kHidden, false);
   EXPECT_FALSE(GetVideoWakeLock()->active_for_tests());
 
   SimulatePause();
@@ -298,7 +298,7 @@ TEST_F(VideoWakeLockTest, LeavingPictureInPictureCancelsLock) {
   test::RunPendingTasks();
 
   SimulatePlaying();
-  GetPage().SetIsHidden(true, false);
+  GetPage().SetVisibilityState(PageVisibilityState::kHidden, false);
   SimulateEnterPictureInPicture();
   EXPECT_TRUE(GetVideoWakeLock()->active_for_tests());
 

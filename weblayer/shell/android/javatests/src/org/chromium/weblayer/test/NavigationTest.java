@@ -206,8 +206,8 @@ public class NavigationTest {
         mActivityTestRule.navigateAndWait(URL2);
         mActivityTestRule.navigateAndWait(URL3);
 
-        NavigationController navigationController = runOnUiThreadBlocking(
-                () -> activity.getBrowserController().getNavigationController());
+        NavigationController navigationController =
+                runOnUiThreadBlocking(() -> activity.getTab().getNavigationController());
 
         navigateAndWaitForCompletion(URL2, () -> {
             assertTrue(navigationController.canGoBack());
@@ -249,10 +249,10 @@ public class NavigationTest {
     }
 
     private void setNavigationCallback(InstrumentationActivity activity) {
-        runOnUiThreadBlocking(()
-                                      -> activity.getBrowserController()
-                                                 .getNavigationController()
-                                                 .registerNavigationCallback(mCallback));
+        runOnUiThreadBlocking(
+                ()
+                        -> activity.getTab().getNavigationController().registerNavigationCallback(
+                                mCallback));
     }
 
     private void navigateAndWaitForCompletion(String expectedUrl, Runnable navigateRunnable)

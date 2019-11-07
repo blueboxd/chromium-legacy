@@ -11,7 +11,6 @@ import android.widget.FrameLayout;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 
@@ -53,20 +52,19 @@ public class BottomContainer
     }
 
     /**
-     * @param sheet The {@link BottomSheet} that interacts with this container.
+     * @param sheetController The {@link BottomSheetController} that interacts with this container.
      */
     public void setBottomSheetController(BottomSheetController sheetController) {
         sheetController.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
-                BottomSheet sheet = sheetController.getBottomSheet();
                 // We only care about the height of the bottom sheet between its hidden and peeking
                 // state (the UI should stack). Once the sheet is opened, the bottom container
                 // stays in place, becoming obscured by the sheet.
-                if (heightFraction > sheet.getPeekRatio()) return;
-                mOffsetFromSheet = -(sheet.getSheetContainerHeight() * heightFraction);
+                if (sheetController.isSheetOpen()) return;
+                mOffsetFromSheet = -(sheetController.getContainerHeight() * heightFraction);
                 // Only apply the shadow height if the sheet is actually visible.
-                if (heightFraction > 0) mOffsetFromSheet += sheet.getToolbarShadowHeight();
+                if (heightFraction > 0) mOffsetFromSheet += sheetController.getTopShadowHeight();
                 setTranslationY(mBaseYOffset);
             }
         });

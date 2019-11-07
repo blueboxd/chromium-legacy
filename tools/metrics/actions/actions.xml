@@ -11649,6 +11649,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileAddBookmarkViaIntent">
+  <obsolete>Feature removed 11/2019</obsolete>
   <owner>newt@chromium.org</owner>
   <description>
     User added a bookmark to Chrome via an intent from a third-party app.

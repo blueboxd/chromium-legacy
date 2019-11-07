@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_factory.h"
 
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 
 namespace content {
@@ -23,7 +24,8 @@ std::unique_ptr<RenderWidgetHostImpl> RenderWidgetHostFactory::Create(
         delegate, process, routing_id, std::move(widget_interface), hidden);
   }
   return std::make_unique<RenderWidgetHostImpl>(
-      delegate, process, routing_id, std::move(widget_interface), hidden);
+      delegate, process, routing_id, std::move(widget_interface), hidden,
+      std::make_unique<FrameTokenMessageQueue>());
 }
 
 // static

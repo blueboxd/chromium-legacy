@@ -17,18 +17,16 @@ generate_locale_config_srcjar("weblayer_locale_config") {
 
 java_cpp_enum("generated_enums") {
   sources = [
-    "//weblayer/public/new_browser_delegate.h",
+    "//weblayer/public/new_tab_delegate.h",
     "//weblayer/public/profile.h",
   ]
 }
 
 android_library("java") {
   java_files = [
-    "org/chromium/weblayer_private/BrowserControllerImpl.java",
-    "org/chromium/weblayer_private/BrowserFragmentControllerImpl.java",
-    "org/chromium/weblayer_private/BrowserFragmentViewController.java",
+    "org/chromium/weblayer_private/BrowserImpl.java",
     "org/chromium/weblayer_private/BrowserFragmentImpl.java",
-    "org/chromium/weblayer_private/BrowserCallbackProxy.java",
+    "org/chromium/weblayer_private/BrowserViewController.java",
     "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
     "org/chromium/weblayer_private/ContentView.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
@@ -37,20 +35,22 @@ android_library("java") {
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
-    "org/chromium/weblayer_private/NewBrowserCallbackProxy.java",
+    "org/chromium/weblayer_private/NewTabCallbackProxy.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
     "org/chromium/weblayer_private/FragmentAndroidPermissionDelegate.java",
     "org/chromium/weblayer_private/FragmentWindowAndroid.java",
     "org/chromium/weblayer_private/ProfileManager.java",
     "org/chromium/weblayer_private/RemoteFragmentImpl.java",
-    "org/chromium/weblayer_private/WebContentsGestureStateTracker.java",
+    "org/chromium/weblayer_private/TabCallbackProxy.java",
+    "org/chromium/weblayer_private/TabImpl.java",
     "org/chromium/weblayer_private/TopControlsContainerView.java",
+    "org/chromium/weblayer_private/WebContentsGestureStateTracker.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
   ]
 
   deps = [
-    ":client_java",
     ":gms_bridge_java",
+    ":interfaces_java",
     ":weblayer_resources",
     "//base:base_java",
     "//base:jni_java",
@@ -70,6 +70,10 @@ android_library("java") {
   jar_excluded_patterns = [ "*/LocaleConfig.class" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
+  # Needed for android.webkit.WebView(Delegate|Factory)
+  alternative_android_sdk_dep =
+      "//third_party/android_sdk:public_framework_system_java"
+
   # TODO(timvolodine): once the downstream implementation of GmsBridgeImpl.java
   # lands make sure to exclude this when "enable_chrome_android_internal" is true.
   deps += [ ":gms_bridge_upstream_impl_java" ]
@@ -77,27 +81,27 @@ android_library("java") {
 
 generate_jni("jni") {
   sources = [
-    "org/chromium/weblayer_private/BrowserCallbackProxy.java",
-    "org/chromium/weblayer_private/BrowserControllerImpl.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/DownloadCallbackProxy.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
-    "org/chromium/weblayer_private/NewBrowserCallbackProxy.java",
+    "org/chromium/weblayer_private/NewTabCallbackProxy.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
+    "org/chromium/weblayer_private/TabCallbackProxy.java",
+    "org/chromium/weblayer_private/TabImpl.java",
     "org/chromium/weblayer_private/TopControlsContainerView.java",
   ]
 }
 
-android_library("client_java") {
+android_library("interfaces_java") {
   java_files = [
-    "org/chromium/weblayer_private/aidl/APICallException.java",
-    "org/chromium/weblayer_private/aidl/BrowserFragmentArgs.java",
-    "org/chromium/weblayer_private/aidl/BrowsingDataType.java",
-    "org/chromium/weblayer_private/aidl/NewBrowserType.java",
-    "org/chromium/weblayer_private/aidl/ObjectWrapper.java",
-    "org/chromium/weblayer_private/aidl/WebLayerVersion.java",
+    "org/chromium/weblayer_private/interfaces/APICallException.java",
+    "org/chromium/weblayer_private/interfaces/BrowserFragmentArgs.java",
+    "org/chromium/weblayer_private/interfaces/BrowsingDataType.java",
+    "org/chromium/weblayer_private/interfaces/NewTabType.java",
+    "org/chromium/weblayer_private/interfaces/ObjectWrapper.java",
+    "org/chromium/weblayer_private/interfaces/WebLayerVersion.java",
   ]
 
   deps = [
@@ -134,23 +138,23 @@ android_library("gms_bridge_upstream_impl_java") {
 }
 
 android_aidl("aidl") {
-  import_include = [ "org/chromium/weblayer_private/aidl" ]
+  import_include = [ "org/chromium/weblayer_private/interfaces" ]
   sources = [
-    "org/chromium/weblayer_private/aidl/IBrowserController.aidl",
-    "org/chromium/weblayer_private/aidl/IBrowserControllerClient.aidl",
-    "org/chromium/weblayer_private/aidl/IBrowserFragment.aidl",
-    "org/chromium/weblayer_private/aidl/IBrowserFragmentController.aidl",
-    "org/chromium/weblayer_private/aidl/IChildProcessService.aidl",
-    "org/chromium/weblayer_private/aidl/IClientNavigation.aidl",
-    "org/chromium/weblayer_private/aidl/IDownloadCallbackClient.aidl",
-    "org/chromium/weblayer_private/aidl/IFullscreenCallbackClient.aidl",
-    "org/chromium/weblayer_private/aidl/INavigation.aidl",
-    "org/chromium/weblayer_private/aidl/INavigationController.aidl",
-    "org/chromium/weblayer_private/aidl/INavigationControllerClient.aidl",
-    "org/chromium/weblayer_private/aidl/IObjectWrapper.aidl",
-    "org/chromium/weblayer_private/aidl/IProfile.aidl",
-    "org/chromium/weblayer_private/aidl/IRemoteFragment.aidl",
-    "org/chromium/weblayer_private/aidl/IRemoteFragmentClient.aidl",
-    "org/chromium/weblayer_private/aidl/IWebLayer.aidl",
+    "org/chromium/weblayer_private/interfaces/IBrowser.aidl",
+    "org/chromium/weblayer_private/interfaces/IBrowserFragment.aidl",
+    "org/chromium/weblayer_private/interfaces/IChildProcessService.aidl",
+    "org/chromium/weblayer_private/interfaces/IClientNavigation.aidl",
+    "org/chromium/weblayer_private/interfaces/IDownloadCallbackClient.aidl",
+    "org/chromium/weblayer_private/interfaces/IFullscreenCallbackClient.aidl",
+    "org/chromium/weblayer_private/interfaces/INavigation.aidl",
+    "org/chromium/weblayer_private/interfaces/INavigationController.aidl",
+    "org/chromium/weblayer_private/interfaces/INavigationControllerClient.aidl",
+    "org/chromium/weblayer_private/interfaces/IObjectWrapper.aidl",
+    "org/chromium/weblayer_private/interfaces/IProfile.aidl",
+    "org/chromium/weblayer_private/interfaces/IRemoteFragment.aidl",
+    "org/chromium/weblayer_private/interfaces/IRemoteFragmentClient.aidl",
+    "org/chromium/weblayer_private/interfaces/ITab.aidl",
+    "org/chromium/weblayer_private/interfaces/ITabClient.aidl",
+    "org/chromium/weblayer_private/interfaces/IWebLayer.aidl",
   ]
 }

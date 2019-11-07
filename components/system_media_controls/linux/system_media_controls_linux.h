@@ -57,8 +57,7 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControlsLinux
   void SetEnabled(bool enabled) override {}
   void SetIsNextEnabled(bool value) override;
   void SetIsPreviousEnabled(bool value) override;
-  void SetIsPlayEnabled(bool value) override;
-  void SetIsPauseEnabled(bool value) override;
+  void SetIsPlayPauseEnabled(bool value) override;
   void SetIsStopEnabled(bool value) override {}
   void SetPlaybackStatus(PlaybackStatus value) override;
   void SetTitle(const base::string16& value) override;

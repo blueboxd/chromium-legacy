@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.browserservices.trustedwebactivityui.control
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.common.BrowserControlsState;
 

@@ -98,8 +98,7 @@ ASH_PUBLIC_EXPORT extern const base::Feature kViewsLogin;
 // Enables the Virtual Desks feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kVirtualDesks;
 
-// Enables the touchpad 3-finger gestures to switch desks. It also changes tab
-// scrubbing as well as overview highlight to use 4-finger gestures.
+// Enables the touchpad 4-finger gestures to switch desks.
 // This flag is only effective if the Virtual Desks feature is enabled (see
 // `kVirtualDesks`).
 ASH_PUBLIC_EXPORT extern const base::Feature kVirtualDesksGestures;

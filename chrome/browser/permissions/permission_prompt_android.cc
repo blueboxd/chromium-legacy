@@ -11,6 +11,7 @@
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -26,18 +27,20 @@ PermissionPromptAndroid::PermissionPromptAndroid(
       weak_factory_(this) {
   DCHECK(web_contents);
 
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents_);
   if (infobar_service &&
       GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
-          GetContentSettingType(0u /* position */))) {
+          profile, GetContentSettingType(0u /* position */))) {
     GroupedPermissionInfoBarDelegate::Create(weak_factory_.GetWeakPtr(),
                                              infobar_service);
     return;
   }
 
   if (PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-          GetContentSettingType(0u /* position */))) {
+          profile, GetContentSettingType(0u /* position */))) {
     permission_request_notification_ =
         PermissionRequestNotificationAndroid::Create(web_contents_, delegate_);
     return;

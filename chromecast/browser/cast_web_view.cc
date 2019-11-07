@@ -33,4 +33,6 @@ CastWebView::CreateParams::CreateParams() {}
 
 CastWebView::CreateParams::CreateParams(const CreateParams& other) = default;
 
+CastWebView::CreateParams::~CreateParams() = default;
+
 }  // namespace chromecast

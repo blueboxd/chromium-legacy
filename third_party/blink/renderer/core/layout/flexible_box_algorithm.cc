@@ -487,9 +487,15 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
   sum_justify_adjustments += initial_position;
   LayoutUnit max_descent;  // Used when align-items: baseline.
   LayoutUnit max_child_cross_axis_extent;
-  bool should_flip_main_axis =
-      !algorithm->StyleRef().ResolvedIsColumnFlexDirection() &&
-      !algorithm->IsLeftToRightFlow();
+  bool should_flip_main_axis;
+  if (algorithm->IsNGFlexBox()) {
+    should_flip_main_axis =
+        algorithm->StyleRef().ResolvedIsRowReverseFlexDirection();
+  } else {
+    should_flip_main_axis =
+        !algorithm->StyleRef().ResolvedIsColumnFlexDirection() &&
+        !algorithm->IsLeftToRightFlow();
+  }
   LayoutUnit width_for_rtl = container_logical_width;
   // -webkit-box always started layout at an origin of 0, regardless of
   // direction.
@@ -960,11 +966,22 @@ void FlexLayoutAlgorithm::LayoutColumnReverse(
       // We passed 0 as the initial main_axis offset to ComputeLineItemsPosition
       // for ColumnReverse containers so here we have to add the
       // border_scrollbar_padding of the container.
+      // TODO(dgrogan): I think
+      // wpt/css/css-flexbox/flex-lines/multi-line-wrap-with-column-reverse.html
+      // fails because this totally ignores margins.
       flex_item.desired_location.SetX(
           main_axis_content_size + border_scrollbar_padding_before -
           flex_item.desired_location.X() - item_main_size);
     }
   }
+}
+
+bool FlexLayoutAlgorithm::IsNGFlexBox() const {
+  DCHECK(!all_items_.IsEmpty())
+      << "You can't call IsNGFlexBox before adding items.";
+  // The FlexItems created by legacy will have an empty ng_input_node. An NG
+  // FlexItem's ng_input_node will have a LayoutBox.
+  return all_items_.at(0).ng_input_node.GetLayoutBox();
 }
 
 }  // namespace blink

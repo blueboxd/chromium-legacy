@@ -29,17 +29,16 @@ public class SmokeTest {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { activity.getBrowserFragmentController().setSupportsEmbedding(true); });
+                () -> { activity.getBrowser().setSupportsEmbedding(true); });
 
         CountDownLatch latch = new CountDownLatch(1);
         String url = "data:text,foo";
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getBrowserFragmentController().setSupportsEmbedding(true).addCallback(
-                    (Boolean result) -> {
-                        Assert.assertTrue(result);
-                        latch.countDown();
-                    });
+            activity.getBrowser().setSupportsEmbedding(true).addCallback((Boolean result) -> {
+                Assert.assertTrue(result);
+                latch.countDown();
+            });
         });
 
         try {

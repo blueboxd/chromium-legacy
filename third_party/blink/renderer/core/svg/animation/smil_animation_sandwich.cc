@@ -55,8 +55,10 @@ void SMILAnimationSandwich::Remove(SVGSMILElement* animation) {
   auto* position = std::find(sandwich_.begin(), sandwich_.end(), animation);
   DCHECK(sandwich_.end() != position);
   sandwich_.erase(position);
-  if (animation == ResultElement())
+  if (animation == ResultElement()) {
     animation->ClearAnimatedType();
+    active_.Shrink(0);
+  }
 }
 
 SVGSMILElement* SMILAnimationSandwich::ResultElement() const {

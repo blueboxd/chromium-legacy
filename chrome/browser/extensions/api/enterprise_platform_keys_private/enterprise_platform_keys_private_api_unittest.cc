@@ -94,7 +94,8 @@ TEST_F(EPKPChallengeMachineKeyTest, ExtensionNotWhitelisted) {
   prefs_->Set(prefs::kAttestationExtensionWhitelist, empty_whitelist);
 
   EXPECT_EQ(
-      EPKPChallengeKey::kExtensionNotWhitelistedError,
+      chromeos::attestation::TpmChallengeKeyResult::
+          kExtensionNotWhitelistedErrorMsg,
       utils::RunFunctionAndReturnError(func_.get(), kFuncArgs, browser()));
 }
 
@@ -133,7 +134,8 @@ TEST_F(EPKPChallengeUserKeyTest, ExtensionNotWhitelisted) {
   prefs_->Set(prefs::kAttestationExtensionWhitelist, empty_whitelist);
 
   EXPECT_EQ(
-      EPKPChallengeKey::kExtensionNotWhitelistedError,
+      chromeos::attestation::TpmChallengeKeyResult::
+          kExtensionNotWhitelistedErrorMsg,
       utils::RunFunctionAndReturnError(func_.get(), kFuncArgs, browser()));
 }
 

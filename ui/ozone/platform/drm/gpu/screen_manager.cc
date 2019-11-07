@@ -154,8 +154,8 @@ bool ScreenManager::ActualConfigureDisplayController(
   gfx::Rect modeset_bounds(origin.x(), origin.y(), mode.hdisplay,
                            mode.vdisplay);
   HardwareDisplayControllers::iterator it = FindDisplayController(drm, crtc);
-  DCHECK(controllers_.end() != it) << "Display controller (crtc=" << crtc
-                                   << ") doesn't exist.";
+  DCHECK(controllers_.end() != it)
+      << "Display controller (crtc=" << crtc << ") doesn't exist.";
 
   HardwareDisplayController* controller = it->get();
   CrtcController* crtc_controller = GetCrtcController(controller, drm, crtc);
@@ -393,7 +393,7 @@ DrmOverlayPlane ScreenManager::GetModesetBuffer(
   }
 
   scoped_refptr<DrmFramebuffer> framebuffer =
-      DrmFramebuffer::AddFramebuffer(drm, buffer.get());
+      DrmFramebuffer::AddFramebuffer(drm, buffer.get(), modifiers);
   if (!framebuffer) {
     LOG(ERROR) << "Failed to add framebuffer for scanout buffer";
     return DrmOverlayPlane::Error();

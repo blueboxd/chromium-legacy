@@ -7,9 +7,16 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/token.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "services/preferences/public/cpp/pref_service_factory.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
+
+const char kAppServicePreferredApps[] = "app_service.preferred_apps";
 
 void Connect(apps::mojom::Publisher* publisher,
              apps::mojom::Subscriber* subscriber) {
@@ -23,12 +30,14 @@ void Connect(apps::mojom::Publisher* publisher,
 
 namespace apps {
 
-AppServiceImpl::AppServiceImpl() {
+AppServiceImpl::AppServiceImpl(service_manager::Connector* connector) {
+  if (connector) {
+    ConnectToPrefService(connector);
+  }
   InitializePreferredApps();
 }
 
 AppServiceImpl::~AppServiceImpl() = default;
-
 void AppServiceImpl::BindReceiver(
     mojo::PendingReceiver<apps::mojom::AppService> receiver) {
   receivers_.Add(this, std::move(receiver));
@@ -188,6 +197,33 @@ PreferredApps& AppServiceImpl::GetPreferredAppsForTesting() {
 void AppServiceImpl::InitializePreferredApps() {
   // TODO(crbug.com/853604): Initialise from disk.
   preferred_apps_.Init(nullptr);
+}
+
+void AppServiceImpl::ConnectToPrefService(
+    service_manager::Connector* connector) {
+  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+  mojo::PendingRemote<prefs::mojom::PrefStoreConnector> remote_connector;
+
+  pref_registry->RegisterDictionaryPref(kAppServicePreferredApps);
+
+  connector->Connect(prefs::mojom::kServiceName,
+                     remote_connector.InitWithNewPipeAndPassReceiver());
+
+  prefs::ConnectToPrefService(
+      std::move(remote_connector), std::move(pref_registry),
+      base::Token::CreateRandom(),
+      base::Bind(&AppServiceImpl::OnPrefServiceConnected,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AppServiceImpl::OnPrefServiceConnected(
+    std::unique_ptr<PrefService> pref_service) {
+  if (!pref_service)
+    return;
+  DCHECK_EQ(nullptr, pref_service_);
+  pref_service_ = std::move(pref_service);
+
+  // TODO(crbug.com/853604): use the pref service to get and set preference.
 }
 
 }  // namespace apps

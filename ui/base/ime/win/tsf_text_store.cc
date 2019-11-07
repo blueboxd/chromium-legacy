@@ -929,7 +929,11 @@ bool TSFTextStore::GetDisplayAttribute(TfGuidAtom guid_atom,
           guid, display_attribute_info.GetAddressOf(), nullptr))) {
     return false;
   }
-  return SUCCEEDED(display_attribute_info->GetAttributeInfo(attribute));
+  // Display Attribute can be null so query for attributes only when its
+  // available
+  if (display_attribute_info)
+    return SUCCEEDED(display_attribute_info->GetAttributeInfo(attribute));
+  return false;
 }
 
 bool TSFTextStore::GetCompositionStatus(

@@ -2057,8 +2057,6 @@ jumbo_source_set("browser") {
       "../app_shim_remote_cocoa/web_contents_ns_view_bridge.mm",
       "gpu/ca_transaction_gpu_coordinator.cc",
       "gpu/ca_transaction_gpu_coordinator.h",
-      "media/now_playing_info_center_notifier.cc",
-      "media/now_playing_info_center_notifier.h",
       "sandbox_support_mac_impl.h",
       "sandbox_support_mac_impl.mm",
     ]
@@ -2513,7 +2511,6 @@ jumbo_source_set("browser") {
       "//media",
       "//third_party/mozilla",
       "//ui/accelerated_widget_mac",
-      "//ui/base/now_playing",
     ]
     libs += [
       "Carbon.framework",

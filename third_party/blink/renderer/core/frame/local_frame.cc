@@ -1290,8 +1290,8 @@ WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
 }
 
 void LocalFrame::WasHidden() {
-  remote_viewport_intersection_ = IntRect();
-  occlusion_state_ = FrameOcclusionState::kPossiblyOccluded;
+  intersection_state_.viewport_intersection = IntRect();
+  intersection_state_.occlusion_state = FrameOcclusionState::kPossiblyOccluded;
   // An iframe may get a "was hidden" notification before it has been attached
   // to the frame tree; in that case, skip running IntersectionObserver.
   if (!Owner() || IsProvisional() || !GetDocument() ||
@@ -1308,12 +1308,16 @@ void LocalFrame::WasShown() {
 }
 
 void LocalFrame::SetViewportIntersectionFromParent(
-    const IntRect& viewport_intersection,
-    FrameOcclusionState occlusion_state) {
-  if (remote_viewport_intersection_ != viewport_intersection ||
-      occlusion_state_ != occlusion_state) {
-    remote_viewport_intersection_ = viewport_intersection;
-    occlusion_state_ = occlusion_state;
+    const ViewportIntersectionState& intersection_state) {
+  // We only schedule an update if the viewport intersection or occlusion state
+  // has changed; neither the viewport offset nor the compositing bounds will
+  // affect IntersectionObserver.
+  bool needs_update =
+      intersection_state_.viewport_intersection !=
+          intersection_state.viewport_intersection ||
+      intersection_state_.occlusion_state != intersection_state.occlusion_state;
+  intersection_state_ = intersection_state;
+  if (needs_update) {
     if (LocalFrameView* frame_view = View()) {
       frame_view->SetIntersectionObservationState(LocalFrameView::kRequired);
       frame_view->ScheduleAnimation();
@@ -1326,7 +1330,7 @@ FrameOcclusionState LocalFrame::GetOcclusionState() const {
   if (IsMainFrame())
     return FrameOcclusionState::kGuaranteedNotOccluded;
   if (IsLocalRoot())
-    return occlusion_state_;
+    return intersection_state_.occlusion_state;
   return LocalFrameRoot().GetOcclusionState();
 }
 

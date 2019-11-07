@@ -205,70 +205,12 @@ content::RenderFrame* NetErrorHelper::GetRenderFrame() {
   return render_frame();
 }
 
-void NetErrorHelper::SendCommand(
-    security_interstitials::SecurityInterstitialCommand command) {
+mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
+NetErrorHelper::GetInterface() {
   mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
       interface;
   render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&interface);
-  switch (command) {
-    case security_interstitials::CMD_DONT_PROCEED: {
-      interface->DontProceed();
-      break;
-    }
-    case security_interstitials::CMD_PROCEED: {
-      interface->Proceed();
-      break;
-    }
-    case security_interstitials::CMD_SHOW_MORE_SECTION: {
-      interface->ShowMoreSection();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_HELP_CENTER: {
-      interface->OpenHelpCenter();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_DIAGNOSTIC: {
-      interface->OpenDiagnostic();
-      break;
-    }
-    case security_interstitials::CMD_RELOAD: {
-      interface->Reload();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_DATE_SETTINGS: {
-      interface->OpenDateSettings();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_LOGIN: {
-      interface->OpenLogin();
-      break;
-    }
-    case security_interstitials::CMD_DO_REPORT: {
-      interface->DoReport();
-      break;
-    }
-    case security_interstitials::CMD_DONT_REPORT: {
-      interface->DontReport();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_REPORTING_PRIVACY: {
-      interface->OpenReportingPrivacy();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_WHITEPAPER: {
-      interface->OpenWhitepaper();
-      break;
-    }
-    case security_interstitials::CMD_REPORT_PHISHING_ERROR: {
-      interface->ReportPhishingError();
-      break;
-    }
-    default: {
-      // Other values in the enum are only used by tests so this
-      // method should not be called with them.
-      NOTREACHED();
-    }
-  }
+  return interface;
 }
 
 void NetErrorHelper::DidStartNavigation(

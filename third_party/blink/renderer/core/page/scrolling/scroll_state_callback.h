@@ -26,7 +26,7 @@ class ScrollStateCallback : public GarbageCollected<ScrollStateCallback> {
 
   virtual void Invoke(ScrollState*) = 0;
 
-  NativeScrollBehavior NativeScrollBehavior() const {
+  NativeScrollBehavior GetNativeScrollBehavior() const {
     return native_scroll_behavior_;
   }
 

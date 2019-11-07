@@ -32,6 +32,7 @@ GPU_EXPORT extern const char kGrContextType[];
 GPU_EXPORT extern const char kGrContextTypeGL[];
 GPU_EXPORT extern const char kGrContextTypeVulkan[];
 GPU_EXPORT extern const char kGrContextTypeMetal[];
+GPU_EXPORT extern const char kGrContextTypeDawn[];
 GPU_EXPORT extern const char kVulkanImplementationNameNative[];
 GPU_EXPORT extern const char kUseVulkan[];
 GPU_EXPORT extern const char kVulkanImplementationNameNative[];

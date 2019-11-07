@@ -69,6 +69,7 @@
  *   MULTIDEVICE_FEATURES: (undefined|!settings.Route),
  *   NETWORK_DETAIL: (undefined|!settings.Route),
  *   ON_STARTUP: (undefined|!settings.Route),
+ *   OS_SYNC: (undefined|!settings.Route),
  *   PASSWORDS: (undefined|!settings.Route),
  *   PAYMENTS: (undefined|!settings.Route),
  *   PEOPLE: (undefined|!settings.Route),
@@ -518,6 +519,10 @@ cr.define('settings', function() {
       r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
 
       if (!loadTimeData.getBoolean('isGuest')) {
+        if (loadTimeData.valueExists('splitSettingsSyncEnabled') &&
+            loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+          r.OS_SYNC = r.PEOPLE.createChild('/osSync');
+        }
         // Personalization
         r.PERSONALIZATION =
             r.BASIC.createSection('/personalization', 'personalization');

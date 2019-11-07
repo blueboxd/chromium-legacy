@@ -110,7 +110,8 @@ GpuChannelManager::GpuChannelManager(
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
     ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
     viz::VulkanContextProvider* vulkan_context_provider,
-    viz::MetalContextProvider* metal_context_provider)
+    viz::MetalContextProvider* metal_context_provider,
+    viz::DawnContextProvider* dawn_context_provider)
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
       gpu_preferences_(gpu_preferences),
@@ -133,7 +134,8 @@ GpuChannelManager::GpuChannelManager(
           base::BindRepeating(&GpuChannelManager::HandleMemoryPressure,
                               base::Unretained(this))),
       vulkan_context_provider_(vulkan_context_provider),
-      metal_context_provider_(metal_context_provider) {
+      metal_context_provider_(metal_context_provider),
+      dawn_context_provider_(dawn_context_provider) {
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
   DCHECK(scheduler);
@@ -481,8 +483,8 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
       use_virtualized_gl_contexts,
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
                      /*synthetic_loss=*/false),
-      gpu_preferences_.gr_context_type,
-      vulkan_context_provider_, metal_context_provider_);
+      gpu_preferences_.gr_context_type, vulkan_context_provider_,
+      metal_context_provider_, dawn_context_provider_);
 
   // OOP-R needs GrContext for raster tiles.
   bool need_gr_context =

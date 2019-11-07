@@ -165,6 +165,10 @@ DaemonControllerDelegateLinux::GetConfig() {
   return result;
 }
 
+bool DaemonControllerDelegateLinux::CheckPermission() {
+  return true;
+}
+
 void DaemonControllerDelegateLinux::SetConfigAndStart(
     std::unique_ptr<base::DictionaryValue> config,
     bool consent,

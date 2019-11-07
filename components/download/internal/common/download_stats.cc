@@ -471,6 +471,7 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".weba"),             // 385
     FILE_PATH_LITERAL(".webm"),             // 386
     FILE_PATH_LITERAL(".xbm"),              // 387
+    FILE_PATH_LITERAL(".accdb"),            // 388
     // NOTE! When you add a type here, please add the UMA value as a comment.
     // These must all match DownloadItem.DangerousFileType in
     // enums.xml. From 263 onward, they should also match

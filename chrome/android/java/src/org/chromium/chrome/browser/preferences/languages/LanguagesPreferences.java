@@ -11,6 +11,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -38,14 +39,15 @@ public class LanguagesPreferences
 
         ChromeSwitchPreference translateSwitch =
                 (ChromeSwitchPreference) findPreference(TRANSLATE_SWITCH_KEY);
-        boolean isTranslateEnabled = PrefServiceBridge.getInstance().isTranslateEnabled();
+        boolean isTranslateEnabled =
+                PrefServiceBridge.getInstance().getBoolean(Pref.OFFER_TRANSLATE_ENABLED);
         translateSwitch.setChecked(isTranslateEnabled);
 
         translateSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 boolean enabled = (boolean) newValue;
-                PrefServiceBridge.getInstance().setTranslateEnabled(enabled);
+                PrefServiceBridge.getInstance().setBoolean(Pref.OFFER_TRANSLATE_ENABLED, enabled);
                 LanguagesManager.recordAction(enabled ? LanguagesManager.LanguageSettingsActionType
                                                                 .ENABLE_TRANSLATE_GLOBALLY
                                                       : LanguagesManager.LanguageSettingsActionType
@@ -53,8 +55,9 @@ public class LanguagesPreferences
                 return true;
             }
         });
-        translateSwitch.setManagedPreferenceDelegate(
-                preference -> PrefServiceBridge.getInstance().isTranslateManaged());
+        translateSwitch.setManagedPreferenceDelegate(preference
+                -> PrefServiceBridge.getInstance().isManagedPreference(
+                        Pref.OFFER_TRANSLATE_ENABLED));
         LanguagesManager.recordImpression(LanguagesManager.LanguageSettingsPageType.PAGE_MAIN);
     }
 

@@ -14,6 +14,7 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
+#include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
@@ -63,6 +64,10 @@ leveldb_env::Options IndexedDBClassFactory::GetLevelDBOptions() {
   options.max_open_files = 80;
   options.env = IndexedDBLevelDBEnv::Get();
   options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
+  options.on_get_error = base::BindRepeating(
+      indexed_db::ReportLevelDBError, "WebCore.IndexedDB.LevelDBReadErrors");
+  options.on_write_error = base::BindRepeating(
+      indexed_db::ReportLevelDBError, "WebCore.IndexedDB.LevelDBWriteErrors");
   return options;
 }
 

@@ -114,7 +114,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   // interface after requesting shutdown, you do so at your own risk and there
   // is NO guarantee that new messages will be sent or ports will complete
   // transfer.
-  void RequestShutdown(const base::Closure& callback);
+  void RequestShutdown(base::OnceClosure callback);
 
   // Notifies the NodeController that we received a bad message from the given
   // node.
@@ -309,7 +309,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   // Set by RequestShutdown(). If this is non-null, the controller will
   // begin polling the Node to see if clean shutdown is possible any time the
   // Node's state is modified by the controller.
-  base::Closure shutdown_callback_;
+  base::OnceClosure shutdown_callback_;
   // Flag to fast-path checking |shutdown_callback_|.
   AtomicFlag shutdown_callback_flag_;
 

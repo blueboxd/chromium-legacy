@@ -84,7 +84,7 @@ vs-chromium-project.txt
 /chrome/build/chrome.x86.orderfile
 /chrome/build/chrome_child.x64.orderfile
 /chrome/build/chrome_child.x86.orderfile
-/chrome/gpu_tests_run.xml
+/chrome/gl_tests_run.xml
 /chrome/gles2_conform_test_run.xml
 /chrome/tab_capture_performance_tests_run.xml
 /chrome/telemetry_gpu_test_run.xml

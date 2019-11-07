@@ -37,14 +37,12 @@ class DiskCacheStream : public net::SourceStream {
         blob_entry_(blob_entry),
         cache_index_(cache_index),
         orig_offset_(offset),
-        orig_length_(length) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  }
+        orig_length_(length) {}
 
   int Read(net::IOBuffer* dst_buffer,
            int buffer_size,
            net::CompletionOnceCallback callback) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     uint64_t offset = orig_offset_ + bytes_read_;
 
@@ -77,7 +75,10 @@ class DiskCacheStream : public net::SourceStream {
 
   std::string Description() const override { return "DiskCacheStream"; }
 
-  bool MayHaveMoreBytes() const override { return bytes_read_ < orig_length_; }
+  bool MayHaveMoreBytes() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return bytes_read_ < orig_length_;
+  }
 
  private:
   const scoped_refptr<CacheStorageCacheEntryHandler::DiskCacheBlobEntry>
@@ -86,6 +87,7 @@ class DiskCacheStream : public net::SourceStream {
   const uint64_t orig_offset_;
   const uint64_t orig_length_;
   uint64_t bytes_read_ = 0;
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 // A |storage::mojom::BlobDataItemReader| implementation that
@@ -100,17 +102,13 @@ class EntryReaderImpl : public storage::mojom::BlobDataItemReader {
       CacheStorageCache::EntryIndex side_data_disk_cache_index)
       : blob_entry_(std::move(blob_entry)),
         disk_cache_index_(disk_cache_index),
-        side_data_disk_cache_index_(side_data_disk_cache_index) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  }
-  ~EntryReaderImpl() override { DCHECK_CURRENTLY_ON(BrowserThread::IO); }
+        side_data_disk_cache_index_(side_data_disk_cache_index) {}
 
   void Read(uint64_t offset,
             uint64_t length,
             mojo::ScopedDataPipeProducerHandle pipe,
             ReadCallback callback) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     uint64_t size = blob_entry_->GetSize(disk_cache_index_);
     if (offset > size) {
       std::move(callback).Run(net::ERR_INVALID_ARGUMENT);
@@ -134,8 +132,7 @@ class EntryReaderImpl : public storage::mojom::BlobDataItemReader {
   }
 
   void ReadSideData(ReadSideDataCallback callback) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Use a WrappedIOBuffer so that the DiskCacheBlobEntry writes directly
     // to the BigBuffer without a copy.
     int length = blob_entry_->GetSize(side_data_disk_cache_index_);
@@ -170,31 +167,16 @@ class EntryReaderImpl : public storage::mojom::BlobDataItemReader {
   const CacheStorageCache::EntryIndex disk_cache_index_;
   const CacheStorageCache::EntryIndex side_data_disk_cache_index_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(EntryReaderImpl);
 };
 
 void FinalizeBlobOnIOThread(
     scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
-    scoped_refptr<CacheStorageCacheEntryHandler::DiskCacheBlobEntry> blob_entry,
-    CacheStorageCache::EntryIndex disk_cache_index,
-    CacheStorageCache::EntryIndex side_data_disk_cache_index,
-    std::string uuid,
+    storage::mojom::BlobDataItemPtr element,
+    const std::string& uuid,
     mojo::PendingReceiver<blink::mojom::Blob> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  auto element = storage::mojom::BlobDataItem::New();
-  element->size = blob_entry->GetSize(disk_cache_index);
-  element->side_data_size =
-      side_data_disk_cache_index == CacheStorageCache::INDEX_INVALID
-          ? 0
-          : blob_entry->GetSize(side_data_disk_cache_index);
-  element->type = storage::mojom::BlobDataItemType::kCacheStorage;
-
-  auto handle = std::make_unique<EntryReaderImpl>(
-      std::move(blob_entry), disk_cache_index, side_data_disk_cache_index);
-  mojo::MakeSelfOwnedReceiver(std::move(handle),
-                              element->reader.InitWithNewPipeAndPassReceiver());
-
   blob_storage_context->context()->RegisterFromDataItem(
       std::move(receiver), uuid, std::move(element));
 }
@@ -206,20 +188,9 @@ CacheStorageCacheEntryHandler::DiskCacheBlobEntry::DiskCacheBlobEntry(
     base::WeakPtr<CacheStorageCacheEntryHandler> entry_handler,
     CacheStorageCacheHandle cache_handle,
     disk_cache::ScopedEntryPtr disk_cache_entry)
-    : base::RefCountedDeleteOnSequence<DiskCacheBlobEntry>(
-          base::SequencedTaskRunnerHandle::Get()),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      entry_handler_(std::move(entry_handler)),
+    : entry_handler_(std::move(entry_handler)),
       cache_handle_(std::move(cache_handle)),
-      disk_cache_entry_(std::move(disk_cache_entry)),
-      valid_(true),
-      key_(disk_cache_entry_->GetKey()),
-      index_headers_size_(
-          disk_cache_entry_->GetDataSize(CacheStorageCache::INDEX_HEADERS)),
-      index_response_body_size_(disk_cache_entry_->GetDataSize(
-          CacheStorageCache::INDEX_RESPONSE_BODY)),
-      index_side_data_size_(
-          disk_cache_entry_->GetDataSize(CacheStorageCache::INDEX_SIDE_DATA)) {}
+      disk_cache_entry_(std::move(disk_cache_entry)) {}
 
 int CacheStorageCacheEntryHandler::DiskCacheBlobEntry::Read(
     scoped_refptr<net::IOBuffer> dst_buffer,
@@ -227,52 +198,36 @@ int CacheStorageCacheEntryHandler::DiskCacheBlobEntry::Read(
     uint64_t offset,
     int bytes_to_read,
     base::OnceCallback<void(int)> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!valid_)
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!disk_cache_entry_)
     return net::ERR_CACHE_READ_FAILURE;
 
-  if (task_runner_->RunsTasksInCurrentSequence()) {
-    return ReadOnSequenceInternal(std::move(dst_buffer), disk_cache_index,
-                                  offset, bytes_to_read, std::move(callback));
-  }
-
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&DiskCacheBlobEntry::ReadOnSequence, this,
-                                std::move(dst_buffer), disk_cache_index, offset,
-                                bytes_to_read, std::move(callback)));
-  return net::ERR_IO_PENDING;
+  return disk_cache_entry_->ReadData(disk_cache_index, offset, dst_buffer.get(),
+                                     bytes_to_read, std::move(callback));
 }
 
 int CacheStorageCacheEntryHandler::DiskCacheBlobEntry::GetSize(
     CacheStorageCache::EntryIndex disk_cache_index) const {
-  // Callable on any thread.
-  if (!valid_)
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!disk_cache_entry_)
     return 0;
   switch (disk_cache_index) {
     case CacheStorageCache::INDEX_INVALID:
       return 0;
     case CacheStorageCache::INDEX_HEADERS:
-      return index_headers_size_;
+      return disk_cache_entry_->GetDataSize(CacheStorageCache::INDEX_HEADERS);
     case CacheStorageCache::INDEX_RESPONSE_BODY:
-      return index_response_body_size_;
+      return disk_cache_entry_->GetDataSize(
+          CacheStorageCache::INDEX_RESPONSE_BODY);
     case CacheStorageCache::INDEX_SIDE_DATA:
-      return index_side_data_size_;
+      return disk_cache_entry_->GetDataSize(CacheStorageCache::INDEX_SIDE_DATA);
   }
   NOTREACHED();
 }
 
-void CacheStorageCacheEntryHandler::DiskCacheBlobEntry::PrintTo(
-    ::std::ostream* os) const {
-  // Callable on any thread.
-  if (valid_)
-    *os << "disk_cache_key:" << key_;
-  else
-    *os << "<invalidated>";
-}
-
 void CacheStorageCacheEntryHandler::DiskCacheBlobEntry::Invalidate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  valid_ = false;
   cache_handle_ = base::nullopt;
   entry_handler_ = nullptr;
   disk_cache_entry_ = nullptr;
@@ -282,58 +237,6 @@ disk_cache::ScopedEntryPtr&
 CacheStorageCacheEntryHandler::DiskCacheBlobEntry::disk_cache_entry() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return disk_cache_entry_;
-}
-
-void CacheStorageCacheEntryHandler::DiskCacheBlobEntry::ReadOnSequence(
-    scoped_refptr<net::IOBuffer> dst_buffer,
-    int disk_cache_index,
-    uint64_t offset,
-    int bytes_to_read,
-    base::OnceCallback<void(int)> callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // The disk_cache behavior of sometimes returning the result synchronously
-  // and sometimes invoking the callback requires us to adapt our callback
-  // to repeating here.  Ideally disk_cache should be refactored to always
-  // report the result through the callback.
-  auto adapted_callback = base::AdaptCallbackForRepeating(std::move(callback));
-
-  int result = ReadOnSequenceInternal(std::move(dst_buffer), disk_cache_index,
-                                      offset, bytes_to_read, adapted_callback);
-
-  if (result == net::ERR_IO_PENDING)
-    return;
-
-  DidReadOnSequence(std::move(adapted_callback), result);
-}
-
-int CacheStorageCacheEntryHandler::DiskCacheBlobEntry::ReadOnSequenceInternal(
-    scoped_refptr<net::IOBuffer> dst_buffer,
-    int disk_cache_index,
-    uint64_t offset,
-    int bytes_to_read,
-    base::OnceCallback<void(int)> callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!disk_cache_entry_) {
-    return net::ERR_CACHE_READ_FAILURE;
-  }
-
-  return disk_cache_entry_->ReadData(
-      disk_cache_index, offset, dst_buffer.get(), bytes_to_read,
-      base::BindOnce(&DiskCacheBlobEntry::DidReadOnSequence, this,
-                     std::move(callback)));
-}
-
-void CacheStorageCacheEntryHandler::DiskCacheBlobEntry::DidReadOnSequence(
-    base::OnceCallback<void(int)> callback,
-    int result) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    std::move(callback).Run(result);
-  } else {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(std::move(callback), result));
-  }
 }
 
 CacheStorageCacheEntryHandler::DiskCacheBlobEntry::~DiskCacheBlobEntry() {
@@ -492,17 +395,35 @@ CacheStorageCacheEntryHandler::CreateBlobWithSideData(
   blob->size = blob_entry->GetSize(disk_cache_index);
   blob->uuid = base::GenerateGUID();
 
+  auto element = storage::mojom::BlobDataItem::New();
+  element->size = blob_entry->GetSize(disk_cache_index);
+  element->side_data_size =
+      side_data_disk_cache_index == CacheStorageCache::INDEX_INVALID
+          ? 0
+          : blob_entry->GetSize(side_data_disk_cache_index);
+  element->type = storage::mojom::BlobDataItemType::kCacheStorage;
+
+  // Bind the blob data item on the current sequence.  This ensures
+  // that the mojo messages are delivered directly to the correct
+  // cache_storage sequence.  This works even if the cache_storage is
+  // running off the IO thread.
+  auto handle = std::make_unique<EntryReaderImpl>(
+      std::move(blob_entry), disk_cache_index, side_data_disk_cache_index);
+  mojo::MakeSelfOwnedReceiver(std::move(handle),
+                              element->reader.InitWithNewPipeAndPassReceiver());
+
+  // We can only register the blob in the storage context on the IO thread.
+  // TODO(crbug/1022104): Once the blob context is not locked to the IO thread
+  //                      we can finalize the blob directly on the sequence.
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    FinalizeBlobOnIOThread(blob_storage_context_, std::move(blob_entry),
-                           disk_cache_index, side_data_disk_cache_index,
+    FinalizeBlobOnIOThread(blob_storage_context_, std::move(element),
                            blob->uuid,
                            blob->blob.InitWithNewPipeAndPassReceiver());
   } else {
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&FinalizeBlobOnIOThread, blob_storage_context_,
-                       std::move(blob_entry), disk_cache_index,
-                       side_data_disk_cache_index, blob->uuid,
+                       std::move(element), blob->uuid,
                        blob->blob.InitWithNewPipeAndPassReceiver()));
   }
 

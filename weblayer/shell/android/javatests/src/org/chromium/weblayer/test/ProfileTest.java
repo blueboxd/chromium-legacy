@@ -38,7 +38,7 @@ public class ProfileTest {
 
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
         Profile firstProfile = TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> activity.getBrowserFragmentController().getProfile());
+                () -> activity.getBrowser().getProfile());
         {
             // Launching an activity with a fragment creates one profile.
             Collection<Profile> profiles = getAllProfiles();

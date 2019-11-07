@@ -10,8 +10,8 @@ import android.webkit.ValueCallback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 /**
  * Owns the c++ FullscreenCallbackProxy class, which is responsible for forwarding all
@@ -23,12 +23,11 @@ public final class FullscreenCallbackProxy {
     private long mNativeFullscreenCallbackProxy;
     private IFullscreenCallbackClient mClient;
 
-    FullscreenCallbackProxy(long browserController, IFullscreenCallbackClient client) {
+    FullscreenCallbackProxy(long tab, IFullscreenCallbackClient client) {
         assert client != null;
         mClient = client;
         mNativeFullscreenCallbackProxy =
-                FullscreenCallbackProxyJni.get().createFullscreenCallbackProxy(
-                        this, browserController);
+                FullscreenCallbackProxyJni.get().createFullscreenCallbackProxy(this, tab);
     }
 
     public void setClient(IFullscreenCallbackClient client) {
@@ -64,7 +63,7 @@ public final class FullscreenCallbackProxy {
 
     @NativeMethods
     interface Natives {
-        long createFullscreenCallbackProxy(FullscreenCallbackProxy proxy, long browserController);
+        long createFullscreenCallbackProxy(FullscreenCallbackProxy proxy, long tab);
         void deleteFullscreenCallbackProxy(long proxy);
         void doExitFullscreen(long nativeFullscreenCallbackProxy, FullscreenCallbackProxy proxy);
     }

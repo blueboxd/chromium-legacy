@@ -2950,7 +2950,8 @@ static float GetMaxWidthListMarker(const LayoutBox* layout_object) {
   DCHECK(layout_object);
   Node* parent_node = layout_object->GeneratingNode();
   DCHECK(parent_node);
-  DCHECK(IsA<HTMLOListElement>(parent_node) || IsHTMLUListElement(parent_node));
+  DCHECK(IsA<HTMLOListElement>(parent_node) ||
+         IsA<HTMLUListElement>(parent_node));
   DCHECK_NE(layout_object->StyleRef().TextAutosizingMultiplier(), 1);
 #endif
   float max_width = 0;
@@ -3081,7 +3082,7 @@ void LayoutBox::ComputeLogicalWidth(
       style_to_use.MarginStart().IsFixed()) {
     Node* parent_node = GeneratingNode();
     if (parent_node && (IsA<HTMLOListElement>(*parent_node) ||
-                        IsHTMLUListElement(*parent_node))) {
+                        IsA<HTMLUListElement>(*parent_node))) {
       // Make sure the markers in a list are properly positioned (i.e. not
       // chopped off) when autosized.
       const float adjusted_margin =

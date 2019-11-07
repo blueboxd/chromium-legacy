@@ -394,6 +394,15 @@ void WebContentController::RenderFrameDeleted(
   current_render_frame_set_.erase(render_frame_host);
 }
 
+void WebContentController::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  // The surface ID may have changed, so trigger a new commit to re-issue the
+  // draw quad.
+  if (surface_)
+    surface_->Commit();
+}
+
 void WebContentController::OnJsClientInstanceRegistered(
     int process_id,
     int routing_id,

@@ -403,7 +403,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
   // ul/ol/dl type (it shouldn't be a list if aria says otherwise).
   if (NodeHasRole(node, "list") || NodeHasRole(node, "directory") ||
       (NodeHasRole(node, g_null_atom) &&
-       (IsHTMLUListElement(node) || IsA<HTMLOListElement>(node) ||
+       (IsA<HTMLUListElement>(node) || IsA<HTMLOListElement>(node) ||
         IsA<HTMLDListElement>(node))))
     return MakeGarbageCollected<AXList>(layout_object, *this);
 

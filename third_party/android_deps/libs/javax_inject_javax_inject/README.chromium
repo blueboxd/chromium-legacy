@@ -3,8 +3,8 @@ Short Name: javax.inject
 URL: http://code.google.com/p/atinject/
 Version: 1
 License: Apache Version 2.0
-License File: NOT_SHIPPED
-Security Critical: no
+License File: LICENSE
+Security Critical: yes
 
 Description:
 The javax.inject API

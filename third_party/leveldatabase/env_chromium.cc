@@ -1302,8 +1302,14 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
   TrackedDBImpl(DBTracker* tracker,
                 const std::string name,
                 leveldb::DB* db,
-                const leveldb::Cache* block_cache)
-      : tracker_(tracker), name_(name), db_(db) {
+                const leveldb::Cache* block_cache,
+                DatabaseErrorReportingCallback on_get_error,
+                DatabaseErrorReportingCallback on_write_error)
+      : tracker_(tracker),
+        name_(name),
+        db_(db),
+        on_get_error_(std::move(on_get_error)),
+        on_write_error_(std::move(on_write_error)) {
     if (leveldb_chrome::GetSharedWebBlockCache() ==
         leveldb_chrome::GetSharedBrowserBlockCache()) {
       shared_read_cache_use_ = SharedReadCacheUse_Unified;
@@ -1344,13 +1350,23 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
 
   leveldb::Status Write(const leveldb::WriteOptions& options,
                         leveldb::WriteBatch* updates) override {
-    return db_->Write(options, updates);
+    leveldb::Status status = db_->Write(options, updates);
+    if (LIKELY(status.ok()))
+      return status;
+    if (on_write_error_)
+      on_write_error_.Run(status);
+    return status;
   }
 
   leveldb::Status Get(const leveldb::ReadOptions& options,
                       const leveldb::Slice& key,
                       std::string* value) override {
-    return db_->Get(options, key, value);
+    leveldb::Status status = db_->Get(options, key, value);
+    if (LIKELY(status.ok() || status.IsNotFound()))
+      return status;
+    if (on_get_error_)
+      on_get_error_.Run(status);
+    return status;
   }
 
   const leveldb::Snapshot* GetSnapshot() override { return db_->GetSnapshot(); }
@@ -1384,6 +1400,8 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
   std::string name_;
   std::unique_ptr<leveldb::DB> db_;
   SharedReadCacheUse shared_read_cache_use_;
+  const DatabaseErrorReportingCallback on_get_error_;
+  const DatabaseErrorReportingCallback on_write_error_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackedDBImpl);
 };
@@ -1563,7 +1581,7 @@ bool DBTracker::IsTrackedDB(const leveldb::DB* db) const {
   return false;
 }
 
-leveldb::Status DBTracker::OpenDatabase(const leveldb::Options& options,
+leveldb::Status DBTracker::OpenDatabase(const leveldb_env::Options& options,
                                         const std::string& name,
                                         TrackedDB** dbptr) {
   leveldb::DB* db = nullptr;
@@ -1573,7 +1591,9 @@ leveldb::Status DBTracker::OpenDatabase(const leveldb::Options& options,
   CHECK((status.ok() && db) || (!status.ok() && !db));
   if (status.ok()) {
     // TrackedDBImpl ctor adds the instance to the tracker.
-    *dbptr = new TrackedDBImpl(GetInstance(), name, db, options.block_cache);
+    *dbptr = new TrackedDBImpl(GetInstance(), name, db, options.block_cache,
+                               std::move(options.on_get_error),
+                               std::move(options.on_write_error));
   }
   return status;
 }

@@ -43,9 +43,20 @@ bool ShouldIncludeForRequestUrl(NSHTTPCookie* cookie, const GURL& url) {
   // to support cookieOptions this function can be modified to support that.
   net::CanonicalCookie canonical_cookie =
       net::CanonicalCookieFromSystemCookie(cookie, base::Time());
-  net::CookieOptions options;
-  options.set_include_httponly();
-  return canonical_cookie.IncludeForRequestURL(url, options).IsInclude();
+  // Cookies handled by this method are app specific cookies, so it's safe to
+  // use strict same site context.
+  net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
+  net::CookieAccessSemantics cookie_access_semantics =
+      net::CookieAccessSemantics::LEGACY;
+  if (@available(iOS 13, *)) {
+    // Using |UNKNOWN| semantics to allow the experiment to switch between non
+    // legacy (where cookies that don't have a specific same-site access policy
+    // and not secure will not be included), and legacy mode.
+    cookie_access_semantics = net::CookieAccessSemantics::UNKNOWN;
+  }
+  return canonical_cookie
+      .IncludeForRequestURL(url, options, cookie_access_semantics)
+      .IsInclude();
 }
 
 }  // namespace

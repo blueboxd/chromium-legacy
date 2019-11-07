@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 # Enable wasm target that depends on foo.patch being applied.
 if (!defined(is_wasm)) {
   is_wasm = current_os == "wasm"
@@ -13,6 +15,8 @@ source_set("caspian-lib") {
   sources = [
     "file_format.cc",
     "file_format.h",
+    "function_signature.cc",
+    "function_signature.h",
     "model.cc",
     "model.h",
     "tree_builder.cc",
@@ -24,6 +28,17 @@ source_set("caspian-lib") {
   ]
   public_deps = [
     "//third_party/jsoncpp:jsoncpp",
+  ]
+}
+
+test("caspian_unittests") {
+  sources = [
+    "function_signature_test.cc",
+  ]
+  deps = [
+    ":caspian-lib",
+    "//testing/gtest",
+    "//testing/gtest:gtest_main",
   ]
 }
 

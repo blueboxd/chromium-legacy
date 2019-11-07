@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <map>
+#include <string_view>
 #include <vector>
 
 #include "third_party/jsoncpp/source/include/json/json.h"
@@ -55,7 +56,7 @@ struct Symbol {
   int32_t padding = 0;
   // Pointers into SizeInfo->raw_decompressed;
   const char* section_name = nullptr;
-  const char* full_name = nullptr;
+  std::string_view full_name;
   const char* object_path = nullptr;
   const char* source_path = nullptr;
   const char* component = nullptr;

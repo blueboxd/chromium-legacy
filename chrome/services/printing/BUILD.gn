@@ -23,6 +23,13 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
   ]
 
+  if (is_chromeos) {
+    sources += [
+      "pdf_flattener.cc",
+      "pdf_flattener.h",
+    ]
+  }
+
   if (is_win) {
     sources += [
       "pdf_to_emf_converter.cc",

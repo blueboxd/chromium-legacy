@@ -105,8 +105,9 @@ void TestRunnerForSpecificView::Reset() {
     // LayerTreeView.
     main_frame_render_widget()->layer_tree_view()->SetVisible(true);
   }
-  web_view_test_proxy_->ApplyPageHidden(/*hidden=*/false,
-                                        /*initial_setting=*/true);
+  web_view_test_proxy_->ApplyPageVisibilityState(
+      content::PageVisibilityState::kVisible,
+      /*initial_setting=*/true);
 }
 
 bool TestRunnerForSpecificView::RequestPointerLock() {
@@ -488,13 +489,14 @@ void TestRunnerForSpecificView::ForceRedSelectionColors() {
 
 void TestRunnerForSpecificView::SetPageVisibility(
     const std::string& new_visibility) {
-  bool hidden;
-  if (new_visibility == "visible")
-    hidden = false;
-  else if (new_visibility == "hidden")
-    hidden = true;
-  else
+  content::PageVisibilityState visibility;
+  if (new_visibility == "visible") {
+    visibility = content::PageVisibilityState::kVisible;
+  } else if (new_visibility == "hidden") {
+    visibility = content::PageVisibilityState::kHidden;
+  } else {
     return;
+  }
 
   // As would the browser via IPC, set visibility on the RenderWidget then on
   // the Page.
@@ -502,9 +504,10 @@ void TestRunnerForSpecificView::SetPageVisibility(
   // main frame.
   // TODO(danakj): This should set visible on the RenderWidget not just the
   // LayerTreeView.
-  main_frame_render_widget()->layer_tree_view()->SetVisible(!hidden);
-  web_view_test_proxy_->ApplyPageHidden(/*hidden=*/hidden,
-                                        /*initial_setting=*/false);
+  main_frame_render_widget()->layer_tree_view()->SetVisible(
+      visibility == content::PageVisibilityState::kVisible);
+  web_view_test_proxy_->ApplyPageVisibilityState(visibility,
+                                                 /*initial_setting=*/false);
 }
 
 void TestRunnerForSpecificView::SetTextDirection(

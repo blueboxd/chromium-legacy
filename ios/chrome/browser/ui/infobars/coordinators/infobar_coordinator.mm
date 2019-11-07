@@ -228,11 +228,15 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (void)bannerInfobarButtonWasPressed:(id)sender {
   [self performInfobarAction];
+  // The Infobar action might be async, and the banner should not dismiss until
+  // the Infobar has been accepted. In the  situation that the banner is not
+  // dismissed here, the completion callback of the async action should be in
+  // charge of calling infobarWasAccepted: and dismissing the banner.
   if ([self isInfobarAccepted]) {
     [self.badgeDelegate infobarWasAccepted:self.infobarType
                                forWebState:self.webState];
+    [self dismissInfobarBanner:sender animated:YES completion:nil];
   }
-  [self dismissInfobarBanner:sender animated:YES completion:nil];
 }
 
 - (void)presentInfobarModalFromBanner {

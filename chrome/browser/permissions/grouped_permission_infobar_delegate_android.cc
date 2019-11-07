@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_prompt_android.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -90,10 +91,14 @@ bool GroupedPermissionInfoBarDelegate::LinkClicked(
 
 // static
 bool GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
+    Profile* profile,
     ContentSettingsType type) {
-  return QuietNotificationsPromptConfig::UIFlavorToUse() ==
-             QuietNotificationsPromptConfig::UIFlavor::MINI_INFOBAR &&
-         type == ContentSettingsType::NOTIFICATIONS;
+  auto* permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
+  return type == ContentSettingsType::NOTIFICATIONS &&
+         permission_ui_selector->ShouldShowQuietUi() &&
+         QuietNotificationsPromptConfig::UIFlavorToUse() ==
+             QuietNotificationsPromptConfig::UIFlavor::MINI_INFOBAR;
 }
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(

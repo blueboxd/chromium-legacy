@@ -20,6 +20,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
+import androidx.annotation.DimenRes;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
@@ -207,11 +208,15 @@ public class BottomSheet
 
         mMinHalfFullDistance =
                 getResources().getDimensionPixelSize(R.dimen.bottom_sheet_min_full_half_distance);
-        mToolbarShadowHeight =
-                getResources().getDimensionPixelOffset(R.dimen.bottom_sheet_toolbar_shadow_height);
+        mToolbarShadowHeight = getResources().getDimensionPixelOffset(getTopShadowResourceId());
 
         mGestureDetector = new BottomSheetSwipeDetector(context, this);
         mIsTouchEnabled = true;
+    }
+
+    /** @return The dimen describing the height of the shadow above the bottom sheet. */
+    static @DimenRes int getTopShadowResourceId() {
+        return R.dimen.bottom_sheet_toolbar_shadow_height;
     }
 
     /**

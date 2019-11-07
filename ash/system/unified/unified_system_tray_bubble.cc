@@ -301,7 +301,7 @@ void UnifiedSystemTrayBubble::OnWidgetDestroying(views::Widget* widget) {
 void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
                                                 aura::Window* gained_active,
                                                 aura::Window* lost_active) {
-  if (!gained_active)
+  if (!gained_active || !bubble_widget_)
     return;
 
   // Don't close the bubble if a transient child is gaining or losing

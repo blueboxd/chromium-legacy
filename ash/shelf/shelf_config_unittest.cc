@@ -104,11 +104,15 @@ TEST_F(ShelfConfigTest, ShelfSizeChangesWithContext) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   GetAppListTestHelper()->CheckVisibility(false);
   const int tablet_dense_in_app = ShelfConfig::Get()->shelf_size();
+  const int system_shelf_tablet_dense_in_app =
+      ShelfConfig::Get()->system_shelf_size();
   const int control_tablet_dense_in_app = ShelfConfig::Get()->control_size();
 
   widget->Close();
   GetAppListTestHelper()->CheckVisibility(true);
   const int tablet_dense_home = ShelfConfig::Get()->shelf_size();
+  const int system_shelf_tablet_dense_home =
+      ShelfConfig::Get()->system_shelf_size();
   const int control_tablet_dense_home = ShelfConfig::Get()->control_size();
 
   UpdateDisplay("1000x1000");
@@ -116,22 +120,30 @@ TEST_F(ShelfConfigTest, ShelfSizeChangesWithContext) {
   widget = CreateTestWidget();
   GetAppListTestHelper()->CheckVisibility(false);
   const int tablet_standard_in_app = ShelfConfig::Get()->shelf_size();
+  const int system_shelf_tablet_standard_in_app =
+      ShelfConfig::Get()->system_shelf_size();
   const int control_tablet_standard_in_app = ShelfConfig::Get()->control_size();
 
   widget->Close();
   GetAppListTestHelper()->CheckVisibility(true);
   const int tablet_standard_home = ShelfConfig::Get()->shelf_size();
+  const int system_shelf_tablet_standard_home =
+      ShelfConfig::Get()->system_shelf_size();
   const int control_tablet_standard_home = ShelfConfig::Get()->control_size();
 
   SetTabletMode(false);
   ASSERT_FALSE(IsTabletMode());
   GetAppListTestHelper()->Dismiss();
   const int clamshell_home = ShelfConfig::Get()->shelf_size();
+  const int system_shelf_clamshell_home =
+      ShelfConfig::Get()->system_shelf_size();
   const int control_clamshell_home = ShelfConfig::Get()->control_size();
 
   widget = CreateTestWidget();
   widget->Maximize();
   const int clamshell_in_app = ShelfConfig::Get()->shelf_size();
+  const int system_shelf_clamshell_in_app =
+      ShelfConfig::Get()->system_shelf_size();
   const int control_clamshell_in_app = ShelfConfig::Get()->control_size();
 
   EXPECT_LT(tablet_dense_in_app, tablet_standard_in_app);
@@ -145,6 +157,14 @@ TEST_F(ShelfConfigTest, ShelfSizeChangesWithContext) {
   EXPECT_EQ(control_clamshell_in_app, control_clamshell_home);
   EXPECT_LT(control_clamshell_home, control_tablet_standard_in_app);
   EXPECT_EQ(control_tablet_standard_in_app, control_tablet_standard_home);
+
+  // System shelf size should return size that matches out-of-app (home) state.
+  EXPECT_EQ(system_shelf_tablet_dense_in_app, tablet_dense_home);
+  EXPECT_EQ(system_shelf_tablet_dense_home, tablet_dense_home);
+  EXPECT_EQ(system_shelf_tablet_standard_in_app, tablet_standard_home);
+  EXPECT_EQ(system_shelf_tablet_standard_home, tablet_standard_home);
+  EXPECT_EQ(system_shelf_clamshell_home, clamshell_home);
+  EXPECT_EQ(system_shelf_clamshell_in_app, clamshell_home);
 }
 
 // Make sure that we consider ourselves inside an app when appropriate.

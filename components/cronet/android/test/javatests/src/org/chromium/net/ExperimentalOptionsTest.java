@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.impl.CronetUrlRequestContext;
@@ -95,6 +96,7 @@ public class ExperimentalOptionsTest {
         cronetEngine.shutdown();
     }
 
+    @DisabledTest(message = "crbug.com/1021941")
     @Test
     @MediumTest
     @Feature({"Cronet"})

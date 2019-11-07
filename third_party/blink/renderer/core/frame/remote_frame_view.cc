@@ -93,7 +93,7 @@ void RemoteFrameView::SetViewportIntersection(
     last_viewport_intersection_ = viewport_intersection;
     last_occlusion_state_ = occlusion_state;
     remote_frame_->Client()->UpdateRemoteViewportIntersection(
-        viewport_intersection, occlusion_state);
+        {viewport_intersection, WebRect(), occlusion_state});
   }
 }
 

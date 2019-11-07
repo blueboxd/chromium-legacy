@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/freetype/freetype.gni")
@@ -11,6 +12,7 @@ import("//printing/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/skia/gn/shared_sources.gni")
 import("//third_party/skia/third_party/skcms/skcms.gni")
+import("features.gni")
 
 if (current_cpu == "arm") {
   import("//build/config/arm.gni")
@@ -26,7 +28,12 @@ skia_support_skottie = true
 declare_args() {
   enable_skia_wuffs_gif = false
   skia_whitelist_serialized_typefaces = false
-  skia_use_dawn = false
+}
+
+# Generate a buildflag header for compile-time checking of Dawn support.
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [ "SKIA_USE_DAWN=$skia_use_dawn" ]
 }
 
 # External-facing config for dependent code.

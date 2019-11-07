@@ -258,7 +258,7 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser,
   tree_.OpenElements()->PushRootNode(MakeGarbageCollected<HTMLStackItem>(
       fragment, HTMLStackItem::kItemForDocumentFragmentNode));
 
-  if (IsHTMLTemplateElement(*context_element))
+  if (IsA<HTMLTemplateElement>(*context_element))
     template_insertion_modes_.push_back(kTemplateContentsMode);
 
   ResetInsertionModeAppropriately();
@@ -902,7 +902,7 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
   if (!tree_.OpenElements()->HasTemplateInHTMLScope()) {
     DCHECK(template_insertion_modes_.IsEmpty() ||
            (template_insertion_modes_.size() == 1 &&
-            IsHTMLTemplateElement(fragment_context_.ContextElement())));
+            IsA<HTMLTemplateElement>(fragment_context_.ContextElement())));
     ParseError(token);
     return false;
   }
@@ -929,7 +929,7 @@ bool HTMLTreeBuilder::ProcessEndOfFileForInTemplateContents(
 
 bool HTMLTreeBuilder::ProcessColgroupEndTagForInColumnGroup() {
   if (tree_.CurrentIsRootNode() ||
-      IsHTMLTemplateElement(*tree_.CurrentNode())) {
+      IsA<HTMLTemplateElement>(*tree_.CurrentNode())) {
     DCHECK(IsParsingFragmentOrTemplateContents());
     // FIXME: parse error
     return false;
@@ -2504,7 +2504,7 @@ void HTMLTreeBuilder::ProcessEndOfFile(AtomicHTMLToken* token) {
         return;  // FIXME: Should we break here instead of returning?
       }
       DCHECK(tree_.CurrentNode()->HasTagName(html_names::kColgroupTag) ||
-             IsHTMLTemplateElement(tree_.CurrentNode()));
+             IsA<HTMLTemplateElement>(tree_.CurrentNode()));
       ProcessColgroupEndTagForInColumnGroup();
       FALLTHROUGH;
     case kInFramesetMode:

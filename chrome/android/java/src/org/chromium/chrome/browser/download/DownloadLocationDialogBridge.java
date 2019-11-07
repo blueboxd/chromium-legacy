@@ -13,7 +13,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.download.R;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -117,8 +116,7 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
             final DirectoryOption dir = dirs.get(0);
             if (dir.type == DirectoryOption.DownloadLocationDirectoryType.DEFAULT) {
                 assert(!TextUtils.isEmpty(dir.location));
-                PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
-                        dir.location);
+                setDownloadAndSaveFileDefaultDirectory(dir.location);
                 DownloadLocationDialogBridgeJni.get().onComplete(
                         mNativeDownloadLocationDialogBridge, DownloadLocationDialogBridge.this,
                         mSuggestedPath);
@@ -194,8 +192,7 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
 
         // Update native with new path.
         if (mNativeDownloadLocationDialogBridge != 0) {
-            PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
-                    directoryOption.location);
+            setDownloadAndSaveFileDefaultDirectory(directoryOption.location);
 
             RecordHistogram.recordEnumeratedHistogram(
                     "MobileDownload.Location.Dialog.DirectoryType", directoryOption.type,
@@ -222,11 +219,27 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
         }
     }
 
+    /**
+     * @return The stored download default directory.
+     */
+    public static String getDownloadDefaultDirectory() {
+        return DownloadLocationDialogBridgeJni.get().getDownloadDefaultDirectory();
+    }
+
+    /**
+     * @param directory New directory to set as the download default directory.
+     */
+    public static void setDownloadAndSaveFileDefaultDirectory(String directory) {
+        DownloadLocationDialogBridgeJni.get().setDownloadAndSaveFileDefaultDirectory(directory);
+    }
+
     @NativeMethods
     interface Natives {
         void onComplete(long nativeDownloadLocationDialogBridge,
                 DownloadLocationDialogBridge caller, String returnedPath);
         void onCanceled(
                 long nativeDownloadLocationDialogBridge, DownloadLocationDialogBridge caller);
+        String getDownloadDefaultDirectory();
+        void setDownloadAndSaveFileDefaultDirectory(String directory);
     }
 }

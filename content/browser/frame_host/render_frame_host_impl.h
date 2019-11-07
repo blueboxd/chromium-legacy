@@ -292,6 +292,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               const std::string& message) override;
   void AllowBindings(int binding_flags) override;
   int GetEnabledBindings() override;
+  void SetWebUIProperty(const std::string& name,
+                        const std::string& value) override;
   void DisableBeforeUnloadHangMonitorForTesting() override;
   bool IsBeforeUnloadHangMonitorDisabledForTesting() override;
   bool GetSuddenTerminationDisablerState(

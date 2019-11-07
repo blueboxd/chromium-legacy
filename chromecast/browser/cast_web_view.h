@@ -66,6 +66,9 @@ class CastWebView {
     // Identifies the activity that is hosted by this CastWebView.
     std::string activity_id = "";
 
+    // Sdk version of the application (if available) hosted by this CastWebView.
+    std::string sdk_version = "";
+
     // Whether this CastWebView is granted media access.
     bool allow_media_access = false;
 
@@ -81,6 +84,7 @@ class CastWebView {
 
     CreateParams();
     CreateParams(const CreateParams& other);
+    ~CreateParams();
   };
 
   CastWebView();

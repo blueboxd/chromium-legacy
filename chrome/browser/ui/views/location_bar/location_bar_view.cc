@@ -401,7 +401,7 @@ OmniboxView* LocationBarView::GetOmniboxView() {
 // LocationBarView, public views::View implementation:
 
 bool LocationBarView::HasFocus() const {
-  return omnibox_view_->model()->has_focus();
+  return omnibox_view_ && omnibox_view_->model()->has_focus();
 }
 
 void LocationBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

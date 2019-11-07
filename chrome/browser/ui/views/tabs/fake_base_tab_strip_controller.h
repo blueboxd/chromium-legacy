@@ -75,6 +75,7 @@ class FakeBaseTabStripController : public TabStripController {
       BrowserFrameActiveState active_state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   Profile* GetProfile() const override;
+  const Browser* GetBrowser() const override;
 
  private:
   void SetActiveIndex(int new_index);

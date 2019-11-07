@@ -31,6 +31,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/attestation/tpm_challenge_key.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
@@ -51,17 +52,23 @@
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/saml_challenge_key_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
@@ -74,6 +81,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/saml_password_attributes.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -115,6 +123,15 @@
 
 namespace em = enterprise_management;
 
+using net::test_server::BasicHttpResponse;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
+using testing::_;
+using testing::Invoke;
+using testing::NiceMock;
+using testing::Return;
+using testing::WithArgs;
+
 namespace chromeos {
 
 namespace {
@@ -135,6 +152,7 @@ constexpr char kFirstSAMLUserEmail[] = "bob@corp.example.com";
 constexpr char kSecondSAMLUserEmail[] = "alice@corp.example.com";
 constexpr char kHTTPSAMLUserEmail[] = "carol@corp.example.com";
 constexpr char kNonSAMLUserEmail[] = "dan@corp.example.com";
+constexpr char kDeviceAttestationSAMLUserEmail[] = "frank@corp.example.test";
 constexpr char kDifferentDomainSAMLUserEmail[] = "eve@example.test";
 
 constexpr char kFirstSAMLUserGaiaId[] = "bob-gaia";
@@ -157,6 +175,58 @@ constexpr char kTestRefreshToken[] = "fake-refresh-token";
 
 constexpr char kAffiliationID[] = "some-affiliation-id";
 
+constexpr char kSamlLoginPath[] = "SAML";
+constexpr char kSamlLoginWithDeviceAttestationPath[] =
+    "SAML-with-device-attestation";
+constexpr char kSamlLoginCheckDeviceAnswerPath[] = "SAML-check-device-answer";
+
+// Must be equal to SAML_VERIFIED_ACCESS_CHALLENGE_HEADER from saml_handler.js.
+constexpr char kSamlVerifiedAccessChallengeHeader[] =
+    "x-verified-access-challenge";
+// Must be equal to SAML_VERIFIED_ACCESS_RESPONSE_HEADER from saml_handler.js.
+constexpr char kSamlVerifiedAccessResponseHeader[] =
+    "x-verified-access-challenge-response";
+
+constexpr char kTpmChallenge[] = {0, 1, 2, 'c', 'h', 'a', 'l', 253, 254, 255};
+constexpr char kTpmChallengeResponse[] = {0,   1,   2,   'r', 'e',
+                                          's', 'p', 253, 254, 255};
+
+std::string GetTpmChallenge() {
+  return std::string(kTpmChallenge, base::size(kTpmChallenge));
+}
+
+std::string GetTpmResponse() {
+  return std::string(kTpmChallengeResponse, base::size(kTpmChallengeResponse));
+}
+
+std::string GetTpmChallengeBase64() {
+  return base::Base64Encode(
+      base::as_bytes(base::span<const char>(kTpmChallenge)));
+}
+
+std::string GetTpmResponseBase64() {
+  return base::Base64Encode(
+      base::as_bytes(base::span<const char>(kTpmChallengeResponse)));
+}
+
+// Returns relay state from http get/post requests.
+std::string GetRelayState(const HttpRequest& request) {
+  std::string relay_state;
+
+  if (request.method == net::test_server::HttpMethod::METHOD_GET) {
+    EXPECT_TRUE(net::GetValueForKeyInQuery(request.GetURL(), kRelayState,
+                                           &relay_state));
+  } else if (request.method == net::test_server::HttpMethod::METHOD_POST) {
+    GURL query_url("http://localhost?" + request.content);
+    EXPECT_TRUE(
+        net::GetValueForKeyInQuery(query_url, kRelayState, &relay_state));
+  } else {
+    EXPECT_TRUE(false);  // gtest friendly implementation of NOTREACHED().
+  }
+
+  return relay_state;
+}
+
 // FakeSamlIdp serves IdP auth form and the form submission. The form is
 // served with the template's RelayState placeholder expanded to the real
 // RelayState parameter from request. The form submission redirects back to
@@ -166,28 +236,51 @@ class FakeSamlIdp {
   FakeSamlIdp();
   ~FakeSamlIdp();
 
-  void SetUp(const std::string& base_path, const GURL& gaia_url);
+  void SetUp(const GURL& base_login_url,
+             const GURL& device_attest_url,
+             const GURL& check_device_answer_url,
+             const GURL& gaia_url);
 
   void SetLoginHTMLTemplate(const std::string& template_file);
   void SetLoginAuthHTMLTemplate(const std::string& template_file);
   void SetRefreshURL(const GURL& refresh_url);
   void SetCookieValue(const std::string& cookie_value);
   void SetSamlResponseFile(const std::string& xml_file);
+  bool IsLastChallengeResponseExists() const;
+  const std::string& GetLastChallengeResponse() const;
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request);
 
  private:
-  std::unique_ptr<net::test_server::HttpResponse> BuildHTMLResponse(
+  std::unique_ptr<HttpResponse> BuildResponseForLogin(
+      const HttpRequest& request,
+      const GURL& request_url);
+  std::unique_ptr<HttpResponse> BuildResponseForLoginAuth(
+      const HttpRequest& request,
+      const GURL& request_url);
+  std::unique_ptr<HttpResponse> BuildResponseForLoginWithDeviceAttestation(
+      const HttpRequest& request,
+      const GURL& request_url);
+  std::unique_ptr<HttpResponse> BuildResponseForCheckDeviceAnswer(
+      const HttpRequest& request,
+      const GURL& request_url);
+
+  std::unique_ptr<HttpResponse> BuildHTMLResponse(
       const std::string& html_template,
       const std::string& relay_state,
       const std::string& next_path);
 
+  void SaveChallengeResponse(const std::string& response);
+  void ClearChallengeResponse();
+
   base::FilePath html_template_dir_;
   base::FilePath saml_response_dir_;
 
-  std::string login_path_;
+  GURL login_url_;
   std::string login_auth_path_;
+  GURL login_with_device_attest_url_;
+  GURL login_check_device_answer_url_;
 
   std::string login_html_template_;
   std::string login_auth_html_template_;
@@ -196,6 +289,8 @@ class FakeSamlIdp {
   std::string cookie_value_;
   std::string saml_response_{"fake_response"};
 
+  base::Optional<std::string> challenge_response_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeSamlIdp);
 };
 
@@ -203,15 +298,22 @@ FakeSamlIdp::FakeSamlIdp() {}
 
 FakeSamlIdp::~FakeSamlIdp() {}
 
-void FakeSamlIdp::SetUp(const std::string& base_path, const GURL& gaia_url) {
+void FakeSamlIdp::SetUp(const GURL& base_login_url,
+                        const GURL& device_attest_url,
+                        const GURL& check_device_answer_url,
+                        const GURL& gaia_url) {
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   // NOTE: Ideally testdata would all be in chromeos/login, to match the test.
   html_template_dir_ = test_data_dir.Append("login");
   saml_response_dir_ = test_data_dir.Append("chromeos").Append("login");
 
-  login_path_ = base_path;
-  login_auth_path_ = base_path + "Auth";
+  login_url_ = base_login_url;
+  login_auth_path_ = login_url_.path() + "Auth";
+
+  login_with_device_attest_url_ = device_attest_url;
+  login_check_device_answer_url_ = check_device_answer_url;
+
   gaia_assertion_url_ = gaia_url.Resolve("/SSO");
 }
 
@@ -249,20 +351,38 @@ std::unique_ptr<net::test_server::HttpResponse> FakeSamlIdp::HandleRequest(
   GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
   std::string request_path = request_url.path();
 
-  if (request_path == login_path_) {
-    std::string relay_state;
-    net::GetValueForKeyInQuery(request_url, kRelayState, &relay_state);
-    return BuildHTMLResponse(login_html_template_, relay_state,
-                             login_auth_path_);
+  if (request_path == login_url_.path()) {
+    return BuildResponseForLogin(request, request_url);
   }
 
-  if (request_path != login_auth_path_) {
-    // Request not understood.
-    return nullptr;
+  if (request_path == login_auth_path_) {
+    return BuildResponseForLoginAuth(request, request_url);
   }
 
-  std::string relay_state;
-  FakeGaia::GetQueryParameter(request.content, kRelayState, &relay_state);
+  if (request_path == login_with_device_attest_url_.path()) {
+    return BuildResponseForLoginWithDeviceAttestation(request, request_url);
+  }
+
+  if (request_path == login_check_device_answer_url_.path()) {
+    return BuildResponseForCheckDeviceAnswer(request, request_url);
+  }
+
+  // All other requests can be ignored.
+  LOG(WARNING) << "Request is ignored by FakeSamlIdp: " << request.GetURL();
+  return std::unique_ptr<HttpResponse>();
+}
+
+std::unique_ptr<HttpResponse> FakeSamlIdp::BuildResponseForLogin(
+    const HttpRequest& request,
+    const GURL& request_url) {
+  const std::string relay_state = GetRelayState(request);
+  return BuildHTMLResponse(login_html_template_, relay_state, login_auth_path_);
+}
+
+std::unique_ptr<HttpResponse> FakeSamlIdp::BuildResponseForLoginAuth(
+    const HttpRequest& request,
+    const GURL& request_url) {
+  const std::string relay_state = GetRelayState(request);
   GURL redirect_url = gaia_assertion_url_;
 
   if (!login_auth_html_template_.empty()) {
@@ -275,11 +395,51 @@ std::unique_ptr<net::test_server::HttpResponse> FakeSamlIdp::HandleRequest(
   redirect_url =
       net::AppendQueryParameter(redirect_url, kRelayState, relay_state);
 
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  auto http_response = std::make_unique<BasicHttpResponse>();
   http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
   http_response->AddCustomHeader("Location", redirect_url.spec());
   http_response->AddCustomHeader(
       "Set-cookie", base::StringPrintf("saml=%s", cookie_value_.c_str()));
+  return http_response;
+}
+
+std::unique_ptr<HttpResponse>
+FakeSamlIdp::BuildResponseForLoginWithDeviceAttestation(
+    const HttpRequest& request,
+    const GURL& request_url) {
+  std::string relay_state = GetRelayState(request);
+
+  GURL redirect_url = login_check_device_answer_url_;
+  redirect_url =
+      net::AppendQueryParameter(redirect_url, kRelayState, relay_state);
+
+  auto http_response = std::make_unique<BasicHttpResponse>();
+  http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+  http_response->AddCustomHeader("Location", redirect_url.spec());
+  http_response->AddCustomHeader(kSamlVerifiedAccessChallengeHeader,
+                                 GetTpmChallengeBase64());
+
+  return std::move(http_response);
+}
+
+std::unique_ptr<HttpResponse> FakeSamlIdp::BuildResponseForCheckDeviceAnswer(
+    const HttpRequest& request,
+    const GURL& request_url) {
+  std::string relay_state = GetRelayState(request);
+
+  auto iter = request.headers.find(kSamlVerifiedAccessResponseHeader);
+  if (iter != request.headers.end()) {
+    SaveChallengeResponse(/*challenge_response=*/iter->second);
+  } else {
+    ClearChallengeResponse();
+  }
+
+  GURL redirect_url =
+      net::AppendQueryParameter(login_url_, kRelayState, relay_state);
+
+  auto http_response = std::make_unique<BasicHttpResponse>();
+  http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+  http_response->AddCustomHeader("Location", redirect_url.spec());
   return std::move(http_response);
 }
 
@@ -300,6 +460,23 @@ std::unique_ptr<net::test_server::HttpResponse> FakeSamlIdp::BuildHTMLResponse(
   http_response->set_content_type("text/html");
 
   return std::move(http_response);
+}
+
+void FakeSamlIdp::SaveChallengeResponse(const std::string& response) {
+  EXPECT_TRUE(!challenge_response_);
+  challenge_response_ = response;
+}
+
+void FakeSamlIdp::ClearChallengeResponse() {
+  challenge_response_.reset();
+}
+
+bool FakeSamlIdp::IsLastChallengeResponseExists() const {
+  return challenge_response_.has_value();
+}
+
+const std::string& FakeSamlIdp::GetLastChallengeResponse() const {
+  return challenge_response_.value();
 }
 
 // A FakeCryptohomeClient that stores the salted and hashed secret passed to
@@ -349,25 +526,42 @@ class SamlTest : public OobeBaseTest {
 
     ASSERT_TRUE(saml_https_forwarder_.Initialize(
         kIdPHost, embedded_test_server()->base_url()));
+
     const GURL gaia_url =
         fake_gaia_.gaia_https_forwarder()->GetURLForSSLHost("");
-    const GURL saml_idp_url = saml_https_forwarder_.GetURLForSSLHost("SAML");
-    fake_saml_idp_.SetUp(saml_idp_url.path(), gaia_url);
-    fake_gaia_.fake_gaia()->RegisterSamlUser(kFirstSAMLUserEmail, saml_idp_url);
+
+    const GURL base_login_saml_idp_url =
+        saml_https_forwarder_.GetURLForSSLHost(kSamlLoginPath);
+
+    const GURL device_attest_saml_idp_url =
+        saml_https_forwarder_.GetURLForSSLHost(
+            kSamlLoginWithDeviceAttestationPath);
+
+    const GURL device_attest_check_response_saml_idp_url =
+        saml_https_forwarder_.GetURLForSSLHost(kSamlLoginCheckDeviceAnswerPath);
+
+    const GURL http_saml_idp_url =
+        embedded_test_server()->base_url().Resolve(kSamlLoginPath);
+
+    fake_saml_idp_.SetUp(base_login_saml_idp_url, device_attest_saml_idp_url,
+                         device_attest_check_response_saml_idp_url, gaia_url);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(kFirstSAMLUserEmail,
+                                             base_login_saml_idp_url);
     fake_gaia_.fake_gaia()->RegisterSamlUser(kSecondSAMLUserEmail,
-                                             saml_idp_url);
-    fake_gaia_.fake_gaia()->RegisterSamlUser(
-        kHTTPSAMLUserEmail,
-        embedded_test_server()->base_url().Resolve("/SAML"));
+                                             base_login_saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(kHTTPSAMLUserEmail,
+                                             http_saml_idp_url);
     fake_gaia_.fake_gaia()->RegisterSamlUser(kDifferentDomainSAMLUserEmail,
-                                             saml_idp_url);
-    fake_gaia_.fake_gaia()->RegisterSamlDomainRedirectUrl("example.com",
-                                                          saml_idp_url);
+                                             base_login_saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(kDeviceAttestationSAMLUserEmail,
+                                             device_attest_saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlDomainRedirectUrl(
+        "example.com", base_login_saml_idp_url);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     // Creates a fake CryptohomeClient. Will be destroyed in browser shutdown.
-    cryptohome_client_ = new SecretInterceptingFakeCryptohomeClient;
+    cryptohome_client_ = new SecretInterceptingFakeCryptohomeClient();
 
     OobeBaseTest::SetUpInProcessBrowserTestFixture();
   }
@@ -1604,5 +1798,279 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginFailed) {
 INSTANTIATE_TEST_SUITE_P(SAMLPasswordAttributesSuite,
                          SAMLPasswordAttributesTest,
                          testing::Bool());
+
+void FakeGetCertificateCallbackTrue(
+    const attestation::AttestationFlow::CertificateCallback& callback) {
+  callback.Run(attestation::ATTESTATION_SUCCESS, "certificate");
+}
+
+void FakeEnterpriseChallenge(
+    const std::string& challenge,
+    const cryptohome::AsyncMethodCaller::DataCallback& callback) {
+  if (challenge == GetTpmChallenge()) {
+    callback.Run(/*success=*/true, GetTpmResponse());
+  } else {
+    NOTREACHED();
+  }
+}
+
+constexpr base::TimeDelta kTimeoutTaskDelay =
+    base::TimeDelta::FromMilliseconds(500);
+constexpr base::TimeDelta kBuildResponseTaskDelay =
+    base::TimeDelta::FromSeconds(3);
+static_assert(
+    kTimeoutTaskDelay < kBuildResponseTaskDelay,
+    "kTimeoutTaskDelay should be less than kBuildResponseTaskDelay to trigger "
+    "timeout error in SAMLDeviceAttestationTest.TimeoutError test.");
+
+void FakeEnterpriseChallengeWithDelay(
+    const std::string& challenge,
+    const cryptohome::AsyncMethodCaller::DataCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(FakeEnterpriseChallenge, challenge, callback),
+      kBuildResponseTaskDelay);
+}
+
+class SAMLDeviceAttestationTest : public SamlTest {
+ public:
+  SAMLDeviceAttestationTest() = default;
+
+  SAMLDeviceAttestationTest(const SAMLDeviceAttestationTest&) = delete;
+  SAMLDeviceAttestationTest& operator=(const SAMLDeviceAttestationTest&) =
+      delete;
+
+  void SetUpInProcessBrowserTestFixture() override;
+
+ protected:
+  void SetAllowedUrlsPolicy(const std::vector<std::string>& allowed_urls);
+
+  chromeos::ScopedTestingCrosSettings settings_helper_;
+  StubCrosSettingsProvider* settings_provider_ = nullptr;
+
+  cryptohome::MockAsyncMethodCaller* mock_async_method_caller_ = nullptr;
+  NiceMock<chromeos::attestation::MockAttestationFlow> mock_attestation_flow_;
+  chromeos::ScopedStubInstallAttributes stub_install_attributes_;
+};
+
+void SAMLDeviceAttestationTest::SetUpInProcessBrowserTestFixture() {
+  SamlTest::SetUpInProcessBrowserTestFixture();
+
+  settings_provider_ = settings_helper_.device_settings();
+
+  mock_async_method_caller_ = new NiceMock<cryptohome::MockAsyncMethodCaller>();
+  mock_async_method_caller_->SetUp(/*success=*/true,
+                                   cryptohome::MountError::MOUNT_ERROR_NONE);
+  ON_CALL(*mock_async_method_caller_, TpmAttestationSignEnterpriseChallenge)
+      .WillByDefault(WithArgs<6, 8>(Invoke(FakeEnterpriseChallenge)));
+
+  // Ownership of mock_async_method_caller_ is transferred to
+  // AsyncMethodCaller::InitializeForTesting.
+  cryptohome::AsyncMethodCaller::InitializeForTesting(
+      mock_async_method_caller_);
+
+  ON_CALL(mock_attestation_flow_, GetCertificate)
+      .WillByDefault(WithArgs<5>(Invoke(FakeGetCertificateCallbackTrue)));
+
+  attestation::TpmChallengeKeyFactory::SetForTesting(
+      std::make_unique<attestation::TpmChallengeKeyImpl>(
+          &mock_attestation_flow_));
+
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+}
+
+void SAMLDeviceAttestationTest::SetAllowedUrlsPolicy(
+    const std::vector<std::string>& allowed_urls) {
+  std::vector<base::Value> allowed_urls_values;
+  for (const auto& url : allowed_urls) {
+    allowed_urls_values.push_back(base::Value(url));
+  }
+  settings_provider_->Set(chromeos::kDeviceWebBasedAttestationAllowedUrls,
+                          base::Value(std::move(allowed_urls_values)));
+}
+
+// Verify that device attestation is not available when
+// DeviceWebBasedAttestationAllowedUrls policy is not set.
+IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, DefaultPolicy) {
+  base::HistogramTester histogram_tester;
+
+  // Leave policy unset.
+
+  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+
+  ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
+                                      attestation::TpmChallengeKeyResultCode::
+                                          kDeviceWebBasedAttestationUrlError,
+                                      1);
+}
+
+// Verify that device attestation is not available when
+// DeviceWebBasedAttestationAllowedUrls policy is set to empty list of allowed
+// URLs.
+IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, EmptyPolicy) {
+  base::HistogramTester histogram_tester;
+  SetAllowedUrlsPolicy({/* empty list */});
+
+  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+
+  ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
+                                      attestation::TpmChallengeKeyResultCode::
+                                          kDeviceWebBasedAttestationUrlError,
+                                      1);
+}
+
+// Verify that device attestation is not available when device is not enterprise
+// enrolled.
+IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, NotEnterpriseEnrolledError) {
+  base::HistogramTester histogram_tester;
+  SetAllowedUrlsPolicy({"login.corp.example.com"});
+
+  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kNonEnterpriseDeviceError, 1);
+}
+
+// Verify that device attestation is not available when device attestation is
+// not enabled.
+IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest,
+                       DeviceAttestationNotEnabledError) {
+  base::HistogramTester histogram_tester;
+  SetAllowedUrlsPolicy({"login.corp.example.com"});
+  stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
+
+  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kDevicePolicyDisabledError, 1);
+}
+
+// Verify that device attestation works when all policies configured correctly.
+IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, Success) {
+  base::HistogramTester histogram_tester;
+  SetAllowedUrlsPolicy({"login.corp.example.com"});
+  stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
+  settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
+
+  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_TRUE(fake_saml_idp()->IsLastChallengeResponseExists());
+  ASSERT_EQ(fake_saml_idp()->GetLastChallengeResponse(),
+            GetTpmResponseBase64());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kSuccess, 1);
+}
+
+// Verify that device attestation is not available for URLs that are not in the
+// allowed URLs list.
+IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyNoMatchError) {
+  base::HistogramTester histogram_tester;
+  SetAllowedUrlsPolicy({"example.com"});
+  stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
+  settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
+
+  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
+                                      attestation::TpmChallengeKeyResultCode::
+                                          kDeviceWebBasedAttestationUrlError,
+                                      1);
+}
+
+// Verify that device attestation is available for URLs that match a pattern
+// from allowed URLs list.
+IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyRegexSuccess) {
+  base::HistogramTester histogram_tester;
+  SetAllowedUrlsPolicy({"[*.]example.com"});
+  stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
+  settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
+
+  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_TRUE(fake_saml_idp()->IsLastChallengeResponseExists());
+  ASSERT_EQ(fake_saml_idp()->GetLastChallengeResponse(),
+            GetTpmResponseBase64());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kSuccess, 1);
+}
+
+// Verify that device attestation works in case of multiple items in allowed
+// URLs list.
+IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyTwoEntriesSuccess) {
+  base::HistogramTester histogram_tester;
+  SetAllowedUrlsPolicy({"example2.com", "login.corp.example.com"});
+  stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
+  settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
+
+  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_TRUE(fake_saml_idp()->IsLastChallengeResponseExists());
+  ASSERT_EQ(fake_saml_idp()->GetLastChallengeResponse(),
+            GetTpmResponseBase64());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kSuccess, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, TimeoutError) {
+  base::HistogramTester histogram_tester;
+  SetAllowedUrlsPolicy({"example2.com", "login.corp.example.com"});
+  stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
+  settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
+
+  ON_CALL(*mock_async_method_caller_, TpmAttestationSignEnterpriseChallenge)
+      .WillByDefault(WithArgs<6, 8>(Invoke(FakeEnterpriseChallengeWithDelay)));
+
+  auto handler = std::make_unique<SamlChallengeKeyHandler>();
+  handler->SetTpmResponseTimeoutForTesting(kTimeoutTaskDelay);
+
+  LoginDisplayHost::default_host()
+      ->GetOobeUI()
+      ->GetHandler<GaiaScreenHandler>()
+      ->SetNextSamlChallengeKeyHandlerForTesting(std::move(handler));
+
+  StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
+
+  if (Test::HasFailure()) {
+    return;
+  }
+
+  ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kTimeoutError, 1);
+}
 
 }  // namespace chromeos

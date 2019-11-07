@@ -80,12 +80,19 @@ class CastWebViewDefault : public CastWebView,
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
+  bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
+                                         bool allowed_per_prefs,
+                                         const url::Origin& origin,
+                                         const GURL& resource_url) override;
 
   CastWebContentsManager* const web_contents_manager_;
   content::BrowserContext* const browser_context_;
   const scoped_refptr<content::SiteInstance> site_instance_;
 
   Delegate* const delegate_;
+  const std::string activity_id_;
+  const std::string session_id_;
+  const std::string sdk_version_;
   const bool allow_media_access_;
   const std::string log_prefix_;
 

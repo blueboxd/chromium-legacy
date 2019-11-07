@@ -102,8 +102,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   SiteInstanceImpl* GetSiteInstance() override;
   bool IsRenderViewLive() override;
   void NotifyMoveOrResizeStarted() override;
-  void SetWebUIProperty(const std::string& name,
-                        const std::string& value) override;
   WebPreferences GetWebkitPreferences() override;
   void UpdateWebkitPreferences(const WebPreferences& prefs) override;
   void OnWebkitPreferencesChanged() override;

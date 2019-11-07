@@ -10,9 +10,9 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
 
-import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IChildProcessService;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IChildProcessService;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 /**
  * Delegates service calls to the chrome service implementation.

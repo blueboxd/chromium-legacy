@@ -83,7 +83,7 @@ public class BottomSheetControllerTest {
 
     /** @return The activity's BottomSheet. */
     private BottomSheet getBottomSheet() {
-        return mSheetController.getBottomSheet();
+        return (BottomSheet) mSheetController.getBottomSheetViewForTesting();
     }
 
     @Test

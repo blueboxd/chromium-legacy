@@ -7,8 +7,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
+#include "components/security_interstitials/core/common/mojom/interstitial_commands.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace weblayer {
 
@@ -41,6 +43,9 @@ class SSLErrorHelper
   // security_interstitials::SecurityInterstitialPageController::Delegate:
   void SendCommand(
       security_interstitials::SecurityInterstitialCommand command) override;
+
+  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
+  GetInterface() override;
 
  private:
   explicit SSLErrorHelper(content::RenderFrame* render_frame);

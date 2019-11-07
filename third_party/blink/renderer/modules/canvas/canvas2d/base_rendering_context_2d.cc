@@ -1738,7 +1738,8 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   // additional swizzling is needed.
   CanvasColorParams data_color_params = data->GetCanvasColorParams();
   CanvasColorParams context_color_params =
-      CanvasColorParams(ColorParams().ColorSpace(), PixelFormat(), kNonOpaque);
+      CanvasColorParams(ColorParams().ColorSpace(), PixelFormat(), kNonOpaque,
+                        CanvasForceRGBA::kNotForced);
   if (data_color_params.NeedsColorConversion(context_color_params) ||
       PixelFormat() == kF16CanvasPixelFormat) {
     size_t data_length;

@@ -1109,7 +1109,7 @@ Position PositionAfterNode(const Node& node) {
 }
 
 bool IsHTMLListElement(const Node* n) {
-  return (n && (IsHTMLUListElement(*n) || IsA<HTMLOListElement>(*n) ||
+  return (n && (IsA<HTMLUListElement>(*n) || IsA<HTMLOListElement>(*n) ||
                 IsA<HTMLDListElement>(*n)));
 }
 

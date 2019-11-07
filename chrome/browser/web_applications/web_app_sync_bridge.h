@@ -71,6 +71,20 @@ class WebAppSyncBridge : public AppRegistryController,
   // An access to read-only registry. Does an upcast to read-only type.
   const WebAppRegistrar& registrar() const { return *registrar_; }
 
+  // syncer::ModelTypeSyncBridge:
+  std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
+      override;
+  base::Optional<syncer::ModelError> MergeSyncData(
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      syncer::EntityChangeList entity_data) override;
+  base::Optional<syncer::ModelError> ApplySyncChanges(
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      syncer::EntityChangeList entity_changes) override;
+  void GetData(StorageKeyList storage_keys, DataCallback callback) override;
+  void GetAllDataForDebugging(DataCallback callback) override;
+  std::string GetClientTag(const syncer::EntityData& entity_data) override;
+  std::string GetStorageKey(const syncer::EntityData& entity_data) override;
+
  private:
   void CheckRegistryUpdateData(const RegistryUpdateData& update_data) const;
 
@@ -101,20 +115,6 @@ class WebAppSyncBridge : public AppRegistryController,
   void ApplySyncChangesToRegistrar(
       std::unique_ptr<RegistryUpdateData> update_local_data);
 
-  // syncer::ModelTypeSyncBridge:
-  std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
-      override;
-  base::Optional<syncer::ModelError> MergeSyncData(
-      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-      syncer::EntityChangeList entity_data) override;
-  base::Optional<syncer::ModelError> ApplySyncChanges(
-      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-      syncer::EntityChangeList entity_changes) override;
-  void GetData(StorageKeyList storage_keys, DataCallback callback) override;
-  void GetAllDataForDebugging(DataCallback callback) override;
-  std::string GetClientTag(const syncer::EntityData& entity_data) override;
-  std::string GetStorageKey(const syncer::EntityData& entity_data) override;
-
   std::unique_ptr<WebAppDatabase> database_;
   WebAppRegistrarMutable* const registrar_;
   SyncInstallDelegate* const install_delegate_;
@@ -125,6 +125,9 @@ class WebAppSyncBridge : public AppRegistryController,
 
   DISALLOW_COPY_AND_ASSIGN(WebAppSyncBridge);
 };
+
+std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app);
+void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data, WebApp* app);
 
 }  // namespace web_app
 

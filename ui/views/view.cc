@@ -1596,9 +1596,6 @@ gfx::Size View::CalculatePreferredSize() const {
   return gfx::Size();
 }
 
-void View::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-}
-
 void View::PreferredSizeChanged() {
   if (parent_)
     parent_->ChildPreferredSizeChanged(this);

@@ -83,6 +83,8 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
  private:
   FocusRing();
 
+  void RefreshLayer();
+
   // Translates the provided SkRect or SkRRect, which is in the parent's
   // coordinate system, into this view's coordinate system, then insets it
   // appropriately to produce the focus ring "halo" effect. If the supplied rect
@@ -102,7 +104,7 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   base::Optional<SkColor> color_;
 
   // The predicate used to determine whether the parent has focus.
-  ViewPredicate has_focus_predicate_;
+  base::Optional<ViewPredicate> has_focus_predicate_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusRing);
 };

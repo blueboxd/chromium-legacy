@@ -491,6 +491,9 @@ Profile* BrowserTabStripController::GetProfile() const {
   return model_->profile();
 }
 
+const Browser* BrowserTabStripController::GetBrowser() const {
+  return browser();
+}
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 

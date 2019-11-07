@@ -1543,4 +1543,73 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_FALSE(spanner_placeholder_object->CanBeSelectionLeaf());
 }
 
+TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
+  SetHtmlInnerHTML(R"HTML(
+    <div id=a>
+      <div id=b>
+        <div id=c></div>
+        <div id=d></div>
+      </div>
+      <div id=e>
+        <div id=f></div>
+        <div id=g></div>
+      </div>
+    </div>
+  )HTML");
+
+  // Dirty all of the leaf nodes.
+  auto dirty_all = [this]() {
+    GetDocument().getElementById("c")->GetLayoutObject()->SetNeedsLayout(
+        "test");
+    GetDocument().getElementById("d")->GetLayoutObject()->SetNeedsLayout(
+        "test");
+    GetDocument().getElementById("f")->GetLayoutObject()->SetNeedsLayout(
+        "test");
+    GetDocument().getElementById("g")->GetLayoutObject()->SetNeedsLayout(
+        "test");
+  };
+
+  unsigned dirty_count = 0;
+  unsigned total_count = 0;
+  bool is_subtree = false;
+
+  dirty_all();
+  GetDocument().View()->CountObjectsNeedingLayout(dirty_count, total_count,
+                                                  is_subtree);
+  // 7 divs + body + html + layout view
+  EXPECT_EQ(dirty_count, 10u);
+  EXPECT_EQ(total_count, 10u);
+
+  GetDocument().getElementById("e")->setAttribute(
+      html_names::kRendersubtreeAttr, "invisible");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Note that the dirty_all call propagate the dirty bit from the unlocked
+  // subtree all the way up to the layout view, so everything on the way up is
+  // dirtied.
+  dirty_all();
+  GetDocument().View()->CountObjectsNeedingLayout(dirty_count, total_count,
+                                                  is_subtree);
+  // Element with 2 children is locked, and it itself isn't dirty (just the
+  // children are). So, 10 - 3 = 7
+  EXPECT_EQ(dirty_count, 7u);
+  // We still see the locked element, so the total is 8.
+  EXPECT_EQ(total_count, 8u);
+
+  GetDocument().getElementById("a")->setAttribute(
+      html_names::kRendersubtreeAttr, "invisible");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Note that this dirty_all call is now not propagating the dirty bits at all,
+  // since they are stopped at the top level div.
+  dirty_all();
+  GetDocument().View()->CountObjectsNeedingLayout(dirty_count, total_count,
+                                                  is_subtree);
+  // Top level element is locked and the dirty bits were not propagated, so we
+  // expect 0 dirty elements. The total should be 4 ('a' + body + html + layout
+  // view);
+  EXPECT_EQ(dirty_count, 0u);
+  EXPECT_EQ(total_count, 4u);
+}
+
 }  // namespace blink

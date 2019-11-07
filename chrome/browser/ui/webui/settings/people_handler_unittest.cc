@@ -61,10 +61,6 @@ using ::testing::Values;
 
 namespace {
 
-MATCHER_P(UserSelectableTypeSetMatches, value, "") {
-  return arg == value;
-}
-
 const char kTestUser[] = "chrome_p13n_test@gmail.com";
 const char kTestCallbackId[] = "test-callback-id";
 
@@ -797,9 +793,8 @@ TEST_F(PeopleHandlerTest, TestSyncIndividualTypes) {
     ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
         .WillByDefault(Return(false));
     SetupInitializedSyncService();
-    EXPECT_CALL(
-        *mock_sync_service_->GetMockUserSettings(),
-        SetSelectedTypes(false, UserSelectableTypeSetMatches(type_to_set)));
+    EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
+                SetSelectedTypes(false, type_to_set));
 
     handler_->HandleSetDatatypes(&list_args);
     ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
@@ -822,9 +817,8 @@ TEST_F(PeopleHandlerTest, TestSyncAllManually) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
   SetupInitializedSyncService();
-  EXPECT_CALL(
-      *mock_sync_service_->GetMockUserSettings(),
-      SetSelectedTypes(false, UserSelectableTypeSetMatches(GetAllTypes())));
+  EXPECT_CALL(*mock_sync_service_->GetMockUserSettings(),
+              SetSelectedTypes(false, GetAllTypes()));
   handler_->HandleSetDatatypes(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);

@@ -54,7 +54,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   scoped_refptr<Dispatcher> GetDispatcher(MojoHandle handle);
   scoped_refptr<Dispatcher> GetAndRemoveDispatcher(MojoHandle handle);
 
-  void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback);
+  void SetDefaultProcessErrorCallback(ProcessErrorCallback callback);
 
   // Creates a message pipe endpoint with an unbound peer port returned in
   // |*peer|. Useful for setting up cross-process bootstrap message pipes. The
@@ -136,7 +136,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // loop, and the calling thread must continue running a MessageLoop at least
   // until the callback is called. If there is no running loop, the |callback|
   // may be called from any thread. Beware!
-  void RequestShutdown(const base::Closure& callback);
+  void RequestShutdown(base::OnceClosure callback);
 
   // ---------------------------------------------------------------------------
 

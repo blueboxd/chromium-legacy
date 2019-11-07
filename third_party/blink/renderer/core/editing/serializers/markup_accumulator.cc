@@ -567,7 +567,7 @@ void MarkupAccumulator::SerializeNodesWithNamespaces(
       !(SerializeAsHTML() && ElementCannotHaveEndTag(target_element));
   if (has_end_tag) {
     const Node* parent = &target_element;
-    if (auto* template_element = ToHTMLTemplateElementOrNull(target_element))
+    if (auto* template_element = DynamicTo<HTMLTemplateElement>(target_element))
       parent = template_element->content();
     for (const Node& child : Strategy::ChildrenOf(*parent))
       SerializeNodesWithNamespaces<Strategy>(child, kIncludeNode);

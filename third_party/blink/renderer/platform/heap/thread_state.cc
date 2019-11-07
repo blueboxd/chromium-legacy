@@ -106,6 +106,11 @@ namespace {
 // TODO(omerkatz): What is a good value to set here?
 constexpr base::TimeDelta kConcurrentMarkingStepDuration =
     base::TimeDelta::FromMilliseconds(2);
+// Number of concurrent marking tasks to use.
+//
+// TODO(omerkatz): kNumberOfMarkingTasks should be set heuristically
+// instead of a constant.
+constexpr uint8_t kNumberOfConcurrentMarkingTasks = 1u;
 
 constexpr size_t kMaxTerminationGCLoops = 20;
 
@@ -729,7 +734,7 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
       // Stop concurrent markers
       marker_scheduler_->CancelAndWait();
       active_markers_ = 0;
-      available_concurrent_marking_ids_.clear();
+      available_concurrent_marking_task_ids_.clear();
     }
 #if DCHECK_IS_ON()
     MarkingWorklist* worklist = Heap().GetMarkingWorklist();
@@ -1155,6 +1160,18 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
       // concurrently_marked_bytes_ without a lock.
       concurrently_marked_bytes_ = 0;
       current_gc_data_.visitor->FlushMarkingWorklist();
+      // Check that the marking worklist has enough private segments for all
+      // concurrent marking tasks.
+      const uint8_t max_concurrent_task_id =
+          WorklistTaskId::ConcurrentThreadBase +
+          kNumberOfConcurrentMarkingTasks;
+      DCHECK_LE(max_concurrent_task_id,
+                Heap().GetMarkingWorklist()->num_tasks());
+      // Initialize concurrent marking task ids.
+      for (uint8_t i = WorklistTaskId::ConcurrentThreadBase;
+           i < max_concurrent_task_id; ++i) {
+        available_concurrent_marking_task_ids_.push_back(i);
+      }
       ScheduleConcurrentMarking();
     }
     SetGCState(kIncrementalMarkingStepScheduled);
@@ -1694,31 +1711,15 @@ void ThreadState::EnableCompactionForNextGCForTesting() {
 void ThreadState::ScheduleConcurrentMarking() {
   base::AutoLock lock(concurrent_marker_bootstrapping_lock_);
 
-  if (active_markers_ > 0) {
-    // Concurrent markers are already running, should not run them again
-    return;
-  }
-
   DCHECK(base::FeatureList::IsEnabled(
       blink::features::kBlinkHeapConcurrentMarking));
 
-  // Number of concurrent marking tasks to start. The check below verifies
-  // that the marking worklist has enough private segments for all tasks.
-  //
-  // TODO(omerkatz): kNumberOfMarkingTasks should be set heuristically instead
-  // of a constant.
-  static constexpr int kNumberOfConcurrentMarkingTasks = 1u;
-  DCHECK_LT(kNumberOfConcurrentMarkingTasks,
-            Heap().GetMarkingWorklist()->num_tasks());
-
-  active_markers_ = kNumberOfConcurrentMarkingTasks;
-
-  for (int i = 0; i < kNumberOfConcurrentMarkingTasks; ++i) {
-    available_concurrent_marking_ids_.push_back(
-        WorklistTaskId::ConcurrentThreadBase + i);
+  for (uint8_t i = active_markers_; i < kNumberOfConcurrentMarkingTasks; ++i) {
     marker_scheduler_->ScheduleTask(WTF::CrossThreadBindOnce(
         &ThreadState::PerformConcurrentMark, WTF::CrossThreadUnretained(this)));
   }
+
+  active_markers_ = kNumberOfConcurrentMarkingTasks;
 }
 
 void ThreadState::PerformConcurrentMark() {
@@ -1727,12 +1728,12 @@ void ThreadState::PerformConcurrentMark() {
   ThreadHeapStatsCollector::EnabledConcurrentScope stats_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kConcurrentMark);
 
-  int task_id;
+  uint8_t task_id;
   {
     base::AutoLock lock(concurrent_marker_bootstrapping_lock_);
-    DCHECK(!available_concurrent_marking_ids_.IsEmpty());
-    task_id = available_concurrent_marking_ids_.back();
-    available_concurrent_marking_ids_.pop_back();
+    DCHECK(!available_concurrent_marking_task_ids_.IsEmpty());
+    task_id = available_concurrent_marking_task_ids_.back();
+    available_concurrent_marking_task_ids_.pop_back();
   }
 
   std::unique_ptr<ConcurrentMarkingVisitor> concurrent_visitor =
@@ -1754,7 +1755,7 @@ void ThreadState::PerformConcurrentMark() {
     // When marking is done, flush visitor worklists and decrement number of
     // active markers so we know how many markers are left
     concurrently_marked_bytes_ += concurrent_visitor->marked_bytes();
-    available_concurrent_marking_ids_.push_back(task_id);
+    available_concurrent_marking_task_ids_.push_back(task_id);
     if (finished) {
       --active_markers_;
       return;

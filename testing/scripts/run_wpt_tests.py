@@ -54,7 +54,7 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             "--headless",
             # TODO(lpz): Consider removing --processes and compute automatically
             # from multiprocessing.cpu_count()
-            "--processes=10",
+            "--processes=5",
             "--no-capture-stdio",
             "--no-manifest-download",
             "--no-pause-after-test",
@@ -71,7 +71,9 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             # update the manifest in cast it's stale.
             #"--no-manifest-update",
             "--manifest=../../third_party/blink/web_tests/external/"
-                "WPT_BASE_MANIFEST_6.json"
+                "WPT_BASE_MANIFEST_6.json",
+            # Enable mach logging to aid debugging
+            "--log-mach=-"
         ])
         return rest_args
 

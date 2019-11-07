@@ -21,6 +21,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/visitedlink/browser/visitedlink_event_listener.h"
@@ -339,6 +340,7 @@ void VisitedLinkMaster::PostIOTask(const base::Location& from_here,
 }
 
 void VisitedLinkMaster::AddURL(const GURL& url) {
+  TRACE_EVENT0("browser", "VisitedLinkMaster::AddURL");
   Hash index = TryToAddURL(url);
   if (!table_builder_ && !table_is_loading_from_file_ && index != null_hash_) {
     // Not rebuilding, so we want to keep the file on disk up to date.
@@ -351,6 +353,7 @@ void VisitedLinkMaster::AddURL(const GURL& url) {
 }
 
 void VisitedLinkMaster::AddURLs(const std::vector<GURL>& urls) {
+  TRACE_EVENT0("browser", "VisitedLinkMaster::AddURLs");
   for (const GURL& url : urls) {
     Hash index = TryToAddURL(url);
     if (!table_builder_ && !table_is_loading_from_file_ && index != null_hash_)

@@ -21,6 +21,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import org.chromium.base.JniStaticTestMocker;
+import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 
@@ -65,6 +66,7 @@ public class JniProcessor extends AbstractProcessor {
     static final String SKIP_GEN_JNI_ARG = "org.chromium.chrome.skipGenJni";
     private static final Class<NativeMethods> JNI_STATIC_NATIVES_CLASS = NativeMethods.class;
     private static final Class<MainDex> MAIN_DEX_CLASS = MainDex.class;
+    private static final Class<CheckDiscard> CHECK_DISCARD_CLASS = CheckDiscard.class;
 
     private static final String NATIVE_WRAPPER_CLASS_POSTFIX = "Jni";
 
@@ -349,6 +351,7 @@ public class JniProcessor extends AbstractProcessor {
         if (isMainDex) {
             builder.addAnnotation(MAIN_DEX_CLASS);
         }
+        builder.addAnnotation(CHECK_DISCARD_CLASS);
 
         // Start by adding all the native method wrappers.
         for (Element enclosed : nativeInterface.getEnclosedElements()) {

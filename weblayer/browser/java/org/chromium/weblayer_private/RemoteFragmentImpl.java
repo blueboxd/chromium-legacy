@@ -12,11 +12,11 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.view.View;
 
-import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IObjectWrapper;
-import org.chromium.weblayer_private.aidl.IRemoteFragment;
-import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IRemoteFragment;
+import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 /**
  * Base for the classes controlling a Fragment that exists in another ClassLoader. Extending this

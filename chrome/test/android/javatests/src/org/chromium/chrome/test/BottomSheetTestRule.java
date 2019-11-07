@@ -117,7 +117,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     }
 
     public BottomSheet getBottomSheet() {
-        return mSheetController.getBottomSheet();
+        return (BottomSheet) mSheetController.getBottomSheetViewForTesting();
     }
 
     /**

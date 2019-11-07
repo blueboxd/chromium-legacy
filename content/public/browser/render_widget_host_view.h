@@ -227,11 +227,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual std::unique_ptr<viz::ClientFrameSinkVideoCapturer>
   CreateVideoCapturer() = 0;
 
-  // Notification that a node was touched.
-  // The |editable| parameter indicates if the node is editable, for e.g.
-  // an input field, etc.
-  virtual void FocusedNodeTouched(bool editable) = 0;
-
   // Informs the view that its associated render widget has frames to draw and
   // wants to have BeginFrame messages sent to it.  This should only be called
   // when the value has changed.  Views must initially default to false.

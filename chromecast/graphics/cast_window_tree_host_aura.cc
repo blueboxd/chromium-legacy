@@ -5,6 +5,7 @@
 #include "chromecast/graphics/cast_window_tree_host_aura.h"
 
 #include "ui/aura/null_window_targeter.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 namespace chromecast {
@@ -33,11 +34,13 @@ void CastWindowTreeHostAura::DispatchEvent(ui::Event* event) {
 }
 
 gfx::Rect CastWindowTreeHostAura::GetTransformedRootWindowBoundsInPixels(
-    const gfx::Size& host_size_in_pixels) const {
-  gfx::RectF new_bounds(WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
-      host_size_in_pixels));
-  new_bounds.set_origin(gfx::PointF());
-  return gfx::ToEnclosingRect(new_bounds);
+    const gfx::Size& size_in_pixels) const {
+  gfx::RectF new_bounds = gfx::RectF(gfx::Rect(size_in_pixels));
+  GetInverseRootTransform().TransformRect(&new_bounds);
+
+  // Root window origin will be (0,0) except during bounds changes.
+  // Set to exactly zero to avoid rounding issues.
+  return gfx::Rect(gfx::ToCeiledSize(new_bounds.size()));
 }
 
 }  // namespace chromecast

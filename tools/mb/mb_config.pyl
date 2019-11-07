@@ -70,7 +70,7 @@
 
       # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
       # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
-      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64',
+      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild',
 
       'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
     },
@@ -381,7 +381,7 @@
       'GPU Linux Builder (dbg)': 'gpu_tests_debug_trybot',
       'GPU Win x64 Builder': 'gpu_tests_release_trybot_resource_whitelisting',
       'GPU Win x64 Builder (dbg)': 'gpu_tests_debug_trybot',
-      'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
+      'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64_fastbuild',
     },
 
     'chromium.gpu.fyi': {
@@ -671,7 +671,7 @@
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-kitkat-arm-rel': 'android_release_trybot_fastbuild',
       'android-marshmallow-arm64-coverage-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage',
-      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting',
+      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild',
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google',
@@ -682,11 +682,11 @@
       'android-webview-oreo-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android-webview-pie-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android_archive_rel_ng': 'android_release_trybot',
-      'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
+      'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64_fastbuild',
       'android-binary-size': 'android_binary_size',
       'android_blink_rel': 'android_release_trybot',
       'android_cfi_rel_ng': 'android_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
-      'android_clang_dbg_recipe': 'android_clang_asan_debug_trybot_compile_only',
+      'android_clang_dbg_recipe': 'android_clang_asan_debug_trybot_compile_only_fastbuild',
       'android_compile_dbg': 'android_debug_trybot_compile_only',
       'android_compile_x64_dbg': 'android_debug_trybot_compile_only_x64',
       'android_compile_x86_dbg': 'android_debug_trybot_compile_only_x86',
@@ -846,6 +846,7 @@
       'linux_layout_tests_composite_after_paint': 'release_trybot',
       'linux_layout_tests_layout_ng_disabled': 'release_trybot',
       'linux-layout-tests-fragment-item': 'release_trybot',
+      'linux-layout-tests-fragment-paint': 'release_trybot',
       'linux_mojo': 'release_trybot',
       'linux_mojo_chromeos': 'chromeos_with_codecs_release_trybot',
       'linux_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
@@ -1005,8 +1006,9 @@
       'android', 'clang', 'asan', 'debug_bot', 'strip_debug_info',
     ],
 
-    'android_clang_asan_debug_trybot_compile_only': [
+    'android_clang_asan_debug_trybot_compile_only_fastbuild': [
       'android', 'clang', 'asan', 'debug_trybot', 'compile_only',
+      'android_fastbuild',
     ],
 
     'android_clang_asan_release_bot': [
@@ -1118,8 +1120,8 @@
       'android', 'debug_trybot', 'compile_only',
     ],
 
-    'android_debug_trybot_compile_only_arm64': [
-      'android', 'debug_trybot', 'compile_only', 'arm64',
+    'android_debug_trybot_compile_only_arm64_fastbuild': [
+      'android', 'debug_trybot', 'compile_only', 'arm64', 'android_fastbuild'
     ],
 
     'android_debug_trybot_compile_only_x64': [
@@ -1635,9 +1637,9 @@
       'gpu_fyi_tests', 'dx12vk', 'release_trybot',
     ],
 
-    'gpu_tests_android_release_bot_minimal_symbols_arm64': [
+    'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'resource_whitelisting', 'static_angle',
+      'resource_whitelisting', 'static_angle', 'android_fastbuild'
     ],
 
     'gpu_tests_android_release_trybot': [
@@ -1648,8 +1650,14 @@
       'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
     ],
 
-    'gpu_tests_android_release_trybot_arm64_resource_whitelisting': [
-      'android', 'release_trybot', 'arm64', 'static_angle', 'resource_whitelisting',
+    'gpu_tests_android_release_trybot_arm64_fastbuild': [
+      'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
+      'android_fastbuild',
+    ],
+
+    'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild': [
+      'android', 'release_trybot', 'arm64', 'static_angle',
+      'resource_whitelisting', 'android_fastbuild',
     ],
 
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage': [

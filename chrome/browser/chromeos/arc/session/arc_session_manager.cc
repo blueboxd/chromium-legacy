@@ -11,7 +11,9 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -145,6 +147,20 @@ void SetArcEnabledStateMetric(bool enabled) {
   if (!stability_metrics_manager)
     return;
   stability_metrics_manager->SetArcEnabledState(enabled);
+}
+
+std::string GetOrCreateSerialNumber(PrefService* prefs) {
+  DCHECK(prefs);
+  std::string serial_number = prefs->GetString(prefs::kArcSerialNumber);
+  if (!serial_number.empty())
+    return serial_number;
+  constexpr size_t kRandSize = 256;
+  constexpr size_t kMaxHardwareIdLen = 20;
+  serial_number =
+      base::HexEncode(base::RandBytesAsString(kRandSize).data(), kRandSize)
+          .substr(0, kMaxHardwareIdLen);
+  prefs->SetString(prefs::kArcSerialNumber, serial_number);
+  return serial_number;
 }
 
 }  // namespace
@@ -466,9 +482,11 @@ void ArcSessionManager::Initialize() {
   DCHECK_EQ(state_, State::NOT_INITIALIZED);
   state_ = State::STOPPED;
 
+  auto* prefs = profile_->GetPrefs();
   const std::string user_id_hash(
       chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
-  arc_session_runner_->SetUserIdHashForProfile(user_id_hash);
+  arc_session_runner_->SetUserInfo(user_id_hash,
+                                   GetOrCreateSerialNumber(prefs));
 
   // Create the support host at initialization. Note that, practically,
   // ARC support Chrome app is rarely used (only opt-in and re-auth flow).
@@ -486,9 +504,8 @@ void ArcSessionManager::Initialize() {
     support_host_->SetErrorDelegate(this);
   }
   data_remover_ = std::make_unique<ArcDataRemover>(
-      profile_->GetPrefs(),
-      cryptohome::Identification(
-          multi_user_util::GetAccountIdFromProfile(profile_)));
+      prefs, cryptohome::Identification(
+                 multi_user_util::GetAccountIdFromProfile(profile_)));
   data_remover_->set_user_id_hash_for_profile(user_id_hash);
 
   if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))

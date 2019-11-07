@@ -90,7 +90,7 @@ void PopulateAdvancedCapsLocalization(
 
 // Returns a dictionary representing printer capabilities as CDD.  Returns
 // an empty dictionary if a dictionary could not be generated.
-base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
+base::Value GetPrinterCapabilitiesOnBlockingTaskRunner(
     const std::string& device_name,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
     bool has_secure_protocol,
@@ -151,7 +151,7 @@ std::string GetUserFriendlyName(const std::string& printer_name) {
 }
 #endif
 
-base::Value GetSettingsOnBlockingPool(
+base::Value GetSettingsOnBlockingTaskRunner(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
@@ -176,7 +176,7 @@ base::Value GetSettingsOnBlockingPool(
   printer_info_capabilities.SetKey(kPrinter, std::move(printer_info));
   printer_info_capabilities.SetKey(
       kSettingCapabilities,
-      GetPrinterCapabilitiesOnBlockingPoolThread(
+      GetPrinterCapabilitiesOnBlockingTaskRunner(
           device_name, additional_papers, has_secure_protocol, print_backend));
   return printer_info_capabilities;
 }

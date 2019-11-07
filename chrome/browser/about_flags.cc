@@ -1317,30 +1317,67 @@ const FeatureEntry::FeatureVariation
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kQuietNotificationPromptsHeadsUpNotifications =
-    {kQuietNotificationPromptsUIFlavourParameterName,
-     kQuietNotificationPromptsHeadsUpNotification};
-const FeatureEntry::FeatureParam kQuietNotificationPromptsMiniInfobars = {
-    kQuietNotificationPromptsUIFlavourParameterName,
-    kQuietNotificationPromptsMiniInfobar};
-// The "default" option that only shows "Enabled" will be the quiet notification
-// option, the rest are listed explicitly here.
+const FeatureEntry::FeatureParam
+    kQuietNotificationPromptsForceQuietNotifications[] = {
+        {kQuietNotificationPromptsUIFlavorParameterName,
+         kQuietNotificationPromptsQuietNotification},
+        {kQuietNotificationPromptsActivationParameterName,
+         kQuietNotificationPromptsActivationAlways},
+};
+const FeatureEntry::FeatureParam
+    kQuietNotificationPromptsForceHeadsUpNotifications[] = {
+        {kQuietNotificationPromptsUIFlavorParameterName,
+         kQuietNotificationPromptsHeadsUpNotification},
+        {kQuietNotificationPromptsActivationParameterName,
+         kQuietNotificationPromptsActivationAlways},
+};
+const FeatureEntry::FeatureParam kQuietNotificationPromptsForceMiniInfobars[] =
+    {
+        {kQuietNotificationPromptsUIFlavorParameterName,
+         kQuietNotificationPromptsMiniInfobar},
+        {kQuietNotificationPromptsActivationParameterName,
+         kQuietNotificationPromptsActivationAlways},
+};
+
+// The "default" option that only shows "Enabled" will be "quiet notifications",
+// triggered after 3 consecutive denies.
 const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
-    {"(heads-up notifications)", &kQuietNotificationPromptsHeadsUpNotifications,
-     1, nullptr},
-    {"(mini-infobars)", &kQuietNotificationPromptsMiniInfobars, 1, nullptr},
+    {"(force quiet notifications)",
+     kQuietNotificationPromptsForceQuietNotifications,
+     base::size(kQuietNotificationPromptsForceQuietNotifications), nullptr},
+    {"(force heads-up notifications)",
+     kQuietNotificationPromptsForceHeadsUpNotifications,
+     base::size(kQuietNotificationPromptsForceHeadsUpNotifications), nullptr},
+    {"(force mini-infobars)", kQuietNotificationPromptsForceMiniInfobars,
+     base::size(kQuietNotificationPromptsForceMiniInfobars), nullptr},
 };
 #else   // OS_ANDROID
-const FeatureEntry::FeatureParam kQuietNotificationPromptsStaticIcons = {
-    kQuietNotificationPromptsUIFlavourParameterName,
-    kQuietNotificationPromptsStaticIcon};
-const FeatureEntry::FeatureParam kQuietNotificationPromptsAnimatedIcons = {
-    kQuietNotificationPromptsUIFlavourParameterName,
-    kQuietNotificationPromptsAnimatedIcon};
-// The "default" option that only shows "Enabled" will be the static icon.
+const FeatureEntry::FeatureParam
+    kQuietNotificationPromptsForceStaticIconNotificationsPrompt[] = {
+        {kQuietNotificationPromptsUIFlavorParameterName,
+         kQuietNotificationPromptsStaticIcon},
+        {kQuietNotificationPromptsActivationParameterName,
+         kQuietNotificationPromptsActivationAlways},
+};
+const FeatureEntry::FeatureParam
+    kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt[] = {
+        {kQuietNotificationPromptsUIFlavorParameterName,
+         kQuietNotificationPromptsAnimatedIcon},
+        {kQuietNotificationPromptsActivationParameterName,
+         kQuietNotificationPromptsActivationAlways},
+};
+
+// The "default" option that only shows "Enabled" will be the static icon,
+// triggered after 3 consecutive denies.
 const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
-    {"(static-icon)", &kQuietNotificationPromptsStaticIcons, 1, nullptr},
-    {"(animated-icon)", &kQuietNotificationPromptsAnimatedIcons, 1, nullptr},
+    {"(force static-icon)",
+     kQuietNotificationPromptsForceStaticIconNotificationsPrompt,
+     base::size(kQuietNotificationPromptsForceStaticIconNotificationsPrompt),
+     nullptr},
+    {"(force animated-icon)",
+     kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt,
+     base::size(kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt),
+     nullptr},
 };
 #endif  // !OS_ANDROID
 
@@ -4734,6 +4771,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcApplicationZoomDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableApplicationZoomFeature)},
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+    {"enable-home-page-location-policy",
+     flag_descriptions::kHomepageLocationName,
+     flag_descriptions::kHomepageLocationDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kHomepageLocation)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

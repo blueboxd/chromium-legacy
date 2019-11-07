@@ -160,9 +160,9 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
       WindowDraggingState window_dragging_state,
       WindowDraggingState previous_window_dragging_state,
       bool can_dragged_window_be_snapped) {
-    // In split view, the labels never show, and they do not need to be updated.
-    if (SplitViewController::Get(GetWidget()->GetNativeWindow())
-            ->InSplitViewMode()) {
+    // No top label for dragging from the top in portrait orientation.
+    if (window_dragging_state == WindowDraggingState::kFromTop &&
+        !IsCurrentScreenOrientationLandscape() && !is_right_or_bottom_) {
       return;
     }
 
@@ -180,19 +180,11 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
       return;
     }
 
-    // No top label for dragging from the top in portrait orientation.
-    if (window_dragging_state == WindowDraggingState::kFromTop &&
-        !IsCurrentScreenOrientationLandscape() && !is_right_or_bottom_) {
-      return;
-    }
-
-    // Set the text according to |can_dragged_window_be_snapped|.
-    SetLabelText(l10n_util::GetStringUTF16(
-        can_dragged_window_be_snapped ? IDS_ASH_SPLIT_VIEW_GUIDANCE
-                                      : IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
-
-    // When dragging begins, fade in with an indicator.
+    // When dragging begins, set the text and fade in with an indicator.
     if (previous_window_dragging_state == WindowDraggingState::kNoDrag) {
+      SetLabelText(l10n_util::GetStringUTF16(
+          can_dragged_window_be_snapped ? IDS_ASH_SPLIT_VIEW_GUIDANCE
+                                        : IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
       DoSplitviewOpacityAnimation(
           layer(), SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT);
       return;
@@ -276,19 +268,25 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     previous_window_dragging_state_ = window_dragging_state_;
     window_dragging_state_ = window_dragging_state;
 
+    const bool previews_only =
+        window_dragging_state == WindowDraggingState::kFromShelf ||
+        SplitViewController::Get(GetWidget()->GetNativeWindow())
+            ->InSplitViewMode();
     const bool can_dragged_window_be_snapped =
         dragged_window_ && CanSnapInSplitview(dragged_window_);
-    left_rotated_view_->OnWindowDraggingStateChanged(
-        window_dragging_state, previous_window_dragging_state_,
-        can_dragged_window_be_snapped);
-    right_rotated_view_->OnWindowDraggingStateChanged(
-        window_dragging_state, previous_window_dragging_state_,
-        can_dragged_window_be_snapped);
+    if (!previews_only) {
+      left_rotated_view_->OnWindowDraggingStateChanged(
+          window_dragging_state, previous_window_dragging_state_,
+          can_dragged_window_be_snapped);
+      right_rotated_view_->OnWindowDraggingStateChanged(
+          window_dragging_state, previous_window_dragging_state_,
+          can_dragged_window_be_snapped);
+    }
     left_highlight_view_->OnWindowDraggingStateChanged(
-        window_dragging_state, previous_window_dragging_state_,
+        window_dragging_state, previous_window_dragging_state_, previews_only,
         can_dragged_window_be_snapped);
     right_highlight_view_->OnWindowDraggingStateChanged(
-        window_dragging_state, previous_window_dragging_state_,
+        window_dragging_state, previous_window_dragging_state_, previews_only,
         can_dragged_window_be_snapped);
 
     if (window_dragging_state != WindowDraggingState::kNoDrag ||

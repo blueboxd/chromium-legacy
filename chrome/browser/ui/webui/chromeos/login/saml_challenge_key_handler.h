@@ -16,6 +16,8 @@
 
 namespace chromeos {
 
+extern const char kSamlChallengeKeyHandlerResultMetric[];
+
 // This class handles "samlChallengeMachineKey" request for GaiaScreenHandler.
 // It calculates response for a challenge from Verified Access server for remote
 // attestation during SAML authentication.
@@ -49,7 +51,7 @@ class SamlChallengeKeyHandler final {
   void ReturnResult(const attestation::TpmChallengeKeyResult& result);
 
   Profile* profile_ = nullptr;
-  std::string challenge_;
+  std::string decoded_challenge_;
   // Callback to return a result of ChallengeKey.
   CallbackType callback_;
 

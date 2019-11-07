@@ -74,7 +74,8 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
   }
 
   if (target) {
-    target->ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kUser);
+    target->ActivateDisplayLockIfNeeded(
+        DisplayLockActivationReason::kFragmentNavigation);
     target->DispatchActivateInvisibleEventIfNeeded();
   }
 

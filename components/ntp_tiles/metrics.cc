@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/ntp_tiles/constants.h"
-#include "components/rappor/public/rappor_utils.h"
 
 namespace ntp_tiles {
 namespace metrics {
@@ -84,8 +83,7 @@ void RecordPageImpression(int number_of_tiles) {
   base::UmaHistogramSparse("NewTabPage.NumberOfTiles", number_of_tiles);
 }
 
-void RecordTileImpression(const NTPTileImpression& impression,
-                          rappor::RapporService* rappor_service) {
+void RecordTileImpression(const NTPTileImpression& impression) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestionsImpression",
                             impression.index, kMaxNumTiles);
 
@@ -126,14 +124,7 @@ void RecordTileImpression(const NTPTileImpression& impression,
 
   const char* tile_type_suffix = GetTileTypeSuffix(impression.visual_type);
   if (tile_type_suffix) {
-    if (!impression.url_for_rappor.is_empty()) {
-      // Note: This handles a null |rappor_service|.
-      rappor::SampleDomainAndRegistryFromGURL(
-          rappor_service,
-          base::StringPrintf("NTP.SuggestionsImpressions.%s", tile_type_suffix),
-          impression.url_for_rappor);
-    }
-
+    // TODO(http://crbug.com/1021598): Add UKM here.
     base::UmaHistogramExactLinear(
         base::StringPrintf("NewTabPage.SuggestionsImpression.%s",
                            tile_type_suffix),

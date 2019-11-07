@@ -64,6 +64,7 @@
 #include "base/i18n/rtl.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -532,6 +533,19 @@ class ShelfLayoutManagerTestBase : public AshTestBase {
     GetEventGenerator()->MoveMouseTo(1, display_bottom - 1);
     ASSERT_TRUE(TriggerAutoHideTimeout());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
+  }
+
+  // Move mouse to |location| and do a two-finger vertical scroll.
+  void DoTwoFingerVerticalScrollAtLocation(gfx::Point location, int y_offset) {
+    GetEventGenerator()->ScrollSequence(location, base::TimeDelta(),
+                                        /*x_offset=*/0, y_offset, /*steps=*/1,
+                                        /*num_fingers=*/2);
+  }
+
+  // Move mouse to |location| and do a mousewheel scroll.
+  void DoMouseWheelScrollAtLocation(gfx::Point location, int delta_y) {
+    GetEventGenerator()->MoveMouseTo(location);
+    GetEventGenerator()->MoveMouseWheel(/*delta_x=*/0, delta_y);
   }
 
  private:
@@ -4032,14 +4046,16 @@ class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
 TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   const gfx::Rect shelf_widget_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
   const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
 
   // Starts the drag from the center of the shelf's bottom.
   gfx::Point start = shelf_widget_bounds.bottom_center();
   StartScroll(start);
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   // We need at least one window to work with.
   EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
-  UpdateScroll(-shelf_widget_bounds.height() - hotseat_size);
   EndScroll(/*is_fling=*/false, 0.f);
 
   std::unique_ptr<aura::Window> window =
@@ -4047,6 +4063,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   wm::ActivateWindow(window.get());
 
   StartScroll(start);
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   DragWindowFromShelfController* window_drag_controller =
       GetShelfLayoutManager()->window_drag_controller_for_testing();
   EXPECT_TRUE(window_drag_controller);
@@ -4058,8 +4075,8 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   // The window needs to be visible to drag up.
   window->Hide();
   StartScroll(start);
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
-  UpdateScroll(-shelf_widget_bounds.height() - hotseat_size);
   EndScroll(/*is_fling=*/false, 0.f);
 
   // In splitview, depends on the drag position, the active dragged window might
@@ -4071,6 +4088,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   StartScroll(shelf_widget_bounds.bottom_left());
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   window_drag_controller =
       GetShelfLayoutManager()->window_drag_controller_for_testing();
   EXPECT_TRUE(window_drag_controller);
@@ -4079,6 +4097,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
 
   StartScroll(shelf_widget_bounds.bottom_right());
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   window_drag_controller =
       GetShelfLayoutManager()->window_drag_controller_for_testing();
   EXPECT_TRUE(window_drag_controller);
@@ -4092,6 +4111,9 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
 TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
   const gfx::Rect shelf_widget_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
   std::unique_ptr<aura::Window> window1 =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   std::unique_ptr<aura::Window> window2 =
@@ -4103,6 +4125,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
   overview_controller->StartOverview();
   gfx::Point start = shelf_widget_bounds.bottom_center();
   StartScroll(start);
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
   EndScroll(/*is_fling=*/false, 0.f);
 
@@ -4116,6 +4139,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   StartScroll(shelf_widget_bounds.bottom_right());
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
   EndScroll(/*is_fling=*/false, 0.f);
 }
@@ -4127,11 +4151,16 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
   Shelf* shelf = GetPrimaryShelf();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+
   // The window can be dragged on a visible shelf.
   const gfx::Rect shelf_widget_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   StartScroll(shelf_widget_bounds.bottom_center());
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   EXPECT_TRUE(GetShelfLayoutManager()->window_drag_controller_for_testing());
   EndScroll(/*is_fling=*/false, 0.f);
 
@@ -4145,6 +4174,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
   gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   StartScroll(display_bounds.bottom_center());
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
   EndScroll(/*is_fling=*/false, 0.f);
 
@@ -4152,6 +4182,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
   SwipeUpOnShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   StartScroll(display_bounds.bottom_center());
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   EXPECT_TRUE(GetShelfLayoutManager()->window_drag_controller_for_testing());
   EndScroll(/*is_fling=*/false, 0.f);
 
@@ -4159,6 +4190,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
   SetState(GetShelfLayoutManager(), SHELF_HIDDEN);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
   StartScroll(display_bounds.bottom_center());
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
   EndScroll(/*is_fling=*/false, 0.f);
 }
@@ -4178,6 +4210,33 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpIfDragStartsAboveShelf) {
       GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
   StartScroll(hotseat_bounds.CenterPoint());
   EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EndScroll(/*is_fling=*/false, 0.f);
+}
+
+// Tests that the MRU window can only be dragged window after the hotseat is
+// fully dragged up if hotseat was hidden before.
+TEST_F(ShelfLayoutManagerWindowDraggingTest, StartsDragAfterHotseatIsUp) {
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+
+  // Starts the drag from the center of the shelf's bottom.
+  gfx::Point start = shelf_widget_bounds.bottom_center();
+  StartScroll(start);
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  // Continues the drag until the hotseat should have been fully dragged up.
+  UpdateScroll(-shelf_size);
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  UpdateScroll(-hotseat_padding_size);
+  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  UpdateScroll(-hotseat_size);
+  EXPECT_TRUE(GetShelfLayoutManager()->window_drag_controller_for_testing());
   EndScroll(/*is_fling=*/false, 0.f);
 }
 
@@ -4480,6 +4539,65 @@ TEST_F(ShelfLayoutManagerTest, ShelfShowsPinnedAppsOnOtherDisplays) {
           << "screen edge on display " << display_index << " with " << app_count
           << " apps";
     }
+  }
+}
+
+// Tests that the mousewheel scroll and the two finger gesture when the mouse is
+// over the shelf shows the app list in peeking state.
+TEST_P(ShelfLayoutManagerTest, ScrollUpFromShelfToShowPeekingAppList) {
+  const struct {
+    views::View* view;
+    bool with_mousewheel_scroll;
+  } test_table[]{
+      {GetPrimaryShelf()->GetShelfViewForTesting(), false},
+      {GetShelfWidget()->status_area_widget()->GetContentsView(), false},
+      {GetShelfWidget()->navigation_widget()->GetContentsView(), false},
+      {GetShelfWidget()->status_area_widget()->GetContentsView(), true},
+      {GetShelfWidget()->navigation_widget()->GetContentsView(), true},
+  };
+  base::HistogramTester histogram_tester;
+  const int scroll_offset_threshold =
+      ShelfConfig::Get()->mousewheel_scroll_offset_threshold();
+  int bucket_count = 0;
+
+  for (auto test : test_table) {
+    ASSERT_EQ(SHELF_ALIGNMENT_BOTTOM, GetPrimaryShelf()->alignment());
+
+    // Scrolling up from the center of the view above the threshold should show
+    // the peeking app list.
+    const gfx::Point start = test.view->GetBoundsInScreen().CenterPoint();
+    if (test.with_mousewheel_scroll)
+      DoMouseWheelScrollAtLocation(start, scroll_offset_threshold + 1);
+    else
+      DoTwoFingerVerticalScrollAtLocation(start, scroll_offset_threshold + 10);
+
+    GetAppListTestHelper()->WaitUntilIdle();
+    GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+    GetAppListTestHelper()->CheckVisibility(true);
+    histogram_tester.ExpectBucketCount("Apps.AppListShowSource",
+                                       AppListShowSource::kScrollFromShelf,
+                                       ++bucket_count);
+
+    GetAppListTestHelper()->DismissAndRunLoop();
+    GetAppListTestHelper()->CheckVisibility(false);
+
+    // Scrolling up from the center of the view below the threshold should not
+    // show the app list.
+    if (test.with_mousewheel_scroll) {
+      DoMouseWheelScrollAtLocation(start, scroll_offset_threshold);
+    } else {
+      // A ScrollEvent gets amplified when transformed into a mousewheel event.
+      // We need to set a lower offset so when it gets amplified, it still is
+      // under the threshold.
+      DoTwoFingerVerticalScrollAtLocation(start, scroll_offset_threshold - 10);
+    }
+
+    GetAppListTestHelper()->WaitUntilIdle();
+    GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+    GetAppListTestHelper()->CheckVisibility(false);
+    histogram_tester.ExpectBucketCount("Apps.AppListShowSource",
+                                       AppListShowSource::kScrollFromShelf,
+                                       bucket_count);
   }
 }
 

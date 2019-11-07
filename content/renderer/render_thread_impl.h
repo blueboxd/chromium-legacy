@@ -17,6 +17,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/user_metrics_action.h"
@@ -37,6 +38,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/renderer/compositor/compositor_dependencies.h"
+#include "content/renderer/discardable_memory_utils.h"
 #include "content/renderer/media/audio/audio_input_ipc_factory.h"
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -76,10 +78,6 @@ class Thread;
 
 namespace cc {
 class TaskGraphRunner;
-}
-
-namespace discardable_memory {
-class ClientDiscardableSharedMemoryManager;
 }
 
 namespace gpu {
@@ -257,9 +255,9 @@ class CONTENT_EXPORT RenderThreadImpl
   bool web_test_mode() const { return web_test_mode_; }
   void enable_web_test_mode() { web_test_mode_ = true; }
 
-  discardable_memory::ClientDiscardableSharedMemoryManager*
-  GetDiscardableSharedMemoryManagerForTest() {
-    return discardable_shared_memory_manager_.get();
+  base::DiscardableMemoryAllocator* GetDiscardableMemoryAllocatorForTest()
+      const {
+    return discardable_memory_allocator_.get();
   }
 
   RendererBlinkPlatformImpl* blink_platform_impl() const {
@@ -538,8 +536,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnRendererInterfaceReceiver(
       mojo::PendingAssociatedReceiver<mojom::Renderer> receiver);
 
-  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
-      discardable_shared_memory_manager_;
+  std::unique_ptr<base::DiscardableMemoryAllocator>
+      discardable_memory_allocator_;
 
   // These objects live solely on the render thread.
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;

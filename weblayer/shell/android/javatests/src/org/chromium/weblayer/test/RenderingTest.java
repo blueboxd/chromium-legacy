@@ -32,16 +32,13 @@ public class RenderingTest {
         String url = "data:text,foo";
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getBrowserFragmentController().setSupportsEmbedding(true).addCallback(
-                    (Boolean result) -> {
-                        Assert.assertTrue(result);
-                        activity.getBrowserFragmentController()
-                                .setSupportsEmbedding(false)
-                                .addCallback((Boolean result2) -> {
-                                    Assert.assertTrue(result2);
-                                    latch.countDown();
-                                });
-                    });
+            activity.getBrowser().setSupportsEmbedding(true).addCallback((Boolean result) -> {
+                Assert.assertTrue(result);
+                activity.getBrowser().setSupportsEmbedding(false).addCallback((Boolean result2) -> {
+                    Assert.assertTrue(result2);
+                    latch.countDown();
+                });
+            });
         });
 
         try {
@@ -60,16 +57,14 @@ public class RenderingTest {
         CountDownLatch latch = new CountDownLatch(2);
         String url = "data:text,foo";
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getBrowserFragmentController().setSupportsEmbedding(true).addCallback(
-                    (Boolean result) -> {
-                        Assert.assertTrue(result);
-                        latch.countDown();
-                    });
-            activity.getBrowserFragmentController().setSupportsEmbedding(true).addCallback(
-                    (Boolean result) -> {
-                        Assert.assertTrue(result);
-                        latch.countDown();
-                    });
+            activity.getBrowser().setSupportsEmbedding(true).addCallback((Boolean result) -> {
+                Assert.assertTrue(result);
+                latch.countDown();
+            });
+            activity.getBrowser().setSupportsEmbedding(true).addCallback((Boolean result) -> {
+                Assert.assertTrue(result);
+                latch.countDown();
+            });
         });
 
         try {

@@ -24,7 +24,8 @@ enum GrContextType {
   kGL = 0,
   kVulkan = 1,
   kMetal = 2,
-  kLast = kMetal,
+  kDawn = 3,
+  kLast = kDawn,
 };
 
 // gpu::GpuPreferences

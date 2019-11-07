@@ -9,6 +9,10 @@
 #include "chrome/services/printing/pdf_to_pwg_raster_converter.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/services/printing/pdf_flattener.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/services/printing/pdf_to_emf_converter.h"
 #include "chrome/services/printing/pdf_to_emf_converter_factory.h"
@@ -34,6 +38,14 @@ void PrintingService::BindPdfToPwgRasterConverter(
       std::make_unique<printing::PdfToPwgRasterConverter>(),
       std::move(receiver));
 }
+
+#if defined(OS_CHROMEOS)
+void PrintingService::BindPdfFlattener(
+    mojo::PendingReceiver<mojom::PdfFlattener> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<printing::PdfFlattener>(),
+                              std::move(receiver));
+}
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
 void PrintingService::BindPdfToEmfConverterFactory(

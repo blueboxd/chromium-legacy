@@ -325,8 +325,17 @@ class TestWebContentsObserver : public WebContentsObserver {
     last_theme_color_ = theme_color;
   }
 
+  void DidChangeVerticalScrollDirection(
+      viz::VerticalScrollDirection scroll_direction) override {
+    last_vertical_scroll_direction_ = scroll_direction;
+  }
+
   const GURL& last_url() const { return last_url_; }
   base::Optional<SkColor> last_theme_color() const { return last_theme_color_; }
+  base::Optional<viz::VerticalScrollDirection> last_vertical_scroll_direction()
+      const {
+    return last_vertical_scroll_direction_;
+  }
   bool observed_did_first_visually_non_empty_paint() const {
     return observed_did_first_visually_non_empty_paint_;
   }
@@ -334,6 +343,7 @@ class TestWebContentsObserver : public WebContentsObserver {
  private:
   GURL last_url_;
   base::Optional<SkColor> last_theme_color_;
+  base::Optional<viz::VerticalScrollDirection> last_vertical_scroll_direction_;
   bool observed_did_first_visually_non_empty_paint_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
@@ -3398,6 +3408,18 @@ TEST_F(WebContentsImplTest, DidFirstVisuallyNonEmptyPaint) {
   rwhod->RenderWidgetDidFirstVisuallyNonEmptyPaint();
 
   EXPECT_TRUE(observer.observed_did_first_visually_non_empty_paint());
+}
+
+TEST_F(WebContentsImplTest, DidChangeVerticalScrollDirection) {
+  TestWebContentsObserver observer(contents());
+
+  EXPECT_FALSE(observer.last_vertical_scroll_direction().has_value());
+
+  contents()->OnVerticalScrollDirectionChanged(
+      viz::VerticalScrollDirection::kUp);
+
+  EXPECT_EQ(viz::VerticalScrollDirection::kUp,
+            observer.last_vertical_scroll_direction().value());
 }
 
 namespace {

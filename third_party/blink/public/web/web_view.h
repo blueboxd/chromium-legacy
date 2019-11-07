@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_
 
 #include "base/time/time.h"
+#include "third_party/blink/public/common/page/page_visibility_state.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -406,8 +407,9 @@ class WebView {
   // Visibility -----------------------------------------------------------
 
   // Sets the visibility of the WebView.
-  virtual void SetIsHidden(bool hidden, bool is_initial_state) = 0;
-  virtual bool IsHidden() = 0;
+  virtual void SetVisibilityState(PageVisibilityState visibility_state,
+                                  bool is_initial_state) = 0;
+  virtual PageVisibilityState GetVisibilityState() = 0;
 
   // FrameOverlay ----------------------------------------------------------
 

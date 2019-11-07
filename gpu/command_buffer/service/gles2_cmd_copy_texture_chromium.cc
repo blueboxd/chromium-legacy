@@ -723,9 +723,9 @@ void prepareUnpackBuffer(GLuint buffer[2],
   if (format == GL_RGB && type == GL_FLOAT) {
 #if defined(OS_ANDROID)
     // Reading pixels to pbo with glReadPixels will cause random failures of
-    // GLCopyTextureCHROMIUMES3Test.FormatCombinations in gpu_tests. This is
-    // seen on Nexus 5 but not Nexus 4. Read pixels to client memory, then
-    // upload to pixel unpack buffer with glBufferData.
+    // GLCopyTextureCHROMIUMES3Test.FormatCombinations in gl_tests. This is seen
+    // on Nexus 5 but not Nexus 4. Read pixels to client memory, then upload to
+    // pixel unpack buffer with glBufferData.
     std::unique_ptr<uint8_t[]> pixels(new uint8_t[width * height * 4]);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
     std::unique_ptr<float[]> data(new float[width * height * 3]);

@@ -59,6 +59,8 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   const base::string16& initiator_title() const { return initiator_title_; }
 
+  bool source_is_arc() const { return source_is_arc_; }
+
   bool source_is_modifiable() const { return source_is_modifiable_; }
 
   bool source_is_pdf() const { return source_is_pdf_; }
@@ -255,6 +257,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Weak pointer to the WebUI handler.
   PrintPreviewHandler* const handler_;
+
+  // Indicates whether the source document is from ARC.
+  bool source_is_arc_ = false;
 
   // Indicates whether the source document can be modified.
   bool source_is_modifiable_ = true;

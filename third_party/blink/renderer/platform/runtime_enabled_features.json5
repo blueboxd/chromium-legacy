@@ -267,6 +267,10 @@
       name: "CacheInlineScriptCode"
     },
     {
+      name: "CacheStorageCodeCacheHint",
+      status: "experimental",
+    },
+    {
       name: "Canvas2dContextLostRestored",
       status: "experimental",
     },
@@ -920,6 +924,9 @@
     {
       name:"ManualSlotting",
       status:"experimental",
+    },
+    {
+      name: "MathMLCore",
     },
     {
       name:"MeasureMemory",

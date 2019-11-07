@@ -16,6 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.android_webview.test.util.MemoryMetricsLoggerUtilsJni;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
@@ -37,7 +38,7 @@ public class MemoryMetricsLoggerTest {
 
         mActivityTestRule.loadUrlSync(testContainerView.getAwContents(),
                 contentsClient.getOnPageFinishedHelper(), "about:blank");
-        Assert.assertTrue(nativeForceRecordHistograms());
+        Assert.assertTrue(MemoryMetricsLoggerUtilsJni.get().forceRecordHistograms());
     }
 
     @After
@@ -75,10 +76,4 @@ public class MemoryMetricsLoggerTest {
                 RecordHistogram.getHistogramTotalCountForTesting(
                         "Memory.Total.PrivateMemoryFootprint"));
     }
-
-    /**
-     * Calls to MemoryMetricsLogger to force recording histograms, returning true on success.
-     * A value of false means recording failed (most likely because process metrics not available.
-     */
-    public static native boolean nativeForceRecordHistograms();
 }

@@ -4,9 +4,9 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_overlay_validator.h"
 
-#include <drm_fourcc.h>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/files/platform_file.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -25,26 +25,44 @@ namespace ui {
 namespace {
 
 scoped_refptr<DrmFramebuffer> GetBufferForPageFlipTest(
-    const scoped_refptr<DrmDevice>& drm_device,
-    const gfx::Size& size,
-    uint32_t format,
+    const DrmWindow* drm_window,
+    const OverlaySurfaceCandidate& overlay_surface,
     std::vector<scoped_refptr<DrmFramebuffer>>* reusable_buffers) {
+  uint32_t fourcc_format =
+      overlay_surface.is_opaque
+          ? GetFourCCFormatForOpaqueFramebuffer(overlay_surface.format)
+          : GetFourCCFormatFromBufferFormat(overlay_surface.format);
+  gfx::Size size = overlay_surface.buffer_size;
+  bool is_0th_plane = !overlay_surface.plane_z_order;
+  // Force the 0th plane (e.g. primary plane and fullscreen) with the modifiers
+  // used in existing buffers to keep the test consistent with the subsequent
+  // flip commits.
+  std::vector<uint64_t> modifiers =
+      is_0th_plane
+          ? drm_window->GetController()->GetFormatModifiers(fourcc_format)
+          : std::vector<uint64_t>();
+
   // Check if we can re-use existing buffers.
-  for (const auto& buffer : *reusable_buffers) {
-    if (buffer->framebuffer_pixel_format() == format &&
-        buffer->size() == size) {
-      return buffer;
+  for (const auto& buf : *reusable_buffers) {
+    if (buf->framebuffer_pixel_format() == fourcc_format &&
+        buf->size() == size && buf->preferred_modifiers() == modifiers) {
+      return buf;
     }
   }
 
-  // TODO(dcastagna): use the right modifiers.
+  scoped_refptr<DrmDevice> drm_device =
+      drm_window->GetController()->GetDrmDevice();
+
   std::unique_ptr<GbmBuffer> buffer =
-      drm_device->gbm_device()->CreateBuffer(format, size, GBM_BO_USE_SCANOUT);
+      is_0th_plane ? drm_device->gbm_device()->CreateBufferWithModifiers(
+                         fourcc_format, size, GBM_BO_USE_SCANOUT, modifiers)
+                   : drm_device->gbm_device()->CreateBuffer(fourcc_format, size,
+                                                            GBM_BO_USE_SCANOUT);
   if (!buffer)
     return nullptr;
 
   scoped_refptr<DrmFramebuffer> drm_framebuffer =
-      DrmFramebuffer::AddFramebuffer(drm_device, buffer.get());
+      DrmFramebuffer::AddFramebuffer(drm_device, buffer.get(), modifiers);
   if (!drm_framebuffer)
     return nullptr;
 
@@ -84,14 +102,13 @@ OverlayStatusList DrmOverlayValidator::TestPageFlip(
       continue;
     }
 
-    scoped_refptr<DrmFramebuffer> buffer = GetBufferForPageFlipTest(
-        drm, params[i].buffer_size,
-        GetFourCCFormatFromBufferFormat(params[i].format), &reusable_buffers);
+    scoped_refptr<DrmFramebuffer> buffer =
+        GetBufferForPageFlipTest(window_, params[i], &reusable_buffers);
 
     DrmOverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
                           gfx::ToNearestRect(params[i].display_rect),
-                          params[i].crop_rect,
-                          /* enable_blend */ true, /* gpu_fence */ nullptr);
+                          params[i].crop_rect, !params[i].is_opaque,
+                          /*gpu_fence=*/nullptr);
     test_list.push_back(std::move(plane));
 
     if (buffer && controller->TestPageFlip(test_list)) {

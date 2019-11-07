@@ -59,8 +59,7 @@ public class PaymentHandlerCoordinator {
         bottomSheetController.addObserver(mediator);
         webContents.addObserver(mediator);
 
-        PaymentHandlerView view = new PaymentHandlerView(
-                activity, bottomSheetController.getBottomSheet(), webContents, webContentView);
+        PaymentHandlerView view = new PaymentHandlerView(activity, webContents, webContentView);
         PropertyModelChangeProcessor changeProcessor =
                 PropertyModelChangeProcessor.create(model, view, PaymentHandlerViewBinder::bind);
         mHider = () -> {

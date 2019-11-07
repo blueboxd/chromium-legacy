@@ -35,6 +35,7 @@ class NeuralStylusPalmDetectionFilterUtilTest : public testing::Test {
  protected:
   InProgressTouchEvdev touch_;
   EventDeviceInfo nocturne_touchscreen_;
+  NeuralStylusPalmDetectionFilterModelConfig model_config_;
 
   DISALLOW_COPY_AND_ASSIGN(NeuralStylusPalmDetectionFilterUtilTest);
 };
@@ -96,7 +97,7 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, PalmFilterSampleTest) {
   const PalmFilterDeviceInfo nocturne_distilled =
       CreatePalmFilterDeviceInfo(nocturne_touchscreen_);
   const PalmFilterSample sample =
-      CreatePalmFilterSample(touch_, time, nocturne_distilled);
+      CreatePalmFilterSample(touch_, time, model_config_, nocturne_distilled);
   EXPECT_EQ(time, sample.time);
   EXPECT_EQ(25, sample.major_radius);
   EXPECT_EQ(24, sample.minor_radius);
@@ -113,8 +114,11 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, LinkTouchscreenSampleTest) {
   const PalmFilterDeviceInfo link_distilled =
       CreatePalmFilterDeviceInfo(link_touchscreen);
   touch_.minor = 0;  // no minor from link.
+  // use 40 as a base since model is trained on that kind of device.
+  model_config_.radius_polynomial_resize = {
+      link_touchscreen.GetAbsResolution(ABS_MT_POSITION_X) / 40.0, 0.0};
   const PalmFilterSample sample =
-      CreatePalmFilterSample(touch_, time, link_distilled);
+      CreatePalmFilterSample(touch_, time, model_config_, link_distilled);
   EXPECT_FLOAT_EQ(12.5, sample.major_radius);
   EXPECT_FLOAT_EQ(12.5, sample.minor_radius);
 }
@@ -132,7 +136,7 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, PalmFilterStrokeTest) {
   for (int i = 0; i < 500000; ++i) {
     touch_.x = 15 + i;
     PalmFilterSample sample =
-        CreatePalmFilterSample(touch_, time, nocturne_distilled);
+        CreatePalmFilterSample(touch_, time, model_config_, nocturne_distilled);
     stroke.AddSample(std::move(sample));
     EXPECT_EQ(touch_.tracking_id, stroke.tracking_id());
     if (i < 3) {
@@ -170,13 +174,13 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest,
     touch_.major = 2 + i;
     touch_.minor = 1 + i;
     PalmFilterSample sample =
-        CreatePalmFilterSample(touch_, time, nocturne_distilled);
+        CreatePalmFilterSample(touch_, time, model_config_, nocturne_distilled);
     EXPECT_EQ(static_cast<uint64_t>(i), stroke.samples_seen());
     stroke.AddSample(sample);
     EXPECT_FLOAT_EQ((1 + i) * (2 + i), stroke.BiggestSize());
 
     PalmFilterSample second_sample =
-        CreatePalmFilterSample(touch_, time, nocturne_distilled);
+        CreatePalmFilterSample(touch_, time, model_config_, nocturne_distilled);
     second_sample.minor_radius = 0;
     no_minor_stroke.AddSample(std::move(second_sample));
     EXPECT_FLOAT_EQ((2 + i) * (2 + i), no_minor_stroke.BiggestSize());
@@ -195,12 +199,32 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeGetMaxMajorTest) {
     touch_.major = i;
     touch_.minor = i - 1;
     PalmFilterSample sample =
-        CreatePalmFilterSample(touch_, time, nocturne_distilled);
+        CreatePalmFilterSample(touch_, time, model_config_, nocturne_distilled);
     time += base::TimeDelta::FromMilliseconds(8);
     EXPECT_EQ(static_cast<uint64_t>(i - 1), stroke.samples_seen());
     stroke.AddSample(sample);
     EXPECT_FLOAT_EQ(i, stroke.MaxMajorRadius());
   }
+}
+
+TEST_F(NeuralStylusPalmDetectionFilterUtilTest, SampleRadiusConversion) {
+  // A single number: a _constant_.
+  model_config_.radius_polynomial_resize = {71.3};
+  base::TimeTicks time =
+      base::TimeTicks::UnixEpoch() + base::TimeDelta::FromSeconds(30);
+  const PalmFilterDeviceInfo nocturne_distilled =
+      CreatePalmFilterDeviceInfo(nocturne_touchscreen_);
+  PalmFilterSample sample =
+      CreatePalmFilterSample(touch_, time, model_config_, nocturne_distilled);
+  EXPECT_FLOAT_EQ(71.3, sample.major_radius);
+  EXPECT_FLOAT_EQ(71.3, sample.minor_radius);
+
+  // 0.1*r^2 + 0.4*r - 5.0
+  model_config_.radius_polynomial_resize = {0.1, 0.4, -5.0};
+  sample =
+      CreatePalmFilterSample(touch_, time, model_config_, nocturne_distilled);
+  EXPECT_FLOAT_EQ(0.1 * 25 * 25 + 0.4 * 25 - 5.0, sample.major_radius);
+  EXPECT_FLOAT_EQ(0.1 * 24 * 24 + 0.4 * 24 - 5.0, sample.minor_radius);
 }
 
 }  // namespace ui

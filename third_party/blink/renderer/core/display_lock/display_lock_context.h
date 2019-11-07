@@ -22,23 +22,45 @@ class DisplayLockScopedLogger;
 
 enum class DisplayLockLifecycleTarget { kSelf, kChildren };
 enum class DisplayLockActivationReason {
-  // This represents activations triggered by intersection observer when the
-  // element intersects the viewport.
-  kViewport = 1 << 0,
-  // This represents activations triggered by script or user actions, such as
-  // find-in-page or scrollIntoView().
-  kUser = 1 << 1,
-  // This represents any activation, and should be result of all other flags
-  // combined.
-  kAny =
-      static_cast<unsigned char>(kViewport) | static_cast<unsigned char>(kUser)
+  // Accessibility driven activation
+  kAccessibility = 1 << 0,
+  // Activation as a result of find-in-page
+  kFindInPage = 1 << 1,
+  // Fragment link navigation
+  kFragmentNavigation = 1 << 2,
+  // Script invoked focus().
+  kScriptFocus = 1 << 3,
+  // scrollIntoView()
+  kScrollIntoView = 1 << 4,
+  // User / script selection
+  kSelection = 1 << 5,
+  // Simulated click (Node::DispatchSimulatedClick)
+  kSimulatedClick = 1 << 6,
+  // User focus (e.g. tab navigation)
+  kUserFocus = 1 << 7,
+  // Intersection observer activation
+  kViewportIntersection = 1 << 8,
+
+  // Shorthands
+  kViewport = static_cast<uint16_t>(kSelection) |
+              static_cast<uint16_t>(kUserFocus) |
+              static_cast<uint16_t>(kViewportIntersection),
+  kAny = static_cast<uint16_t>(kAccessibility) |
+         static_cast<uint16_t>(kFindInPage) |
+         static_cast<uint16_t>(kFragmentNavigation) |
+         static_cast<uint16_t>(kScriptFocus) |
+         static_cast<uint16_t>(kScrollIntoView) |
+         static_cast<uint16_t>(kSelection) |
+         static_cast<uint16_t>(kSimulatedClick) |
+         static_cast<uint16_t>(kUserFocus) |
+         static_cast<uint16_t>(kViewportIntersection)
 };
 
 // Instead of specifying an underlying type, which would propagate throughout
 // forward declarations, we static assert that the activation reasons enum is
-// small.
-static_assert(static_cast<int>(DisplayLockActivationReason::kAny) <
-                  std::numeric_limits<unsigned char>::max(),
+// small-ish.
+static_assert(static_cast<uint32_t>(DisplayLockActivationReason::kAny) <
+                  std::numeric_limits<uint16_t>::max(),
               "DisplayLockActivationReason is too large");
 
 class CORE_EXPORT DisplayLockContext final
@@ -113,7 +135,7 @@ class CORE_EXPORT DisplayLockContext final
   void ContextDestroyed(ExecutionContext*) override;
 
   // Set which reasons activate, as a mask of DisplayLockActivationReason enums.
-  void SetActivatable(unsigned char activatable_mask);
+  void SetActivatable(uint16_t activatable_mask);
 
   // Acquire the lock, should only be called when unlocked.
   void StartAcquire();
@@ -347,8 +369,8 @@ class CORE_EXPORT DisplayLockContext final
   // document level intersection observer.
   bool is_observed_ = false;
 
-  unsigned char activatable_mask_ =
-      static_cast<unsigned char>(DisplayLockActivationReason::kAny);
+  uint16_t activatable_mask_ =
+      static_cast<uint16_t>(DisplayLockActivationReason::kAny);
 };
 
 }  // namespace blink

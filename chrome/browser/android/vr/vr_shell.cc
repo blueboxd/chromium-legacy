@@ -65,7 +65,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
-#include "device/vr/android/gvr/cardboard_gamepad_data_fetcher.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -290,15 +289,6 @@ VrShell::~VrShell() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   content_surface_texture_ = nullptr;
   overlay_surface_texture_ = nullptr;
-  if (gvr_gamepad_source_active_) {
-    device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
-        device::GAMEPAD_SOURCE_GVR);
-  }
-
-  if (cardboard_gamepad_source_active_) {
-    device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
-        device::GAMEPAD_SOURCE_CARDBOARD);
-  }
 
   delegate_provider_->RemoveDelegate();
   {
@@ -408,9 +398,6 @@ void VrShell::CloseHostedDialog() {
 void VrShell::ToggleCardboardGamepad(bool enabled) {
   // Enable/disable updating gamepad state.
   if (cardboard_gamepad_source_active_ && !enabled) {
-    device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
-        device::GAMEPAD_SOURCE_CARDBOARD);
-    cardboard_gamepad_data_fetcher_ = nullptr;
     cardboard_gamepad_source_active_ = false;
   }
 
@@ -418,10 +405,6 @@ void VrShell::ToggleCardboardGamepad(bool enabled) {
     device::GvrDevice* gvr_device = delegate_provider_->GetGvrDevice();
     if (!gvr_device)
       return;
-
-    device::GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new device::CardboardGamepadDataFetcher::Factory(this,
-                                                         gvr_device->GetId()));
     cardboard_gamepad_source_active_ = true;
     if (pending_cardboard_trigger_) {
       OnTriggerEvent(nullptr, JavaParamRef<jobject>(nullptr), true);
@@ -440,8 +423,6 @@ void VrShell::ToggleGvrGamepad(bool enabled) {
     gvr_gamepad_source_active_ = true;
   } else {
     DCHECK(gvr_gamepad_source_active_);
-    device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
-        device::GAMEPAD_SOURCE_GVR);
     gvr_gamepad_source_active_ = false;
   }
 }
@@ -451,12 +432,7 @@ void VrShell::OnTriggerEvent(JNIEnv* env,
                              bool touched) {
   // If we are running cardboard, update gamepad state.
   if (cardboard_gamepad_source_active_) {
-    device::CardboardGamepadData pad;
-    pad.timestamp = cardboard_gamepad_timer_++;
-    pad.is_screen_touching = touched;
-    if (cardboard_gamepad_data_fetcher_) {
-      cardboard_gamepad_data_fetcher_->SetGamepadData(pad);
-    }
+    cardboard_gamepad_timer_++;
   } else {
     pending_cardboard_trigger_ = touched;
   }
@@ -1100,12 +1076,6 @@ void VrShell::ProcessDialogGesture(std::unique_ptr<InputEvent> event) {
 void VrShell::UpdateGamepadData(device::GvrGamepadData pad) {
   if (gvr_gamepad_source_active_ != pad.connected)
     ToggleGvrGamepad(pad.connected);
-}
-
-void VrShell::RegisterCardboardGamepadDataFetcher(
-    device::CardboardGamepadDataFetcher* fetcher) {
-  DVLOG(1) << __FUNCTION__ << "(" << fetcher << ")";
-  cardboard_gamepad_data_fetcher_ = fetcher;
 }
 
 bool VrShell::HasDaydreamSupport(JNIEnv* env) {

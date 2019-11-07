@@ -176,7 +176,7 @@ void VideoFrameValidator::ProcessVideoFrameTask(
     if (!video_frame_mapper_) {
       video_frame_mapper_ = VideoFrameMapperFactory::CreateMapper(
           video_frame->format(), video_frame->storage_type());
-      LOG_ASSERT(video_frame_mapper_) << "Failed to create VideoFrameMapper";
+      ASSERT_TRUE(video_frame_mapper_) << "Failed to create VideoFrameMapper";
     }
 
     validated_frame = video_frame_mapper_->Map(std::move(validated_frame));
@@ -187,7 +187,7 @@ void VideoFrameValidator::ProcessVideoFrameTask(
   }
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
-  LOG_ASSERT(validated_frame->IsMappable());
+  ASSERT_TRUE(validated_frame->IsMappable());
 
   base::Optional<MismatchedFrameInfo> mismatched_info;
   switch (validate_mode_) {

@@ -110,9 +110,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
     // asynchronous.
     WILL_PROCESS_RESPONSE,
 
-    // The response started on the IO thread and is ready to be committed. This
-    // is one of the two final states for the request.
-    RESPONSE_STARTED,
+    // The response started on the IO thread and is ready to be committed.
+    READY_TO_COMMIT,
+
+    // The response has been committed. This is one of the two final states of
+    // the request.
+    DID_COMMIT,
 
     // The request is being canceled.
     CANCELING,
@@ -123,19 +126,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
 
     // The request failed on the IO thread and an error page should be
     // displayed. This is one of the two final states for the request.
-    FAILED,
-  };
-
-  // Used to track the navigation state of NavigationHandleImpl.
-  // Note: the states named PROCESSING_* indicate that NavigationThrottles are
-  // currently processing the corresponding event. When they are done, the
-  // state will move to the next in the list.
-  // TODO(zetamoo): Merge NavigationHandleState with NavigationState, and remove
-  //                the duplicates.
-  enum NavigationHandleState {
-    NOT_CREATED = 0,
-    READY_TO_COMMIT,
-    DID_COMMIT,
     DID_COMMIT_ERROR_PAGE,
   };
 
@@ -389,8 +379,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // navigation_client used to commit.
   void IgnoreCommitInterfaceDisconnection();
 
-  NavigationHandleState handle_state() { return handle_state_; }
-
   // Resume and CancelDeferredNavigation must only be called by the
   // NavigationThrottle that is currently deferring the navigation.
   // |resuming_throttle| and |cancelling_throttle| are the throttles calling
@@ -414,7 +402,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   }
 
   // Called when the navigation was committed.
-  // This will update the |handle_state_|.
+  // This will update the |state_|.
   // |navigation_entry_committed| indicates whether the navigation changed which
   // NavigationEntry is current.
   // |did_replace_entry| is true if the committed entry has replaced the
@@ -427,7 +415,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
       NavigationType navigation_type);
 
   NavigationType navigation_type() const {
-    DCHECK_GE(handle_state_, DID_COMMIT);
+    DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
     return navigation_type_;
   }
 
@@ -792,7 +780,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   bool NeedsUrlLoader();
 
   // Called when the navigation is ready to be committed. This will update the
-  // |handle_state_| and inform the delegate.
+  // |state_| and inform the delegate.
   void ReadyToCommitNavigation(bool is_error);
 
   // Whether the navigation was sent to be committed in a renderer by the
@@ -972,9 +960,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // The offset of the new document in the history.
   // See NavigationHandle::GetNavigationEntryOffset() for details.
   int navigation_entry_offset_ = 0;
-
-  // TODO(zetamoo): Merge |handle_state_| with |state_|.
-  NavigationHandleState handle_state_ = NOT_CREATED;
 
   // Owns the NavigationThrottles associated with this navigation, and is
   // responsible for notifying them about the various navigation events.

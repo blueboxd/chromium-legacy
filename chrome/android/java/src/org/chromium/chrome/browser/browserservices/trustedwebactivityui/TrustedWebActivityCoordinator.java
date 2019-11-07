@@ -9,13 +9,13 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.ClientPackageNameProvider;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityDisclosureController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaRegistrar;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.VerifierDelegate;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -39,7 +39,7 @@ import dagger.Lazy;
 @ActivityScope
 public class TrustedWebActivityCoordinator implements InflationObserver {
 
-    private final Verifier mVerifier;
+    private final CurrentPageVerifier mCurrentPageVerifier;
     private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
     private final Lazy<ImmersiveModeController> mImmersiveModeController;
@@ -53,8 +53,8 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             TrustedWebActivityDisclosureController disclosureController,
             TrustedWebActivityDisclosureView disclosureView,
             TrustedWebActivityOpenTimeRecorder openTimeRecorder,
+            CurrentPageVerifier currentPageVerifier,
             Verifier verifier,
-            VerifierDelegate verifierDelegate,
             CustomTabActivityNavigationController navigationController,
             Lazy<TwaSplashController> splashController,
             CustomTabIntentDataProvider intentDataProvider,
@@ -68,7 +68,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             CustomTabsConnection customTabsConnection) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
         // so they start working.
-        mVerifier = verifier;
+        mCurrentPageVerifier = currentPageVerifier;
         mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
         mStatusBarColorProvider = statusBarColorProvider;
         mImmersiveModeController = immersiveModeController;
@@ -76,10 +76,10 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         mClientPackageNameProvider = clientPackageNameProvider;
 
         navigationController.setLandingPageOnCloseCriterion(
-                verifierDelegate::wasPreviouslyVerified);
+                verifier::wasPreviouslyVerified);
         initSplashScreen(splashController, intentDataProvider, umaRecorder);
 
-        verifier.addVerificationObserver(this::onVerificationUpdate);
+        currentPageVerifier.addVerificationObserver(this::onVerificationUpdate);
         lifecycleDispatcher.register(this);
         lifecycleDispatcher.register(
                 new PostMessageDisabler(customTabsConnection, intentDataProvider));
@@ -87,7 +87,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
 
     @Override
     public void onPreInflationStartup() {
-        if (mVerifier.getState() == null) {
+        if (mCurrentPageVerifier.getState() == null) {
             updateImmersiveMode(true); // Set immersive mode ASAP, before layout inflation.
         }
     }
@@ -96,7 +96,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     public void onPostInflationStartup() {
         // Before the verification completes, we optimistically expect it to be successful and apply
         // the trusted web activity mode to UI.
-        if (mVerifier.getState() == null) {
+        if (mCurrentPageVerifier.getState() == null) {
             updateUi(true);
         }
     }
@@ -115,7 +115,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     }
 
     private void onVerificationUpdate() {
-        Verifier.VerificationState state = mVerifier.getState();
+        CurrentPageVerifier.VerificationState state = mCurrentPageVerifier.getState();
 
         // The state will start off as null and progress to PENDING then SUCCESS/FAILURE. We only
         // want to register the clients once the state reaches SUCCESS, however we are happy to

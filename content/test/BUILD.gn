@@ -1911,10 +1911,7 @@ test("content_unittests") {
   ]
 
   if (is_mac) {
-    sources += [
-      "../browser/media/now_playing_info_center_notifier_unittest.cc",
-      "../renderer/sandbox_mac_v2_unittest.mm",
-    ]
+    sources += [ "../renderer/sandbox_mac_v2_unittest.mm" ]
   }
 
   if (use_atk) {
@@ -2150,7 +2147,6 @@ test("content_unittests") {
       "//third_party/mozilla",
       "//third_party/ocmock",
       "//ui/accelerated_widget_mac",
-      "//ui/base/now_playing:test_support",
     ]
     libs = [
       "Carbon.framework",

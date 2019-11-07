@@ -317,12 +317,12 @@ class UI_BASE_EXPORT ResourceBundle {
   void OverrideLocaleStringResource(int resource_id,
                                     const base::string16& string);
 
-  // Returns the full pathname of the locale file to load.  May return an empty
-  // string if no locale data files are found and |test_file_exists| is true.
+  // Returns the full pathname of the locale file to load, which may be a
+  // compressed locale file ending in .gz. Returns an empty string if no locale
+  // data files are found.
   // Used on Android to load the local file in the browser process and pass it
   // to the sandboxed renderer process.
-  static base::FilePath GetLocaleFilePath(const std::string& app_locale,
-                                          bool test_file_exists);
+  static base::FilePath GetLocaleFilePath(const std::string& app_locale);
 
   // Returns the maximum scale factor currently loaded.
   // Returns SCALE_FACTOR_100P if no resource is loaded.

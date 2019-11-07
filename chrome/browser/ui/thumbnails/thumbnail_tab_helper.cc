@@ -49,6 +49,26 @@ gfx::Size GetMinimumThumbnailSize() {
 
 }  // anonymous namespace
 
+class ThumbnailTabHelper::ScopedCapture {
+ public:
+  explicit ScopedCapture(ThumbnailTabHelper* helper) : helper_(helper) {
+    if (helper->web_contents()) {
+      helper->web_contents()->IncrementCapturerCount(gfx::ScaleToFlooredSize(
+          GetMinimumThumbnailSize(), kMinThumbnailScaleFactor));
+      captured_ = true;
+    }
+  }
+
+  ~ScopedCapture() {
+    if (captured_ && helper_->web_contents())
+      helper_->web_contents()->DecrementCapturerCount();
+  }
+
+ private:
+  ThumbnailTabHelper* const helper_;
+  bool captured_ = false;
+};
+
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
       last_visibility_(web_contents()->GetVisibility()) {}
@@ -61,8 +81,13 @@ void ThumbnailTabHelper::ThumbnailImageBeingObservedChanged(
     bool is_being_observed) {
   if (is_being_observed_ != is_being_observed) {
     is_being_observed_ = is_being_observed;
-    if (is_being_observed && !captured_loaded_thumbnail_since_tab_hidden_)
-      StartVideoCapture();
+    if (is_being_observed && !captured_loaded_thumbnail_since_tab_hidden_) {
+      scoped_capture_ = std::make_unique<ScopedCapture>(this);
+      if (GetView())
+        StartVideoCapture();
+    } else if (!is_being_observed) {
+      scoped_capture_.reset();
+    }
   }
 }
 
@@ -119,6 +144,7 @@ void ThumbnailTabHelper::StoreThumbnail(const SkBitmap& bitmap) {
       tab_load_tracker->GetLoadingState(web_contents()) ==
           resource_coordinator::TabLoadTracker::LoadingState::LOADED) {
     captured_loaded_thumbnail_since_tab_hidden_ = true;
+    scoped_capture_.reset();
   }
 }
 
@@ -126,25 +152,19 @@ void ThumbnailTabHelper::StartVideoCapture() {
   if (video_capturer_)
     return;
 
-  // Increment the reference count now. This should (in theory) cause the
-  // creation of a host view, which we'll use below (but see crbug.com/1020782).
-  web_contents()->IncrementCapturerCount(gfx::ScaleToFlooredSize(
-      GetMinimumThumbnailSize(), kMinThumbnailScaleFactor));
+  // This can be triggered by someone starting to observe a web contents by
+  // incrementing its capture count, or it can happen opportunistically when a
+  // renderer is available, because we want to capture thumbnails while we can
+  // before a page is frozen or swapped out.
 
-  // Get the WebContents' main view.
   content::RenderWidgetHostView* const source_view = GetView();
-  if (!source_view) {
-    web_contents()->DecrementCapturerCount();
-    return;
-  }
+  DCHECK(source_view);
 
   // Get the source size and scale.
   const float scale_factor = source_view->GetDeviceScaleFactor();
   const gfx::Size source_size = source_view->GetViewBounds().size();
-  if (source_size.IsEmpty()) {
-    web_contents()->DecrementCapturerCount();
+  if (source_size.IsEmpty())
     return;
-  }
 
   // Figure out how large we want the capture target to be.
   last_frame_capture_info_ =
@@ -166,10 +186,8 @@ void ThumbnailTabHelper::StartVideoCapture() {
 
 void ThumbnailTabHelper::StopVideoCapture() {
   if (video_capturer_) {
-    if (web_contents())
-      web_contents()->DecrementCapturerCount();
     video_capturer_->Stop();
-    video_capturer_ = nullptr;
+    video_capturer_.reset();
   }
 }
 
@@ -192,6 +210,16 @@ void ThumbnailTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame() && navigation_handle->HasCommitted())
     captured_loaded_thumbnail_since_tab_hidden_ = false;
+}
+
+void ThumbnailTabHelper::RenderViewReady() {
+  if (!captured_loaded_thumbnail_since_tab_hidden_)
+    StartVideoCapture();
+}
+
+void ThumbnailTabHelper::RenderViewDeleted(
+    content::RenderViewHost* render_view_host) {
+  StopVideoCapture();
 }
 
 void ThumbnailTabHelper::OnFrameCaptured(

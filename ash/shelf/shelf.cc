@@ -347,7 +347,16 @@ void Shelf::ProcessMouseEvent(const ui::MouseEvent& event) {
 
 void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event) {
   event->SetHandled();
-  Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(*event);
+  if (!IsHorizontalAlignment())
+    return;
+  auto* app_list_controller = Shell::Get()->app_list_controller();
+  DCHECK(app_list_controller);
+  // If the App List is not visible, send MouseWheel events to the
+  // |shelf_layout_manager_| because these events are used to show the App List.
+  if (app_list_controller->IsVisible())
+    app_list_controller->ProcessMouseWheelEvent(*event);
+  else
+    shelf_layout_manager_->ProcessMouseWheelEventFromShelf(event);
 }
 
 void Shelf::AddObserver(ShelfObserver* observer) {

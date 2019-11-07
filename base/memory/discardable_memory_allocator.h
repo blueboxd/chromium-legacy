@@ -42,6 +42,10 @@ class BASE_EXPORT DiscardableMemoryAllocator {
   // been discarded.
   virtual size_t GetBytesAllocated() const = 0;
 
+  // Release any memory used in the implementation of discardable memory that is
+  // not immediately being used.
+  virtual void ReleaseFreeMemory() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryAllocator);
 };

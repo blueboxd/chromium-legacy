@@ -28,7 +28,6 @@
 #include "chrome/browser/vr/ui_initial_state.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "device/vr/android/gvr/cardboard_gamepad_data_provider.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -67,7 +66,6 @@ struct AutocompleteRequest;
 // The native instance of the Java VrShell. This class is not threadsafe and
 // must only be used on the UI thread.
 class VrShell : device::GvrGamepadDataProvider,
-                device::CardboardGamepadDataProvider,
                 VoiceResultDelegate,
                 public ChromeLocationBarModelDelegate,
                 public PageInfoUI {
@@ -260,10 +258,6 @@ class VrShell : device::GvrGamepadDataProvider,
   // device::GvrGamepadDataProvider implementation.
   void UpdateGamepadData(device::GvrGamepadData) override;
 
-  // device::CardboardGamepadDataProvider implementation.
-  void RegisterCardboardGamepadDataFetcher(
-      device::CardboardGamepadDataFetcher*) override;
-
   // ChromeLocationBarModelDelegate implementation.
   content::WebContents* GetActiveWebContents() const override;
   bool ShouldDisplayURL() const override;
@@ -380,10 +374,6 @@ class VrShell : device::GvrGamepadDataProvider,
   bool cardboard_gamepad_source_active_ = false;
   bool pending_cardboard_trigger_ = false;
 
-  // Registered fetchers, must remain alive for UpdateGamepadData calls.
-  // That's ok since the fetcher is only destroyed from VrShell's destructor.
-  device::CardboardGamepadDataFetcher* cardboard_gamepad_data_fetcher_ =
-      nullptr;
   int64_t cardboard_gamepad_timer_ = 0;
 
   // Content id

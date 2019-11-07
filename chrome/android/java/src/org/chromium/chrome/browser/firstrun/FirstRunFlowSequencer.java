@@ -18,6 +18,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -207,6 +208,11 @@ public abstract class FirstRunFlowSequencer  {
                 FirstRunActivity.SHOW_DATA_REDUCTION_PAGE, shouldShowDataReductionPage());
         freProperties.putBoolean(
                 FirstRunActivity.SHOW_SEARCH_ENGINE_PAGE, shouldShowSearchEnginePage());
+
+        // Cache the flag for the bottom toolbar. If the flag is not cached here, Users, who are in
+        // bottom toolbar experiment group, will see toolbar on the top in first run, and then
+        // toolbar will appear to the bottom on the second run.
+        FeatureUtilities.cacheBottomToolbarEnabled();
     }
 
     /**

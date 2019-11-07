@@ -170,10 +170,6 @@ CONTENT_EXPORT extern const base::Feature kWebNfc;
 CONTENT_EXPORT extern const base::Feature kWebUIPolymer2Exceptions;
 #endif
 
-#if defined(OS_WIN)
-CONTENT_EXPORT extern const base::Feature kExperimentalFlingAnimation;
-#endif  // defined(OS_WIN)
-
 #if defined(OS_MACOSX)
 CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
 CONTENT_EXPORT extern const base::Feature kIOSurfaceCapturer;

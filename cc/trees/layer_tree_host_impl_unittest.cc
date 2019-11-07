@@ -12786,6 +12786,89 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToRenderFrameMetadata) {
   EXPECT_TRUE(selection_2.end.visible());
 }
 
+TEST_F(LayerTreeHostImplTest,
+       VerticalScrollDirectionChangesPassedToRenderFrameMetadata) {
+  // Set up the viewport.
+  SetupViewportLayersInnerScrolls(gfx::Size(50, 50), gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
+
+  // Set up the render frame metadata observer.
+  auto observer = std::make_unique<TestRenderFrameMetadataObserver>(false);
+  auto* observer_ptr = observer.get();
+  host_impl_->SetRenderFrameObserver(std::move(observer));
+  EXPECT_FALSE(observer_ptr->last_metadata());
+
+  // Our test will be comprised of multiple legs, each leg consisting of a
+  // distinct scroll event and an expectation regarding the vertical scroll
+  // direction passed to the render frame metadata.
+  typedef struct {
+    gfx::Vector2d scroll_delta;
+    viz::VerticalScrollDirection expected_vertical_scroll_direction;
+  } TestLeg;
+
+  std::vector<TestLeg> test_legs;
+
+  // Initially, vertical scroll direction should be |kNull| indicating absence.
+  test_legs.push_back({/*scroll_delta=*/gfx::Vector2d(),
+                       /*expected_vertical_scroll_direction=*/viz::
+                           VerticalScrollDirection::kNull});
+
+  // Scrolling to the right should not affect vertical scroll direction.
+  test_legs.push_back({/*scroll_delta=*/gfx::Vector2d(10, 0),
+                       /*expected_vertical_scroll_direction=*/viz::
+                           VerticalScrollDirection::kNull});
+
+  // After scrolling down, the vertical scroll direction should be |kDown|.
+  test_legs.push_back({/*scroll_delta=*/gfx::Vector2d(0, 10),
+                       /*expected_vertical_scroll_direction=*/viz::
+                           VerticalScrollDirection::kDown});
+
+  // If we scroll down again, the vertical scroll direction should be |kNull| as
+  // there was no change in vertical scroll direction.
+  test_legs.push_back({/*scroll_delta=*/gfx::Vector2d(0, 10),
+                       /*expected_vertical_scroll_direction=*/viz::
+                           VerticalScrollDirection::kNull});
+
+  // Scrolling to the left should not affect last vertical scroll direction.
+  test_legs.push_back({/*scroll_delta=*/gfx::Vector2d(-10, 0),
+                       /*expected_vertical_scroll_direction=*/viz::
+                           VerticalScrollDirection::kNull});
+
+  // After scrolling up, the vertical scroll direction should be |kUp|.
+  test_legs.push_back({/*scroll_delta=*/gfx::Vector2d(0, -10),
+                       /*expected_vertical_scroll_direction=*/viz::
+                           VerticalScrollDirection::kUp});
+
+  // If we scroll up again, the vertical scroll direction should be |kNull| as
+  // there was no change in vertical scroll direction.
+  test_legs.push_back({/*scroll_delta=*/gfx::Vector2d(0, -10),
+                       /*expected_vertical_scroll_direction=*/viz::
+                           VerticalScrollDirection::kNull});
+
+  // Iterate over all legs of our test.
+  for (auto& test_leg : test_legs) {
+    // If the test leg contains a scroll, perform it.
+    if (!test_leg.scroll_delta.IsZero()) {
+      host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
+                              InputHandler::WHEEL);
+      host_impl_->ScrollBy(
+          UpdateState(gfx::Point(), test_leg.scroll_delta).get());
+    }
+
+    // Trigger draw.
+    host_impl_->SetNeedsRedraw();
+    DrawFrame();
+
+    // Assert our expectation regarding the vertical scroll direction.
+    EXPECT_EQ(test_leg.expected_vertical_scroll_direction,
+              observer_ptr->last_metadata()->new_vertical_scroll_direction);
+
+    // If the test leg contains a scroll, end it.
+    if (!test_leg.scroll_delta.IsZero())
+      host_impl_->ScrollEnd(EndState().get());
+  }
+}
+
 // Tests ScrollBy() to see if the method sets the scroll tree's currently
 // scrolling node and the ScrollState properly.
 TEST_F(LayerTreeHostImplTest, ScrollByScrollingNode) {

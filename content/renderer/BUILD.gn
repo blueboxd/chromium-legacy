@@ -66,6 +66,8 @@ target(link_target_type, "renderer") {
     "context_menu_params_builder.h",
     "crash_helpers.cc",
     "crash_helpers.h",
+    "discardable_memory_utils.cc",
+    "discardable_memory_utils.h",
     "dom_automation_controller.cc",
     "dom_automation_controller.h",
     "drop_data_builder.cc",
@@ -438,6 +440,7 @@ target(link_target_type, "renderer") {
 
     deps += [
       "//third_party/android_ndk:cpu_features",
+      "//third_party/ashmem",
       "//third_party/libphonenumber",
     ]
   } else {

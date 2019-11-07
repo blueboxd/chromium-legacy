@@ -128,6 +128,7 @@ CastNetworkContexts::GetSystemURLLoaderFactory() {
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
+  params->is_trusted = true;
   GetSystemContext()->CreateURLLoaderFactory(
       system_url_loader_factory_.BindNewPipeAndPassReceiver(),
       std::move(params));

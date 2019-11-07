@@ -42,6 +42,7 @@
 #include "ui/views/view_targeter_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
+class Browser;
 class NewTabButton;
 class StackedTabStripLayout;
 class Tab;
@@ -297,6 +298,7 @@ class TabStrip : public views::AccessiblePaneView,
   void CloseAllTabsInGroup(TabGroupId group) override;
   void UngroupAllTabsInGroup(TabGroupId group) override;
   void AddNewTabInGroup(TabGroupId group) override;
+  const Browser* GetBrowser() override;
 
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;

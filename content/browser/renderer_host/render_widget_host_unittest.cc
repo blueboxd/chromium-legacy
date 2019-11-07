@@ -378,6 +378,20 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     return focus_owning_web_contents_call_count;
   }
 
+  void OnVerticalScrollDirectionChanged(
+      viz::VerticalScrollDirection scroll_direction) override {
+    ++on_vertical_scroll_direction_changed_call_count_;
+    last_vertical_scroll_direction_ = scroll_direction;
+  }
+
+  int GetOnVerticalScrollDirectionChangedCallCount() const {
+    return on_vertical_scroll_direction_changed_call_count_;
+  }
+
+  viz::VerticalScrollDirection GetLastVerticalScrollDirection() const {
+    return last_vertical_scroll_direction_;
+  }
+
   RenderViewHostDelegateView* GetDelegateView() override {
     return mock_delegate_view();
   }
@@ -448,6 +462,10 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   double zoom_level_ = 0;
 
   int focus_owning_web_contents_call_count = 0;
+
+  int on_vertical_scroll_direction_changed_call_count_ = 0;
+  viz::VerticalScrollDirection last_vertical_scroll_direction_ =
+      viz::VerticalScrollDirection::kNull;
 };
 
 class MockRenderWidgetHostOwnerDelegate
@@ -2179,5 +2197,44 @@ TEST_F(RenderWidgetHostTest, AddAndRemoveImeInputEventObserver) {
   host_->ImeFinishComposingText(true);
 }
 #endif
+
+// Tests that vertical scroll direction changes are propagated to the delegate.
+TEST_F(RenderWidgetHostTest, OnVerticalScrollDirectionChanged) {
+  const auto NotifyVerticalScrollDirectionChanged =
+      [this](viz::VerticalScrollDirection scroll_direction) {
+        static uint32_t frame_token = 1u;
+        host_->frame_token_message_queue_->DidProcessFrame(frame_token);
+
+        cc::RenderFrameMetadata metadata;
+        metadata.new_vertical_scroll_direction = scroll_direction;
+        static_cast<mojom::RenderFrameMetadataObserverClient*>(
+            host_->render_frame_metadata_provider())
+            ->OnRenderFrameMetadataChanged(frame_token++, metadata);
+      };
+
+  // Verify initial state.
+  EXPECT_EQ(0, delegate_->GetOnVerticalScrollDirectionChangedCallCount());
+  EXPECT_EQ(viz::VerticalScrollDirection::kNull,
+            delegate_->GetLastVerticalScrollDirection());
+
+  // Verify that we will *not* propagate a vertical scroll of |kNull| which is
+  // only used to indicate the absence of a change in vertical scroll direction.
+  NotifyVerticalScrollDirectionChanged(viz::VerticalScrollDirection::kNull);
+  EXPECT_EQ(0, delegate_->GetOnVerticalScrollDirectionChangedCallCount());
+  EXPECT_EQ(viz::VerticalScrollDirection::kNull,
+            delegate_->GetLastVerticalScrollDirection());
+
+  // Verify that we will propagate a vertical scroll |kUp|.
+  NotifyVerticalScrollDirectionChanged(viz::VerticalScrollDirection::kUp);
+  EXPECT_EQ(1, delegate_->GetOnVerticalScrollDirectionChangedCallCount());
+  EXPECT_EQ(viz::VerticalScrollDirection::kUp,
+            delegate_->GetLastVerticalScrollDirection());
+
+  // Verify that we will propagate a vertical scroll |kDown|.
+  NotifyVerticalScrollDirectionChanged(viz::VerticalScrollDirection::kDown);
+  EXPECT_EQ(2, delegate_->GetOnVerticalScrollDirectionChangedCallCount());
+  EXPECT_EQ(viz::VerticalScrollDirection::kDown,
+            delegate_->GetLastVerticalScrollDirection());
+}
 
 }  // namespace content

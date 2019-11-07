@@ -56,19 +56,22 @@ void TabGroupUnderline::UpdateBounds() {
             kStrokeThickness);
 }
 
+// static
+int TabGroupUnderline::GetStrokeInset() {
+  return TabStyle::GetTabOverlap() + kStrokeThickness;
+}
+
 int TabGroupUnderline::GetStart() const {
   const TabGroupHeader* group_header = tab_strip_->group_header(group_);
 
-  constexpr int kInset = 20;
-  return group_header->bounds().x() + kInset;
+  return group_header->bounds().x() + GetStrokeInset();
 }
 
 int TabGroupUnderline::GetEnd() const {
   // Fall back to the group header end for any corner cases. This ensures
   // that the underline always has a positive width.
   const TabGroupHeader* group_header = tab_strip_->group_header(group_);
-  constexpr int kInset = 20;
-  const int header_end = group_header->bounds().right() - kInset;
+  const int header_end = group_header->bounds().right() - GetStrokeInset();
 
   const std::vector<int> tabs_in_group =
       tab_strip_->controller()->ListTabsInGroup(group_);
@@ -78,8 +81,9 @@ int TabGroupUnderline::GetEnd() const {
   const int last_tab_index = tabs_in_group[tabs_in_group.size() - 1];
   const Tab* last_tab = tab_strip_->tab_at(last_tab_index);
 
-  const int tab_end = last_tab->bounds().right() +
-                      (last_tab->IsActive() ? kStrokeThickness : -kInset);
+  const int tab_end =
+      last_tab->bounds().right() +
+      (last_tab->IsActive() ? kStrokeThickness : -GetStrokeInset());
   return std::max(tab_end, header_end);
 }
 

@@ -148,15 +148,13 @@ void SystemMediaControlsWin::SetIsPreviousEnabled(bool value) {
   DCHECK(SUCCEEDED(hr));
 }
 
-void SystemMediaControlsWin::SetIsPlayEnabled(bool value) {
+void SystemMediaControlsWin::SetIsPlayPauseEnabled(bool value) {
   DCHECK(initialized_);
+
   HRESULT hr = system_media_controls_->put_IsPlayEnabled(value);
   DCHECK(SUCCEEDED(hr));
-}
 
-void SystemMediaControlsWin::SetIsPauseEnabled(bool value) {
-  DCHECK(initialized_);
-  HRESULT hr = system_media_controls_->put_IsPauseEnabled(value);
+  hr = system_media_controls_->put_IsPauseEnabled(value);
   DCHECK(SUCCEEDED(hr));
 }
 

@@ -542,8 +542,10 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
 
     // SVG runs with accelerated compositing disabled so no
     // ScrollingCoordinator.
-    if (auto* coordinator = GetPage().GetScrollingCoordinator())
-      coordinator->UpdateCompositedScrollOffset(this);
+    if (auto* coordinator = GetPage().GetScrollingCoordinator()) {
+      if (scroll_layer_)
+        coordinator->UpdateCompositedScrollOffset(this);
+    }
 
     EnqueueScrollEvent();
 
@@ -595,6 +597,7 @@ void VisualViewport::CreateLayers() {
   LayerForScrollingDidChange(coordinator->GetCompositorAnimationTimeline());
 
   InitializeScrollbars();
+  coordinator->UpdateCompositedScrollOffset(this);
 }
 
 void VisualViewport::InitializeScrollbars() {

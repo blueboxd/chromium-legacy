@@ -54,14 +54,14 @@ const char kTestChildMessagePipeName[] = "test_pipe";
 // For use (and only valid) in a test child process:
 base::LazyInstance<IsolatedConnection>::Leaky g_child_isolated_connection;
 
-template <typename Func>
-int RunClientFunction(Func handler, bool pass_pipe_ownership_to_main) {
+int RunClientFunction(base::OnceCallback<int(MojoHandle)> handler,
+                      bool pass_pipe_ownership_to_main) {
   CHECK(MultiprocessTestHelper::primordial_pipe.is_valid());
   ScopedMessagePipeHandle pipe =
       std::move(MultiprocessTestHelper::primordial_pipe);
   MessagePipeHandle pipe_handle =
       pass_pipe_ownership_to_main ? pipe.release() : pipe.get();
-  return handler(pipe_handle.value());
+  return std::move(handler).Run(pipe_handle.value());
 }
 
 }  // namespace
@@ -290,24 +290,24 @@ void MultiprocessTestHelper::ChildSetup() {
 
 // static
 int MultiprocessTestHelper::RunClientMain(
-    const base::Callback<int(MojoHandle)>& main,
+    base::OnceCallback<int(MojoHandle)> main,
     bool pass_pipe_ownership_to_main) {
-  return RunClientFunction(
-      [main](MojoHandle handle) { return main.Run(handle); },
-      pass_pipe_ownership_to_main);
+  return RunClientFunction(std::move(main), pass_pipe_ownership_to_main);
 }
 
 // static
 int MultiprocessTestHelper::RunClientTestMain(
-    const base::Callback<void(MojoHandle)>& main) {
+    base::OnceCallback<void(MojoHandle)> main) {
   return RunClientFunction(
-      [main](MojoHandle handle) {
-        main.Run(handle);
-        return (::testing::Test::HasFatalFailure() ||
-                ::testing::Test::HasNonfatalFailure())
-                   ? 1
-                   : 0;
-      },
+      base::BindOnce(
+          [](base::OnceCallback<void(MojoHandle)> main, MojoHandle handle) {
+            std::move(main).Run(handle);
+            return (::testing::Test::HasFatalFailure() ||
+                    ::testing::Test::HasNonfatalFailure())
+                       ? 1
+                       : 0;
+          },
+          std::move(main)),
       true /* pass_pipe_ownership_to_main */);
 }
 

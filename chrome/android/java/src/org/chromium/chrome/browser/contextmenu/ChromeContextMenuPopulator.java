@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.LensUtils;
 import org.chromium.chrome.browser.share.ShareParams;
@@ -428,7 +429,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     }
                 } catch (URISyntaxException ignore) {
                 }
-                if (ChromePreferenceManager.getInstance().readBoolean(
+                if (SharedPreferencesManager.getInstance().readBoolean(
                             ChromePreferenceManager.CHROME_DEFAULT_BROWSER, false)
                         && addNewEntries) {
                     if (mDelegate.isIncognitoSupported()) {

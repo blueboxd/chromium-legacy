@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//printing/buildflags/buildflags.gni")
+import("//testing/test.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds must not depend on this")
 assert(use_cups, "Non-CUPS builds must not depend on this")
@@ -54,7 +55,7 @@ static_library("test_support") {
   ]
 }
 
-source_set("unit_tests") {
+test("libcups_unittests") {
   testonly = true
   sources = [
     "ipp_validator_unittest.cc",
@@ -62,16 +63,23 @@ source_set("unit_tests") {
     "socket_manager_unittest.cc",
   ]
 
+  configs += [ "//printing:cups" ]
+
   deps = [
     ":cups_proxy",
     ":test_support",
     "//base",
+    "//base/test:test_support",
+    "//chrome/common",
     "//chrome/services/cups_proxy/public/cpp",
     "//chrome/services/cups_proxy/public/cpp:unit_tests",
+    "//chrome/services/cups_proxy/test:test_support",
+    "//chromeos",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 
   data = [
-    "//chrome/test/data/cups_proxy",
+    "//chrome/services/cups_proxy/test/data",
   ]
 }

@@ -143,12 +143,12 @@ class TabStyle {
   // or og:image images, etc.
   static gfx::Size GetPreviewImageSize();
 
+  // Returns the radius of the outer corners of the tab shape.
+  static int GetCornerRadius();
+
  protected:
   // Avoid implicitly-deleted constructor.
   TabStyle() = default;
-
-  // Returns the radius of the outer corners of the tab shape.
-  static int GetCornerRadius();
 
   // Returns how far from the leading and trailing edges of a tab the contents
   // should actually be laid out.

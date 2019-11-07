@@ -34,6 +34,10 @@
 #include "chrome/browser/sharing/sharing_service_proxy_android.h"
 #endif  // defined(OS_ANDROID)
 
+namespace content {
+class SmsFetcher;
+}
+
 namespace gcm {
 class GCMDriver;
 }  // namespace gcm
@@ -83,7 +87,8 @@ class SharingService : public KeyedService,
       gcm::GCMDriver* gcm_driver,
       syncer::DeviceInfoTracker* device_info_tracker,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
-      syncer::SyncService* sync_service);
+      syncer::SyncService* sync_service,
+      content::SmsFetcher* sms_fetcher);
   ~SharingService() override;
 
   // Returns the device matching |guid|, or nullptr if no match was found.

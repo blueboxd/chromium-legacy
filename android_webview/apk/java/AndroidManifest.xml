@@ -20,7 +20,7 @@
 
     <application android:label="{{ application_label|default('Android System WebView') }}"
                  android:icon="@{{manifest_package|default('com.android.webview')}}:drawable/icon_webview"
-                 android:name="{{ application_name|default('com.android.webview.chromium.WebViewApkApplication') }}"
+                 android:name="{{ application_name|default('org.chromium.android_webview.app.WebViewApkApplication') }}"
                  android:multiArch="true"
                  {{ use32bitAbi|default('android:use32bitAbi="true"') }}
                  android:extractNativeLibs="{{ trichrome_library is not defined }}">
@@ -49,7 +49,7 @@
             </activity>
             <!-- End of WebView Developer UI Activties -->
 
-            <activity android:name="com.android.webview.chromium.LicenseActivity"
+            <activity android:name="org.chromium.android_webview.app.LicenseActivity"
                       android:label="@string/license_activity_title"
                       android:process=":webview_apk">  {# Explicit process required for monochrome compatibility. #}
                 <intent-filter>
@@ -59,7 +59,7 @@
                 <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
                            android:value="true" />
             </activity>
-            <provider android:name="com.android.webview.chromium.LicenseContentProvider"
+            <provider android:name="org.chromium.android_webview.app.LicenseContentProvider"
                       android:exported="true"
                       android:authorities="{{ manifest_package }}.LicenseContentProvider"
                       android:process=":webview_apk" />  {# Explicit process required for monochrome compatibility. #}

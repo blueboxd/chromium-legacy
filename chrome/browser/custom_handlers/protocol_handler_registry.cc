@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -120,9 +119,9 @@ void ProtocolHandlerRegistry::Delegate::CheckDefaultClientWithOS(
 
 ProtocolHandlerRegistry::ProtocolHandlerRegistry(
     content::BrowserContext* context,
-    Delegate* delegate)
+    std::unique_ptr<Delegate> delegate)
     : context_(context),
-      delegate_(delegate),
+      delegate_(std::move(delegate)),
       enabled_(true),
       is_loading_(false),
       is_loaded_(false) {}

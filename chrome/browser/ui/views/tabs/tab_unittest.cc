@@ -134,6 +134,8 @@ class FakeTabController : public TabController {
 
   void AddNewTabInGroup(TabGroupId group) override {}
 
+  const Browser* GetBrowser() override { return nullptr; }
+
   void SetTabColors(SkColor bg_color_active,
                     SkColor fg_color_active,
                     SkColor bg_color_inactive,

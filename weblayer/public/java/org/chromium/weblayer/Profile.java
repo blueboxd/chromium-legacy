@@ -8,9 +8,9 @@ import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
 
-import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IProfile;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IProfile;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 import java.util.Collection;
 import java.util.Collections;

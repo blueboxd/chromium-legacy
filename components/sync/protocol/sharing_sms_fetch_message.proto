@@ -10,7 +10,19 @@ package chrome_browser_sharing;
 option optimize_for = LITE_RUNTIME;
 
 // Request message to fetch a SMS from a remote device.
-message SmsFetchRequest {}
+message SmsFetchRequest {
+  // The origin that is requesting the SMS. Remote devices use it to match
+  // against the metadata contained in the received SMS.
+  // required
+  string origin = 1;
+}
 
 // Response message to fetch a SMS from a remote device.
-message SmsFetchResponse {}
+message SmsFetchResponse {
+  // The full contents of the received SMS.
+  // required
+  string sms = 1;
+  // The parsed one time code of the received SMS.
+  // required
+  string one_time_code = 2;
+}

@@ -71,7 +71,9 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
 
     @Override
     public void tearDownTest() throws Exception {
-        SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY));
+
         FeatureUtilities.setNightModeDefaultToLightForTesting(null);
         super.tearDownTest();
     }

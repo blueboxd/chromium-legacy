@@ -189,7 +189,7 @@ TEST_F(AXTreeSourceAuraTest, Serialize) {
   size_t node_count = out_update2.nodes.size();
 
   // We should have far more updates this time around.
-  ASSERT_GE(node_count, 8U);
+  EXPECT_GE(node_count, 7U);
 
   int text_field_update_index = -1;
   for (size_t i = 0; i < node_count; ++i) {

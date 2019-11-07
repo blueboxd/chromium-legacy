@@ -1571,8 +1571,8 @@ bool RTCPeerConnectionHandler::AddICECandidate(
   bool result = AddICECandidate(std::move(candidate));
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&RTCPeerConnectionHandler::OnaddICECandidateResult,
-                     weak_factory_.GetWeakPtr(), request, result));
+      WTF::Bind(&RTCPeerConnectionHandler::OnaddICECandidateResult,
+                weak_factory_.GetWeakPtr(), WrapPersistent(request), result));
   // On failure callback will be triggered.
   return true;
 }

@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.thinwebview.ThinWebView;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.ui.widget.FadingShadow;
 import org.chromium.chrome.browser.ui.widget.FadingShadowView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.WebContents;
@@ -37,12 +36,11 @@ import org.chromium.ui.base.ActivityWindowAndroid;
      * Construct the PaymentHandlerView.
      *
      * @param activity The activity where the bottome-sheet should be shown.
-     * @param bottomSheet The bottom-sheet where the web-content should be shown.
      * @param webContents The web-content of the payment-handler web-app.
      * @param webContentView The {@link ContentView} that has been contructed with the web-content.
      */
-    /* package */ PaymentHandlerView(ChromeActivity activity, BottomSheet bottomSheet,
-            WebContents webContents, ContentView webContentView) {
+    /* package */ PaymentHandlerView(
+            ChromeActivity activity, WebContents webContents, ContentView webContentView) {
         mToolbarHeightPx = activity.getResources().getDimensionPixelSize(
                 R.dimen.custom_tabs_control_container_height);
         mTabHeight = activity.getActivityTab().getHeight();

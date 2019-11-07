@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_H_
 
 #include "cc/paint/paint_canvas.h"
-#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
+#include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
@@ -54,8 +54,7 @@ class RemoteFrameClient : public FrameClient {
                                  const IntRect& screen_space_rect) = 0;
 
   virtual void UpdateRemoteViewportIntersection(
-      const IntRect& viewport_intersection,
-      FrameOcclusionState occlusion_state) = 0;
+      const ViewportIntersectionState& intersection_state) = 0;
 
   virtual void AdvanceFocus(WebFocusType, LocalFrame* source) = 0;
 

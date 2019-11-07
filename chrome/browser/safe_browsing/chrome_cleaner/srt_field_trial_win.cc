@@ -43,7 +43,7 @@ const base::Feature kChromeCleanupExtensionsFeature{
     "ChromeCleanupExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeCleanupProtobufIPCFeature{
-    "ChromeCleanupProtobufIPC", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ChromeCleanupProtobufIPC", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsSRTPromptFeatureEnabled() {
   return base::FeatureList::IsEnabled(kChromeCleanupInBrowserPromptFeature);

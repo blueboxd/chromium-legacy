@@ -67,6 +67,7 @@ const char kGrContextType[] = "gr-context-type";
 const char kGrContextTypeGL[] = "gl";
 const char kGrContextTypeVulkan[] = "vulkan";
 const char kGrContextTypeMetal[] = "metal";
+const char kGrContextTypeDawn[] = "dawn";
 // Enable Vulkan support and select Vulkan implementation, must also have
 // ENABLE_VULKAN defined.
 const char kUseVulkan[] = "use-vulkan";

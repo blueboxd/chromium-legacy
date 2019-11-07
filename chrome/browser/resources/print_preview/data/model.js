@@ -484,8 +484,9 @@ Polymer({
   observers: [
     'updateSettingsFromDestination_(destination.capabilities)',
     'updateSettingsAvailabilityFromDocumentSettings_(' +
-        'documentSettings.isModifiable, documentSettings.isPdf,' +
-        'documentSettings.hasCssMediaStyles, documentSettings.hasSelection)',
+        'documentSettings.isModifiable, documentSettings.isFromArc,' +
+        'documentSettings.isPdf, documentSettings.hasCssMediaStyles, ' +
+        'documentSettings.hasSelection)',
     'updateHeaderFooterAvailable_(' +
         'margins, settings.margins.value, ' +
         'settings.customMargins.value, settings.mediaSize.value)',
@@ -664,11 +665,6 @@ Polymer({
     this.setSettingPath_(
         'color.available', this.destination.hasColorCapability);
 
-    this.setSettingPath_(
-        'dpi.available',
-        !!caps && !!caps.dpi && !!caps.dpi.option &&
-            caps.dpi.option.length > 1);
-
     const capsHasDuplex = !!caps && !!caps.duplex && !!caps.duplex.option;
     const capsHasLongEdge = capsHasDuplex &&
         caps.duplex.option.some(
@@ -707,6 +703,7 @@ Polymer({
         (!this.documentSettings.isModifiable ||
          this.documentSettings.hasCssMediaStyles);
     const scalingAvailable = !knownSizeToSaveAsPdf &&
+        !this.documentSettings.isFromArc &&
         (this.documentSettings.isModifiable || this.documentSettings.isPdf);
     this.setSettingPath_('scaling.available', scalingAvailable);
     this.setSettingPath_(
@@ -721,6 +718,10 @@ Polymer({
     this.setSettingPath_(
         'mediaSize.available',
         !!caps && !!caps.media_size && !knownSizeToSaveAsPdf);
+    this.setSettingPath_(
+        'dpi.available',
+        !this.documentSettings.isFromArc && !!caps && !!caps.dpi &&
+            !!caps.dpi.option && caps.dpi.option.length > 1);
     this.setSettingPath_('layout.available', this.isLayoutAvailable_(caps));
   },
 
@@ -732,22 +733,30 @@ Polymer({
 
     this.setSettingPath_(
         'pagesPerSheet.available',
-        this.documentSettings.isModifiable || this.documentSettings.isPdf);
+        !this.documentSettings.isFromArc &&
+            (this.documentSettings.isModifiable ||
+             this.documentSettings.isPdf));
     this.setSettingPath_(
-        'margins.available', this.documentSettings.isModifiable);
+        'margins.available',
+        !this.documentSettings.isFromArc && this.documentSettings.isModifiable);
     this.setSettingPath_(
-        'customMargins.available', this.documentSettings.isModifiable);
+        'customMargins.available',
+        !this.documentSettings.isFromArc && this.documentSettings.isModifiable);
     this.setSettingPath_(
-        'cssBackground.available', this.documentSettings.isModifiable);
+        'cssBackground.available',
+        !this.documentSettings.isFromArc && this.documentSettings.isModifiable);
     this.setSettingPath_(
         'selectionOnly.available',
-        this.documentSettings.isModifiable &&
+        !this.documentSettings.isFromArc &&
+            this.documentSettings.isModifiable &&
             this.documentSettings.hasSelection);
     this.setSettingPath_(
-        'headerFooter.available', this.isHeaderFooterAvailable_());
+        'headerFooter.available',
+        !this.documentSettings.isFromArc && this.isHeaderFooterAvailable_());
     this.setSettingPath_(
         'rasterize.available',
-        !this.documentSettings.isModifiable && !cr.isWindows && !cr.isMac);
+        !this.documentSettings.isFromArc &&
+            !this.documentSettings.isModifiable && !cr.isWindows && !cr.isMac);
     this.setSettingPath_(
         'otherOptions.available',
         this.settings.cssBackground.available ||
@@ -820,7 +829,8 @@ Polymer({
    */
   isLayoutAvailable_: function(caps) {
     if (!caps || !caps.page_orientation || !caps.page_orientation.option ||
-        !this.documentSettings.isModifiable ||
+        (!this.documentSettings.isModifiable &&
+         !this.documentSettings.isFromArc) ||
         this.documentSettings.hasCssMediaStyles) {
       return false;
     }

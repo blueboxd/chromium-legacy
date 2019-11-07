@@ -13,6 +13,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/render_widget_surface_properties.h"
 #include "content/public/common/input_event_ack_state.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom.h"
@@ -47,6 +48,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebImeTextSpan::Type,
                           blink::WebImeTextSpan::Type::kMisspellingSuggestion)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::mojom::ImeTextSpanThickness,
                           ui::mojom::ImeTextSpanThickness::kThick)
+IPC_ENUM_TRAITS_MAX_VALUE(content::PageVisibilityState,
+                          content::PageVisibilityState::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(viz::Selection<gfx::SelectionBound>)
   IPC_STRUCT_TRAITS_MEMBER(start)

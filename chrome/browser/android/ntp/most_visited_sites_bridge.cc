@@ -28,7 +28,6 @@
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/section_type.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 using base::android::AttachCurrentThread;
@@ -256,11 +255,9 @@ void MostVisitedSitesBridge::RecordTileImpression(
   favicon_base::IconType icon_type =
       static_cast<favicon_base::IconType>(jicon_type);
 
-  ntp_tiles::metrics::RecordTileImpression(
-      ntp_tiles::NTPTileImpression(
-          jindex, source, title_source, visual_type, icon_type,
-          base::Time::FromJavaTime(jdata_generation_time_ms), url),
-      g_browser_process->rappor_service());
+  ntp_tiles::metrics::RecordTileImpression(ntp_tiles::NTPTileImpression(
+      jindex, source, title_source, visual_type, icon_type,
+      base::Time::FromJavaTime(jdata_generation_time_ms), url));
 }
 
 void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(

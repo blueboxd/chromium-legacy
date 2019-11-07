@@ -72,6 +72,11 @@ struct PrintAttributes {
   PrintDuplexMode duplex_mode;
 };
 
+struct PrintDocumentRequest {
+  array<PrintPageRange> pages;
+  PrintAttributes attributes;
+};
+
 struct PrintJobRequest {
   // android.printservice.PrintJob fields:
   array<int8> id;

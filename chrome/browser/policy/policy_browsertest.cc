@@ -5800,9 +5800,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTestWithRealTimeUrlLookupFetchAllowList,
             std::make_unique<base::Value>(true));
   UpdateProviderPolicy(policies);
 
-  // TODO(crbug.com/1015484): This should be enabled, once we clarify the
-  // policy semantics.
-  EXPECT_FALSE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
+  EXPECT_TRUE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
       browser()->profile()));
 }
 

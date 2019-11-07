@@ -149,14 +149,16 @@ TEST(WakeLockTest, PageVisibilityHidden) {
   context.WaitForPromiseFulfillment(screen_promise);
   context.WaitForPromiseFulfillment(system_promise);
 
-  context.GetDocument()->GetPage()->SetIsHidden(true, false);
+  context.GetDocument()->GetPage()->SetVisibilityState(
+      PageVisibilityState::kHidden, false);
 
   screen_lock.WaitForCancelation();
 
   EXPECT_FALSE(screen_lock.is_acquired());
   EXPECT_TRUE(system_lock.is_acquired());
 
-  context.GetDocument()->GetPage()->SetIsHidden(false, false);
+  context.GetDocument()->GetPage()->SetVisibilityState(
+      PageVisibilityState::kVisible, false);
 
   auto* other_resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
@@ -192,7 +194,8 @@ TEST(WakeLockTest, PageVisibilityHiddenBeforeLockAcquisition) {
   auto* wake_lock = MakeGarbageCollected<WakeLock>(*context.GetDocument());
   wake_lock->DoRequest(WakeLockType::kScreen, screen_resolver);
   wake_lock->DoRequest(WakeLockType::kSystem, system_resolver);
-  context.GetDocument()->GetPage()->SetIsHidden(true, false);
+  context.GetDocument()->GetPage()->SetVisibilityState(
+      PageVisibilityState::kHidden, false);
 
   context.WaitForPromiseRejection(screen_promise);
   system_lock.WaitForRequest();

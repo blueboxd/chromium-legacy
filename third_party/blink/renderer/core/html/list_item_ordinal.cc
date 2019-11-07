@@ -39,7 +39,7 @@ ListItemOrdinal::ListItemOrdinal()
     : type_(kNeedsUpdate), not_in_list_(false), not_in_list_changed_(false) {}
 
 bool ListItemOrdinal::IsList(const Node& node) {
-  return IsHTMLUListElement(node) || IsA<HTMLOListElement>(node);
+  return IsA<HTMLUListElement>(node) || IsA<HTMLOListElement>(node);
 }
 
 bool ListItemOrdinal::IsListItem(const LayoutObject* layout_object) {

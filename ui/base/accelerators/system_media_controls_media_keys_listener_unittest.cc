@@ -68,8 +68,8 @@ TEST_F(SystemMediaControlsMediaKeysListenerTest, ListensToSystemMediaControls) {
 
 TEST_F(SystemMediaControlsMediaKeysListenerTest, SimplePlayPauseTest) {
   // Should be set to true when we start listening for the key.
-  EXPECT_CALL(mock_system_media_controls_service(), SetIsPlayEnabled(true));
-  EXPECT_CALL(mock_system_media_controls_service(), SetIsPauseEnabled(true));
+  EXPECT_CALL(mock_system_media_controls_service(),
+              SetIsPlayPauseEnabled(true));
 
   EXPECT_CALL(delegate(), OnMediaKeysAccelerator(_))
       .WillOnce(WithArg<0>([](const Accelerator& accelerator) {
@@ -115,8 +115,8 @@ TEST_F(SystemMediaControlsMediaKeysListenerTest, KeyCanBeReRegistered) {
 
 TEST_F(SystemMediaControlsMediaKeysListenerTest, ListenForMultipleKeys) {
   // Should be set to true when we start listening for the key.
-  EXPECT_CALL(mock_system_media_controls_service(), SetIsPlayEnabled(true));
-  EXPECT_CALL(mock_system_media_controls_service(), SetIsPauseEnabled(true));
+  EXPECT_CALL(mock_system_media_controls_service(),
+              SetIsPlayPauseEnabled(true));
   EXPECT_CALL(mock_system_media_controls_service(), SetIsPreviousEnabled(true));
 
   // Should receive the key presses.
@@ -134,8 +134,8 @@ TEST_F(SystemMediaControlsMediaKeysListenerTest, ListenForMultipleKeys) {
 TEST_F(SystemMediaControlsMediaKeysListenerTest,
        DoesNotFirePlayPauseOnPauseEventWhenPaused) {
   // Should be set to true when we start listening for the key.
-  EXPECT_CALL(mock_system_media_controls_service(), SetIsPlayEnabled(true));
-  EXPECT_CALL(mock_system_media_controls_service(), SetIsPauseEnabled(true));
+  EXPECT_CALL(mock_system_media_controls_service(),
+              SetIsPlayPauseEnabled(true));
 
   EXPECT_CALL(delegate(), OnMediaKeysAccelerator(_)).Times(0);
 
@@ -150,8 +150,8 @@ TEST_F(SystemMediaControlsMediaKeysListenerTest,
 TEST_F(SystemMediaControlsMediaKeysListenerTest,
        DoesNotFirePlayPauseOnPlayEventWhenPlaying) {
   // Should be set to true when we start listening for the key.
-  EXPECT_CALL(mock_system_media_controls_service(), SetIsPlayEnabled(true));
-  EXPECT_CALL(mock_system_media_controls_service(), SetIsPauseEnabled(true));
+  EXPECT_CALL(mock_system_media_controls_service(),
+              SetIsPlayPauseEnabled(true));
 
   EXPECT_CALL(delegate(), OnMediaKeysAccelerator(_)).Times(0);
 

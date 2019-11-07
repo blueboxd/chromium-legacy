@@ -122,6 +122,8 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   permissions_to_display.push_back(ContentSettingsType::JAVASCRIPT);
   permissions_to_display.push_back(ContentSettingsType::POPUPS);
   permissions_to_display.push_back(ContentSettingsType::ADS);
+  permissions_to_display.push_back(
+      ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER);
   permissions_to_display.push_back(ContentSettingsType::AUTOPLAY);
   permissions_to_display.push_back(ContentSettingsType::SOUND);
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();

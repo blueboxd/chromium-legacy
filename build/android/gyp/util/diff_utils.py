@@ -35,6 +35,9 @@ Files Compared:
   * {}
   * {}
 
+If you are looking at this through LogDog, click "Raw log" before copying.
+See https://bugs.chromium.org/p/chromium/issues/detail?id=984616.
+
 To update the file, run:
 ########### START ###########
  patch -p1 <<'END_DIFF'

@@ -6,11 +6,16 @@ package org.chromium.weblayer_private;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.content.res.AssetManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.FileProvider;
+import android.util.SparseArray;
 import android.webkit.ValueCallback;
+import android.webkit.WebViewDelegate;
+import android.webkit.WebViewFactory;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
@@ -26,16 +31,22 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.ui.base.ResourceBundle;
-import org.chromium.weblayer_private.aidl.IBrowserFragment;
-import org.chromium.weblayer_private.aidl.IObjectWrapper;
-import org.chromium.weblayer_private.aidl.IProfile;
-import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
-import org.chromium.weblayer_private.aidl.IWebLayer;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
-import org.chromium.weblayer_private.aidl.WebLayerVersion;
+import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IProfile;
+import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.IWebLayer;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
+/**
+ * Root implementation class for WebLayer.
+ * This is constructed by the client library using reflection.
+ */
 @UsedByReflection("WebLayer")
 public final class WebLayerImpl extends IWebLayer.Stub {
     // TODO: should there be one tag for all this code?
@@ -75,19 +86,18 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public void initAndLoadAsync(IObjectWrapper appContextWrapper,
-            IObjectWrapper packageInfoWrapper, IObjectWrapper loadedCallbackWrapper,
-            int resourcesPackageId) {
-        // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
-        // other expensive startup tasks.
-        R.onResourcesLoaded(resourcesPackageId);
-
+    public void initAndLoadAsync(
+            IObjectWrapper appContextWrapper, IObjectWrapper loadedCallbackWrapper) {
         // Wrap the app context so that it can be used to load WebLayer implementation classes.
         Context appContext = ClassLoaderContextWrapperFactory.get(
                 ObjectWrapper.unwrap(appContextWrapper, Context.class));
-        PackageInfo packageInfo = ObjectWrapper.unwrap(packageInfoWrapper, PackageInfo.class);
+        PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
         ContextUtils.initApplicationContext(appContext);
         BuildInfo.setBrowserPackageInfo(packageInfo);
+        int resourcesPackageId = getPackageId(appContext, packageInfo.packageName);
+        // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
+        // other expensive startup tasks.
+        R.onResourcesLoaded(resourcesPackageId);
 
         ResourceBundle.setAvailablePakLocales(new String[] {}, LocaleConfig.UNCOMPRESSED_LOCALES);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
@@ -152,5 +162,35 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     @Override
     public IProfile getProfile(String profilePath) {
         return mProfileManager.getProfile(profilePath);
+    }
+
+    /**
+     * Returns the package ID to use when calling R.onResourcesLoaded().
+     */
+    private static int getPackageId(Context appContext, String implPackageName) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                Constructor constructor = WebViewDelegate.class.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                WebViewDelegate delegate = (WebViewDelegate) constructor.newInstance();
+                return delegate.getPackageId(appContext.getResources(), implPackageName);
+            } else {
+                // In L WebViewDelegate did not yet exist, so we have to look inside AssetManager.
+                Method getAssignedPackageIdentifiers =
+                        AssetManager.class.getMethod("getAssignedPackageIdentifiers");
+                SparseArray packageIdentifiers = (SparseArray) getAssignedPackageIdentifiers.invoke(
+                        appContext.getResources().getAssets());
+                for (int i = 0; i < packageIdentifiers.size(); i++) {
+                    final String name = (String) packageIdentifiers.valueAt(i);
+
+                    if (implPackageName.equals(name)) {
+                        return packageIdentifiers.keyAt(i);
+                    }
+                }
+                throw new RuntimeException("Package not found: " + implPackageName);
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

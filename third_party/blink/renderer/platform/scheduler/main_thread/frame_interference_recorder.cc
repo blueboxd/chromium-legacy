@@ -47,98 +47,130 @@ void FrameInterferenceRecorder::OnTaskReady(
 
   DCHECK(!base::Contains(ready_tasks_, enqueue_order));
   ReadyTask& ready_task = ready_tasks_[enqueue_order];
-  ready_task.time_for_all_frames_when_ready = time_for_all_frames_;
-  auto time_for_frame_it = time_for_frame_.find(frame_scheduler);
-  if (time_for_frame_it != time_for_frame_.end())
-    ready_task.time_for_this_frame_when_ready = time_for_frame_it->value;
+  ready_task.time_for_all_agents_when_ready = time_for_all_agents_;
+  ready_task.agent_data_when_ready = agent_data_;
 #if DCHECK_IS_ON()
   ready_task.frame_scheduler = frame_scheduler;
 #endif
 
-  // If the currently running time is associated with a frame, adjust the
+  // If the currently running task is associated with an agent, adjust the
   // clock readings in |ready_task| to include its execution time.
-  if (!current_task_frame_scheduler_)
+  if (!agent_cluster_id_for_current_task_)
     return;
 
-  base::TimeDelta running_time = GetCurrentFrameTaskRunningTime(lazy_now);
+  base::TimeDelta running_time = GetCurrentAgentTaskRunningTime(lazy_now);
   // Clamp the value above zero to handle the case where the time in |lazy_now|
   // was captured after the current main thread task started running.
   running_time = std::max(base::TimeDelta(), running_time);
 
-  ready_task.time_for_all_frames_when_ready += running_time;
-  if (current_task_frame_scheduler_ == frame_scheduler)
-    ready_task.time_for_this_frame_when_ready += running_time;
+  ready_task.time_for_all_agents_when_ready += running_time;
+  ready_task.agent_data_when_ready.at(agent_cluster_id_for_current_task_)
+      .accumulated_running_time += running_time;
 }
 
 void FrameInterferenceRecorder::OnTaskStarted(
     MainThreadTaskQueue* queue,
     base::sequence_manager::EnqueueOrder enqueue_order,
     base::TimeTicks start_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock auto_lock(lock_);
   DCHECK(current_task_start_time_.is_null());
-  DCHECK(!current_task_frame_scheduler_);
+  DCHECK(!agent_cluster_id_for_current_task_);
 
   const FrameScheduler* frame_scheduler =
       queue ? GetFrameSchedulerForQueue(queue) : nullptr;
+  const base::UnguessableToken agent_cluster_id =
+      queue ? GetAgentClusterIdForQueue(queue) : base::UnguessableToken();
+
+  // Insert a default AgentData if there's no value for |agent_cluster_id|.
+  if (agent_cluster_id)
+    agent_data_.emplace(agent_cluster_id, AgentData{});
 
   auto ready_task_it = ready_tasks_.find(enqueue_order);
   if (ready_task_it != ready_tasks_.end()) {
     RecordHistogramForReadyTask(ready_task_it->second, queue, frame_scheduler,
-                                enqueue_order);
+                                agent_cluster_id, enqueue_order);
     ready_tasks_.erase(ready_task_it);
   }
 
   current_task_start_time_ = start_time;
-  current_task_frame_scheduler_ = frame_scheduler;
+  agent_cluster_id_for_current_task_ = agent_cluster_id;
+
+  if (!frame_scheduler)
+    return;
+
+  // Maintain the mapping from frame to agent cluster id.
+  auto frame_to_agent_it = frame_to_agent_cluster_id_.find(frame_scheduler);
+  // If the frame is already tracked and has the same agent as before.
+  if (frame_to_agent_it != frame_to_agent_cluster_id_.end() &&
+      frame_to_agent_it->value == agent_cluster_id) {
+    return;
+  }
+  // If the frame is already tracked, but has a new agent.
+  if (frame_to_agent_it != frame_to_agent_cluster_id_.end()) {
+    DecrementNumFramesForAgent(frame_to_agent_it->value);
+    frame_to_agent_it->value = agent_cluster_id;
+  } else {
+    // If the frame was not tracked before.
+    frame_to_agent_cluster_id_.insert(frame_scheduler, agent_cluster_id);
+  }
+  DCHECK_EQ(frame_to_agent_cluster_id_.find(frame_scheduler)->value,
+            agent_cluster_id);
+  // If the frame was not tracked before, or was tracked but has a new agent.
+  if (agent_cluster_id)
+    ++agent_data_.at(agent_cluster_id).frame_count;
 }
 
 void FrameInterferenceRecorder::OnTaskCompleted(MainThreadTaskQueue* queue,
                                                 base::TimeTicks end_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock auto_lock(lock_);
   DCHECK(!end_time.is_null());
-  if (queue)
-    DCHECK_EQ(GetFrameSchedulerForQueue(queue), current_task_frame_scheduler_);
 
   base::sequence_manager::LazyNow lazy_now(end_time);
   AccumulateCurrentTaskRunningTime(&lazy_now);
   current_task_start_time_ = base::TimeTicks();
-  current_task_frame_scheduler_ = nullptr;
+  agent_cluster_id_for_current_task_ = base::UnguessableToken();
 }
 
 void FrameInterferenceRecorder::OnFrameSchedulerDestroyed(
     const FrameScheduler* frame_scheduler) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock auto_lock(lock_);
-  time_for_frame_.erase(frame_scheduler);
-  if (current_task_frame_scheduler_ == frame_scheduler)
-    current_task_frame_scheduler_ = nullptr;
+
+  auto frame_to_agent_it = frame_to_agent_cluster_id_.find(frame_scheduler);
+  if (frame_to_agent_it == frame_to_agent_cluster_id_.end())
+    return;
+  DecrementNumFramesForAgent(frame_to_agent_it->value);
+  frame_to_agent_cluster_id_.erase(frame_to_agent_it);
 }
 
 void FrameInterferenceRecorder::AccumulateCurrentTaskRunningTime(
     base::sequence_manager::LazyNow* lazy_now) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!current_task_start_time_.is_null());
 
-  if (!current_task_frame_scheduler_)
+  if (!agent_cluster_id_for_current_task_)
     return;
 
   // Update clocks.
-  const base::TimeDelta running_time = GetCurrentFrameTaskRunningTime(lazy_now);
+  const base::TimeDelta running_time = GetCurrentAgentTaskRunningTime(lazy_now);
   DCHECK_GE(running_time, base::TimeDelta());
 
-  time_for_all_frames_ += running_time;
+  time_for_all_agents_ += running_time;
 
-  auto time_for_frame_it = time_for_frame_.find(current_task_frame_scheduler_);
-  if (time_for_frame_it == time_for_frame_.end())
-    time_for_frame_.insert(current_task_frame_scheduler_, running_time);
-  else
-    time_for_frame_it->value += running_time;
-
-  DCHECK_GE(time_for_all_frames_,
-            time_for_frame_.find(current_task_frame_scheduler_)->value);
+  auto agent_data_it = agent_data_.find(agent_cluster_id_for_current_task_);
+  // The agent may have been destroyed before the task completes.
+  if (agent_data_it != agent_data_.end()) {
+    agent_data_it->second.accumulated_running_time += running_time;
+    DCHECK_GE(time_for_all_agents_,
+              agent_data_it->second.accumulated_running_time);
+  }
 }
 
-base::TimeDelta FrameInterferenceRecorder::GetCurrentFrameTaskRunningTime(
+base::TimeDelta FrameInterferenceRecorder::GetCurrentAgentTaskRunningTime(
     base::sequence_manager::LazyNow* lazy_now) const {
-  DCHECK(current_task_frame_scheduler_);
+  DCHECK(agent_cluster_id_for_current_task_);
   DCHECK(!current_task_start_time_.is_null());
   return lazy_now->Now() - current_task_start_time_;
 }
@@ -158,78 +190,101 @@ void FrameInterferenceRecorder::RecordHistogramForReadyTask(
     const ReadyTask& ready_task,
     const MainThreadTaskQueue* queue,
     const FrameScheduler* frame_scheduler,
+    const base::UnguessableToken& agent_cluster_id,
     base::sequence_manager::EnqueueOrder enqueue_order) {
-  // Record the histogram if the task is associated with a frame and wasn't
+  // Record the histogram if the task is associated with an agent and wasn't
   // blocked by a fence or by the TaskQueue being disabled.
-  if (!frame_scheduler || enqueue_order < queue->GetLastUnblockEnqueueOrder())
+  if (agent_cluster_id.is_empty() ||
+      enqueue_order < queue->GetLastUnblockEnqueueOrder()) {
     return;
+  }
 
 #if DCHECK_IS_ON()
   DCHECK_EQ(frame_scheduler, ready_task.frame_scheduler);
 #endif
 
-  // |time_for_all_frames_since_ready| and |time_for_this_frame_since_ready| are
+  // |time_for_all_agents_since_ready| and |time_for_this_agent_since_ready| are
   // clamped above zero to mitigate this problem:
   //
-  // X = initial |time_for_all_frames_|.
+  // X = initial |time_for_all_agents_|.
   //
   // Thread 1: Captures time T1.
   //           Invokes OnTaskStarted with T1.
   //           Captures time T2.
   // Thread 2: Captures time T3.
   //           Invokes OnTaskReady with T3. [*]
-  //             |time_for_all_frames_when_ready| = X + T3 - T1
-  //             (Ready task is from the same frame as the running task)
+  //             |time_for_all_agents_when_ready| = X + T3 - T1
+  //             (Ready task is from the same agent as the running task)
   // Thread 1: Invokes OnTaskCompleted with T2.
-  //             |time_for_all_frames_| += T2 - T1
+  //             |time_for_all_agents_| += T2 - T1
   //           Invokes OnTaskStarted for the next task.
-  //             |time_for_all_frames_since_ready|
-  //                 = |time_for_all_frames_| - |time_for_all_frames_when_ready|
+  //             |time_for_all_agent_since_ready|
+  //                 = |time_for_all_agents_| - |time_for_all_agents_when_ready|
   //                 = (X + T2 - T1) - (X + T3 - T1)
   //                 = T2 - T3
   //             Which is a negative value.
   //
-  // |time_for_other_frames_since_ready| is clamped above zero for the case
-  // where the ready and running tasks are not from the same frame at [*]. In
-  // that case, |ready_task.time_for_all_frames_when_ready| was incremented with
+  // |time_for_other_agents_since_ready| is clamped above zero for the case
+  // where the ready and running tasks are not from the same agent at [*]. In
+  // that case, |ready_task.time_for_all_agents_when_ready| was incremented with
   // the current task's running time, but not
-  // |ready_task.time_for_this_frames_when_ready|, which can cause
-  // |time_for_this_frame_since_ready| to be greater than
-  // |time_for_all_frames_since_ready|.
+  // |ready_task.time_for_this_agents_when_ready|, which can cause
+  // |time_for_this_agent_since_ready| to be greater than
+  // |time_for_all_agents_since_ready|.
   //
   // Note: These problem exists because OnTask*() methods use times captured
   // outside the scope of |lock_|.
-  DCHECK_GE(ready_task.time_for_all_frames_when_ready,
-            ready_task.time_for_this_frame_when_ready);
-  const base::TimeDelta time_for_all_frames_since_ready = std::max(
+  auto time_for_this_agent_when_ready_it =
+      ready_task.agent_data_when_ready.find(agent_cluster_id);
+  const base::TimeDelta time_for_this_agent_when_ready =
+      time_for_this_agent_when_ready_it ==
+              ready_task.agent_data_when_ready.end()
+          ? base::TimeDelta()
+          : time_for_this_agent_when_ready_it->second.accumulated_running_time;
+
+  DCHECK_GE(ready_task.time_for_all_agents_when_ready,
+            time_for_this_agent_when_ready);
+  const base::TimeDelta time_for_all_agents_since_ready = std::max(
       base::TimeDelta(),
-      time_for_all_frames_ - ready_task.time_for_all_frames_when_ready);
+      time_for_all_agents_ - ready_task.time_for_all_agents_when_ready);
 
-  auto time_for_frame_it = time_for_frame_.find(frame_scheduler);
-  const base::TimeDelta time_for_frame =
-      time_for_frame_it == time_for_frame_.end() ? base::TimeDelta()
-                                                 : time_for_frame_it->value;
-  const base::TimeDelta time_for_this_frame_since_ready =
-      std::max(base::TimeDelta(),
-               time_for_frame - ready_task.time_for_this_frame_when_ready);
+  auto agent_data_it = agent_data_.find(agent_cluster_id);
+  DCHECK(agent_data_it != agent_data_.end());
+  const base::TimeDelta time_for_agent =
+      agent_data_it->second.accumulated_running_time;
+  const base::TimeDelta time_for_this_agent_since_ready = std::max(
+      base::TimeDelta(), time_for_agent - time_for_this_agent_when_ready);
 
-  const base::TimeDelta time_for_other_frames_since_ready =
-      std::max(base::TimeDelta(), time_for_all_frames_since_ready -
-                                      time_for_this_frame_since_ready);
-  RecordHistogram(queue, time_for_other_frames_since_ready);
+  const base::TimeDelta time_for_other_agents_since_ready =
+      std::max(base::TimeDelta(), time_for_all_agents_since_ready -
+                                      time_for_this_agent_since_ready);
+  RecordHistogram(queue, time_for_other_agents_since_ready);
+}
+
+void FrameInterferenceRecorder::DecrementNumFramesForAgent(
+    const base::UnguessableToken& agent_cluster_id) {
+  if (!agent_cluster_id)
+    return;
+  auto agent_data_it = agent_data_.find(agent_cluster_id);
+  DCHECK(agent_data_it != agent_data_.end());
+  DCHECK_GT(agent_data_it->second.frame_count, 0U);
+  // If |frame_count| reaches 0, the data for this agent is cleared as it's
+  // no longer useful.
+  if (--agent_data_it->second.frame_count == 0)
+    agent_data_.erase(agent_data_it);
 }
 
 void FrameInterferenceRecorder::RecordHistogram(
     const MainThreadTaskQueue* queue,
     base::TimeDelta sample) {
   // Histogram should only be recorded for queue types that can be associated
-  // with frames.
-  DCHECK(GetFrameSchedulerForQueue(queue));
+  // with agents.
+  DCHECK(GetAgentClusterIdForQueue(queue));
   const MainThreadTaskQueue::QueueType queue_type = queue->queue_type();
   DCHECK(MainThreadTaskQueue::IsPerFrameTaskQueue(queue_type));
 
   const std::string histogram_name =
-      std::string("RendererScheduler.TimeRunningOtherFramesWhileTaskReady.") +
+      std::string("RendererScheduler.TimeRunningOtherAgentsWhileTaskReady.") +
       (GetFrameSchedulerForQueue(queue)->IsFrameVisible() ? "Visible"
                                                           : "Hidden");
   base::UmaHistogramCustomMicrosecondsTimes(
@@ -246,6 +301,14 @@ void FrameInterferenceRecorder::RecordHistogram(
 const FrameScheduler* FrameInterferenceRecorder::GetFrameSchedulerForQueue(
     const MainThreadTaskQueue* queue) {
   return queue->GetFrameScheduler();
+}
+
+const base::UnguessableToken&
+FrameInterferenceRecorder::GetAgentClusterIdForQueue(
+    const MainThreadTaskQueue* queue) {
+  const FrameSchedulerImpl* frame_scheduler = queue->GetFrameScheduler();
+  return frame_scheduler ? frame_scheduler->GetAgentClusterId()
+                         : base::UnguessableToken::Null();
 }
 
 }  // namespace scheduler

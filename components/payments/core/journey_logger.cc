@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -268,12 +266,6 @@ void JourneyLogger::RecordJourneyStatsHistograms(
   if (has_recorded_) {
     UMA_HISTOGRAM_BOOLEAN(
         "PaymentRequest.JourneyLoggerHasRecordedMultipleTimes", true);
-    static base::debug::CrashKeyString* journey_logger_multiple_record =
-        base::debug::AllocateCrashKeyString("journey_logger_multiple_record",
-                                            base::debug::CrashKeySize::Size32);
-    base::debug::SetCrashKeyString(journey_logger_multiple_record,
-                                   base::StringPrintf("%d", events_));
-    base::debug::DumpWithoutCrashing();
   }
   has_recorded_ = true;
 

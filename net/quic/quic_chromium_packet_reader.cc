@@ -116,10 +116,17 @@ bool QuicChromiumPacketReader::ProcessReadResult(int result) {
   quic::QuicReceivedPacket packet(read_buffer_->data(), result, clock_->Now());
   IPEndPoint local_address;
   IPEndPoint peer_address;
-  socket_->GetLocalAddress(&local_address);
-  socket_->GetPeerAddress(&peer_address);
-  return visitor_->OnPacket(packet, ToQuicSocketAddress(local_address),
-                            ToQuicSocketAddress(peer_address));
+  // TODO(zhongyi): once crbug.com/1014092 is root caused, consider early return
+  // false if |socket_| is nulled. For debugging purpose, still report up to
+  // avoid introducing behavior change.
+  // If the socket has been nulled, the connection is already closed. Reporting
+  // packet up to the visitor is a no-op.
+  if (socket_ != nullptr) {
+    socket_->GetLocalAddress(&local_address_);
+    socket_->GetPeerAddress(&peer_address_);
+  }
+  return visitor_->OnPacket(packet, ToQuicSocketAddress(local_address_),
+                            ToQuicSocketAddress(peer_address_));
 }
 
 void QuicChromiumPacketReader::OnReadComplete(int result) {

@@ -44,7 +44,7 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
   gfx::Rect GetRootWindowBounds(const gfx::Size& host_size) const override {
     gfx::Rect bounds(host_size);
     gfx::RectF new_bounds(ui::ConvertRectToDIP(root_window_->layer(), bounds));
-    transform_.TransformRect(&new_bounds);
+    GetInverseTransform().TransformRect(&new_bounds);
     return gfx::Rect(gfx::ToFlooredSize(new_bounds.size()));
   }
 

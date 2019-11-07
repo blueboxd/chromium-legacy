@@ -23,9 +23,9 @@ void AccountMigrationWelcomeUITest::ShowDialog() {
   auto* webui = dialog->GetWebUIForTest();
   auto* web_contents = webui->GetWebContents();
   content::WaitForLoadStop(web_contents);
-  web_contents->GetRenderViewHost()->SetWebUIProperty(
+  web_contents->GetMainFrame()->SetWebUIProperty(
       "expectedUrl", chrome::kChromeUIAccountMigrationWelcomeURL);
-  web_contents->GetRenderViewHost()->SetWebUIProperty("expectedEmail",
-                                                      account_email);
+  web_contents->GetMainFrame()->SetWebUIProperty("expectedEmail",
+                                                 account_email);
   SetWebUIInstance(webui);
 }

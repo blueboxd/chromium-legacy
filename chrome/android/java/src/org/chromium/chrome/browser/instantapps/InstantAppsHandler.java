@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -330,7 +331,7 @@ public class InstantAppsHandler {
 
     /** @return Whether Chrome is the default browser on the device. */
     private boolean isChromeDefaultHandler(Context context) {
-        return ChromePreferenceManager.getInstance().readBoolean(
+        return SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceManager.CHROME_DEFAULT_BROWSER, false);
     }
 

@@ -8,8 +8,8 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabCon
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifierDelegate;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.VerifierDelegate;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifier;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
@@ -78,7 +78,7 @@ public class CustomTabActivityModule {
     }
 
     @Provides
-    public VerifierDelegate provideVerifierDelegate(Lazy<TwaVerifierDelegate> twaVerifierDelegate) {
+    public Verifier provideVerifierDelegate(Lazy<TwaVerifier> twaVerifierDelegate) {
         // TODO(peconn): Add handing of WebAPK/A2HS delegate.
         return twaVerifierDelegate.get();
     }

@@ -41,7 +41,8 @@ enum class GrContextType : uint32_t {
   kGL = 0,
   kVulkan = 1,
   kMetal = 2,
-  kLast = kMetal,
+  kDawn = 3,
+  kLast = kDawn,
 };
 
 // NOTE: if you modify this structure then you must also modify the

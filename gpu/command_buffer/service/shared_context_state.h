@@ -28,6 +28,7 @@ class GLSurface;
 }  // namespace gl
 
 namespace viz {
+class DawnContextProvider;
 class MetalContextProvider;
 class VulkanContextProvider;
 }  // namespace viz
@@ -58,7 +59,8 @@ class GPU_GLES2_EXPORT SharedContextState
       base::OnceClosure context_lost_callback,
       GrContextType gr_context_type = GrContextType::kGL,
       viz::VulkanContextProvider* vulkan_context_provider = nullptr,
-      viz::MetalContextProvider* metal_context_provider = nullptr);
+      viz::MetalContextProvider* metal_context_provider = nullptr,
+      viz::DawnContextProvider* dawn_context_provider = nullptr);
 
   void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds,
                            GrContextOptions::PersistentCache* cache,
@@ -71,8 +73,10 @@ class GPU_GLES2_EXPORT SharedContextState
     return vk_context_provider_ && gr_context_type_ == GrContextType::kVulkan;
   }
   bool GrContextIsMetal() const {
-    return metal_context_provider_ &&
-        gr_context_type_ == GrContextType::kMetal;
+    return metal_context_provider_ && gr_context_type_ == GrContextType::kMetal;
+  }
+  bool GrContextIsDawn() const {
+    return dawn_context_provider_ && gr_context_type_ == GrContextType::kDawn;
   }
 
   bool InitializeGL(const GpuPreferences& gpu_preferences,
@@ -97,6 +101,9 @@ class GPU_GLES2_EXPORT SharedContextState
   }
   viz::MetalContextProvider* metal_context_provider() {
     return metal_context_provider_;
+  }
+  viz::DawnContextProvider* dawn_context_provider() {
+    return dawn_context_provider_;
   }
   gl::ProgressReporter* progress_reporter() const { return progress_reporter_; }
   GrContext* gr_context() { return gr_context_; }
@@ -170,6 +177,7 @@ class GPU_GLES2_EXPORT SharedContextState
   GrContextType gr_context_type_ = GrContextType::kGL;
   viz::VulkanContextProvider* const vk_context_provider_;
   viz::MetalContextProvider* const metal_context_provider_;
+  viz::DawnContextProvider* const dawn_context_provider_;
   GrContext* gr_context_ = nullptr;
 
   scoped_refptr<gl::GLShareGroup> share_group_;

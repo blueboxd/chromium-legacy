@@ -73,7 +73,7 @@ public class DownloadCallbackTest {
 
         mCallback = new Callback();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivity.getBrowserController().setDownloadCallback(mCallback); });
+                () -> { mActivity.getTab().setDownloadCallback(mCallback); });
     }
 
     /**
@@ -96,8 +96,7 @@ public class DownloadCallbackTest {
         try {
             final String pageUrl = webServer.setResponse("/download.txt", data, downloadHeaders);
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                mActivity.getBrowserController().getNavigationController().navigate(
-                        Uri.parse(pageUrl));
+                mActivity.getTab().getNavigationController().navigate(Uri.parse(pageUrl));
             });
             mCallback.waitForDownload();
 

@@ -8,13 +8,17 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/ui/ash/arc_custom_tab_modal_dialog_host.h"
+#include "chrome/services/printing/public/mojom/pdf_flattener.mojom.h"
 #include "components/arc/mojom/print_spooler.mojom.h"
 #include "components/printing/common/print.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace ash {
 class ArcCustomTab;
@@ -50,6 +54,23 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
                    mojom::PrintSessionHostRequest request);
   friend class content::WebContentsUserData<PrintSessionImpl>;
 
+  // printing::mojom::PrintRenderer:
+  void CreatePreviewDocument(base::Value job_settings,
+                             CreatePreviewDocumentCallback callback) override;
+
+  // Called once the preview document has been created by ARC. The preview
+  // document must be read and flattened before being returned by the
+  // PrintRenderer.
+  void OnPreviewDocumentCreated(CreatePreviewDocumentCallback callback,
+                                mojo::ScopedHandle preview_document,
+                                int64_t data_size);
+
+  // Called once the preview document from ARC has been read. The preview
+  // document must be flattened before being returned by the PrintRenderer.
+  void OnPreviewDocumentRead(
+      CreatePreviewDocumentCallback callback,
+      base::ReadOnlySharedMemoryRegion preview_document_region);
+
   // Used to close the ARC Custom Tab used for printing. If the remote end
   // closes the connection, the ARC Custom Tab and print preview will be closed.
   // If printing has already started, this will not cancel any active print job.
@@ -68,6 +89,9 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
   // Used to bind the PrintSessionHost interface implementation to a message
   // pipe.
   mojo::Binding<mojom::PrintSessionHost> session_binding_;
+
+  // Remote interface used to flatten a PDF (preview document).
+  mojo::Remote<printing::mojom::PdfFlattener> pdf_flattener_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

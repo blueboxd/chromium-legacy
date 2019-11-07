@@ -113,7 +113,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool IsMouseLocked() override;
   gfx::Size GetVisibleViewportSize() override;
   void SetInsets(const gfx::Insets& insets) override;
-  void FocusedNodeTouched(bool editable) override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   void SetWantsAnimateOnlyBeginFrames() override;
   TouchSelectionControllerClientManager*
@@ -650,9 +649,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Contains a copy of the last context menu request parameters. Only set when
   // we receive a request to show the context menu on a long press.
   std::unique_ptr<ContextMenuParams> last_context_menu_params_;
-
-  // Set to true if we requested the on screen keyboard to be displayed.
-  bool virtual_keyboard_requested_;
 
   friend class WinScreenKeyboardObserver;
   std::unique_ptr<WinScreenKeyboardObserver> keyboard_observer_;

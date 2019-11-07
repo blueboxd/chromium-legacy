@@ -83,7 +83,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
       scoped_refptr<gl::GLSurface> default_offscreen_surface,
       ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
       viz::VulkanContextProvider* vulkan_context_provider = nullptr,
-      viz::MetalContextProvider* metal_context_provider = nullptr);
+      viz::MetalContextProvider* metal_context_provider = nullptr,
+      viz::DawnContextProvider* dawn_context_provider = nullptr);
   ~GpuChannelManager() override;
 
   GpuChannelManagerDelegate* delegate() const { return delegate_; }
@@ -295,6 +296,10 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // If features::SkiaOnMetad, |metal_context_provider_| will be set from
   // viz::GpuServiceImpl. The raster decoders will use it for rasterization.
   viz::MetalContextProvider* metal_context_provider_ = nullptr;
+
+  // With --gr-context-type=dawn, |dawn_context_provider_| will be set from
+  // viz::GpuServiceImpl. The raster decoders will use it for rasterization.
+  viz::DawnContextProvider* dawn_context_provider_ = nullptr;
 
   GpuPeakMemoryMonitor peak_memory_monitor_;
 

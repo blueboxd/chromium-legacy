@@ -113,9 +113,6 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
   // The time the first significant playback occurred.
   base::Time first_significant_playback_time_;
 
-  // The time between significant playbacks to be recorded to UKM.
-  base::TimeDelta time_since_playback_for_ukm_;
-
   // Whether the session was restored.
   RestoreType restore_status_ = RestoreType::kNotRestored;
 

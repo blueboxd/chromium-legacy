@@ -1523,7 +1523,7 @@ TEST_F(IncrementalMarkingTest, WeakHashMapHeapCompaction) {
   driver.FinishGC();
 
   // Weak callback should register the slot.
-  EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 1u);
+  EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 2u);
 }
 
 TEST_F(IncrementalMarkingTest, ConservativeGCWhileCompactionScheduled) {

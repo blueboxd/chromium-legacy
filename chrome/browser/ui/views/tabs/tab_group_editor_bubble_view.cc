@@ -15,6 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -41,6 +42,7 @@ namespace {
 constexpr int TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP = 13;
 constexpr int TAB_GROUP_HEADER_CXMENU_UNGROUP = 14;
 constexpr int TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP = 15;
+constexpr int TAB_GROUP_HEADER_CXMENU_FEEDBACK = 16;
 
 // Returns our hard-coded set of colors.
 const std::vector<std::pair<SkColor, base::string16>>& GetColorPickerList() {
@@ -163,6 +165,16 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   close_menu_item->SetBorder(views::CreateEmptyBorder(menu_item_border_inset));
   menu_items_container->AddChildView(std::move(close_menu_item));
 
+  menu_items_container->AddChildView(std::make_unique<views::Separator>());
+
+  std::unique_ptr<views::LabelButton> feedback_menu_item = CreateBubbleMenuItem(
+      TAB_GROUP_HEADER_CXMENU_FEEDBACK,
+      l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),
+      &menu_button_listener_);
+  feedback_menu_item->SetBorder(
+      views::CreateEmptyBorder(menu_item_border_inset));
+  menu_items_container->AddChildView(std::move(feedback_menu_item));
+
   views::FlexLayout* menu_layout_manager_ =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
   menu_layout_manager_->SetOrientation(views::LayoutOrientation::kVertical);
@@ -202,7 +214,6 @@ void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
   switch (sender->GetID()) {
     case TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP:
       tab_controller_->AddNewTabInGroup(group_);
-
       break;
     case TAB_GROUP_HEADER_CXMENU_UNGROUP:
       anchor_view_->RemoveObserverFromWidget(sender->GetWidget());
@@ -211,6 +222,16 @@ void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
     case TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP:
       tab_controller_->CloseAllTabsInGroup(group_);
       break;
+    case TAB_GROUP_HEADER_CXMENU_FEEDBACK: {
+      const Browser* browser = tab_controller_->GetBrowser();
+      chrome::ShowFeedbackPage(
+          browser, chrome::FeedbackSource::kFeedbackSourceDesktopTabGroups,
+          std::string() /* description_template */,
+          std::string() /* description_placeholder_text */,
+          std::string("DESKTOP_TAB_GROUPS") /* category_tag */,
+          std::string() /* extra_diagnostics */);
+      break;
+    }
     default:
       NOTREACHED();
   }

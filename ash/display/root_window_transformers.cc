@@ -102,10 +102,10 @@ class AshRootWindowTransformer : public RootWindowTransformer {
     display::ManagedDisplayInfo info =
         display_manager->GetDisplayInfo(display.id());
     host_insets_ = info.GetOverscanInsetsInPixel();
-    root_window_bounds_transform_ =
+    gfx::Transform insets_and_rotation_transform =
         CreateInsetsTransform(host_insets_, display.device_scale_factor()) *
         CreateRootWindowRotationTransform(display);
-    transform_ = root_window_bounds_transform_;
+    transform_ = insets_and_rotation_transform;
     insets_and_scale_transform_ = CreateReverseRotatedInsetsTransform(
         info.GetLogicalActiveRotation(), host_insets_,
         display.device_scale_factor());
@@ -118,6 +118,8 @@ class AshRootWindowTransformer : public RootWindowTransformer {
     }
 
     CHECK(transform_.GetInverse(&invert_transform_));
+    CHECK(insets_and_rotation_transform.GetInverse(
+        &root_window_bounds_transform_));
 
     root_window_bounds_transform_.Scale(1.f / display.device_scale_factor(),
                                         1.f / display.device_scale_factor());
@@ -132,8 +134,9 @@ class AshRootWindowTransformer : public RootWindowTransformer {
     gfx::RectF new_bounds = gfx::RectF(gfx::SizeF(host_size));
     new_bounds.Inset(host_insets_);
     root_window_bounds_transform_.TransformRect(&new_bounds);
-    // Ignore the origin because RootWindow's insets are handled by
-    // the transform.
+
+    // Root window origin will be (0,0) except during bounds changes.
+    // Set to exactly zero to avoid rounding issues.
     // Floor the size because the bounds is no longer aligned to
     // backing pixel when |root_window_scale_| is specified
     // (850 height at 1.25 scale becomes 1062.5 for example.)
@@ -155,8 +158,21 @@ class AshRootWindowTransformer : public RootWindowTransformer {
   // |gfx::Transform::GetInverse|.
   gfx::Transform invert_transform_;
 
-  // The transform of the root window bounds. This is used to calculate
-  // the size of root window.
+  // The transform of the root window bounds. This is used to calculate the size
+  // of the root window. It is the composition of the following transforms
+  //   - inverse of insets. Insets position the content area within the display.
+  //   - inverse of rotation. Rotation changes orientation of the content area.
+  //   - inverse of device scale. Scaling up content shrinks the content area.
+  //
+  // Insets also shrink the content area but this happens prior to applying the
+  // transformation in GetRootWindowBounds().
+  //
+  // Magnification does not affect the window size. Content is clipped in this
+  // case, but the magnifier allows panning to reach clipped areas.
+  //
+  // The transforms are inverted because GetTransform() is the transform from
+  // root window coordinates to host coordinates, but this transform is used in
+  // the reverse direction (derives root window bounds from display bounds).
   gfx::Transform root_window_bounds_transform_;
 
   gfx::Insets host_insets_;

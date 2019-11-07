@@ -522,14 +522,20 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
                 target:self
               selector:@selector(dismiss)];
 
-  UIAccessibilityCustomAction* modalAction =
-      [[UIAccessibilityCustomAction alloc]
-          initWithName:l10n_util::GetNSString(
-                           IDS_IOS_INFOBAR_BANNER_OPTIONS_HINT)
-                target:self
-              selector:@selector(triggerInfobarModal)];
+  NSMutableArray* accessibilityActions =
+      [@[ acceptAction, dismissAction ] mutableCopy];
 
-  return @[ acceptAction, dismissAction, modalAction ];
+  if (self.presentsModal) {
+    UIAccessibilityCustomAction* modalAction =
+        [[UIAccessibilityCustomAction alloc]
+            initWithName:l10n_util::GetNSString(
+                             IDS_IOS_INFOBAR_BANNER_OPTIONS_HINT)
+                  target:self
+                selector:@selector(triggerInfobarModal)];
+    [accessibilityActions addObject:modalAction];
+  }
+
+  return accessibilityActions;
 }
 
 // A11y Custom actions selectors need to return a BOOL.

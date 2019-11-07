@@ -32,6 +32,11 @@ class BASE_EXPORT MadvFreeDiscardableMemoryAllocatorPosix
 
   size_t GetBytesAllocated() const override;
 
+  void ReleaseFreeMemory() override {
+    // Do nothing, since MADV_FREE discardable memory does not keep any memory
+    // overhead that can be released.
+  }
+
  private:
   std::atomic<size_t> bytes_allocated_{0};
 

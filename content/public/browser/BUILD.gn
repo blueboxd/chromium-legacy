@@ -251,7 +251,6 @@ jumbo_source_set("browser_sources") {
     "overscroll_configuration.h",
     "page_navigator.cc",
     "page_navigator.h",
-    "page_visibility_state.h",
     "payment_app_provider.h",
     "peak_gpu_memory_tracker.h",
     "pepper_flash_settings_helper.h",

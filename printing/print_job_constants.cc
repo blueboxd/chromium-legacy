@@ -138,6 +138,9 @@ const char kSettingPinValue[] = "pinValue";
 // Policies affecting printing destination.
 const char kSettingPolicies[] = "policies";
 
+// Whether the source page content is from ARC or not.
+const char kSettingPreviewIsFromArc[] = "previewIsFromArc";
+
 // Whether the source page content is PDF or not.
 const char kSettingPreviewIsPdf[] = "previewIsPdf";
 

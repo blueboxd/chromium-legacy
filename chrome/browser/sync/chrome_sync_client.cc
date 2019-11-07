@@ -93,6 +93,7 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -395,10 +396,14 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-  controllers.push_back(
-      std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
-          syncer::APP_LIST, GetModelTypeStoreService()->GetStoreFactory(),
-          GetSyncableServiceForType(syncer::APP_LIST), dump_stack));
+  // Temporarily Disable AppListSyncableService for tablet form factor devices.
+  // See crbug/1013732 for details.
+  if (!chromeos::switches::IsTabletFormFactor()) {
+    controllers.push_back(
+        std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
+            syncer::APP_LIST, GetModelTypeStoreService()->GetStoreFactory(),
+            GetSyncableServiceForType(syncer::APP_LIST), dump_stack));
+  }
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if defined(OS_LINUX) || defined(OS_WIN)

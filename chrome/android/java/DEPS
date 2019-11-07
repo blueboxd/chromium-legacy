@@ -7,6 +7,7 @@ include_rules = [
   "+chrome/browser/ui/android/widget",
   "+chrome/browser/download/android/java",
   "+chrome/browser/image_fetcher/android/java",
+  "+chrome/browser/preferences/android/java",
   "+chrome/browser/util/android/java",
   "+chrome/lib/lifecycle/public",
   "+components/embedder_support/android",
@@ -39,7 +40,7 @@ include_rules = [
 specific_include_rules = {
   # Special-case where monochrome composes chrome+webview
   "MonochromeApplication\.java": [
-    "+android_webview/apk/java/src/com/android/webview/chromium/WebViewApkApplication.java",
+    "+android_webview/apk/java/src/org/chromium/android_webview/app/WebViewApkApplication.java",
     "+android_webview/glue/java/src/com/android/webview/chromium/MonochromeLibraryPreloader.java",
   ]
 }

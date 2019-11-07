@@ -766,6 +766,7 @@ TEST_F(RenderTextTest, ObscuredText) {
   EXPECT_EQ(2U, render_text->cursor_position());
 
   // Test index conversion and cursor validity with a valid surrogate pair.
+  // Text contains "u+D800 u+DC00" and display text contains "u+2022".
   EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(0U));
   EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(1U));
   EXPECT_EQ(1U, test_api()->TextIndexToDisplayIndex(2U));
@@ -803,6 +804,19 @@ TEST_F(RenderTextTest, ObscuredText) {
     TestVisualCursorMotionInObscuredField(render_text, text, SELECTION_NONE);
     TestVisualCursorMotionInObscuredField(render_text, text, SELECTION_RETAIN);
   }
+}
+
+TEST_F(RenderTextTest, ObscuredTextMultiline) {
+  const base::string16 test = UTF8ToUTF16("a\nbc\ndef");
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(test);
+  render_text->SetObscured(true);
+  render_text->SetMultiline(true);
+
+  // Newlines should be kept in multiline mode.
+  base::string16 display_text = render_text->GetDisplayText();
+  EXPECT_EQ(display_text[1], '\n');
+  EXPECT_EQ(display_text[4], '\n');
 }
 
 TEST_F(RenderTextTest, RevealObscuredText) {
@@ -1065,16 +1079,16 @@ const RunListCase kBasicsRunListCases[] = {
     {"simpleRTL", L"ښڛڜ", "[2<-0]"},
     {"asc_arb", L"abcښڛڜdef", "[0->2][5<-3][6->8]"},
     {"asc_dev_asc", L"abcऔकखdefڜ", "[0->2][3->5][6->8][9]"},
-    {"phone", L"1-(800)-xxx-xxxx", "[0->1][2][3->5][6][7][8->10][11][12->15]"},
+    {"phone", L"1-(800)-xxx-xxxx", "[0][1][2][3->5][6][7][8->10][11][12->15]"},
     {"dev_ZWS", L"क\u200Bख", "[0][1][2]"},
-    {"numeric", L"1 2 3 4", "[0->6]"},
-    {"joiners", L"1\u200C2\u200C3\u200C4", "[0][1][2][3][4][5][6]"},
+    {"numeric", L"1 2 3 4", "[0][1][2][3][4][5][6]"},
+    {"joiners", L"1\u200C2\u200C3\u200C4", "[0->6]"},
     {"combining_accents1", L"a\u0300e\u0301", "[0->3]"},
     {"combining_accents2", L"\u0065\u0308\u0435\u0308", "[0->1][2->3]"},
     {"picto_title", L"☞☛test☚☜", "[0->1][2->5][6->7]"},
     {"picto_LTR", L"☺☺☺!", "[0->2][3]"},
     {"picto_RTL", L"☺☺☺ښ", "[3][2<-0]"},
-    {"paren_picto", L"(☾☹☽)", "[0][1->3][4]"},
+    {"paren_picto", L"(☾☹☽)", "[0][1][2][3][4]"},
     {"emoji_asc", L"\U0001F6281234",
      "[0->1][2->5]"},  // http://crbug.com/530021
     {"emoji_title", L"▶Feel goods",
@@ -1119,11 +1133,12 @@ const RunListCase kBidiRunListCases[] = {
     {"neutral_RLM_post", L"\u2026\u2026\u200F", "[2<-0]"},
     {"brackets_ltr", L"aa(ڭڭ)\u2026\u2026", "[0->1][2][4<-3][5][6->7]"},
     {"brackets_rtl", L"ڭڭ(aa)\u2026\u2026", "[7<-6][5][3->4][2][1<-0]"},
-    {"mixed_with_punct", L"aa \"ڭڭ!\", aa", "[0->1][2->3][5<-4][6->9][10->11]"},
+    {"mixed_with_punct", L"aa \"ڭڭ!\", aa",
+     "[0->1][2][3][5<-4][6->8][9][10->11]"},
     {"mixed_with_punct_RLI", L"aa \"\u2067ڭڭ!\u2069\", aa",
-     "[0->1][2->3][4][7][6<-5][8][9->11][12->13]"},
+     "[0->1][2][3][4][7][6<-5][8][9->10][11][12->13]"},
     {"mixed_with_punct_RLM", L"aa \"ڭڭ!\u200F\", aa",
-     "[0->1][2->3][7][6][5<-4][8->10][11->12]"},
+     "[0->1][2][3][7][6][5<-4][8->9][10][11->12]"},
 };
 
 INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsBidi,
@@ -1202,7 +1217,7 @@ const RunListCase kScriptsRunListCases[] = {
     {"blocks_lat_smallcap", L"ꟺＭ", "[0->1]"},
     {"blocks_lat_small_letter", L"ᶓᶍᶓᴔᴟ", "[0->4]"},
     {"blocks_lat_acc", L"eéěĕȩɇḕẻếⱻꞫ", "[0->10]"},
-    {"blocks_com", L"⟦ℳ¥¾⟾⁸⟧Ⓔ", "[0][1->5][6][7]"},
+    {"blocks_com", L"⟦ℳ¥¾⟾⁸⟧Ⓔ", "[0][1][2->3][4][5][6][7]"},
 
     // Latin script.
     {"latin_numbers", L"a1b2c3", "[0][1][2][3][4][5]"},
@@ -1213,9 +1228,9 @@ const RunListCase kScriptsRunListCases[] = {
     // Common script.
     {"common_tm", L"•bug™", "[0][1->3][4]"},
     {"common_copyright", L"chromium©", "[0->7][8]"},
-    {"common_math1", L"ℳ: ¬ƒ(x)=½×¾", "[0][1->2][3][4][5][6][7][8][9->11]"},
-    {"common_math2", L"𝟏×𝟑", "[0->4]"},
-    {"common_numbers", L"🄀𝟭𝟐⒓¹²", "[0->8]"},
+    {"common_math1", L"ℳ: ¬ƒ(x)=½×¾", "[0][1][2][3][4][5][6][7][8][9->11]"},
+    {"common_math2", L"𝟏×𝟑", "[0->1][2][3->4]"},
+    {"common_numbers", L"🄀𝟭𝟐⒓¹²", "[0->1][2->5][6][7->8]"},
     {"common_puncts", L",.\u0083!", "[0->1][2][3]"},
 
     // Arabic script.
@@ -1254,7 +1269,7 @@ const RunListCase kScriptsRunListCases[] = {
     {"telugu_lat", L"aaఉయ!", "[0->1][2->3][4]"},
     {"telugu_numbers", L"123౦౧౨456౩౪౫", "[0->2][3->5][6->8][9->11]"},
     {"telugu_puncts", L"కురుచ, చిఱుత, చేరువ, చెఱువు!",
-     "[0->4][5->6][7->11][12->13][14->18][19->20][21->26][27]"},
+     "[0->4][5][6][7->11][12][13][14->18][19][20][21->26][27]"},
 
     // Control Pictures.
     {"control_pictures", L"␑␒␓␔␕␖␗␘␙␚␛", "[0->10]"},
@@ -1264,6 +1279,109 @@ const RunListCase kScriptsRunListCases[] = {
 INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsScripts,
                          RenderTextTestWithRunListCase,
                          ::testing::ValuesIn(kScriptsRunListCases),
+                         RenderTextTestWithRunListCase::ParamInfoToString);
+
+// Test cases to ensure ItemizeTextToRuns is splitting emoji correctly.
+// see: http://www.unicode.org/reports/tr51
+// see: http://www.unicode.org/emoji/charts/full-emoji-list.html
+const RunListCase kEmojiRunListCases[] = {
+    // Samples from
+    // https://www.unicode.org/Public/emoji/12.0/emoji-data.txt
+    {"number_sign", L"\u0023", "[0]"},
+    {"keyboard", L"\u2328", "[0]"},
+    {"aries", L"\u2648", "[0]"},
+    {"candle", L"\U0001F56F", "[0->1]"},
+    {"anchor", L"\u2693", "[0]"},
+    {"grinning_face", L"\U0001F600", "[0->1]"},
+    {"face_with_monocle", L"\U0001F9D0", "[0->1]"},
+    {"light_skin_tone", L"\U0001F3FB", "[0->1]"},
+    {"index_pointing_up", L"\u261D", "[0]"},
+    {"horse_racing", L"\U0001F3C7", "[0->1]"},
+    {"kiss", L"\U0001F48F", "[0->1]"},
+    {"couple_with_heart", L"\U0001F491", "[0->1]"},
+    {"people_wrestling", L"\U0001F93C", "[0->1]"},
+    {"eject_button", L"\u23CF", "[0]"},
+
+    // Samples from
+    // https://unicode.org/Public/emoji/12.0/emoji-sequences.txt
+    {"watch", L"\u231A", "[0]"},
+    {"cross_mark", L"\u274C", "[0]"},
+    {"copyright", L"\u00A9\uFE0F", "[0->1]"},
+    {"stop_button", L"\u23F9\uFE0F", "[0->1]"},
+    {"passenger_ship", L"\U0001F6F3\uFE0F", "[0->2]"},
+    {"keycap_star", L"\u002A\uFE0F\u20E3", "[0->2]"},
+    {"keycap_6", L"\u0036\uFE0F\u20E3", "[0->2]"},
+    {"flag_andorra", L"\U0001F1E6\U0001F1E9", "[0->3]"},
+    {"flag_egypt", L"\U0001F1EA\U0001F1EC", "[0->3]"},
+    {"flag_england",
+     L"\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F",
+     "[0->13]"},
+    {"index_up_light", L"\u261D\U0001F3FB", "[0->2]"},
+    {"person_bouncing_ball_light", L"\u26F9\U0001F3FC", "[0->2]"},
+    {"victory_hand_med_light", L"\u270C\U0001F3FC", "[0->2]"},
+    {"horse_racing_med_dark", L"\U0001F3C7\U0001F3FE", "[0->3]"},
+    {"woman_man_hands_light", L"\U0001F46B\U0001F3FB", "[0->3]"},
+    {"person_haircut_med_light", L"\U0001F487\U0001F3FC", "[0->3]"},
+    {"pinching_hand_light", L"\U0001F90F\U0001F3FB", "[0->3]"},
+    {"love_you_light", L"\U0001F91F\U0001F3FB", "[0->3]"},
+    {"leg_dark", L"\U0001F9B5\U0001F3FF", "[0->3]"},
+
+    // Samples from
+    // https://unicode.org/Public/emoji/12.0/emoji-variation-sequences.txt
+    {"number_sign_text", L"\u0023\uFE0E", "[0->1]"},
+    {"number_sign_emoji", L"\u0023\uFE0F", "[0->1]"},
+    {"digit_eight_text", L"\u0038\uFE0E", "[0->1]"},
+    {"digit_eight_emoji", L"\u0038\uFE0F", "[0->1]"},
+    {"up_down_arrow_text", L"\u2195\uFE0E", "[0->1]"},
+    {"up_down_arrow_emoji", L"\u2195\uFE0F", "[0->1]"},
+    {"stopwatch_text", L"\u23F1\uFE0E", "[0->1]"},
+    {"stopwatch_emoji", L"\u23F1\uFE0F", "[0->1]"},
+    {"thermometer_text", L"\U0001F321\uFE0E", "[0->2]"},
+    {"thermometer_emoji", L"\U0001F321\uFE0F", "[0->2]"},
+    {"thumbs_up_text", L"\U0001F44D\uFE0E", "[0->2]"},
+    {"thumbs_up_emoji", L"\U0001F44D\uFE0F", "[0->2]"},
+    {"hole_text", L"\U0001F573\uFE0E", "[0->2]"},
+    {"hole_emoji", L"\U0001F573\uFE0F", "[0->2]"},
+
+    // Samples from
+    // https://unicode.org/Public/emoji/12.0/emoji-zwj-sequences.txt
+    {"couple_man_man", L"\U0001F468\u200D\u2764\uFE0F\u200D\U0001F468",
+     "[0->7]"},
+    {"kiss_man_man",
+     L"\U0001F468\u200D\u2764\uFE0F\u200D\U0001F48B\u200D\U0001F468",
+     "[0->10]"},
+    {"family_man_woman_girl_boy",
+     L"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466", "[0->10]"},
+    {"men_hands_dark_medium",
+     L"\U0001F468\U0001F3FF\u200D\U0001F91D\u200D\U0001F468\U0001F3FD",
+     "[0->11]"},
+    {"people_hands_dark",
+     L"\U0001F9D1\U0001F3FF\u200D\U0001F91D\u200D\U0001F9D1\U0001F3FF",
+     "[0->11]"},
+    {"man_pilot", L"\U0001F468\u200D\u2708\uFE0F", "[0->4]"},
+    {"man_scientist", L"\U0001F468\u200D\U0001F52C", "[0->4]"},
+    {"man_mechanic_light", L"\U0001F468\U0001F3FB\u200D\U0001F527", "[0->6]"},
+    {"man_judge_medium", L"\U0001F468\U0001F3FD\u200D\u2696\uFE0F", "[0->6]"},
+    {"woman_cane_dark", L"\U0001F469\U0001F3FF\u200D\U0001F9AF", "[0->6]"},
+    {"woman_ball_light", L"\u26F9\U0001F3FB\u200D\u2640\uFE0F", "[0->5]"},
+    {"woman_running", L"\U0001F3C3\u200D\u2640\uFE0F", "[0->4]"},
+    {"woman_running_dark", L"\U0001F3C3\U0001F3FF\u200D\u2640\uFE0F", "[0->6]"},
+    {"woman_turban", L"\U0001F473\u200D\u2640\uFE0F", "[0->4]"},
+    {"woman_detective", L"\U0001F575\uFE0F\u200D\u2640\uFE0F", "[0->5]"},
+    {"man_facepalming", L"\U0001F926\u200D\u2642\uFE0F", "[0->4]"},
+    {"man_red_hair", L"\U0001F468\u200D\U0001F9B0", "[0->4]"},
+    {"man_medium_curly", L"\U0001F468\U0001F3FD\u200D\U0001F9B1", "[0->6]"},
+    {"woman_dark_white_hair", L"\U0001F469\U0001F3FF\u200D\U0001F9B3",
+     "[0->6]"},
+    {"rainbow_flag", L"\U0001F3F3\uFE0F\u200D\U0001F308", "[0->5]"},
+    {"pirate_flag", L"\U0001F3F4\u200D\u2620\uFE0F", "[0->4]"},
+    {"service_dog", L"\U0001F415\u200D\U0001F9BA", "[0->4]"},
+    {"eye_bubble", L"\U0001F441\uFE0F\u200D\U0001F5E8\uFE0F", "[0->6]"},
+};
+
+INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsEmoji,
+                         RenderTextTestWithRunListCase,
+                         ::testing::ValuesIn(kEmojiRunListCases),
                          RenderTextTestWithRunListCase::ParamInfoToString);
 
 TEST_F(RenderTextTest, ElidedText) {
@@ -4088,7 +4206,7 @@ TEST_F(RenderTextTest, WhitespaceDoesBreak) {
 
   EXPECT_EQ(ToString16Vec({"סיבית", " ", "–", " ", "ויקיפדיה"}),
             RunsFor(ascii_space_he));
-  EXPECT_EQ(ToString16Vec({"Bit", " - ", "Wikipedia"}),
+  EXPECT_EQ(ToString16Vec({"Bit", " ", "-", " ", "Wikipedia"}),
             RunsFor(ascii_space_en));
   EXPECT_EQ(ToString16Vec({"ども", "　", "ありがと"}),
             RunsFor(full_width_space));
@@ -4671,7 +4789,7 @@ TEST_F(RenderTextTest, PrivateUseCharacterReplacement) {
 
   // The private use characters should have been replaced. If the code point is
   // a surrogate pair, it needs to be replaced by two characters.
-  EXPECT_EQ(WideToUTF16(L"xx\ufffd\ufffda\ufffd\ufffdz"),
+  EXPECT_EQ(WideToUTF16(L"xx\ufffd\ufffda\ufffdz"),
             render_text->GetDisplayText());
 }
 
@@ -5096,12 +5214,29 @@ TEST_F(RenderTextTest, HarfBuzz_MultipleVariationSelectorEmoji) {
 TEST_F(RenderTextTest, HarfBuzz_BreakRunsByAscii) {
   RenderTextHarfBuzz* render_text = GetRenderText();
 
-  // 🐱 (U+1F431, a cat face) and an ASCII period should have separate runs.
-  // Windows requires wide strings for \Unnnnnnnn universal character names.
-  render_text->SetText(WideToUTF16(L"\U0001F431."));
-  test_api()->EnsureLayout();
+  // ▶ (U+25B6, Geometric Shapes) and an ascii character should have
+  // different runs.
+  render_text->SetText(WideToUTF16(L"▶z"));
+  EXPECT_EQ(ToString16Vec({"▶", "z"}), GetRunListStrings());
+  EXPECT_EQ("[0][1]", GetRunListStructureString());
+
+  // ★ (U+2605, Miscellaneous Symbols) and an ascii character should have
+  // different runs.
+  render_text->SetText(WideToUTF16(L"★1"));
+  EXPECT_EQ(ToString16Vec({"★", "1"}), GetRunListStrings());
+  EXPECT_EQ("[0][1]", GetRunListStructureString());
+
+  // 🐱 (U+1F431, a cat face, Miscellaneous Symbols and Pictographs) and an
+  // ASCII period should have separate runs.
+  render_text->SetText(WideToUTF16(L"🐱."));
   EXPECT_EQ(ToString16Vec({"🐱", "."}), GetRunListStrings());
   // U+1F431 is represented as a surrogate pair in UTF-16.
+  EXPECT_EQ("[0->1][2]", GetRunListStructureString());
+
+  // 🥴 (U+1f974, Supplemental Symbols and Pictographs) and an ascii character
+  // should have different runs.
+  render_text->SetText(WideToUTF16(L"🥴$"));
+  EXPECT_EQ(ToString16Vec({"🥴", "$"}), GetRunListStrings());
   EXPECT_EQ("[0->1][2]", GetRunListStructureString());
 }
 
@@ -5383,6 +5518,194 @@ const FallbackFontCase kUnicodeDecomposeCases[] = {
 INSTANTIATE_TEST_SUITE_P(FallbackFontUnicodeDecompose,
                          RenderTextTestWithFallbackFontCase,
                          ::testing::ValuesIn(kUnicodeDecomposeCases),
+                         RenderTextTestWithFallbackFontCase::ParamInfoToString);
+
+// Ensures that RenderText is finding an appropriate font and that every
+// codepoint can be rendered by the font. An error here can be by an incorrect
+// ItemizeText(...) leading to an invalid fallback font.
+const FallbackFontCase kComplexTextCases[] = {
+    {"simple1", L"test"},
+    {"simple2", L"اختبار"},
+    {"simple3", L"Δοκιμή"},
+    {"simple4", L"परीक्षा"},
+    {"simple5", L"تست"},
+    {"simple6", L"Փորձարկում"},
+    {"mixed1", L"www.اختبار.com"},
+    {"mixed2", L"(اختبار)"},
+    {"mixed3", L"/ זה (מבחן) /"},
+#if defined(OS_WIN)
+    {"asc_arb", L"abcښڛڜdef"},
+    {"devanagari", L"ञटठडढणतथ"},
+    {"ethiopic", L"መጩጪᎅⶹⶼ"},
+    {"greek", L"ξοπρς"},
+    {"kannada", L"ಠಡಢಣತಥ"},
+    {"lao", L"ປຝພຟມ"},
+    {"oriya", L"ଔକଖଗଘଙ"},
+    {"telugu_lat", L"aaఉయ!"},
+    {"common_math", L"ℳ: ¬ƒ(x)=½×¾"},
+    {"picto_title", L"☞☛test☚☜"},
+    {"common_numbers", L"𝟭𝟐⒓¹²"},
+    {"common_puncts", L",.!"},
+    {"common_space_math1", L" 𝓐"},
+    {"common_space_math2", L" 𝓉"},
+    {"common_split_spaces", L"♬  𝓐"},
+    {"common_mixed", L"\U0001d4c9\u24d4\U0001d42c"},
+    {"arrows", L"↰↱↲↳↴↵⇚⇛⇜⇝⇞⇟"},
+    {"arrows_space", L"↰ ↱ ↲ ↳ ↴ ↵ ⇚ ⇛ ⇜ ⇝ ⇞ ⇟"},
+    {"emoji_title", L"▶Feel goods"},
+    {"enclosed_alpha", L"ⒶⒷⒸⒹⒺⒻⒼ"},
+    {"shapes", L" ▶▷▸▹►▻◀◁◂◃◄◅"},
+    {"symbols", L"☂☎☏☝☫☬☭☮☯"},
+    {"symbols_space", L"☂ ☎ ☏ ☝ ☫ ☬ ☭ ☮ ☯"},
+    {"dingbats", L"✂✃✄✆✇✈"},
+    {"cjk_compatibility_ideographs", L"賈滑串句龜"},
+    {"lat_dev_ZWNJ", L"a\u200Cक"},
+    {"paren_picto", L"(☾☹☽)"},
+    {"emoji1", L"This is 💩!"},
+    {"emoji2", L"Look [🔝]"},
+    {"strange1", L"💔♬  𝓐 𝓉ⓔ𝐬т ＦỖ𝕣 ｃ卄尺𝕆ᵐ€  ♘👹"},
+    {"strange2", L"˜”*°•.˜”*°• A test for chrome •°*”˜.•°*”˜"},
+    {"strange3", L"𝐭єⓢт ｆσ𝐑 𝔠ʰ𝕣ό𝐌𝔢"},
+    {"strange4", L"тẸⓈ𝔱 𝔽𝕠ᖇ 𝕔𝐡ŕ𝔬ⓜẸ"},
+    {"url1", L"http://www.google.com"},
+    {"url2", L"http://www.nowhere.com/Lörick.html"},
+    {"url3", L"http://www.nowhere.com/تسجيل الدخول"},
+    {"url4", L"https://xyz.com:8080/تس(1)جيل الدخول"},
+    {"url5", L"http://www.script.com/test.php?abc=42&cde=12&f=%20%20"},
+    {"punct1", L"This‐is‑a‒test–for—punctuations"},
+    {"punct2", L"⁅All ‷magic‴ comes with a ‶price″⁆"},
+    {"punct3", L"⍟ Complete my sentence… †"},
+    {"parens", L"❝This❞ 「test」 has ((a)) 【lot】 [{of}] 〚parentheses〛"},
+    {"games", L"Let play: ♗♘⚀⚁♠♣"},
+    {"braille", L"⠞⠑⠎⠞ ⠋⠕⠗ ⠉⠓⠗⠕⠍⠑"},
+    {"emoticon1", L"¯\\_(ツ)_/¯"},
+    {"emoticon2", L"٩(⁎❛ᴗ❛⁎)۶"},
+    {"emoticon3", L"(͡° ͜ʖ ͡°)"},
+    {"emoticon4", L"[̲̅$̲̅(̲̅5̲̅)̲̅$̲̅]"},
+#endif
+};
+
+INSTANTIATE_TEST_SUITE_P(FallbackFontComplexTextCases,
+                         RenderTextTestWithFallbackFontCase,
+                         ::testing::ValuesIn(kComplexTextCases),
+                         RenderTextTestWithFallbackFontCase::ParamInfoToString);
+
+// Test cases to ensures the COMMON unicode script is split by unicode code
+// block. These tests work on Windows and Mac default fonts installation.
+// On other platforms, the fonts are mock (see test_fonts).
+const FallbackFontCase kCommonScriptCases[] = {
+#if defined(OS_WIN)
+    // The following tests are made to work on win7 and win10.
+    {"common00", L"\u237b\u2ac1\u24f5\u259f\u2a87\u23ea\u25d4\u2220"},
+    {"common01", L"\u2303\u2074\u2988\u32b6\u26a2\u24e5\u2a53\u2219"},
+    {"common02", L"\u29b2\u25fc\u2366\u24ae\u2647\u258e\u2654\u25fe"},
+    {"common03", L"\u21ea\u22b4\u29b0\u2a84\u0008\u2657\u2731\u2697"},
+    {"common04", L"\u2b3c\u2932\u21c8\u23cf\u20a1\u2aa2\u2344\u0011"},
+    {"common05", L"\u22c3\u2a56\u2340\u21b7\u26ba\u2798\u220f\u2404"},
+    {"common06", L"\u21f9\u25fd\u008e\u21e6\u2686\u21e4\u259f\u29ee"},
+    {"common07", L"\u231e\ufe39\u0008\u2349\u2262\u2270\uff09\u2b3b"},
+    {"common08", L"\u24a3\u236e\u29b2\u2259\u26ea\u2705\u00ae\u2a23"},
+    {"common09", L"\u33bd\u235e\u2018\u32ba\u2973\u02c1\u20b9\u25b4"},
+    {"common10", L"\u2245\u2a4d\uff19\u2042\u2aa9\u2658\u276e\uff40"},
+    {"common11", L"\u0007\u21b4\u23c9\u2593\u21ba\u00a0\u258f\u23b3"},
+    {"common12", L"\u2938\u250c\u2240\u2676\u2297\u2b07\u237e\u2a04"},
+    {"common13", L"\u2520\u233a\u20a5\u2744\u2445\u268a\u2716\ufe62"},
+    {"common14", L"\ufe4d\u25d5\u2ae1\u2a35\u2323\u273c\u26be\u2a3b"},
+    {"common15", L"\u2aa2\u0000\ufe65\u2962\u2573\u21f8\u2651\u02d2"},
+    {"common16", L"\u225c\u2283\u2960\u4de7\uff12\uffe1\u0016\u2905"},
+    {"common17", L"\uff07\u25aa\u2076\u259e\u226c\u2568\u0026\u2691"},
+    {"common18", L"\u2388\u21c2\u208d\u2a7f\u22d0\u2583\u2ad5\u240f"},
+    {"common19", L"\u230a\u27ac\u001e\u261e\u259d\u25c3\u33a5\u0011"},
+    {"common20", L"\ufe54\u29c7\u2477\u21ed\u2069\u4dfc\u2ae2\u21e8"},
+    {"common21", L"\u2131\u2ab7\u23b9\u2660\u2083\u24c7\u228d\u2a01"},
+    {"common22", L"\u2587\u2572\u21df\uff3c\u02cd\ufffd\u2404\u22b3"},
+    {"common23", L"\u4dc3\u02fe\uff09\u25a3\ufe14\u255c\u2128\u2698"},
+    {"common24", L"\u2b36\u3382\u02f6\u2752\uff16\u22cf\u00b0\u21d6"},
+    {"common25", L"\u2561\u23db\u2958\u2782\u22af\u2621\u24a3\u29ae"},
+    {"common26", L"\u2693\u22e2\u2988\u2987\u33ba\u2a94\u298e\u2328"},
+    {"common27", L"\u266c\u2aa5\u2405\uffeb\uff5c\u2902\u291e\u02e6"},
+    {"common28", L"\u2634\u32b2\u3385\u2032\u33be\u2366\u2ac7\u23cf"},
+    {"common29", L"\u2981\ua721\u25a9\u2320\u21cf\u295a\u2273\u2ac2"},
+    {"common30", L"\u22d9\u2465\u2347\u2a94\u4dca\u2389\u23b0\u208d"},
+    {"common31", L"\u21cc\u2af8\u2912\u23a4\u2271\u2303\u241e\u33a1"},
+#elif defined(OS_ANDROID)
+    {"common00", L"\u2497\uff04\u277c\u21b6\u2076\u21e4\u2068\u21b3"},
+    {"common01", L"\u2663\u2466\u338e\u226b\u2734\u21be\u3389\u00ab"},
+    {"common02", L"\u2062\u2197\u3392\u2681\u33be\u206d\ufe10\ufe34"},
+    {"common03", L"\u02db\u00b0\u02d3\u2745\u33d1\u21e4\u24e4\u33d6"},
+    {"common04", L"\u21da\u261f\u26a1\u2586\u27af\u2560\u21cd\u25c6"},
+    {"common05", L"\ufe51\uff17\u0027\u21fd\u24de\uff5e\u2606\u251f"},
+    {"common06", L"\u2493\u2466\u21fc\u226f\u202d\u21a9\u0040\u265d"},
+    {"common07", L"\u2103\u255a\u2153\u26be\u27ac\u222e\u2490\u21a4"},
+    {"common08", L"\u270b\u2486\u246b\u263c\u27b6\u21d9\u219d\u25a9"},
+    {"common09", L"\u002d\u2494\u25fd\u2321\u2111\u2511\u00d7\u2535"},
+    {"common10", L"\u2523\u203e\u25b2\ufe18\u2499\u2229\ufd3e\ufe16"},
+    {"common11", L"\u2133\u2716\u273f\u2064\u2248\u005c\u265f\u21e6"},
+    {"common12", L"\u2060\u246a\u231b\u2726\u25bd\ufe40\u002e\u25ca"},
+    {"common13", L"\ufe39\u24a2\ufe18\u254b\u249c\u3396\ua71f\u2466"},
+    {"common14", L"\u21b8\u2236\u251a\uff11\u2077\u0035\u27bd\u2013"},
+    {"common15", L"\u2668\u2551\u221a\u02bc\u2741\u2649\u2192\u00a1"},
+    {"common16", L"\u2211\u21ca\u24dc\u2536\u201b\u21c8\u2530\u25fb"},
+    {"common17", L"\u231a\u33d8\u2934\u27bb\u2109\u23ec\u20a9\u3000"},
+    {"common18", L"\u2069\u205f\u33d3\u2466\u24a1\u24dd\u21ac\u21e3"},
+    {"common19", L"\u2737\u219a\u21f1\u2285\u226a\u00b0\u27b2\u2746"},
+    {"common20", L"\u264f\u2539\u2202\u264e\u2548\u2530\u2111\u2007"},
+    {"common21", L"\u2799\u0035\u25e4\u265b\u24e2\u2044\u222b\u0021"},
+    {"common22", L"\u2728\u00a2\u2533\ufe43\u33c9\u27a2\u02f9\u005d"},
+    {"common23", L"\ufe68\u256c\u25b6\u276c\u2771\u33c4\u2712\u24b3"},
+    {"common24", L"\ufe5d\ufe31\ufe3d\u205e\u2512\u33b8\u272b\ufe4f"},
+    {"common25", L"\u24e7\u25fc\u2582\u2743\u2010\u2474\u2262\u251a"},
+    {"common26", L"\u2020\u211c\u24b4\u33c7\u2007\uff0f\u267f\u00b4"},
+    {"common27", L"\u266c\u3399\u2570\u33a4\u276e\u00a8\u2506\u24dc"},
+    {"common28", L"\u2202\ufe43\u2511\u2191\u339a\u33b0\u02d7\u2473"},
+    {"common29", L"\u2517\u2297\u2762\u2460\u25bd\u24a9\u21a7\ufe64"},
+    {"common30", L"\u2105\u2722\u275d\u249c\u21a2\u2590\u2260\uff5d"},
+    {"common31", L"\u33ba\u21c6\u2706\u02cb\ufe64\u02e6\u0374\u2493"},
+#elif defined(OS_MACOSX)
+    {"common00", L"\u2153\u24e0\u2109\u02f0\u2a8f\u25ed\u02c5\u2716"},
+    {"common01", L"\u02f0\u208c\u2203\u2518\u2067\u2270\u21f1\ufe66"},
+    {"common02", L"\u2686\u2585\u2b15\u246f\u23e3\u21b4\u2394\ufe31"},
+    {"common03", L"\u23c1\u2a97\u201e\u2200\u3389\u25d3\u02c2\u259d"},
+#else
+    // The following tests are made for the mock fonts (see test_fonts).
+    {"common00", L"\u2153\u24e0\u2109\u02f0\u2a8f\u25ed\u02c5\u2716"},
+    {"common01", L"\u02f0\u208c\u2203\u2518\u2067\u2270\u21f1\ufe66"},
+    {"common02", L"\u2686\u2585\u2b15\u246f\u23e3\u21b4\u2394\ufe31"},
+    {"common03", L"\u23c1\u2a97\u201e\u2200\u3389\u25d3\u02c2\u259d"},
+    {"common04", L"\u2075\u4dec\u252a\uff15\u4df6\u2668\u27fa\ufe17"},
+    {"common05", L"\u260b\u2049\u3036\u2a85\u2b15\u23c7\u230a\u2374"},
+    {"common06", L"\u2771\u27fa\u255d\uff0b\u2213\u3396\u2a85\u2276"},
+    {"common07", L"\u211e\u2b06\u2255\u2727\u26c3\u33cf\u267d\u2ab2"},
+    {"common08", L"\u2373\u20b3\u22b8\u2a0f\u02fd\u2585\u3036\ufe48"},
+    {"common09", L"\u256d\u2940\u21d8\u4dde\u23a1\u226b\u3374\u2a99"},
+    {"common10", L"\u270f\u24e5\u26c1\u2131\u21f5\u25af\u230f\u27fe"},
+    {"common11", L"\u27aa\u23a2\u02ef\u2373\u2257\u2749\u2496\ufe31"},
+    {"common12", L"\u230a\u25fb\u2117\u3386\u32cc\u21c5\u24c4\u207e"},
+    {"common13", L"\u2467\u2791\u3393\u33bb\u02ca\u25de\ua788\u278f"},
+    {"common14", L"\ua719\u25ed\u20a8\u20a1\u4dd8\u2295\u24eb\u02c8"},
+    {"common15", L"\u22b6\u2520\u2036\uffee\u21df\u002d\u277a\u2b24"},
+    {"common16", L"\u21f8\u211b\u22a0\u25b6\u263e\u2704\u221a\u2758"},
+    {"common17", L"\ufe10\u2060\u24ac\u3385\u27a1\u2059\u2689\u2278"},
+    {"common18", L"\u269b\u211b\u33a4\ufe36\u239e\u267f\u2423\u24a2"},
+    {"common19", L"\u4ded\u262d\u225e\u248b\u21df\u279d\u2518\u21ba"},
+    {"common20", L"\u225a\uff16\u21d4\u21c6\u02ba\u2545\u23aa\u005e"},
+    {"common21", L"\u20a5\u265e\u3395\u2a6a\u2555\u22a4\u2086\u23aa"},
+    {"common22", L"\u203f\u3250\u2240\u24e9\u21cb\u258f\u24b1\u3259"},
+    {"common23", L"\u27bd\u263b\uff1f\u2199\u2547\u258d\u201f\u2507"},
+    {"common24", L"\u2482\u2548\u02dc\u231f\u24cd\u2198\u220e\u20ad"},
+    {"common25", L"\u2ff7\u2540\ufe48\u2197\u276b\u2574\u2062\u3398"},
+    {"common26", L"\u2663\u21cd\u263f\u23e5\u22d7\u2518\u21b9\u2628"},
+    {"common27", L"\u21fa\ufe66\u2739\u2051\u21f4\u3399\u2599\u25f7"},
+    {"common28", L"\u29d3\u25ec\u27a6\u24e0\u2735\u25b4\u2737\u25db"},
+    {"common29", L"\u2622\u22e8\u33d2\u21d3\u2502\u2153\u2669\u25f2"},
+    {"common30", L"\u2121\u21af\u2729\u203c\u337a\u2464\u2b08\u2e24"},
+    {"common31", L"\u33cd\u007b\u02d2\u22cc\u32be\u2ffa\u2787\u02e9"},
+#endif
+};
+
+INSTANTIATE_TEST_SUITE_P(FallbackFontCommonScript,
+                         RenderTextTestWithFallbackFontCase,
+                         ::testing::ValuesIn(kCommonScriptCases),
                          RenderTextTestWithFallbackFontCase::ParamInfoToString);
 
 #if defined(OS_WIN)

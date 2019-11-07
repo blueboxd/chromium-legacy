@@ -46,6 +46,7 @@ component("ui_data_pack") {
   deps = [
     "//base",
     "//net",
+    "//third_party/zlib/google:compression_utils",
   ]
 
   defines = [ "UI_DATA_PACK_IMPLEMENTATION" ]
@@ -350,11 +351,7 @@ jumbo_component("base") {
   }
 
   if (is_mac) {
-    sources += [
-      "accelerators/media_keys_listener_mac.mm",
-      "accelerators/remote_command_media_keys_listener_mac.h",
-      "accelerators/remote_command_media_keys_listener_mac.mm",
-    ]
+    sources += [ "accelerators/media_keys_listener_mac.mm" ]
   } else if (is_win) {
     sources += [
       "accelerators/global_media_keys_listener_win.cc",
@@ -560,10 +557,7 @@ jumbo_component("base") {
   }
 
   if (is_mac) {
-    deps += [
-      "//third_party/mozilla",
-      "//ui/base/now_playing",
-    ]
+    deps += [ "//third_party/mozilla" ]
 
     libs += [
       "Accelerate.framework",
@@ -876,7 +870,6 @@ if (is_ios) {
 
 test("ui_base_unittests") {
   sources = [
-    "accelerators/remote_command_media_keys_listener_mac_unittest.mm",
     "class_property_unittest.cc",
     "l10n/l10n_util_mac_unittest.mm",
     "l10n/l10n_util_unittest.cc",
@@ -919,6 +912,7 @@ test("ui_base_unittests") {
     "//testing/gtest",
     "//third_party/brotli:dec",
     "//third_party/icu",
+    "//third_party/zlib/google:compression_utils",
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base:ui_data_pack",
@@ -1102,7 +1096,6 @@ test("ui_base_unittests") {
     deps += [
       ":ui_unittests_framework",
       "//third_party/mozilla",
-      "//ui/base/now_playing:test_support",
     ]
   }
 

@@ -764,18 +764,6 @@ RenderFrameHost* RenderViewHostImpl::GetMainFrame() {
   return delegate_->GetPendingMainFrame();
 }
 
-void RenderViewHostImpl::SetWebUIProperty(const std::string& name,
-                                          const std::string& value) {
-  // This is a sanity check before telling the renderer to enable the property.
-  // It could lie and send the corresponding IPC messages anyway, but we will
-  // not act on them if enabled_bindings_ doesn't agree. If we get here without
-  // WebUI bindings, kill the renderer process.
-  if (GetMainFrame()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI)
-    Send(new ViewMsg_SetWebUIProperty(GetRoutingID(), name, value));
-  else
-    ReceivedBadMessage(GetProcess(), bad_message::RVH_WEB_UI_BINDINGS_MISMATCH);
-}
-
 void RenderViewHostImpl::RenderWidgetGotFocus() {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (view)

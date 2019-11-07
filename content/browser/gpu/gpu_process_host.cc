@@ -247,6 +247,7 @@ static const char* const kSwitchNames[] = {
 #endif
 #if defined(USE_X11)
     switches::kX11Display,
+    switches::kNoXshm,
 #endif
     switches::kGpuBlacklistTestGroup,
     switches::kGpuDriverBugListTestGroup,

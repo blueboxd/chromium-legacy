@@ -45,6 +45,8 @@ class TestNavigableContentsClient : public mojom::NavigableContentsClient {
                              bool from_user_gesture) override {}
   void UpdateCanGoBack(bool can_go_back) override {}
   void UpdateContentAXTree(const ui::AXTreeID& id) override {}
+  void FocusedNodeChanged(bool is_editable_node,
+                          const gfx::Rect& node_bounds_in_screen) override {}
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigableContentsClient);
 };

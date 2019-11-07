@@ -210,13 +210,11 @@ void ApplicationCacheHostForFrame::SelectCacheWithManifest(
     return;
   }
   if (document->IsSecureContext()) {
-    UseCounter::Count(document,
-                      WebFeature::kApplicationCacheManifestSelectSecureOrigin);
+    Deprecation::CountDeprecation(
+        document, WebFeature::kApplicationCacheManifestSelectSecureOrigin);
   } else {
     Deprecation::CountDeprecation(
         document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
-    Deprecation::CountDeprecationCrossOriginIframe(
-        *document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
     HostsUsingFeatures::CountAnyWorld(
         *document, HostsUsingFeatures::Feature::
                        kApplicationCacheManifestSelectInsecureHost);

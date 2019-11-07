@@ -29,7 +29,7 @@
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "weblayer/public/browser_controller.h"
+#include "weblayer/public/tab.h"
 
 #if defined(USE_AURA)
 #include "ui/wm/core/wm_state.h"
@@ -60,8 +60,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     url_entry_->SetText(base::ASCIIToUTF16(url.spec()));
   }
 
-  void AttachBrowserController(BrowserController* browser_controller,
-                               const gfx::Size& size) {
+  void AttachTab(Tab* tab, const gfx::Size& size) {
     contents_view_->SetLayoutManager(std::make_unique<views::FillLayout>());
     // If there was a previous WebView in this Shell it should be removed and
     // deleted.
@@ -70,7 +69,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       delete web_view_;
     }
     auto web_view = std::make_unique<views::WebView>(nullptr);
-    browser_controller->AttachToView(web_view.get());
+    tab->AttachToView(web_view.get());
     web_view->SetPreferredSize(size);
     web_view_ = contents_view_->AddChildView(std::move(web_view));
     Layout();
@@ -380,8 +379,7 @@ void Shell::PlatformSetContents() {
   views::WidgetDelegate* widget_delegate = window_widget_->widget_delegate();
   ShellWindowDelegateView* delegate_view =
       static_cast<ShellWindowDelegateView*>(widget_delegate);
-  delegate_view->AttachBrowserController(browser_controller_.get(),
-                                         content_size_);
+  delegate_view->AttachTab(tab_.get(), content_size_);
   window_->GetHost()->Show();
   window_widget_->Show();
 }

@@ -53,7 +53,7 @@ static bool IsHTMLListOrBlockquoteElement(const Node* node) {
     return false;
   // TODO(yosin): We should check OL/UL element has "list-style-type" CSS
   // property to make sure they layout contents as list.
-  return IsHTMLUListElement(*element) || IsA<HTMLOListElement>(*element) ||
+  return IsA<HTMLUListElement>(*element) || IsA<HTMLOListElement>(*element) ||
          element->HasTagName(html_names::kBlockquoteTag);
 }
 
@@ -222,7 +222,7 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
                             editing_state);
     return;
   }
-  if (IsHTMLUListElement(*enclosing_element)) {
+  if (IsA<HTMLUListElement>(*enclosing_element)) {
     ApplyCommandToComposite(
         MakeGarbageCollected<InsertListCommand>(
             GetDocument(), InsertListCommand::kUnorderedList),

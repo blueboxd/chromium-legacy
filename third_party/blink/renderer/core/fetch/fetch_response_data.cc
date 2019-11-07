@@ -143,6 +143,13 @@ const KURL* FetchResponseData::Url() const {
   return &url_list_.back();
 }
 
+FetchHeaderList* FetchResponseData::InternalHeaderList() const {
+  if (internal_response_) {
+    return internal_response_->HeaderList();
+  }
+  return HeaderList();
+}
+
 String FetchResponseData::MimeType() const {
   return mime_type_;
 }

@@ -93,8 +93,9 @@ class ArcSessionRunner : public ArcSession::Observer {
   // when this function is called, MessageLoop is no longer exists.
   void OnShutdown();
 
-  // Sets a hash string of the profile user ID.
-  void SetUserIdHashForProfile(const std::string& hash);
+  // Sets a hash string of the profile user ID and an ARC serial number for the
+  // user.
+  void SetUserInfo(const std::string& hash, const std::string& serial_number);
 
   // Returns the current ArcSession instance for testing purpose.
   ArcSession* GetArcSessionForTesting() { return arc_session_.get(); }
@@ -146,6 +147,8 @@ class ArcSessionRunner : public ArcSession::Observer {
 
   // A hash string of the profile user ID.
   std::string user_id_hash_;
+  // A serial number for the current profile.
+  std::string serial_number_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionRunner> weak_ptr_factory_{this};

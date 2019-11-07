@@ -746,7 +746,8 @@ CanvasColorParams ImageData::GetCanvasColorParams() {
   CanvasPixelFormat pixel_format = kRGBA8CanvasPixelFormat;
   if (color_settings_->storageFormat() != kUint8ClampedArrayStorageFormatName)
     pixel_format = kF16CanvasPixelFormat;
-  return CanvasColorParams(color_space, pixel_format, kNonOpaque);
+  return CanvasColorParams(color_space, pixel_format, kNonOpaque,
+                           CanvasForceRGBA::kNotForced);
 }
 
 bool ImageData::ImageDataInCanvasColorSettings(
@@ -760,7 +761,8 @@ bool ImageData::ImageDataInCanvasColorSettings(
     return false;
 
   CanvasColorParams canvas_color_params =
-      CanvasColorParams(canvas_color_space, canvas_pixel_format, kNonOpaque);
+      CanvasColorParams(canvas_color_space, canvas_pixel_format, kNonOpaque,
+                        CanvasForceRGBA::kNotForced);
 
   unsigned char* src_data = static_cast<unsigned char*>(BufferBase()->Data());
 

@@ -1166,11 +1166,9 @@
     "label": "//gin:gin_unittests",
     "type": "console_test_launcher",
   },
-  # Temporary entry for a 3-way patch to rename in Clank's repo as well.
   "gl_tests": {
     "args": [],
-    "label": "//gpu:gpu_tests",
-    "skip_usage_check": True,
+    "label": "//gpu:gl_tests",
     "type": "raw",
   },
   "gl_unittests": {
@@ -1233,11 +1231,6 @@
   "gpu_swiftshader_fuzzer": {
     "label": "//gpu:gpu_swiftshader_fuzzer",
     "type": "fuzzer",
-  },
-  "gpu_tests": {
-    "args": [],
-    "label": "//gpu:gpu_tests",
-    "type": "raw",
   },
   "gpu_unittests": {
     "label": "//gpu:gpu_unittests",
@@ -1533,6 +1526,10 @@
   "libaddressinput_parse_format_rule_fuzzer": {
     "label": "//third_party/libaddressinput:libaddressinput_parse_format_rule_fuzzer",
     "type": "fuzzer",
+  },
+  "libcups_unittests": {
+    "label": "//chrome/services/cups_proxy:libcups_unittests",
+    "type": "console_test_launcher",
   },
   "libjingle_xmpp_unittests": {
     "label": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests",

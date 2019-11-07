@@ -439,6 +439,10 @@ DaemonControllerDelegateWin::GetUsageStatsConsent() {
   return consent;
 }
 
+bool DaemonControllerDelegateWin::CheckPermission() {
+  return true;
+}
+
 void DaemonControllerDelegateWin::SetConfigAndStart(
     std::unique_ptr<base::DictionaryValue> config,
     bool consent,

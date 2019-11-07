@@ -166,7 +166,8 @@ enum AppListShowSource {
   kSearchKeyFullscreen = 4,
   kShelfButtonFullscreen = 5,
   kAssistantEntryPoint = 6,
-  kMaxValue = kAssistantEntryPoint,
+  kScrollFromShelf = 7,
+  kMaxValue = kScrollFromShelf,
 };
 
 // The two versions of folders. These values are written to logs.  New enum

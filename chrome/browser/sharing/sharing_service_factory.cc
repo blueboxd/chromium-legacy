@@ -27,6 +27,7 @@
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/sms_fetcher.h"
 
 namespace {
 constexpr char kServiceName[] = "SharingService";
@@ -98,11 +99,14 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
       std::make_unique<SharingMessageSender>(fcm_sender.get(), sync_prefs.get(),
                                              local_device_info_provider);
 
+  content::SmsFetcher* sms_fetcher = content::SmsFetcher::Get(context);
+
   return new SharingService(
       profile, std::move(sync_prefs), std::move(vapid_key_manager),
       std::move(sharing_device_registration), std::move(fcm_sender),
       std::move(fcm_handler), std::move(sharing_message_sender), gcm_driver,
-      device_info_tracker, local_device_info_provider, sync_service);
+      device_info_tracker, local_device_info_provider, sync_service,
+      sms_fetcher);
 }
 
 content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(

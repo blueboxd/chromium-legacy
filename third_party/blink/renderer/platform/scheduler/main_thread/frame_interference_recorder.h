@@ -6,16 +6,19 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_FRAME_INTERFERENCE_RECORDER_H_
 
 #include <atomic>
+#include <map>
 #include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/enqueue_order.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -25,58 +28,57 @@ namespace scheduler {
 
 class MainThreadTaskQueue;
 
-// Records the RendererScheduler.TimeRunningOtherFramesWhileTaskReady histogram,
-// which tracks how much time is spent running tasks from other frames between
-// when a frame task becomes ready to run and when it starts running.
+// Records the RendererScheduler.TimeRunningOtherAgentsWhileTaskReady histogram,
+// which tracks how much time is spent running tasks from other agents between
+// when an agent task becomes ready to run and when it starts running.
 //
 // Implementation details
 // ----------------------
 //
-// The time running tasks from other frames while a task is ready is defined as:
+// The time running tasks from other agents while a task is ready is defined as:
 //
-//   ([Time running tasks for all frames between thread start and task start] -
-//    [Time running tasks for all frames between thread start and task ready]) -
-//   ([Time running tasks for same frame between thread start and task start] -
-//    [Time running tasks for same frame between thread start and task ready]) -
+//   ([Time running tasks for all agents between thread start and task start] -
+//    [Time running tasks for all agents between thread start and task ready]) -
+//   ([Time running tasks for same agent between thread start and task start] -
+//    [Time running tasks for same agent between thread start and task ready]) -
 //
 // To get these values, we maintain the following state:
 //
-// A) For the task currently running at each nesting level:
+// A) For the task that is currently running:
 //     A1) Start time
-//     A2) Associated frame
-// B) For each frame, an accumulator of time running tasks for that frame since
+//     A2) Associated agent
+// B) For each agent, an accumulator of time running tasks for that agent since
 //    thread start.
-// C) An accumulator of time running tasks for any frame since thread start.
+// C) An accumulator of time running tasks for any agent since thread start.
 // D) For each queued task for which we want to record the histogram:
-//     D1) Time running tasks for all frames between thread start and task
+//     D1) Time running tasks for all agents between thread start and task
 //         queued.
-//     D2) Time running tasks for same frame between thread start and task
+//     D2) Time running tasks for each agent between thread start and task
 //         queued.
 //
 // At any given time, we can compute:
 //
-// E) The time running tasks for a specific FRAME since thread start:
-//      Read the FRAME's accumulator in B. Add [Current Time] - A1 if the
-//      task at the highest nesting level is associated with FRAME.
-// F) The time running tasks for any frame since thread start:
-//      Read C. Add [Current Time] - A1 if the task at highest nesting level is
-//      associated with any frame.
+// E) The time running tasks for a specific AGENT since thread start:
+//      Read the AGENT's accumulator in B. Add [Current Time] - A1 if A2 is
+//      equal to AGENT.
+// F) The time running tasks for any agent since thread start:
+//      Read C. Add [Current Time] - A1 if A2 is non-null.
 //
 // When a task becomes ready, we decide whether we want to record the histogram
 // for it. If so, we use E and F to add an entry to D.
 //
 // When a task starts running, we check whether it is in D. If so, we use D1,
 // D2, E and F to compute the value to record to the histogram. Then, we update
-// the entry at the top of A. When a task finishes running, we update B and C
-// and we clear the entry at the top of A. Note that even though we sample the
-// tasks for which we record the histogram, we need to accumulate the time all
-// tasks in B and C since it can contribute to the value recorded for a sampled
-// task.
+// A. When a task finishes running, we update B and C and we clear A. Note that
+// even though we sample the tasks for which we record the histogram, we need to
+// accumulate the time all tasks in B and C since it can contribute to the value
+// recorded for a sampled task.
 //
 // Entering a nested loop is equivalent to finishing the current task. Exiting a
 // nested loop is equivalent to resuming the task that was finished when the
 // nested loop was entered (no histogram is recorded when resuming an existing
 // task).
+// TODO(crbug.com/1019856): Rename to AgentInterferenceRecorder.
 class PLATFORM_EXPORT FrameInterferenceRecorder {
  public:
   // The histogram is recorded for 1 out of |sampling_rate| tasks.
@@ -110,14 +112,28 @@ class PLATFORM_EXPORT FrameInterferenceRecorder {
   void OnFrameSchedulerDestroyed(const FrameScheduler* frame_scheduler);
 
  private:
+  // Information about an agent.
+  struct AgentData {
+    AgentData() = default;
+
+    // Time running tasks for agent since thread start.
+    base::TimeDelta accumulated_running_time;
+
+    // Number of frames associated with this agent.
+    size_t frame_count = 0;
+  };
+
+  using AgentDataMap = std::map<base::UnguessableToken, AgentData>;
+
   // Information about a ready task for which the histogram will be recorded.
   struct ReadyTask {
-    // The time read from |time_for_all_frames_| when the task became ready.
-    base::TimeDelta time_for_all_frames_when_ready;
+    // Time running tasks for all agents when the task became ready (corresponds
+    // to D1 above).
+    base::TimeDelta time_for_all_agents_when_ready;
 
-    // The time read from |time_for_frame_[task's frame]| when the task became
-    // ready.
-    base::TimeDelta time_for_this_frame_when_ready;
+    // Time running tasks for each agent when the task became ready (corresponds
+    // to D2 above).
+    AgentDataMap agent_data_when_ready;
 
 #if DCHECK_IS_ON()
     // The FrameScheduler associated with the task. Stored in a void* because
@@ -127,15 +143,16 @@ class PLATFORM_EXPORT FrameInterferenceRecorder {
 #endif
   };
 
-  // Updates |time_for_all_frames_| and |time_for_frame_[current frame]| so that
-  // they reflect current running time.
+  // Updates |time_for_all_agents_| and
+  // |agent_data_[current_task_agent_cluster_id_]| so that they reflect current
+  // running time.
   void AccumulateCurrentTaskRunningTime(
       base::sequence_manager::LazyNow* lazy_now)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Returns the running time of the current frame task. Cannot be called if the
-  // task running at the highest nesting level isn't a frame task.
-  base::TimeDelta GetCurrentFrameTaskRunningTime(
+  // Returns the running time of the current agent task. Cannot be called if
+  // currently running task isn't an agent task.
+  base::TimeDelta GetCurrentAgentTaskRunningTime(
       base::sequence_manager::LazyNow* lazy_now) const
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -144,17 +161,26 @@ class PLATFORM_EXPORT FrameInterferenceRecorder {
       const ReadyTask& ready_task,
       const MainThreadTaskQueue* queue,
       const FrameScheduler* frame_scheduler,
+      const base::UnguessableToken& agent_cluster_id,
       base::sequence_manager::EnqueueOrder enqueue_order)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if the next ready task should be sampled. Thread-safe.
   uint32_t ShouldSampleNextReadyTask();
 
+  void DecrementNumFramesForAgent(
+      const base::UnguessableToken& agent_cluster_id)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
   // Virtual for testing.
   virtual void RecordHistogram(const MainThreadTaskQueue* queue,
                                base::TimeDelta sample);
   virtual const FrameScheduler* GetFrameSchedulerForQueue(
       const MainThreadTaskQueue* queue);
+  virtual const base::UnguessableToken& GetAgentClusterIdForQueue(
+      const MainThreadTaskQueue* queue);
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Sampling rate. The histogram is recorded for 1/|sampling_rate_| tasks.
   const int sampling_rate_;
@@ -171,16 +197,21 @@ class PLATFORM_EXPORT FrameInterferenceRecorder {
   // running.
   base::TimeTicks current_task_start_time_ GUARDED_BY(lock_);
 
-  // FrameScheduler of the currently running task, or nullptr if no task is
-  // running. Stored as a void* because it's only used a key and FrameScheduler
-  // isn't thread-safe (so void prevents undesired access).
-  const void* current_task_frame_scheduler_ GUARDED_BY(lock_) = nullptr;
+  // Agent cluster id of the currently running task, or Null if the task is not
+  // agent-bound or if no task is running.
+  base::UnguessableToken agent_cluster_id_for_current_task_ GUARDED_BY(lock_);
 
-  // Time spent running tasks for all frames since thread start.
-  base::TimeDelta time_for_all_frames_ GUARDED_BY(lock_);
+  // Time spent running tasks for all agents since thread start.
+  base::TimeDelta time_for_all_agents_ GUARDED_BY(lock_);
 
-  // Time running tasks for each frame since thread start.
-  WTF::HashMap<const void*, base::TimeDelta> time_for_frame_ GUARDED_BY(lock_);
+  AgentDataMap agent_data_ GUARDED_BY(lock_);
+
+  // Association between frames and agents. Frame is stored as a void* because
+  // it's only used a key and FrameScheduler isn't thread-safe (so void prevents
+  // undesired access). The mapping from frame to agent cluster id is maintained
+  // to allow efficiently maintaining the frame count in AgentData. Protected by
+  // |sequence_checker_|.
+  WTF::HashMap<const void*, base::UnguessableToken> frame_to_agent_cluster_id_;
 
   // Information about ready tasks for which the histogram will be recorded. Key
   // is the task's sequence number.

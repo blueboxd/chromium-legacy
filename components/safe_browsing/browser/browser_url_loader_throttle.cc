@@ -310,8 +310,8 @@ void BrowserURLLoaderThrottle::NotifySlowCheck() {
 }
 
 void BrowserURLLoaderThrottle::DeleteCheckerOnIO() {
-  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                     std::move(io_checker_));
+  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                   std::move(io_checker_));
 }
 
 }  // namespace safe_browsing

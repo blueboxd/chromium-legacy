@@ -111,7 +111,7 @@ bool ShouldIgnoreContents(const Node& node) {
          IsHTMLVideoElement(*element) || IsA<HTMLAudioElement>(*element) ||
          (element->GetDisplayLockContext() &&
           !element->GetDisplayLockContext()->IsActivatable(
-              DisplayLockActivationReason::kUser));
+              DisplayLockActivationReason::kFindInPage));
 }
 
 Node* GetNonSearchableAncestor(const Node& node) {
@@ -235,7 +235,7 @@ std::unique_ptr<FindBuffer::Results> FindBuffer::FindMatches(
 
 bool FindBuffer::PushScopedForcedUpdateIfNeeded(const Element& element) {
   if (auto* context = element.GetDisplayLockContext()) {
-    DCHECK(context->IsActivatable(DisplayLockActivationReason::kUser));
+    DCHECK(context->IsActivatable(DisplayLockActivationReason::kFindInPage));
     scoped_forced_update_list_.push_back(context->GetScopedForcedUpdate());
     return true;
   }

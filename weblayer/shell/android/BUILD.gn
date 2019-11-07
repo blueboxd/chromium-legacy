@@ -42,7 +42,9 @@ template("weblayer_shell_apk_helper") {
   jinja_template(_manifest_target) {
     input = "shell_apk/AndroidManifest.xml"
     output = _weblayer_shell_manifest
-    variables = [ "weblayer_package=" + invoker.weblayer_package ]
+    if (defined(invoker.weblayer_package)) {
+      variables = [ "weblayer_package=" + invoker.weblayer_package ]
+    }
   }
 
   android_apk(target_name + "_apk") {
@@ -69,14 +71,8 @@ weblayer_shell_apk_helper("weblayer_shell") {
   apk_name = "WebLayerShell"
 }
 
-weblayer_shell_apk_helper("weblayer_shell_monochrome") {
-  weblayer_package = "org.chromium.chrome"
-  apk_name = "WebLayerShellChrome"
-}
-
-weblayer_shell_apk_helper("weblayer_shell_webview") {
-  weblayer_package = system_webview_package_name
-  apk_name = "WebLayerShellWebView"
+weblayer_shell_apk_helper("weblayer_shell_system_webview") {
+  apk_name = "WebLayerShellSystemWebView"
 }
 
 generate_wrapper("run_weblayer_shell") {
@@ -97,37 +93,22 @@ generate_wrapper("run_weblayer_shell") {
 }
 
 if (public_android_sdk) {
-  generate_wrapper("run_weblayer_shell_monochrome") {
-    testonly = true
-    wrapper_script = "$root_out_dir/bin/run_weblayer_shell_monochrome"
-    executable = "//weblayer/tools/run_weblayer_shell.py"
-    executable_args = [
-      "--shell-apk-path",
-      "@WrappedPath(apks/WebLayerShellChrome.apk)",
-      "--support-apk-path",
-      "@WrappedPath(apks/MonochromePublic.apk)",
-    ]
-
-    deps = [
-      ":weblayer_shell_monochrome_apk",
-      "//chrome/android:monochrome_public_apk",
-    ]
-  }
-
   generate_wrapper("run_weblayer_shell_trichrome") {
     testonly = true
     wrapper_script = "$root_out_dir/bin/run_weblayer_shell_trichrome"
     executable = "//weblayer/tools/run_weblayer_shell.py"
     executable_args = [
       "--shell-apk-path",
-      "@WrappedPath(apks/WebLayerShellWebView.apk)",
+      "@WrappedPath(apks/WebLayerShellSystemWebView.apk)",
       "--support-apk-path",
       "@WrappedPath(apks/TrichromeLibrary.apk)",
       "@WrappedPath(apks/TrichromeWebView.apk)",
+      "--switch-webview-to",
+      system_webview_package_name,
     ]
 
     deps = [
-      ":weblayer_shell_webview_apk",
+      ":weblayer_shell_system_webview_apk",
       "//android_webview:trichrome_webview_apk",
       "//chrome/android:trichrome_library_apk",
     ]
@@ -139,13 +120,15 @@ if (public_android_sdk) {
     executable = "//weblayer/tools/run_weblayer_shell.py"
     executable_args = [
       "--shell-apk-path",
-      "@WrappedPath(apks/WebLayerShellWebView.apk)",
+      "@WrappedPath(apks/WebLayerShellSystemWebView.apk)",
       "--support-apk-path",
       "@WrappedPath(apks/SystemWebView.apk)",
+      "--switch-webview-to",
+      system_webview_package_name,
     ]
 
     deps = [
-      ":weblayer_shell_webview_apk",
+      ":weblayer_shell_system_webview_apk",
       "//android_webview:system_webview_apk",
     ]
   }
@@ -211,7 +194,6 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
     "//third_party/android_support_test_runner:runner_java",
   ]
   java_files = [
-    "javatests/src/org/chromium/weblayer/test/BrowserCallbackTest.java",
     "javatests/src/org/chromium/weblayer/test/DataClearingTest.java",
     "javatests/src/org/chromium/weblayer/test/DownloadCallbackTest.java",
     "javatests/src/org/chromium/weblayer/test/EventUtils.java",
@@ -222,10 +204,11 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
     "javatests/src/org/chromium/weblayer/test/InputTypesTest.java",
     "javatests/src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
     "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
-    "javatests/src/org/chromium/weblayer/test/NewBrowserCallbackTest.java",
+    "javatests/src/org/chromium/weblayer/test/NewTabCallbackTest.java",
     "javatests/src/org/chromium/weblayer/test/RenderingTest.java",
     "javatests/src/org/chromium/weblayer/test/ProfileTest.java",
     "javatests/src/org/chromium/weblayer/test/SmokeTest.java",
+    "javatests/src/org/chromium/weblayer/test/TabCallbackTest.java",
     "javatests/src/org/chromium/weblayer/test/TopControlsTest.java",
   ]
   additional_apks = [

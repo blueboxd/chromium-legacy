@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/public/common/page/page_visibility_state.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_window_features.h"
@@ -262,7 +263,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   static void AllVisitedStateChanged(bool invalidate_visited_link_hashes);
   static void VisitedStateChanged(LinkHash visited_hash);
 
-  void SetIsHidden(bool hidden, bool is_initial_state);
+  void SetVisibilityState(PageVisibilityState visibility_state,
+                          bool is_initial_state);
+  PageVisibilityState GetVisibilityState() const;
   bool IsPageVisible() const;
 
   PageLifecycleState LifecycleState() const;
@@ -416,7 +419,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   float device_scale_factor_;
 
-  bool is_hidden_;
+  PageVisibilityState visibility_state_;
 
   bool is_ordinary_;
 

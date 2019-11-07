@@ -62,6 +62,9 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   base::AtExitManager exit_manager;
 
   base::CommandLine::Init(argc, argv);
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
   remoting::InitHostLogging();
 
 #if defined(OS_MACOSX)
@@ -105,10 +108,15 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   scoped_refptr<DaemonController> daemon_controller =
       DaemonController::Create();
 
+#if defined(OS_MACOSX)
+  if (command_line->HasSwitch(kCheckPermissionSwitchName)) {
+    bool perm = daemon_controller->CheckPermission();
+    return perm ? kSuccessExitCode : kNoPermissionExitCode;
+  }
+#endif  // defined(OS_MACOSX)
+
   // Pass handle of the native view to the controller so that the UAC prompts
   // are focused properly.
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
   int64_t native_view_handle = 0;
   if (command_line->HasSwitch(kParentWindowSwitchName)) {
     std::string native_view =

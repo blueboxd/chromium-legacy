@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_PAGE_MESSAGES_H_
 
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/common/screen_info.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
@@ -21,11 +22,7 @@
 
 // Messages sent from the browser to the renderer.
 
-// Informs the renderer that the page was hidden.
-IPC_MESSAGE_ROUTED0(PageMsg_WasHidden)
-
-// Informs the renderer that the page is no longer hidden.
-IPC_MESSAGE_ROUTED0(PageMsg_WasShown)
+IPC_MESSAGE_ROUTED1(PageMsg_VisibilityChanged, content::PageVisibilityState)
 
 // Sent when the history for this page is altered from another process. The
 // history list should be reset to |history_length| length, and the offset

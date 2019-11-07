@@ -122,7 +122,8 @@ class OverviewWindowDragTest
   DISALLOW_COPY_AND_ASSIGN(OverviewWindowDragTest);
 };
 
-IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, NormalDrag) {
+// Flakily crashes (likely use-after-free). crbug.com/1021936
+IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_NormalDrag) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
   ui_controls::SendKeyPress(browser_window, ui::VKEY_MEDIA_LAUNCH_APP1,

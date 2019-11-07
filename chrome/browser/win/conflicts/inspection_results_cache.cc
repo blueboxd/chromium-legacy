@@ -10,8 +10,10 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
 #include "base/hash/md5.h"
 #include "base/pickle.h"
+#include "base/strings/string_piece.h"
 
 namespace {
 
@@ -232,6 +234,10 @@ bool WriteInspectionResultsCache(
 
   base::Pickle pickle =
       SerializeInspectionResultsCache(inspection_results_cache);
-  return base::WriteFile(file_path, static_cast<const char*>(pickle.data()),
-                         pickle.size()) == static_cast<int>(pickle.size());
+
+  // TODO(1022041): Investigate if using WriteFileAtomically() in a
+  // CONTINUE_ON_SHUTDOWN sequence can cause too many corrupted caches.
+  return base::ImportantFileWriter::WriteFileAtomically(
+      file_path, base::StringPiece(static_cast<const char*>(pickle.data()),
+                                   pickle.size()));
 }

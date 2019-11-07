@@ -222,7 +222,6 @@ PermissionPromptImpl::PermissionPromptImpl(Browser* browser, Delegate* delegate)
       web_contents_(browser->tab_strip_model()->GetActiveWebContents()) {
   PermissionRequestManager* manager =
       PermissionRequestManager::FromWebContents(web_contents_);
-
   if (manager->ShouldShowQuietPermissionPrompt()) {
     show_quiet_permission_prompt_ = true;
     // Show the prompt as an indicator in the right side of the omnibox.

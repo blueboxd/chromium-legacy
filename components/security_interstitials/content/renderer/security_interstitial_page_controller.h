@@ -6,8 +6,10 @@
 #define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_RENDERER_SECURITY_INTERSTITIAL_PAGE_CONTROLLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/security_interstitials/core/common/mojom/interstitial_commands.mojom.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "gin/wrappable.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace content {
 class RenderFrame;
@@ -27,11 +29,18 @@ class SecurityInterstitialPageController
    public:
     // Called when the interstitial calls any of the installed JS methods.
     // |command| describes the command sent by the interstitial.
+    // TODO(carlosil): This is declared virtual because some embedders are still
+    // using a non-componentized version, once that is not the case, this can
+    // become non-virtual
     virtual void SendCommand(
-        security_interstitials::SecurityInterstitialCommand command) = 0;
+        security_interstitials::SecurityInterstitialCommand command);
 
    protected:
     virtual ~Delegate();
+
+    virtual mojo::AssociatedRemote<
+        security_interstitials::mojom::InterstitialCommands>
+    GetInterface() = 0;
   };
 
   // Will invoke methods on |delegate| in response to user actions taken on the

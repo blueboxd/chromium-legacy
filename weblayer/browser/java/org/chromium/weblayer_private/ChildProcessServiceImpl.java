@@ -13,9 +13,9 @@ import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.process_launcher.ChildProcessService;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.content_public.app.ChildProcessServiceFactory;
-import org.chromium.weblayer_private.aidl.IChildProcessService;
-import org.chromium.weblayer_private.aidl.IObjectWrapper;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IChildProcessService;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 @UsedByReflection("WebLayer")
 public final class ChildProcessServiceImpl extends IChildProcessService.Stub {

@@ -39,7 +39,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
-#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
@@ -48,6 +47,7 @@
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
@@ -339,9 +339,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Called on a view for a LocalFrame with a RemoteFrame parent. This makes
   // viewport intersection and occlusion/obscuration available that accounts for
   // remote ancestor frames and their respective scroll positions, clips, etc.
-  void SetViewportIntersectionFromParent(const IntRect&, FrameOcclusionState);
+  void SetViewportIntersectionFromParent(const ViewportIntersectionState&);
   IntRect RemoteViewportIntersection() const {
-    return remote_viewport_intersection_;
+    return intersection_state_.viewport_intersection;
   }
   FrameOcclusionState GetOcclusionState() const;
   bool NeedsOcclusionTracking() const;
@@ -568,8 +568,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // const methods.
   mutable mojo::Remote<mojom::blink::ReportingServiceProxy> reporting_service_;
 
-  IntRect remote_viewport_intersection_;
-  FrameOcclusionState occlusion_state_ = FrameOcclusionState::kUnknown;
+  ViewportIntersectionState intersection_state_;
+  // IntRect remote_viewport_intersection_;
+  // FrameOcclusionState occlusion_state_ = FrameOcclusionState::kUnknown;
 
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;

@@ -31,8 +31,8 @@ void Init() {
   Init(Configuration());
 }
 
-void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback) {
-  Core::Get()->SetDefaultProcessErrorCallback(callback);
+void SetDefaultProcessErrorCallback(ProcessErrorCallback callback) {
+  Core::Get()->SetDefaultProcessErrorCallback(std::move(callback));
 }
 
 scoped_refptr<base::TaskRunner> GetIOTaskRunner() {

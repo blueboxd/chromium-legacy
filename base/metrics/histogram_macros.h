@@ -18,9 +18,6 @@
 // the histogram should take, see
 // https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-// TODO(rkaplow): Link to proper documentation on metric creation once we have
-// it in a good state.
-
 // All of these macros must be called with |name| as a runtime constant - it
 // doesn't have to literally be a constant, but it must be the same string on
 // all calls from a particular call site. If this rule is violated, it is
@@ -327,10 +324,11 @@
         name, sample, min, max, bucket_count,                                  \
         base::HistogramBase::kUmaStabilityHistogramFlag)
 
-#define UMA_STABILITY_HISTOGRAM_ENUMERATION(name, sample, enum_max)            \
-    INTERNAL_HISTOGRAM_ENUMERATION_WITH_FLAG(                                  \
-        name, sample, enum_max,                                                \
-        base::HistogramBase::kUmaStabilityHistogramFlag)
+#define UMA_STABILITY_HISTOGRAM_ENUMERATION(name, ...)                  \
+  INTERNAL_UMA_HISTOGRAM_ENUMERATION_GET_MACRO(                         \
+      __VA_ARGS__, INTERNAL_UMA_HISTOGRAM_ENUMERATION_SPECIFY_BOUNDARY, \
+      INTERNAL_UMA_HISTOGRAM_ENUMERATION_DEDUCE_BOUNDARY)               \
+  (name, __VA_ARGS__, base::HistogramBase::kUmaStabilityHistogramFlag)
 
 #define UMA_STABILITY_HISTOGRAM_LONG_TIMES(name, sample) \
   STATIC_HISTOGRAM_POINTER_BLOCK(                        \

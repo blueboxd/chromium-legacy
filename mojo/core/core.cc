@@ -169,9 +169,8 @@ scoped_refptr<Dispatcher> Core::GetAndRemoveDispatcher(MojoHandle handle) {
   return dispatcher;
 }
 
-void Core::SetDefaultProcessErrorCallback(
-    const ProcessErrorCallback& callback) {
-  default_process_error_callback_ = callback;
+void Core::SetDefaultProcessErrorCallback(ProcessErrorCallback callback) {
+  default_process_error_callback_ = std::move(callback);
 }
 
 MojoHandle Core::CreatePartialMessagePipe(ports::PortRef* peer) {
@@ -252,8 +251,8 @@ void Core::ReleaseDispatchersForTransit(
     handles_->CancelTransit(dispatchers);
 }
 
-void Core::RequestShutdown(const base::Closure& callback) {
-  GetNodeController()->RequestShutdown(callback);
+void Core::RequestShutdown(base::OnceClosure callback) {
+  GetNodeController()->RequestShutdown(std::move(callback));
 }
 
 MojoHandle Core::ExtractMessagePipeFromInvitation(const std::string& name) {

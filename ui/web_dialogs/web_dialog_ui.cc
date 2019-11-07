@@ -89,15 +89,13 @@ void WebDialogUIBase::HandleRenderFrameCreated(
     delegate->GetWebUIMessageHandlers(&handlers);
   }
 
-  content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
   if (0 != (web_ui_->GetBindings() & content::BINDINGS_POLICY_WEB_UI))
-    render_view_host->SetWebUIProperty("dialogArguments", dialog_args);
+    render_frame_host->SetWebUIProperty("dialogArguments", dialog_args);
   for (WebUIMessageHandler* handler : handlers)
     web_ui_->AddMessageHandler(base::WrapUnique(handler));
 
   if (delegate)
-    delegate->OnDialogShown(web_ui_, render_view_host);
+    delegate->OnDialogShown(web_ui_, render_frame_host->GetRenderViewHost());
 }
 
 void WebDialogUIBase::OnDialogClosed(const base::ListValue* args) {

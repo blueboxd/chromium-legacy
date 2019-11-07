@@ -5,6 +5,7 @@
 #include "content/test/test_render_widget_host.h"
 
 #include "base/run_loop.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/public/common/content_features.h"
 
 namespace content {
@@ -33,7 +34,8 @@ TestRenderWidgetHost::TestRenderWidgetHost(
                            process,
                            routing_id,
                            std::move(widget),
-                           hidden),
+                           hidden,
+                           std::make_unique<FrameTokenMessageQueue>()),
       widget_impl_(std::move(widget_impl)) {}
 
 TestRenderWidgetHost::~TestRenderWidgetHost() {}

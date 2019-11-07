@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
+#include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -262,6 +264,31 @@ void WebAppInstallTask::UpdateWebAppFromInfo(
                      base::Unretained(this), std::move(web_application_info)));
 }
 
+void WebAppInstallTask::LoadAndRetrieveWebApplicationInfoWithIcons(
+    const GURL& app_url,
+    WebAppUrlLoader* url_loader,
+    RetrieveWebApplicationInfoWithIconsCallback callback) {
+  CheckInstallPreconditions();
+
+  retrieve_info_callback_ = std::move(callback);
+  background_installation_ = true;
+  only_retrieve_web_application_info_ = true;
+
+  web_contents_ = content::WebContents::Create(
+      content::WebContents::CreateParams(profile_));
+  Observe(web_contents_.get());
+
+  InstallableManager::CreateForWebContents(web_contents_.get());
+  SecurityStateTabHelper::CreateForWebContents(web_contents_.get());
+  favicon::CreateContentFaviconDriverForWebContents(web_contents_.get());
+
+  DCHECK(url_loader);
+  url_loader->LoadUrl(
+      app_url, web_contents(),
+      base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void WebAppInstallTask::WebContentsDestroyed() {
   CallInstallCallback(AppId(), InstallResultCode::kWebContentsDestroyed);
 }
@@ -277,6 +304,7 @@ void WebAppInstallTask::CheckInstallPreconditions() {
   // Concurrent calls are not allowed.
   DCHECK(!web_contents());
   CHECK(!install_callback_);
+  CHECK(!retrieve_info_callback_);
 }
 
 void WebAppInstallTask::RecordInstallEvent(
@@ -295,6 +323,12 @@ void WebAppInstallTask::CallInstallCallback(const AppId& app_id,
   dialog_callback_.Reset();
 
   install_source_ = kNoInstallSource;
+
+  if (only_retrieve_web_application_info_) {
+    DCHECK(retrieve_info_callback_);
+    std::move(retrieve_info_callback_).Run(std::move(web_application_info_));
+    return;
+  }
 
   DCHECK(install_callback_);
   std::move(install_callback_).Run(app_id, code);
@@ -615,6 +649,12 @@ void WebAppInstallTask::OnDialogCompleted(
 
   if (!user_accepted) {
     CallInstallCallback(AppId(), InstallResultCode::kUserInstallDeclined);
+    return;
+  }
+
+  if (only_retrieve_web_application_info_) {
+    web_application_info_ = std::move(web_app_info);
+    CallInstallCallback(AppId(), InstallResultCode::kSuccessNewInstall);
     return;
   }
 

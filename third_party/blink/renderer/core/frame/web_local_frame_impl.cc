@@ -160,6 +160,7 @@
 #include "third_party/blink/renderer/core/editing/finder/find_in_page_coordinates.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/editing/ime/ime_text_span_vector_builder.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
@@ -1352,6 +1353,12 @@ bool WebLocalFrameImpl::SetCompositionFromExistingText(
     int composition_end,
     const WebVector<WebImeTextSpan>& ime_text_spans) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::setCompositionFromExistingText");
+  if (EditContext* edit_context =
+          GetFrame()->GetInputMethodController().GetActiveEditContext()) {
+    return edit_context->SetCompositionFromExistingText(
+        composition_start, composition_end, ime_text_spans);
+  }
+
   if (!GetFrame()->GetEditor().CanEdit())
     return false;
 
@@ -1371,6 +1378,12 @@ bool WebLocalFrameImpl::SetCompositionFromExistingText(
 
 void WebLocalFrameImpl::ExtendSelectionAndDelete(int before, int after) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::extendSelectionAndDelete");
+  if (EditContext* edit_context =
+          GetFrame()->GetInputMethodController().GetActiveEditContext()) {
+    edit_context->ExtendSelectionAndDelete(before, after);
+    return;
+  }
+
   if (WebPlugin* plugin = FocusedPluginIfInputMethodSupported()) {
     plugin->ExtendSelectionAndDelete(before, after);
     return;

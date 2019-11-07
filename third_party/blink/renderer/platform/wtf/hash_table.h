@@ -2060,18 +2060,11 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
     if (!table->table_)
       return;
 
-    // Only trace the backing store. Its fields will be processed below.
-    Allocator::template TraceHashTableBackingOnly<ValueType, HashTableType>(
-        visitor, table->table_, &(table->table_));
-    // Now perform weak processing (this is a no-op if the backing was
-    // accessible through an iterator and was already marked strongly).
+    // Weak processing: If the backing was accessible through an iterator and
+    // thus marked strongly this loop will find all buckets as non-empty.
     for (ValueType* element = table->table_ + table->table_size_ - 1;
          element >= table->table_; element--) {
       if (!HashTableType::IsEmptyOrDeletedBucket(*element)) {
-        // At this stage calling trace can make no difference
-        // (everything is already traced), but we use the return value
-        // to remove things from the collection.
-
         if (!TraceInCollectionTrait<kWeakHandling, ValueType, Traits>::IsAlive(
                 *element)) {
           table->RegisterModification();
@@ -2108,6 +2101,17 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     // Weak HashTable. The HashTable may be held alive strongly from somewhere
     // else, e.g., an iterator.
 
+    // Only trace the backing store. Its buckets will be processed after
+    // marking. The interesting cases for marking are:
+    // - The backing is dropped using clear(): The backing can still be
+    //   compacted but empty/deleted buckets will only be destroyed once the
+    //   backing is reclaimed by the garbage collector on the next cycle.
+    // - The hash table expands/shrinks: Buckets are moved to the new backing
+    //   store and strongified, resulting in all buckets being alive. The old
+    //   backing store is marked but only contains empty/deleted buckets as all
+    //   non-empty/deleted buckets have been moved to the new backing store.
+    Allocator::template TraceHashTableBackingOnly<ValueType, HashTable>(
+        visitor, table_, &table_);
     // Trace the table weakly. For marking this will result in delaying the
     // processing until the end of the atomic pause. It is safe to trace
     // weakly multiple times.

@@ -1090,7 +1090,7 @@ HTMLFormElement* HTMLElement::FindFormAncestor() const {
 
 static inline bool ElementAffectsDirectionality(const Node* node) {
   auto* html_element = DynamicTo<HTMLElement>(node);
-  return html_element && (IsHTMLBDIElement(*html_element) ||
+  return html_element && (IsA<HTMLBDIElement>(*html_element) ||
                           html_element->FastHasAttribute(html_names::kDirAttr));
 }
 
@@ -1103,7 +1103,7 @@ bool HTMLElement::HasDirectionAuto() const {
   // <bdi> defaults to dir="auto"
   // https://html.spec.whatwg.org/C/#the-bdi-element
   const AtomicString& direction = FastGetAttribute(html_names::kDirAttr);
-  return (IsHTMLBDIElement(*this) && direction == g_null_atom) ||
+  return (IsA<HTMLBDIElement>(*this) && direction == g_null_atom) ||
          DeprecatedEqualIgnoringCase(direction, "auto");
 }
 

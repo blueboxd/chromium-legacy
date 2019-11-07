@@ -978,7 +978,12 @@ Output.prototype = {
     var node = opt_node || null;
 
     this.formatOptions_ = {speech: true, braille: false, auralStyle: false};
-    this.format_(node, formatStr, this.speechBuffer_, this.speechRulesStr_);
+    this.format_({
+      node: node,
+      outputFormat: formatStr,
+      outputBuffer: this.speechBuffer_,
+      outputRuleString: this.speechRulesStr_
+    });
 
     return this;
   },
@@ -995,7 +1000,12 @@ Output.prototype = {
     var node = opt_node || null;
 
     this.formatOptions_ = {speech: false, braille: true, auralStyle: false};
-    this.format_(node, formatStr, this.brailleBuffer_, this.brailleRulesStr_);
+    this.format_({
+      node: node,
+      outputFormat: formatStr,
+      outputBuffer: this.brailleBuffer_,
+      outputRuleString: this.brailleRulesStr_
+    });
     return this;
   },
 
@@ -1181,17 +1191,34 @@ Output.prototype = {
 
   /**
    * Format the node given the format specifier.
-   * @param {AutomationNode} node
-   * @param {string|!Object} format The output format either specified as an
-   * output template string or a parsed output format tree.
-   * @param {!Array<Spannable>} buff Buffer to receive rendered output.
-   * @param {!OutputRulesStr} ruleStr
-   * @param {!AutomationNode=} opt_prevNode
-   * @param {!Object<string,(string|number|boolean|Function|Array<string>)>=}
-   *     opt_properties
+   * Please see below for more information on arguments.
+   * node: The AutomationNode of interest.
+   * outputFormat: The output format either specified as an output template
+   * string or a parsed output format tree.
+   * outputBuffer: Buffer to receive rendered output.
+   * outputRuleString: Used for logging and recording output.
+   * opt_prevNode: Optional argument. Helps provide context for certain speech
+   * output.
+   * opt_speechProps: Optional argument. Used to specify how speech should be
+   * verbalized; can specify pitch, rate, language, etc.
+   * @param {!{
+   *    node: AutomationNode,
+   *    outputFormat: (string|!Object),
+   *    outputBuffer: !Array<Spannable>,
+   *    outputRuleString: !OutputRulesStr,
+   *    opt_prevNode: (!AutomationNode|undefined),
+   *    opt_speechProps: (!Output.SpeechProperties|undefined)
+   * }} params An object containing all required and optional parameters.
    * @private
    */
-  format_: function(node, format, buff, ruleStr, opt_prevNode, opt_properties) {
+  format_: function(params) {
+    var node = params['node'];
+    var format = params['outputFormat'];
+    var buff = params['outputBuffer'];
+    var ruleStr = params['outputRuleString'];
+    var prevNode = params['opt_prevNode'];
+    var speechProps = params['opt_speechProps'];
+
     var tokens = [];
     var args = null;
 
@@ -1203,7 +1230,6 @@ Output.prototype = {
       tokens = [format];
     }
 
-    var speechProps = opt_properties || null;
     tokens.forEach(function(token) {
       // Ignore empty tokens.
       if (!token) {
@@ -1268,7 +1294,7 @@ Output.prototype = {
           }
         } else if (token == 'name') {
           options.annotation.push(token);
-          var earcon = node ? this.findEarcon_(node, opt_prevNode) : null;
+          var earcon = node ? this.findEarcon_(node, prevNode) : null;
           if (earcon) {
             options.annotation.push(earcon);
           }
@@ -1360,7 +1386,12 @@ Output.prototype = {
             ruleStr.writeTokenWithValue(token, node.name);
           } else {
             ruleStr.writeToken(token);
-            this.format_(node, '$descendants', buff, ruleStr);
+            this.format_({
+              node: node,
+              outputFormat: '$descendants',
+              outputBuffer: buff,
+              outputRuleString: ruleStr
+            });
           }
         } else if (token == 'indexInParent') {
           if (node.parent) {
@@ -1389,19 +1420,34 @@ Output.prototype = {
           var msg = Output.RESTRICTION_STATE_MAP[node.restriction];
           if (msg) {
             ruleStr.writeToken(token);
-            this.format_(node, '@' + msg, buff, ruleStr);
+            this.format_({
+              node: node,
+              outputFormat: '@' + msg,
+              outputBuffer: buff,
+              outputRuleString: ruleStr
+            });
           }
         } else if (token == 'checked') {
           var msg = Output.CHECKED_STATE_MAP[node.checked];
           if (msg) {
             ruleStr.writeToken(token);
-            this.format_(node, '@' + msg, buff, ruleStr);
+            this.format_({
+              node: node,
+              outputFormat: '@' + msg,
+              outputBuffer: buff,
+              outputRuleString: ruleStr
+            });
           }
         } else if (token == 'pressed') {
           var msg = Output.PRESSED_STATE_MAP[node.checked];
           if (msg) {
             ruleStr.writeToken(token);
-            this.format_(node, '@' + msg, buff, ruleStr);
+            this.format_({
+              node: node,
+              outputFormat: '@' + msg,
+              outputBuffer: buff,
+              outputRuleString: ruleStr
+            });
           }
         } else if (token == 'state') {
           if (node.state) {
@@ -1409,7 +1455,12 @@ Output.prototype = {
               var stateInfo = Output.STATE_INFO_[s];
               if (stateInfo && !stateInfo.isRoleSpecific && stateInfo.on) {
                 ruleStr.writeToken(token);
-                this.format_(node, '$' + s, buff, ruleStr);
+                this.format_({
+                  node: node,
+                  outputFormat: '$' + s,
+                  outputBuffer: buff,
+                  outputRuleString: ruleStr
+                });
               }
             }.bind(this));
           }
@@ -1423,7 +1474,12 @@ Output.prototype = {
             var formatString = tree.firstChild.nextSibling;
             if (node) {
               ruleStr.writeToken(token);
-              this.format_(node, formatString, buff, ruleStr);
+              this.format_({
+                node: node,
+                outputFormat: formatString,
+                outputBuffer: buff,
+                outputRuleString: ruleStr
+              });
             }
           }
         } else if (token == 'descendants') {
@@ -1466,7 +1522,12 @@ Output.prototype = {
         } else if (token == 'joinedDescendants') {
           var unjoined = [];
           ruleStr.write('joinedDescendants {');
-          this.format_(node, '$descendants', unjoined, ruleStr);
+          this.format_({
+            node: node,
+            outputFormat: '$descendants',
+            outputBuffer: unjoined,
+            outputRuleString: ruleStr
+          });
           this.append_(buff, unjoined.join(' '), options);
           ruleStr.write(
               '}: ' + (unjoined.length ? unjoined.join(' ') : 'EMPTY') + '\n');
@@ -1533,12 +1594,15 @@ Output.prototype = {
             ruleStr.writeTokenWithValue(token, value);
           } else {
             ruleStr.write(token);
-            this.format_(
-                node, `@cell_summary($if($tableCellAriaRowIndex,
-                               $tableCellAriaRowIndex, $tableCellRowIndex),
+            this.format_({
+              node: node,
+              outputFormat: ` @cell_summary($if($tableCellAriaRowIndex,
+                      $tableCellAriaRowIndex, $tableCellRowIndex),
                     $if($tableCellAriaColumnIndex, $tableCellAriaColumnIndex,
-                        $tableCellColumnIndex))`,
-                buff, ruleStr);
+                      $tableCellColumnIndex))`,
+              outputBuffer: buff,
+              outputRuleString: ruleStr
+            });
           }
         } else if (token == 'node') {
           if (!tree.firstChild) {
@@ -1548,13 +1612,11 @@ Output.prototype = {
           var relationName = tree.firstChild.value;
           if (relationName == 'tableCellColumnHeaders') {
             // Skip output when previous position falls on the same column.
-            while (opt_prevNode &&
-                   !AutomationPredicate.cellLike(opt_prevNode)) {
-              opt_prevNode = opt_prevNode.parent;
+            while (prevNode && !AutomationPredicate.cellLike(prevNode)) {
+              prevNode = prevNode.parent;
             }
-            if (opt_prevNode &&
-                opt_prevNode.tableCellColumnIndex ==
-                    node.tableCellColumnIndex) {
+            if (prevNode &&
+                prevNode.tableCellColumnIndex == node.tableCellColumnIndex) {
               return;
             }
 
@@ -1587,7 +1649,12 @@ Output.prototype = {
         } else if (token == 'nameOrTextContent') {
           if (node.name && node.nameFrom != NameFromType.CONTENTS) {
             ruleStr.writeToken(token);
-            this.format_(node, '$name', buff, ruleStr);
+            this.format_({
+              node: node,
+              outputFormat: '$name',
+              outputBuffer: buff,
+              outputRuleString: ruleStr
+            });
             return;
           }
 
@@ -1647,7 +1714,12 @@ Output.prototype = {
             ruleStr.writeTokenWithValue(token, String(node.posInSet));
           } else {
             ruleStr.writeToken(token);
-            this.format_(node, '$indexInParent', buff, ruleStr);
+            this.format_({
+              node: node,
+              outputFormat: '$indexInParent',
+              outputBuffer: buff,
+              outputRuleString: ruleStr
+            });
           }
         } else if (token == 'setSize') {
           var size = node.setSize ? node.setSize : 0;
@@ -1661,10 +1733,20 @@ Output.prototype = {
             var attrib = cond.value.slice(1);
             if (Output.isTruthy(node, attrib)) {
               ruleStr.write(attrib + '==true => ');
-              this.format_(node, cond.nextSibling, buff, ruleStr);
+              this.format_({
+                node: node,
+                outputFormat: cond.nextSibling,
+                outputBuffer: buff,
+                outputRuleString: ruleStr
+              });
             } else if (Output.isFalsey(node, attrib)) {
               ruleStr.write(attrib + '==false => ');
-              this.format_(node, cond.nextSibling.nextSibling, buff, ruleStr);
+              this.format_({
+                node: node,
+                outputFormat: cond.nextSibling.nextSibling,
+                outputBuffer: buff,
+                outputRuleString: ruleStr
+              });
             }
           } else if (token == 'nif') {
             ruleStr.writeToken(token);
@@ -1672,10 +1754,20 @@ Output.prototype = {
             var attrib = cond.value.slice(1);
             if (Output.isFalsey(node, attrib)) {
               ruleStr.write(attrib + '==false => ');
-              this.format_(node, cond.nextSibling, buff, ruleStr);
+              this.format_({
+                node: node,
+                outputFormat: cond.nextSibling,
+                outputBuffer: buff,
+                outputRuleString: ruleStr
+              });
             } else if (Output.isTruthy(node, attrib)) {
               ruleStr.write(attrib + '==true => ');
-              this.format_(node, cond.nextSibling.nextSibling, buff, ruleStr);
+              this.format_({
+                node: node,
+                outputFormat: cond.nextSibling.nextSibling,
+                outputBuffer: buff,
+                outputRuleString: ruleStr
+              });
             }
           } else if (token == 'earcon') {
             // Ignore unless we're generating speech output.
@@ -1723,7 +1815,12 @@ Output.prototype = {
               return;
             }
             var msgBuff = [];
-            this.format_(node, curArg, msgBuff, ruleStr);
+            this.format_({
+              node: node,
+              outputFormat: curArg,
+              outputBuffer: msgBuff,
+              outputRuleString: ruleStr
+            });
             // Fill in empty string if nothing was formatted.
             if (!msgBuff.length) {
               msgBuff = [''];
@@ -1762,7 +1859,12 @@ Output.prototype = {
             return;
           }
           var argBuff = [];
-          this.format_(node, arg, argBuff, ruleStr);
+          this.format_({
+            node: node,
+            outputFormat: arg,
+            outputBuffer: argBuff,
+            outputRuleString: ruleStr
+          });
           var namedArgs = {COUNT: Number(argBuff[0])};
           msg = new goog.i18n.MessageFormat(msg).format(namedArgs);
         }
@@ -1960,9 +2062,13 @@ Output.prototype = {
           localStorage['useVerboseMode'] == 'true') {
         rule.navigation = 'leave';
         ruleStr.writeRule(rule);
-        this.format_(
-            formatPrevNode, eventBlock[rule.role].leave, buff, ruleStr,
-            prevNode);
+        this.format_({
+          node: formatPrevNode,
+          outputFormat: eventBlock[rule.role].leave,
+          outputBuffer: buff,
+          outputRuleString: ruleStr,
+          opt_prevNode: prevNode
+        });
       }
     }
 
@@ -1996,7 +2102,13 @@ Output.prototype = {
         var enterFormat = rule.output ?
             eventBlock[rule.role]['enter'][rule.output] :
             eventBlock[rule.role]['enter'];
-        this.format_(formatNode, enterFormat, buff, ruleStr, prevNode);
+        this.format_({
+          node: formatNode,
+          outputFormat: enterFormat,
+          outputBuffer: buff,
+          outputRuleString: ruleStr,
+          opt_prevNode: prevNode
+        });
 
         if (this.formatOptions_.braille && buff.length) {
           var nodeSpan = this.mergeBraille_(buff);
@@ -2053,8 +2165,13 @@ Output.prototype = {
       }
     }
     ruleStr.writeRule(rule);
-    this.format_(
-        node, eventBlock[rule.role][rule.output], buff, ruleStr, prevNode);
+    this.format_({
+      node: node,
+      outputFormat: eventBlock[rule.role][rule.output],
+      outputBuffer: buff,
+      outputRuleString: ruleStr,
+      opt_prevNode: prevNode
+    });
 
     // Restore braille and add an annotation for this node.
     if (this.formatOptions_.braille) {
@@ -2185,7 +2302,12 @@ Output.prototype = {
 
     // Undelayed hints.
     if (node.errorMessage) {
-      this.format_(node, '$node(errorMessage)', buff, ruleStr, undefined, {});
+      this.format_({
+        node: node,
+        outputFormat: '$node(errorMessage)',
+        outputBuffer: buff,
+        outputRuleString: ruleStr
+      });
     }
 
     // Hints should be delayed.
@@ -2195,44 +2317,66 @@ Output.prototype = {
     ruleStr.write('hint_: ');
     if (EventSourceState.get() == EventSourceType.TOUCH_GESTURE) {
       if (node.state[StateType.EDITABLE]) {
-        this.format_(
-            node,
-            node.state[StateType.FOCUSED] ? '@hint_is_editing' :
-                                            '@hint_double_tap_to_edit',
-            buff, ruleStr, undefined, hintProperties);
+        this.format_({
+          node: node,
+          outputFormat: node.state[StateType.FOCUSED] ?
+              '@hint_is_editing' :
+              '@hint_double_tap_to_edit',
+          outputBuffer: buff,
+          outputRuleString: ruleStr,
+          opt_speechProps: hintProperties
+        });
         return;
       }
 
       var isWithinVirtualKeyboard = AutomationUtil.getAncestors(node).find(
           (n) => n.role == RoleType.KEYBOARD);
       if (node.defaultActionVerb != 'none' && !isWithinVirtualKeyboard) {
-        this.format_(
-            node, '@hint_double_tap', buff, ruleStr, undefined, hintProperties);
+        this.format_({
+          node: node,
+          outputFormat: '@hint_double_tap',
+          outputBuffer: buff,
+          outputRuleString: ruleStr,
+          opt_speechProps: hintProperties
+        });
       }
 
       var enteredVirtualKeyboard =
           uniqueAncestors.find((n) => n.role == RoleType.KEYBOARD);
       if (enteredVirtualKeyboard) {
-        this.format_(
-            node, '@hint_touch_type', buff, ruleStr, undefined, hintProperties);
+        this.format_({
+          node: node,
+          outputFormat: '@hint_touch_type',
+          outputBuffer: buff,
+          outputRuleString: ruleStr,
+          opt_speechProps: hintProperties
+        });
       }
 
       return;
     }
 
     if (node.state[StateType.EDITABLE] && cvox.ChromeVox.isStickyPrefOn) {
-      this.format_(
-          node, '@sticky_mode_enabled', buff, ruleStr, undefined,
-          hintProperties);
+      this.format_({
+        node: node,
+        outputFormat: '@sticky_mode_enabled',
+        outputBuffer: buff,
+        outputRuleString: ruleStr,
+        opt_speechProps: hintProperties
+      });
     }
 
     if (node.state[StateType.EDITABLE] && node.state[StateType.FOCUSED] &&
         !this.formatOptions_.braille) {
       if (node.state[StateType.MULTILINE] ||
           node.state[StateType.RICHLY_EDITABLE])
-        this.format_(
-            node, '@hint_search_within_text_field', buff, ruleStr, undefined,
-            hintProperties);
+        this.format_({
+          node: node,
+          outputFormat: '@hint_search_within_text_field',
+          outputBuffer: buff,
+          outputRuleString: ruleStr,
+          opt_speechProps: hintProperties
+        });
     }
 
     if (node.placeholder) {
@@ -2247,23 +2391,41 @@ Output.prototype = {
     }
 
     if (AutomationPredicate.checkable(node)) {
-      this.format_(
-          node, '@hint_checkable', buff, ruleStr, undefined, hintProperties);
+      this.format_({
+        node: node,
+        outputFormat: '@hint_checkable',
+        outputBuffer: buff,
+        outputRuleString: ruleStr,
+        opt_speechProps: hintProperties
+      });
     } else if (AutomationPredicate.clickable(node)) {
-      this.format_(
-          node, '@hint_clickable', buff, ruleStr, undefined, hintProperties);
+      this.format_({
+        node: node,
+        outputFormat: '@hint_clickable',
+        outputBuffer: buff,
+        outputRuleString: ruleStr,
+        opt_speechProps: hintProperties
+      });
     }
 
     if (node.autoComplete == 'list' || node.autoComplete == 'both' ||
         node.state[StateType.AUTOFILL_AVAILABLE]) {
-      this.format_(
-          node, '@hint_autocomplete_list', buff, ruleStr, undefined,
-          hintProperties);
+      this.format_({
+        node: node,
+        outputFormat: '@hint_autocomplete_list',
+        outputBuffer: buff,
+        outputRuleString: ruleStr,
+        opt_speechProps: hintProperties
+      });
     }
     if (node.autoComplete == 'inline' || node.autoComplete == 'both') {
-      this.format_(
-          node, '@hint_autocomplete_inline', buff, ruleStr, undefined,
-          hintProperties);
+      this.format_({
+        node: node,
+        outputFormat: '@hint_autocomplete_inline',
+        outputBuffer: buff,
+        outputRuleString: ruleStr,
+        opt_speechProps: hintProperties
+      });
     }
     if (node.accessKey) {
       this.append_(buff, Msgs.getMsg('access_key', [node.accessKey]));
@@ -2273,19 +2435,34 @@ Output.prototype = {
     // Ancestry based hints.
     if (uniqueAncestors.find(
             /** @type {function(?) : boolean} */ (AutomationPredicate.table))) {
-      this.format_(
-          node, '@hint_table', buff, ruleStr, undefined, hintProperties);
+      this.format_({
+        node: node,
+        outputFormat: '@hint_table',
+        outputBuffer: buff,
+        outputRuleString: ruleStr,
+        opt_speechProps: hintProperties
+      });
     }
     if (uniqueAncestors.find(/** @type {function(?) : boolean} */ (
             AutomationPredicate.roles([RoleType.MENU, RoleType.MENU_BAR])))) {
-      this.format_(
-          node, '@hint_menu', buff, ruleStr, undefined, hintProperties);
+      this.format_({
+        node: node,
+        outputFormat: '@hint_menu',
+        outputBuffer: buff,
+        outputRuleString: ruleStr,
+        opt_speechProps: hintProperties
+      });
     }
     if (uniqueAncestors.find(/** @type {function(?) : boolean} */ (function(n) {
           return !!n.details;
         }))) {
-      this.format_(
-          node, '@hint_details', buff, ruleStr, undefined, hintProperties);
+      this.format_({
+        node: node,
+        outputFormat: '@hint_details',
+        outputBuffer: buff,
+        outputRuleString: ruleStr,
+        opt_speechProps: hintProperties
+      });
     }
   },
 

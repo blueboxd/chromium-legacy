@@ -585,7 +585,8 @@ CreditCardFIDOAuthenticator::ParseCredentialDescriptor(
 base::Value CreditCardFIDOAuthenticator::ParseAssertionResponse(
     GetAssertionAuthenticatorResponsePtr assertion_response) {
   base::Value response = base::Value(base::Value::Type::DICTIONARY);
-  response.SetKey("credential_id", base::Value(assertion_response->info->id));
+  response.SetKey("credential_id",
+                  BytesToBase64(assertion_response->info->raw_id));
   response.SetKey("authenticator_data",
                   BytesToBase64(assertion_response->authenticator_data));
   response.SetKey("client_data",

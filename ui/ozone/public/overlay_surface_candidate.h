@@ -53,7 +53,8 @@ class COMPONENT_EXPORT(OZONE_BASE) OverlaySurfaceCandidate {
   gfx::Rect clip_rect;
   // If the quad is clipped after composition.
   bool is_clipped = false;
-
+  // If the quad doesn't require blending.
+  bool is_opaque = false;
   // To be modified by the implementer if this candidate can go into
   // an overlay.
   bool overlay_handled = false;

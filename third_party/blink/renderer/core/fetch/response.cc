@@ -535,6 +535,10 @@ const Vector<KURL>& Response::InternalURLList() const {
   return response_->InternalURLList();
 }
 
+FetchHeaderList* Response::InternalHeaderList() const {
+  return response_->InternalHeaderList();
+}
+
 void Response::Trace(blink::Visitor* visitor) {
   Body::Trace(visitor);
   visitor->Trace(response_);

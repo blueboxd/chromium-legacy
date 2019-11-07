@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/path_service.h"
 #include "base/test/bind_test_util.h"
@@ -78,14 +79,14 @@ class ContentDirectoryTest : public cr_fuchsia::WebEngineBrowserTest {
     provider.set_name("testdata");
     base::FilePath pkg_path;
     base::PathService::Get(base::DIR_ASSETS, &pkg_path);
-    provider.set_directory(
-        OpenDirectoryHandle(pkg_path.AppendASCII("fuchsia/engine/test/data")));
+    provider.set_directory(base::fuchsia::OpenDirectory(
+        pkg_path.AppendASCII("fuchsia/engine/test/data")));
     providers.emplace_back(std::move(provider));
 
     provider = {};
     provider.set_name("alternate");
-    provider.set_directory(
-        OpenDirectoryHandle(pkg_path.AppendASCII("fuchsia/engine/test/data")));
+    provider.set_directory(base::fuchsia::OpenDirectory(
+        pkg_path.AppendASCII("fuchsia/engine/test/data")));
     providers.emplace_back(std::move(provider));
 
     ContentDirectoryLoaderFactory::SetContentDirectoriesForTest(
@@ -96,24 +97,6 @@ class ContentDirectoryTest : public cr_fuchsia::WebEngineBrowserTest {
 
   void TearDown() override {
     ContentDirectoryLoaderFactory::SetContentDirectoriesForTest({});
-  }
-
-  fidl::InterfaceHandle<fuchsia::io::Directory> OpenDirectoryHandle(
-      const base::FilePath& path) {
-    zx::channel directory_channel;
-    zx::channel remote_directory_channel;
-    zx_status_t status =
-        zx::channel::create(0, &directory_channel, &remote_directory_channel);
-    ZX_DCHECK(status == ZX_OK, status) << "zx_channel_create";
-
-    status = fdio_open(
-        path.value().c_str(),
-        fuchsia::io::OPEN_FLAG_DIRECTORY | fuchsia::io::OPEN_RIGHT_READABLE,
-        remote_directory_channel.release());
-    ZX_DCHECK(status == ZX_OK, status) << "fdio_open";
-
-    return fidl::InterfaceHandle<fuchsia::io::Directory>(
-        std::move(directory_channel));
   }
 
  protected:

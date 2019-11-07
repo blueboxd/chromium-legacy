@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/api/history/history_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate_factory.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_factory_impl.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
@@ -48,14 +49,10 @@
 #include "chrome/common/buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "ppapi/buildflags/buildflags.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
-#include "chrome/browser/chromeos/extensions/input_method_api.h"
-#include "chrome/browser/chromeos/extensions/media_player_api.h"
-#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
-#elif defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #endif
 
@@ -91,20 +88,20 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::IdentityAPI::GetFactoryInstance();
   extensions::InstallTrackerFactory::GetInstance();
   extensions::InstallVerifierFactory::GetInstance();
-#if defined(OS_CHROMEOS)
-  extensions::InputImeAPI::GetFactoryInstance();
-  extensions::InputMethodAPI::GetFactoryInstance();
-#elif defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
   extensions::InputImeAPI::GetFactoryInstance();
 #endif
   extensions::LanguageSettingsPrivateDelegateFactory::GetInstance();
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   extensions::MDnsAPI::GetFactoryInstance();
 #endif
-#if defined(OS_CHROMEOS)
-  extensions::MediaPlayerAPI::GetFactoryInstance();
-#endif
   extensions::MenuManagerFactory::GetInstance();
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
+  auto networking_private_ui_delegate_factory =
+      std::make_unique<extensions::NetworkingPrivateUIDelegateFactoryImpl>();
+  extensions::NetworkingPrivateDelegateFactory::GetInstance()
+      ->SetUIDelegateFactory(std::move(networking_private_ui_delegate_factory));
+#endif
   extensions::OmniboxAPI::GetFactoryInstance();
   extensions::PasswordsPrivateEventRouterFactory::GetInstance();
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -126,9 +123,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::WarningBadgeServiceFactory::GetInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();
   extensions::WebrtcAudioPrivateEventService::GetFactoryInstance();
-#if defined(OS_CHROMEOS)
-  file_manager::EventRouterFactory::GetInstance();
-#endif
   ToolbarActionsModelFactory::GetInstance();
   extensions::ExtensionGCMAppHandler::GetFactoryInstance();
 }

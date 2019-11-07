@@ -16,6 +16,7 @@ SPECIAL_TOKENS = [
     'Base64',
     'IFrame',
     'Latin1',
+    'MathML',
     'PlugIn',
     'SQLite',
     'Uint16',

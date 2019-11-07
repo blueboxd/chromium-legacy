@@ -70,6 +70,15 @@ IN_PROC_BROWSER_TEST_F(VerifyPendingDialogViewBrowserTest,
   base::RunLoop().RunUntilIdle();
 }
 
+// Ensures dialog can be closed when verification finishes.
+IN_PROC_BROWSER_TEST_F(VerifyPendingDialogViewBrowserTest,
+                       VerificationFinishes) {
+  ShowUi(std::string());
+  VerifyUi();
+  GetVerifyPendingDialog()->Hide();
+  base::RunLoop().RunUntilIdle();
+}
+
 // Ensures dialog is closed when cancel button is clicked.
 IN_PROC_BROWSER_TEST_F(VerifyPendingDialogViewBrowserTest, ClickCancelButton) {
   ShowUi(std::string());

@@ -27,6 +27,7 @@ MockSharingService::MockSharingService()
           /*gcm_driver=*/nullptr,
           /*device_info_tracker=*/nullptr,
           /*local_device_info_provider=*/nullptr,
-          /*sync_service*/ nullptr) {}
+          /*sync_service*/ nullptr,
+          /*sms_fetcher=*/nullptr) {}
 
 MockSharingService::~MockSharingService() = default;

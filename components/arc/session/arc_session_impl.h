@@ -190,7 +190,8 @@ class ArcSessionImpl
   void Stop() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
-  void SetUserIdHashForProfile(const std::string& hash) override;
+  void SetUserInfo(const std::string& hash,
+                   const std::string& serial_number) override;
 
   // chromeos::SchedulerConfigurationManagerBase::Observer overrides:
   void OnConfigurationSet(bool success, size_t num_cores_disabled) override;

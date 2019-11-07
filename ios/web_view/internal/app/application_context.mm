@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
+#include "base/task/post_task.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -16,6 +17,7 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/web_view_io_thread.h"
@@ -79,8 +81,8 @@ void ApplicationContext::SaveState() {
     shared_url_loader_factory_->Detach();
 
   if (network_context_) {
-    web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
-                               network_context_owner_.release());
+    base::DeleteSoon(FROM_HERE, {web::WebThread::IO},
+                     network_context_owner_.release());
   }
 }
 

@@ -10,17 +10,22 @@
 #include "chrome/common/chrome_features.h"
 
 // Keep in sync with "PermissionFieldTrial.java"
-
-const char kQuietNotificationPromptsUIFlavourParameterName[] = "ui_flavour";
+const char kQuietNotificationPromptsUIFlavorParameterName[] = "ui_flavour";
 
 #if defined(OS_ANDROID)
+const char kQuietNotificationPromptsQuietNotification[] = "quiet_notification";
 const char kQuietNotificationPromptsHeadsUpNotification[] =
     "heads_up_notification";
 const char kQuietNotificationPromptsMiniInfobar[] = "mini_infobar";
 #else   // OS_ANDROID
 const char kQuietNotificationPromptsStaticIcon[] = "static_icon";
 const char kQuietNotificationPromptsAnimatedIcon[] = "animated_icon";
-#endif  // !OS_ANDROID
+#endif  // OS_ANDROID
+
+const char kQuietNotificationPromptsActivationParameterName[] = "activation";
+const char kQuietNotificationPromptsActivationNever[] = "never";
+const char kQuietNotificationPromptsActivationAdaptive[] = "adaptive";
+const char kQuietNotificationPromptsActivationAlways[] = "always";
 
 QuietNotificationsPromptConfig::UIFlavor
 QuietNotificationsPromptConfig::UIFlavorToUse() {
@@ -29,7 +34,7 @@ QuietNotificationsPromptConfig::UIFlavorToUse() {
 
   std::string ui_flavor = base::GetFieldTrialParamValueByFeature(
       features::kQuietNotificationPrompts,
-      kQuietNotificationPromptsUIFlavourParameterName);
+      kQuietNotificationPromptsUIFlavorParameterName);
 
 #if defined(OS_ANDROID)
   if (ui_flavor == kQuietNotificationPromptsHeadsUpNotification) {
@@ -48,4 +53,23 @@ QuietNotificationsPromptConfig::UIFlavorToUse() {
     return UIFlavor::STATIC_ICON;
   }
 #endif  // !OS_ANDROID
+}
+
+// static
+QuietNotificationsPromptConfig::Activation
+QuietNotificationsPromptConfig::GetActivation() {
+  if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
+    return Activation::kNever;
+
+  std::string ui_flavor = base::GetFieldTrialParamValueByFeature(
+      features::kQuietNotificationPrompts,
+      kQuietNotificationPromptsActivationParameterName);
+  if (ui_flavor == kQuietNotificationPromptsActivationAlways) {
+    return Activation::kAlways;
+  } else if (ui_flavor == kQuietNotificationPromptsActivationNever) {
+    return Activation::kNever;
+  } else if (ui_flavor == kQuietNotificationPromptsActivationAdaptive) {
+    return Activation::kAdaptive;
+  }
+  return Activation::kAdaptive;
 }

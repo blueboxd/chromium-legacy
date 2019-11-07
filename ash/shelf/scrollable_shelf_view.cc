@@ -729,6 +729,16 @@ void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
   Layout();
 }
 
+void ScrollableShelfView::OnScrollEvent(ui::ScrollEvent* event) {
+  if (event->finger_count() != 2)
+    return;
+  if (ShouldDelegateScrollToShelf(*event)) {
+    ui::MouseWheelEvent wheel(*event);
+    GetShelf()->ProcessMouseWheelEvent(&wheel);
+    event->StopPropagation();
+  }
+}
+
 void ScrollableShelfView::OnMouseEvent(ui::MouseEvent* event) {
   if (event->IsMouseWheelEvent()) {
     HandleMouseWheelEvent(event->AsMouseWheelEvent());
@@ -1143,7 +1153,16 @@ void ScrollableShelfView::HandleMouseWheelEvent(ui::MouseWheelEvent* event) {
     return;
 
   if (GetShelf()->IsHorizontalAlignment()) {
-    ScrollByXOffset(CalculatePageScrollingOffset(event->x_offset() < 0),
+    const float x_offset = event->x_offset();
+    const float y_offset = event->y_offset();
+    // If the shelf is bottom aligned, we can scroll over the shelf contents if
+    // the scroll is horizontal or vertical (in the case of a mousewheel
+    // scroll). We take the biggest offset difference of the vertical and
+    // horizontal components to determine the offset to scroll over the
+    // contents.
+    float max_absolute_offset =
+        abs(x_offset) > abs(y_offset) ? x_offset : y_offset;
+    ScrollByXOffset(CalculatePageScrollingOffset(max_absolute_offset < 0),
                     /*animating=*/true);
   } else {
     ScrollByYOffset(CalculatePageScrollingOffset(event->y_offset() < 0),
@@ -1407,8 +1426,15 @@ bool ScrollableShelfView::CanFitAllAppsWithoutScrolling() const {
 
 bool ScrollableShelfView::ShouldHandleScroll(const gfx::Vector2dF& offset,
                                              bool is_gesture_scrolling) const {
+  // When the shelf is aligned at the bottom, a horizontal mousewheel scroll may
+  // also be handled by the ScrollableShelf if the offset along the main axis is
+  // 0. This case is mainly triggered by an event generated in the MouseWheel,
+  // but not in the touchpad, as touchpads events are caught on ScrollEvent.
+  // If there is an x component to the scroll, consider this instead of the y
+  // axis because the horizontal scroll could move the scrollable shelf.
   const float main_axis_offset =
-      GetShelf()->IsHorizontalAlignment() ? offset.x() : offset.y();
+      GetShelf()->IsHorizontalAlignment() && offset.x() != 0 ? offset.x()
+                                                             : offset.y();
 
   const int threshold = is_gesture_scrolling ? kGestureFlingVelocityThreshold
                                              : KScrollOffsetThreshold;
@@ -1553,6 +1579,23 @@ bool ScrollableShelfView::IsDragIconWithinVisibleSpace() const {
   views::View::ConvertRectToScreen(this, &visible_space_in_screen);
 
   return visible_space_in_screen.Contains(drag_icon_->GetBoundsInScreen());
+}
+
+bool ScrollableShelfView::ShouldDelegateScrollToShelf(
+    const ui::ScrollEvent& event) const {
+  // When the shelf is not aligned in the bottom, the events should be
+  // propagated and handled as MouseWheel events.
+  if (!GetShelf()->IsHorizontalAlignment())
+    return false;
+
+  if (event.type() != ui::ET_SCROLL)
+    return false;
+
+  const float main_offset = event.x_offset();
+  const float cross_offset = event.y_offset();
+  // We only delegate to the shelf scroll events across the main axis,
+  // otherwise, let them propagate and be handled as MouseWheel Events.
+  return std::abs(main_offset) < std::abs(cross_offset);
 }
 
 }  // namespace ash

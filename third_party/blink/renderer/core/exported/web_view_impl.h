@@ -308,8 +308,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   LocalDOMWindow* PagePopupWindow() const;
 
   PageScheduler* Scheduler() const override;
-  void SetIsHidden(bool hidden, bool is_initial_state) override;
-  bool IsHidden() override;
+  void SetVisibilityState(PageVisibilityState visibility_state,
+                          bool is_initial_state) override;
+  PageVisibilityState GetVisibilityState() override;
 
   // Called by a full frame plugin inside this view to inform it that its
   // zoom level has been updated.  The plugin should only call this function

@@ -150,8 +150,6 @@ component("web_engine_core") {
     "browser/web_engine_net_log.h",
     "browser/web_engine_permission_manager.cc",
     "browser/web_engine_permission_manager.h",
-    "browser/web_engine_screen.cc",
-    "browser/web_engine_screen.h",
     "common/web_engine_content_client.cc",
     "common/web_engine_content_client.h",
     "common/web_engine_url_loader_throttle.cc",

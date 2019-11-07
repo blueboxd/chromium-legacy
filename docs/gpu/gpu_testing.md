@@ -169,7 +169,7 @@ All of the GPU tests running on the bots can be run locally from a Chromium
 build. Many of the tests are simple executables:
 
 *   `angle_unittests`
-*   `gpu_tests`
+*   `gl_tests`
 *   `gl_unittests`
 *   `tab_capture_end2end_tests`
 

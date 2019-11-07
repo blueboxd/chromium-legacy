@@ -323,7 +323,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   // the node is a url, its url is added to removed_urls.
   //
   // This does NOT delete the node.
-  void RemoveNode(BookmarkNode* node);
+  void RemoveNodeFromIndexRecursive(BookmarkNode* node);
 
   // Called when done loading. Updates internal state and notifies observers.
   void DoneLoading(std::unique_ptr<BookmarkLoadDetails> details);

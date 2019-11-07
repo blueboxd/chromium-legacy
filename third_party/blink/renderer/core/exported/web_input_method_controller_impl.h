@@ -49,6 +49,10 @@ class CORE_EXPORT WebInputMethodControllerImpl
 
   WebRange GetSelectionOffsets() const override;
 
+  void GetLayoutBounds(WebRect& control_bounds,
+                       WebRect& selection_bounds) override;
+  bool IsEditContextActive() const override;
+
   void Trace(blink::Visitor*);
 
  private:

@@ -869,7 +869,7 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
 };
 
 TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
-  ProtocolHandlerRegistry registry(profile(), new FakeDelegate());
+  ProtocolHandlerRegistry registry(profile(), std::make_unique<FakeDelegate>());
   registry.InitProtocolSettings();
 
   const GURL page_url("http://toplevel.example/");
@@ -934,7 +934,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, RPHDefaultDone) {
-  ProtocolHandlerRegistry registry(profile(), new FakeDelegate());
+  ProtocolHandlerRegistry registry(profile(), std::make_unique<FakeDelegate>());
   registry.InitProtocolSettings();
 
   const GURL page_url("http://toplevel.example/");

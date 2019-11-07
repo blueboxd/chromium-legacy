@@ -56,6 +56,8 @@ const char kUnmaskCardRequestPath[] =
 const char kUnmaskCardRequestFormat[] =
     "requestContentType=application/json; charset=utf-8&request=%s"
     "&s7e_13_cvc=%s";
+const char kUnmaskCardRequestFormatWithoutCvc[] =
+    "requestContentType=application/json; charset=utf-8&request=%s";
 
 const char kOptChangeRequestPath[] =
     "payments/apis/chromepaymentsservice/updateautofilluserpreference";
@@ -347,7 +349,6 @@ class UnmaskCardRequest : public PaymentsRequest {
 
   std::string GetRequestContent() override {
     base::Value request_dict(base::Value::Type::DICTIONARY);
-    request_dict.SetKey("encrypted_cvc", base::Value("__param:s7e_13_cvc"));
     request_dict.SetKey("credit_card_id",
                         base::Value(request_details_.card.server_id()));
     if (base::FeatureList::IsEnabled(
@@ -386,19 +387,33 @@ class UnmaskCardRequest : public PaymentsRequest {
         "opt_in_fido_auth",
         base::Value(request_details_.user_response.enable_fido_auth));
 
-    if (request_details_.fido_assertion_info.is_dict()) {
+    // Either FIDO assertion info is set or CVC is set, never both.
+    bool is_cvc_auth = !request_details_.user_response.cvc.empty();
+    bool is_fido_auth = request_details_.fido_assertion_info.is_dict();
+
+    DCHECK_NE(is_cvc_auth, is_fido_auth);
+    if (is_cvc_auth) {
+      request_dict.SetKey("encrypted_cvc", base::Value("__param:s7e_13_cvc"));
+    } else {
       request_dict.SetKey("fido_assertion_info",
                           std::move(request_details_.fido_assertion_info));
     }
 
     std::string json_request;
     base::JSONWriter::Write(request_dict, &json_request);
-    std::string request_content = base::StringPrintf(
-        kUnmaskCardRequestFormat,
-        net::EscapeUrlEncodedData(json_request, true).c_str(),
-        net::EscapeUrlEncodedData(
-            base::UTF16ToASCII(request_details_.user_response.cvc), true)
-            .c_str());
+    std::string request_content;
+    if (is_cvc_auth) {
+      request_content = base::StringPrintf(
+          kUnmaskCardRequestFormat,
+          net::EscapeUrlEncodedData(json_request, true).c_str(),
+          net::EscapeUrlEncodedData(
+              base::UTF16ToASCII(request_details_.user_response.cvc), true)
+              .c_str());
+    } else {
+      request_content = base::StringPrintf(
+          kUnmaskCardRequestFormatWithoutCvc,
+          net::EscapeUrlEncodedData(json_request, true).c_str());
+    }
 
     // Payments is reporting receiving blank or non-standard-length CVCs.
     // Log CVC length being sent to gauge how often this is happening.

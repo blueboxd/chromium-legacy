@@ -44,8 +44,10 @@ class ArcClientAdapter {
   // is called due to the browser being shut down.
   virtual void StopArcInstance(bool on_shutdown) = 0;
 
-  // Sets a hash string of the profile user ID.
-  virtual void SetUserIdHashForProfile(const std::string& hash) = 0;
+  // Sets a hash string of the profile user ID and an ARC serial number for the
+  // user.
+  virtual void SetUserInfo(const std::string& hash,
+                           const std::string& serial_number) = 0;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

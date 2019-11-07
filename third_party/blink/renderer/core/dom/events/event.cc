@@ -316,10 +316,6 @@ void Event::SetHandlingPassive(PassiveMode mode) {
 
 HeapVector<Member<EventTarget>> Event::PathInternal(ScriptState* script_state,
                                                     EventPathMode mode) const {
-  if (target_)
-    HostsUsingFeatures::CountHostOrIsolatedWorldHumanReadableName(
-        script_state, *target_, HostsUsingFeatures::Feature::kEventPath);
-
   if (!current_target_) {
     DCHECK_EQ(Event::kNone, event_phase_);
     if (!event_path_) {

@@ -386,6 +386,9 @@ class COMPONENT_EXPORT(URL) GURL {
   // parameter, and query portions of the URL. It is guaranteed to be ASCII.
   std::string PathForRequest() const;
 
+  // Returns the same characters as PathForRequest(), avoiding a copy.
+  base::StringPiece PathForRequestPiece() const;
+
   // Returns the host, excluding the square brackets surrounding IPv6 address
   // literals. This can be useful for passing to getaddrinfo().
   std::string HostNoBrackets() const;

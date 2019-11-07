@@ -2569,6 +2569,12 @@ const char kGamesHubName[] = "Games Hub";
 const char kGamesHubDescription[] =
     "Enables viewing and usage of the Games Hub.";
 
+const char kHomepageLocationName[] =
+    "Enable enterprise policy HomepageLocation";
+const char kHomepageLocationDescription[] =
+    "Enable enterprice policy HomepageLocation, a rule of configure the home "
+    "page URL";
+
 const char kInterestFeedNotificationsName[] = "Interest Feed Notifications";
 const char kInterestFeedNotificationsDescription[] =
     "Show notifications for some suggested content from the interest feed. "

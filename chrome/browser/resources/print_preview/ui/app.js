@@ -257,8 +257,9 @@ Polymer({
             settings.uiLocale);
       }
       this.$.documentInfo.init(
-          settings.previewModifiable, settings.previewIsPdf,
-          settings.documentTitle, settings.documentHasSelection);
+          settings.previewModifiable, settings.previewIsFromArc,
+          settings.previewIsPdf, settings.documentTitle,
+          settings.documentHasSelection);
       this.$.model.setStickySettings(settings.serializedAppStateStr);
       this.$.model.setPolicySettings(
           settings.headerFooter, settings.isHeaderFooterManaged);

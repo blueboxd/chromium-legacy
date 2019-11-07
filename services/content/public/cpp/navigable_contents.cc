@@ -106,6 +106,13 @@ void NavigableContents::UpdateContentAXTree(const ui::AXTreeID& id) {
     view_->NotifyAccessibilityTreeChange();
 }
 
+void NavigableContents::FocusedNodeChanged(
+    bool is_editable_node,
+    const gfx::Rect& node_bounds_in_screen) {
+  for (auto& observer : observers_)
+    observer.FocusedNodeChanged(is_editable_node, node_bounds_in_screen);
+}
+
 void NavigableContents::OnEmbedTokenReceived(
     const base::UnguessableToken& token) {
   DCHECK(view_);

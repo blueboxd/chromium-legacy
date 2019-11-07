@@ -17,6 +17,7 @@
 #include "android_webview/renderer/aw_print_render_frame_helper_delegate.h"
 #include "android_webview/renderer/aw_render_frame_ext.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
+#include "android_webview/renderer/aw_safe_browsing_error_page_controller_delegate_impl.h"
 #include "android_webview/renderer/aw_url_loader_throttle_provider.h"
 #include "android_webview/renderer/aw_websocket_handshake_throttle_provider.h"
 #include "android_webview/renderer/js_java_interaction/js_java_configurator.h"
@@ -167,6 +168,7 @@ void AwContentRendererClient::RenderFrameCreated(
       render_frame, std::make_unique<AwPrintRenderFrameHelperDelegate>());
   new AwRenderFrameExt(render_frame);
   new JsJavaConfigurator(render_frame);
+  new AwSafeBrowsingErrorPageControllerDelegateImpl(render_frame);
 
   // TODO(jam): when the frame tree moves into content and parent() works at
   // RenderFrame construction, simplify this by just checking parent().
@@ -214,6 +216,9 @@ void AwContentRendererClient::PrepareErrorPage(
     const blink::WebURLError& error,
     const std::string& http_method,
     std::string* error_html) {
+  AwSafeBrowsingErrorPageControllerDelegateImpl::Get(render_frame)
+      ->PrepareForErrorPage();
+
   std::string err;
   if (error.reason() == net::ERR_TEMPORARILY_THROTTLED)
     err = kThrottledErrorDescription;

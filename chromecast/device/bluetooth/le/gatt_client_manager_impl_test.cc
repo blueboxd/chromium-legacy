@@ -256,10 +256,14 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
   EXPECT_FALSE(gatt_client_manager_->IsConnectedLeDevice(kTestAddr1));
   EXPECT_EQ(kTestAddr1, device->addr());
 
-  // These should fail if we're not connected.
-  EXPECT_CALL(cb_, Run(false));
+  // Disconnect from an already disconnected device.
+  EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr1)).WillOnce(Return(false));
+  EXPECT_CALL(*gatt_client_, ClearPendingDisconnect(kTestAddr1))
+      .WillOnce(Return(true));
+  EXPECT_CALL(cb_, Run(true));
   device->Disconnect(cb_.Get());
 
+  // These should fail if we're not connected.
   EXPECT_CALL(cb_, Run(false));
   device->CreateBond(cb_.Get());
 

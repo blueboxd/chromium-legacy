@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/attestation/mock_tpm_challenge_key.h"
+
 #include <utility>
 
 using ::testing::Invoke;

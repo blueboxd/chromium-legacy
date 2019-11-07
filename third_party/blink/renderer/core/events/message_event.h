@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -242,6 +243,9 @@ class CORE_EXPORT MessageEvent final : public Event {
   bool transfer_user_activation_ = false;
   bool allow_autoplay_ = false;
 };
+
+extern CORE_EXPORT const V8PrivateProperty::SymbolKey
+    kPrivatePropertyMessageEventCachedData;
 
 }  // namespace blink
 

@@ -18062,13 +18062,13 @@
         'per_profile': True,
       },
       'id': 578,
-      'supported_on': ['chrome.*:78-','chrome_os:78-'],
+      'supported_on': ['chrome.*:80-','chrome_os:80-'],
       'future': True,
       'caption': '''Check Safe Browsing status of visited URLs in real time''',
       'tags': ['google-sharing'],
       'desc': '''When this policy is set to enabled, all visited URLs will be checked with Safe Browsing in real time.
 
-      When this policy is set to disabled, or not set, the consumer Safe Browsing checks will be applied.'''
+      When this policy is set to disabled, or not set, the consumer Safe Browsing checks will be applied. Consumer Safe Browsing checks can still include real time lookups, depending on the "Make searches and browsing better" preference. To forcibly disable real time lookups, see the <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY">UrlKeyedAnonymizedDataCollectionEnabled</ph> policy.'''
     },
     {
       'name': 'CACertificateManagementAllowed',

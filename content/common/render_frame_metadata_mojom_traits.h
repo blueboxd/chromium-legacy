@@ -72,6 +72,11 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.top_controls_shown_ratio;
   }
 
+  static viz::VerticalScrollDirection new_vertical_scroll_direction(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.new_vertical_scroll_direction;
+  }
+
 #if defined(OS_ANDROID)
   static float bottom_controls_height(const cc::RenderFrameMetadata& metadata) {
     return metadata.bottom_controls_height;

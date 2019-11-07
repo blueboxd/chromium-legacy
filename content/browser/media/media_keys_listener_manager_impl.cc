@@ -15,11 +15,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/idle/idle.h"
 
-#if defined(OS_MACOSX)
-#include "content/browser/media/now_playing_info_center_notifier.h"
-#include "ui/base/now_playing/now_playing_info_center_delegate.h"
-#endif
-
 namespace content {
 
 MediaKeysListenerManagerImpl::ListeningData::ListeningData()
@@ -162,10 +157,6 @@ void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
     return;
 
   // Keep the SystemMediaControls notified of media playback state and metadata.
-  //
-  // TODO(https://crbug.com/949596): Remove the MprisNotifier and
-  // NowPlayingInfoCenterNotifier once those are moved into the
-  // platform-agnostic SystemMediaControls.
   system_media_controls::SystemMediaControls* system_media_controls =
       system_media_controls::SystemMediaControls::GetInstance();
   if (system_media_controls) {
@@ -178,17 +169,7 @@ void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
   // On Mac OS, we need to initialize the idle monitor in order to check if the
   // system is locked.
   ui::InitIdleMonitor();
-
-  // Only create the NowPlayingInfoCenterNotifier if we're able to get a
-  // NowPlayingInfoCenterDelegate.
-  auto now_playing_info_center_delegate =
-      now_playing::NowPlayingInfoCenterDelegate::Create();
-  if (now_playing_info_center_delegate) {
-    now_playing_info_center_notifier_ =
-        std::make_unique<NowPlayingInfoCenterNotifier>(
-            connector_, std::move(now_playing_info_center_delegate));
-  }
-#endif
+#endif  // defined(OS_MACOSX)
 
   auxiliary_services_started_ = true;
 }

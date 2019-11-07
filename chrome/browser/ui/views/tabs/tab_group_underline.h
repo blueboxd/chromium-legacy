@@ -16,6 +16,7 @@ class TabStrip;
 class TabGroupUnderline : public views::View {
  public:
   static constexpr int kStrokeThickness = 3;
+  static int GetStrokeInset();
 
   TabGroupUnderline(TabStrip* tab_strip, TabGroupId group);
 

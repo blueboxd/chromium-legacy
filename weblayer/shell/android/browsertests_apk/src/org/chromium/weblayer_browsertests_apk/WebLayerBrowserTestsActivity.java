@@ -18,10 +18,10 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.native_test.NativeBrowserTest;
 import org.chromium.native_test.NativeBrowserTestActivity;
-import org.chromium.weblayer.BrowserCallback;
-import org.chromium.weblayer.BrowserController;
-import org.chromium.weblayer.BrowserFragmentController;
+import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.Profile;
+import org.chromium.weblayer.Tab;
+import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.WebLayer;
 
 import java.io.File;
@@ -32,8 +32,8 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
 
     private WebLayer mWebLayer;
     private Profile mProfile;
-    private BrowserFragmentController mBrowserFragmentController;
-    private BrowserController mBrowserController;
+    private Browser mBrowser;
+    private Tab mTab;
     private EditText mUrlView;
     private View mMainView;
 
@@ -83,12 +83,12 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
         transaction.add(viewId, fragment);
         transaction.commitNow();
 
-        mBrowserFragmentController = BrowserFragmentController.fromFragment(fragment);
-        mProfile = mBrowserFragmentController.getProfile();
-        mBrowserFragmentController.setTopView(topContentsContainer);
+        mBrowser = Browser.fromFragment(fragment);
+        mProfile = mBrowser.getProfile();
+        mBrowser.setTopView(topContentsContainer);
 
-        mBrowserController = mBrowserFragmentController.getActiveBrowserController();
-        mBrowserController.registerBrowserCallback(new BrowserCallback() {
+        mTab = mBrowser.getActiveTab();
+        mTab.registerTabCallback(new TabCallback() {
             @Override
             public void visibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());

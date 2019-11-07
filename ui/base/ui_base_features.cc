@@ -82,6 +82,11 @@ const base::Feature kCompositorThreadedScrollbarScrolling = {
     "CompositorThreadedScrollbarScrolling", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_WIN)
+// Enables the use of a touch fling curve that is based on the behavior of
+// native apps on Windows.
+const base::Feature kExperimentalFlingAnimation{
+    "ExperimentalFlingAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables InputPane API for controlling on screen keyboard.
 const base::Feature kInputPaneOnScreenKeyboard = {
     "InputPaneOnScreenKeyboard", base::FEATURE_ENABLED_BY_DEFAULT};

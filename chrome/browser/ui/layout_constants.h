@@ -91,6 +91,9 @@ enum LayoutConstant {
   // non-pixel-aligned drawing goes in.  See https://crbug.com/765723.
   TABSTRIP_TOOLBAR_OVERLAP,
 
+  // The total height, including icons and insets, of buttons in the toolbar.
+  TOOLBAR_BUTTON_HEIGHT,
+
   // Additional horizontal padding between the elements in the toolbar.
   TOOLBAR_ELEMENT_PADDING,
 

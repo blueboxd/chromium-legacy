@@ -318,7 +318,7 @@ void ResourceBundle::LoadSecondaryLocaleDataWithPakFileRegion(
 #if !defined(OS_ANDROID)
 // static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
-  return !GetLocaleFilePath(locale, true).empty();
+  return !GetLocaleFilePath(locale).empty();
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -364,8 +364,8 @@ void ResourceBundle::AddDataPackFromFileRegion(
 
 #if !defined(OS_MACOSX)
 // static
-base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
-                                                 bool test_file_exists) {
+base::FilePath ResourceBundle::GetLocaleFilePath(
+    const std::string& app_locale) {
   if (app_locale.empty())
     return base::FilePath();
 
@@ -406,10 +406,16 @@ base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
   if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
     return base::FilePath();
 
-  if (test_file_exists && !base::PathExists(locale_file_path))
-    return base::FilePath();
+  if (base::PathExists(locale_file_path))
+    return locale_file_path;
 
-  return locale_file_path;
+  // If a compressed version of the file exists, load that.
+  base::FilePath compressed_locale_file_path =
+      locale_file_path.AddExtension(FILE_PATH_LITERAL(".gz"));
+  if (base::PathExists(compressed_locale_file_path))
+    return compressed_locale_file_path;
+
+  return base::FilePath();
 }
 #endif
 
@@ -420,7 +426,7 @@ std::string ResourceBundle::LoadLocaleResources(
   std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   base::FilePath locale_file_path = GetOverriddenPakPath();
   if (locale_file_path.empty())
-    locale_file_path = GetLocaleFilePath(app_locale, true);
+    locale_file_path = GetLocaleFilePath(app_locale);
 
   if (locale_file_path.empty()) {
     // It's possible that there is no locale.pak.

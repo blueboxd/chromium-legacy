@@ -2121,22 +2121,12 @@ are declared in tools/grit/grit_rule.gni.
       </if>
 
       <!-- "Install web app" confirmation bubble -->
-      <if expr="use_titlecase">
-        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="In Title Case: Title of the bubble for installing a web app to the operating system.">
-          Install App?
-        </message>
-        <message name="IDS_INSTALL_PWA_BUTTON_LABEL" desc="In Title Case: Text for button that installs a web app to the operating system.">
-          Install
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for installing a web app to the operating system.">
-          Install app?
-        </message>
-        <message name="IDS_INSTALL_PWA_BUTTON_LABEL" desc="Text for button that installs a web app to the operating system.">
-          Install
-        </message>
-      </if>
+      <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for installing a web app to the operating system.">
+        Install app?
+      </message>
+      <message name="IDS_INSTALL_PWA_BUTTON_LABEL" desc="Text for button that installs a web app to the operating system.">
+        Install
+      </message>
 
       <message name="IDS_BOOKMARK_APP_AX_BUBBLE_NAME_LABEL" desc="Text preceding the name of a bookmark app, read by spoken feedback.">
         Shortcut name
@@ -6281,6 +6271,9 @@ the Bookmarks menu.">
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP" desc="The label of the tab group header context menu item for closing all tabs in the current group.">
           Close group
         </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK" desc="The label of the tab group header context menu item for sending feedback for tab groups.">
+          Send feedback
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP" desc="In Title Case: The label of the tab group header context menu item for adding a new tab into the current group.">
@@ -6291,6 +6284,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP" desc="In Title Case: The label of the tab group header context menu item for closing all tabs in the current group.">
           Close Group
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK" desc="In Title Case: The label of the tab group header context menu item for sending feedback for tab groups.">
+          Send Feedback
         </message>
       </if>
 

@@ -156,7 +156,7 @@ void RTCDTMFSender::PlayoutTask() {
   DispatchEvent(*event.Release());
 }
 
-void RTCDTMFSender::DidPlayTone(const WebString& tone) {
+void RTCDTMFSender::DidPlayTone(const String& tone) {
   // We're using the DidPlayTone with an empty buffer to signal the
   // end of the tone.
   if (tone.IsEmpty()) {

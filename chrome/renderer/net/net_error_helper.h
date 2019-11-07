@@ -73,8 +73,8 @@ class NetErrorHelper
 
   // security_interstitials::SecurityInterstitialPageController::Delegate
   // implementation
-  void SendCommand(
-      security_interstitials::SecurityInterstitialCommand command) override;
+  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
+  GetInterface() override;
 
   // RenderFrameObserver implementation.
   void DidStartNavigation(

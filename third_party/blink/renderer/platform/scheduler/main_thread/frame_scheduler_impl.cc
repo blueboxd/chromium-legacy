@@ -1147,6 +1147,8 @@ FrameSchedulerImpl::CreateWebSchedulingTaskQueue(
 }
 
 const base::UnguessableToken& FrameSchedulerImpl::GetAgentClusterId() const {
+  if (!delegate_)
+    return base::UnguessableToken::Null();
   return delegate_->GetAgentClusterId();
 }
 

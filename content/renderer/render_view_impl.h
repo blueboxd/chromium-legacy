@@ -29,6 +29,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/web_preferences.h"
@@ -301,7 +302,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Called when Page visibility is changed, to update the View/Page in blink.
   // This is separate from the IPC handlers as tests may call this and need to
   // be able to specify |initial_setting| where IPC handlers do not.
-  void ApplyPageHidden(bool hidden, bool initial_setting);
+  void ApplyPageVisibilityState(PageVisibilityState visibility_state,
+                                bool initial_setting);
 
   // Instead of creating a new RenderWidget, a RenderFrame for a main frame
   // revives the undead RenderWidget;
@@ -450,7 +452,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnSetInitialFocus(bool reverse);
   void OnSetRendererPrefs(
       const blink::mojom::RendererPreferences& renderer_prefs);
-  void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSuppressDialogsUntilSwapOut();
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
@@ -459,8 +460,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnSetBackgroundOpaque(bool opaque);
 
   // Page message handlers -----------------------------------------------------
-  void OnPageWasHidden();
-  void OnPageWasShown();
+  void OnPageVisibilityChanged(PageVisibilityState visibility_state);
   void SetPageFrozen(bool frozen);
   void PutPageIntoBackForwardCache();
   void RestorePageFromBackForwardCache();

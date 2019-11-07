@@ -74,7 +74,7 @@ void CreateBufferWithGbmFlags(const scoped_refptr<DrmDevice>& drm,
 
   scoped_refptr<DrmFramebuffer> framebuffer;
   if (flags & GBM_BO_USE_SCANOUT) {
-    framebuffer = DrmFramebuffer::AddFramebuffer(drm, buffer.get());
+    framebuffer = DrmFramebuffer::AddFramebuffer(drm, buffer.get(), modifiers);
     if (!framebuffer)
       return;
   }

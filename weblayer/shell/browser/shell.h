@@ -16,8 +16,8 @@
 #include "build/build_config.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
-#include "weblayer/public/browser_observer.h"
 #include "weblayer/public/navigation_observer.h"
+#include "weblayer/public/tab_observer.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -34,12 +34,12 @@ class WMState;
 class GURL;
 
 namespace weblayer {
-class BrowserController;
 class Profile;
+class Tab;
 
 // This represents one window of the Web Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.
-class Shell : public BrowserObserver, public NavigationObserver {
+class Shell : public TabObserver, public NavigationObserver {
  public:
   ~Shell() override;
 
@@ -68,7 +68,7 @@ class Shell : public BrowserObserver, public NavigationObserver {
   // instance is destroyed.
   static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
 
-  BrowserController* browser_controller();
+  Tab* tab();
 
   gfx::NativeWindow window() { return window_; }
 
@@ -77,9 +77,9 @@ class Shell : public BrowserObserver, public NavigationObserver {
  private:
   enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
 
-  explicit Shell(std::unique_ptr<BrowserController> browser_controller);
+  explicit Shell(std::unique_ptr<Tab> tab);
 
-  // BrowserObserver implementation:
+  // TabObserver implementation:
   void DisplayedUrlChanged(const GURL& url) override;
 
   // NavigationObserver implementation:
@@ -87,9 +87,8 @@ class Shell : public BrowserObserver, public NavigationObserver {
   void LoadProgressChanged(double progress) override;
 
   // Helper to create a new Shell.
-  static Shell* CreateShell(
-      std::unique_ptr<BrowserController> browser_controller,
-      const gfx::Size& initial_size);
+  static Shell* CreateShell(std::unique_ptr<Tab> tab,
+                            const gfx::Size& initial_size);
 
   // Helper for one time initialization of application
   static void PlatformInitialize(const gfx::Size& default_window_size);
@@ -127,7 +126,7 @@ class Shell : public BrowserObserver, public NavigationObserver {
   // Set the title of shell window
   void PlatformSetTitle(const base::string16& title);
 
-  std::unique_ptr<BrowserController> browser_controller_;
+  std::unique_ptr<Tab> tab_;
 
   gfx::NativeWindow window_;
 

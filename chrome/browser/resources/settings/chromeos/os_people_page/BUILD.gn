@@ -32,6 +32,7 @@ js_type_check("closure_compile") {
 
 js_library("os_people_page") {
   deps = [
+    ":os_sync_controls",
     "../../:page_visibility",
     "../../:route",
     "../../settings_page:settings_animated_pages",
@@ -48,5 +49,22 @@ js_library("os_people_page") {
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
+  ]
+}
+
+js_library("os_sync_controls") {
+  deps = [
+    ":os_sync_browser_proxy",
+    "../../:route",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("os_sync_browser_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
   ]
 }

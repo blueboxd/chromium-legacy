@@ -2466,7 +2466,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   const int inset_height = 200;
   parent_render_widget_host_aura->SetLastPointerType(
       ui::EventPointerType::POINTER_TYPE_TOUCH);
-  parent_render_widget_host_aura->FocusedNodeTouched(true);
   parent_render_widget_host_aura->SetInsets(gfx::Insets(0, 0, inset_height, 0));
 
   // After focus on editable element, we expect element to be scrolled

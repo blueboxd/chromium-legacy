@@ -131,7 +131,8 @@ class ArcContainerClientAdapter
         chromeos::EmptyVoidDBusMethodCallback());
   }
 
-  void SetUserIdHashForProfile(const std::string& hash) override {}
+  void SetUserInfo(const std::string& hash,
+                   const std::string& serial_number) override {}
 
   // chromeos::SessionManagerClient::Observer overrides:
   void ArcInstanceStopped() override {

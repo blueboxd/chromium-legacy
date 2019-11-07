@@ -79,14 +79,14 @@ void ConstrainedWebDialogUI::RenderFrameCreated(
   ui::WebDialogDelegate* dialog_delegate = delegate->GetWebDialogDelegate();
   std::vector<WebUIMessageHandler*> handlers;
   dialog_delegate->GetWebUIMessageHandlers(&handlers);
-  RenderViewHost* render_view_host = render_frame_host->GetRenderViewHost();
-  render_view_host->SetWebUIProperty("dialogArguments",
-                                     dialog_delegate->GetDialogArgs());
+  render_frame_host->SetWebUIProperty("dialogArguments",
+                                      dialog_delegate->GetDialogArgs());
   for (WebUIMessageHandler* handler : handlers) {
     web_ui()->AddMessageHandler(base::WrapUnique(handler));
   }
 
-  dialog_delegate->OnDialogShown(web_ui(), render_view_host);
+  dialog_delegate->OnDialogShown(web_ui(),
+                                 render_frame_host->GetRenderViewHost());
 }
 
 void ConstrainedWebDialogUI::OnDialogCloseMessage(const base::ListValue* args) {

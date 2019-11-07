@@ -1042,13 +1042,13 @@ if (!is_android) {
       "../browser/plugins/flash_permission_browsertest.cc",
       "../browser/plugins/plugin_power_saver_browsertest.cc",
       "../browser/plugins/plugin_response_interceptor_url_loader_throttle_browsertest.cc",
+      "../browser/policy/cloud/chrome_browser_cloud_management_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_manager_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_test_utils.cc",
       "../browser/policy/cloud/cloud_policy_test_utils.h",
       "../browser/policy/cloud/component_cloud_policy_browsertest.cc",
       "../browser/policy/cloud/device_management_service_browsertest.cc",
-      "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest.cc",
       "../browser/policy/policy_browsertest.cc",
       "../browser/policy/policy_initialization_browsertest.cc",
       "../browser/policy/policy_network_browsertest.cc",
@@ -2382,7 +2382,7 @@ if (!is_android) {
         "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
 
         # chromeos does not support machine level user cloud policies
-        "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest.cc",
+        "../browser/policy/cloud/chrome_browser_cloud_management_browsertest.cc",
       ]
     } else {  # !is_chromeos
       sources -= [
@@ -2446,8 +2446,8 @@ if (!is_android) {
         "//chrome:chrome_framework",
       ]
       sources += [
-        "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest_mac_util.h",
-        "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest_mac_util.mm",
+        "../browser/policy/cloud/chrome_browser_cloud_management_browsertest_mac_util.h",
+        "../browser/policy/cloud/chrome_browser_cloud_management_browsertest_mac_util.mm",
         "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm",
         "../browser/spellchecker/spell_check_host_chrome_impl_mac_browsertest.cc",
         "../browser/ui/cocoa/accelerators_cocoa_browsertest.mm",
@@ -2897,7 +2897,6 @@ test("unit_tests") {
     "../browser/android/oom_intervention/oom_intervention_decider_unittest.cc",
     "../browser/android/password_ui_view_android_unittest.cc",
     "../browser/android/password_update_delegate_unittest.cc",
-    "../browser/android/preferences/pref_service_bridge_unittest.cc",
     "../browser/android/preferences/prefs_unittest.cc",
     "../browser/android/shortcut_info_unittest.cc",
     "../browser/android/signin/signin_manager_android_unittest.cc",
@@ -3278,6 +3277,7 @@ test("unit_tests") {
     "../browser/tracing/background_tracing_field_trial_unittest.cc",
     "../browser/tracing/background_tracing_metrics_provider_unittest.cc",
     "../browser/tracing/trace_event_system_stats_monitor_unittest.cc",
+    "../browser/translate/android/translate_bridge_unittest.cc",
     "../browser/translate/translate_fake_page.cc",
     "../browser/translate/translate_service_unittest.cc",
     "../browser/ui/android/tab_model/tab_model_list_unittest.cc",
@@ -4017,6 +4017,8 @@ test("unit_tests") {
       "../browser/sharing/shared_clipboard/shared_clipboard_test_base.h",
       "../browser/sharing/shared_clipboard/shared_clipboard_ui_controller_unittest.cc",
       "../browser/sharing/shared_clipboard/shared_clipboard_utils_unittest.cc",
+      "../browser/sharing/sms/sms_fetch_request_handler_unittest.cc",
+      "../browser/sharing/sms/sms_remote_fetcher_unittest.cc",
       "../browser/ui/autofill/payments/local_card_migration_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_unittest.cc",
       "../browser/ui/bluetooth/bluetooth_chooser_controller_unittest.cc",
@@ -4129,6 +4131,7 @@ test("unit_tests") {
       "../browser/ui/ash/wallpaper_controller_client_unittest.cc",
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.cc",
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.h",
+      "../browser/ui/webui/chromeos/sync/os_sync_handler_unittest.cc",
       "../browser/ui/window_sizer/window_sizer_ash_unittest.cc",
     ]
     deps += [
@@ -4801,9 +4804,6 @@ test("unit_tests") {
     data_deps += [ "//testing/buildbot/filters:chromeos_filters" ]
     sources -=
         [ "../browser/policy/cloud/user_policy_signin_service_unittest.cc" ]
-    if (use_cups) {
-      deps += [ "//chrome/services/cups_proxy:unit_tests" ]
-    }
   }
   if (use_x11) {
     deps += [ "//ui/events/devices" ]

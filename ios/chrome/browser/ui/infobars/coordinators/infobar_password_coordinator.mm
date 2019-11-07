@@ -35,7 +35,8 @@
     InfobarPasswordTableViewController* modalViewController;
 // The InfobarType for the banner presented by this Coordinator.
 @property(nonatomic, assign, readonly) InfobarType infobarBannerType;
-
+// YES if the Infobar has been Accepted.
+@property(nonatomic, assign) BOOL infobarAccepted;
 @end
 
 @implementation InfobarPasswordCoordinator
@@ -65,6 +66,7 @@
 - (void)start {
   if (!self.started) {
     self.started = YES;
+    self.infobarAccepted = NO;
     self.bannerViewController = [[InfobarBannerViewController alloc]
         initWithDelegate:self
            presentsModal:self.hasBadge
@@ -150,7 +152,7 @@
 }
 
 - (BOOL)isInfobarAccepted {
-  return YES;
+  return self.infobarAccepted;
 }
 
 - (void)infobarBannerWasPresented {
@@ -175,6 +177,7 @@
 
 - (void)performInfobarAction {
   self.passwordInfoBarDelegate->Accept();
+  self.infobarAccepted = YES;
 }
 
 - (void)infobarBannerWillBeDismissed:(BOOL)userInitiated {

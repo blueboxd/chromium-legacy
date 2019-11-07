@@ -329,15 +329,10 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
 }
 
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(
-    const gfx::Rect& viewport_intersection,
-    const gfx::Rect& compositor_visible_rect,
-    blink::FrameOcclusionState occlusion_state) {
-  viewport_intersection_rect_ = viewport_intersection;
-  compositor_visible_rect_ = compositor_visible_rect;
-  occlusion_state_ = occlusion_state;
+    const blink::ViewportIntersectionState& intersection_state) {
+  intersection_state_ = intersection_state;
   if (view_)
-    view_->UpdateViewportIntersection(viewport_intersection,
-                                      compositor_visible_rect, occlusion_state);
+    view_->UpdateViewportIntersection(intersection_state);
 
   if (IsVisible()) {
     // Record metrics if a crashed subframe became visible as a result of this
@@ -557,7 +552,7 @@ void CrossProcessFrameConnector::DelegateWasShown() {
 bool CrossProcessFrameConnector::IsVisible() {
   if (visibility_ == blink::mojom::FrameVisibility::kNotRendered)
     return false;
-  if (viewport_intersection_rect().IsEmpty())
+  if (intersection_state().viewport_intersection.IsEmpty())
     return false;
 
   Visibility embedder_visibility =

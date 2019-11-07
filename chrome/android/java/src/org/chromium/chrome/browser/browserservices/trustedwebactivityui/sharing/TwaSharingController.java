@@ -11,7 +11,7 @@ import android.util.Pair;
 import org.chromium.base.Promise;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.ShareRequestMethod;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifierDelegate;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifier;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
@@ -36,14 +36,14 @@ public class TwaSharingController {
     private final CustomTabActivityTabProvider mTabProvider;
     private final CustomTabActivityNavigationController mNavigationController;
     private final WebApkPostShareTargetNavigator mPostNavigator;
-    private final TwaVerifierDelegate mVerifierDelegate;
+    private final TwaVerifier mVerifierDelegate;
     private final TrustedWebActivityUmaRecorder mUmaRecorder;
 
     @Inject
     public TwaSharingController(CustomTabActivityTabProvider tabProvider,
             CustomTabActivityNavigationController navigationController,
             WebApkPostShareTargetNavigator postNavigator,
-            TwaVerifierDelegate verifierDelegate,
+            TwaVerifier verifierDelegate,
             TrustedWebActivityUmaRecorder umaRecorder) {
         mTabProvider = tabProvider;
         mNavigationController = navigationController;

@@ -39,6 +39,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantCardElementView
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override;
+  void FocusedNodeChanged(bool is_editable_node,
+                          const gfx::Rect& node_bounds_in_screen) override;
 
   // Returns a reference to the native view associated with the underlying web
   // contents. When animating AssistantCardElementView, we should animate the

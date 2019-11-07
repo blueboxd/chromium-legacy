@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/system/sys_info.h"
 
 namespace policy {
@@ -30,6 +31,38 @@ namespace policy {
 // called.
 class BrowserDMTokenStorage {
  public:
+  // Represents the browser's DM token with its status, which can be:
+  // kValid:
+  //    A valid token to be used to make requests. Its value cannot be empty or
+  //    equal to |kInvalidTokenValue|.
+  // kInvalid:
+  //    The token explicitly marks this browser as unenrolled. The browser
+  //    should not sync policies or try to get a new DM token if it is set to
+  //    this value.
+  // kEmpty:
+  //    The token is empty. The browser will try to get a valid token if an
+  //    enrollment token is present.
+  class BrowserDMToken {
+   public:
+    const std::string& value() const;
+
+    bool is_valid() const;
+    bool is_invalid() const;
+    bool is_empty() const;
+
+    static BrowserDMToken CreateValidToken(const std::string& value);
+    static BrowserDMToken CreateInvalidToken();
+    static BrowserDMToken CreateEmptyToken();
+
+   private:
+    enum class Status { kValid, kInvalid, kEmpty };
+
+    BrowserDMToken();
+    BrowserDMToken(Status status, const base::StringPiece value);
+
+    Status status_;
+    std::string value_;
+  };
   using StoreCallback = base::OnceCallback<void(bool success)>;
 
   // Returns the global singleton object. Must be called from the UI thread.
@@ -44,10 +77,16 @@ class BrowserDMTokenStorage {
   // Asynchronously stores |dm_token| and calls |callback| with a boolean to
   // indicate success or failure. It is an error to attempt concurrent store
   // operations.
+  // TODO(domfc): Remove overload after updating callers.
   void StoreDMToken(const std::string& dm_token, StoreCallback callback);
+  void StoreDMToken(const BrowserDMToken& dm_token, StoreCallback callback);
   // Returns an already stored DM token. An empty token is returned if no DM
   // token exists on the system or an error is encountered.
+  // TODO(domfc): Remove overload after updating callers. Note that the names
+  //              are different because you cannot overload functions that only
+  //              differ in their return type.
   std::string RetrieveDMToken();
+  BrowserDMToken RetrieveBrowserDMToken();
   // Must be called after the DM token is saved, to ensure that the callback is
   // invoked.
   void OnDMTokenStored(bool success);
@@ -102,7 +141,7 @@ class BrowserDMTokenStorage {
   std::string client_id_;
   base::Optional<std::string> serial_number_;
   std::string enrollment_token_;
-  std::string dm_token_;
+  BrowserDMToken dm_token_;
   bool should_display_error_message_on_failure_;
 
   SEQUENCE_CHECKER(sequence_checker_);

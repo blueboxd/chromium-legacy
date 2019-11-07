@@ -14,6 +14,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.isKitKatAndBelow;
 
 import android.content.res.ColorStateList;
@@ -150,12 +151,16 @@ public class TabGridIphItemViewBinderTest extends DummyUiActivityTestCase {
         mModel.set(TabGridIphItemProperties.IS_IPH_DIALOG_VISIBLE, true);
 
         assertTrue(mIphWindow.isShowing());
-        assertTrue(mIphAnimation.isRunning());
+        if (areAnimatorsEnabled()) {
+            assertTrue(mIphAnimation.isRunning());
+        }
 
         mModel.set(TabGridIphItemProperties.IS_IPH_DIALOG_VISIBLE, false);
 
         assertFalse(mIphWindow.isShowing());
-        assertFalse(mIphAnimation.isRunning());
+        if (areAnimatorsEnabled()) {
+            assertFalse(mIphAnimation.isRunning());
+        }
     }
 
     @Test

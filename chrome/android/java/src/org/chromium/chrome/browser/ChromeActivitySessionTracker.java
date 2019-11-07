@@ -30,11 +30,13 @@ import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.notifications.chime.ChimeSession;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.ui.base.ResourceBundle;
 
 import java.util.Locale;
@@ -222,7 +224,7 @@ public class ChromeActivitySessionTracker {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString(PREF_LOCALE, newLocale);
             editor.apply();
-            PrefServiceBridge.getInstance().resetAcceptLanguages(newLocale);
+            TranslateBridge.resetAcceptLanguages(newLocale);
             // We consider writing the initial value to prefs as _not_ changing the locale.
             return previousLocale != null;
         }
@@ -238,9 +240,13 @@ public class ChromeActivitySessionTracker {
                 Settings.System.getInt(ContextUtils.getApplicationContext().getContentResolver(),
                         Settings.System.TEXT_SHOW_PASSWORD, 1)
                 == 1;
-        if (PrefServiceBridge.getInstance().getPasswordEchoEnabled() == systemEnabled) return;
+        if (PrefServiceBridge.getInstance().getBoolean(Pref.WEBKIT_PASSWORD_ECHO_ENABLED)
+                == systemEnabled) {
+            return;
+        }
 
-        PrefServiceBridge.getInstance().setPasswordEchoEnabled(systemEnabled);
+        PrefServiceBridge.getInstance().setBoolean(
+                Pref.WEBKIT_PASSWORD_ECHO_ENABLED, systemEnabled);
     }
 
     /**

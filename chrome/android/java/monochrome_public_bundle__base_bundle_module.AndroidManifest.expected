@@ -243,6 +243,17 @@
         android:theme="@style/Theme.Chromium.Activity"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+        android:excludeFromRecents="true"
+        android:name="org.chromium.chrome.browser.bookmarks.BookmarkAddActivity"
+        android:theme="@android:style/Theme.NoDisplay"
+        android:windowSoftInputMode="stateHidden">
+      <intent-filter>
+        <action android:name="org.chromium.chrome.ADDBOOKMARK"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
+    </activity>
+    <activity
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/bookmark_choose_folder"
         android:name="org.chromium.chrome.browser.bookmarks.BookmarkFolderSelectActivity"
@@ -295,16 +306,6 @@
         android:exported="false"
         android:name="org.chromium.chrome.browser.signin.SigninActivity"
         android:theme="@style/Theme.Chromium.DialogWhenLarge"/>
-    <activity
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-        android:name="org.chromium.chrome.browser.bookmarks.BookmarkAddActivity"
-        android:theme="@style/Theme.Chromium.DialogWhenLarge"
-        android:windowSoftInputMode="stateHidden">
-      <intent-filter>
-        <action android:name="org.chromium.chrome.ADDBOOKMARK"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-      </intent-filter>
-    </activity>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode"
         android:enableVrMode="@string/gvr_vr_mode_component"
@@ -995,7 +996,7 @@
     </activity>
     <activity
         android:label="@string/license_activity_title"
-        android:name="com.android.webview.chromium.LicenseActivity"
+        android:name="org.chromium.android_webview.app.LicenseActivity"
         android:process=":webview_apk">
       <intent-filter>
         <action android:name="android.settings.WEBVIEW_LICENSE"/>
@@ -1317,7 +1318,7 @@
     <provider
         android:authorities="org.chromium.chrome.LicenseContentProvider"
         android:exported="true"
-        android:name="com.android.webview.chromium.LicenseContentProvider"
+        android:name="org.chromium.android_webview.app.LicenseContentProvider"
         android:process=":webview_apk"/>
     <receiver
         android:exported="false"

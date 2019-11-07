@@ -58,7 +58,8 @@ ShelfConfig::ShelfConfig()
       shelf_tooltip_preview_max_width_(192),
       shelf_tooltip_preview_max_ratio_(1.5),    // = 3/2
       shelf_tooltip_preview_min_ratio_(0.666),  // = 2/3
-      shelf_blur_radius_(30) {
+      shelf_blur_radius_(30),
+      mousewheel_scroll_offset_threshold_(20) {
   UpdateIsDense();
 }
 
@@ -121,22 +122,15 @@ void ShelfConfig::OnAppListVisibilityWillChange(bool shown,
 }
 
 int ShelfConfig::shelf_size() const {
-  // Before the hotseat redesign, the shelf always has the same size.
-  if (!chromeos::switches::ShouldShowShelfHotseat())
-    return 56;
-
-  // In clamshell mode, the shelf always has the same size.
-  if (!IsTabletMode())
-    return 48;
-
-  if (is_in_app())
-    return in_app_shelf_size();
-
-  return is_dense_ ? 48 : 56;
+  return GetShelfSize(false /*ignore_in_app_state*/);
 }
 
 int ShelfConfig::in_app_shelf_size() const {
   return is_dense_ ? 36 : 40;
+}
+
+int ShelfConfig::system_shelf_size() const {
+  return GetShelfSize(true /*ignore_in_app_state*/);
 }
 
 int ShelfConfig::hotseat_size() const {
@@ -215,6 +209,21 @@ void ShelfConfig::UpdateIsDense() {
 
   is_dense_ = new_is_dense;
   OnShelfConfigUpdated();
+}
+
+int ShelfConfig::GetShelfSize(bool ignore_in_app_state) const {
+  // Before the hotseat redesign, the shelf always has the same size.
+  if (!chromeos::switches::ShouldShowShelfHotseat())
+    return 56;
+
+  // In clamshell mode, the shelf always has the same size.
+  if (!IsTabletMode())
+    return 48;
+
+  if (!ignore_in_app_state && is_in_app())
+    return in_app_shelf_size();
+
+  return is_dense_ ? 48 : 56;
 }
 
 SkColor ShelfConfig::GetShelfControlButtonColor() const {

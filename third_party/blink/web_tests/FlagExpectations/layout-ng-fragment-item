@@ -4038,7 +4038,6 @@ Bug(none) virtual/composite-after-paint/compositing/gestures/gesture-tapHighligh
 Bug(none) virtual/composite-after-paint/paint/background/background-clip-text-inline.html [ Failure ]
 crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-visibility-change.html [ Crash ]
 crbug.com/982194 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Crash Pass ]
-crbug.com/982194 virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Crash Pass ]
 
 crbug.com/982194 animations/state-at-end-event.html [ Crash ]
 crbug.com/982194 animations/timing/keyframe-timing-functions.html [ Crash ]

@@ -34,9 +34,11 @@
 #include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {
+
+// extern
+const V8PrivateProperty::SymbolKey kPrivatePropertyMessageEventCachedData;
 
 static inline bool IsValidSource(EventTarget* source) {
   return !source || source->ToDOMWindow() || source->ToMessagePort() ||
@@ -358,14 +360,16 @@ v8::Local<v8::Object> MessageEvent::AssociateWithWrapper(
     case kDataTypeSerializedScriptValue:
       break;
     case kDataTypeString:
-      V8PrivateProperty::GetMessageEventCachedData(isolate).Set(
-          wrapper, V8String(isolate, data_as_string_.data()));
+      V8PrivateProperty::GetSymbol(isolate,
+                                   kPrivatePropertyMessageEventCachedData)
+          .Set(wrapper, V8String(isolate, data_as_string_.data()));
       break;
     case kDataTypeBlob:
       break;
     case kDataTypeArrayBuffer:
-      V8PrivateProperty::GetMessageEventCachedData(isolate).Set(
-          wrapper, ToV8(data_as_array_buffer_, wrapper, isolate));
+      V8PrivateProperty::GetSymbol(isolate,
+                                   kPrivatePropertyMessageEventCachedData)
+          .Set(wrapper, ToV8(data_as_array_buffer_, wrapper, isolate));
       break;
   }
 

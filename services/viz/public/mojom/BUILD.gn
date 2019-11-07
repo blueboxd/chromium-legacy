@@ -33,6 +33,7 @@ mojom("mojom") {
     "compositing/surface_range.mojom",
     "compositing/texture_releaser.mojom",
     "compositing/transferable_resource.mojom",
+    "compositing/vertical_scroll_direction.mojom",
     "compositing/video_detector_observer.mojom",
     "gpu.mojom",
     "hit_test/aggregated_hit_test_region.mojom",

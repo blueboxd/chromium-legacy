@@ -16,19 +16,27 @@ namespace paint_preview {
 // user profile).
 class FileManager {
  public:
-  // Create a file manager for |root_directory|/paint_previews
+  // Create a file manager for |root_directory|. Top level items in
+  // |root_directoy| should be exclusively managed by this class. Items within
+  // the subdirectories it creates can be freely modified.
   explicit FileManager(const base::FilePath& root_directory);
   ~FileManager();
 
   // Get statistics about the time of creation and size of artifacts.
   size_t GetSizeOfArtifactsFor(const GURL& url);
   bool GetCreatedTime(const GURL& url, base::Time* created_time);
-  bool GetLastAccessedTime(const GURL& url, base::Time* last_accessed_time);
+  bool GetLastModifiedTime(const GURL& url, base::Time* last_modified_time);
 
-  // Creates or gets a subdirectory under |root_directory|/paint_previews/
-  // for |url| and assigns it to |directory|. Returns true and modifies
-  // |directory| on success.
+  // Creates or gets a subdirectory under |root_directory|/ for |url| and
+  // assigns it to |directory|. Returns true on success. If the directory was
+  // compressed then it is uncompressed automatically.
   bool CreateOrGetDirectoryFor(const GURL& url, base::FilePath* directory);
+
+  // Compresses the directory associated with |url|. Returns true on success or
+  // if the directory was already compressed.
+  // NOTE: an empty directory or a directory containing only empty
+  // files/directories will not compress.
+  bool CompressDirectoryFor(const GURL& url);
 
   // Deletes artifacts associated with |urls|.
   void DeleteArtifactsFor(const std::vector<GURL>& urls);
@@ -36,13 +44,14 @@ class FileManager {
   // Deletes all stored paint previews stored in the |profile_directory_|.
   void DeleteAll();
 
-  // Deletes all captures with access times older than |deletion_time|. Slow and
-  // blocking as it relies on base::FileEnumerator.
-  void DeleteAllOlderThan(base::Time deletion_time);
-
  private:
-  bool LastAccessedTimeInternal(const base::FilePath& path,
-                                base::Time* last_accessed_time);
+  enum StorageType {
+    kNone = 0,
+    kDirectory = 1,
+    kZip = 2,
+  };
+
+  StorageType GetPathForUrl(const GURL& url, base::FilePath* path);
 
   base::FilePath root_directory_;
 

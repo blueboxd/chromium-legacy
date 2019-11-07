@@ -3375,8 +3375,7 @@ AutotestPrivateCreateNewDeskFunction::~AutotestPrivateCreateNewDeskFunction() =
 
 ExtensionFunction::ResponseAction AutotestPrivateCreateNewDeskFunction::Run() {
   const bool success = ash::AutotestDesksApi().CreateNewDesk();
-  return RespondNow(OneArgument(
-      api::autotest_private::CreateNewDesk::Results::Create(success)));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(success)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3399,16 +3398,14 @@ AutotestPrivateActivateDeskAtIndexFunction::Run() {
           base::BindOnce(
               &AutotestPrivateActivateDeskAtIndexFunction::OnAnimationComplete,
               this))) {
-    return RespondNow(OneArgument(
-        api::autotest_private::ActivateDeskAtIndex::Results::Create(false)));
+    return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
   }
 
   return RespondLater();
 }
 
 void AutotestPrivateActivateDeskAtIndexFunction::OnAnimationComplete() {
-  Respond(OneArgument(
-      api::autotest_private::ActivateDeskAtIndex::Results::Create(true)));
+  Respond(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3425,16 +3422,14 @@ AutotestPrivateRemoveActiveDeskFunction::Run() {
   if (!ash::AutotestDesksApi().RemoveActiveDesk(base::BindOnce(
           &AutotestPrivateRemoveActiveDeskFunction::OnAnimationComplete,
           this))) {
-    return RespondNow(OneArgument(
-        api::autotest_private::RemoveActiveDesk::Results::Create(false)));
+    return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
   }
 
   return RespondLater();
 }
 
 void AutotestPrivateRemoveActiveDeskFunction::OnAnimationComplete() {
-  Respond(OneArgument(
-      api::autotest_private::RemoveActiveDesk::Results::Create(true)));
+  Respond(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -817,8 +817,7 @@ void RenderFrameProxy::FrameRectsChanged(
 }
 
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
-    const blink::WebRect& viewport_intersection,
-    blink::FrameOcclusionState occlusion_state) {
+    const blink::ViewportIntersectionState& intersection_state) {
   // If the remote viewport intersection has changed, then we should check if
   // the compositing rect has also changed: if it has, then we should update the
   // visible properties.
@@ -833,8 +832,9 @@ void RenderFrameProxy::UpdateRemoteViewportIntersection(
     SynchronizeVisualProperties();
 
   Send(new FrameHostMsg_UpdateViewportIntersection(
-      routing_id_, gfx::Rect(viewport_intersection), compositor_visible_rect,
-      occlusion_state));
+      routing_id_,
+      {intersection_state.viewport_intersection, compositor_visible_rect,
+       intersection_state.occlusion_state}));
 }
 
 void RenderFrameProxy::VisibilityChanged(

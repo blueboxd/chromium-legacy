@@ -539,10 +539,8 @@ void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
 
 gfx::Rect WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
     const gfx::Size& size_in_pixels) const {
-  gfx::Rect bounds(size_in_pixels);
-  gfx::RectF new_bounds =
-      gfx::ScaleRect(gfx::RectF(bounds), 1.0f / device_scale_factor_);
-  window()->layer()->transform().TransformRect(&new_bounds);
+  gfx::RectF new_bounds = gfx::RectF(gfx::Rect(size_in_pixels));
+  GetInverseRootTransform().TransformRect(&new_bounds);
   return gfx::ToEnclosingRect(new_bounds);
 }
 

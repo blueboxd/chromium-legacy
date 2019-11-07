@@ -43,7 +43,7 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
  *
  * The flow of this code is roughly:
  * . WebContentsGestureStateTracker generally detects a touch first
- * . BrowserControllerImpl is notified and caches state.
+ * . TabImpl is notified and caches state.
  * . onTopControlsChanged() is called. This triggers hiding the real view and calling to native code
  *   to move the cc::Layers.
  * . the move continues.

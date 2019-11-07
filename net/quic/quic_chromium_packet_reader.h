@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_client_socket.h"
@@ -65,6 +66,9 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   void SetShouldStopReading() {
     DCHECK(!should_stop_reading_);
     should_stop_reading_ = true;
+    // Cache local and peer addresses before null out the socket.
+    socket_->GetLocalAddress(&local_address_);
+    socket_->GetPeerAddress(&peer_address_);
     socket_ = nullptr;
   }
 
@@ -85,6 +89,8 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   bool ProcessReadResult(int result);
 
   DatagramClientSocket* socket_;
+  IPEndPoint local_address_;
+  IPEndPoint peer_address_;
   // Set to true if |this| should no longer attempt read.
   bool should_stop_reading_;
 

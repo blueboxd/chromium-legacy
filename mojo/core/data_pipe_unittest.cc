@@ -1992,7 +1992,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(DataPipeStatusChangeInTransitClient,
   {
     base::RunLoop run_loop;
     int count = 0;
-    auto callback = base::Bind(
+    auto callback = base::BindRepeating(
         [](base::RunLoop* loop, int* count, MojoResult result) {
           EXPECT_EQ(MOJO_RESULT_OK, result);
           if (++*count == 2)

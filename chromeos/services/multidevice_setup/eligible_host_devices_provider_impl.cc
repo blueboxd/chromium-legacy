@@ -60,7 +60,7 @@ EligibleHostDevicesProviderImpl::GetEligibleHostDevices() const {
   return eligible_devices_from_last_sync_;
 }
 
-multidevice::RemoteDeviceRefList
+multidevice::DeviceWithConnectivityStatusList
 EligibleHostDevicesProviderImpl::GetEligibleActiveHostDevices() const {
   return eligible_active_devices_from_last_sync_;
 }
@@ -96,7 +96,12 @@ void EligibleHostDevicesProviderImpl::UpdateEligibleDevicesSet() {
   if (base::FeatureList::IsEnabled(
           features::kCryptAuthV2DeviceActivityStatus)) {
     eligible_active_devices_from_last_sync_.clear();
-    eligible_active_devices_from_last_sync_ = eligible_devices_from_last_sync_;
+    for (const auto& remote_device : eligible_devices_from_last_sync_) {
+      eligible_active_devices_from_last_sync_.push_back(
+          multidevice::DeviceWithConnectivityStatus(
+              remote_device,
+              cryptauthv2::ConnectivityStatus::UNKNOWN_CONNECTIVITY));
+    }
 
     device_sync_client_->GetDevicesActivityStatus(
         base::Bind(&EligibleHostDevicesProviderImpl::OnGetDevicesActivityStatus,
@@ -132,12 +137,14 @@ void EligibleHostDevicesProviderImpl::OnGetDevicesActivityStatus(
         // not the public key since that's the ID DeviceActivityStatus uses.
         // TODO(themaxli): update this when instance ID is available on
         // RemoteDeviceRef.
-        auto it1 = id_to_activity_status_map.find(first_device.public_key());
-        auto it2 = id_to_activity_status_map.find(second_device.public_key());
+        auto it1 = id_to_activity_status_map.find(
+            first_device.remote_device.public_key());
+        auto it2 = id_to_activity_status_map.find(
+            second_device.remote_device.public_key());
         if (it1 == id_to_activity_status_map.end() &&
             it2 == id_to_activity_status_map.end()) {
-          return first_device.last_update_time_millis() >
-                 second_device.last_update_time_millis();
+          return first_device.remote_device.last_update_time_millis() >
+                 second_device.remote_device.last_update_time_millis();
         }
 
         if (it1 == id_to_activity_status_map.end()) {
@@ -173,9 +180,18 @@ void EligibleHostDevicesProviderImpl::OnGetDevicesActivityStatus(
                  second_activity_status->last_activity_time;
         }
 
-        return first_device.last_update_time_millis() >
-               second_device.last_update_time_millis();
+        return first_device.remote_device.last_update_time_millis() >
+               second_device.remote_device.last_update_time_millis();
       });
+
+  for (auto& host_device : eligible_active_devices_from_last_sync_) {
+    auto it =
+        id_to_activity_status_map.find(host_device.remote_device.public_key());
+    if (it == id_to_activity_status_map.end()) {
+      continue;
+    }
+    host_device.connectivity_status = std::get<1>(*it)->connectivity_status;
+  }
 }
 
 }  // namespace multidevice_setup

@@ -91,7 +91,7 @@ ModuleInspector::ModuleInspector(
       cache_task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       inspection_results_cache_read_(false),
       flush_inspection_results_timer_(
           FROM_HERE,

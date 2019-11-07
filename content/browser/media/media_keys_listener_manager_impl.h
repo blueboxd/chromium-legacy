@@ -25,10 +25,6 @@ namespace content {
 class HardwareKeyMediaController;
 class SystemMediaControlsNotifier;
 
-#if defined(OS_MACOSX)
-class NowPlayingInfoCenterNotifier;
-#endif
-
 // Listens for media keys and decides which listeners receive which events. In
 // particular, it owns one of its delegates (HardwareKeyMediaController), and
 // only propagates to the HardwareKeyMediaController if no other delegates are
@@ -118,11 +114,6 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
   bool auxiliary_services_started_;
 
   bool is_media_playing_ = false;
-
-#if defined(OS_MACOSX)
-  std::unique_ptr<NowPlayingInfoCenterNotifier>
-      now_playing_info_center_notifier_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(MediaKeysListenerManagerImpl);
 };

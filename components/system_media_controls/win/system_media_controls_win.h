@@ -39,8 +39,7 @@ class SystemMediaControlsWin : public SystemMediaControls {
   void SetEnabled(bool enabled) override;
   void SetIsNextEnabled(bool value) override;
   void SetIsPreviousEnabled(bool value) override;
-  void SetIsPlayEnabled(bool value) override;
-  void SetIsPauseEnabled(bool value) override;
+  void SetIsPlayPauseEnabled(bool value) override;
   void SetIsStopEnabled(bool value) override;
   void SetPlaybackStatus(PlaybackStatus status) override;
   void SetTitle(const base::string16& title) override;

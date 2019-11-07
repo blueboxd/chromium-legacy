@@ -212,7 +212,7 @@ void BookmarkModel::Remove(const BookmarkNode* node) {
   std::set<GURL> removed_urls;
   std::unique_ptr<BookmarkNode> owned_node =
       url_index_->Remove(AsMutable(node), &removed_urls);
-  RemoveNode(owned_node.get());
+  RemoveNodeFromIndexRecursive(owned_node.get());
 
   if (store_)
     store_->ScheduleSave();
@@ -248,7 +248,7 @@ void BookmarkModel::RemoveAllUserBookmarks() {
       for (size_t j = permanent_node->children().size(); j > 0; --j) {
         std::unique_ptr<BookmarkNode> node = url_index_->Remove(
             permanent_node->children()[j - 1].get(), &removed_urls);
-        RemoveNode(node.get());
+        RemoveNodeFromIndexRecursive(node.get());
         removed_node_data_list.push_back(
             {permanent_node.get(), j - 1, std::move(node)});
       }
@@ -753,7 +753,7 @@ void BookmarkModel::NotifyNodeAddedForAllDescendents(const BookmarkNode* node) {
   }
 }
 
-void BookmarkModel::RemoveNode(BookmarkNode* node) {
+void BookmarkModel::RemoveNodeFromIndexRecursive(BookmarkNode* node) {
   DCHECK(loaded_);
   DCHECK(!is_permanent_node(node));
 
@@ -764,7 +764,7 @@ void BookmarkModel::RemoveNode(BookmarkNode* node) {
 
   // Recurse through children.
   for (size_t i = node->children().size(); i > 0; --i)
-    RemoveNode(node->children()[i - 1].get());
+    RemoveNodeFromIndexRecursive(node->children()[i - 1].get());
 }
 
 void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {

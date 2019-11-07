@@ -105,11 +105,9 @@ TEST_F(RealTimePolicyEngineTest,
 TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledByPolicy) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kRealTimeUrlLookupFetchAllowlist);
-  pref_service_.SetUserPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
-                            std::make_unique<base::Value>(true));
-  // TODO(crbug.com/1015484): This should be enabled, once we clarify the policy
-  // semantics.
-  EXPECT_FALSE(CanPerformFullURLLookup());
+  pref_service_.SetManagedPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
+                               std::make_unique<base::Value>(true));
+  EXPECT_TRUE(CanPerformFullURLLookup());
 }
 
 TEST_F(RealTimePolicyEngineTest,

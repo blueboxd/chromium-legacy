@@ -201,6 +201,12 @@ bool StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
 }
 
 void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->IsMouseWheelEvent()) {
+    ui::MouseWheelEvent* mouse_wheel_event = event->AsMouseWheelEvent();
+    shelf_->ProcessMouseWheelEvent(mouse_wheel_event);
+    return;
+  }
+
   // Clicking anywhere except the virtual keyboard tray icon should hide the
   // virtual keyboard.
   gfx::Point location = event->location();

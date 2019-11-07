@@ -223,7 +223,8 @@ class SharingServiceTest : public testing::Test {
           base::WrapUnique(sharing_message_sender_), nullptr,
           fake_device_info_sync_service.GetDeviceInfoTracker(),
           fake_device_info_sync_service.GetLocalDeviceInfoProvider(),
-          &test_sync_service_);
+          &test_sync_service_,
+          /* sms_fetcher= */ nullptr);
     }
     task_environment_.RunUntilIdle();
     return sharing_service_.get();

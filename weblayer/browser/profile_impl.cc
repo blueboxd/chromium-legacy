@@ -12,8 +12,8 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/resource_context.h"
-#include "weblayer/browser/browser_controller_impl.h"
 #include "weblayer/browser/ssl_host_state_delegate_impl.h"
+#include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/download_delegate.h"
 
 #if defined(OS_ANDROID)
@@ -56,11 +56,11 @@ class DownloadManagerDelegateImpl : public content::DownloadManagerDelegate {
       bool is_transient,
       content::WebContents* web_contents) override {
     // If there's no DownloadDelegate, the download is simply dropped.
-    auto* browser = BrowserControllerImpl::FromWebContents(web_contents);
-    if (!browser)
+    auto* tab = TabImpl::FromWebContents(web_contents);
+    if (!tab)
       return true;
 
-    DownloadDelegate* delegate = browser->download_delegate();
+    DownloadDelegate* delegate = tab->download_delegate();
     if (!delegate)
       return true;
 

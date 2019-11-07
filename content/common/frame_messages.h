@@ -55,7 +55,6 @@
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -68,6 +67,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
+#include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
@@ -288,6 +288,12 @@ IPC_STRUCT_TRAITS_BEGIN(blink::FramePolicy)
   IPC_STRUCT_TRAITS_MEMBER(sandbox_flags)
   IPC_STRUCT_TRAITS_MEMBER(container_policy)
   IPC_STRUCT_TRAITS_MEMBER(allowed_to_download_without_user_activation)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(blink::ViewportIntersectionState)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_intersection)
+  IPC_STRUCT_TRAITS_MEMBER(compositor_visible_rect)
+  IPC_STRUCT_TRAITS_MEMBER(occlusion_state)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::PageImportanceSignals)
@@ -928,6 +934,12 @@ IPC_MESSAGE_ROUTED2(FrameMsg_MediaPlayerActionAt,
 // fallback contents (i.e., <object>).
 IPC_MESSAGE_ROUTED0(FrameMsg_RenderFallbackContent)
 
+// Tell the renderer to add a property to the WebUI binding object.  This
+// only works if we allowed WebUI bindings.
+IPC_MESSAGE_ROUTED2(FrameMsg_SetWebUIProperty,
+                    std::string /* property_name */,
+                    std::string /* property_value_json */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -1183,14 +1195,11 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SynchronizeVisualProperties,
                     viz::FrameSinkId /* frame_sink_id */,
                     content::FrameVisualProperties)
 
-// Sent by a parent frame to update its child's viewport intersection rect for
-// use by the IntersectionObserver API.
-// compositor_rect is dependent on the intersection rect and indicates the
-// area of the child frame that needs to be rastered. It is in physical pixels.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateViewportIntersection,
-                    gfx::Rect /* viewport_intersection */,
-                    gfx::Rect /* compositor_visible_rect */,
-                    blink::FrameOcclusionState /* occlusion_state */)
+// Sent by a parent frame to notify its child about the state of the child's
+// intersection with the parent's viewport, primarily for use by the
+// IntersectionObserver API.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateViewportIntersection,
+                    blink::ViewportIntersectionState /* intersection_state */)
 
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged,

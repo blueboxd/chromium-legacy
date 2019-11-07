@@ -78,7 +78,7 @@ public class DataClearingTest {
 
         CountDownLatch latch = new CountDownLatch(2);
         runOnUiThreadBlocking(() -> {
-            Profile profile = activity.getBrowserFragmentController().getProfile();
+            Profile profile = activity.getBrowser().getProfile();
             profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA})
                     .addCallback((ignored) -> latch.countDown());
             profile.clearBrowsingData(new int[] {CACHE})
@@ -94,7 +94,7 @@ public class DataClearingTest {
 
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> {
-            Profile profile = activity.getBrowserFragmentController().getProfile();
+            Profile profile = activity.getBrowser().getProfile();
             profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA}).addCallback((v1) -> {
                 profile.clearBrowsingData(new int[] {CACHE}).addCallback((v2) -> latch.countDown());
             });
@@ -109,7 +109,7 @@ public class DataClearingTest {
 
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> {
-            Profile profile = activity.getBrowserFragmentController().getProfile();
+            Profile profile = activity.getBrowser().getProfile();
             profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA});
 
             // We need to remove the fragment before calling Profile#destroy().
@@ -127,10 +127,8 @@ public class DataClearingTest {
         InstrumentationActivity activity = mActivityTestRule.launchWithProfile(profileName);
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> {
-            activity.getBrowserFragmentController()
-                    .getProfile()
-                    .clearBrowsingData(dataTypes)
-                    .addCallback((ignored) -> latch.countDown());
+            activity.getBrowser().getProfile().clearBrowsingData(dataTypes).addCallback(
+                    (ignored) -> latch.countDown());
         });
         assertTrue(latch.await(3, TimeUnit.SECONDS));
     }

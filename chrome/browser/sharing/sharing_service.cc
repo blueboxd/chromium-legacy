@@ -60,7 +60,8 @@ SharingService::SharingService(
     gcm::GCMDriver* gcm_driver,
     syncer::DeviceInfoTracker* device_info_tracker,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
-    syncer::SyncService* sync_service)
+    syncer::SyncService* sync_service,
+    content::SmsFetcher* sms_fetcher)
     : sync_prefs_(std::move(sync_prefs)),
       vapid_key_manager_(std::move(vapid_key_manager)),
       sharing_device_registration_(std::move(sharing_device_registration)),
@@ -105,7 +106,8 @@ SharingService::SharingService(
   }
 
   if (sharing_device_registration_->IsSmsFetcherSupported()) {
-    sms_fetch_request_handler_ = std::make_unique<SmsFetchRequestHandler>();
+    sms_fetch_request_handler_ =
+        std::make_unique<SmsFetchRequestHandler>(sms_fetcher);
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kSmsFetchRequest,
         sms_fetch_request_handler_.get());

@@ -1659,7 +1659,8 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
   // FIXME: Can't we do something better when the immediate parent wasn't a list
   // node?
   if (!list_node ||
-      (!IsHTMLUListElement(*list_node) && !IsA<HTMLOListElement>(*list_node)) ||
+      (!IsA<HTMLUListElement>(*list_node) &&
+       !IsA<HTMLOListElement>(*list_node)) ||
       !HasEditableStyle(*list_node) ||
       list_node == RootEditableElement(*empty_list_item))
     return false;
@@ -1694,7 +1695,7 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
       // If listNode does NOT appear at the end of the outer list item, then
       // behave as if in a regular paragraph.
     } else if (IsA<HTMLOListElement>(*block_enclosing_list) ||
-               IsHTMLUListElement(*block_enclosing_list)) {
+               IsA<HTMLUListElement>(*block_enclosing_list)) {
       new_block = MakeGarbageCollected<HTMLLIElement>(GetDocument());
     }
   }

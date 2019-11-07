@@ -117,7 +117,7 @@ ContentSuggestion CreateSuggestion(Category category,
   [[ContentSuggestionsTestSingleton sharedInstance]
       resetAdditionalSuggestionsHelperWithURL:newURL];
   EXPECT_CALL(*[self provider], FetchMock(_, _, _))
-      .WillOnce(WithArg<2>(
+      .WillRepeatedly(WithArg<2>(
           Invoke([[ContentSuggestionsTestSingleton sharedInstance]
                      additionalSuggestionsHelper],
                  &AdditionalSuggestionsHelper::SendAdditionalSuggestions)));

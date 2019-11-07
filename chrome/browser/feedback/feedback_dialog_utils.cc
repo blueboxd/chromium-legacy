@@ -47,7 +47,7 @@ GURL GetTargetTabUrl(SessionID session_id, int index) {
   return GURL();
 }
 
-Profile* GetFeedbackProfile(Browser* browser) {
+Profile* GetFeedbackProfile(const Browser* browser) {
   Profile* profile =
       browser ? browser->profile()
               : ProfileManager::GetLastUsedProfileAllowedByPolicy();

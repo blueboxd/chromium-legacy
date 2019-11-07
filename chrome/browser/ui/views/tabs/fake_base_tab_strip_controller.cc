@@ -229,6 +229,10 @@ Profile* FakeBaseTabStripController::GetProfile() const {
   return nullptr;
 }
 
+const Browser* FakeBaseTabStripController::GetBrowser() const {
+  return nullptr;
+}
+
 void FakeBaseTabStripController::SetActiveIndex(int new_index) {
   active_index_ = new_index;
   selection_model_.SetSelectedIndex(active_index_);

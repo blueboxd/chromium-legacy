@@ -36,7 +36,7 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
 // with default settings.
 // Data from |basic_info|, |additional_papers| and |has_secure_protocol| are
 // incorporated into the returned dictionary.
-base::Value GetSettingsOnBlockingPool(
+base::Value GetSettingsOnBlockingTaskRunner(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,

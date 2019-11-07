@@ -78,7 +78,7 @@ test the code that is actually shipped. As of this writing, the tests included:
     `src/third_party/angle/src/tests/BUILD.gn`
 *   `gles2_conform_test` (requires internal sources): see
     `src/gpu/gles2_conform_support/BUILD.gn`
-*   `gpu_tests`: see `src/gpu/BUILD.gn`
+*   `gl_tests`: see `src/gpu/BUILD.gn`
 *   `gl_unittests`: see `src/ui/gl/BUILD.gn`
 
 And more. See

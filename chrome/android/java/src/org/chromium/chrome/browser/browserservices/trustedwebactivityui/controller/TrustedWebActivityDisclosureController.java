@@ -12,8 +12,8 @@ import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.T
 
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationState;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationState;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -28,7 +28,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
         TrustedWebActivityModel.DisclosureEventsCallback {
     private final ChromePreferenceManager mPreferenceManager;
     private final TrustedWebActivityModel mModel;
-    private final Verifier mVerifier;
+    private final CurrentPageVerifier mCurrentPageVerifier;
     private final TrustedWebActivityUmaRecorder mRecorder;
     private final ClientPackageNameProvider mClientPackageNameProvider;
 
@@ -37,16 +37,16 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
             ChromePreferenceManager preferenceManager,
             TrustedWebActivityModel model,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            Verifier verifier,
+            CurrentPageVerifier currentPageVerifier,
             TrustedWebActivityUmaRecorder recorder,
             ClientPackageNameProvider clientPackageNameProvider) {
-        mVerifier = verifier;
+        mCurrentPageVerifier = currentPageVerifier;
         mPreferenceManager = preferenceManager;
         mModel = model;
         mRecorder = recorder;
         mClientPackageNameProvider = clientPackageNameProvider;
         model.set(DISCLOSURE_EVENTS_CALLBACK, this);
-        verifier.addVerificationObserver(this::onVerificationStatusChanged);
+        currentPageVerifier.addVerificationObserver(this::onVerificationStatusChanged);
         lifecycleDispatcher.register(this);
     }
 
@@ -95,7 +95,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
     }
 
     private boolean shouldShowInCurrentState() {
-        VerificationState state = mVerifier.getState();
+        VerificationState state = mCurrentPageVerifier.getState();
         return state != null && state.status != VerificationStatus.FAILURE;
     }
 

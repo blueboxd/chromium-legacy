@@ -81,7 +81,8 @@ class SharedClipboardUtilsTest : public testing::Test {
         /* gcm_driver= */ nullptr,
         /* device_info_tracker= */ nullptr,
         /* local_device_info_provider= */ nullptr,
-        /* sync_service */ nullptr);
+        /* sync_service */ nullptr,
+        /* sms_fetcher= */ nullptr);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

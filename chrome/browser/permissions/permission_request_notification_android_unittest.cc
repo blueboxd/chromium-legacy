@@ -13,7 +13,9 @@
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/stub_notification_display_service.h"
+#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
+#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_prompt_android.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "chrome/common/chrome_features.h"
@@ -69,6 +71,8 @@ class PermissionRequestNotificationAndroidTest : public testing::Test {
     notification_display_service_tester_ =
         std::make_unique<NotificationDisplayServiceTester>(profile_);
   }
+
+  TestingProfile* profile() { return profile_; }
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile* profile_;
@@ -173,15 +177,21 @@ TEST_F(PermissionRequestNotificationAndroidTest, Closing_CallsDelegateClosing) {
 
 TEST_F(PermissionRequestNotificationAndroidTest, ShouldShowAsNotification) {
   EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      ContentSettingsType::NOTIFICATIONS));
+      profile(), ContentSettingsType::NOTIFICATIONS));
   EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      ContentSettingsType::GEOLOCATION));
+      profile(), ContentSettingsType::GEOLOCATION));
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kQuietNotificationPrompts);
+  base::FieldTrialParams params;
+  params[kQuietNotificationPromptsUIFlavorParameterName] =
+      kQuietNotificationPromptsHeadsUpNotification;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kQuietNotificationPrompts, params);
+  AdaptiveNotificationPermissionUiSelector::GetForProfile(profile())
+      ->set_should_show_quiet_ui_for_testing(true);
 
   EXPECT_TRUE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      ContentSettingsType::NOTIFICATIONS));
+      profile(), ContentSettingsType::NOTIFICATIONS));
   EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      ContentSettingsType::GEOLOCATION));
+      profile(), ContentSettingsType::GEOLOCATION));
 }

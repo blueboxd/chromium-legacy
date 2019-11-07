@@ -21,6 +21,7 @@ class Notification;
 }  // namespace message_center
 
 class NotificationDisplayServiceImpl;
+class Profile;
 
 // Class for displaying a permission prompt as a notification. Uses
 // the notification display service to show the notification.
@@ -35,7 +36,8 @@ class PermissionRequestNotificationAndroid final
       PermissionPrompt::Delegate* delegate);
 
   // Returns true if we should show the permission request as a notification.
-  static bool ShouldShowAsNotification(ContentSettingsType type);
+  static bool ShouldShowAsNotification(Profile* profile,
+                                       ContentSettingsType type);
 
   // Converts an origin string into a notification id.
   static std::string NotificationIdForOrigin(const std::string& origin);

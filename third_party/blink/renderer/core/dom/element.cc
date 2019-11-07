@@ -1071,7 +1071,7 @@ static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions* options,
 }
 
 void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions* options) {
-  ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kUser);
+  ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kScrollIntoView);
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   ScrollIntoViewNoVisualUpdate(options);
 }
@@ -1081,7 +1081,8 @@ void Element::ScrollIntoViewNoVisualUpdate(
   if (!GetLayoutObject() || !GetDocument().GetPage())
     return;
 
-  if (DisplayLockPreventsActivation(DisplayLockActivationReason::kUser))
+  if (DisplayLockPreventsActivation(
+          DisplayLockActivationReason::kScrollIntoView))
     return;
 
   ScrollBehavior behavior = (options->behavior() == "smooth")
@@ -2362,15 +2363,15 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
       SpaceSplitString tokens(params.new_value.LowerASCII());
-      unsigned char activation_mask =
-          static_cast<unsigned char>(DisplayLockActivationReason::kAny);
+      uint16_t activation_mask =
+          static_cast<uint16_t>(DisplayLockActivationReason::kAny);
 
       // Figure out the activation mask.
       if (tokens.Contains("skip-activation"))
         activation_mask = 0;
       if (tokens.Contains("skip-viewport-activation")) {
         activation_mask &=
-            ~static_cast<unsigned char>(DisplayLockActivationReason::kViewport);
+            ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport);
       }
 
       EnsureDisplayLockContext().SetActivatable(activation_mask);
@@ -4069,8 +4070,8 @@ void Element::focus(const FocusParams& params) {
   // activating because of a script action (kUser). Otherwise, this is a
   // viewport activation (kViewport).
   ActivateDisplayLockIfNeeded(params.type == kWebFocusTypeNone
-                                  ? DisplayLockActivationReason::kUser
-                                  : DisplayLockActivationReason::kViewport);
+                                  ? DisplayLockActivationReason::kScriptFocus
+                                  : DisplayLockActivationReason::kUserFocus);
   DispatchActivateInvisibleEventIfNeeded();
   if (IsInsideInvisibleSubtree()) {
     // The element stays invisible because the default event action is
@@ -4225,7 +4226,8 @@ bool Element::IsKeyboardFocusable() const {
            GetIntegralAttribute(html_names::kTabindexAttr, 0) >= 0) ||
           (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
            IsScrollableNode(this))) &&
-         !DisplayLockPreventsActivation(DisplayLockActivationReason::kViewport);
+         !DisplayLockPreventsActivation(
+             DisplayLockActivationReason::kUserFocus);
 }
 
 bool Element::IsMouseFocusable() const {
@@ -4234,7 +4236,8 @@ bool Element::IsMouseFocusable() const {
   DCHECK(!GetDocument().IsActive() ||
          !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
   return isConnected() && !IsInert() && IsFocusableStyle() && SupportsFocus() &&
-         !DisplayLockPreventsActivation(DisplayLockActivationReason::kViewport);
+         !DisplayLockPreventsActivation(
+             DisplayLockActivationReason::kUserFocus);
 }
 
 bool Element::IsAutofocusable() const {
@@ -4501,7 +4504,7 @@ void Element::SetInnerHTMLFromString(const String& html,
     if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
             html, this, kAllowScriptingContent, "innerHTML", exception_state)) {
       ContainerNode* container = this;
-      if (auto* template_element = ToHTMLTemplateElementOrNull(*this))
+      if (auto* template_element = DynamicTo<HTMLTemplateElement>(*this))
         container = template_element->content();
       ReplaceChildrenWithFragment(container, fragment, exception_state);
     }

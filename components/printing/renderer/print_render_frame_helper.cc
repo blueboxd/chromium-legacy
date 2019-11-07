@@ -19,6 +19,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
@@ -1333,6 +1334,11 @@ void PrintRenderFrameHelper::OnPrintPreview(
     return;
   }
 
+  // Save the job settings if a PrintRenderer will be used to create the preview
+  // document.
+  if (print_renderer_)
+    print_renderer_job_settings_ = settings.Clone();
+
   // Set the options from document if we are previewing a pdf and send a
   // message to browser.
   if (print_pages_params_->params.is_first_request &&
@@ -1392,12 +1398,15 @@ void PrintRenderFrameHelper::OnFramePreparedForPreviewDocument() {
     PrepareFrameForPreviewDocument();
     return;
   }
-  DidFinishPrinting(CreatePreviewDocument() ? OK : FAIL_PREVIEW);
+  CreatePreviewDocumentResult result = CreatePreviewDocument();
+  if (result != CREATE_IN_PROGRESS)
+    DidFinishPrinting(result == CREATE_SUCCESS ? OK : FAIL_PREVIEW);
 }
 
-bool PrintRenderFrameHelper::CreatePreviewDocument() {
+PrintRenderFrameHelper::CreatePreviewDocumentResult
+PrintRenderFrameHelper::CreatePreviewDocument() {
   if (!print_pages_params_ || CheckForCancel())
-    return false;
+    return CREATE_FAIL;
 
   base::UmaHistogramEnumeration(
       print_preview_context_.IsForArc() ? "Arc.PrintPreview.PreviewEvent"
@@ -1410,7 +1419,7 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
   if (!print_preview_context_.CreatePreviewDocument(
           std::move(prep_frame_view_), pages, print_params.printed_doc_type,
           print_params.document_cookie)) {
-    return false;
+    return CREATE_FAIL;
   }
 
   PageSizeMargins default_page_layout;
@@ -1448,16 +1457,27 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
       GetFitToPageScaleFactor(printable_area_in_points);
   Send(new PrintHostMsg_DidStartPreview(routing_id(), params, ids));
   if (CheckForCancel())
-    return false;
+    return CREATE_FAIL;
+
+  // If a PrintRenderer has been provided, use it to create the preview
+  // document.
+  if (print_renderer_) {
+    base::TimeTicks begin_time = base::TimeTicks::Now();
+    print_renderer_->CreatePreviewDocument(
+        print_renderer_job_settings_.Clone(),
+        base::BindOnce(&PrintRenderFrameHelper::OnPreviewDocumentCreated,
+                       weak_ptr_factory_.GetWeakPtr(), begin_time));
+    return CREATE_IN_PROGRESS;
+  }
 
   while (!print_preview_context_.IsFinalPageRendered()) {
     int page_number = print_preview_context_.GetNextPageNumber();
     DCHECK_GE(page_number, 0);
     if (!RenderPreviewPage(page_number))
-      return false;
+      return CREATE_FAIL;
 
     if (CheckForCancel())
-      return false;
+      return CREATE_FAIL;
 
     // We must call PrepareFrameAndViewForPrint::FinishPrinting() (by way of
     // print_preview_context_.AllPagesRendered()) before calling
@@ -1473,11 +1493,11 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
       DCHECK(print_preview_context_.IsModifiable() ||
              print_preview_context_.IsFinalPageRendered());
       if (!FinalizePrintReadyDocument())
-        return false;
+        return CREATE_FAIL;
     }
   }
   print_preview_context_.Finished();
-  return true;
+  return CREATE_SUCCESS;
 }
 
 bool PrintRenderFrameHelper::RenderPreviewPage(int page_number) {
@@ -1534,6 +1554,45 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
 
   Send(new PrintHostMsg_MetafileReadyForPrinting(routing_id(), preview_params,
                                                  ids));
+  return true;
+}
+
+void PrintRenderFrameHelper::OnPreviewDocumentCreated(
+    base::TimeTicks begin_time,
+    base::ReadOnlySharedMemoryRegion preview_document_region) {
+  bool success =
+      ProcessPreviewDocument(begin_time, std::move(preview_document_region));
+  DidFinishPrinting(success ? OK : FAIL_PREVIEW);
+}
+
+bool PrintRenderFrameHelper::ProcessPreviewDocument(
+    base::TimeTicks begin_time,
+    base::ReadOnlySharedMemoryRegion preview_document_region) {
+  // Record the render time for the entire document.
+  print_preview_context_.RenderedPreviewDocument(base::TimeTicks::Now() -
+                                                 begin_time);
+
+  base::ReadOnlySharedMemoryMapping preview_document_mapping =
+      preview_document_region.Map();
+  if (!preview_document_mapping.IsValid())
+    return false;
+
+  auto preview_document_buffer =
+      preview_document_mapping.GetMemoryAsSpan<const uint8_t>();
+  if (!print_preview_context_.metafile()->InitFromData(
+          preview_document_buffer.data(), preview_document_buffer.size())) {
+    LOG(ERROR) << "Failed to initialize PDF metafile.";
+    return false;
+  }
+
+  if (CheckForCancel())
+    return false;
+
+  print_preview_context_.AllPagesRendered();
+  if (!FinalizePrintReadyDocument())
+    return false;
+
+  print_preview_context_.Finished();
   return true;
 }
 
@@ -2207,10 +2266,12 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
   print_preview_context_.source_frame()->DispatchBeforePrintEvent();
   if (!weak_this)
     return;
+  const bool is_from_arc = print_preview_context_.IsForArc();
   const bool is_modifiable = print_preview_context_.IsModifiable();
   const bool is_pdf = print_preview_context_.IsPdf();
   const bool has_selection = print_preview_context_.HasSelection();
   PrintHostMsg_RequestPrintPreview_Params params;
+  params.is_from_arc = is_from_arc;
   params.is_modifiable = is_modifiable;
   params.is_pdf = is_pdf;
   params.has_selection = has_selection;
@@ -2409,6 +2470,12 @@ void PrintRenderFrameHelper::PrintPreviewContext::RenderedPreviewPage(
   DCHECK_EQ(RENDERING, state_);
   document_render_time_ += page_time;
   base::UmaHistogramTimes("PrintPreview.RenderPDFPageTime", page_time);
+}
+
+void PrintRenderFrameHelper::PrintPreviewContext::RenderedPreviewDocument(
+    const base::TimeDelta document_time) {
+  DCHECK_EQ(RENDERING, state_);
+  document_render_time_ += document_time;
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::AllPagesRendered() {

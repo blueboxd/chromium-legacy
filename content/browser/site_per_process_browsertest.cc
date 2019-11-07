@@ -597,10 +597,8 @@ class UpdateViewportIntersectionMessageFilter
     return false;
   }
 
-  gfx::Rect GetCompositingRect() const { return compositing_rect_; }
-  gfx::Rect GetViewportIntersection() const { return viewport_intersection_; }
-  blink::FrameOcclusionState GetOcclusionState() const {
-    return occlusion_state_;
+  const blink::ViewportIntersectionState& GetIntersectionState() const {
+    return intersection_state_;
   }
 
   void Wait() {
@@ -622,9 +620,7 @@ class UpdateViewportIntersectionMessageFilter
   ~UpdateViewportIntersectionMessageFilter() override {}
 
   void OnUpdateViewportIntersection(
-      const gfx::Rect& viewport_intersection,
-      const gfx::Rect& compositing_rect,
-      blink::FrameOcclusionState occlusion_state) {
+      const blink::ViewportIntersectionState& intersection_state) {
     // The message is going to be posted to UI thread after
     // OnUpdateViewportIntersection returns. This additional post on the IO
     // thread guarantees that by the time OnUpdateViewportIntersectionOnUI runs,
@@ -632,36 +628,25 @@ class UpdateViewportIntersectionMessageFilter
     base::PostTask(FROM_HERE, {content::BrowserThread::IO},
                    base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                                       OnUpdateViewportIntersectionPostOnIO,
-                                  this, viewport_intersection, compositing_rect,
-                                  occlusion_state));
+                                  this, intersection_state));
   }
   void OnUpdateViewportIntersectionPostOnIO(
-      const gfx::Rect& viewport_intersection,
-      const gfx::Rect& compositing_rect,
-      blink::FrameOcclusionState occlusion_state) {
+      const blink::ViewportIntersectionState& intersection_state) {
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                    base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                                       OnUpdateViewportIntersectionOnUI,
-                                  this, viewport_intersection, compositing_rect,
-                                  occlusion_state));
+                                  this, intersection_state));
   }
   void OnUpdateViewportIntersectionOnUI(
-      const gfx::Rect& viewport_intersection,
-      const gfx::Rect& compositing_rect,
-      blink::FrameOcclusionState occlusion_state) {
-    viewport_intersection_ = viewport_intersection;
-    compositing_rect_ = compositing_rect;
-    occlusion_state_ = occlusion_state;
+      const blink::ViewportIntersectionState& intersection_state) {
+    intersection_state_ = intersection_state;
     msg_received_ = true;
     if (run_loop_)
       run_loop_->Quit();
   }
   base::RunLoop* run_loop_ = nullptr;
   bool msg_received_;
-  gfx::Rect compositing_rect_;
-  gfx::Rect viewport_intersection_;
-  blink::FrameOcclusionState occlusion_state_ =
-      blink::FrameOcclusionState::kUnknown;
+  blink::ViewportIntersectionState intersection_state_;
   DISALLOW_COPY_AND_ASSIGN(UpdateViewportIntersectionMessageFilter);
 };
 
@@ -12365,7 +12350,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // Ignore any messages that arrive before the compositing_rect scrolls
     // away from the origin.
     filter->Wait();
-    compositing_rect = filter->GetCompositingRect();
+    compositing_rect = filter->GetIntersectionState().compositor_visible_rect;
   }
 
   float scale_factor = 1.0f;
@@ -12451,7 +12436,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // Ignore any messages that arrive before the compositing_rect scrolls
     // away from the origin.
     filter->Wait();
-    compositing_rect = filter->GetCompositingRect();
+    compositing_rect = filter->GetIntersectionState().compositor_visible_rect;
   }
 
   float scale_factor = 1.0f;
@@ -12574,7 +12559,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(ExecuteScript(root, "window.scrollTo(0, 5000);"));
   while (true) {
     filter->Wait();
-    if (filter->GetViewportIntersection().IsEmpty())
+    if (filter->GetIntersectionState().viewport_intersection.IsEmpty())
       break;
   }
 
@@ -12582,7 +12567,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(ExecuteScript(root, "window.scrollTo(0, 0);"));
   while (true) {
     filter->Wait();
-    if (!filter->GetViewportIntersection().IsEmpty())
+    if (!filter->GetIntersectionState().viewport_intersection.IsEmpty())
       break;
   }
 }

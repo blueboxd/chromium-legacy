@@ -665,9 +665,6 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
       if (DoesItemStretch(flex_item.ng_input_node))
         ApplyStretchAlignmentToChild(flex_item);
 
-      // TODO(dgrogan): Implement behavior from legacy's
-      // FlipForRightToLeftColumn here.
-
       // flex_item.desired_location stores the main axis offset in X and the
       // cross axis offset in Y. But AddChild wants offset from parent
       // rectangle, so we have to transpose for columns. AddChild takes care of

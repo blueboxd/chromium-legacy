@@ -90,6 +90,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/accessibility/aom_content_ax_tree.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
@@ -3246,11 +3247,11 @@ void RenderFrameImpl::CancelBlockedRequests() {
 }
 
 void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
+  // TODO(nasko): WebUIExtensionsData might be useful to be registered for
+  // subframes as well, though at this time there is no such usage.
   if (IsMainFrame() && (enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
       !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
-    // TODO(sammc): Move WebUIExtensionData to be a RenderFrameObserver.
-    // WebUIExtensionData deletes itself when |render_view_| is destroyed.
-    new WebUIExtensionData(render_view_);
+    new WebUIExtensionData(this);
   }
 
   enabled_bindings_ |= enabled_bindings_flags;

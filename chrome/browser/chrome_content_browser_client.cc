@@ -4086,7 +4086,7 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
           web_contents->GetBrowserContext());
   if (prerender_manager &&
       prerender_manager->IsWebContentsPrerendering(web_contents, nullptr)) {
-    *visibility_state = content::PageVisibilityState::kPrerender;
+    *visibility_state = content::PageVisibilityState::kHiddenButPainting;
   }
 }
 

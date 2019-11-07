@@ -4,6 +4,8 @@
 
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_util.h"
 
+#include <algorithm>
+
 namespace ui {
 
 PalmFilterDeviceInfo CreatePalmFilterDeviceInfo(
@@ -41,23 +43,43 @@ PalmFilterDeviceInfo CreatePalmFilterDeviceInfo(
   return info;
 }
 
-PalmFilterSample CreatePalmFilterSample(const InProgressTouchEvdev& touch,
-                                        const base::TimeTicks& time,
-                                        const PalmFilterDeviceInfo& dev_info) {
+namespace {
+float ScaledRadius(
+    float radius,
+    const NeuralStylusPalmDetectionFilterModelConfig& model_config) {
+  if (model_config.radius_polynomial_resize.empty()) {
+    return radius;
+  }
+  float return_value = 0.0f;
+  for (uint32_t i = 0; i < model_config.radius_polynomial_resize.size(); ++i) {
+    float power = model_config.radius_polynomial_resize.size() - 1 - i;
+    return_value +=
+        model_config.radius_polynomial_resize[i] * powf(radius, power);
+  }
+  return return_value;
+}
+}  // namespace
+
+PalmFilterSample CreatePalmFilterSample(
+    const InProgressTouchEvdev& touch,
+    const base::TimeTicks& time,
+    const NeuralStylusPalmDetectionFilterModelConfig& model_config,
+    const PalmFilterDeviceInfo& dev_info) {
   // radius_x and radius_y have been
   // scaled by resolution already.
 
   PalmFilterSample sample;
   sample.time = time;
 
-  // Original model here is not normalized appropriately, so we divide by 40.
-  sample.major_radius = std::max(touch.major, touch.minor) * dev_info.x_res /
-                        40.0 * dev_info.major_radius_res;
+  sample.major_radius = ScaledRadius(
+      std::max(touch.major, touch.minor) * dev_info.major_radius_res,
+      model_config);
   if (dev_info.minor_radius_supported) {
-    sample.minor_radius = std::min(touch.major, touch.minor) * dev_info.x_res /
-                          40.0 * dev_info.minor_radius_res;
+    sample.minor_radius = ScaledRadius(
+        std::min(touch.major, touch.minor) * dev_info.minor_radius_res,
+        model_config);
   } else {
-    sample.minor_radius = sample.major_radius;
+    sample.minor_radius = ScaledRadius(touch.major, model_config);
   }
 
   // Nearest edge distance, in cm.

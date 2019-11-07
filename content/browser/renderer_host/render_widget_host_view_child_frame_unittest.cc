@@ -26,6 +26,7 @@
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/frame_visual_properties.h"
@@ -43,7 +44,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/frame/occlusion_state.h"
+#include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 
@@ -66,10 +67,12 @@ class MockFrameConnectorDelegate : public FrameConnectorDelegate {
     last_surface_info_ = surface_info;
   }
 
-  void SetViewportIntersection(const gfx::Rect& intersection,
-                               const gfx::Rect& compositor_visible_rect) {
-    viewport_intersection_rect_ = intersection;
-    compositor_visible_rect_ = compositor_visible_rect;
+  void SetViewportIntersection(const blink::WebRect& intersection,
+                               const blink::WebRect& compositor_visible_rect,
+                               blink::FrameOcclusionState occlusion_state) {
+    intersection_state_.viewport_intersection = intersection;
+    intersection_state_.compositor_visible_rect = compositor_visible_rect;
+    intersection_state_.occlusion_state = occlusion_state;
   }
 
   RenderWidgetHostViewBase* GetParentRenderWidgetHostView() override {
@@ -124,7 +127,8 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     widget_impl_ = std::make_unique<MockWidgetImpl>(
         widget.InitWithNewPipeAndPassReceiver());
     widget_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, routing_id, std::move(widget), false);
+        &delegate_, process_host, routing_id, std::move(widget),
+        /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
     view_ = RenderWidgetHostViewChildFrame::Create(widget_host_);
 
     test_frame_connector_ =
@@ -221,9 +225,11 @@ TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
 // Tests that the viewport intersection rect is dispatched to the RenderWidget
 // whenever screen rects are updated.
 TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
-  gfx::Rect intersection_rect(5, 5, 100, 80);
-  test_frame_connector_->SetViewportIntersection(intersection_rect,
-                                                 intersection_rect);
+  blink::WebRect intersection_rect(5, 5, 100, 80);
+  blink::FrameOcclusionState occlusion_state =
+      blink::FrameOcclusionState::kPossiblyOccluded;
+  test_frame_connector_->SetViewportIntersection(
+      intersection_rect, intersection_rect, occlusion_state);
 
   MockRenderProcessHost* process =
       static_cast<MockRenderProcessHost*>(widget_host_->GetProcess());
@@ -235,11 +241,15 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
       process->sink().GetUniqueMessageMatching(
           WidgetMsg_SetViewportIntersection::ID);
   ASSERT_TRUE(intersection_update);
-  std::tuple<gfx::Rect, gfx::Rect, blink::FrameOcclusionState> sent_rects;
+  std::tuple<blink::ViewportIntersectionState> intersection_state;
 
-  WidgetMsg_SetViewportIntersection::Read(intersection_update, &sent_rects);
-  EXPECT_EQ(intersection_rect, std::get<0>(sent_rects));
-  EXPECT_EQ(intersection_rect, std::get<1>(sent_rects));
+  WidgetMsg_SetViewportIntersection::Read(intersection_update,
+                                          &intersection_state);
+  EXPECT_EQ(intersection_rect,
+            std::get<0>(intersection_state).viewport_intersection);
+  EXPECT_EQ(intersection_rect,
+            std::get<0>(intersection_state).compositor_visible_rect);
+  EXPECT_EQ(occlusion_state, std::get<0>(intersection_state).occlusion_state);
 }
 
 class RenderWidgetHostViewChildFrameZoomForDSFTest

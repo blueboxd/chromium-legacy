@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -75,6 +76,30 @@ bool HasJavascriptMimeType(const Response* response) {
   return MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type);
 }
 
+enum class CodeCachePolicy {
+  // Use the default policy.  Currently that policy generates full code cache
+  // when a script is stored during service worker install.
+  kAuto,
+  // Do not generate code cache when putting a script in cache_storage.
+  kNone,
+};
+
+CodeCachePolicy GetCodeCachePolicy(const Response* response) {
+  if (!RuntimeEnabledFeatures::CacheStorageCodeCacheHintEnabled())
+    return CodeCachePolicy::kAuto;
+
+  String header_name(
+      features::kCacheStorageCodeCacheHintHeaderName.Get().data());
+  String header_value;
+  if (!response->InternalHeaderList()->Get(header_name, header_value))
+    return CodeCachePolicy::kAuto;
+
+  if (header_value.LowerASCII() == "none")
+    return CodeCachePolicy::kNone;
+
+  return CodeCachePolicy::kAuto;
+}
+
 bool ShouldGenerateV8CodeCache(ScriptState* script_state,
                                const Response* response) {
   ExecutionContext* context = ExecutionContext::From(script_state);
@@ -82,14 +107,20 @@ bool ShouldGenerateV8CodeCache(ScriptState* script_state,
   if (!global_scope)
     return false;
 
-  if (!global_scope->IsInstalling())
+  if (!response->InternalBodyBuffer())
     return false;
 
   if (!HasJavascriptMimeType(response))
     return false;
 
-  if (!response->InternalBodyBuffer())
+  auto policy = GetCodeCachePolicy(response);
+  if (policy == CodeCachePolicy::kNone)
     return false;
+
+  DCHECK_EQ(policy, CodeCachePolicy::kAuto);
+  if (!global_scope->IsInstalling())
+    return false;
+
   return true;
 }
 

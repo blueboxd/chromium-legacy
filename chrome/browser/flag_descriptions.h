@@ -1516,6 +1516,9 @@ extern const char kExploreSitesDescription[];
 extern const char kGamesHubName[];
 extern const char kGamesHubDescription[];
 
+extern const char kHomepageLocationName[];
+extern const char kHomepageLocationDescription[];
+
 extern const char kInterestFeedNotificationsName[];
 extern const char kInterestFeedNotificationsDescription[];
 

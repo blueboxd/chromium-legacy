@@ -200,7 +200,7 @@ Page::Page(PageClients& page_clients)
       tab_key_cycles_through_elements_(true),
       paused_(false),
       device_scale_factor_(1),
-      is_hidden_(false),
+      visibility_state_(PageVisibilityState::kVisible),
       is_ordinary_(false),
       page_lifecycle_state_(kDefaultPageLifecycleState),
       is_cursor_visible_(true),
@@ -496,24 +496,29 @@ void Page::VisitedStateChanged(LinkHash link_hash) {
   }
 }
 
-void Page::SetIsHidden(bool hidden, bool is_initial_state) {
-  if (is_hidden_ == hidden)
+void Page::SetVisibilityState(PageVisibilityState visibility_state,
+                              bool is_initial_state) {
+  if (visibility_state_ == visibility_state)
     return;
-  is_hidden_ = hidden;
+  visibility_state_ = visibility_state;
 
   if (is_initial_state)
     return;
 
   NotifyPageVisibilityChanged();
   if (main_frame_) {
-    if (IsPageVisible())
+    if (visibility_state_ == PageVisibilityState::kVisible)
       RestoreSVGImageAnimations();
     main_frame_->DidChangeVisibilityState();
   }
 }
 
+PageVisibilityState Page::GetVisibilityState() const {
+  return visibility_state_;
+}
+
 bool Page::IsPageVisible() const {
-  return !is_hidden_;
+  return visibility_state_ == PageVisibilityState::kVisible;
 }
 
 void Page::SetLifecycleState(PageLifecycleState state) {

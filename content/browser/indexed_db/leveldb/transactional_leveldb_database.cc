@@ -12,6 +12,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -114,12 +115,8 @@ leveldb::Status TransactionalLevelDBDatabase::Put(const StringPiece& key,
   const leveldb::Status s =
       db()->Put(write_options, leveldb_env::MakeSlice(key),
                 leveldb_env::MakeSlice(*value));
-  if (!s.ok())
-    LOG(ERROR) << "LevelDB put failed: " << s.ToString();
-  else
-    UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.PutTime",
-                        base::TimeTicks::Now() - begin_time);
-
+  UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.PutTime",
+                      base::TimeTicks::Now() - begin_time);
   EvictAllIterators();
   last_modified_ = clock_->Now();
   return s;
@@ -131,8 +128,6 @@ leveldb::Status TransactionalLevelDBDatabase::Remove(const StringPiece& key) {
 
   const leveldb::Status s =
       db()->Delete(write_options, leveldb_env::MakeSlice(key));
-  if (!s.ok() && !s.IsNotFound())
-    LOG(ERROR) << "LevelDB remove failed: " << s.ToString();
 
   EvictAllIterators();
   last_modified_ = clock_->Now();
@@ -151,10 +146,8 @@ leveldb::Status TransactionalLevelDBDatabase::Get(const StringPiece& key,
     *found = true;
     return s;
   }
-  if (s.IsNotFound())
+  if (LIKELY(s.IsNotFound()))
     return leveldb::Status::OK();
-  indexed_db::ReportLevelDBError("WebCore.IndexedDB.LevelDBReadErrors", s);
-  LOG(ERROR) << "LevelDB get failed: " << s.ToString();
   return s;
 }
 
@@ -167,13 +160,8 @@ leveldb::Status TransactionalLevelDBDatabase::Write(
 
   const leveldb::Status s =
       db()->Write(write_options, write_batch->write_batch_.get());
-  if (!s.ok()) {
-    indexed_db::ReportLevelDBError("WebCore.IndexedDB.LevelDBWriteErrors", s);
-    LOG(ERROR) << "LevelDB write failed: " << s.ToString();
-  } else {
-    UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.WriteTime",
-                        base::TimeTicks::Now() - begin_time);
-  }
+  UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.WriteTime",
+                      base::TimeTicks::Now() - begin_time);
   EvictAllIterators();
   last_modified_ = clock_->Now();
   return s;

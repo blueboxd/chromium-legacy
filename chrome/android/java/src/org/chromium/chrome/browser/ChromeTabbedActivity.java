@@ -112,6 +112,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.SearchEngineChoiceNotification;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
@@ -800,7 +801,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     private void createToolbarButtonInProductHelpController() {
         try (TraceEvent e = TraceEvent.scoped(
                      "ChromeTabbedActivity.createToolbarButtonInProductHelpController")) {
-            ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
+            SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
             // Promos can only be shown when we start with ACTION_MAIN intent and
             // after FRE is complete. Native initialization can finish before the FRE flow is
             // complete, and this will only show promos on the second opportunity. This is

@@ -32,6 +32,7 @@ class ThumbnailTabHelper
 
  private:
   class ThumanailImageImpl;
+  class ScopedCapture;
   friend class content::WebContentsUserData<ThumbnailTabHelper>;
   friend class ThumanailImageImpl;
 
@@ -70,6 +71,8 @@ class ThumbnailTabHelper
   void OnVisibilityChanged(content::Visibility visibility) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void RenderViewReady() override;
+  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
 
   // viz::mojom::FrameSinkVideoConsumer:
   void OnFrameCaptured(
@@ -121,6 +124,10 @@ class ThumbnailTabHelper
   // Captures frames from the WebContents while it's hidden. The capturer count
   // of the WebContents is incremented/decremented when a capturer is set/unset.
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> video_capturer_;
+
+  // Scoped request for video capture. Ensures we always decrement the counter
+  // once per increment.
+  std::unique_ptr<ScopedCapture> scoped_capture_;
 
   // The thumbnail maintained by this instance.
   scoped_refptr<ThumbnailImage> thumbnail_ =

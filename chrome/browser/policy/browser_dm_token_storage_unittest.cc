@@ -27,17 +27,73 @@ constexpr char kEnrollmentToken2[] = "fake-enrollment-token-2";
 constexpr char kDMToken1[] = "fake-dm-token-1";
 constexpr char kDMToken2[] = "fake-dm-token-2";
 
-}  // namespace
-
-class BrowserDMTokenStorageTest : public testing::Test {
+class BrowserDMTokenStorageTestBase {
  public:
-  BrowserDMTokenStorageTest()
-      : storage_(kClientId1, kEnrollmentToken1, kDMToken1, false) {}
+  BrowserDMTokenStorageTestBase(const std::string& client_id,
+                                const std::string& enrollment_token,
+                                const std::string& dm_token,
+                                const bool enrollment_error_option)
+      : storage_(client_id,
+                 enrollment_token,
+                 dm_token,
+                 enrollment_error_option) {}
   FakeBrowserDMTokenStorage storage_;
 
  private:
   content::BrowserTaskEnvironment task_environment_;
 };
+
+class BrowserDMTokenStorageTest : public BrowserDMTokenStorageTestBase,
+                                  public testing::Test {
+ public:
+  BrowserDMTokenStorageTest()
+      : BrowserDMTokenStorageTestBase(kClientId1,
+                                      kEnrollmentToken1,
+                                      kDMToken1,
+                                      false) {}
+};
+
+struct StoreAndRetrieveTestParams {
+ public:
+  StoreAndRetrieveTestParams(const std::string& dm_token_to_store,
+                             const std::string& expected_retrieved_dm_token,
+                             bool expect_valid,
+                             bool expect_invalid,
+                             bool expect_empty)
+      : dm_token_to_store(dm_token_to_store),
+        expected_retrieved_dm_token(expected_retrieved_dm_token),
+        expect_valid(expect_valid),
+        expect_invalid(expect_invalid),
+        expect_empty(expect_empty) {}
+
+  std::string dm_token_to_store;
+  std::string expected_retrieved_dm_token;
+  bool expect_valid;
+  bool expect_invalid;
+  bool expect_empty;
+};
+
+class BrowserDMTokenStorageStoreAndRetrieveTest
+    : public BrowserDMTokenStorageTestBase,
+      public testing::TestWithParam<StoreAndRetrieveTestParams> {
+ public:
+  BrowserDMTokenStorageStoreAndRetrieveTest()
+      : BrowserDMTokenStorageTestBase(kClientId1,
+                                      kEnrollmentToken1,
+                                      GetParam().dm_token_to_store,
+                                      false) {}
+};
+
+}  // namespace
+
+INSTANTIATE_TEST_SUITE_P(
+    BrowserDMTokenStorageStoreAndRetrieveTest,
+    BrowserDMTokenStorageStoreAndRetrieveTest,
+    testing::Values(
+        StoreAndRetrieveTestParams(kDMToken1, kDMToken1, true, false, false),
+        StoreAndRetrieveTestParams(kDMToken2, kDMToken2, true, false, false),
+        StoreAndRetrieveTestParams("INVALID_DM_TOKEN", "", false, true, false),
+        StoreAndRetrieveTestParams("", "", false, false, true)));
 
 TEST_F(BrowserDMTokenStorageTest, RetrieveClientId) {
   EXPECT_EQ(kClientId1, storage_.RetrieveClientId());
@@ -56,12 +112,31 @@ TEST_F(BrowserDMTokenStorageTest, RetrieveEnrollmentToken) {
   EXPECT_EQ(kEnrollmentToken1, storage_.RetrieveEnrollmentToken());
 }
 
-TEST_F(BrowserDMTokenStorageTest, RetrieveDMToken) {
-  EXPECT_EQ(kDMToken1, storage_.RetrieveDMToken());
+TEST_P(BrowserDMTokenStorageStoreAndRetrieveTest, StoreDMToken) {
+  storage_.SetDMToken(GetParam().dm_token_to_store);
+  auto dm_token = storage_.RetrieveBrowserDMToken();
+  if (GetParam().expect_valid || GetParam().expect_empty) {
+    EXPECT_EQ(GetParam().expected_retrieved_dm_token, dm_token.value());
+  }
+  EXPECT_EQ(GetParam().expect_valid, dm_token.is_valid());
+  EXPECT_EQ(GetParam().expect_invalid, dm_token.is_invalid());
+  EXPECT_EQ(GetParam().expect_empty, dm_token.is_empty());
 
   // The DM token should be cached in memory and not read from the system again.
-  storage_.SetDMToken(kDMToken2);
-  EXPECT_EQ(kDMToken1, storage_.RetrieveDMToken());
+  storage_.SetDMToken("not_saved");
+  if (GetParam().expect_valid || GetParam().expect_empty) {
+    EXPECT_EQ(GetParam().expected_retrieved_dm_token, dm_token.value());
+  }
+}
+
+TEST_P(BrowserDMTokenStorageStoreAndRetrieveTest, RetrieveDMToken) {
+  auto dm_token = storage_.RetrieveBrowserDMToken();
+  if (GetParam().expect_valid || GetParam().expect_empty) {
+    EXPECT_EQ(GetParam().expected_retrieved_dm_token, dm_token.value());
+  }
+  EXPECT_EQ(GetParam().expect_valid, dm_token.is_valid());
+  EXPECT_EQ(GetParam().expect_invalid, dm_token.is_invalid());
+  EXPECT_EQ(GetParam().expect_empty, dm_token.is_empty());
 }
 
 TEST_F(BrowserDMTokenStorageTest, ShouldDisplayErrorMessageOnFailure) {

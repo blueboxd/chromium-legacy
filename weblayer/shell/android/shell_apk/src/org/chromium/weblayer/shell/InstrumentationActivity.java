@@ -22,11 +22,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import org.chromium.weblayer.BrowserCallback;
-import org.chromium.weblayer.BrowserController;
-import org.chromium.weblayer.BrowserFragmentController;
+import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.ListenableFuture;
 import org.chromium.weblayer.Profile;
+import org.chromium.weblayer.Tab;
+import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
 
@@ -42,20 +42,20 @@ public class InstrumentationActivity extends FragmentActivity {
     public static final String EXTRA_PROFILE_NAME = "EXTRA_PROFILE_NAME";
 
     private Profile mProfile;
-    private BrowserFragmentController mBrowserFragmentController;
-    private BrowserController mBrowserController;
+    private Browser mBrowser;
+    private Tab mTab;
     private EditText mUrlView;
     private View mMainView;
     private int mMainViewId;
     private ViewGroup mTopContentsContainer;
     private IntentInterceptor mIntentInterceptor;
 
-    public BrowserController getBrowserController() {
-        return mBrowserController;
+    public Tab getTab() {
+        return mTab;
     }
 
-    public BrowserFragmentController getBrowserFragmentController() {
-        return mBrowserFragmentController;
+    public Browser getBrowser() {
+        return mBrowser;
     }
 
     /** Interface used to intercept intents for testing. */
@@ -127,13 +127,13 @@ public class InstrumentationActivity extends FragmentActivity {
         if (isFinishing() || isDestroyed()) return;
 
         Fragment fragment = getOrCreateBrowserFragment(savedInstanceState);
-        mBrowserFragmentController = BrowserFragmentController.fromFragment(fragment);
-        mProfile = mBrowserFragmentController.getProfile();
+        mBrowser = Browser.fromFragment(fragment);
+        mProfile = mBrowser.getProfile();
 
-        mBrowserFragmentController.setTopView(mTopContentsContainer);
+        mBrowser.setTopView(mTopContentsContainer);
 
-        mBrowserController = mBrowserFragmentController.getActiveBrowserController();
-        mBrowserController.registerBrowserCallback(new BrowserCallback() {
+        mTab = mBrowser.getActiveTab();
+        mTab.registerTabCallback(new TabCallback() {
             @Override
             public void visibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
@@ -174,7 +174,7 @@ public class InstrumentationActivity extends FragmentActivity {
     }
 
     public void loadUrl(String url) {
-        mBrowserController.getNavigationController().navigate(Uri.parse(url));
+        mTab.getNavigationController().navigate(Uri.parse(url));
         mUrlView.clearFocus();
     }
 

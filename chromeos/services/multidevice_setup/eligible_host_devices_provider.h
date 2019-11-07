@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/services/multidevice_setup/device_with_connectivity_status.h"
+#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 
 namespace chromeos {
 
@@ -28,10 +30,8 @@ class EligibleHostDevicesProvider {
   // contact time with the server). In this context, this means that the
   // devices have a SoftwareFeatureState of kSupported or kEnabled for the
   // BETTER_TOGETHER_HOST feature.
-  // TODO(themaxli): This should return a new type (instead of a list of
-  // RemoteDeviceRef) which includes OnlineStatus for display in the UI
-  virtual multidevice::RemoteDeviceRefList GetEligibleActiveHostDevices()
-      const = 0;
+  virtual multidevice::DeviceWithConnectivityStatusList
+  GetEligibleActiveHostDevices() const = 0;
 
  protected:
   EligibleHostDevicesProvider() = default;

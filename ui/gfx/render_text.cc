@@ -194,6 +194,116 @@ void RestoreBreakList(RenderText* render_text, BreakList<T>* break_list) {
   }
 }
 
+// Determines the equivalent codepoint (same rank) at |text[index]| in
+// |other_text|. The size of each codepoint may no longer match due to elision,
+// truncation or revision but their ordering is still the same. The following
+// code assumes that |other_text| is a transformation from |text| that preserves
+// the number and ordering of codepoints. Replacing a 1x with a 2x character
+// codepoint is valid, however replacing one codepoint with two codepoints is
+// not (see http://crbug.com/1021720).
+size_t GetTextIndexForOtherText(const base::string16& text,
+                                size_t index,
+                                const base::string16& other_text) {
+  // Move index to the beginning of the surrogate pair, if needed.
+  U16_SET_CP_START(text.data(), 0, index);
+
+  // Iterates through codepoints in both strings until we reach |index| in
+  // |text|.
+  base::i18n::UTF16CharIterator text_iter(&text);
+  base::i18n::UTF16CharIterator other_text_iter(&other_text);
+  while (!text_iter.end() && !other_text_iter.end()) {
+    // Codepoint at |index| is found, returns the corresponding index in
+    // |other_text|.
+    if (text_iter.array_pos() == static_cast<int32_t>(index))
+      return other_text_iter.array_pos();
+
+    // Move both iterator to the next codepoints.
+    if (!text_iter.Advance() || !other_text_iter.Advance())
+      break;
+  }
+
+  // The index is out-of-bound. Returns the end of other_text.
+  return other_text.length();
+}
+
+// Returns the codepoint at text[index]. This function handles that codepoint
+// can be one or two characters. It also handles offset in a middle of a
+// surrogate pair.
+UChar32 GetCodepointAtIndex(const base::string16& text, size_t index) {
+  // Move index to the beginning of the surrogate pair, if needed.
+  U16_SET_CP_START(text.data(), 0, index);
+  // Retrieve the codepoint at index.
+  UChar32 codepoint;
+  U16_NEXT(text.data(), index, text.length(), codepoint);
+  return codepoint;
+}
+
+// Replace a the codepoint at text[index] by the codepoint specified in
+// |new_codepoint|. This function handles that codepoint can be one or two
+// characters and enforce to replace a codepoint by a single codepoint.
+void ReplaceCodepointAtIndex(size_t index,
+                             UChar32 new_codepoint,
+                             base::string16* text) {
+  // Move index to the beginning of the surrogate pair, if needed.
+  U16_SET_CP_START(text->data(), 0, index);
+
+  // Gets the range to be replaced.
+  size_t end = index;
+  UChar32 original_codepoint;
+  U16_NEXT(text->data(), end, text->length(), original_codepoint);
+
+  DCHECK_LT(index, end);
+  DCHECK_LT(index, text->length());
+  DCHECK_LE(end, text->length());
+
+  // Encode the codepoint in utf16 (e.g. base::char16).
+  base::char16 replace_chars[U16_MAX_LENGTH];
+  size_t replace_length = U16_LENGTH(new_codepoint);
+  if (replace_length == 1) {
+    replace_chars[0] = new_codepoint;
+  } else {
+    replace_chars[0] = U16_LEAD(new_codepoint);
+    replace_chars[1] = U16_TRAIL(new_codepoint);
+  }
+
+  // Replace the codepoint range by the new codepoint characters.
+  text->replace(index, U16_LENGTH(original_codepoint), replace_chars,
+                replace_length);
+}
+
+// Create an obscured text for the given |text| where characters are replaced by
+// an bullet. In multiline, the newline character is not replaced. If
+// |reveal_index| is specify, the codepoint at |reveal_index| kept its original
+// value.
+base::string16 CreateObscuredText(const base::string16& text,
+                                  bool multiline,
+                                  int reveal_index) {
+  // Make an initial string with the same amount of characters.
+  size_t obscured_text_length =
+      static_cast<size_t>(UTF16IndexToOffset(text, 0, text.length()));
+  base::string16 output_text(obscured_text_length,
+                             RenderText::kPasswordReplacementChar);
+
+  // In multiline, do not replace the newline characters since they are used to
+  // split lines.
+  if (multiline) {
+    for (size_t i = 0; i < text.length(); ++i) {
+      if (text[i] == '\n')
+        output_text[i] = '\n';
+    }
+  }
+
+  // If needed, reveal the character at position |reveal_index|.
+  if (reveal_index >= 0 && reveal_index < static_cast<int>(text.length())) {
+    UChar32 original_codepoint = GetCodepointAtIndex(text, reveal_index);
+    size_t output_index =
+        GetTextIndexForOtherText(text, reveal_index, output_text);
+    ReplaceCodepointAtIndex(output_index, original_codepoint, &output_text);
+  }
+
+  return output_text;
+}
+
 // Replace the codepoints not handled by RenderText by an other compatible
 // codepoint. Replace the unicode control characters ISO 6429 (block C0) by
 // their corresponding visual symbols. Control characters can't be displayed but
@@ -229,48 +339,10 @@ void ReplaceControlCharactersWithSymbols(bool multiline, base::string16* text) {
       const int8_t codepoint_category = u_charType(codepoint);
       if (codepoint_category == U_PRIVATE_USE_CHAR ||
           codepoint_category == U_CONTROL_CHAR) {
-        (*text)[offset] = kReplacementCodepoint;
-        // We may need to replace the surrogate pair.
-        if (next_offset != offset + 1)
-          (*text)[offset + 1] = kReplacementCodepoint;
+        ReplaceCodepointAtIndex(offset, kReplacementCodepoint, text);
       }
     }
   }
-}
-
-// Determines the equivalent codepoint (same rank) at |text[index]| in
-// |other_text|. The size of each codepoint may no longer match due to elision,
-// truncation or revision but their ordering is still the same. The following
-// code assumes that |other_text| is a transformation from |text| that preserves
-// the number and ordering of codepoints. Replacing a 1x with a 2x character
-// codepoint is valid, however replacing one codepoint with two codepoints is
-// not (see http://crbug.com/1021720).
-size_t GetTextIndexForOtherText(const base::string16& text,
-                                size_t index,
-                                const base::string16& other_text) {
-  // Iterates through codepoints in both strings until we reach |index| in
-  // |text|.
-  base::i18n::UTF16CharIterator text_iter(&text);
-  base::i18n::UTF16CharIterator other_text_iter(&other_text);
-  size_t previous_index = 0;
-  do {
-    // Codepoint at |index| is found, returns the corresponding index in
-    // |other_text|.
-    if (text_iter.array_pos() == static_cast<int32_t>(index))
-      return other_text_iter.array_pos();
-    // The character at index is part of the previous codepoint (e.g. Surrogate
-    // pair). Returns the previous index.
-    if (text_iter.array_pos() > static_cast<int32_t>(index))
-      return previous_index;
-
-    // Move both iterator to the next codepoints.
-    previous_index = other_text_iter.array_pos();
-    if (!other_text_iter.Advance())
-      break;
-  } while (text_iter.Advance());
-
-  // The index is out-of-bound. Returns the end of other_text.
-  return other_text.length();
 }
 
 }  // namespace
@@ -1701,25 +1773,8 @@ void RenderText::OnTextAttributeChanged() {
   line_breaks_.SetMax(0);
 
   if (obscured_) {
-    size_t obscured_text_length =
-        static_cast<size_t>(UTF16IndexToOffset(text_, 0, text_.length()));
-    layout_text_.assign(obscured_text_length, kPasswordReplacementChar);
-
-    if (obscured_reveal_index_ >= 0 &&
-        obscured_reveal_index_ < static_cast<int>(text_.length())) {
-      // Gets the index range in |text_| to be revealed.
-      size_t start = obscured_reveal_index_;
-      U16_SET_CP_START(text_.data(), 0, start);
-      size_t end = start;
-      UChar32 unused_char;
-      U16_NEXT(text_.data(), end, text_.length(), unused_char);
-
-      // Gets the index in |layout_text_| to be replaced.
-      const size_t cp_start =
-          static_cast<size_t>(UTF16IndexToOffset(text_, 0, start));
-      if (layout_text_.length() > cp_start)
-        layout_text_.replace(cp_start, 1, text_.substr(start, end - start));
-    }
+    layout_text_ =
+        CreateObscuredText(text_, multiline_, obscured_reveal_index_);
   } else {
     layout_text_ = text_;
   }

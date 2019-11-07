@@ -17,7 +17,6 @@
 #include "chrome/browser/browsing_data/browsing_data_history_observer_service.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
 #include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -109,26 +108,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
-#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
-#include "chrome/browser/chromeos/bluetooth/debug_logs_manager_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
-#include "chrome/browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h"
-#include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
-#include "chrome/browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_engagement_metrics_service.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder_factory.h"
-#include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
-#include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
-#include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
-#include "chrome/browser/chromeos/printing/cups_proxy_service_manager_factory.h"
-#include "chrome/browser/chromeos/printing/history/print_job_history_service_factory.h"
-#include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
-#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
-#include "chrome/browser/chromeos/tether/tether_service_factory.h"
-#include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
+#include "chrome/browser/chromeos/browser_context_keyed_service_factories.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #endif
@@ -151,16 +131,11 @@
 #include "apps/browser_context_keyed_service_factories.h"
 #include "chrome/browser/apps/platform_apps/api/browser_context_keyed_service_factories.h"
 #include "chrome/browser/apps/platform_apps/browser_context_keyed_service_factories.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_factory_impl.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_factory.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
-#include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
-#endif
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
@@ -225,6 +200,10 @@ void ChromeBrowserMainExtraPartsProfiles::
   chrome_apps::api::EnsureAPIBrowserContextKeyedServiceFactoriesBuilt();
 #endif
 
+#if defined(OS_CHROMEOS)
+  chromeos::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+#endif
+
 #if BUILDFLAG(ENABLE_APP_LIST)
   app_list::AppListSyncableServiceFactory::GetInstance();
 #endif
@@ -238,9 +217,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   AccountConsistencyModeManagerFactory::GetInstance();
   AccountInvestigatorFactory::GetInstance();
   AccountReconcilorFactory::GetInstance();
-#if defined(OS_CHROMEOS)
-  arc::ArcAccessibilityHelperBridge::CreateFactory();
-#endif
   AutocompleteClassifierFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
 #if BUILDFLAG(ENABLE_BACKGROUND_CONTENTS)
@@ -255,9 +231,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   CertificateReportingServiceFactory::GetInstance();
   ChromeBrowsingDataRemoverDelegateFactory::GetInstance();
-#if defined(OS_CHROMEOS)
-  chromeos::android_sms::AndroidSmsServiceFactory::GetInstance();
-#endif
   ChromeSigninClientFactory::GetInstance();
   ClientHintsFactory::GetInstance();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
@@ -270,31 +243,8 @@ void ChromeBrowserMainExtraPartsProfiles::
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   DownloadCoreServiceFactory::GetInstance();
   DownloadServiceFactory::GetInstance();
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#if defined(OS_CHROMEOS)
-  chromeos::EasyUnlockServiceFactory::GetInstance();
-#endif
-#endif
 #if defined(OS_ANDROID)
   explore_sites::ExploreSitesServiceFactory::GetInstance();
-#endif
-#if defined(OS_CHROMEOS)
-  chromeos::AccountManagerMigratorFactory::GetInstance();
-  chromeos::bluetooth::DebugLogsManagerFactory::GetInstance();
-  chromeos::CupsPrintJobManagerFactory::GetInstance();
-  chromeos::CupsPrintersManagerFactory::GetInstance();
-  chromeos::PrintJobHistoryServiceFactory::GetInstance();
-  chromeos::SyncedPrintersManagerFactory::GetInstance();
-  chromeos::smb_client::SmbServiceFactory::GetInstance();
-  crostini::CrostiniRegistryServiceFactory::GetInstance();
-  extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
-  extensions::PrintingAPIHandler::GetFactoryInstance();
-  extensions::PrintJobFinishedEventDispatcher::GetFactoryInstance();
-  extensions::VerifyTrustAPI::GetFactoryInstance();
-  TetherServiceFactory::GetInstance();
-#if defined(USE_CUPS)
-  chromeos::CupsProxyServiceManagerFactory::GetInstance();
-#endif
 #endif
   FaviconServiceFactory::GetInstance();
   HistoryUiFaviconRequestHandlerFactory::GetInstance();
@@ -328,15 +278,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserServiceFactory::GetInstance();
 #endif
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
-  std::unique_ptr<extensions::NetworkingPrivateUIDelegateFactoryImpl>
-      networking_private_ui_delegate_factory(
-          new extensions::NetworkingPrivateUIDelegateFactoryImpl);
-  extensions::NetworkingPrivateDelegateFactory::GetInstance()
-      ->SetUIDelegateFactory(std::move(networking_private_ui_delegate_factory));
-#endif
-#endif
   LanguageModelManagerFactory::GetInstance();
 #if !defined(OS_ANDROID)
   LoginUIServiceFactory::GetInstance();
@@ -369,16 +310,8 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginPrefsFactory::GetInstance();
 #endif
-#if defined(OS_CHROMEOS)
-  plugin_vm::PluginVmEngagementMetricsService::Factory::GetInstance();
-#endif
   PrefsTabHelper::GetServiceInstance();
-#if defined(OS_CHROMEOS)
-  chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance();
-  policy::PolicyCertServiceFactory::GetInstance();
-  policy::UserCloudPolicyTokenForwarderFactory::GetInstance();
-  policy::UserNetworkConfigurationUpdaterFactory::GetInstance();
-#else  // !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
   policy::UserPolicySigninServiceFactory::GetInstance();
 #endif
   policy::UserCloudPolicyInvalidatorFactory::GetInstance();

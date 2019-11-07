@@ -83,7 +83,8 @@ class TracingRenderWidgetHost : public RenderWidgetHostImpl {
                              process,
                              routing_id,
                              std::move(widget),
-                             hidden) {
+                             hidden,
+                             std::make_unique<FrameTokenMessageQueue>()) {
     ui::LatencyTracker::SetLatencyInfoProcessorForTesting(base::BindRepeating(
         &TracingRenderWidgetHost::HandleLatencyInfoAfterGpuSwap,
         base::Unretained(this)));

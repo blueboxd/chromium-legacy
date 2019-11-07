@@ -1951,6 +1951,10 @@ void TabStrip::UngroupAllTabsInGroup(TabGroupId group) {
 void TabStrip::AddNewTabInGroup(TabGroupId group) {
   controller_->AddNewTabInGroup(group);
 }
+
+const Browser* TabStrip::GetBrowser() {
+  return controller_->GetBrowser();
+}
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, views::AccessiblePaneView overrides:
 

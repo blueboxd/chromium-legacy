@@ -178,7 +178,6 @@
 #include "content/browser/renderer_host/browser_compositor_view_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
-#include "ui/base/now_playing/remote_command_center_delegate.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1462,10 +1461,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
 
   if (MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled()) {
-#if defined(OS_MACOSX)
-    remote_command_center_delegate_ =
-        now_playing::RemoteCommandCenterDelegate::Create();
-#endif
     media_keys_listener_manager_ =
         std::make_unique<MediaKeysListenerManagerImpl>(GetSystemConnector());
   }

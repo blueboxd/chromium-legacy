@@ -37,6 +37,7 @@ cr.define('print_preview', function() {
    *   decimalDelimiter: string,
    *   unitType: !print_preview.MeasurementSystemUnitType,
    *   previewModifiable: boolean,
+   *   previewIsFromArc: boolean,
    *   previewIsPdf: boolean,
    *   documentTitle: string,
    *   documentHasSelection: boolean,

@@ -131,24 +131,6 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
                        base::Unretained(this)));
   }
 
-  // Helper function to call WillProcessResponse on |handle|. If this function
-  // returns DEFER, |callback_result_| will be set to the actual result of the
-  // throttle checks when they are finished.
-  // TODO(clamy): this should also simulate that WillStartRequest was called if
-  // it has not been called before.
-  void SimulateWillProcessResponse() {
-    was_callback_called_ = false;
-    callback_result_ = NavigationThrottle::DEFER;
-
-    // It's safe to use base::Unretained since the NavigationHandle is owned by
-    // the NavigationRequestTest. The ConnectionInfo is different from that sent
-    // to WillRedirectRequest to verify that it's correctly plumbed in both
-    // cases.
-    request_->WillProcessResponse(
-        base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
-                       base::Unretained(this)));
-  }
-
   // Whether the callback was called.
   bool was_callback_called() const { return was_callback_called_; }
 
@@ -157,13 +139,7 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     return callback_result_;
   }
 
-  NavigationRequest::NavigationHandleState state() {
-    return request_->handle_state();
-  }
-
-  NavigationRequest::NavigationState request_state() {
-    return request_->state();
-  }
+  NavigationRequest::NavigationState state() { return request_->state(); }
 
   bool call_counts_match(TestNavigationThrottle* throttle,
                          int start,
@@ -306,19 +282,19 @@ TEST_F(NavigationRequestTest, SimpleDataChecksFailure) {
 TEST_F(NavigationRequestTest, CancelDeferredWillStart) {
   TestNavigationThrottle* test_throttle =
       CreateTestNavigationThrottle(NavigationThrottle::DEFER);
-  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, request_state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, state());
   EXPECT_TRUE(call_counts_match(test_throttle, 0, 0, 0, 0));
 
   // Simulate WillStartRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillStartRequest();
-  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, request_state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 0, 0));
 
   // Cancel the request. The callback should have been called.
   CancelDeferredNavigation(NavigationThrottle::CANCEL_AND_IGNORE);
-  EXPECT_EQ(NavigationRequest::CANCELING, request_state());
+  EXPECT_EQ(NavigationRequest::CANCELING, state());
   EXPECT_TRUE(was_callback_called());
   EXPECT_EQ(NavigationThrottle::CANCEL_AND_IGNORE, callback_result());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 0, 0));
@@ -329,19 +305,19 @@ TEST_F(NavigationRequestTest, CancelDeferredWillStart) {
 TEST_F(NavigationRequestTest, CancelDeferredWillRedirect) {
   TestNavigationThrottle* test_throttle =
       CreateTestNavigationThrottle(NavigationThrottle::DEFER);
-  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, request_state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, state());
   EXPECT_TRUE(call_counts_match(test_throttle, 0, 0, 0, 0));
 
   // Simulate WillRedirectRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillRedirectRequest();
-  EXPECT_EQ(NavigationRequest::WILL_REDIRECT_REQUEST, request_state());
+  EXPECT_EQ(NavigationRequest::WILL_REDIRECT_REQUEST, state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 0, 1, 0, 0));
 
   // Cancel the request. The callback should have been called.
   CancelDeferredNavigation(NavigationThrottle::CANCEL_AND_IGNORE);
-  EXPECT_EQ(NavigationRequest::CANCELING, request_state());
+  EXPECT_EQ(NavigationRequest::CANCELING, state());
   EXPECT_TRUE(was_callback_called());
   EXPECT_EQ(NavigationThrottle::CANCEL_AND_IGNORE, callback_result());
   EXPECT_TRUE(call_counts_match(test_throttle, 0, 1, 0, 0));
@@ -352,7 +328,7 @@ TEST_F(NavigationRequestTest, CancelDeferredWillRedirect) {
 TEST_F(NavigationRequestTest, CancelDeferredWillFail) {
   TestNavigationThrottle* test_throttle = CreateTestNavigationThrottle(
       TestNavigationThrottle::WILL_FAIL_REQUEST, NavigationThrottle::DEFER);
-  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, request_state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, state());
   EXPECT_TRUE(call_counts_match(test_throttle, 0, 0, 0, 0));
 
   // Simulate WillStartRequest.
@@ -362,13 +338,13 @@ TEST_F(NavigationRequestTest, CancelDeferredWillFail) {
   // Simulate WillFailRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillFailRequest(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST, request_state());
+  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST, state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 1, 0));
 
   // Cancel the request. The callback should have been called.
   CancelDeferredNavigation(NavigationThrottle::CANCEL_AND_IGNORE);
-  EXPECT_EQ(NavigationRequest::CANCELING, request_state());
+  EXPECT_EQ(NavigationRequest::CANCELING, state());
   EXPECT_TRUE(was_callback_called());
   EXPECT_EQ(NavigationThrottle::CANCEL_AND_IGNORE, callback_result());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 1, 0));
@@ -378,19 +354,19 @@ TEST_F(NavigationRequestTest, CancelDeferredWillFail) {
 TEST_F(NavigationRequestTest, CancelDeferredWillRedirectNoIgnore) {
   TestNavigationThrottle* test_throttle =
       CreateTestNavigationThrottle(NavigationThrottle::DEFER);
-  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, request_state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, state());
   EXPECT_TRUE(call_counts_match(test_throttle, 0, 0, 0, 0));
 
   // Simulate WillStartRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillStartRequest();
-  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, request_state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, state());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 0, 0));
 
   // Cancel the request. The callback should have been called with CANCEL, and
   // not CANCEL_AND_IGNORE.
   CancelDeferredNavigation(NavigationThrottle::CANCEL);
-  EXPECT_EQ(NavigationRequest::CANCELING, request_state());
+  EXPECT_EQ(NavigationRequest::CANCELING, state());
   EXPECT_TRUE(was_callback_called());
   EXPECT_EQ(NavigationThrottle::CANCEL, callback_result());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 0, 0));
@@ -401,7 +377,7 @@ TEST_F(NavigationRequestTest, CancelDeferredWillRedirectNoIgnore) {
 TEST_F(NavigationRequestTest, CancelDeferredWillFailNoIgnore) {
   TestNavigationThrottle* test_throttle = CreateTestNavigationThrottle(
       TestNavigationThrottle::WILL_FAIL_REQUEST, NavigationThrottle::DEFER);
-  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, request_state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, state());
   EXPECT_TRUE(call_counts_match(test_throttle, 0, 0, 0, 0));
 
   // Simulate WillStartRequest.
@@ -411,14 +387,14 @@ TEST_F(NavigationRequestTest, CancelDeferredWillFailNoIgnore) {
   // Simulate WillFailRequest. The request should be deferred. The callback
   // should not have been called.
   SimulateWillFailRequest(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST, request_state());
+  EXPECT_EQ(NavigationRequest::WILL_FAIL_REQUEST, state());
   EXPECT_FALSE(was_callback_called());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 1, 0));
 
   // Cancel the request. The callback should have been called with CANCEL, and
   // not CANCEL_AND_IGNORE.
   CancelDeferredNavigation(NavigationThrottle::CANCEL);
-  EXPECT_EQ(NavigationRequest::CANCELING, request_state());
+  EXPECT_EQ(NavigationRequest::CANCELING, state());
   EXPECT_TRUE(was_callback_called());
   EXPECT_EQ(NavigationThrottle::CANCEL, callback_result());
   EXPECT_TRUE(call_counts_match(test_throttle, 1, 0, 1, 0));

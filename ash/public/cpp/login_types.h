@@ -252,6 +252,9 @@ struct ASH_PUBLIC_EXPORT LoginUserInfo {
   // True if this user can be removed.
   bool can_remove = false;
 
+  // Show pin pad for password for this user or not.
+  bool show_pin_pad_for_password = false;
+
   // Contains the public account information if user type is PUBLIC_ACCOUNT.
   base::Optional<PublicAccountInfo> public_account_info;
 };

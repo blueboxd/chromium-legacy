@@ -654,13 +654,10 @@ class WebviewClientCertsLoginTest : public WebviewClientCertsLoginTestBase {
 // system slot is enabled in the sign-in frame. The server does not request
 // certificates signed by a specific authority.
 // TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_SigninFrameNoAuthorityGiven DISABLED_SigninFrameNoAuthorityGiven
-#else
-#define MAYBE_SigninFrameNoAuthorityGiven SigninFrameNoAuthorityGiven
-#endif
+// Flaky (timeout), especially (but not only) in debug builds or under
+// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameNoAuthorityGiven) {
+                       DISABLED_SigninFrameNoAuthorityGiven) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -683,15 +680,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // Test that client certificate autoselect selects the right certificate even
 // with multiple filters for the same pattern.
 // TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_SigninFrameCertMultipleFiltersAutoSelected \
-  DISABLED_SigninFrameCertMultipleFiltersAutoSelected
-#else
-#define MAYBE_SigninFrameCertMultipleFiltersAutoSelected \
-  SigninFrameCertMultipleFiltersAutoSelected
-#endif
+// Flaky (timeout), especially (but not only) in debug builds or under
+// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameCertMultipleFiltersAutoSelected) {
+                       DISABLED_SigninFrameCertMultipleFiltersAutoSelected) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -715,14 +707,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // Test that if no client certificate is auto-selected using policy on the
 // sign-in frame, the client does not send up any client certificate.
 // TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_SigninFrameCertNotAutoSelected \
-  DISABLED_SigninFrameCertNotAutoSelected
-#else
-#define MAYBE_SigninFrameCertNotAutoSelected SigninFrameCertNotAutoSelected
-#endif
+// Flaky (timeout), especially (but not only) in debug builds or under
+// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameCertNotAutoSelected) {
+                       DISABLED_SigninFrameCertNotAutoSelected) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -740,13 +728,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // system slot is enabled in the sign-in frame. The server requests
 // a certificate signed by a specific authority.
 // TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_SigninFrameAuthorityGiven DISABLED_SigninFrameAuthorityGiven
-#else
-#define MAYBE_SigninFrameAuthorityGiven SigninFrameAuthorityGiven
-#endif
+// Flaky (timeout), especially (but not only) in debug builds or under
+// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameAuthorityGiven) {
+                       DISABLED_SigninFrameAuthorityGiven) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -774,15 +759,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // a certificate signed by a specific authority. The client doesn't have a
 // matching certificate.
 // TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_SigninFrameAuthorityGivenNoMatchingCert \
-  DISABLED_SigninFrameAuthorityGivenNoMatchingCert
-#else
-#define MAYBE_SigninFrameAuthorityGivenNoMatchingCert \
-  SigninFrameAuthorityGivenNoMatchingCert
-#endif
+// Flaky (timeout), especially (but not only) in debug builds or under
+// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameAuthorityGivenNoMatchingCert) {
+                       DISABLED_SigninFrameAuthorityGivenNoMatchingCert) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -808,15 +788,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // known on the device (it has not been made available through device ONC
 // policy).
 // TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_SigninFrameIntermediateAuthorityUnknown \
-  DISABLED_SigninFrameIntermediateAuthorityUnknown
-#else
-#define MAYBE_SigninFrameIntermediateAuthorityUnknown \
-  SigninFrameIntermediateAuthorityUnknown
-#endif
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameIntermediateAuthorityUnknown) {
+                       DISABLED_SigninFrameIntermediateAuthorityUnknown) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -841,15 +814,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // issued by an intermediate authority, and the intermediate authority is
 // known on the device (it has been made available through device ONC policy).
 // TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_SigninFrameIntermediateAuthorityKnown \
-  DISABLED_SigninFrameIntermediateAuthorityKnown
-#else
-#define MAYBE_SigninFrameIntermediateAuthorityKnown \
-  SigninFrameIntermediateAuthorityKnown
-#endif
+// Flaky (timeout), especially (but not only) in debug builds or under
+// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameIntermediateAuthorityKnown) {
+                       DISABLED_SigninFrameIntermediateAuthorityKnown) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -1004,8 +972,14 @@ bool IsTpmTokenReady() {
 // Test that the system slot becomes initialized and the client certificate
 // authentication works in the sign-in frame after the TPM gets reported as
 // ready.
+// Flaky (timeout), in ASAN/LSAN. crbug.com/1022034
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_SystemSlotInitialization DISABLED_SystemSlotInitialization
+#else
+#define MAYBE_SystemSlotInitialization SystemSlotInitialization
+#endif
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsTokenLoadingLoginTest,
-                       SystemSlotInitialization) {
+                       MAYBE_SystemSlotInitialization) {
   ASSERT_NO_FATAL_FAILURE(PrepareSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;

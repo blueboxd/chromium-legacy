@@ -47,6 +47,7 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
   gfx::Size GetIdealSize() const;
 
   // views::Widget:
+  void OnMouseEvent(ui::MouseEvent* event) override;
   bool OnNativeWidgetActivationChanged(bool active) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 

@@ -860,9 +860,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
   navigation_request->StartNavigation(true);
   DCHECK(navigation_request->IsNavigationStarted());
 
-  // Update the state of the NavigationRequest to match the fact that the
-  // navigation just committed.
-  navigation_request->state_ = RESPONSE_STARTED;
   return navigation_request;
 }
 
@@ -1059,7 +1056,7 @@ NavigationRequest::NavigationRequest(
 NavigationRequest::~NavigationRequest() {
   TRACE_EVENT_ASYNC_END0("navigation", "NavigationRequest", this);
   ResetExpectedProcess();
-  if (state_ >= WILL_START_NAVIGATION && state_ < RESPONSE_STARTED) {
+  if (state_ >= WILL_START_NAVIGATION && state_ < READY_TO_COMMIT) {
     devtools_instrumentation::OnNavigationRequestFailed(
         *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   }
@@ -1198,7 +1195,6 @@ void NavigationRequest::BeginNavigation() {
     // it immediately.
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                  "ResponseStarted");
-    state_ = RESPONSE_STARTED;
 
     // Select an appropriate RenderFrameHost.
     render_frame_host_ =
@@ -1339,10 +1335,9 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
     TraceNavigationEnd();
   }
 
-  // Reset the states of the NavigationRequest, and the navigation_handle_id.
+  // Reset the state of the NavigationRequest, and the navigation_handle_id.
   StopCommitTimeout();
   state_ = NOT_STARTED;
-  handle_state_ = NOT_CREATED;
   processing_navigation_throttle_ = false;
   navigation_handle_id_ = 0;
 
@@ -1603,7 +1598,7 @@ void NavigationRequest::OnResponseStarted(
   DCHECK(response_head);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "OnResponseStarted");
-  state_ = RESPONSE_STARTED;
+  state_ = WILL_PROCESS_RESPONSE;
   response_head_ = response_head;
   response_body_ = std::move(response_body);
   ssl_info_ = response_head->head.ssl_info;
@@ -1887,7 +1882,7 @@ void NavigationRequest::OnRequestFailedInternal(
     bool collapse_frame) {
   DCHECK(state_ == WILL_START_NAVIGATION || state_ == WILL_START_REQUEST ||
          state_ == WILL_REDIRECT_REQUEST || state_ == WILL_PROCESS_RESPONSE ||
-         state_ == RESPONSE_STARTED || state_ == CANCELING ||
+         state_ == DID_COMMIT || state_ == CANCELING ||
          state_ == WILL_FAIL_REQUEST);
   DCHECK(!(status.error_code == net::ERR_ABORTED &&
            error_page_content.has_value()));
@@ -1906,7 +1901,7 @@ void NavigationRequest::OnRequestFailedInternal(
   // net_error is a certificate error.
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationRequest", this,
                                "OnRequestFailed", "error", status.error_code);
-  state_ = FAILED;
+  state_ = WILL_FAIL_REQUEST;
   processing_navigation_throttle_ = false;
 
   // Ensure the pending entry also gets discarded if it has no other active
@@ -2175,7 +2170,7 @@ void NavigationRequest::OnStartChecksComplete(
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
           report_raw_headers,
           navigating_frame_host->GetVisibilityState() ==
-              PageVisibilityState::kPrerender,
+              PageVisibilityState::kHiddenButPainting,
           upgrade_if_insecure_,
           blob_url_loader_factory_ ? blob_url_loader_factory_->Clone()
                                    : nullptr,
@@ -3140,9 +3135,9 @@ void NavigationRequest::WillProcessResponse(
     ThrottleChecksFinishedCallback callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "WillProcessResponse");
+  DCHECK_EQ(state_, WILL_PROCESS_RESPONSE);
 
   complete_callback_ = std::move(callback);
-  state_ = WILL_PROCESS_RESPONSE;
   processing_navigation_throttle_ = true;
 
   // Notify each throttle of the response.
@@ -3202,18 +3197,18 @@ void NavigationRequest::DidCommitNavigation(
       net_error_ != net::OK) {
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                  "DidCommitNavigation: error page");
-    handle_state_ = DID_COMMIT_ERROR_PAGE;
+    state_ = DID_COMMIT_ERROR_PAGE;
   } else {
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                  "DidCommitNavigation");
-    handle_state_ = DID_COMMIT;
+    state_ = DID_COMMIT;
   }
 
   StopCommitTimeout();
 
   // Record metrics for the time it took to commit the navigation if it was to
   // another document without error.
-  if (!IsSameDocument() && handle_state_ != DID_COMMIT_ERROR_PAGE) {
+  if (!IsSameDocument() && state_ != DID_COMMIT_ERROR_PAGE) {
     ui::PageTransition transition = common_params_->transition;
     base::Optional<bool> is_background =
         render_frame_host_->GetProcess()->IsProcessBackgrounded();
@@ -3230,8 +3225,7 @@ void NavigationRequest::DidCommitNavigation(
 
   // For successful navigations, ensure the frame owner element is no longer
   // collapsed as a result of a prior navigation.
-  if (handle_state_ != DID_COMMIT_ERROR_PAGE &&
-      !frame_tree_node()->IsMainFrame()) {
+  if (state_ != DID_COMMIT_ERROR_PAGE && !frame_tree_node()->IsMainFrame()) {
     // The last committed load in collapsed frames will be an error page with
     // |kUnreachableWebDataURL|. Same-document navigation should not be
     // possible.
@@ -3312,8 +3306,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   AddNetworkServiceDebugEvent(
       std::string("RTCN") +
       (render_frame_host_->GetProcess()->IsReady() ? "1" : "0"));
-  handle_state_ = READY_TO_COMMIT;
-  state_ = RESPONSE_STARTED;
+  state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
 
@@ -3352,7 +3345,7 @@ NavigationRequest::TakeAppCacheHandle() {
 }
 
 bool NavigationRequest::IsWaitingToCommit() {
-  return handle_state_ == NavigationRequest::READY_TO_COMMIT;
+  return state_ == READY_TO_COMMIT;
 }
 
 void NavigationRequest::RunCompleteCallback(
@@ -3387,7 +3380,7 @@ void NavigationRequest::StopCommitTimeout() {
 
 void NavigationRequest::RestartCommitTimeout() {
   commit_timeout_timer_.Stop();
-  if (handle_state_ >= DID_COMMIT)
+  if (state_ >= DID_COMMIT)
     return;
 
   RenderProcessHost* renderer_host =
@@ -3407,7 +3400,7 @@ void NavigationRequest::RestartCommitTimeout() {
 }
 
 void NavigationRequest::OnCommitTimeout() {
-  DCHECK_EQ(READY_TO_COMMIT, handle_state_);
+  DCHECK_EQ(READY_TO_COMMIT, state_);
   AddNetworkServiceDebugEvent("T");
 #if defined(OS_ANDROID)
   // Rate limit the number of stack dumps so we don't overwhelm our crash
@@ -3554,11 +3547,11 @@ net::IPEndPoint NavigationRequest::GetSocketAddress() {
 }
 
 bool NavigationRequest::HasCommitted() {
-  return handle_state_ == DID_COMMIT || handle_state_ == DID_COMMIT_ERROR_PAGE;
+  return state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE;
 }
 
 bool NavigationRequest::IsErrorPage() {
-  return handle_state_ == DID_COMMIT_ERROR_PAGE;
+  return state_ == DID_COMMIT_ERROR_PAGE;
 }
 
 net::HttpResponseInfo::ConnectionInfo NavigationRequest::GetConnectionInfo() {
@@ -3730,22 +3723,22 @@ net::NetworkIsolationKey NavigationRequest::GetNetworkIsolationKey() {
 
 bool NavigationRequest::HasSubframeNavigationEntryCommitted() {
   DCHECK(!frame_tree_node_->IsMainFrame());
-  DCHECK(handle_state_ == DID_COMMIT || handle_state_ == DID_COMMIT_ERROR_PAGE);
+  DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
   return subframe_entry_committed_;
 }
 
 bool NavigationRequest::DidReplaceEntry() {
-  DCHECK(handle_state_ == DID_COMMIT || handle_state_ == DID_COMMIT_ERROR_PAGE);
+  DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
   return did_replace_entry_;
 }
 
 bool NavigationRequest::ShouldUpdateHistory() {
-  DCHECK(handle_state_ == DID_COMMIT || handle_state_ == DID_COMMIT_ERROR_PAGE);
+  DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
   return should_update_history_;
 }
 
 const GURL& NavigationRequest::GetPreviousURL() {
-  DCHECK(handle_state_ == DID_COMMIT || handle_state_ == DID_COMMIT_ERROR_PAGE);
+  DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
   return previous_url_;
 }
 

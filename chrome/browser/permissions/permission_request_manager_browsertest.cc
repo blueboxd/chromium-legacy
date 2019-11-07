@@ -698,7 +698,7 @@ class PermissionRequestManagerBrowserTest_StaticIcon
  public:
   void SetUp() override {
     base::FieldTrialParams params;
-    params[kQuietNotificationPromptsUIFlavourParameterName] =
+    params[kQuietNotificationPromptsUIFlavorParameterName] =
         kQuietNotificationPromptsStaticIcon;
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
@@ -713,7 +713,7 @@ class PermissionRequestManagerBrowserTest_AnimatedIcon
  public:
   void SetUp() override {
     base::FieldTrialParams params;
-    params[kQuietNotificationPromptsUIFlavourParameterName] =
+    params[kQuietNotificationPromptsUIFlavorParameterName] =
         kQuietNotificationPromptsAnimatedIcon;
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeatureWithParameters(

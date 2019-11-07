@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.engagement.SiteEngagementService;
 import org.chromium.chrome.browser.permissions.PermissionDialogController;
 import org.chromium.chrome.browser.permissions.PermissionTestRule;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -458,7 +459,9 @@ public class NotificationPlatformBridgeTest {
 
         // Disable notification vibration in preferences.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().setNotificationsVibrateEnabled(false));
+                ()
+                        -> PrefServiceBridge.getInstance().setBoolean(
+                                Pref.NOTIFICATIONS_VIBRATE_ENABLED, false));
 
         Notification notification = showAndGetNotification("MyNotification", notificationOptions);
 
@@ -508,8 +511,9 @@ public class NotificationPlatformBridgeTest {
 
         // By default, vibration is enabled in notifications.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertTrue(
-                                PrefServiceBridge.getInstance().isNotificationsVibrateEnabled()));
+                ()
+                        -> Assert.assertTrue(PrefServiceBridge.getInstance().getBoolean(
+                                Pref.NOTIFICATIONS_VIBRATE_ENABLED)));
 
         Notification notification = showAndGetNotification("MyNotification", "{ vibrate: 42 }");
 

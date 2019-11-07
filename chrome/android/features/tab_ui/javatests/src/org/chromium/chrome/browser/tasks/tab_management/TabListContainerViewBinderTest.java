@@ -8,9 +8,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import android.animation.ValueAnimator;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
+
 import android.graphics.drawable.ColorDrawable;
-import android.provider.Settings;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -24,7 +24,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -266,18 +265,5 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     public void tearDownTest() throws Exception {
         mMCP.destroy();
         super.tearDownTest();
-    }
-
-    /**
-     * Should be the same as {@link ValueAnimator#areAnimatorsEnabled}, which requires API level 26.
-     */
-    private static boolean areAnimatorsEnabled() {
-        // We default to assuming that animations are enabled in case ANIMATOR_DURATION_SCALE is not
-        // defined.
-        final float defaultScale = 1f;
-        float durationScale =
-                Settings.Global.getFloat(ContextUtils.getApplicationContext().getContentResolver(),
-                        Settings.Global.ANIMATOR_DURATION_SCALE, defaultScale);
-        return !(durationScale == 0.0);
     }
 }

@@ -6,8 +6,8 @@
 
 #include "base/android/jni_string.h"
 #include "url/gurl.h"
-#include "weblayer/browser/browser_controller_impl.h"
 #include "weblayer/browser/java/jni/FullscreenCallbackProxy_jni.h"
+#include "weblayer/browser/tab_impl.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -15,16 +15,15 @@ using base::android::ScopedJavaLocalRef;
 
 namespace weblayer {
 
-FullscreenCallbackProxy::FullscreenCallbackProxy(
-    JNIEnv* env,
-    jobject obj,
-    BrowserController* browser_controller)
-    : browser_controller_(browser_controller), java_delegate_(env, obj) {
-  browser_controller_->SetFullscreenDelegate(this);
+FullscreenCallbackProxy::FullscreenCallbackProxy(JNIEnv* env,
+                                                 jobject obj,
+                                                 Tab* tab)
+    : tab_(tab), java_delegate_(env, obj) {
+  tab_->SetFullscreenDelegate(this);
 }
 
 FullscreenCallbackProxy::~FullscreenCallbackProxy() {
-  browser_controller_->SetFullscreenDelegate(nullptr);
+  tab_->SetFullscreenDelegate(nullptr);
 }
 
 void FullscreenCallbackProxy::EnterFullscreen(base::OnceClosure exit_closure) {
@@ -48,10 +47,9 @@ void FullscreenCallbackProxy::DoExitFullscreen(
 static jlong JNI_FullscreenCallbackProxy_CreateFullscreenCallbackProxy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& proxy,
-    jlong browser_controller) {
-  return reinterpret_cast<jlong>(new FullscreenCallbackProxy(
-      env, proxy,
-      reinterpret_cast<BrowserControllerImpl*>(browser_controller)));
+    jlong tab) {
+  return reinterpret_cast<jlong>(
+      new FullscreenCallbackProxy(env, proxy, reinterpret_cast<TabImpl*>(tab)));
 }
 
 static void JNI_FullscreenCallbackProxy_DeleteFullscreenCallbackProxy(

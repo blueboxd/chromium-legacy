@@ -109,6 +109,11 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
     // sensitive have been filtered out.
     virtual std::unique_ptr<base::DictionaryValue> GetConfig() = 0;
 
+    // Checks to verify that the required OS permissions have been granted to
+    // the host process, querying the user if necessary. Returns true iff all
+    // required permissions have been granted.
+    virtual bool CheckPermission() = 0;
+
     // Starts the daemon process. This may require that the daemon be
     // downloaded and installed. |done| is invoked on the calling thread when
     // the operation is completed.
@@ -149,6 +154,11 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // after the configuration is read, and any values that might be security
   // sensitive have been filtered out.
   void GetConfig(const GetConfigCallback& done);
+
+  // Checks to see if the required OS permissions have been granted. This may
+  // show a dialog to the user requesting the permissions.
+  // Returns true iff all required permissions have been granted.
+  bool CheckPermission();
 
   // Start the daemon process. This may require that the daemon be
   // downloaded and installed. |done| is called when the

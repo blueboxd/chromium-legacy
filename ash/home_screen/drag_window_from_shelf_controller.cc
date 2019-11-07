@@ -160,13 +160,10 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
   if (overview_controller->InOverviewSession()) {
     const SplitViewController::SnapPosition snap_position =
         GetSnapPosition(location_in_screen);
-    // Pass non_snap_state=kNoDrag so that only snap previews show up.
-    // TODO(crbug.com/1020349): Achieve that effect another way, because this
-    // way causes incorrect animations.
     SplitViewDragIndicators::WindowDraggingState window_dragging_state =
         SplitViewDragIndicators::ComputeWindowDraggingState(
             drag_started_,
-            SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+            SplitViewDragIndicators::WindowDraggingState::kFromShelf,
             snap_position);
     OverviewSession* overview_session = overview_controller->overview_session();
     overview_session->SetSplitViewDragIndicatorsWindowDraggingState(

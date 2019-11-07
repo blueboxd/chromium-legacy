@@ -276,6 +276,11 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
 // Tests the "Open in New Tab" action of the Most Visited context menu.
 - (void)testMostVisitedNewTab {
+// TODO(crbug.com/1022152): Enable this test.
+#if defined(CHROME_EARL_GREY_2)
+  EARL_GREY_TEST_DISABLED(@"Fails with EG2");
+#endif
+
   [self setupMostVisitedTileLongPress];
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
@@ -313,6 +318,11 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests the "Open in New Incognito Tab" action of the Most Visited context
 // menu.
 - (void)testMostVisitedNewIncognitoTab {
+// TODO(crbug.com/1022152): Enable this test.
+#if defined(CHROME_EARL_GREY_2)
+  EARL_GREY_TEST_DISABLED(@"Fails with EG2");
+#endif
+
   [self setupMostVisitedTileLongPress];
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 

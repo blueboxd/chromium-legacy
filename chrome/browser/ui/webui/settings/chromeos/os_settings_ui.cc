@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
+#include "chrome/browser/ui/webui/chromeos/sync/os_sync_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
@@ -47,6 +48,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/os_settings_resources.h"
 #include "chrome/grit/os_settings_resources_map.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -91,6 +93,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::LanguagesHandler>(web_ui));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::MediaDevicesSelectionHandler>(profile));
+  if (chromeos::features::IsSplitSettingsSyncEnabled())
+    AddSettingsPageUIHandler(std::make_unique<OSSyncHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::PeopleHandler>(profile));
   AddSettingsPageUIHandler(
@@ -103,7 +107,9 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<chromeos::settings::WallpaperHandler>(web_ui));
 
   html_source->AddBoolean("showAppManagement", base::FeatureList::IsEnabled(
-                                                   features::kAppManagement));
+                                                   ::features::kAppManagement));
+  html_source->AddBoolean("splitSettingsSyncEnabled",
+                          chromeos::features::IsSplitSettingsSyncEnabled());
 
 #if defined(OS_CHROMEOS)
   html_source->AddBoolean(

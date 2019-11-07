@@ -23,6 +23,9 @@ namespace ash {
 
 namespace {
 
+constexpr int kNumFingersForHighlight = 3;
+constexpr int kNumFingersForDesksSwitch = 4;
+
 bool InOverviewSession() {
   return Shell::Get()->overview_controller()->InOverviewSession();
 }
@@ -30,10 +33,6 @@ bool InOverviewSession() {
 bool CanHandleVirtualDesksGestures() {
   return features::IsVirtualDesksEnabled() &&
          features::IsVirtualDesksGesturesEnabled();
-}
-
-int GetNumFingersForHighlight() {
-  return CanHandleVirtualDesksGestures() ? 4 : 3;
 }
 
 const aura::Window* GetHighlightedWindow() {
@@ -72,7 +71,7 @@ class WmGestureHandlerTest : public AshTestBase,
     DeskSwitchAnimationWaiter waiter;
     const float x_offset =
         (scroll_left ? -1 : 1) * WmGestureHandler::kHorizontalThresholdDp;
-    Scroll(x_offset, 0, /*fingers=*/3);
+    Scroll(x_offset, 0, kNumFingersForDesksSwitch);
     waiter.Wait();
   }
 
@@ -123,7 +122,7 @@ TEST_P(WmGestureHandlerTest, HorizontalScrollInOverview) {
   auto scroll_until_window_highlighted = [this](float x_offset,
                                                 float y_offset) {
     do {
-      Scroll(x_offset, y_offset, GetNumFingersForHighlight());
+      Scroll(x_offset, y_offset, kNumFingersForHighlight);
     } while (!GetHighlightedWindow());
   };
 
@@ -154,10 +153,10 @@ TEST_P(WmGestureHandlerTest, HorizontalScrollInOverview) {
 // Tests that a mostly horizontal scroll does not trigger overview.
 TEST_P(WmGestureHandlerTest, HorizontalScrolls) {
   const float long_scroll = 2 * WmGestureHandler::kVerticalThresholdDp;
-  Scroll(long_scroll + 100, -long_scroll, GetNumFingersForHighlight());
+  Scroll(long_scroll + 100, -long_scroll, kNumFingersForHighlight);
   EXPECT_FALSE(InOverviewSession());
 
-  Scroll(-long_scroll - 100, -long_scroll, GetNumFingersForHighlight());
+  Scroll(-long_scroll - 100, -long_scroll, kNumFingersForHighlight);
   EXPECT_FALSE(InOverviewSession());
 }
 
@@ -209,7 +208,7 @@ TEST_P(DesksGestureHandlerTest, HorizontalScrolls) {
   // Tests that since there is no previous desk, we remain on the same desk when
   // scrolling right.
   const float long_scroll = WmGestureHandler::kHorizontalThresholdDp;
-  Scroll(long_scroll, 0.f, 3);
+  Scroll(long_scroll, 0.f, kNumFingersForDesksSwitch);
   EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
 }
 
@@ -224,16 +223,17 @@ TEST_P(DesksGestureHandlerTest, NoDeskChanges) {
   const float short_scroll = WmGestureHandler::kHorizontalThresholdDp - 10.f;
   const float long_scroll = WmGestureHandler::kHorizontalThresholdDp;
   // Tests that a short horizontal scroll does not switch desks.
-  Scroll(short_scroll, 0.f, 3);
+  Scroll(short_scroll, 0.f, kNumFingersForDesksSwitch);
   EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
 
   // Tests that a scroll that meets the horizontal requirements, but is mostly
   // vertical does not switch desks.
-  Scroll(long_scroll, long_scroll + 10.f, 3);
+  Scroll(long_scroll, long_scroll + 10.f, kNumFingersForDesksSwitch);
   EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
 
   // Tests that a vertical scroll does not switch desks.
-  Scroll(0.f, WmGestureHandler::kVerticalThresholdDp, 3);
+  Scroll(0.f, WmGestureHandler::kVerticalThresholdDp,
+         kNumFingersForDesksSwitch);
   EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
 }
 
@@ -248,7 +248,7 @@ TEST_P(DesksGestureHandlerTest, NoDoubleDeskChange) {
 
   const float long_scroll = WmGestureHandler::kHorizontalThresholdDp * 3;
   DeskSwitchAnimationWaiter waiter;
-  Scroll(-long_scroll, 0, 3);
+  Scroll(-long_scroll, 0, kNumFingersForDesksSwitch);
   waiter.Wait();
   EXPECT_EQ(desk_controller->desks()[1].get(), desk_controller->active_desk());
 }

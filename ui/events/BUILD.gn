@@ -607,6 +607,14 @@ if (!is_ios) {
       ]
     }
 
+    if (use_x11 || ozone_platform_x11) {
+      sources += [ "x/x11_event_translation_unittest.cc" ]
+      deps += [
+        "//ui/events/x",
+        "//ui/gfx/x",
+      ]
+    }
+
     if (use_x11 || use_ozone) {
       sources += [ "devices/device_data_manager_unittest.cc" ]
     }

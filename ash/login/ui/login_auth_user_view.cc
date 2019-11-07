@@ -915,7 +915,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
 
   auth_methods_ = static_cast<AuthMethods>(auth_methods);
   bool has_password = HasAuthMethod(AUTH_PASSWORD);
-  bool has_pin = HasAuthMethod(AUTH_PIN);
+  bool has_pin_pad = HasAuthMethod(AUTH_PIN);
   bool has_tap = HasAuthMethod(AUTH_TAP);
   bool force_online_sign_in = HasAuthMethod(AUTH_ONLINE_SIGN_IN);
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
@@ -933,7 +933,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
     // The security token PIN request is a special mode that uses the password
     // and the PIN views, regardless of the user's auth methods.
     has_password = true;
-    has_pin = true;
+    has_pin_pad = true;
     has_tap = false;
     force_online_sign_in = false;
     has_fingerprint = false;
@@ -943,9 +943,6 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
 
   bool hide_auth = auth_disabled || force_online_sign_in;
 
-  // The pin UI should be used only when it's allowed.
-  DCHECK(!has_pin || can_use_pin || security_token_pin_request_);
-
   online_sign_in_message_->SetVisible(force_online_sign_in);
   disabled_auth_message_->SetVisible(auth_disabled);
   if (auth_disabled)
@@ -954,7 +951,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   // Adjust the PIN keyboard visibility before the password textfield's one, so
   // that when both are about to be hidden the focus doesn't jump to the "1"
   // keyboard button, causing unexpected accessibility effects.
-  pin_view_->SetVisible(has_pin);
+  pin_view_->SetVisible(has_pin_pad);
 
   pin_view_->SetBackButtonVisible(security_token_pin_request_.has_value());
 
@@ -978,9 +975,9 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   }
 
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;
-  if (has_fingerprint && !has_pin) {
+  if (has_fingerprint && !has_pin_pad) {
     padding_view_height = kDistanceBetweenPasswordFieldAndFingerprintViewDp;
-  } else if (has_challenge_response && !has_pin) {
+  } else if (has_challenge_response && !has_pin_pad) {
     padding_view_height =
         kDistanceBetweenPasswordFieldAndChallengeResponseViewDp;
   }
@@ -988,14 +985,14 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
       gfx::Size(kNonEmptyWidthDp, padding_view_height));
 
   // Note: both |security_token_pin_request_| and |has_tap| must have higher
-  // priority than |has_pin| when determining the placeholder.
+  // priority than |has_pin_pad| when determining the placeholder.
   if (security_token_pin_request_) {
     password_view_->SetPlaceholderText(l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_POD_PASSWORD_SMART_CARD_PIN_PLACEHOLDER));
   } else if (has_tap) {
     password_view_->SetPlaceholderText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER));
-  } else if (has_pin) {
+  } else if (can_use_pin) {
     password_view_->SetPlaceholderText(
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_POD_PASSWORD_PIN_PLACEHOLDER));
   } else {

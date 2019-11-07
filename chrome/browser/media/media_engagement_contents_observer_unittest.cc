@@ -302,13 +302,8 @@ class MediaEngagementContentsObserverTest
                       int playbacks_total,
                       int visits_total,
                       int score,
-                      int playbacks_delta,
-                      bool high_score,
                       int audible_players_delta,
-                      int audible_players_total,
-                      int significant_players_delta,
-                      int significant_players_total,
-                      int seconds_since_playback) {
+                      int significant_players_delta) {
     using Entry = ukm::builders::Media_Engagement_SessionFinished;
 
     auto ukm_entries = test_ukm_recorder_.GetEntriesByName(Entry::kEntryName);
@@ -322,25 +317,12 @@ class MediaEngagementContentsObserverTest
                                 ukm_entry, Entry::kVisits_TotalName));
     EXPECT_EQ(score, *test_ukm_recorder_.GetEntryMetric(
                          ukm_entry, Entry::kEngagement_ScoreName));
-    EXPECT_EQ(playbacks_delta, *test_ukm_recorder_.GetEntryMetric(
-                                   ukm_entry, Entry::kPlaybacks_DeltaName));
-    EXPECT_EQ(high_score, !!*test_ukm_recorder_.GetEntryMetric(
-                              ukm_entry, Entry::kEngagement_IsHighName));
     EXPECT_EQ(audible_players_delta,
               *test_ukm_recorder_.GetEntryMetric(
                   ukm_entry, Entry::kPlayer_Audible_DeltaName));
-    EXPECT_EQ(audible_players_total,
-              *test_ukm_recorder_.GetEntryMetric(
-                  ukm_entry, Entry::kPlayer_Audible_TotalName));
     EXPECT_EQ(significant_players_delta,
               *test_ukm_recorder_.GetEntryMetric(
                   ukm_entry, Entry::kPlayer_Significant_DeltaName));
-    EXPECT_EQ(significant_players_total,
-              *test_ukm_recorder_.GetEntryMetric(
-                  ukm_entry, Entry::kPlayer_Significant_TotalName));
-    EXPECT_EQ(seconds_since_playback,
-              *test_ukm_recorder_.GetEntryMetric(
-                  ukm_entry, Entry::kPlaybacks_SecondsSinceLastName));
   }
 
   void ExpectUkmIgnoredEntries(const url::Origin& origin,
@@ -1015,7 +997,7 @@ TEST_F(MediaEngagementContentsObserverTest, RecordUkmMetricsOnDestroy) {
 
   SimulateDestroy();
   ExpectScores(origin, 21.0 / 25.0, 25, 21, 5, 2, 1, 0);
-  ExpectUkmEntry(origin, 21, 25, 84, 1, true, 2, 5, 1, 2, 0);
+  ExpectUkmEntry(origin, 21, 25, 84, 2, 1);
 }
 
 TEST_F(MediaEngagementContentsObserverTest,
@@ -1033,7 +1015,7 @@ TEST_F(MediaEngagementContentsObserverTest,
 
   // AudioContext playbacks should count as a significant playback.
   ExpectScores(origin, 21.0 / 25.0, 25, 21, 2, 1, 0, 1);
-  ExpectUkmEntry(origin, 21, 25, 84, 0, true, 0, 2, 0, 1, 0);
+  ExpectUkmEntry(origin, 21, 25, 84, 0, 0);
 }
 
 TEST_F(MediaEngagementContentsObserverTest,
@@ -1046,7 +1028,7 @@ TEST_F(MediaEngagementContentsObserverTest,
 
   SimulateDestroy();
   ExpectScores(origin, 20.0 / 25.0, 25, 20, 2, 1, 0, 0);
-  ExpectUkmEntry(origin, 20, 25, 80, 0, true, 0, 2, 0, 1, 0);
+  ExpectUkmEntry(origin, 20, 25, 80, 0, 0);
 }
 
 TEST_F(MediaEngagementContentsObserverTest, RecordUkmMetricsOnNavigate) {
@@ -1063,7 +1045,7 @@ TEST_F(MediaEngagementContentsObserverTest, RecordUkmMetricsOnNavigate) {
 
   Navigate(GURL("https://www.example.org"));
   ExpectScores(origin, 21.0 / 25.0, 25, 21, 5, 2, 1, 0);
-  ExpectUkmEntry(origin, 21, 25, 84, 1, true, 2, 5, 1, 2, 0);
+  ExpectUkmEntry(origin, 21, 25, 84, 2, 1);
 }
 
 TEST_F(MediaEngagementContentsObserverTest,
@@ -1082,7 +1064,7 @@ TEST_F(MediaEngagementContentsObserverTest,
 
   // AudioContext playbacks should count as a media playback.
   ExpectScores(origin, 21.0 / 25.0, 25, 21, 2, 1, 0, 1);
-  ExpectUkmEntry(origin, 21, 25, 84, 0, true, 0, 2, 0, 1, 0);
+  ExpectUkmEntry(origin, 21, 25, 84, 0, 0);
 }
 
 TEST_F(MediaEngagementContentsObserverTest,
@@ -1095,7 +1077,7 @@ TEST_F(MediaEngagementContentsObserverTest,
 
   Navigate(GURL("https://www.example.org"));
   ExpectScores(origin, 6 / 28.0, 28, 6, 2, 1, 0, 0);
-  ExpectUkmEntry(origin, 6, 28, 21, 0, false, 0, 2, 0, 1, 0);
+  ExpectUkmEntry(origin, 6, 28, 21, 0, 0);
 }
 
 TEST_F(MediaEngagementContentsObserverTest,
@@ -1119,7 +1101,7 @@ TEST_F(MediaEngagementContentsObserverTest,
   SimulateDestroy();
   ExpectScores(origin, 21.0 / 25.0, 25, 21, 5, 3, 1, 0);
   ExpectLastPlaybackTime(origin, first);
-  ExpectUkmEntry(origin, 21, 25, 84, 1, true, 2, 5, 2, 3, 900);
+  ExpectUkmEntry(origin, 21, 25, 84, 2, 2);
 }
 
 TEST_F(MediaEngagementContentsObserverTest, DoNotCreateSessionOnInternalUrl) {

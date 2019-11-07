@@ -73,6 +73,28 @@ void SetRectToJobSettings(const std::string& json_path,
 
 }  // namespace
 
+PageRanges GetPageRangesFromJobSettings(const base::Value& job_settings) {
+  PageRanges page_ranges;
+  const base::Value* page_range_array =
+      job_settings.FindListKey(kSettingPageRange);
+  if (page_range_array) {
+    for (const base::Value& page_range : page_range_array->GetList()) {
+      if (!page_range.is_dict())
+        continue;
+
+      base::Optional<int> from = page_range.FindIntKey(kSettingPageRangeFrom);
+      base::Optional<int> to = page_range.FindIntKey(kSettingPageRangeTo);
+      if (!from.has_value() || !to.has_value())
+        continue;
+
+      // Page numbers are 1-based in the dictionary.
+      // Page numbers are 0-based for the printing context.
+      page_ranges.push_back(PageRange{from.value() - 1, to.value() - 1});
+    }
+  }
+  return page_ranges;
+}
+
 bool PrintSettingsFromJobSettings(const base::Value& job_settings,
                                   PrintSettings* settings) {
   base::Optional<bool> display_header_footer =
@@ -134,25 +156,7 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
   if (margin_type == CUSTOM_MARGINS)
     settings->SetCustomMargins(GetCustomMarginsFromJobSettings(job_settings));
 
-  PageRanges new_ranges;
-  const base::Value* page_range_array =
-      job_settings.FindKeyOfType(kSettingPageRange, base::Value::Type::LIST);
-  if (page_range_array) {
-    for (const base::Value& value : page_range_array->GetList()) {
-      if (!value.is_dict())
-        continue;
-
-      base::Optional<int> from = value.FindIntKey(kSettingPageRangeFrom);
-      base::Optional<int> to = value.FindIntKey(kSettingPageRangeTo);
-      if (!from.has_value() || !to.has_value())
-        continue;
-
-      // Page numbers are 1-based in the dictionary.
-      // Page numbers are 0-based for the printing context.
-      new_ranges.push_back(PageRange{from.value() - 1, to.value() - 1});
-    }
-  }
-  settings->set_ranges(new_ranges);
+  settings->set_ranges(GetPageRangesFromJobSettings(job_settings));
 
   base::Optional<bool> collate = job_settings.FindBoolKey(kSettingCollate);
   base::Optional<int> copies = job_settings.FindIntKey(kSettingCopies);

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/counters/site_settings_counter.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/test/simple_test_clock.h"
@@ -81,7 +83,7 @@ class SiteSettingsCounterTest : public testing::Test {
     zoom_map_ = nullptr;
 #endif
     handler_registry_ = std::make_unique<ProtocolHandlerRegistry>(
-        profile(), new TestProtocolHandlerRegistryDelegate());
+        profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
 
     counter_ = std::make_unique<SiteSettingsCounter>(
         map(), zoom_map(), handler_registry(), profile_->GetPrefs());

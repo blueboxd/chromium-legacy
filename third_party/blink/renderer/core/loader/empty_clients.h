@@ -473,8 +473,7 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void FrameRectsChanged(const IntRect& local_frame_rect,
                          const IntRect& transformed_frame_rect) override {}
   void UpdateRemoteViewportIntersection(
-      const IntRect& viewport_intersection,
-      FrameOcclusionState occlusion_state) override {}
+      const ViewportIntersectionState& intersection_state) override {}
   void AdvanceFocus(WebFocusType, LocalFrame* source) override {}
   void VisibilityChanged(blink::mojom::FrameVisibility) override {}
   void SetIsInert(bool) override {}

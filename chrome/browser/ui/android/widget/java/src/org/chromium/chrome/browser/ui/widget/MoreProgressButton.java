@@ -13,6 +13,8 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.VisibleForTesting;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -105,5 +107,10 @@ public class MoreProgressButton extends FrameLayout implements View.OnClickListe
         mState = state;
         this.mButton.setVisibility(State.BUTTON == state ? View.VISIBLE : View.GONE);
         this.mProgressSpinner.setVisibility(State.LOADING == state ? View.VISIBLE : View.GONE);
+    }
+
+    @VisibleForTesting
+    public @State int getStateForTest() {
+        return mState;
     }
 }

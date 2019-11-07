@@ -2,11 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Logic for parsing a function signatures."""
+"""Logic for parsing a function signatures.
+
+Much of this logic is duplicated at
+tools/binary_size/libsupersize/caspian/function_signature.cc."""
 
 
 def _FindParameterListParen(name):
-  """Finds index of the "(" that denotes the start of a paremeter list."""
+  """Finds index of the "(" that denotes the start of a parameter list."""
   # This loops from left-to-right, but the only reason (I think) that this
   # is necessary (rather than reusing _FindLastCharOutsideOfBrackets), is
   # to capture the outer-most function in the case where classes are nested.

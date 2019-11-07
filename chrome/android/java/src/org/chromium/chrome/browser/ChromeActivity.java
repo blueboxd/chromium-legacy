@@ -291,7 +291,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private BottomSheetController mBottomSheetController;
     private EphemeralTabCoordinator mEphemeralTabCoordinator;
     private UpdateNotificationController mUpdateNotificationController;
-    private BottomSheet mBottomSheet;
     private ScrimView mScrimView;
     private StatusBarColorController mStatusBarColorController;
 
@@ -1474,14 +1473,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         Supplier<BottomSheet> sheetSupplier = () -> {
             ViewGroup coordinator = findViewById(R.id.coordinator);
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
-            mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
-            mBottomSheet.init(coordinator, getActivityTabProvider(), getFullscreenManager(),
-                    getWindow(), getWindowAndroid().getKeyboardDelegate());
+            BottomSheet sheet = coordinator.findViewById(R.id.bottom_sheet);
+            sheet.init(coordinator, getActivityTabProvider(), getFullscreenManager(), getWindow(),
+                    getWindowAndroid().getKeyboardDelegate());
 
             mBottomSheetSnackbarManager = new SnackbarManager(
-                    this, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
+                    this, sheet.findViewById(R.id.bottom_sheet_snackbar_container));
 
-            return mBottomSheet;
+            return sheet;
         };
 
         Supplier<OverlayPanelManager> panelManagerSupplier =
@@ -1505,7 +1504,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 // is responsible for adding itself to the list of obscuring views when applicable.
                 if (content != null && content.hasCustomScrimLifecycle()) return;
 
-                addViewObscuringAllTabs(mBottomSheet);
+                mBottomSheetController.setIsObscuringAllTabs(ChromeActivity.this, true);
 
                 assert mAppModalToken == TokenHolder.INVALID_TOKEN;
                 assert mTabModalToken == TokenHolder.INVALID_TOKEN;
@@ -1525,7 +1524,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     return;
                 }
 
-                removeViewObscuringAllTabs(mBottomSheet);
+                mBottomSheetController.setIsObscuringAllTabs(ChromeActivity.this, false);
 
                 if (getModalDialogManager() != null) {
                     getModalDialogManager().resumeType(

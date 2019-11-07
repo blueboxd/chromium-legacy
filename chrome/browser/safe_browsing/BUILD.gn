@@ -245,7 +245,7 @@ jumbo_static_library("safe_browsing") {
       }
     } else if (safe_browsing_mode == 2) {
       sources += [
-        "android/file_type_policies.cc",
+        "android/safe_browsing_bridge.cc",
         "android/services_delegate_android.cc",
         "android/services_delegate_android.h",
         "telemetry/android/android_telemetry_service.cc",

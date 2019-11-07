@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollect
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.tab.TabViewAndroidDelegate;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -200,12 +199,8 @@ class AssistantBottomBarCoordinator
                     hide();
                 }
             } else if (AssistantModel.ALLOW_TALKBACK_ON_WEBSITE == propertyKey) {
-                boolean allow = model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE);
-                if (allow) {
-                    activity.removeViewObscuringAllTabs(controller.getBottomSheet());
-                } else {
-                    activity.addViewObscuringAllTabs(controller.getBottomSheet());
-                }
+                controller.setIsObscuringAllTabs(
+                        activity, !model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE));
             } else if (AssistantModel.WEB_CONTENTS == propertyKey) {
                 mWebContents = model.get(AssistantModel.WEB_CONTENTS);
             }
@@ -383,9 +378,8 @@ class AssistantBottomBarCoordinator
             return;
         }
 
-        BottomSheet bottomSheet = mBottomSheetController.getBottomSheet();
-        setVisualViewportResizing((int) Math.floor(
-                bottomSheet.getCurrentOffsetPx() - bottomSheet.getToolbarShadowHeight()));
+        setVisualViewportResizing((int) Math.floor(mBottomSheetController.getCurrentOffset()
+                - mBottomSheetController.getTopShadowHeight()));
     }
 
     private void resetVisualViewportHeight() {

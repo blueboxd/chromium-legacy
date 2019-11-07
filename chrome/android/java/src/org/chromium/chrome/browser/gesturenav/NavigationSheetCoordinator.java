@@ -17,7 +17,6 @@ import org.chromium.base.Supplier;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.gesturenav.NavigationSheetMediator.ItemProperties;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
@@ -263,8 +262,6 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     }
 
     private @SheetState int getTargetOrCurrentState() {
-        BottomSheet sheet = mBottomSheetController.get().getBottomSheet();
-        if (sheet == null) return BottomSheetController.SheetState.HIDDEN;
         @SheetState
         int state = mBottomSheetController.get().getTargetSheetState();
         return state != BottomSheetController.SheetState.NONE

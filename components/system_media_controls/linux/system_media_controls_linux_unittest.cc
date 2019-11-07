@@ -246,7 +246,7 @@ TEST_F(SystemMediaControlsLinuxTest, ChangingPropertyEmitsSignal) {
         // The changed property name should be "CanPlay".
         std::string property_name;
         ASSERT_TRUE(dict_entry_reader.PopString(&property_name));
-        EXPECT_EQ("CanPlay", property_name);
+        EXPECT_EQ("CanGoNext", property_name);
 
         // The new value should be true.
         bool value;
@@ -261,11 +261,11 @@ TEST_F(SystemMediaControlsLinuxTest, ChangingPropertyEmitsSignal) {
 
   // CanPlay is initialized as false, so setting it to true should emit an
   // org.freedesktop.DBus.Properties.PropertiesChanged signal.
-  GetService()->SetIsPlayEnabled(true);
+  GetService()->SetIsNextEnabled(true);
   wait_for_signal.Run();
 
   // Setting it to true again should not re-signal.
-  GetService()->SetIsPlayEnabled(true);
+  GetService()->SetIsNextEnabled(true);
 }
 
 TEST_F(SystemMediaControlsLinuxTest, ChangingMetadataEmitsSignal) {

@@ -8,10 +8,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "url/gurl.h"
-#include "weblayer/public/browser_controller.h"
 #include "weblayer/public/navigation.h"
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/public/navigation_observer.h"
+#include "weblayer/public/tab.h"
 #include "weblayer/shell/browser/shell.h"
 
 namespace weblayer {
@@ -30,12 +30,12 @@ class TestNavigationObserver : public NavigationObserver {
       : closure_(std::move(closure)),
         url_(url),
         event_(event),
-        browser_(shell->browser_controller()) {
-    browser_->GetNavigationController()->AddObserver(this);
+        tab_(shell->tab()) {
+    tab_->GetNavigationController()->AddObserver(this);
   }
 
   ~TestNavigationObserver() override {
-    browser_->GetNavigationController()->RemoveObserver(this);
+    tab_->GetNavigationController()->RemoveObserver(this);
   }
 
  private:
@@ -68,7 +68,7 @@ class TestNavigationObserver : public NavigationObserver {
   base::OnceClosure closure_;
   const GURL url_;
   NavigationEventToObserve event_;
-  BrowserController* browser_;
+  Tab* tab_;
   bool done_loading_ = false;
   bool navigation_complete_ = false;
 };
@@ -82,7 +82,7 @@ void NavigateAndWaitForEvent(
   TestNavigationObserver test_observer(run_loop.QuitClosure(), url, event,
                                        shell);
 
-  shell->browser_controller()->GetNavigationController()->Navigate(url);
+  shell->tab()->GetNavigationController()->Navigate(url);
   run_loop.Run();
 }
 
@@ -103,7 +103,7 @@ base::Value ExecuteScript(Shell* shell,
                           bool use_separate_isolate) {
   base::Value final_result;
   base::RunLoop run_loop;
-  shell->browser_controller()->ExecuteScript(
+  shell->tab()->ExecuteScript(
       base::ASCIIToUTF16(script), use_separate_isolate,
       base::BindLambdaForTesting(
           [&run_loop, &final_result](base::Value result) {

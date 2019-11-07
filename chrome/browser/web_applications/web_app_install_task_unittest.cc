@@ -295,6 +295,21 @@ class WebAppInstallTaskTest : public WebAppTest {
     return result;
   }
 
+  std::unique_ptr<WebApplicationInfo>
+  LoadAndRetrieveWebApplicationInfoWithIcons(const GURL& url) {
+    std::unique_ptr<WebApplicationInfo> result;
+    base::RunLoop run_loop;
+    install_task_->LoadAndRetrieveWebApplicationInfoWithIcons(
+        url, &url_loader(),
+        base::BindLambdaForTesting(
+            [&](std::unique_ptr<WebApplicationInfo> web_app_info) {
+              result = std::move(web_app_info);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return result;
+  }
+
   AppId InstallWebAppFromManifestWithFallback() {
     InstallResult result = InstallWebAppFromManifestWithFallbackAndGetResults();
     DCHECK_EQ(InstallResultCode::kSuccessNewInstall, result.code);
@@ -1256,6 +1271,65 @@ TEST_F(WebAppInstallTaskTest, LoadAndInstallWebAppFromManifestWithFallback) {
     EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, result.code);
     EXPECT_EQ(app_id, result.app_id);
     EXPECT_TRUE(registrar().GetAppById(app_id));
+  }
+}
+
+TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
+  const GURL url = GURL("https://example.com/path");
+  const GURL start_url = GURL("https://example.com/start");
+  const std::string name = "Name";
+  const std::string description = "Description";
+  const AppId app_id = GenerateAppIdFromURL(url);
+  {
+    CreateDefaultDataToRetrieve(url);
+    url_loader().SetNextLoadUrlResult(
+        url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+
+    std::unique_ptr<WebApplicationInfo> result =
+        LoadAndRetrieveWebApplicationInfoWithIcons(url);
+    EXPECT_TRUE(!result);
+  }
+  {
+    CreateDefaultDataToRetrieve(url);
+    url_loader().SetNextLoadUrlResult(
+        url, WebAppUrlLoader::Result::kFailedPageTookTooLong);
+
+    std::unique_ptr<WebApplicationInfo> result =
+        LoadAndRetrieveWebApplicationInfoWithIcons(url);
+    EXPECT_TRUE(!result);
+  }
+  {
+    CreateDefaultDataToRetrieve(start_url);
+    CreateRendererAppInfo(url, name, description);
+    url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
+
+    std::unique_ptr<WebApplicationInfo> result =
+        LoadAndRetrieveWebApplicationInfoWithIcons(url);
+    EXPECT_TRUE(result);
+    EXPECT_EQ(result->app_url, start_url);
+    EXPECT_TRUE(result->icons.size() > 0);
+  }
+  {
+    // Verify the callback is always called.
+    base::RunLoop run_loop;
+    auto data_retriever = std::make_unique<TestDataRetriever>();
+    data_retriever->BuildDefaultDataToRetrieve(url, GURL{});
+    url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
+
+    auto task = std::make_unique<WebAppInstallTask>(
+        profile(), shortcut_manager_.get(), install_finalizer_.get(),
+        std::move(data_retriever));
+
+    std::unique_ptr<WebApplicationInfo> info;
+    task->LoadAndRetrieveWebApplicationInfoWithIcons(
+        url, &url_loader(),
+        base::BindLambdaForTesting(
+            [&](std::unique_ptr<WebApplicationInfo> app_info) {
+              info = std::move(app_info);
+              run_loop.Quit();
+            }));
+    task.reset();
+    run_loop.Run();
   }
 }
 

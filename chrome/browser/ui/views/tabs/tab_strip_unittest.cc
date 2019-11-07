@@ -1196,12 +1196,11 @@ TEST_P(TabStripTest, GroupUnderlineBasics) {
   // Update underline manually in the absence of a real Paint cycle.
   underline->UpdateBounds();
 
-  constexpr int kInset = 20;
-
-  EXPECT_EQ(underline->x(), kInset);
+  EXPECT_EQ(underline->x(), TabGroupUnderline::GetStrokeInset());
   EXPECT_GT(underline->width(), 0);
   EXPECT_EQ(underline->bounds().right(),
-            tab_strip_->tab_at(0)->bounds().right() - kInset);
+            tab_strip_->tab_at(0)->bounds().right() -
+                TabGroupUnderline::GetStrokeInset());
   EXPECT_EQ(underline->height(), TabGroupUnderline::kStrokeThickness);
 
   // Endpoints are different if the last grouped tab is active.
@@ -1209,7 +1208,7 @@ TEST_P(TabStripTest, GroupUnderlineBasics) {
   controller_->MoveTabIntoGroup(1, group);
   underline->UpdateBounds();
 
-  EXPECT_EQ(underline->x(), kInset);
+  EXPECT_EQ(underline->x(), TabGroupUnderline::GetStrokeInset());
   EXPECT_EQ(underline->bounds().right(),
             tab_strip_->tab_at(1)->bounds().right() +
                 TabGroupUnderline::kStrokeThickness);

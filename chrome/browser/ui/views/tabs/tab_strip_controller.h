@@ -174,6 +174,8 @@ class TabStripController {
 
   // Returns the profile associated with the Tabstrip.
   virtual Profile* GetProfile() const = 0;
+
+  virtual const Browser* GetBrowser() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_

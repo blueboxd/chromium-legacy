@@ -73,6 +73,7 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/plugin_content_origin_whitelist.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -1645,6 +1646,12 @@ RenderFrameHostImpl* WebContentsImpl::GetFocusedFrameFromFocusedDelegate() {
   return focused_node ? focused_node->current_frame_host() : nullptr;
 }
 
+void WebContentsImpl::OnVerticalScrollDirectionChanged(
+    viz::VerticalScrollDirection scroll_direction) {
+  for (auto& observer : observers_)
+    observer.DidChangeVerticalScrollDirection(scroll_direction);
+}
+
 void WebContentsImpl::OnAudioStateChanged() {
   // This notification can come from any embedded contents or from this
   // WebContents' stream monitor. Aggregate these signals to get the actual
@@ -2194,6 +2201,12 @@ ukm::SourceId WebContentsImpl::GetUkmSourceIdForLastCommittedSource() const {
   return last_committed_source_id_;
 }
 
+ukm::SourceId
+WebContentsImpl::GetUkmSourceIdForLastCommittedSourceIncludingSameDocument()
+    const {
+  return last_committed_source_id_including_same_document_;
+}
+
 void WebContentsImpl::SetTopControlsShownRatio(
     RenderWidgetHostImpl* render_widget_host,
     float ratio) {
@@ -2548,8 +2561,10 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   // as soon as they are shown. But the Page and other classes do not expect to
   // be producing frames when the Page is hidden. So we make sure the Page is
   // shown first.
-  if (page_is_visible)
-    SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
+  if (page_is_visible) {
+    SendPageMessage(new PageMsg_VisibilityChanged(
+        MSG_ROUTING_NONE, PageVisibilityState::kVisible));
+  }
 
   // |GetRenderWidgetHostView()| can be null if the user middle clicks a link to
   // open a tab in the background, then closes the tab before selecting it.
@@ -2583,7 +2598,8 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   if (!page_is_visible) {
     // Similar to when showing the page, we only hide the page after
     // hiding the individual RenderWidgets.
-    SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
+    SendPageMessage(new PageMsg_VisibilityChanged(
+        MSG_ROUTING_NONE, PageVisibilityState::kHidden));
   } else {
     for (FrameTreeNode* node : frame_tree_.Nodes()) {
       RenderFrameProxyHost* parent = node->render_manager()->GetProxyToParent();
@@ -2984,7 +3000,8 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
   }
 
   RenderWidgetHostImpl* widget_host = new RenderWidgetHostImpl(
-      this, process, route_id, std::move(widget), IsHidden());
+      this, process, route_id, std::move(widget), IsHidden(),
+      std::make_unique<FrameTokenMessageQueue>());
   RenderWidgetHostViewBase* widget_view =
       static_cast<RenderWidgetHostViewBase*>(
           view_->CreateViewForChildWidget(widget_host));
@@ -4385,13 +4402,6 @@ void WebContentsImpl::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
   TRACE_EVENT1("navigation", "WebContentsImpl::ReadyToCommitNavigation",
                "navigation_handle", navigation_handle);
-
-  if (!navigation_handle->GetParentFrame() &&
-      record_max_frame_count_when_leaving_current_page_) {
-    RecordMaxFrameCountUMA(max_frame_count_);
-    record_max_frame_count_when_leaving_current_page_ = false;
-  }
-
   for (auto& observer : observers_)
     observer.ReadyToCommitNavigation(navigation_handle);
 
@@ -4464,12 +4474,16 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
       }
     }
 
-    if (navigation_handle->IsInMainFrame() &&
-        !navigation_handle->IsSameDocument()) {
-      was_ever_audible_ = false;
-      last_committed_source_id_ =
+    if (navigation_handle->IsInMainFrame()) {
+      last_committed_source_id_including_same_document_ =
           ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
                                  ukm::SourceIdType::NAVIGATION_ID);
+
+      if (!navigation_handle->IsSameDocument()) {
+        was_ever_audible_ = false;
+        last_committed_source_id_ =
+            last_committed_source_id_including_same_document_;
+      }
     }
   }
 
@@ -4480,15 +4494,20 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
     should_focus_location_bar_by_default_ = false;
   }
 
-  // If navigation has successfully finished in the main page, set
-  // |record_max_frame_count_when_leaving_current_page_| to true so that when
-  // the main frame navigates away from this page we know to record this page's
-  // max frame count.
-  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsErrorPage()) {
-    record_max_frame_count_when_leaving_current_page_ = true;
+  if (navigation_handle->IsInMainFrame() && first_navigation_completed_)
+    RecordMaxFrameCountUMA(max_loaded_frame_count_);
 
-    // Navigation has completed in main frame. Reset |max_frame_count_| to 1.
-    max_frame_count_ = 1;
+  // If navigation has successfully finished in the main frame, set
+  // |first_navigation_completed_| to true so that we will record
+  // |max_loaded_frame_count_| above when future main frame navigations finish.
+  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsErrorPage()) {
+    first_navigation_completed_ = true;
+
+    // Navigation has completed in main frame. Reset |max_loaded_frame_count_|.
+    // |max_loaded_frame_count_| is not necessarily 1 if the navigation was
+    // served from BackForwardCache.
+    max_loaded_frame_count_ =
+        GetMainFrame()->frame_tree_node()->GetFrameTreeSize();
   }
 }
 
@@ -4845,13 +4864,15 @@ void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,
   GURL validated_url(url);
   source->GetProcess()->FilterURL(false, &validated_url);
 
-  if (!source->GetParent()) {
-    size_t frame_count = source->frame_tree_node()->GetFrameTreeSize();
-    UMA_HISTOGRAM_COUNTS_1000("Navigation.MainFrame.FrameCount", frame_count);
-  }
-
   for (auto& observer : observers_)
     observer.DidFinishLoad(source, validated_url);
+
+  size_t tree_size = frame_tree_.root()->GetFrameTreeSize();
+  if (max_loaded_frame_count_ < tree_size)
+    max_loaded_frame_count_ = tree_size;
+
+  if (!source->GetParent())
+    UMA_HISTOGRAM_COUNTS_1000("Navigation.MainFrame.FrameCount", tree_size);
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
@@ -5285,12 +5306,6 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
 void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_host,
                                          RenderFrameHost* new_host,
                                          bool is_main_frame) {
-  if (!old_host) {
-    frame_count_++;
-    if (max_frame_count_ < frame_count_)
-      max_frame_count_ = frame_count_;
-  }
-
 #if defined(OS_ANDROID)
   // Copy importance from |old_host| if |new_host| is a main frame.
   if (old_host && !new_host->GetParent()) {
@@ -5395,18 +5410,18 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
 }
 
 void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
-  if (!render_frame_host->GetParent() && IsBeingDestroyed() &&
-      record_max_frame_count_when_leaving_current_page_ &&
+  if (IsBeingDestroyed() && !render_frame_host->GetParent() &&
+      first_navigation_completed_ &&
       !static_cast<RenderFrameHostImpl*>(render_frame_host)
            ->is_in_back_forward_cache()) {
     // Main frame has been deleted because WebContents is being destroyed.
     // Note that we aren't recording this here when the main frame is in the
     // back-forward cache because that means we've actually already navigated
     // away from it (and we got to this point because the WebContents is
-    // deleted), which means |max_frame_count_| is already overwritten.
-    // The |max_frame_count_| value will instead be recorded from within
-    // |WebContentsImpl::ReadyToCommitNavigation()|.
-    RecordMaxFrameCountUMA(max_frame_count_);
+    // deleted), which means |max_loaded_frame_count_| is already overwritten.
+    // The |max_loaded_frame_count_| value will instead be recorded from within
+    // |WebContentsImpl::DidFinishNavigation()|.
+    RecordMaxFrameCountUMA(max_loaded_frame_count_);
   }
 
   is_notifying_observers_ = true;
@@ -6807,8 +6822,6 @@ gfx::Size WebContentsImpl::GetSizeForNewRenderView(bool is_main_frame) {
 }
 
 void WebContentsImpl::OnFrameRemoved(RenderFrameHost* render_frame_host) {
-  frame_count_--;
-
   for (auto& observer : observers_)
     observer.FrameDeleted(render_frame_host);
 }
@@ -7300,15 +7313,6 @@ bool WebContentsImpl::AddDomainInfoToRapporSample(rappor::Sample* sample) {
   sample->SetStringField("Domain", ::rappor::GetDomainAndRegistrySampleFromGURL(
                                        GetLastCommittedURL()));
   return true;
-}
-
-void WebContentsImpl::FocusedNodeTouched(bool editable) {
-#if defined(OS_WIN)
-  RenderWidgetHostView* view = GetRenderWidgetHostView();
-  if (!view)
-    return;
-  view->FocusedNodeTouched(editable);
-#endif
 }
 
 void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {

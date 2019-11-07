@@ -76,9 +76,9 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name) {
     return base::Value();
   }
 
-  return GetSettingsOnBlockingPool(device_name, basic_info, additional_papers,
-                                   /* has_secure_protocol */ false,
-                                   print_backend);
+  return GetSettingsOnBlockingTaskRunner(
+      device_name, basic_info, additional_papers,
+      /* has_secure_protocol */ false, print_backend);
 }
 
 std::string GetDefaultPrinterAsync() {

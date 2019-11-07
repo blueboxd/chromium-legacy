@@ -116,18 +116,6 @@ public class BookmarkUtils {
     }
 
     /**
-     * Adds a bookmark with the given title and url to the last used parent folder. Provides
-     * no visual feedback that a bookmark has been added.
-     *
-     * @param title The title of the bookmark.
-     * @param url The URL of the new bookmark.
-     */
-    public static BookmarkId addBookmarkSilently(
-            Context context, BookmarkModel bookmarkModel, String title, String url) {
-        return addBookmarkInternal(context, bookmarkModel, title, url);
-    }
-
-    /**
      * An internal version of {@link #addBookmarkSilently(Context, BookmarkModel, String, String)}.
      * Will reset last used parent if it fails to add a bookmark
      */

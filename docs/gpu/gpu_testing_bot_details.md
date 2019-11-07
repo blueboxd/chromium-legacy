@@ -93,7 +93,7 @@ background on Isolates and Swarming.
 ### Adding a new isolate
 
 1.  Define your target using the `template("test")` template in
-    [`src/testing/test.gni`][testing/test.gni]. See `test("gpu_tests")` in
+    [`src/testing/test.gni`][testing/test.gni]. See `test("gl_tests")` in
     [`src/gpu/BUILD.gn`][gpu/BUILD.gn] for an example. For a more complex
     example which invokes a series of scripts which finally launches the
     browser, see [`src/chrome/telemetry_gpu_test.isolate`][telemetry_gpu_test.isolate].
@@ -670,7 +670,7 @@ email address is required in order to properly authenticate.
 
 To test your authentication, find a hash for a recent isolate. Consult the
 instructions on [Running Binaries from the Bots Locally] to find a random hash
-from a target like `gpu_tests`. Then run the following:
+from a target like `gl_tests`. Then run the following:
 
 [Running Binaries from the Bots Locally]: https://www.chromium.org/developers/testing/gpu-testing#TOC-Running-Binaries-from-the-Bots-Locally
 

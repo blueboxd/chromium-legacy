@@ -19,6 +19,8 @@ def main():
   parser.add_argument('--support-apk-path', nargs='+', type=os.path.abspath,
                       required=True,
                       help='Absolute path to the WebLayer support APKs to use.')
+  parser.add_argument('--switch-webview-to', type=str, required=False,
+                      help='Package name to set as the WebView implementation.')
   parser.add_argument('-d', '--device', dest='devices', action='append',
                       default=[],
                       help='Target device for apk to install on. Enter multiple'
@@ -36,6 +38,10 @@ def main():
       print 'Installing %s...' % path
       device.Install(path, reinstall=True, allow_downgrade=True)
       print 'Success'
+    if args.switch_webview_to:
+      print 'Setting WebView implementation to %s' % args.switch_webview_to
+      device.SetWebViewImplementation(args.switch_webview_to)
+      print 'Done'
 
     device.adb.Shell('monkey -p org.chromium.weblayer.shell 1')
 

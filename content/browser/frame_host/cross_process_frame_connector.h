@@ -174,9 +174,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void OnSynchronizeVisualProperties(
       const viz::FrameSinkId& frame_sink_id,
       const FrameVisualProperties& visual_properties);
-  void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
-                                    const gfx::Rect& compositor_visible_rect,
-                                    blink::FrameOcclusionState occlusion_state);
+  void OnUpdateViewportIntersection(
+      const blink::ViewportIntersectionState& viewport_intersection);
   void OnVisibilityChanged(blink::mojom::FrameVisibility visibility);
   void OnSetIsInert(bool);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,

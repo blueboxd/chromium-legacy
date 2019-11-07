@@ -213,8 +213,10 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   // Returns a new registry, initializing it if |initialize| is true.
   // Caller assumes ownership for the object
   void SetUpRegistry(bool initialize) {
-    delegate_ = new FakeDelegate();
-    registry_.reset(new ProtocolHandlerRegistry(profile(), delegate()));
+    auto delegate = std::make_unique<FakeDelegate>();
+    delegate_ = delegate.get();
+    registry_.reset(
+        new ProtocolHandlerRegistry(profile(), std::move(delegate)));
     if (initialize) registry_->InitProtocolSettings();
   }
 

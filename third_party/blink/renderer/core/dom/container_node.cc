@@ -486,7 +486,7 @@ void ContainerNode::ParserInsertBefore(Node* new_child, Node& next_child) {
   DCHECK(new_child);
   DCHECK_EQ(next_child.parentNode(), this);
   DCHECK(!new_child->IsDocumentFragment());
-  DCHECK(!IsHTMLTemplateElement(this));
+  DCHECK(!IsA<HTMLTemplateElement>(this));
 
   if (next_child.previousSibling() == new_child ||
       &next_child == new_child)  // nothing to do
@@ -870,7 +870,7 @@ Node* ContainerNode::AppendChild(Node* new_child) {
 void ContainerNode::ParserAppendChild(Node* new_child) {
   DCHECK(new_child);
   DCHECK(!new_child->IsDocumentFragment());
-  DCHECK(!IsHTMLTemplateElement(this));
+  DCHECK(!IsA<HTMLTemplateElement>(this));
 
   RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
                            RuntimeCallStats::CounterId::kParserAppendChild);

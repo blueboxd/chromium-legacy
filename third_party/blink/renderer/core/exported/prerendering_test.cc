@@ -195,7 +195,7 @@ class PrerenderingTest : public testing::Test {
     Document* document =
         web_view_helper_.LocalMainFrame()->GetFrame()->GetDocument();
     Element* console = document->getElementById("console");
-    DCHECK(IsHTMLUListElement(console));
+    DCHECK(IsA<HTMLUListElement>(console));
     return *console;
   }
 

@@ -273,11 +273,10 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, FullscreenOpenFile) {
 IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, SafeBrowsing) {
   const base::FilePath test_file = temp_dir_.GetPath().AppendASCII("test.exe");
 
-  std::vector<uint8_t> raw_expected_hash;
-  ASSERT_TRUE(base::HexStringToBytes(
+  std::string expected_hash;
+  ASSERT_TRUE(base::HexStringToString(
       "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD",
-      &raw_expected_hash));
-  std::string expected_hash(raw_expected_hash.begin(), raw_expected_hash.end());
+      &expected_hash));
   std::string expected_url =
       "blob:" + embedded_test_server()->base_url().spec() +
       "native-file-system-write";

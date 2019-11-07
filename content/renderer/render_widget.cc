@@ -2464,13 +2464,10 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
 }
 
 void RenderWidget::OnSetViewportIntersection(
-    const gfx::Rect& viewport_intersection,
-    const gfx::Rect& compositor_visible_rect,
-    blink::FrameOcclusionState occlusion_state) {
+    const blink::ViewportIntersectionState& intersection_state) {
   if (auto* frame_widget = GetFrameWidget()) {
-    compositor_visible_rect_ = compositor_visible_rect;
-    frame_widget->SetRemoteViewportIntersection(viewport_intersection,
-                                                occlusion_state);
+    compositor_visible_rect_ = intersection_state.compositor_visible_rect;
+    frame_widget->SetRemoteViewportIntersection(intersection_state);
     layer_tree_host_->SetViewportVisibleRect(ViewportVisibleRect());
   }
 }
@@ -2901,20 +2898,6 @@ void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
     else
       ShowVirtualKeyboard();
   }
-// TODO(ananta): Piggyback off existing IPCs to communicate this information,
-// crbug/420130.
-#if defined(OS_WIN)
-  if (event.GetType() == blink::WebGestureEvent::kGestureTap) {
-    // TODO(estade): hit test the event against focused node to make sure
-    // the tap actually hit the focused node.
-    blink::WebInputMethodController* controller = GetInputMethodController();
-    blink::WebTextInputType text_input_type =
-        controller ? controller->TextInputType() : blink::kWebTextInputTypeNone;
-
-    Send(new WidgetHostMsg_FocusedNodeTouched(
-        routing_id_, text_input_type != blink::kWebTextInputTypeNone));
-  }
-#endif
 #endif
 }
 

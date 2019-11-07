@@ -86,4 +86,8 @@ interface NavigableContentsClient {
   // Informs the client of the ID of the content area's accessibility tree
   // whenever it changes.
   UpdateContentAXTree(ax.mojom.AXTreeID id);
+
+  // Informs the client that the focused DOM node has changed.
+  FocusedNodeChanged(bool is_editable_node,
+                     gfx.mojom.Rect node_bounds_in_screen);
 };

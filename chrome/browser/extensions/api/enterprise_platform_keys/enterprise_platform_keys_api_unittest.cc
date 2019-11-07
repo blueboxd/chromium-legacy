@@ -132,13 +132,6 @@ class EPKChallengeMachineKeyTest : public EPKChallengeKeyTestBase {
     func_->set_extension(extension_.get());
   }
 
-  // Returns an error string for the given code.
-  std::string GetCertificateError(int error_code) {
-    return base::StringPrintf(
-        chromeos::attestation::TpmChallengeKeyImpl::kGetCertificateFailedError,
-        error_code);
-  }
-
   std::unique_ptr<base::ListValue> CreateArgs() {
     return CreateArgsInternal(nullptr);
   }
@@ -169,7 +162,8 @@ TEST_F(EPKChallengeMachineKeyTest, ExtensionNotWhitelisted) {
   base::ListValue empty_whitelist;
   prefs_->Set(prefs::kAttestationExtensionWhitelist, empty_whitelist);
 
-  EXPECT_EQ(EPKPChallengeKey::kExtensionNotWhitelistedError,
+  EXPECT_EQ(chromeos::attestation::TpmChallengeKeyResult::
+                kExtensionNotWhitelistedErrorMsg,
             RunFunctionAndReturnError(func_.get(), CreateArgs(), browser()));
 }
 
@@ -239,7 +233,8 @@ TEST_F(EPKChallengeUserKeyTest, ExtensionNotWhitelisted) {
   base::ListValue empty_whitelist;
   prefs_->Set(prefs::kAttestationExtensionWhitelist, empty_whitelist);
 
-  EXPECT_EQ(EPKPChallengeKey::kExtensionNotWhitelistedError,
+  EXPECT_EQ(chromeos::attestation::TpmChallengeKeyResult::
+                kExtensionNotWhitelistedErrorMsg,
             RunFunctionAndReturnError(func_.get(), CreateArgs(), browser()));
 }
 

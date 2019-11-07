@@ -7,13 +7,14 @@ package org.chromium.chrome.browser.component_updater;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /** Java-side implementation of the VrAssetsComponentInstaller. */
 @JNINamespace("component_updater")
 public class VrAssetsComponentInstaller {
     @CalledByNative
     private static boolean shouldRegisterOnStartup() {
-        return ChromePreferenceManager.getInstance().readBoolean(
+        return SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceManager.SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP, false);
     }
 }

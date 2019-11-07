@@ -37,19 +37,25 @@ enum CanvasPixelFormat {
   kF16CanvasPixelFormat,
 };
 
+// todo(crbug/1021986) remove force_rgba in canvasColorParams
+enum class CanvasForceRGBA { kForced, kNotForced };
+
 class PLATFORM_EXPORT CanvasColorParams {
   DISALLOW_NEW();
 
  public:
   // The default constructor will create an output-blended 8-bit surface.
   CanvasColorParams();
-  CanvasColorParams(CanvasColorSpace, CanvasPixelFormat, OpacityMode);
-  CanvasColorParams(const CanvasColorParams& params, bool force_rgba);
+  CanvasColorParams(CanvasColorSpace,
+                    CanvasPixelFormat,
+                    OpacityMode,
+                    CanvasForceRGBA);
   explicit CanvasColorParams(const SkImageInfo&);
 
   CanvasColorSpace ColorSpace() const { return color_space_; }
   CanvasPixelFormat PixelFormat() const { return pixel_format_; }
   OpacityMode GetOpacityMode() const { return opacity_mode_; }
+  CanvasForceRGBA GetForceRGBA() const { return force_rgba_; }
 
   void SetCanvasColorSpace(CanvasColorSpace c) { color_space_ = c; }
   void SetCanvasPixelFormat(CanvasPixelFormat f) { pixel_format_ = f; }
@@ -95,7 +101,7 @@ class PLATFORM_EXPORT CanvasColorParams {
   CanvasColorSpace color_space_ = kSRGBCanvasColorSpace;
   CanvasPixelFormat pixel_format_ = kRGBA8CanvasPixelFormat;
   OpacityMode opacity_mode_ = kNonOpaque;
-  bool force_rgba_ = false;
+  CanvasForceRGBA force_rgba_ = CanvasForceRGBA::kNotForced;
 };
 
 }  // namespace blink

@@ -622,7 +622,11 @@ void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
 
   switch (event->type()) {
     case ui::ET_MOUSEWHEEL:
-      // The mouse wheel event is handled by ScrollableShelfView.
+      // The mousewheel event is handled by the ScrollableShelfView, but if the
+      // scrollable shelf is not active, then we delegate the event to the
+      // shelf.
+      if (!chromeos::switches::ShouldShowScrollableShelf())
+        shelf_->ProcessMouseWheelEvent(event->AsMouseWheelEvent());
       break;
     case ui::ET_MOUSE_PRESSED:
       if (!event->IsOnlyLeftMouseButton()) {
@@ -701,7 +705,6 @@ void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
 void ShelfView::ButtonPressed(views::Button* sender,
                               const ui::Event& event,
                               views::InkDrop* ink_drop) {
-
   if (sender == overflow_button_) {
     ToggleOverflowBubble();
     shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
@@ -1066,8 +1069,7 @@ void ShelfView::CalculateIdealBounds() {
                                    ? (origin.x() - display_bounds.x())
                                    : (origin.y() - display_bounds.y());
     } else {
-      padding_for_centering =
-          (available_size_for_app_icons - icons_size) / 2;
+      padding_for_centering = (available_size_for_app_icons - icons_size) / 2;
     }
 
     if (padding_for_centering > 0) {

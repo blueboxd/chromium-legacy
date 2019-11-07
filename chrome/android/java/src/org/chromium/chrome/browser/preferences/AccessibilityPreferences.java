@@ -72,7 +72,7 @@ public class AccessibilityPreferences
                         ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER);
         if (AccessibilityUtil.isAccessibilityEnabled()) {
             mAccessibilityTabSwitcherPref.setChecked(
-                    ChromePreferenceManager.getInstance().readBoolean(
+                    SharedPreferencesManager.getInstance().readBoolean(
                             ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER, true));
         } else {
             getPreferenceScreen().removePreference(mAccessibilityTabSwitcherPref);

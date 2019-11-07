@@ -10,16 +10,16 @@ import android.os.Bundle;
 import android.view.View;
 
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
-import org.chromium.weblayer_private.aidl.BrowserFragmentArgs;
-import org.chromium.weblayer_private.aidl.IBrowserFragment;
-import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
-import org.chromium.weblayer_private.aidl.IRemoteFragment;
-import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.BrowserFragmentArgs;
+import org.chromium.weblayer_private.interfaces.IBrowser;
+import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.IRemoteFragment;
+import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 
 public class BrowserFragmentImpl extends RemoteFragmentImpl {
     private final ProfileImpl mProfile;
 
-    private BrowserFragmentControllerImpl mController;
+    private BrowserImpl mBrowser;
     private Context mContext;
 
     public BrowserFragmentImpl(
@@ -33,49 +33,49 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     public void onAttach(Context context) {
         super.onAttach(context);
         mContext = ClassLoaderContextWrapperFactory.get(context);
-        if (mController != null) { // On first creation, onAttach is called before onCreate
-            mController.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
+        if (mBrowser != null) { // On first creation, onAttach is called before onCreate
+            mBrowser.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
         }
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mController = new BrowserFragmentControllerImpl(mProfile, savedInstanceState);
+        mBrowser = new BrowserImpl(mProfile, savedInstanceState);
         if (mContext != null) {
-            mController.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
+            mBrowser.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
         }
     }
 
     @Override
     public View onCreateView() {
-        return mController.getFragmentView();
+        return mBrowser.getFragmentView();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        mController.onActivityResult(requestCode, resultCode, data);
+        mBrowser.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     public void onRequestPermissionsResult(
             int requestCode, String[] permissions, int[] grantResults) {
-        mController.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        mBrowser.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mController.destroy();
-        mController = null;
+        mBrowser.destroy();
+        mBrowser = null;
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        // mController != null if fragment is retained, otherwise onDestroy is called first.
-        if (mController != null) {
-            mController.onFragmentDetached();
+        // mBrowser != null if fragment is retained, otherwise onDestroy is called first.
+        if (mBrowser != null) {
+            mBrowser.onFragmentDetached();
         }
         mContext = null;
     }
@@ -88,12 +88,12 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
             }
 
             @Override
-            public IBrowserFragmentController getController() {
-                if (mController == null) {
-                    throw new RuntimeException("BrowserFragmentController is available only between"
+            public IBrowser getBrowser() {
+                if (mBrowser == null) {
+                    throw new RuntimeException("Browser is available only between"
                             + " BrowserFragment's onCreate() and onDestroy().");
                 }
-                return mController;
+                return mBrowser;
             }
         };
     }

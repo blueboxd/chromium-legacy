@@ -1406,6 +1406,62 @@ class HardcodedGoogleHostsTest(unittest.TestCase):
     self.assertEqual(0, len(warnings))
 
 
+class ChromeOsSyncedPrefRegistrationTest(unittest.TestCase):
+
+  def testWarnsOnChromeOsDirectories(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('ash/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('chrome/browser/chromeos/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('chromeos/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('components/arc/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('components/exo/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+    ]
+    warnings = PRESUBMIT._CheckChromeOsSyncedPrefRegistration(
+      input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testDoesNotWarnOnSyncOsPref(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('chromeos/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_OS_PREF']),
+    ]
+    warnings = PRESUBMIT._CheckChromeOsSyncedPrefRegistration(
+      input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testDoesNotWarnOnCrossPlatformDirectories(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('chrome/browser/ui/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('components/sync/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('content/browser/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+    ]
+    warnings = PRESUBMIT._CheckChromeOsSyncedPrefRegistration(
+      input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testSeparateWarningForPriorityPrefs(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('chromeos/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF',
+                'PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF']),
+    ]
+    warnings = PRESUBMIT._CheckChromeOsSyncedPrefRegistration(
+      input_api, MockOutputApi())
+    self.assertEqual(2, len(warnings))
+
+
 class ForwardDeclarationTest(unittest.TestCase):
   def testCheckHeadersOnlyOutsideThirdParty(self):
     mock_input_api = MockInputApi()

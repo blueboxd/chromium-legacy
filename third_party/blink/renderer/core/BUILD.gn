@@ -188,6 +188,7 @@ component("core") {
     "//third_party/blink/renderer/core/layout",
     "//third_party/blink/renderer/core/layout/svg:svg_layout",
     "//third_party/blink/renderer/core/loader",
+    "//third_party/blink/renderer/core/mathml",
     "//third_party/blink/renderer/core/messaging",
     "//third_party/blink/renderer/core/mojo",
     "//third_party/blink/renderer/core/offscreencanvas",
@@ -653,6 +654,33 @@ process_json5_files("make_core_generated_html_element_type_helpers") {
   ]
 }
 
+process_json5_files("make_core_generated_mathml_names") {
+  script = "../build/scripts/make_element_factory.py"
+
+  in_files = [
+    "mathml/mathml_tag_names.json5",
+    "mathml/mathml_attribute_names.json5",
+  ]
+  other_inputs = make_element_factory_files
+  outputs = [
+    "$blink_core_output_dir/mathml_element_factory.cc",
+    "$blink_core_output_dir/mathml_element_factory.h",
+    "$blink_core_output_dir/mathml_names.cc",
+    "$blink_core_output_dir/mathml_names.h",
+  ]
+}
+
+process_json5_files("make_core_generated_mathml_element_type_helpers") {
+  script = "../build/scripts/make_element_type_helpers.py"
+
+  in_files = [ "mathml/mathml_tag_names.json5" ]
+  other_inputs = make_element_type_helpers_files
+  outputs = [
+    "$blink_core_output_dir/mathml_element_type_helpers.cc",
+    "$blink_core_output_dir/mathml_element_type_helpers.h",
+  ]
+}
+
 process_json5_files("make_core_generated_svg_names") {
   script = "../build/scripts/make_element_factory.py"
 
@@ -754,17 +782,6 @@ make_names("make_core_generated_enter_key_hint_names") {
 }
 
 # make_qualified_names ---------------------------------------------------------
-
-make_qualified_names("make_core_generated_math_ml_names") {
-  in_files = [
-    "html/parser/mathml_tag_names.json5",
-    "html/parser/mathml_attribute_names.json5",
-  ]
-  outputs = [
-    "$blink_core_output_dir/mathml_names.cc",
-    "$blink_core_output_dir/mathml_names.h",
-  ]
-}
 
 make_qualified_names("make_core_generated_xlink_names") {
   in_files = [ "svg/xlink_attribute_names.json5" ]
@@ -1033,7 +1050,8 @@ targets_generating_sources = [
   ":make_core_generated_html_tokenizer_names",
   ":make_core_generated_input_mode_names",
   ":make_core_generated_input_type_names",
-  ":make_core_generated_math_ml_names",
+  ":make_core_generated_mathml_names",
+  ":make_core_generated_mathml_element_type_helpers",
   ":make_core_generated_media_feature_names",
   ":make_core_generated_media_type_names",
   ":make_core_generated_performance_entry_names",
@@ -1259,7 +1277,6 @@ jumbo_source_set("unit_tests") {
     "frame/local_frame_view_test.cc",
     "frame/mhtml_archive_test.cc",
     "frame/mhtml_loading_test.cc",
-    "frame/origins_using_features_test.cc",
     "frame/performance_monitor_test.cc",
     "frame/reporting_context_test.cc",
     "frame/root_frame_viewport_test.cc",

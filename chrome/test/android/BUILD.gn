@@ -182,6 +182,7 @@ android_library("chrome_java_test_support") {
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
+    "//chrome/browser/preferences:java",
     "//chrome/browser/util:java",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/embedder_support/android:web_contents_delegate_java",

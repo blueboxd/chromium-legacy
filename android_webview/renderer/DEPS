@@ -12,6 +12,8 @@ include_rules = [
   "+components/safe_browsing/common",
   "+components/safe_browsing/features.h",
   "+components/safe_browsing/renderer",
+  "+components/security_interstitials/core",
+  "+components/security_interstitials/content/renderer",
   "+components/spellcheck/renderer",
   "+components/visitedlink/renderer",
 

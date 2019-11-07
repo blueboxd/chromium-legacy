@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -74,6 +75,8 @@ class TestGpuService : public mojom::GpuService {
     gfx::GpuMemoryBufferHandle handle;
     handle.id = req.id;
     handle.type = gfx::SHARED_MEMORY_BUFFER;
+    constexpr size_t kBufferSizeBytes = 100;
+    handle.region = base::UnsafeSharedMemoryRegion::Create(kBufferSizeBytes);
 
     DCHECK(req.callback);
     std::move(req.callback).Run(std::move(handle));

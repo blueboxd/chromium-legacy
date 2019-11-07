@@ -13,6 +13,7 @@ class Profile;
 
 namespace content {
 class StoragePartition;
+class WebContents;
 }
 
 namespace unified_consent {
@@ -83,14 +84,13 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
                             const GURL& url2,
                             const AutocompleteInput* input) const;
 
- private:
-  // Like StrippedURLsAreEqual(), but second URL is already stripped. The
-  // input corresponds to this second URL. This is a small optimization when
-  // comparing lots of URLs to a single one.
-  bool IsURLEqualToStrippedURL(const GURL& url1,
-                               const GURL& stripped_url2,
-                               const AutocompleteInput& input) const;
+  // Performs a comparison of |stripped_url| to the stripped last committed
+  // URL of |web_contents|, using the internal cache to avoid repeatedly
+  // re-stripping the URL.
+  bool IsStrippedURLEqualToWebContentsURL(const GURL& stripped_url,
+                                          content::WebContents* web_contents);
 
+ private:
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
   std::unique_ptr<OmniboxPedalProvider> pedal_provider_;

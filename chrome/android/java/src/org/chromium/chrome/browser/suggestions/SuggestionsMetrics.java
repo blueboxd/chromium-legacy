@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSitesBridge;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -28,10 +29,10 @@ public abstract class SuggestionsMetrics {
     // UI Element interactions
 
     public static void recordSurfaceVisible() {
-        if (!ChromePreferenceManager.getInstance().readBoolean(
+        if (!SharedPreferencesManager.getInstance().readBoolean(
                     ChromePreferenceManager.CONTENT_SUGGESTIONS_SHOWN_KEY, false)) {
             RecordUserAction.record("Suggestions.FirstTimeSurfaceVisible");
-            ChromePreferenceManager.getInstance().writeBoolean(
+            SharedPreferencesManager.getInstance().writeBoolean(
                     ChromePreferenceManager.CONTENT_SUGGESTIONS_SHOWN_KEY, true);
         }
 

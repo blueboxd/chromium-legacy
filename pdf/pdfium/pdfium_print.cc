@@ -254,11 +254,33 @@ std::string GetPageRangeStringFromRange(
   return page_number_str;
 }
 
+bool FlattenPrintData(FPDF_DOCUMENT doc) {
+  DCHECK(doc);
+
+  int page_count = FPDF_GetPageCount(doc);
+  for (int i = 0; i < page_count; ++i) {
+    ScopedFPDFPage page(FPDF_LoadPage(doc, i));
+    DCHECK(page);
+    if (FPDFPage_Flatten(page.get(), FLAT_PRINT) == FLATTEN_FAIL)
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 PDFiumPrint::PDFiumPrint(PDFiumEngine* engine) : engine_(engine) {}
 
 PDFiumPrint::~PDFiumPrint() = default;
+
+#if defined(OS_CHROMEOS)
+// static
+std::vector<uint8_t> PDFiumPrint::CreateFlattenedPdf(ScopedFPDFDocument doc) {
+  if (!FlattenPrintData(doc.get()))
+    return std::vector<uint8_t>();
+  return ConvertDocToBuffer(std::move(doc));
+}
+#endif  // defined(OS_CHROMEOS)
 
 // static
 std::vector<uint32_t> PDFiumPrint::GetPageNumbersFromPrintPageNumberRange(
@@ -475,19 +497,6 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
   }
 
   return temp_doc;
-}
-
-bool PDFiumPrint::FlattenPrintData(FPDF_DOCUMENT doc) const {
-  DCHECK(doc);
-
-  int page_count = FPDF_GetPageCount(doc);
-  for (int i = 0; i < page_count; ++i) {
-    ScopedFPDFPage page(FPDF_LoadPage(doc, i));
-    DCHECK(page);
-    if (FPDFPage_Flatten(page.get(), FLAT_PRINT) == FLATTEN_FAIL)
-      return false;
-  }
-  return true;
 }
 
 }  // namespace chrome_pdf

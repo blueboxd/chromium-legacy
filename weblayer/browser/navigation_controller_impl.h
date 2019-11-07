@@ -19,12 +19,12 @@
 #endif
 
 namespace weblayer {
-class BrowserControllerImpl;
+class TabImpl;
 
 class NavigationControllerImpl : public NavigationController,
                                  public content::WebContentsObserver {
  public:
-  explicit NavigationControllerImpl(BrowserControllerImpl* browser_controller);
+  explicit NavigationControllerImpl(TabImpl* tab);
   ~NavigationControllerImpl() override;
 
 #if defined(OS_ANDROID)

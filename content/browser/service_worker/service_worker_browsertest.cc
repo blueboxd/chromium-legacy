@@ -97,6 +97,7 @@
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/test/blob_test_utils.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
@@ -3348,6 +3349,8 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
   }
 
  protected:
+  virtual const char* GetWorkerURL() { return kWorkerUrl; }
+
   void RegisterAndActivateServiceWorker() {
     scoped_refptr<WorkerActivatedObserver> observer =
         new WorkerActivatedObserver(wrapper());
@@ -3357,7 +3360,7 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
         blink::mojom::ScriptType::kClassic,
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
-        embedded_test_server()->GetURL(kWorkerUrl), options,
+        embedded_test_server()->GetURL(GetWorkerURL()), options,
         base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
     observer->Wait();
   }
@@ -3586,6 +3589,47 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest,
   // is received by CodeCacheHost it should ignore the provided metadata.
   // TODO(crbug/925035): In the future this should instead kill the renderer.
   NavigateToTestPage();
+  WaitUntilSideDataSizeIs(0);
+}
+
+class ServiceWorkerCacheStorageFullCodeCacheFromInstallEventTest
+    : public ServiceWorkerV8CodeCacheForCacheStorageTest {
+ public:
+  const char* GetWorkerURL() override {
+    return "/service_worker/install_event_caches_script.js";
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    ServiceWorkerCacheStorageFullCodeCacheFromInstallEventTest,
+    FullCodeCacheGenerated) {
+  RegisterAndActivateServiceWorker();
+  // The full code cache should have been generated when the script was
+  // stored in the install event.
+  WaitUntilSideDataSizeIsBiggerThan(kV8CacheTimeStampDataSize);
+}
+
+class ServiceWorkerCacheStorageFullCodeCacheFromInstallEventDisabledByHintTest
+    : public ServiceWorkerV8CodeCacheForCacheStorageTest {
+ public:
+  ServiceWorkerCacheStorageFullCodeCacheFromInstallEventDisabledByHintTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "CacheStorageCodeCacheHint");
+  }
+
+  const char* GetWorkerURL() override {
+    return "/service_worker/install_event_caches_script_with_hint.js";
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    ServiceWorkerCacheStorageFullCodeCacheFromInstallEventDisabledByHintTest,
+    FullCodeCacheNotGenerated) {
+  RegisterAndActivateServiceWorker();
+  // The full code cache should not be generated when the script was
+  // stored in the install event and the header hint disables code cache.
   WaitUntilSideDataSizeIs(0);
 }
 

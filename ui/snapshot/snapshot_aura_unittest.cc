@@ -318,7 +318,7 @@ TEST_P(SnapshotAuraTest, RotateAndUIScale) {
   test_screen()->SetUIScale(kUIScale);
   test_screen()->SetDisplayRotation(display::Display::ROTATE_90);
 
-  gfx::Rect test_bounds(100, 100, 300, 200);
+  gfx::Rect test_bounds(100, 100, 200, 300);
   SetupTestWindow(test_bounds);
   WaitForDraw();
 
@@ -344,7 +344,7 @@ TEST_P(SnapshotAuraTest, RotateAndUIScaleAndScaleFactor) {
   test_screen()->SetUIScale(kUIScale);
   test_screen()->SetDisplayRotation(display::Display::ROTATE_90);
 
-  gfx::Rect test_bounds(20, 30, 150, 100);
+  gfx::Rect test_bounds(20, 30, 100, 150);
   SetupTestWindow(test_bounds);
   WaitForDraw();
 

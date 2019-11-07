@@ -474,6 +474,12 @@ class PDFEngineExports {
 
   static PDFEngineExports* Get();
 
+#if defined(OS_CHROMEOS)
+  // See the definition of CreateFlattenedPdf in pdf.cc for details.
+  virtual std::vector<uint8_t> CreateFlattenedPdf(
+      base::span<const uint8_t> input_buffer) = 0;
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN)
   // See the definition of RenderPDFPageToDC in pdf.cc for details.
   virtual bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,

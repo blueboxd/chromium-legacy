@@ -36,9 +36,13 @@ namespace web_app {
 class AppShortcutManager;
 class InstallFinalizer;
 class WebAppDataRetriever;
+class WebAppUrlLoader;
 
 class WebAppInstallTask : content::WebContentsObserver {
  public:
+  using RetrieveWebApplicationInfoWithIconsCallback =
+      base::OnceCallback<void(std::unique_ptr<WebApplicationInfo>)>;
+
   WebAppInstallTask(Profile* profile,
                     AppShortcutManager* shortcut_manager,
                     InstallFinalizer* install_finalizer,
@@ -125,6 +129,13 @@ class WebAppInstallTask : content::WebContentsObserver {
       std::unique_ptr<WebApplicationInfo> web_application_info,
       InstallManager::OnceInstallCallback callback);
 
+  // Obtains WebApplicationInfo about web app located at |app_url|, fallbacks to
+  // title/favicon if manifest is not present.
+  void LoadAndRetrieveWebApplicationInfoWithIcons(
+      const GURL& app_url,
+      WebAppUrlLoader* url_loader,
+      RetrieveWebApplicationInfoWithIconsCallback callback);
+
   // WebContentsObserver:
   void WebContentsDestroyed() override;
 
@@ -206,8 +217,13 @@ class WebAppInstallTask : content::WebContentsObserver {
                           const AppId& app_id,
                           bool shortcut_created);
 
+  // Whether we should just obtain WebApplicationInfo instead of the actual
+  // installation.
+  bool only_retrieve_web_application_info_ = false;
+
   InstallManager::WebAppInstallDialogCallback dialog_callback_;
   InstallManager::OnceInstallCallback install_callback_;
+  RetrieveWebApplicationInfoWithIconsCallback retrieve_info_callback_;
   base::Optional<InstallManager::InstallParams> install_params_;
   base::Optional<AppId> expected_app_id_;
   bool background_installation_ = false;
@@ -219,6 +235,8 @@ class WebAppInstallTask : content::WebContentsObserver {
   WebappInstallSource install_source_ = kNoInstallSource;
 
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
+  std::unique_ptr<WebApplicationInfo> web_application_info_;
+  std::unique_ptr<content::WebContents> web_contents_;
 
   AppShortcutManager* shortcut_manager_;
   InstallFinalizer* install_finalizer_;

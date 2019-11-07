@@ -1,166 +1,59 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
-import org.chromium.base.ObserverList;
 import org.chromium.base.Promise;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
-import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabObserverRegistrar;
-import org.chromium.content_public.browser.NavigationHandle;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-import javax.inject.Inject;
-
-import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
- * Checks whether the currently seen web page belongs to a verified origin and updates the
- * {@link TrustedWebActivityModel} accordingly.
+ * A Delegate for the {@link CurrentPageVerifier} that provides implementation specific to
+ * Trusted Web Activities, WebAPKs or A2HS as appropriate.
  */
-@ActivityScope
-public class Verifier implements NativeInitObserver {
-    private final CustomTabActivityTabProvider mTabProvider;
-    private final BrowserServicesIntentDataProvider mIntentDataProvider;
-    private final VerifierDelegate mDelegate;
-
-    @Nullable private VerificationState mState;
-
-    private final ObserverList<Runnable> mObservers = new ObserverList<>();
-
-    @IntDef({VerificationStatus.PENDING, VerificationStatus.SUCCESS, VerificationStatus.FAILURE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface VerificationStatus {
-        int PENDING = 0;
-        int SUCCESS = 1;
-        int FAILURE = 2;
-    }
-
-    /** Represents the verification state of currently viewed web page. */
-    public static class VerificationState {
-        public final String scope;
-        @VerificationStatus
-        public final int status;
-
-        public VerificationState(String scope, @VerificationStatus int status) {
-            this.scope = scope;
-            this.status = status;
-        }
-    }
-
-    /** A {@link TabObserver} that checks whether we are on a verified page on navigation. */
-    private final TabObserver mVerifyOnPageLoadObserver = new EmptyTabObserver() {
-        @Override
-        public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
-            if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
-            verify(navigation.getUrl());
-        }
-    };
-
-    private final CustomTabActivityTabProvider.Observer mVerifyOnTabSwitchObserver =
-            new CustomTabActivityTabProvider.Observer() {
-                @Override
-                public void onTabSwapped(@NonNull Tab tab) {
-                    // When a link with target="_blank" is followed and the user navigates back, we
-                    // don't get the onDidFinishNavigation event (because the original page wasn't
-                    // navigated away from, it was only ever hidden). https://crbug.com/942088
-                    verify(tab.getUrl());
-                }
-            };
-
-    @Inject
-    public Verifier(
-            ActivityLifecycleDispatcher lifecycleDispatcher,
-            TabObserverRegistrar tabObserverRegistrar,
-            CustomTabActivityTabProvider tabProvider,
-            CustomTabIntentDataProvider intentDataProvider,
-            VerifierDelegate delegate) {
-        // TODO(peconn): Change the CustomTabIntentDataProvider to a BrowserServices... once
-        // https://chromium-review.googlesource.com/c/chromium/src/+/1877600 has landed.
-        mTabProvider = tabProvider;
-        mIntentDataProvider = intentDataProvider;
-        mDelegate = delegate;
-
-        tabObserverRegistrar.registerTabObserver(mVerifyOnPageLoadObserver);
-        tabProvider.addObserver(mVerifyOnTabSwitchObserver);
-        lifecycleDispatcher.register(this);
-    }
+public interface Verifier {
+    /**
+     * Checks whether the given URL is verified.
+     *
+     * The returned Promise may be immediately fulfilled (eg if we know that the given url is one
+     * we shouldn't even attempt to verify or if we have a cached result). It is worth explicitly
+     * checking for this to deal with the result synchronously and not incur the delay of
+     * {@link Promise#then}.
+     */
+    Promise<Boolean> verify(String url);
 
     /**
-     * @return the {@link VerificationState} of the page we are currently on.
-     * Since verification may require native, may return null before native is loaded.
+     * A synchronous version of verify that returns true iff verification has previously been
+     * completed successfully for the given url.
+     */
+    boolean wasPreviouslyVerified(String url);
+
+    /**
+     * Returns the widest scope for which verification is relevant. This can be used to determine
+     * whether two different urls are the same for the purposes of verification. Returns
+     * {@link null} if the given url cannot be parsed.
+     *
+     * The purpose of this method is to determine whether two different pages can share verification
+     * state. Eg, if we've already verified a TWA for https://www.example.com/webapp/page1.html we
+     * don't need to perform verification again for https://www.example.com/webapp/folder/page2.html
+     * (but we do for https://developers.google.com/web/updates).
+     *
+     * eg, for a TWA where verification is on a per origin basis, this method would map to origins:
+     * https://www.example.com/webapp/page1.html        -> https://www.example.com
+     * https://www.example.com/webapp/folder/page2.html -> https://www.example.com
+     * https://developers.google.com/web/updates        -> https://developers.google.com
+     *
+     * eg, say we have a WebAPK with the verified scope being https://www.example.com/webapp/, then
+     * this method would map:
+     *
+     * https://www.example.com/webapp/page1.html         -> https://www.example.com/webapp/
+     * https://www.example.com/webapp/folder/page2.html  -> https://www.example.com/webapp/
+     * https://www.example.com/somewhere_else/page3.html -> https://www.example.com/somewhere_else/
+     *
+     * The last result can really be anything other than https://www.example.com/webapp/ - just
+     * something to signify we aren't on the verified scope.
      */
     @Nullable
-    public VerificationState getState() {
-        return mState;
-    }
-
-    public void addVerificationObserver(Runnable observer) {
-        mObservers.addObserver(observer);
-    }
-
-    public void removeVerificationObserver(Runnable observer) {
-        mObservers.removeObserver(observer);
-    }
-
-    @Override
-    public void onFinishNativeInitialization() {
-        verify(mIntentDataProvider.getUrlToLoad());
-    }
-
-    /**
-     * Perform verification for the given page.
-     */
-    private void verify(String url) {
-        Promise<Boolean> result = mDelegate.verify(url);
-        String scope = mDelegate.getVerifiedScope(url);
-        if (scope == null) return;
-
-        if (result.isFulfilled()) {
-            updateState(scope, statusFromBoolean(result.getResult()));
-        } else {
-            updateState(scope, VerificationStatus.PENDING);
-            result.then(verified -> { onVerificationResult(scope, verified); });
-        }
-    }
-
-    /**
-     * Is called as a result of a verification request to OriginVerifier. Is not called if the
-     * client called |validateRelationship| before launching the TWA and we found that verification
-     * in the cache.
-     */
-    private void onVerificationResult(String scope, boolean verified) {
-        Tab tab = mTabProvider.getTab();
-
-        boolean resultStillApplies = tab != null
-                && scope.equals(mDelegate.getVerifiedScope(tab.getUrl()));
-        if (resultStillApplies) {
-            updateState(scope, verified ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE);
-        }
-    }
-
-    private void updateState(String scope, @VerificationStatus int status) {
-        mState = new VerificationState(scope, status);
-        for (Runnable observer : mObservers) {
-            observer.run();
-        }
-    }
-
-    private static @VerificationStatus int statusFromBoolean(boolean success) {
-        return success ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE;
-    }
+    String getVerifiedScope(String url);
 }

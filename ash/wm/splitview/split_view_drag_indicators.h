@@ -55,6 +55,11 @@ class ASH_EXPORT SplitViewDragIndicators {
     // snapped in split view.
     kFromTop,
 
+    // Started dragging from the shelf. Split view is supported. Not currently
+    // dragging in a snap area, or the dragged window is not eligible to be
+    // snapped in split view.
+    kFromShelf,
+
     // Currently dragging in the |SplitViewController::LEFT| snap area, and the
     // dragged window is eligible to be snapped in split view.
     kToSnapLeft,

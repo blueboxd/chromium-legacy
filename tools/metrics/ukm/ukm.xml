@@ -3945,16 +3945,25 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Engagement.IsHigh.Changed">
+    <obsolete>
+      Deprecated 8/19 as part of https://crbug.com/998685
+    </obsolete>
     <summary>
       Whether the IsHigh bit changed during the current session.
     </summary>
   </metric>
   <metric name="Engagement.IsHigh.Changes">
+    <obsolete>
+      Deprecated 8/19 as part of https://crbug.com/998685
+    </obsolete>
     <summary>
       Counts of IsHigh changing (from 0 to 1 or 1 to 0).
     </summary>
   </metric>
   <metric name="Engagement.IsPreloaded">
+    <obsolete>
+      Deprecated 8/19 as part of https://crbug.com/998685
+    </obsolete>
     <summary>
       Whether the origin was preloaded (from the chrome://component) as a high
       engagement origin.
@@ -3969,12 +3978,18 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Playbacks.AudioContextTotal">
+    <obsolete>
+      Deprecated 8/19 as part of https://crbug.com/998685
+    </obsolete>
     <summary>
       The total number of significant media playbacks on this origin that came
       from WebAudio / AudioContext.
     </summary>
   </metric>
   <metric name="Playbacks.Delta">
+    <obsolete>
+      Deprecated 8/19 as part of https://crbug.com/998685
+    </obsolete>
     <summary>
       The number of significant media playbacks on this origin during this
       session (a visit to an origin on the same tab). A playback is determined
@@ -3983,12 +3998,18 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Playbacks.MediaElementTotal">
+    <obsolete>
+      Deprecated 8/19 as part of https://crbug.com/998685
+    </obsolete>
     <summary>
       The total number of significant media playbacks on this origin that came
       from media elements.
     </summary>
   </metric>
   <metric name="Playbacks.SecondsSinceLast">
+    <obsolete>
+      Deprecated 8/19 as part of https://crbug.com/998685
+    </obsolete>
     <summary>
       The number of seconds between significant media playback on the last visit
       and significant media playback on the current visit. If there was no
@@ -4007,6 +4028,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Player.Audible.Total">
+    <obsolete>
+      Deprecated 8/19 as part of https://crbug.com/998685
+    </obsolete>
     <summary>
       The delta from above but instead of a single visit, the total of all
       deltas for all visits on this origin.
@@ -4020,6 +4044,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Player.Significant.Total">
+    <obsolete>
+      Deprecated 8/19 as part of https://crbug.com/998685
+    </obsolete>
     <summary>
       The delta from above but instead of a single visit, the total of all
       deltas for all visits on this origin.

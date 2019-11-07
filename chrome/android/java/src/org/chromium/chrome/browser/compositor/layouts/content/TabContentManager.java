@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -344,6 +345,7 @@ public class TabContentManager {
     private void getTabThumbnailFromDisk(@NonNull Tab tab, @NonNull Callback<Bitmap> callback) {
         // Try JPEG thumbnail first before using the more costly
         // TabContentManagerJni.get().getEtc1TabThumbnail.
+        TraceEvent.startAsync("GetTabThumbnailFromDisk", tab.getId());
         new AsyncTask<Bitmap>() {
             @Override
             public Bitmap doInBackground() {
@@ -354,6 +356,7 @@ public class TabContentManager {
 
             @Override
             public void onPostExecute(Bitmap jpeg) {
+                TraceEvent.finishAsync("GetTabThumbnailFromDisk", tab.getId());
                 if (jpeg != null) {
                     RecordHistogram.recordEnumeratedHistogram(UMA_THUMBNAIL_FETCHING_RESULT,
                             ThumbnailFetchingResult.GOT_JPEG, ThumbnailFetchingResult.NUM_ENTRIES);

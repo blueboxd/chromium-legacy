@@ -447,6 +447,7 @@ class Surface final : public ui::PropertyHandler {
 #endif  // defined(OS_CHROMEOS)
 
   viz::SurfaceId first_embedded_surface_id_;
+  viz::SurfaceId latest_embedded_surface_id_;
   base::RepeatingCallback<viz::SurfaceId()> get_current_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);

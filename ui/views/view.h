@@ -1353,7 +1353,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual gfx::Size CalculatePreferredSize() const;
 
   // Override to be notified when the bounds of the view have changed.
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds);
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) {}
 
   // Called when the preferred size of a child view changed.  This gives the
   // parent an opportunity to do a fresh layout if that makes sense.

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/display/event_transformation_handler.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -32,12 +31,7 @@
 
 namespace {
 
-int GetFingerCountForScrubbing() {
-  return ash::features::IsVirtualDesksEnabled() &&
-                 ash::features::IsVirtualDesksGesturesEnabled()
-             ? 4
-             : 3;
-}
+constexpr int kScrubbingGestureFingerCount = 3;
 
 // Waits until the immersive mode reveal ends, and therefore the top view of
 // the browser is no longer visible.
@@ -87,8 +81,7 @@ class ImmersiveRevealEndedWaiter : public ImmersiveModeController::Observer {
 }  // namespace
 
 class TabScrubberTest : public InProcessBrowserTest,
-                        public TabStripModelObserver,
-                        public ::testing::WithParamInterface<bool> {
+                        public TabStripModelObserver {
  public:
   TabScrubberTest() = default;
 
@@ -97,17 +90,6 @@ class TabScrubberTest : public InProcessBrowserTest,
   }
 
   // InProcessBrowserTest:
-  void SetUp() override {
-    if (GetParam()) {
-      scoped_feature_list_.InitWithFeatures(
-          /*enabled_features=*/{ash::features::kVirtualDesks,
-                                ash::features::kVirtualDesksGestures},
-          /*disabled_features=*/{});
-    }
-
-    InProcessBrowserTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
     TabScrubber::GetInstance()->use_default_activation_delay_ = false;
     // Disable external monitor scaling of coordinates.
@@ -173,7 +155,7 @@ class TabScrubberTest : public InProcessBrowserTest,
                  GetStartX(browser, active_index, direction);
     ui::ScrollEvent scroll_event(ui::ET_SCROLL, gfx::Point(0, 0),
                                  ui::EventTimeForNow(), 0, offset, 0, offset, 0,
-                                 GetFingerCountForScrubbing());
+                                 kScrubbingGestureFingerCount);
     event_generator->Dispatch(&scroll_event);
   }
 
@@ -267,7 +249,7 @@ class TabScrubberTest : public InProcessBrowserTest,
         : event_generator_(event_generator) {
       ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(),
                                    time_for_next_event_, 0, 0, 0, 0, 0,
-                                   GetFingerCountForScrubbing());
+                                   kScrubbingGestureFingerCount);
       event_generator->Dispatch(&fling_cancel);
       if (TabScrubber::GetInstance()->IsActivationPending())
         TabScrubber::GetInstance()->FinishScrub(true);
@@ -276,7 +258,7 @@ class TabScrubberTest : public InProcessBrowserTest,
     ~ScrollGenerator() {
       ui::ScrollEvent fling_start(
           ui::ET_SCROLL_FLING_START, gfx::Point(), time_for_next_event_, 0,
-          last_x_offset_, 0, last_x_offset_, 0, GetFingerCountForScrubbing());
+          last_x_offset_, 0, last_x_offset_, 0, kScrubbingGestureFingerCount);
       event_generator_->Dispatch(&fling_start);
       if (TabScrubber::GetInstance()->IsActivationPending())
         TabScrubber::GetInstance()->FinishScrub(true);
@@ -286,7 +268,7 @@ class TabScrubberTest : public InProcessBrowserTest,
       time_for_next_event_ += base::TimeDelta::FromMilliseconds(100);
       ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(), time_for_next_event_,
                              0, x_offset, 0, x_offset, 0,
-                             GetFingerCountForScrubbing());
+                             kScrubbingGestureFingerCount);
       last_x_offset_ = x_offset;
       event_generator_->Dispatch(&scroll);
       if (TabScrubber::GetInstance()->IsActivationPending())
@@ -308,13 +290,11 @@ class TabScrubberTest : public InProcessBrowserTest,
     return std::make_unique<ui::test::EventGenerator>(root, window);
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(TabScrubberTest);
 };
 
 // Swipe a single tab in each direction.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, Single) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, Single) {
   AddTabs(browser(), 1);
 
   Scrub(browser(), 0, EACH_TAB);
@@ -329,7 +309,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, Single) {
 }
 
 // Swipe 4 tabs in each direction. Each of the tabs should become active.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, Multi) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, Multi) {
   AddTabs(browser(), 4);
 
   Scrub(browser(), 0, EACH_TAB);
@@ -349,7 +329,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, Multi) {
   EXPECT_EQ(4, browser()->tab_strip_model()->active_index());
 }
 
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, MultiBrowser) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, MultiBrowser) {
   AddTabs(browser(), 1);
   Scrub(browser(), 0, EACH_TAB);
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
@@ -365,7 +345,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, MultiBrowser) {
 }
 
 // Tests that tab scrubbing works correctly for a full-screen browser.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, FullScreenBrowser) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, FullScreenBrowser) {
   // Initializes the position of mouse. Makes the mouse away from the tabstrip
   // to prevent any interference on this test.
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
@@ -397,7 +377,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, FullScreenBrowser) {
 
 // Swipe 4 tabs in each direction with an extra swipe within each. The same
 // 4 tabs should become active.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, Repeated) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, Repeated) {
   AddTabs(browser(), 4);
 
   Scrub(browser(), 0, REPEAT_TABS);
@@ -420,7 +400,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, Repeated) {
 // Confirm that we get the last tab made active when we skip tabs.
 // These tests have 5 total tabs. We will only received scroll events
 // on tabs 0, 2 and 4.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, Skipped) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, Skipped) {
   AddTabs(browser(), 4);
 
   Scrub(browser(), 0, SKIP_TABS);
@@ -437,7 +417,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, Skipped) {
 }
 
 // Confirm that nothing happens when the swipe is small.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, NoChange) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, NoChange) {
   AddTabs(browser(), 1);
 
   SendScrubSequence(browser(), -1, 1);
@@ -448,7 +428,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, NoChange) {
 }
 
 // Confirm that very large swipes go to the beginning and and of the tabstrip.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, Bounds) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, Bounds) {
   AddTabs(browser(), 1);
 
   SendScrubSequence(browser(), -10000, 0);
@@ -458,7 +438,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, Bounds) {
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 }
 
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, DeleteHighlighted) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, DeleteHighlighted) {
   AddTabs(browser(), 1);
 
   SendScrubEvent(browser(), 0);
@@ -469,7 +449,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, DeleteHighlighted) {
 }
 
 // Delete the currently highlighted tab. Make sure the TabScrubber is aware.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, DeleteBeforeHighlighted) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, DeleteBeforeHighlighted) {
   AddTabs(browser(), 2);
 
   SendScrubEvent(browser(), 1);
@@ -480,7 +460,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, DeleteBeforeHighlighted) {
 }
 
 // Move the currently highlighted tab and confirm it gets tracked.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, MoveHighlighted) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, MoveHighlighted) {
   AddTabs(browser(), 1);
 
   SendScrubEvent(browser(), 0);
@@ -493,7 +473,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, MoveHighlighted) {
 
 // Move a tab to before the highlighted one. Make sure that the highlighted tab
 // index is updated correctly.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, MoveBefore) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, MoveBefore) {
   AddTabs(browser(), 2);
 
   SendScrubEvent(browser(), 1);
@@ -506,7 +486,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, MoveBefore) {
 
 // Move a tab to after the highlighted one. Make sure that the highlighted tab
 // index is updated correctly.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, MoveAfter) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, MoveAfter) {
   AddTabs(browser(), 2);
 
   SendScrubEvent(browser(), 1);
@@ -516,7 +496,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, MoveAfter) {
 }
 
 // Close the browser while an activation is pending.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, CloseBrowser) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, CloseBrowser) {
   AddTabs(browser(), 1);
 
   SendScrubEvent(browser(), 0);
@@ -527,7 +507,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, CloseBrowser) {
 
 // In an RTL layout, swipe 4 tabs in each direction. Each of the tabs should
 // become active.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, RTLMulti) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, RTLMulti) {
   base::i18n::SetICUDefaultLocale("ar");
   ASSERT_TRUE(base::i18n::IsRTL());
 
@@ -553,7 +533,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, RTLMulti) {
 // In an RTL layout, confirm that we get the last tab made active when we skip
 // tabs. These tests have 5 total tabs. We will only received scroll events
 // on tabs 0, 2 and 4.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, RTLSkipped) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, RTLSkipped) {
   base::i18n::SetICUDefaultLocale("ar");
   ASSERT_TRUE(base::i18n::IsRTL());
 
@@ -574,7 +554,7 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, RTLSkipped) {
 
 // In an RTL layout, move a tab to before the highlighted one. Make sure that
 // the highlighted tab index is updated correctly.
-IN_PROC_BROWSER_TEST_P(TabScrubberTest, RTLMoveBefore) {
+IN_PROC_BROWSER_TEST_F(TabScrubberTest, RTLMoveBefore) {
   base::i18n::SetICUDefaultLocale("ar");
   ASSERT_TRUE(base::i18n::IsRTL());
 
@@ -587,5 +567,3 @@ IN_PROC_BROWSER_TEST_P(TabScrubberTest, RTLMoveBefore) {
   browser()->tab_strip_model()->MoveSelectedTabsTo(2);
   EXPECT_EQ(0, TabScrubber::GetInstance()->highlighted_tab());
 }
-
-INSTANTIATE_TEST_SUITE_P(, TabScrubberTest, ::testing::Bool());

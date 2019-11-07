@@ -20,7 +20,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class PermissionFieldTrial {
     // Keep in sync with "chrome/browser/permissions/permission_features.h"
-    private static final String QUIET_NOTIFICATION_PROMPTS_UI_FLAVOUR_PARAMETER_NAME = "ui_flavour";
+    private static final String QUIET_NOTIFICATION_PROMPTS_UI_FLAVOR_PARAMETER_NAME = "ui_flavour";
     private static final String QUIET_NOTIFICATION_PROMPTS_HEADS_UP_NOTIFICATION =
             "heads_up_notification";
     private static final String QUIET_NOTIFICATION_PROMPTS_MINI_INFOBAR = "mini_infobar";
@@ -42,7 +42,7 @@ public class PermissionFieldTrial {
 
         switch (ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.QUIET_NOTIFICATION_PROMPTS,
-                PermissionFieldTrial.QUIET_NOTIFICATION_PROMPTS_UI_FLAVOUR_PARAMETER_NAME)) {
+                PermissionFieldTrial.QUIET_NOTIFICATION_PROMPTS_UI_FLAVOR_PARAMETER_NAME)) {
             case PermissionFieldTrial.QUIET_NOTIFICATION_PROMPTS_HEADS_UP_NOTIFICATION:
                 return UIFlavor.HEADS_UP_NOTIFICATION;
             case PermissionFieldTrial.QUIET_NOTIFICATION_PROMPTS_MINI_INFOBAR:

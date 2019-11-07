@@ -179,6 +179,8 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
           << "GrContextType is Metal, but Metal is not enabled.";
       gpu_preferences.gr_context_type = GrContextType::kMetal;
 #endif
+    } else if (value == switches::kGrContextTypeDawn) {
+      gpu_preferences.gr_context_type = GrContextType::kDawn;
     } else {
       NOTREACHED() << "Invalid GrContextType.";
       gpu_preferences.gr_context_type = GrContextType::kGL;

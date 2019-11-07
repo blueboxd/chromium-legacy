@@ -7,38 +7,40 @@ package org.chromium.weblayer;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.AssetManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.util.AndroidRuntimeException;
 import android.webkit.ValueCallback;
-import android.webkit.WebViewDelegate;
-import android.webkit.WebViewFactory;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.BrowserFragmentArgs;
-import org.chromium.weblayer_private.aidl.IBrowserFragment;
-import org.chromium.weblayer_private.aidl.IProfile;
-import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
-import org.chromium.weblayer_private.aidl.IWebLayer;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
-import org.chromium.weblayer_private.aidl.WebLayerVersion;
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.BrowserFragmentArgs;
+import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.IProfile;
+import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.IWebLayer;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 /**
  * WebLayer is responsible for initializing state necessary to use any of the classes in web layer.
  */
 public final class WebLayer {
-    // TODO: Using a metadata key for the WebLayerImpl package is just being used for testing,
-    // production will use a different mechanism.
+    // This metadata key, if defined, overrides the default behaviour of loading WebLayer from the
+    // current WebView implementation. This is only intended for testing, and does not enforce any
+    // signature requirements on the implementation, nor does it use the production code path to
+    // load the code. Do not set this in production APKs!
     private static final String PACKAGE_MANIFEST_KEY = "org.chromium.weblayer.WebLayerPackage";
 
     private static ListenableFuture<WebLayer> sFuture;
@@ -71,29 +73,6 @@ public final class WebLayer {
     }
 
     /**
-     * Loads assets for WebLayer and returns the package ID to use when calling
-     * R.onResourcesLoaded().
-     */
-    private static int loadAssets(Context appContext, PackageInfo implPackageInfo)
-            throws ReflectiveOperationException {
-        WebViewDelegate delegate;
-        // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
-        // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
-        // WebViewFactory, so we have to fake it.
-        Field packageInfo = WebViewFactory.class.getDeclaredField("sPackageInfo");
-        packageInfo.setAccessible(true);
-        packageInfo.set(null, implPackageInfo);
-
-        // TODO(torne): Figure out how to load assets for production.
-        // Load assets using the WebViewDelegate.
-        Constructor constructor = WebViewDelegate.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        delegate = (WebViewDelegate) constructor.newInstance();
-        delegate.addWebViewAssetPath(appContext);
-        return delegate.getPackageId(appContext.getResources(), implPackageInfo.packageName);
-    }
-
-    /**
      * Asynchronously creates and initializes WebLayer. Calling this more than once returns the same
      * object.
      *
@@ -111,12 +90,7 @@ public final class WebLayer {
                 appContext = appContext.getApplicationContext();
                 ClassLoader remoteClassLoader = createRemoteClassLoader(appContext);
                 IWebLayer iWebLayer = connectToWebLayerImplementation(remoteClassLoader);
-                PackageInfo packageInfo = appContext.getPackageManager().getPackageInfo(
-                        getImplPackageName(appContext),
-                        PackageManager.GET_SHARED_LIBRARY_FILES | PackageManager.GET_META_DATA);
-                int resourcesPackageId = loadAssets(appContext, packageInfo);
-                sFuture = new WebLayerLoadFuture(
-                        iWebLayer, appContext, packageInfo, resourcesPackageId);
+                sFuture = new WebLayerLoadFuture(iWebLayer, appContext);
             } catch (Exception e) {
                 throw new AndroidRuntimeException(e);
             }
@@ -130,8 +104,7 @@ public final class WebLayer {
     private static final class WebLayerLoadFuture extends ListenableFuture<WebLayer> {
         private final IWebLayer mIWebLayer;
 
-        WebLayerLoadFuture(IWebLayer iWebLayer, Context appContext, PackageInfo packageInfo,
-                int resourcesPackageId) {
+        WebLayerLoadFuture(IWebLayer iWebLayer, Context appContext) {
             mIWebLayer = iWebLayer;
             ValueCallback<Boolean> loadCallback = new ValueCallback<Boolean>() {
                 @Override
@@ -142,9 +115,8 @@ public final class WebLayer {
                 }
             };
             try {
-                iWebLayer.initAndLoadAsync(ObjectWrapper.wrap(appContext),
-                        ObjectWrapper.wrap(packageInfo), ObjectWrapper.wrap(loadCallback),
-                        resourcesPackageId);
+                iWebLayer.initAndLoadAsync(
+                        ObjectWrapper.wrap(appContext), ObjectWrapper.wrap(loadCallback));
             } catch (RemoteException e) {
                 throw new APICallException(e);
             }
@@ -224,17 +196,85 @@ public final class WebLayer {
     /**
      * Creates a ClassLoader for the remote (weblayer implementation) side.
      */
-    static ClassLoader createRemoteClassLoader(Context localContext) {
-        try {
-            // TODO(cduvall): Might want to cache the remote context so we don't need to call into
-            // package manager more than we need to.
-            Context remoteContext =
-                    localContext.createPackageContext(getImplPackageName(localContext),
-                            Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
-            return remoteContext.getClassLoader();
-        } catch (NameNotFoundException e) {
-            throw new AndroidRuntimeException(e);
+    static ClassLoader createRemoteClassLoader(Context appContext)
+            throws PackageManager.NameNotFoundException, ReflectiveOperationException {
+        String implPackageName = getImplPackageName(appContext);
+        if (implPackageName == null) {
+            return createRemoteClassLoaderFromWebViewFactory(appContext);
+        } else {
+            return createRemoteClassLoaderFromPackage(appContext, implPackageName);
         }
+    }
+
+    /**
+     * Creates a ClassLoader for the remote (weblayer implementation) side
+     * using a specified package name as the implementation. This is only
+     * intended for testing, not production use.
+     */
+    private static ClassLoader createRemoteClassLoaderFromPackage(
+            Context appContext, String implPackageName)
+            throws PackageManager.NameNotFoundException, ReflectiveOperationException {
+        // Load the code for the target package.
+        Context remoteContext = appContext.createPackageContext(
+                implPackageName, Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
+
+        // Get the package info for the target package.
+        PackageInfo implPackageInfo = appContext.getPackageManager().getPackageInfo(implPackageName,
+                PackageManager.GET_SHARED_LIBRARY_FILES | PackageManager.GET_META_DATA);
+
+        // Store this package info in WebViewFactory as if it had been loaded as WebView,
+        // because other parts of the implementation need to be able to fetch it from there.
+        Class<?> webViewFactory = Class.forName("android.webkit.WebViewFactory");
+        Field sPackageInfo = webViewFactory.getDeclaredField("sPackageInfo");
+        sPackageInfo.setAccessible(true);
+        sPackageInfo.set(null, implPackageInfo);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            // Load assets using the WebViewDelegate.
+            Class<?> webViewDelegateClass = Class.forName("android.webkit.WebViewDelegate");
+            Constructor constructor = webViewDelegateClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            Method addWebViewAssetPath =
+                    webViewDelegateClass.getDeclaredMethod("addWebViewAssetPath", Context.class);
+            Object delegate = constructor.newInstance();
+            addWebViewAssetPath.invoke(delegate, appContext);
+        } else {
+            // In L WebViewDelegate did not yet exist, so we have to poke AssetManager directly.
+            // Note: like the implementation in WebView's Api21CompatibilityDelegate this does
+            // not support split APKs.
+            Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
+            addAssetPath.invoke(appContext.getResources().getAssets(),
+                    implPackageInfo.applicationInfo.sourceDir);
+        }
+
+        return remoteContext.getClassLoader();
+    }
+
+    /**
+     * Creates a ClassLoader for the remote (weblayer implementation) side
+     * using WebViewFactory to load the current WebView implementation.
+     */
+    private static ClassLoader createRemoteClassLoaderFromWebViewFactory(Context appContext)
+            throws ReflectiveOperationException {
+        Class<?> webViewFactory = Class.forName("android.webkit.WebViewFactory");
+        Class<?> providerClass;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // In M+ this method loads the native library and the Java code, and adds the assets
+            // to the app.
+            Method getProviderClass = webViewFactory.getDeclaredMethod("getProviderClass");
+            getProviderClass.setAccessible(true);
+            providerClass = (Class) getProviderClass.invoke(null);
+        } else {
+            // In L we have to load the native library separately first.
+            Method loadNativeLibrary = webViewFactory.getDeclaredMethod("loadNativeLibrary");
+            loadNativeLibrary.setAccessible(true);
+            loadNativeLibrary.invoke(null);
+            // In L the method had a different name but still adds the assets to the app.
+            Method getFactoryClass = webViewFactory.getDeclaredMethod("getFactoryClass");
+            getFactoryClass.setAccessible(true);
+            providerClass = (Class) getFactoryClass.invoke(null);
+        }
+        return providerClass.getClassLoader();
     }
 
     private static String sanitizeProfilePath(String profilePath) {
@@ -244,11 +284,11 @@ public final class WebLayer {
         return profilePath == null ? "" : profilePath;
     }
 
-    private static String getImplPackageName(Context localContext)
+    private static String getImplPackageName(Context appContext)
             throws PackageManager.NameNotFoundException {
-        Bundle metaData = localContext.getPackageManager()
-                                  .getApplicationInfo(localContext.getPackageName(),
-                                          PackageManager.GET_META_DATA)
+        Bundle metaData = appContext.getPackageManager()
+                                  .getApplicationInfo(
+                                          appContext.getPackageName(), PackageManager.GET_META_DATA)
                                   .metaData;
         if (metaData != null) return metaData.getString(PACKAGE_MANIFEST_KEY);
         return null;

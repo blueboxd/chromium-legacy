@@ -27,6 +27,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
+#include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
@@ -44,7 +45,9 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -515,7 +518,7 @@ std::unique_ptr<KeyedService> BuildProtocolHandlerRegistry(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   return std::make_unique<ProtocolHandlerRegistry>(
-      profile, new FakeProtocolHandlerRegistryDelegate());
+      profile, std::make_unique<FakeProtocolHandlerRegistryDelegate>());
 }
 
 class ClearDomainReliabilityTester {
@@ -3009,3 +3012,51 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeCrashData) {
   EXPECT_FALSE(base::PathExists(upload_log_path));
 }
 #endif
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       WipeNotificationPermissionPromptOutcomesData) {
+  PrefService* prefs = GetProfile()->GetPrefs();
+  auto* permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(GetProfile());
+  base::SimpleTestClock clock_;
+  clock_.SetNow(base::Time::Now());
+  base::Time first_recorded_time = clock_.Now();
+
+  permission_ui_selector->set_clock_for_testing(&clock_);
+  permission_ui_selector->RecordPermissionPromptOutcome(
+      PermissionAction::DENIED);
+  clock_.Advance(base::TimeDelta::FromDays(1));
+  permission_ui_selector->set_clock_for_testing(&clock_);
+  permission_ui_selector->RecordPermissionPromptOutcome(
+      PermissionAction::DENIED);
+  clock_.Advance(base::TimeDelta::FromDays(1));
+  base::Time third_recorded_time = clock_.Now();
+  permission_ui_selector->set_clock_for_testing(&clock_);
+  permission_ui_selector->RecordPermissionPromptOutcome(
+      PermissionAction::DENIED);
+
+  constexpr char kNotificationPermissionActionsPrefPath[] =
+      "profile.content_settings.permission_actions.notifications";
+
+  EXPECT_EQ(3u,
+            prefs->GetList(kNotificationPermissionActionsPrefPath)->GetSize());
+  // Remove the first and the second element.
+  BlockUntilBrowsingDataRemoved(
+      first_recorded_time, third_recorded_time,
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_USAGE_DATA, false);
+  // There is only one element left.
+  EXPECT_EQ(1u,
+            prefs->GetList(kNotificationPermissionActionsPrefPath)->GetSize());
+  EXPECT_EQ(
+      (util::ValueToTime(prefs->GetList(kNotificationPermissionActionsPrefPath)
+                             ->begin()
+                             ->FindKey("time")))
+          .value_or(base::Time()),
+      third_recorded_time);
+
+  // Test we wiped all the elements left.
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_USAGE_DATA, false);
+  EXPECT_TRUE(prefs->GetList(kNotificationPermissionActionsPrefPath)->empty());
+}

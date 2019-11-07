@@ -20,29 +20,16 @@ namespace blink {
 
 class ScriptWrappable;
 
-// TODO(peria): Remove properties just to keep V8 objects alive.
-// e.g. IDBCursor.Request.
-// Apply |X| for each pair of (InterfaceName, PrivateKeyName).
-#define V8_PRIVATE_PROPERTY_FOR_EACH(X)                 \
-  X(MessageEvent, CachedData)                           \
-
-// The getter's name for a private property.
-#define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \
-  Get##InterfaceName##PrivateKeyName
-
-// Provides access to V8's private properties.
+// Provides access to V8's private properties with a symbol key.
 //
-// Usage 1) Path to use a pre-registered symbol.
-//   auto private_property = V8PrivateProperty::GetDOMExceptionError(isolate);
+//   static const V8PrivateProperty::SymbolKey kPrivateProperty;
+//   auto private_property = V8PrivateProperty::GetSymbol(
+//       isolate, kPrivateProperty);
 //   v8::Local<v8::Object> object = ...;
 //   v8::Local<v8::Value> value;
 //   if (!private_property.GetOrUndefined(object).ToLocal(&value)) return;
 //   value = ...;
 //   private_property.Set(object, value);
-//
-// Usage 2) Access with a symbol key.
-//   static const SymbolKey key;
-//   auto private_property = V8PrivateProperty::GetSymbol(isolate, key);
 //   ...
 class PLATFORM_EXPORT V8PrivateProperty {
   USING_FAST_MALLOC(V8PrivateProperty);
@@ -120,17 +107,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
     SymbolKey(const SymbolKey&) = delete;
     SymbolKey& operator=(const SymbolKey&) = delete;
   };
-
-#define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)        \
-  static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */          \
-                                                InterfaceName, KeyName)( \
-      v8::Isolate * isolate) {                                           \
-    static const SymbolKey private_property_key;                         \
-    return GetSymbol(isolate, private_property_key);                     \
-  }
-
-  V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DEFINE_GETTER)
-#undef V8_PRIVATE_PROPERTY_DEFINE_GETTER
 
   // TODO(peria): Do not use this specialized hack. See a TODO comment
   // on m_symbolWindowDocumentCachedAccessor.

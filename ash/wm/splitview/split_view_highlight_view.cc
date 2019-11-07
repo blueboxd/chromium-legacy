@@ -177,7 +177,15 @@ void SplitViewHighlightView::SetColor(SkColor color) {
 void SplitViewHighlightView::OnWindowDraggingStateChanged(
     SplitViewDragIndicators::WindowDraggingState window_dragging_state,
     SplitViewDragIndicators::WindowDraggingState previous_window_dragging_state,
+    bool previews_only,
     bool can_dragged_window_be_snapped) {
+  // No top indicator for dragging from the top in portrait orientation.
+  if (window_dragging_state ==
+          SplitViewDragIndicators::WindowDraggingState::kFromTop &&
+      !IsCurrentScreenOrientationLandscape() && !is_right_or_bottom_) {
+    return;
+  }
+
   const SplitViewController::SnapPosition preview_position =
       SplitViewDragIndicators::GetSnapPosition(window_dragging_state);
   const SplitViewController::SnapPosition previous_preview_position =
@@ -205,32 +213,37 @@ void SplitViewHighlightView::OnWindowDraggingStateChanged(
     return;
   }
 
-  // No top indicator for dragging from the top in portrait orientation.
-  if (window_dragging_state ==
-          SplitViewDragIndicators::WindowDraggingState::kFromTop &&
-      !IsCurrentScreenOrientationLandscape() && !is_right_or_bottom_) {
-    return;
-  }
-
-  const bool in_split_view_mode =
-      SplitViewController::Get(GetWidget()->GetNativeWindow())
-          ->InSplitViewMode();
-
   if (previous_preview_position != SplitViewController::NONE) {
-    DoSplitviewOpacityAnimation(
-        layer(), in_split_view_mode
-                     ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT
-                     : (is_right_or_bottom_ !=
-                                IsPhysicalLeftOrTop(previous_preview_position)
-                            ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN
-                            : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN));
+    // There was a snap preview showing, but now the user has dragged away from
+    // the edge of the screen, so that the preview should go away.
+    if (is_right_or_bottom_ != IsPhysicalLeftOrTop(previous_preview_position)) {
+      // This code is for the preview. If |previews_only|, just fade out. Else
+      // fade in from |kPreviewAreaHighlightOpacity| to |kHighlightOpacity|.
+      DoSplitviewOpacityAnimation(
+          layer(), previews_only ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT
+                                 : SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN);
+    } else {
+      // This code is for the other highlight. If |previews_only|, just stay
+      // hidden (in other words, do nothing). Else fade in.
+      DCHECK_EQ(0.f, layer()->opacity());
+      if (!previews_only) {
+        DoSplitviewOpacityAnimation(
+            layer(), SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN);
+      }
+    }
     return;
   }
 
-  SetColor(can_dragged_window_be_snapped ? SK_ColorWHITE : SK_ColorBLACK);
-  DoSplitviewOpacityAnimation(
-      layer(), in_split_view_mode ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT
-                                  : SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN);
+  // The drag just started, and not in a snap area. If |previews_only|, there is
+  // nothing to do. Else set the color of the indicators and fade them in.
+  DCHECK_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+            previous_window_dragging_state);
+  DCHECK_EQ(0.f, layer()->opacity());
+  if (!previews_only) {
+    SetColor(can_dragged_window_be_snapped ? SK_ColorWHITE : SK_ColorBLACK);
+    DoSplitviewOpacityAnimation(layer(), SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN);
+    return;
+  }
 }
 
 }  // namespace ash

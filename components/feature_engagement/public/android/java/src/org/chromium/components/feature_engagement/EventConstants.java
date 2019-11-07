@@ -29,12 +29,6 @@ public final class EventConstants {
     public static final String DOWNLOAD_HOME_OPENED = "download_home_opened";
 
     /**
-     * The user triggered pull to refresh. Used to help determine when to show the Chrome Home
-     * in-product help.
-     */
-    public static final String PULL_TO_REFRESH = "pull_to_refresh";
-
-    /**
      * Screenshot is taken with Chrome in the foreground.
      */
     public static final String SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND =

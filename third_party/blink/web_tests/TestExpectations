@@ -1383,16 +1383,12 @@ crbug.com/591099 external/wpt/css/css-flexbox/flexbox_align-items-stretch-3.html
 
 ### virtual/layout_ng_flex_box/css3/flexbox/
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-align-end.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-align-vertical-writing-mode.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-align.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-auto-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-border.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-margins-auto-size.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-margins.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-orientations.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-order.html [ Failure ]
@@ -1400,10 +1396,7 @@ crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flexbox-baseline-margin
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flexbox-baseline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flexbox-overflow-auto.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/minimum-size-image.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/multiline-align-self.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/multiline-justify-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/multiline-reverse-wrap-baseline.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/multiline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/negative-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/order-painting.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/overflow-auto-resizes-correctly.html [ Failure ]
@@ -1411,8 +1404,6 @@ crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/percentage-height-repla
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/position-absolute-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/relpos-with-percentage-top.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/style-change.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/true-centering.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/writing-modes.html [ Failure ]
 
 ### virtual/layout_ng_flex_box/css3/flexbox/mozilla/
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/mozilla/flexbox-items-as-stacking-contexts-2.html [ Failure ]
@@ -1425,7 +1416,6 @@ crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/anonymo
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/anonymous-flex-item-003.html [ Failure ]
 crbug.com/807497 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-basis-010.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-direction-row-vertical.html [ Failure ]
 crbug.com/249112 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-005.xht [ Failure ]
 crbug.com/249112 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Failure ]
 crbug.com/996474 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-minimum-height-flex-items-009.html [ Pass Failure ]
@@ -2472,11 +2462,6 @@ crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/sc
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
@@ -2492,13 +2477,7 @@ crbug.com/953847 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scro
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 
 # 1px scroll offset difference for compositor threaded scrollbar scrolling on Linux.
-crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Failure ]
-
-# TODO(arakeri): Mac is the only platform that runs with use_zoom_for_dsf=false. Get rid of this suite when crbug.com/716231 is fixed.
-# When DSF = 2 and use_zoom_for_dsf=false, the scroll offsets are different when compared to DSF = 2 and use_zoom_for_dsf=true.
-crbug.com/1016186 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
-crbug.com/1016186 [ Linux ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1009892 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 
 # TODO (arakeri): Mac uses the "Option" modifier instead of "Shift" to do the non-animated jump. This hasn't been implemented yet.
 crbug.com/1016955 [ Mac ] fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
@@ -2506,8 +2485,6 @@ crbug.com/1016955 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scr
 crbug.com/1016955 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 crbug.com/1016955 [ Mac ] virtual/hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
-crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
-crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -2615,6 +2592,9 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
+
+crbug.com/1022141 external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Crash Timeout ]
+crbug.com/1022141 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Crash Timeout ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
@@ -3126,10 +3106,8 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-display-rendering.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-auto-001.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-tall.html [ Failure ]
-crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-pause-resume.tentative.html [ Timeout ]
 crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-pause-resume.tentative.html [ Timeout ]
-crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Timeout ]
 crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-without-activation-fails.tentative.html [ Failure ]
 crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-interpolation-001.html [ Failure ]
 crbug.com/880983 external/wpt/css/css-masking/clip-path/clip-path-path-interpolation-002.html [ Failure ]
@@ -5543,6 +5521,7 @@ crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-mai
 # Pending enabling scroll to text feature
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment-same-doc.html [ Skip ]
+crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment-api.html [ Skip ]
 
 crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
 

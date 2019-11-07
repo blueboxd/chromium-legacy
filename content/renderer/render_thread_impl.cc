@@ -940,20 +940,13 @@ void RenderThreadImpl::Init() {
 #endif
   categorized_worker_pool_->Start(num_raster_threads);
 
-  mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
-      manager_remote;
-  ChildThread::Get()->BindHostReceiver(
-      manager_remote.InitWithNewPipeAndPassReceiver());
-
-  discardable_shared_memory_manager_ = std::make_unique<
-      discardable_memory::ClientDiscardableSharedMemoryManager>(
-      std::move(manager_remote), GetIOTaskRunner());
+  discardable_memory_allocator_ = CreateDiscardableMemoryAllocator();
 
   // TODO(boliu): In single process, browser main loop should set up the
   // discardable memory manager, and should skip this if kSingleProcess.
   // See crbug.com/503724.
   base::DiscardableMemoryAllocator::SetInstance(
-      discardable_shared_memory_manager_.get());
+      discardable_memory_allocator_.get());
 
 #if defined(OS_LINUX)
   if (base::FeatureList::IsEnabled(
@@ -1692,8 +1685,7 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
   size_t malloc_usage = metric->GetMallocUsage();
   memory_metrics->malloc_mb = malloc_usage / 1024 / 1024;
 
-  size_t discardable_usage =
-      discardable_shared_memory_manager_->GetBytesAllocated();
+  size_t discardable_usage = discardable_memory_allocator_->GetBytesAllocated();
   memory_metrics->discardable_kb = discardable_usage / 1024;
 
   size_t v8_usage = 0;
@@ -2368,7 +2360,7 @@ void RenderThreadImpl::OnRendererForegrounded() {
 
 void RenderThreadImpl::ReleaseFreeMemory() {
   base::allocator::ReleaseFreeMemory();
-  discardable_shared_memory_manager_->ReleaseFreeMemory();
+  discardable_memory_allocator_->ReleaseFreeMemory();
 
   // Do not call into blink if it is not initialized.
   if (blink_platform_impl_) {

@@ -44,6 +44,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -392,7 +393,6 @@ void ChromeAutocompleteProviderClient::StartServiceWorker(
                                                base::DoNothing());
 }
 
-// TODO(crbug.com/46623): Maintain a map of URL->WebContents for fast look-up.
 bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
     const GURL& url,
     const AutocompleteInput* input) {
@@ -413,8 +413,7 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
         content::WebContents* web_contents =
             browser->tab_strip_model()->GetWebContentsAt(i);
         if (web_contents != active_tab &&
-            IsURLEqualToStrippedURL(web_contents->GetLastCommittedURL(),
-                                    stripped_url, *input))
+            IsStrippedURLEqualToWebContentsURL(stripped_url, web_contents))
           return true;
       }
     }
@@ -445,12 +444,59 @@ bool ChromeAutocompleteProviderClient::StrippedURLsAreEqual(
              url2, *input, template_url_service, base::string16());
 }
 
-bool ChromeAutocompleteProviderClient::IsURLEqualToStrippedURL(
-    const GURL& url1,
-    const GURL& stripped_url2,
-    const AutocompleteInput& input) const {
-  const TemplateURLService* template_url_service = GetTemplateURLService();
-  return AutocompleteMatch::GURLToStrippedGURL(
-             url1, input, template_url_service, base::string16()) ==
-         stripped_url2;
+class AutocompleteClientWebContentsUserData
+    : public content::WebContentsUserData<
+          AutocompleteClientWebContentsUserData> {
+ public:
+  ~AutocompleteClientWebContentsUserData() override = default;
+
+  int GetLastCommittedEntryIndex() { return last_committed_entry_index_; }
+  const GURL& GetLastCommittedStrippedURL() {
+    return last_committed_stripped_url_;
+  }
+  void UpdateLastCommittedStrippedURL(
+      int last_committed_index,
+      const GURL& last_committed_url,
+      TemplateURLService* template_url_service) {
+    if (last_committed_url.is_valid()) {
+      last_committed_entry_index_ = last_committed_index;
+      // Use blank input since we will re-use this stripped URL with other
+      // inputs.
+      last_committed_stripped_url_ = AutocompleteMatch::GURLToStrippedGURL(
+          last_committed_url, AutocompleteInput(), template_url_service,
+          base::string16());
+    }
+  }
+
+ private:
+  explicit AutocompleteClientWebContentsUserData(
+      content::WebContents* contents);
+  friend class content::WebContentsUserData<
+      AutocompleteClientWebContentsUserData>;
+
+  int last_committed_entry_index_ = -1;
+  GURL last_committed_stripped_url_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+};
+
+AutocompleteClientWebContentsUserData::AutocompleteClientWebContentsUserData(
+    content::WebContents*)
+    : content::WebContentsUserData<AutocompleteClientWebContentsUserData>() {}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AutocompleteClientWebContentsUserData)
+
+bool ChromeAutocompleteProviderClient::IsStrippedURLEqualToWebContentsURL(
+    const GURL& stripped_url,
+    content::WebContents* web_contents) {
+  AutocompleteClientWebContentsUserData::CreateForWebContents(web_contents);
+  AutocompleteClientWebContentsUserData* user_data =
+      AutocompleteClientWebContentsUserData::FromWebContents(web_contents);
+  DCHECK(user_data);
+  if (user_data->GetLastCommittedEntryIndex() !=
+      web_contents->GetController().GetLastCommittedEntryIndex()) {
+    user_data->UpdateLastCommittedStrippedURL(
+        web_contents->GetController().GetLastCommittedEntryIndex(),
+        web_contents->GetLastCommittedURL(), GetTemplateURLService());
+  }
+  return stripped_url == user_data->GetLastCommittedStrippedURL();
 }

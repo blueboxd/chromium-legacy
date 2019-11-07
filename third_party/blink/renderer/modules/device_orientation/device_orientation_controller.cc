@@ -72,9 +72,6 @@ void DeviceOrientationController::DidAddEventListener(
   UseCounter::Count(GetDocument(), WebFeature::kDeviceOrientationSecureOrigin);
 
   if (!has_event_listener_) {
-    Platform::Current()->RecordRapporURL("DeviceSensors.DeviceOrientation",
-                                         WebURL(GetDocument().Url()));
-
     if (!IsSameSecurityOriginAsMainFrame()) {
       Platform::Current()->RecordRapporURL(
           "DeviceSensors.DeviceOrientationCrossOrigin",

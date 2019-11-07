@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -200,6 +201,7 @@ void StabilityMetricsHelper::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void StabilityMetricsHelper::IncreaseRendererCrashCount() {
   IncrementPrefValue(prefs::kStabilityRendererCrashCount);
+  RecordStabilityEvent(StabilityEventType::kRendererCrash);
 }
 
 void StabilityMetricsHelper::IncreaseGpuCrashCount() {
@@ -229,8 +231,7 @@ void StabilityMetricsHelper::LogLoadStarted() {
   base::RecordAction(base::UserMetricsAction("PageLoad"));
   IncrementPrefValue(prefs::kStabilityPageLoadCount);
   IncrementLongPrefsValue(prefs::kUninstallMetricsPageLoadCount);
-  // We need to save the prefs, as page load count is a critical stat, and it
-  // might be lost due to a crash :-(.
+  RecordStabilityEvent(StabilityEventType::kPageLoad);
 }
 
 void StabilityMetricsHelper::LogRendererCrash(
@@ -252,6 +253,7 @@ void StabilityMetricsHelper::LogRendererCrash(
         NOTREACHED();
 #endif
         IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
+        RecordStabilityEvent(StabilityEventType::kExtensionCrash);
 
         base::UmaHistogramSparse("CrashExitCodes.Extension",
                                  MapCrashExitCodeForHistogram(exit_code));
@@ -260,7 +262,7 @@ void StabilityMetricsHelper::LogRendererCrash(
               "Stability.CrashedProcessAge.Extension", uptime.value());
         }
       } else {
-        IncrementPrefValue(prefs::kStabilityRendererCrashCount);
+        IncreaseRendererCrashCount();
 
         base::UmaHistogramSparse("CrashExitCodes.Renderer",
                                  MapCrashExitCodeForHistogram(exit_code));
@@ -348,6 +350,13 @@ void StabilityMetricsHelper::LogRendererHang() {
       "ChildProcess.HungRendererAvailableMemoryMB",
       base::SysInfo::AmountOfAvailablePhysicalMemory() / 1024 / 1024);
   IncrementPrefValue(prefs::kStabilityRendererHangCount);
+}
+
+// static
+void StabilityMetricsHelper::RecordStabilityEvent(
+    StabilityEventType stability_event_type) {
+  UMA_STABILITY_HISTOGRAM_ENUMERATION("Stability.Experimental.Counts",
+                                      stability_event_type);
 }
 
 }  // namespace metrics

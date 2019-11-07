@@ -31,8 +31,8 @@
 namespace {
 
 // Mode of size 6x4.
-const drmModeModeInfo kDefaultMode =
-    {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
+const drmModeModeInfo kDefaultMode = {0, 6, 0, 0, 0, 0, 4,     0,
+                                      0, 0, 0, 0, 0, 0, {'\0'}};
 
 const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 constexpr uint32_t kCrtcIdBase = 1;
@@ -145,6 +145,7 @@ void DrmOverlayValidatorTest::SetUp() {
   ui::OverlaySurfaceCandidate primary_candidate;
   primary_candidate.buffer_size = primary_rect_.size();
   primary_candidate.display_rect = gfx::RectF(primary_rect_);
+  primary_candidate.is_opaque = true;
   primary_candidate.format = gfx::BufferFormat::BGRX_8888;
   primary_candidate.overlay_handled = true;
   overlay_params_.push_back(primary_candidate);
@@ -154,6 +155,7 @@ void DrmOverlayValidatorTest::SetUp() {
   overlay_candidate.buffer_size = overlay_rect_.size();
   overlay_candidate.display_rect = gfx::RectF(overlay_rect_);
   overlay_candidate.plane_z_order = 1;
+  primary_candidate.is_opaque = true;
   overlay_candidate.format = gfx::BufferFormat::BGRX_8888;
   overlay_candidate.overlay_handled = true;
   overlay_params_.push_back(overlay_candidate);
@@ -303,6 +305,7 @@ TEST_F(DrmOverlayValidatorTest, OverlayFormat_YUV) {
   overlay_params_.back().buffer_size = overlay_rect_.size();
   overlay_params_.back().display_rect = gfx::RectF(overlay_rect_);
   overlay_params_.back().crop_rect = crop_rect;
+  overlay_params_.back().is_opaque = false;
   overlay_params_.back().format = gfx::BufferFormat::YUV_420_BIPLANAR;
   plane_list_.pop_back();
   AddPlane(overlay_params_.back());

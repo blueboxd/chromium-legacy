@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_handler.h"
+#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_notification_handler.h"
@@ -55,14 +56,16 @@ PermissionRequestNotificationAndroid::Create(
 
 // static
 bool PermissionRequestNotificationAndroid::ShouldShowAsNotification(
+    Profile* profile,
     ContentSettingsType type) {
-  QuietNotificationsPromptConfig::UIFlavor ui_flavor =
-      QuietNotificationsPromptConfig::UIFlavorToUse();
-  return (ui_flavor ==
-              QuietNotificationsPromptConfig::UIFlavor::QUIET_NOTIFICATION ||
-          ui_flavor == QuietNotificationsPromptConfig::UIFlavor::
-                           HEADS_UP_NOTIFICATION) &&
-         type == ContentSettingsType::NOTIFICATIONS;
+  auto* permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
+  return type == ContentSettingsType::NOTIFICATIONS &&
+         permission_ui_selector->ShouldShowQuietUi() &&
+         (QuietNotificationsPromptConfig::UIFlavorToUse() ==
+              QuietNotificationsPromptConfig::UIFlavor::HEADS_UP_NOTIFICATION ||
+          QuietNotificationsPromptConfig::UIFlavorToUse() ==
+              QuietNotificationsPromptConfig::UIFlavor::QUIET_NOTIFICATION);
 }
 
 // static

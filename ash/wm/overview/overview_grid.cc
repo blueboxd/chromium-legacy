@@ -20,7 +20,6 @@
 #include "ash/root_window_settings.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desk_mini_view.h"
@@ -45,6 +44,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/work_area_insets.h"
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
@@ -231,32 +231,8 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
 // clamp the bounds to a minimum size and shift the bounds offscreen.
 gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
                                 bool divider_changed) {
-  gfx::Rect work_area =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-          root_window);
-
-  // If the shelf is in auto hide, overview will force it to be in auto hide
-  // shown, but we want to place the thumbnails as if the shelf was shown, so
-  // manually update the work area.
-  if (Shelf::ForWindow(root_window)->GetVisibilityState() == SHELF_AUTO_HIDE) {
-    const int inset = ShelfConfig::Get()->shelf_size();
-    switch (Shelf::ForWindow(root_window)->alignment()) {
-      case SHELF_ALIGNMENT_BOTTOM:
-      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-        work_area.Inset(0, 0, 0, inset);
-        break;
-      case SHELF_ALIGNMENT_LEFT:
-        work_area.Inset(inset, 0, 0, 0);
-        break;
-      case SHELF_ALIGNMENT_RIGHT:
-        work_area.Inset(0, 0, inset, 0);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-
+  const gfx::Rect work_area =
+      WorkAreaInsets::ForWindow(root_window)->ComputeStableWorkArea();
   SplitViewController* split_view_controller =
       SplitViewController::Get(root_window);
   if (!split_view_controller->InSplitViewMode())

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.util;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.view.accessibility.AccessibilityManager;
 
@@ -86,6 +87,13 @@ public class AccessibilityUtil {
         ApplicationStatus.unregisterActivityStateListener(sActivityStateListener);
         sActivityStateListener = null;
         sIsAccessibilityEnabled = null;
+    }
+
+    /**
+     * @return True if a hardware keyboard is detected.
+     */
+    public static boolean isHardwareKeyboardAttached(Configuration c) {
+        return c.keyboard != Configuration.KEYBOARD_NOKEYS;
     }
 
     /**

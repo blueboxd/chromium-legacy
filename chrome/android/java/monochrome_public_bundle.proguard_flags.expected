@@ -140,11 +140,6 @@
 # ~1%, and reduces the method count by ~4%.
 -allowaccessmodification
 
-# Ensure @RemovableInRelease actually works.
--checkdiscard class ** {
-  @org.chromium.base.annotations.RemovableInRelease *;
-}
-
 ################################################################################
 # ../../base/android/proguard/chromium_code.flags
 ################################################################################
@@ -269,6 +264,11 @@
 }
 -checkdiscard class ** {
   @org.chromium.base.annotations.CheckDiscard *;
+}
+
+# Ensure @RemovableInRelease actually works.
+-checkdiscard class ** {
+  @org.chromium.base.annotations.RemovableInRelease *;
 }
 
 ################################################################################

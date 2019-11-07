@@ -178,7 +178,7 @@ bool ShouldHandleChildren(const Node& node,
 
   if (auto* element = DynamicTo<Element>(node)) {
     if (auto* context = element->GetDisplayLockContext()) {
-      return context->IsActivatable(DisplayLockActivationReason::kUser);
+      return context->IsActivatable(DisplayLockActivationReason::kSelection);
     }
   }
   return true;

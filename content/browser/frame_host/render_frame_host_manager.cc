@@ -714,7 +714,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     //   navigation yet.
     if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
             browser_context, request->common_params().url) &&
-        request->state() != NavigationRequest::FAILED) {
+        request->state() < NavigationRequest::CANCELING) {
       if (render_frame_host_->has_committed_any_navigation()) {
         // If |render_frame_host_| has committed at least one navigation and it
         // is in a WebUI SiteInstance, then it must have the exact same WebUI
@@ -775,7 +775,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     // allow the navigation to be served correctly.
     if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
             browser_context, request->common_params().url) &&
-        request->state() != NavigationRequest::FAILED) {
+        request->state() < NavigationRequest::CANCELING) {
       bool created_web_ui = speculative_render_frame_host_->CreateWebUI(
           request->common_params().url, request->bindings());
       notify_webui_of_rf_creation =
@@ -2145,7 +2145,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->common_params().url, request->GetSourceSiteInstance(),
       request->dest_site_instance(), candidate_site_instance,
       request->common_params().transition,
-      request->state() == NavigationRequest::FAILED,
+      request->state() >= NavigationRequest::CANCELING,
       request->GetRestoreType() != RestoreType::NONE, request->is_view_source(),
       request->WasServerRedirect());
 

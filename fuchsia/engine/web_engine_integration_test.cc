@@ -108,17 +108,6 @@ class WebEngineIntegrationTest : public testing::Test {
     return value ? value->GetString() : std::string();
   }
 
-  fidl::InterfaceHandle<fuchsia::io::Directory> OpenDirectoryHandle(
-      const base::FilePath& path) {
-    fidl::InterfaceHandle<fuchsia::io::Directory> directory_channel;
-    zx_status_t status = fdio_open(
-        path.value().c_str(),
-        fuchsia::io::OPEN_FLAG_DIRECTORY | fuchsia::io::OPEN_RIGHT_READABLE,
-        directory_channel.NewRequest().TakeChannel().release());
-    ZX_DCHECK(status == ZX_OK, status) << "fdio_open";
-    return directory_channel;
-  }
-
  protected:
   const base::test::TaskEnvironment task_environment_;
 
@@ -339,8 +328,8 @@ TEST_F(WebEngineIntegrationTest, ContentDirectoryProvider) {
   provider.set_name("testdata");
   base::FilePath pkg_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &pkg_path));
-  provider.set_directory(
-      OpenDirectoryHandle(pkg_path.AppendASCII("fuchsia/engine/test/data")));
+  provider.set_directory(base::fuchsia::OpenDirectory(
+      pkg_path.AppendASCII("fuchsia/engine/test/data")));
 
   create_params.mutable_content_directories()->emplace_back(
       std::move(provider));

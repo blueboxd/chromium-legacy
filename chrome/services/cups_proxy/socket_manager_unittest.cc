@@ -16,6 +16,7 @@
 #include "chrome/services/cups_proxy/fake_cups_proxy_service_delegate.h"
 #include "chrome/services/cups_proxy/public/cpp/type_conversions.h"
 #include "chrome/services/cups_proxy/socket_manager.h"
+#include "chrome/services/cups_proxy/test/paths.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,22 +24,17 @@
 namespace cups_proxy {
 namespace {
 
-// CupsProxy testing data relative path.
-const base::FilePath::CharType kCupsProxyDataDirectory[] =
-    FILE_PATH_LITERAL("cups_proxy");
-
 // Returns base::nullopt on failure.
 base::Optional<std::string> GetTestFile(std::string test_name) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   // Build file path.
   base::FilePath path;
-  if (!base::PathService::Get(chrome::DIR_TEST_DATA, &path)) {
+  if (!base::PathService::Get(Paths::DIR_TEST_DATA, &path)) {
     return base::nullopt;
   }
 
-  path = path.Append(kCupsProxyDataDirectory)
-             .Append(FILE_PATH_LITERAL(test_name))
+  path = path.Append(FILE_PATH_LITERAL(test_name))
              .AddExtension(FILE_PATH_LITERAL(".bin"));
 
   // Read in file contents.

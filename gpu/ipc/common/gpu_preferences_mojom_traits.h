@@ -28,6 +28,8 @@ struct EnumTraits<gpu::mojom::GrContextType, gpu::GrContextType> {
         return gpu::mojom::GrContextType::kVulkan;
       case gpu::GrContextType::kMetal:
         return gpu::mojom::GrContextType::kMetal;
+      case gpu::GrContextType::kDawn:
+        return gpu::mojom::GrContextType::kDawn;
     }
     NOTREACHED();
     return gpu::mojom::GrContextType::kGL;
@@ -43,6 +45,9 @@ struct EnumTraits<gpu::mojom::GrContextType, gpu::GrContextType> {
         return true;
       case gpu::mojom::GrContextType::kMetal:
         *out = gpu::GrContextType::kMetal;
+        return true;
+      case gpu::mojom::GrContextType::kDawn:
+        *out = gpu::GrContextType::kDawn;
         return true;
     }
     return false;

@@ -72,10 +72,10 @@ class GpuMojoMediaClient : public MojoMediaClient {
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager_;
   AndroidOverlayMojoFactoryCB android_overlay_factory_cb_;
-#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   // Indirectly owned by GpuChildThread.
   gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
-#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#endif  // defined(OS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   CdmProxyFactoryCB cdm_proxy_factory_cb_;
 #if defined(OS_WIN)
   base::Optional<SupportedVideoDecoderConfigs> d3d11_supported_configs_;

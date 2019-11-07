@@ -15,7 +15,9 @@ import android.util.AttributeSet;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.ui.widget.ListMenuButton;
 import org.chromium.chrome.browser.ui.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
@@ -46,10 +48,9 @@ public class LanguageListPreference extends Preference {
                     ArrayList<Item> menuItems = new ArrayList<>();
 
                     // Show "Offer to translate" option if "Chrome Translate" is enabled.
-                    if (PrefServiceBridge.getInstance().isTranslateEnabled()) {
+                    if (PrefServiceBridge.getInstance().getBoolean(Pref.OFFER_TRANSLATE_ENABLED)) {
                         // Set this row checked if the language is unblocked.
-                        int endIconResId =
-                                PrefServiceBridge.getInstance().isBlockedLanguage(info.getCode())
+                        int endIconResId = TranslateBridge.isBlockedLanguage(info.getCode())
                                 ? 0
                                 : R.drawable.ic_check_googblue_24dp;
                         // Add checked icon at the end.
@@ -85,8 +86,7 @@ public class LanguageListPreference extends Preference {
                     if (item.getTextId() == R.string.languages_item_option_offer_to_translate) {
                         // Toggle current blocked state of this language.
                         boolean state = (item.getEndIconId() == 0);
-                        PrefServiceBridge.getInstance().setLanguageBlockedState(
-                                info.getCode(), !state);
+                        TranslateBridge.setLanguageBlockedState(info.getCode(), !state);
                         LanguagesManager.recordAction(state
                                         ? LanguagesManager.LanguageSettingsActionType
                                                   .ENABLE_TRANSLATE_FOR_SINGLE_LANGUAGE

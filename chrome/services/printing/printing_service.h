@@ -25,6 +25,10 @@ class PrintingService : public mojom::PrintingService {
       mojo::PendingReceiver<mojom::PdfNupConverter> receiver) override;
   void BindPdfToPwgRasterConverter(
       mojo::PendingReceiver<mojom::PdfToPwgRasterConverter> receiver) override;
+#if defined(OS_CHROMEOS)
+  void BindPdfFlattener(
+      mojo::PendingReceiver<mojom::PdfFlattener> receiver) override;
+#endif  // defined(OS_CHROMEOS)
 #if defined(OS_WIN)
   void BindPdfToEmfConverterFactory(
       mojo::PendingReceiver<mojom::PdfToEmfConverterFactory> receiver) override;

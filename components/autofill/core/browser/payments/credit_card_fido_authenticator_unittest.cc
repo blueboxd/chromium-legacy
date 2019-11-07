@@ -319,7 +319,7 @@ TEST_F(CreditCardFIDOAuthenticatorTest, ParseAssertionResponse) {
   GetAssertionAuthenticatorResponsePtr assertion_response_ptr =
       GetAssertionAuthenticatorResponse::New();
   assertion_response_ptr->info = blink::mojom::CommonCredentialInfo::New();
-  assertion_response_ptr->info->id = kTestCredentialId;
+  assertion_response_ptr->info->raw_id = Base64ToBytes(kTestCredentialId);
   assertion_response_ptr->signature = Base64ToBytes(kTestSignature);
 
   base::Value assertion_response_json =

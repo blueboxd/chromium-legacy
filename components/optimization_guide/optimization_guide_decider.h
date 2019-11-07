@@ -46,10 +46,23 @@ class OptimizationGuideDecider {
       const std::vector<proto::OptimizationType>& optimization_types,
       const std::vector<proto::OptimizationTarget>& optimization_targets) = 0;
 
+  // Returns whether the current conditions match |optimization_target|.
+  virtual OptimizationGuideDecision ShouldTargetNavigation(
+      content::NavigationHandle* navigation_handle,
+      proto::OptimizationTarget optimization_target) = 0;
+
+  // Returns whether |optimization_type| can be applied for the URL associated
+  // with |navigation_handle|.
+  virtual OptimizationGuideDecision CanApplyOptimization(
+      content::NavigationHandle* navigation_handle,
+      proto::OptimizationType optimization_type,
+      OptimizationMetadata* optimization_metadata) = 0;
+
   // Returns whether the current conditions match |optimization_target| and
   // |optimization_type| can be applied for the URL associated with
   // |navigation_handle|.
-  virtual OptimizationGuideDecision CanApplyOptimization(
+  virtual OptimizationGuideDecision
+  ShouldTargetNavigationAndCanApplyOptimization(
       content::NavigationHandle* navigation_handle,
       proto::OptimizationTarget optimization_target,
       proto::OptimizationType optimization_type,

@@ -161,6 +161,8 @@ bool WriteModuleBlacklistCache(
       sizeof(third_party_dlls::PackedListModule) * blacklisted_modules.size());
   file_contents.append(std::begin(md5_digest->a), std::end(md5_digest->a));
 
+  // TODO(1022041): Investigate if using WriteFileAtomically() in a
+  // CONTINUE_ON_SHUTDOWN sequence doesn't cause too many corrupted caches.
   return base::ImportantFileWriter::WriteFileAtomically(
       module_blacklist_cache_path, file_contents);
 }

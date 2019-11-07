@@ -57,6 +57,7 @@ enum Milestone {
   kM79,
   kM80,
   kM81,
+  kM82,
 };
 
 // Returns estimated milestone dates as human-readable strings.
@@ -95,6 +96,8 @@ const char* MilestoneString(Milestone milestone) {
       return "M80, around February 2020";
     case kM81:
       return "M81, around March 2020";
+    case kM82:
+      return "M82, around April 2020";
   }
 
   NOTREACHED();
@@ -135,9 +138,11 @@ double MilestoneDate(Milestone milestone) {
     case kM79:
       return 1575950400000;  // December 10, 2019.
     case kM80:
-      return 1580529600000;  // February 1, 2020. (This is a guess!)
+      return 1580788800000;  // February 4, 2020.
     case kM81:
-      return 1585022400000;  // March 24, 2020
+      return 1584417600000;  // March 17, 2020.
+    case kM82:
+      return 1588046400000;  // April 28, 2020.
   }
 
   NOTREACHED();
@@ -309,13 +314,23 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           "https://www.chromestatus.com/features/6107495151960064 for more "
           "details."};
 
-    case WebFeature::kApplicationCacheManifestSelectInsecureOrigin:
     case WebFeature::kApplicationCacheAPIInsecureOrigin:
+    case WebFeature::kApplicationCacheManifestSelectInsecureOrigin:
       return {"ApplicationCacheAPIInsecureOrigin", kM70,
-              "Application Cache is restricted to secure contexts. Please "
-              "consider migrating your application to HTTPS, and eventually "
-              "shifting over to Service Workers. See https://goo.gl/rStTGz for "
-              "more details."};
+              "Application Cache was previously restricted to secure origins "
+              "only from M70 on but now secure origin use is deprecated and "
+              "will be removed in M82.  Please shift your use case over to "
+              "Service Workers."};
+
+    case WebFeature::kApplicationCacheAPISecureOrigin:
+      return {
+          "ApplicationCacheAPISecureOrigin", kM82,
+          WillBeRemoved("Application Cache API use", kM82, "6192449487634432")};
+
+    case WebFeature::kApplicationCacheManifestSelectSecureOrigin:
+      return {"ApplicationCacheAPISecureOrigin", kM82,
+              WillBeRemoved("Application Cache API manifest selection", kM82,
+                            "6192449487634432")};
 
     case WebFeature::kNotificationInsecureOrigin:
     case WebFeature::kNotificationAPIInsecureOriginIframe:

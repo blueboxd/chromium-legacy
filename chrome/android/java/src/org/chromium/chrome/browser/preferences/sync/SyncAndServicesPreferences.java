@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
@@ -350,11 +351,11 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         } else if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
             mPrefServiceBridge.setBoolean(Pref.SEARCH_SUGGEST_ENABLED, (boolean) newValue);
         } else if (PREF_SAFE_BROWSING.equals(key)) {
-            mPrefServiceBridge.setSafeBrowsingEnabled((boolean) newValue);
+            mPrefServiceBridge.setBoolean(Pref.SAFE_BROWSING_ENABLED, (boolean) newValue);
         } else if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
-            mPrefServiceBridge.setSafeBrowsingExtendedReportingEnabled((boolean) newValue);
+            SafeBrowsingBridge.setSafeBrowsingExtendedReportingEnabled((boolean) newValue);
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
-            mPrefServiceBridge.setResolveNavigationErrorEnabled((boolean) newValue);
+            mPrefServiceBridge.setBoolean(Pref.ALTERNATE_ERROR_PAGES_ENABLED, (boolean) newValue);
         } else if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
             UmaSessionStats.changeMetricsReportingConsent((boolean) newValue);
         } else if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
@@ -553,10 +554,11 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         updateSyncPreferences();
 
         mSearchSuggestions.setChecked(mPrefServiceBridge.getBoolean(Pref.SEARCH_SUGGEST_ENABLED));
-        mNavigationError.setChecked(mPrefServiceBridge.isResolveNavigationErrorEnabled());
-        mSafeBrowsing.setChecked(mPrefServiceBridge.isSafeBrowsingEnabled());
+        mNavigationError.setChecked(
+                mPrefServiceBridge.getBoolean(Pref.ALTERNATE_ERROR_PAGES_ENABLED));
+        mSafeBrowsing.setChecked(mPrefServiceBridge.getBoolean(Pref.SAFE_BROWSING_ENABLED));
         mSafeBrowsingReporting.setChecked(
-                mPrefServiceBridge.isSafeBrowsingExtendedReportingEnabled());
+                SafeBrowsingBridge.isSafeBrowsingExtendedReportingEnabled());
         mUsageAndCrashReporting.setChecked(
                 mPrivacyPrefManager.isUsageAndCrashReportingPermittedByUser());
         mUrlKeyedAnonymizedData.setChecked(
@@ -618,16 +620,16 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         return preference -> {
             String key = preference.getKey();
             if (PREF_NAVIGATION_ERROR.equals(key)) {
-                return mPrefServiceBridge.isResolveNavigationErrorManaged();
+                return mPrefServiceBridge.isManagedPreference(Pref.ALTERNATE_ERROR_PAGES_ENABLED);
             }
             if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
                 return mPrefServiceBridge.isManagedPreference(Pref.SEARCH_SUGGEST_ENABLED);
             }
             if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
-                return mPrefServiceBridge.isSafeBrowsingExtendedReportingManaged();
+                return SafeBrowsingBridge.isSafeBrowsingExtendedReportingManaged();
             }
             if (PREF_SAFE_BROWSING.equals(key)) {
-                return mPrefServiceBridge.isSafeBrowsingManaged();
+                return mPrefServiceBridge.isManagedPreference(Pref.SAFE_BROWSING_ENABLED);
             }
             if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
                 return mPrefServiceBridge.isMetricsReportingManaged();

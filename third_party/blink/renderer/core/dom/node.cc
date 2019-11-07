@@ -617,13 +617,13 @@ void Node::CallDistributeScroll(ScrollState& scroll_state) {
     NativeDistributeScroll(scroll_state);
     return;
   }
-  if (callback->NativeScrollBehavior() !=
+  if (callback->GetNativeScrollBehavior() !=
       NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
-  if (callback->NativeScrollBehavior() !=
+  if (callback->GetNativeScrollBehavior() !=
       NativeScrollBehavior::kDisableNativeScroll)
     NativeDistributeScroll(scroll_state);
-  if (callback->NativeScrollBehavior() ==
+  if (callback->GetNativeScrollBehavior() ==
       NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
 }
@@ -663,13 +663,13 @@ void Node::CallApplyScroll(ScrollState& scroll_state) {
     NativeApplyScroll(scroll_state);
     return;
   }
-  if (callback->NativeScrollBehavior() !=
+  if (callback->GetNativeScrollBehavior() !=
       NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
-  if (callback->NativeScrollBehavior() !=
+  if (callback->GetNativeScrollBehavior() !=
       NativeScrollBehavior::kDisableNativeScroll)
     NativeApplyScroll(scroll_state);
-  if (callback->NativeScrollBehavior() ==
+  if (callback->GetNativeScrollBehavior() ==
       NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
 }
@@ -1701,8 +1701,8 @@ bool Node::CanStartSelection() const {
 // inline style, or other things that this apparently guards against.
 bool Node::IsStyledElement() const {
   auto* this_element = DynamicTo<Element>(this);
-  return IsHTMLElement() || IsSVGElement() ||
-         (this_element &&
+  return IsHTMLElement() || IsSVGElement() || IsMathMLElement() ||
+         (!RuntimeEnabledFeatures::MathMLCoreEnabled() && this_element &&
           this_element->namespaceURI() == mathml_names::kNamespaceURI);
 }
 
@@ -2846,8 +2846,10 @@ DispatchEventResult Node::DispatchDOMActivateEvent(int detail,
 void Node::DispatchSimulatedClick(Event* underlying_event,
                                   SimulatedClickMouseEventOptions event_options,
                                   SimulatedClickCreationScope scope) {
-  if (auto* element = IsElementNode() ? ToElement(this) : parentElement())
-    element->ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kUser);
+  if (auto* element = IsElementNode() ? ToElement(this) : parentElement()) {
+    element->ActivateDisplayLockIfNeeded(
+        DisplayLockActivationReason::kSimulatedClick);
+  }
   EventDispatcher::DispatchSimulatedClick(*this, underlying_event,
                                           event_options, scope);
 }

@@ -761,6 +761,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // RenderWidgetHostDelegate --------------------------------------------------
 
   ukm::SourceId GetUkmSourceIdForLastCommittedSource() const override;
+  ukm::SourceId GetUkmSourceIdForLastCommittedSourceIncludingSameDocument()
+      const override;
   void SetTopControlsShownRatio(RenderWidgetHostImpl* render_widget_host,
                                 float ratio) override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
@@ -776,6 +778,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ResetAutoResizeSize() override;
   InputEventShim* GetInputEventShim() const override;
   RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate() override;
+  void OnVerticalScrollDirectionChanged(
+      viz::VerticalScrollDirection scroll_direction) override;
 
 #if !defined(OS_ANDROID)
   double GetPendingPageZoomLevel() override;
@@ -838,7 +842,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool OnUpdateDragCursor() override;
   bool IsWidgetForMainFrame(RenderWidgetHostImpl* render_widget_host) override;
   bool AddDomainInfoToRapporSample(rappor::Sample* sample) override;
-  void FocusedNodeTouched(bool editable) override;
   bool IsShowingContextMenuOnPage() const override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
@@ -1651,8 +1654,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The last published theme color.
   base::Optional<SkColor> last_sent_theme_color_;
 
-  // SourceId for current page.
+  // SourceId for current page from the last committed cross-document
+  // navigation.
   ukm::SourceId last_committed_source_id_ = ukm::kInvalidSourceId;
+  // SourceId of the last committed navigation, either a cross-document or
+  // same-document navigation.
+  ukm::SourceId last_committed_source_id_including_same_document_ =
+      ukm::kInvalidSourceId;
 
   // Data for misc internal state ----------------------------------------------
 
@@ -1922,19 +1930,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<JavaScriptDialogNavigationDeferrer>
       javascript_dialog_navigation_deferrer_;
 
-  // The number of frames currently in this WebContents.
-  size_t frame_count_ = 0;
+  // The max number of loaded frames that have been seen in this WebContents.
+  // This number is reset with each main frame navigation.
+  size_t max_loaded_frame_count_ = 0;
 
-  // The max number of frames seen in the current page hosted by this
-  // WebContents.
-  size_t max_frame_count_ = 0;
-
-  // This boolean value is used to keep track of whether we should record
-  // |max_frame_count_| when the main frame navigation is ready to commit.
-  // |max_frame_count_| should not be recorded for initial navigation for
-  // example. This is because |max_frame_count_| refers to the page that is
-  // being navigated away from.
-  bool record_max_frame_count_when_leaving_current_page_ = false;
+  // This boolean value is used to keep track of whether we finished the first
+  // successful navigation in this WebContents.
+  bool first_navigation_completed_ = false;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
   base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};

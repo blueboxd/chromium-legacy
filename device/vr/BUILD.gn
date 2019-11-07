@@ -56,9 +56,6 @@ if (enable_vr) {
 
     if (enable_gvr_services) {
       sources += [
-        "android/gvr/cardboard_gamepad_data_fetcher.cc",
-        "android/gvr/cardboard_gamepad_data_fetcher.h",
-        "android/gvr/cardboard_gamepad_data_provider.h",
         "android/gvr/gvr_delegate.cc",
         "android/gvr/gvr_delegate.h",
         "android/gvr/gvr_delegate_provider.h",

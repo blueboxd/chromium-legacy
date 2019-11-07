@@ -6,6 +6,7 @@ package org.chromium.weblayer_private;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -192,6 +193,10 @@ public class ContentViewRenderView extends FrameLayout {
                 mSurfaceCallback = new SurfaceHolderCallback(this);
                 mSurfaceView.getHolder().addCallback(mSurfaceCallback);
                 mSurfaceView.setVisibility(View.VISIBLE);
+
+                // TODO(boliu): This is only needed when video is lifted into a separate surface.
+                // Keeping this constantly will use one more byte per pixel constantly.
+                mSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
                 mTextureView = null;
                 mSurfaceTextureListener = null;

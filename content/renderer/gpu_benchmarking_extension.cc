@@ -46,6 +46,7 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/page/page_visibility_state.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_image_cache.h"
@@ -1175,8 +1176,8 @@ void GpuBenchmarking::Freeze() {
   GpuBenchmarkingContext context(render_frame_);
   // TODO(fmeawad): Instead of forcing a visibility change, only allow
   // freezing a page if it was already hidden.
-  context.web_view()->SetIsHidden(/*hidden=*/true,
-                                  /*is_initial_state=*/false);
+  context.web_view()->SetVisibilityState(PageVisibilityState::kHidden,
+                                         /*is_initial_state=*/false);
   context.web_view()->SetPageFrozen(true);
 }
 

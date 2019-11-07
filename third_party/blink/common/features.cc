@@ -424,5 +424,15 @@ const base::Feature kSetDetachedWindowReasonByClosing{
 const base::Feature kSetDetachedWindowReasonByOtherReason{
     "SetDetachedWindowReasonByOtherReason", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled allows the header name used in the blink
+// CacheStorageCodeCacheHint runtime feature to be modified.  This runtime
+// feature disables generating full code cache for responses stored in
+// cache_storage during a service worker install event.  The runtime feature
+// must be enabled via the blink runtime feature mechanism, however.
+const base::Feature kCacheStorageCodeCacheHintHeader{
+    "CacheStorageCodeCacheHintHeader", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<std::string> kCacheStorageCodeCacheHintHeaderName{
+    &kCacheStorageCodeCacheHintHeader, "name", "x-CacheStorageCodeCacheHint"};
+
 }  // namespace features
 }  // namespace blink

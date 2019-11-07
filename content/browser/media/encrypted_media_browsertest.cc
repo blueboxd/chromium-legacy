@@ -270,6 +270,14 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_FLAC) {
   RunMultipleFileTest(std::string(), "bear-flac-cenc.mp4", media::kEnded);
 }
 
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_OPUS) {
+#if defined(OS_ANDROID)
+  if (!media::MediaCodecUtil::IsOpusDecoderAvailable())
+    return;
+#endif
+  RunMultipleFileTest(std::string(), "bear-opus-cenc.mp4", media::kEnded);
+}
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {

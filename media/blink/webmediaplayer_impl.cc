@@ -271,6 +271,16 @@ void DestructionHelper(
           std::move(media_log)));
 }
 
+void SetSanitizedStringProperty(MediaLog* log,
+                                std::string key,
+                                blink::WebString value) {
+  std::string converted = value.Utf8();
+  if (converted.empty() || !base::IsStringUTF8(converted)) {
+    converted = "<invalid property>";
+  }
+  log->SetStringProperty(key, converted);
+}
+
 }  // namespace
 
 class BufferedDataSourceHostImpl;
@@ -372,10 +382,12 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   media_log_->AddEvent(media_log_->CreateCreatedEvent(
       url::Origin(frame_->GetSecurityOrigin()).GetURL().spec()));
-  media_log_->SetStringProperty("frame_url",
-                                frame_->GetDocument().Url().GetString().Utf8());
-  media_log_->SetStringProperty("frame_title",
-                                frame_->GetDocument().Title().Utf8());
+
+  SetSanitizedStringProperty(media_log_.get(), "frame_url",
+                             frame_->GetDocument().Url().GetString());
+
+  SetSanitizedStringProperty(media_log_.get(), "frame_title",
+                             frame_->GetDocument().Title());
 
   // To make manual testing easier, include |surface_layer_mode_| in the log.
   // TODO(liberato): Move this into media_factory.cc, so that it can be shared

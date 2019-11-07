@@ -310,16 +310,6 @@
              "--force-device-scale-factor=2"]
   },
   {
-    "prefix": "compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf",
-    "bases": ["fast/scrolling/scrollbars"],
-    "args": ["--enable-features=CompositorThreadedScrollbarScrolling",
-             "--enable-threaded-compositing",
-             "--enable-prefer-compositing-to-lcd-text",
-             "--disable-smooth-scrolling",
-             "--force-device-scale-factor=2",
-             "--enable-use-zoom-for-dsf=false"]
-  },
-  {
     "prefix": "speech-with-unified-autoplay",
     "bases": ["external/wpt/speech-api"],
     "args": ["--autoplay-policy=document-user-activation-required"]

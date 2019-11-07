@@ -102,6 +102,11 @@ AutocompleteMatch::DocumentType GetIconForMIMEType(
 const char kErrorMessageAdminDisabled[] =
     "Not eligible to query due to admin disabled Chrome search settings.";
 const char kErrorMessageRetryLater[] = "Not eligible to query, see retry info.";
+
+// TODO(manukh): Remove ResponseContainsBackoffSignal once the check using http
+// status code in |OnURLLoadComplete| rolls out and the backend returns to
+// sending 4xx backoff responses as opposed to 2xx; or, if the backend is never
+// adjusted to send 2xx responses, once that check rolls out.
 bool ResponseContainsBackoffSignal(const base::DictionaryValue* root_dict) {
   const base::DictionaryValue* error_info;
   if (!root_dict->GetDictionary("error", &error_info)) {
@@ -609,10 +614,15 @@ void DocumentProvider::OnURLLoadComplete(
 
   LogOmniboxDocumentRequest(DOCUMENT_REPLY_RECEIVED);
 
+  int httpStatusCode = source->ResponseInfo() && source->ResponseInfo()->headers
+                           ? source->ResponseInfo()->headers->response_code()
+                           : 0;
+
+  if (httpStatusCode == 400 || httpStatusCode == 499)
+    backoff_for_session_ = true;
+
   const bool results_updated =
-      response_body && source->NetError() == net::OK &&
-      (source->ResponseInfo() && source->ResponseInfo()->headers &&
-       source->ResponseInfo()->headers->response_code() == 200) &&
+      response_body && source->NetError() == net::OK && httpStatusCode == 200 &&
       UpdateResults(SearchSuggestionParser::ExtractJsonData(
           source, std::move(response_body)));
   loader_.reset();

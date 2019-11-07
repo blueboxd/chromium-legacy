@@ -447,8 +447,9 @@ TEST_F(DragWindowFromShelfControllerTest, HideOverviewDuringDragging) {
   EXPECT_EQ(window1->layer()->GetTargetOpacity(), 1.f);
 }
 
-// Test there is no drag-to-snap or cannot-snap drag indicators during dragging.
-TEST_F(DragWindowFromShelfControllerTest, NoDragToSnapIndicator) {
+// Check the split view drag indicators window dragging states.
+TEST_F(DragWindowFromShelfControllerTest,
+       SplitViewDragIndicatorsWindowDraggingStates) {
   UpdateDisplay("400x400");
   const gfx::Rect shelf_bounds =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
@@ -462,13 +463,29 @@ TEST_F(DragWindowFromShelfControllerTest, NoDragToSnapIndicator) {
   SplitViewDragIndicators::WindowDraggingState window_dragging_state =
       overview_session->split_view_drag_indicators()
           ->current_window_dragging_state();
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromShelf,
             window_dragging_state);
 
   Drag(gfx::Point(0, 200), 0.5f, 0.5f);
   window_dragging_state = overview_session->split_view_drag_indicators()
                               ->current_window_dragging_state();
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
+            window_dragging_state);
+
+  Drag(gfx::Point(0, 300), 0.5f, 0.5f);
+  window_dragging_state = overview_session->split_view_drag_indicators()
+                              ->current_window_dragging_state();
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromShelf,
+            window_dragging_state);
+  Drag(gfx::Point(0, 200), 0.5f, 0.5f);
+  window_dragging_state = overview_session->split_view_drag_indicators()
+                              ->current_window_dragging_state();
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
+            window_dragging_state);
+  Drag(gfx::Point(200, 200), 0.5f, 0.5f);
+  window_dragging_state = overview_session->split_view_drag_indicators()
+                              ->current_window_dragging_state();
+  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromShelf,
             window_dragging_state);
 
   EndDrag(shelf_bounds.CenterPoint(),

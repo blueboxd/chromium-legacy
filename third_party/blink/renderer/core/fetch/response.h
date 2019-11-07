@@ -119,6 +119,8 @@ class CORE_EXPORT Response final : public Body {
 
   const Vector<KURL>& InternalURLList() const;
 
+  FetchHeaderList* InternalHeaderList() const;
+
   void Trace(blink::Visitor*) override;
 
  protected:

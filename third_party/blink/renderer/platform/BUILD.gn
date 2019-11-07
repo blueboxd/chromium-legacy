@@ -1662,7 +1662,7 @@ jumbo_static_library("test_support") {
   ]
 
   # fuzzed_data_provider may not work with a custom toolchain.
-  if (custom_toolchain == "") {
+  if (custom_toolchain == "" && is_clang) {
     sources += [
       "testing/fuzzed_data_provider.cc",
       "testing/fuzzed_data_provider.h",

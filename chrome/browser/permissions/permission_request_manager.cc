@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -433,6 +434,11 @@ void PermissionRequestManager::FinalizeBubble(
   PermissionDecisionAutoBlocker* autoblocker =
       PermissionDecisionAutoBlocker::GetForProfile(profile);
 
+  auto* adaptive_notification_permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
+  adaptive_notification_permission_ui_selector->RecordPermissionPromptOutcome(
+      permission_action);
+
   for (PermissionRequest* request : requests_) {
     // TODO(timloh): We only support dismiss and ignore embargo for permissions
     // which use PermissionRequestImpl as the other subclasses don't support
@@ -549,17 +555,33 @@ void PermissionRequestManager::RemoveObserver(Observer* observer) {
 }
 
 bool PermissionRequestManager::ShouldShowQuietPermissionPrompt() {
-  if (!requests_.size())
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  auto* permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
+
+  if (requests_.empty())
     return false;
 
-#if !defined(OS_ANDROID)
+  bool not_a_notifications_request =
+      requests_.front()->GetPermissionRequestType() !=
+      PermissionRequestType::PERMISSION_NOTIFICATIONS;
+  bool should_show_loud_ui =
+      !permission_ui_selector
+           ->AdaptiveNotificationPermissionUiSelector::ShouldShowQuietUi();
+
+  if (not_a_notifications_request || should_show_loud_ui)
+    return false;
+
   const auto ui_flavor = QuietNotificationsPromptConfig::UIFlavorToUse();
-  return (requests_.front()->GetPermissionRequestType() ==
-              PermissionRequestType::PERMISSION_NOTIFICATIONS &&
-          (ui_flavor == QuietNotificationsPromptConfig::STATIC_ICON ||
-           ui_flavor == QuietNotificationsPromptConfig::ANIMATED_ICON));
+
+#if !defined(OS_ANDROID)
+  return (ui_flavor == QuietNotificationsPromptConfig::STATIC_ICON ||
+          ui_flavor == QuietNotificationsPromptConfig::ANIMATED_ICON);
 #else   // OS_ANDROID
-  return false;
+  return (ui_flavor == QuietNotificationsPromptConfig::QUIET_NOTIFICATION ||
+          ui_flavor == QuietNotificationsPromptConfig::HEADS_UP_NOTIFICATION ||
+          ui_flavor == QuietNotificationsPromptConfig::MINI_INFOBAR);
 #endif  // OS_ANDROID
 }
 

@@ -288,7 +288,7 @@ if (!is_android && !is_fuchsia && !is_chromeos) {
   }
 }
 
-test("gpu_tests") {
+test("gl_tests") {
   sources = [
     "command_buffer/service/shared_image_backing_factory_gl_texture_unittest.cc",
     "command_buffer/service/shared_image_factory_unittest.cc",
@@ -333,6 +333,7 @@ test("gpu_tests") {
     "command_buffer/tests/gl_stream_draw_unittest.cc",
     "command_buffer/tests/gl_test_utils.cc",
     "command_buffer/tests/gl_test_utils.h",
+    "command_buffer/tests/gl_tests_main.cc",
     "command_buffer/tests/gl_texture_mailbox_unittest.cc",
     "command_buffer/tests/gl_texture_storage_unittest.cc",
     "command_buffer/tests/gl_unallocated_texture_unittest.cc",
@@ -341,7 +342,6 @@ test("gpu_tests") {
     "command_buffer/tests/gl_virtual_contexts_ext_window_rectangles_unittest.cc",
     "command_buffer/tests/gl_virtual_contexts_unittest.cc",
     "command_buffer/tests/gl_webgl_multi_draw_test.cc",
-    "command_buffer/tests/gpu_tests_main.cc",
     "command_buffer/tests/occlusion_query_unittest.cc",
     "command_buffer/tests/texture_image_factory.cc",
     "command_buffer/tests/texture_image_factory.h",
@@ -424,14 +424,6 @@ test("gpu_tests") {
       "//third_party/dawn/src/dawn:libdawn_proc",
     ]
   }
-}
-
-# Temporary group for a 3-way patch to rename in Clank's repo as well.
-group("gl_tests") {
-  testonly = true
-  deps = [
-    ":gpu_tests",
-  ]
 }
 
 test("gpu_unittests") {

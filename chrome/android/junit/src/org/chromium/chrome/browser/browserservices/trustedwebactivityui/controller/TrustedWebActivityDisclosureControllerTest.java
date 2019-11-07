@@ -28,8 +28,8 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationState;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationState;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
@@ -44,7 +44,7 @@ public class TrustedWebActivityDisclosureControllerTest {
 
     @Mock public ChromePreferenceManager mPreferences;
     @Mock public ActivityLifecycleDispatcher mLifecycleDispatcher;
-    @Mock public Verifier mVerifier;
+    @Mock public CurrentPageVerifier mCurrentPageVerifier;
     @Mock public TrustedWebActivityUmaRecorder mRecorder;
     @Mock public ClientPackageNameProvider mClientPackageNameProvider;
 
@@ -57,11 +57,12 @@ public class TrustedWebActivityDisclosureControllerTest {
         MockitoAnnotations.initMocks(this);
 
         doReturn(CLIENT_PACKAGE).when(mClientPackageNameProvider).get();
-        doNothing().when(mVerifier).addVerificationObserver(mVerificationObserverCaptor.capture());
+        doNothing().when(mCurrentPageVerifier)
+                .addVerificationObserver(mVerificationObserverCaptor.capture());
         doReturn(false).when(mPreferences).hasUserAcceptedTwaDisclosureForPackage(anyString());
 
         new TrustedWebActivityDisclosureController(mPreferences, mModel, mLifecycleDispatcher,
-                mVerifier, mRecorder, mClientPackageNameProvider);
+                mCurrentPageVerifier, mRecorder, mClientPackageNameProvider);
     }
 
     @Test
@@ -113,7 +114,7 @@ public class TrustedWebActivityDisclosureControllerTest {
     }
 
     private void setVerificationState(VerificationState state) {
-        doReturn(state).when(mVerifier).getState();
+        doReturn(state).when(mCurrentPageVerifier).getState();
         for (Runnable observer : mVerificationObserverCaptor.getAllValues()) {
             observer.run();
         }

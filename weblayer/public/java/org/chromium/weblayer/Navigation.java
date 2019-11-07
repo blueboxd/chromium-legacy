@@ -9,9 +9,9 @@ import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
 
-import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IClientNavigation;
-import org.chromium.weblayer_private.aidl.INavigation;
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IClientNavigation;
+import org.chromium.weblayer_private.interfaces.INavigation;
 
 import java.util.ArrayList;
 import java.util.List;

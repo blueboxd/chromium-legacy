@@ -595,7 +595,7 @@ class PLATFORM_EXPORT ThreadState final {
   std::unique_ptr<IncrementalMarkingScheduler> incremental_marking_scheduler_;
 
   std::unique_ptr<CancelableTaskScheduler> marker_scheduler_;
-  Vector<int> available_concurrent_marking_ids_;
+  Vector<uint8_t> available_concurrent_marking_task_ids_;
   uint8_t active_markers_ = 0;
   base::Lock concurrent_marker_bootstrapping_lock_;
   size_t concurrently_marked_bytes_ = 0;

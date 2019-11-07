@@ -144,7 +144,11 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
             filter_quality,
             // TODO(khushalsagar): The software path seems to be assuming N32
             // somewhere in the later pipeline but for offscreen canvas only.
-            CanvasColorParams(color_params, is_accelerated /* force_rgba */),
+            CanvasColorParams(color_params.ColorSpace(),
+                              color_params.PixelFormat(),
+                              color_params.GetOpacityMode(),
+                              is_accelerated ? CanvasForceRGBA::kForced
+                                             : CanvasForceRGBA::kNotForced),
             is_origin_top_left,
             std::move(context_provider_wrapper),
             std::move(resource_dispatcher)),

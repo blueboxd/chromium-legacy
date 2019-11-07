@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
+import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
 import org.chromium.chrome.features.start_surface.StartSurface;
@@ -35,7 +36,7 @@ public interface TabManagementDelegate {
      *         communicate with this surface.
      * @param fakeboxDelegate The delegate of the fake search box.
      * @param isTabCarousel Whether show the Tabs in carousel mode.
-     * @return The {@TasksSurface}.
+     * @return The {@link TasksSurface}.
      */
     TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
             FakeboxDelegate fakeboxDelegate, boolean isTabCarousel);

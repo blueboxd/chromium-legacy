@@ -4,6 +4,7 @@
 
 import("//components/viz/viz.gni")
 import("//gpu/vulkan/features.gni")
+import("//skia/features.gni")
 import("//testing/test.gni")
 
 source_set("resource_format") {
@@ -40,6 +41,8 @@ viz_component("resource_format_utils") {
   ]
 }
 
+# TODO(sgilhuly): To reduce link times, merge these context provider components
+# into a single gr_context_provider component.
 if (is_mac) {
   viz_component("metal_context_provider") {
     output_name = "viz_metal_context_provider"
@@ -103,6 +106,28 @@ if (enable_vulkan) {
       "//gpu/vulkan",
       "//gpu/vulkan:buildflags",
       "//ui/gfx",
+    ]
+  }
+}
+
+if (skia_use_dawn) {
+  viz_component("dawn_context_provider") {
+    output_name = "viz_dawn_context_provider"
+
+    defines = [ "VIZ_DAWN_CONTEXT_PROVIDER_IMPLEMENTATION" ]
+
+    sources = [
+      "gpu/dawn_context_provider.cc",
+      "gpu/dawn_context_provider.h",
+      "viz_dawn_context_provider_export.h",
+    ]
+
+    public_deps = [
+      "//skia",
+    ]
+
+    deps = [
+      "//base",
     ]
   }
 }
@@ -239,6 +264,7 @@ viz_component("common") {
     "switches.h",
     "traced_value.cc",
     "traced_value.h",
+    "vertical_scroll_direction.h",
     "viz_common_export.h",
     "viz_utils.cc",
     "viz_utils.h",
@@ -301,6 +327,9 @@ viz_component("common") {
   }
   if (is_mac) {
     public_deps += [ ":metal_context_provider" ]
+  }
+  if (skia_use_dawn) {
+    public_deps += [ ":dawn_context_provider" ]
   }
 }
 

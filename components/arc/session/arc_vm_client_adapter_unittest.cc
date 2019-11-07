@@ -27,6 +27,7 @@ namespace arc {
 namespace {
 
 constexpr const char kUserIdHash[] = "this_is_a_valid_user_id_hash";
+constexpr const char kSerialNumber[] = "AAAABBBBCCCCDDDD1234";
 constexpr int64_t kCid = 123;
 
 StartParams GetPopulatedStartParams() {
@@ -171,7 +172,9 @@ class ArcVmClientAdapterTest : public testing::Test,
     GetTestDebugDaemonClient()->set_start_concierge_result(response);
   }
 
-  void SetValidUserIdHash() { adapter()->SetUserIdHashForProfile(kUserIdHash); }
+  void SetValidUserInfo() {
+    adapter()->SetUserInfo(kUserIdHash, kSerialNumber);
+  }
 
   void StartMiniArcWithParams(StartParams params) {
     adapter()->StartMiniArc(
@@ -271,9 +274,9 @@ class ArcVmClientAdapterTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapterTest);
 };
 
-// Tests that SetUserIdHashForProfile() doesn't crash.
-TEST_F(ArcVmClientAdapterTest, SetUserIdHashForProfile) {
-  adapter()->SetUserIdHashForProfile("deadbeef");
+// Tests that SetUserInfo() doesn't crash.
+TEST_F(ArcVmClientAdapterTest, SetUserInfo) {
+  adapter()->SetUserInfo(kUserIdHash, kSerialNumber);
 }
 
 // Tests that StartMiniArc() always succeeds.
@@ -285,7 +288,7 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc) {
 
 // Tests that StopArcInstance() eventually notifies the observer.
 TEST_F(ArcVmClientAdapterTest, StopArcInstance) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   UpgradeArc(true);
 
@@ -306,7 +309,7 @@ TEST_F(ArcVmClientAdapterTest, StopArcInstance) {
 
 // Tests that StopArcInstance() called during shutdown doesn't do anything.
 TEST_F(ArcVmClientAdapterTest, StopArcInstance_OnShutdown) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   UpgradeArc(true);
 
@@ -335,7 +338,7 @@ TEST_F(ArcVmClientAdapterTest, StopArcInstance_Fail) {
 
 // Tests that UpgradeArc() handles arcvm-server-proxy startup failures properly.
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmProxyFailure) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
 
   // Inject failure to FakeUpstartClient.
@@ -360,7 +363,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmProxyFailure) {
 
 // Tests that UpgradeArc() handles StartConcierge() failures properly.
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartConciergeFailure) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   // Inject failure to StartConcierge().
   SetStartConciergeResponse(false);
@@ -381,11 +384,11 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartConciergeFailure) {
 }
 
 // Tests that "no user ID hash" failure is handled properly.
-TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoUserId) {
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoUserInfo) {
   StartMiniArc();
 
-  // Don't call SetValidUserIdHash(). Note that we cannot call StartArcVm()
-  // without a valid ID.
+  // Don't call SetValidUserInfo(). Note that we cannot call StartArcVm()
+  // without valid user info.
   UpgradeArc(false);
   EXPECT_TRUE(GetStartConciergeCalled());
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
@@ -404,7 +407,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoUserId) {
 
 // Tests that StartArcVm() failure is handled properly.
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmFailure) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   // Inject failure to StartArcVm().
   vm_tools::concierge::StartVmResponse start_vm_response;
@@ -428,7 +431,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmFailure) {
 }
 
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmFailureEmptyReply) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   // Inject failure to StartArcVm(). This emulates D-Bus timeout situations.
   GetTestConciergeClient()->set_start_vm_response(base::nullopt);
@@ -451,7 +454,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmFailureEmptyReply) {
 
 // Tests that successful StartArcVm() call is handled properly.
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_Success) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   UpgradeArc(true);
   EXPECT_TRUE(GetStartConciergeCalled());
@@ -473,7 +476,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_Success) {
 // Try to start and upgrade the instance with more params.
 TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_VariousParams) {
   StartParams start_params(GetPopulatedStartParams());
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArcWithParams(std::move(start_params));
 
   UpgradeParams params(GetPopulatedUpgradeParams());
@@ -491,7 +494,7 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_VariousParams2) {
   start_params.play_store_auto_update =
       StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_OFF;
 
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArcWithParams(std::move(start_params));
 
   UpgradeParams params(GetPopulatedUpgradeParams());
@@ -509,7 +512,7 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_VariousParams2) {
 
 // Tests that StartArcVm() is called with valid parameters.
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmParams) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   UpgradeArc(true);
   ASSERT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
@@ -529,7 +532,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartArcVmParams) {
 
 // Tests that crosvm crash is handled properly.
 TEST_F(ArcVmClientAdapterTest, CrosvmCrash) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   UpgradeArc(true);
   EXPECT_TRUE(GetStartConciergeCalled());
@@ -544,7 +547,7 @@ TEST_F(ArcVmClientAdapterTest, CrosvmCrash) {
 
 // Tests that vm_concierge crash is handled properly.
 TEST_F(ArcVmClientAdapterTest, ConciergeCrash) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   UpgradeArc(true);
   EXPECT_TRUE(GetStartConciergeCalled());
@@ -559,7 +562,7 @@ TEST_F(ArcVmClientAdapterTest, ConciergeCrash) {
 
 // Tests the case where crosvm crashes, then vm_concierge crashes too.
 TEST_F(ArcVmClientAdapterTest, CrosvmAndConciergeCrashes) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   UpgradeArc(true);
   EXPECT_TRUE(GetStartConciergeCalled());
@@ -582,7 +585,7 @@ TEST_F(ArcVmClientAdapterTest, CrosvmAndConciergeCrashes) {
 
 // Tests the case where a unknown VmStopped signal is sent to Chrome.
 TEST_F(ArcVmClientAdapterTest, VmStoppedSignal_UnknownCid) {
-  SetValidUserIdHash();
+  SetValidUserInfo();
   StartMiniArc();
   UpgradeArc(true);
   EXPECT_TRUE(GetStartConciergeCalled());

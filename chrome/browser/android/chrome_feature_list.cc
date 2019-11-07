@@ -141,6 +141,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kEphemeralTabUsingBottomSheet,
     &kExploreSites,
     &kHandleMediaIntents,
+    &kHomepageLocation,
     &kHorizontalTabSwitcherAndroid,
     &kIdentityDisc,
     &kImmersiveUiMode,
@@ -248,7 +249,7 @@ const base::Feature kAdjustWebApkInstallationSpace = {
     "AdjustWebApkInstallationSpace", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAndroidNightMode{"AndroidNightMode",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidNightModeCCT{"AndroidNightModeCCT",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
@@ -426,6 +427,11 @@ const base::Feature kExploreSites{"ExploreSites",
 
 const base::Feature kHandleMediaIntents{"HandleMediaIntents",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable the HomePage Location feature that allows enterprise policy set and
+// force the home page url for managed devices.
+const base::Feature kHomepageLocation{"HomepageLocationPolicy",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHorizontalTabSwitcherAndroid{
     "HorizontalTabSwitcherAndroid", base::FEATURE_DISABLED_BY_DEFAULT};

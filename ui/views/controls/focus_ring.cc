@@ -71,7 +71,7 @@ void FocusRing::SetInvalid(bool invalid) {
 
 void FocusRing::SetHasFocusPredicate(const ViewPredicate& predicate) {
   has_focus_predicate_ = predicate;
-  SchedulePaint();
+  RefreshLayer();
 }
 
 void FocusRing::SetColor(base::Optional<SkColor> color) {
@@ -105,11 +105,18 @@ void FocusRing::ViewHierarchyChanged(
     // become a nullptr, it won't be able to do so in its destructor.
     details.parent->RemoveObserver(this);
   }
+  RefreshLayer();
 }
 
 void FocusRing::OnPaint(gfx::Canvas* canvas) {
-  if (!has_focus_predicate_(parent()))
+  // TODO(pbos): Reevaluate if this can turn into a DCHECK, e.g. we should
+  // never paint if there's no parent focus.
+  if (has_focus_predicate_) {
+    if (!(*has_focus_predicate_)(parent()))
+      return;
+  } else if (!parent()->HasFocus()) {
     return;
+  }
 
   cc::PaintFlags paint;
   paint.setAntiAlias(true);
@@ -145,26 +152,41 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
 }
 
 void FocusRing::OnViewFocused(View* view) {
-  SchedulePaint();
+  RefreshLayer();
 }
 
 void FocusRing::OnViewBlurred(View* view) {
-  SchedulePaint();
+  RefreshLayer();
 }
 
 FocusRing::FocusRing() {
-  // A layer is necessary to paint beyond the parent's bounds.
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
   // Don't allow the view to process events.
   set_can_process_events_within_subtree(false);
-
-  has_focus_predicate_ = [](View* p) -> bool { return p->HasFocus(); };
 }
 
 FocusRing::~FocusRing() {
   if (parent())
     parent()->RemoveObserver(this);
+}
+
+void FocusRing::RefreshLayer() {
+  // TODO(pbos): This always keeps the layer alive if |has_focus_predicate_| is
+  // set. This is done because we're not notified when the predicate might
+  // return a different result and there are call sites that call SchedulePaint
+  // on FocusRings and expect that to be sufficient.
+  // The cleanup would be to always call has_focus_predicate_ here and make sure
+  // that RefreshLayer gets called somehow whenever |has_focused_predicate_|
+  // returns a new value.
+  const bool should_paint =
+      has_focus_predicate_.has_value() || (parent() && parent()->HasFocus());
+  SetVisible(should_paint);
+  if (should_paint) {
+    // A layer is necessary to paint beyond the parent's bounds.
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+  } else {
+    DestroyLayer();
+  }
 }
 
 SkRRect FocusRing::RingRectFromPathRect(const SkRect& rect) const {

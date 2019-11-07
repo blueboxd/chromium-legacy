@@ -144,6 +144,8 @@ blink_core_sources("editing") {
     "frame_selection.h",
     "granularity_strategy.cc",
     "granularity_strategy.h",
+    "ime/edit_context.cc",
+    "ime/edit_context.h",
     "ime/ime_text_span.cc",
     "ime/ime_text_span.h",
     "ime/ime_text_span_vector_builder.cc",

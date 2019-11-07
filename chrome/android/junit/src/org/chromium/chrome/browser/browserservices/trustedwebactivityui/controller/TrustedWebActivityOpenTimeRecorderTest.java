@@ -25,8 +25,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationState;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier.VerificationStatus;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationState;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 
 import java.util.concurrent.TimeUnit;
@@ -39,7 +39,8 @@ import java.util.concurrent.TimeUnit;
 public class TrustedWebActivityOpenTimeRecorderTest {
 
     @Mock ActivityLifecycleDispatcher mLifecycleDispatcher;
-    @Mock Verifier mVerifier;
+    @Mock
+    CurrentPageVerifier mCurrentPageVerifier;
     @Mock TrustedWebActivityUmaRecorder mUmaRecorder;
     @Mock ActivityTabProvider mTabProvider;
     @Captor ArgumentCaptor<Runnable> mVerificationObserverCaptor;
@@ -49,9 +50,10 @@ public class TrustedWebActivityOpenTimeRecorderTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        doNothing().when(mVerifier).addVerificationObserver(mVerificationObserverCaptor.capture());
+        doNothing().when(mCurrentPageVerifier)
+                .addVerificationObserver(mVerificationObserverCaptor.capture());
         mRecorder = new TrustedWebActivityOpenTimeRecorder(
-                mLifecycleDispatcher, mVerifier, mUmaRecorder, mTabProvider);
+                mLifecycleDispatcher, mCurrentPageVerifier, mUmaRecorder, mTabProvider);
     }
 
     @Test
@@ -202,7 +204,7 @@ public class TrustedWebActivityOpenTimeRecorderTest {
 
     private void setVerificationStatus(@VerificationStatus int status) {
         VerificationState newState = new VerificationState("www.example.com", status);
-        when(mVerifier.getState()).thenReturn(newState);
+        when(mCurrentPageVerifier.getState()).thenReturn(newState);
         for (Runnable observer : mVerificationObserverCaptor.getAllValues()) {
             observer.run();
         }

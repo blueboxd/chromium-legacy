@@ -62,8 +62,9 @@ class ProtocolHandlerRegistry : public KeyedService {
     virtual void OnProtocolHandlerRegistryChanged() = 0;
   };
 
-  // Creates a new instance. Assumes ownership of |delegate|.
-  ProtocolHandlerRegistry(content::BrowserContext* context, Delegate* delegate);
+  // Creates a new instance.
+  ProtocolHandlerRegistry(content::BrowserContext* context,
+                          std::unique_ptr<Delegate> delegate);
   ~ProtocolHandlerRegistry() override;
 
   void AddObserver(Observer* observer);

@@ -360,7 +360,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 #if defined(OS_WIN)
       legacy_render_widget_host_HWND_(nullptr),
       legacy_window_destroyed_(false),
-      virtual_keyboard_requested_(false),
 #endif
       is_guest_view_hack_(is_guest_view_hack),
       device_scale_factor_(0.0f),
@@ -761,28 +760,6 @@ void RenderWidgetHostViewAura::SetInsets(const gfx::Insets& insets) {
     SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                                 window_->GetLocalSurfaceIdAllocation());
   }
-}
-
-void RenderWidgetHostViewAura::FocusedNodeTouched(bool editable) {
-#if defined(OS_WIN)
-  auto* input_method = GetInputMethod();
-  if (!input_method || !input_method->GetInputMethodKeyboardController())
-    return;
-  auto* controller = input_method->GetInputMethodKeyboardController();
-  if (editable && host()->GetView() && host()->delegate()) {
-    if (last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH) {
-      keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
-      if (!controller->DisplayVirtualKeyboard())
-        keyboard_observer_.reset(nullptr);
-    } else {
-      keyboard_observer_.reset(nullptr);
-    }
-    virtual_keyboard_requested_ = keyboard_observer_.get();
-  } else {
-    virtual_keyboard_requested_ = false;
-    controller->DismissVirtualKeyboard();
-  }
-#endif
 }
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
@@ -1799,16 +1776,7 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
     input_method->CancelComposition(this);
   has_composition_text_ = false;
 
-#if defined(OS_WIN)
-  if (!editable && virtual_keyboard_requested_ && window_) {
-    virtual_keyboard_requested_ = false;
-
-    if (input_method && input_method->GetInputMethodKeyboardController()) {
-      input_method->GetInputMethodKeyboardController()
-          ->DismissVirtualKeyboard();
-    }
-  }
-#elif defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA)
   if (!editable && window_) {
     if (input_method) {
       input_method->GetInputMethodKeyboardController()
@@ -2460,6 +2428,22 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
     // Ensure that accessibility events are fired when the selection location
     // moves from UI back to content.
     text_input_manager->NotifySelectionBoundsChanged(updated_view);
+    // Register for input pane visibility change.
+#if defined(OS_WIN)
+    auto* controller = GetInputMethod()->GetInputMethodKeyboardController();
+    if (controller && state->show_ime_if_needed && host()->GetView() &&
+        host()->delegate()) {
+      if (show_virtual_keyboard) {
+        keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
+        if (!controller->DisplayVirtualKeyboard())
+          keyboard_observer_.reset(nullptr);
+      } else {
+        keyboard_observer_.reset(nullptr);
+      }
+    } else {
+      keyboard_observer_.reset(nullptr);
+    }
+#endif
   }
 
   if (auto* render_widget_host = updated_view->host()) {

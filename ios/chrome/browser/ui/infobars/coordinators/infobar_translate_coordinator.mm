@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/translate/translate_constants.h"
 #import "ios/chrome/browser/translate/translate_infobar_delegate_observer_bridge.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_table_view_controller.h"
@@ -21,7 +22,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TranslateInfobarCoordinator () <TranslateInfobarDelegateObserving,
+@interface TranslateInfobarCoordinator () <InfobarCoordinatorImplementation,
+                                           TranslateInfobarDelegateObserving,
                                            InfobarTranslateModalDelegate> {
   // Observer to listen for changes to the TranslateStep.
   std::unique_ptr<TranslateInfobarDelegateObserverBridge>
@@ -113,7 +115,7 @@
 
 #pragma mark - InfobarCoordinatorImplementation
 
-- (BOOL)shouldBadgeBeAccepted {
+- (BOOL)isInfobarAccepted {
   return self.currentStep ==
          translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE;
 }

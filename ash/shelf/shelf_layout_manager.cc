@@ -658,6 +658,19 @@ void ShelfLayoutManager::ProcessGestureEventFromShelfWidget(
     event_in_screen->StopPropagation();
 }
 
+void ShelfLayoutManager::ProcessMouseWheelEventFromShelf(
+    ui::MouseWheelEvent* event) {
+  if (event->y_offset() <=
+      ShelfConfig::Get()->mousewheel_scroll_offset_threshold()) {
+    return;
+  }
+  Shell::Get()->app_list_controller()->ToggleAppList(
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
+          .id(),
+      kScrollFromShelf, event->time_stamp());
+}
+
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.pre_lock_screen_animation_active)
     return SHELF_BACKGROUND_DEFAULT;
@@ -2151,7 +2164,6 @@ bool ShelfLayoutManager::StartShelfDrag(
                               : SHELF_AUTO_HIDE_SHOWN;
   MaybeSetupHotseatDrag(event_in_screen);
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
-  MaybeStartDragWindowFromShelf(event_in_screen);
 
   // For the hotseat, |drag_amount_| is relative to the top of the shelf.
   // To keep the hotseat from jumping to the top of the shelf on drag, set the
@@ -2163,6 +2175,9 @@ bool ShelfLayoutManager::StartShelfDrag(
   } else {
     drag_amount_ = 0.f;
   }
+
+  MaybeStartDragWindowFromShelf(event_in_screen);
+
   return true;
 }
 
@@ -2399,43 +2414,61 @@ void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
   previous_workspace_window_state_ = current_workspace_window_state;
 }
 
-void ShelfLayoutManager::MaybeStartDragWindowFromShelf(
+bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     const ui::LocatedEvent& event_in_screen) {
   if (!features::IsDragFromShelfToHomeOrOverviewEnabled())
-    return;
+    return false;
   if (!IsTabletModeEnabled())
-    return;
+    return false;
   if (drag_status_ != kDragInProgress)
-    return;
+    return false;
 
   // Do not drag on a auto-hide hidden shelf or a hidden shelf.
   if ((visibility_state() == SHELF_AUTO_HIDE &&
        auto_hide_state() == SHELF_AUTO_HIDE_HIDDEN) ||
       visibility_state() == SHELF_HIDDEN) {
-    return;
+    return false;
   }
 
-  // If the start location is above the shelf (e.g., on the extended hotseat),
-  // do not allow the drag.
-  const gfx::Rect shelf_bounds = GetVisibleShelfBounds();
-  if (event_in_screen.location().y() < shelf_bounds.y())
-    return;
+  // Do not drag on kShown hotseat (it should be in home screen).
+  if (hotseat_state() == HotseatState::kShown)
+    return false;
+
+  // If hotseat is hidden when drag starts, do not start drag window if hotseat
+  // hasn't been fully dragged up.
+  if (hotseat_state() == HotseatState::kHidden) {
+    ShelfConfig* shelf_config = ShelfConfig::Get();
+    const int full_drag_amount =
+        -(shelf_config->shelf_size() + shelf_config->hotseat_bottom_padding() +
+          shelf_config->hotseat_size());
+    if (drag_amount_ > full_drag_amount)
+      return false;
+  } else if (hotseat_state() == HotseatState::kExtended) {
+    // If the start location is above the shelf (e.g., on the extended hotseat),
+    // do not allow the drag.
+    const gfx::Rect shelf_bounds = GetVisibleShelfBounds();
+    if (event_in_screen.location().y() < shelf_bounds.y())
+      return false;
+  }
 
   aura::Window* window =
       GetWindowForDragToHomeOrOverview(event_in_screen.location());
   if (!window)
-    return;
+    return false;
 
   window_drag_controller_ =
       std::make_unique<DragWindowFromShelfController>(window);
+  return true;
 }
 
 void ShelfLayoutManager::MaybeUpdateWindowDrag(
     const ui::LocatedEvent& event_in_screen,
     float scroll_x,
     float scroll_y) {
-  if (!window_drag_controller_)
+  if (!window_drag_controller_ &&
+      !MaybeStartDragWindowFromShelf(event_in_screen)) {
     return;
+  }
 
   DCHECK_EQ(drag_status_, kDragInProgress);
   window_drag_controller_->Drag(event_in_screen.location(), scroll_x, scroll_y);

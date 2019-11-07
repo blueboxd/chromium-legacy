@@ -34,13 +34,28 @@ class FrameInterferenceRecorderTest : public testing::Test {
 
     FrameScheduler* GetFrameSchedulerForQueue(
         const MainThreadTaskQueue* queue) override {
-      if (queue == outer_->queue_a1_ || queue == outer_->queue_a2_)
-        return outer_->frame_a_.get();
-      if (queue == outer_->queue_b1_)
-        return outer_->frame_b_.get();
-      if (queue == outer_->queue_c1_)
-        return outer_->frame_c_.get();
+      if (queue == outer_->queue_frame_agent_a_ ||
+          queue == outer_->other_queue_frame_agent_a_)
+        return outer_->frame_agent_a_.get();
+      if (queue == outer_->queue_frame_agent_b_)
+        return outer_->frame_agent_b_.get();
+      if (queue == outer_->queue_frame_agent_c_)
+        return outer_->frame_agent_c_.get();
+      if (queue == outer_->queue_other_frame_agent_c_)
+        return outer_->other_frame_agent_c_.get();
       return nullptr;
+    }
+    const base::UnguessableToken& GetAgentClusterIdForQueue(
+        const MainThreadTaskQueue* queue) override {
+      if (queue == outer_->queue_frame_agent_a_ ||
+          queue == outer_->other_queue_frame_agent_a_)
+        return outer_->agent_a_;
+      if (queue == outer_->queue_frame_agent_b_)
+        return outer_->agent_b_;
+      if (queue == outer_->queue_frame_agent_c_ ||
+          queue == outer_->queue_other_frame_agent_c_)
+        return outer_->agent_c_;
+      return base::UnguessableToken::Null();
     }
 
     MOCK_METHOD2(MockRecordHistogram,
@@ -89,14 +104,26 @@ class FrameInterferenceRecorderTest : public testing::Test {
 
   testing::StrictMock<MockFrameInterferenceRecorder> recorder_{this};
 
-  std::unique_ptr<FrameScheduler> frame_a_ = CreateDummyFrameScheduler();
-  std::unique_ptr<FrameScheduler> frame_b_ = CreateDummyFrameScheduler();
-  std::unique_ptr<FrameScheduler> frame_c_ = CreateDummyFrameScheduler();
+  base::UnguessableToken agent_a_ = base::UnguessableToken::Create();
+  base::UnguessableToken agent_b_ = base::UnguessableToken::Create();
+  base::UnguessableToken agent_c_ = base::UnguessableToken::Create();
 
-  scoped_refptr<MainThreadTaskQueue> queue_a1_ = CreateMainThreadTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> queue_a2_ = CreateMainThreadTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> queue_b1_ = CreateMainThreadTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> queue_c1_ = CreateMainThreadTaskQueue();
+  std::unique_ptr<FrameScheduler> frame_agent_a_ = CreateDummyFrameScheduler();
+  std::unique_ptr<FrameScheduler> frame_agent_b_ = CreateDummyFrameScheduler();
+  std::unique_ptr<FrameScheduler> frame_agent_c_ = CreateDummyFrameScheduler();
+  std::unique_ptr<FrameScheduler> other_frame_agent_c_ =
+      CreateDummyFrameScheduler();
+
+  scoped_refptr<MainThreadTaskQueue> queue_frame_agent_a_ =
+      CreateMainThreadTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> other_queue_frame_agent_a_ =
+      CreateMainThreadTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> queue_frame_agent_b_ =
+      CreateMainThreadTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> queue_frame_agent_c_ =
+      CreateMainThreadTaskQueue();
+  scoped_refptr<MainThreadTaskQueue> queue_other_frame_agent_c_ =
+      CreateMainThreadTaskQueue();
 
   // GetFrameSchedulerForQueue() will return nullptr for this queue.
   scoped_refptr<MainThreadTaskQueue> queue_no_frame_ =
@@ -120,19 +147,20 @@ class FrameInterferenceRecorderTest : public testing::Test {
 TEST_F(FrameInterferenceRecorderTest, NoInterferenceSingleTask) {
   SCOPED_TRACE(NowTicks());
 
-  OnTaskReady(frame_a_.get(), EnqueueOrder(1));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
   FastForwardBy(kDelay);
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_a1_.get(),
+      ScopedExpectSample expect_sample(this, queue_frame_agent_a_.get(),
                                        base::TimeDelta());
-      recorder_.OnTaskStarted(queue_a1_.get(), EnqueueOrder(1), start);
+      recorder_.OnTaskStarted(queue_frame_agent_a_.get(), EnqueueOrder(1),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_a_.get(), end);
   }
 }
 
@@ -140,79 +168,120 @@ TEST_F(FrameInterferenceRecorderTest, NoInterferenceSingleTask) {
 TEST_F(FrameInterferenceRecorderTest, NoInterferenceMultipleTasksSameQueue) {
   SCOPED_TRACE(NowTicks());
 
-  OnTaskReady(frame_a_.get(), EnqueueOrder(1));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
   FastForwardBy(kDelay);
-  OnTaskReady(frame_a_.get(), EnqueueOrder(2));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(2));
   FastForwardBy(kDelay);
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_a1_.get(),
+      ScopedExpectSample expect_sample(this, queue_frame_agent_a_.get(),
                                        base::TimeDelta());
-      recorder_.OnTaskStarted(queue_a1_.get(), EnqueueOrder(1), start);
+      recorder_.OnTaskStarted(queue_frame_agent_a_.get(), EnqueueOrder(1),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_a_.get(), end);
   }
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_a1_.get(),
+      ScopedExpectSample expect_sample(this, queue_frame_agent_a_.get(),
                                        base::TimeDelta());
-      recorder_.OnTaskStarted(queue_a1_.get(), EnqueueOrder(2), start);
+      recorder_.OnTaskStarted(queue_frame_agent_a_.get(), EnqueueOrder(2),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_a_.get(), end);
   }
 }
 
 // Verify that zero interference is recorded when tasks from different queues
 // associated with the same frame run.
-TEST_F(FrameInterferenceRecorderTest, NoInterferenceMultipleQueuesSameFrame) {
+TEST_F(FrameInterferenceRecorderTest, NoInterferenceMultipleQueuesSameAgent) {
   SCOPED_TRACE(NowTicks());
 
-  OnTaskReady(frame_a_.get(), EnqueueOrder(1));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
   FastForwardBy(kDelay);
-  OnTaskReady(frame_a_.get(), EnqueueOrder(2));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(2));
   FastForwardBy(kDelay);
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_a1_.get(),
+      ScopedExpectSample expect_sample(this, queue_frame_agent_a_.get(),
                                        base::TimeDelta());
-      recorder_.OnTaskStarted(queue_a1_.get(), EnqueueOrder(1), start);
+      recorder_.OnTaskStarted(queue_frame_agent_a_.get(), EnqueueOrder(1),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_a_.get(), end);
   }
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_a2_.get(),
+      ScopedExpectSample expect_sample(this, other_queue_frame_agent_a_.get(),
                                        base::TimeDelta());
-      recorder_.OnTaskStarted(queue_a2_.get(), EnqueueOrder(2), start);
+      recorder_.OnTaskStarted(other_queue_frame_agent_a_.get(), EnqueueOrder(2),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a2_.get(), end);
+    recorder_.OnTaskCompleted(other_queue_frame_agent_a_.get(), end);
+  }
+}
+
+// Verify that zero interference is recorded when tasks from different frame
+// associated with the same agent run.
+TEST_F(FrameInterferenceRecorderTest, NoInterferenceMultipleFramesSameAgent) {
+  SCOPED_TRACE(NowTicks());
+
+  OnTaskReady(frame_agent_c_.get(), EnqueueOrder(1));
+  FastForwardBy(kDelay);
+  OnTaskReady(other_frame_agent_c_.get(), EnqueueOrder(2));
+  FastForwardBy(kDelay);
+
+  {
+    const base::TimeTicks start = NowTicks();
+    {
+      ScopedExpectSample expect_sample(this, queue_frame_agent_c_.get(),
+                                       base::TimeDelta());
+      recorder_.OnTaskStarted(queue_frame_agent_c_.get(), EnqueueOrder(1),
+                              start);
+    }
+    FastForwardBy(kDelay);
+    const base::TimeTicks end = NowTicks();
+    recorder_.OnTaskCompleted(queue_frame_agent_c_.get(), end);
+  }
+
+  {
+    const base::TimeTicks start = NowTicks();
+    {
+      ScopedExpectSample expect_sample(this, queue_other_frame_agent_c_.get(),
+                                       base::TimeDelta());
+      recorder_.OnTaskStarted(queue_other_frame_agent_c_.get(), EnqueueOrder(2),
+                              start);
+    }
+    FastForwardBy(kDelay);
+    const base::TimeTicks end = NowTicks();
+    recorder_.OnTaskCompleted(queue_other_frame_agent_c_.get(), end);
   }
 }
 
 // Verify that zero interference is recorded when a non-frame task runs between
 // when a frame task is ready and when it runs.
-TEST_F(FrameInterferenceRecorderTest, NoInterferenceNoFrameQueue) {
+TEST_F(FrameInterferenceRecorderTest, NoInterferenceNoAgentQueue) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(nullptr, EnqueueOrder(1));
   FastForwardBy(kDelay);
-  OnTaskReady(frame_a_.get(), EnqueueOrder(2));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(2));
   FastForwardBy(kDelay);
 
   {
@@ -226,112 +295,123 @@ TEST_F(FrameInterferenceRecorderTest, NoInterferenceNoFrameQueue) {
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_a2_.get(),
+      ScopedExpectSample expect_sample(this, other_queue_frame_agent_a_.get(),
                                        base::TimeDelta());
-      recorder_.OnTaskStarted(queue_a2_.get(), EnqueueOrder(2), start);
+      recorder_.OnTaskStarted(other_queue_frame_agent_a_.get(), EnqueueOrder(2),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a2_.get(), end);
+    recorder_.OnTaskCompleted(other_queue_frame_agent_a_.get(), end);
   }
 }
 
-// Verify that interference is recorded when a task from another frame runs
-// between when a frame task becomes ready and when it runs.
-TEST_F(FrameInterferenceRecorderTest, InterferenceFromOneOtherFrame) {
+// Verify that interference is recorded when a task from another agent runs
+// between when a agent task becomes ready and when it runs.
+TEST_F(FrameInterferenceRecorderTest, InterferenceFromOneOtherAgent) {
   SCOPED_TRACE(NowTicks());
 
-  OnTaskReady(frame_a_.get(), EnqueueOrder(1));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
   FastForwardBy(kDelay);
-  OnTaskReady(frame_b_.get(), EnqueueOrder(2));
+  OnTaskReady(frame_agent_b_.get(), EnqueueOrder(2));
   FastForwardBy(kDelay);
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_a1_.get(),
+      ScopedExpectSample expect_sample(this, queue_frame_agent_a_.get(),
                                        base::TimeDelta());
-      recorder_.OnTaskStarted(queue_a1_.get(), EnqueueOrder(1), start);
+      recorder_.OnTaskStarted(queue_frame_agent_a_.get(), EnqueueOrder(1),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_a_.get(), end);
   }
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_b1_.get(), kDelay);
-      recorder_.OnTaskStarted(queue_b1_.get(), EnqueueOrder(2), start);
+      ScopedExpectSample expect_sample(this, queue_frame_agent_b_.get(),
+                                       kDelay);
+      recorder_.OnTaskStarted(queue_frame_agent_b_.get(), EnqueueOrder(2),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_b1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_b_.get(), end);
   }
 }
 
 // Verify that interference is recorded correctly when tasks from multiple
-// frames run.
+// agents run.
 TEST_F(FrameInterferenceRecorderTest, InterferenceFromManyOtherFrames) {
   SCOPED_TRACE(NowTicks());
 
-  OnTaskReady(frame_a_.get(), EnqueueOrder(1));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
   // Add FastForwardBy()'s in between; those shouldn't matter.
   FastForwardBy(kDelay * 32);
-  OnTaskReady(frame_b_.get(), EnqueueOrder(2));
+  OnTaskReady(frame_agent_b_.get(), EnqueueOrder(2));
   FastForwardBy(kDelay * 64);
-  OnTaskReady(frame_c_.get(), EnqueueOrder(3));
+  OnTaskReady(frame_agent_c_.get(), EnqueueOrder(3));
   FastForwardBy(kDelay * 128);
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_a1_.get(),
+      ScopedExpectSample expect_sample(this, queue_frame_agent_a_.get(),
                                        base::TimeDelta());
-      recorder_.OnTaskStarted(queue_a1_.get(), EnqueueOrder(1), start);
+      recorder_.OnTaskStarted(queue_frame_agent_a_.get(), EnqueueOrder(1),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_a_.get(), end);
   }
 
-  OnTaskReady(frame_a_.get(), EnqueueOrder(4));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(4));
   FastForwardBy(kDelay);
 
   {
     const base::TimeTicks start = NowTicks();
     {
       // Had to wait for task 1.
-      ScopedExpectSample expect_sample(this, queue_b1_.get(), kDelay);
-      recorder_.OnTaskStarted(queue_b1_.get(), EnqueueOrder(2), start);
+      ScopedExpectSample expect_sample(this, queue_frame_agent_b_.get(),
+                                       kDelay);
+      recorder_.OnTaskStarted(queue_frame_agent_b_.get(), EnqueueOrder(2),
+                              start);
     }
     FastForwardBy(2 * kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_b1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_b_.get(), end);
   }
 
   {
     const base::TimeTicks start = NowTicks();
     {
       // Had to wait for tasks 1 and 2.
-      ScopedExpectSample expect_sample(this, queue_c1_.get(), 3 * kDelay);
-      recorder_.OnTaskStarted(queue_c1_.get(), EnqueueOrder(3), start);
+      ScopedExpectSample expect_sample(this, queue_frame_agent_c_.get(),
+                                       3 * kDelay);
+      recorder_.OnTaskStarted(queue_frame_agent_c_.get(), EnqueueOrder(3),
+                              start);
     }
     FastForwardBy(4 * kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_c1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_c_.get(), end);
   }
 
   {
     const base::TimeTicks start = NowTicks();
     {
       // Had to wait for tasks 2 and 3.
-      ScopedExpectSample expect_sample(this, queue_a2_.get(), 6 * kDelay);
-      recorder_.OnTaskStarted(queue_a2_.get(), EnqueueOrder(4), start);
+      ScopedExpectSample expect_sample(this, other_queue_frame_agent_a_.get(),
+                                       6 * kDelay);
+      recorder_.OnTaskStarted(other_queue_frame_agent_a_.get(), EnqueueOrder(4),
+                              start);
     }
     FastForwardBy(8 * kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a2_.get(), end);
+    recorder_.OnTaskCompleted(other_queue_frame_agent_a_.get(), end);
   }
 }
 
@@ -339,46 +419,49 @@ TEST_F(FrameInterferenceRecorderTest, InterferenceFromManyOtherFrames) {
 TEST_F(FrameInterferenceRecorderTest, Nesting) {
   SCOPED_TRACE(NowTicks());
 
-  OnTaskReady(frame_a_.get(), EnqueueOrder(1));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
   FastForwardBy(kDelay);
-  OnTaskReady(frame_b_.get(), EnqueueOrder(2));
+  OnTaskReady(frame_agent_b_.get(), EnqueueOrder(2));
   FastForwardBy(kDelay);
-  OnTaskReady(frame_b_.get(), EnqueueOrder(3));
+  OnTaskReady(frame_agent_b_.get(), EnqueueOrder(3));
   FastForwardBy(kDelay);
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_a1_.get(),
+      ScopedExpectSample expect_sample(this, queue_frame_agent_a_.get(),
                                        base::TimeDelta());
-      recorder_.OnTaskStarted(queue_a1_.get(), EnqueueOrder(1), start);
+      recorder_.OnTaskStarted(queue_frame_agent_a_.get(), EnqueueOrder(1),
+                              start);
     }
     FastForwardBy(kDelay);
 
     // Run task 2 nested.
     {
       // When a nested loop is entered, complete the current task.
-      recorder_.OnTaskCompleted(queue_a1_.get(), NowTicks());
+      recorder_.OnTaskCompleted(queue_frame_agent_a_.get(), NowTicks());
 
       const base::TimeTicks nested_start = NowTicks();
       {
-        ScopedExpectSample expect_sample(this, queue_b1_.get(), kDelay);
-        recorder_.OnTaskStarted(queue_b1_.get(), EnqueueOrder(2), nested_start);
+        ScopedExpectSample expect_sample(this, queue_frame_agent_b_.get(),
+                                         kDelay);
+        recorder_.OnTaskStarted(queue_frame_agent_b_.get(), EnqueueOrder(2),
+                                nested_start);
       }
       FastForwardBy(8 * kDelay);
       const base::TimeTicks nested_end = NowTicks();
-      recorder_.OnTaskCompleted(queue_b1_.get(), nested_end);
+      recorder_.OnTaskCompleted(queue_frame_agent_b_.get(), nested_end);
 
       // When a nested loop is exited, resume the task that was running when the
       // nested loop was entered.
-      recorder_.OnTaskStarted(queue_a1_.get(),
+      recorder_.OnTaskStarted(queue_frame_agent_a_.get(),
                               base::sequence_manager::EnqueueOrder::none(),
                               NowTicks());
     }
 
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_a_.get(), end);
   }
 
   {
@@ -386,12 +469,14 @@ TEST_F(FrameInterferenceRecorderTest, Nesting) {
     {
       // Only includes the execution time of task 1, not the nested execution
       // time of task 2, which is from the same frame.
-      ScopedExpectSample expect_sample(this, queue_b1_.get(), 2 * kDelay);
-      recorder_.OnTaskStarted(queue_b1_.get(), EnqueueOrder(3), start);
+      ScopedExpectSample expect_sample(this, queue_frame_agent_b_.get(),
+                                       2 * kDelay);
+      recorder_.OnTaskStarted(queue_frame_agent_b_.get(), EnqueueOrder(3),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_b1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_b_.get(), end);
   }
 }
 
@@ -400,35 +485,78 @@ TEST_F(FrameInterferenceRecorderTest, Nesting) {
 TEST_F(FrameInterferenceRecorderTest, ReadyDuringRun) {
   SCOPED_TRACE(NowTicks());
 
-  OnTaskReady(frame_a_.get(), EnqueueOrder(1));
+  OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
   FastForwardBy(kDelay);
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_a1_.get(),
+      ScopedExpectSample expect_sample(this, queue_frame_agent_a_.get(),
                                        base::TimeDelta());
-      recorder_.OnTaskStarted(queue_a1_.get(), EnqueueOrder(1), start);
+      recorder_.OnTaskStarted(queue_frame_agent_a_.get(), EnqueueOrder(1),
+                              start);
     }
 
     FastForwardBy(kDelay);
     // Post task 2 in the middle of running task 1.
-    OnTaskReady(frame_b_.get(), EnqueueOrder(2));
+    OnTaskReady(frame_agent_b_.get(), EnqueueOrder(2));
     FastForwardBy(kDelay);
 
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_a1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_a_.get(), end);
   }
 
   {
     const base::TimeTicks start = NowTicks();
     {
-      ScopedExpectSample expect_sample(this, queue_b1_.get(), kDelay);
-      recorder_.OnTaskStarted(queue_b1_.get(), EnqueueOrder(2), start);
+      ScopedExpectSample expect_sample(this, queue_frame_agent_b_.get(),
+                                       kDelay);
+      recorder_.OnTaskStarted(queue_frame_agent_b_.get(), EnqueueOrder(2),
+                              start);
     }
     FastForwardBy(kDelay);
     const base::TimeTicks end = NowTicks();
-    recorder_.OnTaskCompleted(queue_b1_.get(), end);
+    recorder_.OnTaskCompleted(queue_frame_agent_b_.get(), end);
+  }
+}
+
+// Verify that OnFrameSchedulerDestroyed doesn't clear data associated to an
+// agent that is referred to by other frames.
+TEST_F(FrameInterferenceRecorderTest, OnFrameSchedulerDestroyed) {
+  SCOPED_TRACE(NowTicks());
+
+  OnTaskReady(frame_agent_c_.get(), EnqueueOrder(1));
+  FastForwardBy(kDelay);
+  OnTaskReady(other_frame_agent_c_.get(), EnqueueOrder(2));
+  FastForwardBy(kDelay);
+
+  {
+    const base::TimeTicks start = NowTicks();
+    {
+      ScopedExpectSample expect_sample(this, queue_frame_agent_c_.get(),
+                                       base::TimeDelta());
+      recorder_.OnTaskStarted(queue_frame_agent_c_.get(), EnqueueOrder(1),
+                              start);
+    }
+    FastForwardBy(kDelay);
+    const base::TimeTicks end = NowTicks();
+    recorder_.OnTaskCompleted(queue_frame_agent_c_.get(), end);
+  }
+
+  {
+    const base::TimeTicks start = NowTicks();
+    {
+      ScopedExpectSample expect_sample(this, queue_other_frame_agent_c_.get(),
+                                       base::TimeDelta());
+      recorder_.OnTaskStarted(queue_other_frame_agent_c_.get(), EnqueueOrder(2),
+                              start);
+    }
+    // This should not clear data associated with |agent_c_|.
+    recorder_.OnFrameSchedulerDestroyed(frame_agent_c_.get());
+
+    FastForwardBy(kDelay);
+    const base::TimeTicks end = NowTicks();
+    recorder_.OnTaskCompleted(queue_other_frame_agent_c_.get(), end);
   }
 }
 

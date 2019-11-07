@@ -41,8 +41,12 @@ int LayoutManagerBase::GetPreferredHeightForWidth(const View* host,
 
 void LayoutManagerBase::Layout(View* host) {
   DCHECK_EQ(host_view_, host);
-  const gfx::Size size = host->size();
-  ApplyLayout(GetProposedLayout(size));
+  // A handful of views will cause invalidations while they are being
+  // positioned, which can result in loops or loss of layout data during layout
+  // application. Therefore we protect the layout manager from spurious
+  // invalidations during the layout process.
+  base::AutoReset<bool> setter(&suppress_invalidate_, true);
+  LayoutImpl();
 }
 
 std::vector<View*> LayoutManagerBase::GetChildViewsInPaintOrder(
@@ -92,6 +96,10 @@ bool LayoutManagerBase::IsChildIncludedInLayout(const View* child,
     return false;
 
   return !it->second.ignored && (include_hidden || it->second.can_be_visible);
+}
+
+void LayoutManagerBase::LayoutImpl() {
+  ApplyLayout(GetProposedLayout(host_view_->size()));
 }
 
 void LayoutManagerBase::ApplyLayout(const ProposedLayout& layout) {

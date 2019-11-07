@@ -25,6 +25,10 @@ class TestDiscardableMemoryAllocator : public DiscardableMemoryAllocator {
 
   size_t GetBytesAllocated() const override;
 
+  void ReleaseFreeMemory() override {
+    // Do nothing since it is backed by heap memory.
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestDiscardableMemoryAllocator);
 };

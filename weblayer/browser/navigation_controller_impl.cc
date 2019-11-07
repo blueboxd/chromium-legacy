@@ -9,7 +9,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
-#include "weblayer/browser/browser_controller_impl.h"
+#include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation_observer.h"
 
 #if defined(OS_ANDROID)
@@ -23,9 +23,8 @@ using base::android::AttachCurrentThread;
 
 namespace weblayer {
 
-NavigationControllerImpl::NavigationControllerImpl(
-    BrowserControllerImpl* browser_controller)
-    : WebContentsObserver(browser_controller->web_contents()) {}
+NavigationControllerImpl::NavigationControllerImpl(TabImpl* tab)
+    : WebContentsObserver(tab->web_contents()) {}
 
 NavigationControllerImpl::~NavigationControllerImpl() = default;
 
@@ -243,12 +242,10 @@ void NavigationControllerImpl::NotifyLoadStateChanged() {
 }
 
 #if defined(OS_ANDROID)
-static jlong JNI_NavigationControllerImpl_GetNavigationController(
-    JNIEnv* env,
-    jlong browserController) {
+static jlong JNI_NavigationControllerImpl_GetNavigationController(JNIEnv* env,
+                                                                  jlong tab) {
   return reinterpret_cast<jlong>(
-      reinterpret_cast<BrowserController*>(browserController)
-          ->GetNavigationController());
+      reinterpret_cast<Tab*>(tab)->GetNavigationController());
 }
 #endif
 

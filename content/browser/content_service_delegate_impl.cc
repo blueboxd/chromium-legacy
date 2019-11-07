@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -195,6 +196,11 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
 
     can_go_back_ = can_go_back;
     client_->UpdateCanGoBack(can_go_back);
+  }
+
+  void OnFocusChangedInPage(FocusedNodeDetails* details) override {
+    client_->FocusedNodeChanged(details->is_editable_node,
+                                details->node_bounds_in_screen);
   }
 
   std::unique_ptr<WebContents> web_contents_;

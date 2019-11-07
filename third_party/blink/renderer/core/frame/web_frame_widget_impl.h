@@ -105,8 +105,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetFocus(bool enable) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool IsAcceleratedCompositingActive() const override;
-  void SetRemoteViewportIntersection(const WebRect&,
-                                     FrameOcclusionState) override;
+  void SetRemoteViewportIntersection(const ViewportIntersectionState&) override;
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(TouchAction) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,

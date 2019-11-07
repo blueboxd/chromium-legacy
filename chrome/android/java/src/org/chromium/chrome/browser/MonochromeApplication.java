@@ -7,8 +7,8 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 
 import com.android.webview.chromium.MonochromeLibraryPreloader;
-import com.android.webview.chromium.WebViewApkApplication;
 
+import org.chromium.android_webview.app.WebViewApkApplication;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.content_public.browser.ChildProcessCreationParams;

@@ -155,6 +155,19 @@ void AssistantCardElementView::DidSuppressNavigation(
     delegate_->OpenUrlFromView(url);
 }
 
+void AssistantCardElementView::FocusedNodeChanged(
+    bool is_editable_node,
+    const gfx::Rect& node_bounds_in_screen) {
+  // TODO(b/143985066): Card has element with empty bounds, e.g. the line break.
+  if (node_bounds_in_screen.IsEmpty())
+    return;
+
+  gfx::Point origin = node_bounds_in_screen.origin();
+  ConvertPointFromScreen(this, &origin);
+  gfx::Rect focused_rect_in_local(origin, node_bounds_in_screen.size());
+  ScrollRectToVisible(focused_rect_in_local);
+}
+
 void AssistantCardElementView::InitLayout(
     const AssistantCardElement* card_element) {
   SetFocusBehavior(FocusBehavior::ALWAYS);

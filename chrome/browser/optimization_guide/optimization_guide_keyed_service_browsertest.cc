@@ -83,22 +83,52 @@ class OptimizationGuideConsumerWebContentsObserver
     OptimizationGuideKeyedService* service =
         OptimizationGuideKeyedServiceFactory::GetForProfile(
             Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-    last_optimization_guide_decision_ = service->CanApplyOptimization(
+    last_should_target_navigation_decision_ = service->ShouldTargetNavigation(
         navigation_handle,
-        optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-        optimization_guide::proto::NOSCRIPT, /*optimization_metadata=*/nullptr);
+        optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    last_can_apply_optimization_decision_ = service->CanApplyOptimization(
+        navigation_handle, optimization_guide::proto::NOSCRIPT,
+        /*optimization_metadata=*/nullptr);
+    last_optimization_guide_decision_ =
+        service->ShouldTargetNavigationAndCanApplyOptimization(
+            navigation_handle,
+            optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+            optimization_guide::proto::NOSCRIPT,
+            /*optimization_metadata=*/nullptr);
   }
 
   // Returns the last optimization guide decision that was returned by the
-  // OptimizationGuideKeyedService.
+  // OptimizationGuideKeyedService's
+  // ShouldTargetNavigationAndCanApplyOptimization() method.
   optimization_guide::OptimizationGuideDecision
   last_optimization_guide_decision() const {
     return last_optimization_guide_decision_;
   }
 
+  // Returns the last optimization guide decision that was returned by the
+  // OptimizationGuideKeyedService's ShouldTargetNavigation() method.
+  optimization_guide::OptimizationGuideDecision
+  last_should_target_navigation_decision() {
+    return last_should_target_navigation_decision_;
+  }
+
+  // Returns the last optimization guide decision that was returned by the
+  // OptimizationGuideKeyedService's CanApplyOptimization() method.
+  optimization_guide::OptimizationGuideDecision
+  last_can_apply_optimization_decision() {
+    return last_can_apply_optimization_decision_;
+  }
+
  private:
   optimization_guide::OptimizationGuideDecision
-      last_optimization_guide_decision_;
+      last_optimization_guide_decision_ =
+          optimization_guide::OptimizationGuideDecision::kUnknown;
+  optimization_guide::OptimizationGuideDecision
+      last_should_target_navigation_decision_ =
+          optimization_guide::OptimizationGuideDecision::kUnknown;
+  optimization_guide::OptimizationGuideDecision
+      last_can_apply_optimization_decision_ =
+          optimization_guide::OptimizationGuideDecision::kUnknown;
 };
 
 }  // namespace
@@ -217,8 +247,22 @@ class OptimizationGuideKeyedServiceBrowserTest
         ->ReportEffectiveConnectionTypeForTesting(effective_connection_type);
   }
 
-  // Returns the last decision seen by the consumer of the
-  // OptimizationGuideKeyedService.
+  // Returns the last decision from the CanApplyOptimization() method seen by
+  // the consumer of the OptimizationGuideKeyedService.
+  optimization_guide::OptimizationGuideDecision
+  last_should_target_navigation_decision() {
+    return consumer_->last_should_target_navigation_decision();
+  }
+
+  // Returns the last decision from the CanApplyOptimization() method seen by
+  // the consumer of the OptimizationGuideKeyedService.
+  optimization_guide::OptimizationGuideDecision
+  last_can_apply_optimization_decision() {
+    return consumer_->last_can_apply_optimization_decision();
+  }
+
+  // Returns the last decision from the ShouldTargetAndCanApplyOptimization()
+  // method seen by the consumer of the OptimizationGuideKeyedService.
   optimization_guide::OptimizationGuideDecision last_consumer_decision() {
     return consumer_->last_optimization_guide_decision();
   }
@@ -275,6 +319,10 @@ IN_PROC_BROWSER_TEST_F(
 
   histogram_tester.ExpectTotalCount("OptimizationGuide.LoadedHint.Result", 0);
   // There is a hint that matches this URL but it wasn't loaded.
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
+            last_can_apply_optimization_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
             last_consumer_decision());
 }
@@ -308,7 +356,11 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
 
-  // We had a hint but it wasn't loaded and it was painful enough.
+  // We had a hint and it was loaded and it was painful enough.
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_can_apply_optimization_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_consumer_decision());
   // Expect that the optimization guide UKM was recorded.
@@ -347,6 +399,10 @@ IN_PROC_BROWSER_TEST_F(
                                       true, 1);
 
   // We had a matching hint but the page load was not painful.
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_can_apply_optimization_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_consumer_decision());
   histogram_tester.ExpectUniqueSample(
@@ -395,6 +451,10 @@ IN_PROC_BROWSER_TEST_F(
                                      true, 1);
   // Hint is still applicable so we expect it to be allowed to be applied.
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_can_apply_optimization_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_consumer_decision());
   // Make sure hint cache match UMA was logged.
   histogram_tester.ExpectUniqueSample(
@@ -438,6 +498,10 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // attempt to load a hint but still fail.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       false, 1);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_can_apply_optimization_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_consumer_decision());
   histogram_tester.ExpectUniqueSample(
@@ -484,6 +548,10 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // There should be a hint that matches this URL.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_can_apply_optimization_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_consumer_decision());
   histogram_tester.ExpectUniqueSample(
@@ -529,6 +597,10 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // There should be a hint that matches this URL.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_can_apply_optimization_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_consumer_decision());
   histogram_tester.ExpectUniqueSample(
@@ -731,6 +803,10 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_can_apply_optimization_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_consumer_decision());
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.TargetDecision.PainfulPageLoad",
@@ -780,6 +856,10 @@ IN_PROC_BROWSER_TEST_F(
   // There should be a hint that matches this URL.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_can_apply_optimization_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_consumer_decision());
   histogram_tester.ExpectUniqueSample(

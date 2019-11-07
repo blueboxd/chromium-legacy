@@ -7,10 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/memory/scoped_refptr.h"
-#include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
@@ -25,31 +21,11 @@ namespace media_router {
 
 namespace {
 
-void ParseJsonFromDecoderThread(
-    const std::string& json,
-    data_decoder::DataDecoder::ValueParseCallback callback) {
-  GetDataDecoder().ParseJson(json, std::move(callback));
-}
-
-void ForwardParseResultToTaskRunner(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    data_decoder::DataDecoder::ValueParseCallback callback,
-    data_decoder::DataDecoder::ValueOrError result) {
-  task_runner->PostTask(FROM_HERE,
-                        base::BindOnce(std::move(callback), std::move(result)));
-}
-
-// The CastMessageHandler calls this from the IO thread, but the Media router's
-// DataDecoder client instance lives on the UI thread.
 void ParseJsonFromIoThread(
     const std::string& json,
     data_decoder::DataDecoder::ValueParseCallback callback) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&ParseJsonFromDecoderThread, json,
-                     base::BindOnce(&ForwardParseResultToTaskRunner,
-                                    base::SequencedTaskRunnerHandle::Get(),
-                                    std::move(callback))));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  GetDataDecoder().ParseJson(json, std::move(callback));
 }
 
 }  // namespace

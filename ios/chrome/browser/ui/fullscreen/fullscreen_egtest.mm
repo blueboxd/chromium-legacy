@@ -117,6 +117,11 @@ void AssertURLIs(const GURL& expectedURL) {
 // Verifies that the toolbar is not hidden when scrolling a short pdf, as the
 // entire document is visible without hiding the toolbar.
 - (void)testSmallWidePDFScroll {
+// TODO(crbug.com/1022029): Enable this test.
+#if defined(CHROME_EARL_GREY_2)
+  EARL_GREY_TEST_DISABLED(@"Fails with EG2");
+#endif
+
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/single_page_wide.pdf");

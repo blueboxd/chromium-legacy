@@ -29,9 +29,9 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "weblayer/browser/browser_controller_impl.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
 #include "weblayer/browser/ssl_error_handler.h"
+#include "weblayer/browser/tab_impl.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 #include "weblayer/common/features.h"
 #include "weblayer/public/fullscreen_delegate.h"
@@ -141,10 +141,8 @@ void ContentBrowserClientImpl::OverrideWebkitPrefs(
       content::WebContents::FromRenderViewHost(render_view_host);
   if (!web_contents)
     return;
-  BrowserControllerImpl* browser_controller =
-      BrowserControllerImpl::FromWebContents(web_contents);
-  prefs->fullscreen_supported =
-      browser_controller && browser_controller->fullscreen_delegate();
+  TabImpl* tab = TabImpl::FromWebContents(web_contents);
+  prefs->fullscreen_supported = tab && tab->fullscreen_delegate();
 }
 
 mojo::Remote<network::mojom::NetworkContext>
@@ -223,10 +221,9 @@ bool ContentBrowserClientImpl::CanCreateWindow(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(opener);
 
-  // Block popups if there is no NewBrowserDelegate.
-  BrowserControllerImpl* browser =
-      BrowserControllerImpl::FromWebContents(web_contents);
-  if (!browser || !browser->has_new_browser_delegate())
+  // Block popups if there is no NewTabDelegate.
+  TabImpl* tab = TabImpl::FromWebContents(web_contents);
+  if (!tab || !tab->has_new_tab_delegate())
     return false;
 
   if (container_type == content::mojom::WindowContainerType::BACKGROUND) {

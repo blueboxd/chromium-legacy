@@ -1266,8 +1266,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
 
     // Page messages.
-    IPC_MESSAGE_HANDLER(PageMsg_WasHidden, OnPageWasHidden)
-    IPC_MESSAGE_HANDLER(PageMsg_WasShown, OnPageWasShown)
+    IPC_MESSAGE_HANDLER(PageMsg_VisibilityChanged, OnPageVisibilityChanged)
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
@@ -1622,7 +1621,7 @@ void RenderViewImpl::StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame) {
   int delay;
   if (send_content_state_immediately_)
     delay = 0;
-  else if (GetWebView()->IsHidden())
+  else if (GetWebView()->GetVisibilityState() != PageVisibilityState::kVisible)
     delay = kDelaySecondsForContentStateSyncHidden;
   else
     delay = kDelaySecondsForContentStateSync;
@@ -1852,8 +1851,10 @@ void RenderViewImpl::OnSetPageScale(float page_scale_factor) {
   webview()->SetPageScaleFactor(page_scale_factor);
 }
 
-void RenderViewImpl::ApplyPageHidden(bool hidden, bool initial_setting) {
-  webview()->SetIsHidden(hidden, initial_setting);
+void RenderViewImpl::ApplyPageVisibilityState(
+    PageVisibilityState visibility_state,
+    bool initial_setting) {
+  webview()->SetVisibilityState(visibility_state, initial_setting);
   // Note: RenderWidget visibility is separately set from the IPC handlers, and
   // does not change when tests override the visibility of the Page.
 }
@@ -1979,20 +1980,14 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
     webview()->CancelPagePopup();
 }
 
-void RenderViewImpl::OnPageWasHidden() {
+void RenderViewImpl::OnPageVisibilityChanged(
+    PageVisibilityState visibility_state) {
 #if defined(OS_ANDROID)
-  SuspendVideoCaptureDevices(true);
+  SuspendVideoCaptureDevices(visibility_state != PageVisibilityState::kVisible);
 #endif
 
-  ApplyPageHidden(/*hidden=*/true, /*initial_setting=*/false);
-}
-
-void RenderViewImpl::OnPageWasShown() {
-#if defined(OS_ANDROID)
-  SuspendVideoCaptureDevices(false);
-#endif
-
-  ApplyPageHidden(/*hidden=*/false, /*initial_setting=*/false);
+  ApplyPageVisibilityState(visibility_state,
+                           /*initial_setting=*/false);
 }
 
 void RenderViewImpl::SetPageFrozen(bool frozen) {

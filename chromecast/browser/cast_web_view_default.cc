@@ -60,6 +60,9 @@ CastWebViewDefault::CastWebViewDefault(
       browser_context_(browser_context),
       site_instance_(std::move(site_instance)),
       delegate_(params.delegate),
+      activity_id_(params.activity_id),
+      session_id_(params.window_params.session_id),
+      sdk_version_(params.sdk_version),
       allow_media_access_(params.allow_media_access),
       log_prefix_(params.log_prefix),
       web_contents_(CreateWebContents(browser_context_, site_instance_)),
@@ -270,6 +273,17 @@ CastWebViewDefault::RunBluetoothChooser(
   return chooser
              ? std::move(chooser)
              : WebContentsDelegate::RunBluetoothChooser(frame, event_handler);
+}
+
+bool CastWebViewDefault::ShouldAllowRunningInsecureContent(
+    content::WebContents* /* web_contents */,
+    bool allowed_per_prefs,
+    const url::Origin& /* origin */,
+    const GURL& /* resource_url */) {
+  metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
+      activity_id_, session_id_, sdk_version_,
+      "Cast.Platform.AppRunningInsecureContent");
+  return allowed_per_prefs;
 }
 
 void CastWebViewDefault::DidStartNavigation(

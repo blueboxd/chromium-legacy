@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.ViewAssertion;
@@ -24,6 +25,7 @@ import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
@@ -165,6 +167,20 @@ public class TabUiTestHelper {
      */
     static boolean isKitKatAndBelow() {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
+    }
+
+    /**
+     * @return whether animators are enabled on device by checking whether the animation duration
+     * scale is set to 0.0.
+     */
+    public static boolean areAnimatorsEnabled() {
+        // We default to assuming that animations are enabled in case ANIMATOR_DURATION_SCALE is not
+        // defined.
+        final float defaultScale = 1f;
+        float durationScale =
+                Settings.Global.getFloat(ContextUtils.getApplicationContext().getContentResolver(),
+                        Settings.Global.ANIMATOR_DURATION_SCALE, defaultScale);
+        return !(durationScale == 0.0);
     }
 
     /**

@@ -54,6 +54,7 @@ enum FeedbackSource {
   kFeedbackSourceSadTabPage,
   kFeedbackSourceSupervisedUserInterstitial,
   kFeedbackSourceAssistant,
+  kFeedbackSourceDesktopTabGroups,
 
   // Must be last.
   kFeedbackSourceCount,
@@ -68,7 +69,7 @@ void ShowExtensions(Browser* browser,
 
 // ShowFeedbackPage() uses |browser| to determine the URL of the current tab.
 // |browser| should be NULL if there are no currently open browser windows.
-void ShowFeedbackPage(Browser* browser,
+void ShowFeedbackPage(const Browser* browser,
                       FeedbackSource source,
                       const std::string& description_template,
                       const std::string& description_placeholder_text,

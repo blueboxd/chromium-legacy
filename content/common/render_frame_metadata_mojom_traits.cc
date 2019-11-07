@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/selection_mojom_traits.h"
+#include "services/viz/public/cpp/compositing/vertical_scroll_direction_mojom_traits.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojom/selection_bound_mojom_traits.h"
 
@@ -40,7 +41,9 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
          data.ReadRootLayerSize(&out->root_layer_size) &&
 #endif
          data.ReadViewportSizeInPixels(&out->viewport_size_in_pixels) &&
-         data.ReadLocalSurfaceIdAllocation(&out->local_surface_id_allocation);
+         data.ReadLocalSurfaceIdAllocation(&out->local_surface_id_allocation) &&
+         data.ReadNewVerticalScrollDirection(
+             &out->new_vertical_scroll_direction);
 }
 
 }  // namespace mojo

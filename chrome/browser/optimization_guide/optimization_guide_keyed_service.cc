@@ -41,15 +41,13 @@ GetTopHostProviderIfUserPermitted(content::BrowserContext* browser_context) {
   return OptimizationGuideTopHostProvider::CreateIfAllowed(browser_context);
 }
 
-// Logs |optimization_target_decision| for |optimization_target| and the
-// |optimization_type_decision| for |optimization_type| in the current
-// navigation's OptimizationGuideNavigationData;
-void LogDecisions(
+// Logs |optimization_target_decision| for |optimization_target| in the current
+// navigation's OptimizationGuideNavigationData.
+void LogOptimizationTargetDecision(
     content::NavigationHandle* navigation_handle,
     optimization_guide::proto::OptimizationTarget optimization_target,
-    optimization_guide::OptimizationTargetDecision optimization_target_decision,
-    optimization_guide::proto::OptimizationType optimization_type,
-    optimization_guide::OptimizationTypeDecision optimization_type_decision) {
+    optimization_guide::OptimizationTargetDecision
+        optimization_target_decision) {
   OptimizationGuideWebContentsObserver*
       optimization_guide_web_contents_observer =
           OptimizationGuideWebContentsObserver::FromWebContents(
@@ -62,8 +60,52 @@ void LogDecisions(
           ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
   navigation_data->SetDecisionForOptimizationTarget(
       optimization_target, optimization_target_decision);
+}
+
+// Logs the |optimization_type_decision| for |optimization_type| in the current
+// navigation's OptimizationGuideNavigationData.
+void LogOptimizationTypeDecision(
+    content::NavigationHandle* navigation_handle,
+    optimization_guide::proto::OptimizationType optimization_type,
+    optimization_guide::OptimizationTypeDecision optimization_type_decision) {
+  OptimizationGuideWebContentsObserver*
+      optimization_guide_web_contents_observer =
+          OptimizationGuideWebContentsObserver::FromWebContents(
+              navigation_handle->GetWebContents());
+  if (!optimization_guide_web_contents_observer)
+    return;
+
+  OptimizationGuideNavigationData* navigation_data =
+      optimization_guide_web_contents_observer
+          ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
   navigation_data->SetDecisionForOptimizationType(optimization_type,
                                                   optimization_type_decision);
+}
+
+// Returns the OptimizationGuideDecision from |optimization_target_decision|.
+optimization_guide::OptimizationGuideDecision
+GetOptimizationGuideDecisionFromOptimizationTargetDecision(
+    optimization_guide::OptimizationTargetDecision
+        optimization_target_decision) {
+  switch (optimization_target_decision) {
+    case optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch:
+    case optimization_guide::OptimizationTargetDecision::
+        kModelNotAvailableOnClient:
+    case optimization_guide::OptimizationTargetDecision::
+        kModelPredictionHoldback:
+      return optimization_guide::OptimizationGuideDecision::kFalse;
+    case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
+      return optimization_guide::OptimizationGuideDecision::kTrue;
+    case optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized:
+    default:
+      return optimization_guide::OptimizationGuideDecision::kUnknown;
+  }
+  static_assert(
+      optimization_guide::OptimizationTargetDecision::kMaxValue ==
+          optimization_guide::OptimizationTargetDecision::
+              kDeciderNotInitialized,
+      "This function should be updated when a new OptimizationTargetDecision "
+      "is added");
 }
 
 // Returns the OptimizationGuideDecision from |optimization_type_decision|.
@@ -92,32 +134,24 @@ GetOptimizationGuideDecisionFromOptimizationTypeDecision(
       "added");
 }
 
-// Returns the OptimizationGuideDecision based on |optimization_target_decision|
-// and |optimization_guide_decision|. If either resolves to false,
-// then the decision will be false. Otherwise, resolves to true or unknown.
-optimization_guide::OptimizationGuideDecision ResolveOptimizationGuideDecision(
-    optimization_guide::OptimizationTargetDecision optimization_target_decision,
-    optimization_guide::OptimizationTypeDecision optimization_type_decision) {
-  switch (optimization_target_decision) {
-    case optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch:
-    case optimization_guide::OptimizationTargetDecision::
-        kModelNotAvailableOnClient:
-    case optimization_guide::OptimizationTargetDecision::
-        kModelPredictionHoldback:
+// Returns the OptimizationGuideDecision based on |decisions|
+// 1) If any decision is false, return false.
+// 2) If all decisions are true, return true.
+// 3) Otherwise, return unknown.
+optimization_guide::OptimizationGuideDecision ResolveOptimizationGuideDecisions(
+    std::vector<optimization_guide::OptimizationGuideDecision> decisions) {
+  bool has_unknown_decision = false;
+  for (const auto decision : decisions) {
+    if (decision == optimization_guide::OptimizationGuideDecision::kFalse)
       return optimization_guide::OptimizationGuideDecision::kFalse;
-    case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
-      return GetOptimizationGuideDecisionFromOptimizationTypeDecision(
-          optimization_type_decision);
-    case optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized:
-    default:
-      return optimization_guide::OptimizationGuideDecision::kUnknown;
+
+    if (decision == optimization_guide::OptimizationGuideDecision::kUnknown)
+      has_unknown_decision = true;
   }
-  static_assert(
-      optimization_guide::OptimizationTargetDecision::kMaxValue ==
-          optimization_guide::OptimizationTargetDecision::
-              kDeciderNotInitialized,
-      "This function should be updated when a new OptimizationTargetDecision "
-      "is added");
+
+  return has_unknown_decision
+             ? optimization_guide::OptimizationGuideDecision::kUnknown
+             : optimization_guide::OptimizationGuideDecision::kTrue;
 }
 
 }  // namespace
@@ -194,28 +228,18 @@ void OptimizationGuideKeyedService::RegisterOptimizationTypesAndTargets(
 }
 
 optimization_guide::OptimizationGuideDecision
-OptimizationGuideKeyedService::CanApplyOptimization(
+OptimizationGuideKeyedService::ShouldTargetNavigation(
     content::NavigationHandle* navigation_handle,
-    optimization_guide::proto::OptimizationTarget optimization_target,
-    optimization_guide::proto::OptimizationType optimization_type,
-    optimization_guide::OptimizationMetadata* optimization_metadata) {
+    optimization_guide::proto::OptimizationTarget optimization_target) {
   if (!hints_manager_) {
-    // We are not initialized yet, so return unknown.
-    LogDecisions(
+    // We are not initialized yet, just return unknown.
+    LogOptimizationTargetDecision(
         navigation_handle, optimization_target,
-        optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized,
-        optimization_type,
-        optimization_guide::OptimizationTypeDecision::kDeciderNotInitialized);
+        optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized);
     return optimization_guide::OptimizationGuideDecision::kUnknown;
   }
 
   optimization_guide::OptimizationTargetDecision optimization_target_decision;
-  optimization_guide::OptimizationTypeDecision optimization_type_decision;
-  hints_manager_->CanApplyOptimization(
-      navigation_handle, optimization_target, optimization_type,
-      &optimization_target_decision, &optimization_type_decision,
-      optimization_metadata);
-
   if (prediction_manager_) {
     optimization_target_decision = prediction_manager_->ShouldTargetNavigation(
         navigation_handle, optimization_target);
@@ -225,13 +249,63 @@ OptimizationGuideKeyedService::CanApplyOptimization(
       optimization_target_decision = optimization_guide::
           OptimizationTargetDecision::kModelPredictionHoldback;
     }
+  } else {
+    DCHECK(hints_manager_);
+    optimization_guide::OptimizationTypeDecision
+        unused_optimization_type_decision;
+    hints_manager_->CanApplyOptimization(
+        navigation_handle, optimization_target,
+        optimization_guide::proto::OPTIMIZATION_NONE,
+        &optimization_target_decision, &unused_optimization_type_decision,
+        /*optimization_metadata=*/nullptr);
   }
 
-  LogDecisions(navigation_handle, optimization_target,
-               optimization_target_decision, optimization_type,
-               optimization_type_decision);
-  return ResolveOptimizationGuideDecision(optimization_target_decision,
-                                          optimization_type_decision);
+  LogOptimizationTargetDecision(navigation_handle, optimization_target,
+                                optimization_target_decision);
+  return GetOptimizationGuideDecisionFromOptimizationTargetDecision(
+      optimization_target_decision);
+}
+
+optimization_guide::OptimizationGuideDecision
+OptimizationGuideKeyedService::CanApplyOptimization(
+    content::NavigationHandle* navigation_handle,
+    optimization_guide::proto::OptimizationType optimization_type,
+    optimization_guide::OptimizationMetadata* optimization_metadata) {
+  DCHECK(hints_manager_);
+
+  optimization_guide::OptimizationTargetDecision
+      unused_optimization_target_decision;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision;
+  hints_manager_->CanApplyOptimization(
+      navigation_handle, optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN,
+      optimization_type, &unused_optimization_target_decision,
+      &optimization_type_decision, optimization_metadata);
+
+  LogOptimizationTypeDecision(navigation_handle, optimization_type,
+                              optimization_type_decision);
+  return GetOptimizationGuideDecisionFromOptimizationTypeDecision(
+      optimization_type_decision);
+}
+
+optimization_guide::OptimizationGuideDecision
+OptimizationGuideKeyedService::ShouldTargetNavigationAndCanApplyOptimization(
+    content::NavigationHandle* navigation_handle,
+    optimization_guide::proto::OptimizationTarget optimization_target,
+    optimization_guide::proto::OptimizationType optimization_type,
+    optimization_guide::OptimizationMetadata* optimization_metadata) {
+  optimization_guide::OptimizationGuideDecision
+      optimization_target_guide_decision =
+          ShouldTargetNavigation(navigation_handle, optimization_target);
+
+  // Get both decisions regardless of what the first decision is for logging
+  // purposes.
+
+  optimization_guide::OptimizationGuideDecision
+      optimization_type_guide_decision = CanApplyOptimization(
+          navigation_handle, optimization_type, optimization_metadata);
+
+  return ResolveOptimizationGuideDecisions(
+      {optimization_target_guide_decision, optimization_type_guide_decision});
 }
 
 void OptimizationGuideKeyedService::ClearData() {

@@ -134,6 +134,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // WebUI (i.e. WebUI mignt not have completed transition to the new mode).
   bool IsOfflineLoginActive() const;
 
+  void SetNextSamlChallengeKeyHandlerForTesting(
+      std::unique_ptr<SamlChallengeKeyHandler> handler_for_test);
+
  private:
   // TODO (xiaoyinh): remove this dependency.
   friend class SigninScreenHandler;
@@ -336,9 +339,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
     return !security_token_pin_dialog_closed_callback_.is_null();
   }
 
-  // Assigns new SamlChallengeKeyHandler object to
+  // Assigns new SamlChallengeKeyHandler object or an object for testing to
   // |saml_challenge_key_handler_|.
-  // TODO(miersh): ... or assigns an object for testing.
   void CreateSamlChallengeKeyHandler();
 
   // Current state of Gaia frame.
@@ -446,6 +448,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // Handler for |samlChallengeMachineKey| request.
   std::unique_ptr<SamlChallengeKeyHandler> saml_challenge_key_handler_;
+  std::unique_ptr<SamlChallengeKeyHandler> saml_challenge_key_handler_for_test_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_{this};
 

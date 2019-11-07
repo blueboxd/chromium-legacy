@@ -89,6 +89,8 @@ class WebContentController : public exo::SurfaceObserver,
   // content::WebContentsObserver
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
 
   // JsClientInstance::Observer
   void OnJsClientInstanceRegistered(int process_id,

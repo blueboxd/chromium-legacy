@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/vulkan/buildflags.h"
+#include "skia/buildflags.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
@@ -26,6 +27,10 @@
 
 #if defined(OS_MACOSX)
 #include "components/viz/common/gpu/metal_context_provider.h"
+#endif
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+#include "components/viz/common/gpu/dawn_context_provider.h"
 #endif
 
 namespace {
@@ -51,12 +56,14 @@ SharedContextState::SharedContextState(
     base::OnceClosure context_lost_callback,
     GrContextType gr_context_type,
     viz::VulkanContextProvider* vulkan_context_provider,
-    viz::MetalContextProvider* metal_context_provider)
+    viz::MetalContextProvider* metal_context_provider,
+    viz::DawnContextProvider* dawn_context_provider)
     : use_virtualized_gl_contexts_(use_virtualized_gl_contexts),
       context_lost_callback_(std::move(context_lost_callback)),
       gr_context_type_(gr_context_type),
       vk_context_provider_(vulkan_context_provider),
       metal_context_provider_(metal_context_provider),
+      dawn_context_provider_(dawn_context_provider),
       share_group_(std::move(share_group)),
       context_(context),
       real_context_(std::move(context)),
@@ -73,6 +80,13 @@ SharedContextState::SharedContextState(
   if (GrContextIsMetal()) {
 #if defined(OS_MACOSX)
     gr_context_ = metal_context_provider_->GetGrContext();
+#endif
+    use_virtualized_gl_contexts_ = false;
+    DCHECK(gr_context_);
+  }
+  if (GrContextIsDawn()) {
+#if BUILDFLAG(SKIA_USE_DAWN)
+    gr_context_ = dawn_context_provider_->GetGrContext();
 #endif
     use_virtualized_gl_contexts_ = false;
     DCHECK(gr_context_);

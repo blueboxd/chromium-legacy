@@ -39,12 +39,23 @@
 - (nullable NSArray<NSHTTPCookie*>*)cookiesForURL:(NSURL*)URL {
   NSMutableArray<NSHTTPCookie*>* result = [NSMutableArray array];
   GURL gURL = net::GURLWithNSURL(URL);
-  net::CookieOptions options;
-  options.set_include_httponly();
+  // TODO(crbug.com/1018272): Compute the cookie access semantic, and update
+  // |options| with it.
+  net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
+  net::CookieAccessSemantics cookieAccessSemantics =
+      net::CookieAccessSemantics::LEGACY;
+  if (@available(iOS 13, *)) {
+    // Using |UNKNOWN| semantics to allow the experiment to switch between non
+    // legacy (where cookies that don't have a specific same-site access policy
+    // and not secure will not be included), and legacy mode.
+    cookieAccessSemantics = net::CookieAccessSemantics::UNKNOWN;
+  }
   for (NSHTTPCookie* cookie in self.cookies) {
     net::CanonicalCookie canonical_cookie =
         net::CanonicalCookieFromSystemCookie(cookie, base::Time());
-    if (canonical_cookie.IncludeForRequestURL(gURL, options).IsInclude())
+    if (canonical_cookie
+            .IncludeForRequestURL(gURL, options, cookieAccessSemantics)
+            .IsInclude())
       [result addObject:cookie];
   }
   return [result copy];

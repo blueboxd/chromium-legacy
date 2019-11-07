@@ -146,7 +146,7 @@ LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
       return curr_child;
 
     if (curr->IsListItem() && in_quirks_mode && curr_child->GetNode() &&
-        (IsHTMLUListElement(*curr_child->GetNode()) ||
+        (IsA<HTMLUListElement>(*curr_child->GetNode()) ||
          IsA<HTMLOListElement>(*curr_child->GetNode())))
       break;
 
@@ -244,20 +244,22 @@ bool LayoutListItem::UpdateMarkerLocation() {
   DCHECK(marker_);
 
   LayoutObject* marker_parent = marker_->Parent();
-  // list-style-position:inside makes the ::marker pseudo an ordinary
-  // position:static element that should be attached to LayoutListItem block.
-  LayoutObject* line_box_parent =
-      marker_->IsInside() ? this : GetParentOfFirstLineBox(this, marker_);
+  LayoutObject* line_box_parent = nullptr;
 
-  if (!marker_->IsInside() && line_box_parent &&
-      (line_box_parent->HasOverflowClip() ||
-       !line_box_parent->IsLayoutBlockFlow() ||
-       (line_box_parent->IsBox() &&
-        ToLayoutBox(line_box_parent)->IsWritingModeRoot())))
+  if (!marker_->IsInside())
+    line_box_parent = GetParentOfFirstLineBox(this, marker_);
+  if (line_box_parent && (line_box_parent->HasOverflowClip() ||
+                          !line_box_parent->IsLayoutBlockFlow() ||
+                          (line_box_parent->IsBox() &&
+                           ToLayoutBox(line_box_parent)->IsWritingModeRoot())))
     need_block_direction_align_ = true;
   if (need_block_direction_align_)
     return PrepareForBlockDirectionAlign(line_box_parent);
 
+  // list-style-position:inside makes the ::marker pseudo an ordinary
+  // position:static element that should be attached to LayoutListItem block.
+  // list-style-position:outside marker can't find its line_box_parent,
+  // it should be attached to LayoutListItem block too.
   if (!line_box_parent) {
     // If the marker is currently contained inside an anonymous box, then we
     // are the only item in that anonymous box (since no line box parent was
@@ -273,7 +275,8 @@ bool LayoutListItem::UpdateMarkerLocation() {
     }
   }
 
-  if (marker_parent != line_box_parent) {
+  if (!marker_parent ||
+      (marker_parent != line_box_parent && NormalChildNeedsLayout())) {
     marker_->Remove();
     line_box_parent->AddChild(marker_, FirstNonMarkerChild(line_box_parent));
     // TODO(rhogan): line_box_parent and marker_parent may be deleted by

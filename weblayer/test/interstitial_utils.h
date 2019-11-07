@@ -7,18 +7,18 @@
 
 namespace weblayer {
 
-class BrowserController;
+class Tab;
 
 // Contains utilities for aiding in testing an embedder's integration of
 // WebLayer's interstitial functionality.
 
 // Returns true iff a security interstitial is currently displaying in
-// |browser_controller|.
-bool IsShowingSecurityInterstitial(BrowserController* browser_controller);
+// |tab|.
+bool IsShowingSecurityInterstitial(Tab* tab);
 
 // Returns true iff an SSL error-related interstitial is currently displaying in
-// |browser_controller|.
-bool IsShowingSSLInterstitial(BrowserController* browser_controller);
+// |tab|.
+bool IsShowingSSLInterstitial(Tab* tab);
 
 }  // namespace weblayer
 

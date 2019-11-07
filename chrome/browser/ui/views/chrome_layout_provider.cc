@@ -72,8 +72,6 @@ gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
       return touch_ui ? gfx::Insets(8, 10) : gfx::Insets(6);
     case INSETS_TOAST:
       return gfx::Insets(0, kHarmonyLayoutUnit);
-    case INSETS_TAB_GROUP_TITLE_CHIP:
-      return gfx::Insets(0, 12);
     default:
       return LayoutProvider::GetInsetsMetric(metric);
   }
@@ -145,8 +143,6 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return kHarmonyLayoutUnit * 12;
     case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:
       return 0;
-    case DISTANCE_TAB_GROUP_TITLE_CHIP_MARGIN:
-      return 4;
     case DISTANCE_TOAST_CONTROL_VERTICAL:
       return 8;
     case DISTANCE_TOAST_LABEL_VERTICAL:

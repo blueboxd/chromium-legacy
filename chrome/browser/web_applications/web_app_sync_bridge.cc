@@ -36,6 +36,17 @@ namespace web_app {
 
 namespace {
 
+bool AreAppsLocallyInstalledByDefault() {
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, sync always locally installs an app.
+  return true;
+#else
+  return false;
+#endif
+}
+
+}  // namespace
+
 std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->name = app.name();
@@ -84,17 +95,6 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
     parsed_sync_data.theme_color = sync_data.theme_color();
   app->SetSyncData(std::move(parsed_sync_data));
 }
-
-bool AreAppsLocallyInstalledByDefault() {
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, sync always locally installs an app.
-  return true;
-#else
-  return false;
-#endif
-}
-
-}  // namespace
 
 WebAppSyncBridge::WebAppSyncBridge(
     Profile* profile,

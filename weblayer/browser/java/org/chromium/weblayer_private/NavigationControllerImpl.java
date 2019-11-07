@@ -9,8 +9,8 @@ import android.os.RemoteException;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.INavigationController;
-import org.chromium.weblayer_private.aidl.INavigationControllerClient;
+import org.chromium.weblayer_private.interfaces.INavigationController;
+import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 
 /**
  * Acts as the bridge between java and the C++ implementation of of NavigationController.
@@ -18,15 +18,14 @@ import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 @JNINamespace("weblayer")
 public final class NavigationControllerImpl extends INavigationController.Stub {
     private long mNativeNavigationController;
-    private BrowserControllerImpl mBrowserController;
+    private TabImpl mTab;
     private INavigationControllerClient mNavigationControllerClient;
 
-    public NavigationControllerImpl(
-            BrowserControllerImpl browserController, INavigationControllerClient client) {
+    public NavigationControllerImpl(TabImpl tab, INavigationControllerClient client) {
         mNavigationControllerClient = client;
-        mBrowserController = browserController;
-        mNativeNavigationController = NavigationControllerImplJni.get().getNavigationController(
-                browserController.getNativeBrowserController());
+        mTab = tab;
+        mNativeNavigationController =
+                NavigationControllerImplJni.get().getNavigationController(tab.getNativeTab());
         NavigationControllerImplJni.get().setNavigationControllerImpl(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }
@@ -141,7 +140,7 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     interface Natives {
         void setNavigationControllerImpl(
                 long nativeNavigationControllerImpl, NavigationControllerImpl caller);
-        long getNavigationController(long browserController);
+        long getNavigationController(long tab);
         void navigate(
                 long nativeNavigationControllerImpl, NavigationControllerImpl caller, String uri);
         void goBack(long nativeNavigationControllerImpl, NavigationControllerImpl caller);

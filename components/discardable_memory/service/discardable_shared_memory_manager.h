@@ -95,6 +95,10 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   // Returns bytes of allocated discardable memory.
   size_t GetBytesAllocated() const override;
 
+  void ReleaseFreeMemory() override {
+    // Do nothing since we already subscribe to memory pressure notifications.
+  }
+
  private:
   class MemorySegment : public base::RefCountedThreadSafe<MemorySegment> {
    public:

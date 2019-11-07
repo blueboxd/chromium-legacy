@@ -27,6 +27,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/installable_ink_drop.h"
@@ -185,12 +186,10 @@ void ToolbarButton::SetLabelSideSpacing(int spacing) {
   // Add the spacing only if text is non-empty.
   if (!GetText().empty()) {
     // Add spacing to the opposing side.
-    if (GetHorizontalAlignment() == gfx::ALIGN_RIGHT) {
-      label_insets = gfx::Insets(0, spacing, 0, 0);
-    } else {
-      DCHECK_EQ(GetHorizontalAlignment(), gfx::ALIGN_LEFT);
-      label_insets = gfx::Insets(0, 0, 0, spacing);
-    }
+    label_insets =
+        gfx::MaybeFlipForRTL(GetHorizontalAlignment()) == gfx::ALIGN_RIGHT
+            ? gfx::Insets(0, spacing, 0, 0)
+            : gfx::Insets(0, 0, 0, spacing);
   }
   if (!label()->border() || label_insets != label()->border()->GetInsets()) {
     label()->SetBorder(views::CreateEmptyBorder(label_insets));

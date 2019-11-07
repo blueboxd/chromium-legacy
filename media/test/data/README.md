@@ -152,6 +152,16 @@ aomenc bear-320x180-10bit.y4m --lag-in-frames=0 --target-bitrate=50 \
   -o bear-av1-320x180-10bit.webm
 ```
 
+#### bear-av1-opus.mp4
+Created by combining bear-av1.mp4 and bear-opus.mp4.
+```
+ffmpeg -i bear-av1.mp4 -i bear-opus.mp4 -c copy -strict -2 \
+  -movflags frag_keyframe+empty_moov+default_base_moof \
+  bear-av1-opus.mp4
+```
+**Note**: "-strict -2" was required because the current ffmpeg version
+has support for OPUS in MP4 as experimental.
+
 ### Alpha Channel
 
 #### bear-vp8a.webm
@@ -445,6 +455,20 @@ key ID [1] and key [2]. Sample encryption information stored in SampleEncryption
 packager in=bear-flac.mp4,stream=audio,output=bear-flac-cenc.mp4
          --enable_raw_key_encryption
          --clear_lead 0.5
+         --segment_duration 0.5
+         --keys label=:key_id=30313233343536373839303132333435:key=ebdd62f16814d27b68ef122afce4ae3c
+         --pssh 000000327073736800000000EDEF8BA979D64ACEA3C827DCD51D21ED000000121210303132333435363738393031323334350000003470737368010000001077EFECC0B24D02ACE33C1E52E2FB4B000000013031323334353637383930313233343500000000
+```
+
+#### bear-opus-cenc.mp4
+Encrypted version of bear-opus.mp4, encrypted by [Shaka Packager] v2.3.0 using
+key ID [1] and key [2].
+
+```
+packager in=bear-opus.mp4,stream=audio,output=bear-opus-cenc.mp4
+         --enable_raw_key_encryption
+         --protection_scheme cenc
+         --clear_lead 0
          --segment_duration 0.5
          --keys label=:key_id=30313233343536373839303132333435:key=ebdd62f16814d27b68ef122afce4ae3c
          --pssh 000000327073736800000000EDEF8BA979D64ACEA3C827DCD51D21ED000000121210303132333435363738393031323334350000003470737368010000001077EFECC0B24D02ACE33C1E52E2FB4B000000013031323334353637383930313233343500000000

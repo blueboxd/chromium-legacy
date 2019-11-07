@@ -17,7 +17,7 @@ namespace cr_fuchsia {
 
 // Connects to the ComponentContext service from the supplied ServiceDirectory,
 // and uses it to connect-to and manage one or more Agents used by the caller.
-class BASE_EXPORT AgentManager {
+class AgentManager {
  public:
   explicit AgentManager(const sys::ServiceDirectory* incoming);
   ~AgentManager();

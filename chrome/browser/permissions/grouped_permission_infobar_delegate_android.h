@@ -13,6 +13,7 @@
 
 class InfoBarService;
 class PermissionPromptAndroid;
+class Profile;
 
 // An InfoBar that displays a permission request.
 //
@@ -51,7 +52,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   // Returns true if we should show the permission request as a mini-infobar.
-  static bool ShouldShowMiniInfobar(ContentSettingsType type);
+  static bool ShouldShowMiniInfobar(Profile* profile, ContentSettingsType type);
 
  private:
   GroupedPermissionInfoBarDelegate(

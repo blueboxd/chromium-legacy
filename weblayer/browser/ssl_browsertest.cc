@@ -32,7 +32,7 @@ IN_PROC_BROWSER_TEST_F(WebLayerBrowserTest, SSLErrorMismatchedCertificate) {
   ASSERT_EQ("127.0.0.1", initial_url.host());
 
   NavigateAndWaitForCompletion(initial_url, shell());
-  EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->browser_controller()));
+  EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->tab()));
 
   // Now do a navigation that should result in an SSL error.
   GURL url_with_mismatched_cert =
@@ -41,10 +41,10 @@ IN_PROC_BROWSER_TEST_F(WebLayerBrowserTest, SSLErrorMismatchedCertificate) {
   NavigateAndWaitForFailure(url_with_mismatched_cert, shell());
 
   // First check that there *is* an interstitial.
-  EXPECT_TRUE(IsShowingSecurityInterstitial(shell()->browser_controller()));
+  EXPECT_TRUE(IsShowingSecurityInterstitial(shell()->tab()));
 
   // Now verify that the interstitial is in fact an SSL interstitial.
-  EXPECT_TRUE(IsShowingSSLInterstitial(shell()->browser_controller()));
+  EXPECT_TRUE(IsShowingSSLInterstitial(shell()->tab()));
 
   // TODO(blundell): Check the security state once security state is available
   // via the public WebLayer API, following the example of //chrome's
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(WebLayerBrowserTest, SSLErrorMismatchedCertificate) {
 
   // Check that it's possible to navigate to a new page.
   NavigateAndWaitForCompletion(initial_url, shell());
-  EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->browser_controller()));
+  EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->tab()));
 }
 
 }  // namespace weblayer

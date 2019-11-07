@@ -27,8 +27,7 @@ class MockSystemMediaControls : public SystemMediaControls {
   MOCK_METHOD1(SetEnabled, void(bool enabled));
   MOCK_METHOD1(SetIsNextEnabled, void(bool value));
   MOCK_METHOD1(SetIsPreviousEnabled, void(bool value));
-  MOCK_METHOD1(SetIsPlayEnabled, void(bool value));
-  MOCK_METHOD1(SetIsPauseEnabled, void(bool value));
+  MOCK_METHOD1(SetIsPlayPauseEnabled, void(bool value));
   MOCK_METHOD1(SetIsStopEnabled, void(bool value));
   MOCK_METHOD1(SetPlaybackStatus, void(PlaybackStatus value));
   MOCK_METHOD1(SetTitle, void(const base::string16& title));

@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -176,10 +177,10 @@ public class FeedNewTabPageTest {
     @MediumTest
     @Feature({"FeedNewTabPage"})
     public void testSignInPromo_DismissBySwipe() {
-        boolean dismissed = ChromePreferenceManager.getInstance().readBoolean(
+        boolean dismissed = SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
         if (dismissed) {
-            ChromePreferenceManager.getInstance().writeBoolean(
+            SharedPreferencesManager.getInstance().writeBoolean(
                     ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
         }
 
@@ -203,7 +204,7 @@ public class FeedNewTabPageTest {
         onView(withId(R.id.ntp_content)).check(matches(isDisplayed()));
 
         // Reset state.
-        ChromePreferenceManager.getInstance().writeBoolean(
+        SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, dismissed);
     }
 

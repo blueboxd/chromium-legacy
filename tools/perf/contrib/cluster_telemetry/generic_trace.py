@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from collections import defaultdict
+
 from core import path_util
 path_util.AddTracingToPath()
 from core import perf_benchmark
@@ -34,6 +36,7 @@ class _GenericTraceMeasurement(legacy_page_test.LegacyPageTest):
   def ValidateAndMeasurePage(self, page, tab, results):
     with tab.browser.platform.tracing_controller.StopTracing() as trace_builder:
       trace_data = trace_builder.AsData()
+    measurements = defaultdict(list)
     for trace in trace_data.GetTracesFor(trace_data_module.CHROME_TRACE_PART):
       for event in trace['traceEvents']:
         # We collect data from duration begin, complete, instant and count
@@ -46,7 +49,9 @@ class _GenericTraceMeasurement(legacy_page_test.LegacyPageTest):
           if not isinstance(arg_value, int):
             continue
           value_name = '/'.join([event['cat'], event['name'], arg_name])
-          results.AddMeasurement(value_name, 'count', arg_value)
+          measurements[value_name].append(arg_value)
+    for name, value in measurements.items():
+      results.AddMeasurement(name, 'count', value)
 
 
 class _GenericTraceBenchmark(perf_benchmark.PerfBenchmark):

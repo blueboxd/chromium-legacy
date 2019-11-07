@@ -22,6 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
@@ -497,8 +498,10 @@ public class TabPersistentStore extends TabPersister {
             while (!mTabsToRestore.isEmpty()
                     && mNormalTabsRestored.size() == 0
                     && mIncognitoTabsRestored.size() == 0) {
-                TabRestoreDetails tabToRestore = mTabsToRestore.removeFirst();
-                restoreTab(tabToRestore, true);
+                try (TraceEvent e = TraceEvent.scoped("LoadFirstTabState")) {
+                    TabRestoreDetails tabToRestore = mTabsToRestore.removeFirst();
+                    restoreTab(tabToRestore, true);
+                }
             }
         }
         loadNextTab();
@@ -1315,6 +1318,7 @@ public class TabPersistentStore extends TabPersister {
 
         public LoadTabTask(TabRestoreDetails tabToRestore) {
             mTabToRestore = tabToRestore;
+            TraceEvent.startAsync("LoadTabState", mTabToRestore.id);
         }
 
         @Override
@@ -1330,6 +1334,7 @@ public class TabPersistentStore extends TabPersister {
 
         @Override
         protected void onPostExecute(TabState tabState) {
+            TraceEvent.finishAsync("LoadTabState", mTabToRestore.id);
             if (mDestroyed || isCancelled()) return;
 
             boolean isIncognito = isIncognitoTabBeingRestored(mTabToRestore, tabState);

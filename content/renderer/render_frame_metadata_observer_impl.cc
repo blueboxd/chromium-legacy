@@ -151,7 +151,9 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
       rfm1.viewport_size_in_pixels != rfm2.viewport_size_in_pixels ||
       rfm1.top_controls_height != rfm2.top_controls_height ||
       rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
-      rfm1.local_surface_id_allocation != rfm2.local_surface_id_allocation) {
+      rfm1.local_surface_id_allocation != rfm2.local_surface_id_allocation ||
+      rfm2.new_vertical_scroll_direction !=
+          viz::VerticalScrollDirection::kNull) {
     *needs_activation_notification = true;
     return true;
   }

@@ -19,7 +19,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.chrome.browser.safe_browsing.FileTypePolicies;
+import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.share.ShareSheetCoordinator;
@@ -197,7 +197,7 @@ public class ShareServiceImpl implements ShareService {
 
         for (SharedFile file : files) {
             RecordHistogram.recordSparseHistogram(
-                    "WebShare.Unverified", FileTypePolicies.umaValueForFile(file.name));
+                    "WebShare.Unverified", SafeBrowsingBridge.umaValueForFile(file.name));
         }
 
         for (SharedFile file : files) {

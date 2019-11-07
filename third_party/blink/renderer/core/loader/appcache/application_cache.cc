@@ -155,7 +155,8 @@ void ApplicationCache::RecordAPIUseType() const {
     return;
 
   if (document->IsSecureContext()) {
-    UseCounter::Count(document, WebFeature::kApplicationCacheAPISecureOrigin);
+    Deprecation::CountDeprecation(document,
+                                  WebFeature::kApplicationCacheAPISecureOrigin);
   } else {
     Deprecation::CountDeprecation(
         document, WebFeature::kApplicationCacheAPIInsecureOrigin);

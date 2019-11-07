@@ -635,10 +635,7 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     if (impression->source == ntp_tiles::TileSource::SUGGESTIONS_SERVICE) {
       has_server_side_suggestions = true;
     }
-    // No URL and rappor service passed - not interested in favicon-related
-    // Rappor metrics.
-    ntp_tiles::metrics::RecordTileImpression(*impression,
-                                             /*rappor_service=*/nullptr);
+    ntp_tiles::metrics::RecordTileImpression(*impression);
     ++tiles_count;
   }
   ntp_tiles::metrics::RecordPageImpression(tiles_count);

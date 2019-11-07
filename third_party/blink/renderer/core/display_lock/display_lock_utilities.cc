@@ -77,7 +77,7 @@ bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
   DCHECK_EQ(enclosing_block,
             EnclosingBlock(range.EndPosition(), kCannotCrossEditingBoundary));
   return enclosing_block->ActivateDisplayLockIfNeeded(
-      DisplayLockActivationReason::kUser);
+      DisplayLockActivationReason::kFindInPage);
 }
 
 bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
@@ -89,7 +89,7 @@ bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
           range.GetDocument().ActivationBlockingDisplayLockCount())
     return false;
   UpdateStyleAndLayoutForRangeIfNeeded(range,
-                                       DisplayLockActivationReason::kUser);
+                                       DisplayLockActivationReason::kSelection);
   HeapHashSet<Member<Element>> elements_to_activate;
   for (Node& node : range.Nodes()) {
     DCHECK(!node.GetDocument().NeedsLayoutTreeUpdateForNode(node));
@@ -101,7 +101,7 @@ bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
   }
   for (Element* element : elements_to_activate) {
     element->ActivateDisplayLockIfNeeded(
-        DisplayLockActivationReason::kViewport);
+        DisplayLockActivationReason::kSelection);
   }
   return !elements_to_activate.IsEmpty();
 }

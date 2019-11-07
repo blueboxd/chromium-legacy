@@ -4156,12 +4156,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  EXPECT_EQ(web_contents->max_frame_count_, 1u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 1u);
 
   GURL url_with_iframes_out_of_process =
       embedded_test_server()->GetURL("b.com", "/page_with_iframe.html");
   EXPECT_TRUE(NavigateToURL(shell(), url_with_iframes_out_of_process));
-  EXPECT_EQ(web_contents->max_frame_count_, 2u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 2u);
 
   // There should be two samples for kFrameCountUMA.
   histogram_tester.ExpectTotalCount(kFrameCountUMA, 2);
@@ -4180,7 +4180,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL url_with_multiple_iframes = embedded_test_server()->GetURL(
       "b.com", "/cross_site_iframe_factory.html?b(a,c(b),d,b)");
   EXPECT_TRUE(NavigateToURL(shell(), url_with_multiple_iframes));
-  EXPECT_EQ(web_contents->max_frame_count_, 6u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 6u);
 
   histogram_tester.ExpectTotalCount(kMaxFrameCountUMA, 2);
   histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, 1, 1);
@@ -4208,16 +4208,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL url_with_iframes =
       embedded_test_server()->GetURL("a.com", "/page_with_iframe.html");
   EXPECT_TRUE(NavigateToURL(shell(), url_with_iframes));
-  EXPECT_EQ(web_contents->max_frame_count_, 2u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 2u);
 
   // |url_with_iframes| contains another iframe inside it. This means that we
   // have 4 iframes inside.
   auto* rfh =
       static_cast<RenderFrameHostImpl*>(CreateSubframe(url_with_iframes));
 
-  EXPECT_EQ(web_contents->max_frame_count_, 4u);
-  EXPECT_EQ(web_contents->frame_count_, 4u);
-
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 4u);
   ASSERT_NE(rfh, nullptr);
 
   shell()->Close();
@@ -4243,13 +4241,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL url_with_iframes =
       embedded_test_server()->GetURL("a.com", "/page_with_iframe.html");
   EXPECT_TRUE(NavigateToURL(shell(), url_with_iframes));
-  EXPECT_EQ(web_contents->max_frame_count_, 2u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 2u);
 
   GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
   auto* rfh = static_cast<RenderFrameHostImpl*>(CreateSubframe(url));
   ASSERT_NE(rfh, nullptr);
-  EXPECT_EQ(web_contents->max_frame_count_, 3u);
-  EXPECT_EQ(web_contents->frame_count_, 3u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 3u);
 
   // Let's remove the first child.
   auto* main_frame = web_contents->GetMainFrame();
@@ -4260,8 +4257,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                             "iframe').parentNode);"));
   observer.Wait();
 
-  EXPECT_EQ(web_contents->max_frame_count_, 3u);
-  EXPECT_EQ(web_contents->frame_count_, 2u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 3u);
 
   // Let's remove the second child.
   node_to_remove = main_frame->child_at(0);
@@ -4271,8 +4267,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       "document.body.removeChild(document.querySelector('iframe'));"));
   observer_second.Wait();
 
-  EXPECT_EQ(web_contents->max_frame_count_, 3u);
-  EXPECT_EQ(web_contents->frame_count_, 1u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 3u);
 
   shell()->Close();
 
@@ -4460,6 +4455,199 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   shell()->web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(shell()->web_contents()->GetThemeColor(), 0xFFFF0000u);
+}
+
+namespace {
+
+// A WebContentsObserver which caches the total number of calls to
+// DidChangeVerticalScrollDirection as well as the most recently provided value.
+class DidChangeVerticalScrollDirectionObserver : public WebContentsObserver {
+ public:
+  explicit DidChangeVerticalScrollDirectionObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  // WebContentsObserver:
+  void DidChangeVerticalScrollDirection(
+      viz::VerticalScrollDirection scroll_direction) override {
+    ++call_count_;
+    last_value_ = scroll_direction;
+  }
+
+  int call_count() const { return call_count_; }
+  viz::VerticalScrollDirection last_value() const { return last_value_; }
+
+ private:
+  int call_count_ = 0;
+  viz::VerticalScrollDirection last_value_ =
+      viz::VerticalScrollDirection::kNull;
+
+  DISALLOW_COPY_AND_ASSIGN(DidChangeVerticalScrollDirectionObserver);
+};
+
+}  // namespace
+
+// Tests that DidChangeVerticalScrollDirection is called only when the vertical
+// scroll direction has changed and that it includes the correct details.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DidChangeVerticalScrollDirection) {
+  net::EmbeddedTestServer* server = embedded_test_server();
+  EXPECT_TRUE(server->Start());
+
+  // Set up the DOM.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL(server->GetURL("/scrollable_page_with_content.html"))));
+
+  // Size our view so that we can scroll both horizontally and vertically.
+  ResizeWebContentsView(shell(), gfx::Size(10, 10), /*set_start_page=*/false);
+
+  // Set up observers to watch the web contents and render frame submissions.
+  auto* web_contents = shell()->web_contents();
+  DidChangeVerticalScrollDirectionObserver web_contents_observer(web_contents);
+  RenderFrameSubmissionObserver render_frame_observer(web_contents);
+
+  // Verify that we are starting our test without scroll offset.
+  render_frame_observer.WaitForScrollOffset(gfx::Vector2dF());
+
+  // Assert initial state.
+  EXPECT_EQ(0, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kNull,
+            web_contents_observer.last_value());
+
+  // Scroll offset is dependent upon device pixel ratio which can vary across
+  // devices. To account for this, we extract the |devicePixelRatio| from our
+  // content window and for the remainder of this test use a scaled |Vector2dF|,
+  // which takes pixel ratio into consideration, when waiting for scroll offset.
+  // Note that this is primarily being done to satisfy tests running on Android.
+  const double device_pixel_ratio =
+      EvalJs(web_contents, "window.devicePixelRatio").ExtractDouble();
+  auto ScaledVector2dF = [device_pixel_ratio](float x, float y) {
+    return gfx::Vector2dF(std::floor(x * device_pixel_ratio),
+                          std::floor(y * device_pixel_ratio));
+  };
+
+  // Scroll down.
+  EXPECT_TRUE(ExecJs(web_contents, "window.scrollTo(0, 5)"));
+  render_frame_observer.WaitForScrollOffset(ScaledVector2dF(0.f, 5.f));
+
+  // Assert that we are notified of the scroll down event.
+  EXPECT_EQ(1, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kDown,
+            web_contents_observer.last_value());
+
+  // Scroll down again.
+  EXPECT_TRUE(ExecJs(web_contents, "window.scrollTo(0, 10)"));
+  render_frame_observer.WaitForScrollOffset(ScaledVector2dF(0.f, 10.f));
+
+  // Assert that we are *not* notified of the scroll down event given that no
+  // change in scroll direction occurred (as our previous scroll was also down).
+  EXPECT_EQ(1, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kDown,
+            web_contents_observer.last_value());
+
+  // Scroll right.
+  EXPECT_TRUE(ExecJs(web_contents, "window.scrollTo(10, 10)"));
+  render_frame_observer.WaitForScrollOffset(ScaledVector2dF(10.f, 10.f));
+
+  // Assert that we are *not* notified of the scroll right event given that no
+  // change occurred in the vertical direction.
+  EXPECT_EQ(1, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kDown,
+            web_contents_observer.last_value());
+
+  // Scroll left.
+  EXPECT_TRUE(ExecJs(web_contents, "window.scrollTo(0, 10)"));
+  render_frame_observer.WaitForScrollOffset(ScaledVector2dF(0.f, 10.f));
+
+  // Assert that we are *not* notified of the scroll left event given that no
+  // change occurred in the vertical direction.
+  EXPECT_EQ(1, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kDown,
+            web_contents_observer.last_value());
+
+  // Scroll up.
+  EXPECT_TRUE(ExecJs(web_contents, "window.scrollTo(0, 5)"));
+  render_frame_observer.WaitForScrollOffset(ScaledVector2dF(0.f, 5.f));
+
+  // Assert that we are notified of the scroll up event.
+  EXPECT_EQ(2, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kUp,
+            web_contents_observer.last_value());
+
+  // Scroll up again.
+  EXPECT_TRUE(ExecJs(web_contents, "window.scrollTo(0, 0)"));
+  render_frame_observer.WaitForScrollOffset(ScaledVector2dF(0.f, 0.f));
+
+  // Assert that we are *not* notified of the scroll up event given that no
+  // change in scroll direction occurred (as our previous scroll was also up).
+  EXPECT_EQ(2, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kUp,
+            web_contents_observer.last_value());
+}
+
+// Tests that DidChangeVerticalScrollDirection is *not* called when the vertical
+// scroll direction has changed in a child frame. We expect to only be notified
+// of vertical scroll direction changes to the main frame's root layer.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DidChangeVerticalScrollDirectionWithIframe) {
+  net::EmbeddedTestServer* server = embedded_test_server();
+  EXPECT_TRUE(server->Start());
+
+  // Set up the DOM.
+  GURL main_url(server->GetURL("a.co", "/scrollable_page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Set up the iframe.
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* iframe = web_contents->GetFrameTree()->root()->child_at(0);
+  GURL iframe_url(server->GetURL("b.co", "/scrollable_page_with_content.html"));
+  NavigateFrameToURL(iframe, iframe_url);
+
+  // Size our view so that we can scroll both horizontally and vertically.
+  ResizeWebContentsView(shell(), gfx::Size(10, 10), /*set_start_page=*/false);
+
+  // Set up an observer to watch the web contents.
+  DidChangeVerticalScrollDirectionObserver web_contents_observer(web_contents);
+
+  // Assert initial state.
+  EXPECT_EQ(0, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kNull,
+            web_contents_observer.last_value());
+
+  // Scroll down in the iframe.
+  EXPECT_TRUE(ExecJs(iframe->current_frame_host(), "window.scrollTo(0, 10)"));
+
+  // Assert that we are *not* notified of the scroll down event given that the
+  // scroll was not performed on the main frame's root layer.
+  EXPECT_EQ(0, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kNull,
+            web_contents_observer.last_value());
+
+  // Scroll right in the iframe.
+  EXPECT_TRUE(ExecJs(iframe->current_frame_host(), "window.scrollTo(10, 10)"));
+
+  // Assert that we are *not* notified of the scroll right event given that the
+  // scroll was not performed on the main frame's root layer.
+  EXPECT_EQ(0, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kNull,
+            web_contents_observer.last_value());
+
+  // Scroll left in the iframe.
+  EXPECT_TRUE(ExecJs(iframe->current_frame_host(), "window.scrollTo(0, 10)"));
+
+  // Assert that we are *not* notified of the scroll left event given that the
+  // scroll was not performed on the main frame's root layer.
+  EXPECT_EQ(0, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kNull,
+            web_contents_observer.last_value());
+
+  // Scroll up in the iframe.
+  EXPECT_TRUE(ExecJs(iframe->current_frame_host(), "window.scrollTo(0, 0)"));
+
+  // Assert that we are *not* notified of the scroll up event given that the
+  // scroll was not performed on the main frame's root layer.
+  EXPECT_EQ(0, web_contents_observer.call_count());
+  EXPECT_EQ(viz::VerticalScrollDirection::kNull,
+            web_contents_observer.last_value());
 }
 
 }  // namespace content

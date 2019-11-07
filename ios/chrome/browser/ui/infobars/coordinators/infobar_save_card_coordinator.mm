@@ -28,7 +28,8 @@
 // Delegate that holds the Infobar information and actions.
 @property(nonatomic, readonly)
     autofill::AutofillSaveCardInfoBarDelegateMobile* saveCardInfoBarDelegate;
-
+// YES if the Infobar has been Accepted.
+@property(nonatomic, assign) BOOL infobarAccepted;
 @end
 
 @implementation InfobarSaveCardCoordinator
@@ -53,6 +54,7 @@
 - (void)start {
   if (!self.started) {
     self.started = YES;
+    self.infobarAccepted = NO;
     self.bannerViewController = [[InfobarBannerViewController alloc]
         initWithDelegate:self
            presentsModal:self.hasBadge
@@ -85,7 +87,7 @@
 #pragma mark - InfobarCoordinatorImplementation
 
 - (BOOL)isInfobarAccepted {
-  return YES;
+  return self.infobarAccepted;
 }
 
 - (void)performInfobarAction {
@@ -93,6 +95,7 @@
     // TODO(crbug.com/1014652): Open Modal if CreditCard details will be
     // uploaded. Meaning that the ToS needs to be displayed.
   } else if (self.saveCardInfoBarDelegate->Accept()) {
+    self.infobarAccepted = YES;
     // TODO(crbug.com/1014652): Until a post save editing functionality is
     // implemented the Infobar will be completely removed after its been
     // accepted.

@@ -51,24 +51,6 @@ void TpmChallengeKeyFactory::SetForTesting(
   next_result_for_testing_ = next_result.release();
 }
 
-//============================ TpmChallengeKeyResult ===========================
-
-// static
-TpmChallengeKeyResult TpmChallengeKeyResult::MakeResult(
-    const std::string& success_result) {
-  return TpmChallengeKeyResult{/*is_success=*/true,
-                               /*data=*/success_result,
-                               /*error_message=*/""};
-}
-
-// static
-TpmChallengeKeyResult TpmChallengeKeyResult::MakeError(
-    const std::string& error_message) {
-  return TpmChallengeKeyResult{/*is_success=*/false,
-                               /*data=*/"",
-                               /*error_message=*/error_message};
-}
-
 //=========================== TpmChallengeKeyImpl ==============================
 
 namespace {
@@ -84,23 +66,6 @@ bool IsUserConsentRequired() {
   return !IsEnterpriseDevice();
 }
 }  // namespace
-
-const char TpmChallengeKeyImpl::kDevicePolicyDisabledError[] =
-    "Remote attestation is not enabled for your device.";
-const char TpmChallengeKeyImpl::kSignChallengeFailedError[] =
-    "Failed to sign the challenge.";
-const char TpmChallengeKeyImpl::kUserNotManaged[] =
-    "The user account is not enterprise managed.";
-const char TpmChallengeKeyImpl::kKeyRegistrationFailedError[] =
-    "Key registration failed.";
-const char TpmChallengeKeyImpl::kGetCertificateFailedError[] =
-    "Failed to get Enterprise certificate. Error code = %d";
-const char TpmChallengeKeyImpl::kUserPolicyDisabledError[] =
-    "Remote attestation is not enabled for your account.";
-const char TpmChallengeKeyImpl::kUserKeyNotAvailable[] =
-    "User keys cannot be challenged in this profile.";
-const char TpmChallengeKeyImpl::kNonEnterpriseDeviceError[] =
-    "The device is not enterprise enrolled.";
 
 void TpmChallengeKey::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -164,14 +129,15 @@ void TpmChallengeKeyImpl::ChallengeMachineKey() {
 
   // Check if the device is enterprise enrolled.
   if (!IsEnterpriseDevice()) {
-    std::move(callback_).Run(
-        TpmChallengeKeyResult::MakeError(kNonEnterpriseDeviceError));
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kNonEnterpriseDeviceError));
     return;
   }
 
   // Check whether the user is managed unless the signin profile is used.
   if (GetUser() && !IsUserAffiliated()) {
-    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(kUserNotManaged));
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kUserNotManagedError));
     return;
   }
 
@@ -186,21 +152,21 @@ void TpmChallengeKeyImpl::ChallengeUserKey() {
 
   // Check if user keys are available in this profile.
   if (!GetUser()) {
-    std::move(callback_).Run(
-        TpmChallengeKeyResult::MakeError(kUserKeyNotAvailable));
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kUserKeyNotAvailableError));
     return;
   }
 
   if (!IsRemoteAttestationEnabledForUser()) {
-    std::move(callback_).Run(
-        TpmChallengeKeyResult::MakeError(kUserPolicyDisabledError));
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kUserPolicyDisabledError));
     return;
   }
 
   if (IsEnterpriseDevice()) {
     if (!IsUserAffiliated()) {
-      std::move(callback_).Run(
-          TpmChallengeKeyResult::MakeError(kUserNotManaged));
+      std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+          TpmChallengeKeyResultCode::kUserNotManagedError));
       return;
     }
 
@@ -332,8 +298,8 @@ void TpmChallengeKeyImpl::GetDeviceAttestationEnabledCallback(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!enabled) {
-    std::move(callback_).Run(
-        TpmChallengeKeyResult::MakeError(kDevicePolicyDisabledError));
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kDevicePolicyDisabledError));
     return;
   }
 
@@ -353,7 +319,8 @@ void TpmChallengeKeyImpl::IsAttestationPreparedCallback(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!result.has_value()) {
-    PrepareKeyFinished(PrepareKeyResult::kDbusError);
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kDbusError));
     return;
   }
   if (!result.value()) {
@@ -389,14 +356,17 @@ void TpmChallengeKeyImpl::PrepareKeyErrorHandlerCallback(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!is_tpm_enabled.has_value()) {
-    PrepareKeyFinished(PrepareKeyResult::kDbusError);
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kDbusError));
     return;
   }
 
   if (is_tpm_enabled.value()) {
-    PrepareKeyFinished(PrepareKeyResult::kResetRequired);
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kResetRequiredError));
   } else {
-    PrepareKeyFinished(PrepareKeyResult::kAttestationUnsupported);
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kAttestationUnsupportedError));
   }
 }
 
@@ -404,13 +374,14 @@ void TpmChallengeKeyImpl::DoesKeyExistCallback(base::Optional<bool> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!result.has_value()) {
-    PrepareKeyFinished(PrepareKeyResult::kDbusError);
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kDbusError));
     return;
   }
 
   if (result.value()) {
     // The key exists. Do nothing more.
-    PrepareKeyFinished(PrepareKeyResult::kOk);
+    PrepareKeyFinished();
     return;
   }
 
@@ -441,7 +412,8 @@ void TpmChallengeKeyImpl::AskForUserConsentCallback(bool result) {
 
   if (!result) {
     // The user rejects the request.
-    PrepareKeyFinished(PrepareKeyResult::kUserRejected);
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kUserRejectedError));
     return;
   }
 
@@ -461,21 +433,16 @@ void TpmChallengeKeyImpl::GetCertificateCallback(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (status != ATTESTATION_SUCCESS) {
-    PrepareKeyFinished(PrepareKeyResult::kGetCertificateFailed);
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kGetCertificateFailedError));
     return;
   }
 
-  PrepareKeyFinished(PrepareKeyResult::kOk);
+  PrepareKeyFinished();
 }
 
-void TpmChallengeKeyImpl::PrepareKeyFinished(PrepareKeyResult result) {
+void TpmChallengeKeyImpl::PrepareKeyFinished() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (result != PrepareKeyResult::kOk) {
-    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
-        base::StringPrintf(kGetCertificateFailedError, result)));
-    return;
-  }
 
   // Everything is checked. Sign the challenge.
   cryptohome::AsyncMethodCaller::GetInstance()
@@ -495,8 +462,8 @@ void TpmChallengeKeyImpl::SignChallengeCallback(bool register_key,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!success) {
-    std::move(callback_).Run(
-        TpmChallengeKeyResult::MakeError(kSignChallengeFailedError));
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kSignChallengeFailedError));
     return;
   }
 
@@ -518,8 +485,8 @@ void TpmChallengeKeyImpl::RegisterKeyCallback(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!success || return_code != cryptohome::MOUNT_ERROR_NONE) {
-    std::move(callback_).Run(
-        TpmChallengeKeyResult::MakeError(kKeyRegistrationFailedError));
+    std::move(callback_).Run(TpmChallengeKeyResult::MakeError(
+        TpmChallengeKeyResultCode::kKeyRegistrationFailedError));
     return;
   }
   std::move(callback_).Run(TpmChallengeKeyResult::MakeResult(response));

@@ -41,4 +41,8 @@ const char kMojoPipeToken[] = "mojo-pipe-token";
 
 const char kUpgradeTokenSwitchName[] = "upgrade-token";
 
+#if defined(OS_MACOSX)
+const char kCheckPermissionSwitchName[] = "check-permission";
+#endif  // defined OS_MACOSX
+
 }  // namespace remoting

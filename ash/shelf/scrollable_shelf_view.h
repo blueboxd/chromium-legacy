@@ -164,6 +164,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   const char* GetClassName() const override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -304,6 +305,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   void OnPageFlipTimer();
 
   bool IsDragIconWithinVisibleSpace() const;
+
+  // Returns whether a scroll event should be handled by this view or delegated
+  // to the shelf.
+  bool ShouldDelegateScrollToShelf(const ui::ScrollEvent& event) const;
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 

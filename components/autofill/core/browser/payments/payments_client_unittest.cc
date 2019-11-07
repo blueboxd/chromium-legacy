@@ -518,17 +518,6 @@ TEST_F(PaymentsClientTest, UnmaskLogsCvcLengthForPaymentRequest) {
       "Autofill.CardUnmask.CvcLength.ForPaymentRequest", 5, 1);
 }
 
-TEST_F(PaymentsClientTest, UnmaskLogsBlankCvcLength) {
-  base::HistogramTester histogram_tester;
-  StartUnmasking(CardUnmaskOptions()
-                     .with_reason(AutofillClient::UNMASK_FOR_AUTOFILL)
-                     .with_cvc(""));
-  IssueOAuthToken();
-
-  histogram_tester.ExpectBucketCount(
-      "Autofill.CardUnmask.CvcLength.ForAutofill", 0, 1);
-}
-
 TEST_F(PaymentsClientTest, OptInSuccess) {
   StartOptChangeRequest(
       PaymentsClient::OptChangeRequestDetails::ENABLE_FIDO_AUTH);

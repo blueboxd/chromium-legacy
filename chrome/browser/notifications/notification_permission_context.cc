@@ -20,10 +20,10 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/common/page_visibility_state.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -105,7 +105,7 @@ VisibilityTimerTabHelper::VisibilityTimerTabHelper(
   } else {
     switch (contents->GetMainFrame()->GetVisibilityState()) {
       case content::PageVisibilityState::kHidden:
-      case content::PageVisibilityState::kPrerender:
+      case content::PageVisibilityState::kHiddenButPainting:
         is_visible_ = false;
         break;
       case content::PageVisibilityState::kVisible:

@@ -334,29 +334,6 @@ int AnimatingLayoutManager::GetPreferredHeightForWidth(const View* host,
              : target_layout_manager()->GetPreferredHeightForWidth(host, width);
 }
 
-void AnimatingLayoutManager::Layout(View* host) {
-  DCHECK_EQ(host_view(), host);
-  // Changing the size of a view directly will lead to a layout call rather
-  // than an invalidation. This should reset the layout (but see the note in
-  // RecalculateTarget() below).
-  if (should_animate_bounds_) {
-    const int host_main = GetMainAxis(orientation(), host->size());
-    const int desired_main =
-        GetMainAxis(orientation(), current_layout_.host_size);
-    if (desired_main > host_main)
-      ResetLayoutToSize(host->size());
-  } else if (!cached_layout_size() || host->size() != *cached_layout_size()) {
-    ResetLayout();
-  }
-
-  ApplyLayout(current_layout_);
-
-  // Send animating stopped events on layout so the current layout during the
-  // event represents the final state instead of an intermediate state.
-  if (is_animating_ && current_offset_ == 1.0)
-    OnAnimationEnded();
-}
-
 std::vector<View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(
     const View* host) const {
   DCHECK_EQ(host_view(), host);
@@ -424,6 +401,29 @@ void AnimatingLayoutManager::OnInstalled(View* host) {
 void AnimatingLayoutManager::OnLayoutChanged() {
   // This replaces the normal behavior of clearing cached layouts.
   RecalculateTarget();
+}
+
+void AnimatingLayoutManager::LayoutImpl() {
+  // Changing the size of a view directly will lead to a layout call rather
+  // than an invalidation. This should reset the layout (but see the note in
+  // RecalculateTarget() below).
+  const gfx::Size host_size = host_view()->size();
+  if (should_animate_bounds_) {
+    const int host_main = GetMainAxis(orientation(), host_size);
+    const int desired_main =
+        GetMainAxis(orientation(), current_layout_.host_size);
+    if (desired_main > host_main)
+      ResetLayoutToSize(host_size);
+  } else if (!cached_layout_size() || host_size != *cached_layout_size()) {
+    ResetLayout();
+  }
+
+  ApplyLayout(current_layout_);
+
+  // Send animating stopped events on layout so the current layout during the
+  // event represents the final state instead of an intermediate state.
+  if (is_animating_ && current_offset_ == 1.0)
+    OnAnimationEnded();
 }
 
 bool AnimatingLayoutManager::RecalculateTarget() {

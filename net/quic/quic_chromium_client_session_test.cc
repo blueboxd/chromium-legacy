@@ -618,6 +618,76 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
 }
 
+// Regression test for https://crbug.com/1021938.
+// When the connection is closed, there may be tasks queued in the message loop
+// to read the last packet, reading that packet should not crash.
+TEST_P(QuicChromiumClientSessionTest, ReadAfterConnectionClose) {
+  MockQuicData quic_data(version_);
+  if (version_.transport_version == quic::QUIC_VERSION_99) {
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
+    // The open stream limit is set to 50 by
+    // MockCryptoClientStream::SetConfigNegotiated() so when the 51st stream is
+    // requested, a STREAMS_BLOCKED will be sent, indicating that it's blocked
+    // at the limit of 50.
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
+                                        2, true, 50,
+                                        /*unidirectional=*/false));
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
+                                        3, true, 50,
+                                        /*unidirectional=*/false));
+  }
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  // This packet will be read after connection is closed.
+  quic_data.AddRead(
+      ASYNC,
+      server_maker_.MakeConnectionClosePacket(
+          1, false, quic::QUIC_CRYPTO_VERSION_NOT_SUPPORTED, "Time to panic!"));
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+  CompleteCryptoHandshake();
+
+  // Open the maximum number of streams so that a subsequent request
+  // can not proceed immediately.
+  const size_t kMaxOpenStreams = GetMaxAllowedOutgoingBidirectionalStreams();
+  for (size_t i = 0; i < kMaxOpenStreams; i++) {
+    QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get());
+  }
+  EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
+
+  // Request two streams which will both be pending.
+  // In V99 each will generate a max stream id for each attempt.
+  std::unique_ptr<QuicChromiumClientSession::Handle> handle =
+      session_->CreateHandle(destination_);
+  std::unique_ptr<QuicChromiumClientSession::Handle> handle2 =
+      session_->CreateHandle(destination_);
+
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      handle->RequestStream(
+          /*requires_confirmation=*/false,
+          base::BindOnce(&QuicChromiumClientSessionTest::ResetHandleOnError,
+                         base::Unretained(this), &handle2),
+          TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  TestCompletionCallback callback2;
+  ASSERT_EQ(ERR_IO_PENDING,
+            handle2->RequestStream(/*requires_confirmation=*/false,
+                                   callback2.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  session_->connection()->CloseConnection(
+      quic::QUIC_NETWORK_IDLE_TIMEOUT, "Timed out",
+      quic::ConnectionCloseBehavior::SILENT_CLOSE);
+
+  // Pump the message loop to read the connection close packet.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(handle2.get());
+  quic_data.Resume();
+  EXPECT_TRUE(quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
 TEST_P(QuicChromiumClientSessionTest, ClosedWithAsyncStreamRequest) {
   MockQuicData quic_data(version_);
   if (version_.transport_version == quic::QUIC_VERSION_99) {

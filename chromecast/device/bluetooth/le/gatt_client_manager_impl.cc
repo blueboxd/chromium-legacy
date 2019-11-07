@@ -464,6 +464,12 @@ void GattClientManagerImpl::RunQueuedConnectRequest() {
       LOG(ERROR) << "Disconnect failed";
       // Clear pending disconnect request to avoid device be in a bad state.
       gatt_client_->ClearPendingDisconnect(addr);
+
+      auto it = addr_to_device_.find(addr);
+      if (it != addr_to_device_.end()) {
+        it->second->SetConnected(false);
+      }
+
       DisconnectAllComplete(false);
     }
 

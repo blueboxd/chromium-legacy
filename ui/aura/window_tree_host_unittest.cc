@@ -34,7 +34,7 @@ TEST_F(WindowTreeHostTest, DPIWindowSize) {
   EXPECT_EQ(gfx::Rect(0, 0, 534, 400), root_window()->bounds());
 
   gfx::Transform transform;
-  transform.Translate(0, 1.1f);
+  transform.Translate(0, -1.1f);
   host()->SetRootTransform(transform);
   EXPECT_EQ(gfx::Rect(0, 1, 534, 401), root_window()->bounds());
 
@@ -55,7 +55,7 @@ TEST_F(WindowTreeHostTest,
             gfx::Size(400, 300));
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
             gfx::Rect(0, 0, 400, 300));
-  EXPECT_EQ(gfx::Size(400, 300), host()->window()->bounds().size());
+  EXPECT_EQ(gfx::Rect(400, 300), host()->window()->bounds());
 
   host()->SetBoundsInPixels(gfx::Rect(0, 0, 400, 300));
   test_screen()->SetDisplayRotation(display::Display::ROTATE_90);
@@ -66,7 +66,7 @@ TEST_F(WindowTreeHostTest,
             gfx::Size(300, 400));
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
             gfx::Rect(0, 0, 300, 400));
-  EXPECT_EQ(gfx::Size(300, 400), host()->window()->bounds().size());
+  EXPECT_EQ(gfx::Rect(300, 400), host()->window()->bounds());
 
   host()->SetBoundsInPixels(gfx::Rect(0, 0, 400, 300));
   test_screen()->SetDisplayRotation(display::Display::ROTATE_180);
@@ -77,7 +77,7 @@ TEST_F(WindowTreeHostTest,
             gfx::Size(400, 300));
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
             gfx::Rect(0, 0, 400, 300));
-  EXPECT_EQ(gfx::Size(400, 300), host()->window()->bounds().size());
+  EXPECT_EQ(gfx::Rect(400, 300), host()->window()->bounds());
 
   host()->SetBoundsInPixels(gfx::Rect(0, 0, 400, 300));
   test_screen()->SetDisplayRotation(display::Display::ROTATE_270);
@@ -88,7 +88,7 @@ TEST_F(WindowTreeHostTest,
             gfx::Size(300, 400));
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
             gfx::Rect(0, 0, 300, 400));
-  EXPECT_EQ(gfx::Size(300, 400), host()->window()->bounds().size());
+  EXPECT_EQ(gfx::Rect(300, 400), host()->window()->bounds());
 }
 
 #if defined(OS_CHROMEOS)

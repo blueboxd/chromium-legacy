@@ -16,6 +16,7 @@ if (!is_ios) {
     deps = [
       "//base",
       "//cc/base",
+      "//third_party/zlib/google:zip",
       "//ui/gfx/geometry",
       "//url",
     ]

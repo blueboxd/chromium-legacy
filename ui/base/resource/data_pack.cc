@@ -21,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 // For details of the file layout, see
 // http://dev.chromium.org/developers/design-documents/linuxresourcesandlocalizedstrings
@@ -47,6 +48,7 @@ enum LoadErrors {
   HEADER_TRUNCATED,
   WRONG_ENCODING,
   INIT_FAILED_FROM_FILE,
+  UNZIP_FAILED,
 
   LOAD_ERRORS_COUNT,
 };
@@ -200,13 +202,31 @@ class DataPack::MemoryMappedDataSource : public DataPack::DataSource {
 
   // DataPack::DataSource:
   size_t GetLength() const override { return mmap_->length(); }
-
   const uint8_t* GetData() const override { return mmap_->data(); }
 
  private:
   std::unique_ptr<base::MemoryMappedFile> mmap_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryMappedDataSource);
+};
+
+// Takes ownership of a string of uncompressed pack data.
+class DataPack::StringDataSource : public DataPack::DataSource {
+ public:
+  explicit StringDataSource(std::string&& data) : data_(std::move(data)) {}
+
+  ~StringDataSource() override {}
+
+  // DataPack::DataSource:
+  size_t GetLength() const override { return data_.size(); }
+  const uint8_t* GetData() const override {
+    return reinterpret_cast<const uint8_t*>(data_.c_str());
+  }
+
+ private:
+  const std::string data_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringDataSource);
 };
 
 class DataPack::BufferDataSource : public DataPack::DataSource {
@@ -217,7 +237,6 @@ class DataPack::BufferDataSource : public DataPack::DataSource {
 
   // DataPack::DataSource:
   size_t GetLength() const override { return buffer_.length(); }
-
   const uint8_t* GetData() const override {
     return reinterpret_cast<const uint8_t*>(buffer_.data());
   }
@@ -249,8 +268,18 @@ bool DataPack::LoadFromPath(const base::FilePath& path) {
   if (!mmap->Initialize(path)) {
     DLOG(ERROR) << "Failed to mmap datapack";
     LogDataPackError(INIT_FAILED);
-    mmap.reset();
     return false;
+  }
+  if (path.FinalExtension() == FILE_PATH_LITERAL(".gz")) {
+    base::StringPiece compressed(reinterpret_cast<char*>(mmap->data()),
+                                 mmap->length());
+    std::string data;
+    if (!compression::GzipUncompress(compressed, &data)) {
+      LOG(ERROR) << "Failed to unzip compressed datapack: " << path;
+      LogDataPackError(UNZIP_FAILED);
+      return false;
+    }
+    return LoadImpl(std::make_unique<StringDataSource>(std::move(data)));
   }
   return LoadImpl(std::make_unique<MemoryMappedDataSource>(std::move(mmap)));
 }

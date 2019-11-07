@@ -159,7 +159,6 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   gfx::Size GetPreferredSize(const View* host) const override;
   gfx::Size GetMinimumSize(const View* host) const override;
   int GetPreferredHeightForWidth(const View* host, int width) const override;
-  void Layout(View* host) override;
   std::vector<View*> GetChildViewsInPaintOrder(const View* host) const override;
 
   // Queues an action to take place after the current animation completes.
@@ -188,6 +187,7 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
       const SizeBounds& size_bounds) const override;
   void OnInstalled(View* host) override;
   void OnLayoutChanged() override;
+  void LayoutImpl() override;
 
  private:
   struct LayoutFadeInfo;

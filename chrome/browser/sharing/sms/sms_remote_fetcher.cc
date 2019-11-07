@@ -11,12 +11,18 @@
 #include "chrome/browser/sharing/sms/sms_flags.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/browser/browser_context.h"
+#include "url/origin.h"
+
+namespace {
+const uint32_t kDefaultTimeoutSeconds = 60;
+}  // namespace
 
 void FetchRemoteSms(
     content::BrowserContext* context,
     const url::Origin& origin,
     base::OnceCallback<void(base::Optional<std::string>)> callback) {
   if (!base::FeatureList::IsEnabled(kSmsFetchRequestHandler)) {
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
@@ -25,21 +31,39 @@ void FetchRemoteSms(
   SharingService::SharingDeviceList devices =
       sharing_service->GetDeviceCandidates(
           sync_pb::SharingSpecificFields::SMS_FETCHER);
-  for (const std::unique_ptr<syncer::DeviceInfo>& info : devices) {
-    chrome_browser_sharing::SharingMessage sharing_message;
 
-    sharing_service->SendMessageToDevice(
-        info->guid(), kSendMessageTimeout, std::move(sharing_message),
-        base::BindOnce(
-            [](SharingSendMessageResult result,
-               std::unique_ptr<chrome_browser_sharing::ResponseMessage>
-                   response) {
-              // TODO(crbug.com/1015645): implementation pending.
-              NOTIMPLEMENTED();
-            }));
-
-    // Sends to the first device that has the capability enabled.
-    // TODO(crbug.com/1015645): figure out the routing strategy.
-    break;
+  if (devices.empty()) {
+    // No devices available to call.
+    std::move(callback).Run(base::nullopt);
+    return;
   }
+
+  // Sends to the first device that has the capability enabled.
+  // TODO(crbug.com/1015645): figure out the routing strategy, possibly
+  // requiring UX to allow the users to specify the device.
+  const std::unique_ptr<syncer::DeviceInfo>& device = devices.front();
+
+  chrome_browser_sharing::SharingMessage request;
+
+  request.mutable_sms_fetch_request()->set_origin(origin.Serialize());
+
+  sharing_service->SendMessageToDevice(
+      device->guid(), base::TimeDelta::FromSeconds(kDefaultTimeoutSeconds),
+      std::move(request),
+      base::BindOnce(
+          [](base::OnceCallback<void(base::Optional<std::string>)> callback,
+             SharingSendMessageResult result,
+             std::unique_ptr<chrome_browser_sharing::ResponseMessage>
+                 response) {
+            if (result != SharingSendMessageResult::kSuccessful) {
+              std::move(callback).Run(base::nullopt);
+              return;
+            }
+
+            DCHECK(response);
+            DCHECK(response->has_sms_fetch_response());
+
+            std::move(callback).Run(response->sms_fetch_response().sms());
+          },
+          std::move(callback)));
 }

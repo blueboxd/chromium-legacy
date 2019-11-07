@@ -1953,6 +1953,34 @@ interface DynamicsCompressorNode : AudioNode
     getter release
     getter threshold
     method constructor
+interface EditContext : EventTarget
+    attribute @@toStringTag
+    getter enterKeyHint
+    getter inputMode
+    getter inputPanelPolicy
+    getter oncompositionend
+    getter oncompositionstart
+    getter ontextformatupdate
+    getter ontextupdate
+    getter selectionEnd
+    getter selectionStart
+    getter text
+    method blur
+    method constructor
+    method focus
+    method updateLayout
+    method updateSelection
+    method updateText
+    setter enterKeyHint
+    setter inputMode
+    setter inputPanelPolicy
+    setter oncompositionend
+    setter oncompositionstart
+    setter ontextformatupdate
+    setter ontextupdate
+    setter selectionEnd
+    setter selectionStart
+    setter text
 interface Element : Node
     attribute @@toStringTag
     attribute @@unscopables

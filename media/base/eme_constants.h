@@ -49,7 +49,7 @@ using SupportedCodecs = uint32_t;
 namespace {
 
 constexpr SupportedCodecs GetMp4AudioCodecs() {
-  SupportedCodecs codecs = EME_CODEC_FLAC;
+  SupportedCodecs codecs = EME_CODEC_OPUS | EME_CODEC_FLAC;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   codecs |= EME_CODEC_AAC;
 #if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)

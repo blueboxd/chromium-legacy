@@ -14,16 +14,14 @@
 
 namespace weblayer {
 
-class BrowserController;
+class Tab;
 
 // FullscreenCallbackProxy forwards all FullscreenDelegate functions to the
 // Java side. There is at most one FullscreenCallbackProxy per
-// BrowserController.
+// Tab.
 class FullscreenCallbackProxy : public FullscreenDelegate {
  public:
-  FullscreenCallbackProxy(JNIEnv* env,
-                          jobject obj,
-                          BrowserController* browser_controller);
+  FullscreenCallbackProxy(JNIEnv* env, jobject obj, Tab* tab);
   ~FullscreenCallbackProxy() override;
 
   // FullscreenDelegate:
@@ -35,7 +33,7 @@ class FullscreenCallbackProxy : public FullscreenDelegate {
                         const base::android::JavaParamRef<jobject>& caller);
 
  private:
-  BrowserController* browser_controller_;
+  Tab* tab_;
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
   base::OnceClosure exit_fullscreen_closure_;
 

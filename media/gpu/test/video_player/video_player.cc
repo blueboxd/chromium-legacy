@@ -15,6 +15,30 @@
 namespace media {
 namespace test {
 
+namespace {
+// Get the name of the specified video player |event|.
+const char* EventName(VideoPlayerEvent event) {
+  switch (event) {
+    case VideoPlayerEvent::kInitialized:
+      return "Initialized";
+    case VideoPlayerEvent::kFrameDecoded:
+      return "FrameDecoded";
+    case VideoPlayerEvent::kFlushing:
+      return "Flushing";
+    case VideoPlayerEvent::kFlushDone:
+      return "FlushDone";
+    case VideoPlayerEvent::kResetting:
+      return "Resetting";
+    case VideoPlayerEvent::kResetDone:
+      return "ResetDone";
+    case VideoPlayerEvent::kConfigInfo:
+      return "ConfigInfo";
+    default:
+      return "Unknown";
+  }
+}
+}  // namespace
+
 VideoPlayer::VideoPlayer()
     : video_(nullptr),
       video_player_state_(VideoPlayerState::kUninitialized),
@@ -183,8 +207,11 @@ bool VideoPlayer::WaitForEvent(VideoPlayerEvent event, size_t times) {
     }
 
     // Check whether we've exceeded the maximum time we're allowed to wait.
-    if (time_waiting >= event_timeout_)
+    if (time_waiting >= event_timeout_) {
+      LOG(ERROR) << "Timeout while waiting for '" << EventName(event)
+                 << "' event";
       return false;
+    }
 
     const base::TimeTicks start_time = base::TimeTicks::Now();
     event_cv_.TimedWait(event_timeout_ - time_waiting);

@@ -152,6 +152,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   URLItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
   URLItem.textFieldValue = self.URL;
+  URLItem.hideIcon = YES;
   [model addItem:URLItem toSectionWithIdentifier:SectionIdentifierContent];
 
   self.originalUsername = self.username;
@@ -174,6 +175,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.passwordItem.identifyingIcon =
       [UIImage imageNamed:@"infobar_reveal_password_icon"];
   self.passwordItem.identifyingIconEnabled = YES;
+  self.passwordItem.hideIcon = YES;
   self.passwordItem.identifyingIconAccessibilityLabel = l10n_util::GetNSString(
       IDS_IOS_INFOBAR_MODAL_PASSWORD_REVEAL_PASSWORD_HINT);
   [model addItem:self.passwordItem

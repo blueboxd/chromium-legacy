@@ -3237,7 +3237,7 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   if (Element* locked_ancestor =
           DisplayLockUtilities::NearestLockedInclusiveAncestor(*node)) {
     locked_ancestor->ActivateDisplayLockIfNeeded(
-        DisplayLockActivationReason::kUser);
+        DisplayLockActivationReason::kAccessibility);
   }
   LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object || !node->isConnected())

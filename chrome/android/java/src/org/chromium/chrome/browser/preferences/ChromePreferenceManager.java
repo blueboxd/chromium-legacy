@@ -465,29 +465,4 @@ public class ChromePreferenceManager {
     public boolean hasUserAcceptedTwaDisclosureForPackage(String packageName) {
         return getTrustedWebActivityDisclosureAcceptedPackages().contains(packageName);
     }
-
-    /**
-     * Writes the given boolean to the named shared preference.
-     *
-     * @param key The name of the preference to modify.
-     * @param value The new value for the preference.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public void writeBoolean(String key, boolean value) {
-        mManager.writeBoolean(key, value);
-    }
-
-    /**
-     * Reads the given boolean value from the named shared preference.
-     *
-     * @param key The name of the preference to return.
-     * @param defaultValue The default value to return if there's no value stored.
-     * @return The value of the preference if stored; defaultValue otherwise.
-     * @deprecated Use {@link SharedPreferencesManager} instead.
-     */
-    @Deprecated
-    public boolean readBoolean(String key, boolean defaultValue) {
-        return mManager.readBoolean(key, defaultValue);
-    }
 }

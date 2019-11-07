@@ -169,8 +169,21 @@ void FreePagesInternal(void* address, size_t length) {
   ZX_CHECK(status == ZX_OK, status);
 }
 
+void DiscardSystemPagesInternal(void* address, size_t length) {
+  // TODO(https://crbug.com/1022062): Mark pages as discardable, rather than
+  // forcibly de-committing them immediately, when Fuchsia supports it.
+  uint64_t address_int = reinterpret_cast<uint64_t>(address);
+  zx_status_t status = zx::vmar::root_self()->op_range(
+      ZX_VMO_OP_DECOMMIT, address_int, length, nullptr, 0);
+  ZX_CHECK(status == ZX_OK, status);
+}
+
 void DecommitSystemPagesInternal(void* address, size_t length) {
-  DiscardSystemPages(address, length);
+  // TODO(https://crbug.com/1022062): Review whether this implementation is
+  // still appropriate once DiscardSystemPagesInternal() migrates to a "lazy"
+  // discardable API.
+  DiscardSystemPagesInternal(address, length);
+
   SetSystemPagesAccessInternal(address, length, PageInaccessible);
 }
 
@@ -179,10 +192,6 @@ bool RecommitSystemPagesInternal(void* address,
                                  PageAccessibilityConfiguration accessibility) {
   SetSystemPagesAccessInternal(address, length, accessibility);
   return true;
-}
-
-void DiscardSystemPagesInternal(void* address, size_t length) {
-  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 }  // namespace base

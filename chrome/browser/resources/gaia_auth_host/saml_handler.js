@@ -37,6 +37,12 @@ cr.define('cr.login', function() {
   const SAML_HEADER = 'google-accounts-saml';
 
   /** @const */
+  const SAML_VERIFIED_ACCESS_CHALLENGE_HEADER = 'x-verified-access-challenge';
+  /** @const */
+  const SAML_VERIFIED_ACCESS_RESPONSE_HEADER =
+      'x-verified-access-challenge-response';
+
+  /** @const */
   const injectedScriptName = 'samlInjected';
 
   /**
@@ -79,6 +85,26 @@ cr.define('cr.login', function() {
      * */
     constructor(webview, startsOnSamlPage) {
       super();
+
+      /**
+       * Device attestation flow stages.
+       * @enum {number}
+       * @private
+       */
+      SamlHandler.DeviceAttestationStage = {
+        // No device attestation in progress.
+        NONE: 1,
+        // A Redirect was received with a HTTP header that contained a device
+        // attestation challenge.
+        CHALLENGE_RECEIVED: 2,
+        // The Redirect has been canceled and a device attestation challenge
+        // response is being computed.
+        ORIGINAL_REDIRECT_CANCELED: 3,
+        // The device attestation challenge response is available and the
+        // original Redirect is being followed with the response included in a
+        // HTTP header.
+        NAVIGATING_TO_REDIRECT_PAGE: 4,
+      };
 
       /**
        * The webview that serves IdP pages.
@@ -164,6 +190,27 @@ cr.define('cr.login', function() {
       this.extractSamlPasswordAttributes = false;
 
       /**
+       * Current stage of device attestation flow.
+       * @type {DeviceAttestationStage}
+       * @private
+       */
+      this.deviceAttestationStage_ = SamlHandler.DeviceAttestationStage.NONE;
+
+      /**
+       * Challenge from IdP to perform device attestation.
+       * @type {?string}
+       * @private
+       */
+      this.verifiedAccessChallenge_ = null;
+
+      /**
+       * Response for a device attestation challenge.
+       * @type {?string}
+       * @private
+       */
+      this.verifiedAccessChallengeResponse_ = null;
+
+      /**
        * The password-attributes that were extracted from the SAMLResponse, if
        * any. (Doesn't contain the password itself).
        * @type {PasswordAttributes}
@@ -195,6 +242,18 @@ cr.define('cr.login', function() {
       if (!this.startsOnSamlPage_) {
         this.webviewEventManager_.addEventListener(
             this.webview_, 'loadcommit', this.onLoadCommit_.bind(this));
+
+        this.webviewEventManager_.addWebRequestEventListener(
+            this.webview_.request.onBeforeRequest,
+            this.onBeforeRequest_.bind(this),
+            {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
+            ['blocking']);
+
+        this.webviewEventManager_.addWebRequestEventListener(
+            this.webview_.request.onBeforeSendHeaders,
+            this.onBeforeSendHeaders_.bind(this),
+            {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
+            ['blocking', 'requestHeaders']);
 
         this.webviewEventManager_.addWebRequestEventListener(
             this.webview_.request.onHeadersReceived,
@@ -308,6 +367,10 @@ cr.define('cr.login', function() {
       this.pendingIsSamlPage_ = this.startsOnSamlPage_;
       this.passwordStore_ = {};
 
+      this.deviceAttestationStage_ = SamlHandler.DeviceAttestationStage.NONE;
+      this.verifiedAccessChallenge_ = null;
+      this.verifiedAccessChallengeResponse_ = null;
+
       this.apiInitialized_ = false;
       this.apiVersion_ = 0;
       this.apiToken_ = null;
@@ -322,6 +385,16 @@ cr.define('cr.login', function() {
      */
     verifyConfirmedPassword(password) {
       return this.getConsolidatedScrapedPasswords_().indexOf(password) >= 0;
+    }
+
+    /**
+     * Check that last navigation was aborted intentionally. It will be
+     * continued later, so the abort event can be ignored.
+     * @return {boolean}
+     */
+    isIntentionalAbort() {
+      return this.deviceAttestationStage_ ==
+          SamlHandler.DeviceAttestationStage.ORIGINAL_REDIRECT_CANCELED;
     }
 
     /**
@@ -343,6 +416,10 @@ cr.define('cr.login', function() {
      * @private
      */
     onLoadAbort_(e) {
+      if (this.isIntentionalAbort()) {
+        return;
+      }
+
       if (e.isTopLevel) {
         this.abortedTopLevelUrl_ = e.url;
       }
@@ -415,6 +492,126 @@ cr.define('cr.login', function() {
     }
 
     /**
+     * Receives a response for a device attestation challenge and navigates to
+     * saved redirect page.
+     * @param {string} url Url from canceled redirect.
+     * @param {{success: boolean, response: string}} challengeResponse Response
+     *     for device attestation challenge. If |success| is true, |response|
+     *     contains challenge response. Otherwise |response| contains empty
+     *     string.
+     * @private
+     */
+    continueDelayedRedirect_(url, challengeResponse) {
+      if (this.deviceAttestationStage_ !=
+          SamlHandler.DeviceAttestationStage.ORIGINAL_REDIRECT_CANCELED) {
+        console.error(
+            'SamlHandler.continueDelayedRedirect_: incorrect attestation stage');
+        return;
+      }
+
+      // Save response only if it is successful.
+      if (challengeResponse.success) {
+        this.verifiedAccessChallengeResponse_ = challengeResponse.response;
+      }
+
+      // Navigate to the saved destination from the canceled redirect.
+      this.deviceAttestationStage_ =
+          SamlHandler.DeviceAttestationStage.NAVIGATING_TO_REDIRECT_PAGE;
+      this.webview_.src = url;
+    }
+
+    /**
+     * Invoked before sending a web request. If a challenge for the remote
+     * attestation was found in a previous request, cancel the current one. It
+     * will be continued (reinitiated) later when a challenge response is ready.
+     * @param {Object} details The web-request details.
+     * @return {BlockingResponse} Allows the event handler to modify network
+     *     requests.
+     * @private
+     */
+    onBeforeRequest_(details) {
+      // Default case without Verified Access.
+      if (this.deviceAttestationStage_ ==
+          SamlHandler.DeviceAttestationStage.NONE) {
+        return {};
+      }
+
+      if (this.deviceAttestationStage_ ==
+          SamlHandler.DeviceAttestationStage.NAVIGATING_TO_REDIRECT_PAGE) {
+        return {};
+      }
+
+      if ((this.deviceAttestationStage_ ==
+           SamlHandler.DeviceAttestationStage.CHALLENGE_RECEIVED) &&
+          (this.verifiedAccessChallenge_ !== null)) {
+        // Ask backend to compute response for device attestation challenge.
+        this.dispatchEvent(new CustomEvent('challengeMachineKeyRequired', {
+          detail: {
+            url: details.url,
+            challenge: this.verifiedAccessChallenge_,
+            callback: this.continueDelayedRedirect_.bind(this, details.url)
+          }
+        }));
+
+        this.verifiedAccessChallenge_ = null;
+
+        // Cancel redirect by changing destination to javascript:void(0).
+        // That will produce 'loadabort' event that should be ignored.
+        this.deviceAttestationStage_ =
+            SamlHandler.DeviceAttestationStage.ORIGINAL_REDIRECT_CANCELED;
+        return {redirectUrl: 'javascript:void(0)'};
+      }
+
+      // Reset state in case of unexpected requests during device attestation.
+      this.deviceAttestationStage_ = SamlHandler.DeviceAttestationStage.NONE;
+      console.error(
+          'SamlHandler.onBeforeRequest_: incorrect attestation stage');
+      return {};
+    }
+
+    /**
+     * Attaches challenge response during device attestation flow.
+     * @param {Object} details The web-request details.
+     * @return {BlockingResponse} Allows the event handler to modify network
+     *     requests.
+     * @private
+     */
+    onBeforeSendHeaders_(details) {
+      // Default case without Verified Access.
+      if (this.deviceAttestationStage_ ==
+          SamlHandler.DeviceAttestationStage.NONE) {
+        return {};
+      }
+
+      if (this.deviceAttestationStage_ ==
+          SamlHandler.DeviceAttestationStage.NAVIGATING_TO_REDIRECT_PAGE) {
+        // Send extra header only if no error was encountered during challenge
+        // key procedure.
+        if (this.verifiedAccessChallengeResponse_ === null) {
+          this.deviceAttestationStage_ =
+              SamlHandler.DeviceAttestationStage.NONE;
+          return {};
+        }
+
+        details.requestHeaders.push({
+          'name': SAML_VERIFIED_ACCESS_RESPONSE_HEADER,
+          'value': this.verifiedAccessChallengeResponse_
+        });
+
+        this.verifiedAccessChallengeResponse_ = null;
+        this.deviceAttestationStage_ = SamlHandler.DeviceAttestationStage.NONE;
+
+        return {requestHeaders: details.requestHeaders};
+      }
+
+      // Reset state in case of unexpected navigation during device attestation.
+      this.deviceAttestationStage_ = SamlHandler.DeviceAttestationStage.NONE;
+      console.error(
+          'SamlHandler.onBeforeSendHeaders_: incorrect attestation stage');
+      return {};
+    }
+
+    /**
      * Invoked when headers are received for the main frame.
      * @private
      */
@@ -434,6 +631,18 @@ cr.define('cr.login', function() {
           } else if (action == 'end') {
             this.pendingIsSamlPage_ = false;
           }
+        }
+
+        // If true, IdP tries to perform a device attestation.
+        // 300 <= .. <= 399 means it is a redirect to a page that will verify
+        // device response. HTTP header with
+        // |SAML_VERIFIED_ACCESS_CHALLENGE_HEADER| name contains challenge from
+        // Verified Access Web API.
+        if ((details.statusCode >= 300) && (details.statusCode <= 399) &&
+            (headerName == SAML_VERIFIED_ACCESS_CHALLENGE_HEADER)) {
+          this.deviceAttestationStage_ =
+              SamlHandler.DeviceAttestationStage.CHALLENGE_RECEIVED;
+          this.verifiedAccessChallenge_ = header.value;
         }
       }
 

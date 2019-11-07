@@ -28,13 +28,13 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
@@ -239,7 +239,7 @@ bool PushMessagingNotificationManager::IsTabVisible(
   // Ignore minimized windows.
   switch (active_web_contents->GetMainFrame()->GetVisibilityState()) {
     case content::PageVisibilityState::kHidden:
-    case content::PageVisibilityState::kPrerender:
+    case content::PageVisibilityState::kHiddenButPainting:
       return false;
     case content::PageVisibilityState::kVisible:
       break;

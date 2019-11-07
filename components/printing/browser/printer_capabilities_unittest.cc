@@ -9,6 +9,9 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
+#include "base/task_runner_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "content/public/test/browser_task_environment.h"
 #include "printing/backend/test_print_backend.h"
@@ -23,26 +26,60 @@ namespace {
 
 const char kDpi[] = "dpi";
 
+void GetSettingsDone(base::OnceClosure done_closure,
+                     base::Value* out_settings,
+                     base::Value settings) {
+  *out_settings = std::move(settings);
+  std::move(done_closure).Run();
+}
+
 }  // namespace
 
 class PrinterCapabilitiesTest : public testing::Test {
  public:
-  PrinterCapabilitiesTest() {}
-  ~PrinterCapabilitiesTest() override {}
+  PrinterCapabilitiesTest() = default;
+  ~PrinterCapabilitiesTest() override = default;
 
  protected:
   void SetUp() override {
     test_backend_ = base::MakeRefCounted<TestPrintBackend>();
     PrintBackend::SetPrintBackendForTesting(test_backend_.get());
+    blocking_task_runner_ = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::MayBlock()});
+    disallow_blocking_ = std::make_unique<base::ScopedDisallowBlocking>();
   }
 
-  void TearDown() override { test_backend_ = nullptr; }
+  void TearDown() override {
+    disallow_blocking_.reset();
+    test_backend_.reset();
+  }
+
+  base::Value GetSettingsOnBlockingTaskRunnerAndWaitForResults(
+      const std::string& printer_name,
+      const PrinterBasicInfo& basic_info,
+      const PrinterSemanticCapsAndDefaults::Papers& papers,
+      scoped_refptr<PrintBackend> backend) {
+    base::RunLoop run_loop;
+    base::Value settings;
+
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&GetSettingsOnBlockingTaskRunner, printer_name,
+                       basic_info, papers, /*has_secure_protocol=*/false,
+                       backend),
+        base::BindOnce(&GetSettingsDone, run_loop.QuitClosure(), &settings));
+
+    run_loop.Run();
+    return settings;
+  }
 
   TestPrintBackend* print_backend() { return test_backend_.get(); }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<TestPrintBackend> test_backend_;
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
+  std::unique_ptr<base::ScopedDisallowBlocking> disallow_blocking_;
 };
 
 // Verify that we don't crash for a missing printer and a nullptr is never
@@ -53,8 +90,8 @@ TEST_F(PrinterCapabilitiesTest, NonNullForMissingPrinter) {
   PrinterSemanticCapsAndDefaults::Papers no_additional_papers;
 
   base::Value settings_dictionary =
-      GetSettingsOnBlockingPool(printer_name, basic_info, no_additional_papers,
-                                /* has_secure_protocol */ false, nullptr);
+      GetSettingsOnBlockingTaskRunnerAndWaitForResults(
+          printer_name, basic_info, no_additional_papers, nullptr);
 
   ASSERT_FALSE(settings_dictionary.DictEmpty());
 }
@@ -69,9 +106,9 @@ TEST_F(PrinterCapabilitiesTest, ProvidedCapabilitiesUsed) {
   caps->dpis = {{600, 600}};
   print_backend()->AddValidPrinter(printer_name, std::move(caps));
 
-  base::Value settings_dictionary = GetSettingsOnBlockingPool(
-      printer_name, basic_info, no_additional_papers,
-      /* has_secure_protocol */ false, print_backend());
+  base::Value settings_dictionary =
+      GetSettingsOnBlockingTaskRunnerAndWaitForResults(
+          printer_name, basic_info, no_additional_papers, print_backend());
 
   // Verify settings were created.
   ASSERT_FALSE(settings_dictionary.DictEmpty());
@@ -99,9 +136,9 @@ TEST_F(PrinterCapabilitiesTest, NullCapabilitiesExcluded) {
   // Return false when attempting to retrieve capabilities.
   print_backend()->AddValidPrinter(printer_name, nullptr);
 
-  base::Value settings_dictionary = GetSettingsOnBlockingPool(
-      printer_name, basic_info, no_additional_papers,
-      /* has_secure_protocol */ false, print_backend());
+  base::Value settings_dictionary =
+      GetSettingsOnBlockingTaskRunnerAndWaitForResults(
+          printer_name, basic_info, no_additional_papers, print_backend());
 
   // Verify settings were created.
   ASSERT_FALSE(settings_dictionary.DictEmpty());
@@ -127,9 +164,9 @@ TEST_F(PrinterCapabilitiesTest, AdditionalPapers) {
   additional_papers.push_back({"foo", "vendor", {200, 300}});
   additional_papers.push_back({"bar", "vendor", {600, 600}});
 
-  base::Value settings_dictionary = GetSettingsOnBlockingPool(
-      printer_name, basic_info, additional_papers,
-      /* has_secure_protocol */ false, print_backend());
+  base::Value settings_dictionary =
+      GetSettingsOnBlockingTaskRunnerAndWaitForResults(
+          printer_name, basic_info, additional_papers, print_backend());
 
   // Verify settings were created.
   ASSERT_FALSE(settings_dictionary.DictEmpty());
@@ -191,7 +228,6 @@ TEST_F(PrinterCapabilitiesTest, HasNotSecureProtocol) {
   std::string printer_name = "test_printer";
   PrinterBasicInfo basic_info;
   PrinterSemanticCapsAndDefaults::Papers no_additional_papers;
-  bool has_secure_protocol = false;
 
   // Set a capability and add a valid printer.
   auto caps = std::make_unique<PrinterSemanticCapsAndDefaults>();
@@ -199,8 +235,8 @@ TEST_F(PrinterCapabilitiesTest, HasNotSecureProtocol) {
   print_backend()->AddValidPrinter(printer_name, std::move(caps));
 
   base::Value settings_dictionary =
-      GetSettingsOnBlockingPool(printer_name, basic_info, no_additional_papers,
-                                has_secure_protocol, print_backend());
+      GetSettingsOnBlockingTaskRunnerAndWaitForResults(
+          printer_name, basic_info, no_additional_papers, print_backend());
 
   // Verify settings were created.
   ASSERT_FALSE(settings_dictionary.DictEmpty());

@@ -1427,6 +1427,10 @@ linux_builder(
 )
 
 linux_builder(
+    name = 'linux-layout-tests-fragment-paint',
+)
+
+linux_builder(
     name = 'linux_mojo',
     goma_backend = goma.backend.RBE_PROD,
 )

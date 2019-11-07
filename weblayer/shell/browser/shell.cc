@@ -16,8 +16,8 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "url/gurl.h"
-#include "weblayer/public/browser_controller.h"
 #include "weblayer/public/navigation_controller.h"
+#include "weblayer/public/tab.h"
 
 namespace weblayer {
 
@@ -29,19 +29,19 @@ const int kDefaultTestWindowHeightDip = 700;
 
 std::vector<Shell*> Shell::windows_;
 
-Shell::Shell(std::unique_ptr<BrowserController> browser_controller)
-    : browser_controller_(std::move(browser_controller)), window_(nullptr) {
+Shell::Shell(std::unique_ptr<Tab> tab)
+    : tab_(std::move(tab)), window_(nullptr) {
   windows_.push_back(this);
-  if (browser_controller_) {
-    browser_controller_->AddObserver(this);
-    browser_controller_->GetNavigationController()->AddObserver(this);
+  if (tab_) {
+    tab_->AddObserver(this);
+    tab_->GetNavigationController()->AddObserver(this);
   }
 }
 
 Shell::~Shell() {
-  if (browser_controller_) {
-    browser_controller_->GetNavigationController()->RemoveObserver(this);
-    browser_controller_->RemoveObserver(this);
+  if (tab_) {
+    tab_->GetNavigationController()->RemoveObserver(this);
+    tab_->RemoveObserver(this);
   }
   PlatformCleanUp();
 
@@ -55,7 +55,7 @@ Shell::~Shell() {
   // Always destroy WebContents before calling PlatformExit(). WebContents
   // destruction sequence may depend on the resources destroyed in
   // PlatformExit() (e.g. the display::Screen singleton).
-  browser_controller_.reset();
+  tab_.reset();
 
   if (windows_.empty()) {
     if (*g_quit_main_message_loop)
@@ -63,9 +63,9 @@ Shell::~Shell() {
   }
 }
 
-Shell* Shell::CreateShell(std::unique_ptr<BrowserController> browser_controller,
+Shell* Shell::CreateShell(std::unique_ptr<Tab> tab,
                           const gfx::Size& initial_size) {
-  Shell* shell = new Shell(std::move(browser_controller));
+  Shell* shell = new Shell(std::move(tab));
   shell->PlatformCreateWindow(initial_size.width(), initial_size.height());
 
   shell->PlatformSetContents();
@@ -95,12 +95,12 @@ void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
   *g_quit_main_message_loop = std::move(quit_closure);
 }
 
-BrowserController* Shell::browser_controller() {
+Tab* Shell::tab() {
 #if defined(OS_ANDROID)
   // TODO(jam): this won't work if we need more than one Shell in a test.
-  return BrowserController::GetLastControllerForTesting();
+  return Tab::GetLastTabForTesting();
 #else
-  return browser_controller_.get();
+  return tab_.get();
 #endif
 }
 
@@ -113,8 +113,7 @@ void Shell::DisplayedUrlChanged(const GURL& url) {
 }
 
 void Shell::LoadStateChanged(bool is_loading, bool to_different_document) {
-  NavigationController* navigation_controller =
-      browser_controller_->GetNavigationController();
+  NavigationController* navigation_controller = tab_->GetNavigationController();
 
   PlatformEnableUIControl(STOP_BUTTON, is_loading && to_different_document);
 
@@ -139,37 +138,36 @@ Shell* Shell::CreateNewWindow(weblayer::Profile* web_profile,
                               const GURL& url,
                               const gfx::Size& initial_size) {
 #if defined(OS_ANDROID)
-  std::unique_ptr<BrowserController> browser_controller;
+  std::unique_ptr<Tab> tab;
 #else
-  auto browser_controller = BrowserController::Create(web_profile);
+  auto tab = Tab::Create(web_profile);
 #endif
 
-  Shell* shell = CreateShell(std::move(browser_controller),
-                             AdjustWindowSize(initial_size));
+  Shell* shell = CreateShell(std::move(tab), AdjustWindowSize(initial_size));
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;
 }
 
 void Shell::LoadURL(const GURL& url) {
-  browser_controller()->GetNavigationController()->Navigate(url);
+  tab()->GetNavigationController()->Navigate(url);
 }
 
 void Shell::GoBackOrForward(int offset) {
   if (offset == -1)
-    browser_controller()->GetNavigationController()->GoBack();
+    tab()->GetNavigationController()->GoBack();
   else if (offset == 1)
-    browser_controller()->GetNavigationController()->GoForward();
+    tab()->GetNavigationController()->GoForward();
 }
 
 void Shell::Reload() {
-  browser_controller()->GetNavigationController()->Reload();
+  tab()->GetNavigationController()->Reload();
 }
 
 void Shell::ReloadBypassingCache() {}
 
 void Shell::Stop() {
-  browser_controller()->GetNavigationController()->Stop();
+  tab()->GetNavigationController()->Stop();
 }
 
 gfx::Size Shell::GetShellDefaultSize() {

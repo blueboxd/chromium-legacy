@@ -9,6 +9,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/android/chrome_jni_headers/DownloadLocationDialogBridge_jni.h"
 #include "chrome/browser/download/android/download_controller.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "ui/android/window_android.h"
 
 DownloadLocationDialogBridgeImpl::DownloadLocationDialogBridgeImpl()
@@ -93,4 +96,25 @@ void DownloadLocationDialogBridgeImpl::CompleteLocationSelection(
     UMA_HISTOGRAM_ENUMERATION("MobileDownload.Location.Dialog.Result", result);
     std::move(location_callback_).Run(result, std::move(file_path));
   }
+}
+
+static base::android::ScopedJavaLocalRef<jstring>
+JNI_DownloadLocationDialogBridge_GetDownloadDefaultDirectory(JNIEnv* env) {
+  PrefService* pref_service =
+      ProfileManager::GetActiveUserProfile()->GetOriginalProfile()->GetPrefs();
+
+  return base::android::ConvertUTF8ToJavaString(
+      env, pref_service->GetString(prefs::kDownloadDefaultDirectory));
+}
+
+static void
+JNI_DownloadLocationDialogBridge_SetDownloadAndSaveFileDefaultDirectory(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& directory) {
+  PrefService* pref_service =
+      ProfileManager::GetActiveUserProfile()->GetOriginalProfile()->GetPrefs();
+
+  base::FilePath path(base::android::ConvertJavaStringToUTF8(env, directory));
+  pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
+  pref_service->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
 }

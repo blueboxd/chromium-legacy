@@ -17,8 +17,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.Browser;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.SmallTest;
@@ -36,24 +34,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.history.HistoryTestUtils.TestObserver;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
-import org.chromium.chrome.browser.preferences.PrefChangeRegistrar.PrefObserver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -67,7 +62,6 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -80,47 +74,6 @@ public class HistoryActivityTest {
     @Rule
     public IntentsTestRule<HistoryActivity> mActivityTestRule =
             new IntentsTestRule<>(HistoryActivity.class, false, false);
-
-    private static class TestObserver extends RecyclerView.AdapterDataObserver
-            implements SelectionObserver<HistoryItem>, SignInStateObserver, PrefObserver {
-        public final CallbackHelper onChangedCallback = new CallbackHelper();
-        public final CallbackHelper onSelectionCallback = new CallbackHelper();
-        public final CallbackHelper onSigninStateChangedCallback = new CallbackHelper();
-        public final CallbackHelper onPreferenceChangeCallback = new CallbackHelper();
-
-        private Handler mHandler;
-
-        public TestObserver() {
-            mHandler = new Handler(Looper.getMainLooper());
-        }
-
-        @Override
-        public void onChanged() {
-            // To guarantee that all real Observers have had a chance to react to the event, post
-            // the CallbackHelper.notifyCalled() call.
-            mHandler.post(() -> onChangedCallback.notifyCalled());
-        }
-
-        @Override
-        public void onSelectionStateChange(List<HistoryItem> selectedItems) {
-            mHandler.post(() -> onSelectionCallback.notifyCalled());
-        }
-
-        @Override
-        public void onSignedIn() {
-            mHandler.post(() -> onSigninStateChangedCallback.notifyCalled());
-        }
-
-        @Override
-        public void onSignedOut() {
-            mHandler.post(() -> onSigninStateChangedCallback.notifyCalled());
-        }
-
-        @Override
-        public void onPreferenceChange() {
-            mHandler.post(() -> onPreferenceChangeCallback.notifyCalled());
-        }
-    }
 
     private StubbedHistoryProvider mHistoryProvider;
     private HistoryAdapter mAdapter;
@@ -151,18 +104,7 @@ public class HistoryActivityTest {
         HistoryManager.setProviderForTests(mHistoryProvider);
 
         launchHistoryActivity();
-        if (!mAdapter.isClearBrowsingDataButtonVisible()) {
-            int changedCallCount = mTestObserver.onChangedCallback.getCallCount();
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> mAdapter.setClearBrowsingDataButtonVisibilityForTest(true));
-            mTestObserver.onChangedCallback.waitForCallback(changedCallCount);
-        }
-
-        if (mAdapter.arePrivacyDisclaimersVisible()) {
-            int changedCallCount = mTestObserver.onChangedCallback.getCallCount();
-            setHasOtherFormsOfBrowsingData(false);
-            mTestObserver.onChangedCallback.waitForCallback(changedCallCount);
-        }
+        HistoryTestUtils.setupHistoryTestHeaders(mAdapter, mTestObserver);
 
         Assert.assertEquals(4, mAdapter.getItemCount());
     }

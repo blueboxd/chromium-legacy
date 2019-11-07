@@ -288,7 +288,9 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       Page::CreateOrdinary(page_clients, opener ? opener->GetPage() : nullptr);
   CoreInitializer::GetInstance().ProvideModulesToPage(*AsView().page,
                                                       AsView().client);
-  SetIsHidden(is_hidden, /*is_initial_state=*/true);
+  SetVisibilityState(
+      is_hidden ? PageVisibilityState::kHidden : PageVisibilityState::kVisible,
+      /*is_initial_state=*/true);
 
   // When not compositing, keep the Page in the loop so that it will paint all
   // content into the root layer, as multiple layers can only be used when
@@ -3373,15 +3375,17 @@ PageScheduler* WebViewImpl::Scheduler() const {
   return GetPage()->GetPageScheduler();
 }
 
-void WebViewImpl::SetIsHidden(bool hidden, bool is_initial_state) {
+void WebViewImpl::SetVisibilityState(PageVisibilityState visibility_state,
+                                     bool is_initial_state) {
   DCHECK(GetPage());
-  GetPage()->SetIsHidden(hidden, is_initial_state);
-  GetPage()->GetPageScheduler()->SetPageVisible(!hidden);
+  GetPage()->SetVisibilityState(visibility_state, is_initial_state);
+  GetPage()->GetPageScheduler()->SetPageVisible(visibility_state ==
+                                                PageVisibilityState::kVisible);
 }
 
-bool WebViewImpl::IsHidden() {
+PageVisibilityState WebViewImpl::GetVisibilityState() {
   DCHECK(GetPage());
-  return !GetPage()->IsPageVisible();
+  return GetPage()->GetVisibilityState();
 }
 
 void WebViewImpl::ForceNextWebGLContextCreationToFail() {
@@ -3421,7 +3425,7 @@ void WebViewImpl::SetPageFrozen(bool frozen) {
 }
 
 void WebViewImpl::PutPageIntoBackForwardCache() {
-  SetIsHidden(/*is_hidden=*/true, /*is_initial_state=*/false);
+  SetVisibilityState(PageVisibilityState::kHidden, /*is_initial_state=*/false);
 
   Page* page = AsView().page;
   if (page) {
@@ -3472,7 +3476,7 @@ void WebViewImpl::RestorePageFromBackForwardCache() {
       }
     }
   }
-  SetIsHidden(/*is_hidden=*/false, /*is_initial_state=*/false);
+  SetVisibilityState(PageVisibilityState::kVisible, /*is_initial_state=*/false);
 }
 
 WebWidget* WebViewImpl::MainFrameWidget() {

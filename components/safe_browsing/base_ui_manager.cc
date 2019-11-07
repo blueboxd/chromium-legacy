@@ -264,9 +264,13 @@ void BaseUIManager::DisplayBlockingPage(
       // via javascript without a navigation.
       GURL blocked_url = entry ? entry->GetURL() : resource.url;
 
+      // Blocking pages handle both user interaction, and generation of the
+      // interstitial HTML. In the case of subresources, we need the HTML
+      // content prior to (and in a different process than when) installing the
+      // command handlers. For this reason we create a blocking page here just
+      // to generate the HTML, and immediately delete it.
       BaseBlockingPage* blocking_page =
           CreateBlockingPageForSubresource(contents, blocked_url, resource);
-
       contents->GetController().LoadPostCommitErrorPage(
           contents->GetMainFrame(), blocked_url,
           blocking_page->GetHTMLContents(), net::ERR_BLOCKED_BY_CLIENT);

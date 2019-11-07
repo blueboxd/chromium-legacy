@@ -14,6 +14,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
@@ -107,7 +108,7 @@ public class SignInPromo extends OptionalLeaf {
     /** @return Whether the {@link SignInPromo} should be created. */
     public static boolean shouldCreatePromo() {
         return !sDisablePromoForTests
-                && !ChromePreferenceManager.getInstance().readBoolean(
+                && !SharedPreferencesManager.getInstance().readBoolean(
                         ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false)
                 && !getSuppressionStatus();
     }
@@ -163,7 +164,7 @@ public class SignInPromo extends OptionalLeaf {
         mDismissed = true;
         updateVisibility();
 
-        ChromePreferenceManager.getInstance().writeBoolean(
+        SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, true);
 
         final @StringRes int promoHeader = mSigninPromoController.getDescriptionStringId();

@@ -20,6 +20,21 @@ namespace base {
 
 namespace {
 
+// Priorities of event sources are important to let everything be processed.
+// In particular, GTK event source should have the highest priority (because
+// UI events come from it), then Wayland events (the ones coming from the FD
+// watcher), and the lowest priority is GLib events (our base message pump).
+//
+// The g_source API uses ints to denote priorities, and the lower is its value,
+// the higher is the priority (i.e., they are ordered backwards).
+constexpr int kPriorityWork = G_PRIORITY_DEFAULT_IDLE;
+constexpr int kPriorityFdWatch = G_PRIORITY_DEFAULT_IDLE - 10;
+
+// See the explanation above.
+static_assert(G_PRIORITY_DEFAULT < kPriorityFdWatch &&
+                  kPriorityFdWatch < kPriorityWork,
+              "Wrong priorities are set for event sources!");
+
 // Return a timeout suitable for the glib loop according to |next_task_time|, -1
 // to block forever, 0 to return right away, or a timeout in milliseconds from
 // now.
@@ -218,8 +233,7 @@ MessagePumpGlib::MessagePumpGlib()
   work_source_ = g_source_new(&WorkSourceFuncs, sizeof(WorkSource));
   static_cast<WorkSource*>(work_source_)->pump = this;
   g_source_add_poll(work_source_, wakeup_gpollfd_.get());
-  // Use a low priority so that we let other events in the queue go first.
-  g_source_set_priority(work_source_, G_PRIORITY_DEFAULT_IDLE);
+  g_source_set_priority(work_source_, kPriorityWork);
   // This is needed to allow Run calls inside Dispatch.
   g_source_set_can_recurse(work_source_, TRUE);
   g_source_attach(work_source_, context_);
@@ -294,6 +308,7 @@ bool MessagePumpGlib::FdWatchController::InitOrUpdate(int fd,
   g_source_add_poll(source_, poll_fd_.get());
   g_source_set_can_recurse(source_, TRUE);
   g_source_set_callback(source_, nullptr, nullptr, nullptr);
+  g_source_set_priority(source_, kPriorityFdWatch);
 
   watcher_ = watcher;
   return true;

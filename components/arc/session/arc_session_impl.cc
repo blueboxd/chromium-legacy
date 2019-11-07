@@ -708,9 +708,10 @@ void ArcSessionImpl::OnShutdown() {
   OnStopped(ArcStopReason::SHUTDOWN);
 }
 
-void ArcSessionImpl::SetUserIdHashForProfile(const std::string& hash) {
+void ArcSessionImpl::SetUserInfo(const std::string& hash,
+                                 const std::string& serial_number) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->SetUserIdHashForProfile(hash);
+  client_->SetUserInfo(hash, serial_number);
 }
 
 void ArcSessionImpl::OnConfigurationSet(bool success,

@@ -31,8 +31,6 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   USING_GARBAGE_COLLECTED_MIXIN(XRInputSource);
 
  public:
-  enum class UserActivation { kEnabled, kDisabled };
-
   static XRInputSource* CreateOrUpdateFrom(
       XRInputSource* other /* may be null, input */,
       XRSession* session,
@@ -85,7 +83,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   base::Optional<XRNativeOriginInformation> nativeOrigin() const;
 
   void OnSelectStart();
-  void OnSelectEnd(UserActivation user_activation);
+  void OnSelectEnd();
   void OnSelect();
   void UpdateSelectState(
       const device::mojom::blink::XRInputSourceStatePtr& state);

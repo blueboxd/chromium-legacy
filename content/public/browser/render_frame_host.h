@@ -14,9 +14,9 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/page_visibility_state.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/public/common/page_visibility_state.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -310,6 +310,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns a bitwise OR of bindings types that have been enabled for this
   // RenderFrame. See BindingsPolicy for details.
   virtual int GetEnabledBindings() = 0;
+
+  // Sets a property with the given name and value on the WebUI object
+  // associated with this RenderFrameHost, if one exists.
+  virtual void SetWebUIProperty(const std::string& name,
+                                const std::string& value) = 0;
 
 #if defined(OS_ANDROID)
   // Returns an InterfaceProvider for Java-implemented interfaces that are

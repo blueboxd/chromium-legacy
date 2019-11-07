@@ -172,6 +172,7 @@ jumbo_source_set("common_sources") {
     "page_state.cc",
     "page_state.h",
     "page_type.h",
+    "page_visibility_state.h",
     "page_zoom.h",
     "pepper_plugin_info.cc",
     "pepper_plugin_info.h",

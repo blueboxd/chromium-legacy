@@ -76,7 +76,7 @@ cr.define('invalid_settings_browsertest', function() {
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
-      page.$.documentInfo.init(true, false, 'title', false);
+      page.$.documentInfo.init(true, false, false, 'title', false);
       const previewArea = page.$.previewArea;
     }
 

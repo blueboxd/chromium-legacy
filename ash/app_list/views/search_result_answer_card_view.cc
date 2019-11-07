@@ -298,6 +298,9 @@ class SearchResultAnswerCardView::AnswerCardResultView
     base::RecordAction(base::UserMetricsAction("SearchAnswer_OpenedUrl"));
   }
 
+  void FocusedNodeChanged(bool is_editable_node,
+                          const gfx::Rect& node_bounds_in_screen) override {}
+
   SearchResultContainerView* const container_;  // Not owned.
   AppListViewDelegate* const view_delegate_;    // Not owned.
   mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;

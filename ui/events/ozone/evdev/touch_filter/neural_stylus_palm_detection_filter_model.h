@@ -18,7 +18,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilterModelConfig {
   NeuralStylusPalmDetectionFilterModelConfig();
   NeuralStylusPalmDetectionFilterModelConfig(
       const NeuralStylusPalmDetectionFilterModelConfig& other);
-
+  ~NeuralStylusPalmDetectionFilterModelConfig();
   // Number of nearest neighbors to use in vector construction.
   uint32_t nearest_neighbor_count = 0;
 
@@ -53,6 +53,14 @@ struct EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilterModelConfig {
   // on them if the heuristic would have marked the touch as a palm at that
   // point.
   bool heuristic_delay_start_if_palm = false;
+
+  // If empty, the radius by the device is left as is.
+  // If non empty, the radius reported by device is re-sized in features by the
+  // polynomial defined in this vector. E.g. if this vector is {0.5, 1.3,
+  // -0.2, 1.0} Each radius r is replaced by
+  //
+  // R = 0.5 * r^3 + 1.3 * r^2 - 0.2 * r + 1
+  std::vector<float> radius_polynomial_resize;
 };
 
 // An abstract model utilized by NueralStylusPalmDetectionFilter.

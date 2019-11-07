@@ -35,21 +35,14 @@ IN_PROC_BROWSER_TEST_F(WebComponentsV0Test, CheckWebComponentsV0Enabled) {
   ui_test_utils::NavigateToURL(browser(), url);
   constexpr char kScript[] =
       R"({
-          let link = document.createElement('link');
-          link.setAttribute('rel','import');
-          let div = document.createElement('div');
-          try { div.createShadowRoot(); } catch {}
-          try { document.registerElement('test-element'); } catch {}
-          const observer = new ReportingObserver((reports, observer) => {
-            var needed = ['HTMLImports','ElementCreateShadowRoot',
-               'DocumentRegisterElement'];
-            for (const report of reports) {
-              needed = needed.filter(item => item !== report.body.id);
-            }
-            var allEnabled = needed.length == 0;
-            window.domAutomationController.send(allEnabled);
-          }, {types: ['deprecation'], buffered: true});
-          observer.observe();
+          const htmlImportsEnabled = 'import' in
+            document.createElement('link');
+          const customElementsV0Enabled = 'registerElement' in document;
+          const shadowDomV0Enabled = 'createShadowRoot' in
+            document.createElement('div');
+          const allEnabled = htmlImportsEnabled && customElementsV0Enabled
+            && shadowDomV0Enabled;
+          window.domAutomationController.send(allEnabled);
          })";
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

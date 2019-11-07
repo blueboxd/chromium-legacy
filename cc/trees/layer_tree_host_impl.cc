@@ -2213,6 +2213,33 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
       frame->render_passes.back()->has_transparent_background;
 #endif
 
+  if (last_draw_render_frame_metadata_) {
+    const float last_root_scroll_offset_y =
+        last_draw_render_frame_metadata_->root_scroll_offset
+            .value_or(gfx::Vector2dF())
+            .y();
+
+    const float new_root_scroll_offset_y =
+        metadata.root_scroll_offset.value().y();
+
+    if (!MathUtil::IsWithinEpsilon(last_root_scroll_offset_y,
+                                   new_root_scroll_offset_y)) {
+      viz::VerticalScrollDirection new_vertical_scroll_direction =
+          (last_root_scroll_offset_y < new_root_scroll_offset_y)
+              ? viz::VerticalScrollDirection::kDown
+              : viz::VerticalScrollDirection::kUp;
+
+      // Changes in vertical scroll direction happen instantaneously. This being
+      // the case, a new vertical scroll direction should only be present in the
+      // singular metadata for the render frame in which the direction change
+      // occurred. If the vertical scroll direction detected here matches that
+      // which we've previously cached, then this frame is not the instant in
+      // which the direction change occurred and is therefore not propagated.
+      if (last_vertical_scroll_direction_ != new_vertical_scroll_direction)
+        metadata.new_vertical_scroll_direction = new_vertical_scroll_direction;
+    }
+  }
+
   bool allocate_new_local_surface_id =
 #if !defined(OS_ANDROID)
       last_draw_render_frame_metadata_ &&
@@ -2374,6 +2401,17 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
 
   if (render_frame_metadata_observer_) {
     last_draw_render_frame_metadata_ = MakeRenderFrameMetadata(frame);
+
+    // We cache the value of any new vertical scroll direction so that we can
+    // accurately determine when the next change in vertical scroll direction
+    // occurs. Note that |kNull| is only used to indicate the absence of a
+    // vertical scroll direction and should therefore be ignored.
+    if (last_draw_render_frame_metadata_->new_vertical_scroll_direction !=
+        viz::VerticalScrollDirection::kNull) {
+      last_vertical_scroll_direction_ =
+          last_draw_render_frame_metadata_->new_vertical_scroll_direction;
+    }
+
     render_frame_metadata_observer_->OnRenderFrameSubmission(
         *last_draw_render_frame_metadata_, &metadata,
         active_tree()->TakeForceSendMetadataRequest());

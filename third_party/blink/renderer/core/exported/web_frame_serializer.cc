@@ -245,7 +245,7 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
   // The special attribute in a template element to denote the shadow DOM
   // should only be generated from MHTML serialization. If it is found in the
   // original page, it should be ignored.
-  if (IsHTMLTemplateElement(element) &&
+  if (IsA<HTMLTemplateElement>(element) &&
       (attribute.LocalName() == kShadowModeAttributeName ||
        attribute.LocalName() == kShadowDelegatesFocusAttributeName) &&
       !shadow_template_elements_.Contains(&element)) {

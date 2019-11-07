@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/util/type_safety/pass_key.h"
@@ -68,13 +68,7 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
   // The DiskCacheBlobEntry is a ref-counted object containing both
   // a disk_cache Entry and a Handle to the cache in which it lives.  This
   // blob entry can then be used to create an |EntryReaderImpl|.
-  //
-  // |EntryReaderImpl| always lives on the IO thread.  The DiskCacheBlobEntry
-  // is held cross-sequence, but is always created and destroyed on the
-  // cache_storage scheduler sequence. This ensure both the cache and the
-  // disk_cache entry live as long as the blob.
-  class DiskCacheBlobEntry
-      : public base::RefCountedDeleteOnSequence<DiskCacheBlobEntry> {
+  class DiskCacheBlobEntry : public base::RefCounted<DiskCacheBlobEntry> {
    public:
     // Use |CacheStorageCacheEntryHandler::CreateDiskCacheBlobEntry|.
     DiskCacheBlobEntry(
@@ -83,69 +77,27 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
         CacheStorageCacheHandle cache_handle,
         disk_cache::ScopedEntryPtr disk_cache_entry);
 
-    // Only callable on IO thread.
     int Read(scoped_refptr<net::IOBuffer> dst_buffer,
              CacheStorageCache::EntryIndex disk_cache_index,
              uint64_t offset,
              int bytes_to_read,
              base::OnceCallback<void(int)> callback);
 
-    // Callable on any thread.
     int GetSize(CacheStorageCache::EntryIndex disk_cache_index) const;
 
-    // Callable on any thread.
-    void PrintTo(::std::ostream* os) const;
-
-    // Only callable on the creation sequence.
     void Invalidate();
 
-    // Only callable on the creation sequence.
     disk_cache::ScopedEntryPtr& disk_cache_entry();
 
    private:
-    friend class base::DeleteHelper<DiskCacheBlobEntry>;
-    friend class base::RefCountedDeleteOnSequence<DiskCacheBlobEntry>;
+    friend class base::RefCounted<DiskCacheBlobEntry>;
     ~DiskCacheBlobEntry();
 
-    // Only callable on the creation sequence.
-    void ReadOnSequence(scoped_refptr<net::IOBuffer> dst_buffer,
-                        int disk_cache_index,
-                        uint64_t offset,
-                        int bytes_to_read,
-                        base::OnceCallback<void(int)> callback);
-
-    // Only callable on the creation sequence.
-    int ReadOnSequenceInternal(scoped_refptr<net::IOBuffer> dst_buffer,
-                               int disk_cache_index,
-                               uint64_t offset,
-                               int bytes_to_read,
-                               base::OnceCallback<void(int)> callback);
-
-    void DidReadOnSequence(base::OnceCallback<void(int)> callback, int result);
-
-    // Accessed on any thread
-    const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-    // Only accessed on the creation sequence.
     base::WeakPtr<CacheStorageCacheEntryHandler> entry_handler_;
     base::Optional<CacheStorageCacheHandle> cache_handle_;
     disk_cache::ScopedEntryPtr disk_cache_entry_;
 
-    // Accessed on any thread.
-    std::atomic<bool> valid_;
-
-    // Cached on the creation sequence so that they can be synchronously
-    // read on the IO thread.
-    const std::string key_;
-    const int index_headers_size_;
-    const int index_response_body_size_;
-    const int index_side_data_size_;
-
-    // For methods that should only be executed on the creation sequence.
     SEQUENCE_CHECKER(sequence_checker_);
-
-    // Do not add a WeakPtrFactory since this class uses a cross-sequence
-    // delete helper.
 
     DISALLOW_COPY_AND_ASSIGN(DiskCacheBlobEntry);
   };

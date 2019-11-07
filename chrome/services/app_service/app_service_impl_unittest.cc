@@ -161,7 +161,7 @@ class AppServiceImplTest : public testing::Test {
 TEST_F(AppServiceImplTest, PubSub) {
   const int size_hint_in_dip = 64;
 
-  AppServiceImpl impl;
+  AppServiceImpl impl(nullptr);
 
   // Start with one subscriber.
   FakeSubscriber sub0(&impl);
@@ -252,7 +252,7 @@ TEST_F(AppServiceImplTest, PubSub) {
 
 TEST_F(AppServiceImplTest, PreferredApps) {
   // Test Initialize.
-  AppServiceImpl impl;
+  AppServiceImpl impl(nullptr);
 
   // TODO(crbug.com/853604): Update this test after reading from disk done.
   EXPECT_TRUE(impl.GetPreferredAppsForTesting().GetValue().DictEmpty());

@@ -144,8 +144,8 @@ class TouchToFillView implements BottomSheetContent {
     @Override
     public float getHalfHeightRatio() {
         return Math.min(mContext.getResources().getDimensionPixelSize(getDesiredSheetHeight()),
-                       (int) mBottomSheetController.getBottomSheet().getSheetContainerHeight())
-                / mBottomSheetController.getBottomSheet().getSheetContainerHeight();
+                       (int) mBottomSheetController.getContainerHeight())
+                / mBottomSheetController.getContainerHeight();
     }
 
     @Override

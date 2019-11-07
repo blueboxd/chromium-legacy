@@ -137,26 +137,12 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="DeviceSensors.DeviceMotion" type="ETLD_PLUS_ONE">
-  <owner>timvolodine@chromium.org</owner>
-  <summary>
-    The domain and registry of the URL that is using Device Motion API.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="DeviceSensors.DeviceMotionCrossOrigin"
     type="ETLD_PLUS_ONE">
   <owner>timvolodine@chromium.org</owner>
   <summary>
     The domain and registry of the URL that is using Device Motion API from a
     frame with an origin different to that of the main frame.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="DeviceSensors.DeviceOrientation" type="ETLD_PLUS_ONE">
-  <owner>timvolodine@chromium.org</owner>
-  <summary>
-    The domain and registry of the URL that is using Device Orientation API.
   </summary>
 </rappor-metric>
 
@@ -185,36 +171,6 @@ components/rappor/rappor_parameters.h.
     The eTLD+1 of the website visited by a user by typing the URL in the omnibox
     including those completed from suggestions but not including those that end
     up being searches in the search engine.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="NTP.SuggestionsImpressions.IconsColor"
-    type="UMA_RAPPOR_TYPE">
-  <owner>mastiz@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a most visited tile displayed in the NTP, for cases where the
-    fallback color was used (as opposed to having an icon, or simply being
-    gray).
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="NTP.SuggestionsImpressions.IconsGray"
-    type="UMA_RAPPOR_TYPE">
-  <owner>mastiz@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a most visited tile displayed in the NTP, for cases where the
-    gray fallback icon was used (as opposed to having an icon, or a fallback
-    color).
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="NTP.SuggestionsImpressions.IconsReal"
-    type="UMA_RAPPOR_TYPE">
-  <owner>mastiz@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a most visited tile displayed in the NTP, for cases where the
-    real icon was used (as opposed to having a fallback color or simply being
-    gray).
   </summary>
 </rappor-metric>
 

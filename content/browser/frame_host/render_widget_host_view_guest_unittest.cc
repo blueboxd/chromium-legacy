@@ -19,6 +19,7 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -58,7 +59,8 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
         widget.InitWithNewPipeAndPassReceiver());
 
     widget_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, routing_id, std::move(widget), false);
+        &delegate_, process_host, routing_id, std::move(widget),
+        /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
     view_ = RenderWidgetHostViewGuest::Create(
         widget_host_, nullptr,
         (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());
@@ -144,7 +146,8 @@ class RenderWidgetHostViewGuestSurfaceTest : public testing::Test {
         widget.InitWithNewPipeAndPassReceiver());
 
     widget_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, routing_id, std::move(widget), false);
+        &delegate_, process_host, routing_id, std::move(widget),
+        /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
     view_ = RenderWidgetHostViewGuest::Create(
         widget_host_, browser_plugin_guest_,
         (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());

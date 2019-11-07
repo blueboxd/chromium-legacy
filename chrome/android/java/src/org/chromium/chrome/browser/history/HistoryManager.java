@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
@@ -83,10 +84,12 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private static final int PAGE_TRANSITION_TYPE = PageTransition.AUTO_BOOKMARK;
 
     private static HistoryProvider sProviderForTests;
+    private static Boolean sIsScrollToLoadDisabledForTests;
 
     private final Activity mActivity;
     private final boolean mIsIncognito;
     private final boolean mIsSeparateActivity;
+    private final boolean mIsScrollToLoadDisabled;
     private final SelectableListLayout<HistoryItem> mSelectableListLayout;
     private final HistoryAdapter mHistoryAdapter;
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
@@ -117,6 +120,9 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mIsSeparateActivity = isSeparateActivity;
         mSnackbarManager = snackbarManager;
         mIsIncognito = isIncognito;
+        mIsScrollToLoadDisabled = AccessibilityUtil.isAccessibilityEnabled()
+                || AccessibilityUtil.isHardwareKeyboardAttached(
+                        mActivity.getResources().getConfiguration());
 
         mSelectionDelegate = new SelectionDelegate<>();
         mSelectionDelegate.addObserver(this);
@@ -160,6 +166,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
         // 7. Initialize the adapter to load items.
         mHistoryAdapter.generateHeaderItems();
+        mHistoryAdapter.generateFooterItems();
         mHistoryAdapter.initialize();
 
         // 8. Add scroll listener to show/hide info button on scroll and page in more items
@@ -174,7 +181,10 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
                 mToolbar.updateInfoMenuItem(
                         shouldShowInfoButton(), shouldShowInfoHeaderIfAvailable());
 
-                if (!mHistoryAdapter.canLoadMoreItems()) return;
+                if (!mHistoryAdapter.canLoadMoreItems() || isScrollToLoadDisabled()) {
+                    return;
+                }
+
                 // Load more items if the scroll position is close to the bottom of the list.
                 if (layoutManager.findLastVisibleItemPosition()
                         > (mHistoryAdapter.getItemCount() - 25)) {
@@ -511,6 +521,19 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         return mShouldShowInfoHeader;
     }
 
+    /**
+     * Check if we want to enable the scrolling to load for recycled view. Noting this function
+     * will be called during testing with RecycledView == null. Will return False in such case.
+     * @return True if accessibility is enabled or a hardware keyboard is attached.
+     */
+    boolean isScrollToLoadDisabled() {
+        if (sIsScrollToLoadDisabledForTests != null) {
+            return sIsScrollToLoadDisabledForTests.booleanValue();
+        }
+
+        return mIsScrollToLoadDisabled;
+    }
+
     @Override
     public void onSignedIn() {
         mToolbar.onSignInStateChange();
@@ -552,5 +575,10 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     @VisibleForTesting
     public RecyclerView getRecyclerViewForTests() {
         return mRecyclerView;
+    }
+
+    @VisibleForTesting
+    public static void setScrollToLoadDisabledForTesting(boolean isScrollToLoadDisabled) {
+        sIsScrollToLoadDisabledForTests = isScrollToLoadDisabled;
     }
 }

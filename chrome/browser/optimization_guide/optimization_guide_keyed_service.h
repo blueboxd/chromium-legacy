@@ -78,7 +78,16 @@ class OptimizationGuideKeyedService
           optimization_types,
       const std::vector<optimization_guide::proto::OptimizationTarget>&
           optimization_targets) override;
+  optimization_guide::OptimizationGuideDecision ShouldTargetNavigation(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationTarget optimization_target)
+      override;
   optimization_guide::OptimizationGuideDecision CanApplyOptimization(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationMetadata* optimization_metadata) override;
+  optimization_guide::OptimizationGuideDecision
+  ShouldTargetNavigationAndCanApplyOptimization(
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationTarget optimization_target,
       optimization_guide::proto::OptimizationType optimization_type,

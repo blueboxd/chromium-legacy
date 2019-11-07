@@ -38,8 +38,7 @@ class COMPONENT_EXPORT(SYSTEM_MEDIA_CONTROLS) SystemMediaControls {
   // Enable or disable specific controls.
   virtual void SetIsNextEnabled(bool value) = 0;
   virtual void SetIsPreviousEnabled(bool value) = 0;
-  virtual void SetIsPlayEnabled(bool value) = 0;
-  virtual void SetIsPauseEnabled(bool value) = 0;
+  virtual void SetIsPlayPauseEnabled(bool value) = 0;
   virtual void SetIsStopEnabled(bool value) = 0;
 
   // Setters for metadata.

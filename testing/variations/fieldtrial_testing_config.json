@@ -1517,21 +1517,6 @@
             ]
         }
     ],
-    "ChromeCleanupProtobufIPC": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ChromeCleanupProtobufIPC"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeSmartSelection": [
         {
             "platforms": [
@@ -5315,6 +5300,24 @@
             ]
         }
     ],
+    "SafeBrowsingRealTimeUrlLookupEnabled": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingRealTimeUrlLookupEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingRealTimeUrlLookupFetchAllowlist": [
         {
             "platforms": [
@@ -6075,6 +6078,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SyncUSSBookmarks"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SyncUssNigori": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncUSSNigori"
                     ]
                 }
             ]

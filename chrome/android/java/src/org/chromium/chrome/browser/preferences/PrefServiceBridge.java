@@ -12,7 +12,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 
@@ -39,33 +38,6 @@ public class PrefServiceBridge {
     private static final String[] EMPTY_PERMISSIONS = {};
 
     private static final String LOG_TAG = "PrefServiceBridge";
-
-    /**
-     * Structure that holds all the version information about the current Chrome browser.
-     */
-    public static class AboutVersionStrings {
-        private final String mApplicationVersion;
-        private final String mOSVersion;
-
-        private AboutVersionStrings(String applicationVersion, String osVersion) {
-            mApplicationVersion = applicationVersion;
-            mOSVersion = osVersion;
-        }
-
-        public String getApplicationVersion() {
-            return mApplicationVersion;
-        }
-
-        public String getOSVersion() {
-            return mOSVersion;
-        }
-    }
-
-    @CalledByNative
-    private static AboutVersionStrings createAboutVersionStrings(String applicationVersion,
-            String osVersion) {
-        return new AboutVersionStrings(applicationVersion, osVersion);
-    }
 
     // Singleton constructor. Do not call directly unless for testing purpose.
     @VisibleForTesting
@@ -196,17 +168,6 @@ public class PrefServiceBridge {
         list.add(exception);
     }
 
-    @CalledByNative
-    private static void addNewLanguageItemToList(List<LanguageItem> list, String code,
-            String displayName, String nativeDisplayName, boolean supportTranslate) {
-        list.add(new LanguageItem(code, displayName, nativeDisplayName, supportTranslate));
-    }
-
-    @CalledByNative
-    private static void copyStringArrayToList(List<String> list, String[] source) {
-        list.addAll(Arrays.asList(source));
-    }
-
     /**
      * Return the list of android permission strings for a given {@link ContentSettingsType}.  If
      * there is no permissions associated with the content setting, then an empty array is returned.
@@ -243,18 +204,6 @@ public class PrefServiceBridge {
         return PrefServiceBridgeJni.get().getAcceptCookiesManagedByCustodian();
     }
 
-    // TODO(crbug.com/1016957): Inline downstream.
-    public boolean isBlockThirdPartyCookiesEnabled() {
-        return getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES);
-    }
-
-    /**
-     * @return Whether vibration is enabled for notifications.
-     */
-    public boolean isNotificationsVibrateEnabled() {
-        return PrefServiceBridgeJni.get().getNotificationsVibrateEnabled();
-    }
-
     /**
      * @return Whether geolocation information can be shared with content.
      */
@@ -282,10 +231,6 @@ public class PrefServiceBridge {
      */
     public boolean isAllowLocationManagedByCustodian() {
         return PrefServiceBridgeJni.get().getAllowLocationManagedByCustodian();
-    }
-
-    public boolean getPasswordEchoEnabled() {
-        return PrefServiceBridgeJni.get().getPasswordEchoEnabled();
     }
 
     /**
@@ -317,66 +262,10 @@ public class PrefServiceBridge {
     }
 
     /**
-     * Sets the preference that controls translate
-     */
-    public void setTranslateEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setTranslateEnabled(enabled);
-    }
-
-    /**
      * Sets the preference that signals when the user has accepted the EULA.
      */
     public void setEulaAccepted() {
         PrefServiceBridgeJni.get().setEulaAccepted();
-    }
-
-    /**
-     * @return the last account username associated with sync.
-     */
-    public String getSyncLastAccountName() {
-        return PrefServiceBridgeJni.get().getSyncLastAccountName();
-    }
-
-    /**
-     * @return Whether Safe Browsing Extended Reporting is currently enabled.
-     */
-    public boolean isSafeBrowsingExtendedReportingEnabled() {
-        return PrefServiceBridgeJni.get().getSafeBrowsingExtendedReportingEnabled();
-    }
-
-    /**
-     * @param enabled Whether Safe Browsing Extended Reporting should be enabled.
-     */
-    public void setSafeBrowsingExtendedReportingEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setSafeBrowsingExtendedReportingEnabled(enabled);
-    }
-
-    /**
-     * @return Whether Safe Browsing Extended Reporting is managed
-     */
-    public boolean isSafeBrowsingExtendedReportingManaged() {
-        return PrefServiceBridgeJni.get().getSafeBrowsingExtendedReportingManaged();
-    }
-
-    /**
-     * @return Whether Safe Browsing is currently enabled.
-     */
-    public boolean isSafeBrowsingEnabled() {
-        return PrefServiceBridgeJni.get().getSafeBrowsingEnabled();
-    }
-
-    /**
-     * @param enabled Whether Safe Browsing should be enabled.
-     */
-    public void setSafeBrowsingEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setSafeBrowsingEnabled(enabled);
-    }
-
-    /**
-     * @return Whether Safe Browsing is managed
-     */
-    public boolean isSafeBrowsingManaged() {
-        return PrefServiceBridgeJni.get().getSafeBrowsingManaged();
     }
 
     /**
@@ -415,54 +304,6 @@ public class PrefServiceBridge {
      */
     public boolean canPrefetchAndPrerender() {
         return PrefServiceBridgeJni.get().canPrefetchAndPrerender();
-    }
-
-    /**
-     * @return Whether the web service to resolve navigation error is enabled.
-     */
-    public boolean isResolveNavigationErrorEnabled() {
-        return PrefServiceBridgeJni.get().getResolveNavigationErrorEnabled();
-    }
-
-    /**
-     * @return Whether the web service to resolve navigation error is configured by policy.
-     */
-    public boolean isResolveNavigationErrorManaged() {
-        return PrefServiceBridgeJni.get().getResolveNavigationErrorManaged();
-    }
-
-    /**
-     * @return true if translate is enabled, false otherwise.
-     */
-    public boolean isTranslateEnabled() {
-        return PrefServiceBridgeJni.get().getTranslateEnabled();
-    }
-
-    /**
-     * @return Whether translate is configured by policy
-     */
-    public boolean isTranslateManaged() {
-        return PrefServiceBridgeJni.get().getTranslateManaged();
-    }
-
-    /**
-     * Sets whether the web service to resolve navigation error should be enabled.
-     */
-    public void setResolveNavigationErrorEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setResolveNavigationErrorEnabled(enabled);
-    }
-
-    // TODO(crbug.com/1016957): Inline downstream.
-    public void setBlockThirdPartyCookiesEnabled(boolean enabled) {
-        setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, enabled);
-    }
-
-    public void setNotificationsVibrateEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setNotificationsVibrateEnabled(enabled);
-    }
-
-    public void setPasswordEchoEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setPasswordEchoEnabled(enabled);
     }
 
     /**
@@ -637,92 +478,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * Get all the version strings from native.
-     * @return AboutVersionStrings about version strings.
-     */
-    public AboutVersionStrings getAboutVersionStrings() {
-        return PrefServiceBridgeJni.get().getAboutVersionStrings();
-    }
-
-    /**
-     * Reset accept-languages to its default value.
-     *
-     * @param defaultLocale A fall-back value such as en_US, de_DE, zh_CN, etc.
-     */
-    public void resetAcceptLanguages(String defaultLocale) {
-        PrefServiceBridgeJni.get().resetAcceptLanguages(defaultLocale);
-    }
-
-    /**
-     * @return A sorted list of LanguageItems representing the Chrome accept languages with details.
-     *         Languages that are not supported on Android have been filtered out.
-     */
-    public List<LanguageItem> getChromeLanguageList() {
-        List<LanguageItem> list = new ArrayList<>();
-        PrefServiceBridgeJni.get().getChromeAcceptLanguages(list);
-        return list;
-    }
-
-    /**
-     * @return A sorted list of accept language codes for the current user.
-     *         Note that for the signed-in user, the list might contain some language codes from
-     *         other platforms but not supported on Android.
-     */
-    public List<String> getUserLanguageCodes() {
-        List<String> list = new ArrayList<>();
-        PrefServiceBridgeJni.get().getUserAcceptLanguages(list);
-        return list;
-    }
-
-    /**
-     * Update accept language for the current user.
-     *
-     * @param languageCode A valid language code to update.
-     * @param add Whether this is an "add" operation or "delete" operation.
-     */
-    public void updateUserAcceptLanguages(String languageCode, boolean add) {
-        PrefServiceBridgeJni.get().updateUserAcceptLanguages(languageCode, add);
-    }
-
-    /**
-     * Move a language to the given postion of the user's accept language.
-     *
-     * @param languageCode A valid language code to set.
-     * @param offset The offset from the original position of the language.
-     */
-    public void moveAcceptLanguage(String languageCode, int offset) {
-        PrefServiceBridgeJni.get().moveAcceptLanguage(languageCode, offset);
-    }
-
-    /**
-     * Given an array of language codes, sets the order of the user's accepted languages to match.
-     *
-     * @param codes The new order for the user's accepted languages.
-     */
-    public void setLanguageOrder(String[] codes) {
-        PrefServiceBridgeJni.get().setLanguageOrder(codes);
-    }
-
-    /**
-     * @param languageCode A valid language code to check.
-     * @return Whether the given language is blocked by the user.
-     */
-    public boolean isBlockedLanguage(String languageCode) {
-        return PrefServiceBridgeJni.get().isBlockedLanguage(languageCode);
-    }
-
-    /**
-     * Sets the blocked state of a given language.
-     *
-     * @param languageCode A valid language code to change.
-     * @param blocked Whether to set language blocked.
-     */
-    public void setLanguageBlockedState(String languageCode, boolean blocked) {
-        PrefServiceBridgeJni.get().setLanguageBlockedState(languageCode, blocked);
-    }
-
-
-    /**
       * @return Whether usage and crash reporting pref is enabled.
       */
     public boolean isMetricsReportingEnabled() {
@@ -741,42 +496,6 @@ public class PrefServiceBridge {
      */
     public boolean isMetricsReportingManaged() {
         return PrefServiceBridgeJni.get().isMetricsReportingManaged();
-    }
-
-    /**
-     * @return The stored download default directory.
-     */
-    public String getDownloadDefaultDirectory() {
-        return PrefServiceBridgeJni.get().getDownloadDefaultDirectory();
-    }
-
-    /**
-     * @param directory New directory to set as the download default directory.
-     */
-    public void setDownloadAndSaveFileDefaultDirectory(String directory) {
-        PrefServiceBridgeJni.get().setDownloadAndSaveFileDefaultDirectory(directory);
-    }
-
-    /**
-     * @return Whether the explicit language prompt was shown at least once.
-     */
-    public boolean getExplicitLanguageAskPromptShown() {
-        return PrefServiceBridgeJni.get().getExplicitLanguageAskPromptShown();
-    }
-
-    /**
-     * @param shown The value to set the underlying pref to: whether the prompt
-     * was shown to the user at least once.
-     */
-    public void setExplicitLanguageAskPromptShown(boolean shown) {
-        PrefServiceBridgeJni.get().setExplicitLanguageAskPromptShown(shown);
-    }
-
-    /**
-     * @param enabled The value to set whether or not ForceWebContentsDarkMode is enabled.
-     */
-    public void setForceWebContentsDarkModeEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setForceWebContentsDarkModeEnabled(enabled);
     }
 
     public void setContentSettingForPattern(int contentSettingType, String pattern, int setting) {
@@ -815,7 +534,6 @@ public class PrefServiceBridge {
         boolean getAllowLocationUserModifiable();
         boolean getLocationAllowedByPolicy();
         boolean getAllowLocationManagedByCustodian();
-        boolean getPasswordEchoEnabled();
         boolean getFirstRunEulaAccepted();
         boolean getCameraEnabled();
         void setCameraEnabled(boolean enabled);
@@ -825,15 +543,10 @@ public class PrefServiceBridge {
         void setMicEnabled(boolean enabled);
         boolean getMicUserModifiable();
         boolean getMicManagedByCustodian();
-        boolean getTranslateEnabled();
-        boolean getTranslateManaged();
-        boolean getResolveNavigationErrorEnabled();
-        boolean getResolveNavigationErrorManaged();
         boolean getIncognitoModeEnabled();
         boolean getIncognitoModeManaged();
         boolean getSensorsEnabled();
         boolean getSoundEnabled();
-        void setTranslateEnabled(boolean enabled);
         void setAutomaticDownloadsEnabled(boolean enabled);
         void setAutoplayEnabled(boolean enabled);
         void setAllowCookiesEnabled(boolean enabled);
@@ -841,43 +554,18 @@ public class PrefServiceBridge {
         void setClipboardEnabled(boolean enabled);
         boolean getAllowLocationEnabled();
         boolean getNotificationsEnabled();
-        boolean getNotificationsVibrateEnabled();
         void setAllowLocationEnabled(boolean enabled);
         void setNotificationsEnabled(boolean enabled);
-        void setNotificationsVibrateEnabled(boolean enabled);
-        void setPasswordEchoEnabled(boolean enabled);
         void setSensorsEnabled(boolean enabled);
         void setSoundEnabled(boolean enabled);
         boolean canPrefetchAndPrerender();
-        AboutVersionStrings getAboutVersionStrings();
-        boolean getSafeBrowsingExtendedReportingEnabled();
-        void setSafeBrowsingExtendedReportingEnabled(boolean enabled);
-        boolean getSafeBrowsingExtendedReportingManaged();
-        boolean getSafeBrowsingEnabled();
-        void setSafeBrowsingEnabled(boolean enabled);
-        boolean getSafeBrowsingManaged();
         boolean getNetworkPredictionManaged();
         boolean obsoleteNetworkPredictionOptionsHasUserSetting();
         boolean getNetworkPredictionEnabled();
         void setNetworkPredictionEnabled(boolean enabled);
-        void setResolveNavigationErrorEnabled(boolean enabled);
         void setEulaAccepted();
-        void resetAcceptLanguages(String defaultLocale);
-        String getSyncLastAccountName();
         boolean isMetricsReportingEnabled();
         void setMetricsReportingEnabled(boolean enabled);
         boolean isMetricsReportingManaged();
-        void getChromeAcceptLanguages(List<LanguageItem> list);
-        void getUserAcceptLanguages(List<String> list);
-        void updateUserAcceptLanguages(String language, boolean add);
-        void moveAcceptLanguage(String language, int offset);
-        void setLanguageOrder(String[] codes);
-        boolean isBlockedLanguage(String language);
-        void setLanguageBlockedState(String language, boolean blocked);
-        String getDownloadDefaultDirectory();
-        void setDownloadAndSaveFileDefaultDirectory(String directory);
-        boolean getExplicitLanguageAskPromptShown();
-        void setExplicitLanguageAskPromptShown(boolean shown);
-        void setForceWebContentsDarkModeEnabled(boolean enabled);
     }
 }

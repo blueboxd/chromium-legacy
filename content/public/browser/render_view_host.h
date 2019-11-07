@@ -99,11 +99,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // started.
   virtual void NotifyMoveOrResizeStarted() = 0;
 
-  // Sets a property with the given name and value on the Web UI binding object.
-  // Must call AllowWebUIBindings() on this renderer first.
-  virtual void SetWebUIProperty(const std::string& name,
-                                const std::string& value) = 0;
-
   // TODO(mustaq): Replace "Webkit" from the following three method names.
   //
   // Returns the current WebKit preferences. Note: WebPreferences is cached, so

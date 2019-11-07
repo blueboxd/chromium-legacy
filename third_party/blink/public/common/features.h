@@ -143,6 +143,10 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kSetDetachedWindowReasonByOtherReason;
 
+BLINK_COMMON_EXPORT extern const base::Feature kCacheStorageCodeCacheHintHeader;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kCacheStorageCodeCacheHintHeaderName;
+
 }  // namespace features
 }  // namespace blink
 

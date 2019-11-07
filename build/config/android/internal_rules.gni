@@ -1024,6 +1024,10 @@ if (enable_java_templates) {
         args += [ "--disable-outlining" ]
       }
 
+      if (defined(testonly) && testonly) {
+        args += [ "--is-test-only" ]
+      }
+
       if (defined(invoker.is_static_library) && invoker.is_static_library) {
         args += [
           "--extra-mapping-output-paths",

@@ -410,7 +410,7 @@ public class FeatureUtilities {
      *         enabled).
      */
     public static boolean isNightModeAvailable() {
-        return isFlagEnabled(NIGHT_MODE_AVAILABLE_KEY, false);
+        return isFlagEnabled(NIGHT_MODE_AVAILABLE_KEY, true);
     }
 
     /**
@@ -435,7 +435,7 @@ public class FeatureUtilities {
 
         String lightModeDefaultParam = "default_light_theme";
         boolean lightModeAsDefault = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.ANDROID_NIGHT_MODE, lightModeDefaultParam, false);
+                ChromeFeatureList.ANDROID_NIGHT_MODE, lightModeDefaultParam, true);
 
         SharedPreferencesManager.getInstance().writeBoolean(
                 NIGHT_MODE_DEFAULT_TO_LIGHT, lightModeAsDefault);
@@ -448,7 +448,7 @@ public class FeatureUtilities {
         if (BuildInfo.isAtLeastQ()) {
             return false;
         }
-        return isFlagEnabled(NIGHT_MODE_DEFAULT_TO_LIGHT, false);
+        return isFlagEnabled(NIGHT_MODE_DEFAULT_TO_LIGHT, true);
     }
 
     /**

@@ -9,10 +9,6 @@
 
 namespace chromeos {
 namespace attestation {
-namespace {
-const char kTimeoutError[] =
-    "Device web based attestation failed with timeout error";
-}
 
 TpmChallengeKeyWithTimeout::TpmChallengeKeyWithTimeout() = default;
 TpmChallengeKeyWithTimeout::~TpmChallengeKeyWithTimeout() {
@@ -34,7 +30,8 @@ void TpmChallengeKeyWithTimeout::BuildResponse(
       FROM_HERE,
       base::Bind(&TpmChallengeKeyWithTimeout::ResolveCallback,
                  weak_factory_.GetWeakPtr(),
-                 TpmChallengeKeyResult::MakeError(kTimeoutError)),
+                 TpmChallengeKeyResult::MakeError(
+                     TpmChallengeKeyResultCode::kTimeoutError)),
       timeout);
 
   challenger_ = TpmChallengeKeyFactory::Create();

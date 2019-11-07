@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
@@ -155,6 +157,11 @@ Visibility RenderFrameHostDelegate::GetVisibility() {
 
 ukm::SourceId RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource()
     const {
+  return ukm::kInvalidSourceId;
+}
+
+ukm::SourceId RenderFrameHostDelegate::
+    GetUkmSourceIdForLastCommittedSourceIncludingSameDocument() const {
   return ukm::kInvalidSourceId;
 }
 

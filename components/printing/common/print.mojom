@@ -4,11 +4,19 @@
 
 module printing.mojom;
 
+import "mojo/public/mojom/base/shared_memory.mojom";
+import "mojo/public/mojom/base/values.mojom";
+
 // Interface implemented by a class that desires to render print documents for
 // Chrome print preview.
 interface PrintRenderer {
-  // TODO(jschettler): Add methods to render a print document and signal the
-  // close of Chrome print preview.
+  // Creates a preview document for print preview using the provided
+  // |job_settings|.
+  // The returned |preview_document_region| contains the preview document data
+  // as a flattened PDF. It will be invalid if errors occurred while rendering
+  // the preview document.
+  CreatePreviewDocument(mojo_base.mojom.DictionaryValue job_settings)
+      => (mojo_base.mojom.ReadOnlySharedMemoryRegion? preview_document_region);
 };
 
 // Render process interface exposed to the browser to handle most of the

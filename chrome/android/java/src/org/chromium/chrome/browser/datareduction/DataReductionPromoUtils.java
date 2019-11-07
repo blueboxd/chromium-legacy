@@ -6,8 +6,7 @@ package org.chromium.chrome.browser.datareduction;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
+import org.chromium.chrome.browser.preferences.about.AboutSettingsBridge;
 
 /**
  * Helper functions for displaying the various data reduction proxy promos. The promo screens
@@ -78,15 +77,13 @@ public class DataReductionPromoUtils {
      * run promo screen has been displayed at the current time.
      */
     public static void saveFreOrSecondRunPromoDisplayed() {
-        AboutVersionStrings versionStrings =
-                PrefServiceBridge.getInstance().getAboutVersionStrings();
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_RUN_PROMO, true)
                 .putLong(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_TIME_MS,
                         System.currentTimeMillis())
                 .putString(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION,
-                        versionStrings.getApplicationVersion())
+                        AboutSettingsBridge.getApplicationVersion())
                 .apply();
     }
 
@@ -141,13 +138,11 @@ public class DataReductionPromoUtils {
      * at the current time.
      */
     public static void saveInfoBarPromoDisplayed() {
-        AboutVersionStrings versionStrings =
-                PrefServiceBridge.getInstance().getAboutVersionStrings();
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(SHARED_PREF_DISPLAYED_INFOBAR_PROMO, true)
                 .putString(SHARED_PREF_DISPLAYED_INFOBAR_PROMO_VERSION,
-                        versionStrings.getApplicationVersion())
+                        AboutSettingsBridge.getApplicationVersion())
                 .apply();
     }
 

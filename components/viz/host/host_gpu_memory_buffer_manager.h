@@ -99,14 +99,6 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
                                             PendingBufferInfo,
                                             std::hash<gfx::GpuMemoryBufferId>>;
 
-  struct AllocatedBufferInfo {
-    AllocatedBufferInfo();
-    ~AllocatedBufferInfo();
-
-    gfx::GpuMemoryBufferType type = gfx::EMPTY_BUFFER;
-    size_t buffer_size_in_bytes = 0;
-    base::UnguessableToken shared_memory_guid;
-  };
   using AllocatedBuffers =
       std::unordered_map<gfx::GpuMemoryBufferId,
                          AllocatedBufferInfo,

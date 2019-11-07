@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -62,8 +63,9 @@ class TextInputClientMacTest : public testing::Test {
     mock_widget_impl_ = std::make_unique<MockWidgetImpl>(
         widget.InitWithNewPipeAndPassReceiver());
 
-    widget_.reset(new RenderWidgetHostImpl(&delegate_, rph, routing_id,
-                                           std::move(widget), false));
+    widget_.reset(new RenderWidgetHostImpl(
+        &delegate_, rph, routing_id, std::move(widget), /*hidden=*/false,
+        std::make_unique<FrameTokenMessageQueue>()));
   }
 
   void TearDown() override {

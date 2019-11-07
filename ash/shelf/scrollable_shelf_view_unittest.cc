@@ -467,4 +467,41 @@ TEST_F(ScrollableShelfViewTest, CorrectUIInTabletWithoutOverflow) {
   EXPECT_EQ(hotseat_background.right() - 4, last_tappable_view_bounds.right());
 }
 
+// Verifies that doing a mousewheel scroll on the scrollable shelf does scroll
+// forward.
+TEST_F(ScrollableShelfViewTest, ScrollWithMouseWheel) {
+  // The scroll threshold. Taken from |KScrollOffsetThreshold| in
+  // scrollable_shelf_view.cc.
+  constexpr int scroll_threshold = 20;
+  AddAppShortcutsUntilOverflow();
+
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Do a mousewheel scroll with a positive offset bigger than the scroll
+  // threshold to scroll forward. Unlike touchpad scrolls, mousewheel scrolls
+  // can only be along the cross axis.
+  GetEventGenerator()->MoveMouseTo(
+      scrollable_shelf_view_->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->MoveMouseWheel(0, -(scroll_threshold + 1));
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Do a mousewheel scroll with a negative offset bigger than the scroll
+  // threshold to scroll backwards.
+  GetEventGenerator()->MoveMouseWheel(0, scroll_threshold + 1);
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Do a mousewheel scroll with an offset smaller than the scroll
+  // threshold should be ignored.
+  GetEventGenerator()->MoveMouseWheel(0, scroll_threshold);
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  GetEventGenerator()->MoveMouseWheel(0, -scroll_threshold);
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+}
+
 }  // namespace ash

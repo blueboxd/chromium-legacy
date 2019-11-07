@@ -28,9 +28,9 @@ bool OverlaySurfaceCandidate::operator<(
   gfx::Rect rrect = gfx::ToNearestRect(param.display_rect);
 
   return std::tie(plane_z_order, format, lrect, lwidth, lheight, transform,
-                  crop_rect) < std::tie(param.plane_z_order, param.format,
-                                        rrect, rwidth, rheight, param.transform,
-                                        param.crop_rect);
+                  crop_rect, is_opaque) <
+         std::tie(param.plane_z_order, param.format, rrect, rwidth, rheight,
+                  param.transform, param.crop_rect, param.is_opaque);
 }
 
 }  // namespace ui

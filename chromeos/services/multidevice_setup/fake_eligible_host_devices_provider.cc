@@ -17,9 +17,9 @@ FakeEligibleHostDevicesProvider::GetEligibleHostDevices() const {
   return eligible_host_devices_;
 }
 
-multidevice::RemoteDeviceRefList
+multidevice::DeviceWithConnectivityStatusList
 FakeEligibleHostDevicesProvider::GetEligibleActiveHostDevices() const {
-  return eligible_host_devices_;
+  return eligible_active_host_devices_;
 }
 
 }  // namespace multidevice_setup

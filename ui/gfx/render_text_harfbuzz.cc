@@ -87,10 +87,16 @@ void RecordShapeRunsFallback(ShapeRunFallback fallback) {
   UMA_HISTOGRAM_ENUMERATION("RenderTextHarfBuzz.ShapeRunsFallback", fallback);
 }
 
-// Returns true if characters of |block_code| may trigger font fallback.
-bool IsUnusualBlockCode(UBlockCode block_code) {
-  return block_code == UBLOCK_GEOMETRIC_SHAPES ||
-         block_code == UBLOCK_MISCELLANEOUS_SYMBOLS;
+// Returns whether the codepoint has the 'extended pictographic' property.
+bool IsExtendedPictographicCodepoint(UChar32 codepoint) {
+  return u_hasBinaryProperty(codepoint, UCHAR_EXTENDED_PICTOGRAPHIC);
+}
+
+// Returns whether the codepoint has emoji properties.
+bool IsEmojiRelatedCodepoint(UChar32 codepoint) {
+  return u_hasBinaryProperty(codepoint, UCHAR_EMOJI) ||
+         u_hasBinaryProperty(codepoint, UCHAR_EMOJI_PRESENTATION) ||
+         u_hasBinaryProperty(codepoint, UCHAR_REGIONAL_INDICATOR);
 }
 
 // Returns true if |codepoint| is a bracket. This is used to avoid "matching"
@@ -115,7 +121,8 @@ size_t GetScriptExtensions(UChar32 codepoint, UScriptCode* scripts) {
 }
 
 // Intersects the script extensions set of |codepoint| with |result| and writes
-// to |result|, reading and updating |result_size|.
+// to |result|, reading and updating |result_size|. The output |result| will be
+// a subset of the input |result| (thus |result_size| can only be smaller).
 void ScriptSetIntersect(UChar32 codepoint,
                         UScriptCode* result,
                         size_t* result_size) {
@@ -169,62 +176,111 @@ void ScriptSetIntersect(UChar32 codepoint,
   *result_size = out_size;
 }
 
-// Returns true if |first_char| and |current_char| both have "COMMON" script
-// property but only one of them is an ASCII character. By doing this ASCII
-// characters will be put into a separate run and be rendered using its default
-// font. See crbug.com/530021 and crbug.com/533721 for more details.
-bool AsciiBreak(UChar32 first_char, UChar32 current_char) {
-  if (isascii(first_char) == isascii(current_char))
-    return false;
+struct GraphemeProperties {
+  bool has_control = false;
+  bool has_bracket = false;
+  bool has_pictographic = false;
+  bool has_emoji = false;
+  UBlockCode block = UBLOCK_NO_BLOCK;
+};
 
-  size_t scripts_size = 1;
-  UScriptCode scripts[kMaxScripts] = { USCRIPT_COMMON };
-  ScriptSetIntersect(first_char, scripts, &scripts_size);
-  if (scripts_size == 0)
-    return false;
-  ScriptSetIntersect(current_char, scripts, &scripts_size);
-  return scripts_size != 0;
+// Returns the properties for the codepoints part of the given text.
+GraphemeProperties RetrieveGraphemeProperties(const base::StringPiece16& text,
+                                              bool retrieve_block) {
+  GraphemeProperties properties;
+  bool first_char = true;
+  base::i18n::UTF16CharIterator iter(text.data(), text.length());
+  while (!iter.end()) {
+    const UChar32 codepoint = iter.get();
+
+    if (first_char) {
+      first_char = false;
+      if (retrieve_block)
+        properties.block = ublock_getCode(codepoint);
+    }
+
+    if (codepoint == '\n' || codepoint == ' ')
+      properties.has_control = true;
+    if (IsBracket(codepoint))
+      properties.has_bracket = true;
+    if (IsExtendedPictographicCodepoint(codepoint))
+      properties.has_pictographic = true;
+    if (IsEmojiRelatedCodepoint(codepoint))
+      properties.has_emoji = true;
+
+    iter.Advance();
+  }
+
+  return properties;
 }
 
-// When a string of "unusual" characters ends, the run usually breaks. However,
-// variation selectors should still attach to the run of unusual characters.
-// Detect this situation so that FindRunBreakingCharacter() can continue
-// tracking the unusual block. Otherwise, just returns |current|.
-UBlockCode MaybeCombineUnusualBlock(UBlockCode preceding, UBlockCode current) {
-  return IsUnusualBlockCode(preceding) && current == UBLOCK_VARIATION_SELECTORS
-             ? preceding
-             : current;
+// Return whether the grapheme properties are compatible and the grapheme can
+// be merge together in the same grapheme cluster.
+bool AreGraphemePropertiesCompatible(const GraphemeProperties& first,
+                                     const GraphemeProperties& second) {
+  // There are 5 constrains to grapheme to be compatible.
+  // 1) The newline character and control characters should form a single run so
+  //  that the line breaker can handle them easily.
+  // 2) Parentheses should be put in a separate run to avoid using different
+  // fonts while rendering matching parentheses (see http://crbug.com/396776).
+  // 3) Pictographic graphemes should be put in separate run to avoid altering
+  // fonts selection while rendering adjacent text (see
+  // http://crbug.com/278913).
+  // 4) Emoji graphemes should be put in separate run (see
+  // http://crbug.com/530021 and http://crbug.com/533721).
+  // 5) The 'COMMON' script needs to be split by unicode block. Codepoints are
+  // spread across blocks and supported with different fonts.
+  return !first.has_control && !second.has_control &&
+         first.has_bracket == second.has_bracket &&
+         first.has_pictographic == second.has_pictographic &&
+         first.has_emoji == second.has_emoji && first.block == second.block;
 }
 
-// Returns the boundary between a special and a regular character. Special
-// characters are brackets or characters that satisfy |IsUnusualBlockCode|.
+// Returns the end of the current grapheme cluster. This function is finding the
+// breaking point where grapheme properties are no longer compatible.
+// (see: UNICODE TEXT SEGMENTATION (http://unicode.org/reports/tr29/)
 size_t FindRunBreakingCharacter(const base::string16& text,
+                                UScriptCode script,
                                 size_t run_start,
                                 size_t run_break) {
-  const int32_t run_length = static_cast<int32_t>(run_break - run_start);
-  base::i18n::UTF16CharIterator iter(text.c_str() + run_start, run_length);
-  const UChar32 first_char = iter.get();
-  // The newline character should form a single run so that the line breaker
-  // can handle them easily.
-  if (first_char == '\n')
+  const size_t run_length = run_break - run_start;
+  const base::StringPiece16 run_text(text.c_str() + run_start, run_length);
+  const bool is_common_script = (script == USCRIPT_COMMON);
+
+  DCHECK(!run_text.empty());
+
+  // Create an iterator to split the text in graphemes.
+  base::i18n::BreakIterator grapheme_iterator(
+      run_text, base::i18n::BreakIterator::BREAK_CHARACTER);
+  if (!grapheme_iterator.Init() || !grapheme_iterator.Advance()) {
+    // In case of error, isolate the first character in a separate run.
+    NOTREACHED();
     return run_start + 1;
+  }
 
-  const UBlockCode first_block = ublock_getCode(first_char);
-  const bool first_block_unusual = IsUnusualBlockCode(first_block);
-  const bool first_bracket = IsBracket(first_char);
+  // Retrieve the first grapheme and its codepoint properties.
+  const base::StringPiece16 first_grapheme_text =
+      grapheme_iterator.GetStringPiece();
+  const GraphemeProperties first_grapheme_properties =
+      RetrieveGraphemeProperties(first_grapheme_text, is_common_script);
 
-  while (iter.Advance() && iter.array_pos() < run_length) {
-    const UChar32 current_char = iter.get();
-    const UBlockCode current_block =
-        MaybeCombineUnusualBlock(first_block, ublock_getCode(current_char));
-    const bool block_break = current_block != first_block &&
-        (first_block_unusual || IsUnusualBlockCode(current_block));
-    if (block_break || current_char == '\n' ||
-        first_bracket != IsBracket(current_char) ||
-        AsciiBreak(first_char, current_char)) {
-      return run_start + iter.array_pos();
+  // Append subsequent graphemes in this grapheme cluster if they are
+  // compatible, otherwise break the current run.
+  while (grapheme_iterator.Advance()) {
+    const base::StringPiece16 current_grapheme_text =
+        grapheme_iterator.GetStringPiece();
+    const GraphemeProperties current_grapheme_properties =
+        RetrieveGraphemeProperties(current_grapheme_text, is_common_script);
+
+    if (!AreGraphemePropertiesCompatible(first_grapheme_properties,
+                                         current_grapheme_properties)) {
+      const size_t current_breaking_position =
+          run_start + grapheme_iterator.prev();
+      return current_breaking_position;
     }
   }
+
+  // Do not break this run, returns end of the text.
   return run_break;
 }
 
@@ -1897,7 +1953,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     CommonizedRunsMap* out_commonized_run_map) {
   TRACE_EVENT1("ui", "RenderTextHarfBuzz::ItemizeTextToRuns", "text_length",
                text.length());
-  DCHECK_NE(0U, text.length());
+  DCHECK(!text.empty());
   const Font& primary_font = font_list().GetPrimaryFont();
 
   // If ICU fails to itemize the text, we create a run that spans the entire
@@ -1958,10 +2014,10 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
            breaking_run_start < script_run_end;) {
         // Break runs at certain characters that need to be rendered separately
         // to prevent either an unusual character from forcing a fallback font
-        // on the entire run, or brackets from being affected by a fallback
-        // font. http://crbug.com/278913, http://crbug.com/396776
-        size_t breaking_char_end =
-            FindRunBreakingCharacter(text, breaking_run_start, script_run_end);
+        // on the entire run. After script intersection, many codepoints end up
+        // in the script COMMON but can't be rendered together.
+        size_t breaking_char_end = FindRunBreakingCharacter(
+            text, script, breaking_run_start, script_run_end);
 
         // Break runs at style boundaries.
         style.UpdatePosition(

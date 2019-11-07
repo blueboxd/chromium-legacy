@@ -17,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/resource/data_pack_literal.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -37,6 +38,42 @@ TEST(DataPackTest, LoadFromPath) {
   // Dump contents into the pak file.
   ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4),
             static_cast<int>(kSamplePakSizeV4));
+
+  // Load the file through the data pack API.
+  DataPack pack(SCALE_FACTOR_100P);
+  ASSERT_TRUE(pack.LoadFromPath(data_path));
+
+  base::StringPiece data;
+  ASSERT_TRUE(pack.HasResource(4));
+  ASSERT_TRUE(pack.GetStringPiece(4, &data));
+  EXPECT_EQ("this is id 4", data);
+  ASSERT_TRUE(pack.HasResource(6));
+  ASSERT_TRUE(pack.GetStringPiece(6, &data));
+  EXPECT_EQ("this is id 6", data);
+
+  // Try reading zero-length data blobs, just in case.
+  ASSERT_TRUE(pack.GetStringPiece(1, &data));
+  EXPECT_EQ(0U, data.length());
+  ASSERT_TRUE(pack.GetStringPiece(10, &data));
+  EXPECT_EQ(0U, data.length());
+
+  // Try looking up an invalid key.
+  ASSERT_FALSE(pack.HasResource(140));
+  ASSERT_FALSE(pack.GetStringPiece(140, &data));
+}
+
+TEST(DataPackTest, LoadFromPathCompressed) {
+  base::ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  base::FilePath data_path =
+      dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak.gz"));
+
+  // Dump contents into a compressed pak file.
+  std::string compressed;
+  ASSERT_TRUE(compression::GzipCompress(
+      base::StringPiece(kSamplePakContentsV4, kSamplePakSizeV4), &compressed));
+  ASSERT_EQ(base::WriteFile(data_path, compressed.c_str(), compressed.length()),
+            static_cast<int>(compressed.length()));
 
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);

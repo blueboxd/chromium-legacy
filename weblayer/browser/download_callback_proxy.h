@@ -14,14 +14,12 @@
 
 namespace weblayer {
 
-class BrowserController;
+class Tab;
 
 // Forwards DownloadDelegate calls to the java-side DownloadCallbackProxy.
 class DownloadCallbackProxy : public DownloadDelegate {
  public:
-  DownloadCallbackProxy(JNIEnv* env,
-                        jobject obj,
-                        BrowserController* browser_controller);
+  DownloadCallbackProxy(JNIEnv* env, jobject obj, Tab* tab);
   ~DownloadCallbackProxy() override;
 
   // DownloadDelegate:
@@ -32,7 +30,7 @@ class DownloadCallbackProxy : public DownloadDelegate {
                          int64_t content_length) override;
 
  private:
-  BrowserController* browser_controller_;
+  Tab* tab_;
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadCallbackProxy);

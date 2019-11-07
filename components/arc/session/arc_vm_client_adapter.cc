@@ -197,7 +197,9 @@ std::vector<std::string> GenerateKernelCmdline(
     const FileSystemStatus& file_system_status,
     bool is_dev_mode,
     bool is_host_on_vm,
-    const std::string& channel) {
+    const std::string& channel,
+    const std::string& serial_number) {
+  DCHECK(!serial_number.empty());
   std::vector<std::string> result = {
       "androidboot.hardware=bertha",
       "androidboot.container=1",
@@ -235,9 +237,10 @@ std::vector<std::string> GenerateKernelCmdline(
       base::StringPrintf(
           "androidboot.supervision.transition=%d",
           static_cast<int>(upgrade_params.supervision_transition)),
+      "androidboot.serialno=" + serial_number,
   };
-  // TODO(yusukes): Check if we need to set ro.serialno, ro.boot.serialno,
-  // ro.boot.container_boot_type, and ro.boot.enable_adb_sideloading for ARCVM.
+  // TODO(yusukes): Check if we need to set ro.boot.container_boot_type and
+  // ro.boot.enable_adb_sideloading for ARCVM.
 
   // Conditionally sets some properties based on |start_params|.
   switch (start_params.play_store_auto_update) {
@@ -418,9 +421,14 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                                 weak_factory_.GetWeakPtr()));
   }
 
-  void SetUserIdHashForProfile(const std::string& hash) override {
+  void SetUserInfo(const std::string& hash,
+                   const std::string& serial_number) override {
     DCHECK(!hash.empty());
+    DCHECK(user_id_hash_.empty());
+    DCHECK(!serial_number.empty());
+    DCHECK(serial_number_.empty());
     user_id_hash_ = hash;
+    serial_number_ = serial_number;
   }
 
   // chromeos::ConciergeClient::Observer overrides:
@@ -552,6 +560,12 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                           const base::FilePath& data_disk_path,
                           FileSystemStatus file_system_status) {
     VLOG(2) << "Got file system status";
+    if (serial_number_.empty()) {
+      LOG(ERROR) << "Serial number is not set";
+      std::move(callback).Run(false);
+      return;
+    }
+
     const int32_t cpus =
         base::SysInfo::NumberOfProcessors() - start_params_.num_cores_disabled;
     DCHECK_LT(0, cpus);
@@ -559,7 +573,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     DCHECK(is_dev_mode_);
     std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
         start_params_, params, file_system_status, *is_dev_mode_,
-        is_host_on_vm_, version_info::GetChannelString(channel_));
+        is_host_on_vm_, version_info::GetChannelString(channel_),
+        serial_number_);
     auto start_request =
         CreateStartArcVmRequest(user_id_hash_, cpus, data_disk_path,
                                 file_system_status, std::move(kernel_cmdline));
@@ -633,6 +648,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   // A hash of the primary profile user ID.
   std::string user_id_hash_;
+  // A serial number for the current profile.
+  std::string serial_number_;
 
   StartParams start_params_;
   bool should_notify_observers_ = false;

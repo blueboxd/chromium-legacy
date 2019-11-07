@@ -118,9 +118,10 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
     return;
   }
 
-  bool should_observe = IsLocked() &&
-                        IsActivatable(DisplayLockActivationReason::kViewport) &&
-                        ConnectedToView();
+  bool should_observe =
+      IsLocked() &&
+      IsActivatable(DisplayLockActivationReason::kViewportIntersection) &&
+      ConnectedToView();
   if (should_observe && !is_observed_) {
     document_->RegisterDisplayLockActivationObservation(element_);
   } else if (!should_observe && is_observed_) {
@@ -129,7 +130,7 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
   is_observed_ = should_observe;
 }
 
-void DisplayLockContext::SetActivatable(unsigned char activatable_mask) {
+void DisplayLockContext::SetActivatable(uint16_t activatable_mask) {
   if (IsLocked()) {
     // If we're locked, the activatable mask might change the activation
     // blocking lock count. If we're not locked, the activation blocking lock
@@ -374,8 +375,7 @@ void DisplayLockContext::DidPaint(DisplayLockLifecycleTarget) {
 
 bool DisplayLockContext::IsActivatable(
     DisplayLockActivationReason reason) const {
-  return !IsLocked() ||
-         (activatable_mask_ & static_cast<unsigned char>(reason));
+  return !IsLocked() || (activatable_mask_ & static_cast<uint16_t>(reason));
 }
 
 void DisplayLockContext::CommitForActivationWithSignal(

@@ -48,8 +48,12 @@ class ServiceWorkerProcessBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (SitePerProcess())
+    if (SitePerProcess()) {
       command_line->AppendSwitch(switches::kSitePerProcess);
+    } else {
+      command_line->RemoveSwitch(switches::kSitePerProcess);
+      command_line->AppendSwitch(switches::kDisableSiteIsolation);
+    }
   }
 
  protected:
@@ -129,6 +133,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerProcessBrowserTest,
   EXPECT_EQ(page_process_id, worker_process_id);
 }
 
+namespace {
+
 // ContentBrowserClient that skips assigning a site URL for a given URL.
 class DontAssignSiteContentBrowserClient : public TestContentBrowserClient {
  public:
@@ -143,12 +149,14 @@ class DontAssignSiteContentBrowserClient : public TestContentBrowserClient {
       const DontAssignSiteContentBrowserClient&) = delete;
 
   bool ShouldAssignSiteForURL(const GURL& url) override {
-    return url == url_to_skip_;
+    return url != url_to_skip_;
   }
 
  private:
   GURL url_to_skip_;
 };
+
+}  // namespace
 
 // Tests that a service worker and navigation share the same process in the
 // special case where the service worker starts before the navigation starts,
@@ -169,32 +177,40 @@ IN_PROC_BROWSER_TEST_P(
   // Register the service worker.
   RegisterServiceWorker();
 
-  // Navigate to the empty site instance page. Subsequent navigations from
-  // this page will prefer to use the same process by default.
+  // Navigate to the empty site instance page.
   ASSERT_TRUE(NavigateToURL(shell(), empty_site));
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), empty_site);
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(GURL(), site_instance->GetSiteURL());
+  int page_process_id = current_frame_host()->GetProcess()->GetID();
+  EXPECT_NE(page_process_id, ChildProcessHost::kInvalidUniqueID);
 
-  // Start the service worker. It will start in a new process.
+  // Start the service worker. It should start in the same process.
   base::RunLoop loop;
   GURL scope = embedded_test_server()->GetURL("/service_worker/");
+  int worker_process_id;
   wrapper()->StartWorkerForScope(
       scope,
-      base::BindLambdaForTesting([&loop](int64_t version_id, int process_id,
-                                         int thread_id) { loop.Quit(); }),
+      base::BindLambdaForTesting(
+          [&](int64_t version_id, int process_id, int thread_id) {
+            worker_process_id = process_id;
+            loop.Quit();
+          }),
       base::BindLambdaForTesting([&loop]() {
         ASSERT_FALSE(true) << "start worker failed";
         loop.Quit();
       }));
   loop.Run();
 
-  // Navigate to a page in the service worker's scope.
+  // The page and service worker should be in the same process.
+  EXPECT_EQ(page_process_id, worker_process_id);
+
+  // Navigate to a page in the service worker's scope. It should still be in the
+  // same process.
   ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("/service_worker/empty.html")));
-
-  // The page and service worker should be in the same process.
-  ASSERT_EQ(GetRunningServiceWorkerCount(), 1u);
-  int page_process_id = current_frame_host()->GetProcess()->GetID();
-  EXPECT_NE(page_process_id, ChildProcessHost::kInvalidUniqueID);
-  EXPECT_EQ(page_process_id, GetServiceWorkerProcessId());
+  EXPECT_EQ(page_process_id, current_frame_host()->GetProcess()->GetID());
 
   SetBrowserClientForTesting(old_client);
 }

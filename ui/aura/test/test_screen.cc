@@ -95,7 +95,7 @@ void TestScreen::SetDisplayRotation(display::Display::Rotation rotation) {
   display.set_rotation(rotation);
   display.SetScaleAndBounds(display.device_scale_factor(), new_bounds);
   display_list().UpdateDisplay(display);
-  host_->SetRootTransform(GetRotationTransform() * GetUIScaleTransform());
+  host_->SetRootTransform(GetUIScaleTransform() * GetRotationTransform());
 }
 
 void TestScreen::SetUIScale(float ui_scale) {
@@ -106,7 +106,7 @@ void TestScreen::SetUIScale(float ui_scale) {
       gfx::ScaleRect(gfx::RectF(bounds_in_pixel), 1.0f / ui_scale));
   display.SetScaleAndBounds(display.device_scale_factor(), new_bounds);
   display_list().UpdateDisplay(display);
-  host_->SetRootTransform(GetRotationTransform() * GetUIScaleTransform());
+  host_->SetRootTransform(GetUIScaleTransform() * GetRotationTransform());
 }
 
 void TestScreen::SetWorkAreaInsets(const gfx::Insets& insets) {

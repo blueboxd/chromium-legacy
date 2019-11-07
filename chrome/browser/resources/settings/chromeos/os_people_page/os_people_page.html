@@ -32,6 +32,7 @@
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
 <link rel="import" href="../../settings_page/settings_subpage.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="os_sync_controls.html">
 
 <dom-module id="os-settings-people-page">
   <template>
@@ -117,7 +118,7 @@
         </template>
 
         <cr-link-row id="sync-setup"
-            label="$i18n{syncAndNonPersonalizedServices}"
+            label="[[getSyncRowLabel_()]]"
             sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
             on-click="onSyncTap_">
         </cr-link-row>
@@ -160,12 +161,23 @@
         </settings-subpage>
       </template>
 
+      <!-- Pre-SplitSettingsSync we show the browser's sync controls. -->
       <template is="dom-if" route-path="/syncSetup/advanced">
         <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
             associated-control="[[$$('#sync-setup')]]"
             learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
           <settings-sync-controls sync-status="[[syncStatus]]">
           </settings-sync-controls>
+        </settings-subpage>
+      </template>
+
+      <!-- Post-SplitSettingsSync we have separate OS sync controls. -->
+      <template is="dom-if" route-path="/osSync">
+        <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
+            associated-control="[[$$('#sync-setup')]]"
+            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
+          <os-sync-controls sync-status="[[syncStatus]]">
+          </os-sync-controls>
         </settings-subpage>
       </template>
 

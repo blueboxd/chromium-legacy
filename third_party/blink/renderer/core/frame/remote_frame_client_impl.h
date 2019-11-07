@@ -46,8 +46,8 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
                           LocalFrame* source) const override;
   void FrameRectsChanged(const IntRect& local_frame_rect,
                          const IntRect& screen_space_rect) override;
-  void UpdateRemoteViewportIntersection(const IntRect&,
-                                        FrameOcclusionState) override;
+  void UpdateRemoteViewportIntersection(
+      const ViewportIntersectionState& intersection_state) override;
   void AdvanceFocus(WebFocusType, LocalFrame*) override;
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
   void SetIsInert(bool) override;

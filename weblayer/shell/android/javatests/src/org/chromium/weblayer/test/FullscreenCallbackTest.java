@@ -83,7 +83,7 @@ public class FullscreenCallbackTest {
         Assert.assertNotNull(mActivity);
         mDelegate = new Delegate();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivity.getBrowserController().setFullscreenCallback(mDelegate); });
+                () -> { mActivity.getTab().setFullscreenCallback(mDelegate); });
 
         // First touch enters fullscreen.
         EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
@@ -110,7 +110,7 @@ public class FullscreenCallbackTest {
     public void testExitFullscreenWhenDelegateCleared() {
         // Clearing the FullscreenCallback should exit fullscreen.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivity.getBrowserController().setFullscreenCallback(null); });
+                () -> { mActivity.getTab().setFullscreenCallback(null); });
         mDelegate.waitForExitFullscreen();
         Assert.assertEquals(1, mDelegate.mExitFullscreenCount);
     }

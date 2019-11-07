@@ -4,6 +4,8 @@
 
 #include "ui/events/x/x11_event_translation.h"
 
+#include <vector>
+
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
@@ -32,9 +34,22 @@ Event::Properties GetEventPropertiesFromXKeyEvent(const XKeyEvent& xev) {
 
 std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
                                          const XEvent& xev) {
-  auto event = std::make_unique<KeyEvent>(
-      event_type, KeyboardCodeFromXKeyEvent(&xev), CodeFromXEvent(&xev),
-      EventFlagsFromXEvent(xev));
+  KeyboardCode key_code = KeyboardCodeFromXKeyEvent(&xev);
+  int event_flags = EventFlagsFromXEvent(xev);
+
+  // In Ozone builds, keep DomCode/DomKey unset, so they are extracted lazily
+  // in KeyEvent::ApplyLayout() which makes it possible for CrOS/Linux, for
+  // example, to support host system keyboard layouts.
+#if defined(USE_OZONE)
+  auto event = std::make_unique<KeyEvent>(event_type, key_code, event_flags);
+#else
+  DomCode dom_code = CodeFromXEvent(&xev);
+  DomKey dom_key = GetDomKeyFromXEvent(&xev);
+  base::TimeTicks timestamp = EventTimeFromXEvent(xev);
+  ValidateEventTimeClock(&timestamp);
+  auto event = std::make_unique<KeyEvent>(event_type, key_code, dom_code,
+                                          event_flags, dom_key, timestamp);
+#endif
 
   DCHECK(event);
   event->SetProperties(GetEventPropertiesFromXKeyEvent(xev.xkey));

@@ -54,8 +54,7 @@ bool SystemMediaControlsMediaKeysListener::StartWatchingMediaKey(
 
   switch (key_code) {
     case VKEY_MEDIA_PLAY_PAUSE:
-      service_->SetIsPlayEnabled(true);
-      service_->SetIsPauseEnabled(true);
+      service_->SetIsPlayPauseEnabled(true);
       break;
     case VKEY_MEDIA_NEXT_TRACK:
       service_->SetIsNextEnabled(true);
@@ -87,8 +86,7 @@ void SystemMediaControlsMediaKeysListener::StopWatchingMediaKey(
 
   switch (key_code) {
     case VKEY_MEDIA_PLAY_PAUSE:
-      service_->SetIsPlayEnabled(false);
-      service_->SetIsPauseEnabled(false);
+      service_->SetIsPlayPauseEnabled(false);
       break;
     case VKEY_MEDIA_NEXT_TRACK:
       service_->SetIsNextEnabled(false);

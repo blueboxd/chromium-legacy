@@ -28,8 +28,8 @@ namespace ui {
 namespace {
 
 // Create a basic mode for a 6x4 screen.
-const drmModeModeInfo kDefaultMode =
-    {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
+const drmModeModeInfo kDefaultMode = {0, 6, 0, 0, 0, 0, 4,     0,
+                                      0, 0, 0, 0, 0, 0, {'\0'}};
 
 const uint32_t kPrimaryCrtc = 1;
 const uint32_t kPrimaryConnector = 2;
@@ -82,7 +82,7 @@ class ScreenManagerTest : public testing::Test {
       modifiers.push_back(format_modifier);
     auto buffer = drm_->gbm_device()->CreateBufferWithModifiers(
         format, size, GBM_BO_USE_SCANOUT, modifiers);
-    return DrmFramebuffer::AddFramebuffer(drm_, buffer.get());
+    return DrmFramebuffer::AddFramebuffer(drm_, buffer.get(), modifiers);
   }
 
  protected:

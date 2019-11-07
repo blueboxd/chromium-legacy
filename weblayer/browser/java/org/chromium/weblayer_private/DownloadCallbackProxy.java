@@ -9,7 +9,7 @@ import android.os.RemoteException;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.IDownloadCallbackClient;
+import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 
 /**
  * Owns the c++ DownloadCallbackProxy class, which is responsible for forwarding all
@@ -21,11 +21,11 @@ public final class DownloadCallbackProxy {
     private long mNativeDownloadCallbackProxy;
     private IDownloadCallbackClient mClient;
 
-    DownloadCallbackProxy(long browserController, IDownloadCallbackClient client) {
+    DownloadCallbackProxy(long tab, IDownloadCallbackClient client) {
         assert client != null;
         mClient = client;
         mNativeDownloadCallbackProxy =
-                DownloadCallbackProxyJni.get().createDownloadCallbackProxy(this, browserController);
+                DownloadCallbackProxyJni.get().createDownloadCallbackProxy(this, tab);
     }
 
     public void setClient(IDownloadCallbackClient client) {
@@ -46,7 +46,7 @@ public final class DownloadCallbackProxy {
 
     @NativeMethods
     interface Natives {
-        long createDownloadCallbackProxy(DownloadCallbackProxy proxy, long browserController);
+        long createDownloadCallbackProxy(DownloadCallbackProxy proxy, long tab);
         void deleteDownloadCallbackProxy(long proxy);
     }
 }

@@ -16,10 +16,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
+import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.concurrent.CountDownLatch;
@@ -34,19 +34,17 @@ public class BrowserFragmentLifecycleTest {
     @SmallTest
     public void successfullyLoadsUrlAfterRecreation() {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
-        BrowserController controller = TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> activity.getBrowserController());
+        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.getTab());
 
         String url = "data:text,foo";
-        mActivityTestRule.navigateAndWait(controller, url, false);
+        mActivityTestRule.navigateAndWait(tab, url, false);
 
         mActivityTestRule.recreateActivity();
 
         InstrumentationActivity newActivity = mActivityTestRule.getActivity();
-        controller = TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> newActivity.getBrowserController());
+        tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
         url = "data:text,bar";
-        mActivityTestRule.navigateAndWait(controller, url, false);
+        mActivityTestRule.navigateAndWait(tab, url, false);
     }
 
     // https://crbug.com/1021041
@@ -56,8 +54,7 @@ public class BrowserFragmentLifecycleTest {
         CountDownLatch latch = new CountDownLatch(1);
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            NavigationController navigationController =
-                    activity.getBrowserController().getNavigationController();
+            NavigationController navigationController = activity.getTab().getNavigationController();
             navigationController.registerNavigationCallback(new NavigationCallback() {
                 @Override
                 public void readyToCommitNavigation(@NonNull Navigation navigation) {

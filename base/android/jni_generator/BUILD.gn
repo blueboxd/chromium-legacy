@@ -97,6 +97,7 @@ java_annotation_processor("jni_processor") {
     # Avoids a circular dependency with base:base_java. This is okay because
     # no target should ever expect to package an annotation processor.
     "//base/android/java/src/org/chromium/base/annotations/MainDex.java",
+    "//base/android/java/src/org/chromium/base/annotations/CheckDiscard.java",
   ]
 
   main_class = "org.chromium.jni_generator.JniProcessor"

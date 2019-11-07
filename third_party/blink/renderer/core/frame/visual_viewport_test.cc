@@ -84,11 +84,6 @@ void ConfigureAndroidCompositing(WebSettings* settings) {
   settings->SetShrinksViewportContentToFit(true);
 }
 
-const cc::ScrollNode* GetScrollNode(const cc::Layer* layer) {
-  return layer->layer_tree_host()->property_trees()->scroll_tree.Node(
-      layer->scroll_tree_index());
-}
-
 const cc::EffectNode* GetEffectNode(const cc::Layer* layer) {
   return layer->layer_tree_host()->property_trees()->effect_tree.Node(
       layer->effect_tree_index());
@@ -837,10 +832,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   UpdateAllLifecyclePhases();
 
   // Ensure the scroll contents size matches the frame view's size.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(IntSize(320, 240),
-              IntSize(visual_viewport.LayerForScrolling()->bounds()));
-  }
+  EXPECT_EQ(gfx::Size(320, 240), visual_viewport.LayerForScrolling()->bounds());
   EXPECT_EQ(IntSize(320, 240), visual_viewport.GetScrollNode()->ContentsSize());
 
   // Ensure the location and scale were reset.
@@ -1632,9 +1624,6 @@ static void configureHiddenScrollbarsSettings(WebSettings* settings) {
 // layer when hideScrollbars WebSetting is true.
 TEST_P(VisualViewportTest,
        TestScrollbarsNotAttachedWhenHideScrollbarsSettingIsTrue) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithAndroidSettings(configureHiddenScrollbarsSettings);
   WebView()->MainFrameWidget()->Resize(IntSize(100, 150));
   NavigateTo("about:blank");
@@ -1648,9 +1637,6 @@ TEST_P(VisualViewportTest,
 // layer when hideScrollbars WebSetting is false.
 TEST_P(VisualViewportTest,
        TestScrollbarsAttachedWhenHideScrollbarsSettingIsFalse) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithAndroidSettings();
   WebView()->MainFrameWidget()->Resize(IntSize(100, 150));
   NavigateTo("about:blank");
@@ -1660,12 +1646,9 @@ TEST_P(VisualViewportTest,
   EXPECT_TRUE(visual_viewport.LayerForVerticalScrollbar());
 }
 
-// Tests that the layout viewport's scroll layer bounds are updated in a
-// compositing change update. crbug.com/423188.
+// Tests that the layout viewport's scroll node bounds are updated.
+// crbug.com/423188.
 TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithAndroidSettings();
   WebView()->MainFrameWidget()->Resize(IntSize(100, 150));
 
@@ -1680,13 +1663,13 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
                       "content.style.height = \"2400px\";"));
   frame_view.UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
-  const auto* scroll_layer = frame_view.LayoutViewport()->LayerForScrolling();
-  const auto* scroll_node = GetScrollNode(scroll_layer);
 
-  EXPECT_EQ(gfx::Size(1500, 2400), scroll_layer->bounds());
-  float scale = scroll_layer->layer_tree_host()->page_scale_factor();
-  EXPECT_EQ(gfx::Size(100 / scale, 150 / scale), scroll_node->container_bounds);
-  EXPECT_EQ(gfx::Size(1500, 2400), scroll_node->bounds);
+  const auto* scroll_node =
+      frame_view.GetLayoutView()->FirstFragment().PaintProperties()->Scroll();
+  float scale = GetFrame()->GetPage()->GetVisualViewport().Scale();
+  EXPECT_EQ(IntSize(100 / scale, 150 / scale),
+            scroll_node->ContainerRect().Size());
+  EXPECT_EQ(IntSize(1500, 2400), scroll_node->ContentsSize());
 }
 
 // Tests that resizing the visual viepwort keeps its bounds within the outer
@@ -2144,14 +2127,14 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   UpdateAllLifecyclePhases();
   Document* document =
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame())->GetDocument();
-  GraphicsLayer* backgroundLayer = document->GetLayoutView()
-                                       ->Layer()
-                                       ->GetCompositedLayerMapping()
-                                       ->MainGraphicsLayer();
-  ASSERT_TRUE(backgroundLayer);
+  GraphicsLayer* background_layer = document->GetLayoutView()
+                                        ->Layer()
+                                        ->GetCompositedLayerMapping()
+                                        ->MainGraphicsLayer();
+  ASSERT_TRUE(background_layer);
 
-  ASSERT_EQ(page_width, backgroundLayer->Size().width());
-  ASSERT_EQ(page_height, backgroundLayer->Size().height());
+  ASSERT_EQ(page_width, background_layer->Size().width());
+  ASSERT_EQ(page_height, background_layer->Size().height());
   ASSERT_EQ(page_width, document->View()->GetLayoutSize().Width());
   ASSERT_EQ(smallest_height, document->View()->GetLayoutSize().Height());
 
@@ -2163,15 +2146,15 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   ASSERT_EQ(smallest_height, document->View()->GetLayoutSize().Height());
 
   // The background layer's size should have changed though.
-  EXPECT_EQ(page_width, backgroundLayer->Size().width());
-  EXPECT_EQ(smallest_height, backgroundLayer->Size().height());
+  EXPECT_EQ(page_width, background_layer->Size().width());
+  EXPECT_EQ(smallest_height, background_layer->Size().height());
 
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, page_height),
                                            browser_controls_height, 0, true);
 
   // The background layer's size should change again.
-  EXPECT_EQ(page_width, backgroundLayer->Size().width());
-  EXPECT_EQ(page_height, backgroundLayer->Size().height());
+  EXPECT_EQ(page_width, background_layer->Size().width());
+  EXPECT_EQ(page_height, background_layer->Size().height());
 }
 
 static void ConfigureAndroidNonCompositing(WebSettings* settings) {
@@ -2389,10 +2372,6 @@ TEST_P(VisualViewportTest, EnsureOverscrollElasticityTransformNode) {
 
 // Ensure we create effect node for scrollbar properly.
 TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
-  // TODO(wangxianzhu): Should this work for CompositeAfterPaint?
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithAndroidSettings();
   WebView()->MainFrameWidget()->Resize(IntSize(400, 400));
   NavigateTo("about:blank");
@@ -2694,6 +2673,28 @@ TEST_F(VisualViewportSimTest, UsedColorSchemeFromRootElement) {
   Compositor().BeginFrame();
 
   EXPECT_EQ(WebColorScheme::kDark, visual_viewport.UsedColorScheme());
+}
+
+TEST_P(VisualViewportTest, SetLocationBeforePrePaint) {
+  InitializeWithAndroidSettings();
+  WebView()->MainFrameWidget()->Resize(WebSize(100, 100));
+  RegisterMockedHttpURLLoad("content-width-1000.html");
+  NavigateTo(base_url_ + "content-width-1000.html");
+
+  // Simulate that the visual viewport is just created and FrameLoader is
+  // restoring the previously saved scale and scroll state.
+  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  visual_viewport.DisposeImpl();
+  ASSERT_FALSE(visual_viewport.LayerForScrolling());
+  visual_viewport.SetScaleAndLocation(1.75, false, FloatPoint(12, 34));
+  EXPECT_EQ(FloatPoint(12, 34), visual_viewport.ScrollPosition());
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(FloatPoint(12, 34), visual_viewport.ScrollPosition());
+  // When we create the scrolling layer, we should update its scroll offset.
+  ASSERT_TRUE(visual_viewport.LayerForScrolling());
+  EXPECT_EQ(gfx::ScrollOffset(12, 34),
+            visual_viewport.LayerForScrolling()->CurrentScrollOffset());
 }
 
 }  // namespace

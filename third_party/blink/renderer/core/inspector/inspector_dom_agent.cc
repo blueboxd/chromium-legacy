@@ -1535,7 +1535,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
       force_push_children = true;
     }
 
-    if (auto* template_element = ToHTMLTemplateElementOrNull(*element)) {
+    if (auto* template_element = DynamicTo<HTMLTemplateElement>(*element)) {
       value->setTemplateContent(BuildObjectForNode(
           template_element->content(), 0, pierce, nodes_map, flatten_result));
       force_push_children = true;

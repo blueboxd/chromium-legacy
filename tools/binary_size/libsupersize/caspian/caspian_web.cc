@@ -81,7 +81,8 @@ void BuildTree(bool group_by_component,
     include_regex.reset(new RE2(include_regex_str));
     if (include_regex->error_code() == RE2::NoError) {
       filters.push_back([&include_regex](const Symbol& sym) -> bool {
-        return RE2::PartialMatch(sym.full_name, *include_regex);
+        re2::StringPiece piece(sym.full_name.data(), sym.full_name.size());
+        return RE2::PartialMatch(piece, *include_regex);
       });
     }
   }
@@ -91,7 +92,8 @@ void BuildTree(bool group_by_component,
     exclude_regex.reset(new RE2(exclude_regex_str));
     if (exclude_regex->error_code() == RE2::NoError) {
       filters.push_back([&exclude_regex](const Symbol& sym) -> bool {
-        return !RE2::PartialMatch(sym.full_name, *exclude_regex);
+        re2::StringPiece piece(sym.full_name.data(), sym.full_name.size());
+        return !RE2::PartialMatch(piece, *exclude_regex);
       });
     }
   }

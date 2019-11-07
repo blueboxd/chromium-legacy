@@ -415,6 +415,25 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
       SplitViewDragIndicators::WindowDraggingState::kToSnapRight, gfx::Point());
   check_helper(indicator.get(), to_int(IndicatorType::kRightHighlight));
 
+  // Verify that only snap previews are shown for window dragging from shelf.
+  indicator->SetWindowDraggingState(
+      SplitViewDragIndicators::WindowDraggingState::kNoDrag, gfx::Point());
+  indicator->SetWindowDraggingState(
+      SplitViewDragIndicators::WindowDraggingState::kFromShelf, gfx::Point());
+  check_helper(indicator.get(), 0);
+  indicator->SetWindowDraggingState(
+      SplitViewDragIndicators::WindowDraggingState::kToSnapLeft, gfx::Point());
+  check_helper(indicator.get(), to_int(IndicatorType::kLeftHighlight));
+  indicator->SetWindowDraggingState(
+      SplitViewDragIndicators::WindowDraggingState::kFromShelf, gfx::Point());
+  check_helper(indicator.get(), 0);
+  indicator->SetWindowDraggingState(
+      SplitViewDragIndicators::WindowDraggingState::kToSnapRight, gfx::Point());
+  check_helper(indicator.get(), to_int(IndicatorType::kRightHighlight));
+  indicator->SetWindowDraggingState(
+      SplitViewDragIndicators::WindowDraggingState::kFromShelf, gfx::Point());
+  check_helper(indicator.get(), 0);
+
   ScreenOrientationControllerTestApi orientation_api(
       Shell::Get()->screen_orientation_controller());
   // Verify that everything is visible in state

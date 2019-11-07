@@ -111,7 +111,7 @@ static inline bool IsAllWhitespace(const String& string) {
 }
 
 static inline void Insert(HTMLConstructionSiteTask& task) {
-  if (auto* template_element = ToHTMLTemplateElementOrNull(*task.parent))
+  if (auto* template_element = DynamicTo<HTMLTemplateElement>(*task.parent))
     task.parent = template_element->content();
 
   // https://html.spec.whatwg.org/C/#insert-a-foreign-element
@@ -782,7 +782,8 @@ void HTMLConstructionSite::InsertTextNode(const StringView& string,
     FindFosterSite(dummy_task);
 
   // FIXME: This probably doesn't need to be done both here and in insert(Task).
-  if (auto* template_element = ToHTMLTemplateElementOrNull(*dummy_task.parent))
+  if (auto* template_element =
+          DynamicTo<HTMLTemplateElement>(*dummy_task.parent))
     dummy_task.parent = template_element->content();
 
   // Unclear when parent != case occurs. Somehow we insert text into two
@@ -844,7 +845,7 @@ CreateElementFlags HTMLConstructionSite::GetCreateElementFlags() const {
 }
 
 inline Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
-  if (auto* template_element = ToHTMLTemplateElementOrNull(*CurrentNode()))
+  if (auto* template_element = DynamicTo<HTMLTemplateElement>(*CurrentNode()))
     return template_element->content()->GetDocument();
   return CurrentNode()->GetDocument();
 }

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -150,6 +151,14 @@ class PrintRenderFrameHelper
   FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperTest, PrintWithIframe);
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
+  // CREATE_IN_PROGRESS signifies that the preview document is being rendered
+  // asynchronously by a PrintRenderer.
+  enum CreatePreviewDocumentResult {
+    CREATE_SUCCESS,
+    CREATE_IN_PROGRESS,
+    CREATE_FAIL,
+  };
+
   enum PrintingResult {
     OK,
     FAIL_PRINT_INIT,
@@ -247,7 +256,7 @@ class PrintRenderFrameHelper
   void OnFramePreparedForPreviewDocument();
 
   // Initialize the print preview document.
-  bool CreatePreviewDocument();
+  CreatePreviewDocumentResult CreatePreviewDocument();
 
   // Renders a print preview page. |page_number| is 0-based.
   // Returns true if print preview should continue, false on failure.
@@ -255,6 +264,18 @@ class PrintRenderFrameHelper
 
   // Finalize the print ready preview document.
   bool FinalizePrintReadyDocument();
+
+  // Called after a preview document has been created by a PrintRenderer.
+  void OnPreviewDocumentCreated(
+      base::TimeTicks begin_time,
+      base::ReadOnlySharedMemoryRegion preview_document_region);
+
+  // Finish processing the preview document created by a PrintRenderer (record
+  // the render time, update the PrintPreviewContext, and finalize the print
+  // ready preview document).
+  bool ProcessPreviewDocument(
+      base::TimeTicks begin_time,
+      base::ReadOnlySharedMemoryRegion preview_document_region);
 
   // Helper method to calculate the scale factor for fit-to-page.
   int GetFitToPageScaleFactor(const gfx::Rect& printable_area_in_points);
@@ -418,6 +439,9 @@ class PrintRenderFrameHelper
   // Used to check the prerendering status.
   const std::unique_ptr<Delegate> delegate_;
 
+  // Settings used by a PrintRenderer to create a preview document.
+  base::Value print_renderer_job_settings_;
+
   // Used to render print documents from an external source (ARC, Crostini,
   // etc.).
   mojom::PrintRendererAssociatedPtr print_renderer_;
@@ -450,6 +474,10 @@ class PrintRenderFrameHelper
     // Called after a page gets rendered. |page_time| is how long the
     // rendering took.
     void RenderedPreviewPage(const base::TimeDelta& page_time);
+
+    // Called after a preview document gets rendered by a PrintRenderer.
+    // |document_time| is how long the rendering took.
+    void RenderedPreviewDocument(const base::TimeDelta document_time);
 
     // Updates the print preview context when the required pages are rendered.
     void AllPagesRendered();

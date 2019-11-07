@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// On iOS, |distiller_on_ios| was set to true before this script.
-var distiller_on_ios;
-if (typeof distiller_on_ios === 'undefined') {
-  distiller_on_ios = false;
+// On iOS, |distillerOnIos| was set to true before this script.
+var distillerOnIos;
+if (typeof distillerOnIos === 'undefined') {
+  distillerOnIos = false;
 }
 
 function addToPage(html) {
@@ -126,7 +126,7 @@ function maybeSetWebFont() {
   // fetched, which can take a long time on slow networks.
   // In Blink, it times out after 3 seconds and uses fallback fonts.
   // See crbug.com/711650
-  if (distiller_on_ios) {
+  if (distillerOnIos) {
     return;
   }
 

@@ -25,8 +25,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
+import org.chromium.chrome.browser.preferences.about.AboutSettingsBridge;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 
 /**
@@ -88,9 +87,6 @@ public class DataReductionPromoUtilsTest {
     @UiThreadTest
     @Feature({"DataReduction"})
     public void testFreOrSecondRunPromoDisplayed() {
-        AboutVersionStrings versionStrings =
-                PrefServiceBridge.getInstance().getAboutVersionStrings();
-
         // The first run experience or second run promo should not have been shown yet.
         Assert.assertFalse(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
 
@@ -99,7 +95,7 @@ public class DataReductionPromoUtilsTest {
         Assert.assertTrue(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
         Assert.assertFalse(DataReductionPromoUtils.getDisplayedInfoBarPromo());
         Assert.assertFalse(DataReductionPromoUtils.getOptedOutOnFrePromo());
-        Assert.assertEquals(versionStrings.getApplicationVersion(),
+        Assert.assertEquals(AboutSettingsBridge.getApplicationVersion(),
                 DataReductionPromoUtils.getDisplayedFreOrSecondRunPromoVersion());
     }
 
@@ -129,9 +125,6 @@ public class DataReductionPromoUtilsTest {
     @UiThreadTest
     @Feature({"DataReduction"})
     public void testInfoBarPromoDisplayed() {
-        AboutVersionStrings versionStrings =
-                PrefServiceBridge.getInstance().getAboutVersionStrings();
-
         // The infobar should not have been shown yet.
         Assert.assertFalse(DataReductionPromoUtils.getDisplayedInfoBarPromo());
 
@@ -140,7 +133,7 @@ public class DataReductionPromoUtilsTest {
         Assert.assertFalse(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
         Assert.assertTrue(DataReductionPromoUtils.getDisplayedInfoBarPromo());
         Assert.assertFalse(DataReductionPromoUtils.getOptedOutOnFrePromo());
-        Assert.assertEquals(versionStrings.getApplicationVersion(),
+        Assert.assertEquals(AboutSettingsBridge.getApplicationVersion(),
                 ContextUtils.getAppSharedPreferences().getString(
                         SHARED_PREF_DISPLAYED_INFOBAR_PROMO_VERSION, ""));
     }

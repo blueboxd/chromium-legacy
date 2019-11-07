@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
+#include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -40,20 +40,14 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip, TabGroupId group)
 
   set_group(group);
 
-  views::FlexLayout* layout =
-      SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
-
+  // The size and color of the chip are set in VisualsChanged().
   title_chip_ = AddChildView(std::make_unique<views::View>());
-  title_chip_->SetLayoutManager(std::make_unique<views::FillLayout>());
-  // Color and border are set in VisualsChanged().
 
+  // The text and color of the title are set in VisualsChanged().
   title_ = title_chip_->AddChildView(std::make_unique<views::Label>());
   title_->SetCollapseWhenHidden(true);
   title_->SetAutoColorReadabilityEnabled(false);
-  title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->SetElideBehavior(gfx::FADE_TAIL);
 
   VisualsChanged();
@@ -134,40 +128,73 @@ TabSizeInfo TabGroupHeader::GetTabSizeInfo() const {
 }
 
 int TabGroupHeader::CalculateWidth() const {
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  const int title_chip_outside_margin =
-      provider->GetDistanceMetric(DISTANCE_TAB_GROUP_TITLE_CHIP_MARGIN);
   // We don't want tabs to visually overlap group headers, so we add that space
   // to the width to compensate. We don't want to actually remove the overlap
   // during layout however; that would cause an the margin to be visually uneven
   // when the header is in the first slot and thus wouldn't overlap anything to
   // the left.
   const int overlap_margin = TabStyle::GetTabOverlap() * 2;
-  return title_chip_->GetPreferredSize().width() + title_chip_outside_margin +
-         overlap_margin;
+
+  // The empty and non-empty chips have different sizes and corner radii, but
+  // both should look nestled against the group stroke of the tab to the right.
+  // This requires a +/- 2px adjustment to the width, which causes the tab to
+  // the right to be positioned in the right spot.
+  const TabGroupVisualData* data =
+      tab_strip_->controller()->GetVisualDataForGroup(group().value());
+  const int right_adjust = data->title().empty() ? 2 : -2;
+
+  return overlap_margin + title_chip_->width() + right_adjust;
 }
 
 void TabGroupHeader::VisualsChanged() {
-  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const TabGroupVisualData* data =
       tab_strip_->controller()->GetVisualDataForGroup(group().value());
+
   if (data->title().empty()) {
+    // If the title is empty, the chip is just a circle.
     title_->SetVisible(false);
-    constexpr gfx::Rect kEmptyTitleChipSize(12, 12);
-    title_chip_->SetBorder(
-        views::CreateEmptyBorder(kEmptyTitleChipSize.InsetsFrom(gfx::Rect())));
+
+    constexpr int kEmptyChipSize = 14;
+    const int y = (height() - kEmptyChipSize) / 2;
+
+    title_chip_->SetBounds(TabGroupUnderline::GetStrokeInset(), y,
+                           kEmptyChipSize, kEmptyChipSize);
+    title_chip_->SetBackground(
+        views::CreateRoundedRectBackground(data->color(), kEmptyChipSize / 2));
   } else {
+    // If the title is set, the chip is a rounded rect that matches the active
+    // tab shape, particularly the tab's corner radius.
     title_->SetVisible(true);
     title_->SetEnabledColor(
         color_utils::GetColorWithMaxContrast(data->color()));
     title_->SetText(data->title());
-    title_chip_->SetBorder(views::CreateEmptyBorder(
-        provider->GetInsetsMetric(INSETS_TAB_GROUP_TITLE_CHIP)));
+
+    // Set the radius such that the chip nestles snugly against the tab corner
+    // radius, taking into account the group underline stroke.
+    const int corner_radius =
+        TabStyle::GetCornerRadius() - TabGroupUnderline::kStrokeThickness;
+
+    // Clamp the width to a maximum of half the standard tab width (not counting
+    // overlap).
+    const int max_width =
+        (TabStyle::GetStandardWidth() - TabStyle::GetTabOverlap()) / 2;
+    const int text_width =
+        std::min(title_->GetPreferredSize().width(), max_width);
+    const int text_height = title_->GetPreferredSize().height();
+    const int text_vertical_inset = 1;
+    const int text_horizontal_inset = corner_radius + text_vertical_inset;
+
+    const int y = (height() - text_height) / 2 - text_vertical_inset;
+
+    title_chip_->SetBounds(TabGroupUnderline::GetStrokeInset(), y,
+                           text_width + 2 * text_horizontal_inset,
+                           text_height + 2 * text_vertical_inset);
+    title_chip_->SetBackground(
+        views::CreateRoundedRectBackground(data->color(), corner_radius));
+
+    title_->SetBounds(text_horizontal_inset, text_vertical_inset, text_width,
+                      text_height);
   }
-  title_chip_->SetBackground(views::CreateRoundedRectBackground(
-      data->color(),
-      provider->GetCornerRadiusMetric(views::EMPHASIS_MAXIMUM,
-                                      title_chip_->GetPreferredSize())));
 }
 
 void TabGroupHeader::RemoveObserverFromWidget(views::Widget* widget) {

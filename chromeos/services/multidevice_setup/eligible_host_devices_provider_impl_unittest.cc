@@ -187,13 +187,21 @@ TEST_P(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
   }
 
   if (use_get_devices_activity_status()) {
-    multidevice::RemoteDeviceRefList eligible_devices =
+    multidevice::DeviceWithConnectivityStatusList eligible_devices =
         provider()->GetEligibleActiveHostDevices();
     EXPECT_EQ(4u, eligible_devices.size());
-    EXPECT_EQ(test_devices()[2], eligible_devices[0]);
-    EXPECT_EQ(test_devices()[3], eligible_devices[1]);
-    EXPECT_EQ(test_devices()[0], eligible_devices[2]);
-    EXPECT_EQ(test_devices()[1], eligible_devices[3]);
+    EXPECT_EQ(test_devices()[2], eligible_devices[0].remote_device);
+    EXPECT_EQ(test_devices()[3], eligible_devices[1].remote_device);
+    EXPECT_EQ(test_devices()[0], eligible_devices[2].remote_device);
+    EXPECT_EQ(test_devices()[1], eligible_devices[3].remote_device);
+    EXPECT_EQ(cryptauthv2::ConnectivityStatus::ONLINE,
+              eligible_devices[0].connectivity_status);
+    EXPECT_EQ(cryptauthv2::ConnectivityStatus::ONLINE,
+              eligible_devices[1].connectivity_status);
+    EXPECT_EQ(cryptauthv2::ConnectivityStatus::ONLINE,
+              eligible_devices[2].connectivity_status);
+    EXPECT_EQ(cryptauthv2::ConnectivityStatus::OFFLINE,
+              eligible_devices[3].connectivity_status);
   } else {
     multidevice::RemoteDeviceRefList eligible_devices =
         provider()->GetEligibleHostDevices();
@@ -212,6 +220,11 @@ TEST_P(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
   }
 
   SetBitsOnTestDevices();
+  GetMutableRemoteDevice(test_devices()[0])->last_update_time_millis = 5;
+  GetMutableRemoteDevice(test_devices()[1])->last_update_time_millis = 4;
+  GetMutableRemoteDevice(test_devices()[2])->last_update_time_millis = 3;
+  GetMutableRemoteDevice(test_devices()[3])->last_update_time_millis = 2;
+  GetMutableRemoteDevice(test_devices()[4])->last_update_time_millis = 1;
 
   multidevice::RemoteDeviceRefList devices{test_devices()[0], test_devices()[1],
                                            test_devices()[2], test_devices()[3],
@@ -222,16 +235,18 @@ TEST_P(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
       device_sync::mojom::NetworkRequestResult::kInternalServerError,
       base::nullopt);
 
-  multidevice::RemoteDeviceRefList eligible_active_devices =
+  multidevice::DeviceWithConnectivityStatusList eligible_active_devices =
       provider()->GetEligibleActiveHostDevices();
   multidevice::RemoteDeviceRefList eligible_devices =
       provider()->GetEligibleHostDevices();
-  EXPECT_EQ(eligible_devices, eligible_active_devices);
-  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[0]));
-  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[1]));
-  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[2]));
-  EXPECT_TRUE(base::Contains(eligible_devices, test_devices()[3]));
-  EXPECT_FALSE(base::Contains(eligible_devices, test_devices()[4]));
+  EXPECT_EQ(test_devices()[0], eligible_active_devices[0].remote_device);
+  EXPECT_EQ(test_devices()[1], eligible_active_devices[1].remote_device);
+  EXPECT_EQ(test_devices()[2], eligible_active_devices[2].remote_device);
+  EXPECT_EQ(test_devices()[3], eligible_active_devices[3].remote_device);
+  EXPECT_EQ(test_devices()[0], eligible_devices[0]);
+  EXPECT_EQ(test_devices()[1], eligible_devices[1]);
+  EXPECT_EQ(test_devices()[2], eligible_devices[2]);
+  EXPECT_EQ(test_devices()[3], eligible_devices[3]);
 }
 
 INSTANTIATE_TEST_SUITE_P(,

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "chrome/browser/chromeos/attestation/tpm_challenge_key_result.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
@@ -40,20 +41,6 @@ class TpmChallengeKeyFactory {
 
  private:
   static TpmChallengeKey* next_result_for_testing_;
-};
-
-//========================= TpmChallengeKeyResult ==============================
-
-// If |is_success| is true then |data| contains a challenge response and
-// |error_message| is empty. If |is_success| is false then |error_message|
-// contains an error message and |data| is empty.
-struct TpmChallengeKeyResult {
-  static TpmChallengeKeyResult MakeResult(const std::string& success_result);
-  static TpmChallengeKeyResult MakeError(const std::string& error_message);
-
-  bool is_success = false;
-  std::string data;
-  std::string error_message;
 };
 
 //=========================== TpmChallengeKey ==================================
@@ -92,15 +79,6 @@ class TpmChallengeKey {
 
 class TpmChallengeKeyImpl : public TpmChallengeKey {
  public:
-  static const char kDevicePolicyDisabledError[];
-  static const char kSignChallengeFailedError[];
-  static const char kUserNotManaged[];
-  static const char kKeyRegistrationFailedError[];
-  static const char kGetCertificateFailedError[];
-  static const char kUserKeyNotAvailable[];
-  static const char kUserPolicyDisabledError[];
-  static const char kNonEnterpriseDeviceError[];
-
   // Use TpmChallengeKeyFactory for creation.
   TpmChallengeKeyImpl();
   // Use only for testing.
@@ -118,15 +96,6 @@ class TpmChallengeKeyImpl : public TpmChallengeKey {
                      const std::string& key_name_for_spkac) override;
 
  private:
-  enum class PrepareKeyResult {
-    kOk,
-    kDbusError,
-    kUserRejected,
-    kGetCertificateFailed,
-    kResetRequired,
-    kAttestationUnsupported
-  };
-
   void ChallengeUserKey();
   void ChallengeMachineKey();
 
@@ -148,10 +117,9 @@ class TpmChallengeKeyImpl : public TpmChallengeKey {
   // generated, i.e. |key_name_for_spkac_| is not empty or the key doesn't exist
   // and, if necessary, call AttestationFlow::GetCertificate() to get a new one.
   // If |IsUserConsentRequired()| is true, it will explicitly ask for user
-  // consent before calling GetCertificate(). Ends up calling
-  // |PrepareKeyFinished| function.
+  // consent before calling GetCertificate().
   void PrepareKey();
-  void PrepareKeyFinished(PrepareKeyResult result);
+  void PrepareKeyFinished();
 
   void SignChallengeCallback(bool register_key,
                              bool success,

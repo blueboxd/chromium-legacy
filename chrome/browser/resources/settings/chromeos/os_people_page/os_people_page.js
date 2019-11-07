@@ -26,6 +26,13 @@ Polymer({
       notify: true,
     },
 
+    splitSettingsSyncEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('splitSettingsSyncEnabled');
+      },
+    },
+
     /**
      * The current sync status, supplied by SyncBrowserProxy.
      * @type {?settings.SyncStatus}
@@ -184,6 +191,18 @@ Polymer({
    * @return {string}
    * @private
    */
+  getSyncRowLabel_: function() {
+    if (this.splitSettingsSyncEnabled_) {
+      return this.i18n('peopleOsSyncRowLabel');
+    } else {
+      return this.i18n('syncAndNonPersonalizedServices');
+    }
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
   getSyncAndGoogleServicesSubtext_: function() {
     if (this.syncStatus && this.syncStatus.hasError &&
         this.syncStatus.statusText) {
@@ -275,6 +294,11 @@ Polymer({
 
   /** @private */
   onSyncTap_: function() {
+    if (this.splitSettingsSyncEnabled_) {
+      settings.navigateTo(settings.routes.OS_SYNC);
+      return;
+    }
+
     // Users can go to sync subpage regardless of sync status.
     settings.navigateTo(settings.routes.SYNC);
   },

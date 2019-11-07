@@ -162,7 +162,8 @@ class WebRtcBrowserTest : public WebRtcTestBase {
 };
 
 // TODO(898546): many of these tests are failing on ASan builds.
-#if defined(ADDRESS_SANITIZER)
+// They are also flaky crashers on Linux.
+#if defined(ADDRESS_SANITIZER) || defined(OS_LINUX)
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
 class DISABLED_WebRtcBrowserTest : public WebRtcBrowserTest {};
 #else

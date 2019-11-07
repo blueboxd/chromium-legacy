@@ -9,7 +9,7 @@ Runs various style checks before upload.
 import re
 
 WEBLAYER_VERSION_PATH = (
-    'weblayer/browser/java/org/chromium/weblayer_private/aidl/' +
+    'weblayer/browser/java/org/chromium/weblayer_private/interfaces/' +
     'WebLayerVersion.java')
 
 

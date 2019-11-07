@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
+#include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_model.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
@@ -41,9 +42,11 @@ struct EVENTS_OZONE_EVDEV_EXPORT PalmFilterSample {
 };
 
 EVENTS_OZONE_EVDEV_EXPORT
-PalmFilterSample CreatePalmFilterSample(const InProgressTouchEvdev& touch,
-                                        const base::TimeTicks& time,
-                                        const PalmFilterDeviceInfo& dev_info);
+PalmFilterSample CreatePalmFilterSample(
+    const InProgressTouchEvdev& touch,
+    const base::TimeTicks& time,
+    const NeuralStylusPalmDetectionFilterModelConfig& model_config,
+    const PalmFilterDeviceInfo& dev_info);
 
 class EVENTS_OZONE_EVDEV_EXPORT PalmFilterStroke {
  public:

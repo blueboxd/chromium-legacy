@@ -8,7 +8,8 @@
 #include <sys/types.h>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
+#include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/mac/authorization_util.h"
@@ -18,7 +19,10 @@
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/values.h"
 #include "remoting/base/string_resources.h"
 #include "remoting/host/host_config.h"
@@ -237,6 +241,59 @@ DaemonControllerDelegateMac::GetConfig() {
   if (host_config->GetString(kXmppLoginConfigPath, &value))
     config->SetString(kXmppLoginConfigPath, value);
   return config;
+}
+
+base::FilePath GetHostExePath() {
+  // Get path to directory that contains the NMH Application bundle.
+  base::FilePath nmh_dir;
+  base::PathService::Get(base::DIR_EXE, &nmh_dir);
+  // The NMH path ends with <nmh>.app/Contents/MacOS/, so we need to strip
+  // off the last 3 parent dirs to get to the app's directory.
+  auto host_path = nmh_dir.DirName().DirName().DirName();
+
+  // For installed builds, the host exe should be in this directory.
+  // TODO(garykac) This assumes that the location of the host exe is relative
+  // to the location of the NMH exe, which may not be true in the future. The
+  // relative path is needed for dev builds (where the binaries are written to
+  // the Chromium 'out' directory), but the release version should get this
+  // path from the build script to ensure that it matches where we install the
+  // host.
+  base::FilePath host_path_exe = host_path.Append("remoting_me2me_host");
+  if (!base::PathExists(host_path_exe)) {
+    // For local dev builds, the host exe is in an app container, so we have to
+    // navigate down to it.
+    host_path_exe = host_path.Append(
+        "remoting_me2me_host.app/Contents/MacOS/remoting_me2me_host");
+    if (!base::PathExists(host_path_exe))
+      LOG(ERROR) << "Path doesn't exist: " << host_path_exe;
+  }
+
+  return host_path_exe;
+}
+
+bool CheckHostPermission(std::string perm) {
+  base::CommandLine cmdLine(GetHostExePath());
+  cmdLine.AppendSwitch(perm);
+
+  base::LaunchOptions options;
+  options.disclaim_responsibility = true;
+  base::Process process = base::LaunchProcess(cmdLine, options);
+  if (!process.IsValid()) {
+    LOG(ERROR) << "Unable to launch host process";
+    return false;
+  }
+  int exit_code;
+  process.WaitForExit(&exit_code);
+  LOG(INFO) << "Permission '" << perm << "' is "
+            << ((exit_code == 0) ? "granted" : "denied");
+  return exit_code == 0;
+}
+
+bool DaemonControllerDelegateMac::CheckPermission() {
+  if (CheckHostPermission("check-accessibility-permission")) {
+    return CheckHostPermission("check-screen-recording-permission");
+  }
+  return false;
 }
 
 void DaemonControllerDelegateMac::SetConfigAndStart(

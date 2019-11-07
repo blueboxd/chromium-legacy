@@ -85,7 +85,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl {
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
 
   // Exposed for our TestRunner harness.
-  using RenderViewImpl::ApplyPageHidden;
+  using RenderViewImpl::ApplyPageVisibilityState;
 
   WebTestDelegate* delegate() { return delegate_.get(); }
   TestInterfaces* test_interfaces() { return test_interfaces_; }

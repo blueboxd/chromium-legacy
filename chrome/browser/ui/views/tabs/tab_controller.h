@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
+class Browser;
 class Tab;
 class TabGroupVisualData;
 class TabGroupId;
@@ -197,6 +198,8 @@ class TabController {
   virtual void UngroupAllTabsInGroup(TabGroupId group) = 0;
 
   virtual void AddNewTabInGroup(TabGroupId group) = 0;
+
+  virtual const Browser* GetBrowser() = 0;
 
  protected:
   virtual ~TabController() {}

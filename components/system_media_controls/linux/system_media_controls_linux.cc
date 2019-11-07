@@ -101,12 +101,9 @@ void SystemMediaControlsLinux::SetIsPreviousEnabled(bool value) {
                            DbusBoolean(value));
 }
 
-void SystemMediaControlsLinux::SetIsPlayEnabled(bool value) {
+void SystemMediaControlsLinux::SetIsPlayPauseEnabled(bool value) {
   properties_->SetProperty(kMprisAPIPlayerInterfaceName, "CanPlay",
                            DbusBoolean(value));
-}
-
-void SystemMediaControlsLinux::SetIsPauseEnabled(bool value) {
   properties_->SetProperty(kMprisAPIPlayerInterfaceName, "CanPause",
                            DbusBoolean(value));
 }

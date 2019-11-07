@@ -412,6 +412,7 @@ LockContentsView::UserState::UserState(const LoginUserInfo& user_info)
   fingerprint_state = user_info.fingerprint_state;
   if (user_info.auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN)
     force_online_sign_in = true;
+  show_pin_pad_for_password = user_info.show_pin_pad_for_password;
 }
 
 LockContentsView::UserState::UserState(UserState&&) = default;
@@ -1653,8 +1654,10 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         // not interfere with PIN entry.
         const bool is_keyboard_visible_for_view =
             GetKeyboardControllerForView() ? keyboard_shown_ : false;
-        if (state->show_pin && !is_keyboard_visible_for_view)
+        if ((state->show_pin || state->show_pin_pad_for_password) &&
+            !is_keyboard_visible_for_view) {
           to_update_auth |= LoginAuthUserView::AUTH_PIN;
+        }
         if (state->enable_tap_auth)
           to_update_auth |= LoginAuthUserView::AUTH_TAP;
         if (state->fingerprint_state != FingerprintState::UNAVAILABLE &&
@@ -1669,7 +1672,6 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
           to_update_auth |= LoginAuthUserView::AUTH_EXTERNAL_BINARY;
         }
       }
-
       view->auth_user()->SetAuthMethods(to_update_auth, state->show_pin);
     } else if (view->public_account()) {
       view->public_account()->SetAuthEnabled(true /*enabled*/, animate);

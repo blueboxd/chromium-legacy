@@ -611,7 +611,7 @@ DocumentFragment* CreateFragmentForInnerOuterHTML(
     ExceptionState& exception_state) {
   DCHECK(context_element);
   Document& document =
-      IsHTMLTemplateElement(*context_element)
+      IsA<HTMLTemplateElement>(*context_element)
           ? context_element->GetDocument().EnsureTemplateDocument()
           : context_element->GetDocument();
   DocumentFragment* fragment = DocumentFragment::Create(document);

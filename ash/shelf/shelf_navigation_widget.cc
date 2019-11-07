@@ -247,6 +247,16 @@ gfx::Size ShelfNavigationWidget::GetIdealSize() const {
                    control_size);
 }
 
+void ShelfNavigationWidget::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->IsMouseWheelEvent()) {
+    ui::MouseWheelEvent* mouse_wheel_event = event->AsMouseWheelEvent();
+    shelf_->ProcessMouseWheelEvent(mouse_wheel_event);
+    return;
+  }
+
+  views::Widget::OnMouseEvent(event);
+}
+
 bool ShelfNavigationWidget::OnNativeWidgetActivationChanged(bool active) {
   if (!Widget::OnNativeWidgetActivationChanged(active))
     return false;

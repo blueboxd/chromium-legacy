@@ -295,6 +295,10 @@ void CreditCardAccessManager::FetchCreditCard(
 
   bool get_unmask_details_returned =
       ready_to_start_authentication_.IsSignaled();
+  bool user_is_opted_in = AuthenticationRequiresUnmaskDetails();
+  bool should_wait_to_authenticate =
+      user_is_opted_in && !get_unmask_details_returned;
+
   // Logging metrics.
 #if !defined(OS_IOS)
   if (should_log_latency_metrics) {
@@ -307,12 +311,14 @@ void CreditCardAccessManager::FetchCreditCard(
         GetOrCreateFIDOAuthenticator()->IsUserOptedIn());
   }
 #endif
-  if (AuthenticationRequiresUnmaskDetails() && !get_unmask_details_returned) {
-    // On desktop, shows the verify pending dialog.
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // On desktop, show the verify pending dialog for opted-in user.
+  if (user_is_opted_in)
     ShowVerifyPendingDialog();
 #endif
 
+  if (should_wait_to_authenticate) {
     // Wait for |ready_to_start_authentication_| to be signaled by
     // OnDidGetUnmaskDetails() or until timeout before calling Authenticate().
     base::PostTaskAndReplyWithResult(

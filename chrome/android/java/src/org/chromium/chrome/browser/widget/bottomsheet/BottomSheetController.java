@@ -4,12 +4,15 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import android.view.View;
+
 import androidx.annotation.IntDef;
 
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -86,6 +89,9 @@ public class BottomSheetController implements Destroyable {
     /** A {@link VrModeObserver} that observers events of entering and exiting VR mode. */
     private final VrModeObserver mVrModeObserver;
 
+    /** The height of the shadow that sits above the toolbar. */
+    private final int mToolbarShadowHeight;
+
     /** The parameters that control how the scrim behaves while the sheet is open. */
     private ScrimParams mScrimParams;
 
@@ -135,6 +141,8 @@ public class BottomSheetController implements Destroyable {
         mTabProvider = activityTabProvider;
         mOverlayPanelManager = overlayManager;
         mPendingSheetObservers = new ArrayList<>();
+        mToolbarShadowHeight =
+                scrim.getResources().getDimensionPixelOffset(BottomSheet.getTopShadowResourceId());
 
         mVrModeObserver = new VrModeObserver() {
             @Override
@@ -326,6 +334,37 @@ public class BottomSheetController implements Destroyable {
         return mBottomSheet == null ? false : mBottomSheet.isHiding();
     }
 
+    /** @return The current offset from the bottom of the screen that the sheet is in px. */
+    public int getCurrentOffset() {
+        return mBottomSheet == null ? 0 : (int) mBottomSheet.getCurrentOffsetPx();
+    }
+
+    /**
+     * @return The height of the bottom sheet's container in px. This will return 0 if the sheet has
+     *         not been initialized (content has not been requested).
+     */
+    public int getContainerHeight() {
+        return mBottomSheet != null ? (int) mBottomSheet.getSheetContainerHeight() : 0;
+    }
+
+    /** @return The height of the shadow above the bottom sheet in px. */
+    public int getTopShadowHeight() {
+        return mToolbarShadowHeight;
+    }
+
+    /**
+     * Set whether the bottom sheet is obscuring all tabs.
+     * @param activity An activity that knows about tabs.
+     * @param isObscuring Whether the bottom sheet is considered to be obscuring.
+     */
+    public void setIsObscuringAllTabs(ChromeActivity activity, boolean isObscuring) {
+        if (isObscuring) {
+            activity.addViewObscuringAllTabs(mBottomSheet);
+        } else {
+            activity.removeViewObscuringAllTabs(mBottomSheet);
+        }
+    }
+
     /**
      * @param observer The observer to add.
      */
@@ -377,16 +416,14 @@ public class BottomSheetController implements Destroyable {
         }
     }
 
-    /**
-     * @return The {@link BottomSheet} controlled by this class.
-     */
-    public BottomSheet getBottomSheet() {
-        return mBottomSheet;
-    }
-
     @VisibleForTesting
     public void setSheetStateForTesting(@SheetState int state, boolean animate) {
         mBottomSheet.setSheetState(state, animate);
+    }
+
+    @VisibleForTesting
+    public View getBottomSheetViewForTesting() {
+        return mBottomSheet;
     }
 
     /**
@@ -528,7 +565,7 @@ public class BottomSheetController implements Destroyable {
     /**
      * @return Whether some other UI is preventing the sheet from showing.
      */
-    protected boolean isOtherUIObscuring() {
+    private boolean isOtherUIObscuring() {
         return mOverlayPanelManager.get() != null
                 && mOverlayPanelManager.get().getActivePanel() != null;
     }

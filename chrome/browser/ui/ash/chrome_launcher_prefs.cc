@@ -27,6 +27,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -163,11 +164,18 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
 
   // If shelf pin layout rolls preference is not started yet then we cannot say
   // if we rolled layout or not.
-  if (selected_sync.Has(syncer::UserSelectableType::kPreferences) &&
-      !PrefServiceSyncableFromProfile(profile)->IsSyncing()) {
-    return false;
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    if (sync_service->GetUserSettings()->GetSelectedOsTypes().Has(
+            syncer::UserSelectableOsType::kOsPreferences) &&
+        !PrefServiceSyncableFromProfile(profile)->IsSyncing()) {
+      return false;
+    }
+  } else {
+    if (selected_sync.Has(syncer::UserSelectableType::kPreferences) &&
+        !PrefServiceSyncableFromProfile(profile)->IsSyncing()) {
+      return false;
+    }
   }
-
   return true;
 }
 

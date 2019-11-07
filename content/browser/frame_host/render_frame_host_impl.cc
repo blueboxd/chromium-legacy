@@ -142,7 +142,6 @@
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -159,6 +158,7 @@
 #include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/network_service_util.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -3229,6 +3229,18 @@ int RenderFrameHostImpl::GetEnabledBindings() {
   return enabled_bindings_;
 }
 
+void RenderFrameHostImpl::SetWebUIProperty(const std::string& name,
+                                           const std::string& value) {
+  // This is a sanity check before telling the renderer to enable the property.
+  // It could lie and send the corresponding IPC messages anyway, but we will
+  // not act on them if enabled_bindings_ doesn't agree. If we get here without
+  // WebUI bindings, terminate the renderer process.
+  if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
+    Send(new FrameMsg_SetWebUIProperty(routing_id_, name, value));
+  else
+    ReceivedBadMessage(GetProcess(), bad_message::RVH_WEB_UI_BINDINGS_MISMATCH);
+}
+
 void RenderFrameHostImpl::DisableBeforeUnloadHangMonitorForTesting() {
   beforeunload_timeout_.reset();
 }
@@ -4674,7 +4686,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
           ? media::MediaMetricsProvider::FrameStatus::kTopFrame
           : media::MediaMetricsProvider::FrameStatus::kNotTopFrame,
       base::BindRepeating(
-          &RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource,
+          &RenderFrameHostDelegate::
+              GetUkmSourceIdForLastCommittedSourceIncludingSameDocument,
           // This callback is only executed when Create() is called, during
           // which the lifetime of the |delegate_| is guaranteed.
           base::Unretained(delegate_)),

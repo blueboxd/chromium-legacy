@@ -97,7 +97,7 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   if (g_locale_paks_in_apk) {
     return !GetPathForAndroidLocalePakWithinApk(locale).empty();
   }
-  return !GetLocaleFilePath(locale, true).empty();
+  return !GetLocaleFilePath(locale).empty();
 }
 
 std::string ResourceBundle::LoadLocaleResources(
@@ -117,7 +117,7 @@ std::string ResourceBundle::LoadLocaleResources(
   } else {
     base::FilePath locale_file_path = GetOverriddenPakPath();
     if (locale_file_path.empty())
-      locale_file_path = GetLocaleFilePath(app_locale, true);
+      locale_file_path = GetLocaleFilePath(app_locale);
 
     if (locale_file_path.empty()) {
       // It's possible that there is no locale.pak.

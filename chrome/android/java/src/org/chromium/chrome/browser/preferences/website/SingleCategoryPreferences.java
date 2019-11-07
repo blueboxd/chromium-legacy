@@ -519,7 +519,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
             prefServiceBridge.setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, ((boolean) newValue));
         } else if (NOTIFICATIONS_VIBRATE_TOGGLE_KEY.equals(preference.getKey())) {
-            prefServiceBridge.setNotificationsVibrateEnabled((boolean) newValue);
+            prefServiceBridge.setBoolean(Pref.NOTIFICATIONS_VIBRATE_ENABLED, (boolean) newValue);
         }
         return true;
     }

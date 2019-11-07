@@ -21,7 +21,8 @@
 namespace mojo {
 namespace core {
 
-using ProcessErrorCallback = base::Callback<void(const std::string& error)>;
+using ProcessErrorCallback =
+    base::RepeatingCallback<void(const std::string& error)>;
 
 // Basic configuration/initialization ------------------------------------------
 
@@ -38,7 +39,7 @@ COMPONENT_EXPORT(MOJO_CORE_EMBEDDER) void Init();
 // Sets a default callback to invoke when an internal error is reported but
 // cannot be associated with a specific child process. Calling this is optional.
 COMPONENT_EXPORT(MOJO_CORE_EMBEDDER)
-void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback);
+void SetDefaultProcessErrorCallback(ProcessErrorCallback callback);
 
 // Initialialization/shutdown for interprocess communication (IPC) -------------
 

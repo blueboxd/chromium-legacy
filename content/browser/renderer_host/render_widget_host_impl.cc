@@ -345,7 +345,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
     RenderProcessHost* process,
     int32_t routing_id,
     mojo::PendingRemote<mojom::Widget> widget,
-    bool hidden)
+    bool hidden,
+    std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue)
     : delegate_(delegate),
       process_(process),
       routing_id_(routing_id),
@@ -356,8 +357,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       new_content_rendering_delay_(
           TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
       compositor_frame_sink_receiver_(this),
-      frame_token_message_queue_(
-          std::make_unique<FrameTokenMessageQueue>(this)),
+      frame_token_message_queue_(std::move(frame_token_message_queue)),
       render_frame_metadata_provider_(
 #if defined(OS_MACOSX)
           ui::WindowResizeHelperMac::Get()->task_runner(),
@@ -367,6 +367,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
           frame_token_message_queue_.get()),
       frame_sink_id_(base::checked_cast<uint32_t>(process_->GetID()),
                      base::checked_cast<uint32_t>(routing_id_)) {
+  DCHECK(frame_token_message_queue_);
+  frame_token_message_queue_->Init(this);
+
 #if defined(OS_MACOSX)
   fling_scheduler_ = std::make_unique<FlingSchedulerMac>(this);
 #elif defined(OS_ANDROID)
@@ -637,7 +640,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(WidgetHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_FrameSwapMessages,
@@ -1795,11 +1797,6 @@ void RenderWidgetHostImpl::OnSelectionBoundsChanged(
     const WidgetHostMsg_SelectionBounds_Params& params) {
   if (view_)
     view_->SelectionBoundsChanged(params);
-}
-
-void RenderWidgetHostImpl::OnFocusedNodeTouched(bool editable) {
-  if (delegate_)
-    delegate_->FocusedNodeTouched(editable);
 }
 
 void RenderWidgetHostImpl::OnStartDragging(
@@ -3234,12 +3231,31 @@ void RenderWidgetHostImpl::OnRenderFrameMetadataChangedBeforeActivation(
     const cc::RenderFrameMetadata& metadata) {}
 
 void RenderWidgetHostImpl::OnRenderFrameMetadataChangedAfterActivation() {
-  bool is_mobile_optimized =
-      render_frame_metadata_provider_.LastRenderFrameMetadata()
-          .is_mobile_optimized;
+  const auto& metadata =
+      render_frame_metadata_provider_.LastRenderFrameMetadata();
+
+  bool is_mobile_optimized = metadata.is_mobile_optimized;
   input_router_->NotifySiteIsMobileOptimized(is_mobile_optimized);
   if (auto* touch_emulator = GetExistingTouchEmulator())
     touch_emulator->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
+
+  // The value |kNull| is only used to indicate an absence of vertical scroll
+  // direction and should therefore be ignored.
+  if (metadata.new_vertical_scroll_direction ==
+      viz::VerticalScrollDirection::kNull) {
+    return;
+  }
+
+  // Changes in vertical scroll direction are only propagated for main frames.
+  // If there is no |owner_delegate|, this is not a main frame.
+  if (!owner_delegate())
+    return;
+
+  if (!delegate())
+    return;
+
+  delegate()->OnVerticalScrollDirectionChanged(
+      metadata.new_vertical_scroll_direction);
 }
 
 void RenderWidgetHostImpl::OnLocalSurfaceIdChanged(

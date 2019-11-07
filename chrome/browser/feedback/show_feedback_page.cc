@@ -37,6 +37,7 @@ bool IsFromUserInteraction(FeedbackSource source) {
     case kFeedbackSourceAsh:
     case kFeedbackSourceAssistant:
     case kFeedbackSourceBrowserCommand:
+    case kFeedbackSourceDesktopTabGroups:
     case kFeedbackSourceMdSettingsAboutPage:
     case kFeedbackSourceOldSettingsAboutPage:
       return true;
@@ -47,7 +48,7 @@ bool IsFromUserInteraction(FeedbackSource source) {
 #endif
 }  // namespace
 
-void ShowFeedbackPage(Browser* browser,
+void ShowFeedbackPage(const Browser* browser,
                       FeedbackSource source,
                       const std::string& description_template,
                       const std::string& description_placeholder_text,

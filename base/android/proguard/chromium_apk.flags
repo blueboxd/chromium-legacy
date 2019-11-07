@@ -64,8 +64,3 @@
 # Allowing Proguard to change modifiers. This change shrinks the .dex size by
 # ~1%, and reduces the method count by ~4%.
 -allowaccessmodification
-
-# Ensure @RemovableInRelease actually works.
--checkdiscard class ** {
-  @org.chromium.base.annotations.RemovableInRelease *;
-}

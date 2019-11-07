@@ -403,7 +403,7 @@ void TestRenderFrameHost::PrepareForCommitInternal(
     return;  // |request| is destructed by now.
 
   CHECK(request->state() >= NavigationRequest::WILL_START_NAVIGATION &&
-        request->state() < NavigationRequest::RESPONSE_STARTED);
+        request->state() < NavigationRequest::READY_TO_COMMIT);
 
   if (!request->loader_for_testing()) {
     base::RunLoop loop;

@@ -5,7 +5,13 @@
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter.h"
 
 #include <algorithm>
+#include <functional>
+#include <memory>
 #include <queue>
+#include <string>
+#include <tuple>
+#include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "ui/events/ozone/evdev/event_device_info.h"
@@ -161,8 +167,8 @@ void NeuralStylusPalmDetectionFilter::Filter(
     }
 
     // Add the sample to the stroke.
-    stroke.AddSample(
-        CreatePalmFilterSample(touch, time, palm_filter_dev_info_));
+    stroke.AddSample(CreatePalmFilterSample(touch, time, model_->config(),
+                                            palm_filter_dev_info_));
     if (!is_palm_.test(slot) && ShouldDecideStroke(stroke)) {
       slots_to_decide.insert(slot);
     }

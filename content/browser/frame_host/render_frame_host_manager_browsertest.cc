@@ -5949,6 +5949,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(speculative_rph, web_contents->GetMainFrame()->GetProcess());
 }
 
+namespace {
+
 // ContentBrowserClient that skips assigning a site URL for all URLs that match
 // a given URL's scheme and host.
 class DontAssignSiteContentBrowserClient : public TestContentBrowserClient {
@@ -5968,6 +5970,8 @@ class DontAssignSiteContentBrowserClient : public TestContentBrowserClient {
 
   DISALLOW_COPY_AND_ASSIGN(DontAssignSiteContentBrowserClient);
 };
+
+}  // namespace
 
 // Ensure that coming back to a NavigationEntry with a previously unassigned
 // SiteInstance (which is now used for another site) properly switches processes

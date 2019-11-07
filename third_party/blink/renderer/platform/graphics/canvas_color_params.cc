@@ -40,16 +40,11 @@ CanvasColorParams::CanvasColorParams() = default;
 
 CanvasColorParams::CanvasColorParams(CanvasColorSpace color_space,
                                      CanvasPixelFormat pixel_format,
-                                     OpacityMode opacity_mode)
+                                     OpacityMode opacity_mode,
+                                     CanvasForceRGBA force_rgba)
     : color_space_(color_space),
       pixel_format_(pixel_format),
-      opacity_mode_(opacity_mode) {}
-
-CanvasColorParams::CanvasColorParams(const CanvasColorParams& params,
-                                     bool force_rgba)
-    : color_space_(params.color_space_),
-      pixel_format_(params.pixel_format_),
-      opacity_mode_(params.opacity_mode_),
+      opacity_mode_(opacity_mode),
       force_rgba_(force_rgba) {}
 
 CanvasColorParams::CanvasColorParams(const SkImageInfo& info)
@@ -70,7 +65,8 @@ bool CanvasColorParams::NeedsColorConversion(
 SkColorType CanvasColorParams::GetSkColorType() const {
   if (pixel_format_ == kF16CanvasPixelFormat)
     return kRGBA_F16_SkColorType;
-  return force_rgba_ ? kRGBA_8888_SkColorType : kN32_SkColorType;
+  return force_rgba_ == CanvasForceRGBA::kForced ? kRGBA_8888_SkColorType
+                                                 : kN32_SkColorType;
 }
 
 SkAlphaType CanvasColorParams::GetSkAlphaType() const {
@@ -243,7 +239,7 @@ CanvasColorParams::CanvasColorParams(const sk_sp<SkColorSpace> color_space,
   if (color_type == kRGBA_F16_SkColorType)
     pixel_format_ = kF16CanvasPixelFormat;
   else if (color_type == kRGBA_8888_SkColorType)
-    force_rgba_ = true;
+    force_rgba_ = CanvasForceRGBA::kForced;
 }
 
 }  // namespace blink

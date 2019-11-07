@@ -308,8 +308,8 @@ SpeechRecognizer::SpeechRecognizer(
 SpeechRecognizer::~SpeechRecognizer() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (speech_recognizer_on_io_) {
-    content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                       speech_recognizer_on_io_.release());
+    base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                     speech_recognizer_on_io_.release());
   }
 }
 

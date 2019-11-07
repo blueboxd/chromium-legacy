@@ -2106,6 +2106,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"photoCaptureAccessibleText", IDS_SETTINGS_PHOTO_CAPTURE_ACCESSIBLE_TEXT},
     {"photoDiscardAccessibleText", IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT},
     {"photoModeAccessibleText", IDS_SETTINGS_PHOTO_MODE_ACCESSIBLE_TEXT},
+    {"syncOsSettingsCheckboxLabel",
+     IDS_OS_SETTINGS_SYNC_OS_SETTINGS_CHECKBOX_LABEL},
+    {"syncPrintersCheckboxLabel", IDS_OS_SETTINGS_SYNC_PRINTERS_CHECKBOX_LABEL},
     {"videoModeAccessibleText", IDS_SETTINGS_VIDEO_MODE_ACCESSIBLE_TEXT},
     {"wifiConfigurationsCheckboxLabel",
      IDS_SETTINGS_WIFI_CONFIGURATIONS_CHECKBOX_LABEL},
@@ -2203,6 +2206,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           base::size(localized_strings));
 #if defined(OS_CHROMEOS)
+  // TODO(crbug.com/1013466): String for this row label.
+  html_source->AddString("peopleOsSyncRowLabel", "SYNC PLACEHOLDER LABEL");
   AddFingerprintStrings(html_source);
 #endif  // OS_CHROMEOS
   html_source->AddString("managementPage",

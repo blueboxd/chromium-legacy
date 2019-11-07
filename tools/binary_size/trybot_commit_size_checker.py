@@ -28,41 +28,14 @@ _MAX_DEX_METHOD_COUNT_INCREASE = 50
 _MAX_NORMALIZED_INCREASE = 16 * 1024
 _MAX_PAK_INCREASE = 1024
 
-_FAILURE_GUIDANCE = """
-Please look at size breakdowns, try to understand the growth, and see if it can
-be mitigated.
-
-There is guidance at:
-
-https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md
-
-If the growth is expected / justified, then you can bypass this bot failure by
-adding "Binary-Size: $JUSTIFICATION" footer to your commit message (must go at
-the bottom of the message, similar to "Bug:").
-
-Here are some examples:
-
-Binary-Size: Increase is due to translations and so cannot be avoided.
-Binary-Size: Increase is due to new images, which are already optimally encoded.
-Binary-Size: Increase is temporary due to a "new way" / "old way" refactoring. \
-It should go away once the "old way" is removed.
-Binary-Size: Increase is temporary and will be reverted before next branch cut.
-Binary-Size: Increase needed to reduce RAM of a common user flow.
-Binary-Size: Increase needed to reduce runtime of a common user flow.
-Binary-Size: Increase needed to implement a feature, and I've already spent a \
-non-trivial amount of time trying to reduce its size.
-"""
-
 
 class _SizeDelta(collections.namedtuple(
-    'SizeDelta', ['name', 'units', 'expected', 'actual', 'details'])):
+    'SizeDelta', ['name', 'units', 'expected', 'actual'])):
 
   @property
   def explanation(self):
     ret = '{}: {} {} (max is {} {})'.format(
         self.name, self.actual, self.units, self.expected, self.units)
-    if self.details and not self.IsAllowable():
-      ret += '\n' + self.details
     return ret
 
   def IsAllowable(self):
@@ -91,26 +64,7 @@ def _CreateMutableConstantsDelta(symbols):
   symbols = symbols.WhereInSection('d').WhereNameMatches(r'\bk[A-Z]|\b[A-Z_]+$')
   lines, net_added = _SymbolDiffHelper(symbols)
 
-  if net_added <= 0:
-    details = """\
-Symbols within .data that are named like constants (crbug.com/747064).
-"""
-  else:
-    details = """\
-Detected new symbols within .data that are named like constants.
-Either:
-  * Mark the symbols as const, or
-  * Rename them.
-
-For more context: https://crbug.com/747064
-"""
-
-  if net_added:
-    details += """
-Refer to Mutable Constants Diff for list of symbols.
-"""
-  return lines, _SizeDelta('Mutable Constants', 'symbols', 0, net_added,
-                           details)
+  return lines, _SizeDelta('Mutable Constants', 'symbols', 0, net_added)
 
 
 def _CreateMethodCountDelta(symbols):
@@ -119,8 +73,6 @@ def _CreateMethodCountDelta(symbols):
   class_symbols = symbols.WhereInSection(
       models.SECTION_DEX).WhereNameMatches('#').Inverted()
   class_lines, _ = _SymbolDiffHelper(class_symbols)
-  details = (
-      'Refer to Dex Class and Method Diff for list of added/removed methods.')
   lines = []
   if class_lines:
     lines.append('===== Classes Added & Removed =====')
@@ -131,21 +83,16 @@ def _CreateMethodCountDelta(symbols):
     lines.extend(method_lines)
 
   return lines, _SizeDelta('Dex Methods Count', 'methods',
-                           _MAX_DEX_METHOD_COUNT_INCREASE, net_method_added,
-                           details)
+                           _MAX_DEX_METHOD_COUNT_INCREASE, net_method_added)
 
 
 def _CreateResourceSizesDelta(apk_name, before_dir, after_dir):
   sizes_diff = diagnose_bloat.ResourceSizesDiff(apk_name)
   sizes_diff.ProduceDiff(before_dir, after_dir)
-  details = (
-      'See https://chromium.googlesource.com/chromium/src/+/master/docs/speed/'
-      'binary_size/metrics.md#Normalized-APK-Size '
-      'for an explanation of Normalized APK Size')
 
   return sizes_diff.Summary(), _SizeDelta(
       'Normalized APK Size', 'bytes', _MAX_NORMALIZED_INCREASE,
-      sizes_diff.summary_stat.value, details)
+      sizes_diff.summary_stat.value)
 
 
 def _CreateSupersizeDiff(apk_name, before_dir, after_dir):
@@ -166,7 +113,7 @@ def _CreateUncompressedPakSizeDeltas(symbols):
       s.section_name == models.SECTION_PAK_NONTRANSLATED)
   return [
       _SizeDelta('Uncompressed Pak Entry "{}"'.format(pak.full_name), 'bytes',
-                 _MAX_PAK_INCREASE, pak.after_symbol.size, None)
+                 _MAX_PAK_INCREASE, pak.after_symbol.size)
       for pak in pak_symbols
   ]
 
@@ -178,7 +125,7 @@ def _CreateTestingSymbolsDeltas(symbols):
   if len(testing_symbols):
     lines = list(describe.GenerateLines(testing_symbols, summarize=False))
   return lines, _SizeDelta('Added symbols named "ForTest"', 'symbols', 0,
-                           len(testing_symbols), None)
+                           len(testing_symbols))
 
 
 def _FormatSign(number):
@@ -266,15 +213,16 @@ def main():
   failing_checks_text = '\n'.join(d.explanation for d in sorted(failing_deltas))
   passing_checks_text = '\n'.join(d.explanation for d in sorted(passing_deltas))
   checks_text = """\
-FAILING:
+FAILING Checks:
 {}
 
-PASSING:
+PASSING Checks:
 {}
+
+To understand what those checks are and how to pass them, see:
+https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/android_binary_size_trybot.md
+
 """.format(failing_checks_text, passing_checks_text)
-
-  if failing_deltas:
-    checks_text += _FAILURE_GUIDANCE
 
   status_code = int(bool(failing_deltas))
 
@@ -284,18 +232,11 @@ PASSING:
   if is_roller and mutable_constants_delta not in failing_deltas:
     status_code = 0
 
-  summary = '<br>' + '<br>'.join(resource_sizes_lines)
-  if 'Empty Resource Sizes Diff' in summary:
-    summary = '<br>No size metrics were affected.'
-  if failing_deltas:
-    summary += '<br><br>Failed Size Checks:<br>'
-    summary += failing_checks_text.replace('\n', '<br>')
-    summary += '<br>Look at "Size Assertion Results" for guidance.'
-
+  summary = '<br>' + checks_text.replace('\n', '<br>')
   links_json = [
       {
-          'name': '>>> Size Assertion Results <<<',
-          'lines': checks_text.splitlines(),
+          'name': '>>> Binary Size Details <<<',
+          'lines': resource_sizes_lines,
       },
       {
           'name': '>>> Mutable Constants Diff <<<',

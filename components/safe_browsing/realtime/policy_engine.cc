@@ -58,9 +58,10 @@ bool RealTimePolicyEngine::IsUserOptedIn(
 // static
 bool RealTimePolicyEngine::IsEnabledByPolicy(
     content::BrowserContext* browser_context) {
-  // TODO(crbug.com/1015484): Once the policy semantics are understood, check if
-  // they are enabled here.
-  return false;
+  PrefService* pref_service = user_prefs::UserPrefs::Get(browser_context);
+  return pref_service->IsManagedPreference(
+             prefs::kSafeBrowsingRealTimeLookupEnabled) &&
+         pref_service->GetBoolean(prefs::kSafeBrowsingRealTimeLookupEnabled);
 }
 
 // static

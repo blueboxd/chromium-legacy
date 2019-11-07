@@ -13,4 +13,6 @@ NeuralStylusPalmDetectionFilterModelConfig::
     NeuralStylusPalmDetectionFilterModelConfig(
         const NeuralStylusPalmDetectionFilterModelConfig& other) = default;
 
+NeuralStylusPalmDetectionFilterModelConfig::
+    ~NeuralStylusPalmDetectionFilterModelConfig() = default;
 }  // namespace ui

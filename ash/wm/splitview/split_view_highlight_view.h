@@ -45,11 +45,15 @@ class ASH_EXPORT SplitViewHighlightView : public views::View {
   void SetColor(SkColor color);
 
   // Called to update the opacity of the highlights view on transition from
-  // |previous_window_dragging_state| to |window_dragging_state|.
+  // |previous_window_dragging_state| to |window_dragging_state|. If
+  // |previews_only|, then there shall be no visible drag indicators except for
+  // snap previews. The highlights are white if |can_dragged_window_be_snapped|,
+  // black otherwise.
   void OnWindowDraggingStateChanged(
       SplitViewDragIndicators::WindowDraggingState window_dragging_state,
       SplitViewDragIndicators::WindowDraggingState
           previous_window_dragging_state,
+      bool previews_only,
       bool can_dragged_window_be_snapped);
 
  private:

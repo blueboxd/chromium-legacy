@@ -149,7 +149,7 @@ bool SerializerMarkupAccumulator::ShouldIgnoreElement(
     const Element& element) const {
   if (IsHTMLScriptElement(element))
     return true;
-  if (IsHTMLNoScriptElement(element))
+  if (IsA<HTMLNoScriptElement>(element))
     return true;
   auto* meta = DynamicTo<HTMLMetaElement>(element);
   if (meta && meta->ComputeEncoding().IsValid()) {

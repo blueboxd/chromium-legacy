@@ -90,7 +90,8 @@ class CanvasResourceProviderTest : public Test {
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderAcceleratedOverlay) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
   EnsureOverlaysSupported();
 
@@ -120,7 +121,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderAcceleratedOverlay) {
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderTexture) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
 
   auto provider = CanvasResourceProvider::Create(
       kSize, CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
@@ -145,7 +147,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderTexture) {
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderUnacceleratedOverlay) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
   EnsureOverlaysSupported();
 
@@ -175,7 +178,8 @@ TEST_F(CanvasResourceProviderTest,
        CanvasResourceProviderSharedImageResourceRecycling) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
   auto provider = CanvasResourceProvider::Create(
@@ -229,7 +233,8 @@ TEST_F(CanvasResourceProviderTest,
        CanvasResourceProviderSharedImageStaticBitmapImage) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
   auto provider = CanvasResourceProvider::Create(
@@ -273,7 +278,8 @@ TEST_F(CanvasResourceProviderTest,
 
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
   auto provider = CanvasResourceProvider::Create(
@@ -296,7 +302,8 @@ TEST_F(CanvasResourceProviderTest,
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderBitmap) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
 
   auto provider = CanvasResourceProvider::Create(
       kSize, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
@@ -321,7 +328,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderBitmap) {
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedBitmap) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
 
   MockCanvasResourceDispatcherClient client;
   CanvasResourceDispatcher resource_dispatcher(
@@ -355,7 +363,8 @@ TEST_F(CanvasResourceProviderTest,
        CanvasResourceProviderDirect2DGpuMemoryBuffer) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
   EnsureOverlaysSupported();
 
@@ -386,7 +395,8 @@ TEST_F(CanvasResourceProviderTest,
        CanvasResourceProviderDirect3DGpuMemoryBuffer) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
   auto provider = CanvasResourceProvider::Create(
@@ -432,7 +442,8 @@ TEST_F(CanvasResourceProviderTest,
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderDirect3D) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
 
   auto provider = CanvasResourceProvider::Create(
       kSize,
@@ -468,7 +479,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderDirect3D) {
 
 TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize) {
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
-                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+                                       kRGBA8CanvasPixelFormat, kNonOpaque,
+                                       CanvasForceRGBA::kNotForced);
   const int max_texture_size = context_provider_wrapper_->ContextProvider()
                                    ->GetCapabilities()
                                    .max_texture_size;

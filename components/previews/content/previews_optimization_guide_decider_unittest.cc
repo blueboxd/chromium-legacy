@@ -57,7 +57,29 @@ class TestOptimizationGuideDecider
     return registered_optimization_targets_;
   }
 
+  optimization_guide::OptimizationGuideDecision ShouldTargetNavigation(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationTarget optimization_target)
+      override {
+    // Should not be called.
+    EXPECT_TRUE(false);
+    return optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+
   optimization_guide::OptimizationGuideDecision CanApplyOptimization(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationMetadata* optimization_metadata)
+      override {
+    auto response_iter = responses_.find(
+        std::make_tuple(navigation_handle->GetURL(), optimization_type));
+    if (response_iter == responses_.end())
+      return optimization_guide::OptimizationGuideDecision::kFalse;
+    return std::get<0>(response_iter->second);
+  }
+
+  optimization_guide::OptimizationGuideDecision
+  ShouldTargetNavigationAndCanApplyOptimization(
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationTarget optimization_target,
       optimization_guide::proto::OptimizationType optimization_type,

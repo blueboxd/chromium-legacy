@@ -94,7 +94,12 @@ public class GlobalNightModeStateControllerTest {
     }
 
     @Test
-    public void testUpdateNightMode_PowerSaveMode() {
+    public void testUpdateNightMode_PowerSaveMode_DefaultsToSystem() {
+        // Set preference to system default and verify that the night mode isn't enabled.
+        SharedPreferencesManager.getInstance().writeInt(
+                UI_THEME_SETTING_KEY, ThemePreferences.ThemeSetting.SYSTEM_DEFAULT);
+        assertFalse(mGlobalNightModeStateController.isInNightMode());
+
         // Enable power save mode and verify night mode is enabled.
         setIsPowerSaveMode(true);
         assertTrue(mGlobalNightModeStateController.isInNightMode());
@@ -117,7 +122,12 @@ public class GlobalNightModeStateControllerTest {
     }
 
     @Test
-    public void testUpdateNightMode_SystemNightMode() {
+    public void testUpdateNightMode_SystemNightMode_DefaultsToSystem() {
+        // Set preference to system default and verify that the night mode isn't enabled.
+        SharedPreferencesManager.getInstance().writeInt(
+                UI_THEME_SETTING_KEY, ThemePreferences.ThemeSetting.SYSTEM_DEFAULT);
+        assertFalse(mGlobalNightModeStateController.isInNightMode());
+
         // Enable system night mode and verify night mode is enabled.
         setSystemNightMode(true);
         assertTrue(mGlobalNightModeStateController.isInNightMode());

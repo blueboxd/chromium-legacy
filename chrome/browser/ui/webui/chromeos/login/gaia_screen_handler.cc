@@ -1322,7 +1322,17 @@ bool GaiaScreenHandler::IsOfflineLoginActive() const {
   return (screen_mode_ == GAIA_SCREEN_MODE_OFFLINE) || offline_login_is_active_;
 }
 
+void GaiaScreenHandler::SetNextSamlChallengeKeyHandlerForTesting(
+    std::unique_ptr<SamlChallengeKeyHandler> handler_for_test) {
+  saml_challenge_key_handler_for_test_ = std::move(handler_for_test);
+}
+
 void GaiaScreenHandler::CreateSamlChallengeKeyHandler() {
+  if (saml_challenge_key_handler_for_test_) {
+    saml_challenge_key_handler_ =
+        std::move(saml_challenge_key_handler_for_test_);
+    return;
+  }
   saml_challenge_key_handler_ = std::make_unique<SamlChallengeKeyHandler>();
 }
 

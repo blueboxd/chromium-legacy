@@ -470,6 +470,27 @@ TEST_F(LockContentsViewKeyboardUnitTest, AutoLayoutSmallUsersListForKeyboard) {
   EXPECT_EQ(users_list->height(), users_list->contents()->height());
 }
 
+TEST_F(LockContentsViewKeyboardUnitTest, ShowPinPadForPassword) {
+  SetUserCount(1);
+  users()[0].show_pin_pad_for_password = true;
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LockContentsView* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  ASSERT_NE(nullptr, contents);
+  DataDispatcher()->SetUserList(users());
+  LoginAuthUserView* login_auth_user_view =
+      LockContentsView::TestApi(contents).primary_big_view()->auth_user();
+  LoginAuthUserView::TestApi primary_user(login_auth_user_view);
+  LoginPinView* pin_view(primary_user.pin_view());
+  ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
+  EXPECT_FALSE(pin_view->GetVisible());
+  ASSERT_NO_FATAL_FAILURE(HideKeyboard());
+  EXPECT_TRUE(pin_view->GetVisible());
+}
+
 // Ensures that when swapping between two users, only auth method display swaps.
 TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
   // Build lock screen with two users.

@@ -4,7 +4,6 @@
 
 #include "weblayer/renderer/ssl_error_helper.h"
 
-#include "components/security_interstitials/core/common/mojom/interstitial_commands.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
@@ -50,8 +49,7 @@ void SSLErrorHelper::OnDestruct() {
 void SSLErrorHelper::SendCommand(
     security_interstitials::SecurityInterstitialCommand command) {
   mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
-      interface;
-  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&interface);
+      interface = GetInterface();
   switch (command) {
     case security_interstitials::CMD_DONT_PROCEED:
       interface->DontProceed();
@@ -84,6 +82,14 @@ void SSLErrorHelper::SendCommand(
       NOTREACHED();
       break;
   }
+}
+
+mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
+SSLErrorHelper::GetInterface() {
+  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
+      interface;
+  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&interface);
+  return interface;
 }
 
 SSLErrorHelper::SSLErrorHelper(content::RenderFrame* render_frame)

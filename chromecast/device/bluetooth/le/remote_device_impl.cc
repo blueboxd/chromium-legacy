@@ -97,11 +97,6 @@ void RemoteDeviceImpl::Disconnect(StatusCallback cb) {
     EXEC_CB_AND_RET(cb, false);
   }
 
-  if (!connected_) {
-    LOG(ERROR) << "Not connected";
-    EXEC_CB_AND_RET(cb, false);
-  }
-
   disconnect_pending_ = true;
   disconnect_cb_ = std::move(cb);
   gatt_client_manager_->EnqueueConnectRequest(addr_, false);

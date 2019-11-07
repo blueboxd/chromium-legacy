@@ -635,6 +635,12 @@ void ShelfWidget::ShowIfHidden() {
 }
 
 void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->IsMouseWheelEvent()) {
+    ui::MouseWheelEvent* mouse_wheel_event = event->AsMouseWheelEvent();
+    shelf_->ProcessMouseWheelEvent(mouse_wheel_event);
+    return;
+  }
+
   if (event->type() == ui::ET_MOUSE_PRESSED) {
     keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
 

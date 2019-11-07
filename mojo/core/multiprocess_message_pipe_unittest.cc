@@ -1283,7 +1283,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
     SimpleWatcher watcher(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC,
                           base::SequencedTaskRunnerHandle::Get());
     watcher.Watch(Handle(handles[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-                  base::Bind(
+                  base::BindRepeating(
                       [](base::RunLoop* loop, MojoResult result) {
                         EXPECT_EQ(MOJO_RESULT_OK, result);
                         loop->Quit();

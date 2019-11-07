@@ -74,12 +74,6 @@ namespace net {
 class NetworkChangeNotifier;
 }  // namespace net
 
-#if defined(OS_MACOSX)
-namespace now_playing {
-class RemoteCommandCenterDelegate;
-}  // namespace now_playing
-#endif
-
 namespace viz {
 class CompositingModeReporterImpl;
 class FrameSinkManagerImpl;
@@ -359,10 +353,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<MediaKeysListenerManagerImpl> media_keys_listener_manager_;
-#if defined(OS_MACOSX)
-  std::unique_ptr<now_playing::RemoteCommandCenterDelegate>
-      remote_command_center_delegate_;
-#endif
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   std::unique_ptr<media::UserInputMonitor> user_input_monitor_;

@@ -24,7 +24,7 @@ class NavigationObserver {
  public:
   virtual ~NavigationObserver() {}
 
-  // Called when a navigation started in the BrowserController. |navigation| is
+  // Called when a navigation started in the Tab. |navigation| is
   // unique to a specific navigation. The same |navigation| will be  provided on
   // subsequent calls to NavigationRedirected, NavigationCommitted,
   // NavigationCompleted and NavigationFailed when related to this navigation.
@@ -37,7 +37,7 @@ class NavigationObserver {
   // navigations or pushState/replaceState, which will not result in a document
   // change. To filter these out, use Navigation::IsSameDocument.
   //
-  // Note that more than one navigation can be ongoing in the BrowserController
+  // Note that more than one navigation can be ongoing in the Tab
   // at the same time. Each will get its own Navigation object.
   //
   // Note that there is no guarantee that NavigationCompleted/NavigationFailed
@@ -56,17 +56,17 @@ class NavigationObserver {
   // Most observers should use NavigationCompleted or NavigationFailed instead,
   // which happens right after the navigation commits. This method is for
   // observers that want to initialize renderer-side state just before the
-  // BrowserController commits the navigation.
+  // Tab commits the navigation.
   //
-  // This is the first point in time where a BrowserController is associated
+  // This is the first point in time where a Tab is associated
   // with the navigation.
   virtual void ReadyToCommitNavigation(Navigation* navigation) {}
 
-  // Called when a navigation completes successfully in the BrowserController.
+  // Called when a navigation completes successfully in the Tab.
   //
-  // The document load will still be ongoing in the BrowserController. Use the
+  // The document load will still be ongoing in the Tab. Use the
   // document loads events such as OnFirstContentfulPaint and related methods to
-  // listen for continued events from this BrowserController.
+  // listen for continued events from this Tab.
   //
   // Note that this is fired by same-document navigations, such as fragment
   // navigations or pushState/replaceState, which will not result in a document
@@ -76,7 +76,7 @@ class NavigationObserver {
   // keep a reference to it afterward.
   virtual void NavigationCompleted(Navigation* navigation) {}
 
-  // Called when a navigation aborts in the BrowserController.
+  // Called when a navigation aborts in the Tab.
   //
   // Note that |navigation| will be destroyed at the end of this call, so do not
   // keep a reference to it afterward.

@@ -5,6 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
+import("//skia/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/gl/features.gni")
 
@@ -309,6 +310,7 @@ target(link_target_type, "gles2_sources") {
     "//gpu/config",
     "//gpu/ipc/common",
     "//gpu/vulkan:buildflags",
+    "//skia:buildflags",
     "//third_party/angle:angle_image_util",
     "//third_party/angle:commit_id",
     "//third_party/angle:translator",
@@ -369,6 +371,10 @@ target(link_target_type, "gles2_sources") {
       "Metal.framework",
       "OpenGL.framework",
     ]
+  }
+
+  if (skia_use_dawn) {
+    deps += [ "//components/viz/common:dawn_context_provider" ]
   }
 
   if (is_android) {

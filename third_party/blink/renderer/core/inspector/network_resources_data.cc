@@ -143,8 +143,8 @@ void NetworkResourcesData::ResourceData::SetResource(
 }
 
 void NetworkResourcesData::ResourceData::ProcessCustomWeakness(
-    const WeakCallbackInfo& broker) {
-  if (!cached_resource_ || broker.IsHeapObjectAlive(cached_resource_))
+    const WeakCallbackInfo& info) {
+  if (!cached_resource_ || info.IsHeapObjectAlive(cached_resource_))
     return;
 
   // Mark loaded resources or resources without the buffer as loaded.

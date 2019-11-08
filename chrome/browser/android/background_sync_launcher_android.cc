@@ -82,7 +82,6 @@ void BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUp(
 // static
 void BackgroundSyncLauncherAndroid::SetPlayServicesVersionCheckDisabledForTests(
     bool disabled) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   disable_play_services_version_check_for_tests = disabled;
 }
 

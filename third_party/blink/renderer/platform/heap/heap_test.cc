@@ -863,8 +863,8 @@ class Weak : public Bar {
         this);
   }
 
-  void ZapWeakMembers(const WeakCallbackInfo& broker) {
-    if (!broker.IsHeapObjectAlive(weak_bar_))
+  void ZapWeakMembers(const WeakCallbackInfo& info) {
+    if (!info.IsHeapObjectAlive(weak_bar_))
       weak_bar_ = nullptr;
   }
 
@@ -1013,8 +1013,8 @@ class FinalizationObserver : public GarbageCollected<FinalizationObserver<T>> {
         this);
   }
 
-  void ZapWeakMembers(const WeakCallbackInfo& broker) {
-    if (data_ && !broker.IsHeapObjectAlive(data_)) {
+  void ZapWeakMembers(const WeakCallbackInfo& info) {
+    if (data_ && !info.IsHeapObjectAlive(data_)) {
       data_->WillFinalize();
       data_ = nullptr;
       did_call_will_finalize_ = true;

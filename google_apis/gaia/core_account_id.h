@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
+
 // Represent the id of an account for interaction with GAIA. It is
 // currently implicitly convertible to and from std::string to allow
 // progressive migration of the code (see https://crbug.com/959157
@@ -22,6 +24,7 @@ struct CoreAccountId {
   CoreAccountId& operator=(const CoreAccountId&);
   CoreAccountId& operator=(CoreAccountId&&) noexcept;
 
+#if defined(OS_CHROMEOS) || defined(OS_IOS) || defined(OS_ANDROID)
   // Those implicit constructor and conversion operator allow to
   // progressively migrate the code to use this struct. Removing
   // them is tracked by https://crbug.com/959161
@@ -29,6 +32,11 @@ struct CoreAccountId {
   CoreAccountId(std::string&& id);
   CoreAccountId(const std::string& id);
   operator std::string() const;
+#else
+  explicit CoreAccountId(const char* id);
+  explicit CoreAccountId(std::string&& id);
+  explicit CoreAccountId(const std::string& id);
+#endif
 
   // Checks if the account is valid or not.
   // TODO(triploblastic): Possibly rename of remove this after

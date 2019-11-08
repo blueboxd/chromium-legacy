@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/css/style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
@@ -1795,6 +1796,15 @@ void StyleEngine::RecalcStyle() {
   }
   style_recalc_root_.Clear();
   PropagateWritingModeAndDirectionToHTMLRoot();
+}
+
+void StyleEngine::ClearEnsuredDescendantStyles(Element& element) {
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  SelectorFilterRootScope filter_scope(&element);
+  element.ClearNeedsStyleRecalc();
+  element.RecalcDescendantStyles(StyleRecalcChange::kClearEnsured);
+  element.ClearChildNeedsStyleRecalc();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
 }
 
 void StyleEngine::RebuildLayoutTree() {

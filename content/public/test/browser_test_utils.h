@@ -89,6 +89,7 @@ typedef int PROPERTYID;
 
 namespace content {
 
+class BrowserAccessibility;
 class BrowserContext;
 struct FrameVisualProperties;
 class FrameTreeNode;
@@ -99,7 +100,6 @@ class RenderFrameMetadataProviderImpl;
 class RenderWidgetHost;
 class RenderWidgetHostView;
 class ScopedAllowRendererCrashes;
-class TestBrowserAccessibility;
 class WebContents;
 
 // Navigates |web_contents| to |url|, blocking until the navigation finishes.
@@ -909,7 +909,7 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
 ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents);
 
 // Returns the root accessibility node for the given WebContents.
-TestBrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents);
+BrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents);
 
 // Finds an accessibility node matching the given criteria.
 struct FindAccessibilityNodeCriteria {
@@ -918,18 +918,18 @@ struct FindAccessibilityNodeCriteria {
   base::Optional<ax::mojom::Role> role;
   base::Optional<std::string> name;
 };
-TestBrowserAccessibility* FindAccessibilityNode(
+BrowserAccessibility* FindAccessibilityNode(
     WebContents* web_contents,
     const FindAccessibilityNodeCriteria& criteria);
-TestBrowserAccessibility* FindAccessibilityNodeInSubtree(
-    TestBrowserAccessibility* node,
+BrowserAccessibility* FindAccessibilityNodeInSubtree(
+    BrowserAccessibility* node,
     const FindAccessibilityNodeCriteria& criteria);
 
 #if defined(OS_WIN)
 // Retrieve the specified interface from an accessibility node.
 template <typename T>
 Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
-    TestBrowserAccessibility* browser_accessibility);
+    BrowserAccessibility* browser_accessibility);
 
 // Call GetPropertyValue with the given UIA property id with variant type
 // VT_ARRAY | VT_UNKNOWN  on the target browser accessibility node to retrieve
@@ -937,7 +937,7 @@ Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
 // automation elements with the expected names.
 void UiaGetPropertyValueVtArrayVtUnknownValidate(
     PROPERTYID property_id,
-    TestBrowserAccessibility* target_browser_accessibility,
+    BrowserAccessibility* target_browser_accessibility,
     const std::vector<std::string>& expected_names);
 #endif
 

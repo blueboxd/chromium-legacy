@@ -227,7 +227,7 @@ TEST_F(ArcImeServiceTest, HasCompositionText) {
 
   instance_->SetCompositionText(composition);
   EXPECT_TRUE(instance_->HasCompositionText());
-  instance_->ConfirmCompositionText();
+  instance_->ConfirmCompositionText(/* keep_selection */ false);
   EXPECT_FALSE(instance_->HasCompositionText());
 
   instance_->SetCompositionText(composition);

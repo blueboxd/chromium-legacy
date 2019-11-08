@@ -378,7 +378,7 @@
     },
     {
       name: "CSS3TextBreakAnywhere",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSAdditiveAnimations",
@@ -1044,7 +1044,7 @@
     },
     {
       name: "ModuleDedicatedWorker",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ModuleServiceWorker",

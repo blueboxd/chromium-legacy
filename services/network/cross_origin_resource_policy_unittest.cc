@@ -70,14 +70,14 @@ TEST(CrossOriginResourcePolicyTest, ParseHeader) {
 
 TEST(CrossOriginResourcePolicyTest, CrossSiteHeaderWithCOEP) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kCrossOriginEmbedderPolicy);
+  feature_list.InitAndEnableFeature(features::kCrossOriginIsolation);
   EXPECT_EQ(CrossOriginResourcePolicy::kCrossOrigin,
             ParseHeader("Cross-Origin-Resource-Policy: cross-origin"));
 }
 
 TEST(CrossOriginResourcePolicyTest, CrossSiteHeaderWithoutCOEP) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kCrossOriginEmbedderPolicy);
+  feature_list.InitAndDisableFeature(features::kCrossOriginIsolation);
   EXPECT_EQ(CrossOriginResourcePolicy::kParsingError,
             ParseHeader("Cross-Origin-Resource-Policy: cross-origin"));
 }
@@ -125,7 +125,7 @@ TEST(CrossOriginResourcePolicyTest, ShouldAllowSameSite) {
 
 TEST(CrossOriginResourcePolicyTest, WithCOEP) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kCrossOriginEmbedderPolicy);
+  feature_list.InitAndEnableFeature(features::kCrossOriginIsolation);
 
   ResourceResponseInfo corp_none;
   ResourceResponseInfo corp_same_origin;

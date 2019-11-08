@@ -11,13 +11,17 @@
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/content_settings/content_settings_manager_impl.h"
+#include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/common/prerender.mojom.h"
 #include "components/dom_distiller/content/browser/distillability_driver.h"
+#include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
+#include "components/dom_distiller/core/dom_distiller_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -37,6 +41,7 @@
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
 #include "content/public/browser/web_contents.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
@@ -95,6 +100,23 @@ void BindDistillabilityService(
   if (!driver)
     return;
   driver->CreateDistillabilityService(std::move(receiver));
+}
+
+void BindDistillerJavaScriptService(
+    content::RenderFrameHost* const frame_host,
+    mojo::PendingReceiver<dom_distiller::mojom::DistillerJavaScriptService>
+        receiver) {
+  dom_distiller::DomDistillerService* dom_distiller_service =
+      dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
+          content::WebContents::FromRenderFrameHost(frame_host)
+              ->GetBrowserContext());
+  auto* distiller_ui_handle = dom_distiller_service->GetDistillerUIHandle();
+#if defined(OS_ANDROID)
+  static_cast<dom_distiller::android::DistillerUIHandleAndroid*>(
+      distiller_ui_handle)
+      ->set_render_frame_host(frame_host);
+#endif
+  CreateDistillerJavaScriptService(distiller_ui_handle, std::move(receiver));
 }
 
 void BindPrerenderCanceler(
@@ -156,6 +178,9 @@ void PopulateChromeFrameBinders(
 
   map->Add<dom_distiller::mojom::DistillabilityService>(
       base::BindRepeating(&BindDistillabilityService));
+
+  map->Add<dom_distiller::mojom::DistillerJavaScriptService>(
+      base::BindRepeating(&BindDistillerJavaScriptService));
 
   map->Add<mojom::PrerenderCanceler>(
       base::BindRepeating(&BindPrerenderCanceler));

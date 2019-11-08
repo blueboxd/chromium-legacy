@@ -1206,6 +1206,14 @@ message ContactDetailsProto {
   optional bool request_payer_phone = 4;
 }
 
+// A generic read-only popup message.
+message InfoPopupProto {
+  // The title of the popup window.
+  optional string title = 1;
+  // The text of the popup window.
+  optional string text = 2;
+}
+
 message LoginDetailsProto {
   // A custom login option which will be handled by the backend, e.g.,
   // 'Guest checkout' or 'Log in with Google'.
@@ -1218,6 +1226,13 @@ message LoginDetailsProto {
   message LoginOptionPasswordManagerProto {}
 
   message LoginOptionProto {
+    // If set, an info icon will be shown that displays a popup when tapped.
+    optional InfoPopupProto info_popup = 6;
+
+    // The optional sublabel to display beneath the label.
+    optional string sublabel = 7;
+    optional string sublabel_accessibility_hint = 8;
+
     // If the option was chosen, this payload will be returned to the server.
     optional bytes payload = 1;
 

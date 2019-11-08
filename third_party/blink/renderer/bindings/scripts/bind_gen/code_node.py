@@ -11,6 +11,7 @@ specific bindings, such as ECMAScript bindings.
 import copy
 import string
 
+from .code_generation_accumulator import CodeGenerationAccumulator
 from .mako_renderer import MakoRenderer
 
 
@@ -145,6 +146,9 @@ class CodeNode(object):
         # Mako's template text, bindings dict, and the renderer object
         self._template_text = template_text
         self._template_vars = {}
+
+        self._accumulator = None
+
         self._renderer = renderer
 
         self._render_state = CodeNode._RenderState()
@@ -275,12 +279,29 @@ class CodeNode(object):
             self.add_template_var(name, value)
 
     @property
+    def accumulator(self):
+        # Always consistently use the accumulator of the root node.
+        if self.outer is not None:
+            return self.outer.accumulator
+        return self._accumulator
+
+    def set_accumulator(self, accumulator):
+        assert isinstance(accumulator, CodeGenerationAccumulator)
+        assert self._accumulator is None
+        self._accumulator = accumulator
+
+    @property
     def renderer(self):
         # Always use the renderer of the root node in order not to mix renderers
         # during rendering of a single code node tree.
         if self.outer is not None:
             return self.outer.renderer
         return self._renderer
+
+    def set_renderer(self, renderer):
+        assert isinstance(renderer, MakoRenderer)
+        assert self._renderer is None
+        self._renderer = renderer
 
     @property
     def current_render_state(self):
@@ -337,8 +358,6 @@ class LiteralNode(CodeNode):
     """
 
     def __init__(self, literal_text, renderer=None):
-        assert isinstance(literal_text, str)
-
         literal_text_gensym = CodeNode.gensym()
         template_text = CodeNode.format_template(
             "${{{literal_text}}}", literal_text=literal_text_gensym)

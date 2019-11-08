@@ -43,7 +43,7 @@ CrossOriginResourcePolicy::ParsedHeader ParseHeader(
   if (header_value == "same-site")
     return CrossOriginResourcePolicy::kSameSite;
 
-  if (base::FeatureList::IsEnabled(features::kCrossOriginEmbedderPolicy) &&
+  if (base::FeatureList::IsEnabled(features::kCrossOriginIsolation) &&
       header_value == "cross-origin") {
     return CrossOriginResourcePolicy::kCrossOrigin;
   }
@@ -126,7 +126,7 @@ CrossOriginResourcePolicy::VerificationResult CrossOriginResourcePolicy::Verify(
   // COEP https://mikewest.github.io/corpp/#corp-check
   if ((policy == kNoHeader || policy == kParsingError) &&
       embedder_policy == mojom::CrossOriginEmbedderPolicy::kRequireCorp) {
-    DCHECK(base::FeatureList::IsEnabled(features::kCrossOriginEmbedderPolicy));
+    DCHECK(base::FeatureList::IsEnabled(features::kCrossOriginIsolation));
     policy = kSameOrigin;
   }
 

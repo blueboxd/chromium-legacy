@@ -56,7 +56,7 @@ if (is_fuchsia) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_android) {
   source_set("bindings_manager_cast") {
     sources = [
       "bindings_manager_cast.cc",
@@ -111,7 +111,7 @@ if (is_linux) {
 source_set("browsertests") {
   testonly = true
   deps = []
-  if (is_linux) {
+  if (is_linux || is_android) {
     deps += [ "//chromecast/bindings:browsertests_cast" ]
   }
 }

@@ -35,8 +35,7 @@ void DummyTextInputClient::SetCompositionText(
   composition_history_.push_back(composition);
 }
 
-void DummyTextInputClient::ConfirmCompositionText() {
-}
+void DummyTextInputClient::ConfirmCompositionText(bool keep_selection) {}
 
 void DummyTextInputClient::ClearCompositionText() {
   SetCompositionText(CompositionText());

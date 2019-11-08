@@ -712,6 +712,18 @@ ExtensionFunction::ResponseAction InputImeDeleteSurroundingTextFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
+InputMethodPrivateFinishComposingTextFunction::Run() {
+  InputMethodEngine* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id());
+  if (!engine)
+    return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
+
+  engine->ConfirmCompositionText(/* reset_engine */ false,
+                                 /* keep_selection */ true);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
 InputMethodPrivateNotifyImeMenuItemActivatedFunction::Run() {
   chromeos::input_method::InputMethodDescriptor current_input_method =
       chromeos::input_method::InputMethodManager::Get()

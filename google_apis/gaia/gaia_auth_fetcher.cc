@@ -620,16 +620,13 @@ void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token,
 }
 
 void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
-    const std::string& access_token,
-    bool is_bound_to_channel_id) {
+    const std::string& access_token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   VLOG(1) << "Starting StartTokenFetchForUberAuthExchange with access_token="
            << access_token;
   std::string authentication_header =
       base::StringPrintf(kOAuthHeaderFormat, access_token.c_str());
-  int load_flags =
-      is_bound_to_channel_id ? net::LOAD_NORMAL : kLoadFlagsIgnoreCookies;
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("gaia_auth_fetch_for_uber", R"(
         semantics {
@@ -658,7 +655,7 @@ void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
           }
         })");
   CreateAndStartGaiaFetcher(std::string(), authentication_header,
-                            uberauth_token_gurl_, load_flags,
+                            uberauth_token_gurl_, kLoadFlagsIgnoreCookies,
                             traffic_annotation);
 }
 

@@ -309,15 +309,19 @@ void CollectUserDataAction::OnGetLogins(
     std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
     std::vector<WebsiteLoginFetcher::Login> logins) {
   for (const auto& login : logins) {
-    LoginChoice choice = {
-        base::NumberToString(collect_user_data_options->login_choices.size()),
-        login.username, login_option.preselection_priority()};
-    collect_user_data_options->login_choices.emplace_back(std::move(choice));
+    auto identifier =
+        base::NumberToString(collect_user_data_options->login_choices.size());
+    collect_user_data_options->login_choices.emplace_back(
+        identifier, login.username, login_option.sublabel(),
+        login_option.sublabel_accessibility_hint(),
+        login_option.preselection_priority(),
+        login_option.has_info_popup()
+            ? base::make_optional(login_option.info_popup())
+            : base::nullopt);
     login_details_map_.emplace(
-        choice.identifier,
-        std::make_unique<LoginDetails>(
-            login_option.choose_automatically_if_no_other_options(),
-            login_option.payload(), login));
+        identifier, std::make_unique<LoginDetails>(
+                        login_option.choose_automatically_if_no_other_options(),
+                        login_option.payload(), login));
   }
   ShowToUser(std::move(collect_user_data_options));
 }
@@ -577,9 +581,14 @@ CollectUserDataAction::CreateOptionsFromProto() {
             base::NumberToString(
                 collect_user_data_options->login_choices.size()),
             login_option.custom().label(),
+            login_option.sublabel(),
+            login_option.sublabel_accessibility_hint(),
             login_option.has_preselection_priority()
                 ? login_option.preselection_priority()
-                : -1};
+                : -1,
+            login_option.has_info_popup()
+                ? base::make_optional(login_option.info_popup())
+                : base::nullopt};
         collect_user_data_options->login_choices.emplace_back(
             std::move(choice));
         login_details_map_.emplace(

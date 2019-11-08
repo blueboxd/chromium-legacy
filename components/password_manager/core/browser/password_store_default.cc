@@ -254,6 +254,22 @@ void PasswordStoreDefault::RemoveLeakedCredentialsByUrlAndTimeImpl(
   }
 }
 
+void PasswordStoreDefault::AddFieldInfoImpl(const FieldInfo& field_info) {
+  if (login_db_)
+    login_db_->field_info_table().AddRow(field_info);
+}
+
+std::vector<FieldInfo> PasswordStoreDefault::GetAllFieldInfoImpl() {
+  return login_db_ ? login_db_->field_info_table().GetAllRows()
+                   : std::vector<FieldInfo>();
+}
+
+void PasswordStoreDefault::RemoveFieldInfoByTimeImpl(base::Time remove_begin,
+                                                     base::Time remove_end) {
+  if (login_db_)
+    login_db_->field_info_table().RemoveRowsByTime(remove_begin, remove_end);
+}
+
 bool PasswordStoreDefault::BeginTransaction() {
   if (login_db_)
     return login_db_->BeginTransaction();

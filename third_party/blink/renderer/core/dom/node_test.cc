@@ -503,4 +503,28 @@ TEST_F(NodeTest, UpdateChildDirtyAfterSlotRemoval) {
   EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsStyleRecalc());
 }
 
+TEST_F(NodeTest, UpdateChildDirtyAfterSlottingDirtyNode) {
+  ScopedFlatTreeStyleRecalcForTest scope(true);
+
+  SetBodyContent("<div id=host><span></span></div>");
+
+  auto* host = GetDocument().getElementById("host");
+  auto* span = To<Element>(host->firstChild());
+
+  // Make sure the span is style dirty.
+  span->setAttribute("style", "color:green");
+
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString("<div><slot></slot></div>");
+
+  GetDocument().GetSlotAssignmentEngine().RecalcSlotAssignments();
+
+  // Make sure shadow tree div and slot are marked with ChildNeedsStyleRecalc
+  // when the dirty span is slotted in.
+  EXPECT_TRUE(shadow_root.firstChild()->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(shadow_root.firstChild()->firstChild()->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(span->NeedsStyleRecalc());
+}
+
 }  // namespace blink

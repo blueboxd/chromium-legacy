@@ -41,7 +41,7 @@ extern const base::Feature kCORBProtectionSniffing;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kProactivelyThrottleLowPriorityRequests;
 COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kCrossOriginEmbedderPolicy;
+extern const base::Feature kCrossOriginIsolation;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kBlockNonSecureExternalRequests;
 COMPONENT_EXPORT(NETWORK_CPP)

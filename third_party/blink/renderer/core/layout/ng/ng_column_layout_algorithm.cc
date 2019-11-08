@@ -376,8 +376,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
   // fragmentation context.
   if (is_constrained_by_outer_fragmentation_context_ &&
       column_size.block_size != kIndefiniteSize) {
-    if (const auto* token = BreakToken())
-      column_size.block_size -= token->ConsumedBlockSize();
+    column_size.block_size -= ConsumedBlockSizeInContentBox(
+        border_scrollbar_padding_.block_start, BreakToken());
 
     // Subtract the space already taken in the current fragment (spanners and
     // earlier column rows).

@@ -14,6 +14,7 @@
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/distiller_page.h"
+#include "components/dom_distiller/core/distiller_ui_handle.h"
 
 class GURL;
 
@@ -53,6 +54,10 @@ class DomDistillerServiceInterface {
   // DomDistillerService.
   virtual DistilledPagePrefs* GetDistilledPagePrefs() = 0;
 
+  // Returns the DistillerUIHandle owned by the instance of
+  // DomDistillerService.
+  virtual DistillerUIHandle* GetDistillerUIHandle() = 0;
+
  protected:
   DomDistillerServiceInterface() {}
 
@@ -66,7 +71,8 @@ class DomDistillerService : public DomDistillerServiceInterface {
   DomDistillerService(
       std::unique_ptr<DistillerFactory> distiller_factory,
       std::unique_ptr<DistillerPageFactory> distiller_page_factory,
-      std::unique_ptr<DistilledPagePrefs> distilled_page_prefs);
+      std::unique_ptr<DistilledPagePrefs> distilled_page_prefs,
+      std::unique_ptr<DistillerUIHandle> distiller_ui_handle);
   ~DomDistillerService() override;
 
   // DomDistillerServiceInterface implementation.
@@ -79,6 +85,7 @@ class DomDistillerService : public DomDistillerServiceInterface {
   std::unique_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
       std::unique_ptr<SourcePageHandle> handle) override;
   DistilledPagePrefs* GetDistilledPagePrefs() override;
+  DistillerUIHandle* GetDistillerUIHandle() override;
 
  private:
   void CancelTask(TaskTracker* task);
@@ -98,6 +105,10 @@ class DomDistillerService : public DomDistillerServiceInterface {
   std::unique_ptr<DistillerFactory> distiller_factory_;
   std::unique_ptr<DistillerPageFactory> distiller_page_factory_;
   std::unique_ptr<DistilledPagePrefs> distilled_page_prefs_;
+
+  // An object for accessing chrome-specific UI controls including external
+  // feedback and opening the distiller settings.
+  std::unique_ptr<DistillerUIHandle> distiller_ui_handle_;
 
   typedef std::vector<std::unique_ptr<TaskTracker>> TaskList;
   TaskList tasks_;

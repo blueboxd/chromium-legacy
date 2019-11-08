@@ -865,6 +865,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       password_store->RemoveLeakedCredentialsByUrlAndTime(
           nullable_filter, delete_begin_, delete_end_,
           CreateTaskCompletionClosure(TracingDataType::kLeakedCredentials));
+      password_store->RemoveFieldInfoByTime(
+          delete_begin_, delete_end_,
+          CreateTaskCompletionClosure(TracingDataType::kFieldInfo));
     }
   }
 

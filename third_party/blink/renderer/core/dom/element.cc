@@ -3054,6 +3054,13 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
     } else if (ShadowRoot* root = GetShadowRoot()) {
       if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
         root->RecalcDescendantStyles(child_change);
+        // Sad panda. This is only to clear ensured ComputedStyles for elements
+        // outside the flat tree for getComputedStyle() in the cases where we
+        // kSubtreeStyleChange. Style invalidation and kLocalStyleChange will
+        // make sure we clear out-of-date ComputedStyles outside the flat tree
+        // in Element::EnsureComputedStyle().
+        if (child_change.RecalcDescendants())
+          RecalcDescendantStyles(StyleRecalcChange::kClearEnsured);
       } else {
         if (child_change.TraverseChild(*root))
           root->RecalcStyle(child_change);
@@ -4395,11 +4402,12 @@ void Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
 
 void Element::ForceLegacyLayoutInFormattingContext(
     const ComputedStyle& new_style) {
-  if (DefinitelyNewFormattingContext(*this, new_style))
-    return;
-
-  bool found_bfc = false;
-  for (Element* ancestor = this; !found_bfc;) {
+  // TableNG requires that table elements are either all NG, or all Legacy.
+  bool needs_traverse_to_table =
+      RuntimeEnabledFeatures::LayoutNGTableEnabled() &&
+      new_style.IsDisplayTableType();
+  bool found_bfc = DefinitelyNewFormattingContext(*this, new_style);
+  for (Element* ancestor = this; !found_bfc || needs_traverse_to_table;) {
     ancestor =
         DynamicTo<Element>(LayoutTreeBuilderTraversal::Parent(*ancestor));
     if (!ancestor || ancestor->ShouldForceLegacyLayout())
@@ -4407,7 +4415,17 @@ void Element::ForceLegacyLayoutInFormattingContext(
     const ComputedStyle* style = ancestor->GetComputedStyle();
     if (style->Display() == EDisplay::kNone)
       break;
-    found_bfc = DefinitelyNewFormattingContext(*ancestor, *style);
+    found_bfc = found_bfc || DefinitelyNewFormattingContext(*ancestor, *style);
+    if (found_bfc && !needs_traverse_to_table) {
+      needs_traverse_to_table =
+          RuntimeEnabledFeatures::LayoutNGTableEnabled() &&
+          style->IsDisplayTableType();
+    }
+    if (needs_traverse_to_table) {
+      EDisplay display = style->Display();
+      if (display == EDisplay::kTable || display == EDisplay::kInlineTable)
+        needs_traverse_to_table = false;
+    }
     ancestor->SetShouldForceLegacyLayoutForChild(true);
     ancestor->SetNeedsReattachLayoutTree();
   }
@@ -4932,21 +4950,44 @@ const ComputedStyle* Element::EnsureComputedStyle(
   // layoutObject because it did the layout, will be correct and so that the
   // values returned for the ":selection" pseudo-element will be correct.
   const ComputedStyle* element_style = GetComputedStyle();
-  if (!element_style) {
+  if (!element_style || element_style->IsEnsuredOutsideFlatTree()) {
     if (CanParticipateInFlatTree()) {
-      if (ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this))
+      if (ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this)) {
         parent->EnsureComputedStyle();
+        if (element_style)
+          element_style = GetComputedStyle();
+      }
+      if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+        if (element_style && NeedsStyleRecalc()) {
+          // RecalcStyle() will not traverse into connected elements outside the
+          // flat tree and we may have a dirty element or ancestors if this
+          // element is not in the flat tree. If we don't need a style recalc,
+          // we can just re-use the ComputedStyle from the last
+          // getComputedStyle(). Otherwise, we need to clear the ensured styles
+          // for the uppermost dirty ancestor and all of its descendants. If
+          // this element was not the uppermost dirty element, we would not end
+          // up here because a dirty ancestor would have cleared the
+          // ComputedStyle in the recursive call above and element_style would
+          // have been null.
+          GetDocument().GetStyleEngine().ClearEnsuredDescendantStyles(*this);
+          element_style = nullptr;
+        }
+      }
+    } else {
+      element_style = nullptr;
     }
-    scoped_refptr<ComputedStyle> new_style = nullptr;
-    // TODO(crbug.com/953707): Avoid setting inline style during
-    // HTMLImageElement::CustomStyleForLayoutObject.
-    if (HasCustomStyleCallbacks() && !IsHTMLImageElement(*this))
-      new_style = CustomStyleForLayoutObject();
-    else
-      new_style = OriginalStyleForLayoutObject();
-    element_style = new_style.get();
-    new_style->SetIsEnsuredInDisplayNone();
-    SetComputedStyle(std::move(new_style));
+    if (!element_style) {
+      scoped_refptr<ComputedStyle> new_style = nullptr;
+      // TODO(crbug.com/953707): Avoid setting inline style during
+      // HTMLImageElement::CustomStyleForLayoutObject.
+      if (HasCustomStyleCallbacks() && !IsHTMLImageElement(*this))
+        new_style = CustomStyleForLayoutObject();
+      else
+        new_style = OriginalStyleForLayoutObject();
+      element_style = new_style.get();
+      new_style->SetIsEnsuredInDisplayNone();
+      SetComputedStyle(std::move(new_style));
+    }
   }
 
   if (!pseudo_element_specifier)

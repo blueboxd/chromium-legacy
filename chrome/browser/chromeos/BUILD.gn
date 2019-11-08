@@ -2337,7 +2337,7 @@ source_set("chromeos") {
   }
 }
 
-copy("dbus_service_files") {
+action("dbus_service_files") {
   sources = [
     "dbus/org.chromium.ChromeFeaturesService.conf",
     "dbus/org.chromium.ComponentUpdaterService.conf",
@@ -2353,9 +2353,14 @@ copy("dbus_service_files") {
     "dbus/org.chromium.VirtualFileRequestService.conf",
     "dbus/org.chromium.VmApplicationsService.conf",
   ]
+  output_conf_file = "$root_out_dir/dbus/chrome_dbus_services.conf"
   outputs = [
-    "$root_out_dir/dbus/{{source_file_part}}",
+    output_conf_file,
   ]
+
+  script = "//chromeos/tools/concat_dbus_conf_files.py"
+  args = [ rebase_path(output_conf_file, root_build_dir) ]
+  args += rebase_path(sources, root_build_dir)
 }
 
 static_library("arc_test_support") {
@@ -2930,48 +2935,9 @@ source_set("unit_tests") {
     "../ui/webui/settings/chromeos/device_keyboard_handler_unittest.cc",
     "../ui/webui/settings/chromeos/internet_handler_unittest.cc",
     "../ui/webui/settings/chromeos/multidevice_handler_unittest.cc",
-    "//components/drive/about_resource_loader_unittest.cc",
-    "//components/drive/change_list_loader_unittest.cc",
-    "//components/drive/change_list_processor_unittest.cc",
-    "//components/drive/chromeos/file_cache_unittest.cc",
-    "//components/drive/directory_loader_unittest.cc",
-    "//components/drive/drive_file_util_unittest.cc",
     "//components/drive/drive_notification_manager_unittest.cc",
-    "//components/drive/drive_operation_queue_unittest.cc",
-    "//components/drive/fake_file_system_unittest.cc",
-    "//components/drive/file_change_unittest.cc",
-    "//components/drive/file_system/copy_operation_unittest.cc",
-    "//components/drive/file_system/create_directory_operation_unittest.cc",
-    "//components/drive/file_system/create_file_operation_unittest.cc",
-    "//components/drive/file_system/download_operation_unittest.cc",
-    "//components/drive/file_system/get_file_for_saving_operation_unittest.cc",
-    "//components/drive/file_system/move_operation_unittest.cc",
-    "//components/drive/file_system/open_file_operation_unittest.cc",
-    "//components/drive/file_system/operation_test_base.cc",
-    "//components/drive/file_system/operation_test_base.h",
-    "//components/drive/file_system/remove_operation_unittest.cc",
-    "//components/drive/file_system/search_operation_unittest.cc",
-    "//components/drive/file_system/set_property_operation_unittest.cc",
-    "//components/drive/file_system/touch_operation_unittest.cc",
-    "//components/drive/file_system/truncate_operation_unittest.cc",
-    "//components/drive/file_system_core_util_unittest.cc",
-    "//components/drive/file_system_unittest.cc",
-    "//components/drive/file_write_watcher_unittest.cc",
-    "//components/drive/job_queue_unittest.cc",
-    "//components/drive/job_scheduler_unittest.cc",
-    "//components/drive/local_file_reader_unittest.cc",
-    "//components/drive/remove_stale_cache_files_unittest.cc",
-    "//components/drive/resource_entry_conversion_unittest.cc",
     "//components/drive/resource_metadata_storage_unittest.cc",
-    "//components/drive/resource_metadata_unittest.cc",
     "//components/drive/search_metadata_unittest.cc",
-    "//components/drive/start_page_token_loader_unittest.cc",
-    "//components/drive/sync/entry_revert_performer_unittest.cc",
-    "//components/drive/sync/entry_update_performer_unittest.cc",
-    "//components/drive/sync/remove_performer_unittest.cc",
-    "//components/drive/sync_client_unittest.cc",
-    "//components/drive/team_drive_change_list_loader_unittest.cc",
-    "//components/drive/team_drive_list_loader_unittest.cc",
   ]
 
   public_deps = [
@@ -3041,9 +3007,7 @@ source_set("unit_tests") {
     "//components/crx_file",
     "//components/download/public/background_service/test:test_support",
     "//components/drive",
-    "//components/drive:drive_chromeos",
     "//components/drive:test_support",
-    "//components/drive:test_support_chromeos",
     "//components/exo",
     "//components/invalidation/impl:test_support",
     "//components/invalidation/public",

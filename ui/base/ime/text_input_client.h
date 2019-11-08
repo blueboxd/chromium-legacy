@@ -61,7 +61,9 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   virtual void SetCompositionText(const ui::CompositionText& composition) = 0;
 
   // Converts current composition text into final content.
-  virtual void ConfirmCompositionText() = 0;
+  // If keep_selection is true, keep the selected range unchanged
+  // otherwise, set it to be after the newly committed text.
+  virtual void ConfirmCompositionText(bool keep_selection) = 0;
 
   // Removes current composition text.
   virtual void ClearCompositionText() = 0;

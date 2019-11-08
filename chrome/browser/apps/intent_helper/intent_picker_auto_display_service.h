@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_INTENT_HELPER_INTENT_PICKER_AUTO_DISPLAY_SERVICE_H_
 
 #include "base/macros.h"
+#include "chrome/browser/apps/intent_helper/intent_picker_auto_display_pref.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
@@ -27,6 +28,17 @@ class IntentPickerAutoDisplayService : public KeyedService {
 
   // Keep track of the |url| repetitions.
   void IncrementCounter(const GURL& url);
+
+  // Returns the last platform selected by the user to handle |url|.
+  // If it has not been checked then it will return |Platform::kNone|
+  // for devices of tablet form factor.
+  IntentPickerAutoDisplayPref::Platform GetLastUsedPlatformForTablets(
+      const GURL& url);
+
+  // Updates the Platform to |platform| for |url| for devices of
+  // tablet form factor.
+  void UpdatePlatformForTablets(const GURL& url,
+                                IntentPickerAutoDisplayPref::Platform platform);
 
  private:
   Profile* profile_;

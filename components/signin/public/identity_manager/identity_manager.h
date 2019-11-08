@@ -295,8 +295,7 @@ class IdentityManager : public KeyedService,
       const CoreAccountId& account_id,
       UbertokenFetcher::CompletionCallback callback,
       gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      bool bound_to_channel_id = true);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Provides the information of all accounts that are present in the Gaia
   // cookie in the cookie jar, ordered by their order in the cookie.

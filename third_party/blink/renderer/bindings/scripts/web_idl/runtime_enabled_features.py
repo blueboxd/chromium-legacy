@@ -10,6 +10,7 @@ class RuntimeEnabledFeatures(object):
 
     _REQUIRE_INIT_MESSAGE = (
         "RuntimeEnabledFeatures.init must be called in advance.")
+    _is_initialized = False
 
     @classmethod
     def init(cls, filepaths):
@@ -18,6 +19,7 @@ class RuntimeEnabledFeatures(object):
             filepaths: Paths to the definition files of runtime-enabled features
                 ("runtime_enabled_features.json5").
         """
+        assert not cls._is_initialized
         assert isinstance(filepaths, list)
         assert all(isinstance(filepath, str) for filepath in filepaths)
 
@@ -36,7 +38,7 @@ class RuntimeEnabledFeatures(object):
     @classmethod
     def is_context_dependent(cls, feature_name):
         """Returns True if the feature may be enabled per-context."""
-        assert cls._is_initialized, _REQUIRE_INIT_MESSAGE
+        assert cls._is_initialized, cls._REQUIRE_INIT_MESSAGE
         assert isinstance(feature_name, str)
         assert feature_name in cls._features, (
             "Unknown runtime-enabled feature: {}".format(feature_name))

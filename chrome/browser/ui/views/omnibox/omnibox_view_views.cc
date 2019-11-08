@@ -264,7 +264,7 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
   // session here.  It may affect the selection status, so order is
   // also important.
   if (IsIMEComposing()) {
-    ConfirmCompositionText();
+    ConfirmCompositionText(/* keep_selection */ false);
     GetInputMethod()->CancelComposition(this);
   }
 

@@ -72,7 +72,10 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   inline const void* DataShared() const;
   inline void* DataMaybeShared();
   inline const void* DataMaybeShared() const;
-  inline unsigned ByteLength() const;
+  inline size_t ByteLengthAsSizeT() const;
+  // This function is deprecated and should not be used. Use {ByteLengthAsSizeT}
+  // instead.
+  inline unsigned ByteLengthAsUnsigned() const;
 
   // Creates a new ArrayBuffer object with copy of bytes in this object
   // ranging from |begin| up to but not including |end|.
@@ -124,7 +127,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::Create(ArrayBuffer* other) {
   // TODO(binji): support creating a SharedArrayBuffer by copying another
   // ArrayBuffer?
   DCHECK(!other->IsShared());
-  return ArrayBuffer::Create(other->Data(), other->ByteLength());
+  return ArrayBuffer::Create(other->Data(), other->ByteLengthAsSizeT());
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::Create(const void* source,
@@ -238,7 +241,15 @@ const void* ArrayBuffer::DataMaybeShared() const {
   return contents_.DataMaybeShared();
 }
 
-unsigned ArrayBuffer::ByteLength() const {
+size_t ArrayBuffer::ByteLengthAsSizeT() const {
+  return contents_.DataLength();
+}
+
+// This function is deprecated and should not be used. Use {ByteLengthAsSizeT}
+// instead.
+unsigned ArrayBuffer::ByteLengthAsUnsigned() const {
+  CHECK_LE(contents_.DataLength(),
+           static_cast<size_t>(std::numeric_limits<unsigned>::max()));
   // TODO(dtapuska): Revisit this cast. ArrayBufferContents
   // uses size_t for storing data. Whereas ArrayBuffer IDL is
   // only uint32_t based.
@@ -254,7 +265,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::Slice(unsigned begin,
 }
 
 unsigned ArrayBuffer::ClampIndex(unsigned index) const {
-  return index < ByteLength() ? index : ByteLength();
+  return index < ByteLengthAsUnsigned() ? index : ByteLengthAsUnsigned();
 }
 
 }  // namespace blink

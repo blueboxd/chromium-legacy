@@ -135,6 +135,9 @@ void MediaStreamDeviceObserver::OnDeviceChanged(
 
 void MediaStreamDeviceObserver::BindMediaStreamDeviceObserverReceiver(
     mojo::PendingReceiver<mojom::blink::MediaStreamDeviceObserver> receiver) {
+  if (receiver_.is_bound())
+    return;
+
   receiver_.Bind(std::move(receiver));
 }
 

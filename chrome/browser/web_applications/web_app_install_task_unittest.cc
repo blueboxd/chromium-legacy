@@ -1287,7 +1287,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
 
     std::unique_ptr<WebApplicationInfo> result =
         LoadAndRetrieveWebApplicationInfoWithIcons(url);
-    EXPECT_TRUE(!result);
+    EXPECT_FALSE(result);
   }
   {
     CreateDefaultDataToRetrieve(url);
@@ -1296,7 +1296,7 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
 
     std::unique_ptr<WebApplicationInfo> result =
         LoadAndRetrieveWebApplicationInfoWithIcons(url);
-    EXPECT_TRUE(!result);
+    EXPECT_FALSE(result);
   }
   {
     CreateDefaultDataToRetrieve(start_url);

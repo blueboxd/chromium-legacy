@@ -136,6 +136,39 @@ TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
   EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             second_account_id);
 }
+
+TEST_F(SyncAuthManagerTest, NotifiesOfSignoutBeforeAccessTokenIsGone) {
+  // Start out already signed in before the SyncAuthManager is created.
+  CoreAccountId account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
+
+  base::MockCallback<AccountStateChangedCallback> account_state_changed;
+  base::MockCallback<CredentialsChangedCallback> credentials_changed;
+  auto auth_manager =
+      CreateAuthManager(account_state_changed.Get(), base::DoNothing());
+
+  auth_manager->RegisterForAuthNotifications();
+
+  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_id);
+
+  auth_manager->ConnectionOpened();
+
+  // Make sure an access token is available.
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
+  ASSERT_EQ(auth_manager->GetCredentials().access_token, "access_token");
+
+  // Sign out of the account.
+  EXPECT_CALL(account_state_changed, Run()).WillOnce([&]() {
+    // At the time the callback gets run, the access token should still be here.
+    EXPECT_FALSE(auth_manager->GetCredentials().access_token.empty());
+  });
+  identity_env()->ClearPrimaryAccount();
+  // After the signout is complete, the access token should be gone.
+  EXPECT_TRUE(
+      auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
+}
 #endif  // !defined(OS_CHROMEOS)
 
 // Unconsented primary accounts (aka secondary accounts) are only supported on

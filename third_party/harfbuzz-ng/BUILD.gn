@@ -223,7 +223,6 @@ if (use_system_harfbuzz) {
       "src/src/hb-unicode.cc",
       "src/src/hb-unicode.hh",
       "src/src/hb-utf.hh",
-      "src/src/hb-warning.cc",
       "src/src/hb.hh",
     ]
 

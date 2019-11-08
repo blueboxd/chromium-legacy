@@ -47,11 +47,11 @@ void WebAppDatabase::Write(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(opened_);
 
-  DCHECK(!update_data.IsEmpty());
-
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
       store_->CreateWriteBatch();
 
+  // |update_data| can be empty here but we should write |metadata_change_list|
+  // anyway.
   write_batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
 
   for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_create) {

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.autofill_assistant.R;
@@ -35,7 +36,7 @@ public class AssistantContactDetailsSection
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_payment_request_title_padding),
                 context.getString(R.string.payments_add_contact),
-                context.getString(R.string.payments_add_contact), /*canEditItems=*/true);
+                context.getString(R.string.payments_add_contact));
         setTitle(context.getString(R.string.payments_contact_details_label));
     }
 
@@ -102,6 +103,21 @@ public class AssistantContactDetailsSection
 
         TextView contactIncompleteView = summaryView.findViewById(R.id.incomplete_error);
         contactIncompleteView.setVisibility(contact.isComplete() ? View.GONE : View.VISIBLE);
+    }
+
+    @Override
+    protected boolean canEditOption(AutofillContact contact) {
+        return true;
+    }
+
+    @Override
+    protected @DrawableRes int getEditButtonDrawable(AutofillContact contact) {
+        return R.drawable.ic_edit_24dp;
+    }
+
+    @Override
+    protected String getEditButtonContentDescription(AutofillContact contact) {
+        return mContext.getString(R.string.payments_edit_contact_details_label);
     }
 
     /**

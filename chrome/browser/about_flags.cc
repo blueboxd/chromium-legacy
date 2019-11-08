@@ -3012,10 +3012,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOutOfBlinkCorsDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kOutOfBlinkCors)},
 
-    {"cross-origin-embedder-policy",
-     flag_descriptions::kCrossOriginEmbedderPolicyName,
-     flag_descriptions::kCrossOriginEmbedderPolicyDescription, kOsAll,
-     FEATURE_VALUE_TYPE(network::features::kCrossOriginEmbedderPolicy)},
+    {"cross-origin-isolation", flag_descriptions::kCrossOriginIsolationName,
+     flag_descriptions::kCrossOriginIsolationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(network::features::kCrossOriginIsolation)},
 
     {"disable-keepalive-fetch", flag_descriptions::kDisableKeepaliveFetchName,
      flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,
@@ -4133,6 +4132,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaSessionNotificationsName,
      flag_descriptions::kMediaSessionNotificationsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kMediaSessionNotification)},
+
+    {"enable-neural-stylus-palm-rejection",
+     flag_descriptions::kEnableNeuralStylusPalmRejectionName,
+     flag_descriptions::kEnableNeuralStylusPalmRejectionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kEnableNeuralPalmDetectionFilter)},
 
     {"enable-heuristic-stylus-palm-rejection",
      flag_descriptions::kEnableHeuristicStylusPalmRejectionName,

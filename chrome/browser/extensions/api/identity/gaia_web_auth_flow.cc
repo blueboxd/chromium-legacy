@@ -90,8 +90,7 @@ void GaiaWebAuthFlow::Start() {
       account_id_,
       base::BindOnce(&GaiaWebAuthFlow::OnUbertokenFetchComplete,
                      base::Unretained(this)),
-      gaia::GaiaSource::kChrome, profile_->GetURLLoaderFactory(),
-      /*bound_to_channel_id=*/false);
+      gaia::GaiaSource::kChrome, profile_->GetURLLoaderFactory());
 }
 
 void GaiaWebAuthFlow::OnUbertokenFetchComplete(GoogleServiceAuthError error,

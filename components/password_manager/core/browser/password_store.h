@@ -58,6 +58,7 @@ class PasswordLeakHistoryConsumer;
 class PasswordStoreSigninNotifier;
 class PasswordSyncableService;
 class PasswordSyncBridge;
+struct FieldInfo;
 struct InteractionsStats;
 struct LeakedCredentials;
 
@@ -264,6 +265,21 @@ class PasswordStore : protected PasswordStoreSync,
       base::Time remove_end,
       base::OnceClosure completion);
 
+  // Adds information about field. If the record for given form_signature and
+  // field_signature already exists, the new one will be ignored.
+  void AddFieldInfo(const FieldInfo& field_info);
+
+  // Retrieves all field info and notifies |consumer| on completion. The request
+  // will be cancelled if the consumer is destroyed.
+  void GetAllFieldInfo(PasswordStoreConsumer* consumer);
+
+  // Removes all leaked credentials in the given date range. If |completion| is
+  // not null, it will be posted to the |main_task_runner_| after deletions have
+  // been completed. Should be called on the UI thread.
+  void RemoveFieldInfoByTime(base::Time remove_begin,
+                             base::Time remove_end,
+                             base::OnceClosure completion);
+
   // Adds an observer to be notified when the password store data changes.
   void AddObserver(Observer* observer);
 
@@ -469,6 +485,13 @@ class PasswordStore : protected PasswordStoreSync,
       base::Time remove_begin,
       base::Time remove_end) = 0;
 
+  // Synchronous implementation for manipulating with information about field
+  // info.
+  virtual void AddFieldInfoImpl(const FieldInfo& field_info) = 0;
+  virtual std::vector<FieldInfo> GetAllFieldInfoImpl() = 0;
+  virtual void RemoveFieldInfoByTimeImpl(base::Time remove_begin,
+                                         base::Time remove_end) = 0;
+
   // PasswordStoreSync:
   PasswordStoreChangeList AddLoginSync(const autofill::PasswordForm& form,
                                        AddLoginError* error) override;
@@ -612,6 +635,10 @@ class PasswordStore : protected PasswordStoreSync,
       base::Time remove_begin,
       base::Time remove_end,
       base::OnceClosure completion);
+
+  void RemoveFieldInfoByTimeInternal(base::Time remove_begin,
+                                     base::Time remove_end,
+                                     base::OnceClosure completion);
 
   // Finds all PasswordForms with a signon_realm that is equal to, or is a
   // PSL-match to that of |form|, and takes care of notifying the consumer with

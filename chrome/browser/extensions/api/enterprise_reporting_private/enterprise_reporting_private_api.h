@@ -5,7 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_REPORTING_PRIVATE_ENTERPRISE_REPORTING_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_REPORTING_PRIVATE_ENTERPRISE_REPORTING_PRIVATE_API_H_
 
+#include <memory>
+#include <string>
+
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "extensions/browser/extension_function.h"
 
 namespace policy {
@@ -39,8 +43,9 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportFunction
 
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);
-  void SetRegistrationInfoForTesting(const std::string& dm_token,
-                                     const std::string& client_id);
+  void SetRegistrationInfoForTesting(
+      const policy::BrowserDMTokenStorage::BrowserDMToken& dm_token,
+      const std::string& client_id);
 
   // Used by tests that want to overrode the URLLoaderFactory used to simulate
   // network requests.
@@ -58,7 +63,7 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportFunction
   void OnReportUploaded(bool status);
 
   std::unique_ptr<policy::CloudPolicyClient> cloud_policy_client_;
-  std::string dm_token_;
+  policy::BrowserDMTokenStorage::BrowserDMToken dm_token_;
   std::string client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(

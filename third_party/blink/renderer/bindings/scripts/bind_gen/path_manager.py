@@ -4,7 +4,10 @@
 
 import os.path
 
+import web_idl
+
 from . import name_style
+from .blink_v8_bridge import blink_class_name
 
 
 class PathManager(object):
@@ -19,41 +22,71 @@ class PathManager(object):
         Everything is generated in a single component.
     """
 
-    def __init__(self, idl_definition, output_dirs):
+    _REQUIRE_INIT_MESSAGE = ("PathManager.init must be called in advance.")
+    _is_initialized = False
+
+    @classmethod
+    def init(cls, output_dirs):
+        """
+        Args:
+            output_dirs: Pairs of component and output directory.
+        """
+        assert not cls._is_initialized
+        assert isinstance(output_dirs, dict)
+        cls._output_dirs = output_dirs
+        cls._blink_path_prefix = os.path.sep + os.path.join(
+            "third_party", "blink", "renderer", "")
+        cls._is_initialized = True
+
+    def __init__(self, idl_definition):
+        assert self._is_initialized, self._REQUIRE_INIT_MESSAGE
+
         idl_path = idl_definition.debug_info.location.filepath
         self._idl_basepath, _ = os.path.splitext(idl_path)
         self._idl_dir, self._idl_basename = os.path.split(self._idl_basepath)
 
-        components = idl_definition.components
-        assert 0 < len(components)
+        components = sorted(idl_definition.components)
 
         if len(components) == 1:
             component = components[0]
             self._is_cross_components = False
             self._api_component = component
             self._impl_component = component
-        else:
-            assert ("core", "modules") == sorted(components)
+        elif len(components) == 2:
+            assert components[0] == "core"
+            assert components[1] == "modules"
             self._is_cross_components = True
             self._api_component = "core"
             self._impl_component = "modules"
+        else:
+            assert False
 
-        self._api_dir = output_dirs[self._api_component]
-        self._impl_dir = output_dirs[self._impl_component]
-
+        self._api_dir = self._output_dirs[self._api_component]
+        self._impl_dir = self._output_dirs[self._impl_component]
         self._out_basename = name_style.file("v8", idl_definition.identifier)
+
+        if isinstance(idl_definition,
+                      (web_idl.CallbackFunction, web_idl.CallbackInterface)):
+            self._blink_dir = self._api_dir
+        else:
+            self._blink_dir = self._idl_dir
+        self._blink_basename = name_style.file(
+            blink_class_name(idl_definition))
 
     @property
     def idl_dir(self):
         return self._idl_dir
 
     def blink_path(self, filename=None, ext=None):
-        # The IDL file and Blink headers are supposed to exist in the same
-        # directory.
-        return self._join(
-            dirpath=self.idl_dir,
-            filename=(filename or self._idl_basename),
-            ext=ext)
+        """
+        Returns a path to a Blink implementation file relative to the project
+        root directory, e.g. "third_party/blink/renderer/..."
+        """
+        return self._rel_to_root(
+            self._join(
+                dirpath=self._blink_dir,
+                filename=(filename or self._blink_basename),
+                ext=ext))
 
     @property
     def is_cross_components(self):
@@ -87,7 +120,14 @@ class PathManager(object):
             filename=(filename or self._out_basename),
             ext=ext)
 
+    def _rel_to_root(self, path):
+        index = path.find(self._blink_path_prefix)
+        if index < 0:
+            assert path.startswith(self._blink_path_prefix[1:])
+            return path
+        return path[index + 1:]
+
     def _join(self, dirpath, filename, ext=None):
         if ext is not None:
-            filename = "{}.{}".format(filename, ext)
+            filename = os.path.extsep.join([filename, ext])
         return os.path.join(dirpath, filename)

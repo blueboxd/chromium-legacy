@@ -114,6 +114,26 @@ class InputImeHideInputViewFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class InputMethodPrivateFinishComposingTextFunction : public ExtensionFunction {
+ public:
+  InputMethodPrivateFinishComposingTextFunction(
+      const InputMethodPrivateFinishComposingTextFunction&) = delete;
+  InputMethodPrivateFinishComposingTextFunction& operator=(
+      const InputMethodPrivateFinishComposingTextFunction&) = delete;
+
+  InputMethodPrivateFinishComposingTextFunction() = default;
+
+ protected:
+  ~InputMethodPrivateFinishComposingTextFunction() override = default;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.finishComposingText",
+                             INPUTMETHODPRIVATE_FINISHCOMPOSINGTEXT)
+};
+
 class InputMethodPrivateNotifyImeMenuItemActivatedFunction
     : public ExtensionFunction {
  public:

@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollect
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateChoiceOptions;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateTime;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantInfoPopup;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsAndConditionsState;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionFactory;
@@ -503,7 +504,8 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
             model.set(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE, true);
             model.set(AssistantCollectUserDataModel.AVAILABLE_LOGINS,
-                    Collections.singletonList(new AssistantLoginChoice("id", "Guest", 0)));
+                    Collections.singletonList(new AssistantLoginChoice(
+                            "id", "Guest", "Description of guest checkout", "", 0, null)));
         });
 
         /* Non-empty sections should not display the 'add' button in their title. */
@@ -554,8 +556,8 @@ public class AutofillAssistantCollectUserDataUiTest {
                 "Acme Inc., 123 Main, 90210 Los Angeles, California, Uzbekistan",
                 viewHolder.mShippingSection.getCollapsedView(),
                 viewHolder.mShippingAddressList.getItem(0));
-        testLoginDetails("Guest", viewHolder.mLoginsSection.getCollapsedView(),
-                viewHolder.mLoginList.getItem(0));
+        testLoginDetails("Guest", "Description of guest checkout",
+                viewHolder.mLoginsSection.getCollapsedView(), viewHolder.mLoginList.getItem(0));
 
         /* Check delegate status. */
         assertThat(delegate.mPaymentMethod.getCard().getNumber(), is("4111111111111111"));
@@ -1101,6 +1103,34 @@ public class AutofillAssistantCollectUserDataUiTest {
         assertThat(delegate.mAdditionalValues.get("loyalty"), is("L-394834"));
     }
 
+    @Test
+    @MediumTest
+    public void testLoginSectionInfoPopup() throws Exception {
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
+
+        AssistantInfoPopup infoPopup =
+                new AssistantInfoPopup("Guest checkout", "Text explanation.");
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+            model.set(AssistantCollectUserDataModel.LOGIN_SECTION_TITLE, "Login options");
+            model.set(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE, true);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_LOGINS,
+                    Collections.singletonList(new AssistantLoginChoice(
+                            "id", "Guest checkout", "", "", 0, infoPopup)));
+        });
+
+        onView(withText("Login options")).perform(click());
+        onView(withContentDescription(mTestRule.getActivity().getString(R.string.learn_more)))
+                .perform(click());
+        onView(withText("Guest checkout")).check(matches(isDisplayed()));
+        onView(withText("Text explanation.")).check(matches(isDisplayed()));
+        onView(withText(mTestRule.getActivity().getString(R.string.close))).perform(click());
+    }
+
     private View getPaymentSummaryErrorView(ViewHolder viewHolder) {
         return viewHolder.mPaymentSection.findViewById(R.id.payment_method_summary)
                 .findViewById(R.id.incomplete_error);
@@ -1157,10 +1187,13 @@ public class AutofillAssistantCollectUserDataUiTest {
                 .check(matches(not(isDisplayed())));
     }
 
-    private void testLoginDetails(String expectedLabel, View summaryView, View fullView) {
-        onView(allOf(withId(R.id.username), isDescendantOfA(is(summaryView))))
+    private void testLoginDetails(
+            String expectedLabel, String expectedSublabel, View summaryView, View fullView) {
+        onView(allOf(withId(R.id.label), isDescendantOfA(is(summaryView))))
                 .check(matches(withText(expectedLabel)));
-        onView(allOf(withId(R.id.username), isDescendantOfA(is(fullView))))
+        onView(allOf(withId(R.id.label), isDescendantOfA(is(fullView))))
                 .check(matches(withText(expectedLabel)));
+        onView(allOf(withId(R.id.sublabel), isDescendantOfA(is(fullView))))
+                .check(matches(withText(expectedSublabel)));
     }
 }

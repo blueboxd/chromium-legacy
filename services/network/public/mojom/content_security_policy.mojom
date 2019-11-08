@@ -6,6 +6,15 @@ module network.mojom;
 
 import "url/mojom/url.mojom";
 
+// A CSPSource represents an expression that matches a set of urls.
+// Examples of CSPSource:
+// - domain.example.com
+// - *.example.com
+// - https://cdn.com
+// - data:
+// - 'none'
+// - 'self'
+// - *
 struct CSPSource {
   string scheme;
   string host;
@@ -13,11 +22,15 @@ struct CSPSource {
   string path;
   bool is_host_wildcard = false;
   bool is_port_wildcard = false;
-  bool allow_self = false;
 };
 
 struct CSPSourceList {
   array<CSPSource> sources;
+
+  // Wildcard hosts and 'self' aren't stored in |sources|, but as attributes
+  // on the source list itself.
+  bool allow_self = false;
+  bool allow_star = false;
 };
 
 struct ContentSecurityPolicy {

@@ -37,6 +37,7 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
   std::unique_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
       std::unique_ptr<SourcePageHandle> handle) override;
   DistilledPagePrefs* GetDistilledPagePrefs() override;
+  DistillerUIHandle* GetDistillerUIHandle() override;
 
  private:
   explicit LazyDomDistillerService(Profile* profile);

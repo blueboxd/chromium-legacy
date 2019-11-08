@@ -47,7 +47,8 @@ unsigned ArrayPiece::ByteLength() const {
 
 void ArrayPiece::InitWithArrayBuffer(ArrayBuffer* buffer) {
   if (buffer) {
-    InitWithData(buffer->Data(), SafeCast<unsigned>(buffer->ByteLength()));
+    InitWithData(buffer->Data(),
+                 SafeCast<unsigned>(buffer->ByteLengthAsUnsigned()));
     is_detached_ = buffer->IsDetached();
   } else {
     InitNull();

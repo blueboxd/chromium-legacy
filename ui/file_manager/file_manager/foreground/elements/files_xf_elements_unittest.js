@@ -134,6 +134,33 @@ async function testDisplayPanelChangingPanelTypes(done) {
   done();
 }
 
+function testFilesDisplayPanelErrorText() {
+  // Get the host display panel container element.
+  /** @type {!DisplayPanel|!Element} */
+  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
+
+  // Add a panel item to the display panel container.
+  const panelItem = displayPanel.addPanelItem('testpanel');
+
+  // Change the primary and secondary text on the panel item.
+  panelItem.primaryText = 'foo';
+  panelItem.secondaryText = 'bar';
+
+  // Check the primary and secondary text has been set on the panel.
+  assertEquals('foo', panelItem.primaryText);
+  assertEquals('bar', panelItem.secondaryText);
+
+  // Change the panel item type to an error panel.
+  panelItem.panelType = panelItem.panelTypeError;
+
+  // Check the default primary text displays a generic error message.
+  // Note, the i18n message gets smooshed into 'An error occurred.' in the app.
+  assertEquals('$i18n{FILE_ERROR_GENERIC}', panelItem.primaryText);
+
+  // Check the secondary text is empty.
+  assertEquals('', panelItem.secondaryText);
+}
+
 // Override the formatting function for unit testing.
 util.strf = (end, option) => {
   return option + end;

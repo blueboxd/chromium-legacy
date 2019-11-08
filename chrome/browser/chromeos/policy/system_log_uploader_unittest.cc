@@ -295,10 +295,11 @@ class SystemLogUploaderTest : public testing::TestWithParam<bool> {
   base::HistogramTester histogram_tester_;
 };
 
+// TODO(crbug.com/1022591) Disabled because of flakiness.
 // Verify log throttling. Try successive kLogThrottleCount log uploads by
 // creating a new task. First kLogThrottleCount logs should have 0 delay.
 // Successive logs should have approx. kLogThrottleWindowDuration delay.
-TEST_P(SystemLogUploaderTest, LogThrottleTest) {
+TEST_P(SystemLogUploaderTest, DISABLED_LogThrottleTest) {
   for (int upload_num = 0;
        upload_num < SystemLogUploader::kLogThrottleCount + 3; upload_num++) {
     EXPECT_FALSE(task_runner_->HasPendingTask());

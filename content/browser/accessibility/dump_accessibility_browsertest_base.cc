@@ -31,7 +31,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/accessibility_notification_waiter.h"
-#include "content/public/test/browser_accessibility.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -134,9 +133,11 @@ DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
       PropertyFilter(base::ASCIIToUTF16("*"), PropertyFilter::ALLOW));
   formatter->SetPropertyFilters(property_filters);
   formatter->set_show_ids(true);
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
   base::string16 ax_tree_dump;
-  TestBrowserAccessibility::FormatAccessibilityTree(
-      formatter.get(), GetRootAccessibilityNode(shell()->web_contents()),
+  formatter->FormatAccessibilityTree(
+      web_contents->GetRootBrowserAccessibilityManager()->GetRoot(),
       &ax_tree_dump);
   return ax_tree_dump;
 }

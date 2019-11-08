@@ -10,10 +10,19 @@
 
 namespace autofill_assistant {
 
-LoginChoice::LoginChoice(const std::string& id,
-                         const std::string& text,
-                         int priority)
-    : identifier(id), label(text), preselect_priority(priority) {}
+LoginChoice::LoginChoice(const std::string& _identifier,
+                         const std::string& _label,
+                         const std::string& _sublabel,
+                         const std::string& _sublabel_accessibility_hint,
+                         int _preselect_priority,
+                         const base::Optional<InfoPopupProto>& _info_popup)
+    : identifier(_identifier),
+      label(_label),
+      sublabel(_sublabel),
+      sublabel_accessibility_hint(_sublabel_accessibility_hint),
+      preselect_priority(_preselect_priority),
+      info_popup(_info_popup) {}
+LoginChoice::LoginChoice(const LoginChoice& another) = default;
 LoginChoice::~LoginChoice() = default;
 
 UserData::UserData() = default;

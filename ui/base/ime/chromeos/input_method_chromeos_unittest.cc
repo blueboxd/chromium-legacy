@@ -268,7 +268,12 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   void SetCompositionText(const CompositionText& composition) override {
     composition_text_ = composition;
   }
-  void ConfirmCompositionText() override {
+  void ConfirmCompositionText(bool keep_selection) override {
+    // TODO(b/134473433) Modify this function so that when keep_selection is
+    // true, the selection is not changed when text committed
+    if (keep_selection) {
+      NOTIMPLEMENTED_LOG_ONCE();
+    }
     confirmed_text_ = composition_text_;
     composition_text_ = CompositionText();
   }
@@ -910,7 +915,8 @@ TEST_F(InputMethodChromeOSTest, ConfirmCompositionText_NoComposition) {
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
 
-  ime_->ConfirmCompositionText(/* reset_engine */ true);
+  ime_->ConfirmCompositionText(/* reset_engine */ true,
+                               /* keep_selection */ false);
 
   EXPECT_TRUE(confirmed_text_.text.empty());
   EXPECT_TRUE(composition_text_.text.empty());
@@ -924,7 +930,8 @@ TEST_F(InputMethodChromeOSTest, ConfirmCompositionText_SetComposition) {
   CompositionText composition_text;
   composition_text.text = base::UTF8ToUTF16("hello");
   SetCompositionText(composition_text);
-  ime_->ConfirmCompositionText(/* reset_engine */ true);
+  ime_->ConfirmCompositionText(/* reset_engine */ true,
+                               /* keep_selection */ false);
 
   EXPECT_EQ(base::ASCIIToUTF16("hello"), confirmed_text_.text);
   EXPECT_TRUE(composition_text_.text.empty());
@@ -941,7 +948,8 @@ TEST_F(InputMethodChromeOSTest, ConfirmCompositionText_SetCompositionRange) {
 
   // "abc" is in composition. Put the two characters in composition.
   ime_->SetCompositionRange(0, 2, {});
-  ime_->ConfirmCompositionText(/* reset_engine */ true);
+  ime_->ConfirmCompositionText(/* reset_engine */ true,
+                               /* keep_selection */ false);
 
   EXPECT_EQ(base::ASCIIToUTF16("ab"), confirmed_text_.text);
   EXPECT_TRUE(composition_text_.text.empty());

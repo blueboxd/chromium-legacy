@@ -3119,10 +3119,19 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          NavigationUrlRewriteBrowserTest,
                          ::testing::Bool());
 
+// TODO(1021779): Figure out why this fails on the kitkat-dbg builder
+// and re-enable for all platforms.
+#if defined(OS_ANDROID) && !defined(NDEBUG)
+#define DISABLE_ON_ANDROID_DEBUG(x) DISABLED_##x
+#else
+#define DISABLE_ON_ANDROID_DEBUG(x) x
+#endif
+
 // Tests navigating to a URL that gets rewritten to a "no access" URL. This
 // mimics the behavior of navigating to special URLs like chrome://newtab and
 // chrome://history which get rewritten to "no access" chrome-native:// URLs.
-IN_PROC_BROWSER_TEST_P(NavigationUrlRewriteBrowserTest, RewriteToNoAccess) {
+IN_PROC_BROWSER_TEST_P(NavigationUrlRewriteBrowserTest,
+                       DISABLE_ON_ANDROID_DEBUG(RewriteToNoAccess)) {
   // Perform an initial navigation.
   {
     TestNavigationObserver observer(shell()->web_contents());

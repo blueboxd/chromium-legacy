@@ -33,11 +33,11 @@ LocalSVGResource* SVGTreeScopeResources::ExistingResourceForId(
 }
 
 void SVGTreeScopeResources::ProcessCustomWeakness(
-    const WeakCallbackInfo& broker) {
+    const WeakCallbackInfo& info) {
   // Unregister and remove any resources that are no longer alive.
   Vector<AtomicString> to_remove;
   for (auto& resource_entry : resources_) {
-    if (broker.IsHeapObjectAlive(resource_entry.value))
+    if (info.IsHeapObjectAlive(resource_entry.value))
       continue;
     resource_entry.value->Unregister();
     to_remove.push_back(resource_entry.key);

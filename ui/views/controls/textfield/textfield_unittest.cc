@@ -222,7 +222,7 @@ void MockInputMethod::OnWillChangeFocusedClient(
     ui::TextInputClient* focused) {
   ui::TextInputClient* client = GetTextInputClient();
   if (client && client->HasCompositionText())
-    client->ConfirmCompositionText();
+    client->ConfirmCompositionText(/* keep_selection */ false);
   ClearComposition();
 }
 

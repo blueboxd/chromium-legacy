@@ -159,6 +159,10 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // is not focused.
   bool CommitText(int context_id, const char* text, std::string* error);
 
+  // Notifies InputContextHandler to commit any composition text.
+  // Set |reset_engine| to false if the event was from the extension.
+  void ConfirmCompositionText(bool reset_engine, bool keep_selection);
+
   // Deletes |number_of_chars| unicode characters as the basis of |offset| from
   // the surrounding text. The |offset| is relative position based on current
   // caret.
@@ -242,9 +246,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // Sends the key event to the window tree host.
   virtual bool SendKeyEvent(ui::KeyEvent* ui_event,
                             const std::string& code) = 0;
-  // Notifies InputContextHandler to commit any composition text.
-  // Set |reset_engine| to false if the event was from the extension.
-  void ConfirmCompositionText(bool reset_engine);
 
   ui::TextInputType current_input_type_;
 

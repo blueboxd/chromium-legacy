@@ -437,12 +437,14 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
   // Sign out of the old account (if any).
   if (!sync_account_.account_info.account_id.empty()) {
     sync_account_ = SyncAccountInfo();
+    // Let the client (SyncService) know of the removed account *before*
+    // throwing away the access token, so it can do "unregister" tasks.
+    account_state_changed_callback_.Run();
     // Also clear any pending request or auth errors we might have, since they
     // aren't meaningful anymore.
     partial_token_status_ = SyncTokenStatus();
     ClearAccessTokenAndRequest();
     SetLastAuthError(GoogleServiceAuthError::AuthErrorNone());
-    account_state_changed_callback_.Run();
   }
 
   // Sign in to the new account (if any).

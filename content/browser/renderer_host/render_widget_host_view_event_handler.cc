@@ -664,7 +664,8 @@ void RenderWidgetHostViewEventHandler::FinishImeCompositionSession() {
   // call to finish composition text should be made through the RWHVA itself
   // otherwise the following call to cancel composition will lead to an extra
   // IPC for finishing the ongoing composition (see https://crbug.com/723024).
-  host_view_->GetTextInputClient()->ConfirmCompositionText();
+  host_view_->GetTextInputClient()->ConfirmCompositionText(
+      /* keep_selection */ false);
   host_view_->ImeCancelComposition();
 }
 

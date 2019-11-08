@@ -22,14 +22,13 @@ class ControllerDelegate : public ModelTypeControllerDelegate {
                      base::WeakPtr<SyncableService> syncable_service,
                      const base::RepeatingClosure& dump_stack)
       : type_(type),
-        store_factory_(std::move(store_factory)),
         dump_stack_(dump_stack) {
-    DCHECK(store_factory_);
+    DCHECK(store_factory);
 
     // The |syncable_service| can be null in tests.
     if (syncable_service) {
       bridge_ = std::make_unique<SyncableServiceBasedBridge>(
-          type_, std::move(store_factory_),
+          type_, std::move(store_factory),
           std::make_unique<ClientTagBasedModelTypeProcessor>(type_,
                                                              dump_stack_),
           syncable_service.get());
@@ -66,7 +65,6 @@ class ControllerDelegate : public ModelTypeControllerDelegate {
   }
 
   const ModelType type_;
-  OnceModelTypeStoreFactory store_factory_;
   const base::RepeatingClosure dump_stack_;
   std::unique_ptr<ModelTypeSyncBridge> bridge_;
 

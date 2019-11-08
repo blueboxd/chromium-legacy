@@ -1466,6 +1466,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_REMOVEACTIVEDESK = 1403,
   TERMINALPRIVATE_GETCROSHSETTINGS = 1404,
   AUTOTESTPRIVATE_ENABLEASSISTANTANDWAITFORREADY = 1405,
+  INPUTMETHODPRIVATE_FINISHCOMPOSINGTEXT = 1406,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

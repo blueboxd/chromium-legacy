@@ -29,6 +29,7 @@
 bind_gen/__init__.py
 bind_gen/blink_v8_bridge.py
 bind_gen/clang_format.py
+bind_gen/code_generation_accumulator.py
 bind_gen/code_generation_context.py
 bind_gen/code_node.py
 bind_gen/codegen_utils.py
@@ -36,6 +37,7 @@ bind_gen/example.py
 bind_gen/interface.py
 bind_gen/mako_renderer.py
 bind_gen/name_style.py
+bind_gen/path_manager.py
 generate_bindings.py
 web_idl/__init__.py
 web_idl/argument.py

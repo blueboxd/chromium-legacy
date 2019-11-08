@@ -18,9 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
-#include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
@@ -41,7 +39,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -56,8 +53,7 @@ class DomDistillerViewerSource::RequestViewerHandle
  public:
   RequestViewerHandle(content::WebContents* web_contents,
                       const GURL& expected_url,
-                      DistilledPagePrefs* distilled_page_prefs,
-                      DistillerUIHandle* ui_handle);
+                      DistilledPagePrefs* distilled_page_prefs);
   ~RequestViewerHandle() override;
 
   // content::WebContentsObserver implementation:
@@ -66,10 +62,6 @@ class DomDistillerViewerSource::RequestViewerHandle
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
   void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;
-  void OnInterfaceRequestFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
  private:
   // Sends JavaScript to the attached Viewer, buffering data if the viewer isn't
@@ -91,30 +83,17 @@ class DomDistillerViewerSource::RequestViewerHandle
   // Temporary store of pending JavaScript if the page isn't ready to receive
   // data from distillation.
   std::string buffer_;
-
-  // An object for accessing chrome-specific UI controls including external
-  // feedback and opening the distiller settings. Guaranteed to outlive this
-  // object.
-  DistillerUIHandle* distiller_ui_handle_;
-
-  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>
-      frame_interfaces_;
 };
 
 DomDistillerViewerSource::RequestViewerHandle::RequestViewerHandle(
     content::WebContents* web_contents,
     const GURL& expected_url,
-    DistilledPagePrefs* distilled_page_prefs,
-    DistillerUIHandle* ui_handle)
+    DistilledPagePrefs* distilled_page_prefs)
     : DomDistillerRequestViewBase(distilled_page_prefs),
       expected_url_(expected_url),
-      waiting_for_page_ready_(true),
-      distiller_ui_handle_(ui_handle) {
+      waiting_for_page_ready_(true) {
   content::WebContentsObserver::Observe(web_contents);
   distilled_page_prefs_->AddObserver(this);
-
-  frame_interfaces_.AddInterface(
-      base::Bind(&CreateDistillerJavaScriptService, distiller_ui_handle_));
 }
 
 DomDistillerViewerSource::RequestViewerHandle::~RequestViewerHandle() {
@@ -213,21 +192,10 @@ void DomDistillerViewerSource::RequestViewerHandle::DOMContentLoaded(
   // No need to Cancel() here.
 }
 
-void DomDistillerViewerSource::RequestViewerHandle::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  frame_interfaces_.TryBindInterface(interface_name, interface_pipe,
-                                     render_frame_host);
-}
-
 DomDistillerViewerSource::DomDistillerViewerSource(
     DomDistillerServiceInterface* dom_distiller_service,
-    const std::string& scheme,
-    std::unique_ptr<DistillerUIHandle> ui_handle)
-    : scheme_(scheme),
-      dom_distiller_service_(dom_distiller_service),
-      distiller_ui_handle_(std::move(ui_handle)) {}
+    const std::string& scheme)
+    : scheme_(scheme), dom_distiller_service_(dom_distiller_service) {}
 
 DomDistillerViewerSource::~DomDistillerViewerSource() {}
 
@@ -277,8 +245,7 @@ void DomDistillerViewerSource::StartDataRequest(
   }
   RequestViewerHandle* request_viewer_handle =
       new RequestViewerHandle(web_contents, request_url,
-                              dom_distiller_service_->GetDistilledPagePrefs(),
-                              distiller_ui_handle_.get());
+                              dom_distiller_service_->GetDistilledPagePrefs());
   std::unique_ptr<ViewerHandle> viewer_handle = viewer::CreateViewRequest(
       dom_distiller_service_, request_url, request_viewer_handle,
       web_contents->GetContainerBounds().size());

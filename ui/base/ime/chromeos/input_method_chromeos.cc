@@ -42,7 +42,7 @@ InputMethodChromeOS::InputMethodChromeOS(
 }
 
 InputMethodChromeOS::~InputMethodChromeOS() {
-  ConfirmCompositionText(/* reset_engine */ true);
+  ConfirmCompositionText(/* reset_engine */ true, /* keep_selection */ false);
   // We are dead, so we need to ask the client to stop relying on us.
   OnInputMethodChanged();
 
@@ -284,7 +284,7 @@ InputMethodChromeOS::GetInputMethodKeyboardController() {
 void InputMethodChromeOS::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
-  ConfirmCompositionText(/* reset_engine */ true);
+  ConfirmCompositionText(/* reset_engine */ true, /* keep_selection */ false);
 
   if (GetEngine())
     GetEngine()->FocusOut();
@@ -344,8 +344,9 @@ bool InputMethodChromeOS::SetCompositionRange(
   }
 }
 
-void InputMethodChromeOS::ConfirmCompositionText(bool reset_engine) {
-  InputMethodBase::ConfirmCompositionText(reset_engine);
+void InputMethodChromeOS::ConfirmCompositionText(bool reset_engine,
+                                                 bool keep_selection) {
+  InputMethodBase::ConfirmCompositionText(reset_engine, keep_selection);
 
   // See https://crbug.com/984472.
   ResetContext(reset_engine);

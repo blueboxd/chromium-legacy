@@ -42,10 +42,9 @@ void LiveNodeListRegistry::RecomputeMask() {
   mask_ = mask;
 }
 
-void LiveNodeListRegistry::ProcessCustomWeakness(
-    const WeakCallbackInfo& broker) {
-  auto* it = std::remove_if(data_.begin(), data_.end(), [broker](Entry entry) {
-    return !broker.IsHeapObjectAlive(entry.first);
+void LiveNodeListRegistry::ProcessCustomWeakness(const WeakCallbackInfo& info) {
+  auto* it = std::remove_if(data_.begin(), data_.end(), [info](Entry entry) {
+    return !info.IsHeapObjectAlive(entry.first);
   });
   if (it == data_.end())
     return;

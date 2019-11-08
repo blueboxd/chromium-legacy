@@ -37,7 +37,7 @@ class MockTextInputClient : public TextInputClient {
  public:
   ~MockTextInputClient() {}
   MOCK_METHOD1(SetCompositionText, void(const ui::CompositionText&));
-  MOCK_METHOD0(ConfirmCompositionText, void());
+  MOCK_METHOD1(ConfirmCompositionText, void(bool));
   MOCK_METHOD0(ClearCompositionText, void());
   MOCK_METHOD1(InsertText, void(const base::string16&));
   MOCK_METHOD1(InsertChar, void(const ui::KeyEvent&));

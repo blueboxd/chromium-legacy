@@ -19,9 +19,6 @@ struct AX_EXPORT AXActionData {
   AXActionData(const AXActionData& other);
   ~AXActionData();
 
-  // Return a string representation of this data, for debugging.
-  std::string ToString() const;
-
   // This is a simple serializable struct. All member variables should be
   // public and copyable.
 

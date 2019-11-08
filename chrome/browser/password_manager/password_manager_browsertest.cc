@@ -3315,8 +3315,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ReattachWebContents) {
 #define MAYBE_FillWhenFormWithHiddenUsername \
   DISABLED_FillWhenFormWithHiddenUsername
 #else
-#define MAYBE_FillWhenFormWithHiddenUsername \
-  FillWhenFormWithHiddenUsername
+#define MAYBE_FillWhenFormWithHiddenUsername FillWhenFormWithHiddenUsername
 #endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        MAYBE_FillWhenFormWithHiddenUsername) {
@@ -3788,6 +3787,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // Check that the password for origin A was not updated automatically and the
   // update bubble is shown instead.
   WaitForPasswordStore();  // Let the navigation take its effect on storing.
+  ASSERT_THAT(password_store->stored_passwords(),
+              ElementsAre(testing::Key(url_A.GetOrigin())));
   CheckThatCredentialsStored("user", "oldpassword");
   std::unique_ptr<BubbleObserver> prompt_observer(
       new BubbleObserver(WebContents()));
@@ -3799,10 +3800,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   prompt_observer->AcceptUpdatePrompt(stored_form);
 
   WaitForPasswordStore();
-  // There are two credentials saved with the new password.
+  // The stored credential has been updated with the new password.
   const auto& passwords_map = password_store->stored_passwords();
-  ASSERT_THAT(passwords_map, ElementsAre(testing::Key(url_A.GetOrigin()),
-                                         testing::Key(url_B.GetOrigin())));
+  ASSERT_THAT(passwords_map, ElementsAre(testing::Key(url_A.GetOrigin())));
   for (const auto& credentials : passwords_map) {
     ASSERT_THAT(credentials.second, testing::SizeIs(1));
     EXPECT_EQ(base::ASCIIToUTF16("user"), credentials.second[0].username_value);

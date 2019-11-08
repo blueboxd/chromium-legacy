@@ -17,6 +17,10 @@ class HostContentSettingsMap;
 // UI for a given origin.
 class IntentPickerAutoDisplayPref final {
  public:
+  // The platform selected by the user to handle this URL for devices of tablet
+  // form factor.
+  enum class Platform { kNone = 0, kArc = 1, kChrome = 2, kMaxValue = kChrome };
+
   IntentPickerAutoDisplayPref(const GURL& origin,
                               HostContentSettingsMap* settings);
   ~IntentPickerAutoDisplayPref();
@@ -24,6 +28,10 @@ class IntentPickerAutoDisplayPref final {
   void IncrementCounter();
 
   bool HasExceededThreshold();
+
+  Platform GetPlatform();
+
+  void UpdatePlatform(Platform platform);
 
  private:
   // Creates and keep track of the dictionary for this specific origin.
@@ -34,12 +42,18 @@ class IntentPickerAutoDisplayPref final {
 
   void SetDismissedCounter(int new_counter);
 
+  Platform QueryPlatform();
+
   void Commit();
 
   // Origin associated to this preference.
   GURL origin_;
 
   int ui_dismissed_counter_;
+
+  // The platform selected by the user to handle link navigations with.
+  // This is only for devices of tablet form factor.
+  Platform platform_;
 
   // Dictionary for this particular preference.
   std::unique_ptr<base::DictionaryValue> pref_dict_;

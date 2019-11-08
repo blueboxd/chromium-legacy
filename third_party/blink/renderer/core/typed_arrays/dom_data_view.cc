@@ -20,7 +20,7 @@ class DataView final : public ArrayBufferView {
                                         unsigned byte_length) {
     base::CheckedNumeric<uint32_t> checked_max = byte_offset;
     checked_max += byte_length;
-    CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLength());
+    CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLengthAsUnsigned());
     return base::AdoptRef(new DataView(buffer, byte_offset, byte_length));
   }
 

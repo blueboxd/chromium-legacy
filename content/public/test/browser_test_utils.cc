@@ -89,7 +89,6 @@
 #include "content/public/test/test_fileapi_operation_waiter.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "content/test/browser_accessibility.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -2027,42 +2026,39 @@ ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents) {
   return manager->SnapshotAXTreeForTesting();
 }
 
-TestBrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents) {
+BrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents) {
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents);
   BrowserAccessibilityManager* manager =
       web_contents_impl->GetRootBrowserAccessibilityManager();
-  return manager ? ToTestBrowserAccessibility(manager->GetRoot()) : nullptr;
+  return manager ? manager->GetRoot() : nullptr;
 }
 
 FindAccessibilityNodeCriteria::FindAccessibilityNodeCriteria() = default;
 
 FindAccessibilityNodeCriteria::~FindAccessibilityNodeCriteria() = default;
 
-TestBrowserAccessibility* FindAccessibilityNode(
+BrowserAccessibility* FindAccessibilityNode(
     WebContents* web_contents,
     const FindAccessibilityNodeCriteria& criteria) {
-  TestBrowserAccessibility* root = GetRootAccessibilityNode(web_contents);
+  BrowserAccessibility* root = GetRootAccessibilityNode(web_contents);
   CHECK(root);
   return FindAccessibilityNodeInSubtree(root, criteria);
 }
 
-TestBrowserAccessibility* FindAccessibilityNodeInSubtree(
-    TestBrowserAccessibility* node,
+BrowserAccessibility* FindAccessibilityNodeInSubtree(
+    BrowserAccessibility* node,
     const FindAccessibilityNodeCriteria& criteria) {
-  BrowserAccessibility* node_internal = FromTestBrowserAccessibility(node);
   if ((!criteria.name ||
-       node_internal->GetStringAttribute(ax::mojom::StringAttribute::kName) ==
+       node->GetStringAttribute(ax::mojom::StringAttribute::kName) ==
            criteria.name.value()) &&
-      (!criteria.role || node_internal->GetRole() == criteria.role.value())) {
+      (!criteria.role || node->GetRole() == criteria.role.value())) {
     return node;
   }
 
-  for (unsigned int i = 0; i < node_internal->PlatformChildCount(); ++i) {
-    TestBrowserAccessibility* child =
-        ToTestBrowserAccessibility(node_internal->PlatformGetChild(i));
-    TestBrowserAccessibility* result =
-        FindAccessibilityNodeInSubtree(child, criteria);
+  for (unsigned int i = 0; i < node->PlatformChildCount(); ++i) {
+    BrowserAccessibility* result =
+        FindAccessibilityNodeInSubtree(node->PlatformGetChild(i), criteria);
     if (result)
       return result;
   }
@@ -2072,7 +2068,7 @@ TestBrowserAccessibility* FindAccessibilityNodeInSubtree(
 #if defined(OS_WIN)
 template <typename T>
 Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
-    TestBrowserAccessibility* browser_accessibility) {
+    BrowserAccessibility* browser_accessibility) {
   Microsoft::WRL::ComPtr<T> result;
   EXPECT_HRESULT_SUCCEEDED(
       browser_accessibility->GetNativeViewAccessible()->QueryInterface(
@@ -2082,7 +2078,7 @@ Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
 
 void UiaGetPropertyValueVtArrayVtUnknownValidate(
     PROPERTYID property_id,
-    TestBrowserAccessibility* target_browser_accessibility,
+    BrowserAccessibility* target_browser_accessibility,
     const std::vector<std::string>& expected_names) {
   ASSERT_NE(nullptr, target_browser_accessibility);
 
@@ -3158,7 +3154,7 @@ namespace {
 // exposing them in the header.
 class EvictionStateWaiter : public DelegatedFrameHost::Observer {
  public:
-  explicit EvictionStateWaiter(DelegatedFrameHost* delegated_frame_host)
+  EvictionStateWaiter(DelegatedFrameHost* delegated_frame_host)
       : delegated_frame_host_(delegated_frame_host) {
     delegated_frame_host_->AddObserverForTesting(this);
   }

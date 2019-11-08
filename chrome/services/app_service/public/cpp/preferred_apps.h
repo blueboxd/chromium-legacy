@@ -45,6 +45,11 @@ class PreferredApps {
 
   static bool VerifyPreferredApps(base::Value* dict);
 
+  // Add a preferred app for an |intent_filter| for |preferred_apps|.
+  static bool AddPreferredApp(const std::string& app_id,
+                              const apps::mojom::IntentFilterPtr& intent_filter,
+                              base::Value* preferred_apps);
+
   void Init(std::unique_ptr<base::Value> preferred_apps);
 
   // Add a preferred app for an |intent_filter|.
@@ -60,6 +65,8 @@ class PreferredApps {
 
   // Get a copy of the preferred apps.
   base::Value GetValue();
+
+  bool IsInitialized();
 
  private:
   std::unique_ptr<base::Value> preferred_apps_;

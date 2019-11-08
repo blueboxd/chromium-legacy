@@ -229,7 +229,6 @@ source_set("unit_tests") {
     "//ios/chrome/test:block_cleanup_test",
     "//ios/chrome/test:test_support",
     "//ios/net",
-    "//ios/testing:ocmock_support",
     "//ios/web/public",
     "//ios/web/public/deprecated",
     "//ios/web/public/test",

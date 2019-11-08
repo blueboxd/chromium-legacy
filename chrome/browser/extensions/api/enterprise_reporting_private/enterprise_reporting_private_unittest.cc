@@ -43,7 +43,16 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportTest
         test_url_loader_factory_.GetSafeWeakWrapper());
     client_ = client.get();
     function->SetCloudPolicyClientForTesting(std::move(client));
-    function->SetRegistrationInfoForTesting(dm_token, kFakeClientId);
+    if (dm_token.empty()) {
+      function->SetRegistrationInfoForTesting(
+          policy::BrowserDMTokenStorage::BrowserDMToken::CreateEmptyToken(),
+          kFakeClientId);
+    } else {
+      function->SetRegistrationInfoForTesting(
+          policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
+              dm_token),
+          kFakeClientId);
+    }
     return function;
   }
 

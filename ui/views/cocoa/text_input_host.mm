@@ -301,7 +301,7 @@ void TextInputHost::SetCompositionText(const base::string16& text,
 void TextInputHost::ConfirmCompositionText() {
   if (!text_input_client_)
     return;
-  text_input_client_->ConfirmCompositionText();
+  text_input_client_->ConfirmCompositionText(/* keep_selection */ false);
 }
 
 bool TextInputHost::HasCompositionText(bool* out_has_composition_text) {

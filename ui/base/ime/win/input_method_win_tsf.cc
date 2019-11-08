@@ -151,7 +151,8 @@ void InputMethodWinTSF::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
   if (IsWindowFocused(focused_before)) {
-    ConfirmCompositionText(/* reset_engine */ true);
+    ConfirmCompositionText(/* reset_engine */ true,
+                           /* keep_selection */ false);
     ui::TSFBridge::GetInstance()->RemoveFocusedClient(focused_before);
   }
 }
@@ -176,7 +177,13 @@ void InputMethodWinTSF::OnDidChangeFocusedClient(
   InputMethodWinBase::OnDidChangeFocusedClient(focused_before, focused);
 }
 
-void InputMethodWinTSF::ConfirmCompositionText(bool reset_engine) {
+void InputMethodWinTSF::ConfirmCompositionText(bool reset_engine,
+                                               bool keep_selection) {
+  // TODO(b/134473433) Modify this function so that when keep_selection is
+  // true, the selection is not changed when text committed
+  if (keep_selection) {
+    NOTIMPLEMENTED_LOG_ONCE();
+  }
   if (IsTextInputTypeNone())
     return;
 

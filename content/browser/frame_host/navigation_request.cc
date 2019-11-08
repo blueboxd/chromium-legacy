@@ -1823,8 +1823,7 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // https://mikewest.github.io/corpp/#process-navigation-response
-  if (base::FeatureList::IsEnabled(
-          network::features::kCrossOriginEmbedderPolicy) &&
+  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation) &&
       render_frame_host_) {
     auto cross_origin_embedder_policy =
         network::mojom::CrossOriginEmbedderPolicy::kNone;

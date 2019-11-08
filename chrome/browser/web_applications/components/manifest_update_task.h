@@ -12,6 +12,7 @@
 #include "third_party/blink/public/common/manifest/manifest.h"
 
 struct InstallableData;
+struct WebApplicationInfo;
 
 namespace web_app {
 
@@ -71,11 +72,13 @@ class ManifestUpdateTask final
   };
 
   void OnDidGetInstallableData(const InstallableData& data);
-  bool IsUpdateNeededForManifest(const blink::Manifest& manifest) const;
-  void OnAllAppWindowsClosed(blink::Manifest manifest);
-  void OnInstallationComplete(blink::Manifest manifest,
-                              const AppId& app_id,
-                              InstallResultCode code);
+  bool IsUpdateNeeded(const WebApplicationInfo& web_application_info) const;
+  void OnAllAppWindowsClosed(
+      std::unique_ptr<WebApplicationInfo> web_application_info);
+  void OnInstallationComplete(
+      std::unique_ptr<WebApplicationInfo> opt_web_application_info,
+      const AppId& app_id,
+      InstallResultCode code);
   void DestroySelf(ManifestUpdateResult result);
 
   const AppRegistrar& registrar_;

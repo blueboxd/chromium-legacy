@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_action.h"
 
@@ -38,15 +39,27 @@ enum TextInputType { INPUT_TEXT = 0, INPUT_ALPHANUMERIC = 1 };
 // Represents a concrete login choice in the UI, e.g., 'Guest checkout' or
 // a particular Chrome PWM login account.
 struct LoginChoice {
-  LoginChoice(const std::string& id, const std::string& text, int priority);
+  LoginChoice(const std::string& id,
+              const std::string& label,
+              const std::string& sublabel,
+              const std::string& sublabel_accessibility_hint,
+              int priority,
+              const base::Optional<InfoPopupProto>& info_popup);
+  LoginChoice(const LoginChoice& another);
   ~LoginChoice();
 
   // Uniquely identifies this login choice.
   std::string identifier;
   // The label to display to the user.
   std::string label;
+  // The sublabel to display to the user.
+  std::string sublabel;
+  // The a11y hint for |sublabel|.
+  std::string sublabel_accessibility_hint;
   // The priority to pre-select this choice (-1 == not set/automatic).
   int preselect_priority = -1;
+  // The popup to show to provide more information about this login choice.
+  base::Optional<InfoPopupProto> info_popup;
 };
 
 // Struct for holding the user data.

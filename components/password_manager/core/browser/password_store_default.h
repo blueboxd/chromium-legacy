@@ -82,6 +82,11 @@ class PasswordStoreDefault : public PasswordStore {
       base::Time remove_begin,
       base::Time remove_end) override;
 
+  void AddFieldInfoImpl(const FieldInfo& field_info) override;
+  std::vector<FieldInfo> GetAllFieldInfoImpl() override;
+  void RemoveFieldInfoByTimeImpl(base::Time remove_begin,
+                                 base::Time remove_end) override;
+
   // Implements PasswordStoreSync interface.
   bool BeginTransaction() override;
   void RollbackTransaction() override;

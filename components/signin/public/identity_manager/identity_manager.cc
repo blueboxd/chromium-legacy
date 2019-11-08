@@ -296,11 +296,10 @@ IdentityManager::CreateUbertokenFetcherForAccount(
     const CoreAccountId& account_id,
     UbertokenFetcher::CompletionCallback callback,
     gaia::GaiaSource source,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    bool bount_to_channel_id) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<UbertokenFetcherImpl>(
       account_id, token_service_.get(), std::move(callback), source,
-      url_loader_factory, bount_to_channel_id);
+      url_loader_factory);
 }
 
 AccountsInCookieJarInfo IdentityManager::GetAccountsInCookieJar() const {

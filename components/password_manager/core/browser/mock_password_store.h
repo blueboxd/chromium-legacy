@@ -11,6 +11,7 @@
 
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,6 +81,10 @@ class MockPasswordStore : public PasswordStore {
                void(const base::RepeatingCallback<bool(const GURL&)>&,
                     base::Time,
                     base::Time));
+  MOCK_METHOD1(AddFieldInfoImpl, void(const FieldInfo&));
+  MOCK_METHOD0(GetAllFieldInfoImpl, std::vector<FieldInfo>());
+  MOCK_METHOD2(RemoveFieldInfoByTimeImpl, void(base::Time, base::Time));
+
   MOCK_CONST_METHOD0(IsAbleToSavePasswords, bool());
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

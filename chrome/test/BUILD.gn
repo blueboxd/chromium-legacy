@@ -1426,7 +1426,6 @@ if (!is_android) {
         "//chrome/browser/media/router:test_support",
         "//chrome/browser/resources/chromeos/autoclick:browser_tests",
         "//chrome/browser/resources/chromeos/chromevox:browser_tests",
-        "//chrome/browser/resources/chromeos/login:browser_tests",
         "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
         "//chrome/browser/resources/chromeos/switch_access:browser_tests",
         "//chrome/services/file_util/public/cpp:browser_tests",
@@ -1458,6 +1457,7 @@ if (!is_android) {
       ]
       if (is_chromeos) {
         deps += [
+          "//chrome/browser/resources/chromeos/login:browser_tests",
           "//chromeos/components/help_app_ui:browser_tests_js",
           "//chromeos/components/media_app_ui:browser_tests_js",
         ]

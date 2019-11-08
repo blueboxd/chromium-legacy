@@ -119,7 +119,7 @@ cr.define('cr.ui', () => {
     }
     set menu(menu) {
       if (typeof menu == 'string' && menu[0] == '#') {
-        menu = assert(this.ownerDocument.getElementById(menu.slice(1)));
+        menu = assert(this.ownerDocument.body.querySelector(menu));
         cr.ui.decorate(menu, cr.ui.Menu);
       }
 

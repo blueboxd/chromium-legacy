@@ -961,7 +961,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
   auto* template_el =
-      ToHTMLTemplateElement(GetDocument().getElementById("template"));
+      To<HTMLTemplateElement>(GetDocument().getElementById("template"));
   auto* child = To<Element>(template_el->content()->firstChild());
   EXPECT_FALSE(child->isConnected());
 

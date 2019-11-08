@@ -464,8 +464,7 @@ TEST_F(GaiaAuthFetcherTest, UberAuthTokenSuccess) {
   EXPECT_CALL(consumer, OnUberAuthTokenSuccess("uberToken")).Times(1);
 
   TestGaiaAuthFetcher auth(&consumer, GetURLLoaderFactory());
-  auth.StartTokenFetchForUberAuthExchange("myAccessToken",
-                                          true /* is_bound_to_channel_id */);
+  auth.StartTokenFetchForUberAuthExchange("myAccessToken");
 
   EXPECT_TRUE(auth.HasPendingFetch());
   auth.TestOnURLLoadCompleteInternal(net::OK, net::HTTP_OK, "uberToken");

@@ -56,7 +56,6 @@ specific_include_rules = {
     "+components/chromeos_camera/common",
     "+components/contextual_search/content/common",
     "+components/data_reduction_proxy/core/common",
-    "+components/dom_distiller/content/common",
     "+components/metrics/public",
     "+components/rappor/public",
     "+components/translate/content/common",

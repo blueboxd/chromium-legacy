@@ -107,7 +107,7 @@ bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
     }
 
     vector->Append(static_cast<uint8_t*>(array_buffer->Data()),
-                   array_buffer->ByteLength());
+                   array_buffer->ByteLengthAsUnsigned());
   } else {
     ArrayBufferView* view = buffer_source.GetAsArrayBufferView().View()->View();
     if (!view->Buffer() || view->Buffer()->IsDetached()) {

@@ -1451,7 +1451,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_InputMethod) {
     ui::CompositionText composition;
     composition.text = base::UTF8ToUTF16("InputTest456");
     text_input_client->SetCompositionText(composition);
-    text_input_client->ConfirmCompositionText();
+    text_input_client->ConfirmCompositionText(/* keep_selection */ false);
     EXPECT_TRUE(content::ExecuteScript(
                   embedder_web_contents,
                   "window.runCommand('testInputMethodRunNextStep', 2);"));

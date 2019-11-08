@@ -1981,6 +1981,7 @@ jumbo_static_library("browser") {
     "//components/data_use_measurement/core:ascriber",
     "//components/device_event_log",
     "//components/dom_distiller/content/browser",
+    "//components/dom_distiller/content/common/mojom",
     "//components/domain_reliability",
     "//components/download/content/factory",
     "//components/download/database",

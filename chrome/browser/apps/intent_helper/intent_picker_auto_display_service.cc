@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "chrome/browser/apps/intent_helper/intent_picker_auto_display_pref.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 
@@ -40,4 +39,15 @@ bool IntentPickerAutoDisplayService::ShouldAutoDisplayUi(const GURL& url) {
 
 void IntentPickerAutoDisplayService::IncrementCounter(const GURL& url) {
   CreateLocalPreference(profile_, url)->IncrementCounter();
+}
+
+IntentPickerAutoDisplayPref::Platform
+IntentPickerAutoDisplayService::GetLastUsedPlatformForTablets(const GURL& url) {
+  return CreateLocalPreference(profile_, url)->GetPlatform();
+}
+
+void IntentPickerAutoDisplayService::UpdatePlatformForTablets(
+    const GURL& url,
+    IntentPickerAutoDisplayPref::Platform platform) {
+  CreateLocalPreference(profile_, url)->UpdatePlatform(platform);
 }

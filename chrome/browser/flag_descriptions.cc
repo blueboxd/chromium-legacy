@@ -815,9 +815,9 @@ const char kEnableOutOfBlinkCorsName[] = "Out of blink CORS";
 const char kEnableOutOfBlinkCorsDescription[] =
     "CORS handling logic is moved out of blink.";
 
-const char kCrossOriginEmbedderPolicyName[] = "Cross Origin Embedder Policy";
-const char kCrossOriginEmbedderPolicyDescription[] =
-    "Enable Cross Origin Embedder Policy (https://mikewest.github.io/corpp/).";
+const char kCrossOriginIsolationName[] = "Cross Origin Isolation";
+const char kCrossOriginIsolationDescription[] =
+    "Enable Cross Origin Opener Policy and Cross Origin Embedder Policy.";
 
 const char kDisableKeepaliveFetchName[] = "Disable fetch with keepalive set";
 const char kDisableKeepaliveFetchDescription[] =
@@ -3496,6 +3496,12 @@ const char kEnableHeuristicStylusPalmRejectionDescription[] =
 const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";
+
+const char kEnableNeuralStylusPalmRejectionName[] =
+    "Enable Neural Palm Detection";
+const char kEnableNeuralStylusPalmRejectionDescription[] =
+    "Experimental: Enable Neural Palm detection. Not compatible with all "
+    "devices.";
 
 const char kEnableParentalControlsSettingsName[] =
     "Enable Parental controls settings";

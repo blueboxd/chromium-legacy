@@ -72,7 +72,7 @@ class CommandButton {
     if (typeof command == 'string') {
       assert(command[0] == '#');
       command = /** @type {!cr.ui.Command} */
-          (this.ownerDocument.getElementById(command.slice(1)));
+          (this.ownerDocument.body.querySelector(command));
       cr.ui.decorate(command, cr.ui.Command);
     }
 

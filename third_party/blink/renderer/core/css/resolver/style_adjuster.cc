@@ -654,6 +654,11 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // Columns don't apply to svg text elements.
     if (IsSVGTextElement(*element))
       style.ClearMultiCol();
+  } else if (element && element->IsMathMLElement()) {
+    if (style.Display() == EDisplay::kContents) {
+      // https://drafts.csswg.org/css-display/#unbox-mathml
+      style.SetDisplay(EDisplay::kNone);
+    }
   }
 
   // If this node is sticky it marks the creation of a sticky subtree, which we

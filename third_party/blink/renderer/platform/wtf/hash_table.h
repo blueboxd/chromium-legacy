@@ -2053,7 +2053,7 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
   using ValueType = typename HashTableType::ValueType;
 
   // Used for purely weak and for weak-and-strong tables (ephemerons).
-  static void Process(const typename Allocator::WeakCallbackInfo& broker,
+  static void Process(const typename Allocator::WeakCallbackInfo&,
                       void* parameter) {
     HashTableType* table = reinterpret_cast<HashTableType*>(parameter);
     // During incremental marking, the table may be freed after the callback has

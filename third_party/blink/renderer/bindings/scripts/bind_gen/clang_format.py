@@ -8,7 +8,11 @@ import subprocess
 _clang_format_command_path = None
 
 
-def init_clang_format(command_path):
+def init(command_path):
+    """
+    Args:
+        command_path: Path to the clang_format command.
+    """
     assert isinstance(command_path, str)
     assert os.path.exists(command_path)
 

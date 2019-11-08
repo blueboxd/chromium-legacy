@@ -241,6 +241,8 @@ class PanelItem extends HTMLElement {
       case this.panelTypeError:
         this.setAttribute('indicator', 'status');
         this.setAttribute('status', 'failure');
+        this.primaryText = '$i18n{FILE_ERROR_GENERIC}';
+        this.secondaryText = '';
         secondaryButton = document.createElement('xf-button');
         secondaryButton.id = 'secondary-action';
         secondaryButton.onclick = assert(this.onclick);
@@ -516,11 +518,27 @@ class PanelItem extends HTMLElement {
   }
 
   /**
+   * Getter for the primary text on the panel.
+   * @return {string}
+   */
+  get primaryText() {
+    return this.getAttribute('primary-text');
+  }
+
+  /**
    * Setter to set the secondary text on the panel.
    * @param {string} text Text to be shown.
    */
   set secondaryText(text) {
     this.setAttribute('secondary-text', text);
+  }
+
+  /**
+   * Getter for the secondary text on the panel.
+   * @return {string}
+   */
+  get secondaryText() {
+    return this.getAttribute('secondary-text');
   }
 
   /**

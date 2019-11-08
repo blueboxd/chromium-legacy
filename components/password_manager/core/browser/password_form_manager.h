@@ -35,6 +35,8 @@ class PasswordManagerClient;
 class PasswordManagerDriver;
 struct PossibleUsernameData;
 
+enum class PendingCredentialsState { NONE, NEW_LOGIN, UPDATE, AUTOMATIC_SAVE };
+
 // This class helps with filling the observed form and with saving/updating the
 // stored information about it.
 class PasswordFormManager : public PasswordFormManagerForUI,
@@ -242,15 +244,9 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void ReportTimeBetweenStoreAndServerUMA();
 
   // Create pending credentials from provisionally saved form when this form
-  // represents credentials that were not previosly saved.
+  // represents credentials that were not previously saved.
   void CreatePendingCredentialsForNewCredentials(
-      const autofill::PasswordForm& submitted_password_form,
       const base::string16& password_element);
-
-  void SetPasswordOverridden(bool password_overridden) {
-    password_overridden_ = password_overridden;
-    votes_uploader_.set_password_overridden(password_overridden);
-  }
 
   // Helper for Save in the case there is at least one match for the pending
   // credentials. This sends needed signals to the autofill server, and also
@@ -330,18 +326,11 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // |submitted_form_| and |best_matches_|.
   autofill::PasswordForm pending_credentials_;
 
-  // Whether |pending_credentials_| stores a credential that should be added
-  // to the password store. False means it's a pure update to the existing ones.
-  // TODO(crbug/831123): this value only makes sense internally. Remove public
-  // dependencies on it.
-  bool is_new_login_ = true;
+  PendingCredentialsState pending_credentials_state_ =
+      PendingCredentialsState::NONE;
 
   // Handles the user flows related to the generation.
   std::unique_ptr<PasswordGenerationManager> generation_manager_;
-
-  // Whether a saved password was overridden. The flag is true when there is a
-  // credential in the store that will get a new password value.
-  bool password_overridden_ = false;
 
   // If Chrome has already autofilled a few times, it is probable that autofill
   // is triggered by programmatic changes in the page. We set a maximum number

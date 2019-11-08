@@ -66,14 +66,13 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   virtual std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
       BrowserAccessibility* root) = 0;
 
-  void FormatAccessibilityTreeForTesting(BrowserAccessibility* root,
-                                         base::string16* contents);
-
   // AccessibilityTreeFormatter overrides.
   void AddDefaultFilters(
       std::vector<PropertyFilter>* property_filters) override;
   std::unique_ptr<base::DictionaryValue> FilterAccessibilityTree(
       const base::DictionaryValue& dict) override;
+  void FormatAccessibilityTree(BrowserAccessibility* root,
+                               base::string16* contents) override;
   void FormatAccessibilityTree(const base::DictionaryValue& tree_node,
                                base::string16* contents) override;
   void SetPropertyFilters(
@@ -150,7 +149,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   std::vector<NodeFilter> node_filters_;
 
   // Whether or not node ids should be included in the dump.
-  bool show_ids_ = false;
+  bool show_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityTreeFormatterBase);
 };

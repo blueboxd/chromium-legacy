@@ -6213,18 +6213,33 @@ TEST_F(InputMethodResultAuraTest, SetCompositionText) {
 
 // This test is for ui::TextInputClient::ConfirmCompositionText.
 TEST_F(InputMethodResultAuraTest, ConfirmCompositionText) {
-  base::Closure ime_call =
-      base::Bind(&ui::TextInputClient::ConfirmCompositionText,
-                 base::Unretained(text_input_client()));
+  base::Closure ime_call = base::Bind(
+      &ui::TextInputClient::ConfirmCompositionText,
+      base::Unretained(text_input_client()), /** keep_selection */ true);
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     SetHasCompositionTextToTrue();
+    // Due to a webkit bug. See: https://bugs.webkit.org/show_bug.cgi?id=37788
+    // RenderWidgetHostViewAura::SetCompositionText() will ignore the
+    // selection range passed into it. Hence, RWHVA::SetCompositionText()
+    // cannot be used to set the selection range.
+
+    // RenderWidgetHostViewAura::GetFocusedFrame() does not return a focused
+    // frame due to (crbug.com/689777). Hence,
+    // RWHVA::SetEditableSelectionRange(gfx::Range(0, 2)) also cannot be used
+    // to set the selection range.
+
+    // Hence, there exists no easy way to set the selection range to a specific
+    //  value and test the behaviour of keep_selection.
     ime_call.Run();
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ("SetComposition FinishComposingText",
               GetMessageNames(widget_hosts_[index]
                                   ->input_handler()
                                   ->GetAndResetDispatchedMessages()));
+    // TODO(keithlee) - If either of the previous bugs get fixed, amend
+    // this unittest to check if the TIC::SelectionRange is updated to the
+    // gfx::Range(0,2) value after the IME call.
   }
 }
 

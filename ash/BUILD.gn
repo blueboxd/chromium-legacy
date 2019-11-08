@@ -1645,16 +1645,21 @@ static_library("ash_shell_lib_with_content") {
   ]
 }
 
-copy("dbus_service_files") {
+action("dbus_service_files") {
   sources = [
     "dbus/org.chromium.DisplayService.conf",
     "dbus/org.chromium.GesturePropertiesService.conf",
     "dbus/org.chromium.LivenessService.conf",
     "dbus/org.chromium.UrlHandlerService.conf",
   ]
+  output_conf_file = "$root_out_dir/dbus/ash_dbus_services.conf"
   outputs = [
-    "$root_out_dir/dbus/{{source_file_part}}",
+    output_conf_file,
   ]
+
+  script = "//chromeos/tools/concat_dbus_conf_files.py"
+  args = [ rebase_path(output_conf_file, root_build_dir) ]
+  args += rebase_path(sources, root_build_dir)
 }
 
 test("ash_unittests") {

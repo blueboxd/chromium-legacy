@@ -1070,14 +1070,9 @@ bool LayoutInline::HitTestCulledInline(
         *ContainingNGBlockFlow()->PaintFragment()));
     DCHECK(container_fragment->PhysicalFragment().IsInline() ||
            container_fragment->PhysicalFragment().IsLineBox());
-    NGInlineCursor cursor;
-    cursor.MoveTo(*this);
-    for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
-      if (!cursor.CurrentPaintFragment()->IsDescendantOfNotSelf(
-              *container_fragment))
-        continue;
+    NGInlineCursor cursor(*container_fragment);
+    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
       yield(cursor.CurrentRect());
-    }
   } else {
     DCHECK(!ContainingNGBlockFlow());
     CollectCulledLineBoxRects(yield);

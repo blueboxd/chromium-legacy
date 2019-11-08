@@ -87,7 +87,11 @@ void ManifestUpdateTask::OnDidGetInstallableData(const InstallableData& data) {
   }
 
   DCHECK(data.manifest);
-  if (!IsUpdateNeededForManifest(*data.manifest)) {
+  std::unique_ptr<WebApplicationInfo> web_application_info =
+      std::make_unique<WebApplicationInfo>();
+  UpdateWebAppInfoFromManifest(*data.manifest, web_application_info.get(),
+                               ForInstallableSite::kYes);
+  if (!IsUpdateNeeded(*web_application_info)) {
     DestroySelf(ManifestUpdateResult::kAppUpToDate);
     return;
   }
@@ -95,28 +99,25 @@ void ManifestUpdateTask::OnDidGetInstallableData(const InstallableData& data) {
   stage_ = Stage::kPendingWindowsClosed;
   Observe(nullptr);
   ui_manager_.NotifyOnAllAppWindowsClosed(
-      app_id_, base::Bind(&ManifestUpdateTask::OnAllAppWindowsClosed,
-                          AsWeakPtr(), *data.manifest));
+      app_id_, base::BindOnce(&ManifestUpdateTask::OnAllAppWindowsClosed,
+                              AsWeakPtr(), std::move(web_application_info)));
 }
 
-bool ManifestUpdateTask::IsUpdateNeededForManifest(
-    const blink::Manifest& manifest) const {
-  if (app_id_ != GenerateAppIdFromURL(manifest.start_url))
+bool ManifestUpdateTask::IsUpdateNeeded(
+    const WebApplicationInfo& web_application_info) const {
+  if (app_id_ != GenerateAppIdFromURL(web_application_info.app_url))
     return false;
 
-  if (manifest.theme_color != registrar_.GetAppThemeColor(app_id_))
+  if (web_application_info.theme_color != registrar_.GetAppThemeColor(app_id_))
     return true;
 
   // TODO(crbug.com/926083): Check more manifest fields.
   return false;
 }
 
-void ManifestUpdateTask::OnAllAppWindowsClosed(blink::Manifest manifest) {
+void ManifestUpdateTask::OnAllAppWindowsClosed(
+    std::unique_ptr<WebApplicationInfo> web_application_info) {
   DCHECK_EQ(stage_, Stage::kPendingWindowsClosed);
-
-  auto web_application_info = std::make_unique<WebApplicationInfo>();
-  UpdateWebAppInfoFromManifest(manifest, web_application_info.get(),
-                               ForInstallableSite::kYes);
 
   // The app's name must not change due to an automatic update.
   web_application_info->title =
@@ -137,16 +138,23 @@ void ManifestUpdateTask::OnAllAppWindowsClosed(blink::Manifest manifest) {
       break;
   }
 
+  std::unique_ptr<WebApplicationInfo> web_application_info_for_dchecking;
+#if DCHECK_IS_ON()
+  web_application_info_for_dchecking =
+      std::make_unique<WebApplicationInfo>(*web_application_info);
+#endif
+
   stage_ = Stage::kPendingInstallation;
   install_manager_.UpdateWebAppFromInfo(
       app_id_, std::move(web_application_info),
-      base::Bind(&ManifestUpdateTask::OnInstallationComplete, AsWeakPtr(),
-                 std::move(manifest)));
+      base::BindOnce(&ManifestUpdateTask::OnInstallationComplete, AsWeakPtr(),
+                     std::move(web_application_info_for_dchecking)));
 }
 
-void ManifestUpdateTask::OnInstallationComplete(blink::Manifest manifest,
-                                                const AppId& app_id,
-                                                InstallResultCode code) {
+void ManifestUpdateTask::OnInstallationComplete(
+    std::unique_ptr<WebApplicationInfo> opt_web_application_info,
+    const AppId& app_id,
+    InstallResultCode code) {
   DCHECK_EQ(stage_, Stage::kPendingInstallation);
 
   if (!IsSuccess(code)) {
@@ -155,7 +163,7 @@ void ManifestUpdateTask::OnInstallationComplete(blink::Manifest manifest,
   }
 
   DCHECK_EQ(app_id_, app_id);
-  DCHECK(!IsUpdateNeededForManifest(manifest));
+  DCHECK(!IsUpdateNeeded(*opt_web_application_info));
   DCHECK_EQ(code, InstallResultCode::kSuccessAlreadyInstalled);
 
   DestroySelf(ManifestUpdateResult::kAppUpdated);

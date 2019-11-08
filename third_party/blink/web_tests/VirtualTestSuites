@@ -584,9 +584,9 @@
     "args": ["--enable-features=BlinkSchedulerDisableAntiStarvationForPriorities"]
   },
   {
-    "prefix": "cross-origin-embedder-policy",
+    "prefix": "cross-origin-isolation",
     "bases": ["external/wpt/html/cross-origin-embedder-policy"],
-    "args": ["--enable-features=CrossOriginEmbedderPolicy"]
+    "args": ["--enable-features=CrossOriginIsolation"]
   },
   {
     "prefix": "json-modules",

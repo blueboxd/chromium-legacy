@@ -1303,7 +1303,25 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   // early return here is a performance optimization.
   if (parent_dirty)
     return;
-
+  // If we are outside the flat tree and FlatTreeStyleRecalc is enabled, we
+  // should not update the recalc root because we should not traverse those
+  // nodes from StyleEngine::RecalcStyle().
+  if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+    if (const ComputedStyle* current_style = GetComputedStyle()) {
+      if (current_style->IsEnsuredOutsideFlatTree())
+        return;
+    } else {
+      ContainerNode* style_parent = ancestor;
+      while (style_parent && !style_parent->CanParticipateInFlatTree())
+        style_parent = style_parent->GetStyleRecalcParent();
+      if (style_parent) {
+        if (const auto* parent_style = style_parent->GetComputedStyle()) {
+          if (parent_style->IsEnsuredOutsideFlatTree())
+            return;
+        }
+      }
+    }
+  }
   // If we're in a locked subtree, then we should not update the style recalc
   // roots. These would be updated when we commit the lock. If we have locked
   // display locks somewhere in the document, we iterate up the ancestor chain

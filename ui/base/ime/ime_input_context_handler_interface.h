@@ -53,7 +53,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEInputContextHandlerInterface {
 
   // Commits any composition text.
   // Set |reset_engine| to false if this was triggered from the extension.
-  virtual void ConfirmCompositionText(bool reset_engine) = 0;
+  virtual void ConfirmCompositionText(bool reset_engine,
+                                      bool keep_selection) = 0;
 
   // Returns true if there is any composition text.
   virtual bool HasCompositionText() = 0;

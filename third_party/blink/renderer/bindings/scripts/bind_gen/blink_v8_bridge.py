@@ -15,6 +15,23 @@ from .code_node import UnlikelyExitNode
 _format = CodeNode.format_template
 
 
+def blink_class_name(idl_definition):
+    """
+    Returns the class name of Blink implementation.
+    """
+    try:
+        class_name = idl_definition.extended_attributes.get(
+            "ImplementedAs").value
+    except:
+        class_name = idl_definition.identifier
+
+    if isinstance(idl_definition,
+                  (web_idl.CallbackFunction, web_idl.CallbackInterface)):
+        return name_style.class_("v8", class_name)
+    else:
+        return name_style.class_(class_name)
+
+
 def blink_type_info(idl_type):
     """
     Returns the types of Blink implementation corresponding to the given IDL

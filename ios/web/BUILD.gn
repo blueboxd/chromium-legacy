@@ -206,6 +206,7 @@ test("ios_web_unittests") {
     "//ios/web/js_messaging:unittests",
     "//ios/web/security:unittests",
     "//ios/web/session:unittests",
+    "//ios/web/test:packed_resources",
     "//ios/web/web_view:unittests",
   ]
 
@@ -345,11 +346,10 @@ source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "public/test/crw_mock_web_state_delegate.h",
-    "public/test/crw_mock_web_state_delegate.mm",
+    "public/test/crw_fake_web_state_delegate.h",
+    "public/test/crw_fake_web_state_delegate.mm",
   ]
   deps = [
-    "//ios/testing:ocmock_support",
     "//ios/web",
   ]
 }

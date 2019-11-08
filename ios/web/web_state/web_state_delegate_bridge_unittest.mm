@@ -10,10 +10,11 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#import "ios/web/public/test/crw_mock_web_state_delegate.h"
+#import "ios/web/public/test/crw_fake_web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/ui/context_menu_params.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 #include "ui/base/page_transition_types.h"
 
@@ -25,6 +26,7 @@
 // any optional methods.
 @interface TestEmptyWebStateDelegate : NSObject<CRWWebStateDelegate>
 @end
+
 @implementation TestEmptyWebStateDelegate
 @end
 
@@ -36,10 +38,7 @@ class WebStateDelegateBridgeTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
 
-    id originalMockDelegate =
-        [OCMockObject niceMockForProtocol:@protocol(CRWWebStateDelegate)];
-    delegate_ = [[CRWMockWebStateDelegate alloc]
-        initWithRepresentedObject:originalMockDelegate];
+    delegate_ = [[CRWFakeWebStateDelegate alloc] init];
     empty_delegate_ = [[TestEmptyWebStateDelegate alloc] init];
 
     bridge_.reset(new WebStateDelegateBridge(delegate_));
@@ -47,11 +46,10 @@ class WebStateDelegateBridgeTest : public PlatformTest {
   }
 
   void TearDown() override {
-    EXPECT_OCMOCK_VERIFY((OCMockObject*)delegate_);
     PlatformTest::TearDown();
   }
 
-  CRWMockWebStateDelegate* delegate_;
+  CRWFakeWebStateDelegate* delegate_;
   id empty_delegate_;
   std::unique_ptr<WebStateDelegateBridge> bridge_;
   std::unique_ptr<WebStateDelegateBridge> empty_delegate_bridge_;

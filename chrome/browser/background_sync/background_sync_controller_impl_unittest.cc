@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
@@ -63,10 +64,12 @@ class BackgroundSyncControllerImplTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
+    base::FilePath sub_dir =
+        temp_dir_.GetPath().AppendASCII("BackgroundSyncTest");
+    ASSERT_TRUE(base::CreateDirectory(sub_dir));
+
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
-        &profile_, base::BindRepeating(
-                       &BuildTestHistoryService,
-                       temp_dir_.GetPath().AppendASCII("BackgroundSyncTest")));
+        &profile_, base::BindRepeating(&BuildTestHistoryService, sub_dir));
     controller_ = std::make_unique<BackgroundSyncControllerImpl>(&profile_);
   }
 
@@ -94,10 +97,10 @@ class BackgroundSyncControllerImplTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
+  base::ScopedTempDir temp_dir_;
   TestingProfile profile_;
   std::unique_ptr<BackgroundSyncControllerImpl> controller_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
-  base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncControllerImplTest);
 };

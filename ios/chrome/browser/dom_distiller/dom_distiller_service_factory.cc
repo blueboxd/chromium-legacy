@@ -33,10 +33,12 @@ class DomDistillerKeyedService : public KeyedService,
       std::unique_ptr<dom_distiller::DistillerFactory> distiller_factory,
       std::unique_ptr<dom_distiller::DistillerPageFactory>
           distiller_page_factory,
-      std::unique_ptr<dom_distiller::DistilledPagePrefs> distilled_page_prefs)
+      std::unique_ptr<dom_distiller::DistilledPagePrefs> distilled_page_prefs,
+      std::unique_ptr<dom_distiller::DistillerUIHandle> distiller_ui_handle)
       : DomDistillerService(std::move(distiller_factory),
                             std::move(distiller_page_factory),
-                            std::move(distilled_page_prefs)) {}
+                            std::move(distilled_page_prefs),
+                            std::move(distiller_ui_handle)) {}
 
   ~DomDistillerKeyedService() override {}
 
@@ -88,7 +90,8 @@ DomDistillerServiceFactory::BuildServiceInstanceFor(
 
   return std::make_unique<DomDistillerKeyedService>(
       std::move(distiller_factory), std::move(distiller_page_factory),
-      std::move(distilled_page_prefs));
+      std::move(distilled_page_prefs),
+      /* distiller_ui_handle */ nullptr);
 }
 
 web::BrowserState* DomDistillerServiceFactory::GetBrowserStateToUse(

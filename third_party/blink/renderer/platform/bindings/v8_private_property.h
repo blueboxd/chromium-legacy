@@ -76,7 +76,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
     friend class V8PrivateProperty;
     // The following classes are exceptionally allowed to call to
     // getFromMainWorld.
-    friend class V8CustomEvent;
     friend class V8ExtendableMessageEvent;
 
     Symbol(v8::Isolate* isolate, v8::Local<v8::Private> private_symbol)

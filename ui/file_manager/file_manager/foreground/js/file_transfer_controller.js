@@ -141,14 +141,14 @@ class FileTransferController {
      * @const
      */
     this.copyCommand_ = /** @type {!cr.ui.Command} */ (
-        queryRequiredElement('command#copy', this.document_));
+        queryRequiredElement('command#copy', assert(this.document_.body)));
 
     /**
      * @private {!cr.ui.Command}
      * @const
      */
     this.cutCommand_ = /** @type {!cr.ui.Command} */ (
-        queryRequiredElement('command#cut', this.document_));
+        queryRequiredElement('command#cut', assert(this.document_.body)));
 
     /**
      * @private {DirectoryEntry|FilesAppDirEntry}
@@ -616,7 +616,7 @@ class FileTransferController {
   renderThumbnail_() {
     const length = this.selectionHandler_.selection.entries.length;
     const container = /** @type {HTMLElement} */ (
-        this.document_.querySelector('#drag-container'));
+        this.document_.body.querySelector('#drag-container'));
     const contents = this.document_.createElement('div');
     contents.className = 'drag-contents';
     container.appendChild(contents);
@@ -758,7 +758,7 @@ class FileTransferController {
     // This should be removed after the bug is fixed.
     this.touching_ = false;
 
-    const container = this.document_.querySelector('#drag-container');
+    const container = this.document_.body.querySelector('#drag-container');
     container.textContent = '';
     this.clearDropTarget_();
     delete window[DRAG_AND_DROP_GLOBAL_DATA];
@@ -1280,7 +1280,7 @@ class FileTransferController {
    * @private
    */
   simulateCommand_(command, handler) {
-    const iframe = this.document_.querySelector('#command-dispatcher');
+    const iframe = this.document_.body.querySelector('#command-dispatcher');
     const doc = iframe.contentDocument;
     doc.addEventListener(command, handler);
     doc.execCommand(command);

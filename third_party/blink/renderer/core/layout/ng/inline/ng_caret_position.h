@@ -32,12 +32,6 @@ struct NGCaretPosition {
  public:
   bool IsNull() const { return cursor.IsNull(); }
 
-  // TODO(yosin): We'll remove |NGCaretPosition::PaintFragment()|, once all
-  // clients work with |NGInlineCursor|.
-  const NGPaintFragment* PaintFragment() const {
-    return cursor.CurrentPaintFragment();
-  }
-
   Position ToPositionInDOMTree() const;
   PositionWithAffinity ToPositionInDOMTreeWithAffinity() const;
 

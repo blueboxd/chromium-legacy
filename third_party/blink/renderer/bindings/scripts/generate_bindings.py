@@ -53,6 +53,8 @@ def main():
         web_idl.Component('modules'): options.output_dir_modules,
     }
 
+    bind_gen.init(output_dirs)
+
     for task in tasks:
         dispatch_table[task](web_idl_database=web_idl_database,
                              output_dirs=output_dirs)

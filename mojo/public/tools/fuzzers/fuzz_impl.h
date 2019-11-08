@@ -6,14 +6,15 @@
 #define MOJO_PUBLIC_TOOLS_FUZZERS_FUZZ_IMPL_H_
 
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/tools/fuzzers/fuzz.mojom.h"
 
 class FuzzImpl : public fuzz::mojom::FuzzInterface,
                  public fuzz::mojom::FuzzDummyInterface {
  public:
-  explicit FuzzImpl(fuzz::mojom::FuzzInterfaceRequest request);
+  explicit FuzzImpl(mojo::PendingReceiver<fuzz::mojom::FuzzInterface> receiver);
   ~FuzzImpl() override;
 
   // fuzz::mojom::FuzzInterface:
@@ -38,7 +39,7 @@ class FuzzImpl : public fuzz::mojom::FuzzInterface,
   void Ping() override;
 
   /* Expose the binding to the fuzz harness. */
-  mojo::Binding<FuzzInterface> binding_;
+  mojo::Receiver<FuzzInterface> receiver_;
 
  private:
   mojo::AssociatedReceiverSet<FuzzDummyInterface> associated_receivers_;

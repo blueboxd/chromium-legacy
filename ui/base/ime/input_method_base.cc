@@ -282,10 +282,11 @@ InputMethod* InputMethodBase::GetInputMethod() {
   return this;
 }
 
-void InputMethodBase::ConfirmCompositionText(bool reset_engine) {
+void InputMethodBase::ConfirmCompositionText(bool reset_engine,
+                                             bool keep_selection) {
   TextInputClient* client = GetTextInputClient();
   if (client && client->HasCompositionText())
-    client->ConfirmCompositionText();
+    client->ConfirmCompositionText(keep_selection);
 }
 
 bool InputMethodBase::HasCompositionText() {

@@ -34,28 +34,24 @@ UbertokenFetcherImpl::UbertokenFetcherImpl(
     ProfileOAuth2TokenService* token_service,
     CompletionCallback ubertoken_callback,
     gaia::GaiaSource source,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    bool is_bound_to_channel_id)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : UbertokenFetcherImpl(account_id,
                            /*access_token=*/"",
                            token_service,
                            std::move(ubertoken_callback),
                            base::BindRepeating(CreateGaiaAuthFetcher,
                                                source,
-                                               url_loader_factory),
-                           is_bound_to_channel_id) {}
+                                               url_loader_factory)) {}
 
 UbertokenFetcherImpl::UbertokenFetcherImpl(
     const CoreAccountId& account_id,
     const std::string& access_token,
     ProfileOAuth2TokenService* token_service,
     CompletionCallback ubertoken_callback,
-    GaiaAuthFetcherFactory factory,
-    bool is_bound_to_channel_id)
+    GaiaAuthFetcherFactory factory)
     : OAuth2AccessTokenManager::Consumer("uber_token_fetcher"),
       token_service_(token_service),
       ubertoken_callback_(std::move(ubertoken_callback)),
-      is_bound_to_channel_id_(is_bound_to_channel_id),
       gaia_auth_fetcher_factory_(factory),
       account_id_(account_id),
       access_token_(access_token),
@@ -146,8 +142,7 @@ void UbertokenFetcherImpl::RequestAccessToken() {
 
 void UbertokenFetcherImpl::ExchangeTokens() {
   gaia_auth_fetcher_ = gaia_auth_fetcher_factory_.Run(this);
-  gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(
-      access_token_, is_bound_to_channel_id_);
+  gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(access_token_);
 }
 
 }  // namespace signin

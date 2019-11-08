@@ -94,6 +94,10 @@ class TestPasswordStore : public PasswordStore {
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) override;
+  void AddFieldInfoImpl(const FieldInfo& field_info) override;
+  std::vector<FieldInfo> GetAllFieldInfoImpl() override;
+  void RemoveFieldInfoByTimeImpl(base::Time remove_begin,
+                                 base::Time remove_end) override;
 
   // PasswordStoreSync interface.
   bool BeginTransaction() override;

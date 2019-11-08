@@ -90,10 +90,10 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
       return false;
     if (sizeof(T) > 1 && byte_offset % sizeof(T))
       return false;
-    if (byte_offset > buffer->ByteLength())
+    if (byte_offset > buffer->ByteLengthAsUnsigned())
       return false;
-    unsigned remaining_elements =
-        static_cast<unsigned>((buffer->ByteLength() - byte_offset) / sizeof(T));
+    unsigned remaining_elements = static_cast<unsigned>(
+        (buffer->ByteLengthAsUnsigned() - byte_offset) / sizeof(T));
     if (num_elements > remaining_elements)
       return false;
     return true;

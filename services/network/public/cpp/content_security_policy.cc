@@ -155,81 +155,67 @@ bool ParsePath(base::StringPiece path, mojom::CSPSource* csp_source) {
 
 // Parses an ancestor source expression.
 // https://www.w3.org/TR/CSP3/#grammardef-ancestor-source
-base::Optional<mojom::CSPSourcePtr> ParseAncestorSource(
-    base::StringPiece source) {
-  if (base::EqualsCaseInsensitiveASCII(source, "'none'"))
-    return base::nullopt;
+//
+// Return false on errors.
+bool ParseAncestorSource(base::StringPiece expression,
+                         mojom::CSPSource* csp_source) {
+  // TODO(arthursonzogni): Blink reports an invalid source expression when
+  // 'none' is parsed here.
+  if (base::EqualsCaseInsensitiveASCII(expression, "'none'"))
+    return false;
 
-  mojom::CSPSource csp_source;
-
-  if (base::EqualsCaseInsensitiveASCII(source, "*")) {
-    csp_source.is_host_wildcard = true;
-    return csp_source.Clone();
-  }
-
-  if (base::EqualsCaseInsensitiveASCII(source, "'self'")) {
-    csp_source.allow_self = true;
-    return csp_source.Clone();
-  }
-
-  size_t position = source.find_first_of(":/");
-  if (position != std::string::npos && source[position] == ':') {
+  size_t position = expression.find_first_of(":/");
+  if (position != std::string::npos && expression[position] == ':') {
     // scheme:
     //       ^
-    if (position + 1 == source.size()) {
-      if (ParseScheme(source.substr(0, position), &csp_source))
-        return csp_source.Clone();
-      return base::nullopt;
-    }
+    if (position + 1 == expression.size())
+      return ParseScheme(expression.substr(0, position), csp_source);
 
-    if (source[position + 1] == '/') {
+    if (expression[position + 1] == '/') {
       // scheme://
       //       ^
-      if (position + 2 >= source.size() || source[position + 2] != '/')
-        return base::nullopt;
-      if (!ParseScheme(source.substr(0, position), &csp_source))
-        return base::nullopt;
-      source = source.substr(position + 3);
-      position = source.find_first_of(":/");
+      if (position + 2 >= expression.size() || expression[position + 2] != '/')
+        return false;
+      if (!ParseScheme(expression.substr(0, position), csp_source))
+        return false;
+      expression = expression.substr(position + 3);
+      position = expression.find_first_of(":/");
     }
   }
 
   // host
   //     ^
-  if (!ParseHost(source.substr(0, position), &csp_source))
-    return base::nullopt;
+  if (!ParseHost(expression.substr(0, position), csp_source))
+    return false;
 
   // If there's nothing more to parse (no port or path specified), return.
   if (position == std::string::npos)
-    return csp_source.Clone();
+    return true;
 
-  source = source.substr(position);
+  expression = expression.substr(position);
 
   // :\d*
   // ^
-  if (source[0] == ':') {
-    size_t port_end = source.find_first_of("/");
-    base::StringPiece port = source.substr(
+  if (expression[0] == ':') {
+    size_t port_end = expression.find_first_of("/");
+    base::StringPiece port = expression.substr(
         1, port_end == std::string::npos ? std::string::npos : port_end - 1);
-    if (!ParsePort(port, &csp_source))
-      return base::nullopt;
+    if (!ParsePort(port, csp_source))
+      return false;
     if (port_end == std::string::npos)
-      return csp_source.Clone();
+      return true;
 
-    source = source.substr(port_end);
+    expression = expression.substr(port_end);
   }
 
   // /
   // ^
-  if (!source.empty() && !ParsePath(source, &csp_source))
-    return base::nullopt;
-
-  return csp_source.Clone();
+  return expression.empty() || ParsePath(expression, csp_source);
 }
 
 // Parse ancestor-source-list grammar.
 // https://www.w3.org/TR/CSP3/#directive-frame-ancestors
-base::Optional<mojom::CSPSourceListPtr> ParseFrameAncestorsDirective(
+mojom::CSPSourceListPtr ParseFrameAncestorsDirective(
     base::StringPiece frame_ancestors_value) {
   base::StringPiece value = base::TrimString(
       frame_ancestors_value, base::kWhitespaceASCII, base::TRIM_ALL);
@@ -237,20 +223,36 @@ base::Optional<mojom::CSPSourceListPtr> ParseFrameAncestorsDirective(
   std::vector<mojom::CSPSourcePtr> sources;
 
   if (frame_ancestors_value.empty())
-    return base::nullopt;
+    return {};
+
+  auto directive = mojom::CSPSourceList::New();
 
   if (base::EqualsCaseInsensitiveASCII(value, "'none'"))
-    return mojom::CSPSourceList::New(std::move(sources));
+    return directive;
 
-  for (const auto& source : base::SplitStringPiece(
+  for (const auto& expression : base::SplitStringPiece(
            value, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    if (auto csp_source = ParseAncestorSource(source))
-      sources.push_back(std::move(*csp_source));
-    else
-      return base::nullopt;
+    if (base::EqualsCaseInsensitiveASCII(expression, "'self'")) {
+      directive->allow_self = true;
+      continue;
+    }
+
+    if (base::EqualsCaseInsensitiveASCII(expression, "*")) {
+      directive->allow_star = true;
+      continue;
+    }
+
+    auto csp_source = mojom::CSPSource::New();
+    if (ParseAncestorSource(expression, csp_source.get())) {
+      directive->sources.push_back(std::move(csp_source));
+      continue;
+    }
+
+    // Parsing error.
+    return {};
   }
 
-  return mojom::CSPSourceList::New(std::move(sources));
+  return directive;
 }
 
 // Parses a reporting directive.
@@ -361,10 +363,8 @@ bool ContentSecurityPolicy::ParseFrameAncestors(
   if (content_security_policy_ptr_->frame_ancestors)
     return true;
 
-  if (auto parsed_frame_ancestors =
-          ParseFrameAncestorsDirective(frame_ancestors_value)) {
-    content_security_policy_ptr_->frame_ancestors =
-        std::move(*parsed_frame_ancestors);
+  if (auto directive = ParseFrameAncestorsDirective(frame_ancestors_value)) {
+    content_security_policy_ptr_->frame_ancestors = std::move(directive);
     return true;
   }
 

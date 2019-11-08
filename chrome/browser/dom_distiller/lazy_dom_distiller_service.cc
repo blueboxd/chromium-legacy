@@ -55,6 +55,10 @@ DistilledPagePrefs* LazyDomDistillerService::GetDistilledPagePrefs() {
   return GetImpl()->GetDistilledPagePrefs();
 }
 
+DistillerUIHandle* LazyDomDistillerService::GetDistillerUIHandle() {
+  return GetImpl()->GetDistillerUIHandle();
+}
+
 LazyDomDistillerService::LazyDomDistillerService(Profile* profile)
     : profile_(profile) {}
 

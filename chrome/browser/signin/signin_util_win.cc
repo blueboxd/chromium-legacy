@@ -65,7 +65,7 @@ std::string DecryptRefreshToken(const std::string& cipher_text) {
 // Finish the process of import credentials.  This is either called directly
 // from ImportCredentialsFromProvider() if a browser window for the profile is
 // already available or is delayed until a browser can first be opened.
-void FinishImportCredentialsFromProvider(const std::string& account_id,
+void FinishImportCredentialsFromProvider(const CoreAccountId& account_id,
                                          Browser* browser,
                                          Profile* profile,
                                          Profile::CreateStatus status) {
@@ -111,7 +111,7 @@ void ImportCredentialsFromProvider(Profile* profile,
       AboutSigninInternalsFactory::GetInstance()->GetForProfile(profile);
   signin_internals->OnAuthenticationResultReceived("Credential Provider");
 
-  std::string account_id =
+  CoreAccountId account_id =
       IdentityManagerFactory::GetForProfile(profile)
           ->GetAccountsMutator()
           ->AddOrUpdateAccount(base::UTF16ToUTF8(gaia_id),

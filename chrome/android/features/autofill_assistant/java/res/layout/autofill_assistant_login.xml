@@ -4,14 +4,19 @@
      found in the LICENSE file. -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/login_full"
+    android:id="@+id/login_summary"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center_vertical">
   <TextView
-      android:id="@+id/username"
+      android:id="@+id/label"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:textAppearance="@style/TextAppearance.BlackBody"/>
+  <TextView
+      android:id="@+id/sublabel"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:textAppearance="@style/TextAppearance.BlackBody" />
 </LinearLayout>

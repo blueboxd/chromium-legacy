@@ -80,8 +80,8 @@ struct TraceMethodDelegate {
 template <typename T, void (T::*method)(const WeakCallbackInfo&)>
 struct WeakCallbackMethodDelegate {
   STATIC_ONLY(WeakCallbackMethodDelegate);
-  static void Trampoline(const WeakCallbackInfo& broker, void* self) {
-    (reinterpret_cast<T*>(self)->*method)(broker);
+  static void Trampoline(const WeakCallbackInfo& info, void* self) {
+    (reinterpret_cast<T*>(self)->*method)(info);
   }
 };
 

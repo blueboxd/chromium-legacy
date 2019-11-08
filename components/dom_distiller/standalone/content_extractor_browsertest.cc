@@ -164,7 +164,8 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
 
   return std::make_unique<DomDistillerService>(
       std::move(distiller_factory), std::move(distiller_page_factory),
-      std::make_unique<DistilledPagePrefs>(pref_service));
+      std::make_unique<DistilledPagePrefs>(pref_service),
+      /* distiller_ui_handle */ nullptr);
 }
 
 void AddComponentsTestResources() {

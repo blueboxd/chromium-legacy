@@ -16,16 +16,33 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/drive/chromeos/drive_test_util.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_system_core_util.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace drive {
 namespace internal {
+
+namespace {
+
+// Helper to destroy objects which needs Destroy() to be called on destruction.
+// Note: When using this helper, you should destruct objects before
+// BrowserThread.
+struct DestroyHelperForTests {
+  template <typename T>
+  void operator()(T* object) const {
+    if (object) {
+      object->Destroy();
+      content::RunAllTasksUntilIdle();  // Finish destruction.
+    }
+  }
+};
+
+}  // namespace
 
 class ResourceMetadataStorageTest : public testing::Test {
  protected:
@@ -78,8 +95,7 @@ class ResourceMetadataStorageTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
-      storage_;
+  std::unique_ptr<ResourceMetadataStorage, DestroyHelperForTests> storage_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMetadataStorageTest);
 };

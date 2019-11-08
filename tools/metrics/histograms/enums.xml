@@ -7914,6 +7914,7 @@ histogram as enum -->
   <int value="30" label="kTpmAttestationKeys"/>
   <int value="31" label="kStrikes"/>
   <int value="32" label="kLeakedCredentials"/>
+  <int value="33" label="kFieldInfo"/>
 </enum>
 
 <enum name="ChromeChannelForHistogram">
@@ -21264,6 +21265,7 @@ Called by update_net_error_codes.py.-->
   <int value="1403" label="AUTOTESTPRIVATE_REMOVEACTIVEDESK"/>
   <int value="1404" label="TERMINALPRIVATE_GETCROSHSETTINGS"/>
   <int value="1405" label="AUTOTESTPRIVATE_ENABLEASSISTANTANDWAITFORREADY"/>
+  <int value="1406" label="INPUTMETHODPRIVATE_FINISHCOMPOSINGTEXT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -35676,6 +35678,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1961648833" label="show_summary"/>
   <int value="-1961497025" label="tint-gl-composited-content"/>
   <int value="-1961062505" label="VrBrowsingInCustomTab:disabled"/>
+  <int value="-1960766118" label="CrossOriginIsolation:disabled"/>
   <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
   <int value="-1959563554" label="ChromeOSAccountManager:enabled"/>
   <int value="-1958315092" label="EnableGamepadButtonAxisEvents:disabled"/>
@@ -36031,7 +36034,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1514611301" label="enable-data-reduction-proxy-bypass-warnings"/>
   <int value="-1512656386" label="disable-new-audio-rendering-mixing-strategy"/>
   <int value="-1510839574" label="disable-sync-synced-notifications"/>
-  <int value="-1509001043" label="CrossOriginEmbedderPolicy:enabled"/>
   <int value="-1508852757" label="CreditCardAutofillTouchBar:disabled"/>
   <int value="-1506880454"
       label="SupervisedUserCommittedInterstitials:disabled"/>
@@ -36483,6 +36485,7 @@ from previous Chrome versions.
   <int value="-992785453" label="ExplicitLanguageAsk:disabled"/>
   <int value="-991253797"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:disabled"/>
+  <int value="-990374250" label="CrossOriginIsolation:enabled"/>
   <int value="-990187062" label="SendTabToSelfShowSendingUI:enabled"/>
   <int value="-989671895" label="OfflineIndicatorAlwaysHttpProbe:enabled"/>
   <int value="-987470173" label="ClickToCallOpenDialerDirectly:disabled"/>
@@ -36754,7 +36757,6 @@ from previous Chrome versions.
   <int value="-662064703" label="MediaSessionService:enabled"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
-  <int value="-656345197" label="CrossOriginEmbedderPolicy:disabled"/>
   <int value="-654196854" label="PasswordsKeyboardAccessory:enabled"/>
   <int value="-653616608" label="MacSyscallSandbox:disabled"/>
   <int value="-650504533" label="enable-speculative-launch-service-worker"/>
@@ -37110,6 +37112,7 @@ from previous Chrome versions.
   <int value="-169745744" label="SyncPseudoUSSPreferences:enabled"/>
   <int value="-167744090" label="EnableHomeLauncher:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
+  <int value="-165006916" label="EnableNeuralPalmDetectionFilter:enabled"/>
   <int value="-164539906"
       label="OmniboxPreserveDefaultMatchAgainstAsyncUpdate:disabled"/>
   <int value="-161782023" label="AndroidMessagesProdEndpoint:enabled"/>
@@ -37853,6 +37856,7 @@ from previous Chrome versions.
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
+  <int value="806035639" label="EnableNeuralPalmDetectionFilter:disabled"/>
   <int value="806334184" label="AndroidSpellChecker:enabled"/>
   <int value="807447752" label="ChromeMemex:disabled"/>
   <int value="807734471" label="tab-management-experiment-type-disabled"/>
@@ -38899,6 +38903,8 @@ from previous Chrome versions.
   <int value="6" label="Stats table failed initialization"/>
   <int value="7" label="Migration error"/>
   <int value="8" label="Commit transaction error"/>
+  <int value="9" label="Init leaked table error"/>
+  <int value="10" label="Init field info table error"/>
 </enum>
 
 <enum name="LoginFailureReason">

@@ -21,7 +21,7 @@ class CORE_EXPORT DOMArrayBufferBase : public ScriptWrappable {
 
   const void* Data() const { return Buffer()->Data(); }
   void* Data() { return Buffer()->Data(); }
-  unsigned ByteLength() const { return Buffer()->ByteLength(); }
+  unsigned ByteLength() const { return Buffer()->ByteLengthAsUnsigned(); }
   bool IsDetached() const { return Buffer()->IsDetached(); }
   bool IsShared() const { return Buffer()->IsShared(); }
 

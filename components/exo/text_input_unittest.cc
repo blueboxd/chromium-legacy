@@ -250,7 +250,7 @@ TEST_F(TextInputTest, CommitCompositionText) {
   SetCompositionText("composition");
 
   EXPECT_CALL(*delegate(), Commit(base::UTF8ToUTF16("composition"))).Times(1);
-  text_input()->ConfirmCompositionText();
+  text_input()->ConfirmCompositionText(/** keep_selection */ false);
 }
 
 TEST_F(TextInputTest, Commit) {

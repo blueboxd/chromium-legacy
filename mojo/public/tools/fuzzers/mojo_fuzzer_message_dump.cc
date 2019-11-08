@@ -14,6 +14,7 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/tools/fuzzers/fuzz.mojom.h"
 #include "mojo/public/tools/fuzzers/fuzz_impl.h"
 
@@ -227,13 +228,15 @@ void FuzzCallback() {}
 /* Invokes each method in the FuzzInterface and dumps the messages to the
  * supplied directory. */
 void DumpMessages(std::string output_directory) {
-  fuzz::mojom::FuzzInterfacePtr fuzz;
+  mojo::Remote<fuzz::mojom::FuzzInterface> fuzz;
   mojo::AssociatedRemote<fuzz::mojom::FuzzDummyInterface> dummy;
 
   /* Create the impl and add a MessageDumper to the filter chain. */
-  env->impl = std::make_unique<FuzzImpl>(MakeRequest(&fuzz));
-  env->impl->binding_.RouterForTesting()->SetIncomingMessageFilter(
-      std::make_unique<MessageDumper>(output_directory));
+  env->impl = std::make_unique<FuzzImpl>(fuzz.BindNewPipeAndPassReceiver());
+  env->impl->receiver_.internal_state()
+      ->RouterForTesting()
+      ->SetIncomingMessageFilter(
+          std::make_unique<MessageDumper>(output_directory));
 
   /* Call methods in various ways to generate interesting messages. */
   fuzz->FuzzBasic();

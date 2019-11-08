@@ -249,6 +249,19 @@ void TestPasswordStore::RemoveLeakedCredentialsByUrlAndTimeImpl(
   NOTIMPLEMENTED();
 }
 
+void TestPasswordStore::AddFieldInfoImpl(const FieldInfo& field_info) {
+  NOTIMPLEMENTED();
+}
+std::vector<FieldInfo> TestPasswordStore::GetAllFieldInfoImpl() {
+  NOTIMPLEMENTED();
+  return std::vector<FieldInfo>();
+}
+
+void TestPasswordStore::RemoveFieldInfoByTimeImpl(base::Time remove_begin,
+                                                  base::Time remove_end) {
+  NOTIMPLEMENTED();
+}
+
 bool TestPasswordStore::BeginTransaction() {
   return true;
 }

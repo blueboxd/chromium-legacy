@@ -282,9 +282,8 @@ IntersectionObserver::IntersectionObserver(
   }
 }
 
-void IntersectionObserver::ProcessCustomWeakness(
-    const WeakCallbackInfo& broker) {
-  if (RootIsImplicit() || (root() && broker.IsHeapObjectAlive(root())))
+void IntersectionObserver::ProcessCustomWeakness(const WeakCallbackInfo& info) {
+  if (RootIsImplicit() || (root() && info.IsHeapObjectAlive(root())))
     return;
   DummyExceptionStateForTesting exception_state;
   disconnect(exception_state);

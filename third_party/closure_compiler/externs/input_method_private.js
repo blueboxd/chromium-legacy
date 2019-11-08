@@ -162,6 +162,13 @@ chrome.inputMethodPrivate.getEncryptSyncEnabled = function(callback) {};
 chrome.inputMethodPrivate.setXkbLayout = function(xkb_name, callback) {};
 
 /**
+ * Commits the text currently being composed without moving the selected text
+ * range
+ * @param {function():void=} callback Called when the operation completes.
+ */
+chrome.inputMethodPrivate.finishComposingText = function(callback) {};
+
+/**
  * Fires the input.ime.onMenuItemActivated event.
  * @param {string} engineID ID of the engine to use.
  * @param {string} name Name of the MenuItem which was activated

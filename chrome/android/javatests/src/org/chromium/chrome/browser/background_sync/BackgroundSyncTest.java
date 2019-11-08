@@ -28,7 +28,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -93,7 +92,7 @@ public final class BackgroundSyncTest {
         // Note that this should be done before the startMainActivityOnBlankPage(), because Chrome
         // will otherwise run this check on startup and disable BackgroundSync code.
         if (!ExternalAuthUtils.canUseGooglePlayServices()) {
-            mNativeLibraryTestRule.loadNativeLibraryAndInitBrowserProcess();
+            mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
             disableGooglePlayServicesVersionCheck();
         }
 
@@ -114,7 +113,6 @@ public final class BackgroundSyncTest {
     @Test
     @MediumTest
     @Feature({"BackgroundSync"})
-    @DisabledTest(message = "crbug.com/1015055")
     public void onSyncCalledWithNetworkConnectivity() throws Exception {
         forceConnectionType(ConnectionType.CONNECTION_NONE);
 
@@ -148,7 +146,6 @@ public final class BackgroundSyncTest {
     @Test
     @MediumTest
     @Feature({"BackgroundSync"})
-    @DisabledTest(message = "crbug.com/1015055")
     public void browserWakeUpScheduledWhenSyncEventFails() throws Exception {
         forceConnectionType(ConnectionType.CONNECTION_NONE);
 

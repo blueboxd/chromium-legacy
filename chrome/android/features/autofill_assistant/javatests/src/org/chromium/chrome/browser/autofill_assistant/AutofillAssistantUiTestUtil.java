@@ -339,4 +339,23 @@ class AutofillAssistantUiTestUtil {
         JSONArray values = new JSONArray(javascriptHelper.getJsonResultAndClear());
         return new Rect(values.getInt(0), values.getInt(1), values.getInt(2), values.getInt(3));
     }
+
+    /**
+     * Retrieves the value of the specified element.
+     */
+    public static String getElementValue(String elementId, WebContents webContents)
+            throws Exception {
+        if (!checkElementExists(elementId, webContents)) {
+            throw new IllegalArgumentException(elementId + " does not exist");
+        }
+        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
+                new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
+        javascriptHelper.evaluateJavaScriptForTests(webContents,
+                "(function() {"
+                        + " return [document.getElementById('" + elementId + "').value]"
+                        + "})()");
+        javascriptHelper.waitUntilHasValue();
+        JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());
+        return result.getString(0);
+    }
 }

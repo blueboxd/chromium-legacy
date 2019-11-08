@@ -122,6 +122,9 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       content::WebContents* web_contents,
       const GURL& url);
 
+  // Whether or not we should launch preferred ARC apps.
+  bool ShouldLaunchPreferredApp(const GURL& url);
+
   // True if ARC is enabled, false otherwise.
   const bool arc_enabled_;
 

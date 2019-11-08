@@ -23,7 +23,6 @@
 #include "chrome/common/channel_info.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/model/entity_data.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_store.h"
@@ -34,8 +33,6 @@
 
 namespace web_app {
 
-namespace {
-
 bool AreAppsLocallyInstalledByDefault() {
 #if defined(OS_CHROMEOS)
   // On Chrome OS, sync always locally installs an app.
@@ -44,8 +41,6 @@ bool AreAppsLocallyInstalledByDefault() {
   return false;
 #endif
 }
-
-}  // namespace
 
 std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
   auto entity_data = std::make_unique<syncer::EntityData>();
@@ -388,6 +383,9 @@ void WebAppSyncBridge::ApplySyncDataChange(
 
 void WebAppSyncBridge::ApplySyncChangesToRegistrar(
     std::unique_ptr<RegistryUpdateData> update_local_data) {
+  if (update_local_data->IsEmpty())
+    return;
+
   std::vector<WebApp*> apps_to_install;
   for (const auto& web_app : update_local_data->apps_to_create)
     apps_to_install.push_back(web_app.get());

@@ -8,13 +8,13 @@
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "mojo/core/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/tools/fuzzers/fuzz_impl.h"
 
 void FuzzMessage(const uint8_t* data, size_t size, base::RunLoop* run) {
-  fuzz::mojom::FuzzInterfacePtr fuzz;
-  auto impl = std::make_unique<FuzzImpl>(MakeRequest(&fuzz));
-  auto router = impl->binding_.RouterForTesting();
+  mojo::PendingRemote<fuzz::mojom::FuzzInterface> fuzz;
+  auto impl = std::make_unique<FuzzImpl>(fuzz.InitWithNewPipeAndPassReceiver());
+  auto router = impl->receiver_.internal_state()->RouterForTesting();
 
   /* Create a mojo message with the appropriate payload size. */
   mojo::Message message(0, 0, size, 0, nullptr);

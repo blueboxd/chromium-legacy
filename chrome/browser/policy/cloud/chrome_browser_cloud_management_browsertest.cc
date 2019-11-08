@@ -471,9 +471,13 @@ class ChromeBrowserCloudManagementEnrollmentTest
   }
 
   void VerifyEnrollmentResult() {
-    EXPECT_EQ(is_enrollment_token_valid() ? "fake_device_management_token"
-                                          : std::string(),
-              BrowserDMTokenStorage::Get()->RetrieveDMToken());
+    auto dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+    if (is_enrollment_token_valid()) {
+      EXPECT_TRUE(dm_token.is_valid());
+      EXPECT_EQ("fake_device_management_token", dm_token.value());
+    } else {
+      EXPECT_TRUE(dm_token.is_empty());
+    }
 
     // Verify the enrollment result.
     ChromeBrowserCloudManagementEnrollmentResult expected_result;

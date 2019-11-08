@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.autofill_assistant.R;
@@ -38,7 +39,7 @@ public class AssistantPaymentMethodSection
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_payment_request_payment_method_title_padding),
                 context.getString(R.string.payments_add_card),
-                context.getString(R.string.payments_add_card), /*canEditItems=*/true);
+                context.getString(R.string.payments_add_card));
         setTitle(context.getString(R.string.payments_method_of_payment_label));
     }
 
@@ -118,6 +119,21 @@ public class AssistantPaymentMethodSection
         TextView methodIncompleteView = summaryView.findViewById(R.id.incomplete_error);
         setIncompleteErrorMessage(methodIncompleteView, method);
         hideIfEmpty(methodIncompleteView);
+    }
+
+    @Override
+    protected boolean canEditOption(AutofillPaymentInstrument method) {
+        return true;
+    }
+
+    @Override
+    protected @DrawableRes int getEditButtonDrawable(AutofillPaymentInstrument method) {
+        return R.drawable.ic_edit_24dp;
+    }
+
+    @Override
+    protected String getEditButtonContentDescription(AutofillPaymentInstrument method) {
+        return mContext.getString(R.string.autofill_edit_credit_card);
     }
 
     void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {

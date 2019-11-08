@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/navigation_handle.h"
@@ -514,11 +516,14 @@ void IntentPickerBubbleView::UpdateCheckboxState() {
   // TODO(crbug.com/826982): allow PWAs to have their decision persisted when
   // there is a central Chrome OS apps registry to store persistence.
   // TODO(crbug.com/1000037): allow to persist remote devices too.
-  auto selected_app_type = app_info_[selected_app_tag_].type;
-  const bool should_enable =
-      selected_app_type != apps::PickerEntryType::kWeb &&
-      selected_app_type != apps::PickerEntryType::kDevice;
-
+  bool should_enable = false;
+  if (base::FeatureList::IsEnabled(features::kAppServiceIntentHandling)) {
+    should_enable = true;
+  } else {
+    auto selected_app_type = app_info_[selected_app_tag_].type;
+    should_enable = selected_app_type != apps::PickerEntryType::kWeb &&
+                    selected_app_type != apps::PickerEntryType::kDevice;
+  }
   // Reset the checkbox state to the default unchecked if becomes disabled.
   if (!should_enable)
     remember_selection_checkbox_->SetChecked(false);

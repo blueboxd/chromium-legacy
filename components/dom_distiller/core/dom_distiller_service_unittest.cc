@@ -68,7 +68,8 @@ class DomDistillerServiceTest : public testing::Test {
     service_.reset(new DomDistillerService(
         std::unique_ptr<DistillerFactory>(distiller_factory_),
         std::unique_ptr<DistillerPageFactory>(distiller_page_factory_),
-        std::unique_ptr<DistilledPagePrefs>()));
+        /* distilled_page_prefs */ nullptr,
+        /* distiller_ui_handle */ nullptr));
   }
 
   void TearDown() override {

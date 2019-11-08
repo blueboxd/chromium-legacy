@@ -33,7 +33,6 @@
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -53,37 +52,12 @@
            notifyToolbar:(BOOL)notifyToolbar;
 @end
 
-@interface BVCTestTabModel : OCMockComplexTypeHelper
-- (instancetype)init NS_DESIGNATED_INITIALIZER;
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-@property(nonatomic, readonly) WebStateList* webStateList;
-@end
-
-@implementation BVCTestTabModel {
-  FakeWebStateListDelegate _webStateListDelegate;
-  std::unique_ptr<WebStateList> _webStateList;
-}
-
-- (instancetype)init {
-  if ((self = [super
-           initWithRepresentedObject:[OCMockObject
-                                         niceMockForClass:[TabModel class]]])) {
-    _webStateList = std::make_unique<WebStateList>(&_webStateListDelegate);
-  }
-  return self;
-}
-
-- (WebStateList*)webStateList {
-  return _webStateList.get();
-}
-@end
-
 #pragma mark -
 
 namespace {
 class BrowserViewControllerTest : public BlockCleanupTest {
  public:
-  BrowserViewControllerTest() {}
+  BrowserViewControllerTest() : web_state_list_(&web_state_list_delegate_) {}
 
  protected:
   void SetUp() override {
@@ -102,8 +76,13 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     chrome_browser_state_ = test_cbs_builder.Build();
 
     // Set up mock TabModel.
-    id tabModel = [[BVCTestTabModel alloc] init];
-    [tabModel setBrowserState:chrome_browser_state_.get()];
+    id tabModel = [OCMockObject niceMockForClass:[TabModel class]];
+    OCMStub([tabModel webStateList]).andReturn(&web_state_list_);
+    OCMStub([tabModel browserState])
+        .andReturn(
+            // As OCMock compare types as string, the cast is required otherwise
+            // it will complain that the value has an incompatible type.
+            static_cast<ios::ChromeBrowserState*>(chrome_browser_state_.get()));
 
     // Enable web usage for the mock TabModel's WebStateList.
     WebStateListWebUsageEnabler* enabler =
@@ -190,6 +169,8 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  FakeWebStateListDelegate web_state_list_delegate_;
+  WebStateList web_state_list_;
   TabModel* tabModel_;
   std::unique_ptr<Browser> browser_;
   BrowserViewControllerHelper* bvcHelper_;

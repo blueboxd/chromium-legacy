@@ -20,6 +20,7 @@ static_library("core") {
     "distiller.h",
     "distiller_page.cc",
     "distiller_page.h",
+    "distiller_ui_handle.h",
     "distiller_url_fetcher.cc",
     "distiller_url_fetcher.h",
     "dom_distiller_constants.cc",

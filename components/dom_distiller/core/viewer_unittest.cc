@@ -5,6 +5,7 @@
 #include "components/dom_distiller/core/viewer.h"
 
 #include "components/dom_distiller/core/distilled_page_prefs.h"
+#include "components/dom_distiller/core/distiller_ui_handle.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -57,6 +58,7 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
     return std::unique_ptr<DistillerPage>();
   }
   DistilledPagePrefs* GetDistilledPagePrefs() override;
+  DistillerUIHandle* GetDistillerUIHandle() override;
 };
 
 class DomDistillerViewerTest : public testing::Test {
@@ -110,6 +112,10 @@ TEST_F(DomDistillerViewerTest, TestCreatingInvalidViewRequest) {
 }
 
 DistilledPagePrefs* TestDomDistillerService::GetDistilledPagePrefs() {
+  return nullptr;
+}
+
+DistillerUIHandle* TestDomDistillerService::GetDistillerUIHandle() {
   return nullptr;
 }
 

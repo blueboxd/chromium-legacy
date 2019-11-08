@@ -89,11 +89,13 @@ base::Value* FindDictionaryForTypeAndValue(
   auto* condition_type_dict =
       dict->FindKey(ConditionTypeToString(condition_type));
 
-  if (!condition_type_dict)
+  if (!condition_type_dict) {
     return nullptr;
+  }
 
-  if (condition_type != apps::mojom::ConditionType::kPattern)
+  if (condition_type != apps::mojom::ConditionType::kPattern) {
     return condition_type_dict->FindKey(value);
+  }
 
   // For pattern matching, we need to go through all patterns and match types
   // to see if we have a match.
@@ -152,11 +154,13 @@ base::Value* FindDictAndUpdateBestMatchAppId(
     base::Value* dict,
     base::Optional<std::string>* best_match_app_id) {
   auto* found_dict = FindDictionaryForTypeAndValue(dict, condition_type, value);
-  if (!found_dict)
+  if (!found_dict) {
     return found_dict;
+  }
   std::string* app_id = found_dict->FindStringKey(kAppId);
-  if (app_id)
+  if (app_id) {
     *best_match_app_id = *app_id;
+  }
   return found_dict;
 }
 
@@ -249,26 +253,46 @@ PreferredApps::~PreferredApps() = default;
 
 // static
 // Recursively verifies that the structure of |value| matches what we expect.
-
+//
 // |value| should be a dictionary where each item is either:
 // * key == kAppId and a string value, or
 // * some other string value with a dictionary value.
 bool PreferredApps::VerifyPreferredApps(base::Value* value) {
-  if (!value->is_dict())
+  if (!value->is_dict()) {
     return false;
+  }
   bool all_items_valid = true;
   for (const auto& key_value : value->DictItems()) {
     bool item_valid = false;
-    if (key_value.first == kAppId)
+    if (key_value.first == kAppId) {
       item_valid = key_value.second.is_string();
-    else
+    } else {
       item_valid = VerifyPreferredApps(&key_value.second);
+    }
     if (!item_valid) {
       all_items_valid = false;
       break;
     }
   }
   return all_items_valid;
+}
+
+// static
+// Add a preferred app for a preferred app dictionary.
+bool PreferredApps::AddPreferredApp(
+    const std::string& app_id,
+    const apps::mojom::IntentFilterPtr& intent_filter,
+    base::Value* preferred_apps) {
+  if (!preferred_apps) {
+    return false;
+  }
+
+  // For an |intent_filter| there could be multiple |conditions|, and for each
+  // condition, there could be multiple |condition_values|. When we set
+  // preferred app for and |intent_filter|, we need to add the preferred app for
+  // all combinations of these |condition_values|.
+  SetPreferredApp(intent_filter->conditions, 0, preferred_apps, app_id);
+  return true;
 }
 
 void PreferredApps::Init(std::unique_ptr<base::Value> preferred_apps) {
@@ -286,21 +310,16 @@ bool PreferredApps::AddPreferredApp(
   if (!preferred_apps_) {
     return false;
   }
-
-  // For an |intent_filter| there could be multiple |conditions|, and for each
-  // condition, there could be multiple |condition_values|. When we set
-  // preferred app for and |intent_filter|, we need to add the preferred app for
-  // all combinations of these |condition_values|.
-  SetPreferredApp(intent_filter->conditions, 0, preferred_apps_.get(), app_id);
-  return true;
+  return AddPreferredApp(app_id, intent_filter, preferred_apps_.get());
 }
 
 base::Optional<std::string> PreferredApps::FindPreferredAppForIntent(
     const apps::mojom::IntentPtr& intent) {
   base::Optional<std::string> best_match_app_id = base::nullopt;
 
-  if (!preferred_apps_)
+  if (!preferred_apps_) {
     return best_match_app_id;
+  }
 
   // Currently only support intent that has the full URL.
   if (!intent->scheme.has_value() || !intent->host.has_value() ||
@@ -314,14 +333,16 @@ base::Optional<std::string> PreferredApps::FindPreferredAppForIntent(
   auto* scheme_dict = FindDictAndUpdateBestMatchAppId(
       apps::mojom::ConditionType::kScheme, intent->scheme.value(),
       preferred_apps_.get(), &best_match_app_id);
-  if (!scheme_dict)
+  if (!scheme_dict) {
     return best_match_app_id;
+  }
 
   auto* host_dict = FindDictAndUpdateBestMatchAppId(
       apps::mojom::ConditionType::kHost, intent->host.value(), scheme_dict,
       &best_match_app_id);
-  if (!host_dict)
+  if (!host_dict) {
     return best_match_app_id;
+  }
 
   FindDictAndUpdateBestMatchAppId(apps::mojom::ConditionType::kPattern,
                                   intent->path.value(), host_dict,
@@ -337,6 +358,10 @@ base::Optional<std::string> PreferredApps::FindPreferredAppForUrl(
 
 base::Value PreferredApps::GetValue() {
   return preferred_apps_->Clone();
+}
+
+bool PreferredApps::IsInitialized() {
+  return preferred_apps_ != nullptr;
 }
 
 }  // namespace apps

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "content/public/browser/browser_context.h"
@@ -66,6 +67,21 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
     apps::PickerEntryType entry_type,
     apps::IntentPickerCloseReason close_reason,
     bool should_persist) {
+  if (chromeos::switches::IsTabletFormFactor() && should_persist) {
+    // On devices of tablet form factor, until the user has decided to persist
+    // the setting, the browser-side intent picker should always be seen.
+    auto platform = IntentPickerAutoDisplayPref::Platform::kNone;
+    if (entry_type == apps::PickerEntryType::kArc) {
+      platform = IntentPickerAutoDisplayPref::Platform::kArc;
+    } else if (entry_type == apps::PickerEntryType::kUnknown &&
+               close_reason == apps::IntentPickerCloseReason::STAY_IN_CHROME) {
+      platform = IntentPickerAutoDisplayPref::Platform::kChrome;
+    }
+    IntentPickerAutoDisplayService::Get(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+        ->UpdatePlatformForTablets(url, platform);
+  }
+
   const bool should_launch_app =
       close_reason == apps::IntentPickerCloseReason::OPEN_APP;
   switch (entry_type) {
@@ -217,14 +233,17 @@ void ChromeOsAppsNavigationThrottle::CancelNavigation() {
 bool ChromeOsAppsNavigationThrottle::ShouldDeferNavigationForArc(
     content::NavigationHandle* handle) {
   // Query for ARC apps, and if we are handling a link navigation, allow the
-  // preferred app (if it exists) to be launched.
+  // preferred app (if it exists) to be launched unless we are on a device
+  // of tablet form factor, which will only launch the app if the user has
+  // explicitly set that app as preferred and persisted that setting via the
+  // intent picker previously.
   if (arc_enabled_ &&
       arc::ArcIntentPickerAppFetcher::WillGetArcAppsForNavigation(
           handle,
           base::BindOnce(
               &ChromeOsAppsNavigationThrottle::OnDeferredNavigationProcessed,
               weak_factory_.GetWeakPtr()),
-          /*should_launch_preferred_app=*/navigate_from_link())) {
+          ShouldLaunchPreferredApp(handle->GetURL()))) {
     return true;
   }
   return false;
@@ -260,6 +279,14 @@ ChromeOsAppsNavigationThrottle::GetPickerShowState(
     const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,
     content::WebContents* web_contents,
     const GURL& url) {
+  // On devices with tablet form factor we should not pop out the intent
+  // picker if Chrome has been chosen by the user as the platform for this URL.
+  if (chromeos::switches::IsTabletFormFactor()) {
+    if (ui_auto_display_service_->GetLastUsedPlatformForTablets(url) ==
+        IntentPickerAutoDisplayPref::Platform::kChrome) {
+      return PickerShowState::kOmnibox;
+    }
+  }
   return ShouldAutoDisplayUi(apps_for_picker, web_contents, url) &&
                  navigate_from_link()
              ? PickerShowState::kPopOut
@@ -299,4 +326,18 @@ bool ChromeOsAppsNavigationThrottle::ShouldAutoDisplayUi(
   DCHECK(ui_auto_display_service_);
   return ui_auto_display_service_->ShouldAutoDisplayUi(url);
 }
+
+bool ChromeOsAppsNavigationThrottle::ShouldLaunchPreferredApp(const GURL& url) {
+  DCHECK(ui_auto_display_service_);
+  // Devices of tablet form factor should only launch a preferred app
+  // from Chrome if it has been explicitly set and persisted by the user in the
+  // intent picker previously.
+  if (chromeos::switches::IsTabletFormFactor() &&
+      ui_auto_display_service_->GetLastUsedPlatformForTablets(url) !=
+          IntentPickerAutoDisplayPref::Platform::kArc) {
+    return false;
+  }
+  return navigate_from_link();
+}
+
 }  // namespace chromeos

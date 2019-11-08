@@ -555,7 +555,7 @@
     "expiry_milestone": 80
   },
   {
-    "name": "cross-origin-embedder-policy",
+    "name": "cross-origin-isolation",
     "owners": [ "yhirano" ],
     "expiry_milestone": 83
   },
@@ -1547,6 +1547,13 @@
     // This flag is used to capture early-browser network logging on platforms
     // without easy access to startup time configuration.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-neural-stylus-palm-rejection",
+    "owners": ["robsc", "napper", "adlr"],
+    // We add a neural net to change how fingers are handled. We set a milestone
+    // deep into the future to allow for experiments.
+    "expiry_milestone": 90
   },
   {
     "name": "enable-new-download-backend",

@@ -243,6 +243,19 @@
           }
         ]
       }, {
+        "name": "finishComposingText",
+        "type": "function",
+        "description": "Commits the text currently being composed without moving the selected text range",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes.",
+            "parameters": []
+          }
+        ]
+      }, {
         "name": "notifyImeMenuItemActivated",
         "type": "function",
         "description": "Fires the input.ime.onMenuItemActivated event.",

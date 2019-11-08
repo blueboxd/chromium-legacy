@@ -41,7 +41,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinTSF
                                  TextInputClient* focused) override;
   void OnDidChangeFocusedClient(TextInputClient* focused_before,
                                 TextInputClient* focused) override;
-  void ConfirmCompositionText(bool reset_engine) override;
+  void ConfirmCompositionText(bool reset_engine, bool keep_selection) override;
 
   void ShowVirtualKeyboardIfEnabled() override;
 

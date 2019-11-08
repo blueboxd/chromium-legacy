@@ -148,6 +148,10 @@ crbug.com/1018375 [ Win7 ] inspector-protocol/layout-fonts/fallback-dingbats.js 
 [ Linux ] inspector-protocol/layout-fonts/mac-case-insensitive-matching.js [ Skip ]
 [ Win ] inspector-protocol/layout-fonts/mac-case-insensitive-matching.js [ Skip ]
 
+# Mac only test for Gill Sans kerning
+crbug.com/1004945 [ Linux ] fast/text/mac-aat-morx-kern.html [ Skip ]
+crbug.com/1004945 [ Win ] fast/text/mac-aat-morx-kern.html [ Skip ]
+
 # Segoe UI matching is only relevant on Windows
 [ Mac ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ Skip ]
 [ Linux ] inspector-protocol/layout-fonts/font-weight-granularity-matching.js [ Skip ]

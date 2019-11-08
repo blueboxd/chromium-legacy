@@ -27,6 +27,8 @@ class CommandLine;
 
 namespace content {
 
+class BrowserAccessibility;
+
 class AccessibilityTestExpectationsLocator {
  public:
   // Suffix of the expectation file corresponding to html file.
@@ -125,6 +127,9 @@ class CONTENT_EXPORT AccessibilityTreeFormatter
   virtual std::unique_ptr<base::DictionaryValue> FilterAccessibilityTree(
       const base::DictionaryValue& dict) = 0;
 
+  // Dumps a BrowserAccessibility tree into a string.
+  virtual void FormatAccessibilityTree(BrowserAccessibility* root,
+                                       base::string16* contents) = 0;
   virtual void FormatAccessibilityTree(const base::DictionaryValue& tree_node,
                                        base::string16* contents) = 0;
 

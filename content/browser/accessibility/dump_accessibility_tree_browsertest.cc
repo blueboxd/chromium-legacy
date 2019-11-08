@@ -23,7 +23,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/accessibility_notification_waiter.h"
-#include "content/public/test/browser_accessibility.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -148,8 +147,10 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     formatter->SetPropertyFilters(property_filters_);
     formatter->SetNodeFilters(node_filters_);
     base::string16 actual_contents_utf16;
-    TestBrowserAccessibility::FormatAccessibilityTree(
-        formatter.get(), GetRootAccessibilityNode(shell()->web_contents()),
+    WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    formatter->FormatAccessibilityTree(
+        web_contents->GetRootBrowserAccessibilityManager()->GetRoot(),
         &actual_contents_utf16);
     std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
     return base::SplitString(actual_contents, "\n", base::KEEP_WHITESPACE,

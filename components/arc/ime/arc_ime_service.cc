@@ -396,9 +396,16 @@ void ArcImeService::SetCompositionText(
   ime_bridge_->SendSetCompositionText(composition);
 }
 
-void ArcImeService::ConfirmCompositionText() {
+void ArcImeService::ConfirmCompositionText(bool keep_selection) {
+  // TODO(b/134473433) Modify this function so that when keep_selection is
+  // true, the selection is not changed when text committed
+  if (keep_selection) {
+    NOTIMPLEMENTED_LOG_ONCE();
+  }
   InvalidateSurroundingTextAndSelectionRange();
   has_composition_text_ = false;
+  // Note: SendConfirmCompositonText() will commit the text and
+  // keep the selection unchanged
   ime_bridge_->SendConfirmCompositionText();
 }
 

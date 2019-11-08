@@ -96,11 +96,16 @@ class OutputMailbox {
     mailboxes[0].mailbox = mailbox_;
     mailboxes[0].sync_token = shared_image_interface_->GenUnverifiedSyncToken();
 
-    return VideoFrame::WrapNativeTextures(
+    auto frame = VideoFrame::WrapNativeTextures(
         pixel_format, mailboxes,
         BindToCurrentLoop(base::BindOnce(&OutputMailbox::OnFrameDestroyed,
                                          base::Unretained(this))),
         coded_size, visible_rect, natural_size, timestamp);
+
+    // Request a fence we'll wait on before reusing the buffer.
+    frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
+                                  true);
+    return frame;
   }
 
   // Called by FuchsiaVideoDecoder when it no longer needs this mailbox.

@@ -41,8 +41,7 @@ void PrefixSelector::SetCompositionText(
     const ui::CompositionText& composition) {
 }
 
-void PrefixSelector::ConfirmCompositionText() {
-}
+void PrefixSelector::ConfirmCompositionText(bool keep_selection) {}
 
 void PrefixSelector::ClearCompositionText() {
 }

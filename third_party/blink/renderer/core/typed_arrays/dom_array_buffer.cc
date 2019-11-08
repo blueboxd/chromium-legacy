@@ -41,8 +41,8 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
                               ArrayBufferContents& result) {
   DOMArrayBuffer* to_transfer = this;
   if (!IsDetachable(isolate)) {
-    to_transfer =
-        DOMArrayBuffer::Create(Buffer()->Data(), Buffer()->ByteLength());
+    to_transfer = DOMArrayBuffer::Create(Buffer()->Data(),
+                                         Buffer()->ByteLengthAsUnsigned());
   }
 
   if (!to_transfer->Buffer()->Transfer(result))

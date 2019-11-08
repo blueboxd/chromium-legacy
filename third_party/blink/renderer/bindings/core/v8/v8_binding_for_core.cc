@@ -80,13 +80,25 @@ void V8SetReturnValue(const v8::PropertyCallbackInfo<v8::Value>& info,
                       const v8::PropertyDescriptor& descriptor) {
   DCHECK(descriptor.has_configurable());
   DCHECK(descriptor.has_enumerable());
-  DCHECK(descriptor.has_value());
-  DCHECK(descriptor.has_writable());
+  if (descriptor.has_value()) {
+    // Data property
+    DCHECK(descriptor.has_writable());
+    info.GetReturnValue().Set(
+        V8ObjectBuilder(ScriptState::ForCurrentRealm(info))
+            .Add("configurable", descriptor.configurable())
+            .Add("enumerable", descriptor.enumerable())
+            .Add("value", descriptor.value())
+            .Add("writable", descriptor.writable())
+            .V8Value());
+    return;
+  }
+  // Accessor property
+  DCHECK(descriptor.has_get() || descriptor.has_set());
   info.GetReturnValue().Set(V8ObjectBuilder(ScriptState::ForCurrentRealm(info))
                                 .Add("configurable", descriptor.configurable())
                                 .Add("enumerable", descriptor.enumerable())
-                                .Add("value", descriptor.value())
-                                .Add("writable", descriptor.writable())
+                                .Add("get", descriptor.get())
+                                .Add("set", descriptor.set())
                                 .V8Value());
 }
 

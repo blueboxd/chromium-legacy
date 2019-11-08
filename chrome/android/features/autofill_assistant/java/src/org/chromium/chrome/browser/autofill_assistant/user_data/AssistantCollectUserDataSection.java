@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -39,7 +40,6 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
     private final int mFullViewResId;
     private final int mTitleToContentPadding;
     private final List<Item> mItems;
-    private final boolean mCanEditItems;
 
     protected final Context mContext;
     protected T mSelectedOption;
@@ -69,16 +69,14 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
      *         button should be created.
      * @param listAddButton The string to display in the add button at the bottom of the list. Can
      *         be null if no add button should be created.
-     * @param canEditItems Whether items can be edited (i.e., show an edit button) or not.
      */
     public AssistantCollectUserDataSection(Context context, ViewGroup parent, int summaryViewResId,
             int fullViewResId, int titleToContentPadding, @Nullable String titleAddButton,
-            @Nullable String listAddButton, boolean canEditItems) {
+            @Nullable String listAddButton) {
         mContext = context;
         mFullViewResId = fullViewResId;
         mItems = new ArrayList<>();
         mTitleToContentPadding = titleToContentPadding;
-        mCanEditItems = canEditItems;
 
         LayoutInflater inflater = LayoutInflater.from(context);
         mSectionExpander = new AssistantVerticalExpander(context, null);
@@ -291,7 +289,7 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
     }
 
     /**
-     * Creates a new |Item| from |option|.
+     * Creates a new item from {@code option}.
      */
     private Item createItem(T option) {
         View fullView = LayoutInflater.from(mContext).inflate(mFullViewResId, null);
@@ -301,48 +299,69 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
     }
 
     /**
-     * Adds |item| to the UI.
+     * Adds {@code item} to the UI.
      */
     private void addItem(Item item) {
         mItems.add(item);
-        mItemsView.addItem(item.mFullView, /*hasEditButton=*/mCanEditItems, selected -> {
-            if (mIgnoreItemSelectedNotifications || !selected) {
-                return;
-            }
-            mIgnoreItemSelectedNotifications = true;
-            selectItem(item.mFullView, item.mOption);
-            mIgnoreItemSelectedNotifications = false;
-            if (item.mOption.isComplete()) {
-                // Workaround for Android bug: a layout transition may cause the newly checked
-                // radiobutton to not render properly.
-                mSectionExpander.post(() -> mSectionExpander.setExpanded(false));
-            } else {
-                createOrEditItem(item.mOption);
-            }
-        }, () -> createOrEditItem(item.mOption));
+        boolean canEditOption = canEditOption(item.mOption);
+        @DrawableRes
+        int editButtonDrawable = R.drawable.ic_edit_24dp;
+        String editButtonContentDescription = "";
+        if (canEditOption) {
+            editButtonDrawable = getEditButtonDrawable(item.mOption);
+            editButtonContentDescription = getEditButtonContentDescription(item.mOption);
+        }
+        mItemsView.addItem(item.mFullView, /*hasEditButton=*/canEditOption,
+                selected
+                -> {
+                    if (mIgnoreItemSelectedNotifications || !selected) {
+                        return;
+                    }
+                    mIgnoreItemSelectedNotifications = true;
+                    selectItem(item.mFullView, item.mOption);
+                    mIgnoreItemSelectedNotifications = false;
+                    if (item.mOption.isComplete()) {
+                        // Workaround for Android bug: a layout transition may cause the newly
+                        // checked radiobutton to not render properly.
+                        mSectionExpander.post(() -> mSectionExpander.setExpanded(false));
+                    } else {
+                        createOrEditItem(item.mOption);
+                    }
+                },
+                ()
+                        -> createOrEditItem(item.mOption),
+                /*editButtonDrawable=*/editButtonDrawable,
+                /*editButtonContentDescription=*/editButtonContentDescription);
         updateVisibility();
     }
 
     /**
-     * Asks the subclass to edit an item or create a new one (if |oldItem| is null). Subclasses
-     * should call |addOrUpdateItem| when they are done.
+     * Asks the subclass to edit an item or create a new one (if {@code oldItem} is null).
+     * Subclasses should call {@code addOrUpdateItem} when they are done.
      * @param oldItem The item to be edited (null if a new item should be created).
      */
     protected abstract void createOrEditItem(@Nullable T oldItem);
 
     /**
-     * Asks the subclass to update the contents of |fullView|, which was previously created by
-     * |createFullView|.
+     * Asks the subclass to update the contents of {@code fullView}, which was previously created by
+     * {@code createFullView}.
      */
     protected abstract void updateFullView(View fullView, T option);
 
-    /**
-     * Asks the subclass to update the contents of the summary view.
-     */
+    /** Asks the subclass to update the contents of the summary view. */
     protected abstract void updateSummaryView(View summaryView, T option);
 
+    /** Asks the subclass whether {@code option} should be editable or not. */
+    protected abstract boolean canEditOption(T option);
+
+    /** Asks the subclass which drawable to use for {@code option}. */
+    protected abstract @DrawableRes int getEditButtonDrawable(T option);
+
+    /** Asks the subclass for the content description of {@code option}. */
+    protected abstract String getEditButtonContentDescription(T option);
+
     /**
-     * For convenience. Hides |view| if it is empty.
+     * For convenience. Hides {@code view} if it is empty.
      */
     void hideIfEmpty(TextView view) {
         view.setVisibility(view.length() == 0 ? View.GONE : View.VISIBLE);

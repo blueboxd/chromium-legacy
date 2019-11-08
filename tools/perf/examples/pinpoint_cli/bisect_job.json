@@ -1,16 +1,14 @@
 {
   "name": "Example bisect job",
-  "bug_id": "944965",
+  "bug_id": "1022349",
   "target": "performance_webview_test_suite",
   "configuration": "android-go_webview-perf",
-  "benchmark": "system_health.memory_mobile",
   "comparison_mode": "performance",
-  "story": "browse.media.facebook.photos",
+  "benchmark": "system_health.memory_mobile",
+  "story": "browse:media:facebook_photos",
   "chart": "memory:webview:all_processes:reported_by_os:system_memory:private_dirty_size",
-  "tir_label": "browse_media",
-  "trace": "browse:media:facebook_photos",
   "statistic": "avg",
   "repository": "chromium",
-  "start_git_hash": "dd0f551fcd96d46c6ec2b2a7c543cb2083f1831d",
-  "end_git_hash": "e6808e8d7e973f43b0796505a09ee03caf6ec976"
+  "start_git_hash": "9bb441de89f7d031992ec67585ac0732ef622222",
+  "end_git_hash": "f402331ff436d3ac12cacbd1c959641eb3524923"
 }

@@ -187,7 +187,7 @@ void MatchedPropertiesCache::Trace(blink::Visitor* visitor) {
 }
 
 void MatchedPropertiesCache::RemoveCachedMatchedPropertiesWithDeadEntries(
-    const WeakCallbackInfo& broker) {
+    const WeakCallbackInfo& info) {
   Vector<unsigned> to_remove;
   for (const auto& entry_pair : cache_) {
     // A nullptr value indicates that the entry is currently being created; see
@@ -196,7 +196,7 @@ void MatchedPropertiesCache::RemoveCachedMatchedPropertiesWithDeadEntries(
       continue;
     for (const auto& matched_properties :
          entry_pair.value->matched_properties) {
-      if (!broker.IsHeapObjectAlive(matched_properties)) {
+      if (!info.IsHeapObjectAlive(matched_properties)) {
         to_remove.push_back(entry_pair.key);
         break;
       }

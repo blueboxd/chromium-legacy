@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/cloud/chrome_browser_cloud_management_helper.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -163,10 +164,10 @@ void MachineLevelUserCloudPolicyFetcher::InitializeManager(
 }
 
 void MachineLevelUserCloudPolicyFetcher::TryToFetchPolicy() {
-  std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
+  auto dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
   std::string client_id = BrowserDMTokenStorage::Get()->RetrieveClientId();
-  if (!dm_token.empty() && !client_id.empty())
-    SetupRegistrationAndFetchPolicy(dm_token, client_id);
+  if (dm_token.is_valid() && !client_id.empty())
+    SetupRegistrationAndFetchPolicy(dm_token.value(), client_id);
 }
 
 }  // namespace policy

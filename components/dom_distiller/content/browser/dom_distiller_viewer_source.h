@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 
@@ -23,8 +22,7 @@ class DomDistillerViewerSourceTest;
 class DomDistillerViewerSource : public content::URLDataSource {
  public:
   DomDistillerViewerSource(DomDistillerServiceInterface* dom_distiller_service,
-                           const std::string& scheme,
-                           std::unique_ptr<DistillerUIHandle> ui_handle);
+                           const std::string& scheme);
   ~DomDistillerViewerSource() override;
 
   class RequestViewerHandle;
@@ -51,10 +49,6 @@ class DomDistillerViewerSource : public content::URLDataSource {
   // The service which contains all the functionality needed to interact with
   // the list of articles.
   DomDistillerServiceInterface* dom_distiller_service_;
-
-  // An object for accessing chrome-specific UI controls including external
-  // feedback and opening the distiller settings.
-  std::unique_ptr<DistillerUIHandle> distiller_ui_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerViewerSource);
 };

@@ -159,7 +159,8 @@ void InputMethodWinImm32::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
   if (IsWindowFocused(focused_before))
-    ConfirmCompositionText(/* reset_engine */ true);
+    ConfirmCompositionText(/* reset_engine */ true,
+                           /* keep_selection */ false);
 }
 
 void InputMethodWinImm32::OnDidChangeFocusedClient(
@@ -322,8 +323,9 @@ void InputMethodWinImm32::RefreshInputLanguage() {
   }
 }
 
-void InputMethodWinImm32::ConfirmCompositionText(bool reset_engine) {
-  InputMethodBase::ConfirmCompositionText(reset_engine);
+void InputMethodWinImm32::ConfirmCompositionText(bool reset_engine,
+                                                 bool keep_selection) {
+  InputMethodBase::ConfirmCompositionText(reset_engine, keep_selection);
   if (reset_engine)
     InputMethodWinBase::ResetEngine();
 

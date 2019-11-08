@@ -126,10 +126,10 @@
         List of credentials to be filled on touch is closed.
       </message>
       <message name="IDS_MANAGE_PASSWORDS" desc="Title of the button at the end of a touch to fill sheet that will open the password preferences when tapped.">
-        Manage Passwords
+        Manage passwords
       </message>
       <message name="IDS_TOUCH_TO_FILL_CONFIRM" desc="Title of the button that confirms filling the only available set of credentials.">
-        Use Password
+        Use password
       </message>
     </messages>
   </release>

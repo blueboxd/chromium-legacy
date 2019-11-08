@@ -55,16 +55,14 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
       ProfileOAuth2TokenService* token_service,
       CompletionCallback ubertoken_callback,
       gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      bool is_bound_to_channel_id = true);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Constructs an instance and starts fetching the ubertoken for |account_id|.
   UbertokenFetcherImpl(const CoreAccountId& account_id,
                        const std::string& access_token,
                        ProfileOAuth2TokenService* token_service,
                        CompletionCallback ubertoken_callback,
-                       GaiaAuthFetcherFactory factory,
-                       bool is_bound_to_channel_id = true);
+                       GaiaAuthFetcherFactory factory);
   ~UbertokenFetcherImpl() override;
 
   // Overridden from GaiaAuthConsumer
@@ -87,7 +85,6 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
 
   ProfileOAuth2TokenService* token_service_;
   CompletionCallback ubertoken_callback_;
-  bool is_bound_to_channel_id_;  // defaults to true
   GaiaAuthFetcherFactory gaia_auth_fetcher_factory_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   std::unique_ptr<OAuth2AccessTokenManager::Request> access_token_request_;

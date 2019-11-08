@@ -25,6 +25,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/password_leak_history_consumer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -369,6 +370,32 @@ void PasswordStore::RemoveLeakedCredentialsByUrlAndTime(
   ScheduleTask(base::BindOnce(
       &PasswordStore::RemoveLeakedCredentialsByUrlAndTimeInternal, this,
       std::move(url_filter), remove_begin, remove_end, std::move(completion)));
+}
+
+void PasswordStore::AddFieldInfo(const FieldInfo& field_info) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  ScheduleTask(
+      base::BindOnce(&PasswordStore::AddFieldInfoImpl, this, field_info));
+}
+
+void PasswordStore::GetAllFieldInfo(PasswordStoreConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  auto get_all_field_info_task =
+      base::BindOnce(&PasswordStore::GetAllFieldInfoImpl, this);
+  consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
+      std::move(get_all_field_info_task),
+      base::BindOnce(&PasswordStoreConsumer::OnGetAllFieldInfo,
+                     consumer->GetWeakPtr()));
+}
+
+void PasswordStore::RemoveFieldInfoByTime(base::Time remove_begin,
+                                          base::Time remove_end,
+                                          base::OnceClosure completion) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  ScheduleTask(base::BindOnce(&PasswordStore::RemoveFieldInfoByTimeInternal,
+                              this, remove_begin, remove_end,
+                              std::move(completion)));
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
@@ -867,6 +894,15 @@ void PasswordStore::RemoveLeakedCredentialsByUrlAndTimeInternal(
     base::OnceClosure completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   RemoveLeakedCredentialsByUrlAndTimeImpl(url_filter, remove_begin, remove_end);
+  if (!completion.is_null())
+    main_task_runner_->PostTask(FROM_HERE, std::move(completion));
+}
+
+void PasswordStore::RemoveFieldInfoByTimeInternal(
+    base::Time remove_begin,
+    base::Time remove_end,
+    base::OnceClosure completion) {
+  RemoveFieldInfoByTimeImpl(remove_begin, remove_end);
   if (!completion.is_null())
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }

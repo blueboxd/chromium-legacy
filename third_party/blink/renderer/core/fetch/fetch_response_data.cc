@@ -293,9 +293,13 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
                     String::FromUTF8(csp_source->scheme),
                     String::FromUTF8(csp_source->host), csp_source->port,
                     String::FromUTF8(csp_source->path),
-                    csp_source->is_host_wildcard, csp_source->is_port_wildcard,
-                    csp_source->allow_self));
+                    csp_source->is_host_wildcard,
+                    csp_source->is_port_wildcard));
           }
+          blink_frame_ancestors->allow_self =
+              frame_ancestors_directive->allow_self;
+          blink_frame_ancestors->allow_star =
+              frame_ancestors_directive->allow_star;
         }
 
         for (auto& endpoints :

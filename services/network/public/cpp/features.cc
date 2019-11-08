@@ -96,9 +96,12 @@ const base::Feature kProactivelyThrottleLowPriorityRequests{
     "ProactivelyThrottleLowPriorityRequests",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// This is for Cross-Origin-Opener-Policy (COOP) and
+// Cross-Origin-Embedder-Policy (COEP).
+// https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
 // https://github.com/mikewest/corpp
-const base::Feature kCrossOriginEmbedderPolicy{
-    "CrossOriginEmbedderPolicy", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCrossOriginIsolation{"CrossOriginIsolation",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When kBlockNonSecureExternalRequests is enabled, requests initiated from a
 // pubic network may only target a private network if the initiating context

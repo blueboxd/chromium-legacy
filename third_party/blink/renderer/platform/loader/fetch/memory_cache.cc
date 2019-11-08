@@ -71,8 +71,8 @@ void MemoryCacheEntry::Trace(blink::Visitor* visitor) {
       MemoryCacheEntry, &MemoryCacheEntry::ClearResourceWeak>(this);
 }
 
-void MemoryCacheEntry::ClearResourceWeak(const WeakCallbackInfo& broker) {
-  if (!resource_ || broker.IsHeapObjectAlive(resource_))
+void MemoryCacheEntry::ClearResourceWeak(const WeakCallbackInfo& info) {
+  if (!resource_ || info.IsHeapObjectAlive(resource_))
     return;
   GetMemoryCache()->Remove(resource_.Get());
   resource_.Clear();

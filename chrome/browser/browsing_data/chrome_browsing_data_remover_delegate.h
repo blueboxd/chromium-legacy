@@ -227,7 +227,8 @@ class ChromeBrowsingDataRemoverDelegate
     kTpmAttestationKeys = 30,
     kStrikes = 31,
     kLeakedCredentials = 32,
-    kMaxValue = kLeakedCredentials,
+    kFieldInfo = 33,
+    kMaxValue = kFieldInfo,
   };
 
   // Called by CreateTaskCompletionClosure().

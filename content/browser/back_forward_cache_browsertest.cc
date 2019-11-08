@@ -327,6 +327,34 @@ class ThemeColorObserver : public WebContentsObserver {
   base::Optional<SkColor> color_;
 };
 
+class DOMContentLoadedObserver : public WebContentsObserver {
+ public:
+  explicit DOMContentLoadedObserver(RenderFrameHostImpl* render_frame_host)
+      : WebContentsObserver(
+            WebContents::FromRenderFrameHost(render_frame_host)),
+        render_frame_host_(render_frame_host) {}
+
+  void DOMContentLoaded(RenderFrameHost* render_frame_host) override {
+    if (render_frame_host_ == render_frame_host)
+      run_loop_.Quit();
+  }
+
+  void Wait() {
+    if (render_frame_host_->dom_content_loaded())
+      run_loop_.Quit();
+    run_loop_.Run();
+  }
+
+ private:
+  RenderFrameHostImpl* render_frame_host_;
+  base::RunLoop run_loop_;
+};
+
+void WaitForDOMContentLoaded(RenderFrameHostImpl* rfh) {
+  DOMContentLoadedObserver observer(rfh);
+  observer.Wait();
+}
+
 }  // namespace
 
 // Navigate from A to B and go back.
@@ -1445,6 +1473,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // The navigation finishes while the image is still loading.
   navigation_manager.WaitForNavigationFinished();
+  // Wait for the document to load DOM to ensure that kLoading is not
+  // one of the reasons why the document wasn't cached.
+  WaitForDOMContentLoaded(current_frame_host());
+
   RenderFrameDeletedObserver delete_observer_rfh_a(current_frame_host());
 
   // 2) Navigate away.
@@ -3652,6 +3684,32 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(observer.did_fire());
 }
 
+// Check that back-forward cache is disabled when PermissionService is used.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, PermissionServiceContext) {
+  content::BackForwardCacheDisabledTester tester;
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  auto* rfh = current_frame_host();
+  int process_id = rfh->GetProcess()->GetID();
+  int frame_routing_id = rfh->GetRoutingID();
+
+  // 2) Invoke PermissionService.
+  EXPECT_TRUE(ExecJs(rfh, R"(
+          navigator.permissions.query({ name: "geolocation" })
+          )"));
+
+  // 3) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 4) Check that back-forward cache is disabled for A.
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(process_id, frame_routing_id,
+                                                  "PermissionServiceContext"));
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        SetsThemeColorWhenRestoredFromCache) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -3739,6 +3797,36 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectNotRestored(
       {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebMidiNotCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // - Wait until requestMIDIAccess() promise is resolved.
+  EXPECT_TRUE(ExecJs(rfh_a, "navigator.requestMIDIAccess()"));
+
+  // 2) Navigate to B.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+
+  // - Page A should not be in the cache.
+  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+
+  // 3) Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kRequestedMIDIPermission,
       FROM_HERE);
 }
 

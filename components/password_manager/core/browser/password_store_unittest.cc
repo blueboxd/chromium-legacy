@@ -92,6 +92,7 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
 
   MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
                void(const std::vector<std::unique_ptr<PasswordForm>>&));
+  MOCK_METHOD1(OnGetAllFieldInfo, void(const std::vector<FieldInfo>));
 
   // GMock cannot mock methods with move-only args.
   void OnGetPasswordStoreResults(
@@ -1246,6 +1247,7 @@ TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
       GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE, 1);
   store->ShutdownOnUIThread();
 }
+#endif
 
 TEST_F(PasswordStoreTest, GetAllLeakedCredentials) {
   LeakedCredentials leaked_credentials(GURL("https://example.com"),
@@ -1315,6 +1317,57 @@ TEST_F(PasswordStoreTest, RemoveLeakedCredentialsCreatedBetween) {
   store->ShutdownOnUIThread();
 }
 
-#endif
+TEST_F(PasswordStoreTest, GetAllFieldInfo) {
+  FieldInfo field_info1{1001 /*form_signature*/, 1 /* field_signature */,
+                        autofill::USERNAME, base::Time::FromTimeT(1)};
+  FieldInfo field_info2{1002 /*form_signature*/, 10 /* field_signature */,
+                        autofill::PASSWORD, base::Time::FromTimeT(2)};
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  store->AddFieldInfo(field_info1);
+  store->AddFieldInfo(field_info2);
+  MockPasswordStoreConsumer consumer;
+  EXPECT_CALL(consumer, OnGetAllFieldInfo(
+                            UnorderedElementsAre(field_info1, field_info2)));
+  store->GetAllFieldInfo(&consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(PasswordStoreTest, RemoveFieldInfo) {
+  FieldInfo field_info1{1001 /*form_signature*/, 1 /* field_signature */,
+                        autofill::USERNAME, base::Time::FromTimeT(100)};
+  FieldInfo field_info2{1002 /*form_signature*/, 10 /* field_signature */,
+                        autofill::PASSWORD, base::Time::FromTimeT(200)};
+
+  FieldInfo field_info3{1003 /*form_signature*/, 11 /* field_signature */,
+                        autofill::PASSWORD, base::Time::FromTimeT(300)};
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  store->AddFieldInfo(field_info1);
+  store->AddFieldInfo(field_info2);
+  store->AddFieldInfo(field_info3);
+
+  MockPasswordStoreConsumer consumer;
+  EXPECT_CALL(consumer, OnGetAllFieldInfo(UnorderedElementsAre(
+                            field_info1, field_info2, field_info3)));
+  store->GetAllFieldInfo(&consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&consumer);
+
+  store->RemoveFieldInfoByTime(base::Time::FromTimeT(150),
+                               base::Time::FromTimeT(250), base::Closure());
+
+  EXPECT_CALL(consumer, OnGetAllFieldInfo(
+                            UnorderedElementsAre(field_info1, field_info3)));
+  store->GetAllFieldInfo(&consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
 
 }  // namespace password_manager

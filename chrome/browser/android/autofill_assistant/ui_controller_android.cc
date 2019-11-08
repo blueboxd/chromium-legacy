@@ -116,6 +116,33 @@ base::Optional<int> CreateJavaColor(JNIEnv* env,
       env, base::android::ConvertUTF8ToJavaString(env, color_string));
 }
 
+// Creates the Java equivalent to |login_choices|.
+base::android::ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
+    JNIEnv* env,
+    const std::vector<LoginChoice>& login_choices) {
+  auto jlist = Java_AssistantCollectUserDataModel_createLoginChoiceList(env);
+  for (const auto& login_choice : login_choices) {
+    base::android::ScopedJavaLocalRef<jobject> jinfo_popup = nullptr;
+    if (login_choice.info_popup.has_value()) {
+      jinfo_popup = Java_AssistantCollectUserDataModel_createInfoPopup(
+          env,
+          base::android::ConvertUTF8ToJavaString(
+              env, login_choice.info_popup->title()),
+          base::android::ConvertUTF8ToJavaString(
+              env, login_choice.info_popup->text()));
+    }
+    Java_AssistantCollectUserDataModel_addLoginChoice(
+        env, jlist,
+        base::android::ConvertUTF8ToJavaString(env, login_choice.identifier),
+        base::android::ConvertUTF8ToJavaString(env, login_choice.label),
+        base::android::ConvertUTF8ToJavaString(env, login_choice.sublabel),
+        base::android::ConvertUTF8ToJavaString(
+            env, login_choice.sublabel_accessibility_hint),
+        login_choice.preselect_priority, jinfo_popup);
+  }
+  return jlist;
+}
+
 // Creates the java equivalent to the text inputs specified in |section|.
 base::android::ScopedJavaLocalRef<jobject> CreateJavaTextInputsForSection(
     JNIEnv* env,
@@ -888,14 +915,8 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       base::android::ToJavaArrayOfStrings(
           env, collect_user_data_options->supported_basic_card_networks));
   if (collect_user_data_options->request_login_choice) {
-    auto jlist = Java_AssistantCollectUserDataModel_createLoginChoiceList(env);
-    for (const auto& login_choice : collect_user_data_options->login_choices) {
-      Java_AssistantCollectUserDataModel_addLoginChoice(
-          env, jmodel, jlist,
-          base::android::ConvertUTF8ToJavaString(env, login_choice.identifier),
-          base::android::ConvertUTF8ToJavaString(env, login_choice.label),
-          login_choice.preselect_priority);
-    }
+    auto jlist = CreateJavaLoginChoiceList(
+        env, collect_user_data_options->login_choices);
     Java_AssistantCollectUserDataModel_setLoginChoices(env, jmodel, jlist);
   }
   Java_AssistantCollectUserDataModel_setRequestDateRange(

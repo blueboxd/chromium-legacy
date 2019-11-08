@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -248,6 +250,12 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         set(DELEGATE, delegate);
     }
 
+    /** Creates a simple info popup with a title and some text. */
+    @CalledByNative
+    private static AssistantInfoPopup createInfoPopup(String title, String text) {
+        return new AssistantInfoPopup(title, text);
+    }
+
     /** Creates an empty list of login options. */
     @CalledByNative
     private static List<AssistantLoginChoice> createLoginChoiceList() {
@@ -256,9 +264,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
 
     /** Appends a login choice to {@code loginChoices}. */
     @CalledByNative
-    private void addLoginChoice(List<AssistantLoginChoice> loginChoices, String identifier,
-            String label, int priority) {
-        loginChoices.add(new AssistantLoginChoice(identifier, label, priority));
+    private static void addLoginChoice(List<AssistantLoginChoice> loginChoices, String identifier,
+            String label, String sublabel, String sublabelAccessibilityHint, int priority,
+            @Nullable AssistantInfoPopup infoPopup) {
+        loginChoices.add(new AssistantLoginChoice(
+                identifier, label, sublabel, sublabelAccessibilityHint, priority, infoPopup));
     }
 
     /** Sets the list of available login choices. */

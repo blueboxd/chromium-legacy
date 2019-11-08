@@ -52,10 +52,8 @@ base::string16 AccessibilityTreeFormatterBase::DumpAccessibilityTreeFromManager(
     formatter = Create();
   base::string16 accessibility_contents_utf16;
   formatter->SetPropertyFilters(property_filters);
-  std::unique_ptr<base::DictionaryValue> dict =
-      static_cast<AccessibilityTreeFormatterBase*>(formatter.get())
-          ->BuildAccessibilityTree(ax_mgr->GetRoot());
-  formatter->FormatAccessibilityTree(*dict, &accessibility_contents_utf16);
+  formatter->FormatAccessibilityTree(ax_mgr->GetRoot(),
+                                     &accessibility_contents_utf16);
   return accessibility_contents_utf16;
 }
 
@@ -97,11 +95,12 @@ bool AccessibilityTreeFormatter::MatchesNodeFilters(
   return false;
 }
 
-AccessibilityTreeFormatterBase::AccessibilityTreeFormatterBase() = default;
+AccessibilityTreeFormatterBase::AccessibilityTreeFormatterBase()
+    : show_ids_(false) {}
 
-AccessibilityTreeFormatterBase::~AccessibilityTreeFormatterBase() = default;
+AccessibilityTreeFormatterBase::~AccessibilityTreeFormatterBase() {}
 
-void AccessibilityTreeFormatterBase::FormatAccessibilityTreeForTesting(
+void AccessibilityTreeFormatterBase::FormatAccessibilityTree(
     BrowserAccessibility* root,
     base::string16* contents) {
   std::unique_ptr<base::DictionaryValue> dict = BuildAccessibilityTree(root);

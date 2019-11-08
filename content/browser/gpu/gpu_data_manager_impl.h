@@ -117,7 +117,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // Returns a new copy of the ListValue.
   std::unique_ptr<base::ListValue> GetLogMessages() const;
 
-  // Called when switching gpu.
+  // Called when switching GPUs.
   void HandleGpuSwitch();
 
   // Maintenance of domains requiring explicit user permission before

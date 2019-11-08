@@ -17,7 +17,7 @@ also have a default `jar_excluded_patterns` set (more on that later):
 * `android_library()`
 * `android_java_prebuilt()`
 
-All targets names must end with "_java" so that the build system can distinguish
+All target names must end with "_java" so that the build system can distinguish
 them from non-java targets (or [other variations](https://cs.chromium.org/chromium/src/build/config/android/internal_rules.gni?rcl=ec2c17d7b4e424e060c3c7972842af87343526a1&l=20)).
 
 ## From Source to Final Dex
@@ -117,7 +117,7 @@ This step happens only when this GN arg is set: `use_jacoco_coverage = true`
 
 This step happens only when targets have `supports_android = true`.
 
-* [d8] converts `.jar` files contain `.class` files into `.dex.jar` files
+* [d8] converts `.jar` files containing `.class` files into `.dex.jar` files
   containing `.dex` files.
 * Dexing is incremental - it will reuse dex'ed classes from a previous build if
   the corresponding `.class` file is unchanged.
@@ -287,7 +287,7 @@ We use several tools for static analysis.
 * Can be toggle on/off with code comments.
   ```java
   // clang-format off
-  ... non-formated code here ...
+  ... non-formatted code here ...
   // clang-format on
   ```
 * Does not work great for multiple annotations or on some lambda expressions,

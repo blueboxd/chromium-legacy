@@ -42,6 +42,7 @@ namespace {
 
 constexpr char kGaiaURL[] = "chrome://oobe/gaia-signin";
 constexpr char kAppLaunchBailout[] = "app_launch_bailout";
+constexpr char kAppLaunchNetworkConfig[] = "app_launch_network_config";
 constexpr char kCancel[] = "cancel";
 
 CoreOobeView::DialogPaddingMode ConvertDialogPaddingMode(
@@ -306,6 +307,9 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
 
   accel_map_[ui::Accelerator(
       ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAppLaunchBailout;
+  accel_map_[ui::Accelerator(ui::VKEY_N,
+                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
+      kAppLaunchNetworkConfig;
   accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, 0)] = kCancel;
 
   DCHECK(!dialog_view_ && !widget_);

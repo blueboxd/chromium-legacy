@@ -26,20 +26,10 @@ class AXFragmentRootPlatformNodeWin;
 // Since UIA derives some information from the underlying HWND hierarchy, we
 // expose one fragment root per HWND. The class that owns the HWND is expected
 // to own the corresponding AXFragmentRootWin.
-//
-// The usual way for UI Automation to obtain a fragment root is through
-// WM_GETOBJECT. However, if there's a relation such as "Controller For"
-// between element A in one window and element B in another window, UIA might
-// call element A to discover the relation, receive a pointer to element B,
-// then ask element B for its fragment root, without having sent WM_GETOBJECT
-// to element B's window.
-// The is_controller_for_root_ boolean member variable is used to determine
-// whether this is a fragment root witha  "Controller For" relation.
 class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
  public:
   AXFragmentRootWin(gfx::AcceleratedWidget widget,
-                    AXFragmentRootDelegateWin* delegate,
-                    bool is_controller_for_root = false);
+                    AXFragmentRootDelegateWin* delegate);
   ~AXFragmentRootWin() override;
 
   // Fragment roots register themselves in a map upon creation and unregister
@@ -64,8 +54,6 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
 
   // If a child node is available, return its delegate.
   AXPlatformNodeDelegate* GetChildNodeDelegate() const;
-
-  bool IsControllerFor() const { return is_controller_for_root_; }
 
  private:
   // AXPlatformNodeDelegate overrides.
@@ -94,7 +82,6 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   AXFragmentRootDelegateWin* const delegate_;
   Microsoft::WRL::ComPtr<ui::AXFragmentRootPlatformNodeWin> platform_node_;
   ui::AXUniqueId unique_id_;
-  bool is_controller_for_root_;
 };
 
 }  // namespace ui

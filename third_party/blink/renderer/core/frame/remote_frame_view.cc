@@ -244,6 +244,11 @@ void RemoteFrameView::VisibilityForThrottlingChanged() {
                                                         IsSubtreeThrottled());
 }
 
+void RemoteFrameView::VisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  remote_frame_->GetRemoteFrameHostRemote().VisibilityChanged(visibility);
+}
+
 bool RemoteFrameView::CanThrottleRendering() const {
   return IsSubtreeThrottled() || IsHiddenForThrottling();
 }

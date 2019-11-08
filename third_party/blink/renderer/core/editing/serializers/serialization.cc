@@ -130,7 +130,7 @@ static HTMLElement* AncestorToRetainStructureAndAppearanceForBlock(
     return nullptr;
 
   if (common_ancestor_block->HasTagName(html_names::kTbodyTag) ||
-      IsHTMLTableRowElement(*common_ancestor_block))
+      IsA<HTMLTableRowElement>(*common_ancestor_block))
     return Traversal<HTMLTableElement>::FirstAncestor(*common_ancestor_block);
 
   if (IsNonTableCellHTMLBlockElement(common_ancestor_block))

@@ -4352,6 +4352,177 @@ void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
   EXPECT_TRUE(quic_data2.AllWriteDataConsumed());
 }
 
+// Regression test for https://crbug.com/1014092.
+TEST_P(QuicStreamFactoryTest, MultiplePortMigrationsExceedsMaxLimit) {
+  test_params_.quic_params.allow_port_migration = true;
+  socket_factory_.reset(new TestMigrationSocketFactory);
+  Initialize();
+
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  // Using a testing task runner so that we can control time.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
+
+  int packet_number = 1;
+  MockQuicData quic_data1(version_);
+  quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging Read.
+  if (VersionUsesHttp3(version_.transport_version)) {
+    quic_data1.AddWrite(SYNCHRONOUS,
+                        ConstructInitialSettingsPacket(packet_number++));
+  }
+  quic_data1.AddWrite(
+      SYNCHRONOUS,
+      ConstructGetRequestPacket(packet_number++,
+                                GetNthClientInitiatedBidirectionalStreamId(0),
+                                true, true));
+  quic_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(
+          host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+          SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */,
+          /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+          failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = url_;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+
+  int server_packet_num = 1;
+  base::TimeDelta next_task_delay;
+  // Perform 4 round of successful migration, and the 5th round will
+  // cancel after successful probing due to hitting the limit.
+  for (int i = 0; i <= 4; i++) {
+    // Set up a different socket data provider that is used for
+    // probing and migration.
+    MockQuicData quic_data2(version_);
+    // Connectivity probe to be sent on the new path.
+    quic_data2.AddWrite(SYNCHRONOUS,
+                        client_maker_.MakeConnectivityProbingPacket(
+                            packet_number, packet_number == 2));
+    packet_number++;
+    quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+    // Connectivity probe to receive from the server.
+    quic_data2.AddRead(ASYNC, server_maker_.MakeConnectivityProbingPacket(
+                                  server_packet_num++, false));
+    // Ping packet to send after migration is completed.
+    if (i == 0) {
+      // First ack and PING are bundled, and version flag is set.
+      quic_data2.AddWrite(SYNCHRONOUS, client_maker_.MakeAckAndPingPacket(
+                                           packet_number++, false, 1, 1, 1));
+    } else if (i != 4) {
+      // ACK and PING post migration after successful probing.
+      quic_data2.AddWrite(
+          SYNCHRONOUS, client_maker_.MakeAckPacket(packet_number++, 1 + 2 * i,
+                                                   1 + 2 * i, 1, true));
+      quic_data2.AddWrite(SYNCHRONOUS,
+                          client_maker_.MakePingPacket(packet_number++, false));
+    }
+    if (i == 4) {
+      // Add one more synchronous read on the last probing reader. The
+      // reader should be deleted on the read before this one.
+      // The test will verify this read is not consumed.
+      quic_data2.AddRead(SYNCHRONOUS,
+                         server_maker_.MakeConnectivityProbingPacket(
+                             server_packet_num++, false));
+    } else {
+      quic_data2.AddRead(ASYNC, server_maker_.MakeConnectivityProbingPacket(
+                                    server_packet_num++, false));
+    }
+    if (i == 3) {
+      // On the last allowed port migration, read one more packet so
+      // that ACK is sent. The next round of migration (which hists the limit)
+      // will not send any proactive ACK when reading the successful probing
+      // response.
+      quic_data2.AddRead(ASYNC, server_maker_.MakeConnectivityProbingPacket(
+                                    server_packet_num++, false));
+      quic_data2.AddWrite(SYNCHRONOUS, client_maker_.MakeAckPacket(
+                                           packet_number++, 9, 9, 1, true));
+    }
+    quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // EOF.
+    quic_data2.AddSocketDataToFactory(socket_factory_.get());
+
+    // Cause the connection to report path degrading to the session.
+    // Session will start to probe a different port.
+    session->connection()->OnPathDegradingTimeout();
+
+    // Next connectivity probe is scheduled to be sent in 2 *
+    // kDefaultRTTMilliSecs.
+    EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+    next_task_delay = task_runner->NextPendingTaskDelay();
+    EXPECT_EQ(base::TimeDelta::FromMilliseconds(2 * kDefaultRTTMilliSecs),
+              next_task_delay);
+
+    // The connection should still be alive, and not marked as going away.
+    EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+    EXPECT_TRUE(HasActiveSession(host_port_pair_));
+    EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+    // Resume quic data and a connectivity probe response will be read on the
+    // new socket.
+    quic_data2.Resume();
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+    EXPECT_TRUE(HasActiveSession(host_port_pair_));
+    EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+    if (i < 4) {
+      // There should be pending tasks, the nearest one will complete
+      // migration to the new port.
+      EXPECT_EQ(2u, task_runner->GetPendingTaskCount());
+      next_task_delay = task_runner->NextPendingTaskDelay();
+      EXPECT_EQ(base::TimeDelta(), next_task_delay);
+    } else {
+      // Last attempt to migrate will abort due to hitting the limit of max
+      // number of allowed migrations.
+      EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+      next_task_delay = task_runner->NextPendingTaskDelay();
+      EXPECT_NE(base::TimeDelta(), next_task_delay);
+    }
+    task_runner->FastForwardBy(next_task_delay);
+    EXPECT_TRUE(quic_data2.AllWriteDataConsumed());
+    // The last round of migration will abort upon reading the probing response.
+    // Future reads in the same socket is ignored.
+    EXPECT_EQ(i != 4, quic_data2.AllReadDataConsumed());
+  }
+
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+
+  // Verify that the session is still alive.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  stream.reset();
+  EXPECT_TRUE(quic_data1.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
+}
+
 // This test verifies that the session marks itself GOAWAY on path degrading
 // and it does not receive any new request
 TEST_P(QuicStreamFactoryTest, GoawayOnPathDegrading) {

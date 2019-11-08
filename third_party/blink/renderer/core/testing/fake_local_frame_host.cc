@@ -42,6 +42,9 @@ void FakeLocalFrameHost::LifecycleStateChanged(
 
 void FakeLocalFrameHost::EvictFromBackForwardCache() {}
 
+void FakeLocalFrameHost::VisibilityChanged(
+    mojom::blink::FrameVisibility visibility) {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

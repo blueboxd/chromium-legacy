@@ -37,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
@@ -605,7 +606,9 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
                             10)
       .SetAdVideoBytes(aggregate_frame_data_->GetAdNetworkBytesForMime(
                            FrameData::ResourceMimeType::kVideo) >>
-                       10);
+                       10)
+      .SetMainframeAdBytes(ukm::GetExponentialBucketMinForBytes(
+          main_frame_data_->ad_network_bytes()));
 
   // Record cpu metrics for the page.
   builder.SetAdCpuTime(

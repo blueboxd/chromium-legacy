@@ -16,6 +16,7 @@ mojom("gl") {
     "//media/mojo/mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
+    "//ui/gl/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
   if (is_chromeos) {

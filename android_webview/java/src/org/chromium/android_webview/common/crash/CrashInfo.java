@@ -39,7 +39,8 @@ public class CrashInfo {
     @NonNull
     public String localId;
     /**
-     * The time the data was captured. This is useful if the data is stored locally when
+     * The time the data was captured in millisecs since epoch.
+     * This is useful if the data is stored locally when
      * captured and uploaded at a later time.
      */
     public long captureTime = -1;
@@ -58,7 +59,7 @@ public class CrashInfo {
      */
     public String uploadId;
     /**
-     * The time when the crash report is uploaded.
+     * The time when the crash report is uploaded in millisecs since epoch.
      * Only valid when |uploadState| == Uploaded.
      */
     public long uploadTime = -1;

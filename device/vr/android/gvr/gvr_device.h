@@ -38,13 +38,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
       JNIEnv* env,
       const base::android::JavaRef<jobject>& obj);
 
-  void Activate(mojom::VRDisplayEventReason reason,
-                base::Callback<void(bool)> on_handled);
-
  private:
-  // VRDeviceBase
-  void OnListeningForActivate(bool listening) override;
-
   void OnStartPresentResult(mojom::XRSessionPtr session);
 
   // XRSessionController

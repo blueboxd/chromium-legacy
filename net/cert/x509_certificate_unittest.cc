@@ -1337,11 +1337,10 @@ TEST_P(X509CertificateNameVerifyTest, VerifyHostname) {
       ASSERT_NE(0U, addr_ascii.length());
       if (addr_ascii[0] == 'x') {  // Hex encoded address
         addr_ascii.erase(0, 1);
-        std::vector<uint8_t> bytes;
-        EXPECT_TRUE(base::HexStringToBytes(addr_ascii, &bytes))
+        std::string bytes;
+        EXPECT_TRUE(base::HexStringToString(addr_ascii, &bytes))
             << "Could not parse hex address " << addr_ascii << " i = " << i;
-        ip_addressses.push_back(
-            std::string(reinterpret_cast<char*>(bytes.data()), bytes.size()));
+        ip_addressses.push_back(std::move(bytes));
         ASSERT_EQ(16U, ip_addressses.back().size()) << i;
       } else {  // Decimal groups
         std::vector<std::string> decimals_ascii = base::SplitString(

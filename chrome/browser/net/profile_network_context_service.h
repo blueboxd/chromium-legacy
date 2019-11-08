@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_NET_PROFILE_NETWORK_CONTEXT_SERVICE_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -28,6 +30,10 @@
 class PrefRegistrySimple;
 class Profile;
 class TrialComparisonCertVerifierController;
+
+namespace net {
+class ClientCertStore;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -69,6 +75,15 @@ class ProfileNetworkContextService
   void FlushProxyConfigMonitorForTesting();
 
   static void SetDiscardDomainReliabilityUploadsForTesting(bool value);
+
+  void set_client_cert_store_factory_for_testing(
+      base::RepeatingCallback<std::unique_ptr<net::ClientCertStore>()>
+          factory) {
+    client_cert_store_factory_ = std::move(factory);
+  }
+
+  // Get platform ClientCertStore. May return nullptr.
+  std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileNetworkContextServiceBrowsertest,
@@ -154,6 +169,10 @@ class ProfileNetworkContextService
   std::unique_ptr<TrialComparisonCertVerifierController>
       trial_comparison_cert_verifier_controller_;
 #endif
+
+  // Used for testing.
+  base::RepeatingCallback<std::unique_ptr<net::ClientCertStore>()>
+      client_cert_store_factory_;
 
 #if defined(OS_CHROMEOS)
   bool using_builtin_cert_verifier_;

@@ -8,10 +8,10 @@ namespace media_message_center {
 
 // static
 const char MediaNotificationItem::kUserActionHistogramName[] =
-    "Media.Notification.Source";
+    "Media.Notification.UserAction";
 
 // static
 const char MediaNotificationItem::kSourceHistogramName[] =
-    "Media.Notification.UserAction";
+    "Media.Notification.Source";
 
 }  // namespace media_message_center

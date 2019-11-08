@@ -12,10 +12,4 @@ namespace quarantine {
 const base::Feature kOutOfProcessQuarantine{"OutOfProcessQuarantine",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// This feature controls whether the InvokeAttachmentServices function will be
-// called. Has no effect on machines that are domain-joined, where the function
-// is always called.
-const base::Feature kInvokeAttachmentServices{"InvokeAttachmentServices",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace quarantine

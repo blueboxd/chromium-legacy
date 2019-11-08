@@ -160,6 +160,7 @@ class PLATFORM_EXPORT CanvasResource
     Abandon();
   }
 
+  void SetFilterQuality(SkFilterQuality filter) { filter_quality_ = filter; }
   // The filter quality to use when the resource is drawn by the compositor.
   SkFilterQuality FilterQuality() const { return filter_quality_; }
 

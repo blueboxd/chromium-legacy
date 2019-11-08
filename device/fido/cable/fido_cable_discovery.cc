@@ -632,29 +632,11 @@ std::vector<CableEidArray> FidoCableDiscovery::GetUUIDs(
 
   const auto service_uuids = device->GetUUIDs();
   for (const auto& uuid : service_uuids) {
-    // |uuid_hex| is a hex string with the format:
-    // xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    const std::string& uuid_hex = uuid.canonical_value();
-    DCHECK_EQ(32u + 4u, uuid_hex.size());
-
-    // Copy substrings of |uuid_hex| to drop the hyphens.
-    std::string hex;
-    hex.reserve(32);
-    hex.append(uuid_hex, 0, 8);
-    hex.append(uuid_hex, 9, 4);
-    hex.append(uuid_hex, 14, 4);
-    hex.append(uuid_hex, 19, 4);
-    hex.append(uuid_hex, 24, 12);
-    DCHECK_EQ(32u, hex.size());
-
-    std::vector<uint8_t> uuid_binary;
-    const bool ok = base::HexStringToBytes(hex, &uuid_binary);
-    DCHECK(ok);
-
+    std::vector<uint8_t> uuid_binary = uuid.GetBytes();
     CableEidArray authenticator_eid;
     DCHECK_EQ(authenticator_eid.size(), uuid_binary.size());
     memcpy(authenticator_eid.data(), uuid_binary.data(),
-           authenticator_eid.size());
+           std::min(uuid_binary.size(), authenticator_eid.size()));
 
     ret.emplace_back(std::move(authenticator_eid));
   }

@@ -14,12 +14,12 @@ AssociatedInterfacePtrStateBase::AssociatedInterfacePtrStateBase() = default;
 AssociatedInterfacePtrStateBase::~AssociatedInterfacePtrStateBase() = default;
 
 void AssociatedInterfacePtrStateBase::QueryVersion(
-    const base::Callback<void(uint32_t)>& callback) {
+    base::OnceCallback<void(uint32_t)> callback) {
   // It is safe to capture |this| because the callback won't be run after this
   // object goes away.
   endpoint_client_->QueryVersion(
-      base::Bind(&AssociatedInterfacePtrStateBase::OnQueryVersion,
-                 base::Unretained(this), callback));
+      base::BindOnce(&AssociatedInterfacePtrStateBase::OnQueryVersion,
+                     base::Unretained(this), std::move(callback)));
 }
 
 void AssociatedInterfacePtrStateBase::RequireVersion(uint32_t version) {
@@ -31,10 +31,10 @@ void AssociatedInterfacePtrStateBase::RequireVersion(uint32_t version) {
 }
 
 void AssociatedInterfacePtrStateBase::OnQueryVersion(
-    const base::Callback<void(uint32_t)>& callback,
+    base::OnceCallback<void(uint32_t)> callback,
     uint32_t version) {
   version_ = version;
-  callback.Run(version);
+  std::move(callback).Run(version);
 }
 
 void AssociatedInterfacePtrStateBase::FlushForTesting() {

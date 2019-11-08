@@ -559,6 +559,29 @@ class AutotestPrivateSetAssistantEnabledFunction
   base::OneShotTimer timeout_timer_;
 };
 
+// Bring up the Assistant service, and wait until the ready signal is received.
+class AutotestPrivateEnableAssistantAndWaitForReadyFunction
+    : public ExtensionFunction,
+      public ash::AssistantStateObserver {
+ public:
+  AutotestPrivateEnableAssistantAndWaitForReadyFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.enableAssistantAndWaitForReady",
+                             AUTOTESTPRIVATE_ENABLEASSISTANTANDWAITFORREADY)
+
+ private:
+  ~AutotestPrivateEnableAssistantAndWaitForReadyFunction() override;
+  ResponseAction Run() override;
+
+  void SubscribeToStatusChanges();
+
+  // ash::AssistantStateObserver overrides:
+  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override;
+
+  // A reference to keep |this| alive while waiting for the Assistant to
+  // respond.
+  scoped_refptr<ExtensionFunction> self_;
+};
+
 // Send text query to Assistant and return response.
 class AutotestPrivateSendAssistantTextQueryFunction : public ExtensionFunction {
  public:

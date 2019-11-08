@@ -332,10 +332,11 @@ public class DecoderServiceHost
             @DecodeVideoTask.DecodingResult int decodingResult) {
         switch (decodingResult) {
             case DecodeVideoTask.DecodingResult.SUCCESS:
-                if (bitmaps == null || bitmaps.size() == 0)
+                if (bitmaps == null || bitmaps.size() == 0) {
                     mFailedVideoDecodesUnknown++;
-                else
+                } else {
                     mSuccessfulVideoDecodes++;
+                }
                 break;
             case DecodeVideoTask.DecodingResult.FILE_ERROR:
                 mFailedVideoDecodesFile++;

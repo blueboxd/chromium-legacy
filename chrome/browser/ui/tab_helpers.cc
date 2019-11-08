@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/client_hints/client_hints_observer.h"
+#include "chrome/browser/client_hints/client_hints.h"
 #include "chrome/browser/complex_tasks/task_tab_helper.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
@@ -210,7 +210,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     ChromeSubresourceFilterClient::CreateForWebContents(web_contents);
   }
   ChromeTranslateClient::CreateForWebContents(web_contents);
-  ClientHintsObserver::CreateForWebContents(web_contents);
+  client_hints::ClientHints::CreateForWebContents(web_contents);
   ConnectionHelpTabHelper::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
   DataReductionProxyTabHelper::CreateForWebContents(web_contents);

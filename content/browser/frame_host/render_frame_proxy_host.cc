@@ -305,6 +305,11 @@ void RenderFrameProxyHost::SetInheritedEffectiveTouchAction(
       touch_action);
 }
 
+void RenderFrameProxyHost::VisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  cross_process_frame_connector_->OnVisibilityChanged(visibility);
+}
+
 void RenderFrameProxyHost::UpdateOpener() {
   // Another frame in this proxy's SiteInstance may reach the new opener by
   // first reaching this proxy and then referencing its window.opener.  Ensure

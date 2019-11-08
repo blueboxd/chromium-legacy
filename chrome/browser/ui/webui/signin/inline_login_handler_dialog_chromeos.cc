@@ -128,10 +128,8 @@ bool InlineLoginHandlerDialogChromeOS::ShouldShowDialogTitle() const {
   return false;
 }
 
-void InlineLoginHandlerDialogChromeOS::OnDialogShown(
-    content::WebUI* webui,
-    content::RenderViewHost* render_view_host) {
-  SystemWebDialogDelegate::OnDialogShown(webui, render_view_host);
+void InlineLoginHandlerDialogChromeOS::OnDialogShown(content::WebUI* webui) {
+  SystemWebDialogDelegate::OnDialogShown(webui);
   web_modal::WebContentsModalDialogManager::CreateForWebContents(
       webui->GetWebContents());
   web_modal::WebContentsModalDialogManager::FromWebContents(

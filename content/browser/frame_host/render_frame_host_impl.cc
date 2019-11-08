@@ -141,6 +141,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/media_player_watch_time.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
@@ -172,7 +173,6 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
-#include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -202,7 +202,6 @@
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
-#include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
@@ -1816,8 +1815,6 @@ void RenderFrameHostImpl::RenderProcessExited(
   SetRenderFrameCreated(false);
   InvalidateMojoConnection();
   document_scoped_interface_provider_binding_.Close();
-  document_interface_broker_content_receiver_.reset();
-  document_interface_broker_blink_receiver_.reset();
   broker_receiver_.reset();
   SetLastCommittedUrl(GURL());
   bundled_exchanges_handle_.reset();
@@ -1992,14 +1989,6 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   BindInterfaceProviderRequest(mojo::MakeRequest(&interface_provider));
 
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_content;
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_blink;
-  BindDocumentInterfaceBrokerReceiver(
-      document_interface_broker_content.InitWithNewPipeAndPassReceiver(),
-      document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
-
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   BindBrowserInterfaceBrokerReceiver(
@@ -2008,8 +1997,6 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
   params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New(
       interface_provider.PassInterface(),
-      std::move(document_interface_broker_content),
-      std::move(document_interface_broker_blink),
       std::move(browser_interface_broker));
 
   params->routing_id = routing_id_;
@@ -2211,10 +2198,6 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     int new_routing_id,
     service_manager::mojom::InterfaceProviderRequest
         new_interface_provider_provider_request,
-    mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-        document_interface_broker_content_receiver,
-    mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-        document_interface_broker_blink_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker_receiver,
     blink::WebTreeScopeType scope,
@@ -2228,8 +2211,6 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
   DCHECK(!frame_unique_name.empty());
   DCHECK(new_interface_provider_provider_request.is_pending());
-  DCHECK(document_interface_broker_content_receiver.is_valid());
-  DCHECK(document_interface_broker_blink_receiver.is_valid());
   DCHECK(browser_interface_broker_receiver.is_valid());
   if (owner_type == blink::FrameOwnerElementType::kNone) {
     // Any child frame must have a HTMLFrameOwnerElement in its parent document
@@ -2247,15 +2228,11 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     return;
 
   // |new_routing_id|, |new_interface_provider_provider_request|,
-  // |document_interface_broker_content_receiver|,
-  // |document_interface_broker_blink_receiver|,
   // |browser_interface_broker_receiver| and |devtools_frame_token| were
   // generated on the browser's IO thread and not taken from the renderer
   // process.
   frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
                         std::move(new_interface_provider_provider_request),
-                        std::move(document_interface_broker_content_receiver),
-                        std::move(document_interface_broker_blink_receiver),
                         std::move(browser_interface_broker_receiver), scope,
                         frame_name, frame_unique_name, is_created_by_script,
                         devtools_frame_token, frame_policy,
@@ -4236,23 +4213,6 @@ void RenderFrameHostImpl::BindInterfaceProviderRequest(
       std::make_unique<ActiveURLMessageFilter>(this));
 }
 
-void RenderFrameHostImpl::BindDocumentInterfaceBrokerReceiver(
-    mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-        content_receiver,
-    mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-        blink_receiver) {
-  DCHECK(!document_interface_broker_content_receiver_.is_bound());
-  DCHECK(content_receiver.is_valid());
-  document_interface_broker_content_receiver_.Bind(std::move(content_receiver));
-  document_interface_broker_content_receiver_.SetFilter(
-      std::make_unique<ActiveURLMessageFilter>(this));
-  DCHECK(!document_interface_broker_blink_receiver_.is_bound());
-  DCHECK(blink_receiver.is_valid());
-  document_interface_broker_blink_receiver_.Bind(std::move(blink_receiver));
-  document_interface_broker_blink_receiver_.SetFilter(
-      std::make_unique<ActiveURLMessageFilter>(this));
-}
-
 void RenderFrameHostImpl::BindBrowserInterfaceBrokerReceiver(
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
   DCHECK(receiver.is_valid());
@@ -4430,15 +4390,6 @@ void RenderFrameHostImpl::CreateNewWindow(
   main_frame->BindInterfaceProviderRequest(
       mojo::MakeRequest(&main_frame_interface_provider_info));
 
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_content;
-
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_blink;
-  main_frame->BindDocumentInterfaceBrokerReceiver(
-      document_interface_broker_content.InitWithNewPipeAndPassReceiver(),
-      document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
-
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   main_frame->BindBrowserInterfaceBrokerReceiver(
@@ -4459,8 +4410,6 @@ void RenderFrameHostImpl::CreateNewWindow(
       main_frame->GetLocalRenderWidgetHost()->GetRoutingID(), visual_properties,
       mojom::DocumentScopedInterfaceBundle::New(
           std::move(main_frame_interface_provider_info),
-          std::move(document_interface_broker_content),
-          std::move(document_interface_broker_blink),
           std::move(browser_interface_broker)),
       cloned_namespace->id(), main_frame->GetDevToolsFrameToken());
 
@@ -4711,7 +4660,10 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                 ->GetBrowserContext()
                 ->GetLearningSession();
           },
-          weak_ptr_factory_.GetWeakPtr())));
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(
+          &RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback,
+          base::Unretained(this))));
 
   if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     registry_->AddInterface(base::BindRepeating(
@@ -4747,6 +4699,11 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::BindRepeating(
       &GetRestrictedCookieManager, base::Unretained(this),
       GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
+}
+
+media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
+RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback() {
+  return delegate_->GetRecordAggregateWatchTimeCallback();
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
@@ -6649,22 +6606,6 @@ void RenderFrameHostImpl::GetInterface(
   }
 }
 
-// This is a test-only interface, not exposed in production.
-void RenderFrameHostImpl::GetFrameHostTestInterface(
-    mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver) {
-  class FrameHostTestInterfaceImpl
-      : public blink::mojom::FrameHostTestInterface {
-   public:
-    void Ping(const GURL& url, const std::string& event) override {}
-    void GetName(GetNameCallback callback) override {
-      std::move(callback).Run("RenderFrameHostImpl");
-    }
-  };
-
-  mojo::MakeSelfOwnedReceiver(std::make_unique<FrameHostTestInterfaceImpl>(),
-                              std::move(receiver));
-}
-
 void RenderFrameHostImpl::CreateAppCacheBackend(
     mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -7487,13 +7428,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
             std::move(interface_provider_request_of_previous_document));
     BindInterfaceProviderRequest(
         std::move(interface_params->interface_provider_request));
-
-    document_interface_broker_content_receiver_.reset();
-    document_interface_broker_blink_receiver_.reset();
     broker_receiver_.reset();
-    BindDocumentInterfaceBrokerReceiver(
-        std::move(interface_params->document_interface_broker_content_receiver),
-        std::move(interface_params->document_interface_broker_blink_receiver));
     BindBrowserInterfaceBrokerReceiver(
         std::move(interface_params->browser_interface_broker_receiver));
   } else {
@@ -7506,8 +7441,6 @@ void RenderFrameHostImpl::DidCommitNavigation(
     // possibly from a different security origin, will no longer be dispatched.
     if (frame_tree_node_->has_committed_real_load()) {
       document_scoped_interface_provider_binding_.Close();
-      document_interface_broker_content_receiver_.reset();
-      document_interface_broker_blink_receiver_.reset();
       broker_receiver_.reset();
       bad_message::ReceivedBadMessage(
           process, bad_message::RFH_INTERFACE_PROVIDER_MISSING);

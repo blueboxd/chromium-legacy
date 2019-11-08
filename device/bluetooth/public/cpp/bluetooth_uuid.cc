@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -107,6 +108,33 @@ GUID BluetoothUUID::GetCanonicalValueAsGUID(base::StringPiece uuid) {
 
 bool BluetoothUUID::IsValid() const {
   return format_ != kFormatInvalid;
+}
+
+std::vector<uint8_t> BluetoothUUID::GetBytes() const {
+  if (!IsValid())
+    return std::vector<uint8_t>();
+
+  base::StringPiece input(canonical_value());
+
+  std::vector<uint8_t> bytes(16);
+  base::span<uint8_t> out(bytes);
+
+  //           0         1         2         3
+  //           012345678901234567890123456789012345
+  // Example: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  //           12345678-1234-5678-9abc-def123456789
+  bool success =
+      (input.size() == 36) && (input[8] == '-') && (input[13] == '-') &&
+      (input[18] == '-') && (input[23] == '-') &&
+      base::HexStringToSpan(input.substr(0, 8), out.subspan<0, 4>()) &&
+      base::HexStringToSpan(input.substr(9, 4), out.subspan<4, 2>()) &&
+      base::HexStringToSpan(input.substr(14, 4), out.subspan<6, 2>()) &&
+      base::HexStringToSpan(input.substr(19, 4), out.subspan<8, 2>()) &&
+      base::HexStringToSpan(input.substr(24, 12), out.subspan<10, 6>());
+
+  DCHECK(success);
+
+  return bytes;
 }
 
 bool BluetoothUUID::operator<(const BluetoothUUID& uuid) const {

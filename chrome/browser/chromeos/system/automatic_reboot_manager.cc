@@ -396,8 +396,7 @@ void AutomaticRebootManager::MaybeReboot(bool ignore_session) {
 void AutomaticRebootManager::Reboot() {
   // If a non-kiosk-app session is in progress, do not reboot.
   if (user_manager::UserManager::Get()->IsUserLoggedIn() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
+      !user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
     VLOG(1) << "Skipping reboot because non-kiosk session is active";
     return;
   }

@@ -59,4 +59,11 @@ OneDeviceTrainNeuralStylusPalmDetectionFilterModel::
   config_.heuristic_palm_area_limit = 400.0f;
 }
 
+OneDeviceTrainNeuralStylusPalmDetectionFilterModel::
+    OneDeviceTrainNeuralStylusPalmDetectionFilterModel(
+        const std::vector<float>& radius_poly)
+    : OneDeviceTrainNeuralStylusPalmDetectionFilterModel() {
+  config_.radius_polynomial_resize = radius_poly;
+}
+
 }  // namespace ui

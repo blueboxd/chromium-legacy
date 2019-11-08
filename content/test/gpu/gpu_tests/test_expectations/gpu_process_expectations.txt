@@ -6,3 +6,10 @@ crbug.com/257109 [ linux ] GpuProcess_video [ Failure ]
 # Seems to have become flaky on Windows recently.
 crbug.com/700522 [ win ] GpuProcess_one_extra_workaround [ RetryOnFailure ]
 
+# TODO(crbug.com/681341): enable these new tests immediately after they land.
+# Disabled upon landing only to avoid having the entire CL reverted if the new
+# tests turn out to be flaky.
+crbug.com/681341 GpuProcess_mac_webgl_backgrounded_high_performance [ Skip ]
+crbug.com/681341 GpuProcess_mac_webgl_high_performance [ Skip ]
+crbug.com/681341 GpuProcess_mac_webgl_low_power [ Skip ]
+crbug.com/681341 GpuProcess_mac_webgl_terminated_high_performance [ Skip ]

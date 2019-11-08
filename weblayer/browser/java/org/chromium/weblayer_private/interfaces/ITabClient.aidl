@@ -11,5 +11,5 @@ package org.chromium.weblayer_private.interfaces;
 interface ITabClient {
   void visibleUrlChanged(in String url) = 0;
 
-  void onNewTab(in ITab tab, in int mode) = 1;
+  void onNewTab(in int tabId, in int mode) = 1;
 }

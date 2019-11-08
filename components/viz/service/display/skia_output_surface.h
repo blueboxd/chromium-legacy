@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/external_use_client.h"
@@ -26,7 +27,9 @@ namespace viz {
 
 class ContextLostObserver;
 class CopyOutputRequest;
+#if defined(OS_WIN)
 class DCLayerOverlay;
+#endif
 
 namespace copy_output {
 struct RenderPassGeometry;
@@ -129,12 +132,14 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
                           const gfx::ColorSpace& color_space,
                           std::unique_ptr<CopyOutputRequest> request) = 0;
 
+#if defined(OS_WIN)
   // Enables/disables drawing with DC layers. Should be enabled before
   // ScheduleDCLayers() will be called.
   virtual void SetEnableDCLayers(bool enable) = 0;
 
   // Schedule drawing DC layer overlays at next SkiaSwapBuffers() call.
   virtual void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) = 0;
+#endif
 
   // Add context lost observer.
   virtual void AddContextLostObserver(ContextLostObserver* observer) = 0;

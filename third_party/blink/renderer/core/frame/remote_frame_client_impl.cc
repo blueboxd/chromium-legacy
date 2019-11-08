@@ -162,11 +162,6 @@ void RemoteFrameClientImpl::AdvanceFocus(WebFocusType type,
                                      WebLocalFrameImpl::FromFrame(source));
 }
 
-void RemoteFrameClientImpl::VisibilityChanged(
-    blink::mojom::FrameVisibility visibility) {
-  web_frame_->Client()->VisibilityChanged(visibility);
-}
-
 void RemoteFrameClientImpl::SetIsInert(bool inert) {
   web_frame_->Client()->SetIsInert(inert);
 }

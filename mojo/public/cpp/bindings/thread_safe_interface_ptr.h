@@ -51,12 +51,12 @@ class ThreadSafeForwarder : public ThreadSafeForwarderBase {
   // method.
   ThreadSafeForwarder(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const ForwardMessageCallback& forward,
-      const ForwardMessageWithResponderCallback& forward_with_responder,
+      ForwardMessageCallback forward,
+      ForwardMessageWithResponderCallback forward_with_responder,
       const AssociatedGroup& associated_group)
       : ThreadSafeForwarderBase(std::move(task_runner),
-                                forward,
-                                forward_with_responder,
+                                std::move(forward),
+                                std::move(forward_with_responder),
                                 associated_group),
         proxy_(this) {}
 
@@ -151,8 +151,8 @@ class ThreadSafeInterfacePtrBase
 
     std::unique_ptr<ThreadSafeForwarder<InterfaceType>> CreateForwarder() {
       return std::make_unique<ThreadSafeForwarder<InterfaceType>>(
-          task_runner_, base::Bind(&PtrWrapper::Accept, this),
-          base::Bind(&PtrWrapper::AcceptWithResponder, this),
+          task_runner_, base::BindRepeating(&PtrWrapper::Accept, this),
+          base::BindRepeating(&PtrWrapper::AcceptWithResponder, this),
           associated_group_);
     }
 

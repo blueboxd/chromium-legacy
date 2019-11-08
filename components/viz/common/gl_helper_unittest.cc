@@ -1009,7 +1009,7 @@ class GLHelperTest : public testing::Test {
     base::RunLoop run_loop;
     bool success = false;
     helper_->ReadbackTextureAsync(
-        src_texture, src_size, pixels, color_type,
+        src_texture, GL_TEXTURE_2D, src_size, pixels, color_type,
         base::BindOnce(
             [](bool* success, base::OnceClosure callback, bool result) {
               *success = result;

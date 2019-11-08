@@ -63,7 +63,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                   const FramePolicy&,
                                   WebLocalFrameClient*,
                                   blink::InterfaceRegistry*,
-                                  mojo::ScopedMessagePipeHandle,
                                   WebFrame* previous_sibling,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType,

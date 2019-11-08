@@ -531,6 +531,11 @@ extern const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAccessibilityInternalsPageImprovements;
 
+#if defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kWebTimeLimits;
+#endif  // defined(OS_CHROMEOS)
+
 bool PrefServiceEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

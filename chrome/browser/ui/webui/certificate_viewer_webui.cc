@@ -278,9 +278,7 @@ std::string CertificateViewerDialog::GetDialogArgs() const {
   return data;
 }
 
-void CertificateViewerDialog::OnDialogShown(
-    content::WebUI* webui,
-    content::RenderViewHost* render_view_host) {
+void CertificateViewerDialog::OnDialogShown(content::WebUI* webui) {
   webui_ = webui;
 }
 

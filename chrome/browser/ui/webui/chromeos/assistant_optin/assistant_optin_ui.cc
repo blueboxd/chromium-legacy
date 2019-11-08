@@ -207,9 +207,7 @@ std::string AssistantOptInDialog::GetDialogArgs() const {
   return std::string();
 }
 
-void AssistantOptInDialog::OnDialogShown(
-    content::WebUI* webui,
-    content::RenderViewHost* render_view_host) {
+void AssistantOptInDialog::OnDialogShown(content::WebUI* webui) {
   assistant_ui_ = static_cast<AssistantOptInUI*>(webui->GetController());
 }
 

@@ -521,10 +521,12 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void StartPluginVmDispatcher(PluginVmDispatcherCallback callback) override {
+  void StartPluginVmDispatcher(const std::string& owner_id,
+                               PluginVmDispatcherCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kStartVmPluginDispatcher);
     dbus::MessageWriter writer(&method_call);
+    writer.AppendString(owner_id);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnStartPluginVmDispatcher,

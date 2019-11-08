@@ -218,15 +218,6 @@ def _GetTraceUrl(test_result):
                else trace_artifact.get('filePath'))
 
 
-def _SplitTestPath(test_result, test_path_format):
-  if test_path_format == command_line.TELEMETRY_TEST_PATH_FORMAT:
-    return test_result['testPath'].split('/', 1)
-  elif test_path_format == command_line.GTEST_TEST_PATH_FORMAT:
-    return test_result['testPath'].split('.', 1)
-  else:
-    raise ValueError('Unknown test path format: %s', test_path_format)
-
-
 def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label,
                                test_path_format):
   """Add diagnostics to all histograms of a test result.
@@ -247,7 +238,7 @@ def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label,
       test_result['_histograms'].AddSharedDiagnosticToAllHistograms(
           name, generic_set.GenericSet(diag))
 
-  test_suite, test_case = _SplitTestPath(test_result, test_path_format)
+  test_suite, test_case = util.SplitTestPath(test_result, test_path_format)
   if 'startTime' in test_result:
     test_start_ms = util.IsoTimestampToEpoch(test_result['startTime']) * 1e3
   else:

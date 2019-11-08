@@ -2,6 +2,5 @@
 ++[section]
 ++++[image] name='pipe' xml-roles:img
 ++++[static] name=' '
-++++[image] name='' xml-roles:img
 ++++[static] name=' '
 ++++[image] name='  ' xml-roles:img

@@ -50,7 +50,6 @@ class CastContentWindowAura : public CastContentWindow,
   void OnWindowDestroyed(aura::Window* window) override;
 
  private:
-  CastContentWindow::Delegate* const delegate_;
   CastWindowManager* const window_manager_;
 
   // Utility class for detecting and dispatching gestures to delegates.

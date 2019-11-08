@@ -15,10 +15,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
+#include "content/public/test/browser_task_environment.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
@@ -72,8 +70,7 @@ class ClientCertStoreChromeOSTest : public ::testing::Test {
   crypto::ScopedTestNSSChromeOSUser user1_{"user1"};
   crypto::ScopedTestNSSChromeOSUser user2_{"user2"};
   crypto::ScopedTestSystemNSSKeySlot system_slot_;
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::IO};
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // Ensure that cert requests, that are started before the filter is initialized,

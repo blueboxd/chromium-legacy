@@ -28,19 +28,19 @@ namespace {
 
 template <typename T>
 void DoExpectResult(const T& expected,
-                    const base::Closure& callback,
+                    base::OnceClosure callback,
                     const T& actual) {
   EXPECT_EQ(expected.x(), actual.x());
   EXPECT_EQ(expected.y(), actual.y());
   EXPECT_EQ(expected.width(), actual.width());
   EXPECT_EQ(expected.height(), actual.height());
-  callback.Run();
+  std::move(callback).Run();
 }
 
 template <typename T>
-base::Callback<void(const T&)> ExpectResult(const T& r,
-                                            const base::Closure& callback) {
-  return base::Bind(&DoExpectResult<T>, r, callback);
+base::OnceCallback<void(const T&)> ExpectResult(const T& r,
+                                                base::OnceClosure callback) {
+  return base::BindOnce(&DoExpectResult<T>, r, std::move(callback));
 }
 
 template <typename T>
@@ -49,8 +49,8 @@ void DoFail(const std::string& reason, const T&) {
 }
 
 template <typename T>
-base::Callback<void(const T&)> Fail(const std::string& reason) {
-  return base::Bind(&DoFail<T>, reason);
+base::OnceCallback<void(const T&)> Fail(const std::string& reason) {
+  return base::BindOnce(&DoFail<T>, reason);
 }
 
 template <typename T>
@@ -292,7 +292,7 @@ TEST_F(StructTraitsTest, BlinkProxyToChromiumService) {
 }
 
 void ExpectStructWithTraits(const StructWithTraitsImpl& expected,
-                            const base::Closure& closure,
+                            base::OnceClosure closure,
                             const StructWithTraitsImpl& passed) {
   EXPECT_EQ(expected.get_enum(), passed.get_enum());
   EXPECT_EQ(expected.get_bool(), passed.get_bool());
@@ -303,7 +303,7 @@ void ExpectStructWithTraits(const StructWithTraitsImpl& expected,
   EXPECT_EQ(expected.get_struct(), passed.get_struct());
   EXPECT_EQ(expected.get_struct_array(), passed.get_struct_array());
   EXPECT_EQ(expected.get_struct_map(), passed.get_struct_map());
-  closure.Run();
+  std::move(closure).Run();
 }
 
 TEST_F(StructTraitsTest, EchoStructWithTraits) {
@@ -341,10 +341,10 @@ TEST_F(StructTraitsTest, CloneStructWithTraitsContainer) {
 }
 
 void ExpectTrivialStructWithTraits(TrivialStructWithTraitsImpl expected,
-                                   const base::Closure& closure,
+                                   base::OnceClosure closure,
                                    TrivialStructWithTraitsImpl passed) {
   EXPECT_EQ(expected.value, passed.value);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 TEST_F(StructTraitsTest, EchoTrivialStructWithTraits) {
@@ -361,11 +361,11 @@ TEST_F(StructTraitsTest, EchoTrivialStructWithTraits) {
 }
 
 void CaptureMessagePipe(ScopedMessagePipeHandle* storage,
-                        const base::Closure& closure,
+                        base::OnceClosure closure,
                         MoveOnlyStructWithTraitsImpl passed) {
   storage->reset(MessagePipeHandle(
       passed.get_mutable_handle().release().value()));
-  closure.Run();
+  std::move(closure).Run();
 }
 
 TEST_F(StructTraitsTest, EchoMoveOnlyStructWithTraits) {
@@ -403,10 +403,10 @@ TEST_F(StructTraitsTest, EchoMoveOnlyStructWithTraits) {
 
 void CaptureNullableMoveOnlyStructWithTraitsImpl(
     base::Optional<MoveOnlyStructWithTraitsImpl>* storage,
-    const base::Closure& closure,
+    base::OnceClosure closure,
     base::Optional<MoveOnlyStructWithTraitsImpl> passed) {
   *storage = std::move(passed);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 TEST_F(StructTraitsTest, EchoNullableMoveOnlyStructWithTraits) {
@@ -424,10 +424,10 @@ TEST_F(StructTraitsTest, EchoNullableMoveOnlyStructWithTraits) {
 }
 
 void ExpectEnumWithTraits(EnumWithTraitsImpl expected_value,
-                          const base::Closure& closure,
+                          base::OnceClosure closure,
                           EnumWithTraitsImpl value) {
   EXPECT_EQ(expected_value, value);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 TEST_F(StructTraitsTest, EchoEnumWithTraits) {
@@ -475,12 +475,12 @@ TEST_F(StructTraitsTest, SerializeStructWithTraits) {
 }
 
 void ExpectUniquePtr(std::unique_ptr<int> expected,
-                     const base::Closure& closure,
+                     base::OnceClosure closure,
                      std::unique_ptr<int> value) {
   ASSERT_EQ(!expected, !value);
   if (expected)
     EXPECT_EQ(*expected, *value);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 TEST_F(StructTraitsTest, TypemapUniquePtr) {
@@ -512,13 +512,13 @@ TEST_F(StructTraitsTest, EchoUnionWithTraits) {
     proxy->EchoUnionWithTraits(
         std::move(input),
         base::BindOnce(
-            [](const base::Closure& quit_closure,
+            [](base::OnceClosure quit_closure,
                std::unique_ptr<test::UnionWithTraitsBase> passed) {
               ASSERT_EQ(test::UnionWithTraitsBase::Type::INT32, passed->type());
               EXPECT_EQ(1234,
                         static_cast<test::UnionWithTraitsInt32*>(passed.get())
                             ->value());
-              quit_closure.Run();
+              std::move(quit_closure).Run();
             },
             loop.QuitClosure()));
     loop.Run();
@@ -531,7 +531,7 @@ TEST_F(StructTraitsTest, EchoUnionWithTraits) {
     proxy->EchoUnionWithTraits(
         std::move(input),
         base::BindOnce(
-            [](const base::Closure& quit_closure,
+            [](base::OnceClosure quit_closure,
                std::unique_ptr<test::UnionWithTraitsBase> passed) {
               ASSERT_EQ(test::UnionWithTraitsBase::Type::STRUCT,
                         passed->type());
@@ -539,7 +539,7 @@ TEST_F(StructTraitsTest, EchoUnionWithTraits) {
                         static_cast<test::UnionWithTraitsStruct*>(passed.get())
                             ->get_struct()
                             .value);
-              quit_closure.Run();
+              std::move(quit_closure).Run();
             },
             loop.QuitClosure()));
     loop.Run();

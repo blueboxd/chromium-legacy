@@ -25,12 +25,6 @@ namespace net {
 class IPEndPoint;
 }
 
-namespace media {
-namespace cast {
-struct FrameReceiverConfig;
-}
-}
-
 namespace extensions {
 class NativeExtensionBindingsSystem;
 
@@ -102,15 +96,6 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
   // If not found, returns NULL and throws a V8 exception.
   CastRtpStream* GetRtpStreamOrThrow(int stream_id) const;
   CastUdpTransport* GetUdpTransportOrThrow(int transport_id) const;
-
-  // Fills out a media::cast::FrameReceiverConfig from the v8
-  // equivialent. (cast.streaming.receiverSession.RtpReceiverParams)
-  // Returns true if everything was ok, raises a v8 exception and
-  // returns false if anything went wrong.
-  bool FrameReceiverConfigFromArg(
-      v8::Isolate* isolate,
-      const v8::Local<v8::Value>& arg,
-      media::cast::FrameReceiverConfig* config) const;
 
   bool IPEndPointFromArg(v8::Isolate* isolate,
                          const v8::Local<v8::Value>& arg,

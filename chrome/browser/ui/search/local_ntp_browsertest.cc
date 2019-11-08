@@ -26,6 +26,8 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/local_ntp_browsertest_base.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
@@ -37,6 +39,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_tiles/constants.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
@@ -1188,6 +1191,53 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
   EXPECT_FALSE(handle_observer.is_renderer_initiated());
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                                            handle_observer.page_transition()));
+}
+
+// This is a regression test for https://crbug.com/1020610 - it verifies that
+// NTP navigations do show up as a pending navigation.
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, PendingNavigations) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Open an NTP.
+  content::WebContents* ntp_tab = local_ntp_test_utils::OpenNewTab(
+      browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Inject and click a link to foo.com/hung and wait for the navigation to
+  // start.
+  GURL slow_url(embedded_test_server()->GetURL("/hung"));
+  const char* kNavScriptTemplate = R"(
+      var a = document.createElement('a');
+      a.href = $1;
+      a.innerText = 'Simulated most-visited link';
+      document.body.appendChild(a);
+      a.click();
+  )";
+  content::TestNavigationManager nav_manager(ntp_tab, slow_url);
+  ASSERT_TRUE(content::ExecuteScript(
+      ntp_tab, content::JsReplace(kNavScriptTemplate, slow_url)));
+  ASSERT_TRUE(nav_manager.WaitForRequestStart());
+
+  // Verify that the visible entry points at the |slow_url|.
+  content::NavigationEntry* pending_entry =
+      ntp_tab->GetController().GetPendingEntry();
+  ASSERT_TRUE(pending_entry);
+  content::NavigationEntry* visible_entry =
+      ntp_tab->GetController().GetVisibleEntry();
+  ASSERT_TRUE(visible_entry);
+  content::NavigationEntry* committed_entry =
+      ntp_tab->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(committed_entry);
+  EXPECT_EQ(visible_entry, pending_entry);
+  EXPECT_EQ(slow_url, visible_entry->GetURL());
+  EXPECT_NE(pending_entry, committed_entry);
+  EXPECT_NE(slow_url, committed_entry->GetURL());
+
+  // Verify that the omnibox displays |slow_url|.
+  OmniboxView* view = browser()->window()->GetLocationBar()->GetOmniboxView();
+  std::string omnibox_text = base::UTF16ToUTF8(view->GetText());
+  EXPECT_THAT(omnibox_text, ::testing::StartsWith(slow_url.host()));
+  EXPECT_THAT(omnibox_text, ::testing::EndsWith(slow_url.path()));
+  EXPECT_THAT(slow_url.spec(), ::testing::EndsWith(omnibox_text));
 }
 
 // Verifies that Chrome won't spawn a separate renderer process for

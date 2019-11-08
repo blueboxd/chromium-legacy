@@ -43,7 +43,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_double_size.h"
@@ -726,12 +725,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   };
 
   HeaderAndFooterClient frame_client;
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker;
   blink::WebLocalFrame* frame = blink::WebLocalFrame::CreateMainFrame(
-      web_view, &frame_client, nullptr,
-      document_interface_broker.InitWithNewPipeAndPassReceiver().PassPipe(),
-      nullptr);
+      web_view, &frame_client, nullptr, nullptr);
 
   blink::WebWidgetClient web_widget_client;
   blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
@@ -966,12 +961,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
       /*compositing_enabled=*/false,
       /*opener=*/nullptr);
   content::RenderView::ApplyWebPreferences(prefs, web_view);
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker;
-  blink::WebLocalFrame* main_frame = blink::WebLocalFrame::CreateMainFrame(
-      web_view, this, nullptr,
-      document_interface_broker.InitWithNewPipeAndPassReceiver().PassPipe(),
-      nullptr);
+  blink::WebLocalFrame* main_frame =
+      blink::WebLocalFrame::CreateMainFrame(web_view, this, nullptr, nullptr);
   frame_.Reset(main_frame);
   blink::WebFrameWidget::CreateForMainFrame(this, main_frame);
   node_to_print_.Reset();

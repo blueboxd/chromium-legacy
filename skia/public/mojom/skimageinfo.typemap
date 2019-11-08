@@ -5,13 +5,11 @@
 mojom = "//skia/public/mojom/image_info.mojom"
 public_headers = [ "//third_party/skia/include/core/SkImageInfo.h" ]
 traits_headers = [ "//skia/public/mojom/image_info_mojom_traits.h" ]
-sources = [
-  "//skia/public/mojom/image_info_mojom_traits.cc",
-]
 deps = [
   "//mojo/public/cpp/bindings",
 ]
 public_deps = [
   "//skia",
+  "//skia/public/mojom:shared_typemap_traits",
 ]
 type_mappings = [ "skia.mojom.ImageInfo=::SkImageInfo" ]

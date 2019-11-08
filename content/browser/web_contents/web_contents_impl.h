@@ -82,11 +82,11 @@
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace service_manager {
 class InterfaceProvider;
-}
+}  // namespace service_manager
 
 namespace content {
 enum class PictureInPictureResult;
@@ -126,7 +126,7 @@ struct MHTMLGenerationParams;
 
 namespace mojom {
 class CreateNewWindowParams;
-}
+}  // namespace mojom
 
 #if defined(OS_ANDROID)
 class WebContentsAndroid;
@@ -645,6 +645,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    int context_id) override;
   void MediaWatchTimeChanged(
       const content::MediaPlayerWatchTime& watch_time) override;
+  media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
+  GetRecordAggregateWatchTimeCallback() override;
   RenderFrameHostImpl* GetMainFrameForInnerDelegate(
       FrameTreeNode* frame_tree_node) override;
   bool IsFrameLowPriority(const RenderFrameHost* render_frame_host) override;

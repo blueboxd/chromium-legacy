@@ -388,8 +388,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               addARObjectAt(event.frame.session,
                             event.frame,
                             hitResult.plane,
-                            new XRRigidTransform(hitResult.hitMatrix),
-                            hitResult.plane.plane_space);
+                            new XRRigidTransform(hitResult.point_on_plane),
+                            hitResult.plane.planeSpace);
             } else {
               console.log("Missed everything, placing an anchor at origin.");
               addARObjectAt(event.frame.session,
@@ -474,8 +474,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // Called every time a XRSession requests that a new frame be drawn.
       async function onXRFrame(t, frame) {
-
         let session = frame.session;
+
+        session.requestAnimationFrame(onXRFrame);
+
         let pose = frame.getViewerPose(xrRefSpace);
 
         let detected_planes = frame.worldInformation.detectedPlanes;
@@ -581,8 +583,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.startFrame();
         scene.drawXRFrame(frame, pose);
         scene.endFrame();
-
-        session.requestAnimationFrame(onXRFrame);
       }
 
       // Start the XR application.

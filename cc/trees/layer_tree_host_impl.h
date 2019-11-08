@@ -1293,6 +1293,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // not we are in that state.
   bool pending_tree_fully_painted_ = false;
 
+#if DCHECK_IS_ON()
+  // Use to track when doing a synchronous draw.
+  bool doing_sync_draw_ = false;
+#endif
+
   // Provides support for PaintWorklets which depend on input properties that
   // are being animated by the compositor (aka 'animated' PaintWorklets).
   // Responsible for storing animated custom property values and for

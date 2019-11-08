@@ -2360,6 +2360,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AppList_BackButtonPressed">
+  <owner>andrewxu@chromium.org</owner>
+  <description>User pressed the back button.</description>
+</action>
+
 <action name="AppList_ClickOnApp">
   <owner>vadimt@chromium.org</owner>
   <description>
@@ -2401,6 +2406,16 @@ should be able to be added at any place in this file.
 <action name="AppList_FullToPeeking">
   <owner>vadimt@chromium.org</owner>
   <description>CrOS Launcher went from full to peeking state.</description>
+</action>
+
+<action name="AppList_HomeButtonPressedClamshell">
+  <owner>andrewxu@chromium.org</owner>
+  <description>User pressed the launcher button in clamshell.</description>
+</action>
+
+<action name="AppList_HomeButtonPressedTablet">
+  <owner>andrewxu@chromium.org</owner>
+  <description>User pressed the launcher button in tablet.</description>
 </action>
 
 <action name="AppList_HomeLauncherToMRUWindow">

@@ -15,12 +15,12 @@ namespace mojo {
 
 ThreadSafeForwarderBase::ThreadSafeForwarderBase(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const ForwardMessageCallback& forward,
-    const ForwardMessageWithResponderCallback& forward_with_responder,
+    ForwardMessageCallback forward,
+    ForwardMessageWithResponderCallback forward_with_responder,
     const AssociatedGroup& associated_group)
     : task_runner_(std::move(task_runner)),
-      forward_(forward),
-      forward_with_responder_(forward_with_responder),
+      forward_(std::move(forward)),
+      forward_with_responder_(std::move(forward_with_responder)),
       associated_group_(associated_group),
       sync_calls_(new InProgressSyncCalls()) {}
 
@@ -52,7 +52,7 @@ bool ThreadSafeForwarderBase::Accept(Message* message) {
         associated_group_.GetController());
   }
   task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(forward_, base::Passed(message)));
+                         base::BindOnce(forward_, std::move(*message)));
   return true;
 }
 
@@ -72,9 +72,8 @@ bool ThreadSafeForwarderBase::AcceptWithResponder(
     auto reply_forwarder =
         std::make_unique<ForwardToCallingThread>(std::move(responder));
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(forward_with_responder_, base::Passed(message),
-                       std::move(reply_forwarder)));
+        FROM_HERE, base::BindOnce(forward_with_responder_, std::move(*message),
+                                  std::move(reply_forwarder)));
     return true;
   }
 
@@ -90,7 +89,7 @@ bool ThreadSafeForwarderBase::AcceptWithResponder(
   auto response = base::MakeRefCounted<SyncResponseInfo>();
   auto response_signaler = std::make_unique<SyncResponseSignaler>(response);
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(forward_with_responder_, base::Passed(message),
+      FROM_HERE, base::BindOnce(forward_with_responder_, std::move(*message),
                                 std::move(response_signaler)));
 
   // Save the pending SyncResponseInfo so that if the sync call deletes
@@ -105,7 +104,7 @@ bool ThreadSafeForwarderBase::AcceptWithResponder(
   auto assign_true = [](bool* b) { *b = true; };
   bool event_signaled = false;
   SyncEventWatcher watcher(&response->event,
-                           base::Bind(assign_true, &event_signaled));
+                           base::BindRepeating(assign_true, &event_signaled));
   const bool* stop_flags[] = {&event_signaled};
   watcher.SyncWatch(stop_flags, 1);
 

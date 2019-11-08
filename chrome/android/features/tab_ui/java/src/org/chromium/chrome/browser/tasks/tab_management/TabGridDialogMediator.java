@@ -102,6 +102,7 @@ public class TabGridDialogMediator {
     private int mCurrentTabId = Tab.INVALID_TAB_ID;
     private boolean mIsUpdatingTitle;
     private String mCurrentGroupModifiedTitle;
+    private Callback<Integer> mToolbarMenuCallback;
 
     TabGridDialogMediator(Context context, DialogController dialogController, PropertyModel model,
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
@@ -197,6 +198,14 @@ public class TabGridDialogMediator {
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
         assert mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter;
+
+        mToolbarMenuCallback = result -> {
+            if (result == R.id.ungroup_tab) {
+                mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, false);
+                List<Tab> tabs = getRelatedTabs(mCurrentTabId);
+                mTabSelectionEditorController.show(tabs);
+            }
+        };
 
         // Setup toolbar button click listeners.
         setupToolbarClickHandlers();
@@ -411,13 +420,8 @@ public class TabGridDialogMediator {
 
     private View.OnClickListener getMenuButtonClickListener() {
         assert mTabSelectionEditorController != null;
-        Callback<Integer> callback = result -> {
-            if (result == R.id.ungroup_tab) {
-                List<Tab> tabs = getRelatedTabs(mCurrentTabId);
-                mTabSelectionEditorController.show(tabs);
-            }
-        };
-        return TabGridDialogMenuCoordinator.getTabGridDialogMenuOnClickListener(callback);
+        return TabGridDialogMenuCoordinator.getTabGridDialogMenuOnClickListener(
+                mToolbarMenuCallback);
     }
 
     private List<Tab> getRelatedTabs(int tabId) {
@@ -501,5 +505,10 @@ public class TabGridDialogMediator {
     @VisibleForTesting
     String getCurrentGroupModifiedTitleForTesting() {
         return mCurrentGroupModifiedTitle;
+    }
+
+    @VisibleForTesting
+    Callback<Integer> getToolbarMenuCallbackForTesting() {
+        return mToolbarMenuCallback;
     }
 }

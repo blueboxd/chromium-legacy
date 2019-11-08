@@ -35,7 +35,10 @@ inline char SpdyHexDigitToIntImpl(char c) {
 }
 
 inline std::string SpdyHexDecodeImpl(SpdyStringPiece data) {
-  return net::HexDecode(data);
+  std::string result;
+  if (!base::HexStringToString(data, &result))
+    result.clear();
+  return result;
 }
 
 NET_EXPORT_PRIVATE bool SpdyHexDecodeToUInt32Impl(SpdyStringPiece data,

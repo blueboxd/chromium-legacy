@@ -35,6 +35,10 @@ class VirtualKeyboardTray;
 // on secondary monitors at the login screen).
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
+  // Whether the status area is collapsed or expanded. Currently, this is only
+  // applicable in in-app tablet mode. Otherwise the state is NOT_COLLAPSIBLE.
+  enum class CollapseState { NOT_COLLAPSIBLE, COLLAPSED, EXPANDED };
+
   StatusAreaWidget(aura::Window* status_container, Shelf* shelf);
   ~StatusAreaWidget() override;
 
@@ -109,6 +113,8 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
     return virtual_keyboard_tray_.get();
   }
 
+  CollapseState collapse_state() const { return collapse_state_; }
+
  private:
   friend class StatusAreaWidgetTestApi;
 
@@ -129,6 +135,8 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   std::unique_ptr<SelectToSpeakTray> select_to_speak_tray_;
 
   LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
+
+  CollapseState collapse_state_ = CollapseState::NOT_COLLAPSIBLE;
 
   Shelf* shelf_;
 

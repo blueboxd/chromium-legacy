@@ -15,7 +15,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -132,7 +132,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   // For the actual request.
   network::mojom::URLLoaderPtr loader_;
-  mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
 
   // To be a URLLoader for the client.
   network::mojom::URLLoaderClientPtr forwarding_client_;

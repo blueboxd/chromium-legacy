@@ -103,7 +103,7 @@ class TestGpuService : public viz::mojom::GpuService {
                     const std::string& key,
                     const std::string& data) override {}
   void WakeUpGpu() override {}
-  void GpuSwitched() override {}
+  void GpuSwitched(gl::GpuPreference active_gpu_heuristic) override {}
   void DestroyAllChannels() override {}
   void OnBackgroundCleanup() override {}
   void OnBackgrounded() override {}

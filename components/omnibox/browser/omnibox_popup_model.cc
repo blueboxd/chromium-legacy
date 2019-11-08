@@ -180,16 +180,9 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   DCHECK(!result().empty());
   DCHECK_NE(kNoMatch, selected_line_);
 
-  const AutocompleteResult& result = this->result();
-  if (result.empty())
-    return;
-
-  const AutocompleteMatch& match = result.match_at(selected_line_);
+  const AutocompleteMatch& match = result().match_at(selected_line_);
   GURL current_destination(match.destination_url);
-
-  if (state == KEYWORD) {
-    DCHECK(match.associated_keyword.get());
-  }
+  DCHECK((state != KEYWORD) || match.associated_keyword.get());
 
   if (state == BUTTON_FOCUSED) {
     // TODO(orinj): If in-suggestion Pedals are kept, refactor a bit
@@ -201,10 +194,9 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   selected_line_state_ = state;
   view_->InvalidateLine(selected_line_);
 
-  // Ensures update of accessibility data for button text.
   if (state == BUTTON_FOCUSED) {
-    edit_model_->view()->SetAccessibilityLabel(edit_model_->view()->GetText(),
-                                               match);
+    edit_model_->SetAccessibilityLabel(match);
+    view_->ProvideButtonFocusHint(selected_line_);
   }
 }
 

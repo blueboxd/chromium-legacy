@@ -67,6 +67,10 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
     last_sent_gesture_ = gesture_event.event;
   }
 
+  gfx::Size GetRootWidgetViewportSize() override {
+    return gfx::Size(1920, 1080);
+  }
+
   // FlingControllerSchedulerClient
   void ScheduleFlingProgress(
       base::WeakPtr<FlingController> fling_controller) override {

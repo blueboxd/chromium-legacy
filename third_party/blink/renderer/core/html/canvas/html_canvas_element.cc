@@ -1287,14 +1287,11 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
       script_state, ImageBitmap::Create(this, crop_rect, options));
 }
 
-void HTMLCanvasElement::SetOffscreenCanvasFrame(
+void HTMLCanvasElement::SetOffscreenCanvasResource(
     scoped_refptr<CanvasResource> image,
-    base::WeakPtr<CanvasResourceDispatcher> dispatcher,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     unsigned resource_id) {
-  OffscreenCanvasPlaceholder::SetOffscreenCanvasFrame(
-      std::move(image), std::move(dispatcher), std::move(task_runner),
-      resource_id);
+  OffscreenCanvasPlaceholder::SetOffscreenCanvasResource(std::move(image),
+                                                         resource_id);
   SetSize(OffscreenCanvasFrame()->Size());
   NotifyListenersCanvasChanged();
 }

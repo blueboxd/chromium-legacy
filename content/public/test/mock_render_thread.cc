@@ -277,18 +277,6 @@ MockRenderThread::TakeInitialInterfaceProviderRequestForFrame(
   return interface_provider_request;
 }
 
-mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-MockRenderThread::TakeInitialDocumentInterfaceBrokerReceiverForFrame(
-    int32_t routing_id) {
-  auto it =
-      frame_routing_id_to_initial_document_broker_receivers_.find(routing_id);
-  if (it == frame_routing_id_to_initial_document_broker_receivers_.end())
-    return mojo::NullReceiver();
-  auto document_broker_receiver = std::move(it->second);
-  frame_routing_id_to_initial_document_broker_receivers_.erase(it);
-  return document_broker_receiver;
-}
-
 mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
 MockRenderThread::TakeInitialBrowserInterfaceBrokerReceiverForFrame(
     int32_t routing_id) {
@@ -322,21 +310,6 @@ void MockRenderThread::OnCreateChildFrame(
       params_reply->child_routing_id, mojo::MakeRequest(&interface_provider));
   params_reply->new_interface_provider =
       interface_provider.PassInterface().PassHandle().release();
-
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker;
-  frame_routing_id_to_initial_document_broker_receivers_.emplace(
-      params_reply->child_routing_id,
-      document_interface_broker.InitWithNewPipeAndPassReceiver());
-  params_reply->document_interface_broker_content_handle =
-      document_interface_broker.PassPipe().release();
-
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_blink;
-  ignore_result(
-      document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
-  params_reply->document_interface_broker_blink_handle =
-      document_interface_broker_blink.PassPipe().release();
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
@@ -391,25 +364,11 @@ void MockRenderThread::OnCreateWindow(
       reply->main_frame_route_id,
       mojo::MakeRequest(
           &reply->main_frame_interface_bundle->interface_provider));
-
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker;
-  frame_routing_id_to_initial_document_broker_receivers_.emplace(
-      reply->main_frame_route_id,
-      document_interface_broker.InitWithNewPipeAndPassReceiver());
-
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   frame_routing_id_to_initial_browser_broker_receivers_.emplace(
       reply->main_frame_route_id,
       browser_interface_broker.InitWithNewPipeAndPassReceiver());
-  reply->main_frame_interface_bundle->document_interface_broker_content =
-      std::move(document_interface_broker);
-
-  ignore_result(document_interface_broker.InitWithNewPipeAndPassReceiver());
-  reply->main_frame_interface_bundle->document_interface_broker_blink =
-      std::move(document_interface_broker);
-
   reply->main_frame_interface_bundle->browser_interface_broker =
       std::move(browser_interface_broker);
 

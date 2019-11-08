@@ -10,11 +10,11 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Histogram names for InfobarConfirmTypeRestore.
 const char kInfobarTypeRestoreEventHistogram[] =
     "Mobile.Messages.Confirm.Event.ConfirmInfobarTypeRestore";
-}  // namespace
+
+const char kInfobarTypeBlockPopupsEventHistogram[] =
+    "Mobile.Messages.Confirm.Event.ConfirmInfobarTypeBlockPopups";
 
 @implementation ConfirmInfobarMetricsRecorder
 
@@ -23,6 +23,9 @@ const char kInfobarTypeRestoreEventHistogram[] =
   switch (infobarConfirmType) {
     case InfobarConfirmType::kInfobarConfirmTypeRestore:
       UMA_HISTOGRAM_ENUMERATION(kInfobarTypeRestoreEventHistogram, event);
+      break;
+    case InfobarConfirmType::kInfobarConfirmTypeBlockPopups:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarTypeBlockPopupsEventHistogram, event);
       break;
   }
 }

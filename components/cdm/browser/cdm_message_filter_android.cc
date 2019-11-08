@@ -201,10 +201,10 @@ void CdmMessageFilterAndroid::OnQueryKeySystemSupport(
 
   bool are_overlay_supported =
       content::AndroidOverlayProvider::GetInstance()->AreOverlaysSupported();
-  bool use_android_overlay =
-      base::FeatureList::IsEnabled(media::kUseAndroidOverlay);
+  bool overlay_fullscreen_video =
+      base::FeatureList::IsEnabled(media::kOverlayFullscreenVideo);
   if (force_to_support_secure_codecs_ ||
-      (are_overlay_supported && use_android_overlay)) {
+      (are_overlay_supported && overlay_fullscreen_video)) {
     DVLOG(1) << "Rendering the output of secure codecs is supported!";
     response->secure_codecs = GetSupportedCodecs(request, true);
   }

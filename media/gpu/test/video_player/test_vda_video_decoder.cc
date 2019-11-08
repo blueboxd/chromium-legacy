@@ -107,7 +107,7 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   if (!decoder_factory) {
-    LOG_ASSERT(decoder_) << "Failed to create VideoDecodeAccelerator factory";
+    ASSERT_TRUE(decoder_) << "Failed to create VideoDecodeAccelerator factory";
     std::move(init_cb).Run(false);
     return;
   }
@@ -128,7 +128,7 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
       this, vda_config, gpu_driver_bug_workarounds, gpu_preferences);
 
   if (!decoder_) {
-    LOG_ASSERT(decoder_) << "Failed to create VideoDecodeAccelerator factory";
+    ASSERT_TRUE(decoder_) << "Failed to create VideoDecodeAccelerator factory";
     std::move(init_cb).Run(false);
     return;
   }
@@ -229,7 +229,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
             gfx::BufferUsage::SCANOUT_VDA_WRITE);
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
-        LOG_ASSERT(video_frame) << "Failed to create video frame";
+        ASSERT_TRUE(video_frame) << "Failed to create video frame";
         video_frames_.emplace(picture_buffer.id(), video_frame);
         gfx::GpuMemoryBufferHandle handle;
 
@@ -240,7 +240,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
         NOTREACHED();
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
-        LOG_ASSERT(!handle.is_null()) << "Failed to create GPU memory handle";
+        ASSERT_TRUE(!handle.is_null()) << "Failed to create GPU memory handle";
         decoder_->ImportBufferForPicture(picture_buffer.id(), format,
                                          std::move(handle));
       }
@@ -252,7 +252,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
         uint32_t texture_id;
         auto video_frame = frame_renderer_->CreateVideoFrame(
             format, dimensions, texture_target, &texture_id);
-        LOG_ASSERT(video_frame) << "Failed to create video frame";
+        ASSERT_TRUE(video_frame) << "Failed to create video frame";
         int32_t picture_buffer_id = GetNextPictureBufferId();
         PictureBuffer::TextureIds texture_ids(1, texture_id);
         picture_buffers.emplace_back(picture_buffer_id, dimensions, texture_ids,
@@ -282,7 +282,7 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   DVLOGF(4) << "Picture buffer ID: " << picture.picture_buffer_id();
 
   auto it = video_frames_.find(picture.picture_buffer_id());
-  LOG_ASSERT(it != video_frames_.end());
+  ASSERT_TRUE(it != video_frames_.end());
   scoped_refptr<VideoFrame> video_frame = it->second;
 
   // Look up the time at which the decode started.
@@ -359,7 +359,7 @@ void TestVDAVideoDecoder::NotifyEndOfBitstreamBuffer(
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
 
   auto it = decode_cbs_.find(bitstream_buffer_id);
-  LOG_ASSERT(it != decode_cbs_.end())
+  ASSERT_TRUE(it != decode_cbs_.end())
       << "Couldn't find decode callback for picture buffer with id "
       << bitstream_buffer_id;
 

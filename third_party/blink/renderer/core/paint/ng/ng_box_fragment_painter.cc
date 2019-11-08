@@ -635,7 +635,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     paint_rect.size = box_fragment_.Size();
     if (layout_object.IsTableCell()) {
       paint_rect.size =
-          PhysicalSize(To<LayoutTableCell>(layout_object).PixelSnappedSize());
+          PhysicalSize(ToLayoutBox(layout_object).PixelSnappedSize());
     }
     background_client = &GetDisplayItemClient();
   }

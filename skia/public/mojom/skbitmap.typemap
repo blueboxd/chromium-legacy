@@ -5,14 +5,12 @@
 mojom = "//skia/public/mojom/bitmap.mojom"
 public_headers = [ "//third_party/skia/include/core/SkBitmap.h" ]
 traits_headers = [ "//skia/public/mojom/bitmap_skbitmap_mojom_traits.h" ]
-sources = [
-  "//skia/public/mojom/bitmap_skbitmap_mojom_traits.cc",
-]
 deps = [
   "//mojo/public/cpp/bindings",
 ]
 public_deps = [
   "//skia",
+  "//skia/public/mojom:shared_typemap_traits",
 ]
 type_mappings = [
   "skia.mojom.Bitmap=::SkBitmap[nullable_is_same_type]",

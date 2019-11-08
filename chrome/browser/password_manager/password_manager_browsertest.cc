@@ -3310,8 +3310,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ReattachWebContents) {
                                   TabStripModel::ADD_ACTIVE);
 }
 
+// Flaky on Linux and Windows.  http://crbug.com/1022531
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_FillWhenFormWithHiddenUsername \
+  DISABLED_FillWhenFormWithHiddenUsername
+#else
+#define MAYBE_FillWhenFormWithHiddenUsername \
+  FillWhenFormWithHiddenUsername
+#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       FillWhenFormWithHiddenUsername) {
+                       MAYBE_FillWhenFormWithHiddenUsername) {
   // At first let us save a credential to the password store.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(

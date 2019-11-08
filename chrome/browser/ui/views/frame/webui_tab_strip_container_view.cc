@@ -59,32 +59,17 @@ bool EventTypeCanCloseTabStrip(const ui::EventType& type) {
 // When enabled, closes the container upon any event in the window not
 // destined for the container and cancels the event. If an event is
 // destined for the container, it passes it through.
-class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
-                                               public views::ViewObserver {
+class WebUITabStripContainerView::AutoCloser : public ui::EventHandler {
  public:
-  AutoCloser(views::View* container,
+  using EventPassthroughPredicate =
+      base::RepeatingCallback<bool(const ui::Event& event)>;
+
+  AutoCloser(EventPassthroughPredicate event_passthrough_predicate,
              base::RepeatingClosure close_container_callback)
-      : container_(container),
-        close_container_callback_(std::move(close_container_callback)),
-        view_observer_(this) {
-    view_observer_.Add(container);
-    WidgetChanged();
+      : event_passthrough_predicate_(std::move(event_passthrough_predicate)),
+        close_container_callback_(std::move(close_container_callback)) {}
 
-    // Our observed Widget's NativeView may be destroyed before us. We
-    // have no reasonable way of un-registering our pre-target handler
-    // from the NativeView while the Widget is destroying. This disables
-    // EventHandler's check that it has been removed from all
-    // EventTargets.
-    DisableCheckTargets();
-  }
-
-  ~AutoCloser() override {
-    // If |container_| was in a Widget and that Widget still has its
-    // NativeView, remove ourselves from it. Otherwise, the NativeView
-    // is already destroying so we don't need to do anything.
-    if (last_widget_ && last_widget_->GetNativeView())
-      last_widget_->GetNativeView()->RemovePreTargetHandler(this);
-  }
+  ~AutoCloser() override {}
 
   // Sets whether to inspect events. If not enabled, all events are
   // ignored and passed through as usual.
@@ -94,54 +79,16 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
   void OnEvent(ui::Event* event) override {
     if (!enabled_)
       return;
-    if (!event->IsLocatedEvent())
+    if (event_passthrough_predicate_.Run(*event))
       return;
 
-    ui::LocatedEvent* located_event = event->AsLocatedEvent();
-    // Let any events destined for |container_| pass through.
-    const gfx::Rect container_bounds_in_window =
-        container_->ConvertRectToWidget(container_->GetLocalBounds());
-    if (container_bounds_in_window.Contains(located_event->root_location()))
-      return;
-
-    // Upon any user action outside |container_|, cancel the event and close the
-    // container.
-    if (EventTypeCanCloseTabStrip(located_event->type())) {
-      located_event->StopPropagation();
-      close_container_callback_.Run();
-    }
-  }
-
-  // views::ViewObserver:
-  void OnViewAddedToWidget(views::View* observed_view) override {
-    DCHECK_EQ(container_, observed_view);
-    WidgetChanged();
-  }
-
-  void OnViewRemovedFromWidget(views::View* observed_view) override {
-    DCHECK_EQ(container_, observed_view);
-    WidgetChanged();
+    event->StopPropagation();
+    close_container_callback_.Run();
   }
 
  private:
-  // Handle when |container_| is added to a new Widget or removed from
-  // its Widget.
-  void WidgetChanged() {
-    views::Widget* new_widget = container_->GetWidget();
-    if (new_widget == last_widget_)
-      return;
-
-    if (last_widget_)
-      last_widget_->GetNativeView()->RemovePreTargetHandler(this);
-    if (new_widget)
-      new_widget->GetNativeView()->AddPreTargetHandler(this);
-    last_widget_ = new_widget;
-  }
-
-  views::View* const container_;
+  EventPassthroughPredicate event_passthrough_predicate_;
   base::RepeatingClosure close_container_callback_;
-  views::Widget* last_widget_ = nullptr;
-  ScopedObserver<View, ViewObserver> view_observer_;
   bool enabled_ = false;
 };
 
@@ -182,7 +129,8 @@ WebUITabStripContainerView::WebUITabStripContainerView(
           AddChildView(std::make_unique<views::WebView>(browser->profile()))),
       tab_contents_container_(tab_contents_container),
       auto_closer_(std::make_unique<AutoCloser>(
-          this,
+          base::Bind(&WebUITabStripContainerView::EventShouldPropagate,
+                     base::Unretained(this)),
           base::Bind(&WebUITabStripContainerView::CloseContainer,
                      base::Unretained(this)))) {
   animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
@@ -211,6 +159,13 @@ WebUITabStripContainerView::WebUITabStripContainerView(
   TabStripUI* const tab_strip_ui = static_cast<TabStripUI*>(
       web_view_->GetWebContents()->GetWebUI()->GetController());
   tab_strip_ui->Initialize(browser_, this);
+
+  // Our observed Widget's NativeView may be destroyed before us. We
+  // have no reasonable way of un-registering our pre-target handler
+  // from the NativeView while the Widget is destroying. This disables
+  // EventHandler's check that it has been removed from all
+  // EventTargets.
+  auto_closer_->DisableCheckTargets();
 }
 
 WebUITabStripContainerView::~WebUITabStripContainerView() = default;
@@ -221,14 +176,20 @@ views::NativeViewHost* WebUITabStripContainerView::GetNativeViewHost() {
 
 std::unique_ptr<ToolbarButton>
 WebUITabStripContainerView::CreateNewTabButton() {
+  DCHECK_EQ(nullptr, new_tab_button_);
   auto new_tab_button = std::make_unique<ToolbarButton>(this);
   new_tab_button->SetID(VIEW_ID_WEBUI_TAB_STRIP_NEW_TAB_BUTTON);
   new_tab_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
+
+  new_tab_button_ = new_tab_button.get();
+  view_observer_.Add(new_tab_button_);
+
   return new_tab_button;
 }
 
 std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
+  DCHECK_EQ(nullptr, tab_counter_);
   // TODO(999557): Create a custom text style to get the correct size/weight.
   // TODO(999557): Figure out how to get the right font.
   auto tab_counter = std::make_unique<views::LabelButton>(
@@ -259,6 +220,9 @@ std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
   browser_->tab_strip_model()->AddObserver(tab_counter_model_observer_.get());
   tab_counter_model_observer_->UpdateCounter(browser_->tab_strip_model());
 
+  tab_counter_ = tab_counter.get();
+  view_observer_.Add(tab_counter_);
+
   return tab_counter;
 }
 
@@ -277,6 +241,30 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     animation_.Hide();
   }
   auto_closer_->set_enabled(target_visible);
+}
+
+bool WebUITabStripContainerView::EventShouldPropagate(const ui::Event& event) {
+  if (!event.IsLocatedEvent())
+    return true;
+  const ui::LocatedEvent* located_event = event.AsLocatedEvent();
+
+  if (!EventTypeCanCloseTabStrip(located_event->type()))
+    return true;
+
+  // If the event is in the container or control buttons, let it be handled.
+  for (views::View* view :
+       {static_cast<views::View*>(this), new_tab_button_, tab_counter_}) {
+    if (!view)
+      continue;
+
+    const gfx::Rect bounds_in_window =
+        view->ConvertRectToWidget(view->GetLocalBounds());
+    if (bounds_in_window.Contains(located_event->root_location()))
+      return true;
+  }
+
+  // Otherwise, cancel the event and close the container.
+  return false;
 }
 
 void WebUITabStripContainerView::AnimationEnded(
@@ -309,6 +297,16 @@ TabStripUILayout WebUITabStripContainerView::GetLayout() {
       tab_contents_container_->size());
 }
 
+void WebUITabStripContainerView::AddedToWidget() {
+  GetWidget()->GetNativeView()->AddPreTargetHandler(auto_closer_.get());
+}
+
+void WebUITabStripContainerView::RemovedFromWidget() {
+  aura::Window* const native_view = GetWidget()->GetNativeView();
+  if (native_view)
+    native_view->RemovePreTargetHandler(auto_closer_.get());
+}
+
 int WebUITabStripContainerView::GetHeightForWidth(int w) const {
   return desired_height_ * animation_.GetCurrentValue();
 }
@@ -325,7 +323,9 @@ void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
 }
 
 void WebUITabStripContainerView::OnViewBoundsChanged(View* observed_view) {
-  DCHECK_EQ(tab_contents_container_, observed_view);
+  if (observed_view != tab_contents_container_)
+    return;
+
   desired_height_ =
       TabStripUILayout::CalculateForWebViewportSize(observed_view->size())
           .CalculateContainerHeight();
@@ -337,4 +337,11 @@ void WebUITabStripContainerView::OnViewBoundsChanged(View* observed_view) {
   TabStripUI* const tab_strip_ui = static_cast<TabStripUI*>(
       web_view_->GetWebContents()->GetWebUI()->GetController());
   tab_strip_ui->LayoutChanged();
+}
+
+void WebUITabStripContainerView::OnViewIsDeleting(View* observed_view) {
+  if (observed_view == new_tab_button_)
+    new_tab_button_ = nullptr;
+  else if (observed_view == tab_counter_)
+    tab_counter_ = nullptr;
 }

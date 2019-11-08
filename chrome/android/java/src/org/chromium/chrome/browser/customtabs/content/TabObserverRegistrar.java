@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs.content;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -25,8 +27,36 @@ import javax.inject.Inject;
  */
 @ActivityScope
 public class TabObserverRegistrar extends EmptyTabModelObserver implements Destroyable {
+    private CustomTabActivityTabProvider mTabProvider;
     private final Set<PageLoadMetrics.Observer> mPageLoadMetricsObservers = new HashSet<>();
     private final Set<TabObserver> mTabObservers = new HashSet<>();
+
+    /** Observers for active tab. */
+    private final Set<TabObserver> mActivityTabObservers = new HashSet<>();
+
+    /**
+     * Caches the {@link CustomTabActivityTabProvider}'s active tab so that TabObservers can be
+     * removed from the previous active tab when the active tab changes.
+     */
+    private Tab mTabProviderTab;
+
+    private final CustomTabActivityTabProvider.Observer mActivityTabProviderObserver =
+            new CustomTabActivityTabProvider.Observer() {
+                @Override
+                public void onInitialTabCreated(@NonNull Tab tab, @TabCreationMode int mode) {
+                    onTabProviderTabUpdated();
+                }
+
+                @Override
+                public void onTabSwapped(@NonNull Tab tab) {
+                    onTabProviderTabUpdated();
+                }
+
+                @Override
+                public void onAllTabsClosed() {
+                    onTabProviderTabUpdated();
+                }
+            };
 
     /**
      * Registers a {@link PageLoadMetrics.Observer} to be managed by this Registrar.
@@ -49,8 +79,33 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
         mTabObservers.remove(observer);
     }
 
+    /**
+     * Registers a TabObserver for the CustomTabActivity's active tab. Changes the Tab that is
+     * being observed when the CustomTabActivity's active tab changes.
+     * Differs from {@link #registerTabObserver()} which observes all newly created tabs.
+     */
+    public void registerActivityTabObserver(TabObserver observer) {
+        mActivityTabObservers.add(observer);
+        Tab activeTab = mTabProvider.getTab();
+        if (activeTab != null) {
+            activeTab.addObserver(observer);
+        }
+    }
+
+    public void unregisterActivityTabObserver(TabObserver observer) {
+        mActivityTabObservers.remove(observer);
+        Tab activeTab = mTabProvider.getTab();
+        if (activeTab != null) {
+            activeTab.removeObserver(observer);
+        }
+    }
+
     @Inject
-    public TabObserverRegistrar(ActivityLifecycleDispatcher lifecycleDispatcher) {
+    public TabObserverRegistrar(ActivityLifecycleDispatcher lifecycleDispatcher,
+            CustomTabActivityTabProvider tabProvider) {
+        mTabProvider = tabProvider;
+        mTabProvider.addObserver(mActivityTabProviderObserver);
+
         lifecycleDispatcher.register(this);
     }
 
@@ -69,7 +124,7 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
     @Override
     public void tabRemoved(Tab tab) {
         removePageLoadMetricsObservers();
-        removeTabObservers(tab);
+        removeTabObservers(tab, mTabObservers);
     }
 
     /**
@@ -78,7 +133,7 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
      */
     public void addObserversForTab(Tab tab) {
         addPageLoadMetricsObservers();
-        addTabObservers(tab);
+        addTabObservers(tab, mTabObservers);
     }
 
     private void addPageLoadMetricsObservers() {
@@ -93,14 +148,27 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
         }
     }
 
-    private void addTabObservers(Tab tab) {
-        for (TabObserver observer : mTabObservers) {
+    /**
+     * Called when the {@link CustomTabActivityTabProvider}'s active tab has changed.
+     */
+    private void onTabProviderTabUpdated() {
+        if (mTabProviderTab != null) {
+            removeTabObservers(mTabProviderTab, mActivityTabObservers);
+        }
+        mTabProviderTab = mTabProvider.getTab();
+        if (mTabProviderTab != null) {
+            addTabObservers(mTabProviderTab, mActivityTabObservers);
+        }
+    }
+
+    private void addTabObservers(Tab tab, Set<TabObserver> tabObservers) {
+        for (TabObserver observer : tabObservers) {
             tab.addObserver(observer);
         }
     }
 
-    private void removeTabObservers(Tab tab) {
-        for (TabObserver observer : mTabObservers) {
+    private void removeTabObservers(Tab tab, Set<TabObserver> tabObservers) {
+        for (TabObserver observer : tabObservers) {
             tab.removeObserver(observer);
         }
     }

@@ -284,11 +284,6 @@ class FakeExtensionCertificateProvider : public chromeos::CertificateProvider {
         *extension_client_certificates_));
   }
 
-  std::unique_ptr<CertificateProvider> Copy() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
  private:
   const net::CertificateList* extension_client_certificates_;
 

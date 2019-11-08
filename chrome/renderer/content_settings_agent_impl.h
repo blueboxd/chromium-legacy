@@ -165,6 +165,9 @@ class ContentSettingsAgentImpl
   bool AllowStorageAccess(
       chrome::mojom::ContentSettingsManager::StorageType storage_type);
 
+  // Ensures that |content_settings_manager_| is connected.
+  void EnsureContentSettingsManagerConnection();
+
   mojo::Remote<chrome::mojom::ContentSettingsManager> content_settings_manager_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

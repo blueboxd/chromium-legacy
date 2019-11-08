@@ -219,12 +219,6 @@ void VRServiceImpl::OnWebContentsFocusChanged(content::RenderWidgetHost* host,
   }
 
   in_focused_frame_ = focused;
-  if (ListeningForActivate()) {
-    BrowserXRRuntime* immersive_runtime =
-        runtime_manager_->GetImmersiveVrRuntime();
-    if (immersive_runtime)
-      immersive_runtime->UpdateListeningForActivate(this);
-  }
 
   for (const auto& controller : magic_window_controllers_)
     controller->SetFrameDataRestricted(!focused);
@@ -611,21 +605,6 @@ void VRServiceImpl::SetFramesThrottled(bool throttled) {
   }
 }
 
-void VRServiceImpl::SetListeningForActivate(
-    mojo::PendingRemote<device::mojom::VRDisplayClient> display_client) {
-  // TODO(crbug.com/999745): Remove the check if the condition to check if
-  // |display_client| is nullptr is not required.
-  if (display_client)
-    display_client_.Bind(std::move(display_client));
-  else
-    display_client_.reset();
-  BrowserXRRuntime* immersive_runtime =
-      runtime_manager_->GetImmersiveVrRuntime();
-  if (immersive_runtime && display_client_) {
-    immersive_runtime->UpdateListeningForActivate(this);
-  }
-}
-
 void VRServiceImpl::GetImmersiveVRDisplayInfo(
     device::mojom::VRService::GetImmersiveVRDisplayInfoCallback callback) {
   if (!initialization_complete_) {
@@ -667,21 +646,6 @@ void VRServiceImpl::OnVisibilityStateChanged(
   visibility_state_ = visiblity_state;
   for (auto& client : session_clients_)
     client->OnVisibilityStateChanged(visiblity_state);
-}
-
-void VRServiceImpl::OnActivate(device::mojom::VRDisplayEventReason reason,
-                               base::OnceCallback<void(bool)> on_handled) {
-  DVLOG(2) << __func__;
-  if (display_client_) {
-    display_client_->OnActivate(reason, std::move(on_handled));
-  }
-}
-
-void VRServiceImpl::OnDeactivate(device::mojom::VRDisplayEventReason reason) {
-  DVLOG(2) << __func__;
-  if (display_client_) {
-    display_client_->OnDeactivate(reason);
-  }
 }
 
 content::WebContents* VRServiceImpl::GetWebContents() {

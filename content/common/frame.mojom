@@ -377,7 +377,7 @@ interface FrameHost {
   // Sent by the renderer when a navigation commits in the frame.
 
   // If |interface_params| is non-empty, the FrameHost implementation
-  // must unbind the old InterfaceProvider and DocumentInterfaceBroker
+  // must unbind the old InterfaceProvider and BrowserInterfaceBroker
   // connections, and drop any interface requests pending on them.
   // Then it should bind the appropriate requests and start servicing
   // GetInterface messages coming in on these new connections
@@ -387,9 +387,8 @@ interface FrameHost {
   // is set for cross-document navigations. This prevents origin confusion by
   // ensuring that interface requests racing with navigation commit will be
   // either ignored, or serviced correctly in the security context of the
-  // document they originated from (based on which InterfaceProvider connection
-  // the GetInterface messages arrive on or DocumentInterfaceBroker
-  // connection the Get<interface> messages arrive on).
+  // document they originated from (based on which InterfaceProvider or
+  // BrowserInterfaceBroker connection the GetInterface messages arrive on).
   DidCommitProvisionalLoad(
       DidCommitProvisionalLoadParams params,
       DidCommitProvisionalLoadInterfaceParams? interface_params);
@@ -466,10 +465,6 @@ interface FrameHost {
   // correctly set the initial size of the frame in case of a cross-process
   // navigation.
   FrameSizeChanged(gfx.mojom.Size size);
-
-  // Notifies the browser that the current frame has changed its visibility
-  // status.
-  VisibilityChanged(blink.mojom.FrameVisibility visibility);
 
   // Updates information to determine whether a user gesture should carryover to
   // future navigations. This is needed so navigations within a certain

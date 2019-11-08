@@ -31,8 +31,6 @@ class WebContents;
 // call exactly one of those methods exactly once.
 class SSLErrorHandler {
  public:
-  // SSLErrorHandler's delegate lives on the UI or IO thread based on the passed
-  // in |delegate_thread|. The methods will be called on that thread.
   class CONTENT_EXPORT Delegate {
    public:
     // Called when SSLErrorHandler decides to cancel the request because of
@@ -49,7 +47,6 @@ class SSLErrorHandler {
 
   SSLErrorHandler(WebContents* web_contents,
                   const base::WeakPtr<Delegate>& delegate,
-                  BrowserThread::ID delegate_thread,
                   bool is_main_frame_request,
                   const GURL& url,
                   int net_error,
@@ -85,11 +82,7 @@ class SSLErrorHandler {
   void DenyRequest();
 
  private:
-  // This is called on |delegate_thread_|.
   base::WeakPtr<Delegate> delegate_;
-
-  // The thread that the delegate is called on.
-  BrowserThread::ID delegate_thread_;
 
   // The URL for the request that generated the error.
   const GURL request_url_;

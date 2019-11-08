@@ -60,12 +60,13 @@ class CORE_EXPORT FileChooserClient : public PopupOpeningObserver {
   // DisconnectFileChooser().
   FileChooser* FileChooserOrNull() const { return chooser_.get(); }
 
- protected:
-  FileChooser* NewFileChooser(const mojom::blink::FileChooserParams&);
-  bool HasConnectedFileChooser() const { return chooser_.get(); }
-
   // This should be called if a user chose files or cancel the dialog.
   void DisconnectFileChooser();
+
+  FileChooser* NewFileChooser(const mojom::blink::FileChooserParams&);
+
+ protected:
+  bool HasConnectedFileChooser() const { return chooser_.get(); }
 
  private:
   scoped_refptr<FileChooser> chooser_;
@@ -96,7 +97,7 @@ class FileChooser : public RefCounted<FileChooser> {
   // mojom::blink::FileChooser callback
   void DidChooseFiles(mojom::blink::FileChooserResultPtr result);
 
-  WeakPersistent<FileChooserClient> client_;
+  Persistent<FileChooserClient> client_;
   mojom::blink::FileChooserParamsPtr params_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
   mojo::Remote<mojom::blink::FileChooser> file_chooser_;

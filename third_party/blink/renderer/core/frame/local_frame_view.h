@@ -704,6 +704,7 @@ class CORE_EXPORT LocalFrameView final
   bool LifecycleUpdatesThrottled() const override {
     return lifecycle_updates_throttled_;
   }
+  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
 
  private:
   LocalFrameView(LocalFrame&, IntRect);

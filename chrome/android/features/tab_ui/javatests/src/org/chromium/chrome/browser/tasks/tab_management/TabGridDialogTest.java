@@ -20,7 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.CardCountAssertion;
-import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstTabFromTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createOverviewHideWatcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
@@ -111,7 +111,7 @@ public class TabGridDialogTest {
 
         // Enter first tab page.
         assertTrue(cta.getLayoutManager().overviewVisible());
-        clickFirstTabFromTabSwitcher(cta);
+        clickFirstCardFromTabSwitcher(cta);
         clickFirstTabFromDialog(cta);
         // Open dialog from tab strip and verify dialog is showing correct content.
         openDialogFromStripAndVerify(cta, 2);
@@ -176,7 +176,7 @@ public class TabGridDialogTest {
     }
 
     private void openDialogFromTabSwitcherAndVerify(ChromeTabbedActivity cta, int tabCount) {
-        clickFirstTabFromTabSwitcher(cta);
+        clickFirstCardFromTabSwitcher(cta);
         CriteriaHelper.pollInstrumentationThread(() -> isDialogShowing(cta));
         verifyShowingDialog(cta, tabCount);
     }

@@ -51,7 +51,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
@@ -100,13 +99,6 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
   return CONTAINS_STRING(arg, "Effective playback rate changed from " +
                                   std::string(old_rate_string) + " to " +
                                   std::string(new_rate_string));
-}
-
-// returns a valid handle that can be passed to WebLocalFrame constructor
-mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
-  return mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
-      .InitWithNewPipeAndPassReceiver()
-      .PassPipe();
 }
 
 class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
@@ -160,6 +152,11 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(RequestPause, void());
   MOCK_METHOD1(RequestMuted, void(bool));
   MOCK_METHOD0(GetFeatures, Features(void));
+  MOCK_METHOD4(OnRequestAnimationFrame,
+               void(base::TimeTicks,
+                    base::TimeTicks,
+                    uint32_t,
+                    const media::VideoFrame&));
 
   void set_was_always_muted(bool value) { was_always_muted_ = value; }
 
@@ -298,9 +295,9 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
   ~MockVideoFrameCompositor() override = default;
 
   // MOCK_METHOD doesn't like OnceCallback.
-  void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) override {}
+  MOCK_METHOD1(SetOnFramePresentedCallback, void(OnNewFramePresentedCB));
   MOCK_METHOD1(SetIsPageVisible, void(bool));
-  MOCK_METHOD0(GetCurrentFrameAndUpdateIfStale, scoped_refptr<VideoFrame>());
+  MOCK_METHOD0(GetCurrentFrameOnAnyThread, scoped_refptr<VideoFrame>());
   MOCK_METHOD4(
       EnableSubmission,
       void(const viz::SurfaceId&, base::TimeTicks, media::VideoRotation, bool));
@@ -314,12 +311,11 @@ class WebMediaPlayerImplTest : public testing::Test {
                                          /*is_hidden=*/false,
                                          /*compositing_enabled=*/false,
                                          nullptr)),
-        web_local_frame_(blink::WebLocalFrame::CreateMainFrame(
-            web_view_,
-            &web_frame_client_,
-            nullptr,
-            CreateStubDocumentInterfaceBrokerHandle(),
-            nullptr)),
+        web_local_frame_(
+            blink::WebLocalFrame::CreateMainFrame(web_view_,
+                                                  &web_frame_client_,
+                                                  nullptr,
+                                                  nullptr)),
         context_provider_(viz::TestContextProvider::Create()),
         audio_parameters_(TestAudioParameters::Normal()) {
     media_thread_.StartAndWaitForTesting();
@@ -368,6 +364,9 @@ class WebMediaPlayerImplTest : public testing::Test {
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
         VideoDecodePerfHistory::SaveCallback(),
         MediaMetricsProvider::GetLearningSessionCallback(),
+        base::BindRepeating(
+            &WebMediaPlayerImplTest::GetRecordAggregateWatchTimeCallback,
+            base::Unretained(this)),
         provider.BindNewPipeAndPassReceiver());
 
     // Initialize provider since none of the tests below actually go through the
@@ -449,6 +448,11 @@ class WebMediaPlayerImplTest : public testing::Test {
   void SetDuration(base::TimeDelta value) {
     wmpi_->SetPipelineMediaDurationForTest(value);
     wmpi_->OnDurationChange();
+  }
+
+  MediaMetricsProvider::RecordAggregateWatchTimeCallback
+  GetRecordAggregateWatchTimeCallback() {
+    return base::NullCallback();
   }
 
   base::TimeDelta GetCurrentTimeInternal() {
@@ -616,6 +620,27 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   bool IsDataSourceMarkedAsPlaying() const {
     return wmpi_->mb_data_source_->media_has_played();
+  }
+
+  scoped_refptr<VideoFrame> CreateFrame() {
+    gfx::Size size(8, 8);
+    return VideoFrame::CreateFrame(PIXEL_FORMAT_I420, size, gfx::Rect(size),
+                                   size, base::TimeDelta());
+  }
+
+  void RequestAnimationFrame() { wmpi_->RequestAnimationFrame(); }
+
+  void OnNewFramePresentedCallback() {
+    wmpi_->OnNewFramePresentedCallback(CreateFrame(), base::TimeTicks::Now(),
+                                       base::TimeTicks::Now(), 1);
+  }
+
+  scoped_refptr<VideoFrame> GetCurrentFrameFromCompositor() {
+    return wmpi_->GetCurrentFrameFromCompositor();
+  }
+
+  void SetCurrentFrameOverrideForTesting(scoped_refptr<VideoFrame> frame) {
+    wmpi_->SetCurrentFrameOverrideForTesting(frame);
   }
 
   enum class LoadType { kFullyBuffered, kStreaming };
@@ -1104,6 +1129,40 @@ TEST_F(WebMediaPlayerImplTest, DidLoadingProgressTriggersResume) {
   EXPECT_FALSE(delegate_.ExpireForTesting());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsSuspended());
+}
+
+TEST_F(WebMediaPlayerImplTest, RequestAnimationFrame) {
+  InitializeWebMediaPlayerImpl();
+
+  EXPECT_CALL(*compositor_, SetOnFramePresentedCallback(_));
+  RequestAnimationFrame();
+}
+
+TEST_F(WebMediaPlayerImplTest, OnNewFramePresentedCallback) {
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(client_, OnRequestAnimationFrame(_, _, _, _));
+
+  OnNewFramePresentedCallback();
+}
+
+TEST_F(WebMediaPlayerImplTest, GetCurrentFrameFromCompositorOverride) {
+  scoped_refptr<VideoFrame> compositor_frame = CreateFrame();
+  scoped_refptr<VideoFrame> override_frame = CreateFrame();
+
+  InitializeWebMediaPlayerImpl();
+
+  EXPECT_CALL(*compositor_, GetCurrentFrameOnAnyThread())
+      .WillRepeatedly(Return(compositor_frame));
+
+  EXPECT_EQ(compositor_frame, GetCurrentFrameFromCompositor());
+
+  SetCurrentFrameOverrideForTesting(override_frame);
+  EXPECT_EQ(override_frame, GetCurrentFrameFromCompositor());
+
+  // After returning from OnNewFramePresentedCallback(), the overriding frame
+  // should be cleared.
+  OnNewFramePresentedCallback();
+  EXPECT_EQ(compositor_frame, GetCurrentFrameFromCompositor());
 }
 
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Constructed) {

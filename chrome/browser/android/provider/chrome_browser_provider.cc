@@ -27,7 +27,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
@@ -37,7 +36,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
-#include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/android/android_history_types.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/search_engines/template_url.h"
@@ -45,7 +43,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/favicon_size.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -315,7 +312,7 @@ class IsInMobileBookmarksBranchTask : public BookmarkModelTask {
 // ------------- Aynchronous requests classes ------------- //
 
 // Base class for asynchronous blocking requests to Chromium services.
-// Service: type of the service to use (e.g. HistoryService, FaviconService).
+// Service: type of the service to use (e.g. HistoryService).
 template <typename Service>
 class AsyncServiceRequest : protected BlockingUIThreadAsyncRequest {
  public:
@@ -797,8 +794,6 @@ ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
   profile_ = g_browser_process->profile_manager()->GetLastUsedProfile();
   bookmark_model_ = BookmarkModelFactory::GetForBrowserContext(profile_);
   top_sites_ = TopSitesFactory::GetForProfile(profile_);
-  favicon_service_ = FaviconServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS),
   service_.reset(new AndroidHistoryProviderService(profile_));
 
   // Register as observer for service we are interested.

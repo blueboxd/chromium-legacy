@@ -13,6 +13,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "net/base/mime_util.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace {
 // TODO(crbug.com/846546): Initially set to load crosh, but change to
@@ -26,7 +27,15 @@ constexpr char kDefaultMime[] = "text/html";
 void ReadFile(const base::FilePath& path,
               const content::URLDataSource::GotDataCallback& callback) {
   std::string content;
+  // First look for uncompressed resource, then try for gzipped file.
   bool result = base::ReadFileToString(path, &content);
+  if (!result) {
+    result =
+        base::ReadFileToString(base::FilePath(path.value() + ".gz"), &content);
+    std::string uncompressed;
+    result = compression::GzipUncompress(content, &uncompressed);
+    content = std::move(uncompressed);
+  }
   // Allow missing files in <root>/_locales only.
   DCHECK(result || base::FilePath(kTerminalRoot)
                        .Append("_locales")

@@ -88,24 +88,24 @@ const base::Feature kStickyBubble{"PasswordManagerStickyBubble",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Field trial identifier for password generation requirements.
-const char* kGenerationRequirementsFieldTrial =
+const char kGenerationRequirementsFieldTrial[] =
     "PasswordGenerationRequirements";
 
 // The file version number of password requirements files. If the prefix length
 // changes, this version number needs to be updated.
 // Default to 0 in order to get an empty requirements file.
-const char* kGenerationRequirementsVersion = "version";
+const char kGenerationRequirementsVersion[] = "version";
 
 // Length of a hash prefix of domain names. This is used to shard domains
 // across multiple files.
 // Default to 0 in order to put all domain names into the same shard.
-const char* kGenerationRequirementsPrefixLength = "prefix_length";
+const char kGenerationRequirementsPrefixLength[] = "prefix_length";
 
 // Timeout (in milliseconds) for password requirements lookups. As this is a
 // network request in the background that does not block the UI, the impact of
 // high values is not strong.
 // Default to 5000 ms.
-const char* kGenerationRequirementsTimeout = "timeout";
+const char kGenerationRequirementsTimeout[] = "timeout";
 
 }  // namespace features
 

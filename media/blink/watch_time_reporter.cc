@@ -530,6 +530,9 @@ void WatchTimeReporter::RecordWatchTime() {
     display_type_component_->RecordWatchTime(current_timestamp);
   if (controls_component_)
     controls_component_->RecordWatchTime(current_timestamp);
+
+  // Update the last timestamp with the current timestamp.
+  recorder_->OnCurrentTimestampChanged(current_timestamp);
 }
 
 void WatchTimeReporter::UpdateWatchTime() {

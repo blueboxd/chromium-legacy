@@ -10,7 +10,7 @@
 #include "components/download/public/common/download_response_handler.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/url_download_handler.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -120,9 +120,10 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // Object that will handle the response.
   std::unique_ptr<network::mojom::URLLoaderClient> url_loader_client_;
 
-  // URLLoaderClient binding. It sends any requests to the |url_loader_client_|.
-  std::unique_ptr<mojo::Binding<network::mojom::URLLoaderClient>>
-      url_loader_client_binding_;
+  // URLLoaderClient receiver. It sends any requests to the
+  // |url_loader_client_|.
+  std::unique_ptr<mojo::Receiver<network::mojom::URLLoaderClient>>
+      url_loader_client_receiver_;
 
   // URLLoader for sending out the request.
   network::mojom::URLLoaderPtr url_loader_;

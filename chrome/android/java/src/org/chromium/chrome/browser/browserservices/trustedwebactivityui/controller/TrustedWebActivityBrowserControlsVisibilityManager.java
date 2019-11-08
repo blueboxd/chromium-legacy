@@ -32,7 +32,7 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
         public void onSSLStateUpdated(Tab tab) {
-            updateBrowserControlsState(tab);
+            updateBrowserControlsState();
         }
     };
 
@@ -40,7 +40,7 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
             new CustomTabActivityTabProvider.Observer() {
                 @Override
                 public void onTabSwapped(@NonNull Tab tab) {
-                    updateBrowserControlsState(tab);
+                    updateBrowserControlsState();
                 }
             };
 
@@ -60,20 +60,20 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
         if (mInTwaMode == inTwaMode) return;
 
         mInTwaMode = inTwaMode;
-        updateBrowserControlsState(mTabProvider.getTab());
+        updateBrowserControlsState();
 
         if (mInTwaMode) {
-            mTabObserverRegistrar.registerTabObserver(mTabObserver);
+            mTabObserverRegistrar.registerActivityTabObserver(mTabObserver);
             mTabProvider.addObserver(mActivityTabObserver);
         } else {
-            mTabObserverRegistrar.unregisterTabObserver(mTabObserver);
+            mTabObserverRegistrar.unregisterActivityTabObserver(mTabObserver);
             mTabProvider.removeObserver(mActivityTabObserver);
         }
     }
 
-    private void updateBrowserControlsState(Tab tab) {
+    private void updateBrowserControlsState() {
         @BrowserControlsState
-        int newBrowserControlsState = computeBrowserControlsState(tab);
+        int newBrowserControlsState = computeBrowserControlsState(mTabProvider.getTab());
         if (mBrowserControlsState == newBrowserControlsState) return;
 
         mBrowserControlsState = newBrowserControlsState;

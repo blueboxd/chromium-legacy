@@ -43,6 +43,7 @@ import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -55,12 +56,14 @@ import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -70,6 +73,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
@@ -91,6 +95,9 @@ public class StartSurfaceLayoutTest {
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
+
+    @Rule
+    public RenderTestRule mRenderTestRule = new RenderTestRule();
 
     private StartSurfaceLayout mStartSurfaceLayout;
     private String mUrl;
@@ -130,13 +137,88 @@ public class StartSurfaceLayoutTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
-        // Only skip thumbnail releasing assertion when "warm" (large soft-cleanup-delay).
+        // Only skip thumbnail releasing assertion when "warm" (large soft-cleanup-delay) or in
+        // RenderTest.
+        // TODO(wychen): figure out why thumbnails are not released in RenderTest.
         mSkipAssertThumbnailsAreReleased = false;
     }
 
     @After
     public void tearDown() {
         if (!mSkipAssertThumbnailsAreReleased) assertThumbnailsAreReleased();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testRenderGrid_3WebTabs() throws InterruptedException, IOException {
+        mSkipAssertThumbnailsAreReleased = true;
+
+        prepareTabs(3, 0, mUrl);
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
+
+        enterGTS();
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
+                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+                "3_web_tabs");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testRenderGrid_10WebTabs() throws InterruptedException, IOException {
+        mSkipAssertThumbnailsAreReleased = true;
+
+        prepareTabs(10, 0, mUrl);
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
+
+        enterGTS();
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
+                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+                "10_web_tabs");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testRenderGrid_10WebTabs_InitialScroll() throws InterruptedException, IOException {
+        mSkipAssertThumbnailsAreReleased = true;
+
+        prepareTabs(10, 0, mUrl);
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.clickNthCardFromTabSwitcher(mActivityTestRule.getActivity(),
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount()
+                        - 1);
+
+        enterGTS();
+        // Make sure the grid tab switcher is scrolled down to show the selected tab.
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
+                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+                "10_web_tabs-select_last");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testRenderGrid_Incognito() throws InterruptedException, IOException {
+        mSkipAssertThumbnailsAreReleased = true;
+
+        // Prepare some incognito tabs and enter tab switcher.
+        prepareTabs(1, 3, mUrl);
+        assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
+
+        enterGTS();
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
+                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+                "3_incognito_web_tabs");
     }
 
     @Test
@@ -730,7 +812,6 @@ public class StartSurfaceLayoutTest {
         } else {
             // The final capture at StartSurfaceLayout#finishedShowing time.
             delta = 1;
-            // TODO(wychen): refactor areAnimatorsEnabled() to a util class.
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
                     && areAnimatorsEnabled()) {
                 // The faster capturing without writing back to cache.

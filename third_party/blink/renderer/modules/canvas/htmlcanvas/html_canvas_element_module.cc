@@ -77,8 +77,8 @@ OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
     offscreen_canvas->AllowHighPerformancePowerPreference();
 
   DOMNodeId canvas_id = DOMNodeIds::IdForNode(&canvas);
-  offscreen_canvas->SetPlaceholderCanvasId(canvas_id);
   canvas.RegisterPlaceholderCanvas(static_cast<int>(canvas_id));
+  offscreen_canvas->SetPlaceholderCanvasId(canvas_id);
 
   SurfaceLayerBridge* bridge = canvas.SurfaceLayerBridge();
   if (bridge) {

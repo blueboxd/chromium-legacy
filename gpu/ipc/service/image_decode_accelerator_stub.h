@@ -76,22 +76,21 @@ class GPU_IPC_SERVICE_EXPORT ImageDecodeAcceleratorStub
       uint64_t release_count);
 
   // Creates the service-side cache entry for a completed decode and releases
-  // the decode sync token.
+  // the decode sync token. If the decode was unsuccessful, no cache entry is
+  // created but the decode sync token is still released.
   void ProcessCompletedDecode(GpuChannelMsg_ScheduleImageDecode_Params params,
                               uint64_t decode_release_count);
 
-  // The |worker_| calls this when a decode is completed. If the decode is
-  // successful, |sequence_| will be enabled so that ProcessCompletedDecode() is
-  // called. If the decode is not successful, we destroy the channel (see
-  // OnError()).
+  // Releases the decode sync token corresponding to |decode_release_count| and
+  // disables |sequence_| if there are no more decodes to process for now.
+  void FinishCompletedDecode(uint64_t decode_release_count)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  // The |worker_| calls this when a decode is completed. |result| is enqueued
+  // and |sequence_| is enabled so that ProcessCompletedDecode() picks it up.
   void OnDecodeCompleted(
       gfx::Size expected_output_size,
       std::unique_ptr<ImageDecodeAcceleratorWorker::DecodeResult> result);
-
-  // Triggers the destruction of the channel asynchronously and makes it so that
-  // we stop accepting completed decodes. On entry, |channel_| must not be
-  // nullptr.
-  void OnError() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // The object to which the actual decoding can be delegated.
   ImageDecodeAcceleratorWorker* worker_ = nullptr;
@@ -103,8 +102,6 @@ class GPU_IPC_SERVICE_EXPORT ImageDecodeAcceleratorStub
       GUARDED_BY(lock_);
   base::queue<std::unique_ptr<ImageDecodeAcceleratorWorker::DecodeResult>>
       pending_completed_decodes_ GUARDED_BY(lock_);
-  bool destroying_channel_ GUARDED_BY(lock_) = false;
-  uint64_t last_release_count_ GUARDED_BY(lock_) = 0;
 
   ImageFactory* external_image_factory_for_testing_ = nullptr;
 

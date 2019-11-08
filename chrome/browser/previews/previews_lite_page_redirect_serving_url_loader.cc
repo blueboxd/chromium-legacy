@@ -205,9 +205,7 @@ const net::NetworkTrafficAnnotationTag kPreviewsTrafficAnnotation =
 
 PreviewsLitePageRedirectServingURLLoader::
     PreviewsLitePageRedirectServingURLLoader(ResultCallback result_callback)
-    : url_loader_binding_(this),
-      result_callback_(std::move(result_callback)),
-      binding_(this) {}
+    : result_callback_(std::move(result_callback)), binding_(this) {}
 
 void PreviewsLitePageRedirectServingURLLoader::StartNetworkRequest(
     const network::ResourceRequest& request,
@@ -218,10 +216,10 @@ void PreviewsLitePageRedirectServingURLLoader::StartNetworkRequest(
   previews_url_ = request.url;
   network::mojom::URLLoaderClientPtr client;
 
-  url_loader_binding_.Bind(mojo::MakeRequest(&client),
-                           base::ThreadTaskRunnerHandle::Get());
-  url_loader_binding_.set_connection_error_handler(base::BindOnce(
-      &PreviewsLitePageRedirectServingURLLoader::OnConnectionError,
+  url_loader_receiver_.Bind(mojo::MakeRequest(&client),
+                            base::ThreadTaskRunnerHandle::Get());
+  url_loader_receiver_.set_disconnect_handler(base::BindOnce(
+      &PreviewsLitePageRedirectServingURLLoader::OnMojoDisconnect,
       base::Unretained(this)));
 
   // Create a network service URL loader with passed in params.
@@ -274,7 +272,7 @@ void PreviewsLitePageRedirectServingURLLoader::SetUpForwardingClient(
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(receiver));
   binding_.set_connection_error_handler(base::BindOnce(
-      &PreviewsLitePageRedirectServingURLLoader::OnConnectionError,
+      &PreviewsLitePageRedirectServingURLLoader::OnMojoDisconnect,
       weak_ptr_factory_.GetWeakPtr()));
   forwarding_client_ = std::move(forwarding_client);
 
@@ -290,7 +288,7 @@ void PreviewsLitePageRedirectServingURLLoader::SetUpForwardingClient(
   forwarding_client_->OnReceiveResponse(resource_response_->head);
 
   // Resume previously paused network service URLLoader.
-  url_loader_binding_.ResumeIncomingMethodCallProcessing();
+  url_loader_receiver_.Resume();
 }
 
 void PreviewsLitePageRedirectServingURLLoader::OnReceiveResponse(
@@ -359,7 +357,7 @@ void PreviewsLitePageRedirectServingURLLoader::OnReceiveResponse(
                       GURL(original_url).host(), frame_tree_node_id_);
   }
 
-  url_loader_binding_.PauseIncomingMethodCallProcessing();
+  url_loader_receiver_.Pause();
   std::move(result_callback_)
       .Run(ServingLoaderResult::kSuccess, base::nullopt, nullptr);
 }
@@ -492,7 +490,7 @@ void PreviewsLitePageRedirectServingURLLoader::ResumeReadingBodyFromNet() {
   network_url_loader_->ResumeReadingBodyFromNet();
 }
 
-void PreviewsLitePageRedirectServingURLLoader::OnConnectionError() {
+void PreviewsLitePageRedirectServingURLLoader::OnMojoDisconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // When we are not yet bound to the navigation code, fallback, which will
   // destroy this object.
@@ -505,7 +503,7 @@ void PreviewsLitePageRedirectServingURLLoader::OnConnectionError() {
   }
 
   network_url_loader_.reset();
-  url_loader_binding_.Close();
+  url_loader_receiver_.reset();
 
   if (binding_.is_bound()) {
     binding_.Close();

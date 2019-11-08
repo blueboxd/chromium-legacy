@@ -869,7 +869,7 @@
 
     // Wait for the eject button to appear.
     const ejectButtonQuery =
-        ['#directory-tree [entry-label="archive.zip"] button.root-eject'];
+        ['#directory-tree [entry-label="archive.zip"] .root-eject'];
     await remoteCall.waitForElement(appId, ejectButtonQuery);
 
     // Focus on the eject button.

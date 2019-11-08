@@ -58,7 +58,7 @@ static bool IsTableCellEmpty(Node* cell) {
 }
 
 static bool IsTableRowEmpty(Node* row) {
-  if (!IsHTMLTableRowElement(row))
+  if (!IsA<HTMLTableRowElement>(row))
     return false;
 
   row->GetDocument().UpdateStyleAndLayout();
@@ -252,10 +252,10 @@ void DeleteSelectionCommand::InitializePositionData(
   start_root_ = RootEditableElementOf(start);
   end_root_ = RootEditableElementOf(end);
 
-  start_table_row_ =
-      ToHTMLTableRowElement(EnclosingNodeOfType(start, &IsHTMLTableRowElement));
-  end_table_row_ =
-      ToHTMLTableRowElement(EnclosingNodeOfType(end, &IsHTMLTableRowElement));
+  start_table_row_ = To<HTMLTableRowElement>(
+      EnclosingNodeOfType(start, &IsA<HTMLTableRowElement>));
+  end_table_row_ = To<HTMLTableRowElement>(
+      EnclosingNodeOfType(end, &IsA<HTMLTableRowElement>));
 
   // Don't move content out of a table cell.
   // If the cell is non-editable, enclosingNodeOfType won't return it by

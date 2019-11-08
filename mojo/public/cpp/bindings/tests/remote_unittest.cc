@@ -322,7 +322,7 @@ TEST_P(RemoteTest, IsConnected) {
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
   EXPECT_TRUE(calculator_ui.is_connected());
 
-  calculator_ui.Multiply(5.0, base::Closure());
+  calculator_ui.Multiply(5.0, base::OnceClosure());
   EXPECT_TRUE(calculator_ui.is_connected());
 
   calc_impl.receiver().reset();
@@ -358,7 +358,7 @@ TEST_P(RemoteTest, DisconnectCallback) {
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
   EXPECT_TRUE(calculator_ui.is_connected());
 
-  calculator_ui.Multiply(5.0, base::Closure());
+  calculator_ui.Multiply(5.0, base::OnceClosure());
   EXPECT_TRUE(calculator_ui.is_connected());
 
   calc_impl.receiver().reset();

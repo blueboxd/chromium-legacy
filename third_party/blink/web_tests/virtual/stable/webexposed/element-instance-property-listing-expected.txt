@@ -700,7 +700,6 @@ html element link
     property hreflang
     property imageSizes
     property imageSrcset
-    property import
     property integrity
     property media
     property referrerPolicy

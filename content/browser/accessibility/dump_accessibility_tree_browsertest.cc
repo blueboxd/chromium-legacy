@@ -23,6 +23,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/accessibility_notification_waiter.h"
+#include "content/public/test/browser_accessibility.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -147,10 +148,8 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     formatter->SetPropertyFilters(property_filters_);
     formatter->SetNodeFilters(node_filters_);
     base::string16 actual_contents_utf16;
-    WebContentsImpl* web_contents =
-        static_cast<WebContentsImpl*>(shell()->web_contents());
-    formatter->FormatAccessibilityTree(
-        web_contents->GetRootBrowserAccessibilityManager()->GetRoot(),
+    TestBrowserAccessibility::FormatAccessibilityTree(
+        formatter.get(), GetRootAccessibilityNode(shell()->web_contents()),
         &actual_contents_utf16);
     std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
     return base::SplitString(actual_contents, "\n", base::KEEP_WHITESPACE,
@@ -1064,6 +1063,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaTreeGrid) {
   RunAriaTest(FILE_PATH_LITERAL("aria-treegrid.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaTreeDiscontinuous) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-tree-discontinuous.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaUndefined) {
   RunAriaTest(FILE_PATH_LITERAL("aria-undefined.html"));
 }
@@ -1558,6 +1562,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDate) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        MAYBE_AccessibilityInputDateWithPopupOpen) {
   RunHtmlTest(FILE_PATH_LITERAL("input-date-with-popup-open.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityInputDateWithPopupOpenMultiple) {
+  RunHtmlTest(FILE_PATH_LITERAL("input-date-with-popup-open-multiple.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDateTime) {

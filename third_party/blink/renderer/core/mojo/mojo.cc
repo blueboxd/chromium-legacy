@@ -9,7 +9,6 @@
 
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -126,34 +125,6 @@ void Mojo::bindInterface(ScriptState* script_state,
           ExecutionContext::From(script_state)->GetInterfaceProvider()) {
     interface_provider->GetInterfaceByName(name, std::move(handle));
   }
-}
-
-// static
-MojoHandle* Mojo::getDocumentInterfaceBrokerHandle(ScriptState* script_state) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  DCHECK(execution_context);
-  Document* document = static_cast<Document*>(execution_context);
-  DCHECK(document);
-
-  mojo::MessagePipe pipe;
-  document->BindDocumentInterfaceBroker(std::move(pipe.handle0));
-  return MakeGarbageCollected<MojoHandle>(
-      mojo::ScopedHandle::From(std::move(pipe.handle1)));
-}
-
-// static
-MojoHandle* Mojo::replaceDocumentInterfaceBrokerForTesting(
-    ScriptState* script_state,
-    MojoHandle* test_broker_handle) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  DCHECK(execution_context);
-  Document* document = static_cast<Document*>(execution_context);
-  DCHECK(document);
-
-  return MakeGarbageCollected<MojoHandle>(
-      mojo::ScopedHandle::From(document->SetDocumentInterfaceBrokerForTesting(
-          mojo::ScopedMessagePipeHandle(mojo::MessagePipeHandle(
-              test_broker_handle->TakeHandle().release().value())))));
 }
 
 }  // namespace blink

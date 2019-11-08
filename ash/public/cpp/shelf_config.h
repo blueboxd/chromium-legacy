@@ -141,6 +141,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
     return mousewheel_scroll_offset_threshold_;
   }
 
+  bool is_dense() const { return is_dense_; }
+
   // Gets the current color for the shelf control buttons.
   SkColor GetShelfControlButtonColor() const;
 

@@ -36,6 +36,13 @@
             style="@style/SuggestionChip" />
 
         <org.chromium.ui.widget.ChipView
+            android:id="@+id/address_filter"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            style="@style/SuggestionChip" />
+
+        <org.chromium.ui.widget.ChipView
             android:id="@+id/email_filter"
             android:gravity="center"
             android:layout_height="wrap_content"

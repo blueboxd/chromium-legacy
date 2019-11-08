@@ -38,7 +38,10 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
@@ -3673,6 +3676,70 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(observer.did_fire());
   EXPECT_EQ(observer.color(), 0xFFFF0000u);
   EXPECT_EQ(web_contents()->GetThemeColor(), 0xFFFF0000u);
+}
+
+class SensorBackForwardCacheBrowserTest : public BackForwardCacheBrowserTest {
+ protected:
+  SensorBackForwardCacheBrowserTest() {
+    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
+        device::mojom::kServiceName,
+        base::BindRepeating(
+            &SensorBackForwardCacheBrowserTest::BindSensorProvider,
+            base::Unretained(this)));
+  }
+
+  ~SensorBackForwardCacheBrowserTest() override {
+    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
+        device::mojom::SensorProvider>(device::mojom::kServiceName);
+  }
+
+  void SetUpOnMainThread() override {
+    provider_ = std::make_unique<device::FakeSensorProvider>();
+    provider_->SetAccelerometerData(1.0, 2.0, 3.0);
+
+    BackForwardCacheBrowserTest::SetUpOnMainThread();
+  }
+
+  std::unique_ptr<device::FakeSensorProvider> provider_;
+
+ private:
+  void BindSensorProvider(
+      mojo::PendingReceiver<device::mojom::SensorProvider> receiver) {
+    provider_->Bind(std::move(receiver));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
+                       AccelerometerNotCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    new Promise(resolve => {
+      const sensor = new Accelerometer();
+      sensor.addEventListener('reading', () => { resolve(); });
+      sensor.start();
+    })
+  )"));
+
+  // 2) Navigate to B.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+
+  // - Page A should not be in the cache.
+  delete_observer_rfh_a.WaitUntilDeleted();
+
+  // 3) Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
 }
 
 }  // namespace content

@@ -212,9 +212,9 @@ TEST_P(ReceiverSetTest, ReceiverSetReportBadMessage) {
 
   std::string last_received_error;
   core::SetDefaultProcessErrorCallback(
-      base::Bind([](std::string* out_error,
-                    const std::string& error) { *out_error = error; },
-                 &last_received_error));
+      base::BindRepeating([](std::string* out_error,
+                             const std::string& error) { *out_error = error; },
+                          &last_received_error));
 
   ReceiverSet<PingService, int> receivers;
   Remote<PingService> ping_a, ping_b;
@@ -225,7 +225,7 @@ TEST_P(ReceiverSetTest, ReceiverSetReportBadMessage) {
     impl.set_ping_handler(ReportBadMessage(&receivers, "message 1"));
     base::RunLoop loop;
     ping_a.set_disconnect_handler(loop.QuitClosure());
-    ping_a->Ping(base::Bind([] {}));
+    ping_a->Ping(base::BindOnce([] {}));
     loop.Run();
     EXPECT_EQ("message 1", last_received_error);
   }
@@ -234,7 +234,7 @@ TEST_P(ReceiverSetTest, ReceiverSetReportBadMessage) {
     impl.set_ping_handler(ReportBadMessage(&receivers, "message 2"));
     base::RunLoop loop;
     ping_b.set_disconnect_handler(loop.QuitClosure());
-    ping_b->Ping(base::Bind([] {}));
+    ping_b->Ping(base::BindOnce([] {}));
     loop.Run();
     EXPECT_EQ("message 2", last_received_error);
   }
@@ -249,9 +249,9 @@ TEST_P(ReceiverSetTest, ReceiverSetGetBadMessageCallback) {
 
   std::string last_received_error;
   core::SetDefaultProcessErrorCallback(
-      base::Bind([](std::string* out_error,
-                    const std::string& error) { *out_error = error; },
-                 &last_received_error));
+      base::BindRepeating([](std::string* out_error,
+                             const std::string& error) { *out_error = error; },
+                          &last_received_error));
 
   ReceiverSet<PingService, int> receivers;
   Remote<PingService> ping_a, ping_b;
@@ -299,9 +299,9 @@ TEST_P(ReceiverSetTest, ReceiverSetGetBadMessageCallbackOutlivesReceiverSet) {
 
   std::string last_received_error;
   core::SetDefaultProcessErrorCallback(
-      base::Bind([](std::string* out_error,
-                    const std::string& error) { *out_error = error; },
-                 &last_received_error));
+      base::BindRepeating([](std::string* out_error,
+                             const std::string& error) { *out_error = error; },
+                          &last_received_error));
 
   ReportBadMessageCallback bad_message_callback;
   {
@@ -329,12 +329,12 @@ class PingProviderImpl : public AssociatedPingProvider, public PingService {
 
   void set_new_ping_context(int context) { new_ping_context_ = context; }
 
-  void set_new_ping_handler(const base::RepeatingClosure& handler) {
-    new_ping_handler_ = handler;
+  void set_new_ping_handler(base::RepeatingClosure handler) {
+    new_ping_handler_ = std::move(handler);
   }
 
-  void set_ping_handler(const base::RepeatingClosure& handler) {
-    ping_handler_ = handler;
+  void set_ping_handler(base::RepeatingClosure handler) {
+    ping_handler_ = std::move(handler);
   }
 
   AssociatedReceiverSet<PingService, int>& ping_receivers() {
@@ -358,8 +358,8 @@ class PingProviderImpl : public AssociatedPingProvider, public PingService {
 
   AssociatedReceiverSet<PingService, int> ping_receivers_;
   int new_ping_context_ = -1;
-  base::Closure ping_handler_;
-  base::Closure new_ping_handler_;
+  base::RepeatingClosure ping_handler_;
+  base::RepeatingClosure new_ping_handler_;
 };
 
 TEST_P(ReceiverSetTest, AssociatedReceiverSetContext) {

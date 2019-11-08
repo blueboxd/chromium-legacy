@@ -83,6 +83,9 @@ class CONTENT_EXPORT InputRouterClient {
                                             bool up,
                                             bool down) = 0;
   virtual void FallbackCursorModeSetCursorVisibility(bool visible) = 0;
+
+  // Returns the size of visible viewport in screen space, in DIPs.
+  virtual gfx::Size GetRootWidgetViewportSize() = 0;
 };
 
 } // namespace content

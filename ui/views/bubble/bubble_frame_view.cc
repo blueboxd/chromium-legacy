@@ -495,6 +495,14 @@ void BubbleFrameView::SetFootnoteView(std::unique_ptr<View> view) {
       footnote_margins_, std::move(view), radius));
 }
 
+View* BubbleFrameView::GetFootnoteView() const {
+  if (!footnote_container_)
+    return nullptr;
+
+  DCHECK_EQ(1u, footnote_container_->children().size());
+  return footnote_container_->children()[0];
+}
+
 void BubbleFrameView::SetCornerRadius(int radius) {
   bubble_border_->SetCornerRadius(radius);
 }

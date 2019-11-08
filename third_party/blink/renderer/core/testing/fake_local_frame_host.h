@@ -36,6 +36,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
   void LifecycleStateChanged(mojom::blink::FrameLifecycleState state) override;
   void EvictFromBackForwardCache() override;
+  void VisibilityChanged(mojom::blink::FrameVisibility visibility) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

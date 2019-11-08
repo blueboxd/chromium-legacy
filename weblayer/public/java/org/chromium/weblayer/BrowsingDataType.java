@@ -9,6 +9,9 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * @hide
+ */
 @IntDef({BrowsingDataType.COOKIES_AND_SITE_DATA, BrowsingDataType.CACHE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface BrowsingDataType {

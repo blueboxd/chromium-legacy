@@ -16,10 +16,15 @@ import android.support.test.rule.ActivityTestRule;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.Tab;
@@ -36,6 +41,9 @@ import java.util.concurrent.TimeoutException;
  * Test can use this ActivityTestRule to launch or get InstrumentationActivity.
  */
 public class InstrumentationActivityTestRule extends ActivityTestRule<InstrumentationActivity> {
+    @Rule
+    private EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
+
     private static final class NavigationWaiter {
         private String mUrl;
         private Tab mTab;
@@ -46,7 +54,7 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
         private NavigationCallback mNavigationCallback = new NavigationCallback() {
             @Override
-            public void navigationCompleted(Navigation navigation) {
+            public void onNavigationCompleted(Navigation navigation) {
                 if (navigation.getUri().toString().equals(mUrl)) {
                     mNavigationComplete = true;
                     checkComplete();
@@ -54,7 +62,7 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
             }
 
             @Override
-            public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
+            public void onLoadStateChanged(boolean isLoading, boolean toDifferentDocument) {
                 mDoneLoading = !isLoading;
                 checkComplete();
             }
@@ -112,6 +120,11 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public InstrumentationActivityTestRule() {
         super(InstrumentationActivity.class, false, false);
+    }
+
+    @Override
+    public Statement apply(final Statement base, Description description) {
+        return super.apply(mTestServerRule.apply(base, description), description);
     }
 
     public WebLayer getWebLayer() {
@@ -248,5 +261,13 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         extras.putString(InstrumentationActivity.EXTRA_PROFILE_NAME, profileName);
         String url = "data:text,foo";
         return launchShellWithUrl(url, extras);
+    }
+
+    public EmbeddedTestServer getTestServer() {
+        return mTestServerRule.getServer();
+    }
+
+    public String getTestDataURL(String path) {
+        return getTestServer().getURL("/weblayer/test/data/" + path);
     }
 }

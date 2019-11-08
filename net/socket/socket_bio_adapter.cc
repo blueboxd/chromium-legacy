@@ -22,7 +22,7 @@
 
 namespace {
 
-net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("socket_bio_adapter", R"(
       semantics {
         sender: "Socket BIO Adapter"

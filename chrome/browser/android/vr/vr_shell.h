@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/android/vr/gvr_gamepad_data.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/vr/assets_load_status.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/vr/ui_initial_state.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
@@ -65,8 +65,7 @@ struct AutocompleteRequest;
 
 // The native instance of the Java VrShell. This class is not threadsafe and
 // must only be used on the UI thread.
-class VrShell : device::GvrGamepadDataProvider,
-                VoiceResultDelegate,
+class VrShell : VoiceResultDelegate,
                 public ChromeLocationBarModelDelegate,
                 public PageInfoUI {
  public:
@@ -255,8 +254,7 @@ class VrShell : device::GvrGamepadDataProvider,
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options);
 
-  // device::GvrGamepadDataProvider implementation.
-  void UpdateGamepadData(device::GvrGamepadData) override;
+  void UpdateGamepadData(GvrGamepadData);
 
   // ChromeLocationBarModelDelegate implementation.
   content::WebContents* GetActiveWebContents() const override;

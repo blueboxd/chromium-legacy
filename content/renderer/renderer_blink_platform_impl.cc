@@ -827,21 +827,17 @@ RendererBlinkPlatformImpl::CreateSharedOffscreenGraphicsContext3DProvider() {
 
 std::unique_ptr<blink::WebGraphicsContext3DProvider>
 RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
-    const blink::WebURL& top_document_web_url,
-    blink::Platform::GraphicsInfo* gl_info) {
+    const blink::WebURL& top_document_web_url) {
 #if !BUILDFLAG(USE_DAWN)
   return nullptr;
 #else
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync());
   if (!gpu_channel_host) {
-    std::string error_message(
-        "WebGPUGraphicsContext3DProvider creation failed, GpuChannelHost "
-        "creation failed");
-    gl_info->error_message = WebString::FromUTF8(error_message);
+    // TODO(crbug.com/973017): Collect GPU info and surface context creation
+    // error.
     return nullptr;
   }
-  Collect3DContextInformation(gl_info, gpu_channel_host->gpu_info());
 
   gpu::ContextCreationAttribs attributes;
   // TODO(kainino): It's not clear yet how GPU preferences work for WebGPU.

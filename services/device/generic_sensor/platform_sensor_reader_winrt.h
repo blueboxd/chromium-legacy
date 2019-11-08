@@ -32,14 +32,6 @@ class PlatformSensorReaderWinrtFactory {
       mojom::SensorType type);
 };
 
-enum SensorWinrtCreateFailure {
-  kOk = 0,
-  kErrorISensorWinrtStaticsActivationFailed = 1,
-  kErrorGetDefaultSensorFailed = 2,
-  kErrorDefaultSensorNull = 3,
-  kErrorGetMinReportIntervalFailed = 4
-};
-
 // Base class that contains common helper functions used between all low
 // level sensor types based on the Windows.Devices.Sensors API. Derived
 // classes will specialize the template into a specific sensor. See
@@ -65,11 +57,15 @@ class PlatformSensorReaderWinrtBase : public PlatformSensorReaderWinBase {
 
   // Allows tests to specify their own implementation of the underlying sensor.
   // This function should be called before Initialize().
-  void InitForTests(GetSensorFactoryFunctor get_sensor_factory_callback) {
+  void InitForTesting(GetSensorFactoryFunctor get_sensor_factory_callback) {
     get_sensor_factory_callback_ = get_sensor_factory_callback;
   }
 
-  SensorWinrtCreateFailure Initialize() WARN_UNUSED_RESULT;
+  // Returns true if the underlying WinRT sensor object is valid, meant
+  // for testing purposes.
+  bool IsUnderlyingWinrtObjectValidForTesting() { return sensor_; }
+
+  bool Initialize() WARN_UNUSED_RESULT;
 
   bool StartSensor(const PlatformSensorConfiguration& configuration) override
       WARN_UNUSED_RESULT;
@@ -79,11 +75,6 @@ class PlatformSensorReaderWinrtBase : public PlatformSensorReaderWinBase {
  protected:
   PlatformSensorReaderWinrtBase();
   virtual ~PlatformSensorReaderWinrtBase();
-
-  // Determines if the SensorWinrtCreateFailure code means a WinRT sensor
-  // was successfully created or not.
-  static bool IsSensorCreateSuccess(
-      SensorWinrtCreateFailure create_return_code);
 
   // Derived classes should implement this function to handle sensor specific
   // parsing of the sensor reading.

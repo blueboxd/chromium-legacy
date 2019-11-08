@@ -19,7 +19,7 @@
 namespace {
 constexpr gfx::Vector3dF kForwardVector = {0.0f, 0.0f, -1.0f};
 
-device::Gamepad CreateGamepad(const device::GvrGamepadData& data) {
+device::Gamepad CreateGamepad(const vr::GvrGamepadData& data) {
   device::Gamepad gamepad;
 
   // Unless the controller state is updated on a different thread,
@@ -81,7 +81,7 @@ void GvrInputDelegate::UpdateController(const gfx::Transform& head_pose,
                                         bool is_webxr_frame) {
   controller_->UpdateState(head_pose);
 
-  device::GvrGamepadData controller_data = controller_->GetGamepadData();
+  GvrGamepadData controller_data = controller_->GetGamepadData();
   if (!is_webxr_frame)
     controller_data.connected = false;
   browser_->UpdateGamepadData(controller_data);

@@ -73,6 +73,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   // ComputeMinMaxSize() or anything it calls.
   LogicalSize border_box_size_;
   LogicalSize content_box_size_;
+  LogicalSize child_percentage_size_;
   base::Optional<FlexLayoutAlgorithm> algorithm_;
 };
 

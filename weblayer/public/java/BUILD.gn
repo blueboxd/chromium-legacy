@@ -39,6 +39,7 @@ android_library("java") {
     "org/chromium/weblayer/Profile.java",
     "org/chromium/weblayer/Tab.java",
     "org/chromium/weblayer/TabCallback.java",
+    "org/chromium/weblayer/TabListCallback.java",
     "org/chromium/weblayer/ThreadCheck.java",
     "org/chromium/weblayer/UnsupportedVersionException.java",
     "org/chromium/weblayer/WebLayer.java",

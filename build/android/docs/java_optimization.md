@@ -89,7 +89,7 @@ There are two main methods for deobfuscating Java stack traces locally:
 Helpful links for deobfuscation:
 
 * [Internal bits about how mapping files are archived][proguard-site]
-* [More detaled deobfuscation instructions][proguard-doc]
+* [More detailed deobfuscation instructions][proguard-doc]
 * [Script for deobfuscating official builds][deob-official]
 
 [proguard-site]: http://goto.google.com/chrome-android-proguard

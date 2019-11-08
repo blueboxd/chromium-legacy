@@ -90,7 +90,7 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
 void VirtualKeyboardTray::OnAccessibilityStatusChanged() {
   bool new_enabled =
       Shell::Get()->accessibility_controller()->virtual_keyboard_enabled();
-  SetVisible(new_enabled);
+  SetVisiblePreferred(new_enabled);
 }
 
 void VirtualKeyboardTray::OnKeyboardVisibilityChanged(const bool is_visible) {

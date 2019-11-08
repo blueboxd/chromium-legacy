@@ -361,13 +361,45 @@ public class ContactsPickerDialogTest
         Assert.assertNotNull(emailFilter);
         View telFilter = topView.findViewById(R.id.tel_filter);
         Assert.assertNotNull(telFilter);
+        View addrFilter = topView.findViewById(R.id.address_filter);
+        Assert.assertNotNull(addrFilter);
 
         // Per configuration given in the createDialog() call, the names and telephone filters
-        // should be visible, but the e-mail filter should be gone.
+        // should be visible, but the e-mail and address filter should be gone.
         Assert.assertEquals(namesFilter.getVisibility(), View.VISIBLE);
         Assert.assertEquals(emailFilter.getVisibility(), View.GONE);
         Assert.assertEquals(telFilter.getVisibility(), View.VISIBLE);
-        // TODO(crbug.com/1016870): Add a false test for the filter chip, when added.
+        Assert.assertEquals(addrFilter.getVisibility(), View.GONE);
+    }
+
+    @Test
+    @LargeTest
+    public void testFilterVisibilityReverseForDataInclusion() throws Throwable {
+        setTestContacts(/*ownerEmail=*/null);
+        createDialog(/* multiselect = */ false, /* includeNames = */ false,
+                /* includeEmails = */ true,
+                /* includeTel = */ false,
+                /* includeAddresses = */ true);
+        Assert.assertTrue(mDialog.isShowing());
+
+        TopView topView = getTopView();
+        Assert.assertNotNull(topView);
+
+        View namesFilter = topView.findViewById(R.id.names_filter);
+        Assert.assertNotNull(namesFilter);
+        View emailFilter = topView.findViewById(R.id.email_filter);
+        Assert.assertNotNull(emailFilter);
+        View telFilter = topView.findViewById(R.id.tel_filter);
+        Assert.assertNotNull(telFilter);
+        View addrFilter = topView.findViewById(R.id.address_filter);
+        Assert.assertNotNull(addrFilter);
+
+        // Per configuration given in the createDialog() call, the names and telephone filters
+        // should be hidden, but the e-mail and address filter should be visible.
+        Assert.assertEquals(namesFilter.getVisibility(), View.GONE);
+        Assert.assertEquals(emailFilter.getVisibility(), View.VISIBLE);
+        Assert.assertEquals(telFilter.getVisibility(), View.GONE);
+        Assert.assertEquals(addrFilter.getVisibility(), View.VISIBLE);
     }
 
     @Test

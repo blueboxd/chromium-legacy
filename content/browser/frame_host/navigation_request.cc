@@ -898,7 +898,7 @@ NavigationRequest::NavigationRequest(
       commit_navigation_client_(mojo::NullAssociatedRemote()),
       rfh_restored_from_back_forward_cache_(
           rfh_restored_from_back_forward_cache) {
-  DCHECK(browser_initiated || common_params_->initiator_origin.has_value());
+  DCHECK(browser_initiated_ || common_params_->initiator_origin.has_value());
   DCHECK(!IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationRequest", this,
@@ -957,6 +957,20 @@ NavigationRequest::NavigationRequest(
     DCHECK(!RequiresSourceSiteInstance() || source_site_instance_);
   }
 
+  // Let the NTP override the navigation params and pretend that this is a
+  // browser-initiated, bookmark-like navigation.
+  if (!browser_initiated_ && source_site_instance_) {
+    bool is_renderer_initiated = !browser_initiated_;
+    Referrer referrer(*common_params_->referrer);
+    GetContentClient()->browser()->OverrideNavigationParams(
+        source_site_instance_.get(), &common_params_->transition,
+        &is_renderer_initiated, &referrer, &common_params_->initiator_origin);
+    common_params_->referrer =
+        blink::mojom::Referrer::New(referrer.url, referrer.policy);
+    browser_initiated_ = !is_renderer_initiated;
+    commit_params_->is_browser_initiated = browser_initiated_;
+  }
+
   // Store the old RenderFrameHost id at request creation to be used later.
   previous_render_frame_host_id_ = GlobalFrameRoutingId(
       frame_tree_node->current_frame_host()->GetProcess()->GetID(),
@@ -1013,7 +1027,7 @@ NavigationRequest::NavigationRequest(
           render_view_host->GetWebkitPreferences().javascript_enabled;
       AddNavigationRequestClientHintsHeaders(
           common_params_->url, &client_hints_headers, browser_context,
-          javascript_enabled, client_hints_delegate);
+          javascript_enabled, client_hints_delegate, frame_tree_node_);
       headers.MergeFrom(client_hints_headers);
     }
 
@@ -1026,11 +1040,11 @@ NavigationRequest::NavigationRequest(
         common_params_->referrer->policy, frame_tree_node);
 
     if (begin_params_->is_form_submission) {
-      if (browser_initiated && !commit_params_->post_content_type.empty()) {
+      if (browser_initiated_ && !commit_params_->post_content_type.empty()) {
         // This is a form resubmit, so make sure to set the Content-Type header.
         headers.SetHeaderIfMissing(net::HttpRequestHeaders::kContentType,
                                    commit_params_->post_content_type);
-      } else if (!browser_initiated) {
+      } else if (!browser_initiated_) {
         // Save the Content-Type in case the form is resubmitted. This will get
         // sent back to the renderer in the CommitNavigation IPC. The renderer
         // will then send it back with the post body so that we can access it
@@ -1240,18 +1254,6 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
   starting_site_instance_ =
       frame_tree_node->current_frame_host()->GetSiteInstance();
   site_url_ = GetSiteForCommonParamsURL();
-
-  // Let the NTP override the navigation params and pretend that this is a
-  // browser-initiated, bookmark-like navigation.
-  bool is_renderer_initiated = !browser_initiated_;
-  Referrer referrer(*common_params_->referrer);
-  GetContentClient()->browser()->OverrideNavigationParams(
-      starting_site_instance_.get(), &common_params_->transition,
-      &is_renderer_initiated, &referrer, &common_params_->initiator_origin);
-  common_params_->referrer =
-      blink::mojom::Referrer::New(referrer.url, referrer.policy);
-  browser_initiated_ = !is_renderer_initiated;
-  commit_params_->is_browser_initiated = browser_initiated_;
 
   // Compute the redirect chain.
   // TODO(clamy): Try to simplify this and have the redirects be part of
@@ -2235,7 +2237,7 @@ void NavigationRequest::OnRedirectChecksComplete(
         render_view_host->GetWebkitPreferences().javascript_enabled;
     AddNavigationRequestClientHintsHeaders(
         common_params_->url, &client_hints_extra_headers, browser_context,
-        javascript_enabled, client_hints_delegate);
+        javascript_enabled, client_hints_delegate, frame_tree_node_);
     modified_headers.MergeFrom(client_hints_extra_headers);
   }
 

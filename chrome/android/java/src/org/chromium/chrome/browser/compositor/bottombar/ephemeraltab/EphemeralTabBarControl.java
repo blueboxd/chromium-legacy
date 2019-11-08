@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -36,7 +37,7 @@ public class EphemeralTabBarControl {
     public EphemeralTabBarControl(EphemeralTabPanel panel, Context context, ViewGroup container,
             DynamicResourceLoader loader) {
         mTitle = new EphemeralTabTitleControl(panel, context, container, loader);
-        mCaption = EphemeralTabPanel.isNewLayout() || panel.canPromoteToNewTab()
+        mCaption = OverlayPanel.isNewLayout() || panel.canPromoteToNewTab()
                 ? new EphemeralTabCaptionControl(panel, context, container, loader)
                 : null;
         mTextLayerMinHeight =
@@ -65,7 +66,7 @@ public class EphemeralTabBarControl {
      * @param percentage The percentage to the more opened state.
      */
     public void updateForCloseOrPeek(float percentage) {
-        if (EphemeralTabPanel.isNewLayout()) {
+        if (OverlayPanel.isNewLayout()) {
             updateForMaximize(SOLID_OPAQUE);
         } else {
             if (percentage == SOLID_OPAQUE) updateForMaximize(SOLID_TRANSPARENT);

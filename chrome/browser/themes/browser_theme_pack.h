@@ -31,6 +31,7 @@ class Image;
 }
 
 namespace ui {
+class ColorProvider;
 class DataPack;
 }
 
@@ -93,6 +94,10 @@ class BrowserThemePack : public CustomThemeSupplier {
   base::RefCountedMemory* GetRawData(int id, ui::ScaleFactor scale_factor)
       const override;
   bool HasCustomImage(int id) const override;
+
+  // Builds the color mixers that represent the state of the current browser
+  // theme instance.
+  void AddCustomThemeColorMixers(ui::ColorProvider* provider) const;
 
  private:
   friend class BrowserThemePackTest;

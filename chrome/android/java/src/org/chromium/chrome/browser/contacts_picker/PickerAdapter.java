@@ -65,11 +65,12 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
      * The types of filters supported.
      */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({FilterType.NAMES, FilterType.EMAILS, FilterType.TELEPHONES})
+    @IntDef({FilterType.NAMES, FilterType.EMAILS, FilterType.TELEPHONES, FilterType.ADDRESSES})
     public @interface FilterType {
         int NAMES = 0;
         int EMAILS = 1;
         int TELEPHONES = 2;
+        int ADDRESSES = 3;
     }
 
     /**
@@ -122,6 +123,9 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     // A list of search result indices into the larger data set.
     private ArrayList<Integer> mSearchResults;
 
+    // Whether to include addresses in the returned results.
+    private static boolean sIncludeAddresses;
+
     // Whether to include names in the returned results.
     private static boolean sIncludeNames;
 
@@ -148,6 +152,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         mCategoryView = categoryView;
         mContentResolver = context.getContentResolver();
         mFormattedOrigin = formattedOrigin;
+        sIncludeAddresses = true;
         sIncludeNames = true;
         sIncludeEmails = true;
         sIncludeTelephones = true;
@@ -188,7 +193,8 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
             String query_lower = query.toLowerCase(Locale.getDefault());
             for (ContactDetails contact : mContactDetails) {
                 if (contact.getDisplayName().toLowerCase(Locale.getDefault()).contains(query_lower)
-                        || contact.getContactDetailsAsString(includesEmails(), includesTelephones())
+                        || contact.getContactDetailsAsString(includesAddresses(), includesEmails(),
+                                          includesTelephones())
                                    .toLowerCase(Locale.getDefault())
                                    .contains(query_lower)) {
                     mSearchResults.add(count);
@@ -277,7 +283,8 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
                 mTopView.registerChipToggledCallback(this);
                 mTopView.updateCheckboxVisibility(mCategoryView.multiSelectionAllowed());
                 mTopView.updateChipVisibility(mCategoryView.includeNames,
-                        mCategoryView.includeEmails, mCategoryView.includeTel);
+                        mCategoryView.includeAddresses, mCategoryView.includeEmails,
+                        mCategoryView.includeTel);
                 mCategoryView.setTopView(mTopView);
                 if (mContactDetails != null) mTopView.updateContactCount(mContactDetails.size());
                 return new TopViewHolder(mTopView);
@@ -334,6 +341,9 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
             case FilterType.NAMES:
                 sIncludeNames = !sIncludeNames;
                 break;
+            case FilterType.ADDRESSES:
+                sIncludeAddresses = !sIncludeAddresses;
+                break;
             case FilterType.EMAILS:
                 sIncludeEmails = !sIncludeEmails;
                 break;
@@ -345,6 +355,13 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         }
 
         notifyDataSetChanged();
+    }
+
+    /**
+     * Returns true unless the adapter is filtering out addresses.
+     */
+    public static boolean includesAddresses() {
+        return sIncludeAddresses;
     }
 
     /**

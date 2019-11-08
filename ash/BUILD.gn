@@ -1985,6 +1985,7 @@ test("ash_unittests") {
     "wm/window_mirror_view_unittest.cc",
     "wm/window_modality_controller_unittest.cc",
     "wm/window_positioner_unittest.cc",
+    "wm/window_positioning_utils_unittest.cc",
     "wm/window_preview_view_unittest.cc",
     "wm/window_state_unittest.cc",
     "wm/window_transient_descendant_iterator_unittest.cc",

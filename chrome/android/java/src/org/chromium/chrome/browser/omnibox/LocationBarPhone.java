@@ -78,10 +78,10 @@ public class LocationBarPhone extends LocationBarLayout {
             // children this way doesn't affect the views' bounds (including hit rect). But these
             // hit rects are preserved for the views that matter (the icon and the url actions
             // container).
-            int lateral_padding = getResources().getDimensionPixelOffset(
+            int lateralPadding = getResources().getDimensionPixelOffset(
                     R.dimen.sei_location_bar_lateral_padding);
-            setPaddingRelative(
-                    lateral_padding, getPaddingTop(), lateral_padding, getPaddingBottom());
+            setPaddingRelative(lateralPadding, getPaddingTop(), lateralPadding, getPaddingBottom());
+            updateUrlBarPaddingForSearchEngineIcon();
         }
 
         // This branch will be hit if the search engine logo experiment is enabled and we should
@@ -107,10 +107,12 @@ public class LocationBarPhone extends LocationBarLayout {
     private void updateUrlBarPaddingForSearchEngineIcon() {
         if (mUrlBar == null || mStatusView == null) return;
 
+        // TODO(crbug.com/1019019): Come up with a better solution for M80 or M81.
         int endPadding = 0;
-        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(mToolbarDataProvider.isIncognito())) {
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(mToolbarDataProvider.isIncognito())
+                && hasFocus()) {
             // This padding prevents the UrlBar's content from extending past the available space
-            // and into the next view.
+            // and into the next view while focused.
             endPadding = mStatusView.getEndPaddingPixelSizeForFocusState(true)
                     - mStatusView.getEndPaddingPixelSizeForFocusState(false);
         }
@@ -239,6 +241,7 @@ public class LocationBarPhone extends LocationBarLayout {
             setFocusable(false);
             setFocusableInTouchMode(false);
         }
+        updateUrlBarPaddingForSearchEngineIcon();
         setUrlFocusChangeInProgress(true);
         updateShouldAnimateIconChanges();
         super.onUrlFocusChange(hasFocus);
@@ -292,6 +295,7 @@ public class LocationBarPhone extends LocationBarLayout {
             setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, false);
             getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
         }
+        updateUrlBarPaddingForSearchEngineIcon();
         mStatusViewCoordinator.onUrlAnimationFinished(hasFocus);
         setUrlFocusChangeInProgress(false);
         updateShouldAnimateIconChanges();

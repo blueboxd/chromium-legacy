@@ -45,3 +45,9 @@ crbug.com/611906 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLo
 crbug.com/609629 [ android qualcomm-adreno-(tm)-420 ] GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash [ Skip ]
 crbug.com/609629 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostFromGPUProcessExit [ Skip ]
 crbug.com/609629 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostInHiddenTab [ Skip ]
+
+# TODO(crbug.com/681341): enable these new tests immediately after they land.
+# Disabled upon landing only to avoid having the entire CL reverted if the new
+# tests turn out to be flaky.
+crbug.com/681341 ContextLost_MacWebGLMultisamplingHighPowerSwitchLosesContext [ Skip ]
+crbug.com/681341 ContextLost_MacWebGLPreserveDBHighPowerSwitchLosesContext [ Skip ]

@@ -19,10 +19,10 @@ public abstract class FullscreenCallback {
      *
      * NOTE: the Runnable must not be used synchronously.
      */
-    public abstract void enterFullscreen(@NonNull Runnable exitFullscreenRunner);
+    public abstract void onEnterFullscreen(@NonNull Runnable exitFullscreenRunner);
 
     /**
      * The page has exited fullscreen mode and the system should be moved out of fullscreen mode.
      */
-    public abstract void exitFullscreen();
+    public abstract void onExitFullscreen();
 }

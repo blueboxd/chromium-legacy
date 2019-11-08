@@ -82,7 +82,7 @@ function newError(message, code) {
  * @constructor
  */
 function CacheWithUUID() {
-  this.cache_ = {};
+  this.cache_ = Object.create(null);
 }
 
 CacheWithUUID.prototype = {
@@ -146,7 +146,7 @@ CacheWithUUID.prototype = {
  * @constructor
  */
 function Cache() {
-  this.cache_ = {};
+  this.cache_ = Object.create(null);
   this.nextId_ = 1;
   this.idPrefix_ = Math.random().toString();
 }

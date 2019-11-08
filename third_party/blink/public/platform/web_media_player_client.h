@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_CLIENT_H_
 
+#include "base/time/time.h"
+#include "media/base/video_frame.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "ui/gfx/color_space.h"
@@ -176,6 +178,15 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   //  - Surface ID;
   //  - Natural Size.
   virtual void OnPictureInPictureStateChange() = 0;
+
+  // Called when a video frame has been presented to the compositor, after a
+  // request was initiated via WebMediaPlayer::RequestAnimationFrame().
+  // TODO(https://crbug.com/1022186): Add pointer to spec.
+  virtual void OnRequestAnimationFrame(
+      base::TimeTicks presentation_time,
+      base::TimeTicks expected_presentation_time,
+      uint32_t presented_frames_counter,
+      const media::VideoFrame& presented_frame) {}
 
   struct Features {
     WebString id;

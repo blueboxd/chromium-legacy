@@ -38,6 +38,8 @@
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -76,6 +78,8 @@ constexpr char kEffectiveTopLevelDomainPlus1Name[] = "etldPlus1";
 constexpr char kOriginList[] = "origins";
 constexpr char kNumCookies[] = "numCookies";
 constexpr char kHasPermissionSettings[] = "hasPermissionSettings";
+constexpr char kHasInstalledPWA[] = "hasInstalledPWA";
+constexpr char kIsInstalled[] = "isInstalled";
 constexpr char kZoom[] = "zoom";
 // Placeholder value for ETLD+1 until a valid origin is added. If an ETLD+1
 // only has placeholder, then create an ETLD+1 origin.
@@ -139,6 +143,19 @@ void AddExceptionsGrantedByHostedApps(
     site_settings::AddExceptionForHostedApp(launch_url.spec(),
                                             *extension->get(), exceptions);
   }
+}
+
+base::flat_set<web_app::AppId> GetInstalledApps(
+    Profile* profile,
+    web_app::AppRegistrar& registrar) {
+  auto apps = registrar.GetAppIds();
+  base::flat_set<std::string> installed;
+  for (auto app : apps) {
+    base::Optional<GURL> scope = registrar.GetAppScope(app);
+    if (scope.has_value())
+      installed.insert(scope.value().GetOrigin().spec());
+  }
+  return installed;
 }
 
 // Whether |pattern| applies to a single origin.
@@ -221,9 +238,12 @@ void ConvertSiteGroupMapToListValue(
     const std::map<std::string, std::set<std::string>>& site_group_map,
     const std::set<std::string>& origin_permission_set,
     base::Value* list_value,
-    Profile* profile) {
+    Profile* profile,
+    web_app::AppRegistrar& registrar) {
   DCHECK_EQ(base::Value::Type::LIST, list_value->type());
   DCHECK(profile);
+  base::flat_set<web_app::AppId> installed_apps =
+      GetInstalledApps(profile, registrar);
   SiteEngagementService* engagement_service =
       SiteEngagementService::Get(profile);
   for (const auto& entry : site_group_map) {
@@ -231,6 +251,7 @@ void ConvertSiteGroupMapToListValue(
     base::Value site_group(base::Value::Type::DICTIONARY);
     site_group.SetKey(kEffectiveTopLevelDomainPlus1Name,
                       base::Value(entry.first));
+    bool has_installed_pwa = false;
     base::Value origin_list(base::Value::Type::LIST);
     for (const std::string& origin : entry.second) {
       base::Value origin_object(base::Value::Type::DICTIONARY);
@@ -248,11 +269,18 @@ void ConvertSiteGroupMapToListValue(
           base::Value(engagement_service->GetScore(GURL(origin))));
       origin_object.SetKey("usage", base::Value(0));
       origin_object.SetKey(kNumCookies, base::Value(0));
+
+      bool is_installed = installed_apps.contains(origin);
+      if (is_installed)
+        has_installed_pwa = true;
+      origin_object.SetKey(kIsInstalled, base::Value(is_installed));
+
       origin_object.SetKey(
           kHasPermissionSettings,
           base::Value(base::Contains(origin_permission_set, origin)));
       origin_list.Append(std::move(origin_object));
     }
+    site_group.SetKey(kHasInstalledPWA, base::Value(has_installed_pwa));
     site_group.SetKey(kNumCookies, base::Value(0));
     site_group.SetKey(kOriginList, std::move(origin_list));
     list_value->Append(std::move(site_group));
@@ -308,8 +336,10 @@ void LogAllSitesAction(AllSitesAction action) {
 
 }  // namespace
 
-SiteSettingsHandler::SiteSettingsHandler(Profile* profile)
+SiteSettingsHandler::SiteSettingsHandler(Profile* profile,
+                                         web_app::AppRegistrar& app_registrar)
     : profile_(profile),
+      app_registrar_(app_registrar),
       pref_change_registrar_(nullptr) {}
 
 SiteSettingsHandler::~SiteSettingsHandler() {
@@ -743,7 +773,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
 
   // Respond with currently available data.
   ConvertSiteGroupMapToListValue(all_sites_map_, origin_permission_set_,
-                                 &result, profile);
+                                 &result, profile, app_registrar_);
 
   LogAllSitesAction(AllSitesAction::kLoadPage);
 
@@ -760,7 +790,7 @@ base::Value SiteSettingsHandler::PopulateCookiesAndUsageData(Profile* profile) {
   GetOriginStorage(&all_sites_map_, &origin_size_map);
   GetOriginCookies(&all_sites_map_, &origin_cookie_map);
   ConvertSiteGroupMapToListValue(all_sites_map_, origin_permission_set_,
-                                 &list_value, profile);
+                                 &list_value, profile, app_registrar_);
 
   // Merge the origin usage and cookies number into |list_value|.
   for (base::Value& site_group : list_value.GetList()) {

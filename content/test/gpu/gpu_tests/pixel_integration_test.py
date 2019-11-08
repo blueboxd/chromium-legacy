@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import os
 import sys
+import time
 
 from gpu_tests import gpu_integration_test
 from gpu_tests import pixel_test_pages
@@ -62,6 +64,10 @@ class PixelIntegrationTest(
     # pages += namespace.SwiftShaderPages(cls.test_base_name)
     if sys.platform.startswith('darwin'):
       pages += namespace.MacSpecificPages(cls.test_base_name)
+      # Unfortunately we don't have a browser instance here so can't tell
+      # whether we should really run these tests. They're short-circuited to a
+      # certain degree on the other platforms.
+      pages += namespace.DualGPUMacSpecificPages(cls.test_base_name)
     if sys.platform.startswith('win'):
       pages += namespace.DirectCompositionPages(cls.test_base_name)
       pages += namespace.LowLatencySwapChainPages(cls.test_base_name)
@@ -164,6 +170,42 @@ class PixelIntegrationTest(
     # Wait for 2 seconds so that new tab becomes visible.
     dummy_tab.action_runner.Wait(2)
     tab.Activate()
+
+  def _RunTestWithHighPerformanceTab(self, tab, page):
+    if not self._IsDualGPUMacLaptop():
+      # Short-circuit this test.
+      logging.info('Short-circuiting test because not running on dual-GPU Mac '
+                   'laptop')
+      tab.EvaluateJavaScript('initialize()')
+      tab.action_runner.WaitForJavaScriptCondition(
+        'domAutomationController._readyForActions', timeout=30)
+      tab.EvaluateJavaScript('runToCompletion()')
+      return
+    # Reset the ready state of the harness.
+    tab.EvaluateJavaScript('domAutomationController._readyForActions = false')
+    high_performance_tab = tab.browser.tabs.New()
+    high_performance_tab.Navigate(self.UrlOfStaticFilePath(
+      skia_gold_integration_test_base.GPU_RELATIVE_PATH +
+      'functional_webgl_high_performance.html'),
+      script_to_evaluate_on_commit=test_harness_script)
+    high_performance_tab.action_runner.WaitForJavaScriptCondition(
+      'domAutomationController._finished', timeout=30)
+    # Wait a few seconds for the GPU switched notification to propagate
+    # throughout the system.
+    time.sleep(5)
+    # Switch back to the main tab and quickly start its rendering, while the
+    # high-power GPU is still active.
+    tab.Activate()
+    tab.EvaluateJavaScript('initialize()')
+    tab.action_runner.WaitForJavaScriptCondition(
+      'domAutomationController._readyForActions', timeout=30)
+    # Close the high-performance tab.
+    high_performance_tab.Close()
+    # Wait for ~15 seconds for the system to switch back to the
+    # integrated GPU.
+    time.sleep(15)
+    # Run the page to completion.
+    tab.EvaluateJavaScript('runToCompletion()')
 
   @classmethod
   def ExpectationsFiles(cls):

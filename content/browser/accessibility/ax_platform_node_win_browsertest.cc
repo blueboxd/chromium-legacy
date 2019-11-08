@@ -71,14 +71,15 @@ class AXPlatformNodeWinBrowserTest : public AccessibilityContentBrowserTest {
 
     std::vector<std::string> names;
     for (LONG i = 0; i < size; ++i) {
-      CComPtr<IUnknown> unknown_element = nullptr;
-      ASSERT_HRESULT_SUCCEEDED(SafeArrayGetElement(
-          V_ARRAY(flows_from_variant.ptr()), &i, &unknown_element));
+      ComPtr<IUnknown> unknown_element;
+      ASSERT_HRESULT_SUCCEEDED(
+          SafeArrayGetElement(V_ARRAY(flows_from_variant.ptr()), &i,
+                              static_cast<void**>(&unknown_element)));
       ASSERT_NE(nullptr, unknown_element);
 
-      CComPtr<IRawElementProviderSimple> raw_element_provider_simple = nullptr;
+      ComPtr<IRawElementProviderSimple> raw_element_provider_simple = nullptr;
       ASSERT_HRESULT_SUCCEEDED(
-          unknown_element->QueryInterface(&raw_element_provider_simple));
+          unknown_element.As(&raw_element_provider_simple));
       ASSERT_NE(nullptr, raw_element_provider_simple);
 
       base::win::ScopedVariant name;

@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/script/script.h"
-#include "third_party/blink/renderer/modules/launch/dom_window_launch_params.h"
+#include "third_party/blink/renderer/modules/launch/dom_window_launch_queue.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
@@ -43,7 +43,7 @@ void WebLaunchServiceImpl::SetLaunchFiles(
         std::move(entry), window_->GetExecutionContext()));
   }
 
-  DOMWindowLaunchParams::UpdateLaunchFiles(window_, std::move(files));
+  DOMWindowLaunchQueue::UpdateLaunchFiles(window_, std::move(files));
 }
 
 }  // namespace blink

@@ -103,15 +103,8 @@ IN_PROC_BROWSER_TEST_P(AccessibilityTreeLinkageWinBrowserTest, Linkage) {
     EXPECT_EQ(accessibility_native_view_accessible,
               dummy_ax_platform_node_->GetNativeViewAccessible());
   } else {
-    if (GetParam().is_uia_enabled) {
-      EXPECT_EQ(accessibility_native_view_accessible,
-                ui::AXFragmentRootWin::GetForAcceleratedWidget(
-                    GetView()->AccessibilityGetAcceleratedWidget())
-                    ->GetNativeViewAccessible());
-    } else {
-      EXPECT_EQ(accessibility_native_view_accessible,
-                GetLegacyRenderWidgetHostHWND()->window_accessible());
-    }
+    EXPECT_EQ(accessibility_native_view_accessible,
+              GetLegacyRenderWidgetHostHWND()->window_accessible());
   }
 }
 

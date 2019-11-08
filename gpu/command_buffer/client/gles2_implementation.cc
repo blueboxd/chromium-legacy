@@ -53,6 +53,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gl/gpu_preference.h"
 
 #if !defined(__native_client__)
 #include "ui/gfx/color_space.h"
@@ -386,17 +387,19 @@ void GLES2Implementation::OnGpuControlSwapBuffersCompleted(
   std::move(callback).Run(params);
 }
 
-void GLES2Implementation::OnGpuSwitched() {
-  share_group_->SetGpuSwitched(true);
+void GLES2Implementation::OnGpuSwitched(
+    gl::GpuPreference active_gpu_heuristic) {
+  gpu_switched_ = true;
+  active_gpu_heuristic_ = active_gpu_heuristic;
 }
 
-GLboolean GLES2Implementation::DidGpuSwitch() {
-  // TODO(zmo): Redesign this code; it works for now because the share group
-  // only contains one context but in the future only the first OpenGL context
-  // in the share group will receive GL_TRUE as the return value.
-  bool gpu_changed = share_group_->GetGpuSwitched();
-  share_group_->SetGpuSwitched(false);
-  return gpu_changed ? GL_TRUE : GL_FALSE;
+GLboolean GLES2Implementation::DidGpuSwitch(gl::GpuPreference* active_gpu) {
+  if (gpu_switched_) {
+    *active_gpu = active_gpu_heuristic_;
+  }
+  GLboolean result = gpu_switched_ ? GL_TRUE : GL_FALSE;
+  gpu_switched_ = false;
+  return result;
 }
 
 void GLES2Implementation::SendErrorMessage(std::string message, int32_t id) {

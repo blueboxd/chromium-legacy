@@ -147,6 +147,7 @@ class RenderFrameProxyHost : public IPC::Listener,
 
   // blink::mojom::RemoteFrameHost
   void SetInheritedEffectiveTouchAction(cc::TouchAction touch_action) override;
+  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
 
  private:
   // IPC Message handlers.

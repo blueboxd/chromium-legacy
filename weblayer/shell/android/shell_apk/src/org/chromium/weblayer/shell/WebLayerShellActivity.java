@@ -130,7 +130,7 @@ public class WebLayerShellActivity extends FragmentActivity {
                     private int mSystemVisibilityToRestore;
 
                     @Override
-                    public void enterFullscreen(Runnable exitFullscreenRunnable) {
+                    public void onEnterFullscreen(Runnable exitFullscreenRunnable) {
                         // This comes from Chrome code to avoid an extra resize.
                         final WindowManager.LayoutParams attrs = getWindow().getAttributes();
                         attrs.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
@@ -150,7 +150,7 @@ public class WebLayerShellActivity extends FragmentActivity {
                     }
 
                     @Override
-                    public void exitFullscreen() {
+                    public void onExitFullscreen() {
                         View decorView = getWindow().getDecorView();
                         decorView.setSystemUiVisibility(mSystemVisibilityToRestore);
 
@@ -174,26 +174,25 @@ public class WebLayerShellActivity extends FragmentActivity {
         loadUrl(startupUrl);
         mTab.registerTabCallback(new TabCallback() {
             @Override
-            public void visibleUrlChanged(Uri uri) {
+            public void onVisibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
             }
         });
-        mTab.getNavigationController().registerNavigationCallback(
-                new NavigationCallback() {
-                    @Override
-                    public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
-                        mLoadProgressBar.setVisibility(
-                                isLoading && toDifferentDocument ? View.VISIBLE : View.INVISIBLE);
-                    }
+        mTab.getNavigationController().registerNavigationCallback(new NavigationCallback() {
+            @Override
+            public void onLoadStateChanged(boolean isLoading, boolean toDifferentDocument) {
+                mLoadProgressBar.setVisibility(
+                        isLoading && toDifferentDocument ? View.VISIBLE : View.INVISIBLE);
+            }
 
-                    @Override
-                    public void loadProgressChanged(double progress) {
-                        mLoadProgressBar.setProgress((int) Math.round(100 * progress));
-                    }
-                });
+            @Override
+            public void onLoadProgressChanged(double progress) {
+                mLoadProgressBar.setProgress((int) Math.round(100 * progress));
+            }
+        });
         mTab.setDownloadCallback(new DownloadCallback() {
             @Override
-            public void downloadRequested(String url, String userAgent, String contentDisposition,
+            public void onDownloadRequested(String url, String userAgent, String contentDisposition,
                     String mimetype, long contentLength) {
                 DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
                 request.setNotificationVisibility(

@@ -23,17 +23,18 @@
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/consumer.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/tracing_service.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace service_manager {
 struct BindSourceInfo;
 }  // namespace service_manager
 
+namespace perfetto {
+namespace trace_processor {
+class TraceProcessorStorage;
+}  // namespace trace_processor
+}  // namespace perfetto
+
 namespace tracing {
 
-class JSONTraceExporter;
 class PerfettoService;
 
 // This is a Mojo interface which enables any client
@@ -89,9 +90,8 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
         DisableTracingAndEmitJsonCallback callback) override;
 
    private:
-    void OnJSONTraceData(std::string* json,
-                         base::DictionaryValue* metadata,
-                         bool has_more);
+    void ExportJson();
+    void OnJSONTraceData(std::string json, bool has_more);
     void OnEnableTracingTimeout();
     void MaybeSendEnableTracingAck();
     bool IsExpectedPid(base::ProcessId pid) const;
@@ -102,7 +102,9 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
     bool privacy_filtering_enabled_ = false;
     base::SequenceBound<StreamWriter> read_buffers_stream_writer_;
     RequestBufferUsageCallback request_buffer_usage_callback_;
-    std::unique_ptr<JSONTraceExporter> json_trace_exporter_;
+    std::unique_ptr<perfetto::trace_processor::TraceProcessorStorage>
+        trace_processor_;
+    std::string json_agent_label_filter_;
     base::OnceCallback<void(bool)> flush_callback_;
     const mojom::TracingClientPriority tracing_priority_;
     base::OnceClosure on_disabled_callback_;

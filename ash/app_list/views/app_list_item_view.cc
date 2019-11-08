@@ -803,6 +803,10 @@ void AppListItemView::EnsureLayer() {
   layer()->SetFillsBoundsOpaquely(false);
 }
 
+void AppListItemView::FireMouseDragTimerForTest() {
+  mouse_drag_timer_.FireNow();
+}
+
 void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
   DCHECK(!is_folder_);
 

@@ -1128,7 +1128,7 @@ TextDirection HTMLElement::Directionality() const {
     // Skip bdi, script, style and text form controls.
     auto* element = DynamicTo<Element>(node);
     if (DeprecatedEqualIgnoringCase(node->nodeName(), "bdi") ||
-        IsHTMLScriptElement(*node) || IsA<HTMLStyleElement>(*node) ||
+        IsA<HTMLScriptElement>(*node) || IsA<HTMLStyleElement>(*node) ||
         (element && element->IsTextControl()) ||
         (element && element->ShadowPseudoId() == "-webkit-input-placeholder")) {
       node = FlatTreeTraversal::NextSkippingChildren(*node, this);

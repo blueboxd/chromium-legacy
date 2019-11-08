@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/callback.h"
 #include "base/hash/hash.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
@@ -139,10 +140,12 @@ WatchTimeRecorder::WatchTimeUkmRecord::WatchTimeUkmRecord(
 
 WatchTimeRecorder::WatchTimeUkmRecord::~WatchTimeUkmRecord() = default;
 
-WatchTimeRecorder::WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties,
-                                     ukm::SourceId source_id,
-                                     bool is_top_frame,
-                                     uint64_t player_id)
+WatchTimeRecorder::WatchTimeRecorder(
+    mojom::PlaybackPropertiesPtr properties,
+    ukm::SourceId source_id,
+    bool is_top_frame,
+    uint64_t player_id,
+    RecordAggregateWatchTimeCallback record_playback_cb)
     : properties_(std::move(properties)),
       source_id_(source_id),
       is_top_frame_(is_top_frame),
@@ -162,7 +165,8 @@ WatchTimeRecorder::WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties,
             kRebuffersCountAudioVideoMse, kDiscardedWatchTimeAudioVideoMse},
            {WatchTimeKey::kAudioVideoEme,
             kMeanTimeBetweenRebuffersAudioVideoEme,
-            kRebuffersCountAudioVideoEme, kDiscardedWatchTimeAudioVideoEme}}) {}
+            kRebuffersCountAudioVideoEme, kDiscardedWatchTimeAudioVideoEme}}),
+      record_playback_cb_(std::move(record_playback_cb)) {}
 
 WatchTimeRecorder::~WatchTimeRecorder() {
   FinalizeWatchTime({});
@@ -375,6 +379,11 @@ void WatchTimeRecorder::UpdateUnderflowDuration(
   underflow_duration_ = total_duration;
 }
 
+void WatchTimeRecorder::OnCurrentTimestampChanged(
+    base::TimeDelta current_timestamp) {
+  last_timestamp_ = current_timestamp;
+}
+
 void WatchTimeRecorder::RecordUkmPlaybackData() {
   // UKM may be unavailable in content_shell or other non-chrome/ builds; it
   // may also be unavailable if browser shutdown has started; so this may be a
@@ -399,6 +408,7 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
     }
   }
 
+  base::TimeDelta total_watch_time;
   for (auto& ukm_record : ukm_records_) {
     ukm::builders::Media_BasicPlayback builder(source_id_);
 
@@ -423,6 +433,7 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
         // Only one of these keys should be present.
         DCHECK(!recorded_all_metric);
         recorded_all_metric = true;
+        total_watch_time += kv.second;
 
         builder.SetWatchTime(kv.second.InMilliseconds());
         if (ukm_record.total_underflow_count) {
@@ -519,6 +530,11 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
     builder.SetAutoplayInitiated(autoplay_initiated_.value_or(false));
     builder.Record(ukm_recorder);
   }
+
+  // Only save the playback if the video contains both video and audio.
+  if (properties_->has_video && properties_->has_audio &&
+      total_watch_time > base::TimeDelta())
+    std::move(record_playback_cb_).Run(total_watch_time, last_timestamp_);
 
   ukm_records_.clear();
 }

@@ -31,22 +31,11 @@ class VRDeviceBaseForTesting : public VRDeviceBase {
     SetVRDisplayInfo(std::move(display_info));
   }
 
-  void FireDisplayActivate() {
-    OnActivate(device::mojom::VRDisplayEventReason::MOUNTED, base::DoNothing());
-  }
-
-  bool ListeningForActivate() { return listening_for_activate; }
-
   void RequestSession(
       mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override {}
 
  private:
-  void OnListeningForActivate(bool listening) override {
-    listening_for_activate = listening;
-  }
-
-  bool listening_for_activate = false;
 
   DISALLOW_COPY_AND_ASSIGN(VRDeviceBaseForTesting);
 };
@@ -61,20 +50,8 @@ class StubVRDeviceEventListener : public mojom::XRRuntimeEventListener {
     DoOnChanged(vr_device_info.get());
   }
 
-  MOCK_METHOD2(DoOnDeviceActivated,
-               void(mojom::VRDisplayEventReason,
-                    base::OnceCallback<void(bool)>));
-  void OnDeviceActivated(mojom::VRDisplayEventReason reason,
-                         base::OnceCallback<void(bool)> callback) override {
-    DoOnDeviceActivated(reason, base::DoNothing());
-    // For now keep the test simple, and just call the callback:
-    std::move(callback).Run(true);
-  }
-
   MOCK_METHOD0(OnExitPresent, void());
   MOCK_METHOD1(OnVisibilityStateChanged, void(mojom::XRVisibilityState));
-  MOCK_METHOD1(OnDeviceIdle, void(mojom::VRDisplayEventReason));
-  MOCK_METHOD0(OnInitialized, void());
 
   mojo::PendingAssociatedRemote<mojom::XRRuntimeEventListener>
   BindPendingRemote() {
@@ -124,26 +101,6 @@ TEST_F(VRDeviceTest, DeviceChangedDispatched) {
   base::RunLoop().RunUntilIdle();
   EXPECT_CALL(listener, DoOnChanged(testing::_)).Times(1);
   device->SetVRDisplayInfoForTest(MakeVRDisplayInfo(device->GetId()));
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(VRDeviceTest, DisplayActivateRegsitered) {
-  device::mojom::VRDisplayEventReason mounted =
-      device::mojom::VRDisplayEventReason::MOUNTED;
-  auto device = MakeVRDevice();
-  mojo::Remote<mojom::XRRuntime> device_remote(device->BindXRRuntime());
-  StubVRDeviceEventListener listener;
-  device_remote->ListenToDeviceChanges(
-      listener.BindPendingRemote(),
-      base::DoNothing());  // TODO: consider getting initial data
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(device->ListeningForActivate());
-  device->SetListeningForActivate(true);
-  EXPECT_TRUE(device->ListeningForActivate());
-
-  EXPECT_CALL(listener, DoOnDeviceActivated(mounted, testing::_)).Times(1);
-  device->FireDisplayActivate();
   base::RunLoop().RunUntilIdle();
 }
 

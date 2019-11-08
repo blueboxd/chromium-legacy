@@ -138,7 +138,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_10,
   void OnUpdateSuccess(uint32_t promise_id, const std::string& session_id);
 
   // Prepares next renewal message and sets a timer for it.
-  void ScheduleNextRenewal();
+  void ScheduleNextTimer();
 
   // Decrypts the |encrypted_buffer| and puts the result in |decrypted_buffer|.
   // Returns cdm::kSuccess if decryption succeeded. The decrypted result is
@@ -158,6 +158,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_10,
   void OnFileIOTestComplete(bool success);
 
   void StartOutputProtectionTest();
+
   void StartPlatformVerificationTest();
   void ReportVerifyCdmHostTestResult();
   void StartStorageIdTest();
@@ -182,9 +183,9 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_10,
   // Timer delay in milliseconds for the next cdm_host_proxy_->SetTimer() call.
   int64_t timer_delay_ms_ = kInitialTimerDelayMs;
 
-  // Indicates whether a renewal timer has been set to prevent multiple timers
-  // from running.
-  bool has_set_renewal_timer_ = false;
+  // Indicates whether a timer has been set to prevent multiple timers from
+  // running.
+  bool has_set_timer_ = false;
 
   bool has_sent_individualization_request_ = false;
 

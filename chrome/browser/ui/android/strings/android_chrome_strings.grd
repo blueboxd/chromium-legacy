@@ -3477,6 +3477,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_TOP_VIEW_NAMES_FILTER_LABEL" desc="The label shown for the names filter toggle button (allowing the user to exclude names).">
         Names
       </message>
+      <message name="IDS_TOP_VIEW_ADDRESS_FILTER_LABEL" desc="The label shown for the address filter toggle button (allowing the user to exclude names).">
+        Addresses
+      </message>
       <message name="IDS_TOP_VIEW_EMAIL_FILTER_LABEL" desc="The label shown for the email filter toggle button (allowing the user to exclude emails).">
         Email addresses
       </message>

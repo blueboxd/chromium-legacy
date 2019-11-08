@@ -68,6 +68,12 @@ interface LocalFrameHost {
   // Evicts the page from the back/forward cache due to e.g., JavaScript
   // execution.
   EvictFromBackForwardCache();
+
+  // Notifies the browser that the associated frame has changed its visibility
+  // status. Visibility status changes occur when the frame moves in/out
+  // of the viewport, or the need for a layout object changes, e.g. if the
+  // frame owner assigns a display: none style.
+  VisibilityChanged(blink.mojom.FrameVisibility visibility);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -117,6 +123,12 @@ interface RemoteFrameHost {
   // ancestor of the associated RemoteFrame and should be propogated to
   // the associated LocalFrame in the other render process.
   SetInheritedEffectiveTouchAction(cc.mojom.TouchAction touch_action);
+
+  // Notifies the browser that the associated frame has changed its visibility
+  // status. Visibility status changes occur when the frame moves in/out
+  // of the viewport, or the need for a layout object changes, e.g. if the
+  // frame owner assigns a display: none style.
+  VisibilityChanged(blink.mojom.FrameVisibility visibility);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

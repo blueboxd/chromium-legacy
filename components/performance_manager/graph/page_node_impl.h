@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/performance_manager/graph/node_attached_data.h"
 #include "components/performance_manager/graph/node_base.h"
@@ -104,6 +105,14 @@ class PageNodeImpl
 
   void SetPageAlmostIdleForTesting(bool page_almost_idle) {
     SetPageAlmostIdle(page_almost_idle);
+  }
+
+  void SetIsHoldingWebLockForTesting(bool is_holding_weblock) {
+    SetIsHoldingWebLock(is_holding_weblock);
+  }
+
+  base::WeakPtr<PageNodeImpl> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
   }
 
  private:
@@ -250,6 +259,8 @@ class PageNodeImpl
 
   // Inline storage for PageAggregatorAccess user data.
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 24> page_aggregator_data_;
+
+  base::WeakPtrFactory<PageNodeImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PageNodeImpl);
 };

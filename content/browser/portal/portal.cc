@@ -148,10 +148,6 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       owner_render_frame_host_->GetProcess()->GetID(),
       owner_render_frame_host_->GetProcess()->GetNextRoutingID(),
       std::move(interface_provider_request),
-      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
-          .InitWithNewPipeAndPassReceiver(),
-      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
-          .InitWithNewPipeAndPassReceiver(),
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
           .InitWithNewPipeAndPassReceiver(),
       blink::WebTreeScopeType::kDocument, "", "", true,

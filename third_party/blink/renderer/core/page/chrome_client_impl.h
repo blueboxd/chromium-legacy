@@ -268,6 +268,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) override;
 
+  void DocumentDetached(Document&) override;
+
  private:
   bool IsChromeClientImpl() const override { return true; }
 

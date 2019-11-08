@@ -482,6 +482,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) {
   }
 
+  virtual void DocumentDetached(Document&) {}
+
  protected:
   ChromeClient() = default;
 

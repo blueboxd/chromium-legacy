@@ -22,7 +22,6 @@ source_set("public") {
   deps = [
     "//base",
     "//components/chrome_cleaner/public/constants",
-    "//components/chrome_cleaner/public/interfaces",
     "//components/variations",
     "//url",
   ]
@@ -63,7 +62,6 @@ jumbo_static_library("chrome_cleaner") {
     "//chrome/common",
     "//chrome/installer/util:with_no_strings",
     "//components/chrome_cleaner/public/constants",
-    "//components/chrome_cleaner/public/interfaces",
     "//components/chrome_cleaner/public/proto",
     "//components/component_updater",
     "//components/crx_file",

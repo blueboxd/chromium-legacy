@@ -104,7 +104,7 @@ void StatusAreaOverflowButtonTray::Initialize() {
 
   // TODO(tengs): Make this tray button visible when the device is in tablet
   // mode and the status area width exceeds the maximum desirable width.
-  SetVisible(false);
+  SetVisiblePreferred(false);
 }
 
 bool StatusAreaOverflowButtonTray::PerformAction(const ui::Event& event) {

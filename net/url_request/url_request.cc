@@ -642,8 +642,11 @@ void URLRequest::StartJob(URLRequestJob* job) {
   maybe_stored_cookies_.clear();
 
   GURL referrer_url(referrer_);
+  bool same_origin_for_metrics;
+
   if (referrer_url != URLRequestJob::ComputeReferrerForPolicy(
-                          referrer_policy_, referrer_url, initiator_, url())) {
+                          referrer_policy_, referrer_url, initiator_, url(),
+                          &same_origin_for_metrics)) {
     if (!network_delegate_ ||
         !network_delegate_->CancelURLRequestWithPolicyViolatingReferrerHeader(
             *this, url(), referrer_url)) {
@@ -659,6 +662,8 @@ void URLRequest::StartJob(URLRequestJob* job) {
       return;
     }
   }
+
+  RecordReferrerGranularityMetrics(same_origin_for_metrics);
 
   // Start() always completes asynchronously.
   //
@@ -1100,6 +1105,31 @@ void URLRequest::OnCallToDelegateComplete() {
   calling_delegate_ = false;
   net_log_.EndEvent(delegate_event_type_);
   delegate_event_type_ = NetLogEventType::FAILED;
+}
+
+void URLRequest::RecordReferrerGranularityMetrics(
+    bool request_is_same_origin) const {
+  GURL referrer_url(referrer_);
+  bool referrer_more_descriptive_than_its_origin =
+      referrer_url.is_valid() && referrer_url.PathForRequestPiece().size() > 1;
+
+  // To avoid renaming the existing enum, we have to use the three-argument
+  // histogram macro.
+  if (request_is_same_origin) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.URLRequest.ReferrerPolicyForRequest.SameOrigin", referrer_policy_,
+        MAX_REFERRER_POLICY + 1);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Net.URLRequest.ReferrerHasInformativePath.SameOrigin",
+        referrer_more_descriptive_than_its_origin);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.URLRequest.ReferrerPolicyForRequest.CrossOrigin", referrer_policy_,
+        MAX_REFERRER_POLICY + 1);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Net.URLRequest.ReferrerHasInformativePath.CrossOrigin",
+        referrer_more_descriptive_than_its_origin);
+  }
 }
 
 void URLRequest::GetConnectionAttempts(ConnectionAttempts* out) const {

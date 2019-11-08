@@ -19,11 +19,11 @@
 
 namespace performance_manager {
 
-class PerformanceManagerTest : public testing::Test {
+class PerformanceManagerImplTest : public testing::Test {
  public:
-  PerformanceManagerTest() {}
+  PerformanceManagerImplTest() {}
 
-  ~PerformanceManagerTest() override {}
+  ~PerformanceManagerImplTest() override {}
 
   void SetUp() override {
     EXPECT_EQ(nullptr, PerformanceManagerImpl::GetInstance());
@@ -52,10 +52,10 @@ class PerformanceManagerTest : public testing::Test {
   std::unique_ptr<PerformanceManagerImpl> performance_manager_;
   base::test::TaskEnvironment task_environment_;
 
-  DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(PerformanceManagerImplTest);
 };
 
-TEST_F(PerformanceManagerTest, InstantiateNodes) {
+TEST_F(PerformanceManagerImplTest, InstantiateNodes) {
   int next_render_frame_id = 0;
 
   std::unique_ptr<ProcessNodeImpl> process_node =
@@ -78,7 +78,7 @@ TEST_F(PerformanceManagerTest, InstantiateNodes) {
   performance_manager()->DeleteNode(std::move(process_node));
 }
 
-TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
+TEST_F(PerformanceManagerImplTest, BatchDeleteNodes) {
   int next_render_frame_id = 0;
   // Create a page node and a small hierarchy of frames.
   std::unique_ptr<ProcessNodeImpl> process_node =
@@ -125,7 +125,7 @@ TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
   performance_manager()->BatchDeleteNodes(std::move(nodes));
 }
 
-TEST_F(PerformanceManagerTest, CallOnGraphImpl) {
+TEST_F(PerformanceManagerImplTest, CallOnGraphImpl) {
   // Create a page node for something to target.
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
@@ -147,7 +147,7 @@ TEST_F(PerformanceManagerTest, CallOnGraphImpl) {
   performance_manager()->DeleteNode(std::move(page_node));
 }
 
-TEST_F(PerformanceManagerTest, CallOnGraphAndReplyWithResult) {
+TEST_F(PerformanceManagerImplTest, CallOnGraphAndReplyWithResult) {
   // Create a page node for something to target.
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),

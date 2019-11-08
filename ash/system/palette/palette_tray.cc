@@ -558,7 +558,7 @@ void PaletteTray::OnPaletteEnabledPrefChanged() {
       prefs::kEnableStylusTools);
 
   if (!is_palette_enabled_) {
-    SetVisible(false);
+    SetVisiblePreferred(false);
     palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
   } else {
     UpdateIconVisibility();
@@ -591,9 +591,10 @@ bool PaletteTray::HasSeenStylus() {
 }
 
 void PaletteTray::UpdateIconVisibility() {
-  SetVisible(HasSeenStylus() && is_palette_enabled_ &&
-             stylus_utils::HasStylusInput() && ShouldShowOnDisplay(this) &&
-             palette_utils::IsInUserSession());
+  SetVisiblePreferred(HasSeenStylus() && is_palette_enabled_ &&
+                      stylus_utils::HasStylusInput() &&
+                      ShouldShowOnDisplay(this) &&
+                      palette_utils::IsInUserSession());
 }
 
 }  // namespace ash

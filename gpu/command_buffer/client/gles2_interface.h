@@ -22,6 +22,10 @@ class Vector2d;
 class Vector2dF;
 }  // namespace gfx
 
+namespace gl {
+enum class GpuPreference;
+}
+
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 extern "C" typedef struct _GLColorSpace* GLColorSpace;
 extern "C" typedef struct _ClientGpuFence* ClientGpuFence;
@@ -37,7 +41,11 @@ class GLES2Interface : public InterfaceBase {
 
   virtual void FreeSharedMemory(void*) {}
 
-  virtual GLboolean DidGpuSwitch();
+  // Returns true if the active GPU switched since the last time this
+  // method was called. If so, |active_gpu| will be written with the
+  // results of the heuristic indicating which GPU is active;
+  // kDefault if "unknown", or kLowPower or kHighPerformance if known.
+  virtual GLboolean DidGpuSwitch(gl::GpuPreference* active_gpu);
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in

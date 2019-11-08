@@ -6,7 +6,7 @@
 
 typedef unsigned long GPUBufferUsageFlags;
 [
-    RuntimeEnabled=WebGPU
+    Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUBufferUsage {
     const GPUBufferUsageFlags MAP_READ = 1;
     const GPUBufferUsageFlags MAP_WRITE = 2;

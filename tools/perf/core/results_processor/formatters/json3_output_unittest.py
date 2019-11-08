@@ -12,10 +12,12 @@ from core.results_processor import testing
 class Json3OutputTest(unittest.TestCase):
   def setUp(self):
     self.base_dir = 'base_dir'
+    self.test_path_format = 'telemetry'
 
   def Convert(self, test_results):
     test_results_copy = copy.deepcopy(test_results)
-    results = json3_output.Convert(test_results_copy, self.base_dir)
+    results = json3_output.Convert(
+        test_results_copy, self.base_dir, self.test_path_format)
     # Convert should not modify the original intermediate results.
     self.assertEqual(test_results_copy, test_results)
     return results
@@ -51,6 +53,8 @@ class Json3OutputTest(unittest.TestCase):
     self.assertNotIn('shard', test_result)
     self.assertEqual(results['num_failures_by_type'], {'PASS': 1})
 
+  # TODO(crbug.com/983993): Remove this test when all stories have
+  # url-friendly names without special characters.
   def testUrlAsStoryName(self):
     results = self.Convert([
         testing.TestResult('benchmark/http%3A%2F%2Fexample.com')

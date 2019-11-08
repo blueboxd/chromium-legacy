@@ -107,6 +107,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/gpu_preference.h"
 #include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/gpu_switching_observer.h"
 #include "ui/gl/gpu_timing.h"
@@ -755,7 +756,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
                     const gfx::Rect& cleared_rect) override;
 
   // Implements GpuSwitchingObserver.
-  void OnGpuSwitched() override;
+  void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) override;
 
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
@@ -5291,9 +5292,9 @@ void GLES2DecoderImpl::SetLevelInfo(uint32_t client_id,
                                   0 /* border */, format, type, cleared_rect);
 }
 
-void GLES2DecoderImpl::OnGpuSwitched() {
+void GLES2DecoderImpl::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) {
   // Send OnGpuSwitched notification to renderer process via decoder client.
-  client()->OnGpuSwitched();
+  client()->OnGpuSwitched(active_gpu_heuristic);
 }
 
 void GLES2DecoderImpl::Destroy(bool have_context) {

@@ -13,7 +13,7 @@ constexpr int kDefaultBackGestureHorizontalThreshold = 80;
 }  // namespace
 
 CastContentGestureHandler::CastContentGestureHandler(
-    CastContentWindow::Delegate* delegate,
+    base::WeakPtr<CastContentWindow::Delegate> delegate,
     bool enable_top_drag_gesture)
     : priority_(Priority::NONE),
       enable_top_drag_gesture_(enable_top_drag_gesture),
@@ -25,10 +25,12 @@ CastContentGestureHandler::CastContentGestureHandler(
 }
 
 CastContentGestureHandler::CastContentGestureHandler(
-    CastContentWindow::Delegate* delegate)
+    base::WeakPtr<CastContentWindow::Delegate> delegate)
     : CastContentGestureHandler(
           delegate,
           GetSwitchValueBoolean(switches::kEnableTopDragGesture, false)) {}
+
+CastContentGestureHandler::~CastContentGestureHandler() = default;
 
 void CastContentGestureHandler::SetPriority(
     CastGestureHandler::Priority priority) {
@@ -41,6 +43,8 @@ CastGestureHandler::Priority CastContentGestureHandler::GetPriority() {
 
 bool CastContentGestureHandler::CanHandleSwipe(
     CastSideSwipeOrigin swipe_origin) {
+  if (!delegate_)
+    return false;
   return delegate_->CanHandleGesture(GestureForSwipeOrigin(swipe_origin));
 }
 
@@ -66,7 +70,6 @@ void CastContentGestureHandler::HandleSideSwipe(
   if (!CanHandleSwipe(swipe_origin)) {
     return;
   }
-
   GestureType gesture_type = GestureForSwipeOrigin(swipe_origin);
 
   switch (event) {
@@ -102,7 +105,7 @@ void CastContentGestureHandler::HandleSideSwipe(
 
 void CastContentGestureHandler::HandleTapDownGesture(
     const gfx::Point& touch_location) {
-  if (!delegate_->CanHandleGesture(GestureType::TAP_DOWN)) {
+  if (!delegate_ || !delegate_->CanHandleGesture(GestureType::TAP_DOWN)) {
     return;
   }
   delegate_->ConsumeGesture(GestureType::TAP_DOWN);
@@ -110,7 +113,7 @@ void CastContentGestureHandler::HandleTapDownGesture(
 
 void CastContentGestureHandler::HandleTapGesture(
     const gfx::Point& touch_location) {
-  if (!delegate_->CanHandleGesture(GestureType::TAP)) {
+  if (!delegate_ || !delegate_->CanHandleGesture(GestureType::TAP)) {
     return;
   }
   delegate_->ConsumeGesture(GestureType::TAP);

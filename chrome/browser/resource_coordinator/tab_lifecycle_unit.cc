@@ -378,6 +378,15 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetRecentlyAudible(
     recently_audible_time_ = NowTicks();
 }
 
+void TabLifecycleUnitSource::TabLifecycleUnit::SetInitialStateFromPageNodeData(
+    performance_manager::mojom::InterventionPolicy origin_trial_policy,
+    bool is_holding_weblock,
+    bool is_holding_indexeddb_lock) {
+  origin_trial_freeze_policy_ = origin_trial_policy;
+  is_holding_weblock_ = is_holding_weblock;
+  is_holding_indexeddb_lock_ = is_holding_indexeddb_lock;
+}
+
 void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
     performance_manager::mojom::LifecycleState state) {
   switch (state) {

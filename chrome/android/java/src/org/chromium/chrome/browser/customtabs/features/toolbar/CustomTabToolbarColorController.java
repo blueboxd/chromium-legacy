@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.customtabs.features.toolbar;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -28,16 +31,33 @@ public class CustomTabToolbarColorController implements InflationObserver {
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final ChromeActivity mActivity;
     private final TabObserverRegistrar mTabObserverRegistrar;
+    private final CustomTabActivityTabProvider mTabProvider;
+
+    /** Keeps track of the original color before the preview was shown. */
+    private int mOriginalColor;
+
+    /** True if a change to the toolbar color was made because of a preview. */
+    private boolean mTriggeredPreviewChange;
+
+    private final CustomTabActivityTabProvider.Observer mActivityTabObserver =
+            new CustomTabActivityTabProvider.Observer() {
+                @Override
+                public void onTabSwapped(@NonNull Tab tab) {
+                    updateColor(tab);
+                }
+            };
 
     @Inject
     public CustomTabToolbarColorController(ActivityLifecycleDispatcher lifecycleDispatcher,
             Lazy<ToolbarManager> toolbarManager,
             BrowserServicesIntentDataProvider intentDataProvider,
             ChromeActivity activity,
+            CustomTabActivityTabProvider tabProvider,
             TabObserverRegistrar tabObserverRegistrar) {
         mToolbarManager = toolbarManager;
         mIntentDataProvider = intentDataProvider;
         mActivity = activity;
+        mTabProvider = tabProvider;
         mTabObserverRegistrar = tabObserverRegistrar;
         lifecycleDispatcher.register(this);
     }
@@ -56,16 +76,11 @@ public class CustomTabToolbarColorController implements InflationObserver {
             manager.setShouldUpdateToolbarPrimaryColor(false);
         }
         observeTabToUpdateColor();
+        mTabProvider.addObserver(mActivityTabObserver);
     }
 
     private void observeTabToUpdateColor() {
-        mTabObserverRegistrar.registerTabObserver(new EmptyTabObserver() {
-            /** Keeps track of the original color before the preview was shown. */
-            private int mOriginalColor;
-
-            /** True if a change to the toolbar color was made because of a preview. */
-            private boolean mTriggeredPreviewChange;
-
+        mTabObserverRegistrar.registerActivityTabObserver(new EmptyTabObserver() {
             @Override
             public void onPageLoadFinished(Tab tab, String url) {
                 // Update the color when the page load finishes.
@@ -77,37 +92,37 @@ public class CustomTabToolbarColorController implements InflationObserver {
                 // Update the color on every new URL.
                 updateColor(tab);
             }
-
-            /**
-             * Updates the color of the Activity's CCT Toolbar. When a preview is shown, it should
-             * be reset to the default color. If the user later navigates away from that preview to
-             * a non-preview page, reset the color back to the original. This does not interfere
-             * with site-specific theme colors which are disabled when a preview is being shown.
-             */
-            private void updateColor(Tab tab) {
-                ToolbarManager manager = mToolbarManager.get();
-
-                // Record the original toolbar color in case we need to revert back to it later
-                // after a preview has been shown then the user navigates to another non-preview
-                // page.
-                if (mOriginalColor == 0) mOriginalColor = manager.getPrimaryColor();
-
-                final boolean shouldUpdateOriginal = manager.getShouldUpdateToolbarPrimaryColor();
-                manager.setShouldUpdateToolbarPrimaryColor(true);
-
-                if (tab.isPreview()) {
-                    final int defaultColor =
-                            ChromeColors.getDefaultThemeColor(mActivity.getResources(), false);
-                    manager.onThemeColorChanged(defaultColor, false);
-                    mTriggeredPreviewChange = true;
-                } else if (mOriginalColor != manager.getPrimaryColor() && mTriggeredPreviewChange) {
-                    manager.onThemeColorChanged(mOriginalColor, false);
-                    mTriggeredPreviewChange = false;
-                    mOriginalColor = 0;
-                }
-
-                manager.setShouldUpdateToolbarPrimaryColor(shouldUpdateOriginal);
-            }
         });
+    }
+
+    /**
+     * Updates the color of the Activity's CCT Toolbar. When a preview is shown, it should
+     * be reset to the default color. If the user later navigates away from that preview to
+     * a non-preview page, reset the color back to the original. This does not interfere
+     * with site-specific theme colors which are disabled when a preview is being shown.
+     */
+    private void updateColor(Tab tab) {
+        ToolbarManager manager = mToolbarManager.get();
+
+        // Record the original toolbar color in case we need to revert back to it later
+        // after a preview has been shown then the user navigates to another non-preview
+        // page.
+        if (mOriginalColor == 0) mOriginalColor = manager.getPrimaryColor();
+
+        final boolean shouldUpdateOriginal = manager.getShouldUpdateToolbarPrimaryColor();
+        manager.setShouldUpdateToolbarPrimaryColor(true);
+
+        if (tab.isPreview()) {
+            final int defaultColor =
+                    ChromeColors.getDefaultThemeColor(mActivity.getResources(), false);
+            manager.onThemeColorChanged(defaultColor, false);
+            mTriggeredPreviewChange = true;
+        } else if (mOriginalColor != manager.getPrimaryColor() && mTriggeredPreviewChange) {
+            manager.onThemeColorChanged(mOriginalColor, false);
+            mTriggeredPreviewChange = false;
+            mOriginalColor = 0;
+        }
+
+        manager.setShouldUpdateToolbarPrimaryColor(shouldUpdateOriginal);
     }
 }

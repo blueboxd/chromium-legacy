@@ -168,16 +168,6 @@ select:-internal-list-box {
   border-radius: 2px;
 }
 
-/* These options only apply to in-page 'multiple' select elements.
-   The options in the popup are handled in listPicker.css */
-select:-internal-list-box option, select:-internal-list-box optgroup {
-  padding: 0 3px;
-}
-
-select:-internal-list-box option {
-  border-radius: 2px;
-}
-
 select:-internal-list-box option:hover {
   background-color: #f3f3f3;
 }

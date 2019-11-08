@@ -14,6 +14,8 @@
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -85,8 +87,14 @@ void HomeButton::OnShelfButtonAboutToRequestFocusFromTabTraversal(
 void HomeButton::ButtonPressed(views::Button* sender,
                                const ui::Event& event,
                                views::InkDrop* ink_drop) {
-  Shell::Get()->metrics()->RecordUserMetricsAction(
-      UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    base::RecordAction(
+        base::UserMetricsAction("AppList_HomeButtonPressedTablet"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("AppList_HomeButtonPressedClamshell"));
+  }
+
   const AppListShowSource show_source =
       event.IsShiftDown() ? kShelfButtonFullscreen : kShelfButton;
   OnPressed(show_source, event.time_stamp());

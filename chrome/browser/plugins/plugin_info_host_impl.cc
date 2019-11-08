@@ -40,7 +40,6 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/plugin_service.h"
@@ -412,7 +411,7 @@ void PluginInfoHostImpl::GetPluginInfoFinish(
   context_.MaybeGrantAccess(output->status, output->plugin.path);
 
   if (output->status != chrome::mojom::PluginStatus::kNotFound) {
-    ReportMetrics(params.render_frame_id, output->actual_mime_type, params.url,
+    ReportMetrics(params.render_frame_id, output->actual_mime_type,
                   params.main_frame_origin);
   }
   std::move(callback).Run(std::move(output));
@@ -420,7 +419,6 @@ void PluginInfoHostImpl::GetPluginInfoFinish(
 
 void PluginInfoHostImpl::ReportMetrics(int render_frame_id,
                                        const base::StringPiece& mime_type,
-                                       const GURL& url,
                                        const url::Origin& main_frame_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -435,10 +433,6 @@ void PluginInfoHostImpl::ReportMetrics(int render_frame_id,
   if (web_contents->GetBrowserContext()->IsOffTheRecord())
     return;
 
-  rappor::RapporServiceImpl* rappor_service =
-      g_browser_process->rappor_service();
-  if (!rappor_service)
-    return;
   if (main_frame_origin.opaque())
     return;
 
@@ -446,16 +440,6 @@ void PluginInfoHostImpl::ReportMetrics(int render_frame_id,
       mime_type != content::kFlashPluginSplMimeType) {
     return;
   }
-
-  rappor_service->RecordSampleString(
-      "Plugins.FlashOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          main_frame_origin.GetURL(),
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-  rappor_service->RecordSampleString(
-      "Plugins.FlashUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
 
   ukm::builders::Plugins_FlashInstance(
       ukm::GetSourceIdForWebContentsDocument(web_contents))

@@ -23,6 +23,7 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
+#include "media/mojo/services/media_metrics_provider.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/cert/cert_status_flags.h"
@@ -485,6 +486,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                          const std::string& scheme,
                                          const GURL& url,
                                          bool user_gesture) {}
+
+  virtual media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
+  GetRecordAggregateWatchTimeCallback();
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

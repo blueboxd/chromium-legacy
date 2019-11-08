@@ -82,7 +82,7 @@ class ImageTransportSurfaceOverlayMacBase : public BaseClass,
   bool IsSurfaceless() const override;
 
   // ui::GpuSwitchingObserver implementation.
-  void OnGpuSwitched() override;
+  void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) override;
 
  private:
   ~ImageTransportSurfaceOverlayMacBase() override;

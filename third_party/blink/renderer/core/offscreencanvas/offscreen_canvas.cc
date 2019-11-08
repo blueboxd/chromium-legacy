@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
@@ -104,6 +105,9 @@ void OffscreenCanvas::SetPlaceholderCanvasId(DOMNodeId canvas_id) {
     DCHECK(animation_frame_provider);
     if (animation_frame_provider)
       animation_frame_provider->RegisterOffscreenCanvas(this);
+  }
+  if (frame_dispatcher_) {
+    frame_dispatcher_->SetPlaceholderCanvasDispatcher(placeholder_canvas_id_);
   }
 }
 
@@ -313,6 +317,9 @@ CanvasResourceDispatcher* OffscreenCanvas::GetOrCreateResourceDispatcher() {
     // throughout the lifetime of this OffscreenCanvas.
     frame_dispatcher_ = std::make_unique<CanvasResourceDispatcher>(
         this, client_id_, sink_id_, placeholder_canvas_id_, size_);
+
+    if (HasPlaceholderCanvas())
+      frame_dispatcher_->SetPlaceholderCanvasDispatcher(placeholder_canvas_id_);
   }
   return frame_dispatcher_.get();
 }
@@ -409,6 +416,16 @@ bool OffscreenCanvas::BeginFrame() {
   DCHECK(HasPlaceholderCanvas());
   GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(false);
   return PushFrameIfNeeded();
+}
+
+void OffscreenCanvas::SetFilterQualityInResource(
+    SkFilterQuality filter_quality) {
+  if (filter_quality_ == filter_quality)
+    return;
+
+  filter_quality_ = filter_quality;
+  if (ResourceProvider())
+    GetOrCreateResourceProvider()->SetFilterQuality(filter_quality);
 }
 
 bool OffscreenCanvas::PushFrameIfNeeded() {

@@ -48,6 +48,11 @@
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/test/test_reg_util_win.h"
+#include "base/win/registry.h"
+#endif
+
 namespace extensions {
 
 namespace {
@@ -57,6 +62,13 @@ const char kAppPath[] = "/app.crx";
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kExternalAppId[] = "kekdneafjmhmndejhmbcadfiiofngffo";
+#endif
+
+#if defined(OS_WIN)
+const char kExternalAppCrxPath[] =
+    "external\\kekdneafjmhmndejhmbcadfiiofngffo.crx";
+const wchar_t kExternalAppRegistryKey[] =
+    L"Software\\Google\\Chrome\\Extensions\\kekdneafjmhmndejhmbcadfiiofngffo";
 #endif
 
 class ExternalProviderImplTest : public ExtensionServiceTestBase {
@@ -92,8 +104,25 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   }
 
   void OverrideExternalExtensionsPath() {
+    // Windows doesn't use the provider that installs the |kExternalAppId|
+    // extension implicitly, so to test that the blocking policy works on
+    // Windows it is installed through a Windows-specific registry provider.
+#if defined(OS_WIN)
+    EXPECT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+    EXPECT_EQ(ERROR_SUCCESS,
+              external_extension_key_.Create(
+                  HKEY_CURRENT_USER, kExternalAppRegistryKey, KEY_ALL_ACCESS));
+    EXPECT_EQ(ERROR_SUCCESS,
+              external_extension_key_.WriteValue(
+                  L"path",
+                  data_dir().AppendASCII(kExternalAppCrxPath).value().c_str()));
+    EXPECT_EQ(ERROR_SUCCESS,
+              external_extension_key_.WriteValue(L"version", L"1"));
+#else
     external_externsions_overrides_.reset(new base::ScopedPathOverride(
         chrome::DIR_EXTERNAL_EXTENSIONS, data_dir().AppendASCII("external")));
+#endif
   }
 
   void SetExternalExtensionsBlockedByPolicy(const bool block_external) {
@@ -172,6 +201,12 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
   // chromeos::ServicesCustomizationExternalLoader is hooked up as an
   // extensions::ExternalLoader and depends on a functioning StatisticsProvider.
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+#endif
+
+#if defined(OS_WIN)
+  // Registry key pointing to the external extension for Windows.
+  base::win::RegKey external_extension_key_;
+  registry_util::RegistryOverrideManager registry_override_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProviderImplTest);

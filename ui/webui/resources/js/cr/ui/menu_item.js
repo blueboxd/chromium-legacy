@@ -74,7 +74,7 @@ cr.define('cr.ui', function() {
       }
 
       if (typeof command == 'string' && command[0] == '#') {
-        command = assert(this.ownerDocument.getElementById(command.slice(1)));
+        command = assert(this.ownerDocument.body.querySelector(command));
         cr.ui.decorate(command, Command);
       }
 

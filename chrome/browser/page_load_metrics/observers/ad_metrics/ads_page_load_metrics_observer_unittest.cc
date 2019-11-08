@@ -1112,6 +1112,15 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameAdBytesRecorded) {
   // Verify page total for network bytes.
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("Resources.Bytes.Ads2"), 20, 1);
+
+  // Verify main frame ad bytes recorded in UKM.
+  auto entries = test_ukm_recorder().GetEntriesByName(
+      ukm::builders::AdPageLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  EXPECT_EQ(
+      *test_ukm_recorder().GetEntryMetric(
+          entries.front(), ukm::builders::AdPageLoad::kMainframeAdBytesName),
+      ukm::GetExponentialBucketMinForBytes(10 * 1024));
 }
 
 // Tests that memory cache ad bytes are recorded correctly.
@@ -1184,6 +1193,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
           entries.front(),
           ukm::builders::AdPageLoad::kAdBytesPerSecondAfterInteractiveName),
       0);
+  EXPECT_EQ(
+      *test_ukm_recorder().GetEntryMetric(
+          entries.front(), ukm::builders::AdPageLoad::kMainframeAdBytesName),
+      ukm::GetExponentialBucketMinForBytes(20 * 1024));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(
                 entries.front(), ukm::builders::AdPageLoad::kAdCpuTimeName),
             500);

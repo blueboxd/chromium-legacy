@@ -9,7 +9,6 @@ include_rules = [
   "+third_party/cld_3",
 
   "+third_party/blink/public/mojom/devtools/console_message.mojom.h",
-  "+third_party/blink/public/mojom/frame/document_interface_broker.mojom.h",
   "+third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h",
   "+third_party/blink/public/platform",
   "+third_party/blink/public/strings/grit/blink_strings.h",

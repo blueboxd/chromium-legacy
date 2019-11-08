@@ -225,11 +225,6 @@ void CastWebContentsImpl::EnableBackgroundVideoPlayback(bool enabled) {
     media_blocker_->EnableBackgroundVideoPlayback(enabled);
 }
 
-void CastWebContentsImpl::SetDelegate(CastWebContents::Delegate* delegate) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  delegate_ = delegate;
-}
-
 void CastWebContentsImpl::AllowWebAndMojoWebUiBindings() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
@@ -411,6 +406,12 @@ void CastWebContentsImpl::OnInterfaceRequestFromFrame(
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (!delegate_) {
+    // Don't let the page bind any more interfaces at this point, since the
+    // owning client has been torn down. This is a cheap trick so that all of
+    // the interfaces don't have to provide binder callbacks with WeakPtr.
+    return;
+  }
   if (binder_registry_.TryBindInterface(interface_name, interface_pipe)) {
     return;
   }
@@ -712,11 +713,12 @@ void CastWebContentsImpl::InnerWebContentsCreated(
     content::WebContents* inner_web_contents) {
   if (!handle_inner_contents_ || !delegate_)
     return;
-  auto result = inner_contents_.insert(std::make_unique<CastWebContentsImpl>(
-      inner_web_contents,
-      InitParams{nullptr, enabled_for_dev_, false /* use_cma_renderer */,
-                 false /* is_root_window */, false /* handle_inner_contents */,
-                 false /* use_media_blocker */, view_background_color_}));
+  InitParams params;
+  params.delegate = delegate_;
+  params.enabled_for_dev = enabled_for_dev_;
+  params.background_color = view_background_color_;
+  auto result = inner_contents_.insert(
+      std::make_unique<CastWebContentsImpl>(inner_web_contents, params));
   delegate_->InnerContentsCreated(result.first->get(), this);
 }
 

@@ -68,7 +68,7 @@ public class SectionList extends InnerNode<NewTabPageViewHolder, PartialBindCall
      * Returns whether prefetched suggestions metrics should be reported for a given category.
      * @param category given category to check.
      */
-    static public boolean shouldReportPrefetchedSuggestionsMetrics(@CategoryInt int category) {
+    public static boolean shouldReportPrefetchedSuggestionsMetrics(@CategoryInt int category) {
         return category == KnownCategories.ARTICLES && !NetworkChangeNotifier.isOnline();
     }
 

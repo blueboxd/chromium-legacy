@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "media/gpu/video_frame_mapper.h"
 #include "media/gpu/video_frame_mapper_factory.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace media {
@@ -127,7 +128,7 @@ void VideoFrameFileWriter::ProcessVideoFrameTask(
       !video_frame_mapper_) {
     video_frame_mapper_ = VideoFrameMapperFactory::CreateMapper(
         video_frame->format(), video_frame->storage_type());
-    LOG_ASSERT(video_frame_mapper_) << "Failed to create VideoFrameMapper";
+    ASSERT_TRUE(video_frame_mapper_) << "Failed to create VideoFrameMapper";
   }
 #endif
 
@@ -180,7 +181,7 @@ void VideoFrameFileWriter::WriteVideoFramePNG(
       argb_out_frame->stride(VideoFrame::kARGBPlane),
       true, /* discard_transparency */
       std::vector<gfx::PNGCodec::Comment>(), &png_output);
-  LOG_ASSERT(png_encode_status);
+  ASSERT_TRUE(png_encode_status);
 
   // Write the PNG data to file.
   base::FilePath file_path(
@@ -188,7 +189,7 @@ void VideoFrameFileWriter::WriteVideoFramePNG(
   const int size = base::checked_cast<int>(png_output.size());
   const int bytes_written = base::WriteFile(
       file_path, reinterpret_cast<char*>(png_output.data()), size);
-  LOG_ASSERT(bytes_written == size);
+  ASSERT_TRUE(bytes_written == size);
 }
 
 void VideoFrameFileWriter::WriteVideoFrameYUV(
@@ -235,7 +236,7 @@ void VideoFrameFileWriter::WriteVideoFrameYUV(
         VideoFrame::Rows(i, pixel_format, visible_size.height());
     const int row_bytes =
         VideoFrame::RowBytes(i, pixel_format, visible_size.width());
-    LOG_ASSERT(stride > 0);
+    ASSERT_TRUE(stride > 0);
     for (size_t row = 0; row < rows; ++row) {
       if (yuv_file.WriteAtCurrentPos(
               reinterpret_cast<const char*>(data + (stride * row)),

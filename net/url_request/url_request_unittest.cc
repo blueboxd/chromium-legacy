@@ -800,6 +800,178 @@ TEST_F(URLRequestTest, InvalidReferrerTest) {
   EXPECT_TRUE(d.request_failed());
 }
 
+TEST_F(URLRequestTest, RecordsSameOriginReferrerHistogram) {
+  TestURLRequestContext context;
+  TestNetworkDelegate network_delegate;
+  network_delegate.set_cancel_request_with_policy_violating_referrer(false);
+  context.set_network_delegate(&network_delegate);
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(
+      context.CreateRequest(GURL("http://google.com/"), DEFAULT_PRIORITY, &d,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+  req->set_initiator(url::Origin::Create(GURL("http://google.com")));
+  req->set_referrer_policy(URLRequest::NEVER_CLEAR_REFERRER);
+
+  base::HistogramTester histograms;
+
+  req->Start();
+  d.RunUntilComplete();
+  histograms.ExpectUniqueSample(
+      "Net.URLRequest.ReferrerPolicyForRequest.SameOrigin",
+      static_cast<int>(URLRequest::NEVER_CLEAR_REFERRER), 1);
+}
+
+TEST_F(URLRequestTest, RecordsCrossOriginReferrerHistogram) {
+  TestURLRequestContext context;
+  TestNetworkDelegate network_delegate;
+  context.set_network_delegate(&network_delegate);
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(
+      context.CreateRequest(GURL("http://google.com/"), DEFAULT_PRIORITY, &d,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+  req->set_initiator(url::Origin::Create(GURL("http://origin.com")));
+
+  // Set a different policy just to make sure we aren't always logging the same
+  // policy.
+  req->set_referrer_policy(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
+
+  base::HistogramTester histograms;
+
+  req->Start();
+  d.RunUntilComplete();
+  histograms.ExpectUniqueSample(
+      "Net.URLRequest.ReferrerPolicyForRequest.CrossOrigin",
+      static_cast<int>(
+          URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
+      1);
+}
+
+TEST_F(URLRequestTest, RecordsReferrerHistogramAgainOnRedirect) {
+  TestURLRequestContext context;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::SYNCHRONOUS);
+  network_delegate.set_redirect_url(GURL("http://redirect.com/"));
+  context.set_network_delegate(&network_delegate);
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(
+      context.CreateRequest(GURL("http://google.com/"), DEFAULT_PRIORITY, &d,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+  req->set_initiator(url::Origin::Create(GURL("http://google.com")));
+
+  req->set_referrer_policy(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
+
+  base::HistogramTester histograms;
+
+  req->Start();
+  d.RunUntilRedirect();
+  histograms.ExpectUniqueSample(
+      "Net.URLRequest.ReferrerPolicyForRequest.SameOrigin",
+      static_cast<int>(
+          URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
+      1);
+  req->FollowDeferredRedirect(/*removed_headers=*/base::nullopt,
+                              /*modified_headers=*/base::nullopt);
+  d.RunUntilComplete();
+  histograms.ExpectUniqueSample(
+      "Net.URLRequest.ReferrerPolicyForRequest.CrossOrigin",
+      static_cast<int>(
+          URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
+      1);
+}
+
+TEST_F(URLRequestTest, RecordsReferrrerWithInformativePath) {
+  TestURLRequestContext context;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::SYNCHRONOUS);
+  network_delegate.set_cancel_request_with_policy_violating_referrer(true);
+  context.set_network_delegate(&network_delegate);
+  network_delegate.set_redirect_url(GURL("http://redirect.com/"));
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(
+      context.CreateRequest(GURL("http://google.com/"), DEFAULT_PRIORITY, &d,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  // Since this referrer is much more informative than the initiating origin,
+  // we should see the histograms' true buckets populated.
+  req->SetReferrer("http://google.com/very-informative-path");
+
+  base::HistogramTester histograms;
+
+  req->Start();
+  d.RunUntilRedirect();
+  histograms.ExpectUniqueSample(
+      "Net.URLRequest.ReferrerHasInformativePath.SameOrigin",
+      /* Check the count of the "true" bucket in the boolean histogram. */ true,
+      1);
+  req->FollowDeferredRedirect(/*removed_headers=*/base::nullopt,
+                              /*modified_headers=*/base::nullopt);
+  d.RunUntilComplete();
+  histograms.ExpectUniqueSample(
+      "Net.URLRequest.ReferrerHasInformativePath.CrossOrigin", true, 1);
+}
+
+TEST_F(URLRequestTest, RecordsReferrerWithInformativeQuery) {
+  TestURLRequestContext context;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::SYNCHRONOUS);
+  network_delegate.set_cancel_request_with_policy_violating_referrer(true);
+  context.set_network_delegate(&network_delegate);
+  network_delegate.set_redirect_url(GURL("http://redirect.com/"));
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(
+      context.CreateRequest(GURL("http://google.com/"), DEFAULT_PRIORITY, &d,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  // Since this referrer is much more informative than the initiating origin,
+  // we should see the histograms' true buckets populated.
+  req->SetReferrer("http://google.com/?very-informative-query");
+
+  base::HistogramTester histograms;
+
+  req->Start();
+  d.RunUntilRedirect();
+  histograms.ExpectUniqueSample(
+      "Net.URLRequest.ReferrerHasInformativePath.SameOrigin",
+      /* Check the count of the "true" bucket in the boolean histogram. */ true,
+      1);
+  req->FollowDeferredRedirect(/*removed_headers=*/base::nullopt,
+                              /*modified_headers=*/base::nullopt);
+  d.RunUntilComplete();
+  histograms.ExpectUniqueSample(
+      "Net.URLRequest.ReferrerHasInformativePath.CrossOrigin", true, 1);
+}
+
+TEST_F(URLRequestTest, RecordsReferrerWithoutInformativePathOrQuery) {
+  TestURLRequestContext context;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::SYNCHRONOUS);
+  network_delegate.set_cancel_request_with_policy_violating_referrer(false);
+  context.set_network_delegate(&network_delegate);
+  network_delegate.set_redirect_url(GURL("http://origin.com/"));
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(
+      context.CreateRequest(GURL("http://google.com/"), DEFAULT_PRIORITY, &d,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  // Since this referrer _isn't_ more informative than the initiating origin,
+  // we should see the histograms' false buckets populated.
+  req->SetReferrer("http://origin.com");
+
+  base::HistogramTester histograms;
+
+  req->Start();
+  d.RunUntilRedirect();
+  histograms.ExpectUniqueSample(
+      "Net.URLRequest.ReferrerHasInformativePath.CrossOrigin", false, 1);
+  req->FollowDeferredRedirect(/*removed_headers=*/base::nullopt,
+                              /*modified_headers=*/base::nullopt);
+  d.RunUntilComplete();
+  histograms.ExpectUniqueSample(
+      "Net.URLRequest.ReferrerHasInformativePath.SameOrigin", false, 1);
+}
+
 // An Interceptor for use with interceptor tests.
 class MockURLRequestInterceptor : public URLRequestInterceptor {
  public:

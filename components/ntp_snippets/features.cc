@@ -87,7 +87,7 @@ const char kDefaultReferrerUrl[] =
 // Provides ability to customize the referrer URL.
 // When specifying a referrer through a field trial, it must contain a path.
 // In case of default value above the path is empty, but it is specified.
-base::FeatureParam<std::string> kArticleSuggestionsReferrerURLParam{
+const base::FeatureParam<std::string> kArticleSuggestionsReferrerURLParam{
     &kArticleSuggestionsFeature, "referrer_url", kDefaultReferrerUrl};
 
 std::string GetContentSuggestionsReferrerURL() {

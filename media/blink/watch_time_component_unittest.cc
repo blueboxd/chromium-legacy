@@ -28,6 +28,7 @@ class WatchTimeInterceptor : public mojom::WatchTimeRecorder {
   MOCK_METHOD2(UpdateUnderflowDuration, void(int32_t, base::TimeDelta));
   MOCK_METHOD1(UpdateSecondaryProperties,
                void(mojom::SecondaryPlaybackPropertiesPtr));
+  MOCK_METHOD1(OnCurrentTimestampChanged, void(base::TimeDelta));
 };
 
 class WatchTimeComponentTest : public testing::Test {

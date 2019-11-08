@@ -340,6 +340,7 @@ public final class BrowserFragment extends Fragment {
     @Override
     public void onDestroy() {
         ThreadCheck.ensureOnUiThread();
+        mBrowser.prepareForDestroy();
         try {
             mRemoteFragment.handleOnDestroy();
             // The other side does the clean up automatically in handleOnDestroy()

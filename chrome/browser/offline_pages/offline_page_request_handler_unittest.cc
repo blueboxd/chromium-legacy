@@ -43,6 +43,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/filename_util.h"
 #include "net/http/http_request_headers.h"
@@ -154,8 +155,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
     virtual ~Observer() {}
   };
 
-  explicit TestURLLoaderClient(Observer* observer)
-      : observer_(observer), binding_(this) {}
+  explicit TestURLLoaderClient(Observer* observer) : observer_(observer) {}
   ~TestURLLoaderClient() override {}
 
   void OnReceiveResponse(
@@ -190,9 +190,9 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
 
   network::mojom::URLLoaderClientPtr CreateInterfacePtr() {
     network::mojom::URLLoaderClientPtr client_ptr;
-    binding_.Bind(mojo::MakeRequest(&client_ptr));
-    binding_.set_connection_error_handler(base::BindOnce(
-        &TestURLLoaderClient::OnConnectionError, base::Unretained(this)));
+    receiver_.Bind(mojo::MakeRequest(&client_ptr));
+    receiver_.set_disconnect_handler(base::BindOnce(
+        &TestURLLoaderClient::OnMojoDisconnect, base::Unretained(this)));
     return client_ptr;
   }
 
@@ -203,10 +203,10 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   }
 
  private:
-  void OnConnectionError() {}
+  void OnMojoDisconnect() {}
 
   Observer* observer_ = nullptr;
-  mojo::Binding<network::mojom::URLLoaderClient> binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> receiver_{this};
   mojo::ScopedDataPipeConsumerHandle response_body_;
   network::URLLoaderCompletionStatus completion_status_;
 

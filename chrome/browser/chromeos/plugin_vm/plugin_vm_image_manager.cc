@@ -149,6 +149,7 @@ void PluginVmImageManager::StartImport() {
   chromeos::DBusThreadManager::Get()
       ->GetDebugDaemonClient()
       ->StartPluginVmDispatcher(
+          chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_),
           base::BindOnce(&PluginVmImageManager::OnPluginVmDispatcherStarted,
                          weak_ptr_factory_.GetWeakPtr()));
 }

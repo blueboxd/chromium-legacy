@@ -204,7 +204,7 @@ class PageInfoUI {
 
   // Returns the connection icon ID for the given connection |status|.
   static int GetConnectionIconID(PageInfo::SiteConnectionStatus status);
-#else
+#else  // !defined(OS_ANDROID)
   // Returns icons for the given PermissionInfo |info|. If |info|'s current
   // setting is CONTENT_SETTING_DEFAULT, it will return the icon for |info|'s
   // default setting.

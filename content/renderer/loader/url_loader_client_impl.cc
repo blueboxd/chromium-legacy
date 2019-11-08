@@ -152,8 +152,7 @@ URLLoaderClientImpl::URLLoaderClientImpl(
       resource_dispatcher_(resource_dispatcher),
       task_runner_(std::move(task_runner)),
       bypass_redirect_checks_(bypass_redirect_checks),
-      last_loaded_url_(request_url),
-      url_loader_client_binding_(this) {}
+      last_loaded_url_(request_url) {}
 
 URLLoaderClientImpl::~URLLoaderClientImpl() = default;
 
@@ -230,9 +229,9 @@ void URLLoaderClientImpl::FlushDeferredMessages() {
 void URLLoaderClientImpl::Bind(
     network::mojom::URLLoaderClientEndpointsPtr endpoints) {
   url_loader_.Bind(std::move(endpoints->url_loader), task_runner_);
-  url_loader_client_binding_.Bind(std::move(endpoints->url_loader_client),
-                                  task_runner_);
-  url_loader_client_binding_.set_connection_error_handler(base::BindOnce(
+  url_loader_client_receiver_.Bind(std::move(endpoints->url_loader_client),
+                                   task_runner_);
+  url_loader_client_receiver_.set_disconnect_handler(base::BindOnce(
       &URLLoaderClientImpl::OnConnectionClosed, weak_factory_.GetWeakPtr()));
 }
 

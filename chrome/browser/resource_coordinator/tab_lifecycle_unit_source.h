@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/public/mojom/lifecycle.mojom.h"
+#include "components/performance_manager/public/web_contents_proxy.h"
 
 class PrefChangeRegistrar;
 class PrefService;
@@ -147,6 +148,14 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
   void OnBrowserNoLongerActive(Browser* browser) override;
+
+  // Called when a TabLifecycleUnit is created to set some properties from
+  // the corresponding PageNode.
+  static void SetInitialStateFromPageNodeData(
+      const performance_manager::WebContentsProxy& contents_proxy,
+      performance_manager::mojom::InterventionPolicy origin_trial_policy,
+      bool is_holding_weblock,
+      bool is_holding_indexeddb_lock);
 
   // This is called indirectly from the corresponding event on a PageNode in the
   // performance_manager Graph.

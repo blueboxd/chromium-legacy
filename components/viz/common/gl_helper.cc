@@ -95,9 +95,9 @@ class I420ConverterImpl : public I420Converter {
   GLenum GetReadbackFormat() const override;
 
  protected:
-  // Returns true if the planerizer should use the faster, two-pass shaders to
-  // generate the YUV planar outputs. If false, the source will be scanned three
-  // times, once for each Y/U/V plane.
+  // Returns true if the planerizer should use the faster, two-pass shaders
+  // to generate the YUV planar outputs. If false, the source will be
+  // scanned three times, once for each Y/U/V plane.
   bool use_mrt() const { return !v_planerizer_; }
 
   // Reallocates the intermediate and plane textures, if needed.
@@ -112,9 +112,9 @@ class I420ConverterImpl : public I420Converter {
 
  private:
   // These generate the Y/U/V planes. If MRT is being used, |y_planerizer_|
-  // generates the Y and interim UV plane, |u_planerizer_| generates the final U
-  // and V planes, and |v_planerizer_| is unused. If MRT is not being used, each
-  // of these generates only one of the Y/U/V planes.
+  // generates the Y and interim UV plane, |u_planerizer_| generates the
+  // final U and V planes, and |v_planerizer_| is unused. If MRT is not
+  // being used, each of these generates only one of the Y/U/V planes.
   const std::unique_ptr<GLHelper::ScalerInterface> y_planerizer_;
   const std::unique_ptr<GLHelper::ScalerInterface> u_planerizer_;
   const std::unique_ptr<GLHelper::ScalerInterface> v_planerizer_;
@@ -122,8 +122,8 @@ class I420ConverterImpl : public I420Converter {
   // Intermediate texture, holding the scaler's output.
   base::Optional<TextureHolder> intermediate_;
 
-  // Intermediate texture, holding the UV interim output (if the MRT shader is
-  // being used).
+  // Intermediate texture, holding the UV interim output (if the MRT shader
+  // is being used).
   base::Optional<ScopedTexture> uv_;
 
   DISALLOW_COPY_AND_ASSIGN(I420ConverterImpl);
@@ -146,6 +146,7 @@ class GLHelper::CopyTextureToImpl
   ~CopyTextureToImpl() { CancelRequests(); }
 
   void ReadbackTextureAsync(GLuint texture,
+                            GLenum texture_target,
                             const gfx::Size& dst_size,
                             unsigned char* out,
                             SkColorType color_type,
@@ -267,8 +268,8 @@ class GLHelper::CopyTextureToImpl
     CopyTextureToImpl* copy_impl_;
     ReadbackSwizzle swizzle_;
 
-    // May be null if no scaling is required. This can be changed between calls
-    // to ReadbackYUV().
+    // May be null if no scaling is required. This can be changed between
+    // calls to ReadbackYUV().
     std::unique_ptr<GLHelper::ScalerInterface> scaler_;
 
     // These are the output textures for each Y/U/V plane.
@@ -366,6 +367,7 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
 
 void GLHelper::CopyTextureToImpl::ReadbackTextureAsync(
     GLuint texture,
+    GLenum texture_target,
     const gfx::Size& dst_size,
     unsigned char* out,
     SkColorType color_type,
@@ -379,9 +381,10 @@ void GLHelper::CopyTextureToImpl::ReadbackTextureAsync(
              IsBGRAReadbackSupported()) {
     format = GL_BGRA_EXT;
   } else {
-    // Note: It's possible the GL implementation supports other readback types.
-    // However, as of this writing, no caller of this method will request a
-    // different |color_type| (i.e., requiring using some other GL format).
+    // Note: It's possible the GL implementation supports other readback
+    // types. However, as of this writing, no caller of this method will
+    // request a different |color_type| (i.e., requiring using some other GL
+    // format).
     std::move(callback).Run(false);
     return;
   }
@@ -389,12 +392,13 @@ void GLHelper::CopyTextureToImpl::ReadbackTextureAsync(
   ScopedFramebuffer dst_framebuffer(gl_);
   ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(gl_,
                                                              dst_framebuffer);
-  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
-  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                            texture, 0);
+  gl_->BindTexture(texture_target, texture);
+  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            texture_target, texture, 0);
   ReadbackAsync(dst_size, dst_size.width() * kBytesPerPixel,
                 dst_size.width() * kBytesPerPixel, out, format,
                 GL_UNSIGNED_BYTE, kBytesPerPixel, std::move(callback));
+  gl_->BindTexture(texture_target, 0);
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackDone(Request* finished_request,
@@ -490,13 +494,14 @@ GLHelper::GLHelper(GLES2Interface* gl, gpu::ContextSupport* context_support)
 GLHelper::~GLHelper() {}
 
 void GLHelper::ReadbackTextureAsync(GLuint texture,
+                                    GLenum texture_target,
                                     const gfx::Size& dst_size,
                                     unsigned char* out,
                                     SkColorType color_type,
                                     base::OnceCallback<void(bool)> callback) {
   InitCopyTextToImpl();
-  copy_texture_to_impl_->ReadbackTextureAsync(texture, dst_size, out,
-                                              color_type, std::move(callback));
+  copy_texture_to_impl_->ReadbackTextureAsync(
+      texture, texture_target, dst_size, out, color_type, std::move(callback));
 }
 
 void GLHelper::InitCopyTextToImpl() {
@@ -744,8 +749,8 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
   I420ConverterImpl::Convert(texture, src_texture_size, gfx::Vector2dF(),
                              scaler_.get(), output_rect, y_, u_, v_);
 
-  // Read back planes, one at a time. Keep the video frame alive while doing the
-  // readback.
+  // Read back planes, one at a time. Keep the video frame alive while doing
+  // the readback.
   const gfx::Rect paste_rect(paste_location, output_rect.size());
   const auto SetUpAndBindFramebuffer = [this](GLuint framebuffer,
                                               GLuint texture) {

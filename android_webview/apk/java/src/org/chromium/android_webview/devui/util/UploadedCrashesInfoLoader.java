@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Parses upload log file in crash directory where crash upload id and time are written.
@@ -67,7 +68,8 @@ public class UploadedCrashesInfoLoader extends CrashInfoLoader {
         CrashInfo info = new CrashInfo(components[2]);
         info.uploadState = CrashInfo.UploadState.UPLOADED;
         try {
-            info.uploadTime = Long.parseLong(components[0]);
+            // Log file has upload time in sec, convert it back to millisec.
+            info.uploadTime = TimeUnit.SECONDS.toMillis(Long.parseLong(components[0]));
         } catch (NumberFormatException e) {
             return null;
         }

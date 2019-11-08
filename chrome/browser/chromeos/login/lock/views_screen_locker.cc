@@ -227,25 +227,18 @@ void ViewsScreenLocker::HandleOnFocusPod(const AccountId& account_id) {
 
   focused_pod_account_id_ = base::Optional<AccountId>(account_id);
 
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id);
-  // |user| may be null in kiosk mode or unit tests.
-  if (user && user->is_logged_in() && !user->is_active()) {
-    SessionControllerClientImpl::DoSwitchActiveUser(account_id);
-  } else {
-    lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
-                                          ime_state_.get());
-    lock_screen_utils::SetKeyboardSettings(account_id);
-    WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
+  lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
+                                        ime_state_.get());
+  lock_screen_utils::SetKeyboardSettings(account_id);
+  WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
 
-    bool use_24hour_clock = false;
-    if (user_manager::known_user::GetBooleanPref(
-            account_id, prefs::kUse24HourClock, &use_24hour_clock)) {
-      g_browser_process->platform_part()
-          ->GetSystemClock()
-          ->SetLastFocusedPodHourClockType(
-              use_24hour_clock ? base::k24HourClock : base::k12HourClock);
-    }
+  bool use_24hour_clock = false;
+  if (user_manager::known_user::GetBooleanPref(
+          account_id, prefs::kUse24HourClock, &use_24hour_clock)) {
+    g_browser_process->platform_part()
+        ->GetSystemClock()
+        ->SetLastFocusedPodHourClockType(use_24hour_clock ? base::k24HourClock
+                                                          : base::k12HourClock);
   }
 }
 

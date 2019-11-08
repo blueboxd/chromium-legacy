@@ -40,7 +40,7 @@ class VirtualKeyboardTrayTest : public AshTestBase {
 TEST_F(VirtualKeyboardTrayTest, PerformActionTogglesVirtualKeyboard) {
   StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
   VirtualKeyboardTray* tray = status->virtual_keyboard_tray_for_testing();
-  tray->SetVisible(true);
+  tray->SetVisiblePreferred(true);
   ASSERT_TRUE(tray->GetVisible());
 
   // First tap should show the virtual keyboard.

@@ -7,7 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_set.h"
-#include "ui/color/color_unittest_utils.h"
+#include "ui/color/color_test_ids.h"
 #include "ui/gfx/color_palette.h"
 
 namespace ui {

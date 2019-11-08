@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "base/enterprise_util.h"
 #include "base/win/win_util.h"
 #include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
 #include "chrome/browser/win/conflicts/module_blacklist_cache_updater.h"
@@ -224,12 +223,6 @@ enum ThirdPartyFeaturesStatus {
   kNonGoogleChromeBuild,
   // The third-party features are not available on Windows 7.
   kNotAvailableWin7,
-  // The third-party features are temporarily disabled on domain-joined
-  // machines because of a known issue with third-party blocking and the
-  // IAttachmentExecute::Save() API (https://crbug.com/870998).
-  // TODO(pmonette): Move IAttachmentExecute::Save() to a utility process and
-  //                 remove this.
-  kEnterpriseManaged,
   // The ThirdPartyBlockingEnabled group policy is disabled.
   kPolicyDisabled,
   // Both the IncompatibleApplicationsWarning and the
@@ -284,9 +277,6 @@ ThirdPartyFeaturesStatus GetThirdPartyFeaturesStatus(
     return kFeatureDisabled;
   }
 
-  if (base::IsMachineExternallyManaged())
-    return kEnterpriseManaged;
-
   // The above 3 cases are the only possible reasons why the manager wouldn't
   // exist.
   NOTREACHED();
@@ -306,9 +296,6 @@ std::string GetThirdPartyFeaturesStatusString(ThirdPartyFeaturesStatus status) {
              "builds.";
     case ThirdPartyFeaturesStatus::kNotAvailableWin7:
       return "The third-party features are not available on Windows 7.";
-    case ThirdPartyFeaturesStatus::kEnterpriseManaged:
-      return "The third-party features are temporarily disabled for clients on "
-             "domain-joined machines.";
     case ThirdPartyFeaturesStatus::kPolicyDisabled:
       return "The ThirdPartyBlockingEnabled group policy is disabled.";
     case ThirdPartyFeaturesStatus::kFeatureDisabled:

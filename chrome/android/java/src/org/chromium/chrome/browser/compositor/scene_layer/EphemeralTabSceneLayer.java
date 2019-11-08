@@ -10,7 +10,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCaptionControl;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
@@ -70,18 +70,19 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
             EphemeralTabSceneLayerJni.get().createEphemeralTabLayer(mNativePtr,
                     EphemeralTabSceneLayer.this, resourceManager,
                     () -> panel.startFaviconAnimation(true));
-            int openInTabIconId = (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
-                                          && panel.canPromoteToNewTab())
+            int openInTabIconId = (OverlayPanel.isNewLayout() && panel.canPromoteToNewTab())
                     ? R.drawable.open_in_new_tab
                     : INVALID_RESOURCE_ID;
-            int dragHandlebarId = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
-                    ? R.drawable.drag_handlebar
-                    : INVALID_RESOURCE_ID;
-            int roundedBarTopId = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
-                    ? R.drawable.top_round
-                    : INVALID_RESOURCE_ID;
+            int dragHandlebarId =
+                    OverlayPanel.isNewLayout() ? R.drawable.drag_handlebar : INVALID_RESOURCE_ID;
+            int roundedBarTopId =
+                    OverlayPanel.isNewLayout() ? R.drawable.top_round : INVALID_RESOURCE_ID;
+            // The panel shadow goes all the way around in the old layout, but in the new layout
+            // the top_round resource also includes the shadow so we only need a side shadow.
+            // In either case there's just one shadow-only resource needed.
             int panelShadowResourceId = panel.getPanelShadowVisible()
-                    ? R.drawable.contextual_search_bar_background
+                    ? (OverlayPanel.isNewLayout() ? R.drawable.overlay_side_shadow
+                                                  : R.drawable.contextual_search_bar_background)
                     : INVALID_RESOURCE_ID;
             EphemeralTabSceneLayerJni.get().setResourceIds(mNativePtr, EphemeralTabSceneLayer.this,
                     title.getViewId(), panelShadowResourceId, roundedBarTopId,

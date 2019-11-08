@@ -28,6 +28,8 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray_test_api.h"
@@ -472,6 +474,52 @@ class HotseatAppListControllerImplTest
 
 // Tests with both hotseat disabled and enabled.
 INSTANTIATE_TEST_SUITE_P(, HotseatAppListControllerImplTest, testing::Bool());
+
+// Verifies that the pinned app should still show after canceling the drag from
+// AppsGridView to Shelf (https://crbug.com/1021768).
+TEST_P(HotseatAppListControllerImplTest, DragItemFromAppsGridView) {
+  // Turn on the tablet mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(IsTabletMode());
+
+  Shelf* const shelf = GetPrimaryShelf();
+
+  // Add icons with the same app id to Shelf and AppsGridView respectively.
+  ShelfViewTestAPI shelf_view_test_api(shelf->GetShelfViewForTesting());
+  std::string app_id = shelf_view_test_api.AddItem(TYPE_PINNED_APP).app_id;
+  Shell::Get()->app_list_controller()->GetModel()->AddItem(
+      std::make_unique<AppListItem>(app_id));
+
+  AppsGridView* apps_grid_view = GetAppListView()
+                                     ->app_list_main_view()
+                                     ->contents_view()
+                                     ->GetAppsContainerView()
+                                     ->apps_grid_view();
+  AppListItemView* app_list_item_view =
+      test::AppsGridViewTestApi(apps_grid_view).GetViewAtIndex(GridIndex(0, 0));
+  views::View* shelf_icon_view =
+      shelf->GetShelfViewForTesting()->view_model()->view_at(0);
+
+  // Drag the app icon from AppsGridView to Shelf. Then move the icon back to
+  // AppsGridView before drag ends.
+  GetEventGenerator()->MoveMouseTo(
+      app_list_item_view->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->PressLeftButton();
+  app_list_item_view->FireMouseDragTimerForTest();
+  GetEventGenerator()->MoveMouseTo(
+      shelf_icon_view->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->MoveMouseTo(
+      apps_grid_view->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ReleaseLeftButton();
+
+  // The icon's opacity updates at the end of animation.
+  shelf_view_test_api.RunMessageLoopUntilAnimationsDone();
+
+  // The icon is pinned before drag starts. So the shelf icon should show in
+  // spite that drag is canceled.
+  EXPECT_TRUE(shelf_icon_view->GetVisible());
+  EXPECT_EQ(1.0f, shelf_icon_view->layer()->opacity());
+}
 
 // Tests for HomeScreenDelegate::GetInitialAppListItemScreenBoundsForWindow
 // implemtenation.

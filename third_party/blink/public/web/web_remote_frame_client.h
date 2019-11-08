@@ -53,8 +53,6 @@ class WebRemoteFrameClient {
   virtual void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) {}
 
-  virtual void VisibilityChanged(blink::mojom::FrameVisibility visibility) {}
-
   // Set or clear the inert property on the remote frame.
   virtual void SetIsInert(bool) {}
 

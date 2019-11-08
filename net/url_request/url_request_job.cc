@@ -278,7 +278,8 @@ GURL URLRequestJob::ComputeReferrerForPolicy(
     URLRequest::ReferrerPolicy policy,
     const GURL& original_referrer,
     const base::Optional<url::Origin>& initiator,
-    const GURL& destination) {
+    const GURL& destination,
+    bool* same_origin_out_for_metrics) {
   bool secure_referrer_but_insecure_destination =
       original_referrer.SchemeIsCryptographic() &&
       !destination.SchemeIsCryptographic();
@@ -286,6 +287,8 @@ GURL URLRequestJob::ComputeReferrerForPolicy(
   url::Origin initiator_origin = initiator.value_or(referrer_origin);
   bool same_origin =
       initiator_origin.IsSameOriginWith(url::Origin::Create(destination));
+  if (same_origin_out_for_metrics)
+    *same_origin_out_for_metrics = same_origin;
   switch (policy) {
     case URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
       return secure_referrer_but_insecure_destination ? GURL()

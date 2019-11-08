@@ -64,8 +64,8 @@ test("color_unittests") {
     "color_mixer_unittest.cc",
     "color_provider_unittest.cc",
     "color_recipe_unittest.cc",
+    "color_test_ids.h",
     "color_transform_unittest.cc",
-    "color_unittest_utils.h",
     "run_all_unittests.cc",
   ]
 

@@ -93,32 +93,37 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // of the initial leg of the request; the caller is responsible for
   // setting the initial Referer, and the ReferrerPolicy only controls
   // what happens to the Referer while following redirects.
+  //
+  // NOTE: This enum is persisted to histograms. Do not change or reorder
+  // values.
+  // TODO(~M82): Once the Net.URLRequest.ReferrerPolicyForRequest
+  // metric is retired, remove this notice.
   enum ReferrerPolicy {
     // Clear the referrer header if the header value is HTTPS but the request
     // destination is HTTP. This is the default behavior of URLRequest.
-    CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+    CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE = 0,
     // A slight variant on CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
     // If the request destination is HTTP, an HTTPS referrer will be cleared. If
     // the request's destination is cross-origin with the referrer (but does not
     // downgrade), the referrer's granularity will be stripped down to an origin
     // rather than a full URL. Same-origin requests will send the full referrer.
-    REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
+    REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN = 1,
     // Strip the referrer down to an origin when the origin of the referrer is
     // different from the destination's origin.
-    ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+    ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN = 2,
     // Never change the referrer.
-    NEVER_CLEAR_REFERRER,
+    NEVER_CLEAR_REFERRER = 3,
     // Strip the referrer down to the origin regardless of the redirect
     // location.
-    ORIGIN,
+    ORIGIN = 4,
     // Clear the referrer when the request's referrer is cross-origin with
     // the request's destination.
-    CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN,
+    CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN = 5,
     // Strip the referrer down to the origin, but clear it entirely if the
     // referrer value is HTTPS and the destination is HTTP.
-    ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+    ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE = 6,
     // Always clear the referrer regardless of the request destination.
-    NO_REFERRER,
+    NO_REFERRER = 7,
     MAX_REFERRER_POLICY = NO_REFERRER
   };
 
@@ -818,6 +823,12 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Called when the delegate lets a request continue.  Also called on
   // cancellation.
   void OnCallToDelegateComplete();
+
+  // Records the referrer policy of the given request, bucketed by
+  // whether the request is same-origin or not. To save computation,
+  // takes this fact as a boolean parameter rather than dynamically
+  // checking.
+  void RecordReferrerGranularityMetrics(bool request_is_same_origin) const;
 
   // Contextual information used for this request. Cannot be NULL. This contains
   // most of the dependencies which are shared between requests (disk cache,

@@ -349,11 +349,6 @@ bool RenderViewHostImpl::CreateRenderView(
         mojom::DocumentScopedInterfaceBundle::New();
     main_rfh->BindInterfaceProviderRequest(mojo::MakeRequest(
         &params->main_frame_interface_bundle->interface_provider));
-    main_rfh->BindDocumentInterfaceBrokerReceiver(
-        params->main_frame_interface_bundle->document_interface_broker_content
-            .InitWithNewPipeAndPassReceiver(),
-        params->main_frame_interface_bundle->document_interface_broker_blink
-            .InitWithNewPipeAndPassReceiver());
     main_rfh->BindBrowserInterfaceBrokerReceiver(
         params->main_frame_interface_bundle->browser_interface_broker
             .InitWithNewPipeAndPassReceiver());
@@ -1022,7 +1017,7 @@ void RenderViewHostImpl::PostRenderViewReady() {
       &RenderViewHostImpl::RenderViewReady, weak_factory_.GetWeakPtr()));
 }
 
-void RenderViewHostImpl::OnGpuSwitched() {
+void RenderViewHostImpl::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) {
   OnHardwareConfigurationChanged();
 }
 

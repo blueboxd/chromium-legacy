@@ -1942,6 +1942,30 @@ TEST_F(OptimizationGuideHintsManagerTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
+       HintsFetchedAtNavigationTime_HasComponentHintButNotFetched) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_hints());
+  base::RunLoop run_loop;
+  base::HistogramTester histogram_tester;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
        HintsNotFetchedAtNavigationTime_ECT_4G) {
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
@@ -1963,6 +1987,35 @@ TEST_F(OptimizationGuideHintsManagerTest,
   run_loop.Run();
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationCalledMidFetch) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::DEFER_ALL_SCRIPT});
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so hint will attempt to be fetched.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  optimization_guide::OptimizationTargetDecision unused_target_decision;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision;
+  hints_manager()->CanApplyOptimization(
+      navigation_handle.get(),
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+      optimization_guide::proto::DEFER_ALL_SCRIPT, &unused_target_decision,
+      &optimization_type_decision, /*optimization_metadata=*/nullptr);
+
+  EXPECT_EQ(optimization_type_decision,
+            optimization_guide::OptimizationTypeDecision::
+                kHintFetchStartedButNotAvailableInTime);
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,

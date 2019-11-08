@@ -40,7 +40,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
@@ -278,10 +277,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool CanNavigate(const Frame&, const KURL& destination_url = KURL());
 
   service_manager::InterfaceProvider& GetInterfaceProvider();
-  void BindDocumentInterfaceBroker(mojo::ScopedMessagePipeHandle js_handle);
-  mojom::blink::DocumentInterfaceBroker& GetDocumentInterfaceBroker();
-  mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
-      mojo::ScopedMessagePipeHandle blink_handle);
 
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
 

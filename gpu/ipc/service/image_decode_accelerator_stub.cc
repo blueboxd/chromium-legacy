@@ -153,24 +153,8 @@ void ImageDecodeAcceleratorStub::OnScheduleImageDecode(
     uint64_t release_count) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
-  if (!channel_ || destroying_channel_) {
+  if (!channel_) {
     // The channel is no longer available, so don't do anything.
-    return;
-  }
-
-  // Make sure the decode sync token is ordered with respect to the last decode
-  // request.
-  if (release_count <= last_release_count_) {
-    DLOG(ERROR) << "Out-of-order decode sync token";
-    OnError();
-    return;
-  }
-  last_release_count_ = release_count;
-
-  // Make sure the output dimensions are not too small.
-  if (decode_params.output_size.IsEmpty()) {
-    DLOG(ERROR) << "Output dimensions are too small";
-    OnError();
     return;
   }
 
@@ -200,7 +184,7 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     uint64_t decode_release_count) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
-  if (!channel_ || destroying_channel_) {
+  if (!channel_) {
     // The channel is no longer available, so don't do anything.
     return;
   }
@@ -208,6 +192,29 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   DCHECK(!pending_completed_decodes_.empty());
   std::unique_ptr<ImageDecodeAcceleratorWorker::DecodeResult> completed_decode =
       std::move(pending_completed_decodes_.front());
+  pending_completed_decodes_.pop();
+
+  // Regardless of what happens next, make sure the sync token gets released and
+  // the sequence gets disabled if there are no more completed decodes after
+  // this. base::Unretained(this) is safe because *this outlives the
+  // ScopedClosureRunner.
+  base::ScopedClosureRunner finalizer(
+      base::BindOnce(&ImageDecodeAcceleratorStub::FinishCompletedDecode,
+                     base::Unretained(this), decode_release_count));
+
+  if (!completed_decode) {
+    DLOG(ERROR) << "The image could not be decoded";
+    return;
+  }
+
+  // TODO(crbug.com/995883): the output_size parameter is going away, so this
+  // validation is not needed. Checking if the size is too small should happen
+  // at the level of the decoder (since that's the component that's aware of its
+  // own capabilities).
+  if (params.output_size.IsEmpty()) {
+    DLOG(ERROR) << "Output dimensions are too small";
+    return;
+  }
 
   // Gain access to the transfer cache through the GpuChannelManager's
   // SharedContextState. We will also use that to get a GrContext that will be
@@ -217,7 +224,6 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
       channel_->gpu_channel_manager()->GetSharedContextState(&context_result);
   if (context_result != ContextResult::kSuccess) {
     DLOG(ERROR) << "Unable to obtain the SharedContextState";
-    OnError();
     return;
   }
   DCHECK(shared_context_state);
@@ -227,17 +233,14 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   // other graphics APIs).
   if (!shared_context_state->IsGLInitialized()) {
     DLOG(ERROR) << "GL has not been initialized";
-    OnError();
     return;
   }
   if (!shared_context_state->gr_context()) {
     DLOG(ERROR) << "Could not get the GrContext";
-    OnError();
     return;
   }
   if (!shared_context_state->MakeCurrent(nullptr /* surface */)) {
     DLOG(ERROR) << "Could not MakeCurrent the shared context";
-    OnError();
     return;
   }
 
@@ -269,7 +272,6 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   if (!safe_uv_width.AssignIfValid(&uv_width) ||
       !safe_uv_height.AssignIfValid(&uv_height)) {
     DLOG(ERROR) << "Could not calculate subsampled dimensions";
-    OnError();
     return;
   }
   gfx::Size uv_plane_size = gfx::Size(uv_width, uv_height);
@@ -343,13 +345,11 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     }
     if (!plane_image) {
       DLOG(ERROR) << "Could not create GL image";
-      OnError();
       return;
     }
     resource->gl_image = std::move(plane_image);
     if (!resource->gl_image->BindTexImage(GL_TEXTURE_EXTERNAL_OES)) {
       DLOG(ERROR) << "Could not bind GL image to texture";
-      OnError();
       return;
     }
 
@@ -372,7 +372,6 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
         resource);
     if (!plane_sk_images[plane]) {
       DLOG(ERROR) << "Could not create planar SkImage";
-      OnError();
       return;
     }
     // No need for us to call the resource cleaner. Skia should do that.
@@ -383,7 +382,6 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   // |native_pixmap_handle| member of a GpuMemoryBufferHandle.
   NOTIMPLEMENTED()
       << "Image decode acceleration is unsupported for this platform";
-  OnError();
   return;
 #endif
 
@@ -395,7 +393,6 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
       channel_->LookupCommandBuffer(params.raster_decoder_route_id);
   if (!command_buffer) {
     DLOG(ERROR) << "Could not find the command buffer";
-    OnError();
     return;
   }
   scoped_refptr<Buffer> handle_buffer =
@@ -403,13 +400,11 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   if (!DiscardableHandleBase::ValidateParameters(
           handle_buffer.get(), params.discardable_handle_shm_offset)) {
     DLOG(ERROR) << "Could not validate the discardable handle parameters";
-    OnError();
     return;
   }
   DCHECK(command_buffer->decoder_context());
   if (command_buffer->decoder_context()->GetRasterDecoderId() < 0) {
     DLOG(ERROR) << "Could not get the raster decoder ID";
-    OnError();
     return;
   }
 
@@ -441,21 +436,18 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
                  completed_decode->yuv_color_space,
                  completed_decode->buffer_byte_size, params.needs_mips)) {
       DLOG(ERROR) << "Could not create and insert the transfer cache entry";
-      OnError();
       return;
     }
   }
   DCHECK(notify_gl_state_changed);
   notify_gl_state_changed->RunAndReset();
+}
 
-  // All done! The decoded image can now be used for rasterization, so we can
-  // release the decode sync token.
+void ImageDecodeAcceleratorStub::FinishCompletedDecode(
+    uint64_t decode_release_count) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  lock_.AssertAcquired();
   sync_point_client_state_->ReleaseFenceSync(decode_release_count);
-
-  // If there are no more completed decodes to be processed, we can disable the
-  // sequence: when the next decode is completed, the sequence will be
-  // re-enabled.
-  pending_completed_decodes_.pop();
   if (pending_completed_decodes_.empty())
     channel_->scheduler()->DisableSequence(sequence_);
 }
@@ -464,19 +456,13 @@ void ImageDecodeAcceleratorStub::OnDecodeCompleted(
     gfx::Size expected_output_size,
     std::unique_ptr<ImageDecodeAcceleratorWorker::DecodeResult> result) {
   base::AutoLock lock(lock_);
-  if (!channel_ || destroying_channel_) {
+  if (!channel_) {
     // The channel is no longer available, so don't do anything.
     return;
   }
 
-  if (!result) {
-    DLOG(ERROR) << "The decode failed";
-    OnError();
-    return;
-  }
-
   // A sanity check on the output of the decoder.
-  DCHECK(expected_output_size == result->visible_size);
+  DCHECK(!result || expected_output_size == result->visible_size);
 
   // The decode is ready to be processed: add it to |pending_completed_decodes_|
   // so that ProcessCompletedDecode() can pick it up.
@@ -486,21 +472,6 @@ void ImageDecodeAcceleratorStub::OnDecodeCompleted(
   // decodes is 1. If there are more, the sequence should already be enabled.
   if (pending_completed_decodes_.size() == 1u)
     channel_->scheduler()->EnableSequence(sequence_);
-}
-
-void ImageDecodeAcceleratorStub::OnError() {
-  lock_.AssertAcquired();
-  DCHECK(channel_);
-
-  // Trigger the destruction of the channel and stop processing further
-  // completed decodes, even if they're successful. We can't call
-  // GpuChannel::OnChannelError() directly because that will end up calling
-  // ImageDecodeAcceleratorStub::Shutdown() while |lock_| is still acquired. So,
-  // we post a task to the main thread instead.
-  destroying_channel_ = true;
-  channel_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GpuChannel::OnChannelError, channel_->AsWeakPtr()));
 }
 
 }  // namespace gpu

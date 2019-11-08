@@ -13,30 +13,30 @@ namespace tracing {
 TEST(HprofBufferTest, VerifyBasicGetBytes) {
   unsigned char file_data[7]{1, 1, 1, 1, 1, 1, 1};
   HprofBuffer hprof(file_data, 7);
-  EXPECT_EQ(hprof.GetOneByte(), (uint32_t)1);
-  EXPECT_EQ(hprof.GetTwoBytes(), (uint32_t)257);
-  EXPECT_EQ(hprof.GetFourBytes(), (uint32_t)16843009);
+  EXPECT_EQ(hprof.GetOneByte(), 1u);
+  EXPECT_EQ(hprof.GetTwoBytes(), 257u);
+  EXPECT_EQ(hprof.GetFourBytes(), 16843009u);
   EXPECT_EQ(hprof.HasRemaining(), false);
 }
 
 TEST(HprofBufferTest, VerifyBasicGetId) {
   unsigned char file_data[12]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
   HprofBuffer hprof(file_data, 12);
-  EXPECT_EQ(hprof.GetId(), (uint64_t)16843009);
+  EXPECT_EQ(hprof.GetId(), 16843009u);
   hprof.set_id_size(8);
-  EXPECT_EQ(hprof.GetId(), (uint64_t)72340172838076673);
+  EXPECT_EQ(hprof.GetId(), 72340172838076673u);
   EXPECT_EQ(hprof.HasRemaining(), false);
 }
 
 TEST(HprofBufferTest, VerifyBasicPositionalMethods) {
   unsigned char file_data[4]{1, 2, 3, 4};
   HprofBuffer hprof(file_data, 4);
-  EXPECT_EQ(hprof.GetOneByte(), (uint32_t)1);
+  EXPECT_EQ(hprof.GetOneByte(), 1u);
   hprof.Skip(2);
-  EXPECT_EQ(hprof.GetOneByte(), (uint32_t)4);
+  EXPECT_EQ(hprof.GetOneByte(), 4u);
   EXPECT_EQ(hprof.HasRemaining(), false);
 
   hprof.set_position(1);
-  EXPECT_EQ(hprof.GetOneByte(), (uint32_t)2);
+  EXPECT_EQ(hprof.GetOneByte(), 2u);
 }
 }  // namespace tracing

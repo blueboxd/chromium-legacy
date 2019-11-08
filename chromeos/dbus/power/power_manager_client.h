@@ -82,6 +82,9 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
     virtual void ScreenBrightnessChanged(
         const power_manager::BacklightBrightnessChange& change) {}
 
+    // Called when the ambient light changed.
+    virtual void AmbientColorChanged(const int32_t color_temperature) {}
+
     // Called when the keyboard brightness is changed.
     virtual void KeyboardBrightnessChanged(
         const power_manager::BacklightBrightnessChange& change) {}

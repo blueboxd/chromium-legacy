@@ -254,13 +254,6 @@ void GvrDevice::StopPresenting() {
   exclusive_controller_receiver_.reset();
 }
 
-void GvrDevice::OnListeningForActivate(bool listening) {
-  GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
-  if (!delegate_provider)
-    return;
-  delegate_provider->OnListeningForActivateChanged(listening);
-}
-
 void GvrDevice::PauseTracking() {
   paused_ = true;
   if (gvr_api_ && non_presenting_context_.obj()) {
@@ -295,11 +288,6 @@ void GvrDevice::OnDisplayConfigurationChanged(JNIEnv* env,
                                               const JavaRef<jobject>& obj) {
   DCHECK(gvr_api_);
   SetVRDisplayInfo(CreateVRDisplayInfo(gvr_api_.get(), GetId()));
-}
-
-void GvrDevice::Activate(mojom::VRDisplayEventReason reason,
-                         base::Callback<void(bool)> on_handled) {
-  OnActivate(reason, std::move(on_handled));
 }
 
 void GvrDevice::Init(base::OnceCallback<void(bool)> on_finished) {

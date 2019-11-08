@@ -78,15 +78,10 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/net/nss_context.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -98,19 +93,6 @@
 #include "services/network/cert_verifier_with_trust_anchors.h"
 #include "services/network/cert_verify_proc_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(USE_NSS_CERTS)
-#include "chrome/browser/ui/crypto_module_delegate_nss.h"
-#include "net/ssl/client_cert_store_nss.h"
-#endif  // defined(USE_NSS_CERTS)
-
-#if defined(OS_WIN)
-#include "net/ssl/client_cert_store_win.h"
-#endif  // defined(OS_WIN)
-
-#if defined(OS_MACOSX)
-#include "net/ssl/client_cert_store_mac.h"
-#endif  // defined(OS_MACOSX)
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -255,18 +237,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK(protocol_handler_registry);
 
 #if defined(OS_CHROMEOS)
-  // Enable client certificates for the Chrome OS sign-in frame, if this feature
-  // is not disabled by a flag.
-  // Note that while this applies to the whole sign-in profile, client
-  // certificates will only be selected for the StoragePartition currently used
-  // in the sign-in frame (see SigninPartitionManager).
-  if (chromeos::switches::IsSigninFrameClientCertsEnabled() &&
-      chromeos::ProfileHelper::IsSigninProfile(profile)) {
-    // We only need the system slot for client certificates, not in NSS context
-    // (the sign-in profile's NSS context is not initialized).
-    params->system_key_slot_use_type = SystemKeySlotUseType::kUseForClientAuth;
-  }
-
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   // No need to initialize NSS for users with empty username hash:
@@ -280,20 +250,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
                    base::BindOnce(&StartNSSInitOnIOThread, user->GetAccountId(),
                                   user->username_hash(), profile->GetPath()));
 
-    // Use the device-wide system key slot only if the user is affiliated on
-    // the device.
     if (user->IsAffiliated()) {
-      params->system_key_slot_use_type =
-          SystemKeySlotUseType::kUseForClientAuthAndCertManagement;
+      params->user_is_affiliated = true;
     }
-  }
-
-  chromeos::CertificateProviderService* cert_provider_service =
-      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
-          profile);
-  if (cert_provider_service) {
-    params->certificate_provider =
-        cert_provider_service->CreateCertificateProvider();
   }
 #endif
 
@@ -318,9 +277,6 @@ ProfileIOData::ProfileParams::~ProfileParams() = default;
 
 ProfileIOData::ProfileIOData()
     : initialized_(false),
-#if defined(OS_CHROMEOS)
-      system_key_slot_use_type_(SystemKeySlotUseType::kNone),
-#endif
       resource_context_(new ResourceContext(this)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -412,38 +368,6 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
   return host_content_settings_map_.get();
 }
 
-std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
-  if (!client_cert_store_factory_.is_null())
-    return client_cert_store_factory_.Run();
-#if defined(OS_CHROMEOS)
-  bool use_system_key_slot =
-      system_key_slot_use_type_ == SystemKeySlotUseType::kUseForClientAuth ||
-      system_key_slot_use_type_ ==
-          SystemKeySlotUseType::kUseForClientAuthAndCertManagement;
-  return std::unique_ptr<net::ClientCertStore>(
-      new chromeos::ClientCertStoreChromeOS(
-          certificate_provider_ ? certificate_provider_->Copy() : nullptr,
-          use_system_key_slot, username_hash_,
-          base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
-                     kCryptoModulePasswordClientAuth)));
-#elif defined(USE_NSS_CERTS)
-  return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(
-      base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
-                 kCryptoModulePasswordClientAuth)));
-#elif defined(OS_WIN)
-  return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
-#elif defined(OS_MACOSX)
-  return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreMac());
-#elif defined(OS_ANDROID)
-  // Android does not use the ClientCertStore infrastructure. On Android client
-  // cert matching is done by the OS as part of the call to show the cert
-  // selection dialog.
-  return nullptr;
-#else
-#error Unknown platform.
-#endif
-}
-
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
     : io_data_(io_data) {
   DCHECK(io_data);
@@ -468,18 +392,14 @@ void ProfileIOData::Init() const {
 
 #if defined(OS_CHROMEOS)
   username_hash_ = profile_params_->username_hash;
-  system_key_slot_use_type_ = profile_params_->system_key_slot_use_type;
   // If we're using the system slot for certificate management, we also must
   // have access to the user's slots.
-  DCHECK(!(username_hash_.empty() &&
-           system_key_slot_use_type_ ==
-               SystemKeySlotUseType::kUseForClientAuthAndCertManagement));
-  if (system_key_slot_use_type_ ==
-      SystemKeySlotUseType::kUseForClientAuthAndCertManagement) {
+  DCHECK(!(username_hash_.empty() && profile_params_->user_is_affiliated));
+  // Use the device-wide system key slot only if the user is affiliated on
+  // the device.
+  if (profile_params_->user_is_affiliated) {
     EnableNSSSystemKeySlotForResourceContext(resource_context_.get());
   }
-
-  certificate_provider_ = std::move(profile_params_->certificate_provider);
 #endif
 
   profile_params_.reset();

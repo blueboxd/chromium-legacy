@@ -314,6 +314,7 @@ TEST_F(ProfileInfoCacheTest, ConcatenateGaiaNameAndProfileName) {
   GetCache()->SetLocalProfileNameOfProfileAtIndex(index1, ASCIIToUTF16("patt"));
   EXPECT_EQ(ASCIIToUTF16("Patt"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index1));
+
   // Multiple profiles.
   // Add another profile with the same GAIA name and a default profile name.
   GetCache()->AddProfileToCache(
@@ -383,27 +384,19 @@ TEST_F(ProfileInfoCacheTest, ConcatenateGaiaNameAndProfileName) {
   EXPECT_EQ(ASCIIToUTF16("Patt (Personal)"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index3));
 
-  // Set one of the profile names to be equal to GAIA name, we should still show
-  // the profile name to clear ambiguity.
+  // Set one of the profile names to be equal to GAIA name, we should show
+  // the profile name even if it is Person n to clear ambiguity.
   GetCache()->SetLocalProfileNameOfProfileAtIndex(index3, ASCIIToUTF16("patt"));
-  EXPECT_EQ(ASCIIToUTF16("Patt"),
-            GetCache()->GetNameToDisplayOfProfileAtIndex(index1));
-  EXPECT_EQ(ASCIIToUTF16("Patt (patt)"),
-            GetCache()->GetNameToDisplayOfProfileAtIndex(index3));
-
-  // One profile with a custom name and another profile with a custom name equal
-  // to GAIA name.
-  GetCache()->SetProfileIsUsingDefaultNameAtIndex(index1, false);
-  GetCache()->SetLocalProfileNameOfProfileAtIndex(index1, ASCIIToUTF16("Work"));
-  EXPECT_EQ(ASCIIToUTF16("Patt (Work)"),
+  EXPECT_EQ(ASCIIToUTF16("Patt (Person 1)"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index1));
   EXPECT_EQ(ASCIIToUTF16("Patt"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index3));
 
+  // Never show the profile name if it is equal GAIA name.
   GetCache()->SetLocalProfileNameOfProfileAtIndex(index1, ASCIIToUTF16("Patt"));
-  EXPECT_EQ(ASCIIToUTF16("Patt (Patt)"),
+  EXPECT_EQ(ASCIIToUTF16("Patt"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index1));
-  EXPECT_EQ(ASCIIToUTF16("Patt (patt)"),
+  EXPECT_EQ(ASCIIToUTF16("Patt"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index3));
   EXPECT_EQ(ASCIIToUTF16("Olly"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index2));

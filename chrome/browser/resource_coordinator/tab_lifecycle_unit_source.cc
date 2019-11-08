@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
@@ -23,7 +24,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/public/graph/page_node.h"
-#include "components/performance_manager/public/web_contents_proxy.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -318,6 +318,31 @@ void TabLifecycleUnitSource::OnTabInserted(TabStripModel* tab_strip_model,
     lifecycle_unit->AddObserver(new DiscardMetricsLifecycleUnitObserver());
     lifecycle_unit->AddObserver(new TracingLifecycleUnitObserver());
 
+    auto page_node =
+        performance_manager::PerformanceManager::GetPageNodeForWebContents(
+            contents);
+
+    auto task_runner =
+        base::CreateSingleThreadTaskRunner({base::CurrentThread()});
+    performance_manager::PerformanceManager::CallOnGraph(
+        FROM_HERE,
+        base::BindOnce(
+            [](base::WeakPtr<performance_manager::PageNode> page_node,
+               scoped_refptr<base::SingleThreadTaskRunner> runner,
+               performance_manager::Graph* graph) {
+              if (!page_node)
+                return;
+              runner->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(
+                      &TabLifecycleUnitSource::SetInitialStateFromPageNodeData,
+                      page_node->GetContentsProxy(),
+                      page_node->GetOriginTrialFreezePolicy(),
+                      page_node->IsHoldingWebLock(),
+                      page_node->IsHoldingIndexedDBLock()));
+            },
+            std::move(page_node), task_runner));
+
     NotifyLifecycleUnitCreated(lifecycle_unit);
   }
 }
@@ -412,6 +437,20 @@ void TabLifecycleUnitSource::OnLifecycleStateChanged(
   // navigation.
   if (lifecycle_unit)
     lifecycle_unit->UpdateLifecycleState(state);
+}
+
+// static
+void TabLifecycleUnitSource::SetInitialStateFromPageNodeData(
+    const performance_manager::WebContentsProxy& contents_proxy,
+    performance_manager::mojom::InterventionPolicy origin_trial_policy,
+    bool is_holding_weblock,
+    bool is_holding_indexeddb_lock) {
+  if (!contents_proxy.Get())
+    return;
+  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(contents_proxy.Get());
+  DCHECK(lifecycle_unit);
+  lifecycle_unit->SetInitialStateFromPageNodeData(
+      origin_trial_policy, is_holding_weblock, is_holding_indexeddb_lock);
 }
 
 // static

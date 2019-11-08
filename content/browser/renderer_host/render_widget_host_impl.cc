@@ -3353,4 +3353,9 @@ void RenderWidgetHostImpl::OnZoomToFindInPageRectInMainFrame(
                                                    transformed_rect_to_zoom));
 }
 
+gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {
+  auto* root_view = view_->GetRootView();
+  return root_view->GetVisibleViewportSize();
+}
+
 }  // namespace content

@@ -143,8 +143,7 @@ void FrameView::UpdateFrameVisibility(bool intersects_viewport) {
   }
   if (frame_visibility != frame_visibility_) {
     frame_visibility_ = frame_visibility;
-    if (FrameClient* client = GetFrame().Client())
-      client->VisibilityChanged(frame_visibility);
+    VisibilityChanged(frame_visibility);
   }
 }
 

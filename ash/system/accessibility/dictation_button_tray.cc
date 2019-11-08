@@ -95,7 +95,7 @@ void DictationButtonTray::UpdateIcon(bool dictation_active) {
 void DictationButtonTray::UpdateVisibility() {
   bool is_visible =
       Shell::Get()->accessibility_controller()->dictation_enabled();
-  SetVisible(is_visible);
+  SetVisiblePreferred(is_visible);
 }
 
 void DictationButtonTray::CheckDictationStatusAndUpdateIcon() {

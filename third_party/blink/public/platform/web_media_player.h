@@ -430,6 +430,12 @@ class WebMediaPlayer {
   // empty GURL, which will be interpreted as "use the original URL".
   virtual GURL GetSrcAfterRedirects() { return GURL(); }
 
+  // Register a request to be notified the next time a video frame is presented
+  // to the compositor. The video frame and its metadata will be surfaced via
+  // WebMediaPlayerClient::OnRequestAnimationFrame().
+  // TODO(https://crbug.com/1022186): Add pointer to spec.
+  virtual void RequestAnimationFrame() {}
+
   virtual base::WeakPtr<WebMediaPlayer> AsWeakPtr() = 0;
 };
 

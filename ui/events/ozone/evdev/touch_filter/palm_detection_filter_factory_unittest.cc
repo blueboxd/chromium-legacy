@@ -42,6 +42,9 @@ class PalmDetectionFilterFactoryTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PalmDetectionFilterFactoryTest);
 };
 
+class PalmDetectionFilterFactoryDeathTest
+    : public PalmDetectionFilterFactoryTest {};
+
 TEST_F(PalmDetectionFilterFactoryTest, AllDisabled) {
   scoped_feature_list_->InitWithFeatures(
       {}, {ui::kEnableHeuristicPalmDetectionFilter,
@@ -114,4 +117,32 @@ TEST_F(PalmDetectionFilterFactoryTest, NeuralBeatsHeuristic) {
   ASSERT_EQ(NeuralStylusPalmDetectionFilter::kFilterName,
             palm_filter->FilterNameForTesting());
 }
+
+TEST_F(PalmDetectionFilterFactoryTest, ParseTest) {
+  EXPECT_EQ(std::vector<float>(), internal::ParseRadiusPolynomial(""));
+  // Note we test for whitespace trimming.
+  EXPECT_EQ(std::vector<float>({3.7, 2.91, 15.19191}),
+            internal::ParseRadiusPolynomial("3.7, 2.91, 15.19191  "));
+}
+
+TEST_F(PalmDetectionFilterFactoryDeathTest, BadParseRecovery) {
+  // in debug, die. In non debug, expect {}
+  EXPECT_DEBUG_DEATH(EXPECT_EQ(std::vector<float>(),
+                               internal::ParseRadiusPolynomial("cheese")),
+                     "Unable to parse.*cheese");
+}
+
+TEST_F(PalmDetectionFilterFactoryDeathTest, BadNeuralParamParse) {
+  scoped_feature_list_->InitWithFeaturesAndParameters(
+      {base::test::ScopedFeatureList::FeatureAndParams(
+          ui::kEnableNeuralPalmDetectionFilter,
+          {
+              {"neural_palm_radius_polynomial", "1.0,chicken"},
+          })},
+      {ui::kEnableHeuristicPalmDetectionFilter});
+  EXPECT_DEBUG_DEATH(CreatePalmDetectionFilter(nocturne_touchscreen_info_,
+                                               &shared_palm_state_),
+                     "Unable to parse.*chicken");
+}
+
 }  // namespace ui

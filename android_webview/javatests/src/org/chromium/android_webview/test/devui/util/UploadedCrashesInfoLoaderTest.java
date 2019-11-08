@@ -26,6 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Unit tests for UploadedCrashesInfoLoader.
@@ -33,8 +34,9 @@ import java.util.List;
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS)
 public class UploadedCrashesInfoLoaderTest {
-    private static final String TEST_UPLOAD_TIME_STR = "1234567890";
-    private static final long TEST_UPLOAD_TIME = Long.parseLong(TEST_UPLOAD_TIME_STR);
+    private static final String TEST_UPLOAD_TIME_SEC_STR = "1234567890";
+    private static final long TEST_UPLOAD_TIME_MILLI =
+            TimeUnit.SECONDS.toMillis(Long.parseLong(TEST_UPLOAD_TIME_SEC_STR));
     private static final String TEST_UPLOAD_ID = "0123456789abcdef";
     private static final String TEST_LOCAL_ID = "fedcba9876543210";
 
@@ -64,7 +66,7 @@ public class UploadedCrashesInfoLoaderTest {
     @SmallTest
     public void testParseSingleEntry() throws IOException {
         List<String> logs = new ArrayList<>();
-        logs.add(TEST_UPLOAD_TIME_STR + "," + TEST_UPLOAD_ID + "," + TEST_LOCAL_ID);
+        logs.add(TEST_UPLOAD_TIME_SEC_STR + "," + TEST_UPLOAD_ID + "," + TEST_LOCAL_ID);
         writeUploadLogs(mLogFile, logs);
 
         UploadedCrashesInfoLoader crashesInfoLoader = new UploadedCrashesInfoLoader(mLogFile);
@@ -73,7 +75,7 @@ public class UploadedCrashesInfoLoaderTest {
         Assert.assertEquals(1, infoList.size());
 
         CrashInfo crashInfo = infoList.get(0);
-        Assert.assertEquals(TEST_UPLOAD_TIME, crashInfo.uploadTime);
+        Assert.assertEquals(TEST_UPLOAD_TIME_MILLI, crashInfo.uploadTime);
         Assert.assertEquals(TEST_UPLOAD_ID, crashInfo.uploadId);
         Assert.assertEquals(TEST_LOCAL_ID, crashInfo.localId);
         Assert.assertEquals(UploadState.UPLOADED, crashInfo.uploadState);
@@ -84,7 +86,7 @@ public class UploadedCrashesInfoLoaderTest {
     public void testParseMultipleEntries() throws IOException {
         List<String> logs = new ArrayList<>();
         for (int i = 1; i <= 4; ++i) {
-            String testEntry = TEST_UPLOAD_TIME_STR + ","
+            String testEntry = TEST_UPLOAD_TIME_SEC_STR + ","
                     + "upload" + Integer.toString(i) + ","
                     + "local" + Integer.toString(i);
             logs.add(testEntry);
@@ -97,7 +99,7 @@ public class UploadedCrashesInfoLoaderTest {
         Assert.assertEquals(4, infoList.size());
         for (int i = 1; i <= 4; ++i) {
             CrashInfo crashInfo = infoList.get(i - 1);
-            Assert.assertEquals(TEST_UPLOAD_TIME, crashInfo.uploadTime);
+            Assert.assertEquals(TEST_UPLOAD_TIME_MILLI, crashInfo.uploadTime);
             Assert.assertEquals("upload" + Integer.toString(i), crashInfo.uploadId);
             Assert.assertEquals("local" + Integer.toString(i), crashInfo.localId);
             Assert.assertEquals(UploadState.UPLOADED, crashInfo.uploadState);
@@ -110,7 +112,7 @@ public class UploadedCrashesInfoLoaderTest {
         List<String> logs = new ArrayList<>();
         // Valid logs
         for (int i = 1; i <= 2; ++i) {
-            String testEntry = TEST_UPLOAD_TIME_STR + ","
+            String testEntry = TEST_UPLOAD_TIME_SEC_STR + ","
                     + "upload" + Integer.toString(i) + ","
                     + "local" + Integer.toString(i);
             logs.add(testEntry);
@@ -131,7 +133,7 @@ public class UploadedCrashesInfoLoaderTest {
         // too many components
         logs.add("123456789,1a2b3c,4d5e6f,1011121314");
         for (int i = 3; i <= 4; ++i) {
-            String testEntry = TEST_UPLOAD_TIME_STR + ","
+            String testEntry = TEST_UPLOAD_TIME_SEC_STR + ","
                     + "upload" + Integer.toString(i) + ","
                     + "local" + Integer.toString(i);
             logs.add(testEntry);
@@ -144,7 +146,7 @@ public class UploadedCrashesInfoLoaderTest {
         Assert.assertEquals(4, infoList.size());
         for (int i = 1; i <= 4; ++i) {
             CrashInfo crashInfo = infoList.get(i - 1);
-            Assert.assertEquals(TEST_UPLOAD_TIME, crashInfo.uploadTime);
+            Assert.assertEquals(TEST_UPLOAD_TIME_MILLI, crashInfo.uploadTime);
             Assert.assertEquals("upload" + Integer.toString(i), crashInfo.uploadId);
             Assert.assertEquals("local" + Integer.toString(i), crashInfo.localId);
             Assert.assertEquals(UploadState.UPLOADED, crashInfo.uploadState);

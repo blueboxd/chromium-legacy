@@ -1351,11 +1351,23 @@ void ShelfView::EndDrag(bool cancel) {
   if (drag_and_drop_item_pinned_ && cancel) {
     model_->UnpinAppWithID(drag_and_drop_shelf_id_.app_id);
   } else if (drag_and_drop_view) {
+    std::unique_ptr<gfx::AnimationDelegate> animation_delegate;
+
+    if (chromeos::switches::ShouldShowScrollableShelf()) {
+      // Resets the dragged view's opacity at the end of drag. Otherwise, if
+      // the app is already pinned on shelf before drag starts, the dragged view
+      // will be invisible when drag ends.
+      animation_delegate = std::make_unique<StartFadeAnimationDelegate>(
+          this, drag_and_drop_view);
+    }
+
     if (cancel) {
       // When a hosted drag gets canceled, the item can remain in the same slot
       // and it might have moved within the bounds. In that case the item need
       // to animate back to its correct location.
       AnimateToIdealBounds();
+      bounds_animator_->SetAnimationDelegate(drag_and_drop_view,
+                                             std::move(animation_delegate));
     } else {
       drag_and_drop_view->SetSize(pre_drag_and_drop_size_);
     }

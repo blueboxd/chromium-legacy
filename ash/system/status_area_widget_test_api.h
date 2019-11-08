@@ -24,6 +24,8 @@ class StatusAreaWidgetTestApi : public mojom::StatusAreaWidgetTestApi {
   // mojom::StatusAreaWidgetTestApi:
   void TapSelectToSpeakTray(TapSelectToSpeakTrayCallback callback) override;
 
+  void SetCollapseState(StatusAreaWidget::CollapseState collapse_state);
+
  private:
   StatusAreaWidget* const widget_;
 

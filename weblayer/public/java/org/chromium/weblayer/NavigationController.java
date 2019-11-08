@@ -148,49 +148,49 @@ public final class NavigationController {
         @Override
         public void navigationStarted(IClientNavigation navigation) {
             for (NavigationCallback callback : mCallbacks) {
-                callback.navigationStarted((Navigation) navigation);
+                callback.onNavigationStarted((Navigation) navigation);
             }
         }
 
         @Override
         public void navigationRedirected(IClientNavigation navigation) {
             for (NavigationCallback callback : mCallbacks) {
-                callback.navigationRedirected((Navigation) navigation);
+                callback.onNavigationRedirected((Navigation) navigation);
             }
         }
 
         @Override
         public void readyToCommitNavigation(IClientNavigation navigation) {
             for (NavigationCallback callback : mCallbacks) {
-                callback.readyToCommitNavigation((Navigation) navigation);
+                callback.onReadyToCommitNavigation((Navigation) navigation);
             }
         }
 
         @Override
         public void navigationCompleted(IClientNavigation navigation) {
             for (NavigationCallback callback : mCallbacks) {
-                callback.navigationCompleted((Navigation) navigation);
+                callback.onNavigationCompleted((Navigation) navigation);
             }
         }
 
         @Override
         public void navigationFailed(IClientNavigation navigation) {
             for (NavigationCallback callback : mCallbacks) {
-                callback.navigationFailed((Navigation) navigation);
+                callback.onNavigationFailed((Navigation) navigation);
             }
         }
 
         @Override
         public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
             for (NavigationCallback callback : mCallbacks) {
-                callback.loadStateChanged(isLoading, toDifferentDocument);
+                callback.onLoadStateChanged(isLoading, toDifferentDocument);
             }
         }
 
         @Override
         public void loadProgressChanged(double progress) {
             for (NavigationCallback callback : mCallbacks) {
-                callback.loadProgressChanged(progress);
+                callback.onLoadProgressChanged(progress);
             }
         }
 

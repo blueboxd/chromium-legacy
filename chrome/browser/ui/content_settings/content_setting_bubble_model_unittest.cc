@@ -863,7 +863,7 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
 
   void RegisterWithOSAsDefaultClient(
       const std::string& protocol,
-      ProtocolHandlerRegistry* registry) override {
+      shell_integration::DefaultWebClientWorkerCallback callback) override {
     VLOG(1) << "Register With OS";
   }
 };

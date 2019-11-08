@@ -105,7 +105,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // it was updated. In certain applications, one might need to periodically
   // call UpdateCurrentFrameIfStale on |task_runner_| to drive the updates.
   // Can be called from any thread.
-  scoped_refptr<VideoFrame> GetCurrentFrameOnAnyThread();
+  virtual scoped_refptr<VideoFrame> GetCurrentFrameOnAnyThread();
 
   // VideoRendererSink implementation. These methods must be called from the
   // same thread (typically the media thread).
@@ -132,7 +132,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Must be called on the compositor thread.
   virtual void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb);
 
-  void SetOnFramePresentedCallback(OnNewFramePresentedCB present_cb);
+  virtual void SetOnFramePresentedCallback(OnNewFramePresentedCB present_cb);
 
   // Updates the rotation information for frames given to |submitter_|.
   void UpdateRotation(VideoRotation rotation);

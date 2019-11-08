@@ -880,7 +880,7 @@ ContentBrowserClient::GetWebAuthenticationRequestDelegate(
 }
 
 std::unique_ptr<net::ClientCertStore>
-ContentBrowserClient::CreateClientCertStore(ResourceContext* resource_context) {
+ContentBrowserClient::CreateClientCertStore(BrowserContext* browser_context) {
   return nullptr;
 }
 

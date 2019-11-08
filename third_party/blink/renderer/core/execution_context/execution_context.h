@@ -36,7 +36,6 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -273,10 +272,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual CoreProbeSink* GetProbeSink() { return nullptr; }
 
   virtual service_manager::InterfaceProvider* GetInterfaceProvider() {
-    return nullptr;
-  }
-
-  virtual mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() {
     return nullptr;
   }
 

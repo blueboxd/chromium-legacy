@@ -749,6 +749,10 @@ const base::Feature kScriptStreamingOnPreload{"ScriptStreamingOnPreload",
 const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether Client Hints are guarded by FeaturePolicy.
+const base::Feature kFeaturePolicyForClientHints{
+    "FeaturePolicyForClientHints", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use ThreadPriority::DISPLAY for browser UI and IO threads.
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 const base::Feature kBrowserUseDisplayThreadPriority{

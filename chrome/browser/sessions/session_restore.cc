@@ -22,6 +22,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -178,11 +179,8 @@ class SessionRestoreImpl : public BrowserListObserver {
 
       // Restore and show the browser.
       const int initial_tab_count = 0;
-      int selected_tab_index =
-          std::max(0, std::min((*i)->selected_tab_index,
-                               static_cast<int>((*i)->tabs.size()) - 1));
       RestoreTabsToBrowser(*(*i), browser, initial_tab_count,
-                           selected_tab_index, &created_contents);
+                           &created_contents);
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
@@ -437,18 +435,12 @@ class SessionRestoreImpl : public BrowserListObserver {
           browser == browser_ && !(*i)->tabs.empty();
       if (close_active_tab)
         --initial_tab_count;
-      int selected_tab_index =
-          initial_tab_count > 0
-              ? browser->tab_strip_model()->active_index()
-              : std::max(0, std::min((*i)->selected_tab_index,
-                                     static_cast<int>((*i)->tabs.size()) - 1));
       if ((*i)->window_id == active_window_id)
         browser_to_activate = browser;
 
       // 5. Restore tabs in |browser|. This will also call Show() on |browser|
       //    if its initial show state is not mimimized.
-      RestoreTabsToBrowser(*(*i), browser, initial_tab_count,
-                           selected_tab_index, created_contents);
+      RestoreTabsToBrowser(*(*i), browser, initial_tab_count, created_contents);
       DCHECK(browser->window()->IsVisible() ||
              browser->window()->IsMinimized());
 
@@ -531,12 +523,11 @@ class SessionRestoreImpl : public BrowserListObserver {
 
   // Adds the tabs from |window| to |browser|. Normal tabs go after the existing
   // tabs but pinned tabs will be pushed in front.
-  // If there are no existing tabs, the tab at |selected_tab_index| will be
-  // selected. Otherwise, the tab selection will remain untouched.
+  // If there are no existing tabs, the tab at |window.selected_tab_index| will
+  // be selected. Otherwise, the tab selection will remain untouched.
   void RestoreTabsToBrowser(const sessions::SessionWindow& window,
                             Browser* browser,
                             int initial_tab_count,
-                            int selected_tab_index,
                             std::vector<RestoredTab>* created_contents) {
     DVLOG(1) << "RestoreTabsToBrowser " << window.tabs.size();
     DCHECK(!window.tabs.empty());
@@ -561,6 +552,9 @@ class SessionRestoreImpl : public BrowserListObserver {
     // to ensure tabs will not be reordered when restoring. This is not possible
     // yet due the ordering of TabStripModelObserver notifications in an edge
     // case.
+
+    const int selected_tab_index = base::ClampToRange(
+        window.selected_tab_index, 0, static_cast<int>(window.tabs.size() - 1));
 
     for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
       const sessions::SessionTab& tab = *(window.tabs[i]);

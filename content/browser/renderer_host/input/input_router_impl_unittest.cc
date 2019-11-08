@@ -114,6 +114,10 @@ class MockInputRouterImplClient : public InputRouterImplClient {
 
   void FallbackCursorModeSetCursorVisibility(bool visible) override {}
 
+  gfx::Size GetRootWidgetViewportSize() override {
+    return gfx::Size(1920, 1080);
+  }
+
   MockWidgetInputHandler::MessageVector GetAndResetDispatchedMessages() {
     return widget_input_handler_.GetAndResetDispatchedMessages();
   }

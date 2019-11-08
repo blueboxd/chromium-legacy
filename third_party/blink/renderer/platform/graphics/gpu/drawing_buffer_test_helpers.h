@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/gl/gpu_preference.h"
 
 namespace blink {
 
@@ -329,6 +330,13 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   void DrawingBufferClientRestorePixelPackBufferBinding() override {
     state_.pixel_pack_buffer_binding = saved_state_.pixel_pack_buffer_binding;
   }
+  bool DrawingBufferClientUserAllocatedMultisampledRenderbuffers() override {
+    // Not unit tested yet. Tested with end-to-end tests.
+    return false;
+  }
+  void DrawingBufferClientForceLostContextWithAutoRecovery() override {
+    // Not unit tested yet. Tested with end-to-end tests.
+  }
 
   // Testing methods.
   gpu::SyncToken MostRecentlyWaitedSyncToken() const {
@@ -461,7 +469,8 @@ class DrawingBufferForTests : public DrawingBuffer {
             false /* wantDepth */,
             false /* wantStencil */,
             DrawingBuffer::kAllowChromiumImage /* ChromiumImageUsage */,
-            CanvasColorParams()),
+            CanvasColorParams(),
+            gl::GpuPreference::kHighPerformance),
         live_(nullptr) {}
 
   ~DrawingBufferForTests() override {

@@ -205,7 +205,6 @@ void WebSocket::WebSocketEventHandler::OnDataFrame(
   DVLOG(3) << "WebSocketEventHandler::OnDataFrame @"
            << reinterpret_cast<void*>(this) << " fin=" << fin
            << " type=" << type << " data is " << payload.size() << " bytes";
-  // TODO(yoichio): Merge OnDataFrame mojo channel into data pipe.
   impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type), payload.size());
   if (payload.size() > 0) {
     impl_->pending_data_frames_.push(payload);

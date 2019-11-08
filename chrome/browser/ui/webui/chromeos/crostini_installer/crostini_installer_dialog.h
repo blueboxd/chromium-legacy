@@ -26,8 +26,7 @@ class CrostiniInstallerDialog : public SystemWebDialogDelegate {
   bool ShouldShowCloseButton() const override;
   void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
   bool CanCloseDialog() const override;
-  void OnDialogShown(content::WebUI* webui,
-                     content::RenderViewHost* render_view_host) override;
+  void OnDialogShown(content::WebUI* webui) override;
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
 

@@ -193,14 +193,16 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
   return SANDBOX_TYPE_UTILITY;
 }
 
-static bool g_audio_sandbox_enabled = true;
-
-SERVICE_MANAGER_SANDBOX_EXPORT void EnableAudioSandbox(bool enable) {
-  g_audio_sandbox_enabled = enable;
+void EnableAudioSandbox(bool enable) {
+  if (enable) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableAudioServiceSandbox);
+  }
 }
 
 bool IsAudioSandboxEnabled() {
-  return g_audio_sandbox_enabled;
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAudioServiceSandbox);
 }
 
 }  // namespace service_manager

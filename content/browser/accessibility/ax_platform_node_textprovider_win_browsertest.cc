@@ -23,19 +23,18 @@ using Microsoft::WRL::ComPtr;
 
 namespace content {
 
-#define ASSERT_UIA_SAFEARRAY_OF_TEXTRANGEPROVIDER(safearray, expected_size) \
-  {                                                                         \
-    EXPECT_EQ(sizeof(CComPtr<ITextRangeProvider>),                          \
-              ::SafeArrayGetElemsize(safearray));                           \
-    ASSERT_EQ(1u, SafeArrayGetDim(safearray));                              \
-    LONG array_lower_bound;                                                 \
-    ASSERT_HRESULT_SUCCEEDED(                                               \
-        SafeArrayGetLBound(safearray, 1, &array_lower_bound));              \
-    LONG array_upper_bound;                                                 \
-    ASSERT_HRESULT_SUCCEEDED(                                               \
-        SafeArrayGetUBound(safearray, 1, &array_upper_bound));              \
-    size_t count = array_upper_bound - array_lower_bound + 1;               \
-    ASSERT_EQ(expected_size, count);                                        \
+#define ASSERT_UIA_SAFEARRAY_OF_TEXTRANGEPROVIDER(safearray, expected_size)    \
+  {                                                                            \
+    EXPECT_EQ(sizeof(ITextRangeProvider*), ::SafeArrayGetElemsize(safearray)); \
+    ASSERT_EQ(1u, SafeArrayGetDim(safearray));                                 \
+    LONG array_lower_bound;                                                    \
+    ASSERT_HRESULT_SUCCEEDED(                                                  \
+        SafeArrayGetLBound(safearray, 1, &array_lower_bound));                 \
+    LONG array_upper_bound;                                                    \
+    ASSERT_HRESULT_SUCCEEDED(                                                  \
+        SafeArrayGetUBound(safearray, 1, &array_upper_bound));                 \
+    size_t count = array_upper_bound - array_lower_bound + 1;                  \
+    ASSERT_EQ(expected_size, count);                                           \
   }
 
 #define EXPECT_UIA_TEXTRANGE_EQ(provider, expected_content) \
@@ -172,11 +171,11 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextProviderWinBrowserTest,
   GetTextProviderFromTextNode(text_provider, node);
 
   base::win::ScopedSafearray text_provider_ranges;
-  CComPtr<ITextRangeProvider>* array_data;
   EXPECT_HRESULT_SUCCEEDED(
       text_provider->GetVisibleRanges(text_provider_ranges.Receive()));
   ASSERT_UIA_SAFEARRAY_OF_TEXTRANGEPROVIDER(text_provider_ranges.Get(), 2U);
 
+  ITextRangeProvider** array_data;
   ASSERT_HRESULT_SUCCEEDED(::SafeArrayAccessData(
       text_provider_ranges.Get(), reinterpret_cast<void**>(&array_data)));
 

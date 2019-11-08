@@ -384,7 +384,7 @@ Pipe disconnection may be caused by:
 
 Regardless of the underlying cause, when a connection error is encountered on
 a receiver endpoint, that endpoint's **disconnect handler** (if set) is
-invoked. This handler is a simple `base::Closure` and may only be invoked
+invoked. This handler is a simple `base::OnceClosure` and may only be invoked
 *once* as long as the endpoint is bound to the same pipe. Typically clients and
 implementations use this handler to do some kind of cleanup or -- particuarly if
 the error was unexpected -- create a new pipe and attempt to establish a new
@@ -1733,7 +1733,7 @@ versioned Mojom types.
 version:
 
 ```cpp
-void QueryVersion(const base::Callback<void(uint32_t)>& callback);
+void QueryVersion(base::OnceCallback<void(uint32_t)> callback);
 ```
 
 This queries the remote endpoint for the version number of its binding. When a

@@ -65,6 +65,7 @@ class RemoteFrameView final : public GarbageCollected<RemoteFrameView>,
 
   bool CanThrottleRendering() const override;
   void VisibilityForThrottlingChanged() override;
+  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
 
   // Compute the interest rect of this frame in its unscrolled space. This may
   // be used by the OOPIF's compositor to limit the amount of rastered tiles,

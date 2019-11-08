@@ -147,7 +147,7 @@ bool SerializerMarkupAccumulator::ShouldIgnoreAttribute(
 
 bool SerializerMarkupAccumulator::ShouldIgnoreElement(
     const Element& element) const {
-  if (IsHTMLScriptElement(element))
+  if (IsA<HTMLScriptElement>(element))
     return true;
   if (IsA<HTMLNoScriptElement>(element))
     return true;

@@ -1925,7 +1925,7 @@ TEST_F(BluetoothSystemTest, GetAvailableDevices_AddressParser) {
       // Invalid addresses
       {"1", "00:11"},                 // Too short
       {"2", "00:11:22:AA:BB:CC:DD"},  // Too long
-      {"3", "00-11-22-AA-BB-CC"},     // Invalid separator
+      {"3", "00|11|22|AA|BB|CC"},     // Invalid separator
       {"4", "00:11:22:XX:BB:CC"},     // Invalid character
       // Valid addresses
       {"5", "00:11:22:aa:bb:cc"},  // Lowercase

@@ -17,6 +17,7 @@ static CSPDirective::Name CSPFallback(CSPDirective::Name directive) {
     case CSPDirective::FormAction:
     case CSPDirective::UpgradeInsecureRequests:
     case CSPDirective::NavigateTo:
+    case CSPDirective::FrameAncestors:
       return CSPDirective::Unknown;
 
     case CSPDirective::FrameSrc:

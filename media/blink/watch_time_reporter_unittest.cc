@@ -229,6 +229,10 @@ class WatchTimeReporterTest
                                         video_frames_dropped);
     }
 
+    void OnCurrentTimestampChanged(base::TimeDelta duration) override {
+      parent_->OnCurrentTimestampChanged(duration);
+    }
+
    private:
     WatchTimeReporterTest* parent_;
 
@@ -623,6 +627,7 @@ class WatchTimeReporterTest
   MOCK_METHOD1(OnSetAutoplayInitiated, void(bool));
   MOCK_METHOD1(OnDurationChanged, void(base::TimeDelta));
   MOCK_METHOD2(OnUpdateVideoDecodeStats, void(uint32_t, uint32_t));
+  MOCK_METHOD1(OnCurrentTimestampChanged, void(base::TimeDelta));
 
   const bool has_video_;
   const bool has_audio_;

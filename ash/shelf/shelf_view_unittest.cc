@@ -1440,6 +1440,45 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 }
 
+// Verifies that the time of button press is recorded correctly in clamshell.
+TEST_F(ShelfViewTest, HomeButtonMetricsInClamshell) {
+  const HomeButton* home_button = shelf_view_->shelf_widget()->GetHomeButton();
+
+  // Make sure we're not showing the app list.
+  EXPECT_FALSE(home_button->IsShowingAppList());
+
+  base::UserActionTester user_action_tester;
+  ASSERT_EQ(0, user_action_tester.GetActionCount(
+                   "AppList_HomeButtonPressedClamshell"));
+
+  GetEventGenerator()->GestureTapAt(
+      home_button->GetBoundsInScreen().CenterPoint());
+  ASSERT_EQ(1, user_action_tester.GetActionCount(
+                   "AppList_HomeButtonPressedClamshell"));
+  EXPECT_TRUE(home_button->IsShowingAppList());
+}
+
+// Verifies that the time of button press is recorded correctly in tablet.
+TEST_F(ShelfViewTest, HomeButtonMetricsInTablet) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  const HomeButton* home_button = shelf_view_->shelf_widget()->GetHomeButton();
+
+  // Make sure we're not showing the app list.
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  wm::ActivateWindow(window.get());
+  EXPECT_FALSE(home_button->IsShowingAppList());
+
+  base::UserActionTester user_action_tester;
+  ASSERT_EQ(
+      0, user_action_tester.GetActionCount("AppList_HomeButtonPressedTablet"));
+
+  GetEventGenerator()->GestureTapAt(
+      home_button->GetBoundsInScreen().CenterPoint());
+  ASSERT_EQ(
+      1, user_action_tester.GetActionCount("AppList_HomeButtonPressedTablet"));
+  EXPECT_TRUE(home_button->IsShowingAppList());
+}
+
 class HotseatShelfViewTest : public ShelfViewTest,
                              public testing::WithParamInterface<bool> {
  public:

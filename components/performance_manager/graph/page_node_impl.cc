@@ -271,6 +271,12 @@ void PageNodeImpl::set_has_nonempty_beforeunload(
 
 void PageNodeImpl::JoinGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+#if DCHECK_IS_ON()
+  // Dereferencing the WeakPtr associated with this node will bind it to the
+  // current sequence (all subsequent calls to |GetWeakPtr| will return the
+  // same WeakPtr).
+  GetWeakPtr()->GetImpl();
+#endif
 
   NodeBase::JoinGraph();
 }

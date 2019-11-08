@@ -35,6 +35,7 @@
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gl/gpu_preference.h"
 #include "ui/gl/gpu_switching_observer.h"
 
 namespace content {
@@ -111,7 +112,7 @@ class CONTENT_EXPORT RenderViewHostImpl
                            const ChildProcessTerminationInfo& info) override;
 
   // GpuSwitchingObserver implementation.
-  void OnGpuSwitched() override;
+  void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) override;
 
   // Set up the RenderView child process. Virtual because it is overridden by
   // TestRenderViewHost.

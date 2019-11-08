@@ -26,8 +26,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -324,9 +324,9 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
     return task_priority;
   }
 
-  // Bound to the URLLoaderClient message pipe (|client_binding_|) via
-  // set_connection_error_handler.
-  void OnConnectionError();
+  // Bound to the URLLoaderClient message pipe (|client_receiver_|) via
+  // set_disconnect_handler.
+  void OnMojoDisconnect();
 
   // Completes the request by calling FinishWithResult() if OnComplete() was
   // called and either no body pipe was ever received, or the body pipe was
@@ -357,7 +357,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   mojo::Remote<mojom::URLLoaderFactory> url_loader_factory_remote_;
   std::unique_ptr<BodyHandler> body_handler_;
 
-  mojo::Binding<mojom::URLLoaderClient> client_binding_;
+  mojo::Receiver<mojom::URLLoaderClient> client_receiver_{this};
   mojom::URLLoaderPtr url_loader_;
 
   std::unique_ptr<StringUploadDataPipeGetter> string_upload_data_pipe_getter_;
@@ -1150,7 +1150,6 @@ SimpleURLLoaderImpl::SimpleURLLoaderImpl(
     const net::NetworkTrafficAnnotationTag& annotation_tag)
     : resource_request_(std::move(resource_request)),
       annotation_tag_(annotation_tag),
-      client_binding_(this),
       request_state_(std::make_unique<RequestState>()),
       final_url_(resource_request_->url),
       timeout_timer_(timeout_tick_clock_) {
@@ -1457,7 +1456,7 @@ void SimpleURLLoaderImpl::FinishWithResult(int net_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!request_state_->finished);
 
-  client_binding_.Close();
+  client_receiver_.reset();
   url_loader_.reset();
   timeout_timer_.Stop();
 
@@ -1509,9 +1508,9 @@ void SimpleURLLoaderImpl::StartRequest(
     resource_request_->enable_upload_progress = true;
 
   mojom::URLLoaderClientPtr client_ptr;
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-  client_binding_.set_connection_error_handler(base::BindOnce(
-      &SimpleURLLoaderImpl::OnConnectionError, base::Unretained(this)));
+  client_receiver_.Bind(mojo::MakeRequest(&client_ptr));
+  client_receiver_.set_disconnect_handler(base::BindOnce(
+      &SimpleURLLoaderImpl::OnMojoDisconnect, base::Unretained(this)));
   // Data elements that use pipes aren't reuseable, currently (Since the IPC
   // code doesn't call the Clone() method), so need to create another one, if
   // uploading a string via a data pipe.
@@ -1546,7 +1545,7 @@ void SimpleURLLoaderImpl::Retry() {
   DCHECK_GT(remaining_retries_, 0);
   --remaining_retries_;
 
-  client_binding_.Close();
+  client_receiver_.reset();
   url_loader_.reset();
 
   request_state_ = std::make_unique<RequestState>();
@@ -1659,8 +1658,8 @@ void SimpleURLLoaderImpl::OnComplete(const URLLoaderCompletionStatus& status) {
   DCHECK(!request_state_->finished);
   DCHECK(!request_state_->request_completed);
 
-  // Close pipes to ignore any subsequent close notification.
-  client_binding_.Close();
+  // Reset pipes to ignore any subsequent close notification.
+  client_receiver_.reset();
   url_loader_.reset();
 
   request_state_->request_completed = true;
@@ -1675,7 +1674,7 @@ void SimpleURLLoaderImpl::OnComplete(const URLLoaderCompletionStatus& status) {
   MaybeComplete();
 }
 
-void SimpleURLLoaderImpl::OnConnectionError() {
+void SimpleURLLoaderImpl::OnMojoDisconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // |this| closes the pipe to the URLLoader in OnComplete(), so this method
   // being called indicates the pipe was closed before completion, most likely

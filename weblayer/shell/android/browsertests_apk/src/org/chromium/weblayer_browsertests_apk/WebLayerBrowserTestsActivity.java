@@ -90,7 +90,7 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
         mTab = mBrowser.getActiveTab();
         mTab.registerTabCallback(new TabCallback() {
             @Override
-            public void visibleUrlChanged(Uri uri) {
+            public void onVisibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
             }
         });

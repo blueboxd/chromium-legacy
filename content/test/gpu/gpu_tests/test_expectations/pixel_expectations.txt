@@ -262,3 +262,9 @@ crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_FourColors
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_Rounded_Corner [ RetryOnFailure ]
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_Context_Loss_VP9 [ RetryOnFailure ]
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ RetryOnFailure ]
+
+# TODO(crbug.com/681341): enable these new tests immediately after they land.
+# Disabled upon landing only to avoid having the entire CL reverted if the new
+# tests turn out to be flaky.
+crbug.com/681341 [ mac ] Pixel_WebGLHighToLowPower [ Skip ]
+crbug.com/681341 [ mac ] Pixel_WebGLLowToHighPower [ Skip ]

@@ -813,10 +813,11 @@ void GpuServiceImpl::WakeUpGpu() {
 #endif
 }
 
-void GpuServiceImpl::GpuSwitched() {
+void GpuServiceImpl::GpuSwitched(gl::GpuPreference active_gpu_heuristic) {
   DVLOG(1) << "GPU: GPU has switched";
   if (!in_host_process())
-    ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
+    ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched(
+        active_gpu_heuristic);
 }
 
 void GpuServiceImpl::DestroyAllChannels() {

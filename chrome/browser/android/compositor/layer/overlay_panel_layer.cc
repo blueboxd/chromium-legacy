@@ -83,10 +83,48 @@ void OverlayPanelLayer::SetProperties(
   // Round values to avoid pixel gap between layers.
   bar_height = floor(bar_height);
 
+  // ---------------------------------------------------------------------------
+  // Content setup, to center in space below drag handle (when present).
+  // ---------------------------------------------------------------------------
   float bar_top_y = bar_offset_y;
   float bar_bottom = bar_top_y + bar_height;
 
   bool is_rtl = l10n_util::IsLayoutRtl();
+  bool is_new_layout = rounded_bar_top_resource_id_ != kInvalidResourceID;
+
+  int content_top_y = bar_top_y;
+  int content_height = bar_height;
+  int rounded_top_adjust = 0;
+  int rounded_shadow_top = 0;
+  gfx::Size rounded_bar_top_size;
+  gfx::PointF rounded_bar_top_position;
+
+  ui::NinePatchResource* rounded_bar_top_resource = nullptr;
+  if (is_new_layout) {
+    content_top_y += bar_margin_top;
+    content_height -= bar_margin_top;
+
+    rounded_bar_top_resource =
+        ui::NinePatchResource::From(resource_manager_->GetResource(
+            ui::ANDROID_RESOURCE_TYPE_STATIC, rounded_bar_top_resource_id_));
+
+    rounded_bar_top_size =
+        gfx::Size(rounded_bar_top_resource->size().width() -
+                      rounded_bar_top_resource->padding().width(),
+                  rounded_bar_top_resource->size().height() -
+                      rounded_bar_top_resource->padding().height());
+
+    // TODO(donnd): fix correctly.
+    const int vertical_fudge_factor = 2;  // Create an overlap to avoid a seam.
+    rounded_top_adjust = rounded_bar_top_size.height() - vertical_fudge_factor;
+    // This is the position of the side-shadows vertically.
+    // TODO(donnd): fix this so it's pixel perfect.
+    rounded_shadow_top = rounded_top_adjust;
+
+    rounded_bar_top_position =
+        gfx::PointF(-rounded_bar_top_resource->padding().x(),
+                    bar_top_y - rounded_top_adjust);
+  }
 
   // ---------------------------------------------------------------------------
   // Panel Shadow
@@ -94,6 +132,8 @@ void OverlayPanelLayer::SetProperties(
   if (panel_shadow_resource_id_ != kInvalidResourceID) {
     if (panel_shadow_->parent() != layer_) {
       layer_->AddChild(panel_shadow_);
+      if (is_new_layout)
+        layer_->AddChild(panel_shadow_right_);
     }
     ui::NinePatchResource* panel_shadow_resource =
         ui::NinePatchResource::From(resource_manager_->GetResource(
@@ -102,55 +142,60 @@ void OverlayPanelLayer::SetProperties(
 
     gfx::Size shadow_res_size = panel_shadow_resource->size();
     gfx::Rect shadow_res_padding = panel_shadow_resource->padding();
-    gfx::Size shadow_bounds(panel_width + shadow_res_size.width() -
-                                shadow_res_padding.size().width(),
-                            panel_height + shadow_res_size.height() -
-                                shadow_res_padding.size().height());
     panel_shadow_->SetUIResourceId(panel_shadow_resource->ui_resource()->id());
-    panel_shadow_->SetBorder(panel_shadow_resource->Border(shadow_bounds));
     panel_shadow_->SetAperture(panel_shadow_resource->aperture());
-    panel_shadow_->SetBounds(shadow_bounds);
-    gfx::PointF shadow_position(-shadow_res_padding.origin().x(),
-                                -shadow_res_padding.origin().y());
-    panel_shadow_->SetPosition(shadow_position);
-  }
+    if (is_new_layout) {
+      DCHECK(rounded_bar_top_resource);
 
-  // ---------------------------------------------------------------------------
-  // Content setup, to center in space below drag handle (when present).
-  // ---------------------------------------------------------------------------
-  int content_top_y = bar_top_y;
-  int content_height = bar_height;
-  int rounded_top_adjust = 0;
-  if (rounded_bar_top_resource_id_ != kInvalidResourceID) {
-    content_top_y += bar_margin_top;
-    content_height -= bar_margin_top;
+      gfx::Size shadow_bounds(shadow_res_size.width(),
+                              panel_height + shadow_res_size.height());
+      panel_shadow_->SetBounds(shadow_bounds);
+      panel_shadow_->SetBorder(panel_shadow_resource->Border(shadow_bounds));
+      // Position the top of the side shadow to the match the top of the
+      // rounded_bar_top shadow (which is indicated by its top padding).
+      // TODO(donnd): revisit side-shadow asset and positioning as discussed
+      // in https://crbug.com/1005975.
+      gfx::PointF shadow_position(-shadow_res_padding.size().width(),
+                                  bar_top_y - rounded_shadow_top);
+      panel_shadow_->SetPosition(shadow_position);
+
+      // Do the right hand side as a mirror of the left shadow.
+      panel_shadow_right_->SetUIResourceId(
+          panel_shadow_resource->ui_resource()->id());
+      panel_shadow_right_->SetAperture(panel_shadow_resource->aperture());
+      panel_shadow_right_->SetBounds(shadow_bounds);
+      panel_shadow_right_->SetBorder(
+          panel_shadow_resource->Border(shadow_bounds));
+      gfx::PointF right_shadow_position(
+          panel_width + shadow_res_padding.size().width(),
+          bar_top_y - rounded_shadow_top);
+      panel_shadow_right_->SetPosition(right_shadow_position);
+
+      // Flip it from the left side to the right side.
+      gfx::Transform flip_right_transform;
+      flip_right_transform.RotateAboutYAxis(180.0);
+      panel_shadow_right_->SetTransform(flip_right_transform);
+    } else {
+      gfx::Size shadow_bounds(panel_width + shadow_res_size.width() -
+                                  shadow_res_padding.size().width(),
+                              panel_height + shadow_res_size.height() -
+                                  shadow_res_padding.size().height());
+      panel_shadow_->SetBounds(shadow_bounds);
+      panel_shadow_->SetBorder(panel_shadow_resource->Border(shadow_bounds));
+      gfx::PointF shadow_position(-shadow_res_padding.origin().x(),
+                                  -shadow_res_padding.origin().y());
+      panel_shadow_->SetPosition(shadow_position);
+    }
   }
 
   // ---------------------------------------------------------------------------
   // Rounded Bar Top
   // ---------------------------------------------------------------------------
-  if (rounded_bar_top_resource_id_ != kInvalidResourceID) {
+  if (is_new_layout) {
+    DCHECK(rounded_bar_top_resource_id_ != kInvalidResourceID);
     rounded_bar_top_->SetIsDrawable(true);
 
-    ui::NinePatchResource* rounded_bar_top_resource =
-        ui::NinePatchResource::From(resource_manager_->GetResource(
-            ui::ANDROID_RESOURCE_TYPE_STATIC, rounded_bar_top_resource_id_));
-
     DCHECK(rounded_bar_top_resource);
-
-    const gfx::Size rounded_bar_top_size(
-        rounded_bar_top_resource->size().width() -
-            rounded_bar_top_resource->padding().width(),
-        rounded_bar_top_resource->size().height() -
-            rounded_bar_top_resource->padding().height());
-
-    // TODO(donnd): fix correctly.
-    const int vertical_fudge_factor = 2;  // Create an overlap to avoid a seam.
-    rounded_top_adjust = rounded_bar_top_size.height() - vertical_fudge_factor;
-
-    gfx::PointF rounded_bar_top_position(
-        -rounded_bar_top_resource->padding().x(),
-        bar_top_y - rounded_top_adjust);
 
     gfx::Size bounds(panel_width - rounded_bar_top_size.width(),
                      rounded_bar_top_resource->size().height());
@@ -426,6 +471,7 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
       layer_(cc::Layer::Create()),
       panel_shadow_(cc::NinePatchLayer::Create()),
+      panel_shadow_right_(cc::NinePatchLayer::Create()),
       rounded_bar_top_(cc::NinePatchLayer::Create()),
       bar_background_(cc::SolidColorLayer::Create()),
       bar_text_(cc::UIResourceLayer::Create()),
@@ -444,9 +490,14 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
   layer_->SetMasksToBounds(false);
   layer_->SetIsDrawable(true);
 
-  // Panel Shadow
+  // Panel Shadow -- shadow on the left side of the panel, or the whole panel
+  // when not using the new layout.
   panel_shadow_->SetIsDrawable(true);
   panel_shadow_->SetFillCenter(false);
+
+  // Panel Shadow Right -- shadow on the right side of the panel.
+  panel_shadow_right_->SetIsDrawable(true);
+  panel_shadow_right_->SetFillCenter(false);
 
   // Rounded Bar Top
   // Puts the layer near the bottom -- we'll decide if it's actually drawable

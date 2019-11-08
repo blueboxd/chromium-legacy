@@ -74,7 +74,7 @@ class Video(IntegrationTest):
   def testRangeRequest(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
-      t.LoadURL('http://check.googlezip.net/connect')
+      t.LoadURL('http://check.googlezip.net/report')
       time.sleep(2) # wait for page load
       t.ExecuteJavascript(
         'var xhr = new XMLHttpRequest();'

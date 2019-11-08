@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_task_traits.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "base/enterprise_util.h"
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
@@ -29,6 +28,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/quarantine/public/cpp/quarantine_features_win.h"
 #endif
 
 namespace {
@@ -36,21 +36,6 @@ namespace {
 ModuleDatabase* g_module_database = nullptr;
 
 #if defined(GOOGLE_CHROME_BUILD)
-// Returns true if either the IncompatibleApplicationsWarning or
-// ThirdPartyModulesBlocking features are enabled via the "enable-features"
-// command-line switch.
-bool AreThirdPartyFeaturesEnabledViaCommandLine() {
-  // The FeatureList API is thread-safe.
-  base::FeatureList* feature_list_instance = base::FeatureList::GetInstance();
-
-  return feature_list_instance->IsFeatureOverriddenFromCommandLine(
-             features::kIncompatibleApplicationsWarning.name,
-             base::FeatureList::OVERRIDE_ENABLE_FEATURE) ||
-         feature_list_instance->IsFeatureOverriddenFromCommandLine(
-             features::kThirdPartyModulesBlocking.name,
-             base::FeatureList::OVERRIDE_ENABLE_FEATURE);
-}
-
 // Callback for the pref change registrar. Is invoked when the
 // ThirdPartyBlockingEnabled policy is modified. Notifies the ModuleDatabase if
 // the policy was disabled.
@@ -446,23 +431,13 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager(
     bool third_party_blocking_policy_enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Temporarily disable this class on domain-joined machines because enterprise
-  // clients depend on IAttachmentExecute::Save() to be invoked for downloaded
-  // files, but that API call has a known issue (https://crbug.com/870998) with
-  // third-party modules blocking. Can be Overridden by enabling the feature via
-  // the command-line.
-  // TODO(pmonette): Move IAttachmentExecute::Save() to a utility process and
-  //                 remove this.
-  if (base::IsMachineExternallyManaged() &&
-      !AreThirdPartyFeaturesEnabledViaCommandLine()) {
-    return;
-  }
-
   if (!third_party_blocking_policy_enabled)
     return;
 
   if (IncompatibleApplicationsUpdater::IsWarningEnabled() ||
       ModuleBlacklistCacheUpdater::IsBlockingEnabled()) {
+    DCHECK(base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine));
+
     third_party_conflicts_manager_ =
         std::make_unique<ThirdPartyConflictsManager>(this);
 

@@ -39,7 +39,7 @@ const SwitchAccessPredicate = {
     const state = node.state;
 
     // Skip things that are offscreen or invisible.
-    if (state[StateType.OFFSCREEN] || loc.top < 0 || loc.left < 0 ||
+    if (state[StateType.OFFSCREEN] || !loc || loc.top < 0 || loc.left < 0 ||
         state[StateType.INVISIBLE]) {
       return false;
     }

@@ -222,6 +222,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // readers.
     EndWriteAccess();
     scoped_refptr<CanvasResource> resource = resource_;
+    resource->SetFilterQuality(FilterQuality());
     if (ContextProviderWrapper()
             ->ContextProvider()
             ->GetCapabilities()

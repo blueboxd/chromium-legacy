@@ -465,13 +465,6 @@ struct XRFrameData {
   XRHitTestSubscriptionResultsData? hit_test_subscription_results;
 };
 
-enum VRDisplayEventReason {
-  NONE = 0,
-  NAVIGATION = 1,
-  MOUNTED = 2,
-  UNMOUNTED = 3
-};
-
 enum RequestSessionError {
   ORIGIN_NOT_SECURE = 1,
   EXISTING_IMMERSIVE_SESSION = 2,
@@ -501,10 +494,6 @@ interface VRService {
   // Optionally supply a VRServiceClient to listen for changes to the XRDevice.
   // A bad message will be reported if this is called multiple times.
   SetClient(pending_remote<VRServiceClient> client);
-
-  // WebVR 1.1 functionality compatibility method. To stop listening pass a null
-  // client.
-  SetListeningForActivate(pending_remote<VRDisplayClient>? client);
 
   // Request to initialize a session in the browser process. If successful, the
   // XRSession struct with the requisite interfaces will be returned.
@@ -723,16 +712,4 @@ interface XRSessionClient {
   OnExitPresent();
   // Indicates a change in the visibility of the WebXR content.
   OnVisibilityStateChanged(XRVisibilityState visibility_state);
-};
-
-// Backwards compatibility events for WebVR 1.1. These are expected to not be
-// used for WebXR.
-interface VRDisplayClient {
-  // Inform the renderer that a headset has sent a signal indicating that the
-  // user has put it on. Returns an indicator of whether or not the page
-  // actually started a WebVR 1.1 presentation.
-  OnActivate(VRDisplayEventReason reason) => (bool will_not_present);
-  // Inform the renderer that a headset has sent a signal indicating that the
-  // user stopped using a headset.
-  OnDeactivate(VRDisplayEventReason reason);
 };

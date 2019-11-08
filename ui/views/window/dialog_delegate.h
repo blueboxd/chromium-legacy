@@ -169,6 +169,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   views::LabelButton* GetCancelButton();
   views::View* GetExtraView();
 
+  // Helper for accessing the footnote view. Unlike the three methods just
+  // above, this *is* safe to call before OnDialogInitialized.
+  views::View* GetFootnoteViewForTesting();
+
   // Add or remove an observer notified by calls to DialogModelChanged().
   void AddObserver(DialogObserver* observer);
   void RemoveObserver(DialogObserver* observer);

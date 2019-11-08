@@ -49,7 +49,6 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
@@ -507,11 +506,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
 
   frame_test_helpers::TestWebFrameClient web_frame_client;
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
-      web_view, &web_frame_client, nullptr,
-      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
-          .InitWithNewPipeAndPassReceiver()
-          .PassPipe(),
-      nullptr);
+      web_view, &web_frame_client, nullptr, nullptr);
   web_frame_client.Bind(frame);
 
   {
@@ -2647,11 +2642,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   frame_test_helpers::TestWebFrameClient web_frame_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
-      web_view, &web_frame_client, nullptr,
-      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
-          .InitWithNewPipeAndPassReceiver()
-          .PassPipe(),
-      nullptr);
+      web_view, &web_frame_client, nullptr, nullptr);
   web_frame_client.Bind(local_frame);
   blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, local_frame);
 

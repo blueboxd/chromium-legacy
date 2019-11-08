@@ -135,7 +135,7 @@ public class InstrumentationActivity extends FragmentActivity {
         mTab = mBrowser.getActiveTab();
         mTab.registerTabCallback(new TabCallback() {
             @Override
-            public void visibleUrlChanged(Uri uri) {
+            public void onVisibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
             }
         });
@@ -153,7 +153,11 @@ public class InstrumentationActivity extends FragmentActivity {
                 return fragments.get(0);
             }
         }
+        return createBrowserFragment(mMainViewId, savedInstanceState);
+    }
 
+    public Fragment createBrowserFragment(int viewId, Bundle savedInstanceState) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
         String profileName = getIntent().hasExtra(EXTRA_PROFILE_NAME)
                 ? getIntent().getStringExtra(EXTRA_PROFILE_NAME)
                 : "DefaultProfile";
@@ -164,7 +168,7 @@ public class InstrumentationActivity extends FragmentActivity {
 
         Fragment fragment = WebLayer.createBrowserFragment(profilePath);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(mMainViewId, fragment);
+        transaction.add(viewId, fragment);
 
         // Note the commitNow() instead of commit(). We want the fragment to get attached to
         // activity synchronously, so we can use all the functionality immediately. Otherwise we'd

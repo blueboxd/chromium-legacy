@@ -1502,9 +1502,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   GetWebAuthenticationRequestDelegate(RenderFrameHost* render_frame_host,
                                       const std::string& relying_party_id);
 
-  // Get platform ClientCertStore. May return nullptr.
+  // Get platform ClientCertStore. May return nullptr. Called on the UI thread.
   virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
-      ResourceContext* resource_context);
+      BrowserContext* browser_context);
 
   // Creates a LoginDelegate that asks the user for a username and password.
   // |web_contents| should not be null when CreateLoginDelegate is called.

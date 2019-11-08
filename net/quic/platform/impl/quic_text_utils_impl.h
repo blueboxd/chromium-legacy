@@ -87,9 +87,12 @@ class QuicTextUtilsImpl {
   }
 
   // Converts |data| from a hexadecimal ASCII string to a binary string
-  // that is |data.length()/2| bytes long.
+  // that is |data.length()/2| bytes long. On failure returns empty string.
   static std::string HexDecode(QuicStringPiece data) {
-    return net::HexDecode(data);
+    std::string result;
+    if (!base::HexStringToString(data, &result))
+      result.clear();
+    return result;
   }
 
   // Base64 encodes with no padding |data_len| bytes of |data| into |output|.

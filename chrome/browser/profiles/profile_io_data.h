@@ -33,10 +33,6 @@
 
 class HostContentSettingsMap;
 
-namespace chromeos {
-class CertificateProvider;
-}
-
 namespace content_settings {
 class CookieSettings;
 }
@@ -44,10 +40,6 @@ class CookieSettings;
 namespace extensions {
 class InfoMap;
 }
-
-namespace net {
-class ClientCertStore;
-}  // namespace net
 
 // Conceptually speaking, the ProfileIOData represents data that lives on the IO
 // thread that is owned by a Profile.  Profile owns ProfileIOData, but will make
@@ -90,29 +82,7 @@ class ProfileIOData {
   }
 #endif
 
-  void set_client_cert_store_factory_for_testing(
-      const base::Callback<std::unique_ptr<net::ClientCertStore>()>& factory) {
-    client_cert_store_factory_ = factory;
-  }
-
-  // Get platform ClientCertStore. May return nullptr.
-  std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
-
  protected:
-#if defined(OS_CHROMEOS)
-  // Defines possible ways in which a profile may use the Chrome OS system
-  // token.
-  enum class SystemKeySlotUseType {
-    // This profile does not use the system key slot.
-    kNone,
-    // This profile only uses the system key slot for client certiticates.
-    kUseForClientAuth,
-    // This profile uses the system key slot for client certificates and for
-    // certificate management.
-    kUseForClientAuthAndCertManagement
-  };
-#endif
-
   // Created on the UI thread, read on the IO thread during ProfileIOData lazy
   // initialization.
   struct ProfileParams {
@@ -129,8 +99,7 @@ class ProfileIOData {
 
 #if defined(OS_CHROMEOS)
     std::string username_hash;
-    SystemKeySlotUseType system_key_slot_use_type = SystemKeySlotUseType::kNone;
-    std::unique_ptr<chromeos::CertificateProvider> certificate_provider;
+    bool user_is_affiliated = false;
 #endif
 
     // The profile this struct was populated from. It's passed as a void* to
@@ -192,10 +161,6 @@ class ProfileIOData {
   // Deleted after lazy initialization.
   mutable std::unique_ptr<ProfileParams> profile_params_;
 
-  // Used for testing.
-  mutable base::Callback<std::unique_ptr<net::ClientCertStore>()>
-      client_cert_store_factory_;
-
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember safe_browsing_enabled_;
 
@@ -206,8 +171,6 @@ class ProfileIOData {
 
 #if defined(OS_CHROMEOS)
   mutable std::string username_hash_;
-  mutable SystemKeySlotUseType system_key_slot_use_type_;
-  mutable std::unique_ptr<chromeos::CertificateProvider> certificate_provider_;
 #endif
 
   mutable std::unique_ptr<ResourceContext> resource_context_;

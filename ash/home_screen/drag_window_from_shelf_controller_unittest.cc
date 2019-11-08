@@ -35,9 +35,11 @@ class DragWindowFromShelfControllerTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  void StartDrag(aura::Window* window) {
-    window_drag_controller_ =
-        std::make_unique<DragWindowFromShelfController>(window);
+  void StartDrag(aura::Window* window,
+                 const gfx::Point& location_in_screen,
+                 HotseatState hotseat_state) {
+    window_drag_controller_ = std::make_unique<DragWindowFromShelfController>(
+        window, location_in_screen, hotseat_state);
   }
   void Drag(const gfx::Point& location_in_screen,
             float scroll_x,
@@ -77,7 +79,7 @@ TEST_F(DragWindowFromShelfControllerTest, HideWindowDuringWindowDragging) {
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window3->IsVisible());
 
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 1.f, 1.f);
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_FALSE(window2->IsVisible());
@@ -91,7 +93,7 @@ TEST_F(DragWindowFromShelfControllerTest, HideWindowDuringWindowDragging) {
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.left_center(), HotseatState::kExtended);
   Drag(gfx::Point(0, 200), 1.f, 1.f);
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_TRUE(window2->IsVisible());
@@ -101,7 +103,8 @@ TEST_F(DragWindowFromShelfControllerTest, HideWindowDuringWindowDragging) {
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window3->IsVisible());
 
-  StartDrag(window2.get());
+  StartDrag(window2.get(), shelf_bounds.right_center(),
+            HotseatState::kExtended);
   Drag(gfx::Point(400, 200), 1.f, 1.f);
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_TRUE(window2->IsVisible());
@@ -118,7 +121,7 @@ TEST_F(DragWindowFromShelfControllerTest, HideHomeLauncherDuringDraggingTest) {
   const gfx::Rect shelf_bounds =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window = CreateTestWindow();
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(0, 200), 0.f, 1.f);
   aura::Window* home_screen_window =
       Shell::Get()->home_screen_controller()->delegate()->GetHomeScreenWindow();
@@ -141,14 +144,14 @@ TEST_F(DragWindowFromShelfControllerTest, MayOrMayNotReShowHiddenWindows) {
 
   // If the dragged window restores to its original position, reshow the hidden
   // windows.
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   EXPECT_FALSE(window2->IsVisible());
   EndDrag(shelf_bounds.CenterPoint(), base::nullopt);
   EXPECT_TRUE(window2->IsVisible());
 
   // If fling to homescreen, do not reshow the hidden windows.
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   EXPECT_FALSE(window2->IsVisible());
   EndDrag(gfx::Point(200, 200),
@@ -160,7 +163,7 @@ TEST_F(DragWindowFromShelfControllerTest, MayOrMayNotReShowHiddenWindows) {
   // windows.
   window2->Show();
   window1->Show();
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   EXPECT_FALSE(window2->IsVisible());
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -176,7 +179,7 @@ TEST_F(DragWindowFromShelfControllerTest, MayOrMayNotReShowHiddenWindows) {
   // showing in overview, do not reshow the hidden windows.
   window2->Show();
   window1->Show();
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.left_center(), HotseatState::kExtended);
   Drag(gfx::Point(0, 200), 0.f, 1.f);
   EXPECT_FALSE(window2->IsVisible());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -191,14 +194,13 @@ TEST_F(DragWindowFromShelfControllerTest, MayOrMayNotReShowHiddenWindows) {
 // show correctly in overview.
 TEST_F(DragWindowFromShelfControllerTest, MinimizedWindowsShowInOverview) {
   UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window3 = CreateTestWindow();
   auto window2 = CreateTestWindow();
   auto window1 = CreateTestWindow();
 
-  StartDrag(window1.get());
-  EXPECT_TRUE(window1->IsVisible());
-  EXPECT_TRUE(window2->IsVisible());
-  EXPECT_TRUE(window3->IsVisible());
+  StartDrag(window1.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   // Drag it far enough so overview should be open behind the dragged window.
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -224,9 +226,11 @@ TEST_F(DragWindowFromShelfControllerTest, MinimizedWindowsShowInOverview) {
 // delta (velocity) decrease to kOpenOverviewThreshold or less.
 TEST_F(DragWindowFromShelfControllerTest, OpenOverviewWhenHold) {
   UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window = CreateTestWindow();
 
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.f,
        DragWindowFromShelfController::kOpenOverviewThreshold + 1);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -241,13 +245,15 @@ TEST_F(DragWindowFromShelfControllerTest, OpenOverviewWhenHold) {
 // kReturnToMaximizedThreshold, it will restore back to its original position.
 TEST_F(DragWindowFromShelfControllerTest, RestoreWindowToOriginalBounds) {
   UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window = CreateTestWindow();
-  const gfx::Rect work_area = display::Screen::GetScreen()
-                                  ->GetDisplayNearestWindow(window.get())
-                                  .work_area();
+  const gfx::Rect display_bounds = display::Screen::GetScreen()
+                                       ->GetDisplayNearestWindow(window.get())
+                                       .bounds();
 
   // Drag it for a small distance and then release.
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.f,
        DragWindowFromShelfController::kShowOverviewThreshold + 1);
   EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
@@ -258,15 +264,16 @@ TEST_F(DragWindowFromShelfControllerTest, RestoreWindowToOriginalBounds) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 
   // Drag it for a large distance and then drag back to release.
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EndDrag(
       gfx::Point(
-          200, work_area.bottom() -
-                   DragWindowFromShelfController::kReturnToMaximizedThreshold +
-                   1),
+          200,
+          display_bounds.bottom() -
+              DragWindowFromShelfController::GetReturnToMaximizedThreshold() +
+              1),
       base::nullopt);
   EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
   EXPECT_FALSE(overview_controller->InOverviewSession());
@@ -277,7 +284,7 @@ TEST_F(DragWindowFromShelfControllerTest, RestoreWindowToOriginalBounds) {
   split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.left_center(), HotseatState::kExtended);
   Drag(gfx::Point(0, 200), 0.f, 1.f);
   EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -292,11 +299,13 @@ TEST_F(DragWindowFromShelfControllerTest, RestoreWindowToOriginalBounds) {
 // TODO(https://crbug.com/1019080) This test is flaky.
 TEST_F(DragWindowFromShelfControllerTest, DISABLED_FlingInOverview) {
   UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window = CreateTestWindow();
 
   // If fling velocity is smaller than kVelocityToHomeScreenThreshold, decide
   // where the window should go based on the release position.
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -309,7 +318,7 @@ TEST_F(DragWindowFromShelfControllerTest, DISABLED_FlingInOverview) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 
   // If fling velocity is equal or larger than kVelocityToHomeScreenThreshold
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EndDrag(gfx::Point(0, 350),
@@ -323,6 +332,8 @@ TEST_F(DragWindowFromShelfControllerTest, DISABLED_FlingInOverview) {
 // overview.
 TEST_F(DragWindowFromShelfControllerTest, DragOrFlingInSplitView) {
   UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
 
   auto window1 = CreateTestWindow();
   auto window2 = CreateTestWindow();
@@ -333,7 +344,7 @@ TEST_F(DragWindowFromShelfControllerTest, DragOrFlingInSplitView) {
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // If the window is only dragged for a small distance:
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.left_center(), HotseatState::kExtended);
   Drag(gfx::Point(100, 200), 0.f, 1.f);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -344,7 +355,7 @@ TEST_F(DragWindowFromShelfControllerTest, DragOrFlingInSplitView) {
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
 
   // If the window is dragged for a long distance:
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.left_center(), HotseatState::kExtended);
   Drag(gfx::Point(100, 200), 0.f, 1.f);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -358,7 +369,7 @@ TEST_F(DragWindowFromShelfControllerTest, DragOrFlingInSplitView) {
   overview_controller->EndOverview();
 
   // If the window is flung with a small velocity:
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.left_center(), HotseatState::kExtended);
   Drag(gfx::Point(100, 200), 0.f, 1.f);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -372,7 +383,7 @@ TEST_F(DragWindowFromShelfControllerTest, DragOrFlingInSplitView) {
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
 
   // If the window is flung with a large velocity:
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.left_center(), HotseatState::kExtended);
   Drag(gfx::Point(100, 200), 0.f, 1.f);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -396,7 +407,7 @@ TEST_F(DragWindowFromShelfControllerTest, WallpaperBlurDuringDragging) {
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window = CreateTestWindow();
 
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(0, 200), 0.f,
        DragWindowFromShelfController::kShowOverviewThreshold + 1);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -416,10 +427,12 @@ TEST_F(DragWindowFromShelfControllerTest, WallpaperBlurDuringDragging) {
 // stops.
 TEST_F(DragWindowFromShelfControllerTest, HideOverviewDuringDragging) {
   UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window2 = CreateTestWindow();
   auto window1 = CreateTestWindow();
 
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.5f, 0.5f);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -448,14 +461,15 @@ TEST_F(DragWindowFromShelfControllerTest, HideOverviewDuringDragging) {
 }
 
 // Check the split view drag indicators window dragging states.
+// Flaky on ChromeOS. https://crbug.com/1022320
 TEST_F(DragWindowFromShelfControllerTest,
-       SplitViewDragIndicatorsWindowDraggingStates) {
+       DISABLED_SplitViewDragIndicatorsWindowDraggingStates) {
   UpdateDisplay("400x400");
   const gfx::Rect shelf_bounds =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window = CreateTestWindow();
 
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.5f, 0.5f);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -505,7 +519,7 @@ TEST_F(DragWindowFromShelfControllerTest, NoBackdropDuringWindowScaleDown) {
   EXPECT_NE(window->GetProperty(kBackdropWindowMode),
             BackdropWindowMode::kDisabled);
 
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.left_center(), HotseatState::kExtended);
   Drag(gfx::Point(0, 200), 0.f, 10.f);
   EndDrag(shelf_bounds.CenterPoint(),
           base::make_optional(
@@ -517,7 +531,10 @@ TEST_F(DragWindowFromShelfControllerTest, NoBackdropDuringWindowScaleDown) {
 
 // Test that if drag is cancelled, overview should be dismissed and other
 // hidden windows should restore to its previous visibility state.
-TEST_F(DragWindowFromShelfControllerTest, CancelDragDismissOverview) {
+// TODO(crbug.com/1022319): flaky.
+TEST_F(DragWindowFromShelfControllerTest, DISABLED_CancelDragDismissOverview) {
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window3 = CreateTestWindow();
   auto window2 = CreateTestWindow();
   auto window1 = CreateTestWindow();
@@ -525,7 +542,7 @@ TEST_F(DragWindowFromShelfControllerTest, CancelDragDismissOverview) {
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window3->IsVisible());
 
-  StartDrag(window1.get());
+  StartDrag(window1.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.5f, 0.5f);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -543,8 +560,10 @@ TEST_F(DragWindowFromShelfControllerTest, CancelDragDismissOverview) {
 // TODO(https://crbug.com/1018498) This test is flaky.
 TEST_F(DragWindowFromShelfControllerTest,
        DISABLED_CancelDragIfWindowDestroyed) {
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window = CreateTestWindow();
-  StartDrag(window.get());
+  StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
   Drag(gfx::Point(200, 200), 0.5f, 0.5f);
   EXPECT_EQ(window_drag_controller()->dragged_window(), window.get());
   EXPECT_TRUE(window_drag_controller()->drag_started());
@@ -554,6 +573,30 @@ TEST_F(DragWindowFromShelfControllerTest,
   // No crash should happen if Drag() call still comes in.
   Drag(gfx::Point(200, 200), 0.5f, 0.5f);
   CancelDrag();
+}
+
+TEST_F(DragWindowFromShelfControllerTest, FlingWithHiddenHotseat) {
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  auto window = CreateTestWindow();
+  gfx::Point start = shelf_bounds.CenterPoint();
+  StartDrag(window.get(), start, HotseatState::kHidden);
+  // Only drag for a small distance and then fling.
+  Drag(gfx::Point(start.x(), start.y() - 10), 0.5f, 0.5f);
+  EndDrag(gfx::Point(start.x(), start.y() - 10),
+          base::make_optional(
+              -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
+  // The window should restore back to its original position.
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
+
+  // Now a bigger distance to fling.
+  StartDrag(window.get(), start, HotseatState::kHidden);
+  Drag(gfx::Point(start.x(), start.y() - 200), 0.5f, 0.5f);
+  EndDrag(gfx::Point(start.x(), start.y() - 200),
+          base::make_optional(
+              -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
+  // The window should be minimized.
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
 }
 
 }  // namespace ash

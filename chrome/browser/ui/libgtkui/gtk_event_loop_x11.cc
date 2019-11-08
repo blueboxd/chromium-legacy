@@ -18,15 +18,18 @@ namespace libgtkui {
 
 namespace {
 
-// Xkb Events stores group attribute into XKeyEvent::state bit field while
-// GdkEventKey objects has separate fields for that purpose, they are ::state
-// and ::group respectively. So recompose them when build XKeyEvent from
-// GdkEventKey here. This is similar to XkbBuildCoreState(), but takes takes a
-// uint instead of assuming a 8-bit Xkb state.
+// Xkb Events store group attribute into XKeyEvent::state bit field, along with
+// other state-related info, while GdkEventKey objects have separate fields for
+// that purpose, they are ::state and ::group. This function is responsible for
+// recomposing them into a single bit field value when translating GdkEventKey
+// into XKeyEvent. This is similar to XkbBuildCoreState(), but assumes state is
+// an uint rather than an uchar.
 //
 // More details:
-// https://code.woboq.org/qt5/include/X11/extensions/XKB.h.html#_M/XkbBuildCoreState
+// https://gitlab.freedesktop.org/xorg/proto/xorgproto/blob/master/include/X11/extensions/XKB.h#L372
 int BuildXkbStateFromGdkEvent(const GdkEventKey& keyev) {
+  DCHECK_EQ(0u, XkbGroupForCoreState(keyev.state));
+  DCHECK(XkbIsLegalGroup(keyev.group));
   return keyev.state | ((keyev.group & 0x3) << 13);
 }
 

@@ -33,7 +33,7 @@ scoped_refptr<SyncHandleRegistry> SyncHandleRegistry::current() {
 
 bool SyncHandleRegistry::RegisterHandle(const Handle& handle,
                                         MojoHandleSignals handle_signals,
-                                        const HandleCallback& callback) {
+                                        HandleCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (base::Contains(handles_, handle))
@@ -43,7 +43,7 @@ bool SyncHandleRegistry::RegisterHandle(const Handle& handle,
   if (result != MOJO_RESULT_OK)
     return false;
 
-  handles_[handle] = callback;
+  handles_[handle] = std::move(callback);
   return true;
 }
 
@@ -58,7 +58,7 @@ void SyncHandleRegistry::UnregisterHandle(const Handle& handle) {
 }
 
 void SyncHandleRegistry::RegisterEvent(base::WaitableEvent* event,
-                                       const base::Closure& callback) {
+                                       base::RepeatingClosure callback) {
   auto it = events_.find(event);
   if (it == events_.end()) {
     auto result = events_.emplace(event, EventCallbackList{});
@@ -70,11 +70,11 @@ void SyncHandleRegistry::RegisterEvent(base::WaitableEvent* event,
   // callbacks to see if any are valid.
   wait_set_.AddEvent(event);
 
-  it->second.container().push_back(callback);
+  it->second.container().push_back(std::move(callback));
 }
 
 void SyncHandleRegistry::UnregisterEvent(base::WaitableEvent* event,
-                                         const base::Closure& callback) {
+                                         base::RepeatingClosure callback) {
   auto it = events_.find(event);
   if (it == events_.end())
     return;
@@ -174,10 +174,11 @@ SyncHandleRegistry::~SyncHandleRegistry() = default;
 void SyncHandleRegistry::RemoveInvalidEventCallbacks() {
   for (auto it = events_.begin(); it != events_.end();) {
     auto& callbacks = it->second.container();
-    callbacks.erase(
-        std::remove_if(callbacks.begin(), callbacks.end(),
-                       [](const base::Closure& callback) { return !callback; }),
-        callbacks.end());
+    callbacks.erase(std::remove_if(callbacks.begin(), callbacks.end(),
+                                   [](const base::RepeatingClosure& callback) {
+                                     return !callback;
+                                   }),
+                    callbacks.end());
     if (callbacks.empty())
       events_.erase(it++);
     else

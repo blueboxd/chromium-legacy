@@ -12,7 +12,6 @@ import collections
 import datetime
 import json
 import os
-import urllib
 
 from core.results_processor import util
 
@@ -22,14 +21,14 @@ OUTPUT_FILENAME = 'test-results.json'
 
 def ProcessIntermediateResults(test_results, options):
   """Process intermediate results and write output in output_dir."""
-  results = Convert(test_results, options.output_dir)
+  results = Convert(test_results, options.output_dir, options.test_path_format)
   output_file = os.path.join(options.output_dir, OUTPUT_FILENAME)
   with open(output_file, 'w') as f:
     json.dump(results, f, sort_keys=True, indent=4, separators=(',', ': '))
   return output_file
 
 
-def Convert(test_results, base_dir):
+def Convert(test_results, base_dir, test_path_format):
   """Convert intermediate results to the JSON Test Results Format.
 
   Args:
@@ -44,8 +43,7 @@ def Convert(test_results, base_dir):
   status_counter = collections.Counter()
 
   for result in test_results:
-    benchmark_name, story_name = result['testPath'].split('/')
-    story_name = urllib.unquote(story_name)
+    benchmark_name, story_name = util.SplitTestPath(result, test_path_format)
     actual_status = result['status']
     expected_status = actual_status if result['expected'] else 'PASS'
     status_counter[actual_status] += 1

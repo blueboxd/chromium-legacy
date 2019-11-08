@@ -520,7 +520,8 @@ void Connector::WaitToReadMore() {
   handle_watcher_->set_heap_profiler_tag(heap_profiler_tag_);
   MojoResult rv = handle_watcher_->Watch(
       message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-      base::Bind(&Connector::OnWatcherHandleReady, base::Unretained(this)));
+      base::BindRepeating(&Connector::OnWatcherHandleReady,
+                          base::Unretained(this)));
 
   if (message_pipe_.is_valid()) {
     peer_remoteness_tracker_.emplace(

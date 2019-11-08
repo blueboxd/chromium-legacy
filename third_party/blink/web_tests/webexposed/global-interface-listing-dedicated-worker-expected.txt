@@ -806,8 +806,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     static method createDataPipe
 [Worker]     static method createMessagePipe
 [Worker]     static method createSharedBuffer
-[Worker]     static method getDocumentInterfaceBrokerHandle
-[Worker]     static method replaceDocumentInterfaceBrokerForTesting
 [Worker]     attribute @@toStringTag
 [Worker]     attribute RESULT_ABORTED
 [Worker]     attribute RESULT_ALREADY_EXISTS

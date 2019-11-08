@@ -15,6 +15,7 @@
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/app_service_impl.h"
+#include "chrome/services/app_service/public/cpp/instance_registry.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -124,8 +125,7 @@ void AppServiceProxy::Initialize() {
     return;
   }
 
-  app_service_impl_ = std::make_unique<apps::AppServiceImpl>(
-      content::BrowserContext::GetConnectorFor(profile_));
+  app_service_impl_ = std::make_unique<apps::AppServiceImpl>();
   app_service_impl_->BindReceiver(app_service_.BindNewPipeAndPassReceiver());
 
   if (app_service_.is_connected()) {
@@ -163,6 +163,12 @@ mojo::Remote<apps::mojom::AppService>& AppServiceProxy::AppService() {
 apps::AppRegistryCache& AppServiceProxy::AppRegistryCache() {
   return cache_;
 }
+
+#if defined(OS_CHROMEOS)
+apps::InstanceRegistry& AppServiceProxy::InstanceRegistry() {
+  return instance_registry_;
+}
+#endif
 
 apps::PreferredApps& AppServiceProxy::PreferredApps() {
   return preferred_apps_;

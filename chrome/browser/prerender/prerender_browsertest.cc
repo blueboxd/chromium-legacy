@@ -41,6 +41,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/prediction_options.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -54,7 +56,6 @@
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
@@ -1599,9 +1600,9 @@ std::unique_ptr<net::ClientCertStore> CreateCertStore(
 // certificate will never be seen since it's an https top-level resource.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSSLClientCertTopLevel) {
-  ProfileIOData::FromResourceContext(
-      current_browser()->profile()->GetResourceContext())
-      ->set_client_cert_store_factory_for_testing(base::Bind(
+  ProfileNetworkContextServiceFactory::GetForContext(
+      current_browser()->profile())
+      ->set_client_cert_store_factory_for_testing(base::BindRepeating(
           &CreateCertStore, net::ImportCertFromFile(
                                 net::GetTestCertsDirectory(), "ok_cert.pem")));
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
@@ -1619,9 +1620,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // subresource will cancel the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSSLClientCertSubresource) {
-  ProfileIOData::FromResourceContext(
-      current_browser()->profile()->GetResourceContext())
-      ->set_client_cert_store_factory_for_testing(base::Bind(
+  ProfileNetworkContextServiceFactory::GetForContext(
+      current_browser()->profile())
+      ->set_client_cert_store_factory_for_testing(base::BindRepeating(
           &CreateCertStore, net::ImportCertFromFile(
                                 net::GetTestCertsDirectory(), "ok_cert.pem")));
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
@@ -1645,9 +1646,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // Checks that an SSL Client Certificate request that originates from an
 // iframe will cancel the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
-  ProfileIOData::FromResourceContext(
-      current_browser()->profile()->GetResourceContext())
-      ->set_client_cert_store_factory_for_testing(base::Bind(
+  ProfileNetworkContextServiceFactory::GetForContext(
+      current_browser()->profile())
+      ->set_client_cert_store_factory_for_testing(base::BindRepeating(
           &CreateCertStore, net::ImportCertFromFile(
                                 net::GetTestCertsDirectory(), "ok_cert.pem")));
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);

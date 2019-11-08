@@ -127,10 +127,6 @@ std::string URLDataSource::GetAccessControlAllowOriginForOrigin(
   return std::string();
 }
 
-bool URLDataSource::IsGzipped(const std::string& path) {
-  return false;
-}
-
 void URLDataSource::DisablePolymer2ForHost(const std::string& host) {}
 
 bool URLDataSource::ShouldReplaceI18nInJS() {

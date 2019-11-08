@@ -16,7 +16,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -151,8 +150,8 @@ abstract class OverlayPanelBase {
         mProgressBarHeight = PROGRESS_BAR_HEIGHT_DP;
         mBarBorderHeight = BAR_BORDER_HEIGHT_DP;
 
-        int bar_height_dimen = isNewLayout() ? R.dimen.overlay_panel_bar_height
-                                             : R.dimen.overlay_panel_bar_height_legacy;
+        int bar_height_dimen = OverlayPanel.isNewLayout() ? R.dimen.overlay_panel_bar_height
+                                                          : R.dimen.overlay_panel_bar_height_legacy;
         mBarHeight = mContext.getResources().getDimension(bar_height_dimen) * mPxToDp;
 
         final Resources resources = mContext.getResources();
@@ -164,7 +163,7 @@ abstract class OverlayPanelBase {
         mButtonPaddingDps =
                 (int) (mPxToDp * resources.getDimension(R.dimen.overlay_panel_button_padding));
         mBarShadowVisible = true;
-        mPanelShadowVisible = !isNewLayout();
+        mPanelShadowVisible = true;
     }
 
     // ============================================================================================
@@ -355,12 +354,6 @@ abstract class OverlayPanelBase {
         return Math.round(mMaximumHeight / mPxToDp);
     }
 
-    /** @return Whether we're using the new Overlay layout feature. */
-    private boolean isNewLayout() {
-        return ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT);
-    }
-
     /** @return The offset for the page content in DPs. */
     protected float getLayoutOffsetYDps() {
         return mLayoutYOffset * mPxToDp;
@@ -513,7 +506,7 @@ abstract class OverlayPanelBase {
      * @return The opacity of the arrow icon.
      */
     public float getArrowIconOpacity() {
-        return isNewLayout() ? ARROW_ICON_OPACITY_TRANSPARENT : mArrowIconOpacity;
+        return OverlayPanel.isNewLayout() ? ARROW_ICON_OPACITY_TRANSPARENT : mArrowIconOpacity;
     }
 
     /**

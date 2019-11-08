@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer_test_helpers.h"
 #include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "ui/gl/gpu_preference.h"
 #include "v8/include/v8.h"
 
 using testing::Test;
@@ -726,7 +727,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
         IntSize(10, 10), premultiplied_alpha, want_alpha_channel,
         want_depth_buffer, want_stencil_buffer, want_antialiasing, preserve,
         DrawingBuffer::kWebGL1, DrawingBuffer::kAllowChromiumImage,
-        CanvasColorParams());
+        CanvasColorParams(), gl::GpuPreference::kHighPerformance);
 
     // When we request a depth or a stencil buffer, we will get both.
     EXPECT_EQ(cases[i].request_depth || cases[i].request_stencil,
@@ -796,7 +797,7 @@ TEST_F(DrawingBufferTest,
       nullptr, gpu_compositing, false /* using_swap_chain */, nullptr,
       too_big_size, false, false, false, false, false, DrawingBuffer::kDiscard,
       DrawingBuffer::kWebGL1, DrawingBuffer::kAllowChromiumImage,
-      CanvasColorParams());
+      CanvasColorParams(), gl::GpuPreference::kHighPerformance);
   EXPECT_EQ(too_big_drawing_buffer, nullptr);
   drawing_buffer_->BeginDestruction();
 }

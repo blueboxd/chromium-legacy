@@ -83,8 +83,7 @@ void StatusAreaWidget::Initialize() {
   virtual_keyboard_tray_->Initialize();
   ime_menu_tray_->Initialize();
   select_to_speak_tray_->Initialize();
-  if (dictation_button_tray_)
-    dictation_button_tray_->Initialize();
+  dictation_button_tray_->Initialize();
   overview_button_tray_->Initialize();
   UpdateAfterShelfAlignmentChange();
   UpdateAfterLoginStatusChange(
@@ -116,8 +115,7 @@ void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
   virtual_keyboard_tray_->UpdateAfterShelfAlignmentChange();
   ime_menu_tray_->UpdateAfterShelfAlignmentChange();
   select_to_speak_tray_->UpdateAfterShelfAlignmentChange();
-  if (dictation_button_tray_)
-    dictation_button_tray_->UpdateAfterShelfAlignmentChange();
+  dictation_button_tray_->UpdateAfterShelfAlignmentChange();
   palette_tray_->UpdateAfterShelfAlignmentChange();
   overview_button_tray_->UpdateAfterShelfAlignmentChange();
   status_area_widget_delegate_->UpdateLayout();
@@ -135,7 +133,7 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
 
 void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
   TrayBackgroundView* tray = unified_system_tray_.get();
-  tray->SetVisible(visible);
+  tray->SetVisiblePreferred(visible);
   // Opacity is set to prevent flakiness in kiosk browser tests. See
   // https://crbug.com/624584.
   SetOpacity(visible ? 1.f : 0.f);
@@ -182,8 +180,7 @@ void StatusAreaWidget::SchedulePaint() {
   logout_button_tray_->SchedulePaint();
   ime_menu_tray_->SchedulePaint();
   select_to_speak_tray_->SchedulePaint();
-  if (dictation_button_tray_)
-    dictation_button_tray_->SchedulePaint();
+  dictation_button_tray_->SchedulePaint();
   palette_tray_->SchedulePaint();
   overview_button_tray_->SchedulePaint();
 }

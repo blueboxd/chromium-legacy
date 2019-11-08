@@ -60,7 +60,7 @@ public class TabCallbackTest {
         public TabCallbackValueRecorder visibleUrlChangedCallback = new TabCallbackValueRecorder();
 
         @Override
-        public void visibleUrlChanged(Uri url) {
+        public void onVisibleUrlChanged(Uri url) {
             visibleUrlChangedCallback.recordValue(url.toString());
         }
     }

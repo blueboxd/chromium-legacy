@@ -122,8 +122,8 @@ class MojoE2EPerftest : public core::test::MojoTestBase {
       base::RunLoop run_loop;
       runner->PostTaskAndReply(
           FROM_HERE,
-          base::Bind(&MojoE2EPerftest::RunTests, base::Unretained(this),
-                     client_mp, test_name),
+          base::BindOnce(&MojoE2EPerftest::RunTests, base::Unretained(this),
+                         client_mp, test_name),
           run_loop.QuitClosure());
       run_loop.Run();
     }

@@ -14,13 +14,11 @@ import androidx.annotation.Nullable;
 
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowser;
+import org.chromium.weblayer_private.interfaces.IBrowserClient;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Browser contains any number of Tabs, with one active Tab. The active Tab is visible to the user,
@@ -30,12 +28,16 @@ import java.util.Map;
  */
 public final class Browser {
     private final IBrowser mImpl;
-    // Maps from id (as returned from ITab.getId() to Tab).
-    private final Map<Integer, Tab> mTabMap;
+    private final ObserverList<TabListCallback> mTabListCallbacks;
 
     Browser(IBrowser impl) {
         mImpl = impl;
-        mTabMap = new HashMap<Integer, Tab>();
+        mTabListCallbacks = new ObserverList<TabListCallback>();
+        try {
+            mImpl.setClient(new BrowserClientImpl());
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
         try {
             for (Object tab : impl.getTabs()) {
                 // getTabs() returns List<TabImpl>, which isn't accessible from the client library.
@@ -43,17 +45,6 @@ public final class Browser {
                 // Tab's constructor calls registerTab().
                 new Tab(iTab, this);
             }
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
-    }
-
-    // This is called when a new Tab is created.
-    void registerTab(Tab tab) {
-        try {
-            int id = tab.getITab().getId();
-            assert !mTabMap.containsKey(id);
-            mTabMap.put(id, tab);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -71,6 +62,13 @@ public final class Browser {
                                                    : null;
     }
 
+    // Called prior to notifying IBrowser of destroy().
+    void prepareForDestroy() {
+        for (Tab tab : getTabs()) {
+            Tab.unregisterTab(tab);
+        }
+    }
+
     /**
      * Sets the active (visible) Tab. Only one Tab is visible at a time.
      *
@@ -84,10 +82,27 @@ public final class Browser {
     public void setActiveTab(@NonNull Tab tab) {
         ThreadCheck.ensureOnUiThread();
         try {
-            if (!mImpl.setActiveTab(tab.getITab())) {
+            if (getActiveTab() != tab && !mImpl.setActiveTab(tab.getITab())) {
                 throw new IllegalStateException("attachTab() must be called before "
                         + "setActiveTab");
             }
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Adds a tab to this Browser. If {link tab} is the active Tab of another Browser, then the
+     * other Browser's active tab is set to null. This does nothing if {@link tab} is already
+     * contained in this Browser.
+     *
+     * @param tab The Tab to add.
+     */
+    public void addTab(@NonNull Tab tab) {
+        ThreadCheck.ensureOnUiThread();
+        if (tab.getBrowser() == this) return;
+        try {
+            mImpl.addTab(tab.getITab());
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -103,7 +118,9 @@ public final class Browser {
     public Tab getActiveTab() {
         ThreadCheck.ensureOnUiThread();
         try {
-            return mTabMap.get(mImpl.getActiveTabId());
+            Tab tab = Tab.getTabById(mImpl.getActiveTabId());
+            assert tab == null || tab.getBrowser() == this;
+            return tab;
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -117,21 +134,47 @@ public final class Browser {
     @NonNull
     public List<Tab> getTabs() {
         ThreadCheck.ensureOnUiThread();
-        return new ArrayList<Tab>(mTabMap.values());
+        return Tab.getTabsInBrowser(this);
     }
 
     /**
-     * Disposes a Tab. If {@link tabl} is the active Tab,
-     * no Tab is made active. After this call {@link tabl} should not be
-     * used.
+     * Disposes a Tab. If {@link tab} is the active Tab, no Tab is made active. After this call
+     *  {@link tab} should not be used.
      *
      * @param tab The Tab to dispose.
      *
      * @throws IllegalStateException is {@link tab} is not in this Browser.
      */
-    public void disposeTab(Tab tab) {
+    public void destroyTab(@NonNull Tab tab) {
         ThreadCheck.ensureOnUiThread();
-        // TODO(sky): implement this.
+        if (tab.getBrowser() != this) {
+            throw new IllegalStateException("destroyTab() must be called on a Tab in the Browser");
+        }
+        try {
+            mImpl.destroyTab(tab.getITab());
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Adds a TabListCallback.
+     *
+     * @param callback The TabListCallback.
+     */
+    public void registerTabListCallback(@NonNull TabListCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        mTabListCallbacks.addObserver(callback);
+    }
+
+    /**
+     * Removes a TabListCallback.
+     *
+     * @param callback The TabListCallback.
+     */
+    public void unregisterTabListCallback(@NonNull TabListCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        mTabListCallbacks.removeObserver(callback);
     }
 
     /**
@@ -186,6 +229,49 @@ public final class Browser {
             return Profile.of(mImpl.getProfile());
         } catch (RemoteException e) {
             throw new APICallException(e);
+        }
+    }
+
+    private final class BrowserClientImpl extends IBrowserClient.Stub {
+        @Override
+        public void onActiveTabChanged(int activeTabId) {
+            Tab tab = Tab.getTabById(activeTabId);
+            for (TabListCallback callback : mTabListCallbacks) {
+                callback.onActiveTabChanged(tab);
+            }
+        }
+
+        @Override
+        public void onTabAdded(ITab iTab) {
+            int id = 0;
+            try {
+                id = iTab.getId();
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
+            Tab tab = Tab.getTabById(id);
+            if (tab == null) {
+                tab = new Tab(iTab, Browser.this);
+            } else {
+                tab.setBrowser(Browser.this);
+            }
+            for (TabListCallback callback : mTabListCallbacks) {
+                callback.onTabAdded(tab);
+            }
+        }
+
+        @Override
+        public void onTabRemoved(int tabId) {
+            Tab tab = Tab.getTabById(tabId);
+            // This should only be called with a previously created tab.
+            assert tab != null;
+            // And this should only be called for tabs attached to this browser.
+            assert tab.getBrowser() == Browser.this;
+
+            tab.setBrowser(null);
+            for (TabListCallback callback : mTabListCallbacks) {
+                callback.onTabRemoved(tab);
+            }
         }
     }
 }

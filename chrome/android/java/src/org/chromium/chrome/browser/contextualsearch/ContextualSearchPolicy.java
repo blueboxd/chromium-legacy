@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -197,14 +197,13 @@ class ContextualSearchPolicy {
             if (promoTapCounter.isEnabled()) promoTapCounter.increment();
         }
         int tapsSinceOpen = mPreferencesManager.incrementInt(
-                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT);
+                ChromePreferenceKeys.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT);
         if (isUserUndecided()) {
             ContextualSearchUma.logTapsSinceOpenForUndecided(tapsSinceOpen);
         } else {
             ContextualSearchUma.logTapsSinceOpenForDecided(tapsSinceOpen);
         }
-        mPreferencesManager.incrementInt(
-                ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT);
+        mPreferencesManager.incrementInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT);
     }
 
     /**
@@ -213,9 +212,9 @@ class ContextualSearchPolicy {
     void updateCountersForOpen() {
         // Always completely reset the tap counters that accumulate only since the last open.
         mPreferencesManager.writeInt(
-                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT, 0);
+                ChromePreferenceKeys.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT, 0);
         mPreferencesManager.writeInt(
-                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT, 0);
+                ChromePreferenceKeys.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT, 0);
 
         // Disable the "promo tap" counter, but only if we're using the Opt-out onboarding.
         // For Opt-in, we never disable the promo tap counter.
@@ -224,11 +223,11 @@ class ContextualSearchPolicy {
 
             // Bump the total-promo-opens counter.
             int count = mPreferencesManager.incrementInt(
-                    ChromePreferenceManager.CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT);
+                    ChromePreferenceKeys.CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT);
             ContextualSearchUma.logPromoOpenCount(count);
         }
         mPreferencesManager.incrementInt(
-                ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT);
+                ChromePreferenceKeys.CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT);
     }
 
     /**
@@ -240,9 +239,9 @@ class ContextualSearchPolicy {
     void updateCountersForQuickAnswer(boolean wasActivatedByTap, boolean doesAnswer) {
         if (wasActivatedByTap && doesAnswer) {
             mPreferencesManager.incrementInt(
-                    ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT);
+                    ChromePreferenceKeys.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT);
             mPreferencesManager.incrementInt(
-                    ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT);
+                    ChromePreferenceKeys.CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT);
         }
     }
 
@@ -343,10 +342,10 @@ class ContextualSearchPolicy {
         if (selectionType == SelectionType.TAP) {
             long currentTimeMillis = System.currentTimeMillis();
             long lastAnimatedTimeMillis = mPreferencesManager.readLong(
-                    ChromePreferenceManager.CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME);
+                    ChromePreferenceKeys.CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME);
             if (Math.abs(currentTimeMillis - lastAnimatedTimeMillis) > DateUtils.DAY_IN_MILLIS) {
                 mPreferencesManager.writeLong(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME,
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME,
                         currentTimeMillis);
                 return true;
             } else {
@@ -391,8 +390,7 @@ class ContextualSearchPolicy {
      */
     @VisibleForTesting
     int getPromoOpenCount() {
-        return mPreferencesManager.readInt(
-                ChromePreferenceManager.CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT);
+        return mPreferencesManager.readInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT);
     }
 
     /**
@@ -401,7 +399,7 @@ class ContextualSearchPolicy {
     @VisibleForTesting
     int getTapCount() {
         return mPreferencesManager.readInt(
-                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT);
+                ChromePreferenceKeys.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT);
     }
 
     // --------------------------------------------------------------------------------------------

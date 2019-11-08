@@ -165,9 +165,6 @@ class CONTENT_EXPORT URLDataSource {
   virtual std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin);
 
-  // Whether |path| is gzipped (and should be transmitted gzipped).
-  virtual bool IsGzipped(const std::string& path);
-
   // Called on the UI thread. For the shared resource, disables using Polymer 2
   // for requests from |host|, even if WebUIPolymer2 is enabled. Assumes this
   // method is only called from one host.

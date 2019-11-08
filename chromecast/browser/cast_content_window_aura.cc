@@ -72,16 +72,14 @@ class TouchBlocker : public ui::EventHandler, public aura::WindowObserver {
 CastContentWindowAura::CastContentWindowAura(
     const CastContentWindow::CreateParams& params,
     CastWindowManager* window_manager)
-    : delegate_(params.delegate),
+    : CastContentWindow(params),
       window_manager_(window_manager),
       gesture_dispatcher_(
           std::make_unique<CastContentGestureHandler>(delegate_)),
       gesture_priority_(params.gesture_priority),
       is_touch_enabled_(params.enable_touch_input),
       window_(nullptr),
-      has_screen_access_(false) {
-  DCHECK(delegate_);
-}
+      has_screen_access_(false) {}
 
 CastContentWindowAura::~CastContentWindowAura() {
   CastWebContents::Observer::Observe(nullptr);
@@ -167,7 +165,9 @@ void CastContentWindowAura::SetHostContext(base::Value host_context) {}
 
 void CastContentWindowAura::NotifyVisibilityChange(
     VisibilityType visibility_type) {
-  delegate_->OnVisibilityChange(visibility_type);
+  if (delegate_) {
+    delegate_->OnVisibilityChange(visibility_type);
+  }
   for (auto& observer : observer_list_) {
     observer.OnVisibilityChange(visibility_type);
   }

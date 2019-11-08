@@ -17,7 +17,6 @@ namespace {
 typedef HashMap<int, blink::OffscreenCanvasPlaceholder*> PlaceholderIdMap;
 
 PlaceholderIdMap& placeholderRegistry() {
-  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(PlaceholderIdMap, s_placeholderRegistry, ());
   return s_placeholderRegistry;
 }
@@ -40,6 +39,14 @@ void SetSuspendAnimation(
   }
 }
 
+void UpdateDispatcherFilterQuality(
+    base::WeakPtr<blink::CanvasResourceDispatcher> dispatcher,
+    SkFilterQuality filter) {
+  if (dispatcher) {
+    dispatcher->SetFilterQuality(filter);
+  }
+}
+
 }  // unnamed namespace
 
 namespace blink {
@@ -48,17 +55,13 @@ OffscreenCanvasPlaceholder::~OffscreenCanvasPlaceholder() {
   UnregisterPlaceholderCanvas();
 }
 
-void OffscreenCanvasPlaceholder::SetOffscreenCanvasFrame(
+void OffscreenCanvasPlaceholder::SetOffscreenCanvasResource(
     scoped_refptr<CanvasResource> new_frame,
-    base::WeakPtr<CanvasResourceDispatcher> dispatcher,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     viz::ResourceId resource_id) {
   DCHECK(IsOffscreenCanvasRegistered());
   DCHECK(new_frame);
   ReleaseOffscreenCanvasFrame();
   placeholder_frame_ = std::move(new_frame);
-  frame_dispatcher_ = std::move(dispatcher);
-  frame_dispatcher_task_runner_ = std::move(task_runner);
   placeholder_frame_resource_id_ = resource_id;
 
   if (animation_state_ == kShouldSuspendAnimation) {
@@ -72,16 +75,56 @@ void OffscreenCanvasPlaceholder::SetOffscreenCanvasFrame(
   }
 }
 
+void OffscreenCanvasPlaceholder::SetOffscreenCanvasDispatcher(
+    base::WeakPtr<CanvasResourceDispatcher> dispatcher,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(IsOffscreenCanvasRegistered());
+  frame_dispatcher_ = std::move(dispatcher);
+  frame_dispatcher_task_runner_ = std::move(task_runner);
+  // The UpdateOffscreenCanvasFilterQuality could be called to change the filter
+  // quality before this function. We need to first apply the filter changes to
+  // the corresponding offscreen canvas.
+  if (filter_quality_) {
+    SkFilterQuality quality = filter_quality_.value();
+    filter_quality_ = base::nullopt;
+    UpdateOffscreenCanvasFilterQuality(quality);
+  }
+}
+
 void OffscreenCanvasPlaceholder::ReleaseOffscreenCanvasFrame() {
   DCHECK(IsOffscreenCanvasRegistered());
-  if (placeholder_frame_) {
-    DCHECK(frame_dispatcher_task_runner_);
-    placeholder_frame_->Transfer();
+  if (!placeholder_frame_)
+    return;
+
+  DCHECK(frame_dispatcher_task_runner_);
+  placeholder_frame_->Transfer();
+  PostCrossThreadTask(
+      *frame_dispatcher_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(releaseFrameToDispatcher, frame_dispatcher_,
+                          std::move(placeholder_frame_),
+                          placeholder_frame_resource_id_));
+}
+
+void OffscreenCanvasPlaceholder::UpdateOffscreenCanvasFilterQuality(
+    SkFilterQuality filter_quality) {
+  DCHECK(IsOffscreenCanvasRegistered());
+  if (!frame_dispatcher_task_runner_) {
+    filter_quality_ = filter_quality;
+    return;
+  }
+
+  if (filter_quality_ == filter_quality)
+    return;
+
+  filter_quality_ = filter_quality;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      Thread::Current()->GetTaskRunner();
+  if (task_runner == frame_dispatcher_task_runner_) {
+    UpdateDispatcherFilterQuality(frame_dispatcher_, filter_quality);
+  } else {
     PostCrossThreadTask(*frame_dispatcher_task_runner_, FROM_HERE,
-                        CrossThreadBindOnce(releaseFrameToDispatcher,
-                                            std::move(frame_dispatcher_),
-                                            std::move(placeholder_frame_),
-                                            placeholder_frame_resource_id_));
+                        CrossThreadBindOnce(UpdateDispatcherFilterQuality,
+                                            frame_dispatcher_, filter_quality));
   }
 }
 

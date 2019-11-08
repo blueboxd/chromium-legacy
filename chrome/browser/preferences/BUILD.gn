@@ -5,7 +5,10 @@
 import("//build/config/android/rules.gni")
 
 android_library("java") {
-  java_files = [ "android/java/src/org/chromium/chrome/browser/preferences/SharedPreferencesManager.java" ]
+  java_files = [
+    "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/SharedPreferencesManager.java",
+  ]
   deps = [
     "//base:base_java",
   ]

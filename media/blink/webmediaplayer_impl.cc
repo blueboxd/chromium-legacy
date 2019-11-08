@@ -369,13 +369,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   always_enable_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceVideoOverlays);
 
-  if (base::FeatureList::IsEnabled(kOverlayFullscreenVideo)) {
-    bool use_android_overlay = base::FeatureList::IsEnabled(kUseAndroidOverlay);
-    overlay_mode_ = use_android_overlay ? OverlayMode::kUseAndroidOverlay
-                                        : OverlayMode::kUseContentVideoView;
-  } else {
+  if (base::FeatureList::IsEnabled(kOverlayFullscreenVideo))
+    overlay_mode_ = OverlayMode::kUseAndroidOverlay;
+  else
     overlay_mode_ = OverlayMode::kNoOverlays;
-  }
 
   delegate_id_ = delegate_->AddObserver(this);
   delegate_->SetIdle(delegate_id_, true);
@@ -550,15 +547,6 @@ void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
     client_->OnPictureInPictureStateChange();
 }
 
-bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {
-#if defined(OS_ANDROID)
-  return !using_media_player_renderer_ &&
-         overlay_mode_ == OverlayMode::kUseContentVideoView;
-#else
-  return false;
-#endif
-}
-
 void WebMediaPlayerImpl::EnableOverlay() {
   overlay_enabled_ = true;
   if (request_routing_token_cb_ &&
@@ -579,9 +567,7 @@ void WebMediaPlayerImpl::EnableOverlay() {
 
 void WebMediaPlayerImpl::DisableOverlay() {
   overlay_enabled_ = false;
-  if (overlay_mode_ == OverlayMode::kUseContentVideoView) {
-    surface_created_cb_.Cancel();
-  } else if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
+  if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
     token_available_cb_.Cancel();
     overlay_routing_token_is_pending_ = false;
     overlay_routing_token_ = OverlayInfo::RoutingToken();
@@ -2782,6 +2768,9 @@ scoped_refptr<VideoFrame> WebMediaPlayerImpl::GetCurrentFrameFromCompositor()
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl::GetCurrentFrameFromCompositor");
 
+  if (current_frame_override_)
+    return current_frame_override_;
+
   // Can be null.
   scoped_refptr<VideoFrame> video_frame =
       compositor_->GetCurrentFrameOnAnyThread();
@@ -3286,6 +3275,28 @@ base::Optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
   return bridge_->GetSurfaceId();
 }
 
+void WebMediaPlayerImpl::RequestAnimationFrame() {
+  vfc_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VideoFrameCompositor::SetOnFramePresentedCallback,
+                     base::Unretained(compositor_.get()),
+                     BindToCurrentLoop(base::BindOnce(
+                         &WebMediaPlayerImpl::OnNewFramePresentedCallback,
+                         weak_factory_.GetWeakPtr()))));
+}
+
+void WebMediaPlayerImpl::OnNewFramePresentedCallback(
+    scoped_refptr<VideoFrame> presented_frame,
+    base::TimeTicks presentation_time,
+    base::TimeTicks expected_presentation_time,
+    uint32_t presentation_counter) {
+  current_frame_override_ = std::move(presented_frame);
+  client_->OnRequestAnimationFrame(
+      presentation_time, expected_presentation_time, presentation_counter,
+      *current_frame_override_);
+  current_frame_override_.reset();
+}
+
 base::WeakPtr<blink::WebMediaPlayer> WebMediaPlayerImpl::AsWeakPtr() {
   return weak_this_;
 }
@@ -3635,6 +3646,11 @@ void WebMediaPlayerImpl::OnSimpleWatchTimerTick() {
 
 GURL WebMediaPlayerImpl::GetSrcAfterRedirects() {
   return mb_data_source_ ? mb_data_source_->GetUrlAfterRedirects() : GURL();
+}
+
+void WebMediaPlayerImpl::SetCurrentFrameOverrideForTesting(
+    scoped_refptr<VideoFrame> current_frame_override) {
+  current_frame_override_ = current_frame_override;
 }
 
 }  // namespace media

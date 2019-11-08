@@ -62,6 +62,7 @@
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/web_test/devtools_protocol_test_bindings.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser.h"
+#include "content/shell/browser/web_test/mock_client_hints_controller_delegate.h"
 #include "content/shell/browser/web_test/test_info_extractor.h"
 #include "content/shell/browser/web_test/web_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
@@ -391,6 +392,9 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
 
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
+
+  browser_context->GetClientHintsControllerDelegate()->ResetForTesting();
+
   initial_size_ = Shell::GetShellDefaultSize();
   if (!main_window_) {
     main_window_ = content::Shell::CreateNewWindow(

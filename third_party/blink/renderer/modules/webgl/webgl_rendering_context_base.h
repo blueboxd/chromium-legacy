@@ -619,6 +619,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   ScriptPromise makeXRCompatible(ScriptState*);
   bool IsXRCompatible();
 
+  void UpdateNumberOfUserAllocatedMultisampledRenderbuffers(int delta);
+
  protected:
   friend class EXTDisjointTimerQuery;
   friend class EXTDisjointTimerQueryWebGL2;
@@ -681,6 +683,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void DrawingBufferClientRestoreFramebufferBinding() override;
   void DrawingBufferClientRestorePixelUnpackBufferBinding() override;
   void DrawingBufferClientRestorePixelPackBufferBinding() override;
+  bool DrawingBufferClientUserAllocatedMultisampledRenderbuffers() override;
+  void DrawingBufferClientForceLostContextWithAutoRecovery() override;
 
   virtual void DestroyContext();
   void MarkContextChanged(ContentChangeType);
@@ -1760,6 +1764,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
+
+  int number_of_user_allocated_multisampled_renderbuffers_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGLRenderingContextBase);
 };

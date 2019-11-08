@@ -6,13 +6,15 @@
 
 namespace chromecast {
 
-CastContentWindow::CastContentWindow() = default;
+CastContentWindow::CastContentWindow(const CreateParams& params)
+    : delegate_(params.delegate) {}
 
 CastContentWindow::~CastContentWindow() = default;
 
 CastContentWindow::CreateParams::CreateParams() = default;
 CastContentWindow::CreateParams::CreateParams(const CreateParams& other) =
     default;
+CastContentWindow::CreateParams::~CreateParams() = default;
 
 void CastContentWindow::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);

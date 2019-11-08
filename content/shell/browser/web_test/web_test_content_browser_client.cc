@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/client_hints_controller_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_process_host.h"
@@ -163,6 +164,12 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
           &WebTestContentBrowserClient::BindClipboardHostForRequest,
           base::Unretained(this)),
       ui_task_runner);
+
+  registry->AddInterface(
+      base::BindRepeating(
+          &WebTestContentBrowserClient::BindClientHintsControllerDelegate,
+          base::Unretained(this)),
+      ui_task_runner);
 }
 
 void WebTestContentBrowserClient::BindClipboardHostForRequest(
@@ -177,6 +184,14 @@ void WebTestContentBrowserClient::BindClipboardHost(
   if (!mock_clipboard_host_)
     mock_clipboard_host_ = std::make_unique<MockClipboardHost>();
   mock_clipboard_host_->Bind(std::move(receiver));
+}
+
+void WebTestContentBrowserClient::BindClientHintsControllerDelegate(
+    mojo::PendingReceiver<client_hints::mojom::ClientHints> receiver) {
+  ClientHintsControllerDelegate* delegate =
+      browser_context()->GetClientHintsControllerDelegate();
+  DCHECK(delegate);
+  delegate->Bind(std::move(receiver));
 }
 
 void WebTestContentBrowserClient::OverrideWebkitPrefs(

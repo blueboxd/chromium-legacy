@@ -49,7 +49,6 @@ PrefetchURLLoader::PrefetchURLLoader(
     : frame_tree_node_id_(frame_tree_node_id),
       resource_request_(resource_request),
       network_loader_factory_(std::move(network_loader_factory)),
-      client_binding_(this),
       forwarding_client_(std::move(client)),
       url_loader_throttles_getter_(url_loader_throttles_getter),
       signed_exchange_prefetch_metric_recorder_(
@@ -79,8 +78,8 @@ PrefetchURLLoader::PrefetchURLLoader(
   }
 
   network::mojom::URLLoaderClientPtr network_client;
-  client_binding_.Bind(mojo::MakeRequest(&network_client));
-  client_binding_.set_connection_error_handler(base::BindOnce(
+  client_receiver_.Bind(mojo::MakeRequest(&network_client));
+  client_receiver_.set_disconnect_handler(base::BindOnce(
       &PrefetchURLLoader::OnNetworkConnectionError, base::Unretained(this)));
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader_), routing_id, request_id, options,
@@ -112,8 +111,8 @@ void PrefetchURLLoader::FollowRedirect(
     RecordPrefetchRedirectHistogram(
         PrefetchRedirect::kPrefetchRedirectedSXGHandler);
 
-    // Rebind |client_binding_| and |loader_|.
-    client_binding_.Bind(signed_exchange_prefetch_handler_->FollowRedirect(
+    // Rebind |client_receiver_| and |loader_|.
+    client_receiver_.Bind(signed_exchange_prefetch_handler_->FollowRedirect(
         mojo::MakeRequest(&loader_)));
     return;
   }
@@ -162,7 +161,7 @@ void PrefetchURLLoader::OnReceiveResponse(
         std::make_unique<SignedExchangePrefetchHandler>(
             frame_tree_node_id_, resource_request_, response,
             mojo::ScopedDataPipeConsumerHandle(), std::move(loader_),
-            client_binding_.Unbind(), network_loader_factory_,
+            client_receiver_.Unbind(), network_loader_factory_,
             url_loader_throttles_getter_, this,
             signed_exchange_prefetch_metric_recorder_, accept_langs_);
     return;
@@ -263,7 +262,7 @@ bool PrefetchURLLoader::SendEmptyBody() {
     forwarding_client_->OnComplete(
         network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
     forwarding_client_.reset();
-    client_binding_.Close();
+    client_receiver_.reset();
     return false;
   }
   forwarding_client_->OnStartLoadingResponseBody(std::move(consumer));

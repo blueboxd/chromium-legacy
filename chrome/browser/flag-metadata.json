@@ -3262,7 +3262,7 @@
   {
     "name": "smooth-scrolling",
     "owners": [ "bokan", "input-dev" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "split-settings",

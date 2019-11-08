@@ -32,14 +32,14 @@ DataDecoderService::DataDecoderService() = default;
 
 DataDecoderService::DataDecoderService(
     mojo::PendingReceiver<mojom::DataDecoderService> receiver) {
-  receiver_.Bind(std::move(receiver));
+  receivers_.Add(this, std::move(receiver));
 }
 
 DataDecoderService::~DataDecoderService() = default;
 
 void DataDecoderService::BindReceiver(
     mojo::PendingReceiver<mojom::DataDecoderService> receiver) {
-  receiver_.Bind(std::move(receiver));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void DataDecoderService::BindImageDecoder(

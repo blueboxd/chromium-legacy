@@ -64,7 +64,6 @@ class SubresourceLoader : public network::mojom::URLLoader,
         options_(options),
         traffic_annotation_(annotation),
         network_loader_factory_(std::move(network_loader_factory)),
-        local_client_binding_(this),
         host_(appcache_host) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     remote_receiver_.set_disconnect_handler(base::BindOnce(
@@ -111,11 +110,11 @@ class SubresourceLoader : public network::mojom::URLLoader,
     DCHECK(handler);
 
     // Disconnect from the network loader first.
-    local_client_binding_.Close();
+    local_client_receiver_.reset();
     network_loader_ = nullptr;
 
     network::mojom::URLLoaderClientPtr client_ptr;
-    local_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
+    local_client_receiver_.Bind(mojo::MakeRequest(&client_ptr));
     std::move(handler).Run(request_, mojo::MakeRequest(&appcache_loader_),
                            std::move(client_ptr));
   }
@@ -123,7 +122,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
   void CreateAndStartNetworkLoader() {
     DCHECK(!appcache_loader_);
     network::mojom::URLLoaderClientPtr client_ptr;
-    local_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
+    local_client_receiver_.Bind(mojo::MakeRequest(&client_ptr));
     network_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
         request_, std::move(client_ptr), traffic_annotation_);
@@ -309,9 +308,9 @@ class SubresourceLoader : public network::mojom::URLLoader,
   // Core appcache logic that decides how to handle a request.
   std::unique_ptr<AppCacheRequestHandler> handler_;
 
-  // The local binding to either our network or appcache loader,
+  // The local receiver to either our network or appcache loader,
   // we only use one of them at any given time.
-  mojo::Binding<network::mojom::URLLoaderClient> local_client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> local_client_receiver_{this};
   network::mojom::URLLoaderPtr network_loader_;
   network::mojom::URLLoaderPtr appcache_loader_;
 

@@ -161,16 +161,8 @@ void ResetWheelAndTouchEventHandlerProperties(LocalFrame& frame) {
 
 }  // namespace
 
-LocalFrameClientImpl::LocalFrameClientImpl(
-    WebLocalFrameImpl* frame,
-    mojo::ScopedMessagePipeHandle document_interface_broker_handle)
-    : web_frame_(frame) {
-  DCHECK(document_interface_broker_handle.is_valid());
-  document_interface_broker_.Bind(
-      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>(
-          std::move(document_interface_broker_handle),
-          mojom::blink::DocumentInterfaceBroker::Version_));
-}
+LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
+    : web_frame_(frame) {}
 
 LocalFrameClientImpl::~LocalFrameClientImpl() = default;
 
@@ -443,17 +435,8 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   }
 
   if (web_frame_->Client()) {
-    mojo::PendingReceiver<mojom::blink::DocumentInterfaceBroker>
-        document_interface_broker_receiver;
-    if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting) {
-      document_interface_broker_.reset();
-      document_interface_broker_receiver =
-          document_interface_broker_.BindNewPipeAndPassReceiver();
-    }
-
     web_frame_->Client()->DidCommitProvisionalLoad(
         WebHistoryItem(item), commit_type,
-        document_interface_broker_receiver.PassPipe(),
         global_object_reuse_policy == GlobalObjectReusePolicy::kCreateNew);
     if (web_frame_->GetFrame()->IsLocalRoot()) {
       // This update should be sent as soon as loading the new document begins
@@ -766,12 +749,6 @@ void LocalFrameClientImpl::SelectorMatchChanged(
   }
 }
 
-void LocalFrameClientImpl::VisibilityChanged(
-    blink::mojom::FrameVisibility visibility) {
-  if (WebLocalFrameClient* client = web_frame_->Client())
-    client->VisibilityChanged(visibility);
-}
-
 DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,
@@ -1061,38 +1038,9 @@ LocalFrameClientImpl::GetInterfaceProvider() {
   return web_frame_->Client()->GetInterfaceProvider();
 }
 
-mojom::blink::DocumentInterfaceBroker*
-LocalFrameClientImpl::GetDocumentInterfaceBroker() {
-  DCHECK(document_interface_broker_.is_bound());
-  return document_interface_broker_.get();
-}
-
 blink::BrowserInterfaceBrokerProxy&
 LocalFrameClientImpl::GetBrowserInterfaceBroker() {
   return *web_frame_->Client()->GetBrowserInterfaceBroker();
-}
-
-void LocalFrameClientImpl::BindDocumentInterfaceBroker(
-    mojo::ScopedMessagePipeHandle js_handle) {
-  document_interface_broker_receivers_.Add(
-      this, mojo::PendingReceiver<mojom::blink::DocumentInterfaceBroker>(
-                std::move(js_handle)));
-}
-
-mojo::ScopedMessagePipeHandle
-LocalFrameClientImpl::SetDocumentInterfaceBrokerForTesting(
-    mojo::ScopedMessagePipeHandle blink_handle) {
-  // Ensure all pending calls get dispatched before the implementation swap
-  document_interface_broker_receivers_.FlushForTesting();
-
-  mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker> test_broker(
-      std::move(blink_handle), mojom::blink::DocumentInterfaceBroker::Version_);
-
-  mojo::ScopedMessagePipeHandle real_handle =
-      document_interface_broker_.Unbind().PassPipe();
-  document_interface_broker_.Bind(std::move(test_broker));
-
-  return real_handle;
 }
 
 AssociatedInterfaceProvider*

@@ -110,17 +110,17 @@ public class NavigationTest {
         public CallbackHelper onFirstContentfulPaintCallback = new CallbackHelper();
 
         @Override
-        public void navigationStarted(Navigation navigation) {
+        public void onNavigationStarted(Navigation navigation) {
             onStartedCallback.notifyCalled(navigation.getUri());
         }
 
         @Override
-        public void readyToCommitNavigation(Navigation navigation) {
+        public void onReadyToCommitNavigation(Navigation navigation) {
             onReadyToCommitCallback.notifyCalled(navigation.getUri());
         }
 
         @Override
-        public void navigationCompleted(Navigation navigation) {
+        public void onNavigationCompleted(Navigation navigation) {
             onCompletedCallback.notifyCalled(navigation.getUri(), navigation.isSameDocument());
         }
 
@@ -130,13 +130,13 @@ public class NavigationTest {
         }
 
         @Override
-        public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
+        public void onLoadStateChanged(boolean isLoading, boolean toDifferentDocument) {
             loadStateChangedCallback.recordValue(
                     Boolean.toString(isLoading) + " " + Boolean.toString(toDifferentDocument));
         }
 
         @Override
-        public void loadProgressChanged(double progress) {
+        public void onLoadProgressChanged(double progress) {
             loadProgressChangedCallback.recordValue(
                     progress == 1 ? "load complete" : "load started");
         }

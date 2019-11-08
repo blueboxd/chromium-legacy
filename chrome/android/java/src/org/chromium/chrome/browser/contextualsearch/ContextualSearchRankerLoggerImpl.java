@@ -62,9 +62,10 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
     public ContextualSearchRankerLoggerImpl(
             ContextualSearchInteractionPersister interactionPersister) {
         mInteractionPersister = interactionPersister;
-        if (isEnabled())
+        if (isEnabled()) {
             mNativePointer = ContextualSearchRankerLoggerImplJni.get().init(
                     ContextualSearchRankerLoggerImpl.this);
+        }
     }
 
     /**
@@ -74,7 +75,7 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
      *         not.
      */
     @VisibleForTesting
-    protected final static String outcomeName(@Feature int feature) {
+    protected static final String outcomeName(@Feature int feature) {
         switch (feature) {
             case Feature.OUTCOME_WAS_PANEL_OPENED:
                 return "OutcomeWasPanelOpened";
@@ -97,7 +98,7 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
      *         expected to be logged.
      */
     @VisibleForTesting
-    protected final static String featureName(@Feature int feature) {
+    protected static final String featureName(@Feature int feature) {
         // NOTE: this list needs to be kept in sync with the white list in
         // predictor_config_definitions.cc and with ukm.xml!
         switch (feature) {

@@ -130,6 +130,9 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::BACKGROUND_SYNC,
     ContentSettingsType::SOUND,
     ContentSettingsType::AUTOMATIC_DOWNLOADS,
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
+#endif
     ContentSettingsType::AUTOPLAY,
     ContentSettingsType::MIDI_SYSEX,
     ContentSettingsType::CLIPBOARD_READ,

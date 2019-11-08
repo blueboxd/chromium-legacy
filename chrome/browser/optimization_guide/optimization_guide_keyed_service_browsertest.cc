@@ -666,6 +666,9 @@ class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
     cmd->AppendSwitch("enable-spdy-proxy-auth");
     // Add switch to avoid having to see the infobar in the test.
     cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
+    // Add switch to avoid racing navigations in the test.
+    cmd->AppendSwitch(optimization_guide::switches::
+                          kDisableFetchingHintsAtNavigationStartForTesting);
   }
 
  private:
@@ -802,11 +805,11 @@ IN_PROC_BROWSER_TEST_F(
   // There should be a hint that matches this URL.
   histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
                                       true, 1);
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
             last_should_target_navigation_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_can_apply_optimization_decision());
-  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kUnknown,
             last_consumer_decision());
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.TargetDecision.PainfulPageLoad",

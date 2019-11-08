@@ -1125,7 +1125,7 @@ if (!is_android) {
       "../browser/sharing/sharing_browsertest.cc",
       "../browser/sharing/sharing_browsertest.h",
       "../browser/signin/consistency_cookie_browsertest.cc",
-      "../browser/signin/e2e_tests/demo_signin_e2e_test.cc",
+      "../browser/signin/e2e_tests/live_sign_in_test.cc",
       "../browser/signin/e2e_tests/live_test.cc",
       "../browser/signin/e2e_tests/live_test.h",
       "../browser/site_isolation/chrome_site_per_process_browsertest.cc",

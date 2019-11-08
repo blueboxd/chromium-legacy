@@ -178,7 +178,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   void OnDestroyed(gpu::error::ContextLostReason reason,
                    gpu::error::Error error);
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
-  void OnGpuSwitched();
+  void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic);
   void OnSignalAck(uint32_t id, const CommandBuffer::State& state);
   void OnSwapBuffersCompleted(const SwapBuffersCompleteParams& params);
   void OnBufferPresented(uint64_t swap_id,

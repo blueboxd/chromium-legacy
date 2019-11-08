@@ -89,8 +89,8 @@ cast_source_set("browser") {
     "cast_system_memory_pressure_evaluator_adjuster.h",
     "cast_web_contents_impl.cc",
     "cast_web_contents_impl.h",
-    "cast_web_contents_manager.cc",
-    "cast_web_contents_manager.h",
+    "cast_web_service.cc",
+    "cast_web_service.h",
     "cast_web_view_default.cc",
     "cast_web_view_default.h",
     "cast_web_view_factory.cc",
@@ -212,7 +212,7 @@ cast_source_set("browser") {
       "android/cast_content_window_android.cc",
       "android/cast_content_window_android.h",
       "android/cast_metrics_helper_android.cc",
-      "android/cast_web_contents_manager_android.cc",
+      "android/cast_web_service_android.cc",
     ]
     deps += [
       ":jni_headers",
@@ -248,7 +248,7 @@ cast_source_set("browser") {
     sources += [
       "cast_content_window_aura.cc",
       "cast_content_window_aura.h",
-      "cast_web_contents_manager_aura.cc",
+      "cast_web_service_aura.cc",
     ]
 
     deps += [

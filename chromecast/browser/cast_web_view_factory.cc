@@ -22,12 +22,12 @@ void CastWebViewFactory::OnPageDestroyed(CastWebView* web_view) {
 
 std::unique_ptr<CastWebView> CastWebViewFactory::CreateWebView(
     const CastWebView::CreateParams& params,
-    CastWebContentsManager* web_contents_manager,
+    CastWebService* web_service,
     scoped_refptr<content::SiteInstance> site_instance,
     const GURL& initial_url) {
   std::unique_ptr<CastWebView> webview;
   webview = std::make_unique<CastWebViewDefault>(
-      params, web_contents_manager, browser_context_, site_instance);
+      params, web_service, browser_context_, site_instance);
   if (webview) {
     webview->AddObserver(this);
   }

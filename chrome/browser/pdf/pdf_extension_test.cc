@@ -69,6 +69,8 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/accessibility_notification_waiter.h"
+#include "content/public/test/browser_accessibility.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/dump_accessibility_test_helper.h"
 #include "content/public/test/hit_test_region_observer.h"
@@ -81,6 +83,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "pdf/pdf_features.h"
 #include "services/network/public/cpp/features.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
@@ -2515,12 +2518,13 @@ class PDFExtensionAccessibilityTreeDumpTest
     // Find the embedded PDF and dump the accessibility tree.
     content::FindAccessibilityNodeCriteria find_criteria;
     find_criteria.role = ax::mojom::Role::kEmbeddedObject;
-    content::BrowserAccessibility* pdf_root =
+    content::TestBrowserAccessibility* pdf_root =
         content::FindAccessibilityNode(guest_contents, find_criteria);
     CHECK(pdf_root);
 
     base::string16 actual_contents_utf16;
-    formatter->FormatAccessibilityTree(pdf_root, &actual_contents_utf16);
+    content::TestBrowserAccessibility::FormatAccessibilityTree(
+        formatter.get(), pdf_root, &actual_contents_utf16);
     std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
 
     std::vector<std::string> actual_lines =
@@ -2625,4 +2629,39 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, TextStyle) {
   RunPDFTest(FILE_PATH_LITERAL("text-style.pdf"));
+}
+
+// This test suite validates the navigation done using the accessibility client.
+using PDFExtensionAccessibilityNavigationTest = PDFExtensionTest;
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityNavigationTest,
+                       LinkNavigation) {
+  // Enable accessibility and load the test file.
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  GURL url(embedded_test_server()->GetURL("/pdf/accessibility/weblinks.pdf"));
+  WebContents* guest_contents = LoadPdfGetGuestContents(url);
+  ASSERT_TRUE(guest_contents);
+  WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
+
+  // Find the specific link node.
+  content::FindAccessibilityNodeCriteria find_criteria;
+  find_criteria.role = ax::mojom::Role::kLink;
+  find_criteria.name = "http://bing.com";
+  content::TestBrowserAccessibility* link_node =
+      content::FindAccessibilityNode(guest_contents, find_criteria);
+  ASSERT_TRUE(link_node);
+
+  // Invoke action on a link and wait for navigation to complete.
+  content::AccessibilityNotificationWaiter event_waiter(
+      GetActiveWebContents(), ui::kAXModeComplete,
+      ax::mojom::Event::kLoadComplete);
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kDoDefault;
+  action_data.target_node_id = link_node->GetData().id;
+  link_node->AccessibilityPerformAction(action_data);
+  event_waiter.WaitForNotification();
+
+  // Test that navigation occurred correctly.
+  const GURL& expected_url = GetActiveWebContents()->GetURL();
+  EXPECT_EQ("https://bing.com/", expected_url.spec());
 }

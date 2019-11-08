@@ -30,8 +30,8 @@ __gCrWeb['passwords'] = __gCrWeb.passwords;
  */
 __gCrWeb.passwords['findPasswordForms'] = function() {
   var formDataList = [];
-  if (hasPasswordField_(window)) {
-    getPasswordFormDataList_(formDataList, window);
+  if (hasPasswordField(window)) {
+    getPasswordFormDataList(formDataList, window);
   }
   return __gCrWeb.stringify(formDataList);
 };
@@ -43,7 +43,7 @@ __gCrWeb.passwords['findPasswordForms'] = function() {
  * contain an input field of type 'password'.
  * @return {boolean}
  */
-var hasPasswordField_ = function(win) {
+var hasPasswordField = function(win) {
   var doc = win.document;
 
   // We may will not be allowed to read the 'document' property from a frame
@@ -56,16 +56,16 @@ var hasPasswordField_ = function(win) {
     return true;
   }
 
-  return getSameOriginFrames_(win).some(hasPasswordField_);
+  return getSameOriginFrames(win).some(hasPasswordField);
 };
 
 /**
  * Returns the contentWindow of all iframes that are from the the same origin
  * as the containing window.
  * @param {Window} win The window in which to look for frames.
- * @return {Array.<Window>} Array of the same-origin frames found.
+ * @return {Array<Window>} Array of the same-origin frames found.
  */
-var getSameOriginFrames_ = function(win) {
+var getSameOriginFrames = function(win) {
   var frames = win.document.getElementsByTagName('iframe');
   var result = [];
   for (var i = 0; i < frames.length; i++) {
@@ -84,7 +84,7 @@ var getSameOriginFrames_ = function(win) {
  * a proxy for onclick event because onclick handling might be prevented by
  * the site JavaScript.
  */
-var addSubmitButtonTouchEndHandler_ = function(form) {
+var addSubmitButtonTouchEndHandler = function(form) {
   if (form.querySelector('input[type=submit]')) {
     return;
   }
@@ -99,7 +99,7 @@ var addSubmitButtonTouchEndHandler_ = function(form) {
     }
   }
   for (var i = 0; i < buttons.length; ++i) {
-    buttons[0].addEventListener('touchend', onSubmitButtonTouchEnd_);
+    buttons[0].addEventListener('touchend', onSubmitButtonTouchEnd);
   }
 };
 
@@ -107,7 +107,7 @@ var addSubmitButtonTouchEndHandler_ = function(form) {
  * Click handler for the submit button. It sends to the host
  * form.submitButtonClick command.
  */
-var onSubmitButtonTouchEnd_ = function(evt) {
+var onSubmitButtonTouchEnd = function(evt) {
   var form = evt.currentTarget.form;
   var formData = __gCrWeb.passwords.getPasswordFormData(form);
   if (!formData) {
@@ -120,11 +120,11 @@ var onSubmitButtonTouchEnd_ = function(evt) {
 /**
  * Returns the element from |inputs| which has the field identifier equal to
  * |identifier| and null if there is no such element.
- * @param {Array.<HTMLInputElement>} inputs
+ * @param {Array<HTMLInputElement>} inputs
  * @param {string} identifier
  * @return {HTMLInputElement}
  */
-var findInputByFieldIdentifier_ = function(inputs, identifier) {
+var findInputByFieldIdentifier = function(inputs, identifier) {
   for (var i = 0; i < inputs.length; ++i) {
     if (identifier == __gCrWeb.form.getFieldIdentifier(inputs[i])) {
       return inputs[i];
@@ -140,14 +140,14 @@ var findInputByFieldIdentifier_ = function(inputs, identifier) {
  * @param {string} identifier The name of the form to extract.
  * @return {HTMLFormElement} The password form.
  */
-var getPasswordFormElement_ = function(win, identifier) {
+var getPasswordFormElement = function(win, identifier) {
   var el = win.__gCrWeb.form.getFormElementFromIdentifier(identifier);
   if (el) {
     return el;
   }
-  var frames = getSameOriginFrames_(win);
+  var frames = getSameOriginFrames(win);
   for (var i = 0; i < frames.length; ++i) {
-    el = getPasswordFormElement_(frames[i], identifier);
+    el = getPasswordFormElement(frames[i], identifier);
     if (el) {
       return el;
     }
@@ -161,7 +161,7 @@ var getPasswordFormElement_ = function(win, identifier) {
  *   are returned.
  * @return {Array<HTMLInputElement>}
  */
-var getFormInputElements_ = function(form) {
+var getFormInputElements = function(form) {
   return __gCrWeb.form.getFormControlElements(form).filter(function(element) {
     return element.tagName === 'INPUT';
   });
@@ -173,7 +173,7 @@ var getFormInputElements_ = function(form) {
  * @return {string} The password form.
  */
 __gCrWeb.passwords['getPasswordFormDataAsString'] = function(identifier) {
-  var el = getPasswordFormElement_(window, identifier);
+  var el = getPasswordFormElement(window, identifier);
   if (!el) {
     return '{}';
   }
@@ -205,7 +205,7 @@ __gCrWeb.passwords['fillPasswordForm'] = function(
   if (!__gCrWeb.common.isSameOrigin(origin, normalizedOrigin)) {
     return false;
   }
-  return fillPasswordFormWithData_(
+  return fillPasswordFormWithData(
       formData, username, password, window, opt_normalizedOrigin);
 };
 
@@ -226,9 +226,9 @@ __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
   if (!form) {
     return false;
   }
-  var inputs = getFormInputElements_(form);
+  var inputs = getFormInputElements(form);
   var newPasswordField =
-      findInputByFieldIdentifier_(inputs, newPasswordIdentifier);
+      findInputByFieldIdentifier(inputs, newPasswordIdentifier);
   if (!newPasswordField) {
     return false;
   }
@@ -237,7 +237,7 @@ __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
     __gCrWeb.fill.setInputElementValue(password, newPasswordField);
   }
   var confirmPasswordField =
-      findInputByFieldIdentifier_(inputs, confirmPasswordIdentifier);
+      findInputByFieldIdentifier(inputs, confirmPasswordIdentifier);
   if (confirmPasswordField && confirmPasswordField.value != password) {
     __gCrWeb.fill.setInputElementValue(password, confirmPasswordField);
   }
@@ -256,7 +256,7 @@ __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
  * @param {string=} opt_normalizedOrigin The origin URL to compare to.
  * @return {boolean} Whether a form field has been filled.
  */
-var fillPasswordFormWithData_ = function(
+var fillPasswordFormWithData = function(
     formData, username, password, win, opt_normalizedOrigin) {
   var doc = win.document;
   var forms = doc.forms;
@@ -269,15 +269,15 @@ var fillPasswordFormWithData_ = function(
     if (formData.action != normalizedFormAction) {
       continue;
     }
-    var inputs = getFormInputElements_(form);
+    var inputs = getFormInputElements(form);
     var usernameInput =
-        findInputByFieldIdentifier_(inputs, formData.fields[0].name);
+        findInputByFieldIdentifier(inputs, formData.fields[0].name);
     if (usernameInput == null || !__gCrWeb.common.isTextField(usernameInput) ||
         usernameInput.disabled) {
       continue;
     }
     var passwordInput =
-        findInputByFieldIdentifier_(inputs, formData.fields[1].name);
+        findInputByFieldIdentifier(inputs, formData.fields[1].name);
     if (passwordInput == null || passwordInput.type != 'password' ||
         passwordInput.readOnly || passwordInput.disabled) {
       continue;
@@ -298,9 +298,9 @@ var fillPasswordFormWithData_ = function(
   }
 
   // Recursively invoke for all iframes.
-  var frames = getSameOriginFrames_(win);
+  var frames = getSameOriginFrames(win);
   for (var i = 0; i < frames.length; i++) {
-    if (fillPasswordFormWithData_(
+    if (fillPasswordFormWithData(
             formData, username, password, frames[i], opt_normalizedOrigin)) {
       filled = true;
     }
@@ -312,26 +312,26 @@ var fillPasswordFormWithData_ = function(
 /**
  * Finds all forms with passwords in the supplied window or frame and appends
  * JS objects containing the form data to |formDataList|.
- * @param {!Array.<Object>} formDataList A list that this function populates
+ * @param {!Array<Object>} formDataList A list that this function populates
  *     with descriptions of discovered forms.
  * @param {Window} win A window (or frame) in which the function should
  *    look for password forms.
  */
-var getPasswordFormDataList_ = function(formDataList, win) {
+var getPasswordFormDataList = function(formDataList, win) {
   var doc = win.document;
   var forms = doc.forms;
   for (var i = 0; i < forms.length; i++) {
     var formData = __gCrWeb.passwords.getPasswordFormData(forms[i]);
     if (formData) {
       formDataList.push(formData);
-      addSubmitButtonTouchEndHandler_(forms[i]);
+      addSubmitButtonTouchEndHandler(forms[i]);
     }
   }
 
   // Recursively invoke for all iframes.
-  var frames = getSameOriginFrames_(win);
+  var frames = getSameOriginFrames(win);
   for (var i = 0; i < frames.length; i++) {
-    getPasswordFormDataList_(formDataList, frames[i]);
+    getPasswordFormDataList(formDataList, frames[i]);
   }
 };
 

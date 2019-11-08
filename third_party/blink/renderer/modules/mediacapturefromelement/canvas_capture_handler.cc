@@ -308,7 +308,7 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
   DCHECK(result);
   DCHECK(context_provider->GetGLHelper());
   context_provider->GetGLHelper()->ReadbackTextureAsync(
-      texture_info.fID, image_size,
+      texture_info.fID, texture_info.fTarget, image_size,
       temp_argb_frame->visible_data(VideoFrame::kARGBPlane), kN32_SkColorType,
       WTF::Bind(&CanvasCaptureHandler::OnARGBPixelsReadAsync,
                 weak_ptr_factory_.GetWeakPtr(), image, temp_argb_frame,

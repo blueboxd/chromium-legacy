@@ -90,6 +90,10 @@ bool MockInputRouterClient::IsAutoscrollInProgress() {
   return false;
 }
 
+gfx::Size MockInputRouterClient::GetRootWidgetViewportSize() {
+  return gfx::Size(1920, 1080);
+}
+
 bool MockInputRouterClient::GetAndResetFilterEventCalled() {
   bool filter_input_event_called = filter_input_event_called_;
   filter_input_event_called_ = false;

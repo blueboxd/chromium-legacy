@@ -360,6 +360,7 @@ mojom("interfaces") {
   }
 
   public_deps = [
+    ":client_hints_mojom",
     ":resource_type_bindings",
     "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
@@ -374,6 +375,18 @@ mojom("interfaces") {
   export_class_attribute = "CONTENT_EXPORT"
   export_define = "CONTENT_IMPLEMENTATION=1"
   export_header = "content/common/content_export.h"
+}
+
+mojom("client_hints_mojom") {
+  sources = [
+    "client_hints.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//third_party/blink/public/mojom:web_client_hints_types_mojo_bindings",
+    "//url/mojom:url_mojom_origin",
+  ]
 }
 
 mojom("service_names") {

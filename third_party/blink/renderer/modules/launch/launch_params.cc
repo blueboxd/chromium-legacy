@@ -12,19 +12,10 @@
 
 namespace blink {
 
-LaunchParams::LaunchParams() {}
+LaunchParams::LaunchParams(HeapVector<Member<NativeFileSystemHandle>> files)
+    : files_(files) {}
 
 LaunchParams::~LaunchParams() = default;
-
-void LaunchParams::SetFiles(HeapVector<Member<NativeFileSystemHandle>> files) {
-  files_ = std::move(files);
-}
-
-void LaunchParams::SetFetchRequest(
-    mojom::blink::FetchAPIRequestPtr fetch_request) {
-  request_ = Member<Request>();
-  fetch_request_ = std::move(fetch_request);
-}
 
 Request* LaunchParams::request(ScriptState* script_state) {
   if (!fetch_request_)

@@ -166,8 +166,8 @@ class ProxyingURLLoaderFactory::InProgressRequest
 
   base::OnceClosure destruction_callback_;
 
-  // Messages received by |client_binding_| are forwarded to |target_client_|.
-  mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
+  // Messages received by |client_receiver_| are forwarded to |target_client_|.
+  mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
   network::mojom::URLLoaderClientPtr target_client_;
 
   // Messages received by |loader_receiver_| are forwarded to |target_loader_|.
@@ -310,11 +310,10 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       referrer_origin_(request.referrer.GetOrigin()),
       resource_type_(static_cast<content::ResourceType>(request.resource_type)),
       is_main_frame_(request.is_main_frame),
-      client_binding_(this),
       target_client_(std::move(client)),
       loader_receiver_(this, std::move(loader_receiver)) {
   network::mojom::URLLoaderClientPtr proxy_client;
-  client_binding_.Bind(mojo::MakeRequest(&proxy_client));
+  client_receiver_.Bind(mojo::MakeRequest(&proxy_client));
 
   net::HttpRequestHeaders modified_headers;
   std::vector<std::string> removed_headers;
@@ -347,7 +346,7 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       2, base::BindOnce(&InProgressRequest::OnBindingsClosed,
                         base::Unretained(this)));
   loader_receiver_.set_disconnect_handler(closure);
-  client_binding_.set_connection_error_handler(closure);
+  client_receiver_.set_disconnect_handler(closure);
 }
 
 void ProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(

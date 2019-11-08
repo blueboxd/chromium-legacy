@@ -34,6 +34,8 @@
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -126,6 +128,10 @@ class FlashContentSettingsChangeWaiter : public content_settings::Observer {
 };
 #endif
 
+std::string GenerateFakeAppId(const GURL& url) {
+  return web_app::GenerateAppIdFromURL(url);
+}
+
 }  // namespace
 
 namespace settings {
@@ -173,7 +179,7 @@ class SiteSettingsHandlerTest : public testing::Test {
             ContentSettingsType::COOKIES)),
         kFlash(site_settings::ContentSettingsTypeToGroupName(
             ContentSettingsType::PLUGINS)),
-        handler_(&profile_) {
+        handler_(&profile_, app_registrar_) {
 #if defined(OS_CHROMEOS)
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::MockUserManager>());
@@ -188,6 +194,7 @@ class SiteSettingsHandlerTest : public testing::Test {
 
   TestingProfile* profile() { return &profile_; }
   TestingProfile* incognito_profile() { return incognito_profile_; }
+  web_app::TestAppRegistrar& app_registrar() { return app_registrar_; }
   content::TestWebUI* web_ui() { return &web_ui_; }
   SiteSettingsHandler* handler() { return &handler_; }
 
@@ -472,6 +479,7 @@ class SiteSettingsHandlerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   TestingProfile* incognito_profile_;
+  web_app::TestAppRegistrar app_registrar_;
   content::TestWebUI web_ui_;
   SiteSettingsHandler handler_;
 #if defined(OS_CHROMEOS)
@@ -787,6 +795,48 @@ TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
   EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
   EXPECT_EQ(0, origin_info->FindKey("usage")->GetDouble());
   EXPECT_EQ(1, origin_info->FindKey("numCookies")->GetDouble());
+}
+
+TEST_F(SiteSettingsHandlerTest, InstalledApps) {
+  web_app::TestAppRegistrar& registrar = app_registrar();
+  const GURL url("http://abc.example.com/");
+  registrar.AddExternalApp(GenerateFakeAppId(url), {url});
+
+  SetUpCookiesTreeModel();
+
+  const base::ListValue* storage_and_cookie_list =
+      GetOnStorageFetchedSentListValue();
+  EXPECT_EQ(3U, storage_and_cookie_list->GetSize());
+
+  const base::DictionaryValue* site_group;
+  ASSERT_TRUE(storage_and_cookie_list->GetDictionary(0, &site_group));
+
+  std::string etld_plus1_string;
+  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
+  ASSERT_EQ("example.com", etld_plus1_string);
+
+  ASSERT_TRUE(site_group->FindKey("hasInstalledPWA")->GetBool());
+
+  const base::ListValue* origin_list;
+  ASSERT_TRUE(site_group->GetList("origins", &origin_list));
+  const base::DictionaryValue* origin_info;
+
+  ASSERT_TRUE(origin_list->GetDictionary(0, &origin_info));
+  EXPECT_EQ("http://abc.example.com/",
+            origin_info->FindKey("origin")->GetString());
+  EXPECT_TRUE(origin_info->FindKey("isInstalled")->GetBool());
+
+  // Verify that installed booleans are false for other siteGroups/origins
+  ASSERT_TRUE(storage_and_cookie_list->GetDictionary(1, &site_group));
+
+  ASSERT_TRUE(site_group->GetString("etldPlus1", &etld_plus1_string));
+  ASSERT_EQ("google.com", etld_plus1_string);
+  ASSERT_TRUE(site_group->GetList("origins", &origin_list));
+  ASSERT_TRUE(origin_list->GetDictionary(0, &origin_info));
+  EXPECT_EQ("https://www.google.com/",
+            origin_info->FindKey("origin")->GetString());
+  EXPECT_FALSE(site_group->FindKey("hasInstalledPWA")->GetBool());
+  EXPECT_FALSE(origin_info->FindKey("isInstalled")->GetBool());
 }
 
 TEST_F(SiteSettingsHandlerTest, Origins) {
@@ -1234,7 +1284,7 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    handler_ = std::make_unique<SiteSettingsHandler>(profile());
+    handler_ = std::make_unique<SiteSettingsHandler>(profile(), app_registrar_);
     handler()->set_web_ui(web_ui());
     handler()->AllowJavascript();
     web_ui()->ClearTrackedCalls();
@@ -1281,6 +1331,7 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
   const std::string kNotifications;
 
  private:
+  web_app::TestAppRegistrar app_registrar_;
   content::TestWebUI web_ui_;
   std::unique_ptr<SiteSettingsHandler> handler_;
   std::unique_ptr<BrowserWindow> window2_;

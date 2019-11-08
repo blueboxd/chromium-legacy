@@ -77,20 +77,11 @@ std::string BluetoothAddressToStr(const BluetoothAddress& address) {
 // Converts a MAC Address string e.g. "00:11:22:33:44:55" into an
 // BluetoothAddress e.g. {0x00, 0x11, 0x22, 0x33, 0x44, 0x55}.
 BluetoothAddress AddressStrToBluetoothAddress(const std::string& address_str) {
-  std::string numbers;
-  bool success = base::ReplaceChars(address_str, ":", "", &numbers);
-  DCHECK(success);
-
-  std::vector<uint8_t> address_vector;
-  success = base::HexStringToBytes(numbers, &address_vector);
-  DCHECK(success);
-
-  // If the size is not 6, then the underlying Bluetooth API returned an
-  // incorrect value.
-  CHECK_EQ(6u, address_vector.size());
-
   BluetoothAddress address_array;
-  std::copy_n(address_vector.begin(), 6, address_array.begin());
+
+  // If the string is not a valid encoding of a Bluetooth address, then the
+  // underlying Bluetooth API returned an incorrect value.
+  CHECK(device::BluetoothDevice::ParseAddress(address_str, address_array));
 
   return address_array;
 }

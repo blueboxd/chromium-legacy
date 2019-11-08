@@ -81,8 +81,6 @@ void CreateChildFrameOnUI(
     blink::FrameOwnerElementType owner_type,
     int new_routing_id,
     mojo::ScopedMessagePipeHandle interface_provider_request_handle,
-    mojo::ScopedMessagePipeHandle document_interface_broker_content_handle,
-    mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle,
     mojo::ScopedMessagePipeHandle browser_interface_broker_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
@@ -94,10 +92,6 @@ void CreateChildFrameOnUI(
         new_routing_id,
         service_manager::mojom::InterfaceProviderRequest(
             std::move(interface_provider_request_handle)),
-        mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>(
-            std::move(document_interface_broker_content_handle)),
-        mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>(
-            std::move(document_interface_broker_blink_handle)),
         mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>(
             std::move(browser_interface_broker_handle)),
         scope, frame_name, frame_unique_name, is_created_by_script,
@@ -278,20 +272,6 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
   params_reply->new_interface_provider =
       interface_provider.PassInterface().PassHandle().release();
 
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_content;
-  auto document_interface_broker_receiver_content =
-      document_interface_broker_content.InitWithNewPipeAndPassReceiver();
-  params_reply->document_interface_broker_content_handle =
-      document_interface_broker_content.PassPipe().release();
-
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_blink;
-  auto document_interface_broker_receiver_blink =
-      document_interface_broker_blink.InitWithNewPipeAndPassReceiver();
-  params_reply->document_interface_broker_blink_handle =
-      document_interface_broker_blink.PassPipe().release();
-
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   auto browser_interface_broker_receiver =
@@ -310,8 +290,6 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
           params.frame_policy, params.frame_owner_properties,
           params.frame_owner_element_type, params_reply->child_routing_id,
           interface_provider_request.PassMessagePipe(),
-          document_interface_broker_receiver_content.PassPipe(),
-          document_interface_broker_receiver_blink.PassPipe(),
           browser_interface_broker_receiver.PassPipe()));
 }
 

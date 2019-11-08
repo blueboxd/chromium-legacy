@@ -3,10 +3,8 @@
 ++++[link] name='unread '
 ++++++[static] name='unread '
 ++++[link] name='read '
-++++++[image] name=''
 ++++++[static] name='read '
 ++++[link] name='read '
-++++++[image] name=''
 ++++++[static] name='read '
 ++++[link] name='read'
 ++++++[image]

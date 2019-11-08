@@ -73,7 +73,6 @@ class WebRemoteFrame : public WebFrame {
                                           const FramePolicy&,
                                           WebLocalFrameClient*,
                                           blink::InterfaceRegistry*,
-                                          mojo::ScopedMessagePipeHandle,
                                           WebFrame* previous_sibling,
                                           const WebFrameOwnerProperties&,
                                           FrameOwnerElementType,

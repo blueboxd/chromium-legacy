@@ -620,6 +620,11 @@
     "args": ["--enable-font-antialiasing"]
   },
   {
+    "prefix": "mathml-disabled",
+    "bases": [],
+    "args": ["--disable-blink-features=MathMLCore"]
+  },
+  {
     "prefix": "hdr",
     "bases": [],
     "args": ["--force-color-profile=scrgb-linear"]

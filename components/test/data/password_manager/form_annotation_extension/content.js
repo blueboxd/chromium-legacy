@@ -126,8 +126,8 @@ function getFrames(elem) {
       console.error('frameElement is null. Unable to fetch data about iframes');
       break;
     }
-    var iframe_selector = getSmartSelector(frameElement);
-    frames.unshift(iframe_selector);
+    var iframeSelector = getSmartSelector(frameElement);
+    frames.unshift(iframeSelector);
     elem = elem.ownerDocument.defaultView.frameElement;
   }
   return frames;

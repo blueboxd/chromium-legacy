@@ -68,7 +68,8 @@ class ToolbarController {
      * @const
      */
     this.deleteCommand_ = assertInstanceof(
-        queryRequiredElement('#delete', assert(this.toolbar_.ownerDocument)),
+        queryRequiredElement(
+            '#delete', assert(this.toolbar_.ownerDocument.body)),
         cr.ui.Command);
 
     /**
@@ -76,7 +77,8 @@ class ToolbarController {
      * @const
      */
     this.refreshCommand_ = assertInstanceof(
-        queryRequiredElement('#refresh', assert(this.toolbar_.ownerDocument)),
+        queryRequiredElement(
+            '#refresh', assert(this.toolbar_.ownerDocument.body)),
         cr.ui.Command);
 
     /**
@@ -85,7 +87,7 @@ class ToolbarController {
      */
     this.newFolderCommand_ = assertInstanceof(
         queryRequiredElement(
-            '#new-folder', assert(this.toolbar_.ownerDocument)),
+            '#new-folder', assert(this.toolbar_.ownerDocument.body)),
         cr.ui.Command);
 
     /**

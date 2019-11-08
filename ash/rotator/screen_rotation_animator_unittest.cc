@@ -384,7 +384,7 @@ TEST_F(ScreenRotationAnimatorSlowAnimationTest,
   // Long duration for hide animation, to allow it to be interrupted.
   ui::ScopedAnimationDurationScaleMode hide_duration(
       ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
-  GetTray()->SetVisible(false);
+  GetTray()->SetVisiblePreferred(false);
 
   // ScreenRotationAnimator copies the current layers, and deletes them upon
   // completion. Allow its animation to complete first.
@@ -615,7 +615,7 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   // Long duration for hide animation, to allow it to be interrupted.
   ui::ScopedAnimationDurationScaleMode hide_duration(
       ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
-  GetTray()->SetVisible(false);
+  GetTray()->SetVisiblePreferred(false);
 
   // Allow ScreenRotationAnimator animation to complete first.
   ui::ScopedAnimationDurationScaleMode rotate_duration(

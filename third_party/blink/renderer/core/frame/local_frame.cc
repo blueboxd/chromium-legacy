@@ -41,7 +41,6 @@
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
@@ -1135,28 +1134,9 @@ service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {
   return *Client()->GetInterfaceProvider();
 }
 
-void LocalFrame::BindDocumentInterfaceBroker(
-    mojo::ScopedMessagePipeHandle js_handle) {
-  DCHECK(Client());
-  Client()->BindDocumentInterfaceBroker(std::move(js_handle));
-}
-
-mojom::blink::DocumentInterfaceBroker&
-LocalFrame::GetDocumentInterfaceBroker() {
-  DCHECK(Client());
-  return *Client()->GetDocumentInterfaceBroker();
-}
-
 BrowserInterfaceBrokerProxy& LocalFrame::GetBrowserInterfaceBroker() {
   DCHECK(Client());
   return Client()->GetBrowserInterfaceBroker();
-}
-
-mojo::ScopedMessagePipeHandle LocalFrame::SetDocumentInterfaceBrokerForTesting(
-    mojo::ScopedMessagePipeHandle blink_handle) {
-  DCHECK(Client());
-  return Client()->SetDocumentInterfaceBrokerForTesting(
-      std::move(blink_handle));
 }
 
 AssociatedInterfaceProvider*

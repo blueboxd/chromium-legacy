@@ -21,7 +21,6 @@
 
 namespace content {
 
-class BrowserThreadDelegate;
 class BrowserThreadImpl;
 
 // Use DCHECK_CURRENTLY_ON(BrowserThread::ID) to assert that a function can only
@@ -120,16 +119,6 @@ class CONTENT_EXPORT BrowserThread {
   // If the current message loop is one of the known threads, returns true and
   // sets identifier to its ID.  Otherwise returns false.
   static bool GetCurrentThreadIdentifier(ID* identifier) WARN_UNUSED_RESULT;
-
-  // Sets the delegate for BrowserThread::IO.
-  //
-  // Only one delegate may be registered at a time. The delegate may be
-  // unregistered by providing a nullptr pointer.
-  //
-  // The delegate can only be registered through this call before
-  // BrowserThreadImpl(BrowserThread::IO) is created and unregistered after
-  // it was destroyed and its underlying thread shutdown.
-  static void SetIOThreadDelegate(BrowserThreadDelegate* delegate);
 
   // Use these templates in conjunction with RefCountedThreadSafe or scoped_ptr
   // when you want to ensure that an object is deleted on a specific thread.

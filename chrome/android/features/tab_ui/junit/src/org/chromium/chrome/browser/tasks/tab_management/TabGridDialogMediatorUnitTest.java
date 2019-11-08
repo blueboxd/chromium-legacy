@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,6 +43,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -916,6 +918,23 @@ public class TabGridDialogMediatorUnitTest {
         // Dialog title should be updated with stored title.
         assertThat(
                 mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(CUSTOMIZED_DIALOG_TITLE));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void testDialogToolbarMenu_SelectionMode() {
+        Callback<Integer> callback = mMediator.getToolbarMenuCallbackForTesting();
+        // Mock that currently the popup window is focusable, and the current tab is tab1 which is
+        // in a group of {tab1, tab2}.
+        mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, true);
+        mMediator.setCurrentTabIdForTest(TAB1_ID);
+        List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        createTabGroup(tabgroup, TAB1_ID);
+
+        callback.onResult(R.id.ungroup_tab);
+
+        assertFalse(mModel.get(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE));
+        verify(mTabSelectionEditorController).show(eq(tabgroup));
     }
 
     @Test

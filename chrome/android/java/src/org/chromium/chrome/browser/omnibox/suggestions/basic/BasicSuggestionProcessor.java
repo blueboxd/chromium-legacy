@@ -170,7 +170,12 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
                         model.get(SuggestionCommonProperties.USE_DARK_COLORS)
                                 ? R.color.suggestion_url_dark_modern
                                 : R.color.suggestion_url_light_modern);
-                textLine2Direction = View.TEXT_DIRECTION_LTR;
+
+                if (suggestionType == OmniboxSuggestionType.CLIPBOARD_TEXT) {
+                    textLine2Direction = View.TEXT_DIRECTION_INHERIT;
+                } else {
+                    textLine2Direction = View.TEXT_DIRECTION_LTR;
+                }
             } else {
                 textLine2 = null;
             }

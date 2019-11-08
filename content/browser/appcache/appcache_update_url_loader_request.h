@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "content/browser/appcache/appcache_update_job.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -122,7 +122,7 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   // Response details.
   std::unique_ptr<net::HttpResponseInfo> http_response_info_;
   // Binds the URLLoaderClient interface to the channel.
-  mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
   // The network URL loader.
   network::mojom::URLLoaderPtr url_loader_;
   // Caller buffer size.

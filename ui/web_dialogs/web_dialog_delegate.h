@@ -19,7 +19,6 @@ class GURL;
 
 namespace content {
 class RenderFrameHost;
-class RenderViewHost;
 class WebContents;
 class WebUI;
 class WebUIMessageHandler;
@@ -88,9 +87,7 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
 
   // A callback to notify the delegate that a web dialog has been shown.
   // |webui| is the WebUI with which the dialog is associated.
-  // |render_view_host| is the RenderViewHost for the shown dialog.
-  virtual void OnDialogShown(content::WebUI* webui,
-                             content::RenderViewHost* render_view_host) {}
+  virtual void OnDialogShown(content::WebUI* webui) {}
 
   // A callback to notify the delegate that the window is requesting to be
   // closed.  If this returns true, the dialog is closed, otherwise the

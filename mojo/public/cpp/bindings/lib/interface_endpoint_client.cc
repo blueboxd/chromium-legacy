@@ -165,7 +165,7 @@ InterfaceEndpointClient::InterfaceEndpointClient(
     dispatcher_.SetValidator(std::move(payload_validator));
 
   if (handle_.pending_association()) {
-    handle_.SetAssociationEventHandler(base::Bind(
+    handle_.SetAssociationEventHandler(base::BindOnce(
         &InterfaceEndpointClient::OnAssociationEvent, base::Unretained(this)));
   } else {
     InitControllerIfNecessary();

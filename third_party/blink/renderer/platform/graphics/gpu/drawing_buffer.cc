@@ -64,6 +64,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
+#include "ui/gl/gpu_preference.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -90,7 +91,8 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
     PreserveDrawingBuffer preserve,
     WebGLVersion webgl_version,
     ChromiumImageUsage chromium_image_usage,
-    const CanvasColorParams& color_params) {
+    const CanvasColorParams& color_params,
+    gl::GpuPreference gpu_preference) {
   if (g_should_fail_drawing_buffer_creation_for_testing) {
     g_should_fail_drawing_buffer_creation_for_testing = false;
     return nullptr;
@@ -141,7 +143,7 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
           std::move(extensions_util), client, discard_framebuffer_supported,
           want_alpha_channel, premultiplied_alpha, preserve, webgl_version,
           want_depth_buffer, want_stencil_buffer, chromium_image_usage,
-          color_params));
+          color_params, gpu_preference));
   if (!drawing_buffer->Initialize(size, multisample_supported)) {
     drawing_buffer->BeginDestruction();
     return scoped_refptr<DrawingBuffer>();
@@ -167,7 +169,8 @@ DrawingBuffer::DrawingBuffer(
     bool want_depth,
     bool want_stencil,
     ChromiumImageUsage chromium_image_usage,
-    const CanvasColorParams& color_params)
+    const CanvasColorParams& color_params,
+    gl::GpuPreference gpu_preference)
     : client_(client),
       preserve_drawing_buffer_(preserve),
       webgl_version_(webgl_version),
@@ -188,10 +191,15 @@ DrawingBuffer::DrawingBuffer(
                               kF16CanvasPixelFormat),
       chromium_image_usage_(chromium_image_usage),
       opengl_flip_y_extension_(
-          ContextProvider()->GetCapabilities().mesa_framebuffer_flip_y) {
+          ContextProvider()->GetCapabilities().mesa_framebuffer_flip_y),
+      initial_gpu_(gpu_preference),
+      current_active_gpu_(gpu_preference) {
   // Used by browser tests to detect the use of a DrawingBuffer.
   TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
+  // PowerPreferenceToGpuPreference should have resolved the meaning
+  // of the "default" GPU already.
+  DCHECK(gpu_preference != gl::GpuPreference::kDefault);
 }
 
 DrawingBuffer::~DrawingBuffer() {
@@ -345,15 +353,15 @@ bool DrawingBuffer::PrepareTransferableResourceInternal(
   ResolveIfNeeded();
 
   if (!using_gpu_compositing_ && !force_gpu_result) {
-    FinishPrepareTransferableResourceSoftware(bitmap_registrar, out_resource,
-                                              out_release_callback);
-  } else {
-    FinishPrepareTransferableResourceGpu(out_resource, out_release_callback);
+    return FinishPrepareTransferableResourceSoftware(
+        bitmap_registrar, out_resource, out_release_callback);
   }
-  return true;
+
+  return FinishPrepareTransferableResourceGpu(out_resource,
+                                              out_release_callback);
 }
 
-void DrawingBuffer::FinishPrepareTransferableResourceSoftware(
+bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
     cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
@@ -391,9 +399,10 @@ void DrawingBuffer::FinishPrepareTransferableResourceSoftware(
   *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
 
   ResetBuffersToAutoClear();
+  return true;
 }
 
-void DrawingBuffer::FinishPrepareTransferableResourceGpu(
+bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   DCHECK(state_restorer_);
@@ -419,6 +428,10 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
     // into the mailbox, and allocate (or recycle) a new backbuffer.
     color_buffer_for_mailbox = back_color_buffer_;
     back_color_buffer_ = CreateOrRecycleColorBuffer();
+    if (!back_color_buffer_) {
+      // Context is likely lost.
+      return false;
+    }
     AttachColorBufferToReadFramebuffer();
 
     // Explicitly specify that m_fbo (which is now bound to the just-allocated
@@ -437,6 +450,10 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
     // TODO(sunnyps): We can skip this test if explicit resolve is used since
     // we'll render to the multisample fbo which will be preserved.
     color_buffer_for_mailbox = CreateOrRecycleColorBuffer();
+    if (!color_buffer_for_mailbox) {
+      // Context is likely lost.
+      return false;
+    }
     gl_->CopySubTextureCHROMIUM(
         back_color_buffer_->texture_id, 0, texture_target_,
         color_buffer_for_mailbox->texture_id, 0, 0, 0, 0, 0, size_.Width(),
@@ -498,6 +515,7 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
 
   contents_changed_ = false;
   ResetBuffersToAutoClear();
+  return true;
 }
 
 void DrawingBuffer::MailboxReleasedGpu(scoped_refptr<ColorBuffer> color_buffer,
@@ -1223,13 +1241,45 @@ void DrawingBuffer::ResolveIfNeeded() {
   contents_change_resolved_ = true;
 
   auto* gl = ContextProvider()->ContextGL();
-  if (gl->DidGpuSwitch() == GL_TRUE) {
-    // TODO(crbug.com/681341): handle preserveDrawingBuffer:true, and
-    // user-allocated multisampled renderbuffers, by dispatching a context lost
-    // event.
-    if (WantExplicitResolve()) {
-      ReallocateMultisampleRenderbuffer(size_);
+  gl::GpuPreference active_gpu = gl::GpuPreference::kDefault;
+  if (gl->DidGpuSwitch(&active_gpu) == GL_TRUE) {
+    // This code path is mainly taken on macOS (the only platform which, as of
+    // this writing, dispatches the GPU-switched notifications), and the
+    // comments below focus only on macOS.
+    //
+    // The code below attempts to deduce whether, if a GPU switch occurred,
+    // it's really necessary to lose the context because certain GPU resources
+    // are no longer accessible. Resources only become inaccessible if
+    // CGLSetVirtualScreen is explicitly called against a GL context to change
+    // its renderer ID. GPU switching notifications are highly asynchronous.
+    //
+    // The tests below, of the initial and currently active GPU, replicate
+    // some logic in GLContextCGL::ForceGpuSwitchIfNeeded. Basically, if a
+    // context requests the high-performance GPU, then CGLSetVirtualScreen
+    // will never be called to migrate that context to the low-power
+    // GPU. However, contexts that were allocated on the integrated GPU will
+    // be migrated to the discrete GPU, and back, when the discrete GPU is
+    // activated and deactivated. Also, if the high-performance GPU was
+    // requested, then that request took effect during context bringup, even
+    // though the GPU switching notification is generally dispatched a couple
+    // of seconds after that, so it's not necessary to either lose the context
+    // or reallocate the multisampled renderbuffers when that initial
+    // notification is received.
+    if (initial_gpu_ == gl::GpuPreference::kLowPower &&
+        current_active_gpu_ != active_gpu) {
+      if ((WantExplicitResolve() && preserve_drawing_buffer_ == kPreserve) ||
+          client_
+              ->DrawingBufferClientUserAllocatedMultisampledRenderbuffers()) {
+        // In these situations there are multisampled renderbuffers whose
+        // content the application expects to be preserved, but which can not
+        // be. Forcing a lost context is the only option to keep applications
+        // rendering correctly.
+        client_->DrawingBufferClientForceLostContextWithAutoRecovery();
+      } else if (WantExplicitResolve()) {
+        ReallocateMultisampleRenderbuffer(size_);
+      }
     }
+    current_active_gpu_ = active_gpu;
   }
 }
 
@@ -1457,6 +1507,11 @@ void DrawingBuffer::PresentSwapChain() {
 
 scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     const IntSize& size) {
+  if (size.IsEmpty()) {
+    // Context is likely lost.
+    return nullptr;
+  }
+
   DCHECK(state_restorer_);
   state_restorer_->SetFramebufferBindingDirty();
   state_restorer_->SetTextureBindingDirty();

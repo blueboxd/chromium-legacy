@@ -287,9 +287,14 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
   if (HasGlobalARIAAttribute())
     return kIncludeObject;
 
-  if (IsImage())
-    return kIncludeObject;
-
+  bool has_non_empty_alt_attribute = !GetAttribute(kAltAttr).IsEmpty();
+  if (IsImage()) {
+    if (has_non_empty_alt_attribute || GetAttribute(kAltAttr).IsNull())
+      return kIncludeObject;
+    else if (ignored_reasons)
+      ignored_reasons->push_back(IgnoredReason(kAXEmptyAlt));
+    return kIgnoreObject;
+  }
   // Using the title or accessibility description (so we
   // check if there's some kind of accessible name for the element)
   // to decide an element's visibility is not as definitive as
@@ -298,8 +303,8 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
   // These checks are simplified in the interest of execution speed;
   // for example, any element having an alt attribute will make it
   // not ignored, rather than just images.
-  if (HasAriaAttribute(GetElement()) || !GetAttribute(kAltAttr).IsEmpty() ||
-      !GetAttribute(kTitleAttr).IsEmpty())
+  if (HasAriaAttribute(GetElement()) || !GetAttribute(kTitleAttr).IsEmpty() ||
+      has_non_empty_alt_attribute)
     return kIncludeObject;
 
   // <span> tags are inline tags and not meant to convey information if they
@@ -421,8 +426,8 @@ static bool IsRequiredOwnedElement(AXObject* parent,
   if (!current_element)
     return false;
   if (IsHTMLTableCellElement(*current_element))
-    return IsHTMLTableRowElement(*parent_node);
-  if (IsHTMLTableRowElement(*current_element))
+    return IsA<HTMLTableRowElement>(*parent_node);
+  if (IsA<HTMLTableRowElement>(*current_element))
     return IsHTMLTableSectionElement(parent_html_element);
 
   // In case of ListboxRole and its child, ListBoxOptionRole, inheritance of
@@ -637,7 +642,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return IsDataTable() ? ax::mojom::Role::kTable
                          : ax::mojom::Role::kLayoutTable;
   }
-  if (IsHTMLTableRowElement(*GetNode()))
+  if (IsA<HTMLTableRowElement>(*GetNode()))
     return DetermineTableRowRole();
   if (IsHTMLTableCellElement(*GetNode()))
     return DetermineTableCellRole();

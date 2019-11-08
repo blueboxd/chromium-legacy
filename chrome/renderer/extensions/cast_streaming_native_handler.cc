@@ -64,8 +64,6 @@ constexpr char kInvalidAesIvMask[] = "Invalid value for AES IV mask";
 constexpr char kInvalidAesKey[] = "Invalid value for AES key";
 constexpr char kInvalidDestination[] = "Invalid destination";
 constexpr char kInvalidRtpParams[] = "Invalid value for RTP params";
-constexpr char kInvalidLatency[] = "Invalid value for max_latency. (0-1000)";
-constexpr char kInvalidRtpTimebase[] = "Invalid rtp_timebase. (1000-1000000)";
 constexpr char kInvalidStreamArgs[] = "Invalid stream arguments";
 constexpr char kRtpStreamNotFound[] = "The RTP stream cannot be found";
 constexpr char kUdpTransportNotFound[] = "The UDP transport cannot be found";
@@ -81,10 +79,11 @@ constexpr char kCodecNameRemoteVideo[] = "REMOTE_VIDEO";
 constexpr int kBitsPerKilobit = 1000;
 
 bool HexDecode(const std::string& input, std::string* output) {
-  std::vector<uint8_t> bytes;
-  if (!base::HexStringToBytes(input, &bytes))
+  DCHECK(output->empty());
+  if (!base::HexStringToString(input, output)) {
+    output->clear();
     return false;
-  output->assign(reinterpret_cast<const char*>(&bytes[0]), bytes.size());
+  }
   return true;
 }
 
@@ -798,90 +797,6 @@ CastUdpTransport* CastStreamingNativeHandler::GetUdpTransportOrThrow(
                               v8::NewStringType::kNormal)
           .ToLocalChecked()));
   return NULL;
-}
-
-bool CastStreamingNativeHandler::FrameReceiverConfigFromArg(
-    v8::Isolate* isolate,
-    const v8::Local<v8::Value>& arg,
-    media::cast::FrameReceiverConfig* config) const {
-  std::unique_ptr<base::Value> params_value =
-      V8ValueConverter::Create()->FromV8Value(arg, context()->v8_context());
-  if (!params_value) {
-    isolate->ThrowException(v8::Exception::TypeError(
-        v8::String::NewFromUtf8(isolate, kUnableToConvertParams,
-                                v8::NewStringType::kNormal)
-            .ToLocalChecked()));
-    return false;
-  }
-  std::unique_ptr<RtpReceiverParams> params =
-      RtpReceiverParams::FromValue(*params_value);
-  if (!params) {
-    isolate->ThrowException(v8::Exception::TypeError(
-        v8::String::NewFromUtf8(isolate, kInvalidRtpParams,
-                                v8::NewStringType::kNormal)
-            .ToLocalChecked()));
-    return false;
-  }
-
-  config->receiver_ssrc = params->receiver_ssrc;
-  config->sender_ssrc = params->sender_ssrc;
-  config->rtp_max_delay_ms = params->max_latency;
-  if (config->rtp_max_delay_ms < 0 || config->rtp_max_delay_ms > 1000) {
-    isolate->ThrowException(v8::Exception::TypeError(
-        v8::String::NewFromUtf8(isolate, kInvalidLatency,
-                                v8::NewStringType::kNormal)
-            .ToLocalChecked()));
-    return false;
-  }
-  config->channels = 2;
-  if (params->codec_name == "OPUS") {
-    config->codec = media::cast::CODEC_AUDIO_OPUS;
-    config->rtp_timebase = 48000;
-    config->rtp_payload_type = media::cast::RtpPayloadType::AUDIO_OPUS;
-  } else if (params->codec_name == "PCM16") {
-    config->codec = media::cast::CODEC_AUDIO_PCM16;
-    config->rtp_timebase = 48000;
-    config->rtp_payload_type = media::cast::RtpPayloadType::AUDIO_PCM16;
-  } else if (params->codec_name == "AAC") {
-    config->codec = media::cast::CODEC_AUDIO_AAC;
-    config->rtp_timebase = 48000;
-    config->rtp_payload_type = media::cast::RtpPayloadType::AUDIO_AAC;
-  } else if (params->codec_name == "VP8") {
-    config->codec = media::cast::CODEC_VIDEO_VP8;
-    config->rtp_timebase = 90000;
-    config->rtp_payload_type = media::cast::RtpPayloadType::VIDEO_VP8;
-  } else if (params->codec_name == "H264") {
-    config->codec = media::cast::CODEC_VIDEO_H264;
-    config->rtp_timebase = 90000;
-    config->rtp_payload_type = media::cast::RtpPayloadType::VIDEO_H264;
-  }
-  if (params->rtp_timebase) {
-    config->rtp_timebase = *params->rtp_timebase;
-    if (config->rtp_timebase < 1000 || config->rtp_timebase > 1000000) {
-      isolate->ThrowException(v8::Exception::TypeError(
-          v8::String::NewFromUtf8(isolate, kInvalidRtpTimebase,
-                                  v8::NewStringType::kNormal)
-              .ToLocalChecked()));
-      return false;
-    }
-  }
-  if (params->aes_key &&
-      !HexDecode(*params->aes_key, &config->aes_key)) {
-    isolate->ThrowException(
-        v8::Exception::Error(v8::String::NewFromUtf8(isolate, kInvalidAesKey,
-                                                     v8::NewStringType::kNormal)
-                                 .ToLocalChecked()));
-    return false;
-  }
-  if (params->aes_iv_mask &&
-      !HexDecode(*params->aes_iv_mask, &config->aes_iv_mask)) {
-    isolate->ThrowException(
-        v8::Exception::Error(v8::String::NewFromUtf8(isolate, kInvalidAesIvMask,
-                                                     v8::NewStringType::kNormal)
-                                 .ToLocalChecked()));
-    return false;
-  }
-  return true;
 }
 
 bool CastStreamingNativeHandler::IPEndPointFromArg(

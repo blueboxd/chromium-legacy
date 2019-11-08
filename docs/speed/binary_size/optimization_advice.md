@@ -36,17 +36,25 @@
 ## Optimizing Images
 
  * Would a vector image work?
+   * Images that can be described by a series of paths should generally be
+     stored as vectors.
+     * The one exception is if the image will be used pre-Lollipop in a
+       notification or application icon.
    * For images used in native code: [VectorIcon](https://chromium.googlesource.com/chromium/src/+/HEAD/components/vector_icons/README.md).
-   * For Android drawables: [VectorDrawable](https://codereview.chromium.org/2857893003/).
+   * For Android drawables: [VectorDrawable](https://developer.android.com/guide/topics/graphics/vector-drawable-resources).
+     * Convert from `.svg` online using https://inloop.github.io/svg2android/.
      * Optimize vector drawables with [avocado](https://bugs.chromium.org/p/chromium/issues/detail?id=982302).
+     * (Googlers): Find most icons as .svg at [go/icons](https://goto.google.com/icons).
  * Would **lossy** compression make sense (often true for large images)?
    * If so, [use lossy webp](https://codereview.chromium.org/2615243002/).
    * And omit some densities (e.g. add only an xxhdpi version).
- * Would **near-lossless** compression make sense?
-   * This can often reduce size by >50% without a perceptible difference.
-   * [Use pngquant](https://pngquant.org) to try this out (use one of the GUI
-     tools to compare before/after).
- * Are the **lossless** images fully optimized?
+ * For lossless `.png` images, see how few unique colors you can use without a
+   noticeable difference.
+   * This can often reduce an already optimized .png by 33%-50%.
+   * [Use pngquant](https://pngquant.org) to try this out.
+     * Requires trial and error for each number of unique colors.
+     * Use one of the GUI tools linked from the website to do this easily.
+ * Finally - Ensure .png files are fully optimized.
    * Use [tools/resources/optimize-png-files.sh](https://cs.chromium.org/chromium/src/tools/resources/optimize-png-files.sh).
    * There is some [Googler-specific guidance](https://goto.google.com/clank/engineering/best-practices/adding-image-assets) as well.
 
@@ -82,12 +90,12 @@ Practical advice:
    the [android-binary-size trybot][size-trybot].
    * Or use [//tools/binary_size/diagnose_bloat.py][diagnose_bloat] to create
      diffs locally.
- * Ensure no symbols exists that are used only by tests.
+ * Ensure no symbols exist that are used only by tests.
  * Be concise with strings used for error handling.
    * Identical strings throughout the codebase are de-duped. Take advantage of
      this for error-related strings.
 
-### Optimizating Native Code
+### Optimizing Native Code
  * If there's a notable increase in `.data.rel.ro`:
    * Ensure there are not [excessive relocations][relocations].
  * If there's a notable increase in `.rodata`:
@@ -104,7 +112,7 @@ Practical advice:
      * E.g. Use PODs wherever possible, and especially in containers. They will
        likely compile down to the same code as other pre-existing PODs.
        * Try also to use consistent field ordering within PODs.
-     * E.g. a `std::vector` of bare pointers will very likely by ICF'ed, but one
+     * E.g. a `std::vector` of bare pointers will very likely be ICF'ed, but one
        that uses smart pointers gets type-specific destructor logic inlined into
        it.
      * This advice is especially applicable to generated code.
@@ -117,7 +125,7 @@ Practical advice:
          separate `const char *` and `const std::string&` overloads rather than
          a single `base::StringPiece`.
 
-### Optimizating Java Code
+### Optimizing Java Code
  * Prefer fewer large JNI calls over many small JNI calls.
  * Minimize the use of class initializers (`<clinit>()`).
    * If R8 cannot determine that they are "trivial", they will prevent
@@ -142,7 +150,7 @@ Practical advice:
      single `onChanged()` that assumes everything changed.
  * Ensure unused code is optimized away by ProGuard / R8.
    * Add `@CheckDiscard` to methods or classes that you expect R8 to inline.
-   * Add `@RemovableInRelease` to force a method to be a no-op in when DCHECKs
+   * Add `@RemovableInRelease` to force a method to be a no-op when DCHECKs
      are disabled.
    * See [here][proguard-build-doc] for more info on how Chrome uses ProGuard.
 

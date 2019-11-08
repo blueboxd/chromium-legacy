@@ -25,6 +25,9 @@ EVENTS_OZONE_EVDEV_EXPORT
 extern const base::Feature kEnableNeuralPalmDetectionFilter;
 
 EVENTS_OZONE_EVDEV_EXPORT
+extern const base::FeatureParam<std::string> kNeuralPalmRadiusPolynomial;
+
+EVENTS_OZONE_EVDEV_EXPORT
 extern const base::FeatureParam<double> kHeuristicCancelThresholdSeconds;
 
 EVENTS_OZONE_EVDEV_EXPORT
@@ -36,6 +39,13 @@ extern const base::FeatureParam<int> kHeuristicStrokeCount;
 EVENTS_OZONE_EVDEV_EXPORT std::unique_ptr<PalmDetectionFilter>
 CreatePalmDetectionFilter(const EventDeviceInfo& devinfo,
                           SharedPalmDetectionFilterState* shared_palm_state);
+
+namespace internal {
+// In a named namespace for testing.
+
+EVENTS_OZONE_EVDEV_EXPORT std::vector<float> ParseRadiusPolynomial(
+    const std::string& radius_string);
+}  // namespace internal
 
 }  // namespace ui
 

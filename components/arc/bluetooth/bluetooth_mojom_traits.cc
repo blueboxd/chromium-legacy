@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -20,16 +19,6 @@ namespace {
 
 // BluetoothUUID helpers.
 constexpr size_t kUUIDSize = 16;
-
-bool IsNonHex(char c) {
-  return !isxdigit(c);
-}
-
-std::string StripNonHex(const std::string& str) {
-  std::string result = str;
-  base::EraseIf(result, IsNonHex);
-  return result;
-}
 
 // BluetoothAdvertisement helpers.
 struct AdvertisementEntry {
@@ -115,11 +104,7 @@ StructTraits<arc::mojom::BluetoothUUIDDataView, device::BluetoothUUID>::uuid(
     const device::BluetoothUUID& input) {
   // TODO(dcheng): Figure out what to do here, this is called twice on
   // serialization. Building a vector is a little inefficient.
-  std::string uuid_str = StripNonHex(input.canonical_value());
-
-  std::vector<uint8_t> address_bytes;
-  base::HexStringToBytes(uuid_str, &address_bytes);
-  return address_bytes;
+  return input.GetBytes();
 }
 
 // static

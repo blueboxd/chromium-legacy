@@ -837,11 +837,6 @@ void RenderFrameProxy::UpdateRemoteViewportIntersection(
        intersection_state.occlusion_state}));
 }
 
-void RenderFrameProxy::VisibilityChanged(
-    blink::mojom::FrameVisibility visibility) {
-  Send(new FrameHostMsg_VisibilityChanged(routing_id_, visibility));
-}
-
 void RenderFrameProxy::SetIsInert(bool inert) {
   Send(new FrameHostMsg_SetIsInert(routing_id_, inert));
 }

@@ -940,6 +940,12 @@ template("mojom") {
         if (enable_kythe_annotations) {
           args += [ "--enable_kythe_annotations" ]
         }
+
+        if (!defined(invoker.scramble_message_ids) ||
+            invoker.scramble_message_ids) {
+          inputs += message_scrambling_inputs
+          args += message_scrambling_args
+        }
       }
     }
 

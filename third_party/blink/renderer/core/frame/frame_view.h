@@ -67,6 +67,8 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
 
   bool DisplayLockedInParentFrame();
 
+  virtual void VisibilityChanged(blink::mojom::FrameVisibility visibilty) = 0;
+
  private:
   PhysicalRect rect_in_parent_;
   base::TimeTicks rect_in_parent_stable_since_;

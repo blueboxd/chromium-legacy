@@ -931,6 +931,8 @@ void WebGL2RenderingContextBase::RenderbufferStorageImpl(
   }
   renderbuffer_binding_->SetInternalFormat(internalformat);
   renderbuffer_binding_->SetSize(width, height);
+  UpdateNumberOfUserAllocatedMultisampledRenderbuffers(
+      renderbuffer_binding_->UpdateMultisampleState(samples > 0));
 }
 
 void WebGL2RenderingContextBase::renderbufferStorageMultisample(

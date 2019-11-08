@@ -155,10 +155,9 @@ const AuditProofTestVector kAuditProofs[] = {
 
 // Decodes a hexadecimal string into the binary data it represents.
 std::string HexToBytes(const std::string& hex_data) {
-  std::vector<uint8_t> output;
   std::string result;
-  if (base::HexStringToBytes(hex_data, &output))
-    result.assign(output.begin(), output.end());
+  if (!base::HexStringToString(hex_data, &result))
+    result.clear();
   return result;
 }
 

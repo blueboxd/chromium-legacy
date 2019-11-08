@@ -25,16 +25,17 @@ namespace test {
 namespace {
 
 template <typename T>
-void DoExpectResult(int foo, int bar, const base::Closure& callback, T actual) {
+void DoExpectResult(int foo, int bar, base::OnceClosure callback, T actual) {
   EXPECT_EQ(foo, actual.foo());
   EXPECT_EQ(bar, actual.bar());
-  callback.Run();
+  std::move(callback).Run();
 }
 
 template <typename T>
-base::Callback<void(T)> ExpectResult(const T& t,
-                                     const base::Closure& callback) {
-  return base::Bind(&DoExpectResult<T>, t.foo(), t.bar(), callback);
+base::OnceCallback<void(T)> ExpectResult(const T& t,
+                                         base::OnceClosure callback) {
+  return base::BindOnce(&DoExpectResult<T>, t.foo(), t.bar(),
+                        std::move(callback));
 }
 
 template <typename T>
@@ -43,19 +44,19 @@ void DoFail(const std::string& reason, T) {
 }
 
 template <typename T>
-base::Callback<void(T)> Fail(const std::string& reason) {
-  return base::Bind(&DoFail<T>, reason);
+base::OnceCallback<void(T)> Fail(const std::string& reason) {
+  return base::BindOnce(&DoFail<T>, reason);
 }
 
 template <typename T>
-void DoExpectEnumResult(T expected, const base::Closure& callback, T actual) {
+void DoExpectEnumResult(T expected, base::OnceClosure callback, T actual) {
   EXPECT_EQ(expected, actual);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 template <typename T>
-base::Callback<void(T)> ExpectEnumResult(T t, const base::Closure& callback) {
-  return base::Bind(&DoExpectEnumResult<T>, t, callback);
+base::OnceCallback<void(T)> ExpectEnumResult(T t, base::OnceClosure callback) {
+  return base::BindOnce(&DoExpectEnumResult<T>, t, std::move(callback));
 }
 
 template <typename T>
@@ -64,8 +65,8 @@ void DoEnumFail(const std::string& reason, T) {
 }
 
 template <typename T>
-base::Callback<void(T)> EnumFail(const std::string& reason) {
-  return base::Bind(&DoEnumFail<T>, reason);
+base::OnceCallback<void(T)> EnumFail(const std::string& reason) {
+  return base::BindOnce(&DoEnumFail<T>, reason);
 }
 
 template <typename T>
@@ -77,8 +78,8 @@ template <typename Func, typename Arg>
 void RunSimpleLambda(Func func, Arg arg) { func(std::move(arg)); }
 
 template <typename Arg, typename Func>
-base::Callback<void(Arg)> BindSimpleLambda(Func func) {
-  return base::Bind(&RunSimpleLambda<Func, Arg>, func);
+base::OnceCallback<void(Arg)> BindSimpleLambda(Func func) {
+  return base::BindOnce(&RunSimpleLambda<Func, Arg>, func);
 }
 
 // This implements the generated Chromium variant of PicklePasser.

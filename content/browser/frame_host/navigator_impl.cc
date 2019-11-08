@@ -749,12 +749,20 @@ NavigatorImpl::GetNavigationEntryForRendererInitiatedNavigation(
   if (has_transient_entry)
     return nullptr;
 
+  // Since GetNavigationEntryForRendererInitiatedNavigation is called from
+  // OnBeginNavigation, we can assume that no frame proxies are involved and
+  // therefore that |current_site_instance| is also the |source_site_instance|.
+  SiteInstance* current_site_instance =
+      frame_tree_node->current_frame_host()->GetSiteInstance();
+  SiteInstance* source_site_instance = current_site_instance;
+
   std::unique_ptr<NavigationEntryImpl> entry =
       NavigationEntryImpl::FromNavigationEntry(
-          NavigationController::CreateNavigationEntry(
+          NavigationControllerImpl::CreateNavigationEntry(
               common_params.url, content::Referrer(),
-              common_params.initiator_origin, ui::PAGE_TRANSITION_LINK,
-              true /* is_renderer_initiated */, std::string(),
+              common_params.initiator_origin, source_site_instance,
+              ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */,
+              std::string() /* extra_headers */,
               controller_->GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
 

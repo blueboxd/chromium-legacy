@@ -211,23 +211,6 @@ void VrShellDelegate::SendRequestPresentReply(
   std::move(request_present_response_callback_).Run(std::move(session));
 }
 
-void VrShellDelegate::DisplayActivate(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {
-  device::GvrDevice* gvr_device = GetGvrDevice();
-  if (gvr_device) {
-    // The only possible source for DisplayActivate is HeadsetActivation.
-    possible_presentation_start_action_ =
-        PresentationStartAction::kHeadsetActivation;
-
-    gvr_device->Activate(
-        device::mojom::VRDisplayEventReason::MOUNTED,
-        base::BindRepeating(&VrShellDelegate::OnActivateDisplayHandled,
-                            weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    OnActivateDisplayHandled(true /* will_not_present */);
-  }
-}
-
 void VrShellDelegate::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (vr_shell_)
     return;
@@ -287,22 +270,6 @@ void VrShellDelegate::ExitWebVRPresent() {
 std::unique_ptr<VrCoreInfo> VrShellDelegate::MakeVrCoreInfo(JNIEnv* env) {
   return std::unique_ptr<VrCoreInfo>(reinterpret_cast<VrCoreInfo*>(
       Java_VrShellDelegate_getVrCoreInfo(env, j_vr_shell_delegate_)));
-}
-
-void VrShellDelegate::OnActivateDisplayHandled(bool will_not_present) {
-  if (will_not_present) {
-    // WebVR page didn't request presentation in the vrdisplayactivate handler.
-    // Tell VrShell that we are in VR Browsing Mode.
-    ExitWebVRPresent();
-    // Reset possible_presentation_start_action_ as it may have been set.
-    possible_presentation_start_action_ = base::nullopt;
-  }
-}
-
-void VrShellDelegate::OnListeningForActivateChanged(bool listening) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_VrShellDelegate_setListeningForWebVrActivate(env, j_vr_shell_delegate_,
-                                                    listening);
 }
 
 void VrShellDelegate::OnRuntimeAdded(vr::BrowserXRRuntime* runtime) {

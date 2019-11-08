@@ -67,7 +67,6 @@ source_set("ocmock_support") {
   ]
 
   public_deps = [
-    "//third_party/google_toolbox_for_mac",
     "//third_party/ocmock",
   ]
 

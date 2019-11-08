@@ -958,6 +958,10 @@ void FlexLayoutAlgorithm::LayoutColumnReverse(
     LayoutUnit border_scrollbar_padding_before) {
   DCHECK(IsColumnFlow());
   DCHECK(Style()->ResolvedIsColumnReverseFlexDirection());
+  DCHECK(all_items_.IsEmpty() || IsNGFlexBox())
+      << "This method relies on NG having passed in 0 for initial main axis "
+         "offset for column-reverse flex boxes. That needs to be fixed if this "
+         "method is to be used in legacy.";
   for (FlexLine& line_context : FlexLines()) {
     for (wtf_size_t child_number = 0;
          child_number < line_context.line_items.size(); ++child_number) {
@@ -966,12 +970,11 @@ void FlexLayoutAlgorithm::LayoutColumnReverse(
       // We passed 0 as the initial main_axis offset to ComputeLineItemsPosition
       // for ColumnReverse containers so here we have to add the
       // border_scrollbar_padding of the container.
-      // TODO(dgrogan): I think
-      // wpt/css/css-flexbox/flex-lines/multi-line-wrap-with-column-reverse.html
-      // fails because this totally ignores margins.
       flex_item.desired_location.SetX(
           main_axis_content_size + border_scrollbar_padding_before -
-          flex_item.desired_location.X() - item_main_size);
+          flex_item.desired_location.X() - item_main_size -
+          flex_item.box->MarginAfter(Style()) +
+          flex_item.box->MarginBefore(Style()));
     }
   }
 }

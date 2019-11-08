@@ -81,10 +81,6 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   void OnExitPresent();
   void OnVisibilityStateChanged(
       device::mojom::XRVisibilityState visibility_state);
-  void OnActivate(device::mojom::VRDisplayEventReason reason,
-                  base::OnceCallback<void(bool)> on_handled);
-  void OnDeactivate(device::mojom::VRDisplayEventReason reason);
-  bool ListeningForActivate() { return !!display_client_; }
   bool InFocusedFrame() { return in_focused_frame_; }
   void OnDisplayInfoChanged();
   void RuntimesChanged();
@@ -94,10 +90,6 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   }
 
   content::WebContents* GetWebContents();
-
-  void SetListeningForActivate(
-      mojo::PendingRemote<device::mojom::VRDisplayClient> display_client)
-      override;
 
  private:
   // content::WebContentsObserver implementation
@@ -170,9 +162,6 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   // List of callbacks to run when initialization is completed.
   std::vector<base::OnceCallback<void()>> pending_requests_;
-
-  // This is required for WebVR 1.1 backwards compatibility.
-  mojo::Remote<device::mojom::VRDisplayClient> display_client_;
 
   bool initialization_complete_ = false;
   bool in_focused_frame_ = false;

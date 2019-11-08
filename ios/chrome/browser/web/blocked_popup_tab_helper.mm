@@ -19,6 +19,7 @@
 #include "components/infobars/core/infobar.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "ios/chrome/browser/infobars/confirm_infobar_metrics_recorder.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/navigation/referrer.h"
@@ -65,6 +66,10 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
   bool Accept() override {
+    [ConfirmInfobarMetricsRecorder
+        recordConfirmInfobarEvent:MobileMessagesConfirmInfobarEvents::Accepted
+            forInfobarConfirmType:InfobarConfirmType::
+                                      kInfobarConfirmTypeBlockPopups];
     scoped_refptr<HostContentSettingsMap> host_content_map_settings(
         ios::HostContentSettingsMapFactory::GetForBrowserState(browser_state_));
     for (auto& popup : popups_) {
@@ -78,6 +83,13 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
           std::string(), CONTENT_SETTING_ALLOW);
     }
     return true;
+  }
+
+  void InfoBarDismissed() override {
+    [ConfirmInfobarMetricsRecorder
+        recordConfirmInfobarEvent:MobileMessagesConfirmInfobarEvents::Dismissed
+            forInfobarConfirmType:InfobarConfirmType::
+                                      kInfobarConfirmTypeBlockPopups];
   }
 
   int GetButtons() const override { return BUTTON_OK; }
@@ -144,6 +156,10 @@ void BlockedPopupTabHelper::ShowInfoBar() {
   } else {
     infobar_ = infobar_manager->AddInfoBar(std::move(infobar));
   }
+  [ConfirmInfobarMetricsRecorder
+      recordConfirmInfobarEvent:MobileMessagesConfirmInfobarEvents::Presented
+          forInfobarConfirmType:InfobarConfirmType::
+                                    kInfobarConfirmTypeBlockPopups];
 }
 
 ios::ChromeBrowserState* BlockedPopupTabHelper::GetBrowserState() const {

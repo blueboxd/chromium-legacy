@@ -65,7 +65,6 @@ if (enable_vr) {
         "android/gvr/gvr_device.h",
         "android/gvr/gvr_device_provider.cc",
         "android/gvr/gvr_device_provider.h",
-        "android/gvr/gvr_gamepad_data_provider.h",
         "android/gvr/gvr_utils.cc",
         "android/gvr/gvr_utils.h",
       ]
@@ -250,8 +249,6 @@ if (enable_vr) {
       "test/fake_vr_device.h",
       "test/fake_vr_device_provider.cc",
       "test/fake_vr_device_provider.h",
-      "test/fake_vr_display_impl_client.cc",
-      "test/fake_vr_display_impl_client.h",
       "test/fake_vr_service_client.cc",
       "test/fake_vr_service_client.h",
       "vr_export.h",

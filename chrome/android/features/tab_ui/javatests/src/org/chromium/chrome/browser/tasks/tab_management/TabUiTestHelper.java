@@ -61,7 +61,7 @@ public class TabUiTestHelper {
      * Enter tab switcher from a tab page.
      * @param cta  The current running activity.
      */
-    static void enterTabSwitcher(ChromeTabbedActivity cta) {
+    public static void enterTabSwitcher(ChromeTabbedActivity cta) {
         OverviewModeBehaviorWatcher showWatcher = createOverviewShowWatcher(cta);
         assertFalse(cta.getLayoutManager().overviewVisible());
         // TODO(crbug.com/1019727) Figure out a better way to wait until isCompletelyDisplayed() is
@@ -76,11 +76,21 @@ public class TabUiTestHelper {
      * group, this will open up the dialog; otherwise this will open up the tab page.
      * @param cta  The current running activity.
      */
-    static void clickFirstTabFromTabSwitcher(ChromeTabbedActivity cta) {
+    public static void clickFirstCardFromTabSwitcher(ChromeTabbedActivity cta) {
+        clickNthCardFromTabSwitcher(cta, 0);
+    }
+
+    /**
+     * Click the Nth card in grid tab switcher. When group is enabled and the Nth card is a
+     * group, this will open up the dialog; otherwise this will open up the tab page.
+     * @param cta  The current running activity.
+     * @param index The index of the target card.
+     */
+    public static void clickNthCardFromTabSwitcher(ChromeTabbedActivity cta, int index) {
         assertTrue(cta.getLayoutManager().overviewVisible());
         onView(allOf(withParent(withId(org.chromium.chrome.R.id.compositor_view_holder)),
                        withId(R.id.tab_list_view)))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+                .perform(RecyclerViewActions.actionOnItemAtPosition(index, click()));
     }
 
     /**

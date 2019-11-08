@@ -37,7 +37,7 @@ const base::Feature kApkWebAppInstalls{"ApkWebAppInstalls",
 // Enable the new multi-profile-aware app shim mode.
 // TODO(https://crbug.com/982024): Delete this flag when feature is complete.
 const base::Feature kAppShimMultiProfile{"AppShimMultiProfile",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Can be used to disable RemoteCocoa (hosting NSWindows for apps in the app
 // process). For debugging purposes only.
@@ -876,5 +876,11 @@ const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile{
 const base::Feature kAccessibilityInternalsPageImprovements{
     "AccessibilityInternalsPageImprovements",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables setting time limit for Chrome and PWA's on child user device.
+#if defined(OS_CHROMEOS)
+const base::Feature kWebTimeLimits{"WebTimeLimits",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace features

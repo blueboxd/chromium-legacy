@@ -41,7 +41,8 @@ let IsValid;
  *            engagement: number,
  *            usage: number,
               numCookies: number,
-              hasPermissionSettings: boolean}}
+              hasPermissionSettings: boolean,
+              isInstalled: boolean}}
  */
 let OriginInfo;
 
@@ -52,7 +53,8 @@ let OriginInfo;
  * "example.com".
  * @typedef {{etldPlus1: string,
  *            numCookies: number,
- *            origins: Array<OriginInfo>}}
+ *            origins: Array<OriginInfo>,
+ *            hasInstalledPWA: boolean}}
  */
 let SiteGroup;
 

@@ -727,6 +727,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                     bool up,
                                     bool down) override;
   void FallbackCursorModeSetCursorVisibility(bool visible) override;
+  gfx::Size GetRootWidgetViewportSize() override;
 
   // FrameTokenMessageQueue::Client:
   void OnInvalidFrameToken(uint32_t frame_token) override;

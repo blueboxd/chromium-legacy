@@ -6,12 +6,27 @@
 
 #include <string>
 
+#include "base/at_exit.h"
+#include "base/i18n/icu_util.h"
 #include "net/http/http_response_headers.h"
 #include "testing/libfuzzer/libfuzzer_exports.h"
+
+namespace {
+
+// This is a workaround for https://crbug.com/778929.
+struct IcuEnvironment {
+  IcuEnvironment() { CHECK(base::i18n::InitializeICU()); }
+  // used by ICU integration.
+  base::AtExitManager at_exit_manager;
+};
+
+}  // namespace
 
 namespace network {
 
 int LLVMFuzzerInitialize(int* argc, char*** argv) {
+  static IcuEnvironment env;
+
   return 0;
 }
 

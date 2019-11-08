@@ -195,7 +195,7 @@ void OverviewButtonTray::UpdateIconVisibility() {
   bool should_show =
       Shell::Get()->tablet_mode_controller()->ShouldShowOverviewButton();
 
-  SetVisible(should_show && active_session && !app_mode);
+  SetVisiblePreferred(should_show && active_session && !app_mode);
 }
 
 }  // namespace ash

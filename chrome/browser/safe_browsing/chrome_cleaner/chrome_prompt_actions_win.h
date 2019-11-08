@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 
 namespace extensions {
 class ExtensionRegistry;
@@ -30,24 +31,9 @@ class ChromeCleanerScannerResults;
 // message received.
 class ChromePromptActions {
  public:
-  // TODO(crbug.com/969139): This mirrors the PromptAcceptance enums from
-  // chrome_prompt.mojom and chrome_prompt.proto. Once the
-  // ChromeCleanupProtobufIPC experiment is over remove this and use the proto
-  // version directly.
-  enum class PromptAcceptance {
-    UNSPECIFIED,
-    // The user explicitly accepted the cleanup operation and cleaner logs
-    // upload is allowed.
-    ACCEPTED_WITH_LOGS,
-    // The user explicitly accepted the cleanup operation and cleaner logs
-    // upload is not allowed.
-    ACCEPTED_WITHOUT_LOGS,
-    // The user explicitly denied the Chrome prompt.
-    DENIED,
-  };
-
   // A callback to be called after showing the prompt, with the user's choice.
-  using PromptUserReplyCallback = base::OnceCallback<void(PromptAcceptance)>;
+  using PromptUserReplyCallback = base::OnceCallback<void(
+      chrome_cleaner::PromptUserResponse::PromptAcceptance)>;
 
   // A callback to show the prompt. The ChromeCleanerScannerResults contains
   // the items that were detected by the scanner, for display in the prompt.
@@ -77,9 +63,6 @@ class ChromePromptActions {
   // Deletes the given |extension_ids|. Returns false on an error, including if
   // not all |extension_ids| were displayed to the user in the last PromptUser
   // call.
-  //
-  // TODO(crbug.com/969139): Now that we're updating the IPC interface, rename
-  // this DeleteExtensions to match the implementation.
   bool DisableExtensions(const std::vector<base::string16>& extension_ids);
 
  private:
@@ -101,11 +84,6 @@ class ChromePromptActions {
 
   std::vector<base::string16> extension_ids_;
 };
-
-//  Format for debug output in tests.
-std::ostream& operator<<(
-    std::ostream& out,
-    ChromePromptActions::PromptAcceptance prompt_acceptance);
 
 }  // namespace safe_browsing
 

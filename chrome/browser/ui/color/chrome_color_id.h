@@ -36,4 +36,8 @@ enum ChromeColorIds : ui::ColorId {
   kColorToolbar,  // TODO(pkasting): Add a recipe
 };
 
+enum ChromeColorSetIds : ui::ColorSetId {
+  kColorSetCustomTheme = ui::kUiColorSetsEnd,
+};
+
 #endif  // CHROME_BROWSER_UI_COLOR_CHROME_COLOR_ID_H_

@@ -104,8 +104,8 @@ class StrongBinding {
                 scoped_refptr<base::SequencedTaskRunner> task_runner)
       : impl_(std::move(impl)),
         binding_(impl_.get(), std::move(request), std::move(task_runner)) {
-    binding_.set_connection_error_with_reason_handler(
-        base::Bind(&StrongBinding::OnConnectionError, base::Unretained(this)));
+    binding_.set_connection_error_with_reason_handler(base::BindOnce(
+        &StrongBinding::OnConnectionError, base::Unretained(this)));
   }
 
   ~StrongBinding() {}

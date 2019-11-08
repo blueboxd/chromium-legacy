@@ -14,6 +14,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:layout_marginEnd="12dp"
         android:orientation="vertical"
         android:layout_gravity="center_vertical" >
 
@@ -26,14 +27,39 @@
             android:textAppearance="@style/TextAppearance.BlackTitle1" />
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/address"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textAppearance="@style/TextAppearance.BlackBody" />
+
+            <TextView
+                android:id="@+id/address_overflow_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="4dp"
+                android:clickable="true"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.BlueLink2" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/email"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:maxLines="1"
                 android:ellipsize="end"
                 android:textAppearance="@style/TextAppearance.BlackBody" />
@@ -42,22 +68,22 @@
                 android:id="@+id/email_overflow_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingStart="4dp"
                 android:clickable="true"
                 android:maxLines="1"
-                android:paddingStart="4dp"
-                android:ellipsize="end"
-                android:textAppearance="@style/TextAppearance.ContactsPickerMoreDetails" />
+                android:textAppearance="@style/TextAppearance.BlueLink2" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
 
             <TextView
                 android:id="@+id/telephone_number"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:maxLines="1"
                 android:ellipsize="end"
                 android:textAppearance="@style/TextAppearance.BlackBody" />
@@ -66,11 +92,10 @@
                 android:id="@+id/telephone_number_overflow_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingStart="4dp"
                 android:clickable="true"
                 android:maxLines="1"
-                android:paddingStart="4dp"
-                android:ellipsize="end"
-                android:textAppearance="@style/TextAppearance.ContactsPickerMoreDetails" />
+                android:textAppearance="@style/TextAppearance.BlueLink2" />
         </LinearLayout>
     </LinearLayout>
 
@@ -78,7 +103,7 @@
         android:id="@+id/star"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="10dp"
         android:src="@drawable/btn_star_filled"
         android:visibility="gone" />
 </merge>

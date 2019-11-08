@@ -136,6 +136,8 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Ensures this item view has its own layer.
   void EnsureLayer();
 
+  void FireMouseDragTimerForTest();
+
   bool is_folder() const { return is_folder_; }
 
  private:

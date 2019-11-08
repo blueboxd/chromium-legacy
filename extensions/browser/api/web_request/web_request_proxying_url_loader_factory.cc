@@ -82,7 +82,6 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       traffic_annotation_(traffic_annotation),
       proxied_loader_receiver_(this, std::move(loader_receiver)),
       target_client_(std::move(client)),
-      proxied_client_binding_(this),
       current_response_(network::mojom::URLResponseHead::New()),
       has_any_extra_headers_listeners_(
           network_service_request_id_ != 0 &&
@@ -108,7 +107,6 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       original_initiator_(request.request_initiator),
       request_id_(request_id),
       proxied_loader_receiver_(this),
-      proxied_client_binding_(this),
       for_cors_preflight_(true),
       has_any_extra_headers_listeners_(
           ExtensionWebRequestEventRouter::GetInstance()
@@ -204,9 +202,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
     // they respond. |continuation| above will be invoked asynchronously to
     // continue or cancel the request.
     //
-    // We pause the binding here to prevent further client message processing.
-    if (proxied_client_binding_.is_bound())
-      proxied_client_binding_.PauseIncomingMethodCallProcessing();
+    // We pause the receiver here to prevent further client message processing.
+    if (proxied_client_receiver_.is_bound())
+      proxied_client_receiver_.Pause();
 
     // Pause the header client, since we want to wait until OnBeforeRequest has
     // finished before processing any future events.
@@ -395,7 +393,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnLoaderCreated(
   header_client_receiver_.Bind(std::move(receiver));
   if (for_cors_preflight_) {
     // In this case we don't have |target_loader_| and
-    // |proxied_client_binding_|, and |receiver| is the only connection to the
+    // |proxied_client_receiver_|, and |receiver| is the only connection to the
     // network service, so we observe mojo connection errors.
     header_client_receiver_.set_disconnect_handler(base::BindOnce(
         &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
@@ -453,7 +451,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   // bugs. The latter doesn't know anything about the redirect. Continuing
   // the load with it gives unexpected results. See
   // https://crbug.com/882661#c72.
-  proxied_client_binding_.Close();
+  proxied_client_receiver_.reset();
   header_client_receiver_.reset();
   target_loader_.reset();
 
@@ -523,8 +521,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     return;
   }
 
-  if (proxied_client_binding_.is_bound())
-    proxied_client_binding_.ResumeIncomingMethodCallProcessing();
+  if (proxied_client_receiver_.is_bound())
+    proxied_client_receiver_.Resume();
 
   if (request_.url.SchemeIsHTTPOrHTTPS()) {
     // NOTE: While it does not appear to be documented (and in fact it may be
@@ -551,8 +549,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       // continue or cancel the request.
       //
       // We pause the binding here to prevent further client message processing.
-      if (proxied_client_binding_.is_bound())
-        proxied_client_binding_.PauseIncomingMethodCallProcessing();
+      if (proxied_client_receiver_.is_bound())
+        proxied_client_receiver_.Pause();
       return;
     }
     DCHECK_EQ(net::OK, result);
@@ -579,8 +577,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     return;
   }
 
-  if (proxied_client_binding_.is_bound())
-    proxied_client_binding_.ResumeIncomingMethodCallProcessing();
+  if (proxied_client_receiver_.is_bound())
+    proxied_client_receiver_.Resume();
 
   if (header_client_receiver_.is_bound())
     header_client_receiver_.Resume();
@@ -596,7 +594,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     // No extensions have cancelled us up to this point, so it's now OK to
     // initiate the real network request.
     network::mojom::URLLoaderClientPtr proxied_client;
-    proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
+    proxied_client_receiver_.Bind(mojo::MakeRequest(&proxied_client));
     uint32_t options = options_;
     // Even if this request does not use the header client, future redirects
     // might, so we need to set the option on the loader.
@@ -651,8 +649,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     pending_follow_redirect_params_.reset();
   }
 
-  if (proxied_client_binding_.is_bound())
-    proxied_client_binding_.ResumeIncomingMethodCallProcessing();
+  if (proxied_client_receiver_.is_bound())
+    proxied_client_receiver_.Resume();
 
   if (request_.url.SchemeIsHTTPOrHTTPS()) {
     // NOTE: While it does not appear to be documented (and in fact it may be
@@ -707,8 +705,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     OnAuthRequestHandled(
         WebRequestAPI::AuthRequestCallback callback,
         ExtensionWebRequestEventRouter::AuthRequiredResponse response) {
-  if (proxied_client_binding_.is_bound())
-    proxied_client_binding_.ResumeIncomingMethodCallProcessing();
+  if (proxied_client_receiver_.is_bound())
+    proxied_client_receiver_.Resume();
 
   base::OnceClosure completion;
   switch (response) {
@@ -781,8 +779,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     return;
   }
 
-  if (proxied_client_binding_)
-    proxied_client_binding_.ResumeIncomingMethodCallProcessing();
+  if (proxied_client_receiver_.is_bound())
+    proxied_client_receiver_.Resume();
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -817,7 +815,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
     // These will get re-bound if a new request is initiated by
     // |FollowRedirect()|.
-    proxied_client_binding_.Close();
+    proxied_client_receiver_.reset();
     header_client_receiver_.reset();
     target_loader_.reset();
 
@@ -827,7 +825,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   info_->AddResponseInfoFromResourceResponse(*current_response_);
 
-  proxied_client_binding_.ResumeIncomingMethodCallProcessing();
+  proxied_client_receiver_.Resume();
 
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       factory_->browser_context_, &info_.value(), net::OK);
@@ -844,8 +842,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   info_->AddResponseInfoFromResourceResponse(*current_response_);
 
-  if (proxied_client_binding_.is_bound())
-    proxied_client_binding_.ResumeIncomingMethodCallProcessing();
+  if (proxied_client_receiver_.is_bound())
+    proxied_client_receiver_.Resume();
 
   ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRedirect(
       factory_->browser_context_, &info_.value(), redirect_info.new_url);
@@ -884,14 +882,14 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     }
 
     if (result == net::ERR_IO_PENDING) {
-      if (proxied_client_binding_.is_bound()) {
+      if (proxied_client_receiver_.is_bound()) {
         // One or more listeners is blocking, so the request must be paused
         // until they respond. |continuation| above will be invoked
         // asynchronously to continue or cancel the request.
         //
-        // We pause the binding here to prevent further client message
+        // We pause the receiver here to prevent further client message
         // processing.
-        proxied_client_binding_.PauseIncomingMethodCallProcessing();
+        proxied_client_receiver_.Pause();
       }
       return;
     }

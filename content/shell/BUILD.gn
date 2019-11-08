@@ -163,6 +163,8 @@ jumbo_static_library("content_shell_lib") {
     "browser/web_test/fake_bluetooth_scanning_prompt.h",
     "browser/web_test/leak_detector.cc",
     "browser/web_test/leak_detector.h",
+    "browser/web_test/mock_client_hints_controller_delegate.cc",
+    "browser/web_test/mock_client_hints_controller_delegate.h",
     "browser/web_test/mojo_web_test_helper.cc",
     "browser/web_test/mojo_web_test_helper.h",
     "browser/web_test/secondary_test_window_observer.cc",
@@ -274,6 +276,7 @@ jumbo_static_library("content_shell_lib") {
     "//services/network:network_service",
   ]
   deps = [
+    ":client_hints_util",
     ":resources",
     ":web_test_messages",
     ":web_test_switches",
@@ -481,6 +484,20 @@ jumbo_static_library("content_shell_lib") {
   if (enable_cast_renderer) {
     deps += [ "//media/mojo/mojom:constants" ]
   }
+}
+
+static_library("client_hints_util") {
+  testonly = true
+
+  sources = [
+    "utility/mock_client_hints_utils.cc",
+    "utility/mock_client_hints_utils.h",
+  ]
+
+  deps = [
+    "//content/public/common",
+    "//third_party/blink/public:blink",
+  ]
 }
 
 grit("content_shell_resources_grit") {

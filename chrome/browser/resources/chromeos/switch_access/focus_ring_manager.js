@@ -87,6 +87,11 @@ class FocusRingManager {
     if (this.rings_.size === 0) {
       return;
     }
+    if (!primary.location || !group.location) {
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.MISSING_LOCATION,
+          'Cannot set focus rings if node location is undefined');
+    }
 
     if (primary instanceof BackButtonNode) {
       // TODO(anastasi): Use standard focus rings.

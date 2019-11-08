@@ -79,7 +79,6 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   VRServiceImpl* GetServiceWithActiveImmersiveSession() {
     return presenting_service_;
   }
-  void UpdateListeningForActivate(VRServiceImpl* service);
 
   device::mojom::VRDisplayInfoPtr GetVRDisplayInfo() {
     return display_info_.Clone();
@@ -103,14 +102,10 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void OnDisplayInfoChanged(
       device::mojom::VRDisplayInfoPtr vr_device_info) override;
   void OnExitPresent() override;
-  void OnDeviceActivated(device::mojom::VRDisplayEventReason reason,
-                         base::OnceCallback<void(bool)> on_handled) override;
-  void OnDeviceIdle(device::mojom::VRDisplayEventReason reason) override;
   void OnVisibilityStateChanged(
       device::mojom::XRVisibilityState visibility_state) override;
 
   void StopImmersiveSession(VRServiceImpl::ExitPresentCallback on_exited);
-  void OnListeningForActivate(bool is_listening);
   void OnRequestSessionResult(
       base::WeakPtr<VRServiceImpl> service,
       device::mojom::XRRuntimeSessionOptionsPtr options,
@@ -129,7 +124,6 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   std::set<VRServiceImpl*> services_;
   device::mojom::VRDisplayInfoPtr display_info_;
 
-  VRServiceImpl* listening_for_activation_service_ = nullptr;
   VRServiceImpl* presenting_service_ = nullptr;
 
   mojo::AssociatedReceiver<device::mojom::XRRuntimeEventListener> receiver_{

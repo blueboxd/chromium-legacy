@@ -533,7 +533,7 @@ class GpuMessageHandler
   void OnGpuInfoUpdate() override;
 
   // ui::GpuSwitchingObserver implementation.
-  void OnGpuSwitched() override;
+  void OnGpuSwitched(gl::GpuPreference) override;
 
   // Messages
   void OnBrowserBridgeInitialized(const base::ListValue* list);
@@ -720,7 +720,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
                                          *(gpu_info_val.get()));
 }
 
-void GpuMessageHandler::OnGpuSwitched() {
+void GpuMessageHandler::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic_) {
   // Currently, about:gpu page does not update GPU info after the GPU switch.
   // If there is something to be updated, the code should be added here.
 }

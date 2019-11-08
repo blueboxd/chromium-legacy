@@ -97,10 +97,6 @@ public class EphemeralTabPanel extends OverlayPanel {
                 && !SysUtils.isLowEndDevice();
     }
 
-    static boolean isNewLayout() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT);
-    }
-
     /**
      * @param context The current Android {@link Context}.
      * @param updateHost The {@link LayoutUpdateHost} used to request updates in the Layout.

@@ -3,7 +3,9 @@
 
 {%- set class_name = interface.name %}
 {%- set proxy_name = interface.name ~ "Proxy" %}
-{%- set namespace_as_string = "%s"|format(namespace|replace(".","::")) %}
+{%- set namespace_as_string = "%s"|format(module_namespace|replace(".","::")) %}
+{%- set namespace_as_string_with_variant = namespace_as_string ~ ("::" ~ variant if variant) %}
+{%- set qualified_class_name = ("::" ~ namespace_as_string_with_variant if namespace_as_string_with_variant) ~ "::" ~ class_name %}
 
 {%- macro alloc_params(struct, params, message, method_number, is_response) %}
   mojo::internal::SerializationContext serialization_context;
@@ -518,82 +520,58 @@ bool {{class_name}}StubDispatch::AcceptWithResponder(
   return false;
 }
 
+{% if interface.methods and (interface | has_packed_method_ordinals) %}
+static const mojo::internal::GenericValidationInfo k{{class_name}}ValidationInfo[] = {
+{%-   for i in range(interface.methods | map(attribute='ordinal') | max + 1) -%}
+{%-     set method = (interface.methods | selectattr('ordinal', 'equalto', i) | list)[0] %}
+{%-     if method %}
+    {&internal::{{class_name}}_{{method.name}}_Params_Data::Validate,
+{%-       if method.response_parameters != None %}
+     &internal::{{class_name}}_{{method.name}}_ResponseParams_Data::Validate},
+{%-       else %}
+     nullptr /* no response */},
+{%-       endif %}
+{%-     else %}
+    {nullptr, nullptr},  // nonexistent
+{%-     endif %}
+{%-   endfor %}
+};
+{%- elif interface.methods %}
+static const std::pair<uint32_t, mojo::internal::GenericValidationInfo> k{{class_name}}ValidationInfo[] = {
+{%-   for method in interface.methods %}
+    {internal::k{{class_name}}_{{method.name}}_Name,
+     {&internal::{{class_name}}_{{method.name}}_Params_Data::Validate,
+{%-     if method.response_parameters != None %}
+      &internal::{{class_name}}_{{method.name}}_ResponseParams_Data::Validate}},
+{%-     else %}
+      nullptr /* no response */}},
+{%-     endif %}
+{%-   endfor %}
+};
+{%- endif %}
+
 {#--- Request validator definitions #}
 
 bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
-  if (!message->is_serialized() ||
-      mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
-    return true;
-  }
-
-  mojo::internal::ValidationContext validation_context(
-      message, "{{class_name}} RequestValidator");
-
-  switch (message->header()->name) {
-{%- for method in interface.methods %}
-    case internal::k{{class_name}}_{{method.name}}_Name: {
-{%-   if method.response_parameters != None %}
-      if (!mojo::internal::ValidateMessageIsRequestExpectingResponse(
-              message, &validation_context)) {
-        return false;
-      }
-{%-   else %}
-      if (!mojo::internal::ValidateMessageIsRequestWithoutResponse(
-              message, &validation_context)) {
-        return false;
-      }
-{%-   endif %}
-      if (!mojo::internal::ValidateMessagePayload<
-               internal::{{class_name}}_{{method.name}}_Params_Data>(
-                  message, &validation_context)) {
-        return false;
-      }
-      return true;
-    }
-{%- endfor %}
-    default:
-      break;
-  }
-
-  // Unrecognized message.
-  ReportValidationError(
-      &validation_context,
-      mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_UNKNOWN_METHOD);
-  return false;
+  {#- Not simply Name_ because there is a mojom interface called MessageReceiver #}
+  const char* name = {{qualified_class_name}}::Name_;
+{%- if not interface.methods %}
+  return mojo::internal::ValidateRequestGeneric(message, name, {});
+{%- elif interface | has_packed_method_ordinals %}
+  return mojo::internal::ValidateRequestGenericPacked(message, name, k{{class_name}}ValidationInfo);
+{%- else %}
+  return mojo::internal::ValidateRequestGeneric(message, name, k{{class_name}}ValidationInfo);
+{%- endif %}
 }
 
 {#--- Response validator definitions #}
 {% if interface|has_callbacks %}
 bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
-  if (!message->is_serialized() ||
-      mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
-    return true;
-  }
-
-  mojo::internal::ValidationContext validation_context(
-      message, "{{class_name}} ResponseValidator");
-
-  if (!mojo::internal::ValidateMessageIsResponse(message, &validation_context))
-    return false;
-  switch (message->header()->name) {
-{%- for method in interface.methods if method.response_parameters != None %}
-    case internal::k{{class_name}}_{{method.name}}_Name: {
-      if (!mojo::internal::ValidateMessagePayload<
-               internal::{{class_name}}_{{method.name}}_ResponseParams_Data>(
-                    message, &validation_context)) {
-        return false;
-      }
-      return true;
-    }
-{%- endfor %}
-    default:
-      break;
-  }
-
-  // Unrecognized message.
-  ReportValidationError(
-      &validation_context,
-      mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_UNKNOWN_METHOD);
-  return false;
+  const char* name = {{qualified_class_name}}::Name_;
+{%-  if interface | has_packed_method_ordinals %}
+  return mojo::internal::ValidateResponseGenericPacked(message, name, k{{class_name}}ValidationInfo);
+{%-  else %}
+  return mojo::internal::ValidateResponseGeneric(message, name, k{{class_name}}ValidationInfo);
+{%   endif %}
 }
 {%- endif -%}

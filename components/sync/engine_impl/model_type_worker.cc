@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/client_tag_hash.h"
@@ -789,7 +790,12 @@ void GetLocalChangesRequest::WaitForResponse() {
   if (!cancelation_signal_->TryRegisterHandler(this)) {
     return;
   }
-  response_accepted_.Wait();
+
+  {
+    base::ScopedAllowBaseSyncPrimitives allow_wait;
+    response_accepted_.Wait();
+  }
+
   cancelation_signal_->UnregisterHandler(this);
 }
 

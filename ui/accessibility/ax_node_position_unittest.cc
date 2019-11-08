@@ -6314,9 +6314,9 @@ INSTANTIATE_TEST_SUITE_P(
              "TextPosition anchor_id=1 text_offset=0 "
              "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2",
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2"}},
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
               return position->CreatePreviousLineStartPosition(
@@ -6634,10 +6634,6 @@ INSTANTIATE_TEST_SUITE_P(
     CreatePreviousLineEndPositionWithBoundaryBehaviorStopAtAnchorBoundary,
     AXPositionTextNavigationTestWithParam,
     testing::Values(
-        // Note that for the first two tests we can't go past the line ending at
-        // "Line 1" to test for "NullPosition'", because the text position at
-        // the beginning of the soft line break is equivalent to the position at
-        // the end of the line's text and so an infinite recursion will occur.
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
               return position->CreatePreviousLineEndPosition(
@@ -6776,9 +6772,9 @@ INSTANTIATE_TEST_SUITE_P(
             {"TextPosition anchor_id=1 text_offset=6 "
              "affinity=downstream annotated_text=Line 1<\n>Line 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2",
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2"}},
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
               return position->CreatePreviousLineEndPosition(
@@ -6800,9 +6796,9 @@ INSTANTIATE_TEST_SUITE_P(
             ROOT_ID,
             5 /* text_offset on the last character of "Line 1". */,
             {"TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2",
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2"}},
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
               return position->CreatePreviousLineEndPosition(
@@ -7196,9 +7192,9 @@ INSTANTIATE_TEST_SUITE_P(
              "TextPosition anchor_id=1 text_offset=0 "
              "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2",
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2"}},
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
               return position->CreatePreviousParagraphStartPosition(
@@ -7310,6 +7306,8 @@ INSTANTIATE_TEST_SUITE_P(
              "TextPosition anchor_id=1 text_offset=13 "
              "affinity=downstream annotated_text=Line 1\nLine 2<>",
              "TextPosition anchor_id=1 text_offset=13 "
+             "affinity=downstream annotated_text=Line 1\nLine 2<>",
+             "TextPosition anchor_id=1 text_offset=13 "
              "affinity=downstream annotated_text=Line 1\nLine 2<>"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
@@ -7320,6 +7318,8 @@ INSTANTIATE_TEST_SUITE_P(
             0 /* text_offset */,
             {"TextPosition anchor_id=4 text_offset=7 "
              "affinity=upstream annotated_text=Line 1\n<L>ine 2",
+             "TextPosition anchor_id=4 text_offset=13 "
+             "affinity=downstream annotated_text=Line 1\nLine 2<>",
              "TextPosition anchor_id=4 text_offset=13 "
              "affinity=downstream annotated_text=Line 1\nLine 2<>",
              "TextPosition anchor_id=4 text_offset=13 "
@@ -7359,9 +7359,9 @@ INSTANTIATE_TEST_SUITE_P(
             ROOT_ID,
             0 /* text_offset */,
             {"TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2",
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2"}},
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
               return position->CreateNextParagraphEndPosition(
@@ -7487,7 +7487,7 @@ INSTANTIATE_TEST_SUITE_P(
             {"TextPosition anchor_id=1 text_offset=7 "
              "affinity=upstream annotated_text=Line 1\n<L>ine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2",
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "NullPosition"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
@@ -7509,7 +7509,7 @@ INSTANTIATE_TEST_SUITE_P(
             ROOT_ID,
             5 /* text_offset on the last character of "Line 1". */,
             {"TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2",
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "NullPosition"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
@@ -7548,10 +7548,6 @@ INSTANTIATE_TEST_SUITE_P(
     CreatePreviousParagraphEndPositionWithBoundaryBehaviorStopAtAnchorBoundary,
     AXPositionTextNavigationTestWithParam,
     testing::Values(
-        // Note that for the first two tests we can't go past the line ending at
-        // "Line 1" to test for "NullPosition'", because the text position at
-        // the beginning of the soft line break is equivalent to the position at
-        // the end of the line's text and so an infinite recursion will occur.
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
               return position->CreatePreviousParagraphEndPosition(
@@ -7562,7 +7558,9 @@ INSTANTIATE_TEST_SUITE_P(
             {"TextPosition anchor_id=1 text_offset=7 "
              "affinity=upstream annotated_text=Line 1\n<L>ine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2"}},
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
+             "TextPosition anchor_id=1 text_offset=0 "
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
               return position->CreatePreviousParagraphEndPosition(
@@ -7573,6 +7571,8 @@ INSTANTIATE_TEST_SUITE_P(
             {"TextPosition anchor_id=4 text_offset=7 "
              "affinity=upstream annotated_text=Line 1\n<L>ine 2",
              "TextPosition anchor_id=4 text_offset=0 "
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
+             "TextPosition anchor_id=4 text_offset=0 "
              "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
@@ -7582,7 +7582,7 @@ INSTANTIATE_TEST_SUITE_P(
             ROOT_ID,
             5 /* text_offset on the last character of "Line 1". */,
             {"TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2",
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "TextPosition anchor_id=1 text_offset=0 "
              "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TextNavigationTestParam{
@@ -7715,9 +7715,9 @@ INSTANTIATE_TEST_SUITE_P(
             {"TextPosition anchor_id=1 text_offset=7 "
              "affinity=upstream annotated_text=Line 1\n<L>ine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2",
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2"}},
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
               return position->CreatePreviousParagraphEndPosition(
@@ -7740,9 +7740,9 @@ INSTANTIATE_TEST_SUITE_P(
             ROOT_ID,
             5 /* text_offset on the last character of "Line 1". */,
             {"TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2",
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2",
              "TextPosition anchor_id=1 text_offset=0 "
-             "affinity=upstream annotated_text=<L>ine 1\nLine 2"}},
+             "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TextNavigationTestParam{
             base::BindRepeating([](const TestPositionType& position) {
               return position->CreatePreviousParagraphEndPosition(

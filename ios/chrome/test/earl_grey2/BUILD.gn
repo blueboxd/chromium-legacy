@@ -41,6 +41,10 @@ chrome_ios_eg2_test("ios_chrome_integration_eg2tests_module") {
     "//ios/chrome/browser/ntp_tiles:eg2_tests",
     "//ios/chrome/browser/passwords:eg2_tests",
     "//ios/chrome/browser/prerender:eg2_tests",
+    "//ios/chrome/browser/ui/autofill:eg2_tests",
+    "//ios/chrome/browser/ui/autofill/manual_fill:eg2_tests",
+    "//ios/chrome/browser/ui/content_suggestions:eg2_tests",
+    "//ios/chrome/browser/ui/integration_tests:eg2_tests",
   ]
 }
 
@@ -66,14 +70,10 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
 
   deps = [
     "//ios/chrome/browser/ui/activity_services:eg2_tests",
-    "//ios/chrome/browser/ui/autofill:eg2_tests",
-    "//ios/chrome/browser/ui/autofill/manual_fill:eg2_tests",
-    "//ios/chrome/browser/ui/content_suggestions:eg2_tests",
     "//ios/chrome/browser/ui/dialogs:eg2_tests",
     "//ios/chrome/browser/ui/download:eg2_tests",
     "//ios/chrome/browser/ui/first_run:eg2_tests",
     "//ios/chrome/browser/ui/fullscreen:eg2_tests",
-    "//ios/chrome/browser/ui/integration_tests:eg2_tests",
     "//ios/chrome/browser/ui/keyboard:eg2_tests",
     "//ios/chrome/browser/ui/ntp:eg2_tests",
     "//ios/chrome/browser/ui/omnibox/popup:eg2_tests",
@@ -89,6 +89,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/tab_grid:eg2_tests",
     "//ios/chrome/browser/ui/tabs:eg2_tests",
     "//ios/chrome/browser/ui/toolbar:eg2_tests",
+    "//ios/chrome/browser/ui/webui:eg2_tests",
   ]
 }
 

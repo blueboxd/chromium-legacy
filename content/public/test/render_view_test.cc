@@ -428,14 +428,6 @@ void RenderViewTest::SetUp() {
       mojo::MakeRequest(
           &view_params->main_frame_interface_bundle->interface_provider));
 
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker;
-  ignore_result(document_interface_broker.InitWithNewPipeAndPassReceiver());
-  view_params->main_frame_interface_bundle->document_interface_broker_content =
-      std::move(document_interface_broker);
-  ignore_result(document_interface_broker.InitWithNewPipeAndPassReceiver());
-  view_params->main_frame_interface_bundle->document_interface_broker_blink =
-      std::move(document_interface_broker);
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   // Ignoring the returned PendingReceiver because it is not bound to anything

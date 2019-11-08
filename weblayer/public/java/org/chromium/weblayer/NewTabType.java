@@ -9,6 +9,9 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * @hide
+ */
 @IntDef({NewTabType.FOREGROUND_TAB, NewTabType.BACKGROUND_TAB, NewTabType.NEW_POPUP,
         NewTabType.NEW_WINDOW})
 @Retention(RetentionPolicy.SOURCE)

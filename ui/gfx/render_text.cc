@@ -316,23 +316,29 @@ void ReplaceControlCharactersWithSymbols(bool multiline, base::string16* text) {
   // Control Pictures block (see: https://unicode.org/charts/PDF/U2400.pdf).
   constexpr base::char16 kSymbolsCodepoint = 0x2400;
 
-  size_t next_offset = 0;
-  while (next_offset < text->length()) {
-    size_t offset = next_offset;
+  size_t offset = 0;
+  while (offset < text->length()) {
     UChar32 codepoint;
-    U16_NEXT(text->c_str(), next_offset, text->length(), codepoint);
+    U16_GET(text->c_str(), 0, offset, text->length(), codepoint);
 
     if (codepoint >= 0 && codepoint <= 0x1F) {
       // The newline character should be kept as-is when rendertext is
       // multiline.
-      if (codepoint == '\n' && multiline)
-        continue;
-      // Replace codepoints with their visual symbols, which are at the same
-      // offset from kSymbolsCodepoint.
-      (*text)[offset] = kSymbolsCodepoint + codepoint;
+      if (codepoint != '\n' || !multiline) {
+        // Replace codepoints with their visual symbols, which are at the same
+        // offset from kSymbolsCodepoint.
+        (*text)[offset] = kSymbolsCodepoint + codepoint;
+      }
     } else if (codepoint == 0x7F) {
       // Replace the 'del' codepoint by its symbol (u2421).
       (*text)[offset] = kSymbolsCodepoint + 0x21;
+    } else if (!U_IS_UNICODE_CHAR(codepoint)) {
+      // Unicode codepoint that can't be assigned a character. This handles:
+      // - single surrogate codepoints,
+      // - last two codepoints on each plane,
+      // - invalid characters (e.g. u+fdd0..u+fdef)
+      // - codepoints above u+10ffff
+      ReplaceCodepointAtIndex(offset, kReplacementCodepoint, text);
     } else if (codepoint > 0x7F) {
       // Private use codepoints are working with a pair of font and codepoint,
       // but they are not used in Chrome.
@@ -342,6 +348,10 @@ void ReplaceControlCharactersWithSymbols(bool multiline, base::string16* text) {
         ReplaceCodepointAtIndex(offset, kReplacementCodepoint, text);
       }
     }
+
+    // Move offset to the index of the next codepoint. This must be computed
+    // after any rewriting steps above since codepoint size may differ.
+    U16_NEXT(text->c_str(), offset, text->length(), codepoint);
   }
 }
 

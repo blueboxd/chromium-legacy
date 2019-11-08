@@ -135,7 +135,13 @@ class GetFallbackFontTest
 //
 // The previous checks can be activated or deactivated through the class
 // FallbackFontTestOption (e.g. test_option_).
-TEST_P(GetFallbackFontTest, GetFallbackFont) {
+#if defined(OS_MACOSX)
+// https://crbug.com/1022455
+#define MAYBE_GetFallbackFont DISABLED_GetFallbackFont
+#else
+#define MAYBE_GetFallbackFont GetFallbackFont
+#endif
+TEST_P(GetFallbackFontTest, MAYBE_GetFallbackFont) {
   // Default system font.
   const Font base_font;
 

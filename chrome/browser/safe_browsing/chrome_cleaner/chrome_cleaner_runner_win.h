@@ -98,20 +98,15 @@ class ChromeCleanerRunner
   // This function will pass command line flags to the Chrome Cleaner
   // executable as appropriate based on the flags in |reporter_invocation| and
   // the |metrics_status| parameters. The Cleaner process will communicate with
-  // Chrome via a Mojo or protobuf IPC interface and any IPC requests or
-  // notifications are passed to the caller via the |on_prompt_user| and
-  // |on_connection_closed| callbacks. Finally, when the Chrome Cleaner process
-  // terminates, a ProcessStatus is passed along to |on_process_done|.
+  // Chrome via an IPC interface and any IPC requests or notifications are
+  // passed to the caller via the |on_prompt_user| and |on_connection_closed|
+  // callbacks. Finally, when the Chrome Cleaner process terminates, a
+  // ProcessStatus is passed along to |on_process_done|.
   //
   // This IPC interface needs the |extension_service| in order to disable
   // extensions that the Cleaner process wants to disable.
   //
-  // The details of the Mojo interface are documented in
-  // "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h".
-  //
-  // TODO(crbug.com/969139): Add a reference to the protobuf interface. Once
-  // the experiment is over, update this comment to only reference the
-  // interface that's actually used.
+  // See ChromePromptChannel for more details of the IPC interface.
   static void RunChromeCleanerAndReplyWithExitCode(
       extensions::ExtensionService* extension_service,
       extensions::ExtensionRegistry* extension_registry,

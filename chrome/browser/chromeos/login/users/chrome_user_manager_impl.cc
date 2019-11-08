@@ -642,8 +642,7 @@ void ChromeUserManagerImpl::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED);
   Profile* profile = content::Details<Profile>(details).ptr();
-  if (IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsKioskApp() &&
-      !IsLoggedInAsArcKioskApp()) {
+  if (IsUserLoggedIn() && !IsLoggedInAsGuest() && !IsLoggedInAsAnyKioskApp()) {
     if (!profile->IsOffTheRecord()) {
       if (AuthSyncObserver::ShouldObserve(profile)) {
         AuthSyncObserver* sync_observer =

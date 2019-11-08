@@ -170,6 +170,11 @@ RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrameForInnerDelegate(
   return nullptr;
 }
 
+media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
+RenderFrameHostDelegate::GetRecordAggregateWatchTimeCallback() {
+  return base::NullCallback();
+}
+
 bool RenderFrameHostDelegate::IsFrameLowPriority(
     const RenderFrameHost* render_frame_host) {
   return false;

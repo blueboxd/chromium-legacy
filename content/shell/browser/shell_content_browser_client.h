@@ -23,6 +23,7 @@ class ShellBrowserContext;
 class ShellBrowserMainParts;
 
 std::string GetShellUserAgent();
+std::string GetShellLanguage();
 blink::UserAgentMetadata GetShellUserAgentMetadata();
 
 class ShellContentBrowserClient : public ContentBrowserClient {

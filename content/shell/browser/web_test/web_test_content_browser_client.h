@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "content/public/common/client_hints.mojom.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -100,6 +101,9 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   void BindClipboardHostForRequest(blink::mojom::ClipboardHostRequest request);
   void BindClipboardHost(
       mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
+
+  void BindClientHintsControllerDelegate(
+      mojo::PendingReceiver<client_hints::mojom::ClientHints> receiver);
 
   std::unique_ptr<MockPlatformNotificationService>
       mock_platform_notification_service_;

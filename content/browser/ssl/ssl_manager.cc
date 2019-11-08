@@ -103,36 +103,6 @@ class SSLManagerSet : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(SSLManagerSet);
 };
 
-void HandleSSLErrorOnUI(
-    const base::Callback<WebContents*(void)>& web_contents_getter,
-    const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
-    BrowserThread::ID delegate_thread,
-    bool is_main_frame_request,
-    const GURL& url,
-    int net_error,
-    const net::SSLInfo& ssl_info,
-    bool fatal) {
-  content::WebContents* web_contents = web_contents_getter.Run();
-  std::unique_ptr<SSLErrorHandler> handler(new SSLErrorHandler(
-      web_contents, delegate, delegate_thread, is_main_frame_request, url,
-      net_error, ssl_info, fatal));
-
-  if (!web_contents) {
-    // Requests can fail to dispatch because they don't have a WebContents. See
-    // https://crbug.com/86537. In this case we have to make a decision in this
-    // function.
-    handler->CancelRequest();
-    return;
-  }
-
-  NavigationControllerImpl* controller =
-      static_cast<NavigationControllerImpl*>(&web_contents->GetController());
-  controller->SetPendingNavigationSSLError(true);
-
-  SSLManager* manager = controller->ssl_manager();
-  manager->OnCertError(std::move(handler));
-}
-
 void LogMixedContentMetrics(MixedContentType type,
                             ukm::SourceId source_id,
                             ukm::UkmRecorder* recorder) {
@@ -157,20 +127,27 @@ void SSLManager::OnSSLCertificateError(
   DVLOG(1) << "OnSSLCertificateError() cert_error: " << net_error
            << " url: " << url.spec() << " cert_status: " << std::hex
            << ssl_info.cert_status;
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    HandleSSLErrorOnUI(web_contents_getter, delegate, BrowserThread::UI,
-                       is_main_frame_request, url, net_error, ssl_info, fatal);
+  content::WebContents* web_contents = web_contents_getter.Run();
+  std::unique_ptr<SSLErrorHandler> handler(
+      new SSLErrorHandler(web_contents, delegate, is_main_frame_request, url,
+                          net_error, ssl_info, fatal));
+
+  if (!web_contents) {
+    // Requests can fail to dispatch because they don't have a WebContents. See
+    // https://crbug.com/86537. In this case we have to make a decision in this
+    // function.
+    handler->CancelRequest();
     return;
   }
 
-  // TODO(jam): remove the logic to call this from IO thread once the
-  // network service code path is the only one.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&HandleSSLErrorOnUI, web_contents_getter, delegate,
-                     BrowserThread::IO, is_main_frame_request, url, net_error,
-                     ssl_info, fatal));
+  NavigationControllerImpl* controller =
+      static_cast<NavigationControllerImpl*>(&web_contents->GetController());
+  controller->SetPendingNavigationSSLError(true);
+
+  SSLManager* manager = controller->ssl_manager();
+  manager->OnCertError(std::move(handler));
 }
 
 // static

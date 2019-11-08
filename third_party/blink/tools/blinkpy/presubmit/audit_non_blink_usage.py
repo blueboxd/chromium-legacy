@@ -614,6 +614,7 @@ _CONFIG = [
         # display-related types.
         'allowed': [
             'base::MRUCache',
+            'gl::GpuPreference',
             'gpu::gles2::GLES2Interface',
             'gpu::MailboxHolder',
             'display::Display',

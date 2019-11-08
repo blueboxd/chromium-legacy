@@ -164,6 +164,7 @@ class VIZ_COMMON_EXPORT GLHelper {
   // TODO(crbug.com/870036): DEPRECATED. This will be moved to be closer to its
   // one caller soon.
   void ReadbackTextureAsync(GLuint texture,
+                            GLenum texture_target,
                             const gfx::Size& dst_size,
                             unsigned char* out,
                             SkColorType color_type,

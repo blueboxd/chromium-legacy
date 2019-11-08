@@ -21,7 +21,7 @@ class SiteInstance;
 
 namespace chromecast {
 
-class CastWebContentsManager;
+class CastWebService;
 
 class CastWebViewFactory : public CastWebView::Observer {
  public:
@@ -30,7 +30,7 @@ class CastWebViewFactory : public CastWebView::Observer {
 
   virtual std::unique_ptr<CastWebView> CreateWebView(
       const CastWebView::CreateParams& params,
-      CastWebContentsManager* web_contents_manager,
+      CastWebService* web_service,
       scoped_refptr<content::SiteInstance> site_instance,
       const GURL& initial_url);
 

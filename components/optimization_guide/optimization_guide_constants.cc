@@ -20,4 +20,6 @@ const char kOptimizationGuideServiceGetModelsDefaultURL[] =
 const char kLoadedHintLocalHistogramString[] =
     "OptimizationGuide.LoadedHint.Result";
 
+const char kOptimizationGuideHintStore[] = "previews_hint_cache_store";
+
 }  // namespace optimization_guide

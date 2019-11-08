@@ -131,6 +131,32 @@ public class JsJavaInteractionTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testPostMessage_LoadData_MessageHasStringNullOrigin() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+
+        final String html = "<html><head><script>myObject.postMessage('Hello');</script></head>"
+                + "<body></body></html>";
+
+        // This uses loadDataAsync() which is equivalent to WebView#loadData(...).
+        mActivityTestRule.loadHtmlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), html);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        // Note that the source origin is a non-null string of n, u, l, l.
+        Assert.assertNotNull(data.mSourceOrigin);
+        Assert.assertEquals("null", data.mSourceOrigin.toString());
+
+        Assert.assertEquals(HELLO, data.mMessage);
+        Assert.assertTrue(data.mIsMainFrame);
+        Assert.assertEquals(0, data.mPorts.length);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testPostMessageWithPorts() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 

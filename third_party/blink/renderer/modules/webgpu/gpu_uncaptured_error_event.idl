@@ -6,7 +6,7 @@
 
 [
     Constructor(DOMString type, GPUUncapturedErrorEventInit gpuUncapturedErrorEventInitDict),
-    RuntimeEnabled=WebGPU
+    Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUUncapturedErrorEvent : Event {
     readonly attribute GPUError error;
 };

@@ -39,15 +39,14 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
 
 CastContentWindowAndroid::CastContentWindowAndroid(
     const CastContentWindow::CreateParams& params)
-    : delegate_(params.delegate),
+    : CastContentWindow(params),
+      activity_id_(delegate_->GetId()),
       java_window_(CreateJavaWindow(reinterpret_cast<jlong>(this),
                                     params.is_headless,
                                     params.enable_touch_input,
                                     params.is_remote_control_mode,
                                     params.turn_on_screen,
-                                    params.session_id)) {
-  DCHECK(delegate_);
-}
+                                    params.session_id)) {}
 
 CastContentWindowAndroid::~CastContentWindowAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -85,7 +84,9 @@ void CastContentWindowAndroid::EnableTouchInput(bool enabled) {
 void CastContentWindowAndroid::OnActivityStopped(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
-  delegate_->OnWindowDestroyed();
+  if (delegate_) {
+    delegate_->OnWindowDestroyed();
+  }
 }
 
 void CastContentWindowAndroid::RequestVisibility(
@@ -102,7 +103,9 @@ void CastContentWindowAndroid::SetHostContext(base::Value host_context) {}
 
 void CastContentWindowAndroid::NotifyVisibilityChange(
     VisibilityType visibility_type) {
-  delegate_->OnVisibilityChange(visibility_type);
+  if (delegate_) {
+    delegate_->OnVisibilityChange(visibility_type);
+  }
   for (auto& observer : observer_list_) {
     observer.OnVisibilityChange(visibility_type);
   }
@@ -117,7 +120,10 @@ bool CastContentWindowAndroid::ConsumeGesture(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     int gesture_type) {
-  return delegate_->ConsumeGesture(static_cast<GestureType>(gesture_type));
+  if (delegate_) {
+    return delegate_->ConsumeGesture(static_cast<GestureType>(gesture_type));
+  }
+  return false;
 }
 
 void CastContentWindowAndroid::OnVisibilityChange(
@@ -130,7 +136,7 @@ void CastContentWindowAndroid::OnVisibilityChange(
 base::android::ScopedJavaLocalRef<jstring> CastContentWindowAndroid::GetId(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
-  return ConvertUTF8ToJavaString(env, delegate_->GetId());
+  return ConvertUTF8ToJavaString(env, activity_id_);
 }
 
 }  // namespace chromecast

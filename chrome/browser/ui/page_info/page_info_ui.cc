@@ -164,6 +164,10 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
      IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL},
     {ContentSettingsType::MIDI_SYSEX, IDS_PAGE_INFO_TYPE_MIDI_SYSEX},
     {ContentSettingsType::BACKGROUND_SYNC, IDS_PAGE_INFO_TYPE_BACKGROUND_SYNC},
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    {ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
+     IDS_PAGE_INFO_TYPE_PROTECTED_MEDIA_IDENTIFIER},
+#endif
     {ContentSettingsType::AUTOPLAY, IDS_PAGE_INFO_TYPE_AUTOPLAY},
     {ContentSettingsType::ADS, IDS_PAGE_INFO_TYPE_ADS},
     {ContentSettingsType::SOUND, IDS_PAGE_INFO_TYPE_SOUND},
@@ -583,6 +587,11 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     case ContentSettingsType::AUTOMATIC_DOWNLOADS:
       icon = &kFileDownloadIcon;
       break;
+#if defined(OS_CHROMEOS)
+    case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
+      icon = &kProtectedContentIcon;
+      break;
+#endif
     case ContentSettingsType::MIDI_SYSEX:
       icon = &vector_icons::kMidiIcon;
       break;
@@ -604,11 +613,9 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     case ContentSettingsType::USB_GUARD:
       icon = &vector_icons::kUsbIcon;
       break;
-#if !defined(OS_ANDROID)
     case ContentSettingsType::SERIAL_GUARD:
       icon = &vector_icons::kSerialPortIcon;
       break;
-#endif
     case ContentSettingsType::BLUETOOTH_SCANNING:
       icon = &vector_icons::kBluetoothScanningIcon;
       break;

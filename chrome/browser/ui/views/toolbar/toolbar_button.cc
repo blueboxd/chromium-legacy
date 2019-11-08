@@ -144,8 +144,9 @@ void ToolbarButton::UpdateColorsAndInsets() {
       highlight_color_animation_.GetBackgroundColor();
   if (background_color) {
     // ToolbarButtons are always the height the location bar.
-    const gfx::Insets bg_insets(
-        (height() - GetLayoutConstant(LOCATION_BAR_HEIGHT)) / 2);
+    const gfx::Insets bg_insets =
+        gfx::Insets((height() - GetLayoutConstant(LOCATION_BAR_HEIGHT)) / 2) +
+        *GetProperty(views::kInternalPaddingKey);
     SetBackground(views::CreateBackgroundFromPainter(
         views::Painter::CreateSolidRoundRectPainter(
             *background_color, highlight_radius, bg_insets)));

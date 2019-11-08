@@ -97,10 +97,16 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
   }
 
   bool GetBrowserProcessType(std::string* ptype) override {
-    *ptype = base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kWebViewSandboxedRenderer)
-                 ? "browser"
-                 : "webview";
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kWebViewSandboxedRenderer)) {
+      // In single process mode the renderer and browser are in the same
+      // process. The process type is "webview" to distinguish this case,
+      // and for backwards compatibility.
+      *ptype = "webview";
+    } else {
+      // Otherwise, in multi process mode, "browser" suffices.
+      *ptype = "browser";
+    }
     return true;
   }
 

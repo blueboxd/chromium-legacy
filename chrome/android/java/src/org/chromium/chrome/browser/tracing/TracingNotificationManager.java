@@ -109,8 +109,9 @@ public class TracingNotificationManager {
         // selecting the stop button, so choose a different message.
         AccessibilityManager am =
                 (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        if (am.isEnabled() && am.isTouchExplorationEnabled())
+        if (am.isEnabled() && am.isTouchExplorationEnabled()) {
             message = MSG_ACTIVE_NOTIFICATION_ACCESSIBILITY_MESSAGE;
+        }
 
         sTracingActiveNotificationBuilder =
                 createNotificationBuilder()

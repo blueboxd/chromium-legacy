@@ -70,11 +70,6 @@ class MockChromeCleanerProcess {
     kDisabled,
   };
 
-  enum class ProtobufIPCFeatureStatus {
-    kEnabled,
-    kDisabled,
-  };
-
   static constexpr int kInternalTestFailureExitCode = 100001;
   static constexpr int kDeliberateCrashExitCode = 100002;
   static constexpr int kNothingFoundExitCode = 2;
@@ -130,11 +125,13 @@ class MockChromeCleanerProcess {
     CrashPoint crash_point() const { return crash_point_; }
 
     void set_expected_user_response(
-        ChromePromptActions::PromptAcceptance expected_user_response) {
+        chrome_cleaner::PromptUserResponse::PromptAcceptance
+            expected_user_response) {
       expected_user_response_ = expected_user_response;
     }
 
-    ChromePromptActions::PromptAcceptance expected_user_response() const {
+    chrome_cleaner::PromptUserResponse::PromptAcceptance
+    expected_user_response() const {
       return expected_user_response_;
     }
 
@@ -146,8 +143,8 @@ class MockChromeCleanerProcess {
       return extensions_reporting_;
     }
 
-    int ExpectedExitCode(
-        ChromePromptActions::PromptAcceptance received_prompt_acceptance) const;
+    int ExpectedExitCode(chrome_cleaner::PromptUserResponse::PromptAcceptance
+                             received_prompt_acceptance) const;
 
    private:
     std::vector<base::FilePath> files_to_delete_;
@@ -158,8 +155,9 @@ class MockChromeCleanerProcess {
     CrashPoint crash_point_ = CrashPoint::kNone;
     ItemsReporting registry_keys_reporting_ = ItemsReporting::kUnsupported;
     ItemsReporting extensions_reporting_ = ItemsReporting::kUnsupported;
-    ChromePromptActions::PromptAcceptance expected_user_response_ =
-        ChromePromptActions::PromptAcceptance::UNSPECIFIED;
+    chrome_cleaner::PromptUserResponse::PromptAcceptance
+        expected_user_response_ =
+            chrome_cleaner::PromptUserResponse::UNSPECIFIED;
   };
 
   MockChromeCleanerProcess();
@@ -193,10 +191,6 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(
     std::ostream& out,
     MockChromeCleanerProcess::ExtensionCleaningFeatureStatus status);
-
-std::ostream& operator<<(
-    std::ostream& out,
-    MockChromeCleanerProcess::ProtobufIPCFeatureStatus status);
 
 std::ostream& operator<<(
     std::ostream& out,

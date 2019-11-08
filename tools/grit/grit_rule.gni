@@ -226,6 +226,7 @@ if (current_toolchain != host_toolchain) {
 
 _strip_resource_files = is_android && is_official_build
 _js_minifier = "//tools/grit/minify_with_uglify.py"
+_css_minifier = "//tools/grit/minimize_css.py"
 
 grit_resource_id_file = "//tools/gritsettings/resource_ids"
 grit_info_script = "//tools/grit/grit_info.py"
@@ -407,12 +408,16 @@ template("grit") {
     }
     if (_strip_resource_files) {
       js_minifier_command = rebase_path(_js_minifier, root_build_dir)
+      css_minifier_command = rebase_path(_css_minifier, root_build_dir)
       args += [
         "--js-minifier",
         js_minifier_command,
+        "--css-minifier",
+        css_minifier_command,
       ]
       inputs += [
         _js_minifier,
+        _css_minifier,
         "//third_party/closure_compiler/compiler/compiler.jar",
       ]
     }

@@ -18,6 +18,7 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "url/gurl.h"
 
 namespace media {
 
@@ -34,16 +35,27 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   using GetLearningSessionCallback =
       base::RepeatingCallback<learning::LearningSession*()>;
 
+  using RecordAggregateWatchTimeCallback =
+      base::RepeatingCallback<void(base::TimeDelta total_watch_time,
+                                   base::TimeDelta time_stamp)>;
+
+  using GetRecordAggregateWatchTimeCallback =
+      base::RepeatingCallback<RecordAggregateWatchTimeCallback(void)>;
+
   MediaMetricsProvider(BrowsingMode is_incognito,
                        FrameStatus is_top_frame,
                        ukm::SourceId source_id,
                        learning::FeatureValue origin,
                        VideoDecodePerfHistory::SaveCallback save_cb,
-                       GetLearningSessionCallback learning_session_cb);
+                       GetLearningSessionCallback learning_session_cb,
+                       RecordAggregateWatchTimeCallback record_playback_cb);
   ~MediaMetricsProvider() override;
 
   // Callback for retrieving a ukm::SourceId.
   using GetSourceIdCallback = base::RepeatingCallback<ukm::SourceId(void)>;
+
+  using GetLastCommittedURLCallback =
+      base::RepeatingCallback<const GURL&(void)>;
 
   // TODO(liberato): This should be from a FeatureProvider, but the way in which
   // we attach LearningHelper more or less precludes it.  Per-frame task
@@ -65,6 +77,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
       GetOriginCallback get_origin_cb,
       VideoDecodePerfHistory::SaveCallback save_cb,
       GetLearningSessionCallback learning_session_cb,
+      GetRecordAggregateWatchTimeCallback get_record_playback_cb,
       mojo::PendingReceiver<mojom::MediaMetricsProvider> receiver);
 
  private:
@@ -126,6 +139,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
 
   const VideoDecodePerfHistory::SaveCallback save_cb_;
   const GetLearningSessionCallback learning_session_cb_;
+  const RecordAggregateWatchTimeCallback record_playback_cb_;
 
   // UMA pipeline packaged data
   PipelineInfo uma_info_;

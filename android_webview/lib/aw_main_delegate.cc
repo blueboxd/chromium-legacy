@@ -184,8 +184,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // WebView isn't compatible with OOP-D.
     features.DisableIfNotSet(::features::kVizDisplayCompositor);
 
-    // WebView does not support AndroidOverlay yet for video overlays.
-    features.DisableIfNotSet(media::kUseAndroidOverlay);
+    // WebView does not support overlay fullscreen yet for video overlays.
+    features.DisableIfNotSet(media::kOverlayFullscreenVideo);
 
     // WebView doesn't support embedding CompositorFrameSinks which is needed
     // for UseSurfaceLayerForVideo feature. https://crbug.com/853832

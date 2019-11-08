@@ -118,7 +118,7 @@ def RaiseCommandException(args, returncode, output, error):
   raise Exception(message)
 
 
-def RunCommand(args):
+def RunCommand(args, print_stdout=False):
   """Run a new shell command.
 
   This function runs without printing anything.
@@ -130,7 +130,8 @@ def RunCommand(args):
     return status, and standard output + error merged in a single message.
   """
   logging.debug('Run %s', args)
-  p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  stdout = None if print_stdout else subprocess.PIPE
+  p = subprocess.Popen(args, stdout=stdout)
   pout, _ = p.communicate()
   if p.returncode != 0:
     RaiseCommandException(args, p.returncode, None, pout)
@@ -390,7 +391,8 @@ def main():
     build_gradle = ReadFile(build_gradle_path)
 
     print('# Resetting and re-syncing workspace. (may take a while).')
-    RunCommand(['gclient', 'sync', '--reset', '--nohooks', '-r', 'src@HEAD'])
+    RunCommand(['gclient', 'sync', '--reset', '--nohooks', '-r', 'src@HEAD'],
+               print_stdout=args.debug)
 
     print('# Restoring build.gradle.')
     WriteFile(build_gradle_path, build_gradle)
@@ -440,7 +442,7 @@ def main():
     if args.debug:
       gradle_cmd.append('--debug')
 
-    RunCommand(gradle_cmd)
+    RunCommand(gradle_cmd, print_stdout=args.debug)
 
     libs_dir = os.path.join(build_dir, args.git_dir, _ANDROID_DEPS_LIBS_SUBDIR)
 
@@ -449,7 +451,7 @@ def main():
         'gn', 'format',
         os.path.join(build_dir, args.git_dir, _ANDROID_DEPS_BUILD_GN)
     ]
-    RunCommand(gn_args)
+    RunCommand(gn_args, print_stdout=args.debug)
 
     print('# Generate Android .aar info and third-party license files.')
     aar_files = FindInDirectory(libs_dir, '*.aar')

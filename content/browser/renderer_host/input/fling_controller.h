@@ -30,6 +30,9 @@ class CONTENT_EXPORT FlingControllerEventSenderClient {
 
   virtual void SendGeneratedGestureScrollEvents(
       const GestureEventWithLatencyInfo& gesture_event) = 0;
+
+  // Returns the size of visible viewport in screen space, in DIPs.
+  virtual gfx::Size GetRootWidgetViewportSize() = 0;
 };
 
 // Interface with which the fling progress gets scheduled.

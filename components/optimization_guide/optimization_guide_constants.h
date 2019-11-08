@@ -25,6 +25,9 @@ extern const char kOptimizationGuideServiceGetModelsDefaultURL[];
 // the cache and are ready for use.
 extern const char kLoadedHintLocalHistogramString[];
 
+// The folder where the hint data will be stored on disk.
+extern const char kOptimizationGuideHintStore[];
+
 }  // namespace optimization_guide
 
 #endif  // COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_CONSTANTS_H_

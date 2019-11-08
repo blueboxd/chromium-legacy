@@ -863,14 +863,15 @@ TEST_F(RenderTextTest, RevealObscuredText) {
   render_text->SetText(UTF8ToUTF16("new longer"));
   EXPECT_EQ(GetObscuredString(10), render_text->GetDisplayText());
 
-  // Text with invalid surrogates.
+  // Text with invalid surrogates (surrogates low 0xDC00 and high 0xD800).
+  // Invalid surrogates are replaced by replacement character (e.g. 0xFFFD).
   const base::char16 invalid_surrogates[] = {0xDC00, 0xD800, 'h', 'o', 'p', 0};
   render_text->SetText(invalid_surrogates);
   EXPECT_EQ(GetObscuredString(5), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(0);
-  EXPECT_EQ(GetObscuredString(5, 0, 0xDC00), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(5, 0, 0xFFFD), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(1);
-  EXPECT_EQ(GetObscuredString(5, 1, 0xD800), render_text->GetDisplayText());
+  EXPECT_EQ(GetObscuredString(5, 1, 0xFFFD), render_text->GetDisplayText());
   render_text->RenderText::SetObscuredRevealIndex(2);
   EXPECT_EQ(GetObscuredString(5, 2, 'h'), render_text->GetDisplayText());
 
@@ -4785,12 +4786,24 @@ TEST_F(RenderTextTest, ControlCharacterReplacement) {
 
 TEST_F(RenderTextTest, PrivateUseCharacterReplacement) {
   RenderText* render_text = GetRenderText();
-  render_text->SetText(UTF8ToUTF16("xx\ue78d\ue78fa\U00100042z"));
+  render_text->SetText(WideToUTF16(L"xx\ue78d\ue78fa\U00100042z"));
 
   // The private use characters should have been replaced. If the code point is
   // a surrogate pair, it needs to be replaced by two characters.
   EXPECT_EQ(WideToUTF16(L"xx\ufffd\ufffda\ufffdz"),
             render_text->GetDisplayText());
+
+  // The private use characters from Area-B must be replaced. The rewrite step
+  // replaced 2 characters by 1 character.
+  render_text->SetText(WideToUTF16(L"x\U00100000\U00100001\U00100002"));
+  EXPECT_EQ(WideToUTF16(L"x\ufffd\ufffd\ufffd"), render_text->GetDisplayText());
+}
+
+TEST_F(RenderTextTest, InvalidSurrogateCharacterReplacement) {
+  // Text with invalid surrogates (surrogates low 0xDC00 and high 0xD800).
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"\xDC00\xD800"));
+  EXPECT_EQ(WideToUTF16(L"\ufffd\ufffd"), render_text->GetDisplayText());
 }
 
 // Make sure the horizontal positions of runs in a line (left-to-right for

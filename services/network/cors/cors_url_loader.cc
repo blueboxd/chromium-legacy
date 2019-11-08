@@ -98,7 +98,6 @@ CorsURLLoader::CorsURLLoader(
       options_(options),
       delete_callback_(std::move(delete_callback)),
       network_loader_factory_(network_loader_factory),
-      network_client_binding_(this),
       request_(resource_request),
       forwarding_client_(std::move(client)),
       traffic_annotation_(traffic_annotation),
@@ -114,9 +113,9 @@ CorsURLLoader::CorsURLLoader(
 }
 
 CorsURLLoader::~CorsURLLoader() {
-  // Close pipes first to ignore possible subsequent callback invocations
-  // cased by |network_loader_|
-  network_client_binding_.Close();
+  // Reset pipes first to ignore possible subsequent callback invocations
+  // caused by |network_loader_|
+  network_client_receiver_.reset();
 }
 
 void CorsURLLoader::Start() {
@@ -217,7 +216,7 @@ void CorsURLLoader::FollowRedirect(
       (!original_fetch_cors_flag && fetch_cors_flag_) ||
       (fetch_cors_flag_ && original_method != request_.method)) {
     DCHECK_NE(request_.mode, mojom::RequestMode::kNoCors);
-    network_client_binding_.Unbind();
+    network_client_receiver_.reset();
     StartRequest();
     return;
   }
@@ -491,10 +490,10 @@ void CorsURLLoader::StartNetworkRequest(
           : mojom::CredentialsMode::kOmit;
 
   mojom::URLLoaderClientPtr network_client;
-  network_client_binding_.Bind(mojo::MakeRequest(&network_client));
+  network_client_receiver_.Bind(mojo::MakeRequest(&network_client));
   // Binding |this| as an unretained pointer is safe because
-  // |network_client_binding_| shares this object's lifetime.
-  network_client_binding_.set_connection_error_handler(
+  // |network_client_receiver_| shares this object's lifetime.
+  network_client_receiver_.set_disconnect_handler(
       base::BindOnce(&CorsURLLoader::OnMojoDisconnect, base::Unretained(this)));
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,

@@ -94,6 +94,8 @@ test("weblayer_browsertests") {
     "interstitial_utils.h",
     "test_launcher_delegate_impl.cc",
     "test_launcher_delegate_impl.h",
+    "test_navigation_observer.cc",
+    "test_navigation_observer.h",
     "weblayer_browser_test.cc",
     "weblayer_browser_test.h",
     "weblayer_browser_test_test.cc",

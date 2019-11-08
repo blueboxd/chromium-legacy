@@ -178,6 +178,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
     const std::map<const char*, SignalMethod> kSignalMethods = {
         {power_manager::kScreenBrightnessChangedSignal,
          &PowerManagerClientImpl::ScreenBrightnessChangedReceived},
+        {power_manager::kAmbientColorTemperatureChangedSignal,
+         &PowerManagerClientImpl::AmbientColorTemperatureChangedReceived},
         {power_manager::kKeyboardBrightnessChangedSignal,
          &PowerManagerClientImpl::KeyboardBrightnessChangedReceived},
         {power_manager::kScreenIdleStateChangedSignal,
@@ -615,6 +617,20 @@ class PowerManagerClientImpl : public PowerManagerClient {
                      << ": cause " << proto.cause();
     for (auto& observer : observers_)
       observer.ScreenBrightnessChanged(proto);
+  }
+
+  void AmbientColorTemperatureChangedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    int32_t color_temperature = 0;
+    if (!reader.PopInt32(&color_temperature)) {
+      POWER_LOG(ERROR) << "Unable to decode read ambient color from "
+                       << power_manager::kAmbientColorTemperatureChangedSignal
+                       << " signal";
+      return;
+    }
+
+    for (auto& observer : observers_)
+      observer.AmbientColorChanged(color_temperature);
   }
 
   void KeyboardBrightnessChangedReceived(dbus::Signal* signal) {

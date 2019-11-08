@@ -41,7 +41,10 @@ inline std::string Http2HexEncodeImpl(const void* bytes, size_t size) {
 }
 
 inline std::string Http2HexDecodeImpl(Http2StringPiece data) {
-  return net::HexDecode(data);
+  std::string result;
+  if (!base::HexStringToString(data, &result))
+    result.clear();
+  return result;
 }
 
 inline std::string Http2HexDumpImpl(Http2StringPiece data) {

@@ -76,4 +76,8 @@ const base::Feature kMergeBookmarksUsingGUIDs{
 const base::Feature kSyncDeviceInfoInTransportMode{
     "SyncDeviceInfoInTransportMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the running of backend ProfileSyncService tasks on the ThreadPool.
+const base::Feature kProfileSyncServiceUsesThreadPool{
+    "ProfileSyncServiceUsesThreadPool", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace switches

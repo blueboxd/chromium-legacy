@@ -46,8 +46,7 @@ class InlineLoginHandlerDialogChromeOS
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
   bool ShouldShowDialogTitle() const override;
-  void OnDialogShown(content::WebUI* webui,
-                     content::RenderViewHost* render_view_host) override;
+  void OnDialogShown(content::WebUI* webui) override;
 
  private:
   InlineLoginHandlerModalDelegate delegate_;

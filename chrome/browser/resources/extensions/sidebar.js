@@ -11,38 +11,38 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {navigation, Page} from './navigation_helper.js';
 
-  Polymer({
-    is: 'extensions-sidebar',
+Polymer({
+  is: 'extensions-sidebar',
 
-    _template: html`{__html_template__}`,
+  _template: html`{__html_template__}`,
 
-    properties: {
-      isSupervised: Boolean,
-    },
+  properties: {
+    isSupervised: Boolean,
+  },
 
-    hostAttributes: {
-      role: 'navigation',
-    },
+  hostAttributes: {
+    role: 'navigation',
+  },
 
-    /** @override */
-    attached: function() {
-      this.$.sectionMenu.select(
-          navigation.getCurrentPage().page == Page.SHORTCUTS ? 1 : 0);
-    },
+  /** @override */
+  attached: function() {
+    this.$.sectionMenu.select(
+        navigation.getCurrentPage().page == Page.SHORTCUTS ? 1 : 0);
+  },
 
-    /**
-     * @param {!Event} e
-     * @private
-     */
-    onLinkTap_: function(e) {
-      e.preventDefault();
-      navigation.navigateTo({page: e.target.dataset.path});
-      this.fire('close-drawer');
-    },
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onLinkTap_: function(e) {
+    e.preventDefault();
+    navigation.navigateTo({page: e.target.dataset.path});
+    this.fire('close-drawer');
+  },
 
-    /** @private */
-    onMoreExtensionsTap_: function() {
-      assert(!this.isSupervised);
-      chrome.metricsPrivate.recordUserAction('Options_GetMoreExtensions');
-    },
-  });
+  /** @private */
+  onMoreExtensionsTap_: function() {
+    assert(!this.isSupervised);
+    chrome.metricsPrivate.recordUserAction('Options_GetMoreExtensions');
+  },
+});

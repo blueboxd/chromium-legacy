@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -369,29 +370,22 @@ bool Performance::PassesTimingAllowCheck(
   if (timing_allow_origin_string.IsEmpty())
     return false;
 
-  // The condition below if only needed for use-counting purposes.
-  if (timing_allow_origin_string == "*") {
-    UseCounter::Count(context, WebFeature::kStarInTimingAllowOrigin);
-    return true;
-  }
-
-  // TODO(yoav): Use CommaDelimitedHeaderSet instead of this one-off parsing
-  // algorithm.
   const String& security_origin = initiator_security_origin.ToString();
-  Vector<String> timing_allow_origins;
-  timing_allow_origin_string.GetString().Split(',', timing_allow_origins);
-  if (timing_allow_origins.size() > 1) {
-    UseCounter::Count(context, WebFeature::kMultipleOriginsInTimingAllowOrigin);
-  } else if (timing_allow_origins.size() == 1 &&
-             timing_allow_origin_string != "*") {
-    UseCounter::Count(context, WebFeature::kSingleOriginInTimingAllowOrigin);
-  }
-  for (const String& allow_origin : timing_allow_origins) {
-    const String allow_origin_stripped = allow_origin.StripWhiteSpace();
-    if (allow_origin_stripped == security_origin ||
-        allow_origin_stripped == "*") {
+  CommaDelimitedHeaderSet tao_headers;
+  ParseCommaDelimitedHeader(timing_allow_origin_string, tao_headers);
+  if (tao_headers.size() == 1u) {
+    if (*tao_headers.begin() == "*") {
+      UseCounter::Count(context, WebFeature::kStarInTimingAllowOrigin);
       return true;
+    } else {
+      UseCounter::Count(context, WebFeature::kSingleOriginInTimingAllowOrigin);
     }
+  } else if (tao_headers.size() > 1u) {
+    UseCounter::Count(context, WebFeature::kMultipleOriginsInTimingAllowOrigin);
+  }
+  for (const String& header : tao_headers) {
+    if (header == "*" || header == security_origin)
+      return true;
   }
 
   return false;

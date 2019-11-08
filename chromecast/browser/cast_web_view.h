@@ -49,11 +49,19 @@ class CastWebView {
     virtual ~Observer() {}
   };
 
+  // When the unique_ptr is reset, the CastWebView may not necessarily be
+  // destroyed. In some cases ownership will be passed to the CastWebService,
+  // which eventually handles destruction.
+  using Scoped =
+      std::unique_ptr<CastWebView, std::function<void(CastWebView*)>>;
+
   // The parameters used to create a CastWebView instance. Passed to
-  // CastWebContentsManager::CreateWebView().
+  // CastWebService::CreateWebView().
   struct CreateParams {
-    // The delegate for the CastWebView. Must be non-null.
-    Delegate* delegate = nullptr;
+    // The delegate for the CastWebView. Must be non-null. If the delegate is
+    // destroyed before CastWebView, the WeakPtr will be invalidated on the main
+    // UI thread.
+    base::WeakPtr<Delegate> delegate = nullptr;
 
     // Parameters for initializing CastWebContents. These will be passed as-is
     // to a CastWebContents instance, which should be used by all CastWebView
@@ -82,12 +90,17 @@ class CastWebView {
     // of console log messages.
     std::string log_prefix = "";
 
+    // Delays CastWebView deletion after CastWebView::Scoped is reset. The
+    // default value is zero, which means the CastWebView will be deleted
+    // immediately and synchronously.
+    base::TimeDelta shutdown_delay = base::TimeDelta();
+
     CreateParams();
     CreateParams(const CreateParams& other);
     ~CreateParams();
   };
 
-  CastWebView();
+  explicit CastWebView(const CreateParams& create_params);
   virtual ~CastWebView();
 
   virtual CastContentWindow* window() const = 0;
@@ -96,6 +109,8 @@ class CastWebView {
 
   virtual CastWebContents* cast_web_contents() = 0;
 
+  base::TimeDelta shutdown_delay() const { return shutdown_delay_; }
+
   // Navigates to |url|. The loaded page will be preloaded if MakeVisible has
   // not been called on the object.
   virtual void LoadUrl(GURL url) = 0;
@@ -103,8 +118,12 @@ class CastWebView {
   // Begins the close process for this page (ie. triggering document.onunload).
   // A consumer of the class can be notified when the process has been finished
   // via Delegate::OnPageStopped(). The page will be torn down after
-  // |shutdown_delay| has elapsed, or sooner if required.
-  virtual void ClosePage(const base::TimeDelta& shutdown_delay) = 0;
+  // |CreateParams::shutdown_delay| has elapsed, or immediately if the browser
+  // is shutting down.
+  virtual void ClosePage() = 0;
+
+  // Closes the page immediately, ignoring |CreateParams::shutdown_delay|.
+  void ForceClose();
 
   // Adds the page to the window manager and makes it visible to the user if
   // |is_visible| is true. |z_order| determines how this window is layered in
@@ -124,7 +143,12 @@ class CastWebView {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+ protected:
+  base::WeakPtr<Delegate> delegate_;
+
  private:
+  base::TimeDelta shutdown_delay_;
+
   base::ObserverList<Observer>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWebView);

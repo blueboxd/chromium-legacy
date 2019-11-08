@@ -1847,34 +1847,32 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
       continue;
     }
 
-    int child_level =
-        child->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
-
-    if (child_level < original_level) {
-      // If a decrease in level occurs after the original node has been
-      // examined, stop adding to this set.
-      if (original_node_index < i)
-        break;
-
-      // If a decrease in level has been detected before the original node
-      // has been examined, then everything previously added to items actually
-      // belongs to a different set. Clear items vector.
-      items.clear();
-      continue;
-    } else if (child_level > original_level) {
-      continue;
-    }
-
-    // If role of node is kRadioButton, only add other kRadioButtons.
-    if (node_is_radio_button &&
-        child->data().role == ax::mojom::Role::kRadioButton)
-      items.push_back(child);
-
     // Add child to items if role matches with ordered set's role. If role of
     // node is kRadioButton, don't add items of other roles, even if item role
     // matches ordered set role.
-    if (!node_is_radio_button && child->SetRoleMatchesItemRole(ordered_set))
+    if ((node_is_radio_button &&
+         child->data().role == ax::mojom::Role::kRadioButton) ||
+        (!node_is_radio_button && child->SetRoleMatchesItemRole(ordered_set))) {
+      int child_level =
+          child->GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
+
+      if (child_level < original_level) {
+        // If a decrease in level occurs after the original node has been
+        // examined, stop adding to this set.
+        if (original_node_index < i)
+          break;
+
+        // If a decrease in level has been detected before the original node
+        // has been examined, then everything previously added to items actually
+        // belongs to a different set. Clear items vector.
+        items.clear();
+        continue;
+      } else if (child_level > original_level) {
+        continue;
+      }
+
       items.push_back(child);
+    }
 
     // Recurse if there is a generic container, ignored, or unknown.
     if (child->IsIgnored() ||

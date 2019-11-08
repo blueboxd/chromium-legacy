@@ -213,6 +213,10 @@ class OmniboxViewViews : public OmniboxView,
   bool MaybeFocusTabButton();
   bool MaybeUnfocusTabButton();
 
+  // If the tab switch button is focused, switches to the relevant tab.  Returns
+  // whether the switch was attempted.
+  bool MaybeSwitchToTab(const ui::KeyEvent& event);
+
   // OmniboxView:
   void SetCaretPos(size_t caret_pos) override;
   void UpdatePopup() override;

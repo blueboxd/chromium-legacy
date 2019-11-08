@@ -253,6 +253,12 @@ class Port(object):
         return 'Port{name=%s, version=%s, architecture=%s, test_configuration=%s}' % (
             self._name, self._version, self._architecture, self._test_configuration)
 
+    def get_platform_tags(self):
+        """Returns system condition tags that are used to find active expectations
+           for a test run on a specific system"""
+        return frozenset([self._options.configuration.lower(), self._version,
+                          self.port_name, self._architecture])
+
     @memoized
     def _flag_specific_config_name(self):
         """Returns the name of the flag-specific configuration which best matches

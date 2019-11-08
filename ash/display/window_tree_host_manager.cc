@@ -500,7 +500,7 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
         new_root_window_controller->GetStatusAreaWidget()
             ->unified_system_tray();
     if (old_tray->GetWidget()->IsVisible()) {
-      new_tray->SetVisible(true);
+      new_tray->SetVisiblePreferred(true);
       new_tray->GetWidget()->Show();
     }
 

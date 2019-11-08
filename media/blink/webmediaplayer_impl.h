@@ -219,7 +219,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result) override;
 
-  bool SupportsOverlayFullscreenVideo() override;
   void EnteredFullscreen() override;
   void ExitedFullscreen() override;
   void BecameDominantVisibleContent(bool is_dominant) override;
@@ -281,6 +280,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   int GetDelegateId() override;
   base::Optional<viz::SurfaceId> GetSurfaceId() override;
   GURL GetSrcAfterRedirects() override;
+  void RequestAnimationFrame() override;
 
   base::WeakPtr<blink::WebMediaPlayer> AsWeakPtr() override;
 
@@ -607,10 +607,20 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Switch to SurfaceLayer, either initially or from VideoLayer.
   void ActivateSurfaceLayerForVideo();
 
+  // Called by |compositor_| upon presenting a frame, after
+  // RequestAnimationFrame() is called.
+  void OnNewFramePresentedCallback(scoped_refptr<VideoFrame> presented_frame,
+                                   base::TimeTicks presentation_time,
+                                   base::TimeTicks expected_presentation_time,
+                                   uint32_t presentation_counter);
+
   // Notifies |mb_data_source_| of playback and rate changes which may increase
   // the amount of data the DataSource buffers. Does nothing prior to reaching
   // kReadyStateHaveEnoughData for the first time.
   void MaybeUpdateBufferSizesForPlayback();
+
+  void SetCurrentFrameOverrideForTesting(
+      scoped_refptr<VideoFrame> current_frame_override);
 
   blink::WebLocalFrame* const frame_;
 
@@ -802,9 +812,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   std::unique_ptr<RendererFactorySelector> renderer_factory_selector_;
 
-  // For canceling ongoing surface creation requests when exiting fullscreen.
-  base::CancelableCallback<void(int)> surface_created_cb_;
-
   // For canceling AndroidOverlay routing token requests.
   base::CancelableCallback<void(const base::UnguessableToken&)>
       token_available_cb_;
@@ -941,9 +948,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
     // All overlays are turned off.
     kNoOverlays,
 
-    // Use ContentVideoView for overlays.
-    kUseContentVideoView,
-
     // Use AndroidOverlay for overlays.
     kUseAndroidOverlay,
   };
@@ -993,6 +997,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
+
+  // Valid while an active OnNewFramePresentedCallback() is in progress.
+  // Overrides the VideoFrame returned by GetCurrentFrameFromCompositor().
+  scoped_refptr<VideoFrame> current_frame_override_;
 
   base::CancelableOnceClosure have_enough_after_lazy_load_cb_;
 

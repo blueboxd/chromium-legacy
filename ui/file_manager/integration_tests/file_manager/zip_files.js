@@ -177,8 +177,10 @@ testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async () => {
 
   const passphraseCloseScript = `
       function clickClose() {
-        let dialog = document.querySelector("passphrase-dialog");
-        dialog.shadowRoot.querySelector("#cancelButton").click();
+        HTMLImports.whenReady(() => {
+          let dialog = document.querySelector("passphrase-dialog");
+          dialog.shadowRoot.querySelector("#cancelButton").click();
+        });
       }
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", clickClose);

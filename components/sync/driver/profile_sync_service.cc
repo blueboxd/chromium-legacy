@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -50,9 +51,6 @@
 namespace syncer {
 
 namespace {
-
-const base::Feature kProfileSyncServiceUsesTaskScheduler{
-    "ProfileSyncServiceUsesThreadPool", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The initial state of sync, for the Sync.InitialState histogram. Even if
 // this value is CAN_START, sync startup might fail for reasons that we may
@@ -435,18 +433,28 @@ void ProfileSyncService::InitializeBackendTaskRunnerIfNeeded() {
     return;
   }
 
-  if (base::FeatureList::IsEnabled(kProfileSyncServiceUsesTaskScheduler)) {
+  if (base::FeatureList::IsEnabled(
+          switches::kProfileSyncServiceUsesThreadPool)) {
     backend_task_runner_ = base::CreateSequencedTaskRunner(
         {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   } else {
-    sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
+    // The thread where all the sync operations happen. This thread is kept
+    // alive until browser shutdown and reused if sync is turned off and on
+    // again. It is joined during the shutdown process, but there is an abort
+    // mechanism in place to prevent slow HTTP requests from blocking browser
+    // shutdown.
+    auto sync_thread = std::make_unique<base::Thread>("Chrome_SyncThread");
     base::Thread::Options options;
     options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-    bool success = sync_thread_->StartWithOptions(options);
+    bool success = sync_thread->StartWithOptions(options);
     DCHECK(success);
+    backend_task_runner_ = sync_thread->task_runner();
 
-    backend_task_runner_ = sync_thread_->task_runner();
+    // Transfer ownership of the thread to the stopper closure that gets
+    // executed at shutdown.
+    sync_thread_stopper_ =
+        base::BindOnce(&base::Thread::Stop, std::move(sync_thread));
   }
 }
 
@@ -536,8 +544,9 @@ void ProfileSyncService::Shutdown() {
 
   auth_manager_.reset();
 
-  if (sync_thread_)
-    sync_thread_->Stop();
+  if (sync_thread_stopper_) {
+    std::move(sync_thread_stopper_).Run();
+  }
 }
 
 void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {

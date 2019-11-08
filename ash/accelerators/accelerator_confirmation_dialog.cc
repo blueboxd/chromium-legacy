@@ -40,16 +40,14 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
   AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(dialog_text_id)));
 
-  // Parent the dialog widget to the LockSystemModalContainer, or
-  // OverlayContainer to ensure that it will get displayed on respective
-  // lock/signin or OOBE screen.
+  // Parent the dialog widget to the LockSystemModalContainer to ensure that it
+  // will get displayed on respective lock/signin or OOBE screen.
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
   int container_id = kShellWindowId_SystemModalContainer;
-  if (session_controller->GetSessionState() ==
-      session_manager::SessionState::OOBE) {
-    container_id = kShellWindowId_OverlayContainer;
-  } else if (session_controller->IsUserSessionBlocked()) {
+  if (session_controller->IsUserSessionBlocked() ||
+      session_controller->GetSessionState() ==
+          session_manager::SessionState::OOBE) {
     container_id = kShellWindowId_LockSystemModalContainer;
   }
 

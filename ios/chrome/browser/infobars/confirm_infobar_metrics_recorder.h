@@ -9,6 +9,12 @@
 
 #import "ios/chrome/browser/infobars/infobar_type.h"
 
+// Histogram names for InfobarConfirmTypeRestore.
+extern const char kInfobarTypeRestoreEventHistogram[];
+
+// Histogram names for ConfirmInfobarTypeBlockPopups.
+extern const char kInfobarTypeBlockPopupsEventHistogram[];
+
 // Values for the UMA Mobile.Messages.Confirm.Event histogram. These values
 // are persisted to logs. Entries should not be renumbered and numeric values
 // should never be reused.

@@ -845,7 +845,7 @@ static Node* ConvertNodesIntoNode(
     Document& document,
     ExceptionState& exception_state) {
   bool needs_check =
-      IsHTMLScriptElement(parent) && document.IsTrustedTypesEnabledForDoc();
+      IsA<HTMLScriptElement>(parent) && document.IsTrustedTypesEnabledForDoc();
 
   if (nodes.size() == 1)
     return NodeOrStringToNode(nodes[0], document, needs_check, exception_state);
@@ -3255,7 +3255,7 @@ Node* Node::TrustedTypesCheckForScriptNode(
     Node* child,
     ExceptionState& exception_state) const {
   DCHECK(child);
-  bool needs_check = IsHTMLScriptElement(this) && child->IsTextNode() &&
+  bool needs_check = IsA<HTMLScriptElement>(this) && child->IsTextNode() &&
                      GetDocument().IsTrustedTypesEnabledForDoc();
   if (!needs_check)
     return child;

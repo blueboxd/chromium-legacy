@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
@@ -26,11 +27,6 @@ namespace ash {
 // swiping up from the shelf to homescreen, overview or splitview.
 class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
  public:
-  // The distance for the dragged window to pass over shelf so that it can be
-  // dragged into home launcher or overview. If not pass this value, the window
-  // will snap back to its original position.
-  static constexpr float kReturnToMaximizedThreshold = 116;
-
   // The deceleration threshold to open overview behind the dragged window
   // when swiping up from the shelf to drag the active window.
   static constexpr float kOpenOverviewThreshold = 10.f;
@@ -47,7 +43,15 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // view is active during dragging.
   static constexpr float kVelocityToOverviewThreshold = 1000.f;
 
-  explicit DragWindowFromShelfController(aura::Window* window);
+  // The distance for the dragged window to pass over the bottom of the display
+  // so that it can be dragged into home launcher or overview. If not pass this
+  // value, the window will snap back to its original position. The value is
+  // different for standard or dense shelf.
+  static float GetReturnToMaximizedThreshold();
+
+  DragWindowFromShelfController(aura::Window* window,
+                                const gfx::Point& location_in_screen,
+                                HotseatState hotseat_state);
   ~DragWindowFromShelfController() override;
 
   // Called during swiping up on the shelf.
@@ -81,7 +85,7 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
 
   // Returns true if the dragged window should restore to its original bounds
   // after drag ends. Happens when |location_in_screen| is within
-  // kReturnToMaximizedThreshold threshold.
+  // GetReturnToMaximizedThreshold() threshold.
   bool ShouldRestoreToOriginalBounds(
       const gfx::Point& location_in_screen) const;
 
@@ -89,7 +93,8 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // the upward vertical velocity is larger than kVelocityToHomeScreenThreshold
   // and splitview is not active. Note when splitview is active, we do not allow
   // to go to home screen by fling.
-  bool ShouldGoToHomeScreen(base::Optional<float> velocity_y) const;
+  bool ShouldGoToHomeScreen(const gfx::Point& location_in_screen,
+                            base::Optional<float> velocity_y) const;
 
   // Returns the desired snap position on |location_in_screen| when drag ends.
   SplitViewController::SnapPosition GetSnapPositionOnDragEnd(
@@ -124,6 +129,9 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
 
   // Timer to show and update overview.
   base::OneShotTimer show_overview_timer_;
+
+  // The hotseat state when drag starts.
+  const HotseatState hotseat_state_;
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowFromShelfController);
 };

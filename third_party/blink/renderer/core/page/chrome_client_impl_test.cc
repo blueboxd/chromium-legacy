@@ -274,8 +274,8 @@ TEST_F(FileChooserQueueTest, DerefQueuedChooser) {
   auto* client2 = MakeGarbageCollected<MockFileChooserClient>(frame);
   mojom::blink::FileChooserParams params;
   params.title = g_empty_string;
-  scoped_refptr<FileChooser> chooser1 = FileChooser::Create(client1, params);
-  scoped_refptr<FileChooser> chooser2 = FileChooser::Create(client2, params);
+  scoped_refptr<FileChooser> chooser1 = client1->NewFileChooser(params);
+  scoped_refptr<FileChooser> chooser2 = client2->NewFileChooser(params);
 
   chrome_client_impl_->OpenFileChooser(frame, chooser1);
   chrome_client_impl_->OpenFileChooser(frame, chooser2);

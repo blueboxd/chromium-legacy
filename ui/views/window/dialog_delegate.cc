@@ -261,6 +261,21 @@ views::View* DialogDelegate::GetExtraView() {
   return client ? client->extra_view() : nullptr;
 }
 
+views::View* DialogDelegate::GetFootnoteViewForTesting() {
+  if (!GetWidget())
+    return footnote_view_.get();
+
+  NonClientFrameView* frame = GetWidget()->non_client_view()->frame_view();
+
+  // CreateDialogFrameView above always uses BubbleFrameView. There are
+  // subclasses that override CreateDialogFrameView, but none of them override
+  // it to create anything other than a BubbleFrameView.
+  // TODO(https://crbug.com/1011446): Make CreateDialogFrameView final, then
+  // remove this DCHECK.
+  DCHECK_EQ(frame->GetClassName(), BubbleFrameView::kViewClassName);
+  return static_cast<BubbleFrameView*>(frame)->GetFootnoteView();
+}
+
 void DialogDelegate::AddObserver(DialogObserver* observer) {
   observer_list_.AddObserver(observer);
 }

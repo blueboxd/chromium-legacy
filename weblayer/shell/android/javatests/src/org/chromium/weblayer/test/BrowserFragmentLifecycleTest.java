@@ -57,7 +57,7 @@ public class BrowserFragmentLifecycleTest {
             NavigationController navigationController = activity.getTab().getNavigationController();
             navigationController.registerNavigationCallback(new NavigationCallback() {
                 @Override
-                public void readyToCommitNavigation(@NonNull Navigation navigation) {
+                public void onReadyToCommitNavigation(@NonNull Navigation navigation) {
                     FragmentManager fm = activity.getSupportFragmentManager();
                     fm.beginTransaction()
                             .remove(fm.getFragments().get(0))

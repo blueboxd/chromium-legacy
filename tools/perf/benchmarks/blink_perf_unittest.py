@@ -32,6 +32,10 @@ class BlinkPerfTest(legacy_page_test_case.LegacyPageTestCase):
     self.blink_page_test = blink_perf._BlinkPerfMeasurement()
     # pylint: enable=protected-access
 
+  def HasChromeTraces(self):
+    return any(name.startswith('trace/traceEvents/')
+               for name in self.test_result['outputArtifacts'])
+
   @staticmethod
   def CreateStorySetForTest(url):
     story_set = story.StorySet(
@@ -46,7 +50,7 @@ class BlinkPerfTest(legacy_page_test_case.LegacyPageTestCase):
   def testBlinkPerfTracingMetricsForMeasureTime(self):
     measurements = self.RunPageTest(
         self.blink_page_test, 'file://append-child-measure-time.html')
-    self.assertIn('trace.html', self.test_result['outputArtifacts'])
+    self.assertTrue(self.HasChromeTraces())
 
     frame_view_layouts = measurements['LocalFrameView::layout']['samples']
     # append-child-measure-time.html specifies 5 iterationCount.
@@ -61,7 +65,7 @@ class BlinkPerfTest(legacy_page_test_case.LegacyPageTestCase):
   def testBlinkPerfTracingMetricsForMeasureFrameTime(self):
     measurements = self.RunPageTest(
         self.blink_page_test, 'file://color-changes-measure-frame-time.html')
-    self.assertIn('trace.html', self.test_result['outputArtifacts'])
+    self.assertTrue(self.HasChromeTraces())
 
     frame_view_prepaints = measurements[
         'LocalFrameView::RunPrePaintLifecyclePhase']['samples']
@@ -79,7 +83,7 @@ class BlinkPerfTest(legacy_page_test_case.LegacyPageTestCase):
   def testBlinkPerfTracingMetricsForMeasurePageLoadTime(self):
     measurements = self.RunPageTest(
         self.blink_page_test, 'file://simple-html-measure-page-load-time.html')
-    self.assertIn('trace.html', self.test_result['outputArtifacts'])
+    self.assertTrue(self.HasChromeTraces())
 
     create_child_frame = measurements[
         'WebLocalFrameImpl::createChildframe']['samples']
@@ -97,7 +101,7 @@ class BlinkPerfTest(legacy_page_test_case.LegacyPageTestCase):
   def testBlinkPerfTracingMetricsForMeasureAsync(self):
     measurements = self.RunPageTest(
         self.blink_page_test, 'file://simple-blob-measure-async.html')
-    self.assertIn('trace.html', self.test_result['outputArtifacts'])
+    self.assertTrue(self.HasChromeTraces())
 
     blob_requests = measurements['BlobRequest']['samples']
     blob_readers = measurements['BlobReader']['samples']
@@ -124,12 +128,12 @@ class BlinkPerfTest(legacy_page_test_case.LegacyPageTestCase):
 
   def testBlinkPerfLifecycleMethods(self):
     self.RunPageTest(self.blink_page_test, 'file://lifecycle-methods.html')
-    self.assertNotIn('trace.html', self.test_result['outputArtifacts'])
+    self.assertFalse(self.HasChromeTraces())
 
   def testExtraChromeCategories(self):
     self.options.extra_chrome_categories = 'cc,blink'
     self.RunPageTest(self.blink_page_test, 'file://lifecycle-methods.html')
-    self.assertIn('trace.html', self.test_result['outputArtifacts'])
+    self.assertTrue(self.HasChromeTraces())
 
 
 # pylint: disable=protected-access

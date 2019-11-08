@@ -190,6 +190,7 @@ SAConstants.ErrorType = {
   NULL_CHILD: 6,
   NO_CHILDREN: 7,
   MALFORMED_DESKTOP: 8,
+  MISSING_LOCATION: 9,
 };
 
 /**

@@ -46,6 +46,10 @@ class MacPortTest(port_testcase.PortTestCase):
     def test_operating_system(self):
         self.assertEqual('mac', self.make_port().operating_system())
 
+    def test_get_platform_tags(self):
+        port = self.make_port()
+        self.assertEqual(port.get_platform_tags(), {'mac', 'mac10.12', 'x86', 'release'})
+
     def test_driver_name_option(self):
         self.assertTrue(self.make_port()._path_to_driver().endswith('Content Shell'))
         port = self.make_port(options=optparse.Values(dict(driver_name='OtherDriver')))

@@ -101,7 +101,9 @@ mojo::Message MojoMessageFromUtf8(base::StringPiece message_utf8) {
 // =============================================================================
 // Mocks
 // =============================================================================
-class MockCastWebContentsDelegate : public CastWebContents::Delegate {
+class MockCastWebContentsDelegate
+    : public base::SupportsWeakPtr<MockCastWebContentsDelegate>,
+      public CastWebContents::Delegate {
  public:
   MockCastWebContentsDelegate() {}
   ~MockCastWebContentsDelegate() override = default;
@@ -273,9 +275,10 @@ class CastWebContentsBrowserTest : public content::BrowserTestBase,
     web_contents_ = content::WebContents::Create(create_params);
     web_contents_->SetDelegate(&mock_wc_delegate_);
 
-    CastWebContents::InitParams init_params = {
-        &mock_cast_wc_delegate_, false /* enabled_for_dev */,
-        false /* use_cma_renderer */, true /* is_root_window */};
+    CastWebContents::InitParams init_params;
+    init_params.delegate = mock_cast_wc_delegate_.AsWeakPtr();
+    init_params.is_root_window = true;
+
     cast_web_contents_ =
         std::make_unique<CastWebContentsImpl>(web_contents_.get(), init_params);
     mock_cast_wc_observer_.Observe(cast_web_contents_.get());

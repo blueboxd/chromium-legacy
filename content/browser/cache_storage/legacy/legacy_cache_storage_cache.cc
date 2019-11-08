@@ -534,10 +534,9 @@ void LegacyCacheStorageCache::Match(
   }
 
   auto id = scheduler_->CreateId();
-  // TODO: use priority
   scheduler_->ScheduleOperation(
       id, CacheStorageSchedulerMode::kShared, CacheStorageSchedulerOp::kMatch,
-      CacheStorageSchedulerPriority::kNormal,
+      priority,
       base::BindOnce(
           &LegacyCacheStorageCache::MatchImpl, weak_ptr_factory_.GetWeakPtr(),
           std::move(request), std::move(match_options), trace_id,

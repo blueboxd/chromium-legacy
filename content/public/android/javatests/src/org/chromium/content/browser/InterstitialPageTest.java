@@ -13,8 +13,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -92,7 +92,7 @@ public class InterstitialPageTest {
     @Test
     @LargeTest
     @Feature({"Navigation"})
-    @RetryOnFailure
+    @DisabledTest(message = "crbug.com/1022324")
     public void testCloseInterstitial() throws ExecutionException {
         final String proceedCommand = "PROCEED";
         final String htmlContent = "<html>"

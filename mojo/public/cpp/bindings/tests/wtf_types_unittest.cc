@@ -84,25 +84,25 @@ WTF::HashMap<WTF::String, WTF::String> ConstructStringMap() {
 }
 
 void ExpectString(const WTF::String& expected_string,
-                  const base::Closure& closure,
+                  base::OnceClosure closure,
                   const WTF::String& string) {
   EXPECT_EQ(expected_string, string);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void ExpectStringArray(base::Optional<WTF::Vector<WTF::String>>* expected_arr,
-                       const base::Closure& closure,
+                       base::OnceClosure closure,
                        const base::Optional<WTF::Vector<WTF::String>>& arr) {
   EXPECT_EQ(*expected_arr, arr);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void ExpectStringMap(
     base::Optional<WTF::HashMap<WTF::String, WTF::String>>* expected_map,
-    const base::Closure& closure,
+    base::OnceClosure closure,
     const base::Optional<WTF::HashMap<WTF::String, WTF::String>>& map) {
   EXPECT_EQ(*expected_map, map);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 }  // namespace

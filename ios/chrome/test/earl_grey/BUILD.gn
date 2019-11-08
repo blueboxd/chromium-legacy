@@ -34,7 +34,9 @@ chrome_ios_eg_test("ios_chrome_integration_egtests") {
     "//ios/chrome/browser/ntp_tiles:eg_tests",
     "//ios/chrome/browser/passwords:eg_tests",
     "//ios/chrome/browser/prerender:eg_tests",
+    "//ios/chrome/browser/ui/autofill:eg_tests",
     "//ios/chrome/browser/ui/autofill/manual_fill:eg_tests",
+    "//ios/chrome/browser/ui/content_suggestions:eg_tests",
     "//ios/chrome/browser/ui/payments:eg_tests",
   ]
 }
@@ -73,9 +75,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
   deps = [
     "//ios/chrome/browser/ui/activity_services:eg_tests",
     "//ios/chrome/browser/ui/alert_coordinator:eg_tests",
-    "//ios/chrome/browser/ui/autofill:eg_tests",
     "//ios/chrome/browser/ui/browser_view:eg_tests",
-    "//ios/chrome/browser/ui/content_suggestions:eg_tests",
     "//ios/chrome/browser/ui/dialogs:eg_tests",
     "//ios/chrome/browser/ui/download:eg_tests",
     "//ios/chrome/browser/ui/find_bar:eg_tests",

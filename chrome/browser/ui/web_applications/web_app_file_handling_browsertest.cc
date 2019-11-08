@@ -11,6 +11,7 @@
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/common/web_application_info.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -81,6 +82,13 @@ class WebAppFileHandlingBrowserTest
         apps::LaunchService::Get(profile())->OpenApplication(params);
 
     navigation_observer.Wait();
+
+    // Attach the launchParams to the window so we can inspect them easily.
+    auto result = content::EvalJs(web_contents,
+                                  "launchQueue.setConsumer(launchParams => {"
+                                  "  window.launchParams = launchParams;"
+                                  "});");
+
     return web_contents;
   }
 
@@ -93,7 +101,7 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest, PWAsCanViewLaunchParams) {
 
   const std::string app_id = InstallFileHandlingPWA();
   content::WebContents* web_contents = LaunchWithFiles(app_id, {});
-  EXPECT_EQ(0, content::EvalJs(web_contents, "launchParams.files.length"));
+  EXPECT_EQ(false, content::EvalJs(web_contents, "!!window.launchParams"));
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
@@ -105,9 +113,10 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
   content::WebContents* web_contents =
       LaunchWithFiles(app_id, {test_file_path});
 
-  EXPECT_EQ(1, content::EvalJs(web_contents, "launchParams.files.length"));
+  EXPECT_EQ(1,
+            content::EvalJs(web_contents, "window.launchParams.files.length"));
   EXPECT_EQ(test_file_path.BaseName().value(),
-            content::EvalJs(web_contents, "launchParams.files[0].name"));
+            content::EvalJs(web_contents, "window.launchParams.files[0].name"));
 }
 
 INSTANTIATE_TEST_SUITE_P(

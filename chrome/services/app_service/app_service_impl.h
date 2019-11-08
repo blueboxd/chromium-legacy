@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/services/app_service/public/cpp/preferred_apps.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -17,12 +16,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
-class PrefService;
-
-namespace service_manager {
-class Connector;
-}
-
 namespace apps {
 
 // The implementation of the apps::mojom::AppService Mojo interface.
@@ -30,7 +23,7 @@ namespace apps {
 // See chrome/services/app_service/README.md.
 class AppServiceImpl : public apps::mojom::AppService {
  public:
-  explicit AppServiceImpl(service_manager::Connector* connector);
+  AppServiceImpl();
   ~AppServiceImpl() override;
 
   void BindReceiver(mojo::PendingReceiver<apps::mojom::AppService> receiver);
@@ -86,10 +79,6 @@ class AppServiceImpl : public apps::mojom::AppService {
   // Initialize the preferred apps from disk.
   void InitializePreferredApps();
 
-  void ConnectToPrefService(service_manager::Connector* connector);
-
-  void OnPrefServiceConnected(std::unique_ptr<PrefService> pref_service);
-
   // publishers_ is a std::map, not a mojo::RemoteSet, since we want to
   // be able to find *the* publisher for a given apps::mojom::AppType.
   std::map<apps::mojom::AppType, mojo::Remote<apps::mojom::Publisher>>
@@ -100,11 +89,7 @@ class AppServiceImpl : public apps::mojom::AppService {
   // destroyed first, closing the connection to avoid dangling callbacks.
   mojo::ReceiverSet<apps::mojom::AppService> receivers_;
 
-  std::unique_ptr<PrefService> pref_service_;
-
   PreferredApps preferred_apps_;
-
-  base::WeakPtrFactory<AppServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceImpl);
 };

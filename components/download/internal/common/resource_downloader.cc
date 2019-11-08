@@ -164,8 +164,8 @@ void ResourceDownloader::Start(
       std::vector<GURL>(1, resource_request_->url), is_background_mode);
 
   network::mojom::URLLoaderClientPtr url_loader_client_ptr;
-  url_loader_client_binding_ =
-      std::make_unique<mojo::Binding<network::mojom::URLLoaderClient>>(
+  url_loader_client_receiver_ =
+      std::make_unique<mojo::Receiver<network::mojom::URLLoaderClient>>(
           url_loader_client_.get(), mojo::MakeRequest(&url_loader_client_ptr));
 
   // Set up the URLLoader
@@ -211,8 +211,8 @@ void ResourceDownloader::InterceptResponse(
     url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
 
   // Bind the new client.
-  url_loader_client_binding_ =
-      std::make_unique<mojo::Binding<network::mojom::URLLoaderClient>>(
+  url_loader_client_receiver_ =
+      std::make_unique<mojo::Receiver<network::mojom::URLLoaderClient>>(
           url_loader_client_.get(), std::move(endpoints->url_loader_client));
 }
 

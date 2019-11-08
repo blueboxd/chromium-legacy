@@ -5268,7 +5268,7 @@ Unknown properties are collapsed to zero. -->
   <int value="208" label="RFH_CHILD_FRAME_NEEDS_OWNER_ELEMENT_TYPE"/>
   <int value="209" label="OBSOLETE_RFH_INVALID_WEB_REPORTING_CRASH_ID"/>
   <int value="210" label="RFH_DETACH_MAIN_FRAME"/>
-  <int value="211" label="RFH_DOCUMENT_INTERFACE_BROKER_MISSING"/>
+  <int value="211" label="RFH_BROWSER_INTERFACE_BROKER_MISSING"/>
   <int value="212" label="RFPH_POST_MESSAGE_INVALID_SOURCE_ORIGIN"/>
   <int value="213" label="INVALID_INITIATOR_ORIGIN"/>
   <int value="214" label="RFHI_BEGIN_NAVIGATION_MISSING_INITIATOR_ORIGIN"/>
@@ -6633,6 +6633,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Latched"/>
 </enum>
 
+<enum name="BooleanLoadCollided">
+  <int value="0" label="Load did not collide"/>
+  <int value="1" label="Load collided"/>
+</enum>
+
 <enum name="BooleanLoaded">
   <int value="0" label="Not loaded"/>
   <int value="1" label="Loaded"/>
@@ -6811,6 +6816,11 @@ Unknown properties are collapsed to zero. -->
 <enum name="BooleanPasswordSavedWithFallback">
   <int value="0" label="Automatic prompt"/>
   <int value="1" label="Manual fallback"/>
+</enum>
+
+<enum name="BooleanPathIsInformative">
+  <int value="0" label="Path contains nothing except possibly a slash"/>
+  <int value="1" label="Path contains text beyond just an opening slash"/>
 </enum>
 
 <enum name="BooleanPending">
@@ -21253,6 +21263,7 @@ Called by update_net_error_codes.py.-->
   <int value="1402" label="AUTOTESTPRIVATE_ACTIVATEDESKATINDEX"/>
   <int value="1403" label="AUTOTESTPRIVATE_REMOVEACTIVEDESK"/>
   <int value="1404" label="TERMINALPRIVATE_GETCROSHSETTINGS"/>
+  <int value="1405" label="AUTOTESTPRIVATE_ENABLEASSISTANTANDWAITFORREADY"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -40253,6 +40264,11 @@ Called by update_use_counter_css.py.-->
   <int value="645" label="overscroll-behavior-block"/>
   <int value="646" label="content-size"/>
   <int value="647" label="font-optical-sizing"/>
+  <int value="648" label="intrinsic-block-size"/>
+  <int value="649" label="intrinsic-height"/>
+  <int value="650" label="intrinsic-inline-size"/>
+  <int value="651" label="intrinsic-size"/>
+  <int value="652" label="intrinsic-width"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -46558,6 +46574,12 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="9" label="Optimization Guide Decider not initialized">
     The OptimizationGuideDecider was not initialized yet.
+  </int>
+  <int value="10" label="Hint was being fetched but was not available yet">
+    A fetch for a hint that matches the page load from the remote Optimization
+    Guide Service was started but was not available in time to make a decision.
+    (Added in M80, Previously, this was combined with &quot;No hint available
+    for page load&quot;.)
   </int>
 </enum>
 
@@ -62913,6 +62935,18 @@ Full version information for the fingerprint enum values:
   <int value="137116619" label="translate_url_fetcher"/>
   <int value="137420486" label="cloud_print_credential_update"/>
   <int value="137457845" label="web_history_counter"/>
+</enum>
+
+<enum name="URLRequestReferrerPolicy">
+  <int value="0" label="CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE"/>
+  <int value="1"
+      label="REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN"/>
+  <int value="2" label="ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN"/>
+  <int value="3" label="NEVER_CLEAR_REFERRER"/>
+  <int value="4" label="ORIGIN"/>
+  <int value="5" label="CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN"/>
+  <int value="6" label="ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE"/>
+  <int value="7" label="NO_REFERRER"/>
 </enum>
 
 <enum name="UrlResolutionResult">

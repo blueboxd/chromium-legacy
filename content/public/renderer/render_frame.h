@@ -22,7 +22,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "ui/accessibility/ax_mode.h"
@@ -172,11 +171,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Returns the InterfaceProvider that this process can use to bind
   // interfaces exposed to it by the application running in this frame.
   virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
-
-  // Returns the DocumentInterfaceBroker that this process can use to bind
-  // interfaces exposed to it by the application running in this frame.
-  virtual blink::mojom::DocumentInterfaceBroker*
-  GetDocumentInterfaceBroker() = 0;
 
   // Returns the BrowserInterfaceBrokerProxy that this process can use to bind
   // interfaces exposed to it by the application running in this frame.

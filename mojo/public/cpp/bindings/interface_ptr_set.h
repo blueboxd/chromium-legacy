@@ -90,7 +90,7 @@ class PtrSet {
   class Element {
    public:
     explicit Element(Ptr<Interface> ptr) : ptr_(std::move(ptr)) {
-      ptr_.set_connection_error_handler(base::Bind(&DeleteElement, this));
+      ptr_.set_connection_error_handler(base::BindOnce(&DeleteElement, this));
     }
 
     ~Element() {}

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabContro
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleToolbarController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
@@ -56,6 +57,7 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     CustomTabCompositorContentInitializer resolveCompositorContentInitializer();
     CustomTabSessionHandler resolveSessionHandler();
     CustomTabActivityClientConnectionKeeper resolveConnectionKeeper();
+    TabObserverRegistrar resolveTabObserverRegistrar();
     TwaFinishHandler resolveTwaFinishHandler();
     ImmersiveModeController resolveImmersiveModeController();
 

@@ -432,8 +432,9 @@ MemoryTracker* GLES2CommandBufferStub::GetMemoryTracker() const {
   return context_group_->memory_tracker();
 }
 
-void GLES2CommandBufferStub::OnGpuSwitched() {
-  Send(new GpuCommandBufferMsg_GpuSwitched(route_id_));
+void GLES2CommandBufferStub::OnGpuSwitched(
+    gl::GpuPreference active_gpu_heuristic) {
+  Send(new GpuCommandBufferMsg_GpuSwitched(route_id_, active_gpu_heuristic));
 }
 
 bool GLES2CommandBufferStub::HandleMessage(const IPC::Message& message) {

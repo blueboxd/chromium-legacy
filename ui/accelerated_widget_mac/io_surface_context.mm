@@ -113,7 +113,7 @@ IOSurfaceContext::~IOSurfaceContext() {
   }
 }
 
-void IOSurfaceContext::OnGpuSwitched() {
+void IOSurfaceContext::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) {
   // Recreate all browser-side GL contexts whenever the GPU switches. If this
   // is not done, performance will suffer.
   // http://crbug.com/361493

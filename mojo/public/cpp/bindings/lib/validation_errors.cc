@@ -77,17 +77,19 @@ void ReportValidationError(ValidationContext* context,
                  << " (" << description << ")";
     }
     if (context->message()) {
-      context->message()->NotifyBadMessage(base::StringPrintf(
-          "Validation failed for %s [%s (%s)]", context->description(),
-          ValidationErrorToString(error), description));
+      context->message()->NotifyBadMessage(
+          base::StringPrintf("Validation failed for %s [%s (%s)]",
+                             context->GetFullDescription().c_str(),
+                             ValidationErrorToString(error), description));
     }
   } else {
     if (!g_suppress_logging)
       LOG(ERROR) << "Invalid message: " << ValidationErrorToString(error);
     if (context->message()) {
-      context->message()->NotifyBadMessage(base::StringPrintf(
-          "Validation failed for %s [%s]", context->description(),
-          ValidationErrorToString(error)));
+      context->message()->NotifyBadMessage(
+          base::StringPrintf("Validation failed for %s [%s]",
+                             context->GetFullDescription().c_str(),
+                             ValidationErrorToString(error)));
     }
   }
 }
@@ -117,8 +119,8 @@ ScopedSuppressValidationErrorLoggingForTests
 }
 
 ValidationErrorObserverForTesting::ValidationErrorObserverForTesting(
-    const base::Closure& callback)
-    : last_error_(VALIDATION_ERROR_NONE), callback_(callback) {
+    base::RepeatingClosure callback)
+    : last_error_(VALIDATION_ERROR_NONE), callback_(std::move(callback)) {
   DCHECK(!g_validation_error_observer);
   g_validation_error_observer = this;
 }

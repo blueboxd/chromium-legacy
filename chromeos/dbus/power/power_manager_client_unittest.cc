@@ -96,6 +96,9 @@ class TestObserver : public PowerManagerClient::Observer {
   const base::UnguessableToken& block_suspend_token() const {
     return block_suspend_token_;
   }
+  int32_t ambient_color_temperature() const {
+    return ambient_color_temperature_;
+  }
 
   void set_should_block_suspend(bool take_callback) {
     should_block_suspend_ = take_callback;
@@ -135,6 +138,9 @@ class TestObserver : public PowerManagerClient::Observer {
     if (run_unblock_suspend_immediately_)
       CHECK(UnblockSuspend());
   }
+  void AmbientColorChanged(const int32_t color_temperature) override {
+    ambient_color_temperature_ = color_temperature;
+  }
 
  private:
   PowerManagerClient* client_;  // Not owned.
@@ -157,6 +163,8 @@ class TestObserver : public PowerManagerClient::Observer {
   // When non-empty, the token for the outstanding block-suspend registration.
   base::UnguessableToken block_suspend_token_;
 
+  // Ambient color temperature
+  int32_t ambient_color_temperature_ = 0;
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
@@ -590,6 +598,19 @@ TEST_F(PowerManagerClientTest, SyncCallbackWithMultipleObservers) {
   ExpectSuspendReadiness(kHandleSuspendReadiness, kSuspendId, kSuspendDelayId);
   EXPECT_TRUE(observer2.UnblockSuspend());
   EmitSuspendDoneSignal(kSuspendId);
+}
+
+// Tests that observers are notified about changes in ambient color temperature.
+TEST_F(PowerManagerClientTest, ChangeAmbientColorTemperature) {
+  TestObserver observer(client_);
+
+  constexpr int32_t kTemperature = 6500;
+  dbus::Signal signal(kInterface,
+                      power_manager::kAmbientColorTemperatureChangedSignal);
+  dbus::MessageWriter(&signal).AppendInt32(kTemperature);
+  EmitSignal(&signal);
+
+  EXPECT_EQ(kTemperature, observer.ambient_color_temperature());
 }
 
 }  // namespace chromeos

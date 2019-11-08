@@ -86,8 +86,15 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // "recently audible" state of the tab changes.
   void SetRecentlyAudible(bool recently_audible);
 
-  // Updates the tab's lifecycle state when changed outside the tab lifecycle
-  // unit.
+  // Set the initial state of this lifecycle unit with some data coming from the
+  // performance_manager Graph.
+  void SetInitialStateFromPageNodeData(
+      performance_manager::mojom::InterventionPolicy origin_trial_policy,
+      bool is_holding_weblock,
+      bool is_holding_indexeddb_lock);
+
+  // Updates the tab's lifecycle state when changed outside the tab
+  // lifecycle unit.
   void UpdateLifecycleState(performance_manager::mojom::LifecycleState state);
 
   // Updates the tab's origin trial freeze policy.
@@ -122,6 +129,8 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   bool IsMediaTab() const;
   bool IsAutoDiscardable() const;
   void SetAutoDiscardable(bool auto_discardable);
+
+  bool IsHoldingWebLockForTesting() { return is_holding_weblock_; }
 
  protected:
   friend class TabManagerTest;

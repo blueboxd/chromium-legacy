@@ -155,6 +155,20 @@ AudioContext::AudioContext(Document& document,
   }
 
   Initialize();
+
+  // Compute the base latency now and cache the value since it doesn't change
+  // once the context is constructed.  We need the destination to be initialized
+  // so we have to compute it here.
+  //
+  // TODO(hongchan): Due to the incompatible constructor between
+  // AudioDestinationNode and RealtimeAudioDestinationNode, casting directly
+  // from |destination()| is impossible. This is a temporary workaround until
+  // the refactoring is completed.
+  RealtimeAudioDestinationHandler& destination_handler =
+      static_cast<RealtimeAudioDestinationHandler&>(
+          destination()->GetAudioDestinationHandler());
+  base_latency_ = destination_handler.GetFramesPerBuffer() /
+                  static_cast<double>(sampleRate());
 }
 
 void AudioContext::Uninitialize() {
@@ -359,15 +373,7 @@ double AudioContext::baseLatency() const {
   DCHECK(IsMainThread());
   DCHECK(destination());
 
-  // TODO(hongchan): Due to the incompatible constructor between
-  // AudioDestinationNode and RealtimeAudioDestinationNode, casting directly
-  // from |destination()| is impossible. This is a temporary workaround until
-  // the refactoring is completed.
-  RealtimeAudioDestinationHandler& destination_handler =
-      static_cast<RealtimeAudioDestinationHandler&>(
-          destination()->GetAudioDestinationHandler());
-  return destination_handler.GetFramesPerBuffer() /
-         static_cast<double>(sampleRate());
+  return base_latency_;
 }
 
 MediaElementAudioSourceNode* AudioContext::createMediaElementSource(

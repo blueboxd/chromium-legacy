@@ -114,8 +114,7 @@ WebContents* LoginWebDialog::GetCurrentWebContents() {
   return stack.empty() ? nullptr : stack.front();
 }
 
-void LoginWebDialog::OnDialogShown(content::WebUI* webui,
-                                   content::RenderViewHost* render_view_host) {
+void LoginWebDialog::OnDialogShown(content::WebUI* webui) {
   g_web_contents_stack.Pointer()->push_front(webui->GetWebContents());
 }
 

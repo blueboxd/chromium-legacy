@@ -14,6 +14,7 @@ import androidx.annotation.DrawableRes;
 
 import org.chromium.base.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelTextViewInflater;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -56,10 +57,10 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
             DynamicResourceLoader resourceLoader) {
         super(panel, R.layout.ephemeral_tab_caption_view, R.id.ephemeral_tab_caption_view, context,
                 container, resourceLoader,
-                (EphemeralTabPanel.isNewLayout() ? R.dimen.overlay_panel_end_buttons_width
-                                                 : R.dimen.overlay_panel_padded_button_width),
-                (EphemeralTabPanel.isNewLayout() ? R.dimen.overlay_panel_end_buttons_width
-                                                 : R.dimen.overlay_panel_padded_button_width));
+                (OverlayPanel.isNewLayout() ? R.dimen.overlay_panel_end_buttons_width
+                                            : R.dimen.overlay_panel_padded_button_width),
+                (OverlayPanel.isNewLayout() ? R.dimen.overlay_panel_end_buttons_width
+                                            : R.dimen.overlay_panel_padded_button_width));
         mUrl = panel::getUrl;
         mIconMargin = context.getResources().getDimensionPixelSize(
                 R.dimen.preview_tab_security_icon_size);
@@ -77,7 +78,7 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
             if (mCaption == null) {
                 // |mCaption| gets initialized synchronously in |onFinishInflate|.
                 inflate();
-                if (EphemeralTabPanel.isNewLayout()) {
+                if (OverlayPanel.isNewLayout()) {
                     mCaption.setText(
                             UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mUrl.get()));
                 } else {
@@ -139,7 +140,7 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
      * @return The current percentage ranging from 0.0 to 1.0.
      */
     public float getAnimationPercentage() {
-        return EphemeralTabPanel.isNewLayout() ? 1.f : mAnimationPercentage;
+        return OverlayPanel.isNewLayout() ? 1.f : mAnimationPercentage;
     }
 
     /**
@@ -167,7 +168,7 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
 
         View view = getView();
         mCaption = (TextView) view.findViewById(R.id.ephemeral_tab_caption);
-        if (EphemeralTabPanel.isNewLayout()) {
+        if (OverlayPanel.isNewLayout()) {
             ((MarginLayoutParams) mCaption.getLayoutParams()).leftMargin = mIconMargin;
         }
     }

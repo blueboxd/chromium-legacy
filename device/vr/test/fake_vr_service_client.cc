@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "device/vr/test/fake_vr_service_client.h"
-#include "device/vr/test/fake_vr_display_impl_client.h"
 
 namespace device {
 

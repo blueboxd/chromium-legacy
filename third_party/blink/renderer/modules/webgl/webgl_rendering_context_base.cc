@@ -837,6 +837,12 @@ bool WebGLRenderingContextBase::IsXRCompatible() {
   return xr_compatible_;
 }
 
+void WebGLRenderingContextBase::
+    UpdateNumberOfUserAllocatedMultisampledRenderbuffers(int delta) {
+  DCHECK(delta >= -1 && delta <= 1);
+  number_of_user_allocated_multisampled_renderbuffers_ += delta;
+}
+
 namespace {
 
 // Exposed by GL_ANGLE_depth_texture
@@ -1010,7 +1016,8 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       feature_handle_for_scheduler_(
           host->GetTopExecutionContext()->GetScheduler()->RegisterFeature(
               SchedulingPolicy::Feature::kWebGL,
-              {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
+              {SchedulingPolicy::RecordMetricsForBackForwardCache()})),
+      number_of_user_allocated_multisampled_renderbuffers_(0) {
   DCHECK(context_provider);
 
   // TODO(http://crbug.com/876140) Make sure this is being created on a
@@ -1065,14 +1072,15 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
 scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing) {
-  bool premultiplied_alpha = CreationAttributes().premultiplied_alpha;
-  bool want_alpha_channel = CreationAttributes().alpha;
-  bool want_depth_buffer = CreationAttributes().depth;
-  bool want_stencil_buffer = CreationAttributes().stencil;
-  bool want_antialiasing = CreationAttributes().antialias;
-  DrawingBuffer::PreserveDrawingBuffer preserve =
-      CreationAttributes().preserve_drawing_buffer ? DrawingBuffer::kPreserve
-                                                   : DrawingBuffer::kDiscard;
+  const CanvasContextCreationAttributesCore& attrs = CreationAttributes();
+  bool premultiplied_alpha = attrs.premultiplied_alpha;
+  bool want_alpha_channel = attrs.alpha;
+  bool want_depth_buffer = attrs.depth;
+  bool want_stencil_buffer = attrs.stencil;
+  bool want_antialiasing = attrs.antialias;
+  DrawingBuffer::PreserveDrawingBuffer preserve = attrs.preserve_drawing_buffer
+                                                      ? DrawingBuffer::kPreserve
+                                                      : DrawingBuffer::kDiscard;
   DrawingBuffer::WebGLVersion web_gl_version = DrawingBuffer::kWebGL1;
   if (context_type_ == Platform::kWebGL1ContextType) {
     web_gl_version = DrawingBuffer::kWebGL1;
@@ -1099,13 +1107,14 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
   bool using_swap_chain =
       base::FeatureList::IsEnabled(kLowLatencyWebGLSwapChain) &&
       context_provider->GetCapabilities().shared_image_swap_chain &&
-      CreationAttributes().desynchronized;
+      attrs.desynchronized;
 
   return DrawingBuffer::Create(
       std::move(context_provider), using_gpu_compositing, using_swap_chain,
       this, ClampedCanvasSize(), premultiplied_alpha, want_alpha_channel,
       want_depth_buffer, want_stencil_buffer, want_antialiasing, preserve,
-      web_gl_version, chromium_image_usage, ColorParams());
+      web_gl_version, chromium_image_usage, ColorParams(),
+      PowerPreferenceToGpuPreference(attrs.power_preference));
 }
 
 void WebGLRenderingContextBase::InitializeNewContext() {
@@ -1256,6 +1265,8 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   ADD_VALUES_TO_SET(supported_types_, kSupportedTypesES2);
   supported_tex_image_source_types_.clear();
   ADD_VALUES_TO_SET(supported_tex_image_source_types_, kSupportedTypesES2);
+
+  number_of_user_allocated_multisampled_renderbuffers_ = 0;
 
   // The DrawingBuffer was unable to store the state that dirtied when it was
   // initialized. Restore it now.
@@ -4508,6 +4519,8 @@ void WebGLRenderingContextBase::RenderbufferStorageImpl(
                         "invalid internalformat");
       break;
   }
+  UpdateNumberOfUserAllocatedMultisampledRenderbuffers(
+      renderbuffer_binding_->UpdateMultisampleState(false));
 }
 
 void WebGLRenderingContextBase::renderbufferStorage(GLenum target,
@@ -6782,6 +6795,17 @@ void WebGLRenderingContextBase::
     DrawingBufferClientRestorePixelUnpackBufferBinding() {}
 void WebGLRenderingContextBase::
     DrawingBufferClientRestorePixelPackBufferBinding() {}
+
+bool WebGLRenderingContextBase::
+    DrawingBufferClientUserAllocatedMultisampledRenderbuffers() {
+  return number_of_user_allocated_multisampled_renderbuffers_ > 0;
+}
+
+void WebGLRenderingContextBase::
+    DrawingBufferClientForceLostContextWithAutoRecovery() {
+  ForceLostContext(WebGLRenderingContextBase::kSyntheticLostContext,
+                   WebGLRenderingContextBase::kAuto);
+}
 
 ScriptValue WebGLRenderingContextBase::GetBooleanParameter(
     ScriptState* script_state,

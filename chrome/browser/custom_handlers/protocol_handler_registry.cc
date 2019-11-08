@@ -95,23 +95,24 @@ bool ProtocolHandlerRegistry::Delegate::IsExternalHandlerRegistered(
 }
 
 void ProtocolHandlerRegistry::Delegate::RegisterWithOSAsDefaultClient(
-    const std::string& protocol, ProtocolHandlerRegistry* registry) {
+    const std::string& protocol,
+    shell_integration::DefaultWebClientWorkerCallback callback) {
   // The worker pointer is reference counted. While it is running, the
   // sequence it runs on will hold references it will be automatically freed
   // once all its tasks have finished.
   base::MakeRefCounted<shell_integration::DefaultProtocolClientWorker>(
-      registry->GetDefaultWebClientCallback(protocol), protocol)
+      std::move(callback), protocol)
       ->StartSetAsDefault();
 }
 
 void ProtocolHandlerRegistry::Delegate::CheckDefaultClientWithOS(
     const std::string& protocol,
-    ProtocolHandlerRegistry* registry) {
+    shell_integration::DefaultWebClientWorkerCallback callback) {
   // The worker pointer is reference counted. While it is running, the
   // sequence it runs on will hold references it will be automatically freed
   // once all its tasks have finished.
   base::MakeRefCounted<shell_integration::DefaultProtocolClientWorker>(
-      registry->GetDefaultWebClientCallback(protocol), protocol)
+      std::move(callback), protocol)
       ->StartCheckIsDefault();
 }
 
@@ -259,7 +260,9 @@ void ProtocolHandlerRegistry::InitProtocolSettings() {
   if (ShouldRemoveHandlersNotInOS()) {
     for (ProtocolHandlerMap::const_iterator p = default_handlers_.begin();
          p != default_handlers_.end(); ++p) {
-      delegate_->CheckDefaultClientWithOS(p->second.protocol(), this);
+      const std::string& protocol = p->second.protocol();
+      delegate_->CheckDefaultClientWithOS(
+          protocol, GetDefaultWebClientCallback(protocol));
     }
   }
 }
@@ -591,14 +594,17 @@ ProtocolHandlerRegistry::GetHandlerList(
 
 void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ProtocolHandlerMap::const_iterator p = default_handlers_.find(
-      handler.protocol());
+
+  const std::string& protocol = handler.protocol();
+  ProtocolHandlerMap::const_iterator p = default_handlers_.find(protocol);
   // If we're not loading, and we are setting a default for a new protocol,
   // register with the OS.
   if (!is_loading_ && p == default_handlers_.end())
-      delegate_->RegisterWithOSAsDefaultClient(handler.protocol(), this);
-  default_handlers_.erase(handler.protocol());
-  default_handlers_.insert(std::make_pair(handler.protocol(), handler));
+    delegate_->RegisterWithOSAsDefaultClient(
+        protocol, GetDefaultWebClientCallback(protocol));
+  default_handlers_.erase(protocol);
+  default_handlers_.insert(std::make_pair(protocol, handler));
+
   PromoteHandler(handler);
 }
 

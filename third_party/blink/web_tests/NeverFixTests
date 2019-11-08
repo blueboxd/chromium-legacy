@@ -1944,9 +1944,6 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-o
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-stop-manual.https.html [ Skip ]
 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Skip ]
 
-# MathML is not implemented.
-crbug.com/6606 external/wpt/mathml [ Skip ]
-
 # ==== Tests incompatible with the default WPT Origin Isolation start here ==VV
 # The section below lists web tests that are incompatible with the WPT Origin
 # Isolation mode of Site Isolation (see

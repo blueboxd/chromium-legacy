@@ -50,11 +50,16 @@
 #include "net/base/features.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_util.h"
+#include "net/ssl/client_cert_store.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -63,6 +68,19 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
+
+#if defined(USE_NSS_CERTS)
+#include "chrome/browser/ui/crypto_module_delegate_nss.h"
+#include "net/ssl/client_cert_store_nss.h"
+#endif  // defined(USE_NSS_CERTS)
+
+#if defined(OS_WIN)
+#include "net/ssl/client_cert_store_win.h"
+#endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+#include "net/ssl/client_cert_store_mac.h"
+#endif  // defined(OS_MACOSX)
 
 #if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 #include "chrome/browser/net/trial_comparison_cert_verifier_controller.h"
@@ -187,7 +205,8 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
   using_builtin_cert_verifier_ = ShouldUseBuiltinCertVerifier(profile_);
   VLOG(0) << "Using " << (using_builtin_cert_verifier_ ? "built-in" : "legacy")
           << " cert verifier.";
-#endif
+#endif  // OS_CHROMEOS
+
   // When any of the following CT preferences change, we schedule an update
   // to aggregate the actual update using a |ct_policy_update_timer_|.
   pref_change_registrar_.Add(
@@ -464,6 +483,71 @@ void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
 void ProfileNetworkContextService::SetDiscardDomainReliabilityUploadsForTesting(
     bool value) {
   g_discard_domain_reliability_uploads_for_testing = new bool(value);
+}
+
+std::unique_ptr<net::ClientCertStore>
+ProfileNetworkContextService::CreateClientCertStore() {
+  if (!client_cert_store_factory_.is_null())
+    return client_cert_store_factory_.Run();
+
+#if defined(OS_CHROMEOS)
+  bool use_system_key_slot = false;
+  // Enable client certificates for the Chrome OS sign-in frame, if this feature
+  // is not disabled by a flag.
+  // Note that while this applies to the whole sign-in profile, client
+  // certificates will only be selected for the StoragePartition currently used
+  // in the sign-in frame (see SigninPartitionManager).
+  if (chromeos::switches::IsSigninFrameClientCertsEnabled() &&
+      chromeos::ProfileHelper::IsSigninProfile(profile_)) {
+    use_system_key_slot = true;
+  }
+
+  std::string username_hash;
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  if (user && !user->username_hash().empty()) {
+    username_hash = user->username_hash();
+
+    // Use the device-wide system key slot only if the user is affiliated on
+    // the device.
+    if (user->IsAffiliated()) {
+      use_system_key_slot = true;
+    }
+  }
+
+  chromeos::CertificateProviderService* cert_provider_service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          profile_);
+  std::unique_ptr<chromeos::CertificateProvider> certificate_provider;
+  if (cert_provider_service) {
+    certificate_provider = cert_provider_service->CreateCertificateProvider();
+  }
+
+  // ClientCertStoreChromeOS internally depends on NSS initialization that
+  // happens when the ResourceContext is created. Call GetResourceContext() so
+  // the dependency is explicit. See https://crbug.com/1018972.
+  profile_->GetResourceContext();
+
+  return std::make_unique<chromeos::ClientCertStoreChromeOS>(
+      std::move(certificate_provider), use_system_key_slot, username_hash,
+      base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
+                 kCryptoModulePasswordClientAuth));
+#elif defined(USE_NSS_CERTS)
+  return std::make_unique<net::ClientCertStoreNSS>(
+      base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
+                 kCryptoModulePasswordClientAuth));
+#elif defined(OS_WIN)
+  return std::make_unique<net::ClientCertStoreWin>();
+#elif defined(OS_MACOSX)
+  return std::make_unique<net::ClientCertStoreMac>();
+#elif defined(OS_ANDROID)
+  // Android does not use the ClientCertStore infrastructure. On Android client
+  // cert matching is done by the OS as part of the call to show the cert
+  // selection dialog.
+  return nullptr;
+#else
+#error Unknown platform.
+#endif
 }
 
 network::mojom::NetworkContextParamsPtr

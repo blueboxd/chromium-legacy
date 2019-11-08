@@ -26,6 +26,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/accessibility_tree_formatter.h"
+#include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
@@ -348,11 +349,25 @@ AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::make_unique<AccessibilityUIMessageHandler>());
 }
 
-AccessibilityUI::~AccessibilityUI() {}
+AccessibilityUI::~AccessibilityUI() = default;
 
-AccessibilityUIMessageHandler::AccessibilityUIMessageHandler() {}
+AccessibilityUIObserver::AccessibilityUIObserver(
+    content::WebContents* web_contents,
+    std::vector<std::string>* event_logs)
+    : content::WebContentsObserver(web_contents), event_logs_(event_logs) {}
 
-AccessibilityUIMessageHandler::~AccessibilityUIMessageHandler() {}
+AccessibilityUIObserver::~AccessibilityUIObserver() = default;
+
+void AccessibilityUIObserver::AccessibilityEventReceived(
+    const content::AXEventNotificationDetails& details) {
+  for (const ui::AXEvent event : details.events) {
+    event_logs_->push_back(event.ToString());
+  }
+}
+
+AccessibilityUIMessageHandler::AccessibilityUIMessageHandler() = default;
+
+AccessibilityUIMessageHandler::~AccessibilityUIMessageHandler() = default;
 
 void AccessibilityUIMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -649,11 +664,15 @@ void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
         base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
                             base::Unretained(this)),
         true);
+    observer_ =
+        std::make_unique<AccessibilityUIObserver>(web_contents, &event_logs_);
   } else {
     web_contents->RecordAccessibilityEvents(
         base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
                             base::Unretained(this)),
         false);
+    observer_.release();
+
     std::string event_logs_str;
     for (std::string log : event_logs_) {
       event_logs_str += log;

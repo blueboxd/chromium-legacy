@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.os.Build;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -13,6 +14,8 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
@@ -23,6 +26,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +35,9 @@ import java.util.List;
  * End-to-end test for TabSelectionEditor.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+@DisableIf.Build(message = "crbug.com/1022200", sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
+        sdk_is_less_than = Build.VERSION_CODES.M)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class TabSelectionEditorTest {
     @Rule

@@ -6,7 +6,7 @@
 
 typedef unsigned long GPUShaderStageFlags;
 [
-    RuntimeEnabled=WebGPU
+    Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUShaderStage {
     const GPUShaderStageFlags VERTEX = 1;
     const GPUShaderStageFlags FRAGMENT = 2;

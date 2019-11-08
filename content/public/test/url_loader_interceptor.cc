@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_util.h"
@@ -187,11 +188,10 @@ class URLLoaderClientInterceptor : public network::mojom::URLLoaderClient {
       const URLLoaderInterceptor::URLLoaderCompletionStatusCallback&
           completion_status_callback)
       : original_client_(std::move(params.client)),
-        delegating_client_binding_(this),
         completion_status_callback_(std::move(completion_status_callback)),
         request_url_(params.url_request.url) {
     network::mojom::URLLoaderClientPtr delegating_client;
-    delegating_client_binding_.Bind(mojo::MakeRequest(&delegating_client));
+    delegating_client_receiver_.Bind(mojo::MakeRequest(&delegating_client));
     factory_getter.Run()->CreateLoaderAndStart(
         std::move(params.receiver), params.routing_id, params.request_id,
         params.options, std::move(params.url_request),
@@ -235,7 +235,8 @@ class URLLoaderClientInterceptor : public network::mojom::URLLoaderClient {
 
  private:
   network::mojom::URLLoaderClientPtr original_client_;
-  mojo::Binding<network::mojom::URLLoaderClient> delegating_client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> delegating_client_receiver_{
+      this};
   URLLoaderInterceptor::URLLoaderCompletionStatusCallback
       completion_status_callback_;
   GURL request_url_;

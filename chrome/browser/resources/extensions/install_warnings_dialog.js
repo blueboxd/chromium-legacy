@@ -10,23 +10,23 @@ import './code_section.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-  Polymer({
-    is: 'extensions-install-warnings-dialog',
+Polymer({
+  is: 'extensions-install-warnings-dialog',
 
-    _template: html`{__html_template__}`,
+  _template: html`{__html_template__}`,
 
-    properties: {
-      /** @type {!Array<string>} */
-      installWarnings: Array,
-    },
+  properties: {
+    /** @type {!Array<string>} */
+    installWarnings: Array,
+  },
 
-    /** @override */
-    attached: function() {
-      this.$.dialog.showModal();
-    },
+  /** @override */
+  attached: function() {
+    this.$.dialog.showModal();
+  },
 
-    /** @private */
-    onOkTap_: function() {
-      this.$.dialog.close();
-    },
-  });
+  /** @private */
+  onOkTap_: function() {
+    this.$.dialog.close();
+  },
+});

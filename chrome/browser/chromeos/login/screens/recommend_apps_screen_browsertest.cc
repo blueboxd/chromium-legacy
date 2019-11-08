@@ -557,8 +557,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, InstallWithNoAppsSelected) {
   EXPECT_EQ(base::Value(base::Value::Type::LIST), *fast_reinstall_packages);
 }
 
-// Disabled due to flakiness: https://crbug.com/982161
-IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, DISABLED_NoRecommendedApps) {
+IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, NoRecommendedApps) {
   recommend_apps_screen_->Show();
 
   OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);
@@ -587,8 +586,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, DISABLED_NoRecommendedApps) {
 
   test::OobeJS().CreateDisplayedWaiter(true, skip_button)->Wait();
   test::OobeJS().ExpectEnabledPath(skip_button);
-  test::OobeJS().ExpectPathDisplayed(false, install_button);
-  test::OobeJS().ExpectPathDisplayed(false, retry_button);
+  test::OobeJS().ExpectDisabledPath(install_button);
   test::OobeJS().ExpectPathDisplayed(false, retry_button);
 
   test::OobeJS().TapOnPath(skip_button);

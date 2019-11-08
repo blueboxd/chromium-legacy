@@ -16,6 +16,7 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -89,9 +90,9 @@ class PreviewsLitePageRedirectServingURLLoader
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
-  // When a connection error occurs in either mojo pipe, this objects lifetime
+  // When a disconnection occurs in either mojo pipe, this object's lifetime
   // needs to be managed and the connections need to be closed.
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   // Calls |result_callback_| with kFallback and cleans up.
   void Fallback();
@@ -110,9 +111,9 @@ class PreviewsLitePageRedirectServingURLLoader
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
       network::mojom::URLLoaderClientPtr forwarding_client);
 
-  // The network URLLoader that fetches the LitePage URL and its binding.
+  // The network URLLoader that fetches the LitePage URL and its receiver.
   network::mojom::URLLoaderPtr network_url_loader_;
-  mojo::Binding<network::mojom::URLLoaderClient> url_loader_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> url_loader_receiver_{this};
 
   // When a result is determined, this callback should be run with the
   // appropriate ServingLoaderResult.

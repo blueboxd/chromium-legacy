@@ -3,35 +3,36 @@
 // found in the LICENSE file.
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UIA_WIN_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UIA_WIN_H_
+
 #include "content/browser/accessibility/accessibility_tree_formatter_base.h"
 
 #include <ole2.h>
 #include <stdint.h>
 #include <uiautomation.h>
 #include <wrl/client.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/win/scoped_variant.h"
+
 namespace content {
 
 class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterBase {
  public:
   AccessibilityTreeFormatterUia();
-
   ~AccessibilityTreeFormatterUia() override;
 
   static std::unique_ptr<AccessibilityTreeFormatter> CreateUia();
 
-  void AddDefaultFilters(
-      std::vector<PropertyFilter>* property_filters) override;
-
   static void SetUpCommandLineForTestPass(base::CommandLine* command_line);
 
+  // AccessibilityTreeFormatterBase:
+  void AddDefaultFilters(
+      std::vector<PropertyFilter>* property_filters) override;
   base::FilePath::StringType GetExpectedFileSuffix() override;
   base::FilePath::StringType GetVersionSpecificExpectedFileSuffix() override;
-
   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
       BrowserAccessibility* start) override;
   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForProcess(
@@ -114,5 +115,7 @@ class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterBase {
   Microsoft::WRL::ComPtr<IUIAutomationCacheRequest> element_cache_request_;
   Microsoft::WRL::ComPtr<IUIAutomationCacheRequest> children_cache_request_;
 };
+
 }  // namespace content
+
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_UIA_WIN_H_

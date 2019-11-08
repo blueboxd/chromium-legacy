@@ -9,7 +9,7 @@
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -182,7 +182,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
   // sometimes).
   network::mojom::URLLoaderPtr network_loader_;
 
-  mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> network_client_receiver_{
+      this};
   mojo::ScopedDataPipeConsumerHandle network_consumer_;
   mojo::SimpleWatcher network_watcher_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;

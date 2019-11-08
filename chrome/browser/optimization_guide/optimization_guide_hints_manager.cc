@@ -175,7 +175,8 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
       hint_cache_(std::make_unique<optimization_guide::HintCache>(
           std::make_unique<optimization_guide::OptimizationGuideStore>(
               database_provider,
-              profile_path,
+              profile_path.AddExtensionASCII(
+                  optimization_guide::kOptimizationGuideHintStore),
               background_task_runner_))),
       top_host_provider_(top_host_provider),
       url_loader_factory_(url_loader_factory),
@@ -847,11 +848,16 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
     // If we do not have a hint already loaded and we do not have one in the
     // cache, we do not know what to do with the URL so just return.
     // Otherwise, we do have information, but we just do not know it yet.
-    *optimization_type_decision =
-        has_hint_in_cache
-            ? optimization_guide::OptimizationTypeDecision::
-                  kHadHintButNotLoadedInTime
-            : optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
+    if (has_hint_in_cache) {
+      *optimization_type_decision = optimization_guide::
+          OptimizationTypeDecision::kHadHintButNotLoadedInTime;
+    } else if (IsHintBeingFetched(url.host())) {
+      *optimization_type_decision = optimization_guide::
+          OptimizationTypeDecision::kHintFetchStartedButNotAvailableInTime;
+    } else {
+      *optimization_type_decision =
+          optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
+    }
     return;
   }
   if (!matched_page_hint) {
@@ -929,7 +935,8 @@ void OptimizationGuideHintsManager::OnNavigationStartOrRedirect(
     return;
   }
 
-  if (IsAllowedToFetchNavigationHints(navigation_handle->GetURL())) {
+  if (IsAllowedToFetchNavigationHints(navigation_handle->GetURL()) &&
+      !hint_cache_->HasHint(navigation_handle->GetURL().host())) {
     std::vector<std::string> hosts{navigation_handle->GetURL().host()};
     navigation_hosts_last_fetched_real_time_.clear();
     navigation_hosts_last_fetched_real_time_.push_back(
@@ -954,4 +961,11 @@ void OptimizationGuideHintsManager::ClearFetchedHints() {
   hint_cache_->ClearFetchedHints();
   optimization_guide::HintsFetcher::ClearHostsSuccessfullyFetched(
       pref_service_);
+}
+
+bool OptimizationGuideHintsManager::IsHintBeingFetched(
+    const std::string& host) const {
+  return std::find(navigation_hosts_last_fetched_real_time_.begin(),
+                   navigation_hosts_last_fetched_real_time_.end(),
+                   host) != navigation_hosts_last_fetched_real_time_.end();
 }

@@ -42,13 +42,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Initializes animations for the bubble.
   static void InitializeBubbleAnimations(views::Widget* bubble_widget);
 
-  // views::View:
-  void SetVisible(bool visible) override;
-  const char* GetClassName() const override;
-  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void ChildPreferredSizeChanged(views::View* child) override;
-
   // ActionableView:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -75,6 +68,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Called whenever the bounds of the root window changes.
   virtual void UpdateAfterRootWindowBoundsChange(const gfx::Rect& old_bounds,
                                                  const gfx::Rect& new_bounds);
+
+  // Called whenever the status area's collapse state changes.
+  virtual void UpdateAfterStatusAreaCollapseChange();
 
   // Called when the anchor (tray or bubble) may have moved or changed.
   virtual void AnchorUpdated() {}
@@ -106,6 +102,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Updates the visibility of this tray's separator.
   void set_separator_visibility(bool visible) { separator_visible_ = visible; }
 
+  // Sets whether to show the view when the status area is collapsed.
+  void set_show_when_collapsed(bool show_when_collapsed) {
+    show_when_collapsed_ = show_when_collapsed;
+  }
+
   // Gets the anchor for bubbles, which is tray_container().
   views::View* GetBubbleAnchor() const;
 
@@ -119,6 +120,12 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Helper function that calculates background bounds relative to local bounds
   // based on background insets returned from GetBackgroundInsets().
   gfx::Rect GetBackgroundBounds() const;
+
+  // Sets whether the tray item should be shown by default (e.g. it is
+  // activated). The effective visibility of the tray item is determined by the
+  // current state of the status tray (i.e. whether the virtual keyboard is
+  // showing or if it is collapsed).
+  void SetVisiblePreferred(bool visible_preferred);
 
  protected:
   // ActionableView:
@@ -137,6 +144,13 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   class HighlightPathGenerator;
   class TrayWidgetObserver;
 
+  // views::View:
+  void SetVisible(bool visible) override;
+  const char* GetClassName() const override;
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
   bool RequiresNotificationWhenAnimatorDestroyed() const override;
@@ -150,6 +164,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Updates the background layer.
   void UpdateBackground();
+
+  // Returns the effective visibility of the tray item based on the current
+  // state.
+  bool GetEffectiveVisibility();
 
   // The shelf containing the system tray for this view.
   Shelf* shelf_;
@@ -172,6 +190,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // If true, the view always shows up when virtual keyboard is visible.
   bool show_with_virtual_keyboard_;
+
+  // If true, the view is visible when the status area is collapsed.
+  bool show_when_collapsed_;
 
   std::unique_ptr<TrayWidgetObserver> widget_observer_;
   std::unique_ptr<TrayEventFilter> tray_event_filter_;

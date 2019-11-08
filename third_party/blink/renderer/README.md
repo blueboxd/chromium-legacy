@@ -99,13 +99,6 @@ Consult `controller/` OWNERS when in doubt.
 In terms of dependencies, `controller/` can depend on `core/`, `platform/` and `modules/`,
 but not vice versa.
 
-### `devtools/`
-
-The `devtools/` directory contains a frontend of the Chrome DevTools,
-including the build scripts and DevTools webapp.
-
-In terms of dependencies, `devtools/` is a stand-alone directory.
-
 ### `build/`
 
 The `build/` directory contains scripts to build Blink.
@@ -127,7 +120,7 @@ Dependencies only flow in the following order:
 
 See [this diagram](https://docs.google.com/document/d/1yYei-V76q3Mb-5LeJfNUMitmj6cqfA5gZGcWXoPaPYQ/edit).
 
-`devtools/` and `build/` are stand-alone directories.
+`build/` is a stand-alone directory.
 
 ### Type dependencies
 

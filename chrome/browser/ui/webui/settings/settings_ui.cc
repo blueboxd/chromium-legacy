@@ -47,6 +47,9 @@
 #include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -161,6 +164,10 @@ void SettingsUI::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kImportDialogSearchEngine, true);
 }
 
+web_app::AppRegistrar& GetRegistrarForProfile(Profile* profile) {
+  return web_app::WebAppProvider::Get(profile)->registrar();
+}
+
 SettingsUI::SettingsUI(content::WebUI* web_ui)
 #if defined(OS_CHROMEOS)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send =*/true),
@@ -206,7 +213,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ProtocolHandlersHandler>());
   AddSettingsPageUIHandler(std::make_unique<SearchEnginesHandler>(profile));
-  AddSettingsPageUIHandler(std::make_unique<SiteSettingsHandler>(profile));
+  AddSettingsPageUIHandler(std::make_unique<SiteSettingsHandler>(
+      profile, GetRegistrarForProfile(profile)));
   AddSettingsPageUIHandler(std::make_unique<StartupPagesHandler>(web_ui));
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysPINHandler>());
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysResetHandler>());

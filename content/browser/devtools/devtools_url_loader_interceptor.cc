@@ -26,6 +26,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 
@@ -161,6 +162,8 @@ using Modifications = DevToolsURLLoaderInterceptor::Modifications;
 using InterceptionStage = DevToolsURLLoaderInterceptor::InterceptionStage;
 using protocol::Response;
 using GlobalRequestId = std::tuple<int32_t, int32_t, int32_t>;
+using network::mojom::CredentialsMode;
+using network::mojom::FetchResponseType;
 
 class BodyReader : public mojo::DataPipeDrainer::Client {
  public:
@@ -355,6 +358,10 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   bool CanGetResponseBody(std::string* error_reason);
   bool StartJobAndMaybeNotify();
 
+  void UpdateCORSFlag();
+  network::mojom::FetchResponseType CalculateResponseTainting();
+  network::ResourceRequest GetResourceRequestForCookies();
+
   const std::string id_prefix_;
   const GlobalRequestId global_req_id_;
   const base::UnguessableToken frame_token_;
@@ -366,7 +373,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   std::unique_ptr<CreateLoaderParameters> create_loader_params_;
   const bool is_download_;
 
-  mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
   mojo::Receiver<network::mojom::URLLoader> loader_receiver_{this};
 
   network::mojom::URLLoaderClientPtr client_;
@@ -390,6 +397,8 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
 
   bool waiting_for_resolution_;
   int redirect_count_;
+  bool tainted_origin_ = false;
+  bool fetch_cors_flag_ = false;
   std::string current_id_;
 
   std::unique_ptr<BodyReader> body_reader_;
@@ -667,7 +676,6 @@ InterceptionJob::InterceptionJob(
       interceptor_(interceptor),
       create_loader_params_(std::move(create_loader_params)),
       is_download_(is_download),
-      client_binding_(this),
       client_(std::move(client)),
       target_factory_(std::move(target_factory)),
       cookie_manager_(std::move(cookie_manager)),
@@ -692,6 +700,7 @@ InterceptionJob::InterceptionJob(
 }
 
 bool InterceptionJob::StartJobAndMaybeNotify() {
+  UpdateCORSFlag();
   start_ticks_ = base::TimeTicks::Now();
   start_time_ = base::Time::Now();
 
@@ -711,6 +720,42 @@ bool InterceptionJob::StartJobAndMaybeNotify() {
     DCHECK_EQ(State::kNotStarted, state_);
   NotifyClient(BuildRequestInfo(nullptr));
   return true;
+}
+
+// FIXME(caseq): The logic in the three methods below is borrowed from
+// CorsURLLoader as a matter of a quick and mergeable fix for crbug.com/1022173.
+// This logic should be unified with CorsURLLoader.
+network::mojom::FetchResponseType InterceptionJob::CalculateResponseTainting() {
+  if (fetch_cors_flag_)
+    return FetchResponseType::kCors;
+  if (create_loader_params_->request.mode ==
+          network::mojom::RequestMode::kNoCors &&
+      tainted_origin_) {
+    return FetchResponseType::kOpaque;
+  }
+  return FetchResponseType::kBasic;
+}
+
+network::ResourceRequest InterceptionJob::GetResourceRequestForCookies() {
+  FetchResponseType response_tainting =
+      fetch_cors_flag_ ? FetchResponseType::kCors : FetchResponseType::kBasic;
+
+  network::ResourceRequest result = create_loader_params_->request;
+  result.credentials_mode =
+      network::cors::CalculateCredentialsFlag(
+          create_loader_params_->request.credentials_mode, response_tainting)
+          ? CredentialsMode::kInclude
+          : CredentialsMode::kOmit;
+  return result;
+}
+
+void InterceptionJob::UpdateCORSFlag() {
+  if (fetch_cors_flag_)
+    return;
+
+  const network::ResourceRequest& request = create_loader_params_->request;
+  fetch_cors_flag_ = network::cors::ShouldCheckCors(
+      request.url, request.request_initiator, request.mode);
 }
 
 bool InterceptionJob::CanGetResponseBody(std::string* error_reason) {
@@ -739,7 +784,7 @@ void InterceptionJob::GetResponseBody(
   if (!body_reader_) {
     body_reader_ = std::make_unique<BodyReader>(base::BindOnce(
         &InterceptionJob::ResponseBodyComplete, base::Unretained(this)));
-    client_binding_.ResumeIncomingMethodCallProcessing();
+    client_receiver_.Resume();
     loader_->ResumeReadingBodyFromNet();
   }
   body_reader_->AddCallback(std::move(callback));
@@ -758,7 +803,7 @@ void InterceptionJob::TakeResponseBodyPipe(
   DCHECK(!!response_metadata_);
   state_ = State::kResponseTaken;
   pending_response_body_pipe_callback_ = std::move(callback);
-  client_binding_.ResumeIncomingMethodCallProcessing();
+  client_receiver_.Resume();
   loader_->ResumeReadingBodyFromNet();
 }
 
@@ -875,7 +920,7 @@ Response InterceptionJob::InnerContinueRequest(
     client_->OnReceiveResponse(response_metadata_->head);
     response_metadata_.reset();
     loader_->ResumeReadingBodyFromNet();
-    client_binding_.ResumeIncomingMethodCallProcessing();
+    client_receiver_.Resume();
     return Response::OK();
   }
 
@@ -1009,7 +1054,7 @@ Response InterceptionJob::ProcessResponseOverride(
 
 void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
                                         base::OnceClosure callback) {
-  if (!create_loader_params_->request.SavesCookies()) {
+  if (!GetResourceRequestForCookies().SavesCookies()) {
     std::move(callback).Run();
     return;
   }
@@ -1120,8 +1165,8 @@ void InterceptionJob::StartRequest() {
   state_ = State::kRequestSent;
 
   network::mojom::URLLoaderClientPtr loader_client;
-  client_binding_.Bind(MakeRequest(&loader_client));
-  client_binding_.set_connection_error_handler(
+  client_receiver_.Bind(MakeRequest(&loader_client));
+  client_receiver_.set_disconnect_handler(
       base::BindOnce(&InterceptionJob::Shutdown, base::Unretained(this)));
 
   target_factory_->CreateLoaderAndStart(
@@ -1137,7 +1182,7 @@ void InterceptionJob::StartRequest() {
 void InterceptionJob::CancelRequest() {
   if (state_ == State::kNotStarted)
     return;
-  client_binding_.Close();
+  client_receiver_.reset();
   loader_.reset();
   if (body_reader_) {
     body_reader_->CancelWithError(
@@ -1167,7 +1212,7 @@ std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
 
 void InterceptionJob::FetchCookies(
     network::mojom::CookieManager::GetCookieListCallback callback) {
-  if (!create_loader_params_->request.SendsCookies()) {
+  if (!GetResourceRequestForCookies().SendsCookies()) {
     std::move(callback).Run({}, {});
     return;
   }
@@ -1224,8 +1269,8 @@ void InterceptionJob::FollowRedirect(
   // TODO(arthursonzogni, juncai): This seems to be correctly implemented, but
   // not used nor tested so far. Add tests and remove this DCHECK to support
   // this feature if needed. See https://crbug.com/845683.
-  DCHECK(removed_headers.empty() && modified_headers.IsEmpty())
-      << "Redirect with removed or modified headers is not supported yet. See "
+  DCHECK(removed_headers.empty())
+      << "Redirect with removed headers is not supported yet. See "
          "https://crbug.com/845683";
   DCHECK(!new_url.has_value()) << "Redirect with modified url was not "
                                   "supported yet. crbug.com/845683";
@@ -1233,6 +1278,12 @@ void InterceptionJob::FollowRedirect(
 
   network::ResourceRequest* request = &create_loader_params_->request;
   const net::RedirectInfo& info = *response_metadata_->redirect_info;
+  const auto current_origin = url::Origin::Create(request->url);
+  if (request->request_initiator &&
+      (!url::Origin::Create(info.new_url).IsSameOriginWith(current_origin) &&
+       !request->request_initiator->IsSameOriginWith(current_origin))) {
+    tainted_origin_ = true;
+  }
 
   bool clear_body = false;
   net::RedirectUtil::UpdateHttpRequest(request->url, request->method, info,
@@ -1246,6 +1297,8 @@ void InterceptionJob::FollowRedirect(
   request->referrer_policy = info.new_referrer_policy;
   request->referrer = GURL(info.new_referrer);
   response_metadata_.reset();
+
+  UpdateCORSFlag();
 
   if (interceptor_) {
     // Pretend that each redirect hop is a new request -- this is for
@@ -1294,7 +1347,7 @@ void InterceptionJob::OnReceiveResponse(
     return;
   }
   loader_->PauseReadingBodyFromNet();
-  client_binding_.PauseIncomingMethodCallProcessing();
+  client_receiver_.Pause();
 
   response_metadata_ = std::make_unique<ResponseMetadata>(head);
 
@@ -1375,9 +1428,9 @@ void InterceptionJob::OnComplete(
     return;
   }
   response_metadata_->status = status;
-  // No need to listen to the channel any more, so just close it, so if the pipe
+  // No need to listen to the channel any more, so just reset it, so if the pipe
   // is closed by the other end, |shutdown| isn't run.
-  client_binding_.Close();
+  client_receiver_.reset();
   loader_.reset();
 }
 

@@ -7,13 +7,15 @@
 
 #include <vector>
 
-#include "skia/public/mojom/image_info.mojom.h"
+#include "base/component_export.h"
+#include "skia/public/mojom/image_info.mojom-shared.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<skia::mojom::ImageInfoDataView, SkImageInfo> {
+struct COMPONENT_EXPORT(SKIA_SHARED_TRAITS)
+    StructTraits<skia::mojom::ImageInfoDataView, SkImageInfo> {
   static skia::mojom::ColorType color_type(const SkImageInfo& info);
   static skia::mojom::AlphaType alpha_type(const SkImageInfo& info);
   static std::vector<uint8_t> serialized_color_space(const SkImageInfo& info);

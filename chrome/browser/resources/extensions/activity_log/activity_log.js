@@ -37,140 +37,140 @@ const ActivityLogSubpage = {
   STREAM: 1
 };
 
+/**
+ * A struct used as a placeholder for chrome.developerPrivate.ExtensionInfo
+ * for this component if the extensionId from the URL does not correspond to
+ * installed extension.
+ * @typedef {{
+ *   id: string,
+ *   isPlaceholder: boolean,
+ * }}
+ */
+export let ActivityLogExtensionPlaceholder;
+
+Polymer({
+  is: 'extensions-activity-log',
+
+  _template: html`{__html_template__}`,
+
+  behaviors: [
+    CrContainerShadowBehavior,
+    I18nBehavior,
+    ItemBehavior,
+  ],
+
+  properties: {
+    /**
+     * The underlying ExtensionInfo for the details being displayed.
+     * @type {!chrome.developerPrivate.ExtensionInfo|
+     *        !ActivityLogExtensionPlaceholder}
+     */
+    extensionInfo: Object,
+
+    /** @type {!ActivityLogDelegate} */
+    delegate: Object,
+
+    /** @private {!ActivityLogSubpage} */
+    selectedSubpage_: {
+      type: Number,
+      value: ActivityLogSubpage.NONE,
+      observer: 'onSelectedSubpageChanged_',
+    },
+
+    /** @private {Array<string>} */
+    tabNames_: {
+      type: Array,
+      value: () => ([
+        loadTimeData.getString('activityLogHistoryTabHeading'),
+        loadTimeData.getString('activityLogStreamTabHeading'),
+      ]),
+    }
+  },
+
+  listeners: {
+    'view-enter-start': 'onViewEnterStart_',
+    'view-exit-finish': 'onViewExitFinish_',
+  },
+
   /**
-   * A struct used as a placeholder for chrome.developerPrivate.ExtensionInfo
-   * for this component if the extensionId from the URL does not correspond to
-   * installed extension.
-   * @typedef {{
-   *   id: string,
-   *   isPlaceholder: boolean,
-   * }}
+   * Focuses the back button when page is loaded and set the activie view to
+   * be HISTORY when we navigate to the page.
+   * @private
    */
-  export let ActivityLogExtensionPlaceholder;
+  onViewEnterStart_: function() {
+    this.selectedSubpage_ = ActivityLogSubpage.HISTORY;
+    afterNextRender(this, () => focusWithoutInk(this.$.closeButton));
+  },
 
-  Polymer({
-    is: 'extensions-activity-log',
+  /**
+   * Set |selectedSubpage_| to NONE to remove the active view from the DOM.
+   * @private
+   */
+  onViewExitFinish_: function() {
+    this.selectedSubpage_ = ActivityLogSubpage.NONE;
+    // clear the stream if the user is exiting the activity log page.
+    const activityLogStream = this.$$('activity-log-stream');
+    if (activityLogStream) {
+      activityLogStream.clearStream();
+    }
+  },
 
-    _template: html`{__html_template__}`,
+  /**
+   * @private
+   * @return {string}
+   */
+  getActivityLogHeading_: function() {
+    const headingName = this.extensionInfo.isPlaceholder ?
+        this.i18n('missingOrUninstalledExtension') :
+        this.extensionInfo.name;
+    return this.i18n('activityLogPageHeading', headingName);
+  },
 
-    behaviors: [
-      CrContainerShadowBehavior,
-      I18nBehavior,
-      ItemBehavior,
-    ],
+  /**
+   * @private
+   * @return {boolean}
+   */
+  isHistoryTabSelected_: function() {
+    return this.selectedSubpage_ === ActivityLogSubpage.HISTORY;
+  },
 
-    properties: {
-      /**
-       * The underlying ExtensionInfo for the details being displayed.
-       * @type {!chrome.developerPrivate.ExtensionInfo|
-       *        !ActivityLogExtensionPlaceholder}
-       */
-      extensionInfo: Object,
+  /**
+   * @private
+   * @return {boolean}
+   */
+  isStreamTabSelected_: function() {
+    return this.selectedSubpage_ === ActivityLogSubpage.STREAM;
+  },
 
-      /** @type {!ActivityLogDelegate} */
-      delegate: Object,
-
-      /** @private {!ActivityLogSubpage} */
-      selectedSubpage_: {
-        type: Number,
-        value: ActivityLogSubpage.NONE,
-        observer: 'onSelectedSubpageChanged_',
-      },
-
-      /** @private {Array<string>} */
-      tabNames_: {
-        type: Array,
-        value: () => ([
-          loadTimeData.getString('activityLogHistoryTabHeading'),
-          loadTimeData.getString('activityLogStreamTabHeading'),
-        ]),
+  /**
+   * @private
+   * @param {!ActivityLogSubpage} newTab
+   * @param {!ActivityLogSubpage} oldTab
+   */
+  onSelectedSubpageChanged_: function(newTab, oldTab) {
+    const activityLogStream = this.$$('activity-log-stream');
+    if (activityLogStream) {
+      if (newTab === ActivityLogSubpage.STREAM) {
+        // Start the stream if the user is switching to the real-time tab.
+        // This will not handle the first tab switch to the real-time tab as
+        // the stream has not been attached to the DOM yet, and is handled
+        // instead by the stream's |attached| method.
+        activityLogStream.startStream();
+      } else if (oldTab === ActivityLogSubpage.STREAM) {
+        // Pause the stream if the user is navigating away from the real-time
+        // tab.
+        activityLogStream.pauseStream();
       }
-    },
+    }
+  },
 
-    listeners: {
-      'view-enter-start': 'onViewEnterStart_',
-      'view-exit-finish': 'onViewExitFinish_',
-    },
-
-    /**
-     * Focuses the back button when page is loaded and set the activie view to
-     * be HISTORY when we navigate to the page.
-     * @private
-     */
-    onViewEnterStart_: function() {
-      this.selectedSubpage_ = ActivityLogSubpage.HISTORY;
-      afterNextRender(this, () => focusWithoutInk(this.$.closeButton));
-    },
-
-    /**
-     * Set |selectedSubpage_| to NONE to remove the active view from the DOM.
-     * @private
-     */
-    onViewExitFinish_: function() {
-      this.selectedSubpage_ = ActivityLogSubpage.NONE;
-      // clear the stream if the user is exiting the activity log page.
-      const activityLogStream = this.$$('activity-log-stream');
-      if (activityLogStream) {
-        activityLogStream.clearStream();
-      }
-    },
-
-    /**
-     * @private
-     * @return {string}
-     */
-    getActivityLogHeading_: function() {
-      const headingName = this.extensionInfo.isPlaceholder ?
-          this.i18n('missingOrUninstalledExtension') :
-          this.extensionInfo.name;
-      return this.i18n('activityLogPageHeading', headingName);
-    },
-
-    /**
-     * @private
-     * @return {boolean}
-     */
-    isHistoryTabSelected_: function() {
-      return this.selectedSubpage_ === ActivityLogSubpage.HISTORY;
-    },
-
-    /**
-     * @private
-     * @return {boolean}
-     */
-    isStreamTabSelected_: function() {
-      return this.selectedSubpage_ === ActivityLogSubpage.STREAM;
-    },
-
-    /**
-     * @private
-     * @param {!ActivityLogSubpage} newTab
-     * @param {!ActivityLogSubpage} oldTab
-     */
-    onSelectedSubpageChanged_: function(newTab, oldTab) {
-      const activityLogStream = this.$$('activity-log-stream');
-      if (activityLogStream) {
-        if (newTab === ActivityLogSubpage.STREAM) {
-          // Start the stream if the user is switching to the real-time tab.
-          // This will not handle the first tab switch to the real-time tab as
-          // the stream has not been attached to the DOM yet, and is handled
-          // instead by the stream's |attached| method.
-          activityLogStream.startStream();
-        } else if (oldTab === ActivityLogSubpage.STREAM) {
-          // Pause the stream if the user is navigating away from the real-time
-          // tab.
-          activityLogStream.pauseStream();
-        }
-      }
-    },
-
-    /** @private */
-    onCloseButtonTap_: function() {
-      if (this.extensionInfo.isPlaceholder) {
-        navigation.navigateTo({page: Page.LIST});
-      } else {
-        navigation.navigateTo(
-            {page: Page.DETAILS, extensionId: this.extensionInfo.id});
-      }
-    },
-  });
+  /** @private */
+  onCloseButtonTap_: function() {
+    if (this.extensionInfo.isPlaceholder) {
+      navigation.navigateTo({page: Page.LIST});
+    } else {
+      navigation.navigateTo(
+          {page: Page.DETAILS, extensionId: this.extensionInfo.id});
+    }
+  },
+});

@@ -27,13 +27,6 @@ interface XRRuntimeEventListener {
   // A device has changed its display information.
   OnDisplayInfoChanged(device.mojom.VRDisplayInfo display_info);
 
-  // A device has indicated that it is in use.
-  OnDeviceActivated(device.mojom.VRDisplayEventReason reason) =>
-      (bool will_not_present);
-
-  // A device has indicated that it is idle.
-  OnDeviceIdle(device.mojom.VRDisplayEventReason reason);
-
   // A device has indicated that the visibility of the content it's displaying
   // has changed.
   OnVisibilityStateChanged(device.mojom.XRVisibilityState visibility_state);
@@ -87,8 +80,6 @@ interface XRRuntime {
   // won't install GVR runtime; it will be installed in
   // GvrDevice::RequestSession().
   EnsureInitialized() => ();
-
-  SetListeningForActivate(bool listen_for_activation);
 
   SetInlinePosesEnabled(bool enable);
 };

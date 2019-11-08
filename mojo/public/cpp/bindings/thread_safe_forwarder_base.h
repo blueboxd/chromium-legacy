@@ -24,14 +24,14 @@ namespace mojo {
 class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) ThreadSafeForwarderBase
     : public MessageReceiverWithResponder {
  public:
-  using ForwardMessageCallback = base::Callback<void(Message)>;
+  using ForwardMessageCallback = base::RepeatingCallback<void(Message)>;
   using ForwardMessageWithResponderCallback =
-      base::Callback<void(Message, std::unique_ptr<MessageReceiver>)>;
+      base::RepeatingCallback<void(Message, std::unique_ptr<MessageReceiver>)>;
 
   ThreadSafeForwarderBase(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const ForwardMessageCallback& forward,
-      const ForwardMessageWithResponderCallback& forward_with_responder,
+      ForwardMessageCallback forward,
+      ForwardMessageWithResponderCallback forward_with_responder,
       const AssociatedGroup& associated_group);
 
   ~ThreadSafeForwarderBase() override;

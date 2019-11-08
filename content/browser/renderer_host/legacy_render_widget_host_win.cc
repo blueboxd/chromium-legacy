@@ -14,6 +14,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 #include "content/browser/renderer_host/direct_manipulation_helper_win.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
@@ -151,8 +152,7 @@ bool LegacyRenderWidgetHostHWND::Init() {
     // element B, then ask element B for its fragment root, without having sent
     // WM_GETOBJECT to element B's window. So we create the fragment root now to
     // ensure it's ready if asked for.
-    ax_fragment_root_ =
-        std::make_unique<ui::AXFragmentRootWin>(hwnd(), this, true);
+    ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(hwnd(), this);
     hr = S_OK;
   }
 
@@ -550,7 +550,41 @@ LegacyRenderWidgetHostHWND::GetOrCreateBrowserAccessibilityRoot() {
   if (!manager || !manager->GetRoot())
     return nullptr;
 
-  return manager->GetRoot()->GetNativeViewAccessible();
+  BrowserAccessibility* root_node = manager->GetRoot();
+
+  // A datetime popup will have a second window with its own kRootWebArea.
+  // However, the BrowserAccessibilityManager is shared with the main window,
+  // and the popup window's kRootWebArea will be inserted as a sibling of the
+  // popup button. When this is called on a popup, we must return the popup
+  // window's kRootWebArea instead of the root document's kRootWebArea. This
+  // will ensure that we're not placing duplicate document roots in the
+  // accessibility tree.
+  if (host_->GetWidgetType() == WidgetType::kPopup) {
+    OneShotAccessibilityTreeSearch tree_search(root_node);
+    tree_search.SetStartNode(root_node);
+    tree_search.SetDirection(OneShotAccessibilityTreeSearch::FORWARDS);
+    tree_search.SetImmediateDescendantsOnly(false);
+    tree_search.SetCanWrapToLastElement(false);
+    tree_search.AddPredicate(AccessibilityPopupButtonPredicate);
+
+    size_t matches = tree_search.CountMatches();
+    for (size_t i = 0; i < matches; ++i) {
+      BrowserAccessibility* match = tree_search.GetMatchAtIndex(i);
+      DCHECK(match);
+
+      // The web root should be the next sibling of the popup node, however it
+      // is not created instantly, so sometimes the popup window exists before
+      // the popup's kRootWebArea has been added to the tree. In this case we
+      // will fall back to the main document's root.
+      BrowserAccessibility* popup_web_root = match->PlatformGetNextSibling();
+      if (popup_web_root &&
+          popup_web_root->GetRole() == ax::mojom::Role::kRootWebArea) {
+        return popup_web_root->GetNativeViewAccessible();
+      }
+    }
+  }
+
+  return root_node->GetNativeViewAccessible();
 }
 
 }  // namespace content

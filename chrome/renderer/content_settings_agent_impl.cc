@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/client_hints.mojom.h"
 #include "chrome/common/client_hints/client_hints.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/ssl_insecure_content.h"
@@ -20,6 +19,7 @@
 #include "components/content_settings/core/common/content_settings.mojom.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "content/public/common/client_hints.mojom.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
@@ -125,9 +125,7 @@ ContentSettingsAgentImpl::ContentSettingsAgentImpl(
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&ContentSettingsAgentImpl::OnContentSettingsAgentRequest,
                  base::Unretained(this)));
-
-  render_frame->GetBrowserInterfaceBroker()->GetInterface(
-      content_settings_manager_.BindNewPipeAndPassReceiver());
+  EnsureContentSettingsManagerConnection();
 
   content::RenderFrame* main_frame =
       render_frame->GetRenderView()->GetMainRenderFrame();
@@ -146,6 +144,16 @@ ContentSettingsAgentImpl::ContentSettingsAgentImpl(
 }
 
 ContentSettingsAgentImpl::~ContentSettingsAgentImpl() {}
+
+void ContentSettingsAgentImpl::EnsureContentSettingsManagerConnection() {
+  if (content_settings_manager_.is_bound() &&
+      content_settings_manager_.is_connected())
+    return;
+
+  content_settings_manager_.reset();
+  render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+      content_settings_manager_.BindNewPipeAndPassReceiver());
+}
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void ContentSettingsAgentImpl::SetExtensionDispatcher(
@@ -203,6 +211,8 @@ void ContentSettingsAgentImpl::DidCommitProvisionalLoad(
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (frame->Parent())
     return;  // Not a top-level navigation.
+
+  EnsureContentSettingsManagerConnection();
 
   if (!is_same_document_navigation) {
     // Clear "block" flags for the new page. This needs to happen before any of

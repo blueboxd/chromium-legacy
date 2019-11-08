@@ -528,8 +528,7 @@ const Report = {
     let pathParser = new PathParser(path);
     let html = `
     <div class='expect' tabindex='0' data-id='${test.expectId}'>
-      <div class='details'></div>${Report.printFlag(test)}
-     ${pathParser.dir}<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}${pathParser.query}</a>
+      <div class='details'></div>${Report.printFlag(test)}${pathParser.dir}<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}${pathParser.query}</a>
     </div>`;
     traversal.html.push(html);
   },

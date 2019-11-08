@@ -6,7 +6,7 @@
 
 [
     Constructor(DOMString message),
-    RuntimeEnabled=WebGPU
+    Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUValidationError {
     readonly attribute DOMString message;
 };

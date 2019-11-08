@@ -323,6 +323,12 @@ class SSLClientSocketImpl::SSLContext {
         ssl_ctx_.get(), TLSEXT_cert_compression_brotli,
         nullptr /* compression not supported */, DecompressBrotliCert);
 #endif
+
+    if (base::FeatureList::IsEnabled(features::kPostQuantumCECPQ2)) {
+      static const int kCurves[] = {NID_CECPQ2, NID_X25519,
+                                    NID_X9_62_prime256v1, NID_secp384r1};
+      SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
+    }
   }
 
   static int ClientCertRequestCallback(SSL* ssl, void* arg) {

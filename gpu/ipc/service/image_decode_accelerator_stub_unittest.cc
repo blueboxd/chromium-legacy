@@ -73,6 +73,11 @@ class MemoryTracker;
 
 namespace {
 
+struct ExpectedCacheEntry {
+  uint32_t id = 0u;
+  SkISize dimensions;
+};
+
 std::unique_ptr<MemoryTracker> CreateMockMemoryTracker(
     const GPUCreateCommandBufferConfig& init_params) {
   return std::make_unique<gles2::MockMemoryTracker>();
@@ -204,8 +209,7 @@ class ImageDecodeAcceleratorStubTest
 
   int GetRasterDecoderId() {
     GpuChannel* channel = channel_manager()->LookupChannel(kChannelId);
-    if (!channel)
-      return -1;
+    DCHECK(channel);
     CommandBufferStub* command_buffer =
         channel->LookupCommandBuffer(kCommandBufferRouteId);
     if (!command_buffer || !command_buffer->decoder_context())
@@ -283,7 +287,7 @@ class ImageDecodeAcceleratorStubTest
                                        scoped_refptr<Buffer> buffer,
                                        uint64_t handle_release_count) {
     GpuChannel* channel = channel_manager()->LookupChannel(kChannelId);
-    CHECK(channel);
+    DCHECK(channel);
     CommandBufferStub* command_buffer =
         channel->LookupCommandBuffer(kCommandBufferRouteId);
     CHECK(command_buffer);
@@ -295,12 +299,11 @@ class ImageDecodeAcceleratorStubTest
   // the raster sequence) to register the handle's buffer and release the sync
   // token corresponding to |handle_release_count| (see the
   // RegisterDiscardableHandleBuffer() method). Returns an invalid handle if the
-  // GPU channel or the command buffer doesn't exist.
+  // command buffer doesn't exist.
   ClientDiscardableHandle CreateDiscardableHandle(
       uint64_t handle_release_count) {
     GpuChannel* channel = channel_manager()->LookupChannel(kChannelId);
-    if (!channel)
-      return ClientDiscardableHandle();
+    DCHECK(channel);
     CommandBufferStub* command_buffer =
         channel->LookupCommandBuffer(kCommandBufferRouteId);
     if (!command_buffer)
@@ -324,20 +327,14 @@ class ImageDecodeAcceleratorStubTest
   // (|decode_release_count|), the transfer cache entry ID
   // (|transfer_cache_entry_id|), and the release count of the sync token that
   // is signaled after the discardable handle's buffer has been registered in
-  // the TransferBufferManager. If the channel does not exist or the discardable
-  // handle can't be created, this function returns an empty sync token.
+  // the TransferBufferManager. If the discardable handle can't be created, this
+  // function returns an empty sync token.
   SyncToken SendDecodeRequest(const gfx::Size& output_size,
                               uint64_t decode_release_count,
                               uint32_t transfer_cache_entry_id,
                               uint64_t handle_release_count) {
     GpuChannel* channel = channel_manager()->LookupChannel(kChannelId);
-    if (!channel) {
-      // It's possible that the channel was destroyed as part of an earlier
-      // SendDecodeRequest() call. This would happen if
-      // ImageDecodeAcceleratorStub::OnScheduleImageDecode decides to destroy
-      // the channel.
-      return SyncToken();
-    }
+    DCHECK(channel);
 
     // Create the decode sync token for the decode request so that we can test
     // that it's actually released.
@@ -383,7 +380,8 @@ class ImageDecodeAcceleratorStubTest
     }
   }
 
-  void CheckTransferCacheEntries(std::vector<SkISize> expected_sizes) {
+  void CheckTransferCacheEntries(
+      const std::vector<ExpectedCacheEntry>& expected_entries) {
     ServiceTransferCache* transfer_cache = GetServiceTransferCache();
     ASSERT_TRUE(transfer_cache);
 
@@ -391,8 +389,8 @@ class ImageDecodeAcceleratorStubTest
     // expected.
     const size_t num_actual_cache_entries =
         transfer_cache->entries_count_for_testing();
-    ASSERT_EQ(expected_sizes.size(), num_actual_cache_entries);
-    if (expected_sizes.empty())
+    ASSERT_EQ(expected_entries.size(), num_actual_cache_entries);
+    if (expected_entries.empty())
       return;
 
     // Then, check the dimensions of the entries to make sure they are as
@@ -402,7 +400,8 @@ class ImageDecodeAcceleratorStubTest
     for (size_t i = 0; i < num_actual_cache_entries; i++) {
       auto* decode_entry = static_cast<cc::ServiceImageTransferCacheEntry*>(
           transfer_cache->GetEntry(ServiceTransferCache::EntryKey(
-              raster_decoder_id, cc::TransferCacheEntryType::kImage, i + 1)));
+              raster_decoder_id, cc::TransferCacheEntryType::kImage,
+              expected_entries[i].id)));
       ASSERT_TRUE(decode_entry);
       ASSERT_EQ(gfx::NumberOfPlanesForLinearBufferFormat(GetParam()),
                 decode_entry->plane_images().size());
@@ -412,9 +411,9 @@ class ImageDecodeAcceleratorStubTest
         EXPECT_TRUE(decode_entry->plane_images()[plane]->isTextureBacked());
       }
       ASSERT_TRUE(decode_entry->image());
-      EXPECT_EQ(expected_sizes[i].width(),
+      EXPECT_EQ(expected_entries[i].dimensions.width(),
                 decode_entry->image()->dimensions().width());
-      EXPECT_EQ(expected_sizes[i].height(),
+      EXPECT_EQ(expected_entries[i].dimensions.height(),
                 decode_entry->image()->dimensions().height());
     }
   }
@@ -471,11 +470,9 @@ TEST_P(ImageDecodeAcceleratorStubTest,
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
 
-  // The channel should still exist at the end.
-  EXPECT_TRUE(channel_manager()->LookupChannel(kChannelId));
-
   // Check that the decoded images are in the transfer cache.
-  CheckTransferCacheEntries({SkISize::Make(100, 100), SkISize::Make(200, 200)});
+  CheckTransferCacheEntries(
+      {{1u, SkISize::Make(100, 100)}, {2u, SkISize::Make(200, 200)}});
 }
 
 // Tests the following flow: three decode requests are sent. The first decode
@@ -521,18 +518,14 @@ TEST_P(ImageDecodeAcceleratorStubTest,
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode3_sync_token));
 
-  // The channel should still exist at the end.
-  EXPECT_TRUE(channel_manager()->LookupChannel(kChannelId));
-
   // Check that the decoded images are in the transfer cache.
-  CheckTransferCacheEntries({SkISize::Make(100, 100), SkISize::Make(200, 200),
-                             SkISize::Make(300, 300)});
+  CheckTransferCacheEntries({{1u, SkISize::Make(100, 100)},
+                             {2u, SkISize::Make(200, 200)},
+                             {3u, SkISize::Make(300, 300)}});
 }
 
 // Tests the following flow: three decode requests are sent. The first decode
-// fails which should trigger the destruction of the channel. The second
-// succeeds and the third one fails. Regardless, the channel should still be
-// destroyed and all sync tokens should be released.
+// fails, the second succeeds, and the third one fails.
 TEST_P(ImageDecodeAcceleratorStubTest, FailedDecodes) {
   {
     InSequence call_sequence;
@@ -561,25 +554,29 @@ TEST_P(ImageDecodeAcceleratorStubTest, FailedDecodes) {
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode3_sync_token));
+
+  // All decode sync tokens should be released after completing all the decodes.
   image_decode_accelerator_worker_.FinishOneDecode(false);
   image_decode_accelerator_worker_.FinishOneDecode(true);
   image_decode_accelerator_worker_.FinishOneDecode(false);
-
-  // We expect the destruction of the ImageDecodeAcceleratorStub, which also
-  // implies that all decode sync tokens should be released.
   RunTasksUntilIdle();
-  EXPECT_FALSE(channel_manager()->LookupChannel(kChannelId));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode3_sync_token));
 
-  // We expect no entries in the transfer cache.
-  CheckTransferCacheEntries({});
+  // There should only be one image in the transfer cache (the one that
+  // succeeded).
+  CheckTransferCacheEntries({{2u, SkISize::Make(200, 200)}});
 }
 
 TEST_P(ImageDecodeAcceleratorStubTest, OutOfOrderDecodeSyncTokens) {
-  EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
-      .Times(1);
+  {
+    InSequence call_sequence;
+    EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
+        .Times(1);
+    EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(200, 200)))
+        .Times(1);
+  }
   const SyncToken decode1_sync_token = SendDecodeRequest(
       gfx::Size(100, 100) /* output_size */, 2u /* decode_release_count */,
       1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
@@ -590,62 +587,87 @@ TEST_P(ImageDecodeAcceleratorStubTest, OutOfOrderDecodeSyncTokens) {
       2u /* transfer_cache_entry_id */, 2u /* handle_release_count */);
   ASSERT_TRUE(decode2_sync_token.HasData());
 
-  // We expect the destruction of the ImageDecodeAcceleratorStub, which also
-  // implies that all decode sync tokens should be released.
+  // A decode sync token should not be released before a decode is finished.
   RunTasksUntilIdle();
-  EXPECT_FALSE(channel_manager()->LookupChannel(kChannelId));
+  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
+  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
+
+  // Since the sync tokens are out of order, releasing the first one should also
+  // release the second one.
+  image_decode_accelerator_worker_.FinishOneDecode(true);
+  RunTasksUntilIdle();
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
 
-  // We expect no entries in the transfer cache.
-  CheckTransferCacheEntries({});
+  // We only expect the first image in the transfer cache.
+  CheckTransferCacheEntries({{1u, SkISize::Make(100, 100)}});
+
+  // Finishing the second decode should not "unrelease" the first sync token.
+  image_decode_accelerator_worker_.FinishOneDecode(true);
+  RunTasksUntilIdle();
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
+  CheckTransferCacheEntries(
+      {{1u, SkISize::Make(100, 100)}, {2u, SkISize::Make(200, 200)}});
 }
 
 TEST_P(ImageDecodeAcceleratorStubTest, ZeroReleaseCountDecodeSyncToken) {
+  EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
+      .Times(1);
   const SyncToken decode_sync_token = SendDecodeRequest(
       gfx::Size(100, 100) /* output_size */, 0u /* decode_release_count */,
       1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
   ASSERT_TRUE(decode_sync_token.HasData());
 
-  // We expect the destruction of the ImageDecodeAcceleratorStub, which also
-  // implies that all decode sync tokens should be released.
+  // A zero-release count sync token is always considered released.
   RunTasksUntilIdle();
-  EXPECT_FALSE(channel_manager()->LookupChannel(kChannelId));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
 
-  // We expect no entries in the transfer cache.
-  CheckTransferCacheEntries({});
+  // Even though the release count is not really valid, we can still finish the
+  // decode.
+  image_decode_accelerator_worker_.FinishOneDecode(true);
+  RunTasksUntilIdle();
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
+  CheckTransferCacheEntries({{1u, SkISize::Make(100, 100)}});
 }
 
 TEST_P(ImageDecodeAcceleratorStubTest, ZeroWidthOutputSize) {
+  EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(0, 100)))
+      .Times(1);
   const SyncToken decode_sync_token = SendDecodeRequest(
       gfx::Size(0, 100) /* output_size */, 1u /* decode_release_count */,
       1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
   ASSERT_TRUE(decode_sync_token.HasData());
 
-  // We expect the destruction of the ImageDecodeAcceleratorStub, which also
-  // implies that all decode sync tokens should be released.
+  // A decode sync token should not be released before a decode is finished.
   RunTasksUntilIdle();
-  EXPECT_FALSE(channel_manager()->LookupChannel(kChannelId));
-  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
+  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
 
-  // We expect no entries in the transfer cache.
+  // Even though the output size is not valid, we can still finish the decode.
+  // We just shouldn't get any entries in the transfer cache.
+  image_decode_accelerator_worker_.FinishOneDecode(true);
+  RunTasksUntilIdle();
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
   CheckTransferCacheEntries({});
 }
 
 TEST_P(ImageDecodeAcceleratorStubTest, ZeroHeightOutputSize) {
+  EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 0)))
+      .Times(1);
   const SyncToken decode_sync_token = SendDecodeRequest(
       gfx::Size(100, 0) /* output_size */, 1u /* decode_release_count */,
       1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
   ASSERT_TRUE(decode_sync_token.HasData());
 
-  // We expect the destruction of the ImageDecodeAcceleratorStub, which also
-  // implies that all decode sync tokens should be released.
+  // A decode sync token should not be released before a decode is finished.
   RunTasksUntilIdle();
-  EXPECT_FALSE(channel_manager()->LookupChannel(kChannelId));
-  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
+  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
 
-  // We expect no entries in the transfer cache.
+  // Even though the output size is not valid, we can still finish the decode.
+  // We just shouldn't get any entries in the transfer cache.
+  image_decode_accelerator_worker_.FinishOneDecode(true);
+  RunTasksUntilIdle();
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
   CheckTransferCacheEntries({});
 }
 
@@ -683,14 +705,6 @@ TEST_P(ImageDecodeAcceleratorStubTest, WaitForDiscardableHandleRegistration) {
   RunTasksUntilIdle();
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
 
-  // Let's make sure that the channel and the command buffer are still alive
-  // because if we didn't wait for the discardable handle's buffer to be
-  // registered, we could have caused a channel teardown.
-  ASSERT_TRUE(channel_manager()->LookupChannel(kChannelId));
-  ASSERT_TRUE(channel_manager()
-                  ->LookupChannel(kChannelId)
-                  ->LookupCommandBuffer(kCommandBufferRouteId));
-
   // Now let's register the discardable handle's buffer by re-enabling the
   // raster sequence. This should trigger the processing of the completed decode
   // and the subsequent release of the decode sync token.
@@ -698,11 +712,8 @@ TEST_P(ImageDecodeAcceleratorStubTest, WaitForDiscardableHandleRegistration) {
   RunTasksUntilIdle();
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
 
-  // The channel should still exist at the end.
-  EXPECT_TRUE(channel_manager()->LookupChannel(kChannelId));
-
   // Check that the decoded images are in the transfer cache.
-  CheckTransferCacheEntries({SkISize::Make(100, 100)});
+  CheckTransferCacheEntries({{1u, SkISize::Make(100, 100)}});
 }
 
 // TODO(andrescj): test the deletion of transfer cache entries.

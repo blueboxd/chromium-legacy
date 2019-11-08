@@ -1,6 +1,4 @@
 document
 ++group
 ++++img
-++++img
-++++img
 ++++img Name='full'

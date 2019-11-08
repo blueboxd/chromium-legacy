@@ -2074,6 +2074,10 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
   // external viewport to be set otherwise.
   DCHECK(active_tree_->internal_device_viewport().origin().IsOrigin());
 
+#if DCHECK_IS_ON()
+  base::AutoReset<bool> reset_sync_draw(&doing_sync_draw_, true);
+#endif
+
   if (skip_draw) {
     client_->OnDrawForLayerTreeFrameSink(resourceless_software_draw_, true);
     return;
@@ -2296,6 +2300,21 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   layer_tree_frame_sink_->SubmitCompositorFrame(
       std::move(compositor_frame),
       /*hit_test_data_changed=*/false, debug_state_.show_hit_test_borders);
+
+#if DCHECK_IS_ON()
+  if (!doing_sync_draw_) {
+    // The throughput computation (in |FrameSequenceTracker|) depends on the
+    // compositor-frame submission to happen while a BeginFrameArgs is 'active'
+    // (i.e. between calls to WillBeginImplFrame() and DidFinishImplFrame()).
+    // Verify that this is the case.
+    // No begin-frame is available when doing sync draws, so avoid doing this
+    // check in that case.
+    const auto& bfargs = current_begin_frame_tracker_.Current();
+    const auto& ack = compositor_frame.metadata.begin_frame_ack;
+    DCHECK_EQ(bfargs.source_id, ack.source_id);
+    DCHECK_EQ(bfargs.sequence_number, ack.sequence_number);
+  }
+#endif
 
   frame_trackers_.NotifySubmitFrame(
       compositor_frame.metadata.frame_token, frame->has_missing_content,

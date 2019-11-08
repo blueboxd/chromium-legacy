@@ -52,9 +52,10 @@ class ProtocolHandlerRegistry : public KeyedService {
     virtual bool IsExternalHandlerRegistered(const std::string& protocol);
     virtual void RegisterWithOSAsDefaultClient(
         const std::string& protocol,
-        ProtocolHandlerRegistry* registry);
-    virtual void CheckDefaultClientWithOS(const std::string& protocol,
-                                          ProtocolHandlerRegistry* registry);
+        shell_integration::DefaultWebClientWorkerCallback callback);
+    virtual void CheckDefaultClientWithOS(
+        const std::string& protocol,
+        shell_integration::DefaultWebClientWorkerCallback callback);
   };
 
   class Observer : public base::CheckedObserver {
@@ -194,11 +195,6 @@ class ProtocolHandlerRegistry : public KeyedService {
   // load command was issued, otherwise the command will be ignored.
   void AddPredefinedHandler(const ProtocolHandler& handler);
 
-  // Gets the callback for DefaultProtocolClientWorker. Allows the Delegate to
-  // create the worker on behalf of ProtocolHandlerRegistry.
-  shell_integration::DefaultWebClientWorkerCallback GetDefaultWebClientCallback(
-      const std::string& protocol);
-
  private:
   friend class base::DeleteHelper<ProtocolHandlerRegistry>;
   friend struct content::BrowserThread::DeleteOnThread<
@@ -293,6 +289,10 @@ class ProtocolHandlerRegistry : public KeyedService {
   void OnSetAsDefaultProtocolClientFinished(
       const std::string& protocol,
       shell_integration::DefaultWebClientState state);
+
+  // Gets the callback for DefaultProtocolClientWorker.
+  shell_integration::DefaultWebClientWorkerCallback GetDefaultWebClientCallback(
+      const std::string& protocol);
 
   // Map from protocols (strings) to protocol handlers.
   ProtocolHandlerMultiMap protocol_handlers_;

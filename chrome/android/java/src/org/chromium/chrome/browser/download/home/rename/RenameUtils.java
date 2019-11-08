@@ -11,7 +11,7 @@ import org.chromium.base.annotations.NativeMethods;
  * A class containing some utility static methods for rename.
  */
 public class RenameUtils {
-    static private boolean sIsDisabledNativeForTesting;
+    private static boolean sIsDisabledNativeForTesting;
 
     /**
      * Determine the extension of a downloaded item.

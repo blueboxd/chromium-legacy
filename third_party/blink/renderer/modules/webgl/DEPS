@@ -5,4 +5,5 @@ include_rules = [
     "+gpu/command_buffer/common/capabilities.h",
     "+gpu/config/gpu_feature_info.h",
     "+skia/ext",
+    "+ui/gl/gpu_preference.h",
 ]

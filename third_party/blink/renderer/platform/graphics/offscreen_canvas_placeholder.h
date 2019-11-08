@@ -12,6 +12,7 @@
 #include "components/viz/common/resources/resource_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/skia/include/core/SkFilterQuality.h"
 
 namespace blink {
 
@@ -24,11 +25,12 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
  public:
   ~OffscreenCanvasPlaceholder();
 
-  virtual void SetOffscreenCanvasFrame(
-      scoped_refptr<CanvasResource>,
+  virtual void SetOffscreenCanvasResource(scoped_refptr<CanvasResource>,
+                                          viz::ResourceId resource_id);
+  void SetOffscreenCanvasDispatcher(
       base::WeakPtr<CanvasResourceDispatcher>,
-      scoped_refptr<base::SingleThreadTaskRunner>,
-      viz::ResourceId resource_id);
+      scoped_refptr<base::SingleThreadTaskRunner>);
+
   void ReleaseOffscreenCanvasFrame();
 
   void SetSuspendOffscreenCanvasAnimation(bool);
@@ -45,6 +47,8 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
   bool IsOffscreenCanvasRegistered() const {
     return placeholder_id_ != kNoPlaceholderId;
   }
+
+  void UpdateOffscreenCanvasFilterQuality(SkFilterQuality filter_quality);
 
  private:
   bool PostSetSuspendAnimationToOffscreenCanvasThread(bool suspend);
@@ -67,6 +71,7 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
     kShouldActivateAnimation,
   };
   AnimationState animation_state_ = kActiveAnimation;
+  base::Optional<SkFilterQuality> filter_quality_ = base::nullopt;
 };
 
 }  // namespace blink

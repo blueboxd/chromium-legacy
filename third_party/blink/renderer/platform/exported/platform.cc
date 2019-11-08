@@ -328,8 +328,8 @@ Platform::CreateSharedOffscreenGraphicsContext3DProvider() {
 }
 
 std::unique_ptr<WebGraphicsContext3DProvider>
-Platform::CreateWebGPUGraphicsContext3DProvider(const WebURL& top_document_url,
-                                                GraphicsInfo*) {
+Platform::CreateWebGPUGraphicsContext3DProvider(
+    const WebURL& top_document_url) {
   return nullptr;
 }
 

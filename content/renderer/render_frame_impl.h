@@ -219,10 +219,6 @@ class CONTENT_EXPORT RenderFrameImpl
   static void CreateFrame(
       int routing_id,
       service_manager::mojom::InterfaceProviderPtr interface_provider,
-      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-          document_interface_broker_content,
-      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-          document_interface_broker_blink,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker,
       int previous_routing_id,
@@ -248,8 +244,6 @@ class CONTENT_EXPORT RenderFrameImpl
         RenderViewImpl* render_view,
         int32_t routing_id,
         service_manager::mojom::InterfaceProviderPtr interface_provider,
-        mojo::Remote<blink::mojom::DocumentInterfaceBroker>
-            document_interface_broker_content,
         mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
             browser_interface_broker,
         const base::UnguessableToken& devtools_frame_token);
@@ -261,8 +255,6 @@ class CONTENT_EXPORT RenderFrameImpl
     RenderViewImpl* render_view;
     int32_t routing_id;
     service_manager::mojom::InterfaceProviderPtr interface_provider;
-    mojo::Remote<blink::mojom::DocumentInterfaceBroker>
-        document_interface_broker_content;
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker;
     base::UnguessableToken devtools_frame_token;
@@ -464,7 +456,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) override;
   service_manager::InterfaceProvider* GetRemoteInterfaces() override;
-  blink::mojom::DocumentInterfaceBroker* GetDocumentInterfaceBroker() override;
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry() override;
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -729,7 +720,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidCommitProvisionalLoad(
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type,
-      mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle,
       bool should_reset_browser_interface_broker) override;
   void DidCreateNewDocument() override;
   void DidClearWindowObject() override;
@@ -832,7 +822,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void BubbleLogicalScrollInParentFrame(
       blink::WebScrollDirection direction,
       ui::input_types::ScrollGranularity granularity) override;
-  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
   blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker() override;
 
   // WebFrameSerializerClient implementation:
@@ -973,10 +962,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void TransferUserActivationFrom(blink::WebLocalFrame* source_frame) override;
 
-  // Used in tests to override DocumentInterfaceBroker's methods
-  void SetDocumentInterfaceBrokerForTesting(
-      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker> test_broker);
-
   // Used in tests to install a fake WebURLLoaderFactory via
   // RenderViewTest::CreateFakeWebURLLoaderFactory().
   void SetWebURLLoaderFactoryOverrideForTest(
@@ -1060,15 +1045,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to, |interface_provider| is the RenderFrameHost's
   // InterfaceProvider through which services are exposed to the RenderFrame,
-  // and |document_interface_broker_content| is the RenderFrameHost's
-  // DocumentInterfaceBroker through which services are exposed to the
+  // and |browser_interface_broker| is the RenderFrameHost's
+  // BrowserInterfaceBroker through which services are exposed to the
   // RenderFrame.
   static RenderFrameImpl* Create(
       RenderViewImpl* render_view,
       int32_t routing_id,
       service_manager::mojom::InterfaceProviderPtr interface_provider,
-      mojo::Remote<blink::mojom::DocumentInterfaceBroker>
-          document_interface_broker_content,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker,
       const base::UnguessableToken& devtools_frame_token);
@@ -1552,8 +1535,6 @@ class CONTENT_EXPORT RenderFrameImpl
   service_manager::InterfaceProvider remote_interfaces_;
   std::unique_ptr<BlinkInterfaceRegistryImpl> blink_interface_registry_;
 
-  mojo::Remote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_;
   blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 
   service_manager::BindSourceInfo local_info_;

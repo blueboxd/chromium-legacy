@@ -2456,8 +2456,8 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
   if (!window)
     return false;
 
-  window_drag_controller_ =
-      std::make_unique<DragWindowFromShelfController>(window);
+  window_drag_controller_ = std::make_unique<DragWindowFromShelfController>(
+      window, event_in_screen.location(), hotseat_state());
   return true;
 }
 

@@ -3279,7 +3279,7 @@ base::string16 WebContentsImpl::DumpAccessibilityTree(
     std::vector<AccessibilityTreeFormatter::PropertyFilter> property_filters) {
   auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
   DCHECK(ax_mgr);
-  return AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
+  return AccessibilityTreeFormatterBase::DumpAccessibilityTreeFromManager(
       ax_mgr, internal, property_filters);
 }
 
@@ -7239,6 +7239,23 @@ void WebContentsImpl::MediaWatchTimeChanged(
     const content::MediaPlayerWatchTime& watch_time) {
   for (auto& observer : observers_)
     observer.MediaWatchTimeChanged(watch_time);
+}
+
+media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
+WebContentsImpl::GetRecordAggregateWatchTimeCallback() {
+  return base::BindRepeating(
+      [](base::WeakPtr<RenderFrameHostDelegate> delegate,
+         GURL last_committed_url, base::TimeDelta total_watch_time,
+         base::TimeDelta time_stamp) {
+        content::MediaPlayerWatchTime watch_time(last_committed_url,
+                                                 last_committed_url.GetOrigin(),
+                                                 total_watch_time, time_stamp);
+
+        // Save the watch time if the delegate is still alive.
+        if (delegate)
+          delegate->MediaWatchTimeChanged(watch_time);
+      },
+      weak_factory_.GetWeakPtr(), GetMainFrameLastCommittedURL());
 }
 
 RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(

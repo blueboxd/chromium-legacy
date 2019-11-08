@@ -135,18 +135,17 @@ function setupEvents() {
   }
 
   if (lookalike) {
-    var proceed_button = 'proceed-button';
-    var dont_proceed_link = 'dont-proceed-link';
-    $(proceed_button).classList.remove(HIDDEN_CLASS);
+    var proceedButton = 'proceed-button';
+    var dontProceedLink = 'dont-proceed-link';
+    $(proceedButton).classList.remove(HIDDEN_CLASS);
 
-    $(proceed_button).textContent =
-        loadTimeData.getString('proceedButtonText');
+    $(proceedButton).textContent = loadTimeData.getString('proceedButtonText');
 
-    $(proceed_button).addEventListener('click', function(event) {
+    $(proceedButton).addEventListener('click', function(event) {
       sendCommand(SecurityInterstitialCommandId.CMD_PROCEED);
     });
 
-    $(dont_proceed_link).addEventListener('click', function(event) {
+    $(dontProceedLink).addEventListener('click', function(event) {
       sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
     });
   }
@@ -188,7 +187,6 @@ function setupEvents() {
     });
   }
 
-  var details_id = null;
   if (captivePortal || billing || lookalike) {
     // Captive portal, billing and lookalike pages don't have details buttons.
     $('details-button').classList.add('hidden');

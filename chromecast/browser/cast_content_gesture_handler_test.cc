@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/cast_content_gesture_handler.h"
 
+#include "base/memory/weak_ptr.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
@@ -39,7 +40,9 @@ constexpr gfx::Point kRightGestureEndPoint(200, 60);
 
 }  // namespace
 
-class MockCastContentWindowDelegate : public CastContentWindow::Delegate {
+class MockCastContentWindowDelegate
+    : public base::SupportsWeakPtr<MockCastContentWindowDelegate>,
+      public CastContentWindow::Delegate {
  public:
   ~MockCastContentWindowDelegate() override = default;
 
@@ -56,7 +59,7 @@ class MockCastContentWindowDelegate : public CastContentWindow::Delegate {
 
 class CastContentGestureHandlerTest : public testing::Test {
  public:
-  CastContentGestureHandlerTest() : dispatcher_(&delegate_, true) {}
+  CastContentGestureHandlerTest() : dispatcher_(delegate_.AsWeakPtr(), true) {}
 
  protected:
   MockCastContentWindowDelegate delegate_;

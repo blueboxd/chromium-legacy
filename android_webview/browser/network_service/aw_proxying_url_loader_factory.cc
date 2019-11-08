@@ -149,7 +149,8 @@ class InterceptedRequest : public network::mojom::URLLoader,
   mojo::Receiver<network::mojom::URLLoader> proxied_loader_receiver_;
   network::mojom::URLLoaderClientPtr target_client_;
 
-  mojo::Binding<network::mojom::URLLoaderClient> proxied_client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> proxied_client_receiver_{
+      this};
   network::mojom::URLLoaderPtr target_loader_;
   mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
 
@@ -279,7 +280,6 @@ InterceptedRequest::InterceptedRequest(
       traffic_annotation_(traffic_annotation),
       proxied_loader_receiver_(this, std::move(loader_receiver)),
       target_client_(std::move(client)),
-      proxied_client_binding_(this),
       target_factory_(std::move(target_factory)) {
   // If there is a client error, clean up the request.
   target_client_.set_connection_error_handler(base::BindOnce(
@@ -397,7 +397,7 @@ bool InterceptedRequest::InputStreamFailed(bool restart_needed) {
   }
 
   input_stream_previously_failed_ = true;
-  proxied_client_binding_.Unbind();
+  proxied_client_receiver_.reset();
   Restart();
   return true;  // request restarted
 }
@@ -417,7 +417,7 @@ void InterceptedRequest::ContinueAfterIntercept() {
       (request_.url.SchemeIs(url::kContentScheme) ||
        android_webview::IsAndroidSpecialFileUrl(request_.url))) {
     network::mojom::URLLoaderClientPtr proxied_client;
-    proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
+    proxied_client_receiver_.Bind(mojo::MakeRequest(&proxied_client));
     AndroidStreamReaderURLLoader* loader = new AndroidStreamReaderURLLoader(
         request_, std::move(proxied_client), traffic_annotation_,
         std::make_unique<ProtocolResponseDelegate>(request_.url,
@@ -428,7 +428,7 @@ void InterceptedRequest::ContinueAfterIntercept() {
 
   if (!target_loader_ && target_factory_) {
     network::mojom::URLLoaderClientPtr proxied_client;
-    proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
+    proxied_client_receiver_.Bind(mojo::MakeRequest(&proxied_client));
     target_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&target_loader_), routing_id_, request_id_, options_,
         request_, std::move(proxied_client), traffic_annotation_);
@@ -438,7 +438,7 @@ void InterceptedRequest::ContinueAfterIntercept() {
 void InterceptedRequest::ContinueAfterInterceptWithOverride(
     std::unique_ptr<AwWebResourceResponse> response) {
   network::mojom::URLLoaderClientPtr proxied_client;
-  proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
+  proxied_client_receiver_.Bind(mojo::MakeRequest(&proxied_client));
   AndroidStreamReaderURLLoader* loader = new AndroidStreamReaderURLLoader(
       request_, std::move(proxied_client), traffic_annotation_,
       std::make_unique<InterceptResponseDelegate>(std::move(response),
@@ -506,7 +506,7 @@ void OnNewLoginRequestOnUiThread(int process_id,
 void InterceptedRequest::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr head) {
   // intercept response headers here
-  // pause/resume proxied_client_binding_ if necessary
+  // pause/resume |proxied_client_receiver_| if necessary
 
   if (head->headers && head->headers->response_code() >= 400) {
     // In Android WebView the WebViewClient.onReceivedHttpError callback
@@ -675,7 +675,7 @@ void InterceptedRequest::CallOnComplete(
   if (proxied_loader_receiver_.is_bound() && wait_for_loader_error) {
     // Since the original client is gone no need to continue loading the
     // request.
-    proxied_client_binding_.Close();
+    proxied_client_receiver_.reset();
     target_loader_.reset();
 
     // Don't delete |this| yet, in case the |proxied_loader_receiver_|'s

@@ -25,7 +25,7 @@ import java.util.ArrayList;
  * and its sheet for the {@link WebContents} it is attached to.
  */
 class ManualFillingState {
-    private final static int[] TAB_ORDER = {
+    private static final int[] TAB_ORDER = {
             AccessoryTabType.PASSWORDS,
             AccessoryTabType.CREDIT_CARDS,
             AccessoryTabType.ADDRESSES,

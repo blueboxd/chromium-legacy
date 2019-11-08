@@ -15,4 +15,5 @@ include_rules = [
     "+gpu/config/gpu_driver_bug_workaround_type.h",
     "+gpu/config/gpu_feature_info.h",
     "+ui/gfx/gpu_fence.h",
+    "+ui/gl/gpu_preference.h",
 ]

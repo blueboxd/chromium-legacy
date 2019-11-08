@@ -84,10 +84,6 @@ class InterfaceProvider;
 namespace blink {
 namespace mojom {
 enum class WebFeature : int32_t;
-
-namespace blink {
-class DocumentInterfaceBroker;
-}  // namespace blink
 }  // namespace mojom
 
 class AssociatedInterfaceProvider;
@@ -372,27 +368,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return nullptr;
   }
 
-  // Binds |js_handle| to the currently bound implementation of
-  // DocumentInterfaceBroker to share the same broker between C++ and JavaScript
-  // clients.
-  virtual void BindDocumentInterfaceBroker(
-      mojo::ScopedMessagePipeHandle js_handle) {}
-
-  virtual mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() {
-    return nullptr;
-  }
-
   virtual BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() = 0;
-
-  // Used in tests to set a custom override for DocumentInterfaceBroker methods.
-  // |blink_handle| is bound to the test implementation on the caller side.
-  // Returns the handle to the previously bound 'production' implementation,
-  // which will be used to forward the calls to methods that have not been
-  // overridden.
-  virtual mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
-      mojo::ScopedMessagePipeHandle blink_handle) {
-    return mojo::ScopedMessagePipeHandle();
-  }
 
   virtual AssociatedInterfaceProvider*
   GetRemoteNavigationAssociatedInterfaces() = 0;

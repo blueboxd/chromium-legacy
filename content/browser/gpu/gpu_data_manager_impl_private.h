@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "ui/gl/gpu_preference.h"
 
 namespace base {
 class CommandLine;
@@ -189,6 +190,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   gpu::GpuFeatureInfo gpu_feature_info_;
   gpu::GPUInfo gpu_info_;
+  gl::GpuPreference active_gpu_heuristic_ = gl::GpuPreference::kDefault;
 #if defined(OS_WIN)
   bool gpu_info_dx_diag_requested_ = false;
   bool gpu_info_dx_diag_request_failed_ = false;

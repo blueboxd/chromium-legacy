@@ -16,7 +16,6 @@
 
 #include <vector>
 
-#include "base/enterprise_util.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -258,21 +257,8 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
     return SetInternetZoneIdentifierDirectly(file, source_url, referrer_url);
   }
 
-  // Check if the attachment services should be invoked based on the experiment
-  // state. Not invoking the attachment services means that the Zone Identifier
-  // will always be set to 3 (Internet), regardless of URL zones configurations.
-  //
-  // Note: The attachment services must always be invoked on domain-joined
-  // machines.
-  // TODO(pmonette): Move the InvokeAttachmentServices() call to a utility
-  //                 process and remove the feature.
-  bool should_invoke_attachment_services =
-      base::IsMachineExternallyManaged() ||
-      base::FeatureList::IsEnabled(kInvokeAttachmentServices);
-
   QuarantineFileResult attachment_services_result = QuarantineFileResult::OK;
-  if (should_invoke_attachment_services &&
-      InvokeAttachmentServices(file, source_url, referrer_url, guid,
+  if (InvokeAttachmentServices(file, source_url, referrer_url, guid,
                                &attachment_services_result)) {
     return attachment_services_result;
   }

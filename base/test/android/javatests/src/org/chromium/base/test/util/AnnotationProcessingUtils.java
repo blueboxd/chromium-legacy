@@ -192,7 +192,7 @@ public abstract class AnnotationProcessingUtils {
      * Abstraction to hide differences between Class, Method and Description with regards to their
      * annotations and what should be analyzed next.
      */
-    private static abstract class AnnotatedNode {
+    private abstract static class AnnotatedNode {
         @Nullable
         abstract AnnotatedNode getParent();
 

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
@@ -149,14 +149,12 @@ public class CtrSuppression extends ContextualSearchHeuristic {
      *         or we have never checked.
      */
     private boolean didWeekChange(int currentWeekNumber) {
-        if (mPreferenceManager.readInt(
-                    ChromePreferenceManager.CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER)
+        if (mPreferenceManager.readInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER)
                 == currentWeekNumber) {
             return false;
         } else {
             mPreferenceManager.writeInt(
-                    ChromePreferenceManager.CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER,
-                    currentWeekNumber);
+                    ChromePreferenceKeys.CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER, currentWeekNumber);
             return true;
         }
     }

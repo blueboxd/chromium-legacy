@@ -37,13 +37,43 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   AccessibilityTreeFormatterBase();
   ~AccessibilityTreeFormatterBase() override;
 
+  static base::string16 DumpAccessibilityTreeFromManager(
+      BrowserAccessibilityManager* ax_mgr,
+      bool internal,
+      std::vector<PropertyFilter> property_filters);
+
+  // Populates the given DictionaryValue with the accessibility tree.
+  // The dictionary contains a key/value pair for each attribute of the node,
+  // plus a "children" attribute containing a list of all child nodes.
+  // {
+  //   "AXName": "node",  /* actual attributes will vary by platform */
+  //   "position": {  /* some attributes may be dictionaries */
+  //     "x": 0,
+  //     "y": 0
+  //   },
+  //   /* ... more attributes of |node| */
+  //   "children": [ {  /* list of children created recursively */
+  //     "AXName": "child node 1",
+  //     /* ... more attributes */
+  //     "children": [ ]
+  //   }, {
+  //     "AXName": "child name 2",
+  //     /* ... more attributes */
+  //     "children": [ ]
+  //   } ]
+  // }
+  // Build an accessibility tree for the current Chrome app.
+  virtual std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
+      BrowserAccessibility* root) = 0;
+
+  void FormatAccessibilityTreeForTesting(BrowserAccessibility* root,
+                                         base::string16* contents);
+
   // AccessibilityTreeFormatter overrides.
   void AddDefaultFilters(
       std::vector<PropertyFilter>* property_filters) override;
   std::unique_ptr<base::DictionaryValue> FilterAccessibilityTree(
       const base::DictionaryValue& dict) override;
-  void FormatAccessibilityTree(BrowserAccessibility* root,
-                               base::string16* contents) override;
   void FormatAccessibilityTree(const base::DictionaryValue& tree_node,
                                base::string16* contents) override;
   void SetPropertyFilters(
@@ -120,7 +150,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   std::vector<NodeFilter> node_filters_;
 
   // Whether or not node ids should be included in the dump.
-  bool show_ids_;
+  bool show_ids_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityTreeFormatterBase);
 };

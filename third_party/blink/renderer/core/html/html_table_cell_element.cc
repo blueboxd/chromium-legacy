@@ -72,7 +72,7 @@ unsigned HTMLTableCellElement::rowSpan() const {
 }
 
 int HTMLTableCellElement::cellIndex() const {
-  if (!IsHTMLTableRowElement(parentElement()))
+  if (!IsA<HTMLTableRowElement>(parentElement()))
     return -1;
 
   int index = 0;

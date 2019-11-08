@@ -211,6 +211,9 @@ class PrinterQuery;
 namespace rlz_lib {
 class FinancialPing;
 }
+namespace syncer {
+class GetLocalChangesRequest;
+}
 namespace ui {
 class CommandBufferClientImpl;
 class CommandBufferLocal;
@@ -418,6 +421,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class rlz_lib::FinancialPing;
   friend class shell_integration_linux::
       LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
+  friend class syncer::GetLocalChangesRequest;
   friend class webrtc::DesktopConfigurationMonitor;
 
   // Usage that should be fixed:

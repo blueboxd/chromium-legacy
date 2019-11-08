@@ -47,6 +47,7 @@ class MockInputRouterClient : public InputRouterClient,
                                     bool up,
                                     bool down) override {}
   void FallbackCursorModeSetCursorVisibility(bool visible) override {}
+  gfx::Size GetRootWidgetViewportSize() override;
 
   bool GetAndResetFilterEventCalled();
   ui::DidOverscrollParams GetAndResetOverscroll();

@@ -424,6 +424,7 @@ TEST_F(QuarantineWinTest, MetaData_ApplyMOTW_Directly) {
   GURL referrer_url_clean = GURL(
       base::StringPrintf(L"https://%ls/folder/index?x#y", GetInternetSite()));
 
+  // An invalid GUID will cause QuarantineFile() to apply the MOTW directly.
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, host_url, referrer_url, std::string()));
 
@@ -431,9 +432,6 @@ TEST_F(QuarantineWinTest, MetaData_ApplyMOTW_Directly) {
 }
 
 TEST_F(QuarantineWinTest, MetaData_InvokeAS) {
-  base::test::ScopedFeatureList invoke_as_feature;
-  invoke_as_feature.InitAndEnableFeature(kInvokeAttachmentServices);
-
   base::FilePath test_file = GetTempDir().AppendASCII("foo.exe");
   ASSERT_TRUE(CreateFile(test_file));
 

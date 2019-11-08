@@ -11,8 +11,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace device {
-class FakeVRDisplayImplClient;
-
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT FakeVRServiceClient : public mojom::VRServiceClient {
  public:
@@ -25,8 +23,6 @@ class DEVICE_VR_EXPORT FakeVRServiceClient : public mojom::VRServiceClient {
   bool CheckDeviceId(mojom::XRDeviceId id);
 
  private:
-  std::vector<mojom::VRDisplayInfoPtr> displays_;
-  std::vector<std::unique_ptr<FakeVRDisplayImplClient>> display_clients_;
   mojom::XRDeviceId last_device_id_ = static_cast<mojom::XRDeviceId>(0);
   mojo::Receiver<mojom::VRServiceClient> receiver_;
 

@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import org.chromium.weblayer_private.interfaces.IBrowserClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
 
@@ -23,4 +24,9 @@ interface IBrowser {
 
   int getActiveTabId() = 4;
   List getTabs() = 5;
+
+  void setClient(in IBrowserClient client) = 6;
+
+  void addTab(in ITab tab) = 7;
+  void destroyTab(in ITab tab) = 8;
 }

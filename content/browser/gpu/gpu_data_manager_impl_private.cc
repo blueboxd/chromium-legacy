@@ -57,6 +57,7 @@
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gpu_preference.h"
 #include "ui/gl/gpu_switching_manager.h"
 
 #if defined(OS_ANDROID)
@@ -807,25 +808,36 @@ std::unique_ptr<base::ListValue> GpuDataManagerImplPrivate::GetLogMessages()
 void GpuDataManagerImplPrivate::HandleGpuSwitch() {
   base::AutoUnlock unlock(owner_->lock_);
   // Notify observers in the browser process.
-  ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
+  ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched(
+      active_gpu_heuristic_);
   // Pass the notification to the GPU process to notify observers there.
-  GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
-                           base::BindOnce([](GpuProcessHost* host) {
-                             if (host)
-                               host->gpu_service()->GpuSwitched();
-                           }));
+  GpuProcessHost::CallOnIO(
+      GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+      base::BindOnce(
+          [](gl::GpuPreference active_gpu, GpuProcessHost* host) {
+            if (host)
+              host->gpu_service()->GpuSwitched(active_gpu);
+          },
+          active_gpu_heuristic_));
 }
 
 bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
                                                 uint32_t device_id) {
+  // Heuristics for dual-GPU detection.
+  bool is_dual_gpu = gpu_info_.secondary_gpus.size() == 1;
+  const uint32_t kIntelID = 0x8086;
+  bool saw_intel_gpu = false;
+  bool saw_non_intel_gpu = false;
+
   if (gpu_info_.gpu.vendor_id == vendor_id &&
       gpu_info_.gpu.device_id == device_id) {
     // The primary GPU is active.
     if (gpu_info_.gpu.active)
       return false;
     gpu_info_.gpu.active = true;
-    for (size_t ii = 0; ii < gpu_info_.secondary_gpus.size(); ++ii)
+    for (size_t ii = 0; ii < gpu_info_.secondary_gpus.size(); ++ii) {
       gpu_info_.secondary_gpus[ii].active = false;
+    }
   } else {
     // A secondary GPU is active.
     for (size_t ii = 0; ii < gpu_info_.secondary_gpus.size(); ++ii) {
@@ -839,6 +851,26 @@ bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
       }
     }
     gpu_info_.gpu.active = false;
+  }
+  active_gpu_heuristic_ = gl::GpuPreference::kDefault;
+  if (is_dual_gpu) {
+    if (gpu_info_.gpu.vendor_id == kIntelID) {
+      saw_intel_gpu = true;
+    } else {
+      saw_non_intel_gpu = true;
+    }
+    if (gpu_info_.secondary_gpus[0].vendor_id == kIntelID) {
+      saw_intel_gpu = true;
+    } else {
+      saw_non_intel_gpu = true;
+    }
+    if (saw_intel_gpu && saw_non_intel_gpu) {
+      if (vendor_id == kIntelID) {
+        active_gpu_heuristic_ = gl::GpuPreference::kLowPower;
+      } else {
+        active_gpu_heuristic_ = gl::GpuPreference::kHighPerformance;
+      }
+    }
   }
   GetContentClient()->SetGpuInfo(gpu_info_);
   NotifyGpuInfoUpdate();

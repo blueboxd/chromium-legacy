@@ -208,8 +208,14 @@ bool DisassemblerElf<Traits>::ParseHeader() {
 
     // Skip empty sections. These don't affect |offset_bound|, and don't
     // contribute to RVA-offset mapping.
-    if (section->sh_size == 0)
+    if (section->sh_size == 0) {
+      // Skipping empty sections is only safe if the |sh_offset| is within the
+      // image. Fail if this is not true as the input is ill-formed.
+      if (section->sh_offset >= image_.size())
+        return false;
+
       continue;
+    }
 
     // Extract dimensions to 32-bit integers to facilitate conversion. Range of
     // values was ensured above when checking that the section is bounded.

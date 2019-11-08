@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
@@ -27,23 +27,22 @@ public class EngagementSuppression extends ContextualSearchHeuristic {
         // OR had a Quick Action presented but none taken and at least one ignored.
         boolean hadEntityImpression =
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT)
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT)
                 > 0;
-        boolean hadEntityOpen =
-                mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT)
+        boolean hadEntityOpen = mPreferenceManager.readInt(
+                                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT)
                 > 0;
         boolean hadQuickActionImpression =
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT)
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT)
                 > 0;
         boolean hadQuickActionTaken =
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT)
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT)
                 > 0;
         boolean hadQuickActionIgnored =
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT)
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT)
                 > 0;
         mIsConditionSatisfied = (hadEntityImpression && !hadEntityOpen)
                 || (hadQuickActionImpression && !hadQuickActionTaken && hadQuickActionIgnored);
@@ -58,13 +57,11 @@ public class EngagementSuppression extends ContextualSearchHeuristic {
     public static void registerQuickActionImpression(
             boolean wasPanelOpened, boolean wasActionClicked) {
         SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
-        prefs.incrementInt(
-                ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT);
+        prefs.incrementInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT);
         if (wasActionClicked) {
-            prefs.incrementInt(ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT);
+            prefs.incrementInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT);
         } else if (wasPanelOpened) {
-            prefs.incrementInt(
-                    ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT);
+            prefs.incrementInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT);
         }
     }
 
@@ -75,9 +72,9 @@ public class EngagementSuppression extends ContextualSearchHeuristic {
      */
     public static void registerContextualCardsImpression(boolean wasPanelOpened) {
         SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
-        prefs.incrementInt(ChromePreferenceManager.CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT);
+        prefs.incrementInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT);
         if (wasPanelOpened) {
-            prefs.incrementInt(ChromePreferenceManager.CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT);
+            prefs.incrementInt(ChromePreferenceKeys.CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT);
         }
     }
 
@@ -95,29 +92,29 @@ public class EngagementSuppression extends ContextualSearchHeuristic {
         // These counters are updated in ContextualSearchPolcy when taps and opens are registered.
         logger.logFeature(ContextualSearchInteractionRecorder.Feature.TAP_COUNT,
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT));
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT));
         logger.logFeature(ContextualSearchInteractionRecorder.Feature.OPEN_COUNT,
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT));
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT));
         logger.logFeature(ContextualSearchInteractionRecorder.Feature.QUICK_ANSWER_COUNT,
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT));
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT));
         // These counters are updated in the #registerX static methods of this class.
         logger.logFeature(ContextualSearchInteractionRecorder.Feature.ENTITY_IMPRESSIONS_COUNT,
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT));
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT));
         logger.logFeature(ContextualSearchInteractionRecorder.Feature.ENTITY_OPENS_COUNT,
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT));
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT));
         logger.logFeature(
                 ContextualSearchInteractionRecorder.Feature.QUICK_ACTION_IMPRESSIONS_COUNT,
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT));
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT));
         logger.logFeature(ContextualSearchInteractionRecorder.Feature.QUICK_ACTIONS_TAKEN_COUNT,
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT));
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT));
         logger.logFeature(ContextualSearchInteractionRecorder.Feature.QUICK_ACTIONS_IGNORED_COUNT,
                 mPreferenceManager.readInt(
-                        ChromePreferenceManager.CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT));
+                        ChromePreferenceKeys.CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT));
     }
 }

@@ -37,7 +37,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) AssociatedInterfacePtrStateBase {
 
   uint32_t version() const { return version_; }
 
-  void QueryVersion(const base::Callback<void(uint32_t)>& callback);
+  void QueryVersion(base::OnceCallback<void(uint32_t)> callback);
   void RequireVersion(uint32_t version);
   void FlushForTesting();
   void CloseWithReason(uint32_t custom_reason, const std::string& description);
@@ -93,7 +93,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) AssociatedInterfacePtrStateBase {
   InterfaceEndpointClient* endpoint_client() { return endpoint_client_.get(); }
 
  private:
-  void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,
+  void OnQueryVersion(base::OnceCallback<void(uint32_t)> callback,
                       uint32_t version);
 
   std::unique_ptr<InterfaceEndpointClient> endpoint_client_;

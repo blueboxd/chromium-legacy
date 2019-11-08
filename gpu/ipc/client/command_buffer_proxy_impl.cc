@@ -38,6 +38,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gpu_preference.h"
 
 namespace gpu {
 
@@ -190,9 +191,10 @@ void CommandBufferProxyImpl::OnConsoleMessage(
                                                   message.id);
 }
 
-void CommandBufferProxyImpl::OnGpuSwitched() {
+void CommandBufferProxyImpl::OnGpuSwitched(
+    gl::GpuPreference active_gpu_heuristic) {
   if (gpu_control_client_)
-    gpu_control_client_->OnGpuSwitched();
+    gpu_control_client_->OnGpuSwitched(active_gpu_heuristic);
 }
 
 void CommandBufferProxyImpl::AddDeletionObserver(DeletionObserver* observer) {

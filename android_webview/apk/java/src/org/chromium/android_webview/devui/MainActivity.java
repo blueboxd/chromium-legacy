@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
         private final InfoItem[] mItems;
 
         public InfoListAdapter(InfoItem[] items) {
-            super(MainActivity.this, android.R.layout.simple_list_item_2, items);
+            super(MainActivity.this, R.layout.two_line_list_item, items);
             mItems = items;
         }
 
@@ -103,7 +103,7 @@ public class MainActivity extends Activity {
             // If the the old view is already created then reuse it, else create a new one by layout
             // inflation.
             if (view == null) {
-                view = getLayoutInflater().inflate(android.R.layout.simple_list_item_2, null, true);
+                view = getLayoutInflater().inflate(R.layout.two_line_list_item, null, true);
             }
 
             InfoItem item = mItems[position];

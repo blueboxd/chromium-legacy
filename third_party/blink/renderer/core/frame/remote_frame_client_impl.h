@@ -49,7 +49,6 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override;
   void AdvanceFocus(WebFocusType, LocalFrame*) override;
-  void VisibilityChanged(blink::mojom::FrameVisibility) override;
   void SetIsInert(bool) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override;

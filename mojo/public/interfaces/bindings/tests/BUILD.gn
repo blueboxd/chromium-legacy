@@ -463,20 +463,6 @@ mojom("test_associated_interfaces") {
   scramble_message_ids = false
 }
 
-mojom("versioning_test_service_interfaces") {
-  testonly = true
-  sources = [
-    "versioning_test_service.mojom",
-  ]
-}
-
-mojom("versioning_test_client_interfaces") {
-  testonly = true
-  sources = [
-    "versioning_test_client.mojom",
-  ]
-}
-
 mojom("test_wtf_types") {
   testonly = true
 

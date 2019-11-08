@@ -231,12 +231,8 @@ const base::Feature kMediaCapabilitiesWithParameters{
 const base::Feature kMediaCastOverlayButton{"MediaCastOverlayButton",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use AndroidOverlay rather than ContentVideoView in clank?
-const base::Feature kUseAndroidOverlay{"UseAndroidOverlay",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Use AndroidOverlay for more cases than just player-element fullscreen?  This
-// requires that |kUseAndroidOverlay| is true, else it is ignored.
+// requires that |kOverlayFullscreenVideo| is true, else it is ignored.
 const base::Feature kUseAndroidOverlayAggressively{
     "UseAndroidOverlayAggressively", base::FEATURE_ENABLED_BY_DEFAULT};
 

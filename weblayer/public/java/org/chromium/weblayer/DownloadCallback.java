@@ -19,6 +19,6 @@ public abstract class DownloadCallback {
      * @param mimetype the mimetype of the content reported by the server
      * @param contentLength the file size reported by the server
      */
-    public abstract void downloadRequested(@NonNull String url, @NonNull String userAgent,
+    public abstract void onDownloadRequested(@NonNull String url, @NonNull String userAgent,
             @NonNull String contentDisposition, @NonNull String mimetype, long contentLength);
 }

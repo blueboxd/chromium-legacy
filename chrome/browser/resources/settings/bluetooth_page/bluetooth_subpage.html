@@ -48,7 +48,8 @@
       <cr-toggle id="enableBluetooth"
           checked="{{bluetoothToggleState}}"
           disabled$="[[!isToggleEnabled_(adapterState, stateChangeInProgress)]]"
-          aria-label="$i18n{bluetoothToggleA11yLabel}">
+          aria-label="$i18n{bluetoothToggleA11yLabel}"
+          aria-live="polite" aria-relevant="all">
       </cr-toggle>
     </div>
 

@@ -97,7 +97,7 @@ static bool HasImpliedEndTag(const HTMLStackItem* item) {
 }
 
 static bool ShouldUseLengthLimit(const ContainerNode& node) {
-  return !IsHTMLScriptElement(node) && !IsA<HTMLStyleElement>(node) &&
+  return !IsA<HTMLScriptElement>(node) && !IsA<HTMLStyleElement>(node) &&
          !IsSVGScriptElement(node);
 }
 
@@ -743,7 +743,7 @@ void HTMLConstructionSite::InsertScriptElement(AtomicHTMLToken* token) {
       .SetAlreadyStarted(is_parsing_fragment_ && flags.IsCreatedByParser());
   HTMLScriptElement* element = nullptr;
   if (const auto* is_attribute = token->GetAttributeItem(html_names::kIsAttr)) {
-    element = ToHTMLScriptElement(OwnerDocumentForCurrentNode().CreateElement(
+    element = To<HTMLScriptElement>(OwnerDocumentForCurrentNode().CreateElement(
         html_names::kScriptTag, flags, is_attribute->Value()));
   } else {
     element = MakeGarbageCollected<HTMLScriptElement>(

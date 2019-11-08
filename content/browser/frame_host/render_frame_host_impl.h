@@ -59,6 +59,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
+#include "media/mojo/services/media_metrics_provider.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -85,7 +86,6 @@
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
@@ -204,7 +204,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public RenderProcessHostObserver,
       public SiteInstanceImpl::Observer,
       public service_manager::mojom::InterfaceProvider,
-      public blink::mojom::DocumentInterfaceBroker,
       public blink::mojom::LocalFrameHost,
       public CSPContext,
       public ui::AXActionHandler {
@@ -417,12 +416,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // interface that the RenderFrameHost corresponding to the child frame should
   // bind to expose services to the renderer process. The caller takes care of
   // sending down the client end of the pipe to the child RenderFrame to use.
-  // |document_interface_broker_content_handle| and
-  // |document_interface_broker_blink_handle| are the pipe handles bound by
-  // to request ends of DocumentInterfaceProviderInterface in content and blink
-  // parts of the child frame. RenderFrameHost should bind these handles to
-  // expose services to the renderer process. The caller takes care of sending
-  // down the client end of the pipe to the child RenderFrame to use.
   // |browser_interface_broker_receiver| is the receiver end of
   // BrowserInterfaceBroker interface in the child frame. RenderFrameHost should
   // bind this receiver to expose services to the renderer process. The caller
@@ -432,10 +425,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int new_routing_id,
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request,
-      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-          document_interface_broker_content_receiver,
-      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-          document_interface_broker_blink_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       blink::WebTreeScopeType scope,
@@ -548,6 +537,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   virtual RenderWidgetHostImpl* GetRenderWidgetHost();
 
   GlobalFrameRoutingId GetGlobalFrameRoutingId();
+
+  media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
+  GetRecordAggregateWatchTimeCallback();
 
   // The unique ID of the latest NavigationEntry that this RenderFrameHost is
   // showing. This may change even when this frame hasn't committed a page,
@@ -885,16 +877,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindInterfaceProviderRequest(
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request);
-
-  // Binds content and blink receiver ends of the DocumentInterfaceProvider
-  // interface through which services provided by this RenderFrameHost are
-  // exposed to the corresponding RenderFrame. The caller is responsible for
-  // plumbing the client ends to the the renderer process.
-  void BindDocumentInterfaceBrokerReceiver(
-      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-          content_receiver,
-      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-          blink_receiver);
 
   // Binds the receiver end of the BrowserInterfaceBroker interface through
   // which services provided by this RenderFrameHost are exposed to the
@@ -1671,11 +1653,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  // blink::mojom::DocumentInterfaceBroker:
-  void GetFrameHostTestInterface(
-      mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver)
-      override;
-
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).
   void DisableSwapOutTimerForTesting();
@@ -2356,15 +2333,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // interfaces.
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       document_scoped_interface_provider_binding_;
-
-  // Receivers for the DocumentInterfaceBroker through which this
-  // RenderFrameHostImpl exposes document-scoped Mojo services to the currently
-  // active document in the corresponding RenderFrame. Because of the type
-  // difference between content and blink, two separate pipes are used.
-  mojo::Receiver<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_content_receiver_{this};
-  mojo::Receiver<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_blink_receiver_{this};
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently

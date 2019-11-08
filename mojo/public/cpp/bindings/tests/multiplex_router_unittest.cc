@@ -221,9 +221,9 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
             std::string(reinterpret_cast<const char*>(response.payload())));
 }
 
-void ForwardErrorHandler(bool* called, const base::Closure& callback) {
+void ForwardErrorHandler(bool* called, base::OnceClosure callback) {
   *called = true;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 // Tests that if the receiving application destroys the responder_ without
@@ -235,9 +235,8 @@ TEST_F(MultiplexRouterTest, MissingResponses) {
       std::move(endpoint0_), nullptr, base::WrapUnique(new PassThroughFilter()),
       false, base::ThreadTaskRunnerHandle::Get(), 0u, kTestInterfaceName);
   bool error_handler_called0 = false;
-  client0.set_connection_error_handler(
-      base::Bind(&ForwardErrorHandler, &error_handler_called0,
-                 run_loop0.QuitClosure()));
+  client0.set_connection_error_handler(base::BindOnce(
+      &ForwardErrorHandler, &error_handler_called0, run_loop0.QuitClosure()));
 
   base::RunLoop run_loop3;
   LazyResponseGenerator generator(run_loop3.QuitClosure());
@@ -246,9 +245,8 @@ TEST_F(MultiplexRouterTest, MissingResponses) {
                                   false, base::ThreadTaskRunnerHandle::Get(),
                                   0u, kTestInterfaceName);
   bool error_handler_called1 = false;
-  client1.set_connection_error_handler(
-      base::Bind(&ForwardErrorHandler, &error_handler_called1,
-                 run_loop1.QuitClosure()));
+  client1.set_connection_error_handler(base::BindOnce(
+      &ForwardErrorHandler, &error_handler_called1, run_loop1.QuitClosure()));
 
   Message request;
   AllocRequestMessage(1, "hello", &request);

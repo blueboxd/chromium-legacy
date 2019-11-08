@@ -34,6 +34,8 @@ public class ContactDetails implements Comparable<ContactDetails> {
         public String overflowEmailCount;
         public String primaryTelephoneNumber;
         public String overflowTelephoneNumberCount;
+        public String primaryAddress;
+        public String overflowAddressCount;
     }
 
     // The unique id for the contact.
@@ -151,16 +153,38 @@ public class ContactDetails implements Comparable<ContactDetails> {
         return displayChars;
     }
 
+    private String ensureSingleLine(String address) {
+        String returnValue = address.replaceAll("\n\n", "\n");
+        // The string might have multiple consecutive new-lines, which means \n\n\n -> \n\n, so
+        // we'll perform the conversion until we've caught them all.
+        while (returnValue.length() < address.length()) {
+            address = returnValue;
+            returnValue = address.replaceAll("\n\n", "\n");
+        }
+
+        return returnValue.replaceAll("\n", ", ");
+    }
+
     /**
      * Accessor for the list of contact details (emails and phone numbers). Returned as strings
      * separated by newline).
+     * @param includeAddresses Whether to include addresses in the returned results.
      * @param includeEmails Whether to include emails in the returned results.
      * @param includeTels Whether to include telephones in the returned results.
      * @return A string containing all the contact details registered for this contact.
      */
-    public String getContactDetailsAsString(boolean includeEmails, boolean includeTels) {
+    public String getContactDetailsAsString(
+            boolean includeAddresses, boolean includeEmails, boolean includeTels) {
         int count = 0;
         StringBuilder builder = new StringBuilder();
+        if (includeAddresses) {
+            for (PaymentAddress address : mAddresses) {
+                if (count++ > 0) {
+                    builder.append("\n");
+                }
+                builder.append(ensureSingleLine(address.addressLine[0]));
+            }
+        }
         if (includeEmails) {
             for (String email : mEmails) {
                 if (count++ > 0) {
@@ -183,14 +207,28 @@ public class ContactDetails implements Comparable<ContactDetails> {
 
     /**
      * Accessor for the list of contact details (emails and phone numbers).
+     * @param includeAddresses Whether to include addresses in the returned results.
      * @param includeEmails Whether to include emails in the returned results.
      * @param includeTels Whether to include telephones in the returned results.
      * @param resources The resources to use for fetching the string. Must be provided.
      * @return The contact details registered for this contact.
      */
-    public AbbreviatedContactDetails getAbbreviatedContactDetails(
+    public AbbreviatedContactDetails getAbbreviatedContactDetails(boolean includeAddresses,
             boolean includeEmails, boolean includeTels, @Nullable Resources resources) {
         AbbreviatedContactDetails results = new AbbreviatedContactDetails();
+
+        results.overflowAddressCount = "";
+        if (!includeAddresses || mAddresses.size() == 0) {
+            results.primaryAddress = "";
+        } else {
+            results.primaryAddress = ensureSingleLine(mAddresses.get(0).addressLine[0]);
+            int totalAddresses = mAddresses.size();
+            if (totalAddresses > 1) {
+                int hiddenAddresses = totalAddresses - 1;
+                results.overflowAddressCount = resources.getQuantityString(
+                        R.plurals.contacts_picker_more_details, hiddenAddresses, hiddenAddresses);
+            }
+        }
 
         results.overflowEmailCount = "";
         if (!includeEmails || mEmails.size() == 0) {

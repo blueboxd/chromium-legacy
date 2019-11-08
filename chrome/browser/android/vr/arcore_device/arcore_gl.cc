@@ -413,15 +413,14 @@ void ArCoreGl::GetFrameData(
     frame_data->detected_planes_data = arcore_->GetDetectedPlanesData();
   }
 
-  frame_data->anchors_data = arcore_->GetAnchorsData();
-
   fps_meter_.AddFrame(base::TimeTicks::Now());
   TRACE_COUNTER1("gpu", "WebXR FPS", fps_meter_.GetFPS());
 
   // Post a task to finish processing the frame so any calls to
   // RequestHitTest() that were made during this function, which can block
   // on the arcore_->Update() call above, can be processed in this frame.
-  // Additionally, this gives a chance for OnScreenTouch() tasks to run.
+  // Additionally, this gives a chance for OnScreenTouch() tasks to run
+  // and added anchors to be registered.
   gl_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ArCoreGl::ProcessFrame, weak_ptr_factory_.GetWeakPtr(),
@@ -766,6 +765,9 @@ void ArCoreGl::ProcessFrame(
     frame_data->hit_test_subscription_results =
         arcore_->GetHitTestSubscriptionResults(frame_data->pose);
   }
+
+  // Get anchors data, including anchors created this frame.
+  frame_data->anchors_data = arcore_->GetAnchorsData();
 
   // The timing requirements for hit-test are documented here:
   // https://github.com/immersive-web/hit-test/blob/master/explainer.md#timing

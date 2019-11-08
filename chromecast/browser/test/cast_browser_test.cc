@@ -12,7 +12,7 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_window.h"
-#include "chromecast/browser/cast_web_contents_manager.h"
+#include "chromecast/browser/cast_web_service.h"
 #include "chromecast/browser/cast_web_view_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -47,7 +47,7 @@ void CastBrowserTest::PreRunTestOnMainThread() {
   metrics::CastMetricsHelper::GetInstance()->SetDummySessionIdForTesting();
   web_view_factory_ = std::make_unique<CastWebViewFactory>(
       CastBrowserProcess::GetInstance()->browser_context());
-  web_contents_manager_ = std::make_unique<CastWebContentsManager>(
+  web_service_ = std::make_unique<CastWebService>(
       CastBrowserProcess::GetInstance()->browser_context(),
       web_view_factory_.get(), nullptr /* window_manager */);
 }
@@ -58,14 +58,14 @@ void CastBrowserTest::PostRunTestOnMainThread() {
 
 content::WebContents* CastBrowserTest::CreateWebView() {
   CastWebView::CreateParams params;
-  params.delegate = this;
-  params.web_contents_params.delegate = this;
+  params.delegate = weak_factory_.GetWeakPtr();
+  params.web_contents_params.delegate = weak_factory_.GetWeakPtr();
   params.web_contents_params.use_cma_renderer = true;
   params.web_contents_params.enabled_for_dev = true;
-  params.window_params.delegate = this;
+  params.window_params.delegate = weak_factory_.GetWeakPtr();
   cast_web_view_ =
-      web_contents_manager_->CreateWebView(params, nullptr, /* site_instance */
-                                           GURL() /* initial_url */);
+      web_service_->CreateWebView(params, nullptr, /* site_instance */
+                                  GURL() /* initial_url */);
 
   return cast_web_view_->web_contents();
 }

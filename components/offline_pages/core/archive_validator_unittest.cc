@@ -143,7 +143,8 @@ TEST_F(ArchiveValidatorTest, GetSizeAndComputeDigestOnBigFile) {
 }
 
 #if defined(OS_ANDROID)
-TEST_F(ArchiveValidatorTest, GetSizeAndComputeDigestOnContentUri) {
+// Flaky. https://crbug.com/1022323
+TEST_F(ArchiveValidatorTest, DISABLED_GetSizeAndComputeDigestOnContentUri) {
   base::FilePath content_uri_path = GetContentUriPathForTest();
   std::pair<int64_t, std::string> actual_size_and_digest =
       ArchiveValidator::GetSizeAndComputeDigest(content_uri_path);

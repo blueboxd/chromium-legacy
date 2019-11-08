@@ -33,7 +33,7 @@ const int kSocketPumpBufferSize = 16 * 1024;
 const int kMinTetheringPort = 1024;
 const int kMaxTetheringPort = 65535;
 
-net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("tethering_handler_socket", R"(
         semantics {
           sender: "Tethering Handler"

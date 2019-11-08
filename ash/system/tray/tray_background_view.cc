@@ -149,6 +149,7 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
       separator_visible_(true),
       visible_preferred_(false),
       show_with_virtual_keyboard_(false),
+      show_when_collapsed_(true),
       widget_observer_(new TrayWidgetObserver(this)) {
   DCHECK(shelf_);
   set_notify_enter_exit_on_child(true);
@@ -202,17 +203,12 @@ void TrayBackgroundView::InitializeBubbleAnimations(
       window, base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMs));
 }
 
+void TrayBackgroundView::SetVisiblePreferred(bool visible_preferred) {
+  visible_preferred_ = visible_preferred;
+  SetVisible(GetEffectiveVisibility());
+}
+
 void TrayBackgroundView::SetVisible(bool visible) {
-  visible_preferred_ = visible;
-
-  // If virtual keyboard is visible and TrayBackgroundView is hidden because of
-  // that, ignore SetVisible() call. |visible_preferred_|  will be restored
-  // in OnVirtualKeyboardVisibilityChanged() when virtual keyboard is hidden.
-  if (!show_with_virtual_keyboard_ &&
-      Shell::Get()->system_tray_model()->virtual_keyboard()->visible()) {
-    return;
-  }
-
   if (visible == layer()->GetTargetVisibility())
     return;
 
@@ -328,21 +324,8 @@ TrayBackgroundView::CreateInkDropHighlight() const {
 }
 
 void TrayBackgroundView::OnVirtualKeyboardVisibilityChanged() {
-  if (show_with_virtual_keyboard_) {
-    // The view always shows up when virtual keyboard is visible if
-    // |show_with_virtual_keyboard| is true.
-    views::View::SetVisible(
-        Shell::Get()->system_tray_model()->virtual_keyboard()->visible() ||
-        visible_preferred_);
-    return;
-  }
-
-  // If virtual keyboard is hidden and current preferred visibility is true,
-  // set the visibility to true. We call base class' SetVisible because we don't
-  // want |visible_preferred_| to be updated here.
-  views::View::SetVisible(
-      !Shell::Get()->system_tray_model()->virtual_keyboard()->visible() &&
-      visible_preferred_);
+  // We call the base class' SetVisible to skip animations.
+  views::View::SetVisible(GetEffectiveVisibility());
 }
 
 TrayBubbleView* TrayBackgroundView::GetBubbleView() {
@@ -361,6 +344,11 @@ void TrayBackgroundView::UpdateAfterRootWindowBoundsChange(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   // Do nothing by default. Child class may do something.
+}
+
+void TrayBackgroundView::UpdateAfterStatusAreaCollapseChange() {
+  // We call the base class' SetVisible to skip animations.
+  views::View::SetVisible(GetEffectiveVisibility());
 }
 
 void TrayBackgroundView::BubbleResized(const TrayBubbleView* bubble_view) {}
@@ -488,6 +476,27 @@ void TrayBackgroundView::UpdateBackground() {
       ShelfConfig::Get()->GetShelfControlButtonBlurRadius());
   layer()->SetColor(ShelfConfig::Get()->GetShelfControlButtonColor());
   layer()->SetClipRect(GetBackgroundBounds());
+}
+
+bool TrayBackgroundView::GetEffectiveVisibility() {
+  // When the virtual keyboard is visible, the effective visibility of the view
+  // is solely determined by |show_with_virtual_keyboard_|.
+  if (Shell::Get()->system_tray_model()->virtual_keyboard()->visible())
+    return show_with_virtual_keyboard_;
+
+  if (!visible_preferred_)
+    return false;
+
+  // When the status area is collapsed, the effective visibility of the view is
+  // determined by |show_when_collapsed_|.
+  StatusAreaWidget::CollapseState collapse_state =
+      Shelf::ForWindow(GetWidget()->GetNativeWindow())
+          ->GetStatusAreaWidget()
+          ->collapse_state();
+  if (collapse_state == StatusAreaWidget::CollapseState::COLLAPSED)
+    return show_when_collapsed_;
+
+  return true;
 }
 
 }  // namespace ash

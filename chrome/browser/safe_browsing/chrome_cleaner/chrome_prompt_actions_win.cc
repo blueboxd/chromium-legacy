@@ -101,12 +101,4 @@ bool ChromePromptActions::DisableExtensions(
   return result;
 }
 
-// Keep the printable name short since it's used in tests with very long
-// parameter lists.
-std::ostream& operator<<(
-    std::ostream& out,
-    ChromePromptActions::PromptAcceptance prompt_acceptance) {
-  return out << "Accept" << static_cast<int>(prompt_acceptance);
-}
-
 }  // namespace safe_browsing

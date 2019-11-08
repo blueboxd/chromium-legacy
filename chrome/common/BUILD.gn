@@ -195,7 +195,6 @@ static_library("common") {
     ":available_offline_content_mojom",
     ":buildflags",
     ":channel_info",
-    ":client_hints_mojom",
     ":ini_parser",
     ":mojo_bindings",
     ":offline_page_auto_fetcher_mojom",
@@ -765,6 +764,7 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//components/content_settings/core/common:mojo_bindings",
+    "//content/public/common:client_hints_mojom",
     "//content/public/common:interfaces",
     "//mojo/public/mojom/base",
     "//third_party/blink/public/mojom:mojom_platform",
@@ -798,18 +798,6 @@ mojom("search_mojom") {
   public_deps = [
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
-  ]
-}
-
-mojom("client_hints_mojom") {
-  sources = [
-    "client_hints.mojom",
-  ]
-
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//third_party/blink/public/mojom:web_client_hints_types_mojo_bindings",
-    "//url/mojom:url_mojom_origin",
   ]
 }
 

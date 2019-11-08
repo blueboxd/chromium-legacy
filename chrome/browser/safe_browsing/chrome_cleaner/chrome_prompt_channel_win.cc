@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -19,7 +20,6 @@
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/optional.h"
-#include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,21 +31,17 @@
 #include "base/win/windows_types.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/public/constants/result_codes.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace safe_browsing {
 
 using base::win::ScopedHandle;
 using chrome_cleaner::ChromePromptRequest;
-using content::BrowserThread;
 using CleanerProcessDelegate = ChromePromptChannel::CleanerProcessDelegate;
-using ErrorCategory = ChromePromptChannelProtobuf::ErrorCategory;
-using CustomErrors = ChromePromptChannelProtobuf::CustomErrors;
+using ErrorCategory = ChromePromptChannel::ErrorCategory;
+using CustomErrors = ChromePromptChannel::CustomErrors;
 
-constexpr char ChromePromptChannelProtobuf::kErrorHistogramName[] =
+constexpr char ChromePromptChannel::kErrorHistogramName[] =
     "SoftwareReporter.Cleaner.ChromePromptChannelError";
 
 namespace {
@@ -54,10 +50,9 @@ template <typename ErrorType>
 void WriteStatusErrorCodeToHistogram(ErrorCategory category,
                                      ErrorType error_type) {
   base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
-      ChromePromptChannelProtobuf::kErrorHistogramName,
+      ChromePromptChannel::kErrorHistogramName,
       base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(
-      ChromePromptChannelProtobuf::GetErrorCodeInt(category, error_type));
+  histogram->Add(ChromePromptChannel::GetErrorCodeInt(category, error_type));
 }
 
 class CleanerProcessWrapper : public CleanerProcessDelegate {
@@ -70,7 +65,6 @@ class CleanerProcessWrapper : public CleanerProcessDelegate {
   base::ProcessHandle Handle() const override { return process_.Handle(); }
 
   void TerminateOnError() const override {
-    // TODO(crbug.com/969139): Assign a new exit code?
     process_.Terminate(
         chrome_cleaner::RESULT_CODE_CHROME_PROMPT_IPC_DISCONNECTED_TOO_SOON,
         /*wait=*/false);
@@ -217,12 +211,11 @@ bool ReadMessageFromPipe(HANDLE handle,
 // When done, calls |on_connection_closed|. On error also slays
 // |cleaner_process|, which is the other end of the pipe.
 void ServiceChromePromptRequests(
-    base::WeakPtr<ChromePromptChannelProtobuf> channel,
+    base::WeakPtr<ChromePromptChannel> channel,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     HANDLE request_read_handle,
     std::unique_ptr<CleanerProcessDelegate> cleaner_process,
     base::OnceClosure on_connection_closed) {
-
   // Always call OnConnectionClosed when finished whether it's with an error or
   // because a CloseConnectionRequest was received.
   base::ScopedClosureRunner call_connection_closed(
@@ -270,7 +263,7 @@ void ServiceChromePromptRequests(
     }
 
     if (request_length < 1 ||
-        request_length > ChromePromptChannelProtobuf::kMaxMessageLength) {
+        request_length > ChromePromptChannel::kMaxMessageLength) {
       WriteStatusErrorCodeToHistogram(ErrorCategory::kCustomError,
                                       CustomErrors::kRequestInvalidSize);
       LOG(ERROR) << "Bad request length: " << request_length;
@@ -296,23 +289,20 @@ void ServiceChromePromptRequests(
       case ChromePromptRequest::kQueryCapability:
         task_runner->PostTask(
             FROM_HERE,
-            base::BindOnce(
-                &ChromePromptChannelProtobuf::HandleQueryCapabilityRequest,
-                channel, chrome_prompt_request.query_capability()));
+            base::BindOnce(&ChromePromptChannel::HandleQueryCapabilityRequest,
+                           channel, chrome_prompt_request.query_capability()));
         break;
       case ChromePromptRequest::kPromptUser:
         task_runner->PostTask(
             FROM_HERE,
-            base::BindOnce(
-                &ChromePromptChannelProtobuf::HandlePromptUserRequest, channel,
-                chrome_prompt_request.prompt_user()));
+            base::BindOnce(&ChromePromptChannel::HandlePromptUserRequest,
+                           channel, chrome_prompt_request.prompt_user()));
         break;
       case ChromePromptRequest::kRemoveExtensions:
         task_runner->PostTask(
             FROM_HERE,
-            base::BindOnce(
-                &ChromePromptChannelProtobuf::HandleRemoveExtensionsRequest,
-                channel, chrome_prompt_request.remove_extensions()));
+            base::BindOnce(&ChromePromptChannel::HandleRemoveExtensionsRequest,
+                           channel, chrome_prompt_request.remove_extensions()));
         break;
       case ChromePromptRequest::kCloseConnection: {
         // Normal exit: do not kill the cleaner. OnConnectionClosed will still
@@ -323,8 +313,7 @@ void ServiceChromePromptRequests(
         // no longer needed.
         task_runner->PostTask(
             FROM_HERE,
-            base::BindOnce(&ChromePromptChannelProtobuf::CloseHandles,
-                           channel));
+            base::BindOnce(&ChromePromptChannel::CloseHandles, channel));
         return;
       }
       default:
@@ -339,62 +328,11 @@ void ServiceChromePromptRequests(
 
 }  // namespace
 
-namespace internal {
-
-// Implementation of the ChromePrompt Mojo interface. Must be constructed and
-// destructed on the IO thread. Calls ChromePromptActions to do the
-// work for each message received.
-class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
- public:
-  ChromePromptImpl(chrome_cleaner::mojom::ChromePromptRequest request,
-                   base::OnceClosure on_connection_closed,
-                   std::unique_ptr<ChromePromptActions> actions)
-      : binding_(this, std::move(request)), actions_(std::move(actions)) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    binding_.set_connection_error_handler(std::move(on_connection_closed));
-  }
-
-  ~ChromePromptImpl() override { DCHECK_CURRENTLY_ON(BrowserThread::IO); }
-
-  void PromptUser(
-      const std::vector<base::FilePath>& files_to_delete,
-      const base::Optional<std::vector<base::string16>>& registry_keys,
-      const base::Optional<std::vector<base::string16>>& extension_ids,
-      PromptUserCallback callback) override {
-    // Wrap |callback| in a ChromePromptActions::PromptUserReplyCallback that
-    // converts |prompt_acceptance| to a Mojo enum and invokes |callback| on
-    // the IO thread.
-    auto callback_wrapper =
-        [](PromptUserCallback mojo_callback,
-           ChromePromptActions::PromptAcceptance acceptance) {
-          auto mojo_acceptance =
-              static_cast<chrome_cleaner::mojom::PromptAcceptance>(acceptance);
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO})
-              ->PostTask(FROM_HERE, base::BindOnce(std::move(mojo_callback),
-                                                   mojo_acceptance));
-        };
-    actions_->PromptUser(files_to_delete, registry_keys, extension_ids,
-                         base::BindOnce(callback_wrapper, std::move(callback)));
-  }
-
-  void DisableExtensions(
-      const std::vector<base::string16>& extension_ids,
-      chrome_cleaner::mojom::ChromePrompt::DisableExtensionsCallback callback)
-      override {
-    std::move(callback).Run(actions_->DisableExtensions(extension_ids));
-  }
-
- private:
-  ChromePromptImpl(const ChromePromptImpl& other) = delete;
-  ChromePromptImpl& operator=(ChromePromptImpl& other) = delete;
-
-  mojo::Binding<chrome_cleaner::mojom::ChromePrompt> binding_;
-  std::unique_ptr<ChromePromptActions> actions_;
-};
-
-}  // namespace internal
-
-// ChromePromptChannel
+// static
+std::unique_ptr<CleanerProcessDelegate>
+ChromePromptChannel::CreateDelegateForProcess(const base::Process& process) {
+  return std::make_unique<CleanerProcessWrapper>(process);
+}
 
 ChromePromptChannel::ChromePromptChannel(
     base::OnceClosure on_connection_closed,
@@ -402,93 +340,20 @@ ChromePromptChannel::ChromePromptChannel(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : on_connection_closed_(std::move(on_connection_closed)),
       actions_(std::move(actions)),
-      task_runner_(std::move(task_runner)) {}
-
-ChromePromptChannel::~ChromePromptChannel() = default;
-
-// static
-std::unique_ptr<CleanerProcessDelegate>
-ChromePromptChannel::CreateDelegateForProcess(const base::Process& process) {
-  return std::make_unique<CleanerProcessWrapper>(process);
-}
-
-// ChromePromptChannelMojo
-
-ChromePromptChannelMojo::ChromePromptChannelMojo(
-    base::OnceClosure on_connection_closed,
-    std::unique_ptr<ChromePromptActions> actions,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : ChromePromptChannel(std::move(on_connection_closed),
-                          std::move(actions),
-                          std::move(task_runner)) {}
-
-ChromePromptChannelMojo::~ChromePromptChannelMojo() = default;
-
-bool ChromePromptChannelMojo::PrepareForCleaner(
-    base::CommandLine* command_line,
-    base::HandlesToInheritVector* handles_to_inherit) {
-  std::string pipe_name = base::NumberToString(base::RandUint64());
-  request_pipe_ = invitation_.AttachMessagePipe(pipe_name);
-  command_line->AppendSwitchASCII(chrome_cleaner::kChromeMojoPipeTokenSwitch,
-                                  pipe_name);
-  mojo_channel_.PrepareToPassRemoteEndpoint(handles_to_inherit, command_line);
-  return true;
-}
-
-void ChromePromptChannelMojo::CleanupAfterCleanerLaunchFailed() {
-  // Mojo requires RemoteProcessLaunchAttempted to be called after the launch
-  // whether it succeeded or failed.
-  mojo_channel_.RemoteProcessLaunchAttempted();
-}
-
-void ChromePromptChannelMojo::ConnectToCleaner(
-    std::unique_ptr<CleanerProcessDelegate> cleaner_process) {
-  mojo_channel_.RemoteProcessLaunchAttempted();
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ChromePromptChannelMojo::CreateChromePromptImpl,
-                     weak_factory_.GetWeakPtr(),
-                     chrome_cleaner::mojom::ChromePromptRequest(
-                         std::move(request_pipe_))));
-  mojo::OutgoingInvitation::Send(std::move(invitation_),
-                                 cleaner_process->Handle(),
-                                 mojo_channel_.TakeLocalEndpoint());
-}
-
-void ChromePromptChannelMojo::CreateChromePromptImpl(
-    chrome_cleaner::mojom::ChromePromptRequest chrome_prompt_request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!chrome_prompt_impl_);
-
-  chrome_prompt_impl_ = std::make_unique<internal::ChromePromptImpl>(
-      std::move(chrome_prompt_request),
-      // Pass ownership of on_connection_closed_ and actions_ to the
-      // ChromePromptImpl.
-      std::move(on_connection_closed_), std::move(actions_));
-}
-
-// ChromePromptChannelProtobuf
-
-ChromePromptChannelProtobuf::ChromePromptChannelProtobuf(
-    base::OnceClosure on_connection_closed,
-    std::unique_ptr<ChromePromptActions> actions,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : ChromePromptChannel(std::move(on_connection_closed),
-                          std::move(actions),
-                          std::move(task_runner)) {
+      task_runner_(std::move(task_runner)) {
   // The sequence checker validates that all handler methods and the destructor
   // are called from the same sequence, which is not the same sequence as the
   // constructor.
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-ChromePromptChannelProtobuf::~ChromePromptChannelProtobuf() {
+ChromePromptChannel::~ChromePromptChannel() {
   // To avoid race conditions accessing WeakPtr's this must be deleted on the
   // same sequence as the request handler methods are called.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-bool ChromePromptChannelProtobuf::PrepareForCleaner(
+bool ChromePromptChannel::PrepareForCleaner(
     base::CommandLine* command_line,
     base::HandlesToInheritVector* handles_to_inherit) {
   // Requests flow from client to server.
@@ -519,14 +384,14 @@ bool ChromePromptChannelProtobuf::PrepareForCleaner(
   return true;
 }
 
-void ChromePromptChannelProtobuf::CleanupAfterCleanerLaunchFailed() {
+void ChromePromptChannel::CleanupAfterCleanerLaunchFailed() {
   request_read_handle_.Close();
   request_write_handle_.Close();
   response_read_handle_.Close();
   response_write_handle_.Close();
 }
 
-void ChromePromptChannelProtobuf::ConnectToCleaner(
+void ChromePromptChannel::ConnectToCleaner(
     std::unique_ptr<CleanerProcessDelegate> cleaner_process) {
   // The handles that were passed to the cleaner are no longer needed in this
   // process.
@@ -552,11 +417,11 @@ void ChromePromptChannelProtobuf::ConnectToCleaner(
                      std::move(on_connection_closed_)));
 }
 
-void ChromePromptChannelProtobuf::WriteResponseMessage(
+void ChromePromptChannel::WriteResponseMessage(
     const google::protobuf::MessageLite& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ScopedClosureRunner error_handler(base::BindOnce(
-      &ChromePromptChannelProtobuf::CloseHandles, base::Unretained(this)));
+      &ChromePromptChannel::CloseHandles, base::Unretained(this)));
 
   std::string response_string;
   if (!message.SerializeToString(&response_string)) {
@@ -587,7 +452,7 @@ void ChromePromptChannelProtobuf::WriteResponseMessage(
   error_handler.ReplaceClosure(base::DoNothing());
 }
 
-void ChromePromptChannelProtobuf::CloseHandles() {
+void ChromePromptChannel::CloseHandles() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This will cause the next ::ReadFile call in ServiceChromePromptRequests to
   // fail, triggering the error handler that kills the cleaner process.
@@ -597,18 +462,18 @@ void ChromePromptChannelProtobuf::CloseHandles() {
   response_write_handle_.Close();
 }
 
-void ChromePromptChannelProtobuf::HandleQueryCapabilityRequest(
+void ChromePromptChannel::HandleQueryCapabilityRequest(
     const chrome_cleaner::QueryCapabilityRequest&) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // No optional capabilities are supported. Send back an empty response.
   WriteResponseMessage(chrome_cleaner::QueryCapabilityResponse());
 }
 
-void ChromePromptChannelProtobuf::HandlePromptUserRequest(
+void ChromePromptChannel::HandlePromptUserRequest(
     const chrome_cleaner::PromptUserRequest& request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ScopedClosureRunner error_handler(base::BindOnce(
-      &ChromePromptChannelProtobuf::CloseHandles, base::Unretained(this)));
+      &ChromePromptChannel::CloseHandles, base::Unretained(this)));
 
   // If there are any fields we don't know how to display, do not prompt. (Not
   // an error, could just be a more recent cleaner version.)
@@ -658,8 +523,6 @@ void ChromePromptChannelProtobuf::HandlePromptUserRequest(
     extension_ids.reserve(request.extension_ids_size());
     for (const std::string& extension_id : request.extension_ids()) {
       base::string16 extension_id_utf16;
-      // TODO(crbug.com/969139): change ChromePromptActions to use strings for
-      // extension_id and skip this conversion.
       if (!base::UTF8ToUTF16(extension_id.c_str(), extension_id.size(),
                              &extension_id_utf16)) {
         LOG(ERROR) << "Undisplayable extension id in PromptUserRequest.";
@@ -678,11 +541,11 @@ void ChromePromptChannelProtobuf::HandlePromptUserRequest(
   // Ensure SendPromptUserResponse runs on this sequence.
   auto response_callback = base::BindOnce(
       [](scoped_refptr<base::SequencedTaskRunner> task_runner,
-         base::WeakPtr<ChromePromptChannelProtobuf> channel,
-         ChromePromptActions::PromptAcceptance acceptance) {
+         base::WeakPtr<ChromePromptChannel> channel,
+         chrome_cleaner::PromptUserResponse::PromptAcceptance acceptance) {
         task_runner->PostTask(
             FROM_HERE,
-            base::BindOnce(&ChromePromptChannelProtobuf::SendPromptUserResponse,
+            base::BindOnce(&ChromePromptChannel::SendPromptUserResponse,
                            channel, acceptance));
       },
       task_runner_, weak_factory_.GetWeakPtr());
@@ -690,11 +553,11 @@ void ChromePromptChannelProtobuf::HandlePromptUserRequest(
                        optional_extension_ids, std::move(response_callback));
 }
 
-void ChromePromptChannelProtobuf::HandleRemoveExtensionsRequest(
+void ChromePromptChannel::HandleRemoveExtensionsRequest(
     const chrome_cleaner::RemoveExtensionsRequest& request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ScopedClosureRunner error_handler(base::BindOnce(
-      &ChromePromptChannelProtobuf::CloseHandles, base::Unretained(this)));
+      &ChromePromptChannel::CloseHandles, base::Unretained(this)));
 
   // extension_ids are mandatory.
   if (!request.extension_ids_size()) {
@@ -706,8 +569,6 @@ void ChromePromptChannelProtobuf::HandleRemoveExtensionsRequest(
   extension_ids.reserve(request.extension_ids_size());
   for (const std::string& extension_id : request.extension_ids()) {
     base::string16 extension_id_utf16;
-    // TODO(crbug.com/969139): change ChromePromptActions to use strings for
-    // extension_id and skip this conversion.
     if (!base::UTF8ToUTF16(extension_id.c_str(), extension_id.size(),
                            &extension_id_utf16)) {
       LOG(ERROR) << "Unusable extension id in RemoveExtensionsReqest.";
@@ -724,13 +585,11 @@ void ChromePromptChannelProtobuf::HandleRemoveExtensionsRequest(
   WriteResponseMessage(response);
 }
 
-void ChromePromptChannelProtobuf::SendPromptUserResponse(
-    ChromePromptActions::PromptAcceptance acceptance) {
+void ChromePromptChannel::SendPromptUserResponse(
+    chrome_cleaner::PromptUserResponse::PromptAcceptance acceptance) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   chrome_cleaner::PromptUserResponse response;
-  response.set_prompt_acceptance(
-      static_cast<chrome_cleaner::PromptUserResponse::PromptAcceptance>(
-          acceptance));
+  response.set_prompt_acceptance(acceptance);
   WriteResponseMessage(response);
 }
 

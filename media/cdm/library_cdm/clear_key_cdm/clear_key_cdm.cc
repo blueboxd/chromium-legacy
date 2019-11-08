@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -501,7 +502,7 @@ void ClearKeyCdm::OnUpdateSuccess(uint32_t promise_id,
     // 100 years after 01 January 1970 UTC.
     expiration = 3153600000.0;  // 100 * 365 * 24 * 60 * 60;
 
-    if (!has_set_renewal_timer_) {
+    if (!has_set_timer_) {
       // Make sure the CDM can get time and sleep if necessary.
       constexpr auto kSleepDuration = base::TimeDelta::FromSeconds(1);
       auto start_time = base::Time::Now();
@@ -509,8 +510,7 @@ void ClearKeyCdm::OnUpdateSuccess(uint32_t promise_id,
       auto time_elapsed = base::Time::Now() - start_time;
       CHECK_GE(time_elapsed, kSleepDuration);
 
-      ScheduleNextRenewal();
-      has_set_renewal_timer_ = true;
+      ScheduleNextTimer();
     }
 
     // Also send an individualization request if never sent before. Only
@@ -581,19 +581,27 @@ void ClearKeyCdm::SetServerCertificate(uint32_t promise_id,
 
 void ClearKeyCdm::TimerExpired(void* context) {
   DVLOG(1) << __func__;
-  DCHECK(has_set_renewal_timer_);
+  DCHECK(has_set_timer_);
   std::string renewal_message;
-  if (!next_renewal_message_.empty() && context == &next_renewal_message_[0]) {
-    renewal_message = next_renewal_message_;
-  } else {
-    renewal_message = "ERROR: Invalid timer context found!";
+
+  if (key_system_ == kExternalClearKeyMessageTypeTestKeySystem) {
+    if (!next_renewal_message_.empty() &&
+        context == &next_renewal_message_[0]) {
+      renewal_message = next_renewal_message_;
+    } else {
+      renewal_message = "ERROR: Invalid timer context found!";
+    }
+
+    cdm_host_proxy_->OnSessionMessage(
+        last_session_id_.data(), last_session_id_.length(),
+        cdm::kLicenseRenewal, renewal_message.data(), renewal_message.length());
+  } else if (key_system_ == kExternalClearKeyOutputProtectionTestKeySystem) {
+    // Check output protection again.
+    cdm_host_proxy_->QueryOutputProtectionStatus();
   }
 
-  cdm_host_proxy_->OnSessionMessage(
-      last_session_id_.data(), last_session_id_.length(), cdm::kLicenseRenewal,
-      renewal_message.data(), renewal_message.length());
-
-  ScheduleNextRenewal();
+  // Start the timer to schedule another timeout.
+  ScheduleNextTimer();
 }
 
 static void CopyDecryptResults(media::Decryptor::Status* status_copy,
@@ -770,8 +778,9 @@ void ClearKeyCdm::Destroy() {
   delete this;
 }
 
-void ClearKeyCdm::ScheduleNextRenewal() {
-  // Prepare the next renewal message and set timer.
+void ClearKeyCdm::ScheduleNextTimer() {
+  // Prepare the next renewal message and set timer. Renewal message is only
+  // needed for the renewal test, and is ignored for other uses of the timer.
   std::ostringstream msg_stream;
   msg_stream << "Renewal from ClearKey CDM set at time "
              << base::Time::FromDoubleT(cdm_host_proxy_->GetCurrentWallTime())
@@ -779,6 +788,7 @@ void ClearKeyCdm::ScheduleNextRenewal() {
   next_renewal_message_ = msg_stream.str();
 
   cdm_host_proxy_->SetTimer(timer_delay_ms_, &next_renewal_message_[0]);
+  has_set_timer_ = true;
 
   // Use a smaller timer delay at start-up to facilitate testing. Increase the
   // timer delay up to a limit to avoid message spam.
@@ -838,27 +848,38 @@ void ClearKeyCdm::OnQueryOutputProtectionStatus(
     cdm::QueryResult result,
     uint32_t link_mask,
     uint32_t output_protection_mask) {
-  DVLOG(1) << __func__;
+  DVLOG(1) << __func__ << " result:" << result << ", link_mask:" << link_mask
+           << ", output_protection_mask:" << output_protection_mask;
 
   if (!is_running_output_protection_test_) {
     NOTREACHED() << "OnQueryOutputProtectionStatus() called unexpectedly.";
     return;
   }
 
-  is_running_output_protection_test_ = false;
-
-// On Chrome OS, status query will fail on Linux Chrome OS build. So we ignore
-// the query result. On all other platforms, status query should succeed.
-// TODO(xhwang): Improve the check on Chrome OS builds. For example, use
-// base::SysInfo::IsRunningOnChromeOS() to differentiate between real Chrome OS
-// build and Linux Chrome OS build.
-#if !defined(OS_CHROMEOS)
-  if (result != cdm::kQuerySucceeded || link_mask != 0) {
-    OnUnitTestComplete(false);
-    return;
+  // If the query fails or it succeeds and link mask contains kLinkTypeNetwork,
+  // send a 'keystatuschange' event with a key marked as output-restricted.
+  // As the JavaScript test doesn't check key IDs, use a dummy key ID.
+  //
+  // Note that QueryOutputProtectionStatus() is known to fail on Linux Chrome
+  // OS builds.
+  //
+  // Note that this does not modify any keys, so if the caller does not check
+  // the 'keystatuschange' event, nothing will happen as decoding will continue
+  // to work.
+  if (result != cdm::kQuerySucceeded || (link_mask & cdm::kLinkTypeNetwork)) {
+    // A session ID is needed, so use |last_session_id_|. However, if this is
+    // called before a session has been created, we have no session to send
+    // this to. Note that this only works with a single session, the same as
+    // renewal messages.
+    if (!last_session_id_.empty()) {
+      const uint8_t kDummyKeyId[] = {'d', 'u', 'm', 'm', 'y'};
+      std::vector<cdm::KeyInformation> keys_vector = {
+          {kDummyKeyId, base::size(kDummyKeyId), cdm::kOutputRestricted, 0}};
+      cdm_host_proxy_->OnSessionKeysChange(
+          last_session_id_.data(), last_session_id_.length(), false,
+          keys_vector.data(), keys_vector.size());
+    }
   }
-#endif
-  OnUnitTestComplete(true);
 }
 
 void ClearKeyCdm::OnStorageId(uint32_t version,
@@ -972,6 +993,9 @@ void ClearKeyCdm::StartOutputProtectionTest() {
   DVLOG(1) << __func__;
   is_running_output_protection_test_ = true;
   cdm_host_proxy_->QueryOutputProtectionStatus();
+
+  // Also start the timer to run this periodically.
+  ScheduleNextTimer();
 }
 
 void ClearKeyCdm::StartPlatformVerificationTest() {

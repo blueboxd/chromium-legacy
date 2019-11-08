@@ -7,12 +7,15 @@ package org.chromium.weblayer_private;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowser;
+import org.chromium.weblayer_private.interfaces.IBrowserClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ITab;
@@ -29,6 +32,7 @@ public class BrowserImpl extends IBrowser.Stub {
     private BrowserViewController mViewController;
     private FragmentWindowAndroid mWindowAndroid;
     private ArrayList<TabImpl> mTabs = new ArrayList<TabImpl>();
+    private IBrowserClient mClient;
 
     public BrowserImpl(ProfileImpl profile, Bundle savedInstanceState) {
         mProfile = profile;
@@ -47,7 +51,7 @@ public class BrowserImpl extends IBrowser.Stub {
         mWindowAndroid = windowAndroid;
         mViewController = new BrowserViewController(context, windowAndroid);
         TabImpl tab = new TabImpl(mProfile, windowAndroid);
-        attachTab(tab);
+        addTab(tab);
         boolean set_active_result = setActiveTab(tab);
         assert set_active_result;
     }
@@ -93,19 +97,25 @@ public class BrowserImpl extends IBrowser.Stub {
         return mProfile;
     }
 
-    public void attachTab(ITab iTab) {
+    @Override
+    public void addTab(ITab iTab) {
         TabImpl tab = (TabImpl) iTab;
         if (tab.getBrowser() == this) return;
-        attachTabImpl(tab);
+        addTabImpl(tab);
     }
 
-    private void attachTabImpl(TabImpl tab) {
+    private void addTabImpl(TabImpl tab) {
         // Null case is only during initial creation.
         if (tab.getBrowser() != this && tab.getBrowser() != null) {
             tab.getBrowser().detachTab(tab);
         }
         mTabs.add(tab);
         tab.attachToBrowser(this);
+        try {
+            if (mClient != null) mClient.onTabAdded(tab);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
     }
 
     public void detachTab(ITab iTab) {
@@ -113,6 +123,11 @@ public class BrowserImpl extends IBrowser.Stub {
         if (tab.getBrowser() != this) return;
         if (getActiveTab() == tab) setActiveTab(null);
         mTabs.remove(tab);
+        try {
+            if (mClient != null) mClient.onTabRemoved(tab.getId());
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
         // This doesn't reset state on TabImpl as |browser| is either about to be
         // destroyed, or switching to a different fragment.
     }
@@ -120,8 +135,15 @@ public class BrowserImpl extends IBrowser.Stub {
     @Override
     public boolean setActiveTab(ITab controller) {
         TabImpl tab = (TabImpl) controller;
-        if (tab.getBrowser() != this) return false;
+        if (tab != null && tab.getBrowser() != this) return false;
         mViewController.setActiveTab(tab);
+        try {
+            if (mClient != null) {
+                mClient.onActiveTabChanged(tab != null ? tab.getId() : 0);
+            }
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
         return true;
     }
 
@@ -139,6 +161,17 @@ public class BrowserImpl extends IBrowser.Stub {
         return getActiveTab() != null ? getActiveTab().getId() : 0;
     }
 
+    @Override
+    public void setClient(IBrowserClient client) {
+        mClient = client;
+    }
+
+    @Override
+    public void destroyTab(ITab iTab) {
+        detachTab(iTab);
+        ((TabImpl) iTab).destroy();
+    }
+
     public View getFragmentView() {
         return getViewController().getView();
     }
@@ -151,7 +184,9 @@ public class BrowserImpl extends IBrowser.Stub {
             }
             mViewController = null;
         }
-        mWindowAndroid = null;
-        mViewController = null;
+        if (mWindowAndroid != null) {
+            mWindowAndroid.destroy();
+            mWindowAndroid = null;
+        }
     }
 }

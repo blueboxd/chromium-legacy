@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "services/data_decoder/public/mojom/data_decoder_service.mojom.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
@@ -61,7 +61,9 @@ class DataDecoderService : public mojom::DataDecoderService {
       mojo::PendingReceiver<mojom::BleScanParser> receiver) override;
 #endif  // OS_CHROMEOS
 
-  mojo::Receiver<mojom::DataDecoderService> receiver_{this};
+  // In-process instances (e.g. on iOS or in tests) may have multiple concurrent
+  // remote DataDecoderService clients.
+  mojo::ReceiverSet<mojom::DataDecoderService> receivers_;
 
   bool drop_image_decoders_ = false;
   bool drop_json_parsers_ = false;

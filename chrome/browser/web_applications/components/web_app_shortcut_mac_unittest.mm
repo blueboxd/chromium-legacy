@@ -20,6 +20,8 @@
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #import "chrome/common/mac/app_mode_common.h"
@@ -348,6 +350,11 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, DeleteAllShortcutsForProfile) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{features::kAppShimMultiProfile});
+
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());
   base::FilePath profile_path = info_->profile_path;

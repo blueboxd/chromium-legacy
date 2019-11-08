@@ -233,20 +233,20 @@ be describing additional metrics about the same event.
   </summary>
   <metric name="AdBytes">
     <summary>
-      Amount of bytes used to load ad resource on the page. Includes resources
-      that did not finish, and top-level ads.
+      Amount of network bytes used to load ad resource on the page. Includes
+      resources that did not finish, and top-level ads. Measured in kilobytes.
     </summary>
   </metric>
   <metric name="AdBytesPerSecond">
     <summary>
-      Amount of bytes used to load ad resources on the page, per second the page
-      was alive after commit.
+      Amount of network bytes used to load ad resources on the page, per second
+      the page was alive after commit. Measured in kilobytes per second.
     </summary>
   </metric>
   <metric name="AdBytesPerSecondAfterInteractive">
     <summary>
-      Amount of bytes used to load ad resources on the page per second after the
-      page was interactive.
+      Amount of network bytes used to load ad resources on the page per second
+      after the page was interactive. Measured in kilobytes.
     </summary>
   </metric>
   <metric name="AdCpuTime">
@@ -257,20 +257,28 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="AdJavascriptBytes">
     <summary>
-      Amount of bytes used to load ad resources with a supported javascript mime
-      type on the page.
+      Amount of network bytes used to load ad resources with a supported
+      javascript mime type on the page. Measured in kilobytes.
     </summary>
   </metric>
   <metric name="AdVideoBytes">
     <summary>
-      Amount of bytes used to load ad resources with a video mime type on the
-      page.
+      Amount of network bytes used to load ad resources with a video mime type
+      on the page. Measured in kilobytes.
+    </summary>
+  </metric>
+  <metric name="MainframeAdBytes">
+    <summary>
+      Amount of network bytes used to load ad resources in the main frame.
+      Includes resources that did not finish but does not include resources in
+      subframes. Measured in bytes. This is rounded to the nearest exponential
+      bucket (with a bucket ratio of 1.3).
     </summary>
   </metric>
   <metric name="TotalBytes">
     <summary>
-      Amount of bytes used to load resources on the page. Includes resources
-      that did not finish.
+      Amount of network bytes used to load resources on the page. Includes
+      resources that did not finish. Measured in kilobytes.
     </summary>
   </metric>
 </event>

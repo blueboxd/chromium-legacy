@@ -505,10 +505,11 @@ class FakeProtocolHandlerRegistryDelegate
 
   void RegisterWithOSAsDefaultClient(
       const std::string& protocol,
-      ProtocolHandlerRegistry* registry) override {}
+      shell_integration::DefaultWebClientWorkerCallback callback) override {}
 
-  void CheckDefaultClientWithOS(const std::string& protocol,
-                                ProtocolHandlerRegistry* registry) override {}
+  void CheckDefaultClientWithOS(
+      const std::string& protocol,
+      shell_integration::DefaultWebClientWorkerCallback callback) override {}
 
  private:
   std::set<std::string> registered_protocols_;

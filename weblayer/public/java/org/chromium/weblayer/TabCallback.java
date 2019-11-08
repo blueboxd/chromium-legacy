@@ -17,5 +17,5 @@ public abstract class TabCallback {
      *
      * @param url The new user-visible url.
      */
-    public void visibleUrlChanged(@NonNull Uri url) {}
+    public void onVisibleUrlChanged(@NonNull Uri url) {}
 }

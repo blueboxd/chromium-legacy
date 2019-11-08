@@ -1229,6 +1229,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
             0);
   EXPECT_GT(
       *ukm_recorder.GetEntryMetric(
+          entries.front(), ukm::builders::AdPageLoad::kMainframeAdBytesName),
+      0);
+  EXPECT_GT(
+      *ukm_recorder.GetEntryMetric(
           entries.front(), ukm::builders::AdPageLoad::kAdBytesPerSecondName),
       0);
 

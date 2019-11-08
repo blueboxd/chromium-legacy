@@ -756,7 +756,7 @@ ToolbarActionView* ToolbarView::GetToolbarActionViewForId(
 
 views::View* ToolbarView::GetDefaultExtensionDialogAnchorView() {
   if (extensions_container_)
-    return extensions_container_;
+    return extensions_container_->extensions_button();
   return GetAppMenuButton();
 }
 

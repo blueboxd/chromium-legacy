@@ -260,7 +260,7 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
         ToBrowserAccessibilityWin(browser_accessibility_start)->GetCOM();
     ASSERT_NE(nullptr, start_browser_accessibility_com_win);
 
-    CComPtr<ITextRangeProvider> text_range_provider =
+    ComPtr<ITextRangeProvider> text_range_provider =
         ui::AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
             start_browser_accessibility_com_win, std::move(start),
             std::move(end));

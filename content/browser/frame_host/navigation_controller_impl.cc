@@ -456,8 +456,26 @@ static bool g_check_for_repost = true;
 // static
 std::unique_ptr<NavigationEntry> NavigationController::CreateNavigationEntry(
     const GURL& url,
-    const Referrer& referrer,
-    const base::Optional<url::Origin>& initiator_origin,
+    Referrer referrer,
+    base::Optional<url::Origin> initiator_origin,
+    ui::PageTransition transition,
+    bool is_renderer_initiated,
+    const std::string& extra_headers,
+    BrowserContext* browser_context,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+  return NavigationControllerImpl::CreateNavigationEntry(
+      url, referrer, std::move(initiator_origin),
+      nullptr /* source_site_instance */, transition, is_renderer_initiated,
+      extra_headers, browser_context, std::move(blob_url_loader_factory));
+}
+
+// static
+std::unique_ptr<NavigationEntryImpl>
+NavigationControllerImpl::CreateNavigationEntry(
+    const GURL& url,
+    Referrer referrer,
+    base::Optional<url::Origin> initiator_origin,
+    SiteInstance* source_site_instance,
     ui::PageTransition transition,
     bool is_renderer_initiated,
     const std::string& extra_headers,
@@ -468,6 +486,12 @@ std::unique_ptr<NavigationEntry> NavigationController::CreateNavigationEntry(
   bool reverse_on_redirect = false;
   RewriteUrlForNavigation(url, browser_context, &url_to_load, &virtual_url,
                           &reverse_on_redirect);
+
+  // Let the NTP override the navigation params and pretend that this is a
+  // browser-initiated, bookmark-like navigation.
+  GetContentClient()->browser()->OverrideNavigationParams(
+      source_site_instance, &transition, &is_renderer_initiated, &referrer,
+      &initiator_origin);
 
   auto entry = std::make_unique<NavigationEntryImpl>(
       nullptr,  // The site instance for tabs is sent on navigation
@@ -2231,8 +2255,9 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
       // TODO(creis): Ensure this case can't exist in https://crbug.com/524208.
       entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
           GURL(url::kAboutBlankURL), referrer, initiator_origin,
-          page_transition, is_renderer_initiated, extra_headers,
-          browser_context_, nullptr /* blob_url_loader_factory */));
+          source_site_instance, page_transition, is_renderer_initiated,
+          extra_headers, browser_context_,
+          nullptr /* blob_url_loader_factory */));
     }
     entry->AddOrUpdateFrameEntry(
         node, -1, -1, nullptr,
@@ -2242,8 +2267,9 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   } else {
     // Main frame case.
     entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
-        url, referrer, initiator_origin, page_transition, is_renderer_initiated,
-        extra_headers, browser_context_, blob_url_loader_factory));
+        url, referrer, initiator_origin, source_site_instance, page_transition,
+        is_renderer_initiated, extra_headers, browser_context_,
+        blob_url_loader_factory));
     entry->root_node()->frame_entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(source_site_instance));
     entry->root_node()->frame_entry->set_method(method);
@@ -2989,8 +3015,9 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
       // TODO(creis): Ensure this case can't exist in https://crbug.com/524208.
       entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
           GURL(url::kAboutBlankURL), params.referrer, params.initiator_origin,
-          params.transition_type, params.is_renderer_initiated,
-          extra_headers_crlf, browser_context_, blob_url_loader_factory));
+          params.source_site_instance.get(), params.transition_type,
+          params.is_renderer_initiated, extra_headers_crlf, browser_context_,
+          blob_url_loader_factory));
     }
 
     entry->AddOrUpdateFrameEntry(
@@ -3002,8 +3029,9 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
     // Otherwise, create a pending entry for the main frame.
     entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
         params.url, params.referrer, params.initiator_origin,
-        params.transition_type, params.is_renderer_initiated,
-        extra_headers_crlf, browser_context_, blob_url_loader_factory));
+        params.source_site_instance.get(), params.transition_type,
+        params.is_renderer_initiated, extra_headers_crlf, browser_context_,
+        blob_url_loader_factory));
     entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
     entry->SetRedirectChain(params.redirect_chain);

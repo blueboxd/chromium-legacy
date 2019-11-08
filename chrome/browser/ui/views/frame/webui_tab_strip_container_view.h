@@ -44,7 +44,7 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
 
   views::NativeViewHost* GetNativeViewHost();
 
-  // Control buttons.
+  // Control buttons. Each must only be called once.
   std::unique_ptr<ToolbarButton> CreateNewTabButton();
   std::unique_ptr<views::View> CreateTabCounter();
 
@@ -52,6 +52,11 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   class AutoCloser;
 
   void SetContainerTargetVisibility(bool target_visible);
+
+  // When the container is open, it intercepts most tap and click
+  // events. This checks if each event should be intercepted or passed
+  // through to its target.
+  bool EventShouldPropagate(const ui::Event& event);
 
   // TabStripUI::Embedder:
   void CloseContainer() override;
@@ -61,6 +66,8 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   TabStripUILayout GetLayout() override;
 
   // views::View:
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
   int GetHeightForWidth(int w) const override;
 
   // gfx::AnimationDelegate:
@@ -72,10 +79,13 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
 
   // views::ViewObserver:
   void OnViewBoundsChanged(View* observed_view) override;
+  void OnViewIsDeleting(View* observed_view) override;
 
   Browser* const browser_;
   views::WebView* const web_view_;
   views::View* const tab_contents_container_;
+  views::View* new_tab_button_ = nullptr;
+  views::View* tab_counter_ = nullptr;
 
   int desired_height_ = 0;
 

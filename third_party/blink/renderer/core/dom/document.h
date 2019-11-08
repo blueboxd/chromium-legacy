@@ -1359,11 +1359,6 @@ class CORE_EXPORT Document : public ContainerNode,
     secure_context_state_ = state;
   }
 
-  void BindDocumentInterfaceBroker(mojo::ScopedMessagePipeHandle js_handle);
-
-  mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
-      mojo::ScopedMessagePipeHandle blink_handle);
-
   CanvasFontCache* GetCanvasFontCache();
 
   // Used by unit tests so that all parsing will be main thread for
@@ -1430,7 +1425,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   CoreProbeSink* GetProbeSink() final;
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
-  mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() final;
 
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
 

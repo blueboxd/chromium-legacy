@@ -212,6 +212,10 @@ std::string GetShellUserAgent() {
   return BuildUserAgentFromProduct(product);
 }
 
+std::string GetShellLanguage() {
+  return "en-us,en";
+}
+
 blink::UserAgentMetadata GetShellUserAgentMetadata() {
   blink::UserAgentMetadata metadata;
 
@@ -363,7 +367,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
 }
 
 std::string ShellContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
-  return "en-us,en";
+  return GetShellLanguage();
 }
 
 std::string ShellContentBrowserClient::GetDefaultDownloadName() {
@@ -499,7 +503,7 @@ ShellContentBrowserClient::CreateNetworkContext(
       network::mojom::NetworkContextParams::New();
   UpdateCorsExemptHeader(context_params.get());
   context_params->user_agent = GetUserAgent();
-  context_params->accept_language = "en-us,en";
+  context_params->accept_language = GetAcceptLangs(context);
 
 #if BUILDFLAG(ENABLE_REPORTING)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -8,6 +8,8 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,6 +59,8 @@ void BackButton::OnShelfButtonAboutToRequestFocusFromTabTraversal(
 void BackButton::ButtonPressed(views::Button* sender,
                                const ui::Event& event,
                                views::InkDrop* ink_drop) {
+  base::RecordAction(base::UserMetricsAction("AppList_BackButtonPressed"));
+
   // Send up event as well as down event as ARC++ clients expect this sequence.
   // TODO: Investigate if we should be using the current modifiers.
   aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();

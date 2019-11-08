@@ -53,7 +53,7 @@ class CastContentWindowAndroid : public CastContentWindow {
       const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
-  CastContentWindow::Delegate* const delegate_;
+  const std::string activity_id_;
   base::android::ScopedJavaGlobalRef<jobject> java_window_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentWindowAndroid);

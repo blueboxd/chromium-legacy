@@ -72,7 +72,6 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "google_apis/drive/auth_service.h"
-#include "net/base/hex_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
@@ -1093,7 +1092,10 @@ FileManagerPrivateDetectCharacterEncodingFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::string input = net::HexDecode(params->bytes);
+  std::string input;
+  if (!base::HexStringToString(params->bytes, &input))
+    input.clear();
+
   std::string encoding;
   bool success = base::DetectEncoding(input, &encoding);
   return RespondNow(OneArgument(std::make_unique<base::Value>(

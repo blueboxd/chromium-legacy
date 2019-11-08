@@ -177,6 +177,13 @@ def ShouldInlineUnion(union):
            for field in union.fields)
 
 
+def HasPackedMethodOrdinals(interface):
+  """Returns whether all method ordinals are packed such that indexing into a
+  table would be efficient."""
+  max_ordinal = len(interface.methods) * 2
+  return all(method.ordinal < max_ordinal for method in interface.methods)
+
+
 class StructConstructor(object):
   """Represents a constructor for a generated struct.
 
@@ -367,6 +374,7 @@ class Generator(generator.Generator):
       "get_pad": pack.GetPad,
       "get_qualified_name_for_kind": self._GetQualifiedNameForKind,
       "has_callbacks": mojom.HasCallbacks,
+      "has_packed_method_ordinals": HasPackedMethodOrdinals,
       "has_sync_methods": mojom.HasSyncMethods,
       "method_supports_lazy_serialization":
           self._MethodSupportsLazySerialization,

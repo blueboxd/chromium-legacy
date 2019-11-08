@@ -22,12 +22,6 @@ class ChromiumPlugin implements Plugin<Project> {
 
             /** Libraries that are only used during build. These support android. */
             buildCompile
-
-            /**
-             * Marks that the dependency will only be used during building, as an annotation
-             * processor. It will not be usable in the APK, and not marked as supporting android.
-             */
-            annotationProcessor
         }
     }
 }

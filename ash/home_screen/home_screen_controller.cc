@@ -4,6 +4,7 @@
 
 #include "ash/home_screen/home_screen_controller.h"
 
+#include <memory>
 #include <vector>
 
 #include "ash/home_screen/home_launcher_gesture_handler.h"
@@ -12,6 +13,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -157,9 +159,6 @@ bool HomeScreenController::GoHome(int64_t display_id) {
     return true;
   }
 
-  delegate_->OnHomeLauncherTargetPositionChanged(true /* showing */,
-                                                 display_id);
-
   // First minimize all inactive windows.
   const bool window_minimized =
       MinimizeAllWindows(windows, active_windows /*windows_to_ignore*/);
@@ -167,8 +166,26 @@ bool HomeScreenController::GoHome(int64_t display_id) {
   // Animate currently active windows into the home screen - they will be
   // minimized by WindowTransformToHomeScreenAnimation when the transition
   // finishes.
-
   if (!active_windows.empty()) {
+    {
+      // Disable window animations before updating home launcher target
+      // position. Calling OnHomeLauncherTargetPositionChanged() can cause
+      // display work area update, and resulting cross-fade window bounds change
+      // animation can interfere with WindowTransformToHomeScreenAnimation
+      // visuals.
+      //
+      // TODO(https://crbug.com/1019531): This can be removed once transitions
+      // between in-app state and home do not cause work area updates.
+      std::vector<std::unique_ptr<ScopedAnimationDisabler>> animation_disablers;
+      for (auto* window : active_windows) {
+        animation_disablers.push_back(
+            std::make_unique<ScopedAnimationDisabler>(window));
+      }
+
+      delegate_->OnHomeLauncherTargetPositionChanged(true /* showing */,
+                                                     display_id);
+    }
+
     base::RepeatingClosure window_transforms_callback = base::BarrierClosure(
         active_windows.size(),
         base::BindOnce(&HomeScreenController::NotifyHomeLauncherTransitionEnded,
@@ -193,8 +210,6 @@ bool HomeScreenController::GoHome(int64_t display_id) {
                                     : base::NullCallback());
       }
     }
-  } else {
-    delegate_->OnHomeLauncherAnimationComplete(true /*shown*/, display_id);
   }
 
   return window_minimized || !active_windows.empty();

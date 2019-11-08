@@ -4612,4 +4612,24 @@ TEST_F(DisplayManagerTest, UpdateRootWindowForNewWindows) {
   }
 }
 
+// Test that exiting mirror mode in tablet mode with a fullscreen window
+// does not cause a crash (crbug.com/1021662).
+TEST_F(DisplayManagerTest, ExitMirrorModeInTabletMode) {
+  // Simulate a tablet with and external display connected.
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  UpdateDisplay("800x600,800x600");
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+
+  // Create a window to force in-app shelf.
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+
+  // Exit mirror mode.
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(display_manager()->IsInSoftwareMirrorMode());
+}
+
 }  // namespace ash

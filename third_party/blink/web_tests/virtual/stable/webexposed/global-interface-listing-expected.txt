@@ -2842,7 +2842,6 @@ interface HTMLLinkElement : HTMLElement
     getter hreflang
     getter imageSizes
     getter imageSrcset
-    getter import
     getter integrity
     getter media
     getter referrerPolicy

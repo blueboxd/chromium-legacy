@@ -558,23 +558,31 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedSensorCreate) {
       ABI::Windows::Devices::Sensors::ILightSensorReadingChangedEventArgs,
       ABI::Windows::Devices::Sensors::LightSensorReadingChangedEventArgs>>();
 
+  // Case: sensor was created successfully
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
+  EXPECT_TRUE(sensor->Initialize());
+  EXPECT_TRUE(sensor->IsUnderlyingWinrtObjectValidForTesting());
 
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
-
+  // Case: failed to query sensor
   fake_sensor_factory->SetGetDefaultReturnCode(E_FAIL);
-  EXPECT_EQ(sensor->Initialize(),
-            SensorWinrtCreateFailure::kErrorGetDefaultSensorFailed);
+  EXPECT_FALSE(sensor->Initialize());
+  EXPECT_FALSE(sensor->IsUnderlyingWinrtObjectValidForTesting());
+  fake_sensor_factory->SetGetDefaultReturnCode(S_OK);
 
-  sensor->InitForTests(base::BindLambdaForTesting(
+  // Case: Sensor does not exist on system
+  fake_sensor_factory->fake_sensor_ = nullptr;
+  EXPECT_FALSE(sensor->Initialize());
+  EXPECT_FALSE(sensor->IsUnderlyingWinrtObjectValidForTesting());
+
+  // Case:: failed to activate sensor factory
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return E_FAIL; }));
-  EXPECT_EQ(
-      sensor->Initialize(),
-      SensorWinrtCreateFailure::kErrorISensorWinrtStaticsActivationFailed);
+  EXPECT_FALSE(sensor->Initialize());
+  EXPECT_FALSE(sensor->IsUnderlyingWinrtObjectValidForTesting());
 }
 
 // Tests that PlatformSensorReaderWinrtBase returns the right
@@ -590,10 +598,10 @@ TEST_F(PlatformSensorReaderTestWinrt, SensorMinimumReportInterval) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   EXPECT_EQ(sensor->GetMinimalReportingInterval().InMilliseconds(),
             kExpectedMinimumReportInterval);
@@ -613,11 +621,10 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedSensorMinimumReportInterval) {
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
   fake_sensor->SetGetMinimumReportIntervalReturnCode(E_FAIL);
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(),
-            SensorWinrtCreateFailure::kErrorGetMinReportIntervalFailed);
+  EXPECT_TRUE(sensor->Initialize());
 
   EXPECT_EQ(sensor->GetMinimalReportingInterval().InMilliseconds(), 0);
 }
@@ -636,10 +643,10 @@ TEST_F(PlatformSensorReaderTestWinrt, SensorTimestampConversion) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
 
@@ -688,10 +695,10 @@ TEST_F(PlatformSensorReaderTestWinrt, StartStopSensorCallbacks) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
   EXPECT_TRUE(sensor->StartSensor(sensor_config));
@@ -722,10 +729,10 @@ TEST_F(PlatformSensorReaderTestWinrt, StartWithoutStopSensorCallbacks) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
   EXPECT_TRUE(sensor->StartSensor(sensor_config));
@@ -748,10 +755,10 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedSensorStart) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   fake_sensor->SetPutReportIntervalReturnCode(E_FAIL);
 
@@ -777,10 +784,10 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedSensorStop) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
   EXPECT_TRUE(sensor->StartSensor(sensor_config));
@@ -803,10 +810,10 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedLightSensorSampleParse) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
 
@@ -844,10 +851,10 @@ TEST_F(PlatformSensorReaderTestWinrt, SensorClientNotification) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
 
@@ -886,12 +893,12 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckAccelerometerReadingConversion) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtAccelerometer>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IAccelerometerStatics**
               sensor_factory) -> HRESULT {
         return fake_sensor_factory.CopyTo(sensor_factory);
       }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
@@ -927,12 +934,12 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedAccelerometerSampleParse) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtAccelerometer>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IAccelerometerStatics**
               sensor_factory) -> HRESULT {
         return fake_sensor_factory.CopyTo(sensor_factory);
       }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   sensor->SetClient(mock_client.get());
@@ -976,10 +983,10 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckGyrometerReadingConversion) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtGyrometer>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IGyrometerStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
@@ -1013,10 +1020,10 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedGyrometerSampleParse) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtGyrometer>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IGyrometerStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   sensor->SetClient(mock_client.get());
@@ -1060,10 +1067,10 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckMagnetometerReadingConversion) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtMagnetometer>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IMagnetometerStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
@@ -1097,10 +1104,10 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedMagnetometerSampleParse) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtMagnetometer>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IMagnetometerStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   sensor->SetClient(mock_client.get());
@@ -1145,10 +1152,10 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckInclinometerReadingConversion) {
 
   auto sensor =
       std::make_unique<PlatformSensorReaderWinrtAbsOrientationEulerAngles>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IInclinometerStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
@@ -1183,10 +1190,10 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedInclinometerSampleParse) {
 
   auto sensor =
       std::make_unique<PlatformSensorReaderWinrtAbsOrientationEulerAngles>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IInclinometerStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   sensor->SetClient(mock_client.get());
@@ -1233,12 +1240,12 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckOrientationSensorReadingConversion) {
 
   auto sensor =
       std::make_unique<PlatformSensorReaderWinrtAbsOrientationQuaternion>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IOrientationSensorStatics**
               sensor_factory) -> HRESULT {
         return fake_sensor_factory.CopyTo(sensor_factory);
       }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
@@ -1276,12 +1283,12 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedOrientationSampleParse) {
 
   auto sensor =
       std::make_unique<PlatformSensorReaderWinrtAbsOrientationQuaternion>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IOrientationSensorStatics**
               sensor_factory) -> HRESULT {
         return fake_sensor_factory.CopyTo(sensor_factory);
       }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   sensor->SetClient(mock_client.get());
@@ -1311,10 +1318,10 @@ TEST_F(PlatformSensorReaderTestWinrt, LightSensorThresholding) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
 
@@ -1367,12 +1374,12 @@ TEST_F(PlatformSensorReaderTestWinrt, AccelerometerThresholding) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtAccelerometer>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IAccelerometerStatics**
               sensor_factory) -> HRESULT {
         return fake_sensor_factory.CopyTo(sensor_factory);
       }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
 
@@ -1437,10 +1444,10 @@ TEST_F(PlatformSensorReaderTestWinrt, GyrometerThresholding) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtGyrometer>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IGyrometerStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
 
@@ -1505,10 +1512,10 @@ TEST_F(PlatformSensorReaderTestWinrt, MagnetometerThresholding) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtMagnetometer>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IMagnetometerStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
 
@@ -1580,10 +1587,10 @@ TEST_F(PlatformSensorReaderTestWinrt, AbsOrientationEulerThresholding) {
 
   auto sensor =
       std::make_unique<PlatformSensorReaderWinrtAbsOrientationEulerAngles>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IInclinometerStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
 
@@ -1665,12 +1672,12 @@ TEST_F(PlatformSensorReaderTestWinrt, AbsOrientationQuatThresholding) {
 
   auto sensor =
       std::make_unique<PlatformSensorReaderWinrtAbsOrientationQuaternion>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::IOrientationSensorStatics**
               sensor_factory) -> HRESULT {
         return fake_sensor_factory.CopyTo(sensor_factory);
       }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
 
@@ -1728,13 +1735,13 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckSensorActivationHistogram) {
       ABI::Windows::Devices::Sensors::LightSensorReadingChangedEventArgs>>();
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
   base::HistogramTester histogram_tester;
 
   // Trigger S_OK
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
 
   EXPECT_EQ(histogram_tester.GetBucketCount(
                 "Sensors.Windows.WinRT.Activation.Result", S_OK),
@@ -1742,15 +1749,13 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckSensorActivationHistogram) {
 
   // Trigger E_ACCESSDENIED twice
   fake_sensor_factory->SetGetDefaultReturnCode(E_ACCESSDENIED);
-  EXPECT_EQ(sensor->Initialize(),
-            SensorWinrtCreateFailure::kErrorGetDefaultSensorFailed);
+  EXPECT_FALSE(sensor->Initialize());
 
   EXPECT_EQ(histogram_tester.GetBucketCount(
                 "Sensors.Windows.WinRT.Activation.Result", E_ACCESSDENIED),
             1);
 
-  EXPECT_EQ(sensor->Initialize(),
-            SensorWinrtCreateFailure::kErrorGetDefaultSensorFailed);
+  EXPECT_FALSE(sensor->Initialize());
 
   EXPECT_EQ(histogram_tester.GetBucketCount(
                 "Sensors.Windows.WinRT.Activation.Result", E_ACCESSDENIED),
@@ -1773,10 +1778,10 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckSensorStartHistogram) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
   base::HistogramTester histogram_tester;
 
   // Trigger S_OK
@@ -1823,10 +1828,10 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckSensorStopHistogram) {
   auto fake_sensor = fake_sensor_factory->fake_sensor_;
 
   auto sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  sensor->InitForTests(base::BindLambdaForTesting(
+  sensor->InitForTesting(base::BindLambdaForTesting(
       [&](ABI::Windows::Devices::Sensors::ILightSensorStatics** sensor_factory)
           -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
-  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+  EXPECT_TRUE(sensor->Initialize());
   base::HistogramTester histogram_tester;
 
   // Trigger E_UNEXPECTED

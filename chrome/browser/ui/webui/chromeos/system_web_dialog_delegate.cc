@@ -123,9 +123,7 @@ std::string SystemWebDialogDelegate::GetDialogArgs() const {
   return std::string();
 }
 
-void SystemWebDialogDelegate::OnDialogShown(
-    content::WebUI* webui,
-    content::RenderViewHost* render_view_host) {
+void SystemWebDialogDelegate::OnDialogShown(content::WebUI* webui) {
   webui_ = webui;
 
   if (features::IsSplitSettingsEnabled()) {

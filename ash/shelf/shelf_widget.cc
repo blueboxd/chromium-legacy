@@ -108,6 +108,8 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   bool CanActivate() const override;
   void ReorderChildLayers(ui::Layer* parent_layer) override;
+  void OnWidgetInitialized() override;
+
   void UpdateBackgroundBlur();
   void UpdateOpaqueBackground();
   void UpdateDragHandle();
@@ -169,8 +171,6 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   drag_handle_->layer()->SetRoundedCornerRadius(
       {radius, radius, radius, radius});
   drag_handle_->SetSize(kDragHandleSize);
-
-  UpdateOpaqueBackground();
 }
 
 ShelfWidget::DelegateView::~DelegateView() = default;
@@ -209,6 +209,10 @@ bool ShelfWidget::DelegateView::CanActivate() const {
 void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
   views::View::ReorderChildLayers(parent_layer);
   parent_layer->StackAtBottom(&opaque_background_);
+}
+
+void ShelfWidget::DelegateView::OnWidgetInitialized() {
+  UpdateOpaqueBackground();
 }
 
 void ShelfWidget::DelegateView::UpdateBackgroundBlur() {

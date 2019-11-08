@@ -305,6 +305,19 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // requests corresponding to the current pending entry.
   std::unique_ptr<PendingEntryRef> ReferencePendingEntry();
 
+  // Like NavigationController::CreateNavigationEntry, but takes an extra
+  // |source_site_instance| argument.
+  static std::unique_ptr<NavigationEntryImpl> CreateNavigationEntry(
+      const GURL& url,
+      Referrer referrer,
+      base::Optional<url::Origin> initiator_origin,
+      SiteInstance* source_site_instance,
+      ui::PageTransition transition,
+      bool is_renderer_initiated,
+      const std::string& extra_headers,
+      BrowserContext* browser_context,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+
  private:
   friend class RestoreHelper;
 

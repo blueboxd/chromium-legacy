@@ -164,6 +164,13 @@ const char kSampleSTHTreeHeadSignature[] =
     "d3";
 size_t kSampleSTHTreeSize = 21u;
 
+std::string HexDecode(base::StringPiece input) {
+  std::string result;
+  if (!base::HexStringToString(input, &result))
+    result.clear();
+  return result;
+}
+
 }  // namespace
 
 void GetX509CertSignedEntry(SignedEntryData* entry) {

@@ -18,6 +18,7 @@
 #include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/store_update_data.h"
 
 namespace base {
@@ -39,6 +40,8 @@ class OptimizationGuideStore {
   using HintLoadedCallback =
       base::OnceCallback<void(const std::string&,
                               std::unique_ptr<proto::Hint>)>;
+  using PredictionModelLoadedCallback =
+      base::OnceCallback<void(std::unique_ptr<proto::PredictionModel>)>;
   using EntryKey = std::string;
   using StoreEntryProtoDatabase =
       leveldb_proto::ProtoDatabase<proto::StoreEntry>;
@@ -135,7 +138,7 @@ class OptimizationGuideStore {
   void UpdateFetchedHints(std::unique_ptr<StoreUpdateData> fetched_hints_data,
                           base::OnceClosure callback);
 
-  // Removes fetched hint store entries from |this|. |hint_entry_keys_| is
+  // Removes fetched hint store entries from |this|. |entry_keys_| is
   // updated after the fetched hint entries are removed.
   void ClearFetchedHintsFromDatabase();
 
@@ -158,9 +161,37 @@ class OptimizationGuideStore {
   base::Time FetchedHintsUpdateTime() const;
 
   // Removes all fetched hints that have expired from the store.
-  // |hint_entry_keys| is updated after the expired fetched hints are
+  // |entry_keys_| is updated after the expired fetched hints are
   // removed.
   void PurgeExpiredFetchedHints();
+
+  // Creates and returns a StoreUpdateData object for Prediction Models. This
+  // object is used to collect a batch of prediction models in a format that is
+  // usable to update the store on a background thread. This is always created
+  // when prediction models have been successfully fetched from the remote
+  // Optimization Guide Service so the store can update old prediction models.
+  std::unique_ptr<StoreUpdateData> CreateUpdateDataForPredictionModels() const;
+
+  // Updates the prediciton models contained in the store. The callback is run
+  // asynchronously after the database stores the prediction models.
+  void UpdatePredictionModels(
+      std::unique_ptr<StoreUpdateData> prediction_models_update_data,
+      base::OnceClosure callback);
+
+  // Finds the entry key for the prediction model if it is known to the store.
+  // Returns true if an entry key is found and |out_prediction_model_entry_key|
+  // is populated with the matching key.
+  bool FindPredictionModelEntryKey(
+      proto::OptimizationTarget optimization_target,
+      OptimizationGuideStore::EntryKey* out_prediction_model_entry_key);
+
+  // Loads the prediction model specified by |prediction_model_entry_key|. After
+  // the load finishes, the prediction model data is passed to |callback|. In
+  // the case where the prediction model cannot be loaded, the callback is run
+  // with a nullptr. Depending on the load result, the callback may be
+  // synchronous or asynchronous.
+  void LoadPredictionModel(const EntryKey& prediction_model_entry_key,
+                           PredictionModelLoadedCallback callback);
 
  private:
   friend class OptimizationGuideStoreTest;
@@ -237,15 +268,14 @@ class OptimizationGuideStore {
   // their default state. Called after the database is destroyed.
   void ClearComponentVersion();
 
-  // Asynchronously loads the hint entry keys from the store, populates
-  // |hint_entry_keys_| with them, and runs the provided callback after they
-  // finish loading. In the case where there is currently an in-flight component
-  // update, this does nothing, as the hint entry keys will be loaded after the
-  // component update completes.
-  void MaybeLoadHintEntryKeys(base::OnceClosure callback);
+  // Asynchronously loads the entry keys from the store, populates |entry_keys_|
+  // with them, and runs the provided callback after they finish loading. In the
+  // case where there is currently an in-flight update, this does nothing, as
+  // the entry keys will be loaded after the update completes.
+  void MaybeLoadEntryKeys(base::OnceClosure callback);
 
-  // Returns the total hint entry keys contained within the store.
-  size_t GetHintEntryKeyCount() const;
+  // Returns the total entry keys contained within the store.
+  size_t GetEntryKeyCount() const;
 
   // Finds the most specific host suffix of the host name that the store has an
   // hint with the provided prefix, |hint_entry_key_prefix|. |out_entry_key| is
@@ -283,20 +313,20 @@ class OptimizationGuideStore {
   // Callback that runs after the database is purged during initialization.
   void OnPurgeDatabase(base::OnceClosure callback, bool success);
 
-  // Callback that runs after the hints data within the store is fully
-  // updated. If the update was successful, it attempts to load all of the hint
+  // Callback that runs after the data within the store is fully
+  // updated. If the update was successful, it attempts to load all of the
   // entry keys contained within the database.
-  void OnUpdateHints(base::OnceClosure callback, bool success);
+  void OnUpdateStore(base::OnceClosure callback, bool success);
 
   // Callback that runs after the hint entry keys are fully loaded. If there's
   // currently an in-flight component update, then the hint entry keys will be
   // loaded again after the component update completes, so the results are
-  // tossed; otherwise, |hint_entry_keys| is moved into |hint_entry_keys_|.
+  // tossed; otherwise, |entry_keys| is moved into |entry_keys_|.
   // Regardless of the outcome of loading the keys, the callback always runs.
-  void OnLoadHintEntryKeys(std::unique_ptr<EntryKeySet> hint_entry_keys,
-                           base::OnceClosure callback,
-                           bool success,
-                           std::unique_ptr<EntryMap> unused);
+  void OnLoadEntryKeys(std::unique_ptr<EntryKeySet> entry_keys,
+                       base::OnceClosure callback,
+                       bool success,
+                       std::unique_ptr<EntryMap> unused);
 
   // Callback that runs after a hint entry is loaded from the database. If
   // there's currently an in-flight component update, then the hint is about to
@@ -308,6 +338,17 @@ class OptimizationGuideStore {
                   HintLoadedCallback callback,
                   bool success,
                   std::unique_ptr<proto::StoreEntry> entry);
+
+  // Callback that runs after a prediction model entry is loaded from the
+  // database. If there's currently an in-flight update, then the data could be
+  // invalidated, so loaded model is discarded. Otherwise, the prediction model
+  // is released into the callback, allowing the caller to own the prediction
+  // model without copying it. Regardless of the success or failure of
+  // retrieving the key, the callback always runs (it simply runs with a nullptr
+  // on failure).
+  void OnLoadPredictionModel(PredictionModelLoadedCallback callback,
+                             bool success,
+                             std::unique_ptr<proto::StoreEntry> entry);
 
   // Proto database used by the store.
   std::unique_ptr<StoreEntryProtoDatabase> database_;

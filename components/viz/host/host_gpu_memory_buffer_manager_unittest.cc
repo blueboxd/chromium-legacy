@@ -160,7 +160,7 @@ class TestGpuService : public mojom::GpuService {
 
   void WakeUpGpu() override {}
 
-  void GpuSwitched() override {}
+  void GpuSwitched(gl::GpuPreference active_gpu_heuristic) override {}
 
   void DestroyAllChannels() override {}
 

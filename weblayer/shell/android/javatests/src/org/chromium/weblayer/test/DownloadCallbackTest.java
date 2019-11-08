@@ -5,7 +5,6 @@
 package org.chromium.weblayer.test;
 
 import android.net.Uri;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
@@ -19,7 +18,6 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.weblayer.DownloadCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -47,7 +45,7 @@ public class DownloadCallbackTest {
         public long mContentLength;
 
         @Override
-        public void downloadRequested(String url, String userAgent, String contentDisposition,
+        public void onDownloadRequested(String url, String userAgent, String contentDisposition,
                 String mimetype, long contentLength) {
             mUrl = url;
             mUserAgent = userAgent;
@@ -117,20 +115,11 @@ public class DownloadCallbackTest {
     @Test
     @SmallTest
     public void testDownloadByLinkAttribute() {
-        EmbeddedTestServer testServer = new EmbeddedTestServer();
-
-        testServer.initializeNative(InstrumentationRegistry.getInstrumentation().getContext(),
-                EmbeddedTestServer.ServerHTTPSSetting.USE_HTTP);
-        testServer.addDefaultHandlers("weblayer/test/data");
-        Assert.assertTrue(testServer.start(0));
-
-        String pageUrl = testServer.getURL("/download.html");
+        String pageUrl = mActivityTestRule.getTestDataURL("download.html");
         mActivityTestRule.navigateAndWait(pageUrl);
 
         EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());
         mCallback.waitForDownload();
-        Assert.assertEquals(testServer.getURL("/lorem_ipsum.txt"), mCallback.mUrl);
-
-        testServer.stopAndDestroyServer();
+        Assert.assertEquals(mActivityTestRule.getTestDataURL("lorem_ipsum.txt"), mCallback.mUrl);
     }
 }

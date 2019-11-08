@@ -22,6 +22,11 @@ import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ITabClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Represents a single tab in a browser. More specifically, owns a NavigationController, and allows
  * configuring state of the tab, such as delegates and callbacks.
@@ -30,6 +35,9 @@ public final class Tab {
     /** The top level key of the JSON object returned by executeScript(). */
     public static final String SCRIPT_RESULT_KEY = "result";
 
+    // Maps from id (as returned from ITab.getId()) to Tab.
+    private static final Map<Integer, Tab> sTabMap = new HashMap<Integer, Tab>();
+
     private final ITab mImpl;
     private FullscreenCallbackClientImpl mFullscreenCallbackClient;
     private final NavigationController mNavigationController;
@@ -37,11 +45,14 @@ public final class Tab {
     private Browser mBrowser;
     private DownloadCallbackClientImpl mDownloadCallbackClient;
     private NewTabCallback mNewTabCallback;
+    // Id from the remote side.
+    private final int mId;
 
     Tab(ITab impl, Browser browser) {
         mImpl = impl;
         mBrowser = browser;
         try {
+            mId = impl.getId();
             mImpl.setClient(new TabClientImpl());
         } catch (RemoteException e) {
             throw new APICallException(e);
@@ -49,9 +60,40 @@ public final class Tab {
 
         mCallbacks = new ObserverList<TabCallback>();
         mNavigationController = NavigationController.create(mImpl);
-        mBrowser.registerTab(this);
+        registerTab(this);
     }
 
+    static void registerTab(Tab tab) {
+        assert getTabById(tab.getId()) == null;
+        sTabMap.put(tab.getId(), tab);
+    }
+
+    static void unregisterTab(Tab tab) {
+        assert getTabById(tab.getId()) != null;
+        sTabMap.remove(tab.getId());
+    }
+
+    static Tab getTabById(int id) {
+        return sTabMap.get(id);
+    }
+
+    static List<Tab> getTabsInBrowser(Browser browser) {
+        List<Tab> tabs = new ArrayList<Tab>();
+        for (Tab tab : sTabMap.values()) {
+            if (tab.getBrowser() == browser) tabs.add(tab);
+        }
+        return tabs;
+    }
+
+    int getId() {
+        return mId;
+    }
+
+    void setBrowser(Browser browser) {
+        mBrowser = browser;
+    }
+
+    @NonNull
     public Browser getBrowser() {
         ThreadCheck.ensureOnUiThread();
         return mBrowser;
@@ -87,6 +129,7 @@ public final class Tab {
         }
     }
 
+    @Nullable
     public DownloadCallback getDownloadCallback() {
         ThreadCheck.ensureOnUiThread();
         return mDownloadCallbackClient != null ? mDownloadCallbackClient.getCallback() : null;
@@ -166,16 +209,19 @@ public final class Tab {
         public void visibleUrlChanged(String url) {
             Uri uri = Uri.parse(url);
             for (TabCallback callback : mCallbacks) {
-                callback.visibleUrlChanged(uri);
+                callback.onVisibleUrlChanged(uri);
             }
         }
 
         @Override
-        public void onNewTab(ITab iTab, int mode) {
+        public void onNewTab(int tabId, int mode) {
             // This should only be hit if setNewTabCallback() has been called with a non-null
             // value.
             assert mNewTabCallback != null;
-            Tab tab = new Tab(iTab, mBrowser);
+            Tab tab = getTabById(tabId);
+            // Tab should have already been created by way of BrowserClient.
+            assert tab != null;
+            assert tab.getBrowser() == getBrowser();
             mNewTabCallback.onNewTab(tab, mode);
         }
     }
@@ -194,7 +240,7 @@ public final class Tab {
         @Override
         public void downloadRequested(String url, String userAgent, String contentDisposition,
                 String mimetype, long contentLength) {
-            mCallback.downloadRequested(
+            mCallback.onDownloadRequested(
                     url, userAgent, contentDisposition, mimetype, contentLength);
         }
     }
@@ -214,12 +260,12 @@ public final class Tab {
         public void enterFullscreen(IObjectWrapper exitFullscreenWrapper) {
             ValueCallback<Void> exitFullscreenCallback = (ValueCallback<Void>) ObjectWrapper.unwrap(
                     exitFullscreenWrapper, ValueCallback.class);
-            mCallback.enterFullscreen(() -> exitFullscreenCallback.onReceiveValue(null));
+            mCallback.onEnterFullscreen(() -> exitFullscreenCallback.onReceiveValue(null));
         }
 
         @Override
         public void exitFullscreen() {
-            mCallback.exitFullscreen();
+            mCallback.onExitFullscreen();
         }
     }
 }

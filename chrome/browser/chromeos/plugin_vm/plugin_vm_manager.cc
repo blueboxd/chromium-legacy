@@ -140,8 +140,8 @@ void PluginVmManager::LaunchPluginVm() {
   chromeos::DBusThreadManager::Get()
       ->GetDebugDaemonClient()
       ->StartPluginVmDispatcher(
-          base::BindOnce(&PluginVmManager::OnStartPluginVmDispatcher,
-                         weak_ptr_factory_.GetWeakPtr()));
+          owner_id_, base::BindOnce(&PluginVmManager::OnStartPluginVmDispatcher,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmManager::StopPluginVm() {

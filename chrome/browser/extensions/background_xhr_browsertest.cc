@@ -6,16 +6,15 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
-#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -45,13 +44,6 @@ constexpr const char kWebstoreDomain[] = "cws.com";
 
 std::unique_ptr<net::ClientCertStore> CreateNullCertStore() {
   return nullptr;
-}
-
-void InstallNullCertStoreFactoryOnIOThread(
-    content::ResourceContext* resource_context) {
-  ProfileIOData::FromResourceContext(resource_context)
-      ->set_client_cert_store_factory_for_testing(
-          base::Bind(&CreateNullCertStore));
 }
 
 }  // namespace
@@ -87,13 +79,9 @@ class BackgroundXhrTest : public ExtensionBrowserTest {
 IN_PROC_BROWSER_TEST_F(BackgroundXhrTest, TlsClientAuth) {
   // Install a null ClientCertStore so the client auth prompt isn't bypassed due
   // to the system certificate store returning no certificates.
-  base::RunLoop loop;
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&InstallNullCertStoreFactoryOnIOThread,
-                     browser()->profile()->GetResourceContext()),
-      loop.QuitClosure());
-  loop.Run();
+  ProfileNetworkContextServiceFactory::GetForContext(browser()->profile())
+      ->set_client_cert_store_factory_for_testing(
+          base::BindRepeating(&CreateNullCertStore));
 
   // Launch HTTPS server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);

@@ -19,7 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_requests.h"
 #include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
@@ -159,7 +159,6 @@ class CertificateProviderService : public KeyedService {
   // is sufficient to create the CertificateProvider once and then repeatedly
   // call its |GetCertificates()|. The returned provider is valid even after the
   // destruction of this service.
-  // The returned provider can be used on any thread.
   std::unique_ptr<CertificateProvider> CreateCertificateProvider();
 
   // Must be called if extension with id |extension_id| is unloaded and cannot
@@ -258,7 +257,7 @@ class CertificateProviderService : public KeyedService {
   // after an extension doesn't report it anymore.
   certificate_provider::ThreadSafeCertificateMap certificate_map_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CertificateProviderService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertificateProviderService);

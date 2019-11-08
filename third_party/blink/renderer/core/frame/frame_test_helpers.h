@@ -410,7 +410,7 @@ class WebViewHelper : public ScopedMockOverlayScrollbars {
 class TestWebFrameClient : public WebLocalFrameClient {
  public:
   TestWebFrameClient();
-  ~TestWebFrameClient() override = default;
+  ~TestWebFrameClient() override;
 
   static bool IsLoading() { return loads_in_progress_ > 0; }
   Vector<String>& ConsoleMessages() { return console_messages_; }
@@ -452,6 +452,8 @@ class TestWebFrameClient : public WebLocalFrameClient {
                               unsigned source_line,
                               const WebString& stack_trace) override;
   WebPlugin* CreatePlugin(const WebPluginParams& params) override;
+  AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
+      override;
 
  private:
   void CommitNavigation(std::unique_ptr<WebNavigationInfo>);
@@ -464,6 +466,8 @@ class TestWebFrameClient : public WebLocalFrameClient {
   // Use service_manager::InterfaceProvider::TestApi to provide test interfaces
   // through this client.
   std::unique_ptr<service_manager::InterfaceProvider> interface_provider_;
+
+  std::unique_ptr<AssociatedInterfaceProvider> associated_interface_provider_;
 
   // This is null from when the client is created until it is initialized with
   // Bind().
@@ -498,9 +502,15 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
                           WebSecurityOrigin target_origin,
                           WebDOMMessageEvent) override {}
 
+  AssociatedInterfaceProvider* GetAssociatedInterfaceProvider() {
+    return associated_interface_provider_.get();
+  }
+
  private:
   // If set to a non-null value, self-deletes on frame detach.
   std::unique_ptr<TestWebRemoteFrameClient> self_owned_;
+
+  std::unique_ptr<AssociatedInterfaceProvider> associated_interface_provider_;
 
   // This is null from when the client is created until it is initialized with
   // Bind().

@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
@@ -266,7 +267,9 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockWebContentsDelegate);
 };
 
-class MockCastWebContentsDelegate : public CastWebContents::Delegate {
+class MockCastWebContentsDelegate
+    : public base::SupportsWeakPtr<MockCastWebContentsDelegate>,
+      public CastWebContents::Delegate {
  public:
   MockCastWebContentsDelegate() {}
   ~MockCastWebContentsDelegate() override = default;
@@ -311,9 +314,10 @@ class BindingsManagerCastBrowserTest : public content::BrowserTestBase {
 
     // CastWebContents::Delegate must be set for receiving PageStateChanged
     // event.
-    CastWebContents::InitParams init_params = {
-        &mock_cast_wc_delegate_ /* delegate */, false /* enabled_for_dev */,
-        false /* use_cma_renderer */, true /* is_root_window */};
+    CastWebContents::InitParams init_params;
+    init_params.delegate = mock_cast_wc_delegate_.AsWeakPtr();
+    init_params.is_root_window = true;
+
     cast_web_contents_ =
         std::make_unique<CastWebContentsImpl>(web_contents_.get(), init_params);
     title_change_observer_.Observe(cast_web_contents_.get());

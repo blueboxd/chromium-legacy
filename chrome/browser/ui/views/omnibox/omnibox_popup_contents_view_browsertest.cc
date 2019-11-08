@@ -93,6 +93,8 @@ class TestAXEventObserver : public views::AXEventObserver {
 
   // views::AXEventObserver:
   void OnViewEvent(views::View* view, ax::mojom::Event event_type) override {
+    if (!view->GetWidget())
+      return;
     ui::AXNodeData node_data;
     view->GetAccessibleNodeData(&node_data);
     if (event_type == ax::mojom::Event::kTextChanged &&
@@ -330,6 +332,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
 // color.
 IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
                        PopupMatchesLocationBarBackground) {
+  // In dark mode the omnibox focused and unfocused colors are the same, which
+  // makes this test fail; see comments below.
+  BrowserView::GetBrowserViewForBrowser(browser())
+      ->GetNativeTheme()
+      ->set_use_dark_colors(false);
+
   // Start with the Omnibox unfocused.
   omnibox_view()->GetFocusManager()->ClearFocus();
   const SkColor color_before_focus = location_bar()->background()->get_color();
@@ -420,6 +428,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   ACMatches matches;
   matches.push_back(match);
   results.AppendMatches(input, matches);
+  results.SortAndCull(input, nullptr);
+  autocomplete_controller->NotifyChanged(true);
 
   // Lets check that arrowing up and down emits the event.
   TestAXEventObserver observer;

@@ -111,7 +111,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
 class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
     ValidationErrorObserverForTesting {
  public:
-  explicit ValidationErrorObserverForTesting(const base::Closure& callback);
+  explicit ValidationErrorObserverForTesting(base::RepeatingClosure callback);
   ~ValidationErrorObserverForTesting();
 
   ValidationError last_error() const { return last_error_; }
@@ -122,7 +122,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
 
  private:
   ValidationError last_error_;
-  base::Closure callback_;
+  base::RepeatingClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ValidationErrorObserverForTesting);
 };

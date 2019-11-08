@@ -176,9 +176,11 @@ void AssistantWebView::DidStopLoading() {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   // We need to clip the corners of our web contents to match our container.
-  contents_->GetView()->native_view()->layer()->SetRoundedCornerRadius(
-      {/*top_left=*/0, /*top_right=*/0, /*bottom_right=*/kCornerRadiusDip,
-       /*bottom_left=*/kCornerRadiusDip});
+  if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
+    contents_->GetView()->native_view()->layer()->SetRoundedCornerRadius(
+        {/*top_left=*/0, /*top_right=*/0, /*bottom_right=*/kCornerRadiusDip,
+         /*bottom_left=*/kCornerRadiusDip});
+  }
 }
 
 void AssistantWebView::DidSuppressNavigation(const GURL& url,

@@ -42,10 +42,10 @@ extern const base::Feature kStickyBubble;
 //   --force-fieldtrials=PasswordGenerationRequirements/Enabled
 //   --force-fieldtrial-params=PasswordGenerationRequirements.Enabled:\
 //       version/0/prefix_length/0/timeout/5000
-extern const char* kGenerationRequirementsFieldTrial;
-extern const char* kGenerationRequirementsVersion;
-extern const char* kGenerationRequirementsPrefixLength;
-extern const char* kGenerationRequirementsTimeout;
+extern const char kGenerationRequirementsFieldTrial[];
+extern const char kGenerationRequirementsVersion[];
+extern const char kGenerationRequirementsPrefixLength[];
+extern const char kGenerationRequirementsTimeout[];
 
 }  // namespace features
 

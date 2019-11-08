@@ -61,8 +61,6 @@ const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyInitializeFailKeySystem[] =
     "org.chromium.externalclearkey.initializefail";
-const char kExternalClearKeyOutputProtectionTestKeySystem[] =
-    "org.chromium.externalclearkey.outputprotectiontest";
 const char kExternalClearKeyPlatformVerificationTestKeySystem[] =
     "org.chromium.externalclearkey.platformverificationtest";
 const char kExternalClearKeyCrashKeySystem[] =
@@ -350,6 +348,17 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
                           PlayCount::ONCE, expected_title);
   }
 
+  void TestOutputProtection(bool create_recorder_before_media_keys) {
+    // Make sure the Clear Key CDM is properly registered in CdmRegistry.
+    EXPECT_TRUE(IsLibraryCdmRegistered(media::kClearKeyCdmGuid));
+
+    base::StringPairs query_params;
+    if (create_recorder_before_media_keys)
+      query_params.emplace_back("createMediaRecorderBeforeMediaKeys", "1");
+    RunMediaTestPage("eme_and_get_display_media.html", query_params,
+                     kUnitTestSuccess, true);
+  }
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
@@ -358,6 +367,10 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
     command_line->AppendSwitchASCII(
         switches::kOverrideEnabledCdmInterfaceVersion,
         base::NumberToString(GetCdmInterfaceVersion()));
+    // The output protection tests create a MediaRecorder on a MediaStream,
+    // so this allows for a fake stream to be created.
+    command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 };
 
@@ -384,7 +397,6 @@ class ECKIncognitoEncryptedMediaTest : public EncryptedMediaTestBase {
     command_line->AppendSwitch(switches::kIncognito);
   }
 };
-
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Tests encrypted media playback with a combination of parameters:
@@ -795,11 +807,13 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, FileIOTest) {
   TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem, kUnitTestSuccess);
 }
 
-// TODO(xhwang): Investigate how to fake capturing activities to test the
-// network link detection logic in OutputProtectionProxy.
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, OutputProtectionTest) {
-  TestNonPlaybackCases(kExternalClearKeyOutputProtectionTestKeySystem,
-                       kUnitTestSuccess);
+// Output protection tests.
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, OutputProtectionBeforeMediaKeys) {
+  TestOutputProtection(/*create_recorder_before_media_keys=*/true);
+}
+
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, OutputProtectionAfterMediaKeys) {
+  TestOutputProtection(/*create_recorder_before_media_keys=*/false);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
@@ -963,5 +977,4 @@ IN_PROC_BROWSER_TEST_F(ECKIncognitoEncryptedMediaTest, LoadSessionAfterClose) {
                             kExternalClearKeyKeySystem, query_params,
                             media::kEnded);
 }
-
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

@@ -222,8 +222,7 @@ NGFlexLayoutAlgorithm::BuildConstraintSpaceForDeterminingFlexBasis(
   }
 
   space_builder.SetAvailableSize(content_box_size_);
-  space_builder.SetPercentageResolutionSize(CalculateChildPercentageSize(
-      ConstraintSpace(), Node(), content_box_size_));
+  space_builder.SetPercentageResolutionSize(child_percentage_size_);
   return space_builder.ToConstraintSpace();
 }
 
@@ -500,6 +499,8 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   border_box_size_ = container_builder_.InitialBorderBoxSize();
   content_box_size_ =
       ShrinkAvailableSize(border_box_size_, border_scrollbar_padding_);
+  child_percentage_size_ = CalculateChildPercentageSize(
+      ConstraintSpace(), Node(), content_box_size_);
 
   const LayoutUnit line_break_length = MainAxisContentExtent(LayoutUnit::Max());
   algorithm_.emplace(&Style(), line_break_length);
@@ -562,11 +563,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       }
 
       space_builder.SetAvailableSize(available_size);
-      // CalculateChildPercentageSize probably has no effect here:
-      // content_box_size_ would already be indefinite without
-      // CalculateChildPercentageSize checking IsFixedBlockSizeIndefinite.
-      space_builder.SetPercentageResolutionSize(CalculateChildPercentageSize(
-          ConstraintSpace(), Node(), content_box_size_));
+      space_builder.SetPercentageResolutionSize(child_percentage_size_);
 
       // https://drafts.csswg.org/css-flexbox/#algo-cross-item
       // Determine the hypothetical cross size of each item by performing layout
@@ -626,8 +623,7 @@ void NGFlexLayoutAlgorithm::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
     }
   }
   space_builder.SetAvailableSize(available_size);
-  space_builder.SetPercentageResolutionSize(CalculateChildPercentageSize(
-      ConstraintSpace(), Node(), content_box_size_));
+  space_builder.SetPercentageResolutionSize(child_percentage_size_);
   space_builder.SetIsFixedInlineSize(true);
   space_builder.SetIsFixedBlockSize(true);
   NGConstraintSpace child_space = space_builder.ToConstraintSpace();

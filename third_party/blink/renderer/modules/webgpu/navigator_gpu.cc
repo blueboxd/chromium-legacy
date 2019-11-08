@@ -11,6 +11,7 @@
 
 namespace blink {
 
+// static
 NavigatorGPU& NavigatorGPU::From(Navigator& navigator) {
   NavigatorGPU* supplement =
       Supplement<Navigator>::From<NavigatorGPU>(navigator);

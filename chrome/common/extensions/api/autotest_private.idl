@@ -573,6 +573,10 @@ namespace autotestPrivate {
     static void setAssistantEnabled(boolean enabled, long timeout_ms,
                                     VoidCallback callback);
 
+    // Bring up the Assistant service, and wait for the ready signal.
+    // |callback|: Called when the operation has completed.
+    static void enableAssistantAndWaitForReady(VoidCallback callback);
+
     // Sends a text query via Google Assistant.
     // |callback|: Called when response has been received.
     static void sendAssistantTextQuery(DOMString query, long timeout_ms,

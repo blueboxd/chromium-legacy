@@ -258,8 +258,9 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
 
         if (AccessibilityUtil.isAccessibilityEnabled()) {
             durationMs *= 2;
-            if (durationMs < sAccessibilitySnackbarDurationMs)
+            if (durationMs < sAccessibilitySnackbarDurationMs) {
                 durationMs = sAccessibilitySnackbarDurationMs;
+            }
         }
 
         return durationMs;

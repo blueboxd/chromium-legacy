@@ -20,7 +20,8 @@ class EVENTS_OZONE_EVDEV_EXPORT
     : public NeuralStylusPalmDetectionFilterModel {
  public:
   OneDeviceTrainNeuralStylusPalmDetectionFilterModel();
-
+  explicit OneDeviceTrainNeuralStylusPalmDetectionFilterModel(
+      const std::vector<float>& radius_poly);
   float Inference(const std::vector<float>& features) const override;
 
   const NeuralStylusPalmDetectionFilterModelConfig& config() const override;

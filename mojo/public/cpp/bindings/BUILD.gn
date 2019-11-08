@@ -153,6 +153,8 @@ component("bindings") {
     "lib/control_message_handler.h",
     "lib/control_message_proxy.cc",
     "lib/control_message_proxy.h",
+    "lib/generated_code_util.cc",
+    "lib/generated_code_util.h",
     "lib/interface_endpoint_client.cc",
     "lib/interface_ptr_state.cc",
     "lib/interface_ptr_state.h",

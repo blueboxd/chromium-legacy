@@ -773,12 +773,12 @@
       origin_trial_feature_name: "HrefTranslate",
       status: "experimental",
     },
-    // TODO(911943): HTML Imports is temporarily being left enabled after
-    // the planned removal milestone of M80.
+    // TODO(937746): Web Components v0 is disabled by default, and will be
+    // removed after M87.
     {
       name: "HTMLImports",
       origin_trial_feature_name: "WebComponentsV0",
-      status: "stable",
+      status: "test",
     },
     {
       name: "IDBObserver",
@@ -927,6 +927,7 @@
     },
     {
       name: "MathMLCore",
+      status:"test",
     },
     {
       name:"MeasureMemory",

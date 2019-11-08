@@ -318,6 +318,8 @@ void Page::DocumentDetached(Document* document) {
 
   if (agent_metrics_collector_)
     agent_metrics_collector_->DidDetachDocument(*document);
+
+  GetChromeClient().DocumentDetached(*document);
 }
 
 bool Page::OpenedByDOM() const {

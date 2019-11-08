@@ -65,10 +65,13 @@ void BindUnhandledTapWebContentsObserver(
   auto* unhandled_tap_notifier_observer =
       contextual_search::UnhandledTapWebContentsObserver::FromWebContents(
           content::WebContents::FromRenderFrameHost(host));
-  contextual_search::CreateUnhandledTapNotifierImpl(
-      unhandled_tap_notifier_observer->device_scale_factor(),
-      unhandled_tap_notifier_observer->unhandled_tap_callback(),
-      std::move(receiver));
+
+  if (unhandled_tap_notifier_observer) {
+    contextual_search::CreateUnhandledTapNotifierImpl(
+        unhandled_tap_notifier_observer->device_scale_factor(),
+        unhandled_tap_notifier_observer->unhandled_tap_callback(),
+        std::move(receiver));
+  }
 }
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 

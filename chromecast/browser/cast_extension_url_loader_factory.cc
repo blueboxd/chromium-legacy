@@ -51,8 +51,7 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
       network::mojom::URLLoaderClientPtr client)
       : original_loader_receiver_(this, std::move(loader_receiver)),
-        original_client_(std::move(client)),
-        network_client_binding_(this) {
+        original_client_(std::move(client)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // If there is a client error, clean up the request.
     original_client_.set_connection_error_handler(base::BindOnce(
@@ -70,13 +69,13 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     network::mojom::URLLoaderClientPtr network_client;
-    network_client_binding_.Bind(mojo::MakeRequest(&network_client));
+    network_client_receiver_.Bind(mojo::MakeRequest(&network_client));
 
     network_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
         request, std::move(network_client), traffic_annotation);
 
-    network_client_binding_.set_connection_error_handler(base::BindOnce(
+    network_client_receiver_.set_disconnect_handler(base::BindOnce(
         &CastExtensionURLLoader::OnNetworkError, base::Unretained(this)));
   }
 
@@ -159,7 +158,8 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
   network::mojom::URLLoaderClientPtr original_client_;
 
   // This is the URLLoaderClient passed to the network URLLoaderFactory.
-  mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> network_client_receiver_{
+      this};
 
   // This is the URLLoader from the network URLLoaderFactory.
   network::mojom::URLLoaderPtr network_loader_;

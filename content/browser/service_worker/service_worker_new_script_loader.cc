@@ -75,7 +75,6 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
       resource_type_(static_cast<ResourceType>(original_request.resource_type)),
       original_options_(options),
       version_(version),
-      network_client_binding_(this),
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                        base::SequencedTaskRunnerHandle::Get()),
@@ -151,7 +150,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   options &= ~network::mojom::kURLLoadOptionSniffMimeType;
 
   network::mojom::URLLoaderClientPtr network_client;
-  network_client_binding_.Bind(mojo::MakeRequest(&network_client));
+  network_client_receiver_.Bind(mojo::MakeRequest(&network_client));
   loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
       resource_request, std::move(network_client), traffic_annotation);
@@ -559,7 +558,7 @@ void ServiceWorkerNewScriptLoader::CommitCompleted(
   client_producer_.reset();
 
   network_loader_.reset();
-  network_client_binding_.Close();
+  network_client_receiver_.reset();
   network_consumer_.reset();
   network_watcher_.Cancel();
   cache_writer_.reset();

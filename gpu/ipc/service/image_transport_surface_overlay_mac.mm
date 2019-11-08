@@ -316,7 +316,8 @@ bool ImageTransportSurfaceOverlayMacBase<BaseClass>::Resize(
 }
 
 template <typename BaseClass>
-void ImageTransportSurfaceOverlayMacBase<BaseClass>::OnGpuSwitched() {
+void ImageTransportSurfaceOverlayMacBase<BaseClass>::OnGpuSwitched(
+    gl::GpuPreference active_gpu_heuristic) {
   // Create a new context, and use the GL renderer ID that the new context gets.
   scoped_refptr<ui::IOSurfaceContext> context_on_new_gpu =
       ui::IOSurfaceContext::Get(ui::IOSurfaceContext::kCALayerContext);

@@ -24,16 +24,16 @@ const char kText1[] = "hello";
 const char kText2[] = "world";
 
 void RecordString(std::string* storage,
-                  const base::Closure& closure,
+                  base::OnceClosure closure,
                   const std::string& str) {
   *storage = str;
-  closure.Run();
+  std::move(closure).Run();
 }
 
-base::Callback<void(const std::string&)> MakeStringRecorder(
+base::OnceCallback<void(const std::string&)> MakeStringRecorder(
     std::string* storage,
-    const base::Closure& closure) {
-  return base::Bind(&RecordString, storage, closure);
+    base::OnceClosure closure) {
+  return base::BindOnce(&RecordString, storage, std::move(closure));
 }
 
 class ImportedInterfaceImpl : public imported::ImportedInterface {
@@ -162,7 +162,7 @@ class HandlePassingTest : public BindingsTestBase {
 
 void DoStuff(bool* got_response,
              std::string* got_text_reply,
-             const base::Closure& closure,
+             base::OnceClosure closure,
              sample::ResponsePtr response,
              const std::string& text_reply) {
   *got_text_reply = text_reply;
@@ -183,16 +183,16 @@ void DoStuff(bool* got_response,
   }
 
   *got_response = true;
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void DoStuff2(bool* got_response,
               std::string* got_text_reply,
-              const base::Closure& closure,
+              base::OnceClosure closure,
               const std::string& text_reply) {
   *got_response = true;
   *got_text_reply = text_reply;
-  closure.Run();
+  std::move(closure).Run();
 }
 
 TEST_P(HandlePassingTest, Basic) {
@@ -216,8 +216,8 @@ TEST_P(HandlePassingTest, Basic) {
   std::string got_text_reply;
   base::RunLoop run_loop2;
   factory->DoStuff(std::move(request), std::move(pipe0.handle0),
-                   base::Bind(&DoStuff, &got_response, &got_text_reply,
-                              run_loop2.QuitClosure()));
+                   base::BindOnce(&DoStuff, &got_response, &got_text_reply,
+                                  run_loop2.QuitClosure()));
 
   EXPECT_FALSE(got_response);
   int count_before = ImportedInterfaceImpl::do_something_count();
@@ -241,8 +241,8 @@ TEST_P(HandlePassingTest, PassInvalid) {
   std::string got_text_reply;
   base::RunLoop run_loop;
   factory->DoStuff(std::move(request), ScopedMessagePipeHandle(),
-                   base::Bind(&DoStuff, &got_response, &got_text_reply,
-                              run_loop.QuitClosure()));
+                   base::BindOnce(&DoStuff, &got_response, &got_text_reply,
+                                  run_loop.QuitClosure()));
 
   EXPECT_FALSE(got_response);
 
@@ -276,8 +276,8 @@ TEST_P(HandlePassingTest, DataPipe) {
   std::string got_text_reply;
   base::RunLoop run_loop;
   factory->DoStuff2(std::move(consumer_handle),
-                    base::Bind(&DoStuff2, &got_response, &got_text_reply,
-                               run_loop.QuitClosure()));
+                    base::BindOnce(&DoStuff2, &got_response, &got_text_reply,
+                                   run_loop.QuitClosure()));
 
   EXPECT_FALSE(got_response);
 

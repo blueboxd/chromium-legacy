@@ -355,11 +355,10 @@ class NavigationManager {
       }
     }
 
-    const desktop = RootNodeWrapper.buildDesktopTree(this.desktop_);
-    const nextNode = desktop.firstChild.automationNode;
-    if (nextNode) {
-      this.moveTo_(nextNode);
-    }
+    // If there is no valid node in the group stack, go to the desktop.
+    this.group_ = RootNodeWrapper.buildDesktopTree(this.desktop_);
+    this.node_ = this.group_.firstChild;
+    this.groupStack_ = [];
   }
 
   /**

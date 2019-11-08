@@ -29,8 +29,6 @@
 #include "chrome/installer/util/install_util.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
 
@@ -166,30 +164,16 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread(
       base::BindOnce(&ChromeCleanerRunner::OnPromptUser,
                      base::RetainedRef(this)));
 
+  // The channel will make blocking calls to ::WriteFile.
+  scoped_refptr<base::SequencedTaskRunner> channel_task_runner =
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
+
   // ChromePromptChannel method calls will be posted to this sequence using
   // WeakPtr's, so the channel must be deleted on the same sequence.
-  scoped_refptr<base::SequencedTaskRunner> channel_task_runner;
-  using ChromePromptChannelPtr =
-      std::unique_ptr<ChromePromptChannel, base::OnTaskRunnerDeleter>;
-  ChromePromptChannelPtr channel(nullptr, base::OnTaskRunnerDeleter(nullptr));
-  if (base::FeatureList::IsEnabled(kChromeCleanupProtobufIPCFeature)) {
-    // The channel will make blocking calls to ::WriteFile.
-    channel_task_runner =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
-    channel =
-        ChromePromptChannelPtr(new ChromePromptChannelProtobuf(
-                                   std::move(on_connection_closed),
-                                   std::move(actions), channel_task_runner),
-                               base::OnTaskRunnerDeleter(channel_task_runner));
-  } else {
-    // Mojo uses the IO thread.
-    channel_task_runner =
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
-    channel = ChromePromptChannelPtr(
-        new ChromePromptChannelMojo(std::move(on_connection_closed),
-                                    std::move(actions), channel_task_runner),
-        base::OnTaskRunnerDeleter(channel_task_runner));
-  }
+  std::unique_ptr<ChromePromptChannel, base::OnTaskRunnerDeleter> channel(
+      new ChromePromptChannel(std::move(on_connection_closed),
+                              std::move(actions), channel_task_runner),
+      base::OnTaskRunnerDeleter(channel_task_runner));
 
   base::LaunchOptions launch_options;
   if (!channel->PrepareForCleaner(&cleaner_command_line_,

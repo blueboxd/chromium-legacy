@@ -73,7 +73,10 @@ size_t EncodedDataHelper::GetBytesForNextNALU(size_t start_pos) {
   size_t pos = start_pos;
   if (pos + 4 > data_.size())
     return pos;
-  LOG_ASSERT(IsNALHeader(data_, pos));
+  if (!IsNALHeader(data_, pos)) {
+    ADD_FAILURE();
+    return std::numeric_limits<std::size_t>::max();
+  }
   pos += 4;
   while (pos + 4 <= data_.size() && !IsNALHeader(data_, pos)) {
     ++pos;

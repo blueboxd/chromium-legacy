@@ -600,9 +600,13 @@ class LayerTreeHostImplTest : public testing::Test,
   void DrawFrame() {
     PrepareForUpdateDrawProperties(host_impl_->active_tree());
     TestFrameData frame;
+    host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
+    host_impl_->DidFinishImplFrame();
   }
 
   RenderFrameMetadata StartDrawAndProduceRenderFrameMetadata() {
@@ -4621,6 +4625,9 @@ TEST_F(LayerTreeHostImplTest, DamageShouldNotCareAboutContributingLayers) {
 
   {
     TestFrameData frame;
+    host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
     EXPECT_FALSE(frame.has_no_damage);
@@ -4631,6 +4638,7 @@ TEST_F(LayerTreeHostImplTest, DamageShouldNotCareAboutContributingLayers) {
     EXPECT_NE(total_quad_count, 0u);
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
+    host_impl_->DidFinishImplFrame();
   }
 
   // Stops the child layer from drawing. We should have damage from this but
@@ -4646,6 +4654,9 @@ TEST_F(LayerTreeHostImplTest, DamageShouldNotCareAboutContributingLayers) {
 
   {
     TestFrameData frame;
+    host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
     EXPECT_FALSE(frame.has_no_damage);
@@ -4656,12 +4667,16 @@ TEST_F(LayerTreeHostImplTest, DamageShouldNotCareAboutContributingLayers) {
     EXPECT_EQ(total_quad_count, 0u);
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
+    host_impl_->DidFinishImplFrame();
   }
 
   // Now tries to draw again. Nothing changes, so should have no damage, no
   // render pass, and no quad.
   {
     TestFrameData frame;
+    host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
     EXPECT_TRUE(frame.has_no_damage);
@@ -4672,6 +4687,7 @@ TEST_F(LayerTreeHostImplTest, DamageShouldNotCareAboutContributingLayers) {
     EXPECT_EQ(total_quad_count, 0u);
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
+    host_impl_->DidFinishImplFrame();
   }
 }
 
@@ -4965,9 +4981,13 @@ TEST_F(LayerTreeHostImplPrepareToDrawTest, PrepareToDrawSucceedsAndFails) {
       host_impl_->SetRequiresHighResToDraw();
 
     TestFrameData frame;
+    host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
     EXPECT_EQ(testcase.expected_result, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
+    host_impl_->DidFinishImplFrame();
   }
 }
 
@@ -7111,9 +7131,13 @@ TEST_F(LayerTreeHostImplTest,
 
   // Check scroll delta reflected in layer.
   TestFrameData frame;
+  host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
+  host_impl_->DidFinishImplFrame();
   EXPECT_FALSE(frame.has_no_damage);
   CheckLayerScrollDelta(scroll_layer,
                         gfx::ScrollOffsetToVector2dF(scroll_offset));
@@ -8306,9 +8330,13 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
 static bool MayContainVideoBitSetOnFrameData(LayerTreeHostImpl* host_impl) {
   host_impl->active_tree()->set_needs_update_draw_properties();
   TestFrameData frame;
+  host_impl->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
   EXPECT_EQ(DRAW_SUCCESS, host_impl->PrepareToDraw(&frame));
   host_impl->DrawLayers(&frame);
   host_impl->DidDrawAllLayers(frame);
+  host_impl->DidFinishImplFrame();
   return frame.may_contain_video;
 }
 
@@ -8645,8 +8673,6 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
           nullptr);
   layer_tree_host_impl->SetVisible(true);
   layer_tree_host_impl->InitializeFrameSink(layer_tree_frame_sink.get());
-  layer_tree_host_impl->WillBeginImplFrame(
-      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2));
 
   LayerImpl* root = SetupRootLayer<LayerImpl>(
       layer_tree_host_impl->active_tree(), gfx::Size(500, 500));
@@ -8664,9 +8690,13 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   TestFrameData frame;
 
   // First frame, the entire screen should get swapped.
+  layer_tree_host_impl->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
   layer_tree_host_impl->DrawLayers(&frame);
   layer_tree_host_impl->DidDrawAllLayers(frame);
+  layer_tree_host_impl->DidFinishImplFrame();
   gfx::Rect expected_swap_rect(500, 500);
   EXPECT_EQ(expected_swap_rect.ToString(),
             fake_layer_tree_frame_sink->last_swap_rect().ToString());
@@ -8675,9 +8705,13 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   // the union of old and new child rects: gfx::Rect(26, 28).
   child->SetOffsetToTransformParent(gfx::Vector2dF());
   child->NoteLayerPropertyChanged();
+  layer_tree_host_impl->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
   layer_tree_host_impl->DrawLayers(&frame);
-  host_impl_->DidDrawAllLayers(frame);
+  layer_tree_host_impl->DidDrawAllLayers(frame);
+  layer_tree_host_impl->DidFinishImplFrame();
 
   expected_swap_rect = gfx::Rect(26, 28);
   EXPECT_EQ(expected_swap_rect.ToString(),
@@ -8686,9 +8720,13 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 10));
   // This will damage everything.
   root->SetBackgroundColor(SK_ColorBLACK);
+  layer_tree_host_impl->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
   EXPECT_EQ(DRAW_SUCCESS, layer_tree_host_impl->PrepareToDraw(&frame));
   layer_tree_host_impl->DrawLayers(&frame);
-  host_impl_->DidDrawAllLayers(frame);
+  layer_tree_host_impl->DidDrawAllLayers(frame);
+  layer_tree_host_impl->DidFinishImplFrame();
 
   expected_swap_rect = gfx::Rect(10, 10);
   EXPECT_EQ(expected_swap_rect.ToString(),
@@ -8783,6 +8821,9 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
 
   // Verify one quad is drawn when transparent background set is not set.
   TestFrameData frame;
+  host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   {
     const auto& root_pass = frame.render_passes.back();
@@ -8792,6 +8833,7 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   }
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
+  host_impl_->DidFinishImplFrame();
 
   // Cause damage so we would draw something if possible.
   host_impl_->SetFullViewportDamage();
@@ -8799,6 +8841,9 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   // Verify no quads are drawn when transparent background is set.
   host_impl_->active_tree()->set_background_color(SK_ColorTRANSPARENT);
   host_impl_->SetFullViewportDamage();
+  host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   {
     const auto& root_pass = frame.render_passes.back();
@@ -8806,6 +8851,7 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   }
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
+  host_impl_->DidFinishImplFrame();
 
   // Cause damage so we would draw something if possible.
   host_impl_->SetFullViewportDamage();
@@ -8813,6 +8859,9 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   // Verify no quads are drawn when semi-transparent background is set.
   host_impl_->active_tree()->set_background_color(SkColorSetARGB(5, 255, 0, 0));
   host_impl_->SetFullViewportDamage();
+  host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   {
     const auto& root_pass = frame.render_passes.back();
@@ -8820,6 +8869,7 @@ TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   }
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
+  host_impl_->DidFinishImplFrame();
 }
 
 class LayerTreeHostImplTestDrawAndTestDamage : public LayerTreeHostImplTest {
@@ -8833,6 +8883,9 @@ class LayerTreeHostImplTestDrawAndTestDamage : public LayerTreeHostImplTest {
     bool expect_to_draw = !expected_damage.IsEmpty();
 
     TestFrameData frame;
+    host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
     if (!expect_to_draw) {
@@ -8862,6 +8915,7 @@ class LayerTreeHostImplTestDrawAndTestDamage : public LayerTreeHostImplTest {
 
     EXPECT_EQ(expect_to_draw, host_impl_->DrawLayers(&frame));
     host_impl_->DidDrawAllLayers(frame);
+    host_impl_->DidFinishImplFrame();
   }
 };
 
@@ -8943,6 +8997,9 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   ASSERT_EQ(1u, host_impl_->active_tree()->GetRenderSurfaceList().size());
 
   TestFrameData frame;
+  host_impl_->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
   ASSERT_EQ(1u, frame.render_passes.size());
@@ -8962,6 +9019,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
+  host_impl_->DidFinishImplFrame();
 }
 
 class CompositorFrameMetadataTest : public LayerTreeHostImplTest {
@@ -9122,12 +9180,16 @@ void ExpectFullDamageAndDraw(LayerTreeHostImpl* host_impl) {
   gfx::Rect full_frame_damage(
       host_impl->active_tree()->GetDeviceViewport().size());
   TestFrameData frame;
+  host_impl->WillBeginImplFrame(viz::CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, viz::BeginFrameArgs::kManualSourceId, 1,
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
   EXPECT_EQ(DRAW_SUCCESS, host_impl->PrepareToDraw(&frame));
   ASSERT_EQ(1u, frame.render_passes.size());
   const viz::RenderPass* root_render_pass = frame.render_passes.back().get();
   EXPECT_EQ(full_frame_damage, root_render_pass->damage_rect);
   EXPECT_TRUE(host_impl->DrawLayers(&frame));
   host_impl->DidDrawAllLayers(frame);
+  host_impl->DidFinishImplFrame();
 }
 }  // namespace
 
@@ -11476,8 +11538,6 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedChangingBounds) {
   content_layer->SetBounds(new_content_size);
   scrolling_layer->SetBounds(new_content_size);
   GetScrollNode(scrolling_layer)->bounds = new_content_size;
-
-  DrawFrame();
 
   begin_frame_args.frame_time =
       start_time + base::TimeDelta::FromMilliseconds(200);

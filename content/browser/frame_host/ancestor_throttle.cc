@@ -114,8 +114,8 @@ AncestorThrottle::WillRedirectRequest() {
   // so we can't log reliably to the console. We should be able to work around
   // this iff we decide to ship the redirect-blocking behavior, but for now
   // we'll just skip the console-logging bits to collect metrics.
-  NavigationThrottle::ThrottleCheckResult result =
-      ProcessResponseImpl(LoggingDisposition::DO_NOT_LOG_TO_CONSOLE);
+  NavigationThrottle::ThrottleCheckResult result = ProcessResponseImpl(
+      LoggingDisposition::DO_NOT_LOG_TO_CONSOLE, false /* is_response_check */);
 
   if (result.action() == NavigationThrottle::BLOCK_RESPONSE)
     RecordXFrameOptionsUsage(XFrameOptionsHistogram::REDIRECT_WOULD_BE_BLOCKED);
@@ -129,11 +129,13 @@ AncestorThrottle::WillRedirectRequest() {
 
 NavigationThrottle::ThrottleCheckResult
 AncestorThrottle::WillProcessResponse() {
-  return ProcessResponseImpl(LoggingDisposition::LOG_TO_CONSOLE);
+  return ProcessResponseImpl(LoggingDisposition::LOG_TO_CONSOLE,
+                             true /* is_response_check */);
 }
 
 NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
-    LoggingDisposition logging) {
+    LoggingDisposition logging,
+    bool is_response_check) {
   DCHECK(!navigation_handle()->IsInMainFrame());
 
   NavigationRequest* request = NavigationRequest::From(navigation_handle());
@@ -150,9 +152,13 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
     if (network::mojom::ContentSecurityPolicyPtr policy =
             request->response()->head.content_security_policy) {
       if (auto& frame_ancestors = policy->frame_ancestors) {
+        // TODO(lfg, arthursonzogni): Move the frame-ancestors check to a common
+        // ContentSecurityPolicy object instead of checking directly against the
+        // CSPSourceList.
         CSPSourceList frame_ancestors_list(*frame_ancestors);
         frame_ancestors_list.allow_response_redirects = true;
         FrameTreeNode* parent = request->frame_tree_node()->parent();
+        bool has_followed_redirect = navigation_handle()->WasServerRedirect();
         // Since the navigation hasn't committed yet, we need to create a
         // CSPContext for the navigation handle.
         CSPContext csp_context;
@@ -162,12 +168,36 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
                                    parent->current_frame_host()
                                        ->GetLastCommittedOrigin()
                                        .GetURL(),
-                                   &csp_context,
-                                   false /* has_followed_redirect */,
-                                   true /* is_response_check) */)) {
+                                   &csp_context, has_followed_redirect,
+                                   is_response_check)) {
             parent = parent->parent();
             continue;
           }
+          auto* frame_to_commit = static_cast<RenderFrameHostImpl*>(
+              navigation_handle()->GetRenderFrameHost());
+          GURL blocked_url = navigation_handle()->GetURL();
+          SourceLocation source_location;
+          frame_to_commit->SanitizeDataForUseInCspViolation(
+              has_followed_redirect, CSPDirective::FrameAncestors, &blocked_url,
+              &source_location);
+          std::vector<std::string> report_endpoints;
+          for (auto& url : policy->report_endpoints)
+            report_endpoints.push_back(url.spec());
+
+          frame_to_commit->ReportContentSecurityPolicyViolation(
+              // The browser doesn't have the raw CSP text to report in the
+              // message.
+              CSPViolationParams(
+                  "frame-ancestors", "frame-ancestors",
+                  base::StringPrintf(
+                      "Refused to display '%s' in a frame because an ancestor "
+                      "violates the frame-ancestors Content Security Policy.",
+                      blocked_url.spec().c_str()),
+                  blocked_url, report_endpoints, policy->use_reporting_api,
+                  "" /* header */,
+                  blink::mojom::ContentSecurityPolicyType::kEnforce,
+                  has_followed_redirect, source_location));
+
           return NavigationThrottle::BLOCK_RESPONSE;
         }
         return NavigationThrottle::PROCEED;

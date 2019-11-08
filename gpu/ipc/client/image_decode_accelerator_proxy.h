@@ -53,7 +53,6 @@ class ImageDecodeAcceleratorProxy : public ImageDecodeAcceleratorInterface {
   // Determines if |image_metadata| corresponds to an image that can be decoded
   // using hardware decode acceleration. The ScheduleImageDecode() method should
   // only be called for images for which IsImageSupported() returns true.
-  // Otherwise, the client faces a GPU channel teardown if the decode fails.
   bool IsImageSupported(
       const cc::ImageHeaderMetadata* image_metadata) const override;
 

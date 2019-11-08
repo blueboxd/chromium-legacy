@@ -60,9 +60,6 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   // Called by the active result view to inform model (due to mouse event).
   void UnselectButton();
 
-  // Called to inform result view of button focus.
-  void ProvideButtonFocusHint(size_t line);
-
   // Returns whether we're in experimental keyword mode and the input gives
   // sufficient confidence that the user wants keyword mode.
   bool InExplicitExperimentalKeywordMode();
@@ -72,6 +69,7 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   void InvalidateLine(size_t line) override;
   void OnLineSelected(size_t line) override;
   void UpdatePopupAppearance() override;
+  void ProvideButtonFocusHint(size_t line) override;
   void OnMatchIconUpdated(size_t match_index) override;
   void OnDragCanceled() override;
 

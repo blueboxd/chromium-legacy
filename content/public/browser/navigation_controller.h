@@ -105,8 +105,8 @@ class NavigationController {
   // Extra headers are separated by \n.
   CONTENT_EXPORT static std::unique_ptr<NavigationEntry> CreateNavigationEntry(
       const GURL& url,
-      const Referrer& referrer,
-      const base::Optional<url::Origin>& initiator_origin,
+      Referrer referrer,
+      base::Optional<url::Origin> initiator_origin,
       ui::PageTransition transition,
       bool is_renderer_initiated,
       const std::string& extra_headers,

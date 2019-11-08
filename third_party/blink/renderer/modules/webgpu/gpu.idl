@@ -10,7 +10,7 @@ typedef (sequence<unsigned long> or GPUExtent3DDict) GPUExtent3D;
 typedef (sequence<unsigned long> or GPUOrigin3DDict) GPUOrigin3D;
 
 [
-    RuntimeEnabled=WebGPU
+    Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPU {
     [
       RuntimeEnabled=WebGPU,

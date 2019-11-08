@@ -270,6 +270,10 @@ class OptimizationGuideHintsManager
       const base::Optional<NavigationPredictorKeyedService::Prediction>&
           prediction) override;
 
+  // Returns whether a hint for |host| is currently being fetched from the
+  // remote Optimization Guide Service.
+  bool IsHintBeingFetched(const std::string& host) const;
+
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* const
       optimization_guide_service_;

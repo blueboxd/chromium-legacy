@@ -39,14 +39,14 @@ public abstract class NavigationCallback {
      *
      * @param navigation the unique object for this navigation.
      */
-    public void navigationStarted(@NonNull Navigation navigation) {}
+    public void onNavigationStarted(@NonNull Navigation navigation) {}
 
     /**
      * Called when a navigation encountered a server redirect.
      *
      * @param navigation the unique object for this navigation.
      */
-    public void navigationRedirected(@NonNull Navigation navigation) {}
+    public void onNavigationRedirected(@NonNull Navigation navigation) {}
 
     /**
      * Called when the navigation is ready to be committed in a renderer. This occurs when the
@@ -61,7 +61,7 @@ public abstract class NavigationCallback {
      *
      * @param navigation the unique object for this navigation.
      */
-    public void readyToCommitNavigation(@NonNull Navigation navigation) {}
+    public void onReadyToCommitNavigation(@NonNull Navigation navigation) {}
 
     /**
      * Called when a navigation completes successfully in the Tab.
@@ -79,7 +79,7 @@ public abstract class NavigationCallback {
      *
      * @param navigation the unique object for this navigation.
      */
-    public void navigationCompleted(@NonNull Navigation navigation) {}
+    public void onNavigationCompleted(@NonNull Navigation navigation) {}
 
     /**
      * Called when a navigation aborts in the Tab.
@@ -89,7 +89,7 @@ public abstract class NavigationCallback {
      *
      * @param navigation the unique object for this navigation.
      */
-    public void navigationFailed(@NonNull Navigation navigation) {}
+    public void onNavigationFailed(@NonNull Navigation navigation) {}
 
     /**
      * The load state of the document has changed.
@@ -98,14 +98,14 @@ public abstract class NavigationCallback {
      * @param toDifferentDocument True if the main frame is loading a different document. Only valid
      *        when |isLoading| is true.
      */
-    public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {}
+    public void onLoadStateChanged(boolean isLoading, boolean toDifferentDocument) {}
 
     /**
      * The progress of loading the main frame in the document has changed.
      *
      * @param progress A value in the range of 0.0-1.0.
      */
-    public void loadProgressChanged(double progress) {}
+    public void onLoadProgressChanged(double progress) {}
 
     /**
      * This is fired after each navigation has completed to indicate that the first paint after a

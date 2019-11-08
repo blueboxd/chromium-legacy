@@ -1073,7 +1073,7 @@ void VrShell::ProcessDialogGesture(std::unique_ptr<InputEvent> event) {
   dialog_gesture_target_->DispatchInputEvent(std::move(event));
 }
 
-void VrShell::UpdateGamepadData(device::GvrGamepadData pad) {
+void VrShell::UpdateGamepadData(GvrGamepadData pad) {
   if (gvr_gamepad_source_active_ != pad.connected)
     ToggleGvrGamepad(pad.connected);
 }

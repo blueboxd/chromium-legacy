@@ -90,22 +90,16 @@ GetOptimizationGuideDecisionFromOptimizationTargetDecision(
   switch (optimization_target_decision) {
     case optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch:
     case optimization_guide::OptimizationTargetDecision::
-        kModelNotAvailableOnClient:
-    case optimization_guide::OptimizationTargetDecision::
         kModelPredictionHoldback:
       return optimization_guide::OptimizationGuideDecision::kFalse;
     case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
       return optimization_guide::OptimizationGuideDecision::kTrue;
+    case optimization_guide::OptimizationTargetDecision::
+        kModelNotAvailableOnClient:
+    case optimization_guide::OptimizationTargetDecision::kUnknown:
     case optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized:
-    default:
       return optimization_guide::OptimizationGuideDecision::kUnknown;
   }
-  static_assert(
-      optimization_guide::OptimizationTargetDecision::kMaxValue ==
-          optimization_guide::OptimizationTargetDecision::
-              kDeciderNotInitialized,
-      "This function should be updated when a new OptimizationTargetDecision "
-      "is added");
 }
 
 // Returns the OptimizationGuideDecision from |optimization_type_decision|.
@@ -122,16 +116,17 @@ GetOptimizationGuideDecisionFromOptimizationTypeDecision(
         kHadOptimizationFilterButNotLoadedInTime:
     case optimization_guide::OptimizationTypeDecision::
         kHadHintButNotLoadedInTime:
+    case optimization_guide::OptimizationTypeDecision::
+        kHintFetchStartedButNotAvailableInTime:
     case optimization_guide::OptimizationTypeDecision::kDeciderNotInitialized:
       return optimization_guide::OptimizationGuideDecision::kUnknown;
-    default:
+    case optimization_guide::OptimizationTypeDecision::kNotAllowedByHint:
+    case optimization_guide::OptimizationTypeDecision::kNoMatchingPageHint:
+    case optimization_guide::OptimizationTypeDecision::kNoHintAvailable:
+    case optimization_guide::OptimizationTypeDecision::
+        kNotAllowedByOptimizationFilter:
       return optimization_guide::OptimizationGuideDecision::kFalse;
   }
-  static_assert(
-      optimization_guide::OptimizationTypeDecision::kMaxValue ==
-          optimization_guide::OptimizationTypeDecision::kDeciderNotInitialized,
-      "This function should be updated when a new OptimizationTypeDecision is "
-      "added");
 }
 
 // Returns the OptimizationGuideDecision based on |decisions|
@@ -139,19 +134,26 @@ GetOptimizationGuideDecisionFromOptimizationTypeDecision(
 // 2) If all decisions are true, return true.
 // 3) Otherwise, return unknown.
 optimization_guide::OptimizationGuideDecision ResolveOptimizationGuideDecisions(
-    std::vector<optimization_guide::OptimizationGuideDecision> decisions) {
-  bool has_unknown_decision = false;
+    const std::vector<optimization_guide::OptimizationGuideDecision>&
+        decisions) {
+  bool has_all_true_decisions = true;
   for (const auto decision : decisions) {
     if (decision == optimization_guide::OptimizationGuideDecision::kFalse)
       return optimization_guide::OptimizationGuideDecision::kFalse;
 
-    if (decision == optimization_guide::OptimizationGuideDecision::kUnknown)
-      has_unknown_decision = true;
+    if (decision != optimization_guide::OptimizationGuideDecision::kTrue) {
+      has_all_true_decisions = false;
+      break;
+    }
   }
 
-  return has_unknown_decision
-             ? optimization_guide::OptimizationGuideDecision::kUnknown
-             : optimization_guide::OptimizationGuideDecision::kTrue;
+  return has_all_true_decisions
+             ? optimization_guide::OptimizationGuideDecision::kTrue
+             : optimization_guide::OptimizationGuideDecision::kUnknown;
+  static_assert(optimization_guide::OptimizationGuideDecision::kMaxValue ==
+                    optimization_guide::OptimizationGuideDecision::kFalse,
+                "This function should be updated when a new "
+                "OptimizationGuideDecision is added");
 }
 
 }  // namespace

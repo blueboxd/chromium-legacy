@@ -15,6 +15,24 @@ source_set("app_update") {
   ]
 }
 
+if (is_chromeos) {
+  source_set("instance_update") {
+    sources = [
+      "instance.cc",
+      "instance.h",
+      "instance_registry.cc",
+      "instance_registry.h",
+      "instance_update.cc",
+      "instance_update.h",
+    ]
+    deps = [
+      "//skia",
+      "//ui/aura",
+      "//ui/compositor",
+    ]
+  }
+}
+
 source_set("icon_loader") {
   sources = [
     "icon_cache.cc",
@@ -88,4 +106,13 @@ source_set("unit_tests") {
     ":icon_loader",
     "//testing/gtest",
   ]
+
+  if (is_chromeos) {
+    sources += [
+      "instance_registry_unittest.cc",
+      "instance_update_unittest.cc",
+    ]
+
+    deps += [ ":instance_update" ]
+  }
 }

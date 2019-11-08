@@ -12,6 +12,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/viz/service/display/output_surface.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -29,12 +30,16 @@ class Size;
 struct PresentationFeedback;
 }  // namespace gfx
 
+// TODO(crbug.com/996004): Remove this once we use BufferQueue SharedImage
+// implementation.
 namespace gl {
 class GLImage;
 }
 
 namespace viz {
+#if defined(OS_WIN)
 class DCLayerOverlay;
+#endif
 
 class SkiaOutputDevice {
  public:
@@ -85,6 +90,8 @@ class SkiaOutputDevice {
                              BufferPresentedCallback feedback,
                              std::vector<ui::LatencyInfo> latency_info);
 
+  // TODO(crbug.com/996004): Should use BufferQueue SharedImage
+  // implementation instead of GLImage.
   virtual gl::GLImage* GetOverlayImage();
   virtual std::unique_ptr<gfx::GpuFence> SubmitOverlayGpuFence();
 
@@ -92,8 +99,10 @@ class SkiaOutputDevice {
   virtual void SetDrawRectangle(const gfx::Rect& draw_rectangle);
 
   virtual void SetGpuVSyncEnabled(bool enabled);
+#if defined(OS_WIN)
   virtual void SetEnableDCLayers(bool enabled);
   virtual void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers);
+#endif
 
   const OutputSurface::Capabilities& capabilities() const {
     return capabilities_;

@@ -114,8 +114,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   void GetDialogSize(gfx::Size* size) const override;
   void GetMinimumDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
-  void OnDialogShown(content::WebUI* webui,
-                     content::RenderViewHost* render_view_host) override;
+  void OnDialogShown(content::WebUI* webui) override;
   void OnDialogClosed(const std::string& json_retval) override;
   void OnDialogCloseFromWebUI(const std::string& json_retval) override;
   void OnCloseContents(content::WebContents* source,

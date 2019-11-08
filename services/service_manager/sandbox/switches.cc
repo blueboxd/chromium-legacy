@@ -62,6 +62,9 @@ const char kDisableSetuidSandbox[] = "disable-setuid-sandbox";
 // Disables the Win32K process mitigation policy for child processes.
 const char kDisableWin32kLockDown[] = "disable-win32k-lockdown";
 
+// Command line flag to enable the audio service sandbox.
+const char kEnableAudioServiceSandbox[] = "enable-audio-service-sandbox";
+
 // Allows shmat() system call in the GPU sandbox.
 const char kGpuSandboxAllowSysVShm[] = "gpu-sandbox-allow-sysv-shm";
 

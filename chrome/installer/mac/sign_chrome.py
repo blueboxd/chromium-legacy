@@ -81,9 +81,6 @@ def main():
     parser = argparse.ArgumentParser(
         description='Code sign and package Chrome for channel distribution.')
     parser.add_argument(
-        '--keychain',
-        help='The keychain to load the identity from. OBSOLETE AND INGORED.')
-    parser.add_argument(
         '--identity',
         required=True,
         help='The identity to sign everything but PKGs with.')

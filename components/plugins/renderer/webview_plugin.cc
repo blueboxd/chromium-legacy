@@ -21,7 +21,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -267,12 +266,8 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker;
-  WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
-      web_view_, this, nullptr,
-      document_interface_broker.InitWithNewPipeAndPassReceiver().PassPipe(),
-      nullptr);
+  WebLocalFrame* web_frame =
+      WebLocalFrame::CreateMainFrame(web_view_, this, nullptr, nullptr);
   // The created WebFrameWidget is owned by the |web_frame|.
   WebFrameWidget::CreateForMainFrame(this, web_frame);
 

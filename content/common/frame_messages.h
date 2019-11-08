@@ -568,10 +568,6 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params_Reply)
   IPC_STRUCT_MEMBER(int32_t, child_routing_id)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, new_interface_provider)
-  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle,
-                    document_interface_broker_content_handle)
-  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle,
-                    document_interface_broker_blink_handle)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, browser_interface_broker_handle)
   IPC_STRUCT_MEMBER(base::UnguessableToken, devtools_frame_token)
 IPC_STRUCT_END()
@@ -1200,10 +1196,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SynchronizeVisualProperties,
 // IntersectionObserver API.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateViewportIntersection,
                     blink::ViewportIntersectionState /* intersection_state */)
-
-// Informs the child that the frame has changed visibility.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged,
-                    blink::mojom::FrameVisibility /* visibility */)
 
 // Sent by a RenderFrameProxy to the browser signaling that the renderer
 // has determined the DOM subtree it represents is inert and should no

@@ -136,10 +136,6 @@ class InterfacePtrState : public InterfacePtrStateBase {
 #endif
   }
 
-  void QueryVersionDeprecated(const base::Callback<void(uint32_t)>& callback) {
-    QueryVersion(base::BindOnce(callback));
-  }
-
   void QueryVersion(base::OnceCallback<void(uint32_t)> callback) {
     ConfigureProxyIfNecessary();
     InterfacePtrStateBase::QueryVersion(std::move(callback));

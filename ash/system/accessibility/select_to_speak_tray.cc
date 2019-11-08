@@ -89,7 +89,7 @@ void SelectToSpeakTray::UpdateIconsForSession() {
 
 void SelectToSpeakTray::CheckStatusAndUpdateIcon() {
   if (!Shell::Get()->accessibility_controller()->select_to_speak_enabled()) {
-    SetVisible(false);
+    SetVisiblePreferred(false);
     return;
   }
 
@@ -111,7 +111,7 @@ void SelectToSpeakTray::CheckStatusAndUpdateIcon() {
       break;
   }
 
-  SetVisible(true);
+  SetVisiblePreferred(true);
 }
 
 }  // namespace ash

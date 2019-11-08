@@ -105,6 +105,9 @@ class FlingSchedulerTest : public testing::Test,
       const MouseWheelEventWithLatencyInfo& wheel_event) override {}
   void SendGeneratedGestureScrollEvents(
       const GestureEventWithLatencyInfo& gesture_event) override {}
+  gfx::Size GetRootWidgetViewportSize() override {
+    return gfx::Size(1920, 1080);
+  }
 
   std::unique_ptr<FlingController> fling_controller_;
   std::unique_ptr<FakeFlingScheduler> fling_scheduler_;

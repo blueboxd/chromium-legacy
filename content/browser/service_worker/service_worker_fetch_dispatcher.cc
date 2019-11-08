@@ -88,8 +88,7 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   using WorkerId = std::pair<int, int>;
   explicit DelegatingURLLoaderClient(network::mojom::URLLoaderClientPtr client,
                                      const network::ResourceRequest& request)
-      : binding_(this),
-        client_(std::move(client)),
+      : client_(std::move(client)),
         url_(request.url),
         devtools_enabled_(request.report_raw_headers) {
     if (!devtools_enabled_)
@@ -178,7 +177,7 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   }
 
   void Bind(network::mojom::URLLoaderClientPtr* ptr_info) {
-    binding_.Bind(mojo::MakeRequest(ptr_info));
+    receiver_.Bind(mojo::MakeRequest(ptr_info));
   }
 
  private:
@@ -198,7 +197,7 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
     MaybeRunDevToolsCallbacks();
   }
 
-  mojo::Binding<network::mojom::URLLoaderClient> binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> receiver_{this};
   network::mojom::URLLoaderClientPtr client_;
   bool completed_ = false;
   const GURL url_;

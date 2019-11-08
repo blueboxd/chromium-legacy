@@ -6200,10 +6200,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params->routing_id = frame_routing_id;
     params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New();
     mojo::MakeRequest(&params->interface_bundle->interface_provider);
-    ignore_result(params->interface_bundle->document_interface_broker_content
-                      .InitWithNewPipeAndPassReceiver());
-    ignore_result(params->interface_bundle->document_interface_broker_blink
-                      .InitWithNewPipeAndPassReceiver());
     ignore_result(params->interface_bundle->browser_interface_broker
                       .InitWithNewPipeAndPassReceiver());
     params->previous_routing_id = previous_routing_id;
@@ -6270,10 +6266,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
     params->routing_id = frame_routing_id;
     params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New();
     mojo::MakeRequest(&params->interface_bundle->interface_provider);
-    ignore_result(params->interface_bundle->document_interface_broker_content
-                      .InitWithNewPipeAndPassReceiver());
-    ignore_result(params->interface_bundle->document_interface_broker_blink
-                      .InitWithNewPipeAndPassReceiver());
     ignore_result(params->interface_bundle->browser_interface_broker
                       .InitWithNewPipeAndPassReceiver());
     params->previous_routing_id = IPC::mojom::kRoutingIdNone;
@@ -14435,10 +14427,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
           std::move(params),
           mojom::DidCommitProvisionalLoadInterfaceParams::New(
               mojo::MakeRequest(&interface_provider),
-              mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
-                  .InitWithNewPipeAndPassReceiver(),
-              mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
-                  .InitWithNewPipeAndPassReceiver(),
               mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
                   .InitWithNewPipeAndPassReceiver()));
 

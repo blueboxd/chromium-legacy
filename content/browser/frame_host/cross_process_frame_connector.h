@@ -117,6 +117,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   // Handlers for messages received from the parent frame called
   // from RenderFrameProxyHost to be sent to |view_|.
   void OnSetInheritedEffectiveTouchAction(cc::TouchAction);
+  void OnVisibilityChanged(blink::mojom::FrameVisibility visibility);
 
   // Exposed for tests.
   RenderWidgetHostViewBase* GetRootRenderWidgetHostViewForTesting() {
@@ -176,7 +177,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       const FrameVisualProperties& visual_properties);
   void OnUpdateViewportIntersection(
       const blink::ViewportIntersectionState& viewport_intersection);
-  void OnVisibilityChanged(blink::mojom::FrameVisibility visibility);
   void OnSetIsInert(bool);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,
                                       bool subtree_throttled);

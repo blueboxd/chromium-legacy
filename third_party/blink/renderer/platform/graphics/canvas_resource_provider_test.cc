@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
 #include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/skia/include/core/SkFilterQuality.h"
 
 using testing::_;
 using testing::InSequence;
@@ -34,6 +35,7 @@ class MockCanvasResourceDispatcherClient
   MockCanvasResourceDispatcherClient() = default;
 
   MOCK_METHOD0(BeginFrame, bool());
+  MOCK_METHOD1(SetFilterQualityInResource, void(SkFilterQuality));
 };
 
 }  // anonymous namespace

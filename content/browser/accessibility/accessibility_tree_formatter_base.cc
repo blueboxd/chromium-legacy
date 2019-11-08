@@ -40,7 +40,8 @@ AccessibilityTreeFormatter::TestPass AccessibilityTreeFormatter::GetTestPass(
   return passes[index];
 }
 
-base::string16 AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
+// static
+base::string16 AccessibilityTreeFormatterBase::DumpAccessibilityTreeFromManager(
     BrowserAccessibilityManager* ax_mgr,
     bool internal,
     std::vector<PropertyFilter> property_filters) {
@@ -51,8 +52,10 @@ base::string16 AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
     formatter = Create();
   base::string16 accessibility_contents_utf16;
   formatter->SetPropertyFilters(property_filters);
-  formatter->FormatAccessibilityTree(ax_mgr->GetRoot(),
-                                     &accessibility_contents_utf16);
+  std::unique_ptr<base::DictionaryValue> dict =
+      static_cast<AccessibilityTreeFormatterBase*>(formatter.get())
+          ->BuildAccessibilityTree(ax_mgr->GetRoot());
+  formatter->FormatAccessibilityTree(*dict, &accessibility_contents_utf16);
   return accessibility_contents_utf16;
 }
 
@@ -94,12 +97,11 @@ bool AccessibilityTreeFormatter::MatchesNodeFilters(
   return false;
 }
 
-AccessibilityTreeFormatterBase::AccessibilityTreeFormatterBase()
-    : show_ids_(false) {}
+AccessibilityTreeFormatterBase::AccessibilityTreeFormatterBase() = default;
 
-AccessibilityTreeFormatterBase::~AccessibilityTreeFormatterBase() {}
+AccessibilityTreeFormatterBase::~AccessibilityTreeFormatterBase() = default;
 
-void AccessibilityTreeFormatterBase::FormatAccessibilityTree(
+void AccessibilityTreeFormatterBase::FormatAccessibilityTreeForTesting(
     BrowserAccessibility* root,
     base::string16* contents) {
   std::unique_ptr<base::DictionaryValue> dict = BuildAccessibilityTree(root);

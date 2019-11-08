@@ -61,15 +61,10 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
     // Create a fake anchor view for the bubble.
     anchor_ = std::make_unique<views::View>();
 
-    std::unique_ptr<BubbleSyncPromoDelegate> delegate;
-    bubble_.reset(new BookmarkBubbleView(anchor_.get(), nullptr,
-                                         std::move(delegate), profile(),
-                                         GURL(kTestBookmarkURL), true));
+    bubble_.reset(new BookmarkBubbleView(anchor_.get(), nullptr, nullptr,
+                                         profile(), GURL(kTestBookmarkURL),
+                                         true));
     bubble_->Init();
-  }
-
-  std::unique_ptr<views::View> CreateFootnoteView() {
-    return bubble_->CreateFootnoteView();
   }
 
   std::unique_ptr<BookmarkBubbleView> bubble_;
@@ -85,14 +80,13 @@ TEST_F(BookmarkBubbleViewTest, SyncPromoSignedIn) {
   signin::MakePrimaryAccountAvailable(
       IdentityManagerFactory::GetForProfile(profile()), "fake_username");
   CreateBubbleView();
-  std::unique_ptr<views::View> footnote = CreateFootnoteView();
-  EXPECT_FALSE(footnote);
+  EXPECT_FALSE(bubble_->GetFootnoteViewForTesting());
 }
 
 // Verifies that the sync promo is displayed for a user that is not signed in.
 TEST_F(BookmarkBubbleViewTest, SyncPromoNotSignedIn) {
   CreateBubbleView();
-  std::unique_ptr<views::View> footnote = CreateFootnoteView();
+  views::View* footnote = bubble_->GetFootnoteViewForTesting();
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(footnote);
 #else  // !defined(OS_CHROMEOS)

@@ -15,6 +15,7 @@
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/store_update_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +46,22 @@ enum class MetadataSchemaState {
   kInvalid,
   kValid,
 };
+
+std::unique_ptr<proto::PredictionModel> CreatePredictionModel() {
+  std::unique_ptr<optimization_guide::proto::PredictionModel> prediction_model =
+      std::make_unique<optimization_guide::proto::PredictionModel>();
+
+  optimization_guide::proto::ModelInfo* model_info =
+      prediction_model->mutable_model_info();
+  model_info->set_version(1);
+  model_info->add_supported_model_features(
+      proto::CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+  model_info->set_optimization_target(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+  model_info->add_supported_model_types(
+      proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  return prediction_model;
+}
 
 }  // namespace
 
@@ -137,21 +154,33 @@ class OptimizationGuideStoreTest : public testing::Test {
     }
   }
 
+  // Moves a prediction model with |optimization_target| into the update data.
+  void SeedPredictionModelUpdateData(
+      StoreUpdateData* update_data,
+      optimization_guide::proto::OptimizationTarget optimization_target) {
+    std::unique_ptr<optimization_guide::proto::PredictionModel>
+        prediction_model = CreatePredictionModel();
+    prediction_model->mutable_model_info()->set_optimization_target(
+        optimization_target);
+    update_data->MovePredictionModelIntoUpdateData(
+        std::move(*prediction_model));
+  }
+
   void CreateDatabase() {
     // Reset everything.
     db_ = nullptr;
-    hint_store_.reset();
+    guide_store_.reset();
 
     // Setup the fake db and the class under test.
     auto db = std::make_unique<FakeDB<StoreEntry>>(&db_store_);
     db_ = db.get();
 
-    hint_store_ = std::make_unique<OptimizationGuideStore>(std::move(db));
+    guide_store_ = std::make_unique<OptimizationGuideStore>(std::move(db));
   }
 
   void InitializeDatabase(bool success, bool purge_existing_data = false) {
     EXPECT_CALL(*this, OnInitialized());
-    hint_store()->Initialize(
+    guide_store()->Initialize(
         purge_existing_data,
         base::BindOnce(&OptimizationGuideStoreTest::OnInitialized,
                        base::Unretained(this)));
@@ -173,7 +202,7 @@ class OptimizationGuideStoreTest : public testing::Test {
     // OnLoadMetadata callback
     db()->LoadCallback(true);
     if (state == MetadataSchemaState::kValid) {
-      // OnLoadHintEntryKeys callback
+      // OnLoadEntryKeys callback
       db()->LoadCallback(true);
     } else {
       // OnPurgeDatabase callback
@@ -184,15 +213,15 @@ class OptimizationGuideStoreTest : public testing::Test {
   void UpdateComponentHints(std::unique_ptr<StoreUpdateData> component_data,
                             bool update_success = true,
                             bool load_hint_entry_keys_success = true) {
-    EXPECT_CALL(*this, OnUpdateHints());
-    hint_store()->UpdateComponentHints(
+    EXPECT_CALL(*this, OnUpdateStore());
+    guide_store()->UpdateComponentHints(
         std::move(component_data),
-        base::BindOnce(&OptimizationGuideStoreTest::OnUpdateHints,
+        base::BindOnce(&OptimizationGuideStoreTest::OnUpdateStore,
                        base::Unretained(this)));
-    // OnUpdateHints callback
+    // OnUpdateStore callback
     db()->UpdateCallback(update_success);
     if (update_success) {
-      // OnLoadHintEntryKeys callback
+      // OnLoadEntryKeys callback
       db()->LoadCallback(load_hint_entry_keys_success);
     }
   }
@@ -200,33 +229,50 @@ class OptimizationGuideStoreTest : public testing::Test {
   void UpdateFetchedHints(std::unique_ptr<StoreUpdateData> fetched_data,
                           bool update_success = true,
                           bool load_hint_entry_keys_success = true) {
-    EXPECT_CALL(*this, OnUpdateHints());
-    hint_store()->UpdateFetchedHints(
+    EXPECT_CALL(*this, OnUpdateStore());
+    guide_store()->UpdateFetchedHints(
         std::move(fetched_data),
-        base::BindOnce(&OptimizationGuideStoreTest::OnUpdateHints,
+        base::BindOnce(&OptimizationGuideStoreTest::OnUpdateStore,
                        base::Unretained(this)));
-    // OnUpdateHints callback
+    // OnUpdateStore callback
     db()->UpdateCallback(update_success);
     if (update_success) {
-      // OnLoadHintEntryKeys callback
+      // OnLoadEntryKeys callback
       db()->LoadCallback(load_hint_entry_keys_success);
     }
   }
 
+  void UpdatePredictionModels(
+      std::unique_ptr<StoreUpdateData> prediction_models_data,
+      bool update_success = true,
+      bool load_prediction_models_entry_keys_success = true) {
+    EXPECT_CALL(*this, OnUpdateStore());
+    guide_store()->UpdatePredictionModels(
+        std::move(prediction_models_data),
+        base::BindOnce(&OptimizationGuideStoreTest::OnUpdateStore,
+                       base::Unretained(this)));
+    // OnUpdateStore callback
+    db()->UpdateCallback(update_success);
+    if (update_success) {
+      // OnLoadEntryKeys callback
+      db()->LoadCallback(load_prediction_models_entry_keys_success);
+    }
+  }
+
   void ClearFetchedHintsFromDatabase() {
-    hint_store()->ClearFetchedHintsFromDatabase();
+    guide_store()->ClearFetchedHintsFromDatabase();
     db()->UpdateCallback(true);
     db()->LoadCallback(true);
   }
 
   void PurgeExpiredFetchedHints() {
-    hint_store()->PurgeExpiredFetchedHints();
+    guide_store()->PurgeExpiredFetchedHints();
 
     // OnFetchedHintsLoadedToMaybePurge
     db()->LoadCallback(true);
-    // OnUpdateHints
+    // OnUpdateStore
     db()->UpdateCallback(true);
-    // OnLoadHintEntryKeys callback
+    // OnLoadEntryKeys callback
     db()->LoadCallback(true);
   }
 
@@ -293,11 +339,11 @@ class OptimizationGuideStoreTest : public testing::Test {
   }
 
   size_t GetDBStoreEntryCount() const { return db_store_.size(); }
-  size_t GetStoreHintEntryKeyCount() const {
-    return hint_store_->GetHintEntryKeyCount();
+  size_t GetStoreEntryKeyCount() const {
+    return guide_store_->GetEntryKeyCount();
   }
 
-  OptimizationGuideStore* hint_store() { return hint_store_.get(); }
+  OptimizationGuideStore* guide_store() { return guide_store_.get(); }
   FakeDB<proto::StoreEntry>* db() { return db_; }
 
   const OptimizationGuideStore::EntryKey& last_loaded_hint_entry_key() const {
@@ -306,22 +352,32 @@ class OptimizationGuideStoreTest : public testing::Test {
 
   proto::Hint* last_loaded_hint() { return last_loaded_hint_.get(); }
 
+  proto::PredictionModel* last_loaded_prediction_model() {
+    return last_loaded_prediction_model_.get();
+  }
+
   void OnHintLoaded(const OptimizationGuideStore::EntryKey& hint_entry_key,
                     std::unique_ptr<proto::Hint> loaded_hint) {
     last_loaded_hint_entry_key_ = hint_entry_key;
     last_loaded_hint_ = std::move(loaded_hint);
   }
 
+  void OnPredictionModelLoaded(
+      std::unique_ptr<proto::PredictionModel> loaded_prediction_model) {
+    last_loaded_prediction_model_ = std::move(loaded_prediction_model);
+  }
+
   MOCK_METHOD0(OnInitialized, void());
-  MOCK_METHOD0(OnUpdateHints, void());
+  MOCK_METHOD0(OnUpdateStore, void());
 
  private:
   FakeDB<proto::StoreEntry>* db_;
   StoreEntryMap db_store_;
-  std::unique_ptr<OptimizationGuideStore> hint_store_;
+  std::unique_ptr<OptimizationGuideStore> guide_store_;
 
   OptimizationGuideStore::EntryKey last_loaded_hint_entry_key_;
   std::unique_ptr<proto::Hint> last_loaded_hint_;
+  std::unique_ptr<proto::PredictionModel> last_loaded_prediction_model_;
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideStoreTest);
 };
@@ -357,7 +413,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult", 0);
@@ -387,7 +443,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
@@ -421,7 +477,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
@@ -449,7 +505,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult", 0);
@@ -479,7 +535,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
@@ -512,7 +568,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
@@ -540,12 +596,12 @@ TEST_F(OptimizationGuideStoreTest,
 
   // OnLoadMetadata callback
   db()->LoadCallback(true);
-  // OnLoadHintEntryKeys callback
+  // OnLoadEntryKeys callback
   db()->LoadCallback(false);
 
   // In the case where initialization fails, the store should be fully purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
@@ -573,7 +629,7 @@ TEST_F(OptimizationGuideStoreTest, InitializeSucceededWithoutSchemaEntry) {
 
   // The store should contain the schema metadata entry and nothing else.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(1));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
@@ -603,7 +659,7 @@ TEST_F(OptimizationGuideStoreTest, InitializeSucceededWithInvalidSchemaEntry) {
 
   // The store should contain the schema metadata entry and nothing else.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(1));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
@@ -633,7 +689,7 @@ TEST_F(OptimizationGuideStoreTest, InitializeSucceededWithValidSchemaEntry) {
 
   // The store should contain the schema metadata entry and nothing else.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(1));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
@@ -671,7 +727,7 @@ TEST_F(OptimizationGuideStoreTest,
   // The store should contain the schema metadata entry and nothing else, as
   // the initial component hints are all purged.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(1));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
@@ -701,7 +757,7 @@ TEST_F(OptimizationGuideStoreTest, InitializeSucceededWithPurgeExistingData) {
 
   // The store should contain the schema metadata entry and nothing else.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(1));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
@@ -734,7 +790,7 @@ TEST_F(OptimizationGuideStoreTest,
   // entry, and all of the initial component hints.
   EXPECT_EQ(GetDBStoreEntryCount(),
             static_cast<size_t>(component_hint_count + 3));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), component_hint_count);
+  EXPECT_EQ(GetStoreEntryKeyCount(), component_hint_count);
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
   ExpectComponentHintsPresent(kDefaultComponentVersion, component_hint_count);
@@ -769,7 +825,7 @@ TEST_F(OptimizationGuideStoreTest,
   // entry, and all of the initial component hints.
   EXPECT_EQ(GetDBStoreEntryCount(),
             static_cast<size_t>(component_hint_count + 2));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), component_hint_count);
+  EXPECT_EQ(GetStoreEntryKeyCount(), component_hint_count);
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
   ExpectComponentHintsPresent(kDefaultComponentVersion, component_hint_count);
@@ -810,7 +866,7 @@ TEST_F(OptimizationGuideStoreTest,
   // entry, and all of the initial component hints.
   EXPECT_EQ(GetDBStoreEntryCount(),
             static_cast<size_t>(component_hint_count + 2));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), component_hint_count);
+  EXPECT_EQ(GetStoreEntryKeyCount(), component_hint_count);
 
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
@@ -838,7 +894,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // StoreUpdateData for a component update should only be created if the store
   // is initialized.
-  EXPECT_FALSE(hint_store()->MaybeCreateUpdateDataForComponentHints(
+  EXPECT_FALSE(guide_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version(kUpdateComponentVersion)));
 }
 
@@ -852,7 +908,7 @@ TEST_F(OptimizationGuideStoreTest,
   // No StoreUpdateData for a component update should be created when the
   // component version of the update is older than the store's component
   // version.
-  EXPECT_FALSE(hint_store()->MaybeCreateUpdateDataForComponentHints(
+  EXPECT_FALSE(guide_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version("0.0.0")));
 }
 
@@ -865,7 +921,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // No StoreUpdateData should be created when the component version of the
   // update is the same as the store's component version.
-  EXPECT_FALSE(hint_store()->MaybeCreateUpdateDataForComponentHints(
+  EXPECT_FALSE(guide_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version(kDefaultComponentVersion)));
 }
 
@@ -878,7 +934,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // StoreUpdateData for a component update should be created when there is no
   // pre-existing component in the store.
-  EXPECT_TRUE(hint_store()->MaybeCreateUpdateDataForComponentHints(
+  EXPECT_TRUE(guide_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version(kDefaultComponentVersion)));
 }
 
@@ -891,7 +947,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // StoreUpdateData for a component update should be created when the component
   // version of the update is newer than the store's component version.
-  EXPECT_TRUE(hint_store()->MaybeCreateUpdateDataForComponentHints(
+  EXPECT_TRUE(guide_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version(kUpdateComponentVersion)));
 }
 
@@ -902,7 +958,7 @@ TEST_F(OptimizationGuideStoreTest, UpdateComponentHintsUpdateEntriesFails) {
   InitializeStore(schema_state);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
   SeedComponentUpdateData(update_data.get(), 5);
@@ -911,7 +967,7 @@ TEST_F(OptimizationGuideStoreTest, UpdateComponentHintsUpdateEntriesFails) {
 
   // The store should be purged if the component data update fails.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 }
 
 TEST_F(OptimizationGuideStoreTest, UpdateComponentHintsGetKeysFails) {
@@ -921,7 +977,7 @@ TEST_F(OptimizationGuideStoreTest, UpdateComponentHintsGetKeysFails) {
   InitializeStore(schema_state);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
   SeedComponentUpdateData(update_data.get(), 5);
@@ -932,7 +988,7 @@ TEST_F(OptimizationGuideStoreTest, UpdateComponentHintsGetKeysFails) {
   // The store should be purged if loading the keys after the component update
   // fails.
   EXPECT_EQ(GetDBStoreEntryCount(), static_cast<size_t>(0));
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
+  EXPECT_EQ(GetStoreEntryKeyCount(), static_cast<size_t>(0));
 }
 
 TEST_F(OptimizationGuideStoreTest, UpdateComponentHints) {
@@ -944,7 +1000,7 @@ TEST_F(OptimizationGuideStoreTest, UpdateComponentHints) {
   InitializeStore(schema_state);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
   SeedComponentUpdateData(update_data.get(), update_hint_count);
@@ -954,7 +1010,7 @@ TEST_F(OptimizationGuideStoreTest, UpdateComponentHints) {
   // metadata entry, the component metadata entry, and all of the update's
   // component hints.
   EXPECT_EQ(GetDBStoreEntryCount(), update_hint_count + 2);
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), update_hint_count);
+  EXPECT_EQ(GetStoreEntryKeyCount(), update_hint_count);
   ExpectComponentHintsPresent(kUpdateComponentVersion, update_hint_count);
 }
 
@@ -968,7 +1024,7 @@ TEST_F(OptimizationGuideStoreTest,
   InitializeStore(schema_state, true /*=purge_existing_data*/);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
   SeedComponentUpdateData(update_data.get(), update_hint_count);
@@ -978,7 +1034,7 @@ TEST_F(OptimizationGuideStoreTest,
   // metadata entry, the component metadata entry, and all of the update's
   // component hints.
   EXPECT_EQ(GetDBStoreEntryCount(), update_hint_count + 2);
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), update_hint_count);
+  EXPECT_EQ(GetStoreEntryKeyCount(), update_hint_count);
   ExpectComponentHintsPresent(kUpdateComponentVersion, update_hint_count);
 }
 
@@ -992,7 +1048,7 @@ TEST_F(OptimizationGuideStoreTest,
   InitializeStore(schema_state);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
   SeedComponentUpdateData(update_data.get(), update_hint_count);
@@ -1000,7 +1056,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // StoreUpdateData for the component update should not be created for a second
   // component update with the same version as the first component update.
-  EXPECT_FALSE(hint_store()->MaybeCreateUpdateDataForComponentHints(
+  EXPECT_FALSE(guide_store()->MaybeCreateUpdateDataForComponentHints(
       base::Version(kUpdateComponentVersion)));
 }
 
@@ -1016,10 +1072,10 @@ TEST_F(OptimizationGuideStoreTest,
 
   // Create two updates for the same component version with different counts.
   std::unique_ptr<StoreUpdateData> update_data_1 =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   std::unique_ptr<StoreUpdateData> update_data_2 =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data_1);
   SeedComponentUpdateData(update_data_1.get(), update_hint_count_1);
@@ -1030,16 +1086,16 @@ TEST_F(OptimizationGuideStoreTest,
   // first with |update_data_1| and then with |update_data_2|.
   UpdateComponentHints(std::move(update_data_1));
 
-  EXPECT_CALL(*this, OnUpdateHints());
-  hint_store()->UpdateComponentHints(
+  EXPECT_CALL(*this, OnUpdateStore());
+  guide_store()->UpdateComponentHints(
       std::move(update_data_2),
-      base::BindOnce(&OptimizationGuideStoreTest::OnUpdateHints,
+      base::BindOnce(&OptimizationGuideStoreTest::OnUpdateStore,
                      base::Unretained(this)));
 
   // Verify that the store is populated with the component data from
   // |update_data_1| and not |update_data_2|.
   EXPECT_EQ(GetDBStoreEntryCount(), update_hint_count_1 + 2);
-  EXPECT_EQ(GetStoreHintEntryKeyCount(), update_hint_count_1);
+  EXPECT_EQ(GetStoreEntryKeyCount(), update_hint_count_1);
   ExpectComponentHintsPresent(kUpdateComponentVersion, update_hint_count_1);
 }
 
@@ -1049,7 +1105,7 @@ TEST_F(OptimizationGuideStoreTest, LoadHintOnUnavailableStore) {
   CreateDatabase();
 
   const OptimizationGuideStore::EntryKey kInvalidEntryKey = "invalid";
-  hint_store()->LoadHint(
+  guide_store()->LoadHint(
       kInvalidEntryKey,
       base::BindOnce(&OptimizationGuideStoreTest::OnHintLoaded,
                      base::Unretained(this)));
@@ -1068,7 +1124,7 @@ TEST_F(OptimizationGuideStoreTest, LoadHintFailure) {
   InitializeStore(schema_state);
 
   const OptimizationGuideStore::EntryKey kInvalidEntryKey = "invalid";
-  hint_store()->LoadHint(
+  guide_store()->LoadHint(
       kInvalidEntryKey,
       base::BindOnce(&OptimizationGuideStoreTest::OnHintLoaded,
                      base::Unretained(this)));
@@ -1094,12 +1150,12 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessInitialData) {
   for (size_t i = 0; i < hint_count; ++i) {
     std::string host_suffix = GetHostSuffix(i);
     OptimizationGuideStore::EntryKey hint_entry_key;
-    if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+    if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
       FAIL() << "Hint entry not found for host suffix: " << host_suffix;
       continue;
     }
 
-    hint_store()->LoadHint(
+    guide_store()->LoadHint(
         hint_entry_key,
         base::BindOnce(&OptimizationGuideStoreTest::OnHintLoaded,
                        base::Unretained(this)));
@@ -1126,7 +1182,7 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessUpdateData) {
   InitializeStore(schema_state);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
   SeedComponentUpdateData(update_data.get(), update_hint_count);
@@ -1137,12 +1193,12 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessUpdateData) {
   for (size_t i = 0; i < update_hint_count; ++i) {
     std::string host_suffix = GetHostSuffix(i);
     OptimizationGuideStore::EntryKey hint_entry_key;
-    if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+    if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
       FAIL() << "Hint entry not found for host suffix: " << host_suffix;
       continue;
     }
 
-    hint_store()->LoadHint(
+    guide_store()->LoadHint(
         hint_entry_key,
         base::BindOnce(&OptimizationGuideStoreTest::OnHintLoaded,
                        base::Unretained(this)));
@@ -1169,7 +1225,7 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyOnUnavailableStore) {
   OptimizationGuideStore::EntryKey hint_entry_key;
 
   // Verify that hint entry keys can't be found when the store is unavailable.
-  EXPECT_FALSE(hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+  EXPECT_FALSE(guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
 }
 
 TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyInitialData) {
@@ -1185,7 +1241,8 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyInitialData) {
   for (size_t i = 0; i < hint_count * 2; ++i) {
     std::string host_suffix = GetHostSuffix(i);
     OptimizationGuideStore::EntryKey hint_entry_key;
-    bool success = hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
+    bool success =
+        guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
     EXPECT_EQ(success, i < hint_count);
   }
 }
@@ -1199,7 +1256,7 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyUpdateData) {
   InitializeStore(schema_state);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
   SeedComponentUpdateData(update_data.get(), update_hint_count);
@@ -1211,7 +1268,8 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyUpdateData) {
   for (size_t i = 0; i < update_hint_count * 2; ++i) {
     std::string host_suffix = GetHostSuffix(i);
     OptimizationGuideStore::EntryKey hint_entry_key;
-    bool success = hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
+    bool success =
+        guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
     EXPECT_EQ(success, i < update_hint_count);
   }
 }
@@ -1235,7 +1293,7 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyForFetchedHints) {
   InitializeStore(schema_state);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->CreateUpdateDataForFetchedHints(
+      guide_store()->CreateUpdateDataForFetchedHints(
           update_time, update_time + optimization_guide::features::
                                          StoredFetchedHintsFreshnessDuration());
   ASSERT_TRUE(update_data);
@@ -1245,7 +1303,8 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyForFetchedHints) {
   for (size_t i = 0; i < update_hint_count; ++i) {
     std::string host_suffix = GetHostSuffix(i);
     OptimizationGuideStore::EntryKey hint_entry_key;
-    bool success = hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
+    bool success =
+        guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
     EXPECT_EQ(success, i < update_hint_count);
   }
 }
@@ -1262,7 +1321,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   base::Version version("2.0.0");
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
 
@@ -1279,7 +1338,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   // Add fetched hints to the store that overlap with the same hosts as the
   // initial set.
-  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(
       update_time,
       update_time +
           optimization_guide::features::StoredFetchedHintsFreshnessDuration());
@@ -1295,7 +1354,7 @@ TEST_F(OptimizationGuideStoreTest,
   // as fetched hints take priority.
   std::string host_suffix = "host.domain2.org";
   OptimizationGuideStore::EntryKey hint_entry_key;
-  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
     FAIL() << "Hint entry not found for host suffix: " << host_suffix;
   }
 
@@ -1303,7 +1362,7 @@ TEST_F(OptimizationGuideStoreTest,
 
   host_suffix = "subdomain.domain1.org";
 
-  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
     FAIL() << "Hint entry not found for host suffix: " << host_suffix;
   }
 
@@ -1321,7 +1380,7 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
 
   base::Version version("2.0.0");
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
 
@@ -1338,7 +1397,7 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
 
   // Add fetched hints to the store that overlap with the same hosts as the
   // initial set.
-  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(
       update_time, update_time + base::TimeDelta().FromDays(7));
 
   proto::Hint fetched_hint1;
@@ -1356,7 +1415,7 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
   // as fetched hints take priority.
   std::string host_suffix = "host.domain2.org";
   OptimizationGuideStore::EntryKey hint_entry_key;
-  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
     FAIL() << "Hint entry not found for host suffix: " << host_suffix;
   }
 
@@ -1364,7 +1423,7 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
 
   host_suffix = "subdomain.domain1.org";
 
-  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
     FAIL() << "Hint entry not found for host suffix: " << host_suffix;
   }
 
@@ -1375,16 +1434,16 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
 
   host_suffix = "domain1.org";
   // Component hint should still exist.
-  EXPECT_TRUE(hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+  EXPECT_TRUE(guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
 
   host_suffix = "domain3.org";
   // Fetched hint should not still exist.
-  EXPECT_FALSE(hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+  EXPECT_FALSE(guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
 
   // Add Components back - newer version.
   base::Version version3("3.0.0");
   std::unique_ptr<StoreUpdateData> update_data2 =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(version3);
+      guide_store()->MaybeCreateUpdateDataForComponentHints(version3);
 
   ASSERT_TRUE(update_data2);
 
@@ -1396,9 +1455,9 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
   UpdateComponentHints(std::move(update_data2));
 
   host_suffix = "host.domain2.org";
-  EXPECT_TRUE(hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+  EXPECT_TRUE(guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
 
-  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(
       update_time,
       update_time +
           optimization_guide::features::StoredFetchedHintsFreshnessDuration());
@@ -1413,7 +1472,7 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
   // initial set.
   host_suffix = "subdomain.domain1.org";
 
-  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
     FAIL() << "Hint entry not found for host suffix: " << host_suffix;
   }
 
@@ -1431,7 +1490,7 @@ TEST_F(OptimizationGuideStoreTest, FetchHintsPurgeExpiredFetchedHints) {
 
   base::Version version("2.0.0");
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
 
@@ -1448,7 +1507,7 @@ TEST_F(OptimizationGuideStoreTest, FetchHintsPurgeExpiredFetchedHints) {
 
   // Add fetched hints to the store that overlap with the same hosts as the
   // initial set.
-  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(
       update_time, update_time + base::TimeDelta().FromDays(7));
 
   proto::Hint fetched_hint1;
@@ -1463,7 +1522,7 @@ TEST_F(OptimizationGuideStoreTest, FetchHintsPurgeExpiredFetchedHints) {
   UpdateFetchedHints(std::move(update_data));
 
   // Add expired fetched hints to the store.
-  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(
       update_time, update_time - base::TimeDelta().FromDays(7));
 
   proto::Hint fetched_hint3;
@@ -1480,10 +1539,10 @@ TEST_F(OptimizationGuideStoreTest, FetchHintsPurgeExpiredFetchedHints) {
   PurgeExpiredFetchedHints();
 
   OptimizationGuideStore::EntryKey hint_entry_key;
-  EXPECT_FALSE(hint_store()->FindHintEntryKey("domain4.org", &hint_entry_key));
-  EXPECT_FALSE(hint_store()->FindHintEntryKey("domain5.org", &hint_entry_key));
-  EXPECT_TRUE(hint_store()->FindHintEntryKey("domain2.org", &hint_entry_key));
-  EXPECT_TRUE(hint_store()->FindHintEntryKey("domain3.org", &hint_entry_key));
+  EXPECT_FALSE(guide_store()->FindHintEntryKey("domain4.org", &hint_entry_key));
+  EXPECT_FALSE(guide_store()->FindHintEntryKey("domain5.org", &hint_entry_key));
+  EXPECT_TRUE(guide_store()->FindHintEntryKey("domain2.org", &hint_entry_key));
+  EXPECT_TRUE(guide_store()->FindHintEntryKey("domain3.org", &hint_entry_key));
 }
 
 TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadExpiredHint) {
@@ -1497,7 +1556,7 @@ TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadExpiredHint) {
 
   base::Version version("2.0.0");
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
+      guide_store()->MaybeCreateUpdateDataForComponentHints(
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
 
@@ -1513,7 +1572,7 @@ TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadExpiredHint) {
   UpdateComponentHints(std::move(update_data));
 
   // Add fetched hints to the store that expired.
-  update_data = hint_store()->CreateUpdateDataForFetchedHints(
+  update_data = guide_store()->CreateUpdateDataForFetchedHints(
       update_time, update_time - base::TimeDelta().FromDays(10));
 
   proto::Hint fetched_hint1;
@@ -1531,11 +1590,11 @@ TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadExpiredHint) {
   // as fetched hints take priority.
   std::string host_suffix = "host.domain2.org";
   OptimizationGuideStore::EntryKey hint_entry_key;
-  if (!hint_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
+  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
     FAIL() << "Hint entry not found for host suffix: " << host_suffix;
   }
   EXPECT_EQ(hint_entry_key, "3_domain2.org");
-  hint_store()->LoadHint(
+  guide_store()->LoadHint(
       hint_entry_key, base::BindOnce(&OptimizationGuideStoreTest::OnHintLoaded,
                                      base::Unretained(this)));
 
@@ -1548,6 +1607,138 @@ TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadExpiredHint) {
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.HintCacheStore.OnLoadHint.FetchedHintExpired", true,
       1);
+}
+
+TEST_F(OptimizationGuideStoreTest, FindPredictionModelEntryKey) {
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  SeedInitialData(schema_state, 0);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      guide_store()->CreateUpdateDataForPredictionModels();
+  ASSERT_TRUE(update_data);
+  SeedPredictionModelUpdateData(update_data.get(),
+                                proto::OPTIMIZATION_TARGET_UNKNOWN);
+  SeedPredictionModelUpdateData(update_data.get(),
+                                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+  UpdatePredictionModels(std::move(update_data));
+
+  OptimizationGuideStore::EntryKey entry_key;
+  bool success = guide_store()->FindPredictionModelEntryKey(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, &entry_key);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(entry_key, "4_1");
+}
+
+TEST_F(OptimizationGuideStoreTest,
+       FindEntryKeyMissingForMissingPredictionModel) {
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  SeedInitialData(schema_state, 0);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      guide_store()->CreateUpdateDataForPredictionModels();
+  ASSERT_TRUE(update_data);
+  SeedPredictionModelUpdateData(update_data.get(),
+                                proto::OPTIMIZATION_TARGET_UNKNOWN);
+  UpdatePredictionModels(std::move(update_data));
+
+  OptimizationGuideStore::EntryKey entry_key;
+  bool success = guide_store()->FindPredictionModelEntryKey(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, &entry_key);
+  EXPECT_FALSE(success);
+  EXPECT_EQ(entry_key, "4_1");
+}
+
+TEST_F(OptimizationGuideStoreTest, LoadPredictionModel) {
+  base::HistogramTester histogram_tester;
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  SeedInitialData(schema_state, 0);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      guide_store()->CreateUpdateDataForPredictionModels();
+  ASSERT_TRUE(update_data);
+  SeedPredictionModelUpdateData(update_data.get(),
+                                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+  UpdatePredictionModels(std::move(update_data));
+
+  OptimizationGuideStore::EntryKey entry_key;
+  bool success = guide_store()->FindPredictionModelEntryKey(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, &entry_key);
+  EXPECT_TRUE(success);
+
+  guide_store()->LoadPredictionModel(
+      entry_key,
+      base::BindOnce(&OptimizationGuideStoreTest::OnPredictionModelLoaded,
+                     base::Unretained(this)));
+  // OnPredictionModelLoaded callback
+  db()->GetCallback(true);
+
+  EXPECT_TRUE(last_loaded_prediction_model());
+
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.PredictionModelStore.OnLoadCollided", false, 1);
+}
+
+TEST_F(OptimizationGuideStoreTest, LoadPredictionModelOnUnavailableStore) {
+  base::HistogramTester histogram_tester;
+  size_t initial_hint_count = 10;
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  SeedInitialData(schema_state, initial_hint_count);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  const OptimizationGuideStore::EntryKey kInvalidEntryKey = "4_2";
+  guide_store()->LoadPredictionModel(
+      kInvalidEntryKey,
+      base::BindOnce(&OptimizationGuideStoreTest::OnPredictionModelLoaded,
+                     base::Unretained(this)));
+  // OnPredictionModelLoaded callback
+  db()->GetCallback(true);
+
+  // Verify that the OnPredictionModelLoaded callback runs when the store is
+  // unavailable and that the prediction model was correctly set.
+  EXPECT_FALSE(last_loaded_prediction_model());
+  // The load failed because of an unavailable store, not because of a
+  // collision.
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.PredictionModelStore.OnLoadCollided", false, 1);
+}
+
+TEST_F(OptimizationGuideStoreTest, LoadPredictionModelWithUpdateInFlight) {
+  base::HistogramTester histogram_tester;
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  SeedInitialData(schema_state, 0);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      guide_store()->CreateUpdateDataForPredictionModels();
+  ASSERT_TRUE(update_data);
+  SeedPredictionModelUpdateData(update_data.get(),
+                                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+  guide_store()->UpdatePredictionModels(
+      std::move(update_data),
+      base::BindOnce(&OptimizationGuideStoreTest::OnUpdateStore,
+                     base::Unretained(this)));
+
+  const OptimizationGuideStore::EntryKey kEntryKey = "4_1";
+  guide_store()->LoadPredictionModel(
+      kEntryKey,
+      base::BindOnce(&OptimizationGuideStoreTest::OnPredictionModelLoaded,
+                     base::Unretained(this)));
+
+  db()->GetCallback(true);
+
+  // Verify that the OnPredictionModelLoaded callback runs when the store is
+  // unavailable and that the prediction model was correctly set.
+  EXPECT_FALSE(last_loaded_prediction_model());
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.PredictionModelStore.OnLoadCollided", true, 1);
 }
 
 }  // namespace optimization_guide

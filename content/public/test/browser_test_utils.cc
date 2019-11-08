@@ -89,6 +89,7 @@
 #include "content/public/test/test_fileapi_operation_waiter.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/test/browser_accessibility.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -134,7 +135,6 @@
 #if defined(OS_WIN)
 #include <uiautomation.h>
 #include <wrl/client.h>
-#include "base/win/atl.h"
 #include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
 #endif
@@ -2027,39 +2027,42 @@ ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents) {
   return manager->SnapshotAXTreeForTesting();
 }
 
-BrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents) {
+TestBrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents) {
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents);
   BrowserAccessibilityManager* manager =
       web_contents_impl->GetRootBrowserAccessibilityManager();
-  return manager ? manager->GetRoot() : nullptr;
+  return manager ? ToTestBrowserAccessibility(manager->GetRoot()) : nullptr;
 }
 
 FindAccessibilityNodeCriteria::FindAccessibilityNodeCriteria() = default;
 
 FindAccessibilityNodeCriteria::~FindAccessibilityNodeCriteria() = default;
 
-BrowserAccessibility* FindAccessibilityNode(
+TestBrowserAccessibility* FindAccessibilityNode(
     WebContents* web_contents,
     const FindAccessibilityNodeCriteria& criteria) {
-  BrowserAccessibility* root = GetRootAccessibilityNode(web_contents);
+  TestBrowserAccessibility* root = GetRootAccessibilityNode(web_contents);
   CHECK(root);
   return FindAccessibilityNodeInSubtree(root, criteria);
 }
 
-BrowserAccessibility* FindAccessibilityNodeInSubtree(
-    BrowserAccessibility* node,
+TestBrowserAccessibility* FindAccessibilityNodeInSubtree(
+    TestBrowserAccessibility* node,
     const FindAccessibilityNodeCriteria& criteria) {
+  BrowserAccessibility* node_internal = FromTestBrowserAccessibility(node);
   if ((!criteria.name ||
-       node->GetStringAttribute(ax::mojom::StringAttribute::kName) ==
+       node_internal->GetStringAttribute(ax::mojom::StringAttribute::kName) ==
            criteria.name.value()) &&
-      (!criteria.role || node->GetRole() == criteria.role.value())) {
+      (!criteria.role || node_internal->GetRole() == criteria.role.value())) {
     return node;
   }
 
-  for (unsigned int i = 0; i < node->PlatformChildCount(); ++i) {
-    BrowserAccessibility* result =
-        FindAccessibilityNodeInSubtree(node->PlatformGetChild(i), criteria);
+  for (unsigned int i = 0; i < node_internal->PlatformChildCount(); ++i) {
+    TestBrowserAccessibility* child =
+        ToTestBrowserAccessibility(node_internal->PlatformGetChild(i));
+    TestBrowserAccessibility* result =
+        FindAccessibilityNodeInSubtree(child, criteria);
     if (result)
       return result;
   }
@@ -2069,7 +2072,7 @@ BrowserAccessibility* FindAccessibilityNodeInSubtree(
 #if defined(OS_WIN)
 template <typename T>
 Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
-    BrowserAccessibility* browser_accessibility) {
+    TestBrowserAccessibility* browser_accessibility) {
   Microsoft::WRL::ComPtr<T> result;
   EXPECT_HRESULT_SUCCEEDED(
       browser_accessibility->GetNativeViewAccessible()->QueryInterface(
@@ -2079,7 +2082,7 @@ Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
 
 void UiaGetPropertyValueVtArrayVtUnknownValidate(
     PROPERTYID property_id,
-    BrowserAccessibility* target_browser_accessibility,
+    TestBrowserAccessibility* target_browser_accessibility,
     const std::vector<std::string>& expected_names) {
   ASSERT_NE(nullptr, target_browser_accessibility);
 
@@ -2102,14 +2105,15 @@ void UiaGetPropertyValueVtArrayVtUnknownValidate(
 
   std::vector<std::string> names;
   for (LONG i = 0; i < size; ++i) {
-    CComPtr<IUnknown> unknown_element = nullptr;
-    ASSERT_HRESULT_SUCCEEDED(SafeArrayGetElement(V_ARRAY(result_variant.ptr()),
-                                                 &i, &unknown_element));
+    Microsoft::WRL::ComPtr<IUnknown> unknown_element;
+    ASSERT_HRESULT_SUCCEEDED(
+        SafeArrayGetElement(V_ARRAY(result_variant.ptr()), &i,
+                            static_cast<void**>(&unknown_element)));
     ASSERT_NE(nullptr, unknown_element);
 
-    CComPtr<IRawElementProviderSimple> raw_element_provider_simple = nullptr;
-    ASSERT_HRESULT_SUCCEEDED(
-        unknown_element->QueryInterface(&raw_element_provider_simple));
+    Microsoft::WRL::ComPtr<IRawElementProviderSimple>
+        raw_element_provider_simple;
+    ASSERT_HRESULT_SUCCEEDED(unknown_element.As(&raw_element_provider_simple));
     ASSERT_NE(nullptr, raw_element_provider_simple);
 
     base::win::ScopedVariant name;
@@ -3154,7 +3158,7 @@ namespace {
 // exposing them in the header.
 class EvictionStateWaiter : public DelegatedFrameHost::Observer {
  public:
-  EvictionStateWaiter(DelegatedFrameHost* delegated_frame_host)
+  explicit EvictionStateWaiter(DelegatedFrameHost* delegated_frame_host)
       : delegated_frame_host_(delegated_frame_host) {
     delegated_frame_host_->AddObserverForTesting(this);
   }

@@ -131,51 +131,43 @@ base::string16 ProfileAttributesEntry::GetGAIANameToDisplay() const {
 
 bool ProfileAttributesEntry::ShouldShowProfileLocalName(
     const base::string16& gaia_name_to_display) const {
-  bool is_using_default_name = IsUsingDefaultName();
-
-  // Customized profile name that is not equal to Gaia name.
-  if (!is_using_default_name &&
-      !base::EqualsCaseInsensitiveASCII(gaia_name_to_display,
-                                        GetLocalProfileName())) {
-    return true;
+  // Never show the profile name if it is equal to GAIA given name,
+  // e.g. Matt (Matt), in that case we should only show the GAIA name.
+  if (base::EqualsCaseInsensitiveASCII(gaia_name_to_display,
+                                       GetLocalProfileName())) {
+    return false;
   }
 
+  // Customized profile name that is not equal to Gaia name, e.g. Matt (Work).
+  if (!IsUsingDefaultName())
+    return true;
+
+  // The profile local name is a default profile name : Person n.
   std::vector<ProfileAttributesEntry*> entries =
       profile_info_cache_->GetAllProfilesAttributes();
 
   for (ProfileAttributesEntry* entry : entries) {
-    if (entry == this) {
+    if (entry == this)
       continue;
-    }
 
     base::string16 other_gaia_name_to_display = entry->GetGAIANameToDisplay();
     if (other_gaia_name_to_display.empty() ||
         other_gaia_name_to_display != gaia_name_to_display)
       continue;
 
-    bool other_is_using_default_name = entry->IsUsingDefaultName();
-    if (is_using_default_name) {
-      // Both profiles have a default profile name.
-      if (other_is_using_default_name) {
-        return true;
-      }
-      // The other profile name will be shown, no need to show |Person %n|.
-      continue;
-    }
-
-    // Current profile has a custom profile name that is equal to GAIA name.
-    if (other_is_using_default_name) {
-      // The other profile has a default profile name (Person %n) that will not
-      // be shown. Show the profile name for this profile to clear ambiguity.
+    // Another profile with the same GAIA name.
+    bool other_profile_name_equal_GAIA_name = base::EqualsCaseInsensitiveASCII(
+        other_gaia_name_to_display, entry->GetLocalProfileName());
+    // If for the other profile, the profile name is equal to GAIA name then it
+    // will not be shown. For disambiguation, show for the current profile the
+    // profile name even if it is Person n.
+    if (other_profile_name_equal_GAIA_name)
       return true;
-    }
 
-    // The other profile has a custom name. If for both profiles, the profile
-    // name is equal to Gaia name, then the profile name must be shown for both
-    // of them.
-    base::string16 other_local_profile_name = entry->GetLocalProfileName();
-    if (base::EqualsCaseInsensitiveASCII(other_gaia_name_to_display,
-                                         other_local_profile_name)) {
+    bool other_is_using_default_name = entry->IsUsingDefaultName();
+    // Both profiles have a default profile name,
+    // e.g. Matt (Person 1), Matt (Person 2).
+    if (other_is_using_default_name) {
       return true;
     }
   }

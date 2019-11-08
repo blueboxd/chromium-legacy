@@ -27,6 +27,8 @@ enum class InfobarType {
 enum class InfobarConfirmType {
   // Confirm Infobar for enabling to "Restore Tabs" after a crash.
   kInfobarConfirmTypeRestore = 0,
+  // Confirm Infobar for blocking popups.
+  kInfobarConfirmTypeBlockPopups = 1,
 };
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_INFOBAR_TYPE_H_

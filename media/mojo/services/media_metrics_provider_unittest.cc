@@ -49,11 +49,19 @@ class MediaMetricsProviderTest : public testing::Test {
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
         VideoDecodePerfHistory::SaveCallback(),
         MediaMetricsProvider::GetLearningSessionCallback(),
+        base::BindRepeating(
+            &MediaMetricsProviderTest::GetRecordAggregateWatchTimeCallback,
+            base::Unretained(this)),
         provider_.BindNewPipeAndPassReceiver());
     provider_->Initialize(is_mse, scheme);
   }
 
   ukm::SourceId GetSourceId() { return source_id_; }
+
+  MediaMetricsProvider::RecordAggregateWatchTimeCallback
+  GetRecordAggregateWatchTimeCallback() {
+    return base::NullCallback();
+  }
 
   void ResetMetricRecorders() {
     // Ensure cleared global before attempting to create a new TestUkmReporter.

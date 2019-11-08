@@ -3680,7 +3680,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
       // Otherwise, consult the platform-neutral tree.
       AXFragmentRootWin* fragment_root =
           AXFragmentRootWin::GetFragmentRootParentOf(GetNativeViewAccessible());
-      if (UNLIKELY(fragment_root) && !fragment_root->IsControllerFor()) {
+      if (UNLIKELY(fragment_root)) {
         neighbor = fragment_root->GetNativeViewAccessible();
       } else {
         neighbor = GetParent();
@@ -3728,8 +3728,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
       // source node isn't Rx, return Rx.
       AXFragmentRootWin* fragment_root =
           AXFragmentRootWin::GetFragmentRootParentOf(neighbor);
-      if (UNLIKELY(fragment_root && fragment_root != GetDelegate() &&
-                   !fragment_root->IsControllerFor()))
+      if (UNLIKELY(fragment_root && fragment_root != GetDelegate()))
         neighbor = fragment_root->GetNativeViewAccessible();
     }
     neighbor->QueryInterface(IID_PPV_ARGS(element_provider));

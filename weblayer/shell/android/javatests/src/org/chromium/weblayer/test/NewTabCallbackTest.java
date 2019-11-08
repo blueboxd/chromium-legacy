@@ -4,21 +4,15 @@
 
 package org.chromium.weblayer.test;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.weblayer.NewTabCallback;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -31,45 +25,12 @@ public class NewTabCallbackTest {
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
-    private EmbeddedTestServer mTestServer;
     private InstrumentationActivity mActivity;
-
-    private static class NewTabCallbackImpl extends NewTabCallback {
-        private CallbackHelper mCallbackHelper = new CallbackHelper();
-
-        @Override
-        public void onNewTab(Tab tab, int mode) {
-            mCallbackHelper.notifyCalled();
-            tab.getBrowser().setActiveTab(tab);
-        }
-
-        public void waitForNewTab() {
-            try {
-                mCallbackHelper.waitForCallback(0);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    @Before
-    public void setUp() {
-        mTestServer = new EmbeddedTestServer();
-        mTestServer.initializeNative(InstrumentationRegistry.getInstrumentation().getContext(),
-                EmbeddedTestServer.ServerHTTPSSetting.USE_HTTP);
-        mTestServer.addDefaultHandlers("weblayer/test/data");
-        Assert.assertTrue(mTestServer.start(0));
-    }
-
-    @After
-    public void tearDown() {
-        mTestServer.stopAndDestroyServer();
-    }
 
     @Test
     @SmallTest
     public void testNewBrowser() {
-        String url = mTestServer.getURL("/new_browser.html");
+        String url = mActivityTestRule.getTestDataURL("new_browser.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);
         Assert.assertNotNull(mActivity);
         NewTabCallbackImpl callback = new NewTabCallbackImpl();

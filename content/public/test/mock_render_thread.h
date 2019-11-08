@@ -20,7 +20,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 
 struct FrameHostMsg_CreateChildFrame_Params;
 struct FrameHostMsg_CreateChildFrame_Params_Reply;
@@ -120,13 +119,6 @@ class MockRenderThread : public RenderThread {
   service_manager::mojom::InterfaceProviderRequest
   TakeInitialInterfaceProviderRequestForFrame(int32_t routing_id);
 
-  // Returns the receiver end of the DocumentInterfaceBroker interface whose
-  // client end was passed in to construct RenderFrame with |routing_id|; if
-  // any. The client end will be used by the RenderFrame to service interface
-  // requests originating from the initial empty document.
-  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-  TakeInitialDocumentInterfaceBrokerReceiverForFrame(int32_t routing_id);
-
   // Returns the receiver end of the BrowserInterfaceBroker interface whose
   // client end was passed in to construct RenderFrame with |routing_id|; if
   // any. The client end will be used by the RenderFrame to service interface
@@ -164,10 +156,6 @@ class MockRenderThread : public RenderThread {
 
   std::map<int32_t, service_manager::mojom::InterfaceProviderRequest>
       frame_routing_id_to_initial_interface_provider_requests_;
-
-  std::map<int32_t,
-           mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>
-      frame_routing_id_to_initial_document_broker_receivers_;
 
   std::map<int32_t, mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>>
       frame_routing_id_to_initial_browser_broker_receivers_;

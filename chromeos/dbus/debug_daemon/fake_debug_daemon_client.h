@@ -90,7 +90,8 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
                          const base::Closure& error_callback) override;
   void StartConcierge(ConciergeCallback callback) override;
   void StopConcierge(ConciergeCallback callback) override;
-  void StartPluginVmDispatcher(PluginVmDispatcherCallback callback) override;
+  void StartPluginVmDispatcher(const std::string& owner_id,
+                               PluginVmDispatcherCallback callback) override;
   void StopPluginVmDispatcher(PluginVmDispatcherCallback callback) override;
   void SetRlzPingSent(SetRlzPingSentCallback callback) override;
   void SetSchedulerConfigurationV2(

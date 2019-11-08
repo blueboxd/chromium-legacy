@@ -87,9 +87,9 @@ void WriteIndent(int depth, StringBuilder* output) {
 
 }  // anonymous namespace
 
-const char* kJSONNullString = "null";
-const char* kJSONTrueString = "true";
-const char* kJSONFalseString = "false";
+const char kJSONNullString[] = "null";
+const char kJSONTrueString[] = "true";
+const char kJSONFalseString[] = "false";
 
 void EscapeStringForJSON(const String& str, StringBuilder* dst) {
   for (unsigned i = 0; i < str.length(); ++i) {

@@ -1501,7 +1501,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
   // This instance of PushMessagingManager is only used from clients
   // bound to service workers (i.e. PushProvider), since frame-bound
-  // clients will rely on DocumentInterfaceBroker instead. Therefore,
+  // clients will rely on BrowserInterfaceBroker instead. Therefore,
   // pass an invalid frame ID here.
   //
   // Constructing the manager must occur after RegisterHost(), since

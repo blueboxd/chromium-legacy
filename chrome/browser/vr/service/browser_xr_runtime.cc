@@ -396,24 +396,6 @@ void BrowserXRRuntime::OnExitPresent() {
   }
 }
 
-void BrowserXRRuntime::OnDeviceActivated(
-    device::mojom::VRDisplayEventReason reason,
-    base::OnceCallback<void(bool)> on_handled) {
-  if (listening_for_activation_service_) {
-    listening_for_activation_service_->OnActivate(reason,
-                                                  std::move(on_handled));
-  } else {
-    std::move(on_handled).Run(true /* will_not_present */);
-  }
-}
-
-void BrowserXRRuntime::OnDeviceIdle(
-    device::mojom::VRDisplayEventReason reason) {
-  for (VRServiceImpl* service : services_) {
-    service->OnDeactivate(reason);
-  }
-}
-
 void BrowserXRRuntime::OnVisibilityStateChanged(
     device::mojom::XRVisibilityState visibility_state) {
   for (VRServiceImpl* service : services_) {
@@ -440,11 +422,6 @@ void BrowserXRRuntime::OnServiceRemoved(VRServiceImpl* service) {
   services_.erase(service);
   if (service == presenting_service_) {
     ExitPresent(service, base::DoNothing());
-  }
-  if (service == listening_for_activation_service_) {
-    // Not listening for activation.
-    listening_for_activation_service_ = nullptr;
-    runtime_->SetListeningForActivate(false);
   }
 }
 
@@ -524,18 +501,6 @@ void BrowserXRRuntime::OnImmersiveSessionError() {
   StopImmersiveSession(base::DoNothing());
 }
 
-void BrowserXRRuntime::UpdateListeningForActivate(VRServiceImpl* service) {
-  if (service->ListeningForActivate() && service->InFocusedFrame()) {
-    bool was_listening = !!listening_for_activation_service_;
-    listening_for_activation_service_ = service;
-    if (!was_listening)
-      OnListeningForActivate(true);
-  } else if (listening_for_activation_service_ == service) {
-    listening_for_activation_service_ = nullptr;
-    OnListeningForActivate(false);
-  }
-}
-
 void BrowserXRRuntime::InitializeAndGetDisplayInfo(
     content::RenderFrameHost* render_frame_host,
     device::mojom::VRService::GetImmersiveVRDisplayInfoCallback callback) {
@@ -549,10 +514,6 @@ void BrowserXRRuntime::InitializeAndGetDisplayInfo(
   pending_initialization_callbacks_.push_back(std::move(callback));
   runtime_->EnsureInitialized(
       base::BindOnce(&BrowserXRRuntime::OnInitialized, base::Unretained(this)));
-}
-
-void BrowserXRRuntime::OnListeningForActivate(bool is_listening) {
-  runtime_->SetListeningForActivate(is_listening);
 }
 
 }  // namespace vr

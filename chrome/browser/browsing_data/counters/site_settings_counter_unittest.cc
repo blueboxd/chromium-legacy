@@ -5,6 +5,8 @@
 #include "chrome/browser/browsing_data/counters/site_settings_counter.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
@@ -54,18 +56,17 @@ class TestProtocolHandlerRegistryDelegate
   }
   void RegisterWithOSAsDefaultClient(
       const std::string& protocol,
-      ProtocolHandlerRegistry* registry) override {
+      shell_integration::DefaultWebClientWorkerCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(registry->GetDefaultWebClientCallback(protocol),
-                       shell_integration::NOT_DEFAULT));
+        base::BindOnce(std::move(callback), shell_integration::NOT_DEFAULT));
   }
-  void CheckDefaultClientWithOS(const std::string& protocol,
-                                ProtocolHandlerRegistry* registry) override {
+  void CheckDefaultClientWithOS(
+      const std::string& protocol,
+      shell_integration::DefaultWebClientWorkerCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(registry->GetDefaultWebClientCallback(protocol),
-                       shell_integration::NOT_DEFAULT));
+        base::BindOnce(std::move(callback), shell_integration::NOT_DEFAULT));
   }
 
  private:

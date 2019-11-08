@@ -4,11 +4,14 @@
 
 package org.chromium.base.task;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,6 +43,9 @@ public class AsyncTaskThreadTest {
     private static class BlockAndGetFeedDataTask extends AsyncTask<Boolean> {
         private LinkedBlockingQueue<Boolean> mIncomingQueue = new LinkedBlockingQueue<Boolean>();
         private LinkedBlockingQueue<Boolean> mOutgoingQueue = new LinkedBlockingQueue<Boolean>();
+        private LinkedBlockingQueue<Boolean> mInterruptedExceptionQueue =
+                new LinkedBlockingQueue<Boolean>();
+        private Boolean mPostExecuteResult;
 
         @Override
         protected Boolean doInBackground() {
@@ -51,6 +57,7 @@ public class AsyncTaskThreadTest {
         @Override
         protected void onPostExecute(Boolean result) {
             if (DEBUG) Log.i(TAG, "onPostExecute: " + result);
+            mPostExecuteResult = result;
         }
 
         public void feedData(Boolean data) {
@@ -61,6 +68,7 @@ public class AsyncTaskThreadTest {
             try {
                 return mIncomingQueue.poll(3, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
+                mInterruptedExceptionQueue.add(true);
                 return false;
             }
         }
@@ -68,8 +76,17 @@ public class AsyncTaskThreadTest {
         public void blockUntilDoInBackgroundStarts() throws Exception {
             mOutgoingQueue.poll(3, TimeUnit.SECONDS);
         }
+
+        public Boolean getPostExecuteResult() {
+            return mPostExecuteResult;
+        }
+
+        public LinkedBlockingQueue<Boolean> getInterruptedExceptionQueue() {
+            return mInterruptedExceptionQueue;
+        }
     }
 
+    private final BlockAndGetFeedDataTask mTask = new BlockAndGetFeedDataTask();
     private final RoboExecutorService mRoboExecutorService = new RoboExecutorService();
     private final Scheduler mBackgroundScheduler = Robolectric.getBackgroundThreadScheduler();
 
@@ -85,42 +102,96 @@ public class AsyncTaskThreadTest {
         mBackgroundScheduler.pause();
     }
 
+    @After
+    public void tearDown() {
+        // No unexpected interrupted exception.
+        assertNull(mTask.getInterruptedExceptionQueue().poll());
+        Assert.assertTrue(mRoboExecutorService.shutdownNow().isEmpty());
+    }
+
     @Test
     @SmallTest
     public void testCancel_ReturnsFalseOnceTaskFinishes() throws Exception {
-        BlockAndGetFeedDataTask task = new BlockAndGetFeedDataTask();
         // This test requires robo executor service such that we can run
         // one background task.
-        task.executeOnExecutor(mRoboExecutorService);
+        mTask.executeOnExecutor(mRoboExecutorService);
 
-        // We feed the background thread, then cancel.
-        task.feedData(true);
+        // Ensure that the background thread is not blocked.
+        mTask.feedData(true);
+
         mBackgroundScheduler.runOneTask();
 
         // Cannot cancel. The task is already run.
-        assertFalse(task.cancel(false));
-        assertTrue(task.get());
+        assertFalse(mTask.cancel(false /* mayInterruptIfRunning */));
+        assertTrue(mTask.get());
+        assertEquals(Boolean.valueOf(true), mTask.getPostExecuteResult());
     }
 
     @Test
     @SmallTest
     public void testCancel_CanReturnTrueEvenAfterTaskStarts() throws Exception {
-        BlockAndGetFeedDataTask task = new BlockAndGetFeedDataTask();
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        // The task has started.
-        task.blockUntilDoInBackgroundStarts();
+        // Wait until the task is started. Note that data is not yet fed.
+        mTask.blockUntilDoInBackgroundStarts();
         // This reflects FutureTask#cancel() behavior. Note that the task is
         // started but cancel can still return true.
-        assertTrue(task.cancel(false));
-        task.feedData(true);
+        assertTrue(mTask.cancel(false /* mayInterruptIfRunning */));
 
-        // get() will raise an exception although the task is run.
+        // Continue the task.
+        mTask.feedData(true);
+
+        // get() will raise an exception although the task is started.
         try {
-            task.get();
+            mTask.get();
             Assert.fail();
         } catch (CancellationException e) {
             // expected
         }
+        assertNull(mTask.getPostExecuteResult()); // onPostExecute did not run.
+    }
+
+    @Test
+    @SmallTest
+    public void testCancel_MayInterrupt_ReturnsFalseOnceTaskFinishes() throws Exception {
+        // This test requires robo executor service such that we can run
+        // one background task.
+        mTask.executeOnExecutor(mRoboExecutorService);
+
+        // Ensure that the background thread is not blocked.
+        mTask.feedData(true);
+
+        mBackgroundScheduler.runOneTask();
+
+        // Cannot cancel. The task is already run.
+        assertFalse(mTask.cancel(true /* mayInterruptIfRunning */));
+        assertTrue(mTask.get());
+        assertEquals(Boolean.valueOf(true), mTask.getPostExecuteResult());
+    }
+
+    @Test
+    @SmallTest
+    public void testCancel_MayInterrupt_TaskIsInterrupted() throws Exception {
+        mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        // Wait until the task is started. Note that data is not yet fed.
+        mTask.blockUntilDoInBackgroundStarts();
+
+        // Cancel and interrupt the current task.
+        assertTrue(mTask.cancel(true /* mayInterruptIfRunning */));
+
+        // Ensure that the background thread is not blocked.
+        mTask.feedData(true);
+
+        // get() will raise an exception although the task is started.
+        try {
+            mTask.get();
+            Assert.fail();
+        } catch (CancellationException e) {
+            // expected
+        }
+        assertNull(mTask.getPostExecuteResult()); // onPostExecute did not run.
+        // Task was interrupted.
+        assertEquals(Boolean.valueOf(true), mTask.getInterruptedExceptionQueue().poll());
     }
 }

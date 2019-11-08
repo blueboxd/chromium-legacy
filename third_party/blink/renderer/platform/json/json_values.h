@@ -265,9 +265,9 @@ class PLATFORM_EXPORT JSONArray : public JSONValue {
   Vector<std::unique_ptr<JSONValue>> data_;
 };
 
-extern const char* kJSONNullString;
-extern const char* kJSONTrueString;
-extern const char* kJSONFalseString;
+extern const char kJSONNullString[];
+extern const char kJSONTrueString[];
+extern const char kJSONFalseString[];
 
 PLATFORM_EXPORT void EscapeStringForJSON(const String&, StringBuilder*);
 void DoubleQuoteStringForJSON(const String&, StringBuilder*);

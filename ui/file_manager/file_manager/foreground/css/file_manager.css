@@ -238,12 +238,22 @@ html[class*='col-resize'] #directory-tree {
   background: -webkit-image-set(
       url(../images/files/ui/eject.png) 1x,
       url(../images/files/ui/2x/eject.png) 2x) no-repeat center;
+  border-style: none;
+  box-shadow: none;
+  min-width: 16px;
+  outline-color: rgb(77, 144, 254);
+  outline-width: 1px;
+  padding: 10px;
 }
 
 #directory-tree .tree-row[selected] > .root-eject {
   background-image: -webkit-image-set(
       url(../images/files/ui/eject_active.png) 1x,
       url(../images/files/ui/2x/eject_active.png) 2x);
+}
+
+#directory-tree .tree-row > .root-eject:active {
+  outline-width: 0;
 }
 
 #directory-tree .root-item[disabled] {

@@ -63,19 +63,20 @@ ScenicWindow::~ScenicWindow() {
 
 void ScenicWindow::AttachSurfaceView(
     fuchsia::ui::views::ViewHolderToken token) {
-  scenic::ViewHolder surface_view_holder(&scenic_session_, std::move(token),
-                                         "chromium window surface");
+  surface_view_holder_ = std::make_unique<scenic::ViewHolder>(
+      &scenic_session_, std::move(token), "chromium window surface");
 
   // Configure the ViewHolder not to be focusable, or hit-testable, to ensure
   // that it cannot receive input.
   fuchsia::ui::gfx::ViewProperties view_properties;
+  view_properties.bounding_box = {{-0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, 0.5f}};
   view_properties.focus_change = false;
-  surface_view_holder.SetViewProperties(std::move(view_properties));
-  surface_view_holder.SetHitTestBehavior(
+  surface_view_holder_->SetViewProperties(std::move(view_properties));
+  surface_view_holder_->SetHitTestBehavior(
       fuchsia::ui::gfx::HitTestBehavior::kSuppress);
 
   render_node_.DetachChildren();
-  render_node_.Attach(surface_view_holder);
+  render_node_.AddChild(*surface_view_holder_);
 
   scenic_session_.Present(
       /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});

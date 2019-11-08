@@ -131,6 +131,9 @@ class MockUserManager : public ChromeUserManager {
   user_manager::User* GetActiveUser() override;
   const user_manager::User* GetPrimaryUser() const override;
 
+  // We can't mock it as easily.
+  bool IsLoggedInAsAnyKioskApp() const override;
+
   // ChromeUserManager overrides:
   MultiProfileUserController* GetMultiProfileUserController() override;
   UserImageManager* GetUserImageManager(const AccountId& account_id) override;

@@ -9,7 +9,7 @@
 namespace gpu {
 namespace gles2 {
 
-GLboolean GLES2Interface::DidGpuSwitch() {
+GLboolean GLES2Interface::DidGpuSwitch(gl::GpuPreference* active_gpu) {
   return GL_FALSE;
 }
 

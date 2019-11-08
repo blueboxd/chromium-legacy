@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/debug/stack_trace.h"
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -84,8 +85,6 @@ CanvasResourceDispatcher::~CanvasResourceDispatcher() = default;
 namespace {
 
 void UpdatePlaceholderImage(
-    base::WeakPtr<CanvasResourceDispatcher> dispatcher,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int placeholder_canvas_id,
     scoped_refptr<blink::CanvasResource> canvas_resource,
     viz::ResourceId resource_id) {
@@ -94,10 +93,22 @@ void UpdatePlaceholderImage(
       OffscreenCanvasPlaceholder::GetPlaceholderCanvasById(
           placeholder_canvas_id);
   if (placeholder_canvas) {
-    placeholder_canvas->SetOffscreenCanvasFrame(
-        std::move(canvas_resource), std::move(dispatcher),
-        std::move(task_runner), resource_id);
+    placeholder_canvas->SetOffscreenCanvasResource(std::move(canvas_resource),
+                                                   resource_id);
   }
+}
+
+void UpdatePlaceholderDispatcher(
+    base::WeakPtr<CanvasResourceDispatcher> dispatcher,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    int placeholder_canvas_id) {
+  OffscreenCanvasPlaceholder* placeholder_canvas =
+      OffscreenCanvasPlaceholder::GetPlaceholderCanvasById(
+          placeholder_canvas_id);
+  // Note that the placeholder canvas may be destroyed when this post task get
+  // to executed.
+  if (placeholder_canvas)
+    placeholder_canvas->SetOffscreenCanvasDispatcher(dispatcher, task_runner);
 }
 
 }  // namespace
@@ -131,17 +142,13 @@ void CanvasResourceDispatcher::PostImageToPlaceholder(
     viz::ResourceId resource_id) {
   scoped_refptr<base::SingleThreadTaskRunner> dispatcher_task_runner =
       Thread::Current()->GetTaskRunner();
-
   // After this point, |canvas_resource| can only be used on the main thread,
   // until it is returned.
   canvas_resource->Transfer();
-
   PostCrossThreadTask(
       *Thread::MainThread()->Scheduler()->CompositorTaskRunner(), FROM_HERE,
-      CrossThreadBindOnce(UpdatePlaceholderImage, this->GetWeakPtr(),
-                          WTF::Passed(std::move(dispatcher_task_runner)),
-                          placeholder_canvas_id_, std::move(canvas_resource),
-                          resource_id));
+      CrossThreadBindOnce(UpdatePlaceholderImage, placeholder_canvas_id_,
+                          std::move(canvas_resource), resource_id));
 }
 
 void CanvasResourceDispatcher::DispatchFrameSync(
@@ -403,6 +410,32 @@ void CanvasResourceDispatcher::DidDeleteSharedBitmap(
     ::gpu::mojom::blink::MailboxPtr id) {
   if (sink_)
     sink_->DidDeleteSharedBitmap(std::move(id));
+}
+
+void CanvasResourceDispatcher::SetFilterQuality(
+    SkFilterQuality filter_quality) {
+  if (Client())
+    Client()->SetFilterQualityInResource(filter_quality);
+}
+
+void CanvasResourceDispatcher::SetPlaceholderCanvasDispatcher(
+    int placeholder_canvas_id) {
+  scoped_refptr<base::SingleThreadTaskRunner> dispatcher_task_runner =
+      Thread::Current()->GetTaskRunner();
+
+  // If the offscreencanvas is in the same tread as the canvas, we will update
+  // the canvas resource dispatcher directly. So Offscreen Canvas can behave in
+  // a more synchronous way when it's on the main thread.
+  if (IsMainThread()) {
+    UpdatePlaceholderDispatcher(this->GetWeakPtr(), dispatcher_task_runner,
+                                placeholder_canvas_id);
+  } else {
+    PostCrossThreadTask(
+        *Thread::MainThread()->Scheduler()->CompositorTaskRunner(), FROM_HERE,
+        CrossThreadBindOnce(UpdatePlaceholderDispatcher, this->GetWeakPtr(),
+                            WTF::Passed(std::move(dispatcher_task_runner)),
+                            placeholder_canvas_id));
+  }
 }
 
 void CanvasResourceDispatcher::ReclaimResourceInternal(

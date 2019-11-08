@@ -30,6 +30,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
+#include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 #include "components/chrome_cleaner/test/test_name_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -54,11 +55,9 @@ using ::testing::ValuesIn;
 using CrashPoint = MockChromeCleanerProcess::CrashPoint;
 using ExtensionCleaningFeatureStatus =
     MockChromeCleanerProcess::ExtensionCleaningFeatureStatus;
-using ProtobufIPCFeatureStatus =
-    MockChromeCleanerProcess::ProtobufIPCFeatureStatus;
 using IdleReason = ChromeCleanerController::IdleReason;
 using ItemsReporting = MockChromeCleanerProcess::ItemsReporting;
-using PromptAcceptance = ChromePromptActions::PromptAcceptance;
+using PromptUserResponse = chrome_cleaner::PromptUserResponse;
 using State = ChromeCleanerController::State;
 using UserResponse = ChromeCleanerController::UserResponse;
 using UwsFoundStatus = MockChromeCleanerProcess::UwsFoundStatus;
@@ -66,19 +65,20 @@ using UwsFoundStatus = MockChromeCleanerProcess::UwsFoundStatus;
 // Returns the PromptAcceptance value that ChromeCleanerController is supposed
 // to send to the Chrome Cleaner process when ReplyWithUserResponse() is
 // called with |user_response|.
-PromptAcceptance UserResponseToPromptAcceptance(UserResponse user_response) {
+PromptUserResponse::PromptAcceptance UserResponseToPromptAcceptance(
+    UserResponse user_response) {
   switch (user_response) {
     case UserResponse::kAcceptedWithLogs:
-      return PromptAcceptance::ACCEPTED_WITH_LOGS;
+      return PromptUserResponse::ACCEPTED_WITH_LOGS;
     case UserResponse::kAcceptedWithoutLogs:
-      return PromptAcceptance::ACCEPTED_WITHOUT_LOGS;
+      return PromptUserResponse::ACCEPTED_WITHOUT_LOGS;
     case UserResponse::kDenied:  // Fallthrough
     case UserResponse::kDismissed:
-      return PromptAcceptance::DENIED;
+      return PromptUserResponse::DENIED;
   }
 
   NOTREACHED();
-  return PromptAcceptance::UNSPECIFIED;
+  return PromptUserResponse::UNSPECIFIED;
 }
 
 class MockChromeCleanerControllerObserver
@@ -232,7 +232,6 @@ typedef std::tuple<CleanerProcessStatus,
                    CrashPoint,
                    UwsFoundStatus,
                    ExtensionCleaningFeatureStatus,
-                   ProtobufIPCFeatureStatus,
                    ItemsReporting,
                    ItemsReporting,
                    UserResponse>
@@ -251,9 +250,8 @@ class ChromeCleanerControllerTest
 
   void SetUp() override {
     std::tie(process_status_, crash_point_, uws_found_status_,
-             extension_cleaning_feature_status_, protobuf_ipc_feature_status_,
-             registry_keys_reporting_, extensions_reporting_, user_response_) =
-        GetParam();
+             extension_cleaning_feature_status_, registry_keys_reporting_,
+             extensions_reporting_, user_response_) = GetParam();
 
     std::vector<base::Feature> enabled_features;
     std::vector<base::Feature> disabled_features;
@@ -262,11 +260,6 @@ class ChromeCleanerControllerTest
       enabled_features.push_back(kChromeCleanupExtensionsFeature);
     } else {
       disabled_features.push_back(kChromeCleanupExtensionsFeature);
-    }
-    if (protobuf_ipc_feature_status_ == ProtobufIPCFeatureStatus::kEnabled) {
-      enabled_features.push_back(kChromeCleanupProtobufIPCFeature);
-    } else {
-      disabled_features.push_back(kChromeCleanupProtobufIPCFeature);
     }
     features_.InitWithFeatures(enabled_features, disabled_features);
 
@@ -280,7 +273,7 @@ class ChromeCleanerControllerTest
     cleaner_process_options_.set_crash_point(crash_point_);
     cleaner_process_options_.set_expected_user_response(
         uws_found_status_ == UwsFoundStatus::kNoUwsFound
-            ? PromptAcceptance::DENIED
+            ? PromptUserResponse::DENIED
             : UserResponseToPromptAcceptance(user_response_));
 
     ChromeCleanerControllerImpl::ResetInstanceForTesting();
@@ -471,7 +464,6 @@ class ChromeCleanerControllerTest
   MockChromeCleanerProcess::CrashPoint crash_point_;
   UwsFoundStatus uws_found_status_;
   ExtensionCleaningFeatureStatus extension_cleaning_feature_status_;
-  ProtobufIPCFeatureStatus protobuf_ipc_feature_status_;
   ItemsReporting registry_keys_reporting_;
   ItemsReporting extensions_reporting_;
   ChromeCleanerController::UserResponse user_response_;
@@ -650,8 +642,6 @@ INSTANTIATE_TEST_SUITE_P(
                    UwsFoundStatus::kUwsFoundNoRebootRequired),
             Values(ExtensionCleaningFeatureStatus::kEnabled,
                    ExtensionCleaningFeatureStatus::kDisabled),
-            Values(ProtobufIPCFeatureStatus::kEnabled,
-                   ProtobufIPCFeatureStatus::kDisabled),
             Values(ItemsReporting::kUnsupported,
                    ItemsReporting::kNotReported,
                    ItemsReporting::kReported),
@@ -671,8 +661,6 @@ INSTANTIATE_TEST_SUITE_P(
             ValuesIn(kCrashPointsAfterStartup),
             Values(UwsFoundStatus::kUwsFoundRebootRequired),
             Values(ExtensionCleaningFeatureStatus::kEnabled),
-            Values(ProtobufIPCFeatureStatus::kEnabled,
-                   ProtobufIPCFeatureStatus::kDisabled),
             Values(ItemsReporting::kReported),
             Values(ItemsReporting::kReported),
             Values(UserResponse::kDenied, UserResponse::kDismissed)),
@@ -689,8 +677,6 @@ INSTANTIATE_TEST_SUITE_P(
             ValuesIn(kCrashPointsAfterStartup),
             Values(UwsFoundStatus::kNoUwsFound),
             Values(ExtensionCleaningFeatureStatus::kDisabled),
-            Values(ProtobufIPCFeatureStatus::kEnabled,
-                   ProtobufIPCFeatureStatus::kDisabled),
             Values(ItemsReporting::kNotReported),
             Values(ItemsReporting::kNotReported),
             Values(UserResponse::kDismissed)),
@@ -706,7 +692,6 @@ INSTANTIATE_TEST_SUITE_P(
             Values(CrashPoint::kNone),
             Values(UwsFoundStatus::kNoUwsFound),
             Values(ExtensionCleaningFeatureStatus::kDisabled),
-            Values(ProtobufIPCFeatureStatus::kDisabled),
             Values(ItemsReporting::kUnsupported),
             Values(ItemsReporting::kUnsupported),
             Values(UserResponse::kAcceptedWithLogs)),
@@ -726,8 +711,6 @@ INSTANTIATE_TEST_SUITE_P(
             Values(CrashPoint::kOnStartup),
             Values(UwsFoundStatus::kNoUwsFound),
             Values(ExtensionCleaningFeatureStatus::kDisabled),
-            Values(ProtobufIPCFeatureStatus::kEnabled,
-                   ProtobufIPCFeatureStatus::kDisabled),
             Values(ItemsReporting::kUnsupported),
             Values(ItemsReporting::kUnsupported),
             Values(UserResponse::kAcceptedWithLogs)),

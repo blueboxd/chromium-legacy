@@ -7,6 +7,11 @@ import datetime
 import logging
 import multiprocessing
 from multiprocessing.dummy import Pool as ThreadPool
+import urllib
+
+
+TELEMETRY_TEST_PATH_FORMAT = 'telemetry'
+GTEST_TEST_PATH_FORMAT = 'gtest'
 
 
 def ApplyInParallel(function, work_list, on_failure=None):
@@ -47,6 +52,31 @@ def ApplyInParallel(function, work_list, on_failure=None):
     pool.join()
   finally:
     pool.terminate()
+
+
+def SplitTestPath(test_result, test_path_format):
+  """ Split a test path into test suite name and test case name.
+
+  Telemetry and Gtest have slightly different test path formats.
+  Telemetry uses '{benchmark_name}/{story_name}', e.g.
+  'system_health.common_desktop/load:news:cnn:2018'.
+  Gtest uses '{test_suite_name}.{test_case_name}', e.g.
+  'ZeroToFiveSequence/LuciTestResultParameterizedTest.Variant'
+  """
+  if test_path_format == TELEMETRY_TEST_PATH_FORMAT:
+    separator = '/'
+  elif test_path_format == GTEST_TEST_PATH_FORMAT:
+    separator = '.'
+  else:
+    raise ValueError('Unknown test path format: %s' % test_path_format)
+
+  # TODO(crbug.com/981349): Remove this after test paths are no longer
+  # url-quoted.
+  test_path = urllib.unquote(test_result['testPath'])
+  if separator not in test_path:
+    raise ValueError('Invalid test path: %s' % test_path)
+
+  return test_path.split(separator, 1)
 
 
 def IsoTimestampToEpoch(timestamp):

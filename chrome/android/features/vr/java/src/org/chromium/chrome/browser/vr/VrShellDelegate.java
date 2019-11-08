@@ -165,10 +165,6 @@ public class VrShellDelegate
     private boolean mRestoreSystemUiVisibility;
     private Integer mRestoreOrientation;
     private boolean mRequestedWebVr;
-    private boolean mListeningForWebVrActivate;
-    private boolean mMaybeActivateAfterHeadsetInsertion;
-    private Handler mClearMaybeActivateHandler = new Handler();
-    private boolean mActivateFromHeadsetInsertion;
     private boolean mStartedFromVrIntent;
 
     private boolean mInternalIntentUsedToStartVr;
@@ -251,11 +247,6 @@ public class VrShellDelegate
             if (!sInstance.mInVr) {
                 VrModuleProvider.getDelegate().addBlackOverlayViewForActivity(sInstance.mActivity);
             }
-
-            // For headset insertion handling it should be impossible in practice to receive this
-            // broadcast after being resumed. However, with VR entry flows skipped, these events
-            // can happen out of order. See https://crbug.com/762724.
-            sInstance.mActivateFromHeadsetInsertion = sInstance.mMaybeActivateAfterHeadsetInsertion;
 
             if (sInstance.mPaused) {
                 if (activity instanceof ChromeTabbedActivity) {
@@ -1067,19 +1058,7 @@ public class VrShellDelegate
         if (mNativeVrShellDelegate == 0) return false;
         if (!canEnterVr()) return false;
 
-        // If headset insertion was performed while a page was listening for vrdisplayactivate,
-        // we assume it wants to request presentation. Go into WebVR mode tentatively. If the page
-        // doesn't request presentation in the vrdisplayactivate handler we will exit presentation
-        // later.
-        if (mActivateFromHeadsetInsertion) {
-            assert !mRequestedWebVr;
-            assert !mStartedFromVrIntent;
-        }
-        enterVr(mActivateFromHeadsetInsertion);
-        if (mActivateFromHeadsetInsertion && mListeningForWebVrActivate) {
-            VrShellDelegateJni.get().displayActivate(mNativeVrShellDelegate, VrShellDelegate.this);
-            mActivateFromHeadsetInsertion = false;
-        }
+        enterVr();
 
         // The user has successfully completed a DON flow.
         RecordUserAction.record("VR.DON");
@@ -1087,7 +1066,7 @@ public class VrShellDelegate
         return true;
     }
 
-    private void enterVr(final boolean tentativeWebVrMode) {
+    private void enterVr() {
         // We should only enter VR when we're the resumed Activity or our changes to things like
         // system UI flags might get lost.
         assert !mPaused;
@@ -1116,12 +1095,11 @@ public class VrShellDelegate
         if (!sRegisteredVrAssetsComponent) {
             registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewer());
         }
-        boolean webVrMode = mRequestedWebVr || tentativeWebVrMode;
-        mVrShell.initializeNative(webVrMode, VrModuleProvider.getDelegate().bootsToVr());
-        mVrShell.setWebVrModeEnabled(webVrMode);
+        mVrShell.initializeNative(mRequestedWebVr, VrModuleProvider.getDelegate().bootsToVr());
+        mVrShell.setWebVrModeEnabled(mRequestedWebVr);
 
         // We're entering VR, but not in WebVr mode.
-        mVrBrowserUsed = !webVrMode;
+        mVrBrowserUsed = !mRequestedWebVr;
 
         // resume needs to be called on GvrLayout after initialization to make sure DON flow works
         // properly.
@@ -1298,8 +1276,7 @@ public class VrShellDelegate
         if (getVrSupportLevel() <= VrSupportLevel.VR_NEEDS_UPDATE) return false;
 
         // If VR browsing is not enabled and this is not a WebXR request, then return false.
-        boolean presenting = mRequestedWebVr || mActivateFromHeadsetInsertion;
-        if (!isVrBrowsingEnabled() && !presenting) return false;
+        if (!isVrBrowsingEnabled() && !mRequestedWebVr) return false;
         return true;
     }
 
@@ -1354,7 +1331,7 @@ public class VrShellDelegate
             getVrDaydreamApi().launchInVr(getEnterVrPendingIntent(mActivity));
             mProbablyInDon = true;
         } else {
-            enterVr(false);
+            enterVr();
         }
         return EnterVRResult.REQUESTED;
     }
@@ -1430,9 +1407,6 @@ public class VrShellDelegate
     @VisibleForTesting
     protected void onResume() {
         if (VrDelegate.DEBUG_LOGS) Log.i(TAG, "onResume");
-        if (!mTestWorkaroundDontCancelVrEntryOnResume) {
-            mMaybeActivateAfterHeadsetInsertion = false;
-        }
         if (mNeedsAnimationCancel) {
             // At least on some devices, like the Samsung S8+, a Window animation is run after our
             // Activity is shown that fades between a stale screenshot from before pausing to the
@@ -1520,7 +1494,6 @@ public class VrShellDelegate
         if (mInVr) {
             maybeSetPresentResult(true);
             mDonSucceeded = false;
-            assert !mActivateFromHeadsetInsertion;
             return;
         }
         if (maybeExitVrToUpdateVrServices()) return;
@@ -1556,10 +1529,6 @@ public class VrShellDelegate
         unregisterDaydreamIntent();
         if (getVrSupportLevel() <= VrSupportLevel.VR_NEEDS_UPDATE) return;
 
-        if (mMaybeActivateAfterHeadsetInsertion) {
-            mClearMaybeActivateHandler.removeCallbacksAndMessages(null);
-        }
-
         if (mInVr) mVrShell.pause();
         if (mNativeVrShellDelegate != 0) {
             VrShellDelegateJni.get().onPause(mNativeVrShellDelegate, VrShellDelegate.this);
@@ -1569,7 +1538,6 @@ public class VrShellDelegate
     }
 
     private void onStart() {
-        mMaybeActivateAfterHeadsetInsertion = false;
         if (mDonSucceeded) setWindowModeForVr();
 
         // This handles the case where Chrome was paused in VR (ie the user navigated to DD home or
@@ -1658,47 +1626,10 @@ public class VrShellDelegate
         return mIsDaydreamCurrentViewer;
     }
 
-    @CalledByNative
-    private void setListeningForWebVrActivate(boolean listening) {
-        if (VrDelegate.DEBUG_LOGS) {
-            Log.i(TAG, "WebVR page listening for vrdisplayactivate: " + listening);
-        }
-        // Non-Daydream devices do not have the concept of activation.
-        if (getVrSupportLevel() != VrSupportLevel.VR_DAYDREAM) return;
-        if (mListeningForWebVrActivate == listening) return;
-        mListeningForWebVrActivate = listening;
-        if (mListeningForWebVrActivate) {
-            registerDaydreamIntent(mActivity);
-            if (mNeedsAnimationCancel || mCancellingEntryAnimation) return;
-            if (mActivateFromHeadsetInsertion) {
-                // Dispatch vrdisplayactivate so that the WebVr page can call requestPresent
-                // to start presentation.
-                VrShellDelegateJni.get().displayActivate(
-                        mNativeVrShellDelegate, VrShellDelegate.this);
-                mActivateFromHeadsetInsertion = false;
-            }
-        } else {
-            if (!canEnterVr()) unregisterDaydreamIntent();
-            // When the active web page has a vrdisplayactivate event handler, and the phone is
-            // inserted into the headset, a vrdisplayactive event should be fired once DON flow
-            // is finished. However, the DON flow will pause our activity, which makes the active
-            // page lose focus and report that it can't handle displayActivate.
-            // Because of the order of onPause events running, we can't check for
-            // mListeningForWebVrActivate in onPause() as we may or may not already have lost focus.
-            // We need to remember that
-            mMaybeActivateAfterHeadsetInsertion = !mInVr && !mRequestedWebVr;
-            if (!mPaused) {
-                mClearMaybeActivateHandler.post(
-                        () -> { mMaybeActivateAfterHeadsetInsertion = false; });
-            }
-        }
-    }
-
     private void cancelPendingVrEntry() {
         if (VrDelegate.DEBUG_LOGS) Log.i(TAG, "cancelPendingVrEntry");
         VrModuleProvider.getDelegate().removeBlackOverlayView(mActivity, false /* animate */);
         mDonSucceeded = false;
-        mActivateFromHeadsetInsertion = false;
         maybeSetPresentResult(false);
         if (!mShowingDaydreamDoff) {
             setVrModeEnabled(mActivity, false);
@@ -1923,11 +1854,6 @@ public class VrShellDelegate
     }
 
     @VisibleForTesting
-    protected boolean isListeningForWebVrActivate() {
-        return mListeningForWebVrActivate;
-    }
-
-    @VisibleForTesting
     protected boolean isVrEntryComplete() {
         return mInVr && !mProbablyInDon && getVrShell().hasUiFinishedLoading();
     }
@@ -1973,7 +1899,6 @@ public class VrShellDelegate
         void onLibraryAvailable();
         void setPresentResult(long nativeVrShellDelegate, VrShellDelegate caller, boolean result);
         void recordVrStartAction(long nativeVrShellDelegate, int startAction);
-        void displayActivate(long nativeVrShellDelegate, VrShellDelegate caller);
         void onPause(long nativeVrShellDelegate, VrShellDelegate caller);
         void onResume(long nativeVrShellDelegate, VrShellDelegate caller);
         void destroy(long nativeVrShellDelegate, VrShellDelegate caller);

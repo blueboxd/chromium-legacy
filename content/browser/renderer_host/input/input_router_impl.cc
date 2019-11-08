@@ -458,6 +458,10 @@ void InputRouterImpl::SendGeneratedGestureScrollEvents(
                                               gesture_event.latency);
 }
 
+gfx::Size InputRouterImpl::GetRootWidgetViewportSize() {
+  return client_->GetRootWidgetViewportSize();
+}
+
 void InputRouterImpl::SendMouseWheelEventImmediately(
     const MouseWheelEventWithLatencyInfo& wheel_event) {
   mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(

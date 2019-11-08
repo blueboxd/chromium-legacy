@@ -78,7 +78,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::RowAfter(
   else if (IsInSection(*previous, html_names::kTbodyTag))
     child = Traversal<HTMLElement>::NextSibling(*previous->parentNode());
   for (; child; child = Traversal<HTMLElement>::NextSibling(*child)) {
-    if (auto* row = ToHTMLTableRowElementOrNull(child))
+    if (auto* row = DynamicTo<HTMLTableRowElement>(child))
       return row;
     if (child->HasTagName(html_names::kTbodyTag)) {
       if (HTMLTableRowElement* row =
@@ -115,7 +115,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::LastRow(HTMLTableElement& table) {
 
   for (HTMLElement* child = Traversal<HTMLElement>::LastChild(table); child;
        child = Traversal<HTMLElement>::PreviousSibling(*child)) {
-    if (auto* row = ToHTMLTableRowElementOrNull(child))
+    if (auto* row = DynamicTo<HTMLTableRowElement>(child))
       return row;
     if (child->HasTagName(html_names::kTbodyTag)) {
       if (HTMLTableRowElement* last_row =
@@ -152,7 +152,7 @@ HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table,
 
 Element* HTMLTableRowsCollection::VirtualItemAfter(Element* previous) const {
   return RowAfter(To<HTMLTableElement>(ownerNode()),
-                  ToHTMLTableRowElement(previous));
+                  To<HTMLTableRowElement>(previous));
 }
 
 }  // namespace blink

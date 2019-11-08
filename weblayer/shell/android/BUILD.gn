@@ -192,6 +192,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_support_test_runner:runner_java",
+    "//weblayer/public/javatests:weblayer_public_javatests",
   ]
   java_files = [
     "javatests/src/org/chromium/weblayer/test/DataClearingTest.java",
@@ -204,12 +205,14 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
     "javatests/src/org/chromium/weblayer/test/InputTypesTest.java",
     "javatests/src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
     "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
+    "javatests/src/org/chromium/weblayer/test/NewTabCallbackImpl.java",
     "javatests/src/org/chromium/weblayer/test/NewTabCallbackTest.java",
     "javatests/src/org/chromium/weblayer/test/RenderingTest.java",
     "javatests/src/org/chromium/weblayer/test/ProfileTest.java",
     "javatests/src/org/chromium/weblayer/test/SmokeTest.java",
     "javatests/src/org/chromium/weblayer/test/TabCallbackTest.java",
     "javatests/src/org/chromium/weblayer/test/TopControlsTest.java",
+    "javatests/src/org/chromium/weblayer/test/TabListCallbackTest.java",
   ]
   additional_apks = [
     "//weblayer/shell/android:weblayer_support_apk",

@@ -36,6 +36,7 @@ class WebTestBrowserContext final : public ShellBrowserContext {
   BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   BackgroundSyncController* GetBackgroundSyncController() override;
   ContentIndexProvider* GetContentIndexProvider() override;
+  ClientHintsControllerDelegate* GetClientHintsControllerDelegate() override;
 
   WebTestPermissionManager* GetWebTestPermissionManager();
 
@@ -46,6 +47,8 @@ class WebTestBrowserContext final : public ShellBrowserContext {
   std::unique_ptr<BackgroundSyncController> background_sync_controller_;
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
   std::unique_ptr<ContentIndexProvider> content_index_provider_;
+  std::unique_ptr<ClientHintsControllerDelegate>
+      client_hints_controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestBrowserContext);
 };

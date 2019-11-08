@@ -145,7 +145,8 @@ class WebRequestProxyingURLLoaderFactory
 
     base::Optional<WebRequestInfo> info_;
 
-    mojo::Binding<network::mojom::URLLoaderClient> proxied_client_binding_;
+    mojo::Receiver<network::mojom::URLLoaderClient> proxied_client_receiver_{
+        this};
     network::mojom::URLLoaderPtr target_loader_;
 
     // NOTE: This is state which ExtensionWebRequestEventRouter needs to have

@@ -116,6 +116,7 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
 
   // Node in |scenic_session_| for rendering (hit testing disabled).
   scenic::EntityNode render_node_;
+  std::unique_ptr<scenic::ViewHolder> surface_view_holder_;
 
   // The ratio used for translating device-independent coordinates to absolute
   // pixel coordinates.

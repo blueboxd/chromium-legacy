@@ -54,7 +54,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
     return;
 
   network::mojom::URLLoaderClientPtr client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  client_receiver_.Bind(mojo::MakeRequest(&client));
 
   // The partition has shutdown, return without making the request.
   if (!partition_)
@@ -123,7 +123,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Read() {
 }
 
 int AppCacheUpdateJob::UpdateURLLoaderRequest::Cancel() {
-  client_binding_.Close();
+  client_receiver_.reset();
   url_loader_ = nullptr;
   handle_watcher_.Cancel();
   handle_.reset();
@@ -208,7 +208,6 @@ AppCacheUpdateJob::UpdateURLLoaderRequest::UpdateURLLoaderRequest(
     URLFetcher* fetcher)
     : fetcher_(fetcher),
       partition_(std::move(partition)),
-      client_binding_(this),
       buffer_size_(buffer_size),
       handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,

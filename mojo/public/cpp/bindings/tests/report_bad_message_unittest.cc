@@ -63,7 +63,7 @@ class ReportBadMessageTest : public BindingsTestBase {
   ReportBadMessageTest() = default;
 
   void SetUp() override {
-    mojo::core::SetDefaultProcessErrorCallback(base::Bind(
+    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &ReportBadMessageTest::OnProcessError, base::Unretained(this)));
 
     impl_.Bind(remote_.BindNewPipeAndPassReceiver());

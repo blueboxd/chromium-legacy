@@ -1773,6 +1773,11 @@ viz::GpuVSyncCallback InProcessCommandBuffer::GetGpuVSyncCallback() {
 }
 
 base::TimeDelta InProcessCommandBuffer::GetGpuBlockedTimeSinceLastSwap() {
+  // Some examples and tests create InProcessCommandBuffer without
+  // GpuChannelManagerDelegate.
+  if (!gpu_channel_manager_delegate_)
+    return base::TimeDelta::Min();
+
   return gpu_channel_manager_delegate_->GetGpuScheduler()
       ->TakeTotalBlockingTime();
 }

@@ -245,8 +245,10 @@ public class ContentView extends FrameLayout
         try {
             TraceEvent.begin("ContentView.onFocusChanged");
             super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
-            getViewEventSink().setHideKeyboardOnBlur(true);
-            getViewEventSink().onViewFocusChanged(gainFocus);
+            if (mWebContents != null) {
+                getViewEventSink().setHideKeyboardOnBlur(true);
+                getViewEventSink().onViewFocusChanged(gainFocus);
+            }
         } finally {
             TraceEvent.end("ContentView.onFocusChanged");
         }
@@ -255,7 +257,9 @@ public class ContentView extends FrameLayout
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        getViewEventSink().onWindowFocusChanged(hasWindowFocus);
+        if (mWebContents != null) {
+            getViewEventSink().onWindowFocusChanged(hasWindowFocus);
+        }
     }
 
     @Override
@@ -335,7 +339,9 @@ public class ContentView extends FrameLayout
 
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
-        getViewEventSink().onConfigurationChanged(newConfig);
+        if (mWebContents != null) {
+            getViewEventSink().onConfigurationChanged(newConfig);
+        }
         super.onConfigurationChanged(newConfig);
     }
 
@@ -409,13 +415,17 @@ public class ContentView extends FrameLayout
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        getViewEventSink().onAttachedToWindow();
+        if (mWebContents != null) {
+            getViewEventSink().onAttachedToWindow();
+        }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        getViewEventSink().onDetachedFromWindow();
+        if (mWebContents != null) {
+            getViewEventSink().onDetachedFromWindow();
+        }
     }
 
     // Implements SmartClipProvider

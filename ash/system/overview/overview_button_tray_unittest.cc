@@ -317,7 +317,7 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
 TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetTray()->GetVisible());
-  GetTray()->SetVisible(false);
+  GetTray()->SetVisiblePreferred(false);
   EXPECT_FALSE(GetTray()->GetVisible());
 }
 
@@ -330,7 +330,7 @@ TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletesOnDelete) {
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> hide_duration(
       new ui::ScopedAnimationDurationScaleMode(
           ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
-  GetTray()->SetVisible(false);
+  GetTray()->SetVisiblePreferred(false);
 
   aura::Window* root_window = Shell::GetRootWindowForDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());

@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
@@ -52,7 +52,7 @@ class DisableablePromoTapCounter {
     private DisableablePromoTapCounter(SharedPreferencesManager prefsManager) {
         mPrefsManager = prefsManager;
         setRawCounter(prefsManager.readInt(
-                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT));
+                ChromePreferenceKeys.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT));
     }
 
     /**
@@ -108,7 +108,7 @@ class DisableablePromoTapCounter {
      */
     private void writeRawCounter() {
         mPrefsManager.writeInt(
-                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, mCounter);
+                ChromePreferenceKeys.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, mCounter);
     }
 
     /**

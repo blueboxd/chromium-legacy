@@ -40,9 +40,13 @@ enum class OptimizationTypeDecision {
   kNoHintAvailable,
   // The OptimizationGuideDecider was not initialized yet.
   kDeciderNotInitialized,
+  // A fetch to get the hint for the page load from the remote Optimization
+  // Guide Service was started, but was not available in time to make a
+  // decision.
+  kHintFetchStartedButNotAvailableInTime,
 
   // Add new values above this line.
-  kMaxValue = kDeciderNotInitialized,
+  kMaxValue = kHintFetchStartedButNotAvailableInTime,
 };
 
 // The types of decisions that can be made for an optimization target.

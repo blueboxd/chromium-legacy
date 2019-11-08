@@ -5,8 +5,7 @@
   LICENSE file.
 -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:id="@+id/crashes_menu">
         <!--suppress HardcodedText -->
         <item

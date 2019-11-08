@@ -64,6 +64,9 @@ public class TopView extends RelativeLayout
     // A Chip for filtering out names.
     private ChipView mNamesFilterChip;
 
+    // A Chip for filtering out addresses.
+    private ChipView mAddressFilterChip;
+
     // A Chip for filtering out emails.
     private ChipView mEmailFilterChip;
 
@@ -101,6 +104,12 @@ public class TopView extends RelativeLayout
         mNamesFilterChip.setSelected(true);
         mNamesFilterChip.setOnClickListener(this);
 
+        mAddressFilterChip = findViewById(R.id.address_filter);
+        textView = mAddressFilterChip.getPrimaryTextView();
+        textView.setText(R.string.top_view_address_filter_label);
+        mAddressFilterChip.setSelected(true);
+        mAddressFilterChip.setOnClickListener(this);
+
         mEmailFilterChip = findViewById(R.id.email_filter);
         textView = mEmailFilterChip.getPrimaryTextView();
         textView.setText(R.string.top_view_email_filter_label);
@@ -119,6 +128,8 @@ public class TopView extends RelativeLayout
         int id = view.getId();
         if (id == R.id.names_filter) {
             notifyChipToggled(PickerAdapter.FilterType.NAMES);
+        } else if (id == R.id.address_filter) {
+            notifyChipToggled(PickerAdapter.FilterType.ADDRESSES);
         } else if (id == R.id.email_filter) {
             notifyChipToggled(PickerAdapter.FilterType.EMAILS);
         } else if (id == R.id.tel_filter) {
@@ -136,6 +147,9 @@ public class TopView extends RelativeLayout
         switch (chip) {
             case PickerAdapter.FilterType.NAMES:
                 chipView = mNamesFilterChip;
+                break;
+            case PickerAdapter.FilterType.ADDRESSES:
+                chipView = mAddressFilterChip;
                 break;
             case PickerAdapter.FilterType.EMAILS:
                 chipView = mEmailFilterChip;
@@ -194,12 +208,14 @@ public class TopView extends RelativeLayout
     /**
      * Updates which chips should be displayed as part of the top view.
      * @param shouldDisplayNames Whether the names chip should be displayed.
+     * @param shouldDisplayAddresses Whether the addresses chip should be displayed.
      * @param shouldDisplayEmails Whether the emails chip should be displayed.
      * @param shouldDisplayTel Whether the telephone chip should be displayed.
      */
-    public void updateChipVisibility(
-            boolean shouldDisplayNames, boolean shouldDisplayEmails, boolean shouldDisplayTel) {
+    public void updateChipVisibility(boolean shouldDisplayNames, boolean shouldDisplayAddresses,
+            boolean shouldDisplayEmails, boolean shouldDisplayTel) {
         mNamesFilterChip.setVisibility(shouldDisplayNames ? View.VISIBLE : View.GONE);
+        mAddressFilterChip.setVisibility(shouldDisplayAddresses ? View.VISIBLE : View.GONE);
         mEmailFilterChip.setVisibility(shouldDisplayEmails ? View.VISIBLE : View.GONE);
         mTelephonesFilterChip.setVisibility(shouldDisplayTel ? View.VISIBLE : View.GONE);
     }

@@ -141,6 +141,7 @@ android_aidl("aidl") {
   import_include = [ "org/chromium/weblayer_private/interfaces" ]
   sources = [
     "org/chromium/weblayer_private/interfaces/IBrowser.aidl",
+    "org/chromium/weblayer_private/interfaces/IBrowserClient.aidl",
     "org/chromium/weblayer_private/interfaces/IBrowserFragment.aidl",
     "org/chromium/weblayer_private/interfaces/IChildProcessService.aidl",
     "org/chromium/weblayer_private/interfaces/IClientNavigation.aidl",

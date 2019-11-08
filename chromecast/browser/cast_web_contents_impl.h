@@ -45,7 +45,6 @@ class CastWebContentsImpl : public CastWebContents,
 
   // CastWebContents implementation:
   int tab_id() const override;
-  void SetDelegate(Delegate* delegate) override;
   void AddRendererFeatures(std::vector<RendererFeature> features) override;
   void AllowWebAndMojoWebUiBindings() override;
   void ClearRenderWidgetHostView() override;
@@ -67,8 +66,6 @@ class CastWebContentsImpl : public CastWebContents,
       const std::string& target_origin,
       const std::string& data,
       std::vector<mojo::ScopedMessagePipeHandle> channels) override;
-
-  // Observer interface:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
@@ -141,7 +138,7 @@ class CastWebContentsImpl : public CastWebContents,
   std::vector<chromecast::shell::mojom::FeaturePtr> GetRendererFeatures();
 
   content::WebContents* web_contents_;
-  Delegate* delegate_;
+  base::WeakPtr<Delegate> delegate_;
   PageState page_state_;
   PageState last_state_;
   const bool enabled_for_dev_;
@@ -168,9 +165,9 @@ class CastWebContentsImpl : public CastWebContents,
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
   service_manager::BinderRegistry binder_registry_;
+
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Map of InterfaceSet -> InterfaceProvider pointer.
   base::flat_map<InterfaceSet, service_manager::InterfaceProvider*>

@@ -70,11 +70,9 @@ bool CrostiniInstallerDialog::CanCloseDialog() const {
   return installer_ui_ == nullptr || installer_ui_->can_close();
 }
 
-void CrostiniInstallerDialog::OnDialogShown(
-    content::WebUI* webui,
-    content::RenderViewHost* render_view_host) {
+void CrostiniInstallerDialog::OnDialogShown(content::WebUI* webui) {
   installer_ui_ = static_cast<CrostiniInstallerUI*>(webui->GetController());
-  return SystemWebDialogDelegate::OnDialogShown(webui, render_view_host);
+  return SystemWebDialogDelegate::OnDialogShown(webui);
 }
 
 void CrostiniInstallerDialog::OnCloseContents(content::WebContents* source,

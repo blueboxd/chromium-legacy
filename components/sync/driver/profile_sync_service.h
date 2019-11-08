@@ -400,13 +400,10 @@ class ProfileSyncService : public SyncService,
   // A utility object containing logic and state relating to encryption.
   SyncServiceCrypto crypto_;
 
-  // The thread where all the sync operations happen. This thread is kept alive
-  // until browser shutdown and reused if sync is turned off and on again. It is
-  // joined during the shutdown process, but there is an abort mechanism in
-  // place to prevent slow HTTP requests from blocking browser shutdown.
+  // Owns the sync thread and takes care of its destruction.
   // TODO(https://crbug.com/1014464): Remove once we have switched to
   // Threadpool.
-  std::unique_ptr<base::Thread> sync_thread_;
+  base::OnceClosure sync_thread_stopper_;
 
   // TODO(crbug.com/923287): Move out of this class. Possibly to SyncEngineImpl.
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;

@@ -38,6 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/accessibility_notification_waiter.h"
+#include "content/public/test/browser_accessibility.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -128,9 +129,9 @@ class AccessibilityWinBrowserTest : public AccessibilityBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityWinBrowserTest);
 };
 
-AccessibilityWinBrowserTest::AccessibilityWinBrowserTest() {}
+AccessibilityWinBrowserTest::AccessibilityWinBrowserTest() = default;
 
-AccessibilityWinBrowserTest::~AccessibilityWinBrowserTest() {}
+AccessibilityWinBrowserTest::~AccessibilityWinBrowserTest() = default;
 
 base::string16 AccessibilityWinBrowserTest::PrintAXTree() const {
   std::unique_ptr<AccessibilityTreeFormatter> formatter(
@@ -141,11 +142,8 @@ base::string16 AccessibilityWinBrowserTest::PrintAXTree() const {
       L"*", AccessibilityTreeFormatter::PropertyFilter::ALLOW)});
 
   base::string16 str;
-  formatter->FormatAccessibilityTree(
-      static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetRootBrowserAccessibilityManager()
-          ->GetRoot(),
-      &str);
+  TestBrowserAccessibility::FormatAccessibilityTree(
+      formatter.get(), GetRootAccessibilityNode(shell()->web_contents()), &str);
   return str;
 }
 
@@ -894,7 +892,7 @@ class WebContentsUIAParentNavigationInDestroyedWatcher
     // Test navigating to the parent node via UIA
     Microsoft::WRL::ComPtr<IUIAutomationElement> parent;
     tree_walker_->GetParentElement(root_.Get(), &parent);
-    CHECK(parent.Get());
+    CHECK(parent.Get() == nullptr);
 
     run_loop_.Quit();
   }
@@ -3790,10 +3788,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
 
     BrowserAccessibilityComWin* browser_accessibility_com_win =
         ToBrowserAccessibilityWin(browser_accessibility)->GetCOM();
-    CComPtr<IScrollProvider> scroll_provider;
+    Microsoft::WRL::ComPtr<IScrollProvider> scroll_provider;
 
     EXPECT_HRESULT_SUCCEEDED(browser_accessibility_com_win->GetPatternProvider(
-        UIA_ScrollPatternId, reinterpret_cast<IUnknown**>(&scroll_provider)));
+        UIA_ScrollPatternId, &scroll_provider));
 
     if (expected.can_scroll_vertical || expected.can_scroll_horizontal) {
       ASSERT_NE(nullptr, scroll_provider);

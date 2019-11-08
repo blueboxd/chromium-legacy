@@ -1979,6 +1979,59 @@ void AutotestPrivateSetAssistantEnabledFunction::Timeout() {
   Respond(Error("Assistant service timed out"));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateEnableAssistantAndWaitForReadyFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateEnableAssistantAndWaitForReadyFunction::
+    AutotestPrivateEnableAssistantAndWaitForReadyFunction() = default;
+
+AutotestPrivateEnableAssistantAndWaitForReadyFunction::
+    ~AutotestPrivateEnableAssistantAndWaitForReadyFunction() {
+  ash::AssistantState::Get()->RemoveObserver(this);
+}
+
+ExtensionFunction::ResponseAction
+AutotestPrivateEnableAssistantAndWaitForReadyFunction::Run() {
+  DVLOG(1) << "AutotestPrivateEnableAssistantAndWaitForReadyFunction";
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const std::string& err_msg =
+      SetWhitelistedPref(profile, chromeos::assistant::prefs::kAssistantEnabled,
+                         base::Value(true));
+  if (!err_msg.empty())
+    return RespondNow(Error(err_msg));
+
+  // Asynchronously subscribe to status changes to avoid a possible segmentation
+  // fault caused by Respond() in the subscriber callback being called before
+  // RespondLater() below.
+  PostTask(
+      FROM_HERE, {base::CurrentThread()},
+      base::BindOnce(&AutotestPrivateEnableAssistantAndWaitForReadyFunction::
+                         SubscribeToStatusChanges,
+                     this));
+
+  // Prevent |this| from being freed before we get a response from the
+  // Assistant.
+  self_ = this;
+
+  return RespondLater();
+}
+
+void AutotestPrivateEnableAssistantAndWaitForReadyFunction::
+    SubscribeToStatusChanges() {
+  // |AddObserver| will immediately trigger |OnAssistantStatusChanged|.
+  ash::AssistantState::Get()->AddObserver(this);
+}
+
+void AutotestPrivateEnableAssistantAndWaitForReadyFunction::
+    OnAssistantStatusChanged(ash::mojom::AssistantState state) {
+  if (state == ash::mojom::AssistantState::NEW_READY) {
+    Respond(NoArguments());
+    self_.reset();
+  }
+}
+
 // AssistantInteractionHelper is a helper class used to interact with Assistant
 // server and store interaction states for tests. It is shared by
 // |AutotestPrivateSendAssistantTextQueryFunction| and

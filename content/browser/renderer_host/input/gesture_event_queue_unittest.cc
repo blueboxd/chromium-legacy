@@ -94,6 +94,9 @@ class GestureEventQueueTest : public testing::Test,
       const MouseWheelEventWithLatencyInfo& wheel_event) override {}
   void SendGeneratedGestureScrollEvents(
       const GestureEventWithLatencyInfo& gesture_event) override {}
+  gfx::Size GetRootWidgetViewportSize() override {
+    return gfx::Size(1920, 1080);
+  }
 
   // FlingControllerSchedulerClient
   void ScheduleFlingProgress(

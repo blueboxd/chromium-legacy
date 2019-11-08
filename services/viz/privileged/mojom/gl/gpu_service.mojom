@@ -24,6 +24,7 @@ import "gpu/ipc/common/sync_token.mojom";
 import "media/mojo/mojom/video_encode_accelerator.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/buffer_types.mojom";
+import "ui/gl/mojom/gpu_preference.mojom";
 
 interface GpuService {
   // Tells the GPU service to create a new channel for communication with a
@@ -116,7 +117,7 @@ interface GpuService {
 
   // Tells GPU that host has seen a GPU switch. This can happen when the display
   // is reconfigured, for example.
-  GpuSwitched();
+  GpuSwitched(gl.mojom.GpuPreference active_gpu_heuristic);
 
   DestroyAllChannels();
 

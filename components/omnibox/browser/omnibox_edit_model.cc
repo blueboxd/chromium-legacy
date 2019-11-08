@@ -1475,6 +1475,10 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
 const char OmniboxEditModel::kCutOrCopyAllTextHistogram[] =
     "Omnibox.CutOrCopyAllText";
 
+void OmniboxEditModel::SetAccessibilityLabel(const AutocompleteMatch& match) {
+  view_->SetAccessibilityLabel(view_->GetText(), match);
+}
+
 bool OmniboxEditModel::PopupIsOpen() const {
   return popup_model() && popup_model()->IsOpen();
 }

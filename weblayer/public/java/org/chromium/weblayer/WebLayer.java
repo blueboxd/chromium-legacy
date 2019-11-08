@@ -81,7 +81,7 @@ public final class WebLayer {
      * completes
      */
     @NonNull
-    public static ListenableFuture<WebLayer> create(Context appContext)
+    public static ListenableFuture<WebLayer> create(@NonNull Context appContext)
             throws UnsupportedVersionException {
         ThreadCheck.ensureOnUiThread();
         if (sFuture == null) {

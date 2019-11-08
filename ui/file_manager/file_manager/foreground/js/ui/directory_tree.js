@@ -703,17 +703,12 @@ class DirectoryItem extends TreeItem {
    * @private
    */
   setupEjectButton_(rowElement) {
-    const ejectButton = document.createElement('button');
+    const ejectButton = document.createElement('cr-button');
 
     ejectButton.className = 'root-eject align-right-icon';
     ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
     ejectButton.setAttribute('tabindex', '0');
-
-    // Add paper-ripple effect on the eject button.
-    const ripple = document.createElement('paper-ripple');
-    ripple.setAttribute('fit', '');
-    ripple.className = 'circle recenteringTouch';
-    ejectButton.appendChild(ripple);
+    ejectButton.circleRipple = true;
 
     // Block mouse handlers, handle click.
     ejectButton.addEventListener('mouseup', (event) => {

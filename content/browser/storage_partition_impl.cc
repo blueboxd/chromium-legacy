@@ -719,7 +719,7 @@ bool IsMainFrameRequest(int process_id, int routing_id) {
   return frame_tree_node && frame_tree_node->IsMainFrame();
 }
 
-// This class lives on the IO thread. It is self-owned and will delete itself
+// This class lives on the UI thread. It is self-owned and will delete itself
 // after any of the SSLClientAuthHandler::Delegate methods are invoked (or when
 // a mojo connection error occurs).
 class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
@@ -727,30 +727,30 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
   SSLClientAuthDelegate(
       mojo::PendingRemote<network::mojom::ClientCertificateResponder>
           client_cert_responder_remote,
-      content::ResourceContext* resource_context,
+      content::BrowserContext* browser_context,
       WebContents::Getter web_contents_getter,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info)
       : client_cert_responder_(std::move(client_cert_responder_remote)),
         ssl_client_auth_handler_(std::make_unique<SSLClientAuthHandler>(
             GetContentClient()->browser()->CreateClientCertStore(
-                resource_context),
+                browser_context),
             std::move(web_contents_getter),
             std::move(cert_info.get()),
             this)) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(client_cert_responder_);
-    ssl_client_auth_handler_->SelectCertificate();
     client_cert_responder_.set_disconnect_handler(base::BindOnce(
         &SSLClientAuthDelegate::DeleteSelf, base::Unretained(this)));
+    ssl_client_auth_handler_->SelectCertificate();
   }
 
-  ~SSLClientAuthDelegate() override { DCHECK_CURRENTLY_ON(BrowserThread::IO); }
+  ~SSLClientAuthDelegate() override { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
 
   void DeleteSelf() { delete this; }
 
   // SSLClientAuthHandler::Delegate:
   void CancelCertificateSelection() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     client_cert_responder_->CancelRequest();
     DeleteSelf();
   }
@@ -759,7 +759,7 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
   void ContinueWithCertificate(
       scoped_refptr<net::X509Certificate> cert,
       scoped_refptr<net::SSLPrivateKey> private_key) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK((cert && private_key) || (!cert && !private_key));
 
     if (cert && private_key) {
@@ -785,18 +785,6 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
   std::unique_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 };
 
-void CreateSSLClientAuthDelegateOnIO(
-    mojo::PendingRemote<network::mojom::ClientCertificateResponder>
-        client_cert_responder_remote,
-    content::ResourceContext* resource_context,
-    WebContents::Getter web_contents_getter,
-    scoped_refptr<net::SSLCertRequestInfo> cert_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  new SSLClientAuthDelegate(std::move(client_cert_responder_remote),
-                            resource_context, std::move(web_contents_getter),
-                            cert_info);  // deletes self
-}
-
 void OnCertificateRequestedContinuation(
     uint32_t process_id,
     uint32_t routing_id,
@@ -818,12 +806,10 @@ void OnCertificateRequestedContinuation(
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CreateSSLClientAuthDelegateOnIO,
-                     std::move(client_cert_responder_remote),
-                     web_contents->GetBrowserContext()->GetResourceContext(),
-                     std::move(web_contents_getter), cert_info));
+  new SSLClientAuthDelegate(std::move(client_cert_responder_remote),
+                            web_contents->GetBrowserContext(),
+                            std::move(web_contents_getter),
+                            cert_info);  // deletes self
 }
 
 class SSLErrorDelegate : public SSLErrorHandler::Delegate {

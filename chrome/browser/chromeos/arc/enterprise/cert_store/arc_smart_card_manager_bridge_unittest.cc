@@ -71,11 +71,6 @@ class FakeCertificateProvider : public chromeos::CertificateProvider {
     return true;
   }
 
-  std::unique_ptr<CertificateProvider> Copy() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
  private:
   // Returns true if the certificate for |name| is created successfully.
   bool AddCert(const std::string& name) {

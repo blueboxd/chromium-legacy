@@ -489,7 +489,7 @@ void ImeMenuTray::OnIMERefresh() {
 }
 
 void ImeMenuTray::OnIMEMenuActivationChanged(bool is_activated) {
-  SetVisible(is_activated);
+  SetVisiblePreferred(is_activated);
   if (is_activated)
     UpdateTrayLabel();
   else

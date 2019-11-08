@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -34,7 +33,6 @@ import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.io.File;
@@ -49,7 +47,6 @@ public class InputTypesTest {
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
-    private EmbeddedTestServer mTestServer;
     private File mTempFile;
     private int mCameraPermission = PackageManager.PERMISSION_GRANTED;
 
@@ -127,12 +124,6 @@ public class InputTypesTest {
 
     @Before
     public void setUp() throws Exception {
-        mTestServer = new EmbeddedTestServer();
-        mTestServer.initializeNative(InstrumentationRegistry.getInstrumentation().getContext(),
-                EmbeddedTestServer.ServerHTTPSSetting.USE_HTTP);
-        mTestServer.addDefaultHandlers("weblayer/test/data");
-        Assert.assertTrue(mTestServer.start(0));
-
         InstrumentationActivity activity = mActivityTestRule.launchShell(new Bundle());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             activity.createWebLayer(
@@ -148,7 +139,7 @@ public class InputTypesTest {
                             null)
                     .get();
         });
-        mActivityTestRule.navigateAndWait(mTestServer.getURL("/input_types.html"));
+        mActivityTestRule.navigateAndWait(mActivityTestRule.getTestDataURL("input_types.html"));
         mTempFile = File.createTempFile("file", null);
         activity.setIntentInterceptor(mIntentInterceptor);
         ActivityCompat.setPermissionCompatDelegate(mPermissionCompatDelegate);

@@ -1280,4 +1280,11 @@ void ChromeClientImpl::DidUpdateTextAutosizerPageInfo(
   web_view_->Client()->DidUpdateTextAutosizerPageInfo(page_info);
 }
 
+void ChromeClientImpl::DocumentDetached(Document& document) {
+  for (auto& it : file_chooser_queue_) {
+    if (it->FrameOrNull() == document.GetFrame())
+      it->DisconnectClient();
+  }
+}
+
 }  // namespace blink

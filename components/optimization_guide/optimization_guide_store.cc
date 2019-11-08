@@ -27,9 +27,6 @@ static_assert(
         static_cast<int>(OptimizationGuideStore::StoreEntryType::kMaxValue),
     "mismatched StoreEntryType enums");
 
-// The folder where the data will be stored on disk.
-constexpr char kOptimizationGuideStore[] = "previews_hint_cache_store";
-
 // The amount of data to build up in memory before converting to a sorted on-
 // disk file.
 constexpr size_t kDatabaseWriteBufferSizeBytes = 128 * 1024;
@@ -97,10 +94,8 @@ OptimizationGuideStore::OptimizationGuideStore(
     leveldb_proto::ProtoDatabaseProvider* database_provider,
     const base::FilePath& database_dir,
     scoped_refptr<base::SequencedTaskRunner> store_task_runner) {
-  base::FilePath hint_store_dir =
-      database_dir.AppendASCII(kOptimizationGuideStore);
   database_ = database_provider->GetDB<proto::StoreEntry>(
-      leveldb_proto::ProtoDbType::HINT_CACHE_STORE, hint_store_dir,
+      leveldb_proto::ProtoDbType::HINT_CACHE_STORE, database_dir,
       store_task_runner);
 
   RecordStatusChange(status_);
@@ -216,7 +211,7 @@ void OptimizationGuideStore::UpdateComponentHints(
   EntryKeyPrefix filter_prefix = GetComponentHintEntryKeyPrefixWithoutVersion();
 
   // Add the new component data and purge any old component hints from the db.
-  // After processing finishes, OnUpdateHints() is called, which loads
+  // After processing finishes, OnUpdateStore() is called, which loads
   // the updated hint entry keys from the database.
   database_->UpdateEntriesWithRemoveFilter(
       component_data->TakeUpdateEntries(),
@@ -227,7 +222,7 @@ void OptimizationGuideStore::UpdateComponentHints(
                    key.compare(0, filter_prefix.length(), filter_prefix) == 0;
           },
           retain_prefix, filter_prefix),
-      base::BindOnce(&OptimizationGuideStore::OnUpdateHints,
+      base::BindOnce(&OptimizationGuideStore::OnUpdateStore,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -256,7 +251,7 @@ void OptimizationGuideStore::UpdateFetchedHints(
       fetched_hints_data->TakeUpdateEntries(),
       base::BindRepeating(&DatabasePrefixFilter,
                           GetMetadataTypeEntryKey(MetadataType::kFetched)),
-      base::BindOnce(&OptimizationGuideStore::OnUpdateHints,
+      base::BindOnce(&OptimizationGuideStore::OnUpdateStore,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -309,7 +304,7 @@ void OptimizationGuideStore::OnLoadFetchedHintsToPurgeExpired(
             return keys_to_remove->find(key) != keys_to_remove->end();
           },
           keys_to_remove.get()),
-      base::BindOnce(&OptimizationGuideStore::OnUpdateHints,
+      base::BindOnce(&OptimizationGuideStore::OnUpdateStore,
                      weak_ptr_factory_.GetWeakPtr(), base::DoNothing::Once()));
 }
 
@@ -531,19 +526,18 @@ void OptimizationGuideStore::ClearFetchedHintsFromDatabase() {
   // TODO(mcrouse): Add histogram to record the number of hints being removed.
   entry_keys_.reset();
 
-  // Removes all |kFetchedHint| store entries. OnUpdateHints will handle
-  // updating status and re-filling hint_entry_keys with the hints still in the
+  // Removes all |kFetchedHint| store entries. OnUpdateStore will handle
+  // updating status and re-filling entry_keys with the entries still in the
   // store.
   database_->UpdateEntriesWithRemoveFilter(
       std::move(entries_to_save),  // this should be empty.
       base::BindRepeating(&DatabasePrefixFilter,
                           GetFetchedHintEntryKeyPrefix()),
-      base::BindOnce(&OptimizationGuideStore::OnUpdateHints,
+      base::BindOnce(&OptimizationGuideStore::OnUpdateStore,
                      weak_ptr_factory_.GetWeakPtr(), base::DoNothing::Once()));
 }
 
-void OptimizationGuideStore::MaybeLoadHintEntryKeys(
-    base::OnceClosure callback) {
+void OptimizationGuideStore::MaybeLoadEntryKeys(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If the database is unavailable or if there's an in-flight component data
@@ -559,25 +553,25 @@ void OptimizationGuideStore::MaybeLoadHintEntryKeys(
   // loaded by the DB. Ownership of the KeySet is passed into the
   // LoadKeysAndEntriesCallback callback, guaranteeing that the KeySet has a
   // lifespan longer than the filter calls.
-  std::unique_ptr<EntryKeySet> hint_entry_keys(std::make_unique<EntryKeySet>());
-  EntryKeySet* raw_hint_entry_keys_pointer = hint_entry_keys.get();
+  std::unique_ptr<EntryKeySet> entry_keys(std::make_unique<EntryKeySet>());
+  EntryKeySet* raw_entry_keys_pointer = entry_keys.get();
   database_->LoadKeysAndEntriesWithFilter(
       base::BindRepeating(
-          [](EntryKeySet* hint_entry_keys, const std::string& filter_prefix,
+          [](EntryKeySet* entry_keys, const std::string& filter_prefix,
              const std::string& entry_key) {
             if (entry_key.compare(0, filter_prefix.length(), filter_prefix) !=
                 0) {
-              hint_entry_keys->insert(entry_key);
+              entry_keys->insert(entry_key);
             }
             return false;
           },
-          raw_hint_entry_keys_pointer, GetMetadataEntryKeyPrefix()),
-      base::BindOnce(&OptimizationGuideStore::OnLoadHintEntryKeys,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(hint_entry_keys),
+          raw_entry_keys_pointer, GetMetadataEntryKeyPrefix()),
+      base::BindOnce(&OptimizationGuideStore::OnLoadEntryKeys,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(entry_keys),
                      std::move(callback)));
 }
 
-size_t OptimizationGuideStore::GetHintEntryKeyCount() const {
+size_t OptimizationGuideStore::GetEntryKeyCount() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return entry_keys_ ? entry_keys_->size() : 0;
 }
@@ -691,7 +685,7 @@ void OptimizationGuideStore::OnLoadMetadata(
   }
 
   UpdateStatus(Status::kAvailable);
-  MaybeLoadHintEntryKeys(std::move(callback));
+  MaybeLoadEntryKeys(std::move(callback));
 }
 
 void OptimizationGuideStore::OnPurgeDatabase(base::OnceClosure callback,
@@ -704,7 +698,7 @@ void OptimizationGuideStore::OnPurgeDatabase(base::OnceClosure callback,
   std::move(callback).Run();
 }
 
-void OptimizationGuideStore::OnUpdateHints(base::OnceClosure callback,
+void OptimizationGuideStore::OnUpdateStore(base::OnceClosure callback,
                                            bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(data_update_in_flight_);
@@ -715,10 +709,10 @@ void OptimizationGuideStore::OnUpdateHints(base::OnceClosure callback,
     std::move(callback).Run();
     return;
   }
-  MaybeLoadHintEntryKeys(std::move(callback));
+  MaybeLoadEntryKeys(std::move(callback));
 }
 
-void OptimizationGuideStore::OnLoadHintEntryKeys(
+void OptimizationGuideStore::OnLoadEntryKeys(
     std::unique_ptr<EntryKeySet> hint_entry_keys,
     base::OnceClosure callback,
     bool success,
@@ -799,6 +793,99 @@ void OptimizationGuideStore::OnLoadHint(
         base::TimeDelta::FromHours(1), base::TimeDelta::FromDays(15), 50);
   }
   std::move(callback).Run(entry_key, std::move(loaded_hint));
+}
+
+std::unique_ptr<StoreUpdateData>
+OptimizationGuideStore::CreateUpdateDataForPredictionModels() const {
+  // Create and returns a StoreUpdateData object. This object has prediction
+  // models from the GetModelsResponse moved into and organizes them in a format
+  // usable by the store. The object will be stored with
+  // UpdatePredictionModels().
+  return StoreUpdateData::CreatePredictionModelStoreUpdateData();
+}
+
+void OptimizationGuideStore::UpdatePredictionModels(
+    std::unique_ptr<StoreUpdateData> prediction_models_update_data,
+    base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(prediction_models_update_data);
+  DCHECK(!data_update_in_flight_);
+
+  if (!IsAvailable()) {
+    std::move(callback).Run();
+    return;
+  }
+
+  data_update_in_flight_ = true;
+
+  entry_keys_.reset();
+
+  std::unique_ptr<EntryVector> entry_vectors =
+      prediction_models_update_data->TakeUpdateEntries();
+
+  database_->UpdateEntries(
+      std::move(entry_vectors), std::make_unique<leveldb_proto::KeyVector>(),
+      base::BindOnce(&OptimizationGuideStore::OnUpdateStore,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+bool OptimizationGuideStore::FindPredictionModelEntryKey(
+    proto::OptimizationTarget optimization_target,
+    OptimizationGuideStore::EntryKey* out_prediction_model_entry_key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!entry_keys_)
+    return false;
+  *out_prediction_model_entry_key =
+      GetPredictionModelEntryKeyPrefix() +
+      base::NumberToString(static_cast<int>(optimization_target));
+  if (entry_keys_->find(*out_prediction_model_entry_key) != entry_keys_->end())
+    return true;
+  return false;
+}
+
+void OptimizationGuideStore::LoadPredictionModel(
+    const EntryKey& prediction_model_entry_key,
+    PredictionModelLoadedCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsAvailable()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  database_->GetEntry(
+      prediction_model_entry_key,
+      base::BindOnce(&OptimizationGuideStore::OnLoadPredictionModel,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void OptimizationGuideStore::OnLoadPredictionModel(
+    PredictionModelLoadedCallback callback,
+    bool success,
+    std::unique_ptr<proto::StoreEntry> entry) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // If either the request failed, the store was set to unavailable after the
+  // request was started, or there's an in-flight update, which
+  // means the entry is about to be invalidated, then the loaded model should
+  // not be considered valid. Reset the entry so that nothing is returned to
+  // the requester.
+  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.PredictionModelStore.OnLoadCollided",
+                        data_update_in_flight_);
+  if (!success || !IsAvailable() || data_update_in_flight_) {
+    entry.reset();
+  }
+
+  if (!entry || !entry->has_prediction_model()) {
+    std::unique_ptr<proto::PredictionModel> loaded_prediction_model(nullptr);
+    std::move(callback).Run(std::move(loaded_prediction_model));
+    return;
+  }
+
+  std::unique_ptr<proto::PredictionModel> loaded_prediction_model(
+      entry->release_prediction_model());
+  std::move(callback).Run(std::move(loaded_prediction_model));
 }
 
 }  // namespace optimization_guide

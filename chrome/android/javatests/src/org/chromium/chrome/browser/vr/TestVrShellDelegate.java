@@ -83,11 +83,6 @@ public class TestVrShellDelegate extends VrShellDelegate {
     }
 
     @Override
-    public boolean isListeningForWebVrActivate() {
-        return super.isListeningForWebVrActivate();
-    }
-
-    @Override
     public boolean isVrEntryComplete() {
         return super.isVrEntryComplete();
     }

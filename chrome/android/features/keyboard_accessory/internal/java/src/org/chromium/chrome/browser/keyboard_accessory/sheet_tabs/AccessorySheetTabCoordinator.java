@@ -33,7 +33,7 @@ public abstract class AccessorySheetTabCoordinator implements KeyboardAccessoryD
      * Provides the icon used for a sheet. Simplifies mocking in controller tests.
      */
     @VisibleForTesting
-    static public class IconProvider {
+    public static class IconProvider {
         private static Drawable sTestIcon;
 
         /**

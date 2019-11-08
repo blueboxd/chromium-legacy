@@ -10,10 +10,13 @@
 #include <set>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -38,7 +41,8 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
                             public ChooserContextBase::PermissionObserver,
                             public CookiesTreeModel::Observer {
  public:
-  explicit SiteSettingsHandler(Profile* profile);
+  explicit SiteSettingsHandler(Profile* profile,
+                               web_app::AppRegistrar& web_app_registrar);
   ~SiteSettingsHandler() override;
 
   // SettingsPageUIHandler:
@@ -240,6 +244,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   void ClearAllSitesMapForTesting();
 
   Profile* profile_;
+  web_app::AppRegistrar& app_registrar_;
 
   content::NotificationRegistrar notification_registrar_;
 

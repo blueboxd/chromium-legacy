@@ -125,8 +125,12 @@ bool QuicChromiumPacketReader::ProcessReadResult(int result) {
     socket_->GetLocalAddress(&local_address_);
     socket_->GetPeerAddress(&peer_address_);
   }
+  auto self = weak_factory_.GetWeakPtr();
+  // Notifies the visitor that |this| reader gets a new packet, which may delete
+  // |this| if |this| is a connectivity probing reader.
   return visitor_->OnPacket(packet, ToQuicSocketAddress(local_address_),
-                            ToQuicSocketAddress(peer_address_));
+                            ToQuicSocketAddress(peer_address_)) &&
+         self;
 }
 
 void QuicChromiumPacketReader::OnReadComplete(int result) {

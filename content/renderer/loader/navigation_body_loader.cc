@@ -97,7 +97,6 @@ NavigationBodyLoader::NavigationBodyLoader(
       endpoints_(std::move(endpoints)),
       task_runner_(std::move(task_runner)),
       resource_load_info_(std::move(resource_load_info)),
-      url_loader_client_binding_(this),
       handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                       task_runner_) {}
@@ -220,9 +219,9 @@ void NavigationBodyLoader::CodeCacheReceived(
 
 void NavigationBodyLoader::BindURLLoaderAndContinue() {
   url_loader_.Bind(std::move(endpoints_->url_loader), task_runner_);
-  url_loader_client_binding_.Bind(std::move(endpoints_->url_loader_client),
-                                  task_runner_);
-  url_loader_client_binding_.set_connection_error_handler(base::BindOnce(
+  url_loader_client_receiver_.Bind(std::move(endpoints_->url_loader_client),
+                                   task_runner_);
+  url_loader_client_receiver_.set_disconnect_handler(base::BindOnce(
       &NavigationBodyLoader::OnConnectionClosed, base::Unretained(this)));
 }
 

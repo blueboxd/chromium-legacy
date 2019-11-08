@@ -2045,19 +2045,11 @@ void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
   service_manager::mojom::InterfaceProviderPtr interface_provider(
       std::move(params->interface_bundle->interface_provider));
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_content(std::move(
-          params->interface_bundle->document_interface_broker_content));
-  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-      document_interface_broker_blink(
-          std::move(params->interface_bundle->document_interface_broker_blink));
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker(
           std::move(params->interface_bundle->browser_interface_broker));
   RenderFrameImpl::CreateFrame(
       params->routing_id, std::move(interface_provider),
-      std::move(document_interface_broker_content),
-      std::move(document_interface_broker_blink),
       std::move(browser_interface_broker), params->previous_routing_id,
       params->opener_routing_id, params->parent_routing_id,
       params->previous_sibling_routing_id, params->devtools_frame_token,

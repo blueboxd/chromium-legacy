@@ -23,6 +23,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "content/public/browser/browser_context.h"
@@ -48,6 +49,7 @@
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom.h"
@@ -144,6 +146,14 @@ void BindFaceDetectionProvider(
 void BindTextDetection(
     mojo::PendingReceiver<shape_detection::mojom::TextDetection> receiver) {
   GetShapeDetectionService()->BindTextDetection(std::move(receiver));
+}
+
+void BindColorChooserFactoryForFrame(
+    RenderFrameHost* host,
+    mojo::PendingReceiver<blink::mojom::ColorChooserFactory> receiver) {
+  auto* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
+  web_contents->OnColorChooserFactoryReceiver(std::move(receiver));
 }
 
 #if defined(OS_ANDROID)
@@ -314,6 +324,8 @@ void PopulateBinderMapWithContext(
     service_manager::BinderMapWithContext<RenderFrameHost*>* map) {
   map->Add<blink::mojom::BackgroundFetchService>(
       base::BindRepeating(&BackgroundFetchServiceImpl::CreateForFrame));
+  map->Add<blink::mojom::ColorChooserFactory>(
+      base::BindRepeating(&BindColorChooserFactoryForFrame));
   map->Add<blink::mojom::CookieStore>(
       base::BindRepeating(&CookieStoreContext::CreateServiceForFrame));
   map->Add<blink::mojom::ContentIndexService>(

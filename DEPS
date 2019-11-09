@@ -122,10 +122,6 @@ vars = {
   # Wildcards are supported (e.g. "qemu.*").
   'checkout_fuchsia_boot_images': "qemu.x64,qemu.arm64",
 
-  # By default, do not check out files required to run fuchsia tests in
-  # qemu on linux-arm64 machines.
-  'checkout_fuchsia_for_arm64_host': False,
-
   # By Default, do not checkout AEMU, as it is too big. This can be overridden
   # e.g. with custom_vars.
   # TODO(chonggu): Delete once AEMU package is small enough.
@@ -176,7 +172,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f2af41c8eab1506a56d1e12051aba072b7b0c5cd',
+  'v8_revision': 'c6814905a3786566e8ee1c5f1386270db0e11862',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -184,7 +180,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '5c0e6e52bd5ecc3616cf0bff09e3e7c8f88dc0b7',
+  'angle_revision': '012d15196023467be913ef6d537417be91e68e16',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -307,7 +303,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '39b4b38f4f36b8a74e351febe5617fb0c2e36d6a',
+  'dawn_revision': '600a26d50a04d82cade2f52c79a2d7ad9e71b89b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -871,7 +867,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'eddbd257ba24d9fc4b9e64cba160014b82b9f54b',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '3573aac4baffe2bbc795e8bd126edfb2703eb1a6',
       'condition': 'checkout_linux',
   },
 
@@ -943,19 +939,6 @@ deps = {
   'src/third_party/fontconfig/src': {
       'url': Var('chromium_git') + '/external/fontconfig.git' + '@' + 'cd51cb241aad7b362b793200ca7d42595c14f52b',
       'condition': 'checkout_linux',
-  },
-
-  # TODO(steveroe): Get this from GCS instead of CIPD once the arm64 sdk is
-  # released using the same version specified in build/fuchsia/linux.sdk.sha1.
-  'src/third_party/fuchsia-sdk-arm64': {
-      'packages': [
-          {
-              'package': 'fuchsia/sdk/core/linux-arm64',
-              'version': 'xbqDSJKkLORclZW8h9et17dVsOjaxurf7RElMu0fGvUC',
-          },
-      ],
-      'condition': 'host_os == "linux" and (checkout_fuchsia and checkout_fuchsia_for_arm64_host)',
-      'dep_type': 'cipd',
   },
 
   'src/third_party/grpc/src': {
@@ -1352,17 +1335,6 @@ deps = {
   'src/third_party/pywebsocket/src':
     Var('chromium_git') + '/external/github.com/google/pywebsocket.git' + '@' + '2d7b73c3acbd0f41dcab487ae5c97c6feae06ce2',
 
-  'src/third_party/qemu-linux-arm64': {
-      'packages': [
-          {
-              'package': 'fuchsia/qemu/linux-arm64',
-              'version': 'b1b61a39e3ab0935cd030f27e01740578b04b967'
-          },
-      ],
-      'condition': 'host_os == "linux" and (checkout_fuchsia and checkout_fuchsia_for_arm64_host)',
-      'dep_type': 'cipd',
-  },
-
   'src/third_party/qemu-linux-x64': {
       'packages': [
           {
@@ -1512,7 +1484,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'dd55f3ca8f2ea716ca917a4aaf36f0729fe902b1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'd6b9b0a1f4132474c737b5e673e380c3d8e12e2c',
+    Var('webrtc_git') + '/src.git' + '@' + 'a4c1aaad8d5fe0d412f08f084b0aa36e01393550',
 
   # Wuffs' canonical repository is at github.com/google/wuffs, but we use
   # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.
@@ -1579,7 +1551,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8f729062729eacc875332a3bc62777f6ba78fadb',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@72fe40d810a1daed12800a2b4df1af9ecbf1eaec',
     'condition': 'checkout_src_internal',
   },
 

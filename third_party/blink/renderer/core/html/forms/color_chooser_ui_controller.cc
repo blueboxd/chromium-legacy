@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/color_chooser_ui_controller.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser_client.h"
@@ -76,7 +76,7 @@ void ColorChooserUIController::DidChooseColor(uint32_t color) {
 
 void ColorChooserUIController::OpenColorChooser() {
   DCHECK(!chooser_);
-  frame_->GetInterfaceProvider().GetInterface(
+  frame_->GetBrowserInterfaceBroker().GetInterface(
       color_chooser_factory_.BindNewPipeAndPassReceiver());
   color_chooser_factory_->OpenColorChooser(
       chooser_.BindNewPipeAndPassReceiver(),

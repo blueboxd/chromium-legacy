@@ -91,8 +91,7 @@ PriorityQueue::~PriorityQueue() {
   while (!container_.empty()) {
     auto task_source = PopTaskSource();
     auto task = task_source.Clear();
-    if (task)
-      std::move(task->task).Run();
+    std::move(task.task).Run();
   }
 }
 

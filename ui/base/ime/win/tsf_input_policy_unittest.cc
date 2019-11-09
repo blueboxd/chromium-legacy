@@ -209,6 +209,53 @@ class TSFInputPanelTest : public testing::Test {
   std::unique_ptr<FakeInputMethod> fake_input_method_;
 };
 
+class TSFMultipleInputPanelTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    text_store1_ = new TSFTextStore();
+    text_store2_ = new TSFTextStore();
+    sink1_ = new MockStoreACPSink();
+    sink2_ = new MockStoreACPSink();
+    EXPECT_EQ(S_OK, text_store1_->AdviseSink(IID_ITextStoreACPSink,
+                                             sink1_.get(), TS_AS_ALL_SINKS));
+    EXPECT_EQ(S_OK, text_store2_->AdviseSink(IID_ITextStoreACPSink,
+                                             sink2_.get(), TS_AS_ALL_SINKS));
+    text_store1_->SetFocusedTextInputClient(kWindowHandle,
+                                            &text_input_client1_);
+    text_store1_->SetInputMethodDelegate(&input_method_delegate_);
+    text_store2_->SetFocusedTextInputClient(kWindowHandle,
+                                            &text_input_client2_);
+    text_store2_->SetInputMethodDelegate(&input_method_delegate_);
+    fake_input_method_ = std::make_unique<FakeInputMethod>();
+    fake_input_method_->SetTSFTextStoreForBridge(text_store1_.get());
+  }
+
+  void SwitchToDifferentTSFTextStore() {
+    fake_input_method_->SetTSFTextStoreForBridge(text_store2_.get());
+  }
+
+  void TearDown() override {
+    EXPECT_EQ(S_OK, text_store1_->UnadviseSink(sink1_.get()));
+    EXPECT_EQ(S_OK, text_store2_->UnadviseSink(sink2_.get()));
+    sink1_ = nullptr;
+    sink2_ = nullptr;
+    text_store1_ = nullptr;
+    text_store2_ = nullptr;
+  }
+
+  // Accessors to the internal state of TSFTextStore.
+
+  base::win::ScopedCOMInitializer com_initializer_;
+  MockTextInputClient text_input_client1_;
+  MockTextInputClient text_input_client2_;
+  MockInputMethodDelegate input_method_delegate_;
+  scoped_refptr<TSFTextStore> text_store1_;
+  scoped_refptr<TSFTextStore> text_store2_;
+  scoped_refptr<MockStoreACPSink> sink1_;
+  scoped_refptr<MockStoreACPSink> sink2_;
+  std::unique_ptr<FakeInputMethod> fake_input_method_;
+};
+
 namespace {
 
 TEST_F(TSFInputPanelTest, GetStatusTest) {
@@ -252,5 +299,38 @@ TEST_F(TSFInputPanelTest, AutomaticInputPaneToManualPolicyTest) {
             status.dwStaticFlags);
 }
 
+TEST_F(TSFMultipleInputPanelTest, InputPaneSwitchForMultipleTSFTextStoreTest) {
+  TS_STATUS status = {};
+  // Invoke the virtual keyboard through InputMethod
+  // and test if the automatic policy flag has been set or not.
+  EXPECT_EQ(S_OK, text_store1_->GetStatus(&status));
+  EXPECT_EQ((ULONG)TS_SD_INPUTPANEMANUALDISPLAYENABLE, status.dwDynamicFlags);
+  EXPECT_EQ((ULONG)(TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT),
+            status.dwStaticFlags);
+  fake_input_method_->ShowVirtualKeyboardIfEnabled();
+  EXPECT_EQ(S_OK, text_store1_->GetStatus(&status));
+  EXPECT_NE((ULONG)TS_SD_INPUTPANEMANUALDISPLAYENABLE, status.dwDynamicFlags);
+  EXPECT_EQ((ULONG)(TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT),
+            status.dwStaticFlags);
+  fake_input_method_->DetachTextInputClient(nullptr);
+  SwitchToDifferentTSFTextStore();
+  // Different TSFTextStore is in focus so manual policy should be set in the
+  // previous one
+  EXPECT_EQ(S_OK, text_store1_->GetStatus(&status));
+  EXPECT_EQ((ULONG)TS_SD_INPUTPANEMANUALDISPLAYENABLE, status.dwDynamicFlags);
+  EXPECT_EQ((ULONG)(TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT),
+            status.dwStaticFlags);
+  EXPECT_EQ(S_OK, text_store2_->GetStatus(&status));
+  EXPECT_EQ((ULONG)TS_SD_INPUTPANEMANUALDISPLAYENABLE, status.dwDynamicFlags);
+  EXPECT_EQ((ULONG)(TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT),
+            status.dwStaticFlags);
+  fake_input_method_->ShowVirtualKeyboardIfEnabled();
+  EXPECT_EQ(S_OK, text_store2_->GetStatus(&status));
+  EXPECT_NE((ULONG)TS_SD_INPUTPANEMANUALDISPLAYENABLE, status.dwDynamicFlags);
+  EXPECT_EQ((ULONG)(TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT),
+            status.dwStaticFlags);
+}
+
 }  // namespace
+
 }  // namespace ui

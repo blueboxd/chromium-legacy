@@ -99,8 +99,8 @@ class BASE_EXPORT Sequence : public TaskSource {
 
   // TaskSource:
   RunStatus WillRunTask() override;
-  Optional<Task> TakeTask(TaskSource::Transaction* transaction) override;
-  Optional<Task> Clear(TaskSource::Transaction* transaction) override;
+  Task TakeTask(TaskSource::Transaction* transaction) override;
+  Task Clear(TaskSource::Transaction* transaction) override;
   bool DidProcessTask(TaskSource::Transaction* transaction) override;
   SequenceSortKey GetSortKey() const override;
 

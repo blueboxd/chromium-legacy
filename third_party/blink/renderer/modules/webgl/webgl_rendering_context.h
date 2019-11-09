@@ -56,7 +56,6 @@ class WebGLDebugRendererInfo;
 class WebGLDepthTexture;
 class WebGLLoseContext;
 class WebGLMultiDraw;
-class WebGLMultiDrawInstanced;
 class WebGLVideoTexture;
 
 class WebGLRenderingContext final : public WebGLRenderingContextBase {
@@ -130,7 +129,6 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<WebGLDrawBuffers> webgl_draw_buffers_;
   Member<WebGLLoseContext> webgl_lose_context_;
   Member<WebGLMultiDraw> webgl_multi_draw_;
-  Member<WebGLMultiDrawInstanced> webgl_multi_draw_instanced_;
   Member<WebGLVideoTexture> webgl_video_texture_;
 };
 

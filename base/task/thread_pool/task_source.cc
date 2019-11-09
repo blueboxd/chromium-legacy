@@ -126,8 +126,7 @@ TaskSource::RunStatus RegisteredTaskSource::WillRunTask() {
   return run_status;
 }
 
-Optional<Task> RegisteredTaskSource::TakeTask(
-    TaskSource::Transaction* transaction) {
+Task RegisteredTaskSource::TakeTask(TaskSource::Transaction* transaction) {
   DCHECK(!transaction || transaction->task_source() == get());
 #if DCHECK_IS_ON()
   DCHECK_EQ(State::kReady, run_step_);
@@ -135,8 +134,7 @@ Optional<Task> RegisteredTaskSource::TakeTask(
   return task_source_->TakeTask(transaction);
 }
 
-Optional<Task> RegisteredTaskSource::Clear(
-    TaskSource::Transaction* transaction) {
+Task RegisteredTaskSource::Clear(TaskSource::Transaction* transaction) {
   DCHECK(!transaction || transaction->task_source() == get());
   return task_source_->Clear(transaction);
 }

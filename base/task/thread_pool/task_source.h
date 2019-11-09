@@ -184,14 +184,14 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
   // Implementations of TakeTask(), DidProcessTask() and Clear() must ensure
   // proper synchronization iff |transaction| is nullptr.
-  virtual Optional<Task> TakeTask(TaskSource::Transaction* transaction) = 0;
+  virtual Task TakeTask(TaskSource::Transaction* transaction) = 0;
   virtual bool DidProcessTask(TaskSource::Transaction* transaction) = 0;
 
   // This may be called for each outstanding RegisteredTaskSource that's ready.
   // The implementation needs to support this being called multiple times;
   // unless it guarantees never to hand-out multiple RegisteredTaskSources that
   // are concurrently ready.
-  virtual Optional<Task> Clear(TaskSource::Transaction* transaction) = 0;
+  virtual Task Clear(TaskSource::Transaction* transaction) = 0;
 
   virtual SequenceSortKey GetSortKey() const = 0;
 
@@ -264,10 +264,7 @@ class BASE_EXPORT RegisteredTaskSource {
   // only after WillRunTask() returned RunStatus::kAllowed*. |transaction| is
   // optional and should only be provided if this operation is already part of
   // a transaction.
-  //
-  // Because this method cannot be called on an empty TaskSource, the returned
-  // Optional<Task> is never nullopt.
-  Optional<Task> TakeTask(TaskSource::Transaction* transaction = nullptr)
+  Task TakeTask(TaskSource::Transaction* transaction = nullptr)
       WARN_UNUSED_RESULT;
 
   // Must be called after WillRunTask() or once the task was run if TakeTask()
@@ -280,8 +277,7 @@ class BASE_EXPORT RegisteredTaskSource {
   // Returns a task that clears this TaskSource to make it empty. |transaction|
   // is optional and should only be provided if this operation is already part
   // of a transaction.
-  Optional<Task> Clear(TaskSource::Transaction* transaction = nullptr)
-      WARN_UNUSED_RESULT;
+  Task Clear(TaskSource::Transaction* transaction = nullptr) WARN_UNUSED_RESULT;
 
  private:
   friend class TaskTracker;

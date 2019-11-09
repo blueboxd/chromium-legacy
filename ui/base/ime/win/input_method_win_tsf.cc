@@ -153,6 +153,11 @@ void InputMethodWinTSF::OnWillChangeFocusedClient(
   if (IsWindowFocused(focused_before)) {
     ConfirmCompositionText(/* reset_engine */ true,
                            /* keep_selection */ false);
+    // set input policy back to manual from automatic
+    // We will set the policy to automatic when user taps on the edit control so
+    // software input panel can come up
+    ui::TSFBridge::GetInstance()->SetInputPanelPolicy(
+          /*inputPanelPolicyManual*/ true);
     ui::TSFBridge::GetInstance()->RemoveFocusedClient(focused_before);
   }
 }
@@ -164,7 +169,6 @@ void InputMethodWinTSF::OnDidChangeFocusedClient(
       IsTextInputClientFocused(focused)) {
     ui::TSFBridge::GetInstance()->SetFocusedClient(toplevel_window_handle_,
                                                    focused);
-
     // Force to update the input type since client's TextInputStateChanged()
     // function might not be called if text input types before the client loses
     // focus and after it acquires focus again are the same.

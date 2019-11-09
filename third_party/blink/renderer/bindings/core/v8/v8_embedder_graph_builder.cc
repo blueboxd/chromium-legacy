@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_embedder_graph_builder.h"
-
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
@@ -354,7 +353,10 @@ class GC_PLUGIN_IGNORE(
         TraceKeysScope scope(builder, &key);
         key_tracing_callback_(builder, const_cast<void*>(key_));
       }
-      DCHECK(key);
+      if (!key) {
+        // Don't trace the value if the key is nullptr.
+        return true;
+      }
       if (!builder->StateExists(key))
         return false;
       {
@@ -562,7 +564,12 @@ void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
   DCHECK(worklist_.empty());
   DCHECK(detached_worklist_.empty());
   DCHECK(unknown_worklist_.empty());
-  DCHECK(ephemeron_worklist_.empty());
+  // ephemeron_worklist_ might not be empty. We might have an ephemeron whose
+  // key is alive but was never observed by the snapshot (e.g. objects pointed
+  // to by the stack). Such entries will remain in the worklist.
+  //
+  // TODO(omerkatz): add DCHECK(ephemeron_worklist_.empty()) when heap snapshot
+  // covers all live objects.
 }
 
 void V8EmbedderGraphBuilder::VisitPersistentHandleInternal(
@@ -783,7 +790,7 @@ void V8EmbedderGraphBuilder::VisitTransitiveClosure() {
   // where key's do not have yet a state associated with them which prohibits
   // them from being processed. Such ephemerons are stashed for later
   // processing.
-  Deque<std::unique_ptr<EphemeronItem>> unprocessed_ephemerons_;
+  bool processed_ephemerons;
   do {
     // Step 1: Go through all items in the worklist using depth-first search.
     while (!worklist_.empty()) {
@@ -793,12 +800,8 @@ void V8EmbedderGraphBuilder::VisitTransitiveClosure() {
     }
 
     // Step 2: Go through ephemeron items.
-
-    // Re-add unprocessed ephemerons from last loop iteration.
-    while (!unprocessed_ephemerons_.empty()) {
-      ephemeron_worklist_.push_back(unprocessed_ephemerons_.TakeFirst());
-    }
-
+    processed_ephemerons = false;
+    Deque<std::unique_ptr<EphemeronItem>> unprocessed_ephemerons_;
     //  Only process an ephemeron item if its key was already observed.
     while (!ephemeron_worklist_.empty()) {
       std::unique_ptr<EphemeronItem> item =
@@ -806,15 +809,12 @@ void V8EmbedderGraphBuilder::VisitTransitiveClosure() {
       ephemeron_worklist_.pop_front();
       if (!item->Process(this)) {
         unprocessed_ephemerons_.push_back(std::move(item));
+      } else {
+        processed_ephemerons = true;
       }
     }
-  } while (!worklist_.empty());
-
-  // Re-add unprocessed ephemerons. A later invocation of VisitTransitiveClosure
-  // must process them.
-  while (!unprocessed_ephemerons_.empty()) {
-    ephemeron_worklist_.push_back(unprocessed_ephemerons_.TakeFirst());
-  }
+    ephemeron_worklist_.Swap(unprocessed_ephemerons_);
+  } while (!worklist_.empty() || processed_ephemerons);
 }
 
 }  // namespace

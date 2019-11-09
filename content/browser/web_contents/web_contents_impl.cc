@@ -617,9 +617,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #if defined(OS_ANDROID)
   display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
 #endif
-
-  binders_.Add(base::BindRepeating(
-      &WebContentsImpl::OnColorChooserFactoryRequest, base::Unretained(this)));
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -5019,7 +5016,7 @@ void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
     observer.AppCacheAccessed(manifest_url, blocked_by_policy);
 }
 
-void WebContentsImpl::OnColorChooserFactoryRequest(
+void WebContentsImpl::OnColorChooserFactoryReceiver(
     mojo::PendingReceiver<blink::mojom::ColorChooserFactory> receiver) {
   color_chooser_factory_receivers_.Add(this, std::move(receiver));
 }
@@ -5369,7 +5366,6 @@ void WebContentsImpl::OnInterfaceRequest(
     RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
-  binders_.TryBind(interface_name, interface_pipe);
   for (auto& observer : observers_) {
     observer.OnInterfaceRequestFromFrame(render_frame_host, interface_name,
                                          interface_pipe);

@@ -58,7 +58,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunTasks) {
               TaskSource::RunStatus::kAllowedNotSaturated);
 
     auto task = registered_task_source.TakeTask();
-    std::move(task->task).Run();
+    std::move(task.task).Run();
     EXPECT_TRUE(registered_task_source.DidProcessTask());
   }
   {
@@ -73,7 +73,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunTasks) {
     EXPECT_EQ(RegisteredTaskSource::CreateForTesting(task_source).WillRunTask(),
               TaskSource::RunStatus::kDisallowed);
 
-    std::move(task->task).Run();
+    std::move(task.task).Run();
     EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
     // Returns false because the task source is out of tasks.
     EXPECT_FALSE(registered_task_source.DidProcessTask());
@@ -115,7 +115,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, Clear) {
   {
     EXPECT_EQ(1U, task_source->GetRemainingConcurrency());
     auto task = registered_task_source_c.Clear();
-    std::move(task->task).Run();
+    std::move(task.task).Run();
     registered_task_source_c.DidProcessTask();
     EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
   }
@@ -127,19 +127,19 @@ TEST_F(ThreadPoolJobTaskSourceTest, Clear) {
   // Another outstanding RunStatus can still call Clear.
   {
     auto task = registered_task_source_d.Clear();
-    std::move(task->task).Run();
+    std::move(task.task).Run();
     registered_task_source_d.DidProcessTask();
     EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
   }
 
   // A task that was already acquired can still run.
-  std::move(task_a->task).Run();
+  std::move(task_a.task).Run();
   registered_task_source_a.DidProcessTask();
 
   // A valid outstanding RunStatus can also take and run a task.
   {
     auto task = registered_task_source_b.TakeTask();
-    std::move(task->task).Run();
+    std::move(task.task).Run();
     registered_task_source_b.DidProcessTask();
   }
 }
@@ -174,13 +174,13 @@ TEST_F(ThreadPoolJobTaskSourceTest, Cancel) {
             TaskSource::RunStatus::kDisallowed);
 
   // A task that was already acquired can still run.
-  std::move(task_a->task).Run();
+  std::move(task_a.task).Run();
   registered_task_source_a.DidProcessTask();
 
   // A RegisteredTaskSource that's ready can also take and run a task.
   {
     auto task = registered_task_source_b.TakeTask();
-    std::move(task->task).Run();
+    std::move(task.task).Run();
     registered_task_source_b.DidProcessTask();
   }
 }
@@ -209,13 +209,13 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunTasksInParallel) {
   EXPECT_EQ(RegisteredTaskSource::CreateForTesting(task_source).WillRunTask(),
             TaskSource::RunStatus::kDisallowed);
 
-  std::move(task_a->task).Run();
+  std::move(task_a.task).Run();
   // Adding a task before closing the first run operation should cause the task
   // source to re-enqueue.
   job_task->SetNumTasksToRun(2);
   EXPECT_TRUE(registered_task_source_a.DidProcessTask());
 
-  std::move(task_b->task).Run();
+  std::move(task_b.task).Run();
   EXPECT_TRUE(registered_task_source_b.DidProcessTask());
 
   auto registered_task_source_c =
@@ -224,7 +224,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunTasksInParallel) {
             TaskSource::RunStatus::kAllowedSaturated);
   auto task_c = registered_task_source_c.TakeTask();
 
-  std::move(task_c->task).Run();
+  std::move(task_c.task).Run();
   EXPECT_FALSE(registered_task_source_c.DidProcessTask());
 }
 
@@ -284,7 +284,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, RunJoinTaskInParallel) {
 
   EXPECT_TRUE(task_source->WillJoin());
 
-  std::move(worker_task->task).Run();
+  std::move(worker_task.task).Run();
   EXPECT_FALSE(registered_task_source.DidProcessTask());
 
   EXPECT_FALSE(task_source->RunJoinTask());
@@ -320,10 +320,10 @@ TEST_F(ThreadPoolJobTaskSourceTest, NotifyConcurrencyIncrease) {
   EXPECT_EQ(RegisteredTaskSource::CreateForTesting(task_source).WillRunTask(),
             TaskSource::RunStatus::kDisallowed);
 
-  std::move(task_a->task).Run();
+  std::move(task_a.task).Run();
   EXPECT_FALSE(registered_task_source_a.DidProcessTask());
 
-  std::move(task_b->task).Run();
+  std::move(task_b.task).Run();
   EXPECT_FALSE(registered_task_source_b.DidProcessTask());
 }
 
@@ -352,7 +352,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, ShouldYield) {
       .WillOnce(Return(false))
       .WillOnce(Return(true));
 
-  std::move(task->task).Run();
+  std::move(task.task).Run();
   EXPECT_FALSE(registered_task_source.DidProcessTask());
 }
 
@@ -382,7 +382,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, MaxConcurrencyStagnateIfShouldYield) {
 
   // Running the task should not fail even though max concurrency remained at 1,
   // since ShouldYield() returned true.
-  std::move(task->task).Run();
+  std::move(task.task).Run();
   registered_task_source.DidProcessTask();
 }
 
@@ -411,7 +411,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, InvalidConcurrency) {
             TaskSource::RunStatus::kAllowedSaturated);
   auto task = registered_task_source.TakeTask();
 
-  EXPECT_DCHECK_DEATH(std::move(task->task).Run());
+  EXPECT_DCHECK_DEATH(std::move(task.task).Run());
 
   registered_task_source.DidProcessTask();
 }

@@ -886,7 +886,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // blink::mojom::ColorChooserFactory ---------------------------------------
 
-  void OnColorChooserFactoryRequest(
+  void OnColorChooserFactoryReceiver(
       mojo::PendingReceiver<blink::mojom::ColorChooserFactory> receiver);
   void OpenColorChooser(
       mojo::PendingReceiver<blink::mojom::ColorChooser> chooser,
@@ -1801,8 +1801,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   mojo::Remote<device::mojom::GeolocationContext> geolocation_context_;
 
   std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
-
-  service_manager::BinderMap binders_;
 
   mojo::ReceiverSet<blink::mojom::ColorChooserFactory>
       color_chooser_factory_receivers_;

@@ -217,7 +217,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
         // Verify the number of Tasks in |registered_task_source|.
         for (int i = 0; i < outer_->TasksPerSequence() - 1; ++i) {
           registered_task_source.WillRunTask();
-          EXPECT_TRUE(registered_task_source.TakeTask());
+          IgnoreResult(registered_task_source.TakeTask());
           EXPECT_EQ(i == outer_->TasksPerSequence() - 2,
                     !registered_task_source.DidProcessTask());
         }

@@ -227,12 +227,18 @@ void TSFBridgeImpl::OnTextInputTypeChanged(const TextInputClient* client) {
     return;
   }
 
-  UpdateAssociateFocus();
-
   TSFDocument* document = GetAssociatedDocument();
   if (!document)
     return;
-  thread_manager_->SetFocus(document->document_manager.Get());
+  // We call AssociateFocus for text input type none that also
+  // triggers SetFocus internally. We don't want to send multiple
+  // focus notifications for the same text input type so we don't
+  // call AssociateFocus and SetFocus together. Just calling SetFocus
+  // should be sufficient for setting focus on a textstore.
+  if (client_->GetTextInputType() != TEXT_INPUT_TYPE_NONE)
+    thread_manager_->SetFocus(document->document_manager.Get());
+  else
+    UpdateAssociateFocus();
   OnTextLayoutChanged();
 }
 
@@ -251,10 +257,7 @@ void TSFBridgeImpl::SetInputPanelPolicy(bool input_panel_policy_manual) {
     return;
   if (!document->text_store)
     return;
-
   document->text_store->SetInputPanelPolicy(input_panel_policy_manual);
-  UpdateAssociateFocus();
-  thread_manager_->SetFocus(document->document_manager.Get());
 }
 
 bool TSFBridgeImpl::CancelComposition() {
@@ -530,6 +533,7 @@ void TSFBridgeImpl::UpdateAssociateFocus() {
   // the attached document manager will not be destroyed while it is attached.
   // This should be true as long as TSFBridge::Shutdown() is called late phase
   // of UI thread shutdown.
+  // AssociateFocus calls SetFocus on the document manager internally
   Microsoft::WRL::ComPtr<ITfDocumentMgr> previous_focus;
   thread_manager_->AssociateFocus(attached_window_handle_,
                                   document->document_manager.Get(),

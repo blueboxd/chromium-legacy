@@ -338,12 +338,12 @@ bool JobTaskSource::WaitForConcurrencyIncreaseUpdate(size_t recorded_version) {
 
 #endif  // DCHECK_IS_ON()
 
-Optional<Task> JobTaskSource::TakeTask(TaskSource::Transaction* transaction) {
+Task JobTaskSource::TakeTask(TaskSource::Transaction* transaction) {
   // JobTaskSource members are not lock-protected so no need to acquire a lock
   // if |transaction| is nullptr.
   DCHECK_GT(state_.Load().worker_count(), 0U);
   DCHECK(primary_task_);
-  return base::make_optional<Task>(from_here_, primary_task_, TimeDelta());
+  return Task(from_here_, primary_task_, TimeDelta());
 }
 
 bool JobTaskSource::DidProcessTask(TaskSource::Transaction* transaction) {
@@ -375,12 +375,12 @@ SequenceSortKey JobTaskSource::GetSortKey() const {
   return SequenceSortKey(traits_.priority(), queue_time_);
 }
 
-Optional<Task> JobTaskSource::Clear(TaskSource::Transaction* transaction) {
+Task JobTaskSource::Clear(TaskSource::Transaction* transaction) {
   Cancel();
   // Nothing is cleared since other workers might still racily run tasks. For
   // simplicity, the destructor will take care of it once all references are
   // released.
-  return base::make_optional<Task>(from_here_, DoNothing(), TimeDelta());
+  return Task(from_here_, DoNothing(), TimeDelta());
 }
 
 }  // namespace internal

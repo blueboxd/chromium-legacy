@@ -52,7 +52,7 @@ void TestMapImpl(ObjectLiveness expected_key_liveness,
 }
 
 TEST_F(WeaknessMarkingTest, WeakToWeakMap) {
-  typedef HeapHashMap<WeakMember<IntegerObject>, WeakMember<IntegerObject>> Map;
+  using Map = HeapHashMap<WeakMember<IntegerObject>, WeakMember<IntegerObject>>;
   TestMapImpl<Map, Persistent, Persistent>(ObjectLiveness::Alive,
                                            ObjectLiveness::Alive);
   TestMapImpl<Map, WeakPersistent, Persistent>(ObjectLiveness::Dead,
@@ -64,7 +64,7 @@ TEST_F(WeaknessMarkingTest, WeakToWeakMap) {
 }
 
 TEST_F(WeaknessMarkingTest, WeakToStrongMap) {
-  typedef HeapHashMap<WeakMember<IntegerObject>, Member<IntegerObject>> Map;
+  using Map = HeapHashMap<WeakMember<IntegerObject>, Member<IntegerObject>>;
   TestMapImpl<Map, Persistent, Persistent>(ObjectLiveness::Alive,
                                            ObjectLiveness::Alive);
   TestMapImpl<Map, WeakPersistent, Persistent>(ObjectLiveness::Dead,
@@ -76,7 +76,7 @@ TEST_F(WeaknessMarkingTest, WeakToStrongMap) {
 }
 
 TEST_F(WeaknessMarkingTest, StrongToWeakMap) {
-  typedef HeapHashMap<Member<IntegerObject>, WeakMember<IntegerObject>> Map;
+  using Map = HeapHashMap<Member<IntegerObject>, WeakMember<IntegerObject>>;
   TestMapImpl<Map, Persistent, Persistent>(ObjectLiveness::Alive,
                                            ObjectLiveness::Alive);
   TestMapImpl<Map, WeakPersistent, Persistent>(ObjectLiveness::Alive,
@@ -88,7 +88,7 @@ TEST_F(WeaknessMarkingTest, StrongToWeakMap) {
 }
 
 TEST_F(WeaknessMarkingTest, StrongToStrongMap) {
-  typedef HeapHashMap<Member<IntegerObject>, Member<IntegerObject>> Map;
+  using Map = HeapHashMap<Member<IntegerObject>, Member<IntegerObject>>;
   TestMapImpl<Map, Persistent, Persistent>(ObjectLiveness::Alive,
                                            ObjectLiveness::Alive);
   TestMapImpl<Map, WeakPersistent, Persistent>(ObjectLiveness::Alive,
@@ -114,15 +114,37 @@ void TestSetImpl(ObjectLiveness object_liveness) {
 }
 
 TEST_F(WeaknessMarkingTest, WeakSet) {
-  typedef HeapHashSet<WeakMember<IntegerObject>> Set;
+  using Set = HeapHashSet<WeakMember<IntegerObject>>;
   TestSetImpl<Set, Persistent>(ObjectLiveness::Alive);
   TestSetImpl<Set, WeakPersistent>(ObjectLiveness::Dead);
 }
 
 TEST_F(WeaknessMarkingTest, StrongSet) {
-  typedef HeapHashSet<Member<IntegerObject>> Set;
+  using Set = HeapHashSet<Member<IntegerObject>>;
   TestSetImpl<Set, Persistent>(ObjectLiveness::Alive);
   TestSetImpl<Set, WeakPersistent>(ObjectLiveness::Alive);
+}
+
+TEST_F(WeaknessMarkingTest, DeadValueInReverseEphemeron) {
+  using Map = HeapHashMap<Member<IntegerObject>, WeakMember<IntegerObject>>;
+  Persistent<Map> map = MakeGarbageCollected<Map>();
+  Persistent<IntegerObject> key = MakeGarbageCollected<IntegerObject>(1);
+  map->insert(key.Get(), MakeGarbageCollected<IntegerObject>(2));
+  EXPECT_EQ(1u, map->size());
+  TestSupportingGC::PreciselyCollectGarbage();
+  // Entries with dead values are removed.
+  EXPECT_EQ(0u, map->size());
+}
+
+TEST_F(WeaknessMarkingTest, NullValueInReverseEphemeron) {
+  using Map = HeapHashMap<Member<IntegerObject>, WeakMember<IntegerObject>>;
+  Persistent<Map> map = MakeGarbageCollected<Map>();
+  Persistent<IntegerObject> key = MakeGarbageCollected<IntegerObject>(1);
+  map->insert(key.Get(), nullptr);
+  EXPECT_EQ(1u, map->size());
+  TestSupportingGC::PreciselyCollectGarbage();
+  // Entries with null values are kept.
+  EXPECT_EQ(1u, map->size());
 }
 
 }  // namespace blink

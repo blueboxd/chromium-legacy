@@ -73,7 +73,7 @@ size_t Sequence::GetRemainingConcurrency() const {
   return 1;
 }
 
-Optional<Task> Sequence::TakeTask(TaskSource::Transaction* transaction) {
+Task Sequence::TakeTask(TaskSource::Transaction* transaction) {
   CheckedAutoLockMaybe auto_lock(transaction ? nullptr : &lock_);
 
   DCHECK(has_worker_);
@@ -82,7 +82,7 @@ Optional<Task> Sequence::TakeTask(TaskSource::Transaction* transaction) {
 
   auto next_task = std::move(queue_.front());
   queue_.pop();
-  return std::move(next_task);
+  return next_task;
 }
 
 bool Sequence::DidProcessTask(TaskSource::Transaction* transaction) {
@@ -107,19 +107,19 @@ SequenceSortKey Sequence::GetSortKey() const {
   return SequenceSortKey(traits_.priority(), queue_.front().queue_time);
 }
 
-Optional<Task> Sequence::Clear(TaskSource::Transaction* transaction) {
+Task Sequence::Clear(TaskSource::Transaction* transaction) {
   CheckedAutoLockMaybe auto_lock(transaction ? nullptr : &lock_);
   // See comment on TaskSource::task_runner_ for lifetime management details.
   if (!queue_.empty() && !has_worker_)
     ReleaseTaskRunner();
-  return base::make_optional<Task>(FROM_HERE,
-                                   base::BindOnce(
-                                       [](base::queue<Task> queue) {
-                                         while (!queue.empty())
-                                           queue.pop();
-                                       },
-                                       std::move(queue_)),
-                                   TimeDelta());
+  return Task(FROM_HERE,
+              base::BindOnce(
+                  [](base::queue<Task> queue) {
+                    while (!queue.empty())
+                      queue.pop();
+                  },
+                  std::move(queue_)),
+              TimeDelta());
 }
 
 void Sequence::ReleaseTaskRunner() {

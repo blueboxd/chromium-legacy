@@ -1213,6 +1213,10 @@ bool TSFTextStore::ConfirmComposition() {
 
 void TSFTextStore::SetInputPanelPolicy(bool input_panel_policy_manual) {
   input_panel_policy_manual_ = input_panel_policy_manual;
+  // This notification tells TSF that the input pane flag has changed.
+  // TSF queries for the status of this flag using GetStatus and gets
+  // the updated value.
+  text_store_acp_sink_->OnStatusChange(TS_SD_INPUTPANEMANUALDISPLAYENABLE);
 }
 
 void TSFTextStore::SendOnLayoutChange() {

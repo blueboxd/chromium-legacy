@@ -1852,6 +1852,151 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(url::Origin::Create(kMainFrameURL), child->current_origin());
 }
 
+namespace {
+void CheckURLOriginAndNetworkIsolationKey(
+    FrameTreeNode* node,
+    GURL url,
+    url::Origin origin,
+    net::NetworkIsolationKey network_isolation_key) {
+  EXPECT_EQ(url, node->current_url());
+  EXPECT_EQ(origin, node->current_origin());
+  EXPECT_EQ(network_isolation_key,
+            node->current_frame_host()->network_isolation_key());
+}
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       NetworkIsolationKeyInitialEmptyDocumentIframe) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  url::Origin main_frame_origin = url::Origin::Create(main_frame_url);
+  net::NetworkIsolationKey expected_main_frame_key =
+      net::NetworkIsolationKey(main_frame_origin, main_frame_origin);
+
+  GURL subframe_url_one("about:blank");
+  GURL subframe_url_two("about:blank#foo");
+  GURL subframe_url_three(
+      embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  url::Origin subframe_origin_three = url::Origin::Create(subframe_url_three);
+  net::NetworkIsolationKey expected_subframe_key_three =
+      net::NetworkIsolationKey(main_frame_origin, subframe_origin_three);
+
+  // Main frame navigation.
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  CheckURLOriginAndNetworkIsolationKey(root, main_frame_url, main_frame_origin,
+                                       expected_main_frame_key);
+
+  // Create iframe.
+  ASSERT_TRUE(ExecuteScript(shell(), R"(
+      var f = document.createElement('iframe');
+      f.id = 'myiframe';
+      document.body.append(f);
+  )"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* child = root->child_at(0u);
+  CheckURLOriginAndNetworkIsolationKey(
+      child, subframe_url_one, main_frame_origin, expected_main_frame_key);
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
+
+  // Same-document navigation of iframe.
+  ASSERT_TRUE(ExecuteScript(shell(), R"(
+      let iframe = document.querySelector('#myiframe');
+      iframe.contentWindow.location.hash = 'foo';
+  )"));
+
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  CheckURLOriginAndNetworkIsolationKey(
+      child, subframe_url_two, main_frame_origin, expected_main_frame_key);
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
+
+  // Cross-document navigation of iframe.
+  TestFrameNavigationObserver commit_observer(child->current_frame_host());
+  std::string subframe_script_three = JsReplace(
+      "iframe = document.querySelector('#myiframe');"
+      "iframe.contentWindow.location.href = $1;",
+      subframe_url_three);
+  ASSERT_TRUE(ExecuteScript(shell(), subframe_script_three));
+  commit_observer.WaitForCommit();
+
+  CheckURLOriginAndNetworkIsolationKey(child, subframe_url_three,
+                                       subframe_origin_three,
+                                       expected_subframe_key_three);
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(root->current_frame_host()->GetProcess(),
+              child->current_frame_host()->GetProcess());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       NetworkIsolationKeyInitialEmptyDocumentPopup) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  url::Origin main_frame_origin = url::Origin::Create(main_frame_url);
+  net::NetworkIsolationKey expected_main_frame_key =
+      net::NetworkIsolationKey(main_frame_origin, main_frame_origin);
+
+  GURL popup_url_one("about:blank");
+  GURL popup_url_two("about:blank#foo");
+  GURL popup_url_three(
+      embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  url::Origin popup_origin_three = url::Origin::Create(popup_url_three);
+  net::NetworkIsolationKey expected_popup_key_three =
+      net::NetworkIsolationKey(popup_origin_three, popup_origin_three);
+
+  // Main frame navigation.
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  CheckURLOriginAndNetworkIsolationKey(root, main_frame_url, main_frame_origin,
+                                       expected_main_frame_key);
+
+  // Create popup.
+  WebContentsAddedObserver popup_observer;
+  ASSERT_TRUE(ExecuteScript(shell(), "var w = window.open();"));
+  WebContents* popup = popup_observer.GetWebContents();
+
+  FrameTreeNode* popup_frame =
+      static_cast<RenderFrameHostImpl*>(popup->GetMainFrame())
+          ->frame_tree_node();
+  CheckURLOriginAndNetworkIsolationKey(
+      popup_frame, popup_url_one, main_frame_origin, expected_main_frame_key);
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            popup_frame->current_frame_host()->GetProcess());
+
+  // Same-document navigation of popup.
+  ASSERT_TRUE(ExecuteScript(shell(), "w.location.hash = 'foo';"));
+  EXPECT_TRUE(WaitForLoadStop(popup));
+
+  CheckURLOriginAndNetworkIsolationKey(
+      popup_frame, popup_url_two, main_frame_origin, expected_main_frame_key);
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            popup_frame->current_frame_host()->GetProcess());
+
+  // Cross-document navigation of popup.
+  TestFrameNavigationObserver commit_observer(
+      popup_frame->current_frame_host());
+  ASSERT_TRUE(ExecuteScript(
+      shell(), JsReplace("w.location.href = $1;", popup_url_three)));
+  commit_observer.WaitForCommit();
+
+  CheckURLOriginAndNetworkIsolationKey(popup_frame, popup_url_three,
+                                       popup_origin_three,
+                                       expected_popup_key_three);
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(root->current_frame_host()->GetProcess(),
+              popup_frame->current_frame_host()->GetProcess());
+  }
+}
+
 // Verify that if the UMA histograms are correctly recording if interface
 // provider requests are getting dropped because they racily arrive from the
 // previously active document (after the next navigation already committed).

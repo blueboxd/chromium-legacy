@@ -18,6 +18,15 @@ const uint32 GRALLOC_USAGE_SW_WRITE_OFTEN = 0x00000030;
 const uint32 GRALLOC_USAGE_HW_COMPOSER = 0x00000800;
 const uint32 GRALLOC_USAGE_HW_CAMERA_WRITE = 0x00020000;
 const uint32 GRALLOC_USAGE_HW_CAMERA_READ = 0x00040000;
+// A private gralloc usage flag to force allocation of YUV420 buffer.  This
+// usage flag is only valid when allocating HAL_PIXEL_FORMAT_YCbCr_420_888
+// flexible YUV buffers.
+const uint32 GRALLOC_USAGE_FORCE_I420 = 0x10000000;
+// Setting this flag means this stream is intended for still capture. We're
+// using the usage flag as an indicator for an output stream that can be split
+// into a new HAL request for Zero-Shutter Lag (ZSL). See crrev.com/c/1877636
+// for the CL that does the aforementioned things.
+const uint32 GRALLOC_USAGE_STILL_CAPTURE = 0x20000000;
 
 [Extensible]
 enum HalPixelFormat {

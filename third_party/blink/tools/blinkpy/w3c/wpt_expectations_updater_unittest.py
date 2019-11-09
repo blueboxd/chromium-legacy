@@ -6,10 +6,10 @@ import copy
 import json
 
 from blinkpy.common.host_mock import MockHost
-from blinkpy.common.net.buildbot import Build
-from blinkpy.common.net.buildbot_mock import MockBuildBot
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
+from blinkpy.common.net.results_fetcher import Build
+from blinkpy.common.net.results_fetcher_mock import MockTestResultsFetcher
 from blinkpy.common.net.web_test_results import WebTestResult, WebTestResults
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_testing import LoggingTestCase
@@ -107,7 +107,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         # results are for the other builders since we shouldn't need to even
         # fetch results, since the try job status already tells us that all
         # of the tests passed.
-        host.buildbot.set_results(
+        host.results_fetcher.set_results(
             Build('MOCK Try Mac10.10', 333),
             WebTestResults({
                 'tests': {
@@ -127,7 +127,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertEqual(0, updater.run(args=[]))
 
         # Results are only fetched for failing builds.
-        self.assertEqual(host.buildbot.fetched_builds, [Build('MOCK Try Mac10.10', 333)])
+        self.assertEqual(host.results_fetcher.fetched_builds, [Build('MOCK Try Mac10.10', 333)])
 
         self.assertEqual(
             host.filesystem.read_text_file(expectations_path),
@@ -136,7 +136,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_get_failing_results_dict_only_passing_results(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
+        host.results_fetcher.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
             'tests': {
                 'external': {
                     'wpt': {
@@ -156,7 +156,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_get_failing_results_dict_unexpected_pass(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
+        host.results_fetcher.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
             'tests': {
                 'external': {
                     'wpt': {
@@ -177,15 +177,15 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_get_failing_results_dict_no_results(self):
         host = self.mock_host()
-        host.buildbot = MockBuildBot()
-        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), None)
+        host.results_fetcher = MockTestResultsFetcher()
+        host.results_fetcher.set_results(Build('MOCK Try Mac10.10', 123), None)
         updater = WPTExpectationsUpdater(host)
         self.assertEqual(
             updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
 
     def test_get_failing_results_dict_some_failing_results(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
+        host.results_fetcher.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
             'tests': {
                 'external': {
                     'wpt': {
@@ -216,7 +216,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_get_failing_results_dict_non_wpt_test(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
+        host.results_fetcher.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
             'tests': {
                 'x': {
                     'failing-test.html': {
@@ -233,7 +233,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_get_failing_results_dict_webdriver_failing_results_(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Try Trusty', 123), WebTestResults({
+        host.results_fetcher.set_results(Build('MOCK Try Trusty', 123), WebTestResults({
             'tests': {
                 'external': {
                     'wpt': {
@@ -249,7 +249,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             },
         }))
 
-        host.buildbot.set_webdriver_test_results(Build('MOCK Try Trusty', 123), "tryserver.blink", WebTestResults({
+        host.results_fetcher.set_webdriver_test_results(Build('MOCK Try Trusty', 123), "tryserver.blink", WebTestResults({
             'tests': {
                 'external': {
                     'wpt': {

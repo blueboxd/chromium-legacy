@@ -525,7 +525,7 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
 
   base::TimeTicks value;
   if (video_frame && video_frame->metadata()->GetTimeTicks(
-                         media::VideoFrameMetadata::DECODE_TIME, &value)) {
+                         media::VideoFrameMetadata::DECODE_END_TIME, &value)) {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0("media", "VideoFrameSubmitter",
                                             *next_frame_token_, value);
     TRACE_EVENT_ASYNC_STEP_PAST0("media", "VideoFrameSubmitter",

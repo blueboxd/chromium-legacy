@@ -21,6 +21,7 @@ from py_utils import cloud_storage
 from core.results_processor import command_line
 from core.results_processor import compute_metrics
 from core.results_processor import formatters
+from core.results_processor import trace_processor
 from core.results_processor import util
 
 from tracing.trace_data import trace_data
@@ -34,6 +35,7 @@ from tracing.value import legacy_unit_info
 TEST_RESULTS = '_test_results.jsonl'
 DIAGNOSTICS_NAME = 'diagnostics.json'
 MEASUREMENTS_NAME = 'measurements.json'
+CONVERTED_JSON_TRACE_NAME = 'converted_from_pb.json'
 
 FORMATS_WITH_METRICS = ['csv', 'histograms', 'html']
 
@@ -63,6 +65,7 @@ def ProcessResults(options):
   results_label = options.results_label
   max_num_values = options.max_values_per_test_case
   test_path_format = options.test_path_format
+  trace_processor_path = options.trace_processor_path
   test_suite_start = (test_results[0]['startTime']
       if test_results and 'startTime' in test_results[0]
       else datetime.datetime.utcnow().isoformat() + 'Z')
@@ -74,7 +77,7 @@ def ProcessResults(options):
       lambda result: ProcessTestResult(
           result, upload_bucket, results_label, run_identifier,
           test_suite_start, should_compute_metrics, max_num_values,
-          test_path_format),
+          test_path_format, trace_processor_path),
       test_results,
       on_failure=util.SetUnexpectedFailure,
   )
@@ -96,8 +99,9 @@ def ProcessResults(options):
 
 def ProcessTestResult(test_result, upload_bucket, results_label,
                       run_identifier, test_suite_start, should_compute_metrics,
-                      max_num_values, test_path_format):
-  AggregateTraces(test_result)
+                      max_num_values, test_path_format, trace_processor_path):
+  ConvertProtoTraces(test_result, trace_processor_path)
+  AggregateJsonTraces(test_result)
   if upload_bucket is not None:
     UploadArtifacts(test_result, upload_bucket, run_identifier)
 
@@ -152,27 +156,68 @@ def _LoadTestResults(intermediate_dir):
   return test_results
 
 
-def AggregateTraces(test_result):
-  """Replace individual traces with an aggregate one for each test result.
+def _IsProtoTrace(trace_name):
+  return (trace_name.startswith('trace/') and
+          (trace_name.endswith('.pb') or trace_name.endswith('.pb.gz')))
 
-  For a test run with traces, generates an aggregate HTML trace. Removes
+
+def _IsJsonTrace(trace_name):
+  return (trace_name.startswith('trace/') and
+          (trace_name.endswith('.json') or trace_name.endswith('.json.gz')))
+
+
+def _BuildOutputPath(input_files, output_name):
+  """Build a path to a file in the same folder as input_files."""
+  return os.path.join(
+      os.path.dirname(os.path.commonprefix(input_files)),
+      output_name
+  )
+
+
+def ConvertProtoTraces(test_result, trace_processor_path):
+  """Convert proto traces to json.
+
+  For a test result with proto traces, converts them to json using
+  trace_processor and stores the json trace as a separate artifact.
+  """
+  artifacts = test_result.get('outputArtifacts', {})
+  proto_trace_files = [
+      artifact['filePath'] for name, artifact in artifacts.iteritems()
+      if _IsProtoTrace(name)]
+
+  if proto_trace_files:
+    logging.info('%s: Converting proto traces %s.',
+                 test_result['testPath'], proto_trace_files)
+    json_path = _BuildOutputPath(proto_trace_files, CONVERTED_JSON_TRACE_NAME)
+    trace_processor.ConvertProtoTracesToJson(
+        trace_processor_path, proto_trace_files, json_path)
+    artifacts['trace/' + CONVERTED_JSON_TRACE_NAME] = {
+        'filePath': json_path,
+        'contentType': 'application/json',
+    }
+
+
+def AggregateJsonTraces(test_result):
+  """Replace individual json traces with an aggregate HTML trace.
+
+  For a test result with json traces, generates an aggregate HTML trace. Removes
   all entries for individual traces and adds one entry for aggregate one.
   """
   artifacts = test_result.get('outputArtifacts', {})
-  traces = [name for name in artifacts if name.startswith('trace/')]
+  json_traces = [name for name in artifacts if _IsJsonTrace(name)]
   # TODO(crbug.com/981349): Stop checking for HTML_TRACE_NAME after
   # Telemetry does not aggregate traces anymore.
-  if traces and compute_metrics.HTML_TRACE_NAME not in artifacts:
-    trace_files = [artifacts[name]['filePath'] for name in traces]
-    html_path = os.path.join(
-        os.path.dirname(os.path.commonprefix(trace_files)),
-        compute_metrics.HTML_TRACE_NAME)
+  if json_traces and compute_metrics.HTML_TRACE_NAME not in artifacts:
+    trace_files = [artifacts[name]['filePath'] for name in json_traces]
+    html_path = _BuildOutputPath(trace_files, compute_metrics.HTML_TRACE_NAME)
+    logging.info('%s: Aggregating json traces %s.',
+                 test_result['testPath'], trace_files)
     trace_data.SerializeAsHtml(trace_files, html_path)
     artifacts[compute_metrics.HTML_TRACE_NAME] = {
       'filePath': html_path,
       'contentType': 'text/html',
     }
-  for name in traces:
+  for name in json_traces:
     del artifacts[name]
 
 

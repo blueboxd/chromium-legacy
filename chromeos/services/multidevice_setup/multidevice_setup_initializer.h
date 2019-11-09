@@ -95,6 +95,8 @@ class MultiDeviceSetupInitializer
   void AddFeatureStateObserver(
       mojo::PendingRemote<mojom::FeatureStateObserver> observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
+  void GetEligibleActiveHostDevices(
+      GetEligibleActiveHostDevicesCallback callback) override;
   void SetHostDevice(const std::string& host_device_id,
                      const std::string& auth_token,
                      SetHostDeviceCallback callback) override;
@@ -140,6 +142,8 @@ class MultiDeviceSetupInitializer
   std::vector<mojo::PendingRemote<mojom::FeatureStateObserver>>
       pending_feature_state_observers_;
   std::vector<GetEligibleHostDevicesCallback> pending_get_eligible_hosts_args_;
+  std::vector<GetEligibleActiveHostDevicesCallback>
+      pending_get_eligible_active_hosts_args_;
   std::vector<GetHostStatusCallback> pending_get_host_args_;
   std::vector<std::tuple<mojom::Feature,
                          bool,

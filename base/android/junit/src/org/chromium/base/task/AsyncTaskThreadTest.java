@@ -14,6 +14,7 @@ import android.support.test.filters.SmallTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -171,6 +172,7 @@ public class AsyncTaskThreadTest {
 
     @Test
     @SmallTest
+    @Ignore("crbug.com/1022954")
     public void testCancel_MayInterrupt_TaskIsInterrupted() throws Exception {
         mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 

@@ -531,10 +531,11 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
     builder.Record(ukm_recorder);
   }
 
-  // Only save the playback if the video contains both video and audio.
-  if (properties_->has_video && properties_->has_audio &&
-      total_watch_time > base::TimeDelta())
-    std::move(record_playback_cb_).Run(total_watch_time, last_timestamp_);
+  if (total_watch_time > base::TimeDelta()) {
+    std::move(record_playback_cb_)
+        .Run(total_watch_time, last_timestamp_, properties_->has_video,
+             properties_->has_audio);
+  }
 
   ukm_records_.clear();
 }

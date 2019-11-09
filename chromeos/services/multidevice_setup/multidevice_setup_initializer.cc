@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "chromeos/services/multidevice_setup/multidevice_setup_initializer.h"
 
 #include "base/logging.h"
@@ -136,6 +138,16 @@ void MultiDeviceSetupInitializer::GetEligibleHostDevices(
   }
 
   pending_get_eligible_hosts_args_.push_back(std::move(callback));
+}
+
+void MultiDeviceSetupInitializer::GetEligibleActiveHostDevices(
+    GetEligibleActiveHostDevicesCallback callback) {
+  if (multidevice_setup_impl_) {
+    multidevice_setup_impl_->GetEligibleActiveHostDevices(std::move(callback));
+    return;
+  }
+
+  pending_get_eligible_active_hosts_args_.push_back(std::move(callback));
 }
 
 void MultiDeviceSetupInitializer::SetHostDevice(
@@ -325,6 +337,12 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
         std::move(get_eligible_callback));
   }
   pending_get_eligible_hosts_args_.clear();
+
+  for (auto& get_eligible_callback : pending_get_eligible_active_hosts_args_) {
+    multidevice_setup_impl_->GetEligibleActiveHostDevices(
+        std::move(get_eligible_callback));
+  }
+  pending_get_eligible_active_hosts_args_.clear();
 
   for (auto& get_host_callback : pending_get_host_args_)
     multidevice_setup_impl_->GetHostStatus(std::move(get_host_callback));

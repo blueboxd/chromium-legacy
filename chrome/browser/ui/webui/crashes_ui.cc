@@ -20,16 +20,19 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/crash/core/browser/crashes_ui_util.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -181,6 +184,14 @@ void CrashesDOMHandler::UpdateUI() {
   using_crashpad = crash_reporter::IsCrashpadEnabled();
 #endif
 
+  bool is_internal = false;
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  if (identity_manager) {
+    is_internal = gaia::IsGoogleInternalAccountEmail(
+        identity_manager->GetPrimaryAccountInfo().email);
+  }
+
   // Manual uploads currently are supported only for Crashpad-using platforms
   // and only if crash uploads are not disabled by policy.
   bool support_manual_uploads =
@@ -201,6 +212,7 @@ void CrashesDOMHandler::UpdateUI() {
   base::Value version(version_info::GetVersionNumber());
   base::Value os_string(base::SysInfo::OperatingSystemName() + " " +
                         base::SysInfo::OperatingSystemVersion());
+  base::Value is_google_account(is_internal);
 
   std::vector<const base::Value*> args;
   args.push_back(&enabled);
@@ -209,6 +221,7 @@ void CrashesDOMHandler::UpdateUI() {
   args.push_back(&crash_list);
   args.push_back(&version);
   args.push_back(&os_string);
+  args.push_back(&is_google_account);
   web_ui()->CallJavascriptFunctionUnsafe(
       crash_reporter::kCrashesUIUpdateCrashList, args);
 }
@@ -247,7 +260,7 @@ CrashesUI::CrashesUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
 // static
 base::RefCountedMemory* CrashesUI::GetFaviconResourceBytes(
-      ui::ScaleFactor scale_factor) {
+    ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_CRASH_SAD_FAVICON, scale_factor);
 }

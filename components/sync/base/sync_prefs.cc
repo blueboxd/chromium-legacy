@@ -282,6 +282,7 @@ void SyncPrefs::RegisterProfilePrefs(
     RegisterTypeSelectedPref(registry, type);
   }
 #if defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(prefs::kOsSyncFeatureEnabled, false);
   registry->RegisterBooleanPref(prefs::kSyncAllOsTypes, true);
   for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
     registry->RegisterBooleanPref(GetPrefNameForOsType(type), false);
@@ -519,6 +520,16 @@ void SyncPrefs::SetSelectedOsTypes(bool sync_all_os_types,
   for (SyncPrefObserver& observer : sync_pref_observers_) {
     observer.OnPreferredDataTypesPrefChange();
   }
+}
+
+bool SyncPrefs::GetOsSyncFeatureEnabled() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return pref_service_->GetBoolean(prefs::kOsSyncFeatureEnabled);
+}
+
+void SyncPrefs::SetOsSyncFeatureEnabled(bool enabled) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->SetBoolean(prefs::kOsSyncFeatureEnabled, enabled);
 }
 #endif  // defined(OS_CHROMEOS)
 

@@ -37,6 +37,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void LifecycleStateChanged(mojom::blink::FrameLifecycleState state) override;
   void EvictFromBackForwardCache() override;
   void VisibilityChanged(mojom::blink::FrameVisibility visibility) override;
+  void DidChangeThemeColor(
+      const base::Optional<::SkColor>& theme_color) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

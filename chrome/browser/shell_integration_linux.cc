@@ -249,15 +249,6 @@ const char kDesktopEntry[] = "Desktop Entry";
 const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
 #endif
 
-// TODO(loyso): shell_integraion_linux.cc won't compile with app_list disabled?
-#if BUILDFLAG(ENABLE_APP_LIST)
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-const char kAppListDesktopName[] = "chrome-app-list";
-#else  // BUILDFLAG(CHROMIUM_BRANDING)
-const char kAppListDesktopName[] = "chromium-app-list";
-#endif
-#endif
-
 }  // namespace
 
 // Allows LaunchXdgUtility to join a process.
@@ -643,49 +634,6 @@ std::string GetDirectoryFileContents(const base::string16& title,
   return std::string();
 #endif
 }
-
-#if BUILDFLAG(ENABLE_APP_LIST)
-bool CreateAppListDesktopShortcut(
-    const std::string& wm_class,
-    const std::string& title) {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
-
-  base::FilePath desktop_name(kAppListDesktopName);
-  base::FilePath shortcut_filename = desktop_name.AddExtension("desktop");
-
-  // We do not want duplicate shortcuts. Delete any that already exist and
-  // replace them.
-  DeleteShortcutInApplicationsMenu(shortcut_filename, base::FilePath());
-
-  base::FilePath chrome_exe_path = GetChromeExePath();
-  if (chrome_exe_path.empty()) {
-    NOTREACHED();
-    return false;
-  }
-
-  gfx::ImageFamily icon_images;
-  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  icon_images.Add(*resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_16));
-  icon_images.Add(*resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_32));
-  icon_images.Add(*resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_48));
-  icon_images.Add(*resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_256));
-  std::string icon_name = CreateShortcutIcon(icon_images, desktop_name);
-
-  base::CommandLine command_line(chrome_exe_path);
-  command_line.AppendSwitch(switches::kShowAppList);
-  std::string contents =
-      GetDesktopFileContentsForCommand(command_line,
-                                       wm_class,
-                                       GURL(),
-                                       base::UTF8ToUTF16(title),
-                                       icon_name,
-                                       kAppListCategories,
-                                       false);
-  return CreateShortcutInApplicationsMenu(
-      shortcut_filename, contents, base::FilePath(), "");
-}
-#endif
 
 }  // namespace shell_integration_linux
 

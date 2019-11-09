@@ -69,11 +69,11 @@ public class AccessibilityPreferences
 
         ChromeBaseCheckBoxPreference mAccessibilityTabSwitcherPref =
                 (ChromeBaseCheckBoxPreference) findPreference(
-                        ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER);
+                        ChromePreferenceKeys.ACCESSIBILITY_TAB_SWITCHER);
         if (AccessibilityUtil.isAccessibilityEnabled()) {
             mAccessibilityTabSwitcherPref.setChecked(
                     SharedPreferencesManager.getInstance().readBoolean(
-                            ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER, true));
+                            ChromePreferenceKeys.ACCESSIBILITY_TAB_SWITCHER, true));
         } else {
             getPreferenceScreen().removePreference(mAccessibilityTabSwitcherPref);
         }

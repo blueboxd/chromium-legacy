@@ -368,6 +368,9 @@
       <message name="IDS_ACCNAME_PARTICLE_DISC" desc="The accessible name for the Account Consistency Disc on New Tab Page">
         Google Account
       </message>
+      <message name="IDS_ACCNAME_TAB_LIST" desc="The accessible name for the tab strip.">
+        Tab list
+      </message>
 
       <message name="IDS_UTILITY_PROCESS_JSON_PARSER_NAME" desc="The name of the utility process used for parsing JSON files.">
         JSON Parser

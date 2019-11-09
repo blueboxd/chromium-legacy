@@ -9,11 +9,15 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
 
 namespace blink {
+
+class RTCStats;
+class RTCStatsMember;
 
 // Wrapper around a webrtc::RTCStatsReport. Filters out any stats objects that
 // aren't whitelisted. |filter| controls whether to include only standard
@@ -24,20 +28,26 @@ namespace blink {
 // |RTCStatsReport|, from renderer/modules/peerconnection/rtc_stats_report.cc|h.
 //
 // TODO(crbug.com/787254): Switch over the classes below from using WebVector
-// and WebString to WTF::Vector and WTF::String, when their respective parent
-// classes are gone.
-class PLATFORM_EXPORT RTCStatsReportPlatform : public WebRTCStatsReport {
+// to WTF::Vector, when their respective parent classes are gone.
+class PLATFORM_EXPORT RTCStatsReportPlatform {
  public:
   RTCStatsReportPlatform(
       const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
       const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
-  ~RTCStatsReportPlatform() override;
-  std::unique_ptr<blink::WebRTCStatsReport> CopyHandle() const override;
+  virtual ~RTCStatsReportPlatform();
+  // Creates a new report object that is a handle to the same underlying stats
+  // report (the stats are not copied). The new report's iterator is reset,
+  // useful when needing multiple iterators.
+  std::unique_ptr<RTCStatsReportPlatform> CopyHandle() const;
 
-  std::unique_ptr<blink::WebRTCStats> GetStats(
-      blink::WebString id) const override;
-  std::unique_ptr<blink::WebRTCStats> Next() override;
-  size_t Size() const override;
+  // Gets stats object by |id|, or null if no stats with that |id| exists.
+  std::unique_ptr<RTCStats> GetStats(const String& id) const;
+
+  // The next stats object, or null if the end has been reached.
+  std::unique_ptr<RTCStats> Next();
+
+  // The number of stats objects.
+  size_t Size() const;
 
  private:
   const scoped_refptr<const webrtc::RTCStatsReport> stats_report_;
@@ -48,20 +58,20 @@ class PLATFORM_EXPORT RTCStatsReportPlatform : public WebRTCStatsReport {
   const size_t size_;
 };
 
-class PLATFORM_EXPORT RTCStats : public blink::WebRTCStats {
+class PLATFORM_EXPORT RTCStats {
  public:
   RTCStats(
       const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
       const webrtc::RTCStats* stats,
       const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
-  ~RTCStats() override;
+  virtual ~RTCStats();
 
-  blink::WebString Id() const override;
-  blink::WebString GetType() const override;
-  double Timestamp() const override;
+  String Id() const;
+  String GetType() const;
+  double Timestamp() const;
 
-  size_t MembersCount() const override;
-  std::unique_ptr<blink::WebRTCStatsMember> GetMember(size_t i) const override;
+  size_t MembersCount() const;
+  std::unique_ptr<RTCStatsMember> GetMember(size_t i) const;
 
  private:
   // Reference to keep the report that owns |stats_| alive.
@@ -72,30 +82,30 @@ class PLATFORM_EXPORT RTCStats : public blink::WebRTCStats {
   const std::vector<const webrtc::RTCStatsMemberInterface*> stats_members_;
 };
 
-class PLATFORM_EXPORT RTCStatsMember : public blink::WebRTCStatsMember {
+class PLATFORM_EXPORT RTCStatsMember {
  public:
   RTCStatsMember(const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
                  const webrtc::RTCStatsMemberInterface* member);
-  ~RTCStatsMember() override;
+  virtual ~RTCStatsMember();
 
-  blink::WebString GetName() const override;
-  webrtc::RTCStatsMemberInterface::Type GetType() const override;
-  bool IsDefined() const override;
+  String GetName() const;
+  webrtc::RTCStatsMemberInterface::Type GetType() const;
+  bool IsDefined() const;
 
-  bool ValueBool() const override;
-  int32_t ValueInt32() const override;
-  uint32_t ValueUint32() const override;
-  int64_t ValueInt64() const override;
-  uint64_t ValueUint64() const override;
-  double ValueDouble() const override;
-  blink::WebString ValueString() const override;
-  blink::WebVector<int> ValueSequenceBool() const override;
-  blink::WebVector<int32_t> ValueSequenceInt32() const override;
-  blink::WebVector<uint32_t> ValueSequenceUint32() const override;
-  blink::WebVector<int64_t> ValueSequenceInt64() const override;
-  blink::WebVector<uint64_t> ValueSequenceUint64() const override;
-  blink::WebVector<double> ValueSequenceDouble() const override;
-  blink::WebVector<blink::WebString> ValueSequenceString() const override;
+  bool ValueBool() const;
+  int32_t ValueInt32() const;
+  uint32_t ValueUint32() const;
+  int64_t ValueInt64() const;
+  uint64_t ValueUint64() const;
+  double ValueDouble() const;
+  String ValueString() const;
+  blink::WebVector<int> ValueSequenceBool() const;
+  blink::WebVector<int32_t> ValueSequenceInt32() const;
+  blink::WebVector<uint32_t> ValueSequenceUint32() const;
+  blink::WebVector<int64_t> ValueSequenceInt64() const;
+  blink::WebVector<uint64_t> ValueSequenceUint64() const;
+  blink::WebVector<double> ValueSequenceDouble() const;
+  blink::WebVector<String> ValueSequenceString() const;
 
  private:
   // Reference to keep the report that owns |member_|'s stats object alive.
@@ -107,7 +117,7 @@ class PLATFORM_EXPORT RTCStatsMember : public blink::WebRTCStatsMember {
 // A stats collector callback.
 // It is invoked on the WebRTC signaling thread and will post a task to invoke
 // |callback| on the thread given in the |main_thread| argument.
-// The argument to the callback will be a |blink::WebRTCStatsReport|.
+// The argument to the callback will be a |RTCStatsReportPlatform|.
 class PLATFORM_EXPORT RTCStatsCollectorCallbackImpl
     : public webrtc::RTCStatsCollectorCallback {
  public:

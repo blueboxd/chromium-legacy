@@ -525,6 +525,7 @@ if (is_android) {
 
     sources = [
       "../browser/engagement/important_sites_util_browsertest.cc",
+      "../browser/payments/empty_parameters_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
       "../browser/payments/hybrid_request_skip_ui_browsertest.cc",
@@ -1426,6 +1427,7 @@ if (!is_android) {
         "//chrome/browser/media/router:test_support",
         "//chrome/browser/resources/chromeos/autoclick:browser_tests",
         "//chrome/browser/resources/chromeos/chromevox:browser_tests",
+        "//chrome/browser/resources/chromeos/login:browser_tests",
         "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
         "//chrome/browser/resources/chromeos/switch_access:browser_tests",
         "//chrome/services/file_util/public/cpp:browser_tests",
@@ -1457,7 +1459,6 @@ if (!is_android) {
       ]
       if (is_chromeos) {
         deps += [
-          "//chrome/browser/resources/chromeos/login:browser_tests",
           "//chromeos/components/help_app_ui:browser_tests_js",
           "//chromeos/components/media_app_ui:browser_tests_js",
         ]
@@ -1841,6 +1842,7 @@ if (!is_android) {
     }
     if (toolkit_views) {
       sources += [
+        "../browser/payments/empty_parameters_browsertest.cc",
         "../browser/payments/has_enrolled_instrument_browsertest.cc",
         "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
         "../browser/payments/journey_logger_browsertest.cc",
@@ -3694,8 +3696,7 @@ test("unit_tests") {
       "../browser/enterprise_reporting/policy_info_unittest.cc",
       "../browser/enterprise_reporting/profile_report_generator_unittest.cc",
       "../browser/enterprise_reporting/report_generator_unittest.cc",
-      "../browser/enterprise_reporting/report_scheduler_unittest.cc",
-      "../browser/enterprise_reporting/report_uploader_unittest.cc",
+      "../browser/enterprise_reporting/report_request_queue_generator_unittest.cc",
       "../browser/enterprise_reporting/request_timer_unittest.cc",
       "../browser/first_run/first_run_unittest.cc",
       "../browser/font_family_cache_unittest.cc",
@@ -3982,6 +3983,15 @@ test("unit_tests") {
     }
     if (is_mac) {
       deps += [ ":firefox_importer_interface" ]
+    }
+
+    # TODO(anqing): finally these two set of unit test will be suitable to
+    # other platforms, rather than Chrome OS only.
+    if (!is_chromeos) {
+      sources += [
+        "../browser/enterprise_reporting/report_scheduler_unittest.cc",
+        "../browser/enterprise_reporting/report_uploader_unittest.cc",
+      ]
     }
   }
 

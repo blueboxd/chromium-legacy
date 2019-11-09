@@ -402,7 +402,12 @@ void InProgressDownloadManager::DetermineDownloadTarget(
           : DownloadPathReservationTracker::OVERWRITE,
       base::Bind(&OnPathReserved, callback, download->GetDangerType(),
                  intermediate_path_cb_, download->GetForcedFilePath()));
-#endif
+#else
+  callback.Run(download->GetTargetFilePath(),
+               DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+               download->GetDangerType(), download->GetFullPath(),
+               DOWNLOAD_INTERRUPT_REASON_NONE);
+#endif  // defined(OS_ANDROID)
 }
 
 void InProgressDownloadManager::ResumeInterruptedDownload(

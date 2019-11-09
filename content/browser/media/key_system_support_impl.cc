@@ -45,7 +45,7 @@ std::vector<T> SetToVector(const base::flat_set<T>& s) {
 // be modified.
 bool IsHardwareSecureCodecsOverriddenFromCommandLine(
     std::vector<media::VideoCodec>* video_codecs,
-    std::vector<media::EncryptionMode>* encryption_schemes) {
+    std::vector<media::EncryptionScheme>* encryption_schemes) {
   DCHECK(video_codecs->empty());
   DCHECK(encryption_schemes->empty());
 
@@ -73,7 +73,7 @@ bool IsHardwareSecureCodecsOverriddenFromCommandLine(
 
   // Codecs enabled from command line assumes CENC support.
   if (!video_codecs->empty())
-    encryption_schemes->push_back(media::EncryptionMode::kCenc);
+    encryption_schemes->push_back(media::EncryptionScheme::kCenc);
 
   return true;
 }
@@ -82,7 +82,7 @@ void GetHardwareSecureDecryptionCaps(
     const std::string& key_system,
     const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
     std::vector<media::VideoCodec>* video_codecs,
-    std::vector<media::EncryptionMode>* encryption_schemes) {
+    std::vector<media::EncryptionScheme>* encryption_schemes) {
   DCHECK(video_codecs->empty());
   DCHECK(encryption_schemes->empty());
 
@@ -122,7 +122,7 @@ void GetHardwareSecureDecryptionCaps(
 #endif
 
   base::flat_set<media::VideoCodec> video_codec_set;
-  base::flat_set<media::EncryptionMode> encryption_scheme_set;
+  base::flat_set<media::EncryptionScheme> encryption_scheme_set;
 
   GetContentClient()->browser()->GetHardwareSecureDecryptionCaps(
       key_system, cdm_proxy_protocols, &video_codec_set,

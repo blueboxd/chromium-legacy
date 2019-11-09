@@ -14,9 +14,12 @@ class NodeWrapper extends SAChildNode {
    * @param {?SARootNode} parent
    */
   constructor(baseNode, parent) {
-    super(SwitchAccessPredicate.isGroup(baseNode, parent));
+    super();
     /** @private {!AutomationNode} */
     this.baseNode_ = baseNode;
+
+    /** @private {boolean} */
+    this.isGroup_ = SwitchAccessPredicate.isGroup(this.baseNode_, parent);
   }
 
   /** @override */
@@ -136,6 +139,11 @@ class NodeWrapper extends SAChildNode {
   /** @override */
   isEquivalentTo(node) {
     return this.baseNode_ === node;
+  }
+
+  /** @override */
+  isGroup() {
+    return this.isGroup_;
   }
 
   /** @override */

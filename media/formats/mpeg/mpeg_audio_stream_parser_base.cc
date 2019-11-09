@@ -211,7 +211,7 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8_t* data,
 
   if (!config_.IsValidConfig()) {
     config_.Initialize(audio_codec_, kSampleFormatF32, channel_layout,
-                       sample_rate, extra_data, Unencrypted(),
+                       sample_rate, extra_data, EncryptionScheme::kUnencrypted,
                        base::TimeDelta(), codec_delay_);
     if (audio_codec_ == kCodecAAC)
       config_.disable_discard_decoder_delay();

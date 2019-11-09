@@ -44,9 +44,9 @@ Robustness ConvertRobustness(const std::string& robustness) {
 
 WidevineKeySystemProperties::WidevineKeySystemProperties(
     media::SupportedCodecs codecs,
-    base::flat_set<media::EncryptionMode> encryption_schemes,
+    base::flat_set<media::EncryptionScheme> encryption_schemes,
     media::SupportedCodecs hw_secure_codecs,
-    base::flat_set<media::EncryptionMode> hw_secure_encryption_schemes,
+    base::flat_set<media::EncryptionScheme> hw_secure_encryption_schemes,
     Robustness max_audio_robustness,
     Robustness max_video_robustness,
     media::EmeSessionTypeSupport persistent_license_support,
@@ -84,7 +84,7 @@ bool WidevineKeySystemProperties::IsSupportedInitDataType(
 }
 
 EmeConfigRule WidevineKeySystemProperties::GetEncryptionSchemeConfigRule(
-    media::EncryptionMode encryption_scheme) const {
+    media::EncryptionScheme encryption_scheme) const {
   bool is_supported = encryption_schemes_.count(encryption_scheme);
   bool is_hw_secure_supported =
       hw_secure_encryption_schemes_.count(encryption_scheme);

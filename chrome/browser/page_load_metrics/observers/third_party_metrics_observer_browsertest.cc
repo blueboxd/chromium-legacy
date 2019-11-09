@@ -7,6 +7,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -24,7 +25,8 @@ const char kAccessLocalStorageHistogram[] =
     "PageLoad.Clients.ThirdParty.Origins.LocalStorageAccess";
 const char kAccessSessionStorageHistogram[] =
     "PageLoad.Clients.ThirdParty.Origins.SessionStorageAccess";
-
+const char kSubframeFCPHistogram[] =
+    "PageLoad.Clients.ThirdParty.Frames.NavigationToFirstContentfulPaint";
 class ThirdPartyMetricsObserverBrowserTest : public InProcessBrowserTest {
  protected:
   ThirdPartyMetricsObserverBrowserTest()
@@ -52,6 +54,33 @@ class ThirdPartyMetricsObserverBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), main_url);
   }
 
+  void NavigateToPageWithFrameAndWaitForFrame(
+      const std::string& host,
+      page_load_metrics::PageLoadMetricsTestWaiter* waiter) {
+    GURL main_url(https_server()->GetURL(host, "/iframe.html"));
+
+    waiter->AddSubframeNavigationExpectation();
+    NavigateToPageWithFrame(host);
+    waiter->Wait();
+  }
+
+  void NavigateFrameAndWaitForFCP(
+      const std::string& host,
+      const std::string& path,
+      page_load_metrics::PageLoadMetricsTestWaiter* waiter) {
+    // Waiting for the frame to navigate ensures that any previous RFHs for this
+    // frame have been deleted and therefore won't pollute any future frame
+    // expectations (such as FCP).
+    waiter->AddSubframeNavigationExpectation();
+    NavigateFrameTo(host, path);
+    waiter->Wait();
+
+    waiter->AddSubFrameExpectation(
+        page_load_metrics::PageLoadMetricsTestWaiter::TimingField::
+            kFirstContentfulPaint);
+    waiter->Wait();
+  }
+
   void NavigateFrameTo(const std::string& host, const std::string& path) {
     GURL page = https_server()->GetURL(host, path);
     NavigateFrameToUrl(page);
@@ -73,6 +102,53 @@ class ThirdPartyMetricsObserverBrowserTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyMetricsObserverBrowserTest);
 };
+
+IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
+                       OneFirstPartyFrame_NoTimingRecorded) {
+  base::HistogramTester histogram_tester;
+  page_load_metrics::PageLoadMetricsTestWaiter waiter(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  NavigateToPageWithFrameAndWaitForFrame("a.com", &waiter);
+
+  // Navigate the frame to a first-party.
+  NavigateFrameAndWaitForFCP("a.com", "/select.html", &waiter);
+  histogram_tester.ExpectTotalCount(kSubframeFCPHistogram, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
+                       OneThirdPartyFrame_OneTimingRecorded) {
+  base::HistogramTester histogram_tester;
+
+  page_load_metrics::PageLoadMetricsTestWaiter waiter(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  NavigateToPageWithFrameAndWaitForFrame("a.com", &waiter);
+
+  // Navigate the frame to a third-party.
+  NavigateFrameAndWaitForFCP("b.com", "/select.html", &waiter);
+  histogram_tester.ExpectTotalCount(kSubframeFCPHistogram, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
+                       ThreeThirdPartyFrames_ThreeTimingsRecorded) {
+  base::HistogramTester histogram_tester;
+
+  page_load_metrics::PageLoadMetricsTestWaiter waiter(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  NavigateToPageWithFrameAndWaitForFrame("a.com", &waiter);
+
+  // Navigate the frame to a third-party.
+  NavigateFrameAndWaitForFCP("b.com", "/select.html", &waiter);
+
+  // Navigate the frame to a different third-party.
+  NavigateFrameAndWaitForFCP("c.com", "/select.html", &waiter);
+
+  // Navigate the frame to a repeat third-party.
+  NavigateFrameAndWaitForFCP("b.com", "/select.html", &waiter);
+
+  // Navigate the frame to first-party.
+  NavigateFrameAndWaitForFCP("a.com", "/select.html", &waiter);
+  histogram_tester.ExpectTotalCount(kSubframeFCPHistogram, 3);
+}
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest, NoStorageEvent) {
   base::HistogramTester histogram_tester;

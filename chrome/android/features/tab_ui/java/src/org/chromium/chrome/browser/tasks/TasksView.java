@@ -59,15 +59,12 @@ class TasksView extends CoordinatorLayoutForPointer {
     }
 
     /**
-     * Sets whether the tasks view should behave in Carousel mode.
-     * @param isTabCarousel whether the tab switcher is in .CAROUSEL mode
+     * Set the visibility of the tab carousel.
+     * @param isVisible Whether it's visible.
      */
-    void setIsTabCarousel(boolean isTabCarousel) {
-        if (isTabCarousel) {
-            // TODO(crbug.com/982018): Change view according to incognito and dark mode.
-            findViewById(R.id.tab_switcher_title).setVisibility(View.VISIBLE);
-            mCarouselTabSwitcherContainer.setVisibility(View.VISIBLE);
-        }
+    void setTabCarouselVisibility(boolean isVisible) {
+        mCarouselTabSwitcherContainer.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        findViewById(R.id.tab_switcher_title).setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
     /**

@@ -28,6 +28,8 @@ class DummyVoteConsumer : public VoteConsumer {
                          const Vote& new_vote) override;
   void VoteInvalidated(AcceptedVote* vote) override;
 
+  void ExpectInvalidVote(size_t index);
+
   // Checks that the vote at position |index| is valid, and has the
   // corresponding |voter|, |frame_node| and |priority|. If |reason| is non-null
   // then it will be validated as well.

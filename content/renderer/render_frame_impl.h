@@ -739,7 +739,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                        blink::WebHistoryCommitType commit_type,
                                        bool content_initiated) override;
   void DidUpdateCurrentHistoryItem() override;
-  void DidChangeThemeColor() override;
   void ForwardResourceTimingToParent(
       const blink::WebResourceTimingInfo& info) override;
   void DispatchLoad() override;

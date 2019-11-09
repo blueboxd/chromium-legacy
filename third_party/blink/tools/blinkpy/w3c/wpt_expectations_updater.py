@@ -131,14 +131,14 @@ class WPTExpectationsUpdater(object):
             # All tests passed, so there should be no failing results.
             return {}
 
-        test_result_list = [self.host.buildbot.fetch_results(build)]
+        test_result_list = [self.host.results_fetcher.fetch_results(build)]
         has_webdriver_tests = self.host.builders.has_webdriver_tests_for_builder(
             build.builder_name)
         if has_webdriver_tests:
             master = self.host.builders.master_for_builder(
                 build.builder_name)
             test_result_list.append(
-                self.host.buildbot.fetch_webdriver_test_results(build, master))
+                self.host.results_fetcher.fetch_webdriver_test_results(build, master))
 
         test_result_list = filter(None, test_result_list)
         if not test_result_list:

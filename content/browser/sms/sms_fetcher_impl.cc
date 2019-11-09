@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/sms/sms_parser.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -72,8 +73,14 @@ bool SmsFetcherImpl::Notify(const url::Origin& origin,
 }
 
 void SmsFetcherImpl::OnRemote(base::Optional<std::string> sms) {
-  // TODO(crbug.com/1015645): implementation left pending deliberately.
-  NOTIMPLEMENTED();
+  if (!sms)
+    return;
+
+  base::Optional<SmsParser::Result> result = SmsParser::Parse(*sms);
+  if (!result)
+    return;
+
+  Notify(result->origin, result->one_time_code, *sms);
 }
 
 bool SmsFetcherImpl::OnReceive(const url::Origin& origin,

@@ -272,6 +272,17 @@ void FrameTree::CreateProxiesForSiteInstance(FrameTreeNode* source,
     }
   }
 
+  // Check whether we're in an inner delegate and |site_instance| corresponds
+  // to the outer delegate.  Subframe proxies aren't needed if this is the
+  // case.
+  bool is_site_instance_for_outer_delegate = false;
+  RenderFrameProxyHost* outer_delegate_proxy =
+      root()->render_manager()->GetProxyToOuterDelegate();
+  if (outer_delegate_proxy) {
+    is_site_instance_for_outer_delegate =
+        (site_instance == outer_delegate_proxy->GetSiteInstance());
+  }
+
   // Proxies are created in the FrameTree in response to a node navigating to a
   // new SiteInstance. Since |source|'s navigation will replace the currently
   // loaded document, the entire subtree under |source| will be removed, and
@@ -299,6 +310,14 @@ void FrameTree::CreateProxiesForSiteInstance(FrameTreeNode* source,
         // race described above not possible.
         continue;
       }
+
+      // Do not create proxies for subframes in the outer delegate's
+      // SiteInstance, since there is no need to expose these subframes to the
+      // outer delegate.  See also comments in CreateProxiesForChildFrame() and
+      // https://crbug.com/1013553.
+      if (!node->IsMainFrame() && is_site_instance_for_outer_delegate)
+        continue;
+
       node->render_manager()->CreateRenderFrameProxy(site_instance);
     }
   }

@@ -89,8 +89,8 @@ class PlayreadyKeySystemProperties : public ::media::KeySystemProperties {
   }
 
   media::EmeConfigRule GetEncryptionSchemeConfigRule(
-      media::EncryptionMode encryption_mode) const override {
-    if (encryption_mode == ::media::EncryptionMode::kCenc) {
+      media::EncryptionScheme encryption_mode) const override {
+    if (encryption_mode == ::media::EncryptionScheme::kCenc) {
       return media::EmeConfigRule::SUPPORTED;
     }
 
@@ -179,8 +179,8 @@ void WebEngineContentRendererClient::AddSupportedKeySystems(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWidevine)) {
-    base::flat_set<media::EncryptionMode> encryption_schemes{
-        media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs};
+    base::flat_set<media::EncryptionScheme> encryption_schemes{
+        media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs};
 
     // Fuchsia always decrypts audio into clear buffers and return them back to
     // Chromium. Hardware secured decoders are only available for supported

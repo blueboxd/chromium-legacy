@@ -314,7 +314,7 @@ MediaCodecLoop::InputData MediaCodecAudioDecoder::ProvideInputData() {
       input_data.key_id = decrypt_config->key_id();
       input_data.iv = decrypt_config->iv();
       input_data.subsamples = decrypt_config->subsamples();
-      input_data.encryption_scheme = decrypt_config->encryption_mode();
+      input_data.encryption_scheme = decrypt_config->encryption_scheme();
       input_data.encryption_pattern = decrypt_config->encryption_pattern();
     }
     input_data.presentation_time = decoder_buffer->timestamp();

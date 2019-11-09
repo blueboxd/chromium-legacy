@@ -208,11 +208,11 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
       FAIL() << catcher.message();
   }
 
-  // Load the PDF at the given URL and use the PDFScriptingAPI to ensure it has
-  // finished loading. Return true if it loads successfully or false if it
-  // fails. If it doesn't finish loading the test will hang. This is done from
-  // outside of the BrowserPlugin guest to ensure the PDFScriptingAPI works
-  // correctly from there.
+  // Load the PDF at the given URL and ensure it has finished loading. Return
+  // true if it loads successfully or false if it fails. If it doesn't finish
+  // loading the test will hang. This is done from outside of the BrowserPlugin
+  // guest to ensure sending messages to/from the plugin works correctly from
+  // there, since the PDFScriptingAPI relies on doing this as well.
   bool LoadPdf(const GURL& url) {
     ui_test_utils::NavigateToURL(browser(), url);
     WebContents* web_contents = GetActiveWebContents();
@@ -1110,10 +1110,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilitySelection) {
   ASSERT_TRUE(guest_contents);
 
   WebContents* web_contents = GetActiveWebContents();
-  CHECK(content::ExecuteScript(web_contents,
-                               "var scriptingAPI = new PDFScriptingAPI(window, "
-                               "    document.getElementsByTagName('embed')[0]);"
-                               "scriptingAPI.selectAll();"));
+  CHECK(content::ExecuteScript(
+      web_contents,
+      "document.getElementsByTagName('embed')[0].postMessage("
+      "{type: 'selectAll'});"));
 
   EnableAccessibilityForWebContents(guest_contents);
   WaitForAccessibilityTreeToContainNodeWithName(guest_contents,

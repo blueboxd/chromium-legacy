@@ -607,6 +607,11 @@ GdkDisplay* GetGdkDisplay() {
   return display;
 }
 
+int BuildXkbStateFromGdkEvent(unsigned int state, unsigned char group) {
+  DCHECK_EQ(0u, ((state >> 13) & 0x3));
+  return state | ((group & 0x3) << 13);
+}
+
 GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event) {
   GdkEventType event_type =
       key_event.type() == ui::ET_KEY_PRESSED ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
@@ -632,7 +637,7 @@ GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event) {
   gdk_event->key.time = event_time.InMilliseconds();
   gdk_event->key.hardware_keycode = hw_code;
   gdk_event->key.keyval = keyval;
-  gdk_event->key.state = state;
+  gdk_event->key.state = BuildXkbStateFromGdkEvent(state, group);
   gdk_event->key.group = group;
   gdk_event->key.send_event = key_event.flags() & ui::EF_FINAL;
   gdk_event->key.is_modifier = state & GDK_MODIFIER_MASK;

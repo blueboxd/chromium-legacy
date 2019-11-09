@@ -12,9 +12,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
+import java.lang.ref.PhantomReference;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.util.concurrent.CountDownLatch;
 
 @RunWith(BaseJUnit4ClassRunner.class)
@@ -47,5 +52,35 @@ public class SmokeTest {
             Assert.fail(e.toString());
         }
         mActivityTestRule.navigateAndWait(url);
+    }
+
+    @Test
+    @SmallTest
+    public void testActivityShouldNotLeak() {
+        ReferenceQueue<InstrumentationActivity> referenceQueue = new ReferenceQueue<>();
+        PhantomReference<InstrumentationActivity> reference;
+        {
+            InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+            mActivityTestRule.recreateActivity();
+            boolean destroyed =
+                    TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.isDestroyed());
+            Assert.assertTrue(destroyed);
+
+            reference = new PhantomReference<>(activity, referenceQueue);
+        }
+
+        Runtime.getRuntime().gc();
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Reference enqueuedReference = referenceQueue.poll();
+                if (enqueuedReference == null) {
+                    Runtime.getRuntime().gc();
+                    return false;
+                }
+                Assert.assertEquals(reference, enqueuedReference);
+                return true;
+            }
+        });
     }
 }

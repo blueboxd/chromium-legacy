@@ -6,8 +6,9 @@
 #define REMOTING_HOST_MAC_PERMISSION_WIZARD_H_
 
 #include <memory>
+#include <string>
 
-#include "base/macros.h"
+#include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 
 namespace base {
@@ -21,21 +22,46 @@ namespace mac {
 // needed MacOS permissions for the host process.
 class PermissionWizard final {
  public:
-  PermissionWizard();
+  class Impl;
+
+  // Callback for the Delegate to inform this class whether a permission was
+  // granted.
+  using ResultCallback = base::OnceCallback<void(bool granted)>;
+
+  // Interface to delegate the permission-checks. This will be invoked to test
+  // each permission, and will return (via callback) whether the permission was
+  // granted.
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    // Returns the name of the bundle that needs to be granted permission, as
+    // it would appear in the System Preferences applet. This will be included
+    // in the dialog's instructional text.
+    virtual std::string GetBundleName() = 0;
+
+    // These checks will be invoked on the UI thread, and the result should be
+    // returned to the callback on the same thread.
+    // They should cause the bundle-name to be added to System Preferences
+    // applet. As far as possible, the check should not trigger a system prompt,
+    // but this may be unavoidable.
+    virtual void CheckAccessibilityPermission(ResultCallback onResult) = 0;
+    virtual void CheckScreenRecordingPermission(ResultCallback onResult) = 0;
+  };
+
+  explicit PermissionWizard(std::unique_ptr<Delegate> checker);
+  PermissionWizard(const PermissionWizard&) = delete;
+  PermissionWizard& operator=(const PermissionWizard&) = delete;
   ~PermissionWizard();
 
   void Start(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
  private:
-  class Impl;
-
   // Private implementation, to hide the Objective-C and Cocoa objects from C++
   // callers.
   std::unique_ptr<Impl> impl_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionWizard);
 };
 
 }  // namespace mac

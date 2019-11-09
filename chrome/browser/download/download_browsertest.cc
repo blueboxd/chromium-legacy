@@ -22,6 +22,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/guid.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -49,17 +50,20 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_manager_utils.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
+#include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/reputation/safety_tip_test_utils.h"
@@ -84,6 +88,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/in_progress_download_manager.h"
 #include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -396,6 +401,65 @@ void SetHiddenDownloadCallback(DownloadItem* item,
 }
 #endif
 
+class SimpleDownloadManagerCoordinatorWaiter
+    : public download::SimpleDownloadManagerCoordinator::Observer {
+ public:
+  explicit SimpleDownloadManagerCoordinatorWaiter(
+      download::SimpleDownloadManagerCoordinator* coordinator)
+      : coordinator_(coordinator) {
+    coordinator_->AddObserver(this);
+  }
+
+  ~SimpleDownloadManagerCoordinatorWaiter() override {
+    if (coordinator_)
+      coordinator_->RemoveObserver(this);
+  }
+
+  void WaitForInitialization() {
+    if (coordinator_ && coordinator_->initialized())
+      return;
+    base::RunLoop run_loop;
+    completion_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+    return;
+  }
+
+ private:
+  void OnDownloadsInitialized(bool active_downloads_only) override {
+    if (completion_closure_)
+      std::move(completion_closure_).Run();
+  }
+
+  void OnManagerGoingDown(
+      download::SimpleDownloadManagerCoordinator* coordinator) override {
+    DCHECK_EQ(coordinator_, coordinator);
+    coordinator_->RemoveObserver(this);
+    coordinator_ = nullptr;
+  }
+
+  download::SimpleDownloadManagerCoordinator* coordinator_;
+  base::OnceClosure completion_closure_;
+};
+
+void CreateCompletedDownload(content::DownloadManager* download_manager,
+                             const std::string& guid,
+                             const base::FilePath target_path,
+                             std::vector<GURL> url_chain,
+                             int64_t file_size) {
+  base::Time current_time = base::Time::Now();
+  download_manager->CreateDownloadItem(
+      guid, 1 /* id */, target_path, target_path, url_chain,
+      GURL() /* referrer_url */, GURL() /* site_url */, GURL() /* tab_url */,
+      GURL() /* tab_referrer_url */, url::Origin() /* request_initiator */,
+      "" /* mime_type */, "" /* original_mime_type */, current_time,
+      current_time, "" /* etag */, "" /* last_modified */, file_size, file_size,
+      "" /* hash */, download::DownloadItem::COMPLETE,
+      download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE, false /* opened */,
+      current_time, false /* transient */,
+      std::vector<download::DownloadItem::ReceivedSlice>());
+}
+
 }  // namespace
 
 DownloadTestObserverNotInProgress::DownloadTestObserverNotInProgress(
@@ -494,6 +558,7 @@ class DownloadTest : public InProcessBrowserTest {
   DownloadTest() {}
 
   void SetUpOnMainThread() override {
+    ASSERT_TRUE(CheckTestDir());
     ASSERT_TRUE(InitialSetup());
     host_resolver()->AddRule("www.a.com", "127.0.0.1");
     host_resolver()->AddRule("foo.com", "127.0.0.1");
@@ -508,15 +573,16 @@ class DownloadTest : public InProcessBrowserTest {
     file_activity_observer_.reset();
   }
 
-  // Returning false indicates a failure of the setup, and should be asserted
-  // in the caller.
-  bool InitialSetup() {
+  bool CheckTestDir() {
     bool have_test_dir =
         base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir_);
     EXPECT_TRUE(have_test_dir);
-    if (!have_test_dir)
-      return false;
+    return have_test_dir;
+  }
 
+  // Returning false indicates a failure of the setup, and should be asserted
+  // in the caller.
+  bool InitialSetup() {
     // Sanity check default values for window and tab count.
     int window_count = chrome::GetTotalBrowserCount();
     EXPECT_EQ(1, window_count);
@@ -4092,6 +4158,86 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadLargeDataURL) {
                                  &downloaded_data));
   }
   ASSERT_EQ(downloaded_data, png_data);
+}
+
+// Testing the behavior of resuming with only in-progress download manager.
+class InProgressDownloadTest : public DownloadTest {
+ public:
+  void SetUpOnMainThread() override { EXPECT_TRUE(CheckTestDir()); }
+};
+
+// Check that if a download exists in both in-progress and history DB,
+// resuming the download after loading the in-progress DB and before
+// history initialization will continue downloading the item even if it
+// is in a terminal state in history DB.
+IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
+                       ResumeInProgressDownloadBeforeLoadingHistory) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/downloads/a_zip_file.zip");
+  base::FilePath origin(OriginFile(
+      base::FilePath(FILE_PATH_LITERAL("downloads/a_zip_file.zip"))));
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  ASSERT_TRUE(base::PathExists(origin));
+  // Gets the file size.
+  int64_t origin_file_size = 0;
+  EXPECT_TRUE(base::GetFileSize(origin, &origin_file_size));
+  std::string guid = base::GenerateGUID();
+
+  // Wait for in-progress download manager to initialize.
+  download::InProgressDownloadManager* in_progress_manager =
+      DownloadManagerUtils::GetInProgressDownloadManager(
+          browser()->profile()->GetProfileKey());
+  download::SimpleDownloadManagerCoordinator* coordinator =
+      SimpleDownloadManagerCoordinatorFactory::GetForKey(
+          browser()->profile()->GetProfileKey());
+  SimpleDownloadManagerCoordinatorWaiter coordinator_waiter(coordinator);
+  coordinator_waiter.WaitForInitialization();
+
+  base::FilePath target_path;
+  ASSERT_TRUE(
+      base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &target_path));
+  target_path =
+      target_path.Append(base::FilePath(FILE_PATH_LITERAL("a_zip_file.zip")));
+  std::vector<GURL> url_chain;
+  url_chain.emplace_back(url);
+  base::Time current_time = base::Time::Now();
+  in_progress_manager->AddInProgressDownloadForTest(
+      std::make_unique<download::DownloadItemImpl>(
+          in_progress_manager, guid, 1 /* id */,
+          target_path.AddExtensionASCII("crdownload"), target_path, url_chain,
+          GURL() /* referrer_url */, GURL() /* site_url */,
+          GURL() /* tab_url */, GURL() /* tab_referrer_url */,
+          url::Origin() /* request_initiator */, "" /* mime_type */,
+          "" /* original_mime_type */, current_time, current_time,
+          "" /* etag */, "" /* last_modified */, 0 /* received_bytes */,
+          origin_file_size, 0 /* auto_resume_count */, "" /* hash */,
+          download::DownloadItem::INTERRUPTED,
+          download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED,
+          download::DOWNLOAD_INTERRUPT_REASON_CRASH, false /* paused */,
+          false /* allow_metered */, false /* opened */, current_time,
+          false /* transient */,
+          std::vector<download::DownloadItem::ReceivedSlice>(),
+          nullptr /* download_entry */));
+
+  download::DownloadItem* download = coordinator->GetDownloadByGuid(guid);
+  content::DownloadManager* manager = DownloadManagerForBrowser(browser());
+  DownloadCoreService* service =
+      DownloadCoreServiceFactory::GetForBrowserContext(browser()->profile());
+  service->SetDownloadHistoryForTesting(nullptr);
+
+  ASSERT_TRUE(download);
+  PercentWaiter waiter(download);
+  // Resume the download first, before download history loads.
+  download->Resume(true);
+  // Now simulate that history DB is loaded.
+  manager->OnHistoryQueryComplete(
+      base::Bind(CreateCompletedDownload, base::Unretained(manager), guid,
+                 target_path, std::move(url_chain), origin_file_size));
+  // Download should continue and complete.
+  ASSERT_TRUE(waiter.WaitForFinished());
+  download::DownloadItem* history_download = manager->GetDownloadByGuid(guid);
+  CHECK_EQ(download, history_download);
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

@@ -144,6 +144,10 @@ std::string AutofillWalletSpecificsAsDebugString(
         AutofillWalletSpecifics_WalletInfoType_CUSTOMER_DATA:
       return "CustomerData";
     case sync_pb::AutofillWalletSpecifics_WalletInfoType::
+        AutofillWalletSpecifics_WalletInfoType_CREDIT_CARD_CLOUD_TOKEN_DATA:
+      // TODO(crbug.com/1020740): Implement for this type.
+      return "CloudTokenData";
+    case sync_pb::AutofillWalletSpecifics_WalletInfoType::
         AutofillWalletSpecifics_WalletInfoType_UNKNOWN:
       return "Unknown";
   }

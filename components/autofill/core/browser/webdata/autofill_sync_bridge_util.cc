@@ -367,6 +367,9 @@ void PopulateWalletTypesFromSyncData(
         customer_data->push_back(
             CustomerDataFromSpecifics(autofill_specifics.customer_data()));
         break;
+      case sync_pb::AutofillWalletSpecifics::CREDIT_CARD_CLOUD_TOKEN_DATA:
+        // TODO(crbug.com/1020740): Implement this type.
+        break;
       case sync_pb::AutofillWalletSpecifics::UNKNOWN:
         // Just ignore new entry types that the client doesn't know about.
         break;

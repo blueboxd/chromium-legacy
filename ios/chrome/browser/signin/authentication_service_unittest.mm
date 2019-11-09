@@ -65,6 +65,10 @@ std::unique_ptr<KeyedService> BuildMockSyncSetupService(
       ProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }
 
+CoreAccountId GetAccountId(ChromeIdentity* identity) {
+  return CoreAccountId(base::SysNSStringToUTF8([identity gaiaID]));
+}
+
 }  // namespace
 
 class AuthenticationServiceTest : public PlatformTest {
@@ -112,7 +116,7 @@ class AuthenticationServiceTest : public PlatformTest {
     authentication_service()->StoreKnownAccountsWhileInForeground();
   }
 
-  std::vector<std::string> GetLastKnownAccountsFromForeground() {
+  std::vector<CoreAccountId> GetLastKnownAccountsFromForeground() {
     return authentication_service()->GetLastKnownAccountsFromForeground();
   }
 
@@ -134,14 +138,13 @@ class AuthenticationServiceTest : public PlatformTest {
   }
 
   void SetCachedMDMInfo(ChromeIdentity* identity, NSDictionary* user_info) {
-    authentication_service()
-        ->cached_mdm_infos_[base::SysNSStringToUTF8([identity gaiaID])] =
+    authentication_service()->cached_mdm_infos_[GetAccountId(identity)] =
         user_info;
   }
 
   bool HasCachedMDMInfo(ChromeIdentity* identity) {
     return authentication_service()->cached_mdm_infos_.count(
-               base::SysNSStringToUTF8([identity gaiaID])) > 0;
+               GetAccountId(identity)) > 0;
   }
 
   AuthenticationService* authentication_service() {
@@ -249,7 +252,7 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityPromptSignIn) {
 
 TEST_F(AuthenticationServiceTest, StoreAndGetAccountsInPrefs) {
   // Profile starts empty.
-  std::vector<std::string> accounts = GetLastKnownAccountsFromForeground();
+  std::vector<CoreAccountId> accounts = GetLastKnownAccountsFromForeground();
   EXPECT_TRUE(accounts.empty());
 
   // Sign in.
@@ -261,8 +264,8 @@ TEST_F(AuthenticationServiceTest, StoreAndGetAccountsInPrefs) {
   StoreKnownAccountsWhileInForeground();
   accounts = GetLastKnownAccountsFromForeground();
   ASSERT_EQ(2u, accounts.size());
-  EXPECT_EQ("foo2ID", accounts[0]);
-  EXPECT_EQ("fooID", accounts[1]);
+  EXPECT_EQ(CoreAccountId("foo2ID"), accounts[0]);
+  EXPECT_EQ(CoreAccountId("fooID"), accounts[1]);
 }
 
 TEST_F(AuthenticationServiceTest,
@@ -281,8 +284,8 @@ TEST_F(AuthenticationServiceTest,
       identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(2u, accounts.size());
-  EXPECT_EQ("foo2ID", accounts[0].account_id);
-  EXPECT_EQ("fooID", accounts[1].account_id);
+  EXPECT_EQ(CoreAccountId("foo2ID"), accounts[0].account_id);
+  EXPECT_EQ(CoreAccountId("fooID"), accounts[1].account_id);
 
   // Simulate a switching to background and back to foreground, triggering a
   // credentials reload.
@@ -294,9 +297,9 @@ TEST_F(AuthenticationServiceTest,
   accounts = identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(3u, accounts.size());
-  EXPECT_EQ("foo2ID", accounts[0].account_id);
-  EXPECT_EQ("foo3ID", accounts[1].account_id);
-  EXPECT_EQ("fooID", accounts[2].account_id);
+  EXPECT_EQ(CoreAccountId("foo2ID"), accounts[0].account_id);
+  EXPECT_EQ(CoreAccountId("foo3ID"), accounts[1].account_id);
+  EXPECT_EQ(CoreAccountId("fooID"), accounts[2].account_id);
 }
 
 TEST_F(AuthenticationServiceTest, HaveAccountsChanged_Default) {
@@ -429,7 +432,7 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   signin::UpdatePersistentErrorOfRefreshTokenForAccount(
-      identity_manager(), base::SysNSStringToUTF8([identity(0) gaiaID]), error);
+      identity_manager(), GetAccountId(identity(0)), error);
 
   // MDM error for |identity_| is being cleared and the error state of refresh
   // token will be updated.
@@ -482,7 +485,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMNotification) {
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   signin::UpdatePersistentErrorOfRefreshTokenForAccount(
-      identity_manager(), base::SysNSStringToUTF8([identity(0) gaiaID]), error);
+      identity_manager(), GetAccountId(identity(0)), error);
 
   NSDictionary* user_info1 = @{ @"foo" : @1 };
   ON_CALL(*identity_service(), GetMDMDeviceStatus(user_info1))
@@ -518,7 +521,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   signin::UpdatePersistentErrorOfRefreshTokenForAccount(
-      identity_manager(), base::SysNSStringToUTF8([identity(0) gaiaID]), error);
+      identity_manager(), GetAccountId(identity(0)), error);
 
   NSDictionary* user_info1 = @{ @"foo" : @1 };
   ON_CALL(*identity_service(), GetMDMDeviceStatus(user_info1))
@@ -576,7 +579,7 @@ TEST_F(AuthenticationServiceTest, ShowMDMErrorDialog) {
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   signin::UpdatePersistentErrorOfRefreshTokenForAccount(
-      identity_manager(), base::SysNSStringToUTF8([identity(0) gaiaID]), error);
+      identity_manager(), GetAccountId(identity(0)), error);
 
   NSDictionary* user_info = [NSDictionary dictionary];
   SetCachedMDMInfo(identity(0), user_info);

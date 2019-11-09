@@ -50,8 +50,11 @@ void WebViewWebMainParts::PreCreateThreads() {
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  std::string enable_features =
-      base::JoinString({autofill::features::kAutofillUpstream.name}, ",");
+  std::string enable_features = base::JoinString(
+      {autofill::features::kAutofillUpstream.name,
+       autofill::features::kAutofillNoLocalSaveOnUploadSuccess.name,
+       autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess.name},
+      ",");
   std::string disabled_features = base::JoinString(
       {// Allows form_structure.cc to run heuristics on single field forms.
        // This is needed to find autofillable password forms with less than 3

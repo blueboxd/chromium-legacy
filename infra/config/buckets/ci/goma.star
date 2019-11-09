@@ -413,10 +413,12 @@ goma_builder(
 
 goma_builder(
     name = 'Chromium Android ARM 32-bit Goma RBE ToT',
+    goma_backend = goma.backend.RBE_TOT,
 )
 
 goma_builder(
     name = 'Chromium Android ARM 32-bit Goma RBE ToT (ATS)',
+    goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = True,
 )
 
@@ -466,10 +468,12 @@ goma_builder(
 
 goma_builder(
     name = 'Chromium Linux Goma RBE ToT',
+    goma_backend = goma.backend.RBE_TOT,
 )
 
 goma_builder(
     name = 'Chromium Linux Goma RBE ToT (ATS)',
+    goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = True,
 )
 
@@ -525,6 +529,7 @@ goma_mac_builder(
 
 goma_mac_builder(
     name = 'Chromium Mac Goma RBE ToT',
+    goma_backend = goma.backend.RBE_TOT,
 )
 
 goma_mac_builder(
@@ -532,9 +537,10 @@ goma_mac_builder(
 )
 
 
-def goma_windows_builder(*, name, goma_enable_ats=True, **kwargs):
+def goma_windows_builder(*, name, goma_enable_ats=True, cores=32, **kwargs):
   return goma_builder(
       name = name,
+      cores = cores,
       goma_enable_ats = goma_enable_ats,
       os = os.WINDOWS_DEFAULT,
       **kwargs
@@ -572,9 +578,11 @@ goma_windows_builder(
 
 goma_windows_builder(
     name = 'Chromium Win Goma RBE ToT',
+    goma_backend = goma.backend.RBE_TOT,
 )
 
 goma_windows_builder(
     name = 'CrWinGomaStaging',
+    cores = 8,
     goma_enable_ats = False,
 )

@@ -1096,10 +1096,13 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return ERR_CONTENT_DECODING_FAILED;
 
   // On a 408 response from the server ("Request Timeout") on a stale socket,
-  // retry the request.
+  // retry the request for HTTP/1.1 but not HTTP/2 or QUIC because those
+  // multiplex requests and have no need for 408.
   // Headers can be NULL because of http://crbug.com/384554.
   if (response_.headers.get() &&
       response_.headers->response_code() == HTTP_REQUEST_TIMEOUT &&
+      HttpResponseInfo::ConnectionInfoToCoarse(response_.connection_info) ==
+          HttpResponseInfo::CONNECTION_INFO_COARSE_HTTP1 &&
       stream_->IsConnectionReused()) {
 #if BUILDFLAG(ENABLE_REPORTING)
     GenerateNetworkErrorLoggingReport(OK);

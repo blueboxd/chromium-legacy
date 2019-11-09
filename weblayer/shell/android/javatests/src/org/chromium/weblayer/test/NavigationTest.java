@@ -22,12 +22,14 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.weblayer.LoadError;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -50,15 +52,14 @@ public class NavigationTest {
         public static class NavigationCallbackHelper extends CallbackHelper {
             private Uri mUri;
             private boolean mIsSameDocument;
+            private List<Uri> mRedirectChain;
+            private @LoadError int mLoadError;
 
-            public void notifyCalled(Uri uri) {
-                mUri = uri;
-                notifyCalled();
-            }
-
-            public void notifyCalled(Uri uri, boolean isSameDocument) {
-                mUri = uri;
-                mIsSameDocument = isSameDocument;
+            public void notifyCalled(Navigation navigation) {
+                mUri = navigation.getUri();
+                mIsSameDocument = navigation.isSameDocument();
+                mRedirectChain = navigation.getRedirectChain();
+                mLoadError = navigation.getLoadError();
                 notifyCalled();
             }
 
@@ -72,6 +73,19 @@ public class NavigationTest {
                 waitForCallback(currentCallCount);
                 assertEquals(mUri.toString(), uri);
                 assertEquals(mIsSameDocument, isSameDocument);
+            }
+
+            public void assertCalledWith(int currentCallCount, List<Uri> redirectChain)
+                    throws TimeoutException {
+                waitForCallback(currentCallCount);
+                assertEquals(mRedirectChain, redirectChain);
+            }
+
+            public void assertCalledWith(int currentCallCount, String uri, @LoadError int loadError)
+                    throws TimeoutException {
+                waitForCallback(currentCallCount);
+                assertEquals(mUri.toString(), uri);
+                assertEquals(mLoadError, loadError);
             }
         }
 
@@ -101,8 +115,10 @@ public class NavigationTest {
         }
 
         public NavigationCallbackHelper onStartedCallback = new NavigationCallbackHelper();
+        public NavigationCallbackHelper onRedirectedCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onReadyToCommitCallback = new NavigationCallbackHelper();
         public NavigationCallbackHelper onCompletedCallback = new NavigationCallbackHelper();
+        public NavigationCallbackHelper onFailedCallback = new NavigationCallbackHelper();
         public NavigationCallbackValueRecorder loadStateChangedCallback =
                 new NavigationCallbackValueRecorder();
         public NavigationCallbackValueRecorder loadProgressChangedCallback =
@@ -111,17 +127,27 @@ public class NavigationTest {
 
         @Override
         public void onNavigationStarted(Navigation navigation) {
-            onStartedCallback.notifyCalled(navigation.getUri());
+            onStartedCallback.notifyCalled(navigation);
+        }
+
+        @Override
+        public void onNavigationRedirected(Navigation navigation) {
+            onRedirectedCallback.notifyCalled(navigation);
         }
 
         @Override
         public void onReadyToCommitNavigation(Navigation navigation) {
-            onReadyToCommitCallback.notifyCalled(navigation.getUri());
+            onReadyToCommitCallback.notifyCalled(navigation);
         }
 
         @Override
         public void onNavigationCompleted(Navigation navigation) {
-            onCompletedCallback.notifyCalled(navigation.getUri(), navigation.isSameDocument());
+            onCompletedCallback.notifyCalled(navigation);
+        }
+
+        @Override
+        public void onNavigationFailed(Navigation navigation) {
+            onFailedCallback.notifyCalled(navigation);
         }
 
         @Override
@@ -246,6 +272,99 @@ public class NavigationTest {
 
         mCallback.onCompletedCallback.assertCalledWith(
                 curCompletedCount, "data:text,foo#bar", true);
+    }
+
+    @Test
+    @SmallTest
+    public void testReload() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        navigateAndWaitForCompletion(
+                URL1, () -> { activity.getTab().getNavigationController().reload(); });
+    }
+
+    @Test
+    @SmallTest
+    public void testStop() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        int curFailedCount = mCallback.onFailedCallback.getCallCount();
+
+        runOnUiThreadBlocking(() -> {
+            NavigationController navigationController = activity.getTab().getNavigationController();
+            navigationController.registerNavigationCallback(new NavigationCallback() {
+                @Override
+                public void onNavigationStarted(Navigation navigation) {
+                    navigationController.stop();
+                }
+            });
+            navigationController.navigate(Uri.parse(URL2));
+        });
+
+        mCallback.onFailedCallback.assertCalledWith(curFailedCount, URL2);
+    }
+
+    @Test
+    @SmallTest
+    public void testRedirect() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        int curRedirectedCount = mCallback.onRedirectedCallback.getCallCount();
+
+        String finalUrl = mActivityTestRule.getTestServer().getURL("/echo");
+        String url = mActivityTestRule.getTestServer().getURL("/server-redirect?" + finalUrl);
+        navigateAndWaitForCompletion(finalUrl,
+                () -> { activity.getTab().getNavigationController().navigate(Uri.parse(url)); });
+
+        mCallback.onRedirectedCallback.assertCalledWith(
+                curRedirectedCount, Arrays.asList(Uri.parse(url), Uri.parse(finalUrl)));
+    }
+
+    @Test
+    @SmallTest
+    public void testNavigationList() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        mActivityTestRule.navigateAndWait(URL2);
+        mActivityTestRule.navigateAndWait(URL3);
+
+        NavigationController navigationController =
+                runOnUiThreadBlocking(() -> activity.getTab().getNavigationController());
+
+        runOnUiThreadBlocking(() -> {
+            assertEquals(3, navigationController.getNavigationListSize());
+            assertEquals(2, navigationController.getNavigationListCurrentIndex());
+            assertEquals(URL1, navigationController.getNavigationEntryDisplayUri(0).toString());
+            assertEquals(URL2, navigationController.getNavigationEntryDisplayUri(1).toString());
+            assertEquals(URL3, navigationController.getNavigationEntryDisplayUri(2).toString());
+        });
+
+        navigateAndWaitForCompletion(URL2, () -> { navigationController.goBack(); });
+
+        runOnUiThreadBlocking(() -> {
+            assertEquals(3, navigationController.getNavigationListSize());
+            assertEquals(1, navigationController.getNavigationListCurrentIndex());
+        });
+    }
+
+    @Test
+    @SmallTest
+    public void testLoadError() throws Exception {
+        String url = mActivityTestRule.getTestDataURL("non_existent.html");
+
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+        setNavigationCallback(activity);
+
+        int curCompletedCount = mCallback.onCompletedCallback.getCallCount();
+
+        mActivityTestRule.navigateAndWait(url);
+
+        mCallback.onCompletedCallback.assertCalledWith(
+                curCompletedCount, url, LoadError.HTTP_CLIENT_ERROR);
     }
 
     private void setNavigationCallback(InstrumentationActivity activity) {

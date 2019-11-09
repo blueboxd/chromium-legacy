@@ -3566,6 +3566,10 @@ source_set("simple_quic_tools") {
     "tools/quic/quic_simple_server_packet_writer.h",
     "tools/quic/quic_simple_server_session_helper.cc",
     "tools/quic/quic_simple_server_session_helper.h",
+    "tools/quic/quic_simple_server_socket.cc",
+    "tools/quic/quic_simple_server_socket.h",
+    "tools/quic/quic_transport_simple_server.cc",
+    "tools/quic/quic_transport_simple_server.h",
     "tools/quic/synchronous_host_resolver.cc",
     "tools/quic/synchronous_host_resolver.h",
   ]
@@ -3601,6 +3605,19 @@ if (!is_ios) {
       "tools/quic/quic_simple_server_backend_factory.cc",
       "tools/quic/quic_simple_server_backend_factory.h",
       "tools/quic/quic_simple_server_bin.cc",
+    ]
+    deps = [
+      ":net",
+      ":simple_quic_tools",
+      "//base",
+      "//build/win:default_exe_manifest",
+      "//third_party/boringssl",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
+  executable("quic_transport_simple_server") {
+    sources = [
+      "tools/quic/quic_transport_simple_server_bin.cc",
     ]
     deps = [
       ":net",
@@ -5835,8 +5852,7 @@ test("net_unittests") {
       "quic/platform/impl/quic_socket_utils_test.cc",
       "third_party/quiche/src/epoll_server/simple_epoll_server_test.cc",
       "third_party/quiche/src/quic/core/chlo_extractor_test.cc",
-
-      #"third_party/quiche/src/quic/core/http/end_to_end_test.cc",
+      "third_party/quiche/src/quic/core/http/end_to_end_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_client_session_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_client_stream_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_server_stream_base_test.cc",

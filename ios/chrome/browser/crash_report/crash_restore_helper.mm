@@ -13,7 +13,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/sessions/core/tab_restore_service.h"
-#include "components/sessions/ios/ios_live_tab.h"
+#include "components/sessions/ios/ios_restore_live_tab.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_google_chrome_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -326,12 +326,10 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
 
   web::WebState::CreateParams params(_browserState);
   for (CRWSessionStorage* session in sessions) {
-    std::unique_ptr<web::WebState> webState =
-        web::WebState::CreateWithStorageSession(params, session);
+    auto live_tab = std::make_unique<sessions::RestoreIOSLiveTab>(session);
     // Add all tabs at the 0 position as the position is relative to an old
     // tabModel.
-    tabRestoreService->CreateHistoricalTab(
-        sessions::IOSLiveTab::GetForWebState(webState.get()), 0);
+    tabRestoreService->CreateHistoricalTab(live_tab.get(), 0);
   }
   return;
 }

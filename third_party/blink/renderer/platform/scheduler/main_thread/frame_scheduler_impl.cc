@@ -474,7 +474,7 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
       } else {
         return PausableTaskQueueTraits();
       }
-    case TaskType::kInternalFreezableIPC:
+    case TaskType::kInternalNavigationAssociated:
       return FreezableTaskQueueTraits();
     case TaskType::kInternalIPC:
     // Some tasks in the tests need to run when objects are paused e.g. to hook
@@ -483,6 +483,7 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // kWebLocks can be frozen if for entire page, but not for individual
     // frames. See https://crrev.com/c/1687716
     case TaskType::kWebLocks:
+    case TaskType::kInternalFrameLifecycleControl:
       return UnpausableTaskQueueTraits();
     case TaskType::kInternalTranslation:
       return ForegroundOnlyTaskQueueTraits();
@@ -491,7 +492,7 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // time is paused.
     case TaskType::kInternalInspector:
     // Navigation IPCs do not run using virtual time to avoid hanging.
-    case TaskType::kInternalNavigationAssociated:
+    case TaskType::kInternalNavigationAssociatedUnfreezable:
       return DoesNotUseVirtualTimeTaskQueueTraits();
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:

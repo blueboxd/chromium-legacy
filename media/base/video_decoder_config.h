@@ -48,7 +48,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                      const gfx::Rect& visible_rect,
                      const gfx::Size& natural_size,
                      const std::vector<uint8_t>& extra_data,
-                     const EncryptionScheme& encryption_scheme);
+                     EncryptionScheme encryption_scheme);
   VideoDecoderConfig(const VideoDecoderConfig& other);
 
   ~VideoDecoderConfig();
@@ -63,7 +63,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                   const gfx::Rect& visible_rect,
                   const gfx::Size& natural_size,
                   const std::vector<uint8_t>& extra_data,
-                  const EncryptionScheme& encryption_scheme);
+                  EncryptionScheme encryption_scheme);
 
   // Returns true if this object has appropriate configuration values, false
   // otherwise.
@@ -140,12 +140,12 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // Whether the video stream is potentially encrypted.
   // Note that in a potentially encrypted video stream, individual buffers
   // can be encrypted or not encrypted.
-  bool is_encrypted() const { return encryption_scheme_.is_encrypted(); }
+  bool is_encrypted() const {
+    return encryption_scheme_ != EncryptionScheme::kUnencrypted;
+  }
 
   // Encryption scheme used for encrypted buffers.
-  const EncryptionScheme& encryption_scheme() const {
-    return encryption_scheme_;
-  }
+  EncryptionScheme encryption_scheme() const { return encryption_scheme_; }
 
   // Color space of the image data.
   void set_color_space_info(const VideoColorSpace& color_space);
@@ -175,7 +175,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   std::vector<uint8_t> extra_data_;
 
-  EncryptionScheme encryption_scheme_;
+  EncryptionScheme encryption_scheme_ = EncryptionScheme::kUnencrypted;
 
   VideoColorSpace color_space_info_;
   base::Optional<HDRMetadata> hdr_metadata_;

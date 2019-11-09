@@ -59,7 +59,6 @@ class OnDeviceHeadProviderTest : public testing::Test,
     if (provider_) {
       provider_->serving_.reset();
       provider_->current_model_filename_.clear();
-      provider_->new_model_filename_.clear();
     }
   }
 

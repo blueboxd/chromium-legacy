@@ -76,6 +76,11 @@ SkColor GetIconColor() {
       AshColorProvider::AshColorMode::kDark);
 }
 
+bool IsManagedByPolicy(const NetworkInfo& info) {
+  return info.source == OncSource::kDevicePolicy ||
+         info.source == OncSource::kUserPolicy;
+}
+
 }  // namespace
 
 // NetworkListView:
@@ -151,6 +156,8 @@ void NetworkListView::OnGetNetworkStateList(
         break;
       case NetworkType::kWiFi:
         wifi_has_networks_ = true;
+        info->secured = network->type_state->get_wifi()->security !=
+                        chromeos::network_config::mojom::SecurityType::kNone;
         break;
       case NetworkType::kTether:
         mobile_has_networks_ = true;
@@ -174,6 +181,9 @@ void NetworkListView::OnGetNetworkStateList(
     }
 
     info->connection_state = connection_state;
+
+    info->signal_strength =
+        chromeos::network_config::GetWirelessSignalStrength(network.get());
 
     if (network->captive_portal_provider) {
       info->captive_portal_provider_name =
@@ -379,8 +389,102 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
       view->AddRightView(icon);
   }
 
+  view->SetAccessibleName(GenerateAccessibilityLabel(info));
+
   needs_relayout_ = true;
 }
+
+base::string16 NetworkListView::GenerateAccessibilityLabel(
+    const NetworkInfo& info) {
+  base::string16 connection_status;
+  if (StateIsConnected(info.connection_state) ||
+      info.connection_state == ConnectionStateType::kConnecting) {
+    connection_status = l10n_util::GetStringUTF16(
+        StateIsConnected(info.connection_state)
+            ? IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED
+            : IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING);
+  }
+
+  switch (info.type) {
+    case NetworkType::kEthernet:
+      if (!connection_status.empty()) {
+        if (IsManagedByPolicy(info)) {
+          return l10n_util::GetStringFUTF16(
+              IDS_ASH_STATUS_TRAY_ETHERNET_A11Y_LABEL_MANAGED_WITH_CONNECTION_STATUS,
+              info.label, connection_status);
+        }
+        return l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_ETHERNET_A11Y_LABEL_WITH_CONNECTION_STATUS,
+            info.label, connection_status);
+      }
+      if (IsManagedByPolicy(info)) {
+        return l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_ETHERNET_A11Y_LABEL_MANAGED, info.label,
+            connection_status);
+      }
+      return info.label;
+    case NetworkType::kWiFi: {
+      base::string16 security_label = l10n_util::GetStringUTF16(
+          info.secured ? IDS_ASH_STATUS_TRAY_NETWORK_STATUS_SECURED
+                       : IDS_ASH_STATUS_TRAY_NETWORK_STATUS_UNSECURED);
+      if (!connection_status.empty()) {
+        if (IsManagedByPolicy(info)) {
+          return l10n_util::GetStringFUTF16(
+              IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_LABEL_MANAGED_WITH_CONNECTION_STATUS,
+              info.label, security_label, connection_status,
+              base::FormatPercent(info.signal_strength));
+        }
+        return l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_LABEL_WITH_CONNECTION_STATUS,
+            info.label, security_label, connection_status,
+            base::FormatPercent(info.signal_strength));
+      }
+      if (IsManagedByPolicy(info)) {
+        return l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_LABEL_MANAGED, info.label,
+            security_label, base::FormatPercent(info.signal_strength));
+      }
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_LABEL, info.label,
+          security_label, base::FormatPercent(info.signal_strength));
+    }
+    case NetworkType::kCellular:
+      if (!connection_status.empty()) {
+        if (IsManagedByPolicy(info)) {
+          return l10n_util::GetStringFUTF16(
+              IDS_ASH_STATUS_TRAY_CELLULAR_NETWORK_A11Y_LABEL_MANAGED_WITH_CONNECTION_STATUS,
+              info.label, connection_status,
+              base::FormatPercent(info.signal_strength));
+        }
+        return l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_CELLULAR_NETWORK_A11Y_LABEL_WITH_CONNECTION_STATUS,
+            info.label, connection_status,
+            base::FormatPercent(info.signal_strength));
+      }
+      if (IsManagedByPolicy(info)) {
+        return l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_CELLULAR_NETWORK_A11Y_LABEL_MANAGED, info.label,
+            base::FormatPercent(info.signal_strength));
+      }
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_CELLULAR_NETWORK_A11Y_LABEL, info.label,
+          base::FormatPercent(info.signal_strength));
+    case NetworkType::kTether:
+      if (!connection_status.empty()) {
+        return l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_TETHER_NETWORK_A11Y_LABEL_WITH_CONNECTION_STATUS,
+            info.label, connection_status,
+            base::FormatPercent(info.signal_strength),
+            base::FormatPercent(info.battery_percentage));
+      }
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_TETHER_NETWORK_A11Y_LABEL, info.label,
+          base::FormatPercent(info.signal_strength),
+          base::FormatPercent(info.battery_percentage));
+    default:
+      return info.label;
+  }
+}  // namespace tray
 
 views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
   // Mobile can be Cellular or Tether.

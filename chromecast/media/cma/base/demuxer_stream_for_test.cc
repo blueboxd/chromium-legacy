@@ -61,7 +61,7 @@ void DemuxerStreamForTest::Read(ReadCB read_cb) {
       ::media::VideoDecoderConfig::AlphaMode::kIsOpaque,
       ::media::VideoColorSpace(), ::media::kNoTransformation, coded_size,
       visible_rect, natural_size, ::media::EmptyExtraData(),
-      ::media::Unencrypted());
+      ::media::EncryptionScheme::kUnencrypted);
 }
 
 ::media::DemuxerStream::Type DemuxerStreamForTest::type() const {

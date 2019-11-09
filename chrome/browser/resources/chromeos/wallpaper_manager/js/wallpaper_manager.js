@@ -363,8 +363,8 @@ WallpaperManager.prototype.placeWallpaperPicker_ = function() {
  * @param {string} errroMessage The string to show in the error dialog.
  */
 WallpaperManager.prototype.showError_ = function(errorMessage) {
-    $('message-container').textContent = errorMessage;
-    $('message-container').style.visibility = 'visible';
+    $('message-content').textContent = errorMessage;
+    $('message-container').style.display = 'block';
 };
 
 /**
@@ -429,11 +429,11 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
 
   getThirdPartyAppName(function(appName) {
     if (appName) {
-      $('message-container').textContent =
+      $('message-content').textContent =
           loadTimeData.getStringF('currentWallpaperSetByMessage', appName);
-      $('message-container').style.visibility = 'visible';
+      $('message-container').style.display = 'block';
     } else {
-      $('message-container').style.visibility = 'hidden';
+      $('message-container').style.display = 'none';
     }
   });
 
@@ -451,7 +451,7 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
     // Force refreshing the images.
     this.wallpaperGrid_.dataModel = null;
     this.onCategoriesChange_();
-    $('message-container').style.visibility = 'hidden';
+    $('message-container').style.display = 'none';
     this.downloadedListMap_ = null;
     $('wallpaper-grid').classList.remove('image-picker-offline');
   });
@@ -712,7 +712,7 @@ WallpaperManager.prototype.onClose_ = function() {
  */
 WallpaperManager.prototype.onWallpaperChanged_ = function(
     activeItem, currentWallpaperURL) {
-  $('message-container').style.visibility = 'hidden';
+  $('message-container').style.display = 'none';
   this.wallpaperGrid_.activeItem = activeItem;
   this.currentWallpaper_ = currentWallpaperURL;
   this.decorateCurrentWallpaperInfoBar_();
@@ -1059,7 +1059,7 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
       var nextPreviewImage = dataModel.item(nextPreviewIndex);
       if (nextPreviewImage.source == Constants.WallpaperSourceEnum.Online)
         this.updateSpinnerVisibility_(true);
-      $('message-container').style.visibility = 'hidden';
+      $('message-container').style.display = 'none';
       this.setWallpaperAttribution(nextPreviewImage);
       this.setSelectedWallpaper_(nextPreviewImage);
       this.currentPreviewIndex_ = nextPreviewIndex;
@@ -1094,7 +1094,7 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
   };
   this.addEventToButton_($('cancel-preview-wallpaper'), onCancelClicked);
 
-  $('message-container').style.visibility = 'hidden';
+  $('message-container').style.display = 'none';
 };
 
 /*
@@ -1103,10 +1103,10 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
  */
 WallpaperManager.prototype.showSuccessMessageAndQuit_ = function() {
   this.document_.body.classList.add('wallpaper-set-successfully');
-  $('message-container').textContent = str('setSuccessfullyMessage');
+  $('message-content').textContent = str('setSuccessfullyMessage');
   // Success message must be shown in full screen mode.
   chrome.app.window.current().fullscreen();
-  $('message-container').style.visibility = 'visible';
+  $('message-container').style.display = 'block';
   // Close the window after showing the success message.
   window.setTimeout(() => {
     window.close();

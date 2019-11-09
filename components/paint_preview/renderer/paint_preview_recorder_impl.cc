@@ -101,15 +101,18 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   }
 
   cc::PaintRecorder recorder;
-  recorder.beginRecording(bounds.width(), bounds.height());
   PaintPreviewTracker tracker(params->guid, routing_id_, is_main_frame_);
-  // TODO(crbug/1008885): Create a method on |canvas| to inject |tracker_| to
-  // propagate to graphics contexts and inner canvases
-  // TODO(crbug/1001109): Create a method on |frame| to execute the capture
-  // within Blink.
+  cc::PaintCanvas* canvas =
+      recorder.beginRecording(bounds.width(), bounds.height());
+  canvas->SetPaintPreviewTracker(&tracker);
+  bool success = frame->CapturePaintPreview(bounds, canvas);
 
   // Restore to before out-of-lifecycle paint phase.
   frame->DispatchAfterPrintEvent();
+  if (!success) {
+    *status = mojom::PaintPreviewStatus::kCaptureFailed;
+    return;
+  }
 
   // TODO(crbug/1011896): Determine if making this async would be beneficial.
   *status = FinishRecording(recorder.finishRecordingAsPicture(), bounds,

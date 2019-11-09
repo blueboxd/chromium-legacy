@@ -176,7 +176,7 @@ HRESULT GlsRunnerTestBase::ReleaseProvider() {
       gaia_provider_->GetCredentialCount(&count, &default_index, &autologon);
   if (SUCCEEDED(get_count_hr)) {
     for (DWORD i = 0; i < count; ++i) {
-      CComPtr<ICredentialProviderCredential> credential;
+      Microsoft::WRL::ComPtr<ICredentialProviderCredential> credential;
       HRESULT get_hr = gaia_provider_->GetCredentialAt(i, &credential);
       EXPECT_EQ(get_hr, S_OK);
       if (SUCCEEDED(get_hr)) {
@@ -195,7 +195,7 @@ HRESULT GlsRunnerTestBase::ReleaseProvider() {
   HRESULT unadvise_hr = gaia_provider_->UnAdvise();
   if (FAILED(unadvise_hr))
     hr = unadvise_hr;
-  gaia_provider_.Release();
+  gaia_provider_.Reset();
 
   return hr;
 }
@@ -208,7 +208,7 @@ GlsRunnerTestBase::InitializeProviderWithCredentials(
   if (FAILED(hr))
     return hr;
 
-  return gaia_provider_.QueryInterface(provider);
+  return gaia_provider_.CopyTo(IID_PPV_ARGS(provider));
 }
 
 HRESULT GlsRunnerTestBase::InitializeProviderWithRemoteCredentials(
@@ -218,7 +218,7 @@ HRESULT GlsRunnerTestBase::InitializeProviderWithRemoteCredentials(
   if (FAILED(hr))
     return hr;
 
-  return gaia_provider_.QueryInterface(provider);
+  return gaia_provider_.CopyTo(IID_PPV_ARGS(provider));
 }
 
 HRESULT GlsRunnerTestBase::InitializeProviderAndGetCredential(
@@ -240,7 +240,7 @@ HRESULT GlsRunnerTestBase::InitializeProviderAndGetCredential(
   if (FAILED(hr))
     return hr;
 
-  EXPECT_EQ(S_OK, testing_cred_.QueryInterface(credential));
+  EXPECT_EQ(S_OK, testing_cred_.CopyTo(IID_PPV_ARGS(credential)));
   return S_OK;
 }
 
@@ -250,12 +250,10 @@ HRESULT GlsRunnerTestBase::InternalInitializeProvider(
   if (count)
     *count = 0;
 
-  CComPtr<ICredentialProvider> provider;
-
+  Microsoft::WRL::ComPtr<ICredentialProvider> provider;
   HRESULT hr =
       CComCreator<CComObject<CTestGaiaCredentialProvider>>::CreateInstance(
-          nullptr, IID_ICredentialProvider,
-          reinterpret_cast<void**>(&provider));
+          nullptr, IID_PPV_ARGS(&provider));
   if (FAILED(hr))
     return hr;
 
@@ -285,8 +283,8 @@ HRESULT GlsRunnerTestBase::InternalInitializeProvider(
   }
 
   // Give list of users visible on welcome screen.
-  CComPtr<ICredentialProviderSetUserArray> provider_user_array;
-  hr = provider.QueryInterface(&provider_user_array);
+  Microsoft::WRL::ComPtr<ICredentialProviderSetUserArray> provider_user_array;
+  hr = provider.As(&provider_user_array);
   if (FAILED(hr))
     return hr;
 
@@ -342,7 +340,7 @@ HRESULT GlsRunnerTestBase::InternalInitializeProvider(
 
     // Advise all the credentials
     for (DWORD i = 0; i < *count; ++i) {
-      CComPtr<ICredentialProviderCredential> current_credential;
+      Microsoft::WRL::ComPtr<ICredentialProviderCredential> current_credential;
       hr = gaia_provider_->GetCredentialAt(i, &current_credential);
       if (FAILED(hr))
         return hr;
@@ -370,7 +368,7 @@ HRESULT GlsRunnerTestBase::InternalInitializeProvider(
   // Initialize the default field states by calling GetFieldState of
   // ICredentialProviderCredential.
   for (DWORD i = 0; count && i < *count; ++i) {
-    CComPtr<ICredentialProviderCredential> current_credential;
+    Microsoft::WRL::ComPtr<ICredentialProviderCredential> current_credential;
     hr = gaia_provider_->GetCredentialAt(i, &current_credential);
     if (FAILED(hr))
       return hr;
@@ -383,7 +381,7 @@ HRESULT GlsRunnerTestBase::InternalInitializeProvider(
         return hr;
 
       hr = fake_credential_provider_credential_events()->SetFieldState(
-          current_credential, fieldID, cpfs);
+          current_credential.Get(), fieldID, cpfs);
       if (FAILED(hr))
         return hr;
     }
@@ -393,7 +391,7 @@ HRESULT GlsRunnerTestBase::InternalInitializeProvider(
 }
 
 HRESULT GlsRunnerTestBase::ApplyProviderFilter(
-    const CComPtr<ICredentialProvider>& provider,
+    const Microsoft::WRL::ComPtr<ICredentialProvider>& provider,
     const CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs_in,
     CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* pcpcs_out,
     HRESULT* update_remote_credentials_hr) {
@@ -402,7 +400,7 @@ HRESULT GlsRunnerTestBase::ApplyProviderFilter(
 
   // Filter only lives long enough to apply filter and get serialization
   // credentials.
-  CComPtr<ICredentialProviderFilter> filter;
+  Microsoft::WRL::ComPtr<ICredentialProviderFilter> filter;
   HRESULT hr =
       CComCreator<CComObject<CGaiaCredentialProviderFilter>>::CreateInstance(
           nullptr, IID_ICredentialProviderFilter, (void**)&filter);
@@ -469,8 +467,8 @@ HRESULT GlsRunnerTestBase::StartLogonProcess(bool succeeds,
 }
 
 HRESULT GlsRunnerTestBase::WaitForLogonProcess() {
-  CComPtr<testing::ITestCredential> test;
-  HRESULT hr = testing_cred_->QueryInterface(&test);
+  Microsoft::WRL::ComPtr<testing::ITestCredential> test;
+  HRESULT hr = testing_cred_.As(&test);
   if (FAILED(hr))
     return hr;
   return test->WaitForGls();
@@ -533,9 +531,10 @@ HRESULT GlsRunnerTestBase::FinishLogonProcess(
   if (!logon_process_started_successfully_)
     return S_OK;
 
-  CComPtr<ICredentialProviderCredential> local_testing_cred = testing_cred_;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> local_testing_cred =
+      testing_cred_;
   // Release ownership on the testing_cred_ which should be finishing.
-  testing_cred_.Release();
+  testing_cred_.Reset();
 
   HRESULT hr = FinishLogonProcessWithCred(
       expected_success, expected_credentials_change_fired,
@@ -558,7 +557,8 @@ HRESULT GlsRunnerTestBase::FinishLogonProcessWithCred(
     bool expected_success,
     bool expected_credentials_change_fired,
     int expected_error_message,
-    const CComPtr<ICredentialProviderCredential>& local_testing_cred) {
+    const Microsoft::WRL::ComPtr<ICredentialProviderCredential>&
+        local_testing_cred) {
   // If no logon process was started, there is nothing to finish.
   if (!logon_process_started_successfully_)
     return S_OK;
@@ -566,13 +566,13 @@ HRESULT GlsRunnerTestBase::FinishLogonProcessWithCred(
   logon_process_started_successfully_ = false;
   DCHECK(gaia_provider_);
 
-  CComPtr<ITestCredential> test_cred;
-  HRESULT hr = local_testing_cred.QueryInterface(&test_cred);
+  Microsoft::WRL::ComPtr<ITestCredential> test_cred;
+  HRESULT hr = local_testing_cred.As(&test_cred);
   if (FAILED(hr))
     return hr;
 
-  CComPtr<ITestCredentialProvider> test_provider;
-  hr = gaia_provider_.QueryInterface(&test_provider);
+  Microsoft::WRL::ComPtr<ITestCredentialProvider> test_provider;
+  hr = gaia_provider_.As(&test_provider);
   if (FAILED(hr))
     return hr;
 
@@ -624,9 +624,10 @@ HRESULT GlsRunnerTestBase::FinishLogonProcessWithCred(
 }
 
 HRESULT GlsRunnerTestBase::ReportLogonProcessResult(
-    const CComPtr<ICredentialProviderCredential>& local_testing_cred) {
-  CComPtr<ITestCredential> test_cred;
-  HRESULT hr = local_testing_cred.QueryInterface(&test_cred);
+    const Microsoft::WRL::ComPtr<ICredentialProviderCredential>&
+        local_testing_cred) {
+  Microsoft::WRL::ComPtr<ITestCredential> test_cred;
+  HRESULT hr = local_testing_cred.As(&test_cred);
   if (FAILED(hr))
     return hr;
 

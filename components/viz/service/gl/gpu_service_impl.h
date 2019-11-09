@@ -38,6 +38,7 @@
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/viz/privileged/mojom/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
+#include "skia/buildflags.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -69,6 +70,7 @@ namespace viz {
 
 class VulkanContextProvider;
 class MetalContextProvider;
+class DawnContextProvider;
 
 // This runs in the GPU process, and communicates with the gpu host (which is
 // the window server) over the mojom APIs. This is responsible for setting up
@@ -268,6 +270,16 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   VulkanContextProvider* vulkan_context_provider() { return nullptr; }
 #endif
 
+#if BUILDFLAG(SKIA_USE_DAWN)
+  bool is_using_dawn() const { return !!dawn_context_provider_; }
+  DawnContextProvider* dawn_context_provider() {
+    return dawn_context_provider_.get();
+  }
+#else
+  bool is_using_dawn() const { return false; }
+  DawnContextProvider* dawn_context_provider() { return nullptr; }
+#endif
+
   void set_oopd_enabled() { oopd_enabled_ = true; }
 
  private:
@@ -344,6 +356,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
 #endif
   std::unique_ptr<MetalContextProvider> metal_context_provider_;
+#if BUILDFLAG(SKIA_USE_DAWN)
+  std::unique_ptr<DawnContextProvider> dawn_context_provider_;
+#endif
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 

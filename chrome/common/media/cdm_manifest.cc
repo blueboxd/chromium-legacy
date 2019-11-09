@@ -218,7 +218,7 @@ bool GetSessionTypes(const base::Value& manifest,
 // fail. Unrecognized values will be reported but otherwise ignored.
 bool GetEncryptionSchemes(
     const base::Value& manifest,
-    base::flat_set<media::EncryptionMode>* encryption_schemes) {
+    base::flat_set<media::EncryptionScheme>* encryption_schemes) {
   DCHECK(manifest.is_dict());
   DCHECK(encryption_schemes);
 
@@ -227,7 +227,7 @@ bool GetEncryptionSchemes(
   if (!value) {
     // No manifest entry found, so assume only 'cenc' supported for backwards
     // compatibility.
-    encryption_schemes->insert(media::EncryptionMode::kCenc);
+    encryption_schemes->insert(media::EncryptionScheme::kCenc);
     return true;
   }
 
@@ -238,7 +238,7 @@ bool GetEncryptionSchemes(
   }
 
   base::span<const base::Value> list = value->GetList();
-  base::flat_set<media::EncryptionMode> result;
+  base::flat_set<media::EncryptionScheme> result;
   for (const auto& item : list) {
     if (!item.is_string()) {
       DLOG(ERROR) << "Unrecognized item type in CDM manifest entry "
@@ -248,9 +248,9 @@ bool GetEncryptionSchemes(
 
     const std::string& scheme = item.GetString();
     if (scheme == kCdmSupportedEncryptionSchemeCenc) {
-      result.insert(media::EncryptionMode::kCenc);
+      result.insert(media::EncryptionScheme::kCenc);
     } else if (scheme == kCdmSupportedEncryptionSchemeCbcs) {
-      result.insert(media::EncryptionMode::kCbcs);
+      result.insert(media::EncryptionScheme::kCbcs);
     } else {
       DLOG(WARNING) << "Unrecognized encryption scheme '" << scheme
                     << "' in CDM manifest entry "

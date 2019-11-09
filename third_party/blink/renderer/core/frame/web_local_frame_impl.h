@@ -297,6 +297,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   void DispatchAfterPrintEvent() override;
   bool GetPrintPresetOptionsForPlugin(const WebNode&,
                                       WebPrintPresetOptions*) override;
+  bool CapturePaintPreview(const WebRect& bounds,
+                           cc::PaintCanvas* canvas) override;
   void AdvanceFocusInForm(WebFocusType) override;
   bool ShouldSuppressKeyboardForFocusedElement() override;
   WebPerformance Performance() const override;

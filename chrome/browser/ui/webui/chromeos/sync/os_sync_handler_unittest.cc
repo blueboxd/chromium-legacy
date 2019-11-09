@@ -23,10 +23,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::DictionaryValue;
 using syncer::UserSelectableOsType;
 using syncer::UserSelectableOsTypeSet;
 using syncer::UserSelectableTypeSet;
-
 using ::testing::_;
 using ::testing::ByMove;
 using ::testing::Mock;
@@ -38,13 +38,16 @@ class BrowserContext;
 
 namespace {
 
+enum FeatureConfig { FEATURE_ENABLED, FEATURE_DISABLED };
 enum SyncAllConfig { SYNC_ALL_OS_TYPES, CHOOSE_WHAT_TO_SYNC };
 
 // Creates a dictionary with the key/value pairs appropriate for a call to
 // HandleSetOsSyncDatatypes().
-base::DictionaryValue CreateSyncPrefs(SyncAllConfig sync_all,
-                                      UserSelectableOsTypeSet types) {
-  base::DictionaryValue result;
+DictionaryValue CreateOsSyncPrefs(FeatureConfig feature,
+                                  SyncAllConfig sync_all,
+                                  UserSelectableOsTypeSet types) {
+  DictionaryValue result;
+  result.SetBoolean("featureEnabled", feature == FEATURE_ENABLED);
   result.SetBoolean("syncAllOsTypes", sync_all == SYNC_ALL_OS_TYPES);
   // Add all of our data types.
   result.SetBoolean("osPreferencesSynced",
@@ -56,7 +59,7 @@ base::DictionaryValue CreateSyncPrefs(SyncAllConfig sync_all,
 
 // Checks whether the passed |dictionary| contains a |key| with the given
 // |expected_value|.
-void CheckBool(const base::DictionaryValue* dictionary,
+void CheckBool(const DictionaryValue* dictionary,
                const std::string& key,
                bool expected_value) {
   bool actual_value;
@@ -67,7 +70,7 @@ void CheckBool(const base::DictionaryValue* dictionary,
 
 // Checks to make sure that the values stored in |dictionary| match the values
 // expected by the JS layer.
-void CheckConfigDataTypeArguments(const base::DictionaryValue* dictionary,
+void CheckConfigDataTypeArguments(const DictionaryValue* dictionary,
                                   SyncAllConfig config,
                                   UserSelectableOsTypeSet types) {
   CheckBool(dictionary, "syncAllOsTypes", config == SYNC_ALL_OS_TYPES);
@@ -123,9 +126,10 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
                     &OsSyncHandlerTest::OnSetupInProgressHandleDestroyed,
                     base::Unretained(this))))));
 
-    // Configure user settings with all types enabled.
+    // Configure user settings with the sync feature on and all types enabled.
     user_settings_ = mock_sync_service_->GetMockUserSettings();
-    ON_CALL(*user_settings_, IsSyncRequested()).WillByDefault(Return(true));
+    ON_CALL(*user_settings_, GetOsSyncFeatureEnabled())
+        .WillByDefault(Return(true));
     ON_CALL(*user_settings_, IsSyncAllOsTypesEnabled())
         .WillByDefault(Return(true));
     ON_CALL(*user_settings_, GetSelectedOsTypes())
@@ -153,9 +157,9 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
     in_progress_handle_destroyed_count_++;
   }
 
-  // Expects that the WebUI received an "os-sync-prefs-changed" event and
+  // Expects that an "os-sync-prefs-changed" event was sent to the WebUI and
   // returns the data passed to that event.
-  const base::DictionaryValue* ExpectSyncPrefsChanged() {
+  const DictionaryValue* ExpectOsSyncPrefsSent() {
     const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
     EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
 
@@ -163,7 +167,7 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(call_data.arg1()->GetAsString(&event));
     EXPECT_EQ(event, "os-sync-prefs-changed");
 
-    const base::DictionaryValue* dictionary = nullptr;
+    const DictionaryValue* dictionary = nullptr;
     EXPECT_TRUE(call_data.arg2()->GetAsDictionary(&dictionary));
     return dictionary;
   }
@@ -184,12 +188,18 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
   int in_progress_handle_destroyed_count_ = 0;
 };
 
-TEST_F(OsSyncHandlerTest, SyncPrefsSentOnNavigateToPage) {
+TEST_F(OsSyncHandlerTest, OsSyncPrefsSentOnNavigateToPage) {
   handler_->HandleDidNavigateToOsSyncPage(nullptr);
+  ASSERT_EQ(1U, web_ui_.call_data().size());
+  ExpectOsSyncPrefsSent();
+}
 
-  EXPECT_EQ(1U, web_ui_.call_data().size());
-  const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
-  CheckBool(dictionary, "syncAllOsTypes", true);
+TEST_F(OsSyncHandlerTest, OsSyncPrefsWhenFeatureIsDisabled) {
+  ON_CALL(*user_settings_, GetOsSyncFeatureEnabled())
+      .WillByDefault(Return(false));
+  handler_->HandleDidNavigateToOsSyncPage(nullptr);
+  const DictionaryValue* os_sync_prefs = ExpectOsSyncPrefsSent();
+  CheckBool(os_sync_prefs, "featureEnabled", false);
 }
 
 TEST_F(OsSyncHandlerTest, OpenConfigPageBeforeSyncEngineInitialized) {
@@ -211,8 +221,7 @@ TEST_F(OsSyncHandlerTest, OpenConfigPageBeforeSyncEngineInitialized) {
 
   // Update for sync prefs is sent.
   EXPECT_EQ(1U, web_ui_.call_data().size());
-  const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
-  CheckBool(dictionary, "syncAllOsTypes", true);
+  ExpectOsSyncPrefsSent();
 }
 
 TEST_F(OsSyncHandlerTest, NavigateAwayDestroysInProgressHandle) {
@@ -230,10 +239,18 @@ TEST_F(OsSyncHandlerTest, OnlyStartEngineWhenConfiguringSync) {
   NotifySyncStateChanged();
 }
 
+TEST_F(OsSyncHandlerTest, UserDisablesFeature) {
+  base::ListValue list_args;
+  list_args.Append(CreateOsSyncPrefs(FEATURE_DISABLED, SYNC_ALL_OS_TYPES,
+                                     UserSelectableOsTypeSet::All()));
+  EXPECT_CALL(*user_settings_, SetOsSyncFeatureEnabled(false));
+  handler_->HandleSetOsSyncDatatypes(&list_args);
+}
+
 TEST_F(OsSyncHandlerTest, TestSyncEverything) {
   base::ListValue list_args;
-  list_args.Append(
-      CreateSyncPrefs(SYNC_ALL_OS_TYPES, UserSelectableOsTypeSet::All()));
+  list_args.Append(CreateOsSyncPrefs(FEATURE_ENABLED, SYNC_ALL_OS_TYPES,
+                                     UserSelectableOsTypeSet::All()));
   EXPECT_CALL(*user_settings_,
               SetSelectedOsTypes(/*sync_all_os_types=*/true, _));
   handler_->HandleSetOsSyncDatatypes(&list_args);
@@ -245,7 +262,8 @@ TEST_F(OsSyncHandlerTest, TestSyncIndividualTypes) {
   for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
     UserSelectableOsTypeSet types = {type};
     base::ListValue list_args;
-    list_args.Append(CreateSyncPrefs(CHOOSE_WHAT_TO_SYNC, types));
+    list_args.Append(
+        CreateOsSyncPrefs(FEATURE_ENABLED, CHOOSE_WHAT_TO_SYNC, types));
     EXPECT_CALL(*user_settings_, SetSelectedOsTypes(false, types));
 
     handler_->HandleSetOsSyncDatatypes(&list_args);
@@ -255,8 +273,8 @@ TEST_F(OsSyncHandlerTest, TestSyncIndividualTypes) {
 
 TEST_F(OsSyncHandlerTest, TestSyncAllManually) {
   base::ListValue list_args;
-  list_args.Append(
-      CreateSyncPrefs(CHOOSE_WHAT_TO_SYNC, UserSelectableOsTypeSet::All()));
+  list_args.Append(CreateOsSyncPrefs(FEATURE_ENABLED, CHOOSE_WHAT_TO_SYNC,
+                                     UserSelectableOsTypeSet::All()));
   EXPECT_CALL(*user_settings_,
               SetSelectedOsTypes(false, UserSelectableOsTypeSet::All()));
   handler_->HandleSetOsSyncDatatypes(&list_args);
@@ -265,7 +283,7 @@ TEST_F(OsSyncHandlerTest, TestSyncAllManually) {
 TEST_F(OsSyncHandlerTest, ShowSetupSyncEverything) {
   handler_->HandleDidNavigateToOsSyncPage(nullptr);
 
-  const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
+  const DictionaryValue* dictionary = ExpectOsSyncPrefsSent();
   CheckBool(dictionary, "syncAllOsTypes", true);
   CheckBool(dictionary, "osPreferencesRegistered", true);
   CheckBool(dictionary, "printersRegistered", true);
@@ -278,7 +296,7 @@ TEST_F(OsSyncHandlerTest, ShowSetupManuallySyncAll) {
       .WillByDefault(Return(false));
   handler_->HandleDidNavigateToOsSyncPage(nullptr);
 
-  const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
+  const DictionaryValue* dictionary = ExpectOsSyncPrefsSent();
   CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC,
                                UserSelectableOsTypeSet::All());
 }
@@ -292,7 +310,7 @@ TEST_F(OsSyncHandlerTest, ShowSetupSyncForAllTypesIndividually) {
 
     handler_->HandleDidNavigateToOsSyncPage(nullptr);
 
-    const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
+    const DictionaryValue* dictionary = ExpectOsSyncPrefsSent();
     CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC, types);
     Mock::VerifyAndClearExpectations(mock_sync_service_);
   }

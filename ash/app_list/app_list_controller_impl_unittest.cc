@@ -155,10 +155,8 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
   // Activate w1 then press home launcher button. Expand arrow view should show
   // because w1 still exists.
   wm::ActivateWindow(w1.get());
-  Shell::Get()
-      ->home_screen_controller()
-      ->home_launcher_gesture_handler()
-      ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
+  Shell::Get()->home_screen_controller()->GoHome(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_EQ(WindowStateType::kMinimized,
             WindowState::Get(w1.get())->GetStateType());
   EXPECT_TRUE(GetExpandArrowViewVisibility());
@@ -867,10 +865,8 @@ TEST_F(AppListControllerImplMetricsTest,
   // hidden.
   std::unique_ptr<aura::Window> w(
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
-  Shell::Get()
-      ->home_screen_controller()
-      ->home_launcher_gesture_handler()
-      ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
+  Shell::Get()->home_screen_controller()->GoHome(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_FALSE(w->IsVisible());
   EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
@@ -940,10 +936,8 @@ TEST_F(AppListControllerImplMetricsTest,
   // hidden.
   std::unique_ptr<aura::Window> w(
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
-  Shell::Get()
-      ->home_screen_controller()
-      ->home_launcher_gesture_handler()
-      ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
+  Shell::Get()->home_screen_controller()->GoHome(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_FALSE(w->IsVisible());
   EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());

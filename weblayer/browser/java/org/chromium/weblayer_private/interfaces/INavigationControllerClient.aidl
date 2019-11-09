@@ -4,6 +4,9 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import org.chromium.weblayer_private.interfaces.IClientNavigation;
+import org.chromium.weblayer_private.interfaces.INavigation;
+
 /**
  * Interface used by NavigationController to inform the client of changes. This largely duplicates
  * the NavigationCallback interface, but is a singleton to avoid unnecessary IPC.

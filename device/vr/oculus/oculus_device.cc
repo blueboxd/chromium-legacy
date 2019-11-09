@@ -61,13 +61,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id,
                                             ovrSession session) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
   display_info->id = id;
-  display_info->display_name = std::string("Oculus");
-  display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->has_position = true;
-  display_info->capabilities->has_external_display = true;
-  display_info->capabilities->can_present = true;
-  display_info->webvr_default_framebuffer_scale = 1.0;
-  display_info->webxr_default_framebuffer_scale = 1.0;
 
   ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session);
   display_info->left_eye = GetEyeDetails(session, hmdDesc, ovrEye_Left);
@@ -168,11 +161,6 @@ void OculusDevice::RequestSession(
                      base::DoNothing::Repeatedly<mojom::XRVisibilityState>(),
                      std::move(options), std::move(on_request_present_result)));
   outstanding_session_requests_count_++;
-}
-
-void OculusDevice::EnsureInitialized(EnsureInitializedCallback callback) {
-  EnsureValidDisplayInfo();
-  std::move(callback).Run();
 }
 
 bool OculusDevice::EnsureValidDisplayInfo() {

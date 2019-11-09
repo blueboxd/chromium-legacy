@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "weblayer/shell/browser/shell.h"
+#include "weblayer/shell/common/shell_switches.h"
 
 namespace weblayer {
 
@@ -18,6 +19,7 @@ WebLayerBrowserTest::~WebLayerBrowserTest() = default;
 
 void WebLayerBrowserTest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kNoInitialNavigation);
   SetUpCommandLine(command_line);
   content::BrowserTestBase::SetUp();
 }

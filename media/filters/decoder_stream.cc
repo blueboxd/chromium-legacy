@@ -630,6 +630,8 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
     return;
   }
 
+  traits_->OnOutputReady(output.get());
+
   if (read_cb_) {
     // If |ready_outputs_| was non-empty, the read would have already been
     // satisifed by Read().
@@ -987,6 +989,7 @@ void DecoderStream<StreamType>::OnPreparedOutputReady(
   DCHECK(!unprepared_outputs_.empty());
   DCHECK(preparing_output_);
 
+  traits_->OnOutputReady(output.get());
   CompletePrepare(output.get());
   unprepared_outputs_.pop_front();
   if (!read_cb_)

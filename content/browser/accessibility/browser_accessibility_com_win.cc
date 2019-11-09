@@ -1590,19 +1590,10 @@ STDMETHODIMP BrowserAccessibilityComWin::InternalQueryInterface(
     return E_NOINTERFACE;
   }
 
-  int32_t ia_role = accessibility->MSAARole();
+  ax::mojom::Role role = accessibility->owner()->GetRole();
+
   if (iid == IID_IAccessibleImage) {
-    if (ia_role != ROLE_SYSTEM_GRAPHIC) {
-      *object = nullptr;
-      return E_NOINTERFACE;
-    }
-  } else if (iid == IID_IAccessibleTable || iid == IID_IAccessibleTable2) {
-    if (!ui::IsTableLike(accessibility->owner()->GetRole())) {
-      *object = nullptr;
-      return E_NOINTERFACE;
-    }
-  } else if (iid == IID_IAccessibleTableCell) {
-    if (!ui::IsCellOrTableHeader(accessibility->owner()->GetRole())) {
+    if (!ui::IsImage(role)) {
       *object = nullptr;
       return E_NOINTERFACE;
     }
@@ -1612,7 +1603,7 @@ STDMETHODIMP BrowserAccessibilityComWin::InternalQueryInterface(
       return E_NOINTERFACE;
     }
   } else if (iid == IID_ISimpleDOMDocument) {
-    if (ia_role != ROLE_SYSTEM_DOCUMENT) {
+    if (!ui::IsDocument(role)) {
       *object = nullptr;
       return E_NOINTERFACE;
     }

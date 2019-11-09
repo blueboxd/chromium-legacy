@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.HomeButton;
@@ -715,6 +715,6 @@ public class ToolbarTablet extends ToolbarLayout
 
     private boolean isAccessibilityTabSwitcherPreferenceEnabled() {
         return SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER, true);
+                ChromePreferenceKeys.ACCESSIBILITY_TAB_SWITCHER, true);
     }
 }

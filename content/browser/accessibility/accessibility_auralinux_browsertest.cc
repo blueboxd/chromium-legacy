@@ -186,6 +186,61 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestMultilingualTextAtOffsetWithBoundaryCharacter) {
+  AtkText* atk_text = SetUpInputField();
+  ASSERT_NE(nullptr, atk_text);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kValueChanged);
+  // Place an e acute, and two emoticons in the text field.
+  ExecuteScript(base::UTF8ToUTF16(R"SCRIPT(
+      const input = document.querySelector('input');
+      input.value =
+          'e\u0301\uD83D\uDC69\u200D\u2764\uFE0F\u200D\uD83D\uDC69\uD83D\uDC36';
+      )SCRIPT"));
+  waiter.WaitForNotification();
+
+  int character_count = atk_text_get_character_count(atk_text);
+  // "character_count" is the number of actual characters, not the number of
+  // UTF16 code units.
+  //
+  // Currently, this doesn't properly count grapheme clusters, but it does
+  // handle surrogate pairs.
+  // TODO(nektar): Implement support for base::OffsetAdjuster in AXPosition.
+  ASSERT_EQ(9, character_count);
+
+  // The expected text consists of an e acute, and two emoticons, but
+  // not every multi-byte character is a surrogate pair.
+  CheckTextAtOffset(atk_text, 0, ATK_TEXT_BOUNDARY_CHAR, 0, 2,
+                    base::WideToUTF8(L"e\x0301").c_str());
+  CheckTextAtOffset(atk_text, 1, ATK_TEXT_BOUNDARY_CHAR, 0, 2,
+                    base::WideToUTF8(L"e\x0301").c_str());
+  CheckTextAtOffset(atk_text, 2, ATK_TEXT_BOUNDARY_CHAR, 2, 8,
+                    "\xF0\x9F\x91\xA9\xE2\x80\x8D\xE2\x9D\xA4\xEF\xB8\x8F\xE2"
+                    "\x80\x8D\xF0\x9F\x91\xA9");
+  CheckTextAtOffset(atk_text, 3, ATK_TEXT_BOUNDARY_CHAR, 2, 8,
+                    "\xF0\x9F\x91\xA9\xE2\x80\x8D\xE2\x9D\xA4\xEF\xB8\x8F\xE2"
+                    "\x80\x8D\xF0\x9F\x91\xA9");
+  CheckTextAtOffset(atk_text, 4, ATK_TEXT_BOUNDARY_CHAR, 2, 8,
+                    "\xF0\x9F\x91\xA9\xE2\x80\x8D\xE2\x9D\xA4\xEF\xB8\x8F\xE2"
+                    "\x80\x8D\xF0\x9F\x91\xA9");
+  CheckTextAtOffset(atk_text, 5, ATK_TEXT_BOUNDARY_CHAR, 2, 8,
+                    "\xF0\x9F\x91\xA9\xE2\x80\x8D\xE2\x9D\xA4\xEF\xB8\x8F\xE2"
+                    "\x80\x8D\xF0\x9F\x91\xA9");
+  CheckTextAtOffset(atk_text, 6, ATK_TEXT_BOUNDARY_CHAR, 2, 8,
+                    "\xF0\x9F\x91\xA9\xE2\x80\x8D\xE2\x9D\xA4\xEF\xB8\x8F\xE2"
+                    "\x80\x8D\xF0\x9F\x91\xA9");
+  CheckTextAtOffset(atk_text, 7, ATK_TEXT_BOUNDARY_CHAR, 2, 8,
+                    "\xF0\x9F\x91\xA9\xE2\x80\x8D\xE2\x9D\xA4\xEF\xB8\x8F\xE2"
+                    "\x80\x8D\xF0\x9F\x91\xA9");
+  CheckTextAtOffset(atk_text, 8, ATK_TEXT_BOUNDARY_CHAR, 8, 9,
+                    "\xF0\x9F\x90\xB6");
+  CheckTextAtOffset(atk_text, 9, ATK_TEXT_BOUNDARY_CHAR, 0, 0, nullptr);
+
+  g_object_unref(atk_text);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                        TestTextAtOffsetWithBoundaryLine) {
   AtkText* atk_text = SetUpInputField();
 

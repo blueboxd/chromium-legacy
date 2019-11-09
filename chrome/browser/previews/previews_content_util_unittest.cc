@@ -447,25 +447,26 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsStateForHttp) {
   user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
   base::HistogramTester histogram_tester;
 
-  // Verify that currently these previews do not commit on HTTP.
-  EXPECT_EQ(content::PREVIEWS_OFF,
+  // Verify that these previews do now commit on HTTP.
+  EXPECT_EQ(content::DEFER_ALL_SCRIPT_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"),
                 content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
                     content::DEFER_ALL_SCRIPT_ON,
                 enabled_previews_decider(), nullptr));
   histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 0);
-
-  // Ensure one does commit on HTTPS (to confirm test setup).
-  EXPECT_NE(content::PREVIEWS_OFF,
-            previews::DetermineCommittedClientPreviewsState(
-                &user_data, GURL("https://www.google.com"),
-                content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
-                    content::DEFER_ALL_SCRIPT_ON,
-                enabled_previews_decider(), nullptr));
-  histogram_tester.ExpectTotalCount(
       "Previews.Triggered.EffectiveConnectionType2", 1);
+
+  EXPECT_EQ(content::RESOURCE_LOADING_HINTS_ON,
+            previews::DetermineCommittedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"),
+                content::RESOURCE_LOADING_HINTS_ON, enabled_previews_decider(),
+                nullptr));
+
+  EXPECT_EQ(content::NOSCRIPT_ON,
+            previews::DetermineCommittedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"), content::NOSCRIPT_ON,
+                enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest,

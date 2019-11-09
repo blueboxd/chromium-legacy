@@ -58,7 +58,8 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   // AppLaunchSplashScreenView::Delegate:
   void OnConfigureNetwork() override;
   void OnCancelAppLaunch() override;
-  void OnNetworkConfigRequested(bool requested) override;
+  void OnNetworkConfigRequested() override;
+  void OnNetworkConfigFinished() override;
   void OnNetworkStateChanged(bool online) override;
   void OnDeletingSplashScreenView() override;
   KioskAppManagerBase::App GetAppData() override;

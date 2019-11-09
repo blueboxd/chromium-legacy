@@ -127,7 +127,7 @@ class MEDIA_EXPORT MediaCodecLoop {
     base::TimeDelta presentation_time;
 
     bool is_eos = false;
-    EncryptionMode encryption_scheme = EncryptionMode::kUnencrypted;
+    EncryptionScheme encryption_scheme = EncryptionScheme::kUnencrypted;
     base::Optional<EncryptionPattern> encryption_pattern;
   };
 

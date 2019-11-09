@@ -416,7 +416,7 @@ MediaCodecStatus MediaCodecBridgeImpl::QueueSecureInputBuffer(
     const std::string& key_id,
     const std::string& iv,
     const std::vector<SubsampleEntry>& subsamples,
-    EncryptionMode encryption_scheme,
+    EncryptionScheme encryption_scheme,
     base::Optional<EncryptionPattern> encryption_pattern,
     base::TimeDelta presentation_time) {
   DVLOG(3) << __func__ << " " << index << ": " << data_size;

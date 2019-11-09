@@ -104,11 +104,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::DemuxerStream::Type,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::EmeInitDataType, media::EmeInitDataType::MAX)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionMode,
-                          media::EncryptionMode::kMaxValue)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme::CipherMode,
-                          media::EncryptionScheme::CipherMode::CIPHER_MODE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme,
+                          media::EncryptionScheme::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::HdcpVersion,
                           media::HdcpVersion::kHdcpVersionMax)

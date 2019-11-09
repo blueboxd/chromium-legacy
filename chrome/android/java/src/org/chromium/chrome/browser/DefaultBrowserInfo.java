@@ -22,7 +22,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.content_public.browser.BrowserStartupController;
 
@@ -105,7 +105,7 @@ public final class DefaultBrowserInfo {
                                 && TextUtils.equals(
                                            context.getPackageName(), info.activityInfo.packageName);
                         SharedPreferencesManager.getInstance().writeBoolean(
-                                ChromePreferenceManager.CHROME_DEFAULT_BROWSER, isDefault);
+                                ChromePreferenceKeys.CHROME_DEFAULT_BROWSER, isDefault);
 
                         // Check if there is a default handler for the Intent.  If so, store its
                         // label.

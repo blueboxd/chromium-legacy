@@ -7,9 +7,12 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -1353,6 +1356,30 @@ public class TabListMediatorUnitTest {
 
         verify(mEditor).remove(eq(String.valueOf(mTab1.getRootId())));
         verify(mRemoveEditor).apply();
+    }
+
+    @Test
+    public void addSpecialItem() {
+        mMediator.addSpecialItemToModel(0, TabProperties.UiType.DIVIDER, new PropertyModel());
+
+        assertTrue(mModel.size() > 0);
+        assertEquals(TabProperties.UiType.DIVIDER, mModel.get(0).type);
+    }
+
+    @Test
+    public void addSpecialItem_notPersistOnReset() {
+        mMediator.addSpecialItemToModel(0, TabProperties.UiType.DIVIDER, new PropertyModel());
+        assertEquals(TabProperties.UiType.DIVIDER, mModel.get(0).type);
+
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        mMediator.resetWithListOfTabs(tabs, false, false);
+        assertThat(mModel.size(), equalTo(2));
+        assertNotEquals(TabProperties.UiType.DIVIDER, mModel.get(0).type);
+        assertNotEquals(TabProperties.UiType.DIVIDER, mModel.get(1).type);
+
+        mMediator.addSpecialItemToModel(1, TabProperties.UiType.DIVIDER, new PropertyModel());
+        assertThat(mModel.size(), equalTo(3));
+        assertEquals(TabProperties.UiType.DIVIDER, mModel.get(1).type);
     }
 
     private void initAndAssertAllProperties() {

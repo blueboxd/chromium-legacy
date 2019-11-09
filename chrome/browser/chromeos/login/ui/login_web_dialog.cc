@@ -56,8 +56,7 @@ LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
       delegate_(delegate),
       title_(title),
       url_(url) {
-  if (!parent_window_) {
-    DCHECK(chromeos::LoginDisplayHost::default_host());
+  if (!parent_window_ && chromeos::LoginDisplayHost::default_host()) {
     parent_window_ =
         chromeos::LoginDisplayHost::default_host()->GetNativeWindow();
   }
@@ -93,6 +92,11 @@ void LoginWebDialog::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const {}
 
 void LoginWebDialog::GetDialogSize(gfx::Size* size) const {
+  // TODO(https://crbug.com/1022774): Fix for the lock screen.
+  if (!parent_window_) {
+    *size = kMaxSize;
+    return;
+  }
   gfx::Rect bounds = parent_window_->bounds();
   bounds.Inset(kMinMargins);
   *size = bounds.size();

@@ -84,6 +84,9 @@ class BASE_EXPORT JobHandle {
   JobHandle(JobHandle&&);
   JobHandle& operator=(JobHandle&&);
 
+  // Returns true if associated with a Job.
+  explicit operator bool() const { return task_source_ != nullptr; }
+
   // Update this Job's priority.
   void UpdatePriority(TaskPriority new_priority);
 

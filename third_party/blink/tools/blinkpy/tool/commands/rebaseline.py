@@ -34,7 +34,7 @@ import re
 
 from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.memoized import memoized
-from blinkpy.common.net.buildbot import Build
+from blinkpy.common.net.results_fetcher import Build
 from blinkpy.tool.commands.command import Command
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models.test_expectations import TestExpectations
@@ -312,7 +312,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             if options.results_directory:
                 args.extend(['--results-directory', options.results_directory])
 
-            step_name = self._tool.buildbot.get_layout_test_step_name(build)
+            step_name = self._tool.results_fetcher.get_layout_test_step_name(build)
             if step_name:
                 args.extend(['--step-name', step_name])
 
@@ -512,7 +512,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     def _result_for_test(self, test, build):
         # We need full results to know if a test passed or was skipped.
         # TODO(robertma): Make memoized support kwargs, and use full=True here.
-        results = self._tool.buildbot.fetch_results(build, True)
+        results = self._tool.results_fetcher.fetch_results(build, True)
         if not results:
             _log.debug('No results found for build %s', build)
             return None

@@ -58,8 +58,6 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -520,12 +518,6 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
     UMA_HISTOGRAM_EXACT_LINEAR(
         "WebsiteSettings.OriginInfo.PermissionChanged.Allowed", histogram_value,
         num_values);
-
-    if (type == ContentSettingsType::PLUGINS) {
-      rappor::SampleDomainAndRegistryFromGURL(
-          g_browser_process->rappor_service(),
-          "ContentSettings.Plugins.AddedAllowException", site_url_);
-    }
   } else if (setting == ContentSetting::CONTENT_SETTING_BLOCK) {
     UMA_HISTOGRAM_EXACT_LINEAR(
         "WebsiteSettings.OriginInfo.PermissionChanged.Blocked", histogram_value,

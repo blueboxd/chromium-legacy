@@ -10,7 +10,8 @@
 #include "media/capture/video/video_capture_device_info.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -131,24 +132,25 @@ TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithReceiver) {
   // Release all buffers back to consumer, then back to the pool
   // after |Receiver::OnFrameReadyInBuffer| is invoked.
   base::RunLoop wait_loop;
-  mojo::PendingRemote<mojom::Receiver> receiver_proxy;
-  MockReceiver receiver(receiver_proxy.InitWithNewPipeAndPassReceiver());
-  EXPECT_CALL(receiver, OnStarted());
-  EXPECT_CALL(receiver, DoOnNewBuffer(_, _))
+  mojo::PendingRemote<mojom::VideoFrameHandler> handler_remote;
+  MockVideoFrameHandler video_frame_handler(
+      handler_remote.InitWithNewPipeAndPassReceiver());
+  EXPECT_CALL(video_frame_handler, OnStarted());
+  EXPECT_CALL(video_frame_handler, DoOnNewBuffer(_, _))
       .Times(
           SharedMemoryVirtualDeviceMojoAdapter::max_buffer_pool_buffer_count());
-  EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
+  EXPECT_CALL(video_frame_handler, DoOnFrameReadyInBuffer(_, _, _, _))
       .Times(
           SharedMemoryVirtualDeviceMojoAdapter::max_buffer_pool_buffer_count());
   device_adapter_->Start(media::VideoCaptureParams(),
-                         std::move(receiver_proxy));
+                         std::move(handler_remote));
   for (auto buffer_id : received_buffer_ids_) {
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
     info->metadata = base::Value(base::Value::Type::DICTIONARY);
     device_adapter_->OnFrameReadyInBuffer(buffer_id, std::move(info));
   }
   wait_loop.RunUntilIdle();
-  Mock::VerifyAndClearExpectations(&receiver);
+  Mock::VerifyAndClearExpectations(&video_frame_handler);
 
   // Verify that requesting a buffer doesn't create a new one, will reuse
   // the available buffer in the pool.
@@ -172,10 +174,10 @@ TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithReceiver) {
   base::RunLoop wait_for_stopped_loop;
   {
     testing::InSequence s;
-    EXPECT_CALL(receiver, DoOnBufferRetired(_))
+    EXPECT_CALL(video_frame_handler, DoOnBufferRetired(_))
         .Times(SharedMemoryVirtualDeviceMojoAdapter::
                    max_buffer_pool_buffer_count());
-    EXPECT_CALL(receiver, OnStopped())
+    EXPECT_CALL(video_frame_handler, OnStopped())
         .WillOnce(Invoke(
             [&wait_for_stopped_loop]() { wait_for_stopped_loop.Quit(); }));
   }

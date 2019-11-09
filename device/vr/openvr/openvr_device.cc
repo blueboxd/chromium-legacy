@@ -72,15 +72,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
                                             device::mojom::XRDeviceId id) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
   display_info->id = id;
-  display_info->display_name =
-      GetOpenVRString(vr_system, vr::Prop_ManufacturerName_String) + " " +
-      GetOpenVRString(vr_system, vr::Prop_ModelNumber_String);
-  display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->has_position = true;
-  display_info->capabilities->has_external_display = true;
-  display_info->capabilities->can_present = true;
-  display_info->webvr_default_framebuffer_scale = 1.0;
-  display_info->webxr_default_framebuffer_scale = 1.0;
 
   display_info->left_eye = mojom::VREyeParameters::New();
   display_info->right_eye = mojom::VREyeParameters::New();
@@ -198,11 +189,6 @@ void OpenVRDevice::RequestSession(
                      base::DoNothing::Repeatedly<mojom::XRVisibilityState>(),
                      std::move(options), std::move(my_callback)));
   outstanding_session_requests_count_++;
-}
-
-void OpenVRDevice::EnsureInitialized(EnsureInitializedCallback callback) {
-  EnsureValidDisplayInfo();
-  std::move(callback).Run();
 }
 
 bool OpenVRDevice::EnsureValidDisplayInfo() {

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 
 namespace blink {
 
@@ -18,17 +19,17 @@ TestWebRTCStatsReportObtainer::GetStatsCallbackWrapper() {
   return base::BindOnce(&TestWebRTCStatsReportObtainer::OnStatsDelivered, this);
 }
 
-blink::WebRTCStatsReport* TestWebRTCStatsReportObtainer::report() const {
+RTCStatsReportPlatform* TestWebRTCStatsReportObtainer::report() const {
   return report_.get();
 }
 
-blink::WebRTCStatsReport* TestWebRTCStatsReportObtainer::WaitForReport() {
+RTCStatsReportPlatform* TestWebRTCStatsReportObtainer::WaitForReport() {
   run_loop_.Run();
   return report_.get();
 }
 
 void TestWebRTCStatsReportObtainer::OnStatsDelivered(
-    std::unique_ptr<blink::WebRTCStatsReport> report) {
+    std::unique_ptr<RTCStatsReportPlatform> report) {
   report_ = std::move(report);
   run_loop_.Quit();
 }

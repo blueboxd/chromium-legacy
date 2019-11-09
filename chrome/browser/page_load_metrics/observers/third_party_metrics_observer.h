@@ -38,6 +38,12 @@ class ThirdPartyMetricsObserver
                             const GURL& first_party_url,
                             bool local,
                             bool blocked_by_policy) override;
+  void OnDidFinishSubFrameNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void OnFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void OnTimingUpdate(
+      content::RenderFrameHost* subframe_rfh,
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  private:
   enum class AccessType { kRead, kWrite };
@@ -74,6 +80,10 @@ class ThirdPartyMetricsObserver
   // third party access happens when the context's origin differs from the main
   // frame's.
   std::map<url::Origin, StorageAccessTypes> third_party_storage_access_types_;
+
+  // A set of RenderFrameHosts that we've recorded timing data for. The
+  // RenderFrameHosts are later removed when they navigate again or are deleted.
+  std::set<content::RenderFrameHost*> recorded_frames_;
 
   // If the page has any blocked_by_policy cookie or DOM storage access (e.g.,
   // block third-party cookies is enabled) then we don't want to record any

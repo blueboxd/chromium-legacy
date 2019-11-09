@@ -47,10 +47,15 @@ void ReportUploader::SetRequestAndUpload(Requests requests,
 }
 
 void ReportUploader::Upload() {
-  client_->UploadChromeDesktopReport(
-      std::make_unique<em::ChromeDesktopReportRequest>(*requests_.front()),
-      base::BindRepeating(&ReportUploader::OnRequestFinished,
-                          weak_ptr_factory_.GetWeakPtr()));
+  auto request = std::make_unique<Request>(*requests_.front());
+  auto callback = base::BindRepeating(&ReportUploader::OnRequestFinished,
+                                      weak_ptr_factory_.GetWeakPtr());
+
+#if defined(OS_CHROMEOS)
+  // Pending for another change list for cloud_policy_client.
+#else
+  client_->UploadChromeDesktopReport(std::move(request), std::move(callback));
+#endif
 }
 
 void ReportUploader::OnRequestFinished(bool status) {

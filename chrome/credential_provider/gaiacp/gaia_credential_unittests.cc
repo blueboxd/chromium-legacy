@@ -5,6 +5,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlcomcli.h>
+#include <wrl/client.h>
 
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
@@ -55,35 +56,35 @@ CComBSTR GcpGaiaCredentialTest::MakeSigninResult(const std::string& password) {
 TEST_F(GcpGaiaCredentialTest, OnUserAuthenticated) {
   USES_CONVERSION;
 
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<IGaiaCredential> gaia_cred;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&gaia_cred));
+  Microsoft::WRL::ComPtr<IGaiaCredential> gaia_cred;
+  ASSERT_EQ(S_OK, cred.As(&gaia_cred));
 
   CComBSTR error;
   ASSERT_EQ(S_OK, gaia_cred->OnUserAuthenticated(signin_result(), &error));
-  CComPtr<ITestCredentialProvider> test_provider;
-  ASSERT_EQ(S_OK, created_provider().QueryInterface(&test_provider));
+  Microsoft::WRL::ComPtr<ITestCredentialProvider> test_provider;
+  ASSERT_EQ(S_OK, created_provider().As(&test_provider));
   EXPECT_TRUE(test_provider->credentials_changed_fired());
 }
 
 TEST_F(GcpGaiaCredentialTest, OnUserAuthenticated_SamePassword) {
   USES_CONVERSION;
 
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<IGaiaCredential> gaia_cred;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&gaia_cred));
+  Microsoft::WRL::ComPtr<IGaiaCredential> gaia_cred;
+  ASSERT_EQ(S_OK, cred.As(&gaia_cred));
 
   CComBSTR error;
   ASSERT_EQ(S_OK, gaia_cred->OnUserAuthenticated(signin_result(), &error));
 
-  CComPtr<ITestCredentialProvider> test_provider;
-  ASSERT_EQ(S_OK, created_provider().QueryInterface(&test_provider));
+  Microsoft::WRL::ComPtr<ITestCredentialProvider> test_provider;
+  ASSERT_EQ(S_OK, created_provider().As(&test_provider));
   CComBSTR first_sid = test_provider->sid();
 
   // Report to register the user.
@@ -115,18 +116,18 @@ TEST_F(GcpGaiaCredentialTest, OnUserAuthenticated_DiffPassword) {
           base::UTF8ToUTF16(test_data_storage.GetSuccessId()).c_str(),
           base::UTF8ToUTF16(test_data_storage.GetSuccessEmail()).c_str(),
           &sid));
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<IGaiaCredential> gaia_cred;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&gaia_cred));
+  Microsoft::WRL::ComPtr<IGaiaCredential> gaia_cred;
+  ASSERT_EQ(S_OK, cred.As(&gaia_cred));
 
   CComBSTR error;
   ASSERT_EQ(S_OK, gaia_cred->OnUserAuthenticated(signin_result(), &error));
 
-  CComPtr<ITestCredentialProvider> test_provider;
-  ASSERT_EQ(S_OK, created_provider().QueryInterface(&test_provider));
+  Microsoft::WRL::ComPtr<ITestCredentialProvider> test_provider;
+  ASSERT_EQ(S_OK, created_provider().As(&test_provider));
   EXPECT_TRUE(test_provider->credentials_changed_fired());
 
   test_provider->ResetCredentialsChangedFired();
@@ -157,15 +158,15 @@ TEST_F(GcpGaiaCredentialGlsRunnerTest,
   ASSERT_EQ(2u, fake_os_user_manager()->GetUserCount());
 
   // Start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<IGaiaCredential> gaia_cred;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&gaia_cred));
+  Microsoft::WRL::ComPtr<IGaiaCredential> gaia_cred;
+  ASSERT_EQ(S_OK, cred.As(&gaia_cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress(base::UTF16ToUTF8(base_username) +
                                            "@gmail.com"));
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
@@ -227,14 +228,14 @@ TEST_P(GcpAssociatedUserRunnableGaiaCredentialTest,
             fake_os_user_manager()->GetUserCount());
 
   // Create provider.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<IGaiaCredential> gaia_cred;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&gaia_cred));
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<IGaiaCredential> gaia_cred;
+  ASSERT_EQ(S_OK, cred.As(&gaia_cred));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   // Start logon.
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());

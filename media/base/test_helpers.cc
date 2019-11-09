@@ -139,7 +139,7 @@ static VideoDecoderConfig GetTestConfig(VideoCodec codec,
       codec, profile, VideoDecoderConfig::AlphaMode::kIsOpaque, color_space,
       VideoTransformation(rotation), coded_size, visible_rect, natural_size,
       EmptyExtraData(),
-      is_encrypted ? AesCtrEncryptionScheme() : Unencrypted());
+      is_encrypted ? EncryptionScheme::kCenc : EncryptionScheme::kUnencrypted);
 }
 
 static VideoCodecProfile MinProfile(VideoCodec codec) {
@@ -243,13 +243,13 @@ gfx::Size TestVideoConfig::LargeCodedSize() {
 AudioDecoderConfig TestAudioConfig::Normal() {
   return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, 44100, EmptyExtraData(),
-                            Unencrypted());
+                            EncryptionScheme::kUnencrypted);
 }
 
 AudioDecoderConfig TestAudioConfig::NormalEncrypted() {
   return AudioDecoderConfig(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, 44100, EmptyExtraData(),
-                            AesCtrEncryptionScheme());
+                            EncryptionScheme::kCenc);
 }
 
 // static

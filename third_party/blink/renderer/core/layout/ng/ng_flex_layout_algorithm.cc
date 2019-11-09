@@ -223,6 +223,7 @@ NGFlexLayoutAlgorithm::BuildConstraintSpaceForDeterminingFlexBasis(
 
   space_builder.SetAvailableSize(content_box_size_);
   space_builder.SetPercentageResolutionSize(child_percentage_size_);
+  space_builder.SetTextDirection(child_style.Direction());
   return space_builder.ToConstraintSpace();
 }
 
@@ -534,6 +535,8 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
                                              /* is_new_fc */ true);
       SetOrthogonalFallbackInlineSizeIfNeeded(Style(), flex_item.ng_input_node,
                                               &space_builder);
+      space_builder.SetTextDirection(
+          flex_item.ng_input_node.Style().Direction());
 
       LogicalSize available_size;
       if (is_column_) {
@@ -622,6 +625,7 @@ void NGFlexLayoutAlgorithm::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
       space_builder.SetIsFixedBlockSizeIndefinite(true);
     }
   }
+  space_builder.SetTextDirection(flex_item.ng_input_node.Style().Direction());
   space_builder.SetAvailableSize(available_size);
   space_builder.SetPercentageResolutionSize(child_percentage_size_);
   space_builder.SetIsFixedInlineSize(true);

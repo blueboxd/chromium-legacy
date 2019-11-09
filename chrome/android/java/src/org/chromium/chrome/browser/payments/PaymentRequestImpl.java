@@ -1396,7 +1396,7 @@ public class PaymentRequestImpl
         }
 
         if (details.modifiers != null) {
-            if (details.modifiers.length == 0) mModifiers.clear();
+            if (details.modifiers.length == 0 && mModifiers != null) mModifiers.clear();
 
             for (int i = 0; i < details.modifiers.length; i++) {
                 PaymentDetailsModifier modifier = details.modifiers[i];

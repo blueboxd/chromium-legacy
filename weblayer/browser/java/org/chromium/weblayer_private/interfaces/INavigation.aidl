@@ -15,4 +15,8 @@ interface INavigation {
   List<String> getRedirectChain() = 2;
 
   boolean isSameDocument() = 3;
+
+  boolean isErrorPage() = 4;
+
+  int getLoadError() = 5;
 }

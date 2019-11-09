@@ -417,8 +417,8 @@ std::unique_ptr<content::CdmInfo> CreateCdmInfoForChromeOS(
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
   // Both encryption schemes are supported on ChromeOS.
-  capability.encryption_schemes.insert(media::EncryptionMode::kCenc);
-  capability.encryption_schemes.insert(media::EncryptionMode::kCbcs);
+  capability.encryption_schemes.insert(media::EncryptionScheme::kCenc);
+  capability.encryption_schemes.insert(media::EncryptionScheme::kCbcs);
 
   // Both temporary and persistent sessions are supported on ChromeOS.
   capability.session_types.insert(media::CdmSessionType::kTemporary);
@@ -656,7 +656,7 @@ void ChromeContentClient::AddContentDecryptionModules(
 
       // Supported codecs are hard-coded in ExternalClearKeyProperties.
       content::CdmCapability capability(
-          {}, {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
+          {}, {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs},
           {media::CdmSessionType::kTemporary,
            media::CdmSessionType::kPersistentLicense,
            media::CdmSessionType::kPersistentUsageRecord},

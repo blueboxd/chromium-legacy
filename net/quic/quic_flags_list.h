@@ -313,8 +313,8 @@ QUIC_FLAG(bool,
 
 // Call NeuterHandshakePackets() at most once per connection.
 QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_neuter_handshake_packets_once,
-          true)
+          FLAGS_quic_reloadable_flag_quic_neuter_handshake_packets_once2,
+          false)
 
 // If true, support HTTP/3 priority in v99.
 QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, false)
@@ -375,4 +375,9 @@ QUIC_FLAG(int32_t, FLAGS_quic_max_congestion_window, 2000)
 // encryption level.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_connection_encryption_level,
+          false)
+
+// If true, do not inject bandwidth in BbrSender::AdjustNetworkParameters.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr_donot_inject_bandwidth,
           false)

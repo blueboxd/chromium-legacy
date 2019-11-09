@@ -2,18 +2,52 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/grit/grit_rule.gni")
 import("../optimize_webui.gni")
 
-optimize_webui("build") {
-  host = "bookmarks"
-  html_in_files = [ "bookmarks.html" ]
-  html_out_files = [ "vulcanized.html" ]
+if (optimize_webui) {
+  bookmarks_pak_file = "bookmarks_resources.pak"
+  unpak_folder = "bookmarks_resources.unpak"
 
-  input = rebase_path(".", root_build_dir)
-  js_out_files = [ "crisper.js" ]
+  optimize_webui("build") {
+    host = "bookmarks"
+    html_in_files = [ "bookmarks.html" ]
+    html_out_files = [ "vulcanized.html" ]
 
-  deps = []
+    input = rebase_path(".", root_build_dir)
+    js_out_files = [ "crisper.js" ]
+
+    deps = [
+      ":unpak",
+    ]
+  }
+
+  unpak("unpak") {
+    pak_file = bookmarks_pak_file
+    out_folder = unpak_folder
+
+    deps = [
+      ":flattened_resources",
+    ]
+  }
+
+  grit("flattened_resources") {
+    source = "bookmarks_resources.grd"
+
+    # The .grd contains references to generated files.
+    source_is_generated = true
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/bookmarks_resources.h",
+      "grit/bookmarks_resources_map.cc",
+      "grit/bookmarks_resources_map.h",
+      bookmarks_pak_file,
+    ]
+    output_dir = "$root_gen_dir/chrome/browser/resources/bookmarks"
+  }
 }
 
 js_type_check("closure_compile") {

@@ -819,11 +819,8 @@ extern const char kNetworkProfileLastWarningTime[];
 #if defined(OS_CHROMEOS)
 extern const char kRLZBrand[];
 extern const char kRLZDisabled[];
-#endif
-
-#if BUILDFLAG(ENABLE_APP_LIST)
 extern const char kAppListLocalState[];
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
+#endif
 
 extern const char kAppShortcutsVersion[];
 

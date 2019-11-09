@@ -211,6 +211,10 @@ std::vector<const WorkerNode*> GraphImpl::GetAllWorkerNodes() const {
   return GetAllNodesOfType<WorkerNodeImpl, const WorkerNode*>();
 }
 
+bool GraphImpl::IsEmpty() const {
+  return nodes_.empty();
+}
+
 ukm::UkmRecorder* GraphImpl::GetUkmRecorder() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ukm_recorder();

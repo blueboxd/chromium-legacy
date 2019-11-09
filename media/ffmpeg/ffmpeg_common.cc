@@ -26,7 +26,7 @@ namespace {
 EncryptionScheme GetEncryptionScheme(const AVStream* stream) {
   AVDictionaryEntry* key =
       av_dict_get(stream->metadata, "enc_key_id", nullptr, 0);
-  return key ? AesCtrEncryptionScheme() : Unencrypted();
+  return key ? EncryptionScheme::kCenc : EncryptionScheme::kUnencrypted;
 }
 
 }  // namespace
@@ -318,10 +318,9 @@ static AVSampleFormat SampleFormatToAVSampleFormat(SampleFormat sample_format) {
   return AV_SAMPLE_FMT_NONE;
 }
 
-bool AVCodecContextToAudioDecoderConfig(
-    const AVCodecContext* codec_context,
-    const EncryptionScheme& encryption_scheme,
-    AudioDecoderConfig* config) {
+bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
+                                        EncryptionScheme encryption_scheme,
+                                        AudioDecoderConfig* config) {
   DCHECK_EQ(codec_context->codec_type, AVMEDIA_TYPE_AUDIO);
 
   AudioCodec codec = CodecIDToAudioCodec(codec_context->codec_id);

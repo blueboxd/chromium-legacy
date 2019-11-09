@@ -462,12 +462,11 @@ void LayoutView::SetShouldDoFullPaintInvalidationForViewAndAllDescendants() {
 void LayoutView::InvalidatePaintForViewAndCompositedLayers() {
   SetSubtreeShouldDoFullPaintInvalidation();
 
-  // The only way we know how to hit these ASSERTS below this point is via the
-  // Chromium OS login screen.
-  DisableCompositingQueryAsserts disabler;
-
-  if (Compositor()->InCompositingMode())
-    Compositor()->FullyInvalidatePaint();
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    DisableCompositingQueryAsserts disabler;
+    if (Compositor()->InCompositingMode())
+      Compositor()->FullyInvalidatePaint();
+  }
 }
 
 bool LayoutView::MapToVisualRectInAncestorSpace(
@@ -647,8 +646,9 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
       RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
   }
 
-  if (document.Printing()) {
-    // When printing, frame-level scrollbars are never displayed.
+  if (document.IsCapturingLayout()) {
+    // When capturing layout (e.g. printing), frame-level scrollbars are never
+    // displayed.
     // TODO(szager): Figure out the right behavior when printing an overflowing
     // iframe.  https://bugs.chromium.org/p/chromium/issues/detail?id=777528
     RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);

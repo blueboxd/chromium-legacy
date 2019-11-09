@@ -924,11 +924,23 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       received_bytes, total_bytes, hash, state, danger_type, interrupt_reason,
       opened, last_access_time, transient, received_slices));
   if (in_progress_download) {
-    // If the download item from history db is already in terminal state,
-    // remove it from the in-progress db. Otherwise, use the in-progress db one.
-    if (item->IsDone()) {
+    // If a download is in both history DB and in-progress DB, we should
+    // be able to remove the in-progress entry if the following 2 conditions
+    // are both met:
+    // 1. The download state in the history DB is a terminal state.
+    // 2. The download is not currently in progress.
+    // The situation could happen when browser crashes when download just
+    // reaches a terminal state. If the download is already in progress, we
+    // should wait for it to complete so that both DBs will be updated
+    // afterwards.
+    if (item->IsDone() && in_progress_download->GetState() !=
+                              download::DownloadItem::IN_PROGRESS) {
       in_progress_manager_->RemoveInProgressDownload(guid);
     } else {
+      // If one of the conditions are not met, use the in-progress download
+      // entry.
+      // TODO(qinmin): return nullptr so that the history DB will delete
+      // the download.
       item = std::move(in_progress_download);
       item->SetDelegate(this);
     }

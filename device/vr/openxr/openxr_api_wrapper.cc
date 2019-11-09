@@ -21,8 +21,6 @@
 namespace device {
 
 namespace {
-
-constexpr char kDefaultRuntimeName[] = "OpenXR";
 constexpr XrSystemId kInvalidSystem = -1;
 // Only supported view configuration:
 constexpr XrViewConfigurationType kSupportedViewConfiguration =
@@ -499,18 +497,6 @@ XrResult OpenXrApiWrapper::LocateViews(XrReferenceSpaceType type,
   return xr_result;
 }
 
-bool OpenXrApiWrapper::HasPosition() const {
-  DCHECK(IsInitialized());
-
-  XrSystemProperties system_properties = {XR_TYPE_SYSTEM_PROPERTIES};
-  if (XR_SUCCEEDED(
-          xrGetSystemProperties(instance_, system_, &system_properties))) {
-    return system_properties.trackingProperties.positionTracking;
-  }
-
-  return false;
-}
-
 // Returns the next predicted display time in nanoseconds.
 XrTime OpenXrApiWrapper::GetPredictedDisplayTime() const {
   DCHECK(IsInitialized());
@@ -650,17 +636,6 @@ uint32_t OpenXrApiWrapper::GetRecommendedSwapchainSampleCount() const {
 
   return std::min_element(start, end, compareSwapchainCounts)
       ->recommendedSwapchainSampleCount;
-}
-
-std::string OpenXrApiWrapper::GetRuntimeName() const {
-  DCHECK(HasInstance());
-
-  XrInstanceProperties instance_properties = {XR_TYPE_INSTANCE_PROPERTIES};
-  if (XR_SUCCEEDED(xrGetInstanceProperties(instance_, &instance_properties))) {
-    return instance_properties.runtimeName;
-  } else {
-    return kDefaultRuntimeName;
-  }
 }
 
 // stage bounds is fixed unless we received event

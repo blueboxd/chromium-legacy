@@ -1556,7 +1556,6 @@ void XRSession::SetXRDisplayInfo(
 
   display_info_id_++;
   display_info_ = std::move(display_info);
-  is_external_ = display_info_->capabilities->has_external_display;
 }
 
 WTF::Vector<XRViewData>& XRSession::views() {

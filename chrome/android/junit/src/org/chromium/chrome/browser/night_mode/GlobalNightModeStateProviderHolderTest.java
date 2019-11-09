@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.night_mode;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
 
 import org.junit.After;
 import org.junit.Test;

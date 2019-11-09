@@ -9022,7 +9022,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
 
       <!-- App List. -->
-      <if expr="enable_app_list">
+      <if expr="chromeos">
         <message name="IDS_SEARCH_BOX_ACCESSIBILITY_NAME" desc="Hint text for the search box in fullscreen app list window with additional instructions to use the arrow keys in Accessibility mode.">
           Search your device, apps, and web. Use the arrow keys to navigate your apps.
         </message>
@@ -9041,80 +9041,41 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_APP_LIST_APPEND_SUGGESTION_ACCESSIBILITY_NAME" desc="The spoken feedback for appending suggestion button">
            Append the suggestion <ph name="SUGGESTION_NAME">$1<ex>Harry Potter</ex></ph> to search box
         </message>
-        <if expr="not use_titlecase">
-          <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
-            New tab
-          </message>
-          <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
-            New window
-          </message>
-          <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
-            Pin to shelf
-          </message>
-          <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
-            Unpin from shelf
-          </message>
-          <message name="IDS_APP_LIST_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY" desc="Short text for the pin/unpin context menu to tell user the setting is enforced by policy of an app list item">
-            Pinned by administrator
-          </message>
-          <message name="IDS_APP_LIST_UNINSTALL_ITEM"
-                   desc="Title text for the 'uninstall' context menu item of an app list item.">
-            Uninstall
-          </message>
-          <message name="IDS_APP_LIST_REMOVE_SHORTCUT"
-                   desc="Title text for the 'remove' context menu item of an app list shortcut item.">
-            Remove
-          </message>
-          <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
-            New window
-          </message>
-          <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
-            New incognito window
-          </message>
-          <message name="IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME" desc="The default name for OEM folders in the App Launcher">
-            OEM folder
-          </message>
-          <message name="IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME" desc="The default name for the Linux (Crostini) apps folder in the App Launcher">
-            Linux apps
-          </message>
-        </if>
-        <if expr="use_titlecase">
-          <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
-            New Tab
-          </message>
-          <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
-            New Window
-          </message>
-          <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
-            Pin to Shelf
-          </message>
-          <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
-            Unpin from Shelf
-          </message>
-          <message name="IDS_APP_LIST_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY" desc="Short text for the pin/unpin context menu to tell user the setting is enforced by policy of an app list item">
-            Pinned by administrator
-          </message>
-          <message name="IDS_APP_LIST_UNINSTALL_ITEM"
-                   desc="Title text for the 'uninstall' context menu item of an app list item.">
-            Uninstall
-          </message>
-          <message name="IDS_APP_LIST_REMOVE_SHORTCUT"
-                   desc="Title text for the 'remove' context menu item of an app list shortcut item.">
-            Remove
-          </message>
-          <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
-            New Window
-          </message>
-          <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
-            New Incognito Window
-          </message>
-          <message name="IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME" desc="The default name for OEM folders in the App Launcher">
-            OEM Folder
-          </message>
-          <message name="IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME" desc="The default name for the Linux (Crostini) apps folder in the App Launcher">
-            Linux Apps
-          </message>
-        </if>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
+          New tab
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW" desc="Title text for the 'open new' context menu item of an app list item configured to open windowed">
+          New window
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_PIN" desc="Title text for the 'pin' context menu item of an app list item.">
+          Pin to shelf
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of an app list item.">
+          Unpin from shelf
+        </message>
+        <message name="IDS_APP_LIST_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY" desc="Short text for the pin/unpin context menu to tell user the setting is enforced by policy of an app list item">
+          Pinned by administrator
+        </message>
+        <message name="IDS_APP_LIST_UNINSTALL_ITEM"
+                  desc="Title text for the 'uninstall' context menu item of an app list item.">
+          Uninstall
+        </message>
+        <message name="IDS_APP_LIST_REMOVE_SHORTCUT"
+                  desc="Title text for the 'remove' context menu item of an app list shortcut item.">
+          Remove
+        </message>
+        <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
+          New window
+        </message>
+        <message name="IDS_APP_LIST_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
+          New incognito window
+        </message>
+        <message name="IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME" desc="The default name for OEM folders in the App Launcher">
+          OEM folder
+        </message>
+        <message name="IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME" desc="The default name for the Linux (Crostini) apps folder in the App Launcher">
+          Linux apps
+        </message>
       </if>
 
       <!-- Translated apps strings -->

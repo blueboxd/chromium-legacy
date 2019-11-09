@@ -453,8 +453,9 @@ blink::WebVector<blink::WebString> RTCRtpSenderImpl::StreamIds() const {
 
 void RTCRtpSenderImpl::ReplaceTrack(blink::WebMediaStreamTrack with_track,
                                     blink::RTCVoidRequest* request) {
-  internal_->ReplaceTrack(std::move(with_track),
-                          base::BindOnce(&OnReplaceTrackCompleted, request));
+  internal_->ReplaceTrack(
+      std::move(with_track),
+      WTF::Bind(&OnReplaceTrackCompleted, WrapPersistent(request)));
 }
 
 std::unique_ptr<blink::RtcDtmfSenderHandler> RTCRtpSenderImpl::GetDtmfSender()

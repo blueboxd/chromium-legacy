@@ -145,10 +145,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 
-#if BUILDFLAG(ENABLE_APP_LIST)
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#endif
-
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
@@ -241,6 +237,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/bluetooth/debug_logs_manager.h"
@@ -301,6 +298,9 @@
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_search_provider.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/webui/certificates_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
@@ -324,12 +324,6 @@
 #include "extensions/browser/api/lock_screen_data/lock_screen_item_storage.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
-#endif
-
-#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
-#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_search_provider.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -895,9 +889,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   AppShortcutManager::RegisterProfilePrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
-#if BUILDFLAG(ENABLE_APP_LIST)
-  app_list::AppListSyncableService::RegisterProfilePrefs(registry);
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
   NewTabUI::RegisterProfilePrefs(registry);
@@ -934,9 +925,13 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #endif
 
 #if defined(OS_CHROMEOS)
+  app_list::AppListSyncableService::RegisterProfilePrefs(registry);
+  app_list::ArcAppReinstallSearchProvider::RegisterProfilePrefs(registry);
   arc::prefs::RegisterProfilePrefs(registry);
+  ArcAppListPrefs::RegisterProfilePrefs(registry);
   certificate_manager::CertificatesHandler::RegisterProfilePrefs(registry);
   chromeos::AccountManager::RegisterPrefs(registry);
+  chromeos::ApkWebAppService::RegisterProfilePrefs(registry);
   chromeos::assistant::prefs::RegisterProfilePrefsForBrowser(registry);
   chromeos::bluetooth::DebugLogsManager::RegisterPrefs(registry);
   chromeos::CupsPrintersManager::RegisterProfilePrefs(registry);
@@ -971,12 +966,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   policy::AppInstallEventLogManagerWrapper::RegisterProfilePrefs(registry);
   policy::StatusCollector::RegisterProfilePrefs(registry);
   ::onc::RegisterProfilePrefs(registry);
-#endif
-
-#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
-  app_list::ArcAppReinstallSearchProvider::RegisterProfilePrefs(registry);
-  ArcAppListPrefs::RegisterProfilePrefs(registry);
-  chromeos::ApkWebAppService::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_RLZ)

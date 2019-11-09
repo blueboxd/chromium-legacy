@@ -311,4 +311,22 @@ suite('Tab', function() {
         titleTextElement.getAttribute('aria-label'),
         'My tab has a network error');
   });
+
+  test('focusing on the host moves focus to inner tab element', () => {
+    tabElement.focus();
+    assertEquals(
+        tabElement.shadowRoot.activeElement,
+        tabElement.shadowRoot.querySelector('#tab'));
+  });
+
+  test('supports Enter and Space key for activating tab', async () => {
+    const innerTabElement = tabElement.shadowRoot.querySelector('#tab');
+    innerTabElement.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+    assertEquals(await testTabsApiProxy.whenCalled('activateTab'), tab.id);
+    testTabsApiProxy.reset();
+
+    innerTabElement.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}));
+    assertEquals(await testTabsApiProxy.whenCalled('activateTab'), tab.id);
+    testTabsApiProxy.reset();
+  });
 });

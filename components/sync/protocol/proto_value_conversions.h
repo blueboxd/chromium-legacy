@@ -69,6 +69,7 @@ class TypedUrlSpecifics;
 class UrlDirective;
 class UserConsentSpecifics;
 class UserEventSpecifics;
+class WalletCreditCardCloudTokenData;
 class WalletMaskedCreditCard;
 class WalletMetadataSpecifics;
 class WalletPostalAddress;
@@ -248,6 +249,9 @@ std::unique_ptr<base::DictionaryValue> UserConsentSpecificsToValue(
 
 std::unique_ptr<base::DictionaryValue> UserEventSpecificsToValue(
     const sync_pb::UserEventSpecifics& user_event_specifics);
+
+std::unique_ptr<base::DictionaryValue> WalletCreditCardCloudTokenDataToValue(
+    const sync_pb::WalletCreditCardCloudTokenData& cloud_token_data);
 
 std::unique_ptr<base::DictionaryValue> WalletMaskedCreditCardToValue(
     const sync_pb::WalletMaskedCreditCard& wallet_masked_card);

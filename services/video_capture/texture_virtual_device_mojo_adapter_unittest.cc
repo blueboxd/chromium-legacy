@@ -7,7 +7,8 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,10 +22,10 @@ class TextureVirtualDeviceMojoAdapterTest : public ::testing::Test {
   TextureVirtualDeviceMojoAdapterTest() = default;
 
   void SetUp() override {
-    mock_receiver_1_ = std::make_unique<MockReceiver>(
-        receiver_1_.InitWithNewPipeAndPassReceiver());
-    mock_receiver_2_ = std::make_unique<MockReceiver>(
-        receiver_2_.InitWithNewPipeAndPassReceiver());
+    mock_video_frame_handler_1_ = std::make_unique<MockVideoFrameHandler>(
+        video_frame_handler_1_.InitWithNewPipeAndPassReceiver());
+    mock_video_frame_handler_2_ = std::make_unique<MockVideoFrameHandler>(
+        video_frame_handler_2_.InitWithNewPipeAndPassReceiver());
     adapter_ = std::make_unique<TextureVirtualDeviceMojoAdapter>();
   }
 
@@ -42,29 +43,31 @@ class TextureVirtualDeviceMojoAdapterTest : public ::testing::Test {
 
   void Receiver1Connects() {
     const media::VideoCaptureParams kArbitraryRequestedSettings;
-    adapter_->Start(kArbitraryRequestedSettings, std::move(receiver_1_));
+    adapter_->Start(kArbitraryRequestedSettings,
+                    std::move(video_frame_handler_1_));
   }
 
   void Receiver2Connects() {
     const media::VideoCaptureParams kArbitraryRequestedSettings;
-    adapter_->Start(kArbitraryRequestedSettings, std::move(receiver_2_));
+    adapter_->Start(kArbitraryRequestedSettings,
+                    std::move(video_frame_handler_2_));
   }
 
   void Receiver1Disconnects() {
     base::RunLoop wait_loop;
     adapter_->SetReceiverDisconnectedCallback(wait_loop.QuitClosure());
-    mock_receiver_1_.reset();
+    mock_video_frame_handler_1_.reset();
     wait_loop.Run();
   }
 
-  std::unique_ptr<MockReceiver> mock_receiver_1_;
-  std::unique_ptr<MockReceiver> mock_receiver_2_;
+  std::unique_ptr<MockVideoFrameHandler> mock_video_frame_handler_1_;
+  std::unique_ptr<MockVideoFrameHandler> mock_video_frame_handler_2_;
 
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TextureVirtualDeviceMojoAdapter> adapter_;
-  mojo::PendingRemote<mojom::Receiver> receiver_1_;
-  mojo::PendingRemote<mojom::Receiver> receiver_2_;
+  mojo::PendingRemote<mojom::VideoFrameHandler> video_frame_handler_1_;
+  mojo::PendingRemote<mojom::VideoFrameHandler> video_frame_handler_2_;
 };
 
 // Tests that when buffer handles are shared by the producer before a receiver
@@ -79,13 +82,15 @@ TEST_F(TextureVirtualDeviceMojoAdapterTest,
 
   base::RunLoop wait_loop;
   int buffer_received_count = 0;
-  EXPECT_CALL(*mock_receiver_1_, DoOnNewBuffer(kArbitraryBufferId1, _))
+  EXPECT_CALL(*mock_video_frame_handler_1_,
+              DoOnNewBuffer(kArbitraryBufferId1, _))
       .WillOnce(InvokeWithoutArgs([&wait_loop, &buffer_received_count]() {
         buffer_received_count++;
         if (buffer_received_count == 2)
           wait_loop.Quit();
       }));
-  EXPECT_CALL(*mock_receiver_1_, DoOnNewBuffer(kArbitraryBufferId2, _))
+  EXPECT_CALL(*mock_video_frame_handler_1_,
+              DoOnNewBuffer(kArbitraryBufferId2, _))
       .WillOnce(InvokeWithoutArgs([&wait_loop, &buffer_received_count]() {
         buffer_received_count++;
         if (buffer_received_count == 2)
@@ -110,7 +115,8 @@ TEST_F(TextureVirtualDeviceMojoAdapterTest,
   ProducerRetiresBufferHandle(kArbitraryBufferId1);
 
   base::RunLoop wait_loop;
-  EXPECT_CALL(*mock_receiver_2_, DoOnNewBuffer(kArbitraryBufferId2, _))
+  EXPECT_CALL(*mock_video_frame_handler_2_,
+              DoOnNewBuffer(kArbitraryBufferId2, _))
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
   Receiver2Connects();
   wait_loop.Run();

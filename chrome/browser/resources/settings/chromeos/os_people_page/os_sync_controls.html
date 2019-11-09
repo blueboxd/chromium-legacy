@@ -24,6 +24,16 @@
       }
     </style>
     <div class="settings-box first">
+      <div id="featureEnabledLabel" class="start">
+        PLACEHOLDER Enable OS sync
+      </div>
+      <cr-toggle checked="{{osSyncPrefs.featureEnabled}}"
+                 on-change="onFeatureEnabledChanged_"
+                 aria-labelledby="featureEnabledLabel">
+      </cr-toggle>
+    </div>
+    <!-- TODO(jamescook): Hide or disable everything when feature is off. -->
+    <div class="settings-box">
       <div id="syncEverythingCheckboxLabel" class="start">
         $i18n{syncEverythingCheckboxLabel}
       </div>

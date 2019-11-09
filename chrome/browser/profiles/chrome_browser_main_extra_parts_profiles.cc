@@ -37,6 +37,7 @@
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
+#include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -88,6 +89,7 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
+#include "media/base/media_switches.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -202,9 +204,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 
 #if defined(OS_CHROMEOS)
   chromeos::EnsureBrowserContextKeyedServiceFactoriesBuilt();
-#endif
-
-#if BUILDFLAG(ENABLE_APP_LIST)
   app_list::AppListSyncableServiceFactory::GetInstance();
 #endif
 
@@ -294,6 +293,8 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();
 #endif
+  if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
+    media_history::MediaHistoryKeyedServiceFactory::GetInstance();
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics::DesktopProfileSessionDurationsServiceFactory::GetInstance();

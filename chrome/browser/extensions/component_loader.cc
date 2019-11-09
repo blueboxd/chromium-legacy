@@ -328,15 +328,6 @@ void ComponentLoader::AddWithNameAndDescription(
   }
 }
 
-#if BUILDFLAG(ENABLE_APP_LIST)
-void ComponentLoader::AddChromeApp() {
-  AddWithNameAndDescription(
-      IDR_CHROME_APP_MANIFEST, base::FilePath(FILE_PATH_LITERAL("chrome_app")),
-      l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME),
-      l10n_util::GetStringUTF8(IDS_CHROME_SHORTCUT_DESCRIPTION));
-}
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
-
 void ComponentLoader::AddWebStoreApp() {
 #if defined(OS_CHROMEOS)
   if (!IsNormalSession())
@@ -350,6 +341,13 @@ void ComponentLoader::AddWebStoreApp() {
 }
 
 #if defined(OS_CHROMEOS)
+void ComponentLoader::AddChromeApp() {
+  AddWithNameAndDescription(
+      IDR_CHROME_APP_MANIFEST, base::FilePath(FILE_PATH_LITERAL("chrome_app")),
+      l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME),
+      l10n_util::GetStringUTF8(IDS_CHROME_SHORTCUT_DESCRIPTION));
+}
+
 void ComponentLoader::AddFileManagerExtension() {
   AddWithNameAndDescription(
       IDR_FILEMANAGER_MANIFEST,
@@ -453,9 +451,9 @@ void ComponentLoader::AddDefaultComponentExtensions(
 
   if (!skip_session_components) {
     AddWebStoreApp();
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
     AddChromeApp();
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
+#endif  // defined(OS_CHROMEOS)
   }
 
   AddDefaultComponentExtensionsWithBackgroundPages(skip_session_components);

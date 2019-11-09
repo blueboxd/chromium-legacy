@@ -28,6 +28,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/drag_download_item.h"
+#include "chrome/browser/icon_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
@@ -63,6 +64,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -99,6 +101,12 @@ constexpr int kDefaultDownloadItemHeight = 48;
 
 // Amount of time between accessible alert events.
 constexpr auto kAccessibleAlertInterval = base::TimeDelta::FromSeconds(30);
+
+// The size of the file icon.
+constexpr int kFileIconSize = 24;
+
+// The offset from the file icon to the danger icon.
+constexpr int kDangerIconOffset = 8;
 
 // The separator is drawn as a border. It's one dp wide.
 class SeparatorBorder : public views::Border {
@@ -271,9 +279,18 @@ SkColor DownloadItemView::GetTextColorForThemeProvider(
                : gfx::kPlaceholderColor;
 }
 
-void DownloadItemView::OnExtractIconComplete(gfx::Image icon_bitmap) {
-  if (!icon_bitmap.IsEmpty())
+void DownloadItemView::OnExtractIconComplete(IconLoader::IconSize icon_size,
+                                             gfx::Image icon_bitmap) {
+  if (!icon_bitmap.IsEmpty()) {
+    if (icon_size == IconLoader::IconSize::NORMAL) {
+      // We want a 24x24 icon, but on Windows only 16x16 and 32x32 are
+      // available. So take the NORMAL icon and downsize it.
+      icon_ = gfx::ImageSkiaOperations::CreateResizedImage(
+          *icon_bitmap.ToImageSkia(), skia::ImageOperations::RESIZE_BEST,
+          gfx::Size(kFileIconSize, kFileIconSize));
+    }
     shelf_->SchedulePaint();
+  }
 }
 
 void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
@@ -709,15 +726,6 @@ int DownloadItemView::GetYForFilenameText() const {
 }
 
 void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
-  if (IsShowingWarningDialog() || IsShowingDeepScanning()) {
-    int icon_x = base::i18n::IsRTL()
-                     ? width() - kWarningIconSize - kStartPadding
-                     : kStartPadding;
-    int icon_y = (height() - kWarningIconSize) / 2;
-    canvas->DrawImageInt(GetWarningIcon(), icon_x, icon_y);
-    return;
-  }
-
   // Paint download progress.
   DownloadItem::DownloadState state = model_->GetState();
   canvas->Save();
@@ -728,7 +736,15 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
   int progress_y = (height() - DownloadShelf::kProgressIndicatorSize) / 2;
   canvas->Translate(gfx::Vector2d(progress_x, progress_y));
 
-  if (state == DownloadItem::IN_PROGRESS) {
+  const gfx::ImageSkia* current_icon = nullptr;
+  IconManager* im = g_browser_process->icon_manager();
+  gfx::Image* image_ptr = im->LookupIconFromFilepath(
+      model_->GetTargetFilePath(), IconLoader::SMALL);
+  if (image_ptr)
+    current_icon = image_ptr->ToImageSkia();
+
+  if (state == DownloadItem::IN_PROGRESS && !IsShowingDeepScanning() &&
+      !IsShowingWarningDialog()) {
     base::TimeDelta progress_time = previous_progress_elapsed_;
     if (!model_->IsPaused())
       progress_time += base::TimeTicks::Now() - progress_start_time_;
@@ -743,26 +759,34 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
       DownloadShelf::PaintDownloadComplete(
           canvas, *GetThemeProvider(), complete_animation_->GetCurrentValue());
     }
+  } else {
+    current_icon = &icon_;
   }
   canvas->Restore();
 
-  // Fetch the already-loaded icon.
-  IconManager* im = g_browser_process->icon_manager();
-  gfx::Image* icon = im->LookupIconFromFilepath(model_->GetTargetFilePath(),
-                                                IconLoader::SMALL);
-  if (!icon)
+  if (!current_icon)
     return;
 
   // Draw the icon image.
-  constexpr int kFiletypeIconOffset =
-      (DownloadShelf::kProgressIndicatorSize - 16) / 2;
+  int kFiletypeIconOffset =
+      (DownloadShelf::kProgressIndicatorSize - current_icon->height()) / 2;
   int icon_x = progress_x + kFiletypeIconOffset;
   int icon_y = progress_y + kFiletypeIconOffset;
   cc::PaintFlags flags;
   // Use an alpha to make the image look disabled.
   if (!GetEnabled())
     flags.setAlpha(120);
-  canvas->DrawImageInt(*icon->ToImageSkia(), icon_x, icon_y, flags);
+  canvas->DrawImageInt(*current_icon, icon_x, icon_y, flags);
+
+  // Overlay the danger icon if appropriate.
+  if (IsShowingWarningDialog() || IsShowingDeepScanning()) {
+    int icon_x =
+        (base::i18n::IsRTL() ? width() - kWarningIconSize - kStartPadding
+                             : kStartPadding) +
+        kDangerIconOffset;
+    int icon_y = (height() - kWarningIconSize) / 2 + kDangerIconOffset;
+    canvas->DrawImageInt(GetWarningIcon(), icon_x, icon_y);
+  }
 }
 
 void DownloadItemView::OpenDownload() {
@@ -809,7 +833,11 @@ void DownloadItemView::LoadIcon() {
   last_download_item_path_ = model_->GetTargetFilePath();
   im->LoadIcon(last_download_item_path_, IconLoader::SMALL,
                base::Bind(&DownloadItemView::OnExtractIconComplete,
-                          base::Unretained(this)),
+                          base::Unretained(this), IconLoader::IconSize::SMALL),
+               &cancelable_task_tracker_);
+  im->LoadIcon(last_download_item_path_, IconLoader::NORMAL,
+               base::Bind(&DownloadItemView::OnExtractIconComplete,
+                          base::Unretained(this), IconLoader::NORMAL),
                &cancelable_task_tracker_);
 }
 

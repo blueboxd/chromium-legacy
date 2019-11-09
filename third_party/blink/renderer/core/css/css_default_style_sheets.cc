@@ -215,8 +215,10 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   // FIXME: We should assert that the sheet only styles MathML elements.
   if (element.namespaceURI() == mathml_names::kNamespaceURI &&
       !mathml_style_sheet_) {
-    mathml_style_sheet_ =
-        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_MATHML_CSS));
+    mathml_style_sheet_ = ParseUASheet(
+        RuntimeEnabledFeatures::MathMLCoreEnabled()
+            ? UncompressResourceAsASCIIString(IDR_UASTYLE_MATHML_CSS)
+            : UncompressResourceAsASCIIString(IDR_UASTYLE_MATHML_FALLBACK_CSS));
     default_style_->AddRulesFromSheet(MathmlStyleSheet(), ScreenEval());
     default_print_style_->AddRulesFromSheet(MathmlStyleSheet(), PrintEval());
     changed_default_style = true;

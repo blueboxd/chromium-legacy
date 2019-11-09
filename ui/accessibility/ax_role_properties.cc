@@ -205,11 +205,14 @@ bool IsImage(const ax::mojom::Role role) {
     case ax::mojom::Role::kImage:
     case ax::mojom::Role::kImageMap:
     case ax::mojom::Role::kSvgRoot:
-    case ax::mojom::Role::kVideo:
       return true;
     default:
       return false;
   }
+}
+
+bool IsImageOrVideo(const ax::mojom::Role role) {
+  return IsImage(role) || role == ax::mojom::Role::kVideo;
 }
 
 bool IsInvokable(const AXNodeData& data) {

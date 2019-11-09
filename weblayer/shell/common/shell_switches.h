@@ -7,6 +7,7 @@
 
 namespace switches {
 
+extern const char kNoInitialNavigation[];
 extern const char kWebLayerShellDataPath[];
 
 }  // namespace switches

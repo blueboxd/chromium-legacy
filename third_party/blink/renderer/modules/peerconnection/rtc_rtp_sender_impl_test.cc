@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/test_webrtc_stats_report_obtainer.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"

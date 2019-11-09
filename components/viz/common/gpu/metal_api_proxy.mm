@@ -382,6 +382,7 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
                    dispatch_data_t,
                    error,
                    __autoreleasing NSError**)
+
 - (nullable id<MTLLibrary>)
     newLibraryWithSource:(NSString*)source
                  options:(nullable MTLCompileOptions*)options
@@ -549,6 +550,7 @@ PROXY_METHOD2(void,
 PROXY_METHOD1_SLOW(nullable id<MTLArgumentEncoder>,
                    newArgumentEncoderWithArguments,
                    NSArray<MTLArgumentDescriptor*>*)
+
 #if defined(MAC_OS_X_VERSION_10_14)
 PROXY_METHOD1_SLOW(nullable id<MTLTexture>,
                    newSharedTextureWithDescriptor,
@@ -573,6 +575,27 @@ PROXY_METHOD0(nullable id<MTLSharedEvent>, newSharedEvent)
 PROXY_METHOD1(nullable id<MTLSharedEvent>,
               newSharedEventWithHandle,
               MTLSharedEventHandle*)
-#endif
+#endif  // MAC_OS_X_VERSION_10_14
+
+#if defined(MAC_OS_X_VERSION_10_15)
+PROXY_METHOD0(BOOL, hasUnifiedMemory)
+PROXY_METHOD0(MTLDeviceLocation, location)
+PROXY_METHOD0(NSUInteger, locationNumber)
+PROXY_METHOD0(uint64_t, maxTransferRate)
+PROXY_METHOD0(BOOL, areBarycentricCoordsSupported)
+PROXY_METHOD0(BOOL, supportsShaderBarycentricCoordinates)
+PROXY_METHOD0(uint64_t, peerGroupID)
+PROXY_METHOD0(uint32_t, peerIndex)
+PROXY_METHOD0(uint32_t, peerCount)
+PROXY_METHOD0(nullable NSArray<id<MTLCounterSet>>*, counterSets)
+PROXY_METHOD1(BOOL, supportsFamily, MTLGPUFamily)
+PROXY_METHOD2_SLOW(nullable id<MTLCounterSampleBuffer>,
+                   newCounterSampleBufferWithDescriptor,
+                   MTLCounterSampleBufferDescriptor*,
+                   error,
+                   NSError**)
+PROXY_METHOD2(void, sampleTimestamps, NSUInteger*, gpuTimestamp, NSUInteger*)
+#endif  // MAC_OS_X_VERSION_10_15
+
 #pragma clang diagnostic pop
 @end

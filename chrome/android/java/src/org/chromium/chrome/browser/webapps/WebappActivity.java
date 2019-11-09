@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
@@ -33,7 +34,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
@@ -48,9 +48,14 @@ import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
@@ -72,12 +77,14 @@ import java.util.HashMap;
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
  */
-public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
+public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
     public static final String WEBAPP_SCHEME = "webapp";
 
     private static final String TAG = "WebappActivity";
     private static final String HISTOGRAM_NAVIGATION_STATUS = "Webapp.NavigationStatus";
     private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
+
+    protected static final String BUNDLE_TAB_ID = "tabId";
 
     private WebappInfo mWebappInfo;
 
@@ -194,6 +201,8 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
     @Override
     public void initializeState() {
         super.initializeState();
+
+        createAndShowTab();
         mTabController.setInitialTab(getActivityTab());
         initializeUI(getSavedInstanceState());
     }
@@ -393,8 +402,12 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
         }
     }
 
-    @Override
-    protected TabState restoreTabState(Bundle savedInstanceState, int tabId) {
+    /**
+     * Restore {@link TabState} from a given {@link Bundle} and tabId.
+     * @param saveInstanceState The saved bundle for the last recorded state.
+     * @param tabId ID of the tab restored from.
+     */
+    private TabState restoreTabState(Bundle savedInstanceState, int tabId) {
         return TabState.restoreTabState(savedInstanceState);
     }
 
@@ -768,14 +781,15 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
         return null;
     }
 
-    @Override
-    protected TabDelegateFactory createTabDelegateFactory() {
+    /**
+     * @return {@link TabDelegateFactory} to be used while creating the associated {@link Tab}.
+     */
+    private TabDelegateFactory createTabDelegateFactory() {
         mWebappDelegateFactory = new WebappDelegateFactory(this);
         return mWebappDelegateFactory;
     }
 
-    @Override
-    protected TabCreator createNormalTabCreator() {
+    private TabCreator createNormalTabCreator() {
         return new WebappTabDelegate(false /* incognito */, mWebappInfo);
     }
 
@@ -847,4 +861,66 @@ public class WebappActivity extends SingleTabActivity<WebappActivityComponent> {
     protected void removeSplashscreenObserver(SplashscreenObserver observer) {
         mSplashController.removeObserver(observer);
     }
+
+    @Override
+    protected TabModelSelector createTabModelSelector() {
+        return new SingleTabModelSelector(this, this, false);
+    }
+
+    @Override
+    protected Pair<? extends TabCreator, ? extends TabCreator> createTabCreators() {
+        return Pair.create(createNormalTabCreator(), null);
+    }
+
+    protected void createAndShowTab() {
+        Tab tab = createTab();
+        getTabModelSelector().setTab(tab);
+        tab.show(TabSelectionType.FROM_NEW);
+    }
+
+    @Override
+    public SingleTabModelSelector getTabModelSelector() {
+        return (SingleTabModelSelector) super.getTabModelSelector();
+    }
+
+    /**
+     * Creates the {@link Tab} used by the {@link SingleTabActivity}.
+     * If the {@code savedInstanceState} exists, then the user did not intentionally close the app
+     * by swiping it away in the recent tasks list.  In that case, we try to restore the tab from
+     * disk.
+     */
+    protected Tab createTab() {
+        Tab tab = null;
+        TabState tabState = null;
+        int tabId = Tab.INVALID_TAB_ID;
+        Bundle savedInstanceState = getSavedInstanceState();
+        if (savedInstanceState != null) {
+            tabId = savedInstanceState.getInt(BUNDLE_TAB_ID, Tab.INVALID_TAB_ID);
+            if (tabId != Tab.INVALID_TAB_ID) {
+                tabState = restoreTabState(savedInstanceState, tabId);
+            }
+        }
+        boolean unfreeze = tabId != Tab.INVALID_TAB_ID && tabState != null;
+        if (unfreeze) {
+            tab = TabBuilder.createFromFrozenState()
+                          .setId(tabId)
+                          .setWindow(getWindowAndroid())
+                          .setDelegateFactory(createTabDelegateFactory())
+                          .setTabState(tabState)
+                          .setUnfreeze(unfreeze)
+                          .build();
+        } else {
+            tab = new TabBuilder()
+                          .setWindow(getWindowAndroid())
+                          .setLaunchType(TabLaunchType.FROM_CHROME_UI)
+                          .setDelegateFactory(createTabDelegateFactory())
+                          .setTabState(tabState)
+                          .setUnfreeze(unfreeze)
+                          .build();
+        }
+        return tab;
+    }
+
+    @Override
+    public void onUpdateStateChanged() {}
 }

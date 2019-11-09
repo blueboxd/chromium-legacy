@@ -60,9 +60,10 @@ class PlatformWindowSurface;
 
 namespace viz {
 
+class DawnContextProvider;
 class DirectContextProvider;
-class ImageContextImpl;
 class GLRendererCopier;
+class ImageContextImpl;
 class SkiaOutputSurfaceDependency;
 class TextureDeleter;
 class VulkanContextProvider;
@@ -205,6 +206,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   bool Initialize();
   bool InitializeForGL();
   bool InitializeForVulkan();
+  bool InitializeForDawn();
 
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
@@ -224,6 +226,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
     return !!vulkan_context_provider_ &&
            gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan;
   }
+  bool is_using_dawn() const {
+    return !!dawn_context_provider_ &&
+           gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn;
+  }
 
   SkSurface* output_sk_surface() const {
     return scoped_output_device_paint_->sk_surface();
@@ -235,6 +241,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   std::unique_ptr<gpu::SharedImageRepresentationFactory>
       shared_image_representation_factory_;
   VulkanContextProvider* const vulkan_context_provider_;
+  DawnContextProvider* const dawn_context_provider_;
   const RendererSettings renderer_settings_;
   // This is only used to lazily create DirectContextProviderDelegate for
   // readback using GLRendererCopier.

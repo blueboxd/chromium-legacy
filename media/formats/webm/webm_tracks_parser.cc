@@ -205,8 +205,9 @@ bool WebMTracksParser::OnListEnd(int id) {
           content_encodings()[0]->encryption_key_id();
     }
 
-    EncryptionScheme encryption_scheme =
-        encryption_key_id.empty() ? Unencrypted() : AesCtrEncryptionScheme();
+    EncryptionScheme encryption_scheme = encryption_key_id.empty()
+                                             ? EncryptionScheme::kUnencrypted
+                                             : EncryptionScheme::kCenc;
 
     if (track_type_ == kWebMTrackTypeAudio) {
       detected_audio_track_count_++;

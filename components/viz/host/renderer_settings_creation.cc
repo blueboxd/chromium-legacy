@@ -86,7 +86,7 @@ RendererSettings CreateRendererSettings() {
 
 #if defined(USE_OZONE)
   if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
-    renderer_settings.overlay_strategies = ParseOverlayStategies(
+    renderer_settings.overlay_strategies = ParseOverlayStrategies(
         command_line->GetSwitchValueASCII(switches::kEnableHardwareOverlays));
   } else {
     auto& host_properties =

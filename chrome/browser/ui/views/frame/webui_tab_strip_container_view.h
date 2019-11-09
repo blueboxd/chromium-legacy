@@ -13,6 +13,7 @@
 #include "chrome/common/buildflags.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/view.h"
 
 #if !BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
@@ -33,8 +34,8 @@ class Browser;
 class TabCounterModelObserver;
 
 class WebUITabStripContainerView : public TabStripUI::Embedder,
-                                   public views::View,
                                    public gfx::AnimationDelegate,
+                                   public views::AccessiblePaneView,
                                    public views::ButtonListener,
                                    public views::ViewObserver {
  public:

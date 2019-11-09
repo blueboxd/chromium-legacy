@@ -142,7 +142,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
 
     AudioDecoderConfig audio_config(kCodecVorbis, kSampleFormat, kChannelLayout,
                                     kDefaultSampleRate, EmptyExtraData(),
-                                    Unencrypted());
+                                    EncryptionScheme::kUnencrypted);
 
     mojo_audio_decoder_->Initialize(
         audio_config, nullptr,

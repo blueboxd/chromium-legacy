@@ -31,7 +31,6 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
       mojom::XRRuntime::RequestSessionCallback callback) override;
   void PauseTracking() override;
   void ResumeTracking() override;
-  void EnsureInitialized(EnsureInitializedCallback callback) override;
   void ShutdownSession(mojom::XRRuntime::ShutdownSessionCallback) override;
 
   void OnDisplayConfigurationChanged(

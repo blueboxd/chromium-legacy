@@ -59,7 +59,7 @@ media::VideoDecoderConfig ToClearMediaVideoDecoderConfig(
       gfx::Rect(coded_size), coded_size,
       std::vector<uint8_t>(config.extra_data,
                            config.extra_data + config.extra_data_size),
-      Unencrypted());
+      EncryptionScheme::kUnencrypted);
 
   return media_config;
 }

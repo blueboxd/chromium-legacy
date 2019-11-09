@@ -36,6 +36,7 @@
 
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "skia/public/mojom/skcolor.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
@@ -560,6 +561,18 @@ bool LocalFrame::BubbleLogicalScrollFromChildFrame(
 
   return GetEventHandler().BubblingScroll(direction, granularity,
                                           owner_element);
+}
+
+void LocalFrame::DidChangeThemeColor() {
+  if (Tree().Parent())
+    return;
+
+  base::Optional<Color> color = GetDocument()->ThemeColor();
+  base::Optional<SkColor> sk_color;
+  if (color)
+    sk_color = color->Rgb();
+
+  GetLocalFrameHostRemote().DidChangeThemeColor(sk_color);
 }
 
 LocalFrame& LocalFrame::LocalFrameRoot() const {
@@ -1285,6 +1298,18 @@ void LocalFrame::WasHidden() {
 void LocalFrame::WasShown() {
   if (LocalFrameView* frame_view = View())
     frame_view->ScheduleAnimation();
+}
+
+bool LocalFrame::ClipsContent() const {
+  // A paint preview shouldn't clip to the viewport if it is the main frame or a
+  // root remote frame.
+  if (GetDocument()->IsPaintingPreview() && IsLocalRoot())
+    return false;
+
+  if (IsMainFrame())
+    return GetSettings()->GetMainFrameClipsContent();
+  // By default clip to viewport.
+  return true;
 }
 
 void LocalFrame::SetViewportIntersectionFromParent(

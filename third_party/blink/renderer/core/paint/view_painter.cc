@@ -48,9 +48,12 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   // The background rect always includes at least the visible content size.
   PhysicalRect background_rect(layout_view_.BackgroundRect());
 
-  // When printing, paint the entire unclipped scrolling content area.
-  if (paint_info.IsPrinting())
+  // When printing or painting a preview, paint the entire unclipped scrolling
+  // content area.
+  if (paint_info.IsPrinting() ||
+      !layout_view_.GetFrameView()->GetFrame().ClipsContent()) {
     background_rect.Unite(layout_view_.DocumentRect());
+  }
 
   const DisplayItemClient* background_client = &layout_view_;
 

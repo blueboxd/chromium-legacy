@@ -605,26 +605,6 @@ void VRServiceImpl::SetFramesThrottled(bool throttled) {
   }
 }
 
-void VRServiceImpl::GetImmersiveVRDisplayInfo(
-    device::mojom::VRService::GetImmersiveVRDisplayInfoCallback callback) {
-  if (!initialization_complete_) {
-    pending_requests_.push_back(
-        base::BindOnce(&VRServiceImpl::GetImmersiveVRDisplayInfo,
-                       base::Unretained(this), std::move(callback)));
-    return;
-  }
-
-  BrowserXRRuntime* immersive_runtime =
-      runtime_manager_->GetImmersiveVrRuntime();
-  if (immersive_runtime) {
-    immersive_runtime->InitializeAndGetDisplayInfo(render_frame_host_,
-                                                   std::move(callback));
-    return;
-  }
-
-  std::move(callback).Run(nullptr);
-}
-
 void VRServiceImpl::OnExitPresent() {
   DVLOG(2) << __func__;
 

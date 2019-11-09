@@ -28,6 +28,7 @@ class AutocompleteResult {
  public:
   typedef ACMatches::const_iterator const_iterator;
   typedef ACMatches::iterator iterator;
+  using MatchDedupComparator = std::pair<GURL, bool>;
 
   // Max number of matches we'll show from the various providers.
   static size_t GetMaxMatches(bool is_zero_suggest = false);
@@ -35,12 +36,11 @@ class AutocompleteResult {
   AutocompleteResult();
   ~AutocompleteResult();
 
-  // Copies matches from |old_matches| to provide a consistant result set. See
-  // comments in code for specifics. Will clear |old_matches| if this result is
-  // empty().
-  void CopyOldMatches(const AutocompleteInput& input,
-                      AutocompleteResult* old_matches,
-                      TemplateURLService* template_url_service);
+  // Moves matches from |old_matches| to provide a consistent result set.
+  // |old_matches| is mutated during this, and should not be used afterwards.
+  void TransferOldMatches(const AutocompleteInput& input,
+                          AutocompleteResult* old_matches,
+                          TemplateURLService* template_url_service);
 
   // Adds a new set of matches to the result set.  Does not re-sort.  Calls
   // PossiblySwapContentsAndDescriptionForURLSuggestion(input)" on all added
@@ -149,9 +149,13 @@ class AutocompleteResult {
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
+  // Get a list of comparators used for deduping for the matches in this result.
+  std::vector<MatchDedupComparator> GetMatchDedupComparators() const;
+
   // Logs metrics for when |new_result| replaces |old_result| asynchronously.
+  // |old_result| a list of the comparators for the old matches.
   static void LogAsynchronousUpdateMetrics(
-      const AutocompleteResult& old_result,
+      const std::vector<MatchDedupComparator>& old_result,
       const AutocompleteResult& new_result);
 
  private:
@@ -209,7 +213,7 @@ class AutocompleteResult {
   // collapse similar URLs if necessary, and whether the match is a calculator
   // suggestion, because we don't want to dedupe them against URLs that simply
   // happen to go to the same destination.
-  static std::pair<GURL, bool> GetMatchComparisonFields(
+  static MatchDedupComparator GetMatchComparisonFields(
       const AutocompleteMatch& match);
 
   // This method reduces the number of navigation suggestions to that of

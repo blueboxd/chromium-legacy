@@ -5,7 +5,7 @@
 import unittest
 
 from blinkpy.common.host_mock import MockHost
-from blinkpy.common.net.buildbot import Build
+from blinkpy.common.net.results_fetcher import Build
 from blinkpy.common.net.git_cl import CLStatus
 from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.net.git_cl import SEARCHBUILDS_RESPONSE_PREFIX

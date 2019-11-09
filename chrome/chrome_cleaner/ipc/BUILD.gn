@@ -32,9 +32,12 @@ source_set("chrome_prompt_ipc") {
     ":mojo_task_runner",
     "//base",
     "//components/chrome_cleaner/public/interfaces",
-    "//components/chrome_cleaner/public/proto",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
+  ]
+
+  public_deps = [
+    "//components/chrome_cleaner/public/proto",
     "//third_party/protobuf:protobuf_lite",
   ]
 }
@@ -128,7 +131,6 @@ source_set("mock_chrome_prompt_ipc") {
 
   deps = [
     ":chrome_prompt_ipc",
-    "//components/chrome_cleaner/public/interfaces",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -48,6 +48,8 @@ if (!is_ios) {
     sources = [
       "ios/ios_live_tab.h",
       "ios/ios_live_tab.mm",
+      "ios/ios_restore_live_tab.h",
+      "ios/ios_restore_live_tab.mm",
       "ios/ios_serialized_navigation_builder.h",
       "ios/ios_serialized_navigation_builder.mm",
       "ios/ios_serialized_navigation_driver.cc",
@@ -62,6 +64,7 @@ if (!is_ios) {
     deps = [
       "//base",
       "//ios/web/common",
+      "//ios/web/public/session",
     ]
   }
 }

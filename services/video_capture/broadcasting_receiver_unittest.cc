@@ -10,7 +10,8 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,16 +37,18 @@ class FakeAccessPermission : public mojom::ScopedAccessPermission {
 class BroadcastingReceiverTest : public ::testing::Test {
  public:
   void SetUp() override {
-    mojo::PendingRemote<mojom::Receiver> receiver_1;
-    mojo::PendingRemote<mojom::Receiver> receiver_2;
-    mock_receiver_1_ = std::make_unique<MockReceiver>(
-        receiver_1.InitWithNewPipeAndPassReceiver());
-    mock_receiver_2_ = std::make_unique<MockReceiver>(
-        receiver_2.InitWithNewPipeAndPassReceiver());
-    client_id_1_ = broadcaster_.AddClient(
-        std::move(receiver_1), media::VideoCaptureBufferType::kSharedMemory);
-    client_id_2_ = broadcaster_.AddClient(
-        std::move(receiver_2), media::VideoCaptureBufferType::kSharedMemory);
+    mojo::PendingRemote<mojom::VideoFrameHandler> video_frame_handler_1;
+    mojo::PendingRemote<mojom::VideoFrameHandler> video_frame_handler_2;
+    mock_video_frame_handler_1_ = std::make_unique<MockVideoFrameHandler>(
+        video_frame_handler_1.InitWithNewPipeAndPassReceiver());
+    mock_video_frame_handler_2_ = std::make_unique<MockVideoFrameHandler>(
+        video_frame_handler_2.InitWithNewPipeAndPassReceiver());
+    client_id_1_ =
+        broadcaster_.AddClient(std::move(video_frame_handler_1),
+                               media::VideoCaptureBufferType::kSharedMemory);
+    client_id_2_ =
+        broadcaster_.AddClient(std::move(video_frame_handler_2),
+                               media::VideoCaptureBufferType::kSharedMemory);
 
     shm_region_ =
         base::UnsafeSharedMemoryRegion::Create(kArbitraryDummyBufferSize);
@@ -59,8 +62,8 @@ class BroadcastingReceiverTest : public ::testing::Test {
 
  protected:
   BroadcastingReceiver broadcaster_;
-  std::unique_ptr<MockReceiver> mock_receiver_1_;
-  std::unique_ptr<MockReceiver> mock_receiver_2_;
+  std::unique_ptr<MockVideoFrameHandler> mock_video_frame_handler_1_;
+  std::unique_ptr<MockVideoFrameHandler> mock_video_frame_handler_2_;
   int32_t client_id_1_;
   int32_t client_id_2_;
   base::UnsafeSharedMemoryRegion shm_region_;
@@ -70,17 +73,17 @@ class BroadcastingReceiverTest : public ::testing::Test {
 TEST_F(
     BroadcastingReceiverTest,
     HoldsOnToAccessPermissionForRetiredBufferUntilLastClientFinishedConsuming) {
-  base::RunLoop frame_arrived_at_receiver_1;
-  base::RunLoop frame_arrived_at_receiver_2;
-  EXPECT_CALL(*mock_receiver_1_, DoOnFrameReadyInBuffer(_, _, _, _))
-      .WillOnce(InvokeWithoutArgs([&frame_arrived_at_receiver_1]() {
-        frame_arrived_at_receiver_1.Quit();
+  base::RunLoop frame_arrived_at_video_frame_handler_1;
+  base::RunLoop frame_arrived_at_video_frame_handler_2;
+  EXPECT_CALL(*mock_video_frame_handler_1_, DoOnFrameReadyInBuffer(_, _, _, _))
+      .WillOnce(InvokeWithoutArgs([&frame_arrived_at_video_frame_handler_1]() {
+        frame_arrived_at_video_frame_handler_1.Quit();
       }));
-  EXPECT_CALL(*mock_receiver_2_, DoOnFrameReadyInBuffer(_, _, _, _))
-      .WillOnce(InvokeWithoutArgs([&frame_arrived_at_receiver_2]() {
-        frame_arrived_at_receiver_2.Quit();
+  EXPECT_CALL(*mock_video_frame_handler_2_, DoOnFrameReadyInBuffer(_, _, _, _))
+      .WillOnce(InvokeWithoutArgs([&frame_arrived_at_video_frame_handler_2]() {
+        frame_arrived_at_video_frame_handler_2.Quit();
       }));
-  mock_receiver_2_->HoldAccessPermissions();
+  mock_video_frame_handler_2_->HoldAccessPermissions();
 
   mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission;
   bool access_permission_has_been_released = false;
@@ -99,35 +102,37 @@ TEST_F(
                                     std::move(access_permission),
                                     std::move(frame_info));
 
-  // mock_receiver_1_ finishes consuming immediately.
-  // mock_receiver_2_ continues consuming.
-  frame_arrived_at_receiver_1.Run();
-  frame_arrived_at_receiver_2.Run();
+  // mock_video_frame_handler_1_ finishes consuming immediately.
+  // mock_video_frame_handler_2_ continues consuming.
+  frame_arrived_at_video_frame_handler_1.Run();
+  frame_arrived_at_video_frame_handler_2.Run();
 
-  base::RunLoop buffer_retired_arrived_at_receiver_1;
-  base::RunLoop buffer_retired_arrived_at_receiver_2;
-  EXPECT_CALL(*mock_receiver_1_, DoOnBufferRetired(_))
-      .WillOnce(InvokeWithoutArgs([&buffer_retired_arrived_at_receiver_1]() {
-        buffer_retired_arrived_at_receiver_1.Quit();
-      }));
-  EXPECT_CALL(*mock_receiver_2_, DoOnBufferRetired(_))
-      .WillOnce(InvokeWithoutArgs([&buffer_retired_arrived_at_receiver_2]() {
-        buffer_retired_arrived_at_receiver_2.Quit();
-      }));
+  base::RunLoop buffer_retired_arrived_at_video_frame_handler_1;
+  base::RunLoop buffer_retired_arrived_at_video_frame_handler_2;
+  EXPECT_CALL(*mock_video_frame_handler_1_, DoOnBufferRetired(_))
+      .WillOnce(InvokeWithoutArgs(
+          [&buffer_retired_arrived_at_video_frame_handler_1]() {
+            buffer_retired_arrived_at_video_frame_handler_1.Quit();
+          }));
+  EXPECT_CALL(*mock_video_frame_handler_2_, DoOnBufferRetired(_))
+      .WillOnce(InvokeWithoutArgs(
+          [&buffer_retired_arrived_at_video_frame_handler_2]() {
+            buffer_retired_arrived_at_video_frame_handler_2.Quit();
+          }));
 
   // retire the buffer
   broadcaster_.OnBufferRetired(kArbiraryBufferId);
 
   // expect that both receivers get the retired event
-  buffer_retired_arrived_at_receiver_1.Run();
-  buffer_retired_arrived_at_receiver_2.Run();
+  buffer_retired_arrived_at_video_frame_handler_1.Run();
+  buffer_retired_arrived_at_video_frame_handler_2.Run();
 
   // expect that |access_permission| is still being held
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(access_permission_has_been_released);
 
-  // mock_receiver_2_ finishes consuming
-  mock_receiver_2_->ReleaseAccessPermissions();
+  // mock_video_frame_handler_2_ finishes consuming
+  mock_video_frame_handler_2_->ReleaseAccessPermissions();
 
   // expect that |access_permission| is released
   base::RunLoop().RunUntilIdle();
@@ -136,8 +141,10 @@ TEST_F(
 
 TEST_F(BroadcastingReceiverTest,
        DoesNotHoldOnToAccessPermissionWhenAllClientsAreSuspended) {
-  EXPECT_CALL(*mock_receiver_1_, DoOnFrameReadyInBuffer(_, _, _, _)).Times(0);
-  EXPECT_CALL(*mock_receiver_2_, DoOnFrameReadyInBuffer(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_video_frame_handler_1_, DoOnFrameReadyInBuffer(_, _, _, _))
+      .Times(0);
+  EXPECT_CALL(*mock_video_frame_handler_2_, DoOnFrameReadyInBuffer(_, _, _, _))
+      .Times(0);
 
   broadcaster_.SuspendClient(client_id_1_);
   broadcaster_.SuspendClient(client_id_2_);

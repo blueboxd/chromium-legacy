@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -46,6 +47,7 @@
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/vulkan/buildflags.h"
+#include "skia/buildflags.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/private/SkDeferredDisplayList.h"
@@ -63,7 +65,7 @@
 #include "components/viz/service/display_embedder/skia_output_device_vulkan.h"
 #endif
 
-#if BUILDFLAG(ENABLE_VULKAN) && defined(USE_X11)
+#if (BUILDFLAG(ENABLE_VULKAN) || BUILDFLAG(SKIA_USE_DAWN)) && defined(USE_X11)
 #include "components/viz/service/display_embedder/skia_output_device_x11.h"
 #endif
 
@@ -71,6 +73,11 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
+#endif
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+#include "components/viz/common/gpu/dawn_context_provider.h"
+#include "components/viz/service/display_embedder/skia_output_device_dawn.h"
 #endif
 
 namespace viz {
@@ -625,6 +632,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       shared_image_representation_factory_(
           CreateSharedImageRepresentationFactory(dependency_)),
       vulkan_context_provider_(dependency_->GetVulkanContextProvider()),
+      dawn_context_provider_(dependency_->GetDawnContextProvider()),
       renderer_settings_(renderer_settings),
       sequence_id_(sequence_id),
       did_swap_buffer_complete_callback_(
@@ -891,9 +899,14 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     DCHECK(offscreen.surface());
   } else {
 #if DCHECK_IS_ON()
+    // TODO(crbug.com/1022304): Remove aliasing after figuring out how
+    // characterizations are different.
     SkSurfaceCharacterization characterization;
-    DCHECK(offscreen.surface()->characterize(&characterization) &&
-           characterization == ddl->characterization());
+    DCHECK(offscreen.surface()->characterize(&characterization));
+    base::debug::Alias(&characterization);
+    SkSurfaceCharacterization ddl_characterization = ddl->characterization();
+    base::debug::Alias(&ddl_characterization);
+    DCHECK(characterization == ddl_characterization);
 #endif
   }
   {
@@ -962,8 +975,8 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
       base::BindOnce([](std::vector<std::unique_ptr<SkDeferredDisplayList>>) {},
                      std::move(destroy_after_swap_)));
 
-  bool use_gl_renderer_copier =
-      !is_using_vulkan() && !features::IsUsingSkiaForGLReadback();
+  bool use_gl_renderer_copier = !is_using_vulkan() && !is_using_dawn() &&
+                                !features::IsUsingSkiaForGLReadback();
   if (use_gl_renderer_copier)
     gpu::ContextUrl::SetActiveUrl(copier_active_url_);
 
@@ -1283,8 +1296,16 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
           ->CreatePlatformWindowSurface(dependency_->GetSurfaceHandle());
 #endif
 
-  if (!(is_using_vulkan() ? InitializeForVulkan() : InitializeForGL()))
-    return false;
+  if (is_using_vulkan()) {
+    if (!InitializeForVulkan())
+      return false;
+  } else if (is_using_dawn()) {
+    if (!InitializeForDawn())
+      return false;
+  } else {
+    if (!InitializeForGL())
+      return false;
+  }
   max_resource_cache_bytes_ = context_state_->max_resource_cache_bytes();
   return true;
 }
@@ -1371,6 +1392,33 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 #else
     output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
         vulkan_context_provider_, dependency_->GetSurfaceHandle(),
+        did_swap_buffer_complete_callback_);
+#endif
+  }
+#endif
+  return true;
+}
+
+bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
+  context_state_ = dependency_->GetSharedContextState();
+  DCHECK(context_state_);
+#if BUILDFLAG(SKIA_USE_DAWN)
+  if (dependency_->IsOffscreen()) {
+    output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
+        context_state_, false /* flipped */,
+        renderer_settings_.requires_alpha_channel,
+        did_swap_buffer_complete_callback_);
+    supports_alpha_ = renderer_settings_.requires_alpha_channel;
+  } else {
+#if defined(USE_X11)
+    // TODO(sgilhuly): Set up a Vulkan swapchain so that Linux can also use
+    // SkiaOutputDeviceDawn.
+    output_device_ = std::make_unique<SkiaOutputDeviceX11>(
+        context_state_, dependency_->GetSurfaceHandle(),
+        did_swap_buffer_complete_callback_);
+#else
+    output_device_ = std::make_unique<SkiaOutputDeviceDawn>(
+        dawn_context_provider_, dependency_->GetSurfaceHandle(),
         did_swap_buffer_complete_callback_);
 #endif
   }

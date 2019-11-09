@@ -17,9 +17,9 @@ namespace media {
 VirtualAudioInputStream::VirtualAudioInputStream(
     const AudioParameters& params,
     const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
-    const AfterCloseCallback& after_close_cb)
+    AfterCloseCallback after_close_cb)
     : worker_task_runner_(worker_task_runner),
-      after_close_cb_(after_close_cb),
+      after_close_cb_(std::move(after_close_cb)),
       callback_(NULL),
       params_(params),
       mixer_(params_, params_, false),
@@ -123,9 +123,7 @@ void VirtualAudioInputStream::Close() {
   // here.  The callback is moved to a stack-local first since |this| could be
   // destroyed during Run().
   if (after_close_cb_) {
-    const AfterCloseCallback cb = after_close_cb_;
-    after_close_cb_.Reset();
-    cb.Run(this);
+    std::move(after_close_cb_).Run(this);
   }
 }
 

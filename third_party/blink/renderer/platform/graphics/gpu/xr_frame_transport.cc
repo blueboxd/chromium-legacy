@@ -102,16 +102,13 @@ void XRFrameTransport::FrameSubmit(
     DrawingBuffer::Client* drawing_buffer_client,
     scoped_refptr<Image> image_ref,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback,
-    int16_t vr_frame_id,
-    bool needs_copy) {
+    int16_t vr_frame_id) {
   DCHECK(transport_options_);
 
   if (transport_options_->transport_method ==
       device::mojom::blink::XRPresentationTransportMethod::
           SUBMIT_AS_TEXTURE_HANDLE) {
 #if defined(OS_WIN)
-    // Currently, we assume that this transport needs a copy.
-    DCHECK(needs_copy);
     TRACE_EVENT0("gpu", "XRFrameTransport::CopyImage");
     // Update last_transfer_succeeded_ value. This should usually complete
     // without waiting.
@@ -152,10 +149,6 @@ void XRFrameTransport::FrameSubmit(
   } else if (transport_options_->transport_method ==
              device::mojom::blink::XRPresentationTransportMethod::
                  SUBMIT_AS_MAILBOX_HOLDER) {
-    // Currently, this transport assumes we don't need to make a separate copy
-    // of the canvas content.
-    DCHECK(!needs_copy);
-
     // The AcceleratedStaticBitmapImage must be kept alive until the
     // mailbox is used via createAndConsumeTextureCHROMIUM, the mailbox
     // itself does not keep it alive. We must keep a reference to the

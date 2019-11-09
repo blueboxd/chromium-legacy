@@ -15,6 +15,7 @@ include_rules = [
   "+media/gpu",
   "+media/mojo",
   "+mojo/public/cpp",
+  "+skia/buildflags.h",
   "+services/viz/privileged/mojom",
   "+ui/gl",
 ]

@@ -19,14 +19,6 @@ class ProtoChromePromptIPC : public ChromePromptIPC {
  public:
   static constexpr uint32_t kMaxMessageLength = 1 * 1024 * 1024;  // 1M bytes
 
-  // Currently some mojom types are used to provide as drop-in replacement
-  // for the existing mojo based implementation. Since they are very simple
-  // they will stay essentially identical once the PromptAcceptance enum is
-  // replaced with a hand rolled one.
-  using PromptAcceptance = mojom::PromptAcceptance;
-  using PromptUserCallback = base::OnceCallback<void(PromptAcceptance)>;
-  using DisableExtensionsCallback = base::OnceCallback<void(bool)>;
-
   ProtoChromePromptIPC(base::win::ScopedHandle response_read_handle,
                        base::win::ScopedHandle request_write_handle);
   ~ProtoChromePromptIPC() override;
@@ -62,7 +54,7 @@ class ProtoChromePromptIPC : public ChromePromptIPC {
 
   void SendBuffer(const std::string& request_content);
 
-  PromptAcceptance WaitForPromptAcceptance();
+  PromptUserResponse::PromptAcceptance WaitForPromptAcceptance();
 
   template <typename T>
   void WriteByValue(T value) {

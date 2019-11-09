@@ -74,8 +74,8 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
       known_buffer_ids_.erase(entry_iter);
       if (producer_.is_bound())
         producer_->OnBufferRetired(buffer_id_to_drop);
-      if (receiver_.is_bound()) {
-        receiver_->OnBufferRetired(buffer_id_to_drop);
+      if (video_frame_handler_.is_bound()) {
+        video_frame_handler_->OnBufferRetired(buffer_id_to_drop);
       }
     }
   }
@@ -87,12 +87,12 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
   }
 
   if (!base::Contains(known_buffer_ids_, buffer_id)) {
-    if (receiver_.is_bound()) {
+    if (video_frame_handler_.is_bound()) {
       media::mojom::VideoBufferHandlePtr buffer_handle =
           media::mojom::VideoBufferHandle::New();
       buffer_handle->set_shared_buffer_handle(
           buffer_pool_->DuplicateAsMojoBuffer(buffer_id));
-      receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
+      video_frame_handler_->OnNewBuffer(buffer_id, std::move(buffer_handle));
     }
     known_buffer_ids_.push_back(buffer_id);
 
@@ -132,7 +132,7 @@ void SharedMemoryVirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
   }
 
   // Notify receiver if there is one.
-  if (receiver_.is_bound()) {
+  if (video_frame_handler_.is_bound()) {
     buffer_pool_->HoldForConsumers(buffer_id, 1 /* num_clients */);
     auto access_permission = std::make_unique<
         media::ScopedBufferPoolReservation<media::ConsumerReleaseTraits>>(
@@ -142,22 +142,22 @@ void SharedMemoryVirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
         std::make_unique<ScopedAccessPermissionMediaToMojoAdapter>(
             std::move(access_permission)),
         access_permission_proxy.InitWithNewPipeAndPassReceiver());
-    receiver_->OnFrameReadyInBuffer(buffer_id, 0 /* frame_feedback_id */,
-                                    std::move(access_permission_proxy),
-                                    std::move(frame_info));
+    video_frame_handler_->OnFrameReadyInBuffer(
+        buffer_id, 0 /* frame_feedback_id */,
+        std::move(access_permission_proxy), std::move(frame_info));
   }
   buffer_pool_->RelinquishProducerReservation(buffer_id);
 }
 
 void SharedMemoryVirtualDeviceMojoAdapter::Start(
     const media::VideoCaptureParams& requested_settings,
-    mojo::PendingRemote<mojom::Receiver> receiver) {
+    mojo::PendingRemote<mojom::VideoFrameHandler> handler) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  receiver_.Bind(std::move(receiver));
-  receiver_.set_disconnect_handler(base::BindOnce(
+  video_frame_handler_.Bind(std::move(handler));
+  video_frame_handler_.set_disconnect_handler(base::BindOnce(
       &SharedMemoryVirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose,
       base::Unretained(this)));
-  receiver_->OnStarted();
+  video_frame_handler_->OnStarted();
 
   // Notify receiver of known buffers */
   for (auto buffer_id : known_buffer_ids_) {
@@ -165,7 +165,7 @@ void SharedMemoryVirtualDeviceMojoAdapter::Start(
         media::mojom::VideoBufferHandle::New();
     buffer_handle->set_shared_buffer_handle(
         buffer_pool_->DuplicateAsMojoBuffer(buffer_id));
-    receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
+    video_frame_handler_->OnNewBuffer(buffer_id, std::move(buffer_handle));
   }
 }
 
@@ -196,15 +196,15 @@ void SharedMemoryVirtualDeviceMojoAdapter::TakePhoto(
 
 void SharedMemoryVirtualDeviceMojoAdapter::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!receiver_.is_bound())
+  if (!video_frame_handler_.is_bound())
     return;
   // Unsubscribe from connection error callbacks.
-  receiver_.set_disconnect_handler(base::OnceClosure());
+  video_frame_handler_.set_disconnect_handler(base::OnceClosure());
   // Send out OnBufferRetired events and OnStopped.
   for (auto buffer_id : known_buffer_ids_)
-    receiver_->OnBufferRetired(buffer_id);
-  receiver_->OnStopped();
-  receiver_.reset();
+    video_frame_handler_->OnBufferRetired(buffer_id);
+  video_frame_handler_->OnStopped();
+  video_frame_handler_.reset();
 }
 
 void SharedMemoryVirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose() {

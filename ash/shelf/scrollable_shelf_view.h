@@ -375,6 +375,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   base::OneShotTimer page_flip_timer_;
 
+  // Metric reporter for scrolling animations.
+  const std::unique_ptr<ui::AnimationMetricsReporter>
+      animation_metrics_reporter_;
+
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfView);
 };
 

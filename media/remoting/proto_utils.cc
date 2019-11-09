@@ -135,7 +135,7 @@ void ConvertDecryptConfigToProto(const DecryptConfig& decrypt_config,
   }
 
   config_message->set_mode(
-      ToProtoEncryptionMode(decrypt_config.encryption_mode()).value());
+      ToProtoEncryptionMode(decrypt_config.encryption_scheme()).value());
   if (decrypt_config.HasPattern()) {
     config_message->set_crypt_byte_block(
         decrypt_config.encryption_pattern()->crypt_byte_block());
@@ -235,20 +235,23 @@ std::vector<uint8_t> DecoderBufferToByteArray(
   return buffer;
 }
 
-void ConvertEncryptionSchemeToProto(const EncryptionScheme& encryption_scheme,
+void ConvertEncryptionSchemeToProto(EncryptionScheme encryption_scheme,
                                     pb::EncryptionScheme* message) {
   DCHECK(message);
+
+  // The remote side only cares about the cipher mode. Setting EncryptionPattern
+  // to (0, 0) is fine.
+  // TODO(crbug.com/1018923): Upgrade proto to remove EncryptionPattern from
+  // Audio/VideoDecoderConfig.
   message->set_mode(
-      ToProtoEncryptionSchemeCipherMode(encryption_scheme.mode()).value());
-  message->set_encrypt_blocks(encryption_scheme.pattern().crypt_byte_block());
-  message->set_skip_blocks(encryption_scheme.pattern().skip_byte_block());
+      ToProtoEncryptionSchemeCipherMode(encryption_scheme).value());
+  message->set_encrypt_blocks(0);
+  message->set_skip_blocks(0);
 }
 
 EncryptionScheme ConvertProtoToEncryptionScheme(
     const pb::EncryptionScheme& message) {
-  return EncryptionScheme(
-      ToMediaEncryptionSchemeCipherMode(message.mode()).value(),
-      EncryptionPattern(message.encrypt_blocks(), message.skip_blocks()));
+  return ToMediaEncryptionScheme(message.mode()).value();
 }
 
 void ConvertAudioDecoderConfigToProto(const AudioDecoderConfig& audio_config,
@@ -359,7 +362,6 @@ bool ConvertProtoToVideoDecoderConfig(
     const pb::VideoDecoderConfig& video_message,
     VideoDecoderConfig* video_config) {
   DCHECK(video_config);
-  EncryptionScheme encryption_scheme;
 
   // TODO(hubbe): Update pb to use VideoColorSpace
   VideoColorSpace color_space;

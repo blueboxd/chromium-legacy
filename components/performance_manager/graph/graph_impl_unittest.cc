@@ -25,7 +25,9 @@ TEST_F(GraphImplTest, SafeCasting) {
 }
 
 TEST_F(GraphImplTest, FindOrCreateSystemNode) {
+  EXPECT_TRUE(graph()->IsEmpty());
   SystemNodeImpl* system_node = graph()->FindOrCreateSystemNodeImpl();
+  EXPECT_FALSE(graph()->IsEmpty());
 
   // A second request should return the same instance.
   EXPECT_EQ(system_node, graph()->FindOrCreateSystemNodeImpl());

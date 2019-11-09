@@ -35,7 +35,7 @@ VideoDecoderConfig CreateFakeVideoConfig() {
   return VideoDecoderConfig(
       kCodecH264, H264PROFILE_MAIN, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace(), kNoTransformation, coded_size, visible_rect,
-      natural_size, EmptyExtraData(), Unencrypted());
+      natural_size, EmptyExtraData(), EncryptionScheme::kUnencrypted);
 }
 
 BufferQueue GenerateFakeBuffers(const int* frame_pts_ms,

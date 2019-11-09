@@ -10,6 +10,27 @@
 
 namespace blink {
 namespace http_structured_header {
+namespace {
+
+// Helpers to make test cases clearer
+
+Item Token(std::string value) {
+  return Item(value, Item::kTokenType);
+}
+
+std::pair<std::string, Item> Param(std::string key) {
+  return std::make_pair(key, Item());
+}
+
+std::pair<std::string, Item> Param(std::string key, int64_t value) {
+  return std::make_pair(key, Item(value));
+}
+
+std::pair<std::string, Item> Param(std::string key, std::string value) {
+  return std::make_pair(key, Item(value));
+}
+
+}  // namespace
 
 // Test cases are taken from https://github.com/httpwg/structured-header-tests.
 
@@ -20,15 +41,12 @@ TEST(StructuredHeaderTest, ParseItem) {
     const base::Optional<Item> expected;  // nullopt if parse error is expected
   } cases[] = {
       // Item
-      {"basic token - item", "a_b-c.d3:f%00/*",
-       Item("a_b-c.d3:f%00/*", Item::kTokenType)},
-      {"token with capitals - item", "fooBar",
-       Item("fooBar", Item::kTokenType)},
-      {"token starting with capitals - item", "FooBar",
-       Item("FooBar", Item::kTokenType)},
+      {"basic token - item", "a_b-c.d3:f%00/*", Token("a_b-c.d3:f%00/*")},
+      {"token with capitals - item", "fooBar", Token("fooBar")},
+      {"token starting with capitals - item", "FooBar", Token("FooBar")},
       {"bad token - item", "abc$%!", base::nullopt},
-      {"leading whitespace", " foo", Item("foo", Item::kTokenType)},
-      {"trailing whitespace", "foo ", Item("foo", Item::kTokenType)},
+      {"leading whitespace", " foo", Token("foo")},
+      {"trailing whitespace", "foo ", Token("foo")},
       // Number
       {"basic integer", "42", Item(42)},
       {"zero integer", "0", Item(0)},
@@ -73,16 +91,74 @@ TEST(StructuredHeaderTest, ParseItem) {
       {"abruptly ending string quote", "\"foo \\", base::nullopt},
   };
   for (const auto& c : cases) {
+    SCOPED_TRACE(c.name);
     base::Optional<Item> result = ParseItem(c.raw);
-    if (c.expected) {
-      EXPECT_TRUE(result.has_value()) << c.name;
-      EXPECT_EQ(*result, c.expected) << c.name;
-    } else {
-      EXPECT_FALSE(result.has_value()) << c.name;
-    }
+    EXPECT_EQ(result, c.expected);
   }
 }
 
+// For Structured Headers Draft 13
+TEST(StructuredHeaderTest, ParseList) {
+  struct ListTestCase {
+    const char* name;
+    const char* raw;
+    const base::Optional<List> expected;  // nullopt if parse error is expected.
+  } cases[] = {
+      // Basic lists
+      {"basic list", "1, 42", {{{Item(1), {}}, {Item(42), {}}}}},
+      {"empty list", "", List()},
+      {"single item list", "42", {{{Item(42), {}}}}},
+      {"no whitespace list", "1, 42", {{{Item(1), {}}, {Item(42), {}}}}},
+      {"trailing comma list", "1, 42,", base::nullopt},
+      {"empty item list", "1,,42", base::nullopt},
+      // Lists of lists
+      {"basic list of lists",
+       "(1 2), (42 43)",
+       {{{{Item(1), Item(2)}, {}}, {{Item(42), Item(43)}, {}}}}},
+      {"single item list of lists",
+       "(42)",
+       {{{std::vector<Item>{Item(42)}, {}}}}},
+      {"empty item list of lists", "()", {{{std::vector<Item>(), {}}}}},
+      {"empty middle item list of lists",
+       "(1),(),(42)",
+       {{{std::vector<Item>{Item(1)}, {}},
+         {std::vector<Item>(), {}},
+         {std::vector<Item>{Item(42)}, {}}}}},
+      {"extra whitespace list of lists",
+       "(1  42)",
+       {{{{Item(1), Item(42)}, {}}}}},
+      {"no trailing parenthesis list of lists", "(1 42", base::nullopt},
+      {"no trailing parenthesis middle list of lists", "(1 2, (42 43)",
+       base::nullopt},
+      // Parameterized Lists
+      {"basic parameterised list",
+       "abc_123;a=1;b=2; cdef_456, ghi;q=\"9\";r=\"w\"",
+       {{{Token("abc_123"), {Param("a", 1), Param("b", 2), Param("cdef_456")}},
+         {Token("ghi"), {Param("q", "9"), Param("r", "w")}}}}},
+      {"single item parameterised list",
+       "text/html;q=1",
+       {{{Token("text/html"), {Param("q", 1)}}}}},
+      {"no whitespace parameterised list",
+       "text/html,text/plain;q=1",
+       {{{Token("text/html"), {}}, {Token("text/plain"), {Param("q", 1)}}}}},
+      {"whitespace before = parameterised list", "text/html, text/plain;q =1",
+       base::nullopt},
+      {"whitespace after = parameterised list", "text/html, text/plain;q= 1",
+       base::nullopt},
+      {"extra whitespace param-list",
+       "text/html  ,  text/plain ;  q=1",
+       {{{Token("text/html"), {}}, {Token("text/plain"), {Param("q", 1)}}}}},
+      {"empty item parameterised list", "text/html,,text/plain;q=1",
+       base::nullopt},
+  };
+  for (const auto& c : cases) {
+    SCOPED_TRACE(c.name);
+    base::Optional<List> result = ParseList(c.raw);
+    EXPECT_EQ(result, c.expected);
+  }
+}
+
+// For Structured Headers Draft 9
 TEST(StructuredHeaderTest, ParseListOfLists) {
   struct TestCase {
     const char* name;
@@ -110,21 +186,18 @@ TEST(StructuredHeaderTest, ParseListOfLists) {
       {"empty inner item list of lists", "1;;2,42", {}},
   };
   for (const auto& c : cases) {
+    SCOPED_TRACE(c.name);
     base::Optional<ListOfLists> result = ParseListOfLists(c.raw);
     if (!c.expected.empty()) {
-      EXPECT_TRUE(result.has_value()) << c.name;
-      EXPECT_EQ(*result, c.expected) << c.name;
+      EXPECT_TRUE(result.has_value());
+      EXPECT_EQ(*result, c.expected);
     } else {
-      EXPECT_FALSE(result.has_value()) << c.name;
+      EXPECT_FALSE(result.has_value());
     }
   }
 }
 
-inline bool operator==(const ParameterisedIdentifier& lhs,
-                       const ParameterisedIdentifier& rhs) {
-  return lhs.identifier == rhs.identifier && lhs.params == rhs.params;
-}
-
+// For Structured Headers Draft 9
 TEST(StructuredHeaderTest, ParseParameterisedList) {
   struct TestCase {
     const char* name;
@@ -134,26 +207,23 @@ TEST(StructuredHeaderTest, ParseParameterisedList) {
       {"basic param-list",
        "abc_123;a=1;b=2; cdef_456, ghi;q=\"9\";r=\"w\"",
        {
-           {Item("abc_123", Item::kTokenType),
-            {{"a", Item(1)}, {"b", Item(2)}, {"cdef_456", {}}}},
-           {Item("ghi", Item::kTokenType),
-            {{"q", Item("9")}, {"r", Item("w")}}},
+           {Token("abc_123"),
+            {Param("a", 1), Param("b", 2), Param("cdef_456")}},
+           {Token("ghi"), {Param("q", "9"), Param("r", "w")}},
        }},
       {"empty param-list", "", {}},
       {"single item param-list",
        "text/html;q=1",
-       {{Item("text/html", Item::kTokenType), {{"q", Item(1)}}}}},
+       {{Token("text/html"), {Param("q", 1)}}}},
       {"empty param-list", "", {}},
       {"no whitespace param-list",
        "text/html,text/plain;q=1",
-       {{Item("text/html", Item::kTokenType), {}},
-        {Item("text/plain", Item::kTokenType), {{"q", Item(1)}}}}},
+       {{Token("text/html"), {}}, {Token("text/plain"), {Param("q", 1)}}}},
       {"whitespace before = param-list", "text/html, text/plain;q =1", {}},
       {"whitespace after = param-list", "text/html, text/plain;q= 1", {}},
       {"extra whitespace param-list",
        "text/html  ,  text/plain ;  q=1",
-       {{Item("text/html", Item::kTokenType), {}},
-        {Item("text/plain", Item::kTokenType), {{"q", Item(1)}}}}},
+       {{Token("text/html"), {}}, {Token("text/plain"), {Param("q", 1)}}}},
       {"duplicate key", "abc;a=1;b=2;a=1", {}},
       {"numeric key", "abc;a=1;1b=2;c=1", {}},
       {"uppercase key", "abc;a=1;B=2;c=1", {}},
@@ -168,16 +238,17 @@ TEST(StructuredHeaderTest, ParseParameterisedList) {
       {"leading comma", ",abc;a=1", {}},
   };
   for (const auto& c : cases) {
+    SCOPED_TRACE(c.name);
     base::Optional<ParameterisedList> result = ParseParameterisedList(c.raw);
     if (c.expected.empty()) {
-      EXPECT_FALSE(result.has_value()) << c.name;
+      EXPECT_FALSE(result.has_value());
       continue;
     }
-    EXPECT_TRUE(result.has_value()) << c.name;
-    EXPECT_EQ(result->size(), c.expected.size()) << c.name;
+    EXPECT_TRUE(result.has_value());
+    EXPECT_EQ(result->size(), c.expected.size());
     if (result->size() == c.expected.size()) {
       for (size_t i = 0; i < c.expected.size(); ++i)
-        EXPECT_EQ((*result)[i], c.expected[i]) << c.name;
+        EXPECT_EQ((*result)[i], c.expected[i]);
     }
   }
 }

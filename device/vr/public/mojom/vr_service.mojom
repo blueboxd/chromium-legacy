@@ -198,12 +198,6 @@ struct VRPose {
   // False when position is based on sensors tracking a 6DoF pose.
   bool emulated_position;
 
-  // Velocity/Acceleration is in global coordinates, as rad/s.
-  gfx.mojom.Vector3dF? angular_velocity;
-  gfx.mojom.Vector3dF? linear_velocity;
-  gfx.mojom.Vector3dF? angular_acceleration;
-  gfx.mojom.Vector3dF? linear_acceleration;
-
   // For WebXR sessions only, reports the state of all active input devices
   // synced with the head pose.
   array<XRInputSourceState>? input_state;
@@ -221,20 +215,6 @@ struct XRRay {
 
 struct XRHitResult {
   gfx.mojom.Transform hit_matrix;
-};
-
-struct VRDisplayCapabilities {
-  bool has_position;
-  bool has_external_display;
-
-  // Indicates whether the display can actively show imagery on a headset.
-  bool can_present;
-
-  // Whether the display gathers data about the environment (for AR like
-  // planes, point clouds, meshes, etc.). The backend will decide whether
-  // it needs to provide camera frames or not based on whether it is a
-  // see-through HMD or camera-based AR system.
-  bool can_provide_environment_integration;
 };
 
 // Information about the optical properties for an eye in a VRDisplay.
@@ -266,14 +246,11 @@ struct VRStageParameters {
 
 struct VRDisplayInfo {
   XRDeviceId id;
-  string display_name;
-  VRDisplayCapabilities capabilities;
   VRStageParameters? stage_parameters;
   // Parameters required to distort a scene for viewing in a VR headset. Only
   // required for devices which have the can_present capability.
   VREyeParameters? left_eye;
   VREyeParameters? right_eye;
-  float webvr_default_framebuffer_scale = 1.0;
   float webxr_default_framebuffer_scale = 1.0;
 };
 
@@ -499,12 +476,6 @@ interface VRService {
   // XRSession struct with the requisite interfaces will be returned.
   RequestSession(XRSessionOptions options) => (RequestSessionResult result);
   SupportsSession(XRSessionOptions options) => (bool supports_session);
-
-  // WebVR 1.1 functionality compatibility method. Returns VRDisplayInfo for an
-  // immersive session if immersive is supported. If (and only if) immersive is
-  // not supported, will return a nullptr. This call might cause device specific
-  // UI to appear.
-  GetImmersiveVRDisplayInfo() => (VRDisplayInfo? info);
 
   // Shuts down an active immersive session. The callback is triggered
   // once teardown is complete and the system is again in a state where

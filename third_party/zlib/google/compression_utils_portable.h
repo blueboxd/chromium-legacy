@@ -17,9 +17,15 @@
 
 namespace zlib_internal {
 
-uLongf GZipExpectedCompressedSize(uLongf input_size);
+enum WrapperType {
+  ZLIB,
+  GZIP,
+  ZRAW,
+};
 
-uint32_t GetUncompressedSize(const Bytef* compressed_data, size_t length);
+uLongf GzipExpectedCompressedSize(uLongf input_size);
+
+uint32_t GetGzipUncompressedSize(const Bytef* compressed_data, size_t length);
 
 int GzipCompressHelper(Bytef* dest,
                        uLongf* dest_length,
@@ -28,10 +34,24 @@ int GzipCompressHelper(Bytef* dest,
                        void* (*malloc_fn)(size_t),
                        void (*free_fn)(void*));
 
+int CompressHelper(WrapperType wrapper_type,
+                   Bytef* dest,
+                   uLongf* dest_length,
+                   const Bytef* source,
+                   uLong source_length,
+                   void* (*malloc_fn)(size_t),
+                   void (*free_fn)(void*));
+
 int GzipUncompressHelper(Bytef* dest,
                          uLongf* dest_length,
                          const Bytef* source,
                          uLong source_length);
+
+int UncompressHelper(WrapperType wrapper_type,
+                     Bytef* dest,
+                     uLongf* dest_length,
+                     const Bytef* source,
+                     uLong source_length);
 
 }  // namespace zlib_internal
 

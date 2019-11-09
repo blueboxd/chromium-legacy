@@ -28,16 +28,16 @@ namespace safe_browsing {
 
 namespace {
 
-const char kDmToken[] = "dm_token";
-const char kTestUrl[] = "http://example.com";
+constexpr char kDmToken[] = "dm_token";
+constexpr char kTestUrl[] = "http://example.com";
 
-const char kTestHttpsSchemePatternUrl[] = "https://*";
-const char kTestChromeSchemePatternUrl[] = "chrome://*";
-const char kTestDevtoolsSchemePatternUrl[] = "devtools://*";
+constexpr char kTestHttpsSchemePatternUrl[] = "https://*";
+constexpr char kTestChromeSchemePatternUrl[] = "chrome://*";
+constexpr char kTestDevtoolsSchemePatternUrl[] = "devtools://*";
 
-const char kTestPathPatternUrl[] = "*/a/specific/path/";
-const char kTestPortPatternUrl[] = "*:1234";
-const char kTestQueryPatternUrl[] = "*?q=5678";
+constexpr char kTestPathPatternUrl[] = "*/a/specific/path/";
+constexpr char kTestPortPatternUrl[] = "*:1234";
+constexpr char kTestQueryPatternUrl[] = "*?q=5678";
 
 class BaseTest : public testing::Test {
  public:

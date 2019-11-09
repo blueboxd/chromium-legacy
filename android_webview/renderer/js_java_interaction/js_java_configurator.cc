@@ -83,7 +83,8 @@ void JsJavaConfigurator::BindPendingReceiver(
     mojo::PendingAssociatedReceiver<mojom::JsJavaConfigurator>
         pending_receiver) {
   receiver_.Bind(std::move(pending_receiver),
-                 render_frame()->GetTaskRunner(blink::TaskType::kInternalIPC));
+                 render_frame()->GetTaskRunner(
+                     blink::TaskType::kInternalNavigationAssociated));
 }
 
 mojom::JsToJavaMessaging* JsJavaConfigurator::GetJsToJavaMessage(

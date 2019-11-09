@@ -17,6 +17,7 @@ generate_product_config_srcjar("weblayer_product_config") {
 
 java_cpp_enum("generated_enums") {
   sources = [
+    "//weblayer/public/navigation.h",
     "//weblayer/public/new_tab_delegate.h",
     "//weblayer/public/profile.h",
   ]
@@ -73,10 +74,6 @@ android_library("java") {
   # Needed for android.webkit.WebView(Delegate|Factory)
   alternative_android_sdk_dep =
       "//third_party/android_sdk:public_framework_system_java"
-
-  # TODO(timvolodine): once the downstream implementation of GmsBridgeImpl.java
-  # lands make sure to exclude this when "enable_chrome_android_internal" is true.
-  deps += [ ":gms_bridge_upstream_impl_java" ]
 }
 
 generate_jni("jni") {
@@ -99,6 +96,8 @@ android_library("interfaces_java") {
     "org/chromium/weblayer_private/interfaces/APICallException.java",
     "org/chromium/weblayer_private/interfaces/BrowserFragmentArgs.java",
     "org/chromium/weblayer_private/interfaces/BrowsingDataType.java",
+    "org/chromium/weblayer_private/interfaces/LoadError.java",
+    "org/chromium/weblayer_private/interfaces/NavigationState.java",
     "org/chromium/weblayer_private/interfaces/NewTabType.java",
     "org/chromium/weblayer_private/interfaces/ObjectWrapper.java",
     "org/chromium/weblayer_private/interfaces/WebLayerVersion.java",
@@ -138,7 +137,7 @@ android_library("gms_bridge_upstream_impl_java") {
 }
 
 android_aidl("aidl") {
-  import_include = [ "org/chromium/weblayer_private/interfaces" ]
+  import_include = [ "." ]
   sources = [
     "org/chromium/weblayer_private/interfaces/IBrowser.aidl",
     "org/chromium/weblayer_private/interfaces/IBrowserClient.aidl",

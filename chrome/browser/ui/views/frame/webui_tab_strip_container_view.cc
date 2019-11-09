@@ -143,6 +143,8 @@ WebUITabStripContainerView::WebUITabStripContainerView(
   // fired.
   web_view_->GetWebContents()->WasHidden();
 
+  web_view_->set_allow_accelerators(true);
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
   web_view_->LoadInitialURL(GURL(chrome::kChromeUITabStripURL));
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
@@ -236,9 +238,11 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     SetVisible(true);
     animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(250));
     animation_.Show();
+    web_view_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   } else {
     animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
     animation_.Hide();
+    web_view_->SetFocusBehavior(FocusBehavior::NEVER);
   }
   auto_closer_->set_enabled(target_visible);
 }
@@ -315,6 +319,12 @@ void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
   if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER) {
     SetContainerTargetVisibility(!GetVisible());
+
+    if (GetVisible() && sender->HasFocus()) {
+      // Automatically move focus to the tab strip WebUI if the focus is
+      // currently on the toggle button.
+      SetPaneFocus(web_view_);
+    }
   } else if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_NEW_TAB_BUTTON) {
     chrome::ExecuteCommand(browser_, IDC_NEW_TAB);
   } else {

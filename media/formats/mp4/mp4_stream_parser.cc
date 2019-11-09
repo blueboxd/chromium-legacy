@@ -42,33 +42,22 @@ const int kMaxEmptySampleLogs = 20;
 const int kMaxInvalidConversionLogs = 20;
 const int kMaxVideoKeyframeMismatchLogs = 10;
 
-// Caller should be prepared to handle return of Unencrypted() in case of
-// unsupported scheme.
-// TODO(crbug.com/825041): Remove pattern from this function.
+// Caller should be prepared to handle return of EncryptionScheme::kUnencrypted
+// in case of unsupported scheme.
 EncryptionScheme GetEncryptionScheme(const ProtectionSchemeInfo& sinf) {
   if (!sinf.HasSupportedScheme())
-    return Unencrypted();
+    return EncryptionScheme::kUnencrypted;
   FourCC fourcc = sinf.type.type;
-  EncryptionScheme::CipherMode mode = EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
-  EncryptionPattern pattern;
-  bool uses_pattern_encryption = false;
   switch (fourcc) {
     case FOURCC_CENC:
-      mode = EncryptionScheme::CIPHER_MODE_AES_CTR;
-      break;
+      return EncryptionScheme::kCenc;
     case FOURCC_CBCS:
-      mode = EncryptionScheme::CIPHER_MODE_AES_CBC;
-      uses_pattern_encryption = true;
-      break;
+      return EncryptionScheme::kCbcs;
     default:
       NOTREACHED();
       break;
   }
-  if (uses_pattern_encryption) {
-    pattern = {sinf.info.track_encryption.default_crypt_byte_block,
-               sinf.info.track_encryption.default_skip_byte_block};
-  }
-  return EncryptionScheme(mode, pattern);
+  return EncryptionScheme::kUnencrypted;
 }
 }  // namespace
 
@@ -442,10 +431,10 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         return false;
       }
       bool is_track_encrypted = entry.sinf.info.track_encryption.is_encrypted;
-      EncryptionScheme scheme = Unencrypted();
+      EncryptionScheme scheme = EncryptionScheme::kUnencrypted;
       if (is_track_encrypted) {
         scheme = GetEncryptionScheme(entry.sinf);
-        if (!scheme.is_encrypted())
+        if (scheme == EncryptionScheme::kUnencrypted)
           return false;
       }
       audio_config.Initialize(codec, sample_format, channel_layout,
@@ -511,10 +500,10 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         return false;
       }
       bool is_track_encrypted = entry.sinf.info.track_encryption.is_encrypted;
-      EncryptionScheme scheme = Unencrypted();
+      EncryptionScheme scheme = EncryptionScheme::kUnencrypted;
       if (is_track_encrypted) {
         scheme = GetEncryptionScheme(entry.sinf);
-        if (!scheme.is_encrypted())
+        if (scheme == EncryptionScheme::kUnencrypted)
           return false;
       }
       video_config.Initialize(entry.video_codec, entry.video_codec_profile,
@@ -838,7 +827,7 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
     if (!subsamples.empty()) {
       // Create a new config with the updated subsamples.
       decrypt_config.reset(
-          new DecryptConfig(decrypt_config->encryption_mode(),
+          new DecryptConfig(decrypt_config->encryption_scheme(),
                             decrypt_config->key_id(), decrypt_config->iv(),
                             subsamples, decrypt_config->encryption_pattern()));
     }

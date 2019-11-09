@@ -4,6 +4,7 @@
 
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"

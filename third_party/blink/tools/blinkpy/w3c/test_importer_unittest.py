@@ -7,11 +7,11 @@ import json
 
 from blinkpy.common.checkout.git_mock import MockGit
 from blinkpy.common.host_mock import MockHost
-from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.git_cl import CLStatus
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
 from blinkpy.common.net.network_transaction import NetworkTimeout
+from blinkpy.common.net.results_fetcher import Build
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.executive_mock import MockCall
 from blinkpy.common.system.executive_mock import MockExecutive

@@ -141,22 +141,6 @@
       "pool":"chromium.tests"
     },
     {
-      "include": "eg_cq_tests.json",
-      "device type": "iPad Pro (12.9-inch)",
-      "os": "12.4",
-      "xcode build version": "11b44",
-      "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
-    },
-    {
-      "include": "eg_tests.json",
-      "device type": "iPhone X",
-      "os": "12.4",
-      "xcode build version": "11b44",
-      "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"
-    },
-    {
       "include": "eg_tests.json",
       "device type": "iPad Air (3rd generation)",
       "os": "12.4",

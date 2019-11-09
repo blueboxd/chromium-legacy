@@ -13,14 +13,11 @@
 #include "components/offline_items_collection/core/test_support/scoped_mock_offline_content_provider.h"
 #include "components/offline_items_collection/core/throttled_offline_content_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
-using testing::CallbackToFunctor;
 using testing::Eq;
 using testing::InvokeWithoutArgs;
-using testing::Return;
 
 namespace offline_items_collection {
 namespace {
@@ -335,25 +332,27 @@ TEST_F(ThrottledOfflineContentProviderTest, TestPokingProviderFlushesQueue) {
   OfflineItem item5(ContentId("5", "E"));
   OfflineItem item6(ContentId("6", "F"));
 
-  auto updater = base::Bind(&MockOfflineContentProvider::NotifyOnItemUpdated,
-                            base::Unretained(&wrapped_provider_));
-
   // Set up reentrancy calls back into the provider.
   EXPECT_CALL(wrapped_provider_, OpenItem(_, _))
-      .WillRepeatedly(InvokeWithoutArgs(
-          CallbackToFunctor(base::Bind(updater, item2, base::nullopt))));
+      .WillRepeatedly(InvokeWithoutArgs([=]() {
+        wrapped_provider_.NotifyOnItemUpdated(item2, base::nullopt);
+      }));
   EXPECT_CALL(wrapped_provider_, RemoveItem(_))
-      .WillRepeatedly(InvokeWithoutArgs(
-          CallbackToFunctor(base::Bind(updater, item3, base::nullopt))));
+      .WillRepeatedly(InvokeWithoutArgs([=]() {
+        wrapped_provider_.NotifyOnItemUpdated(item3, base::nullopt);
+      }));
   EXPECT_CALL(wrapped_provider_, CancelDownload(_))
-      .WillRepeatedly(InvokeWithoutArgs(
-          CallbackToFunctor(base::Bind(updater, item4, base::nullopt))));
+      .WillRepeatedly(InvokeWithoutArgs([=]() {
+        wrapped_provider_.NotifyOnItemUpdated(item4, base::nullopt);
+      }));
   EXPECT_CALL(wrapped_provider_, PauseDownload(_))
-      .WillRepeatedly(InvokeWithoutArgs(
-          CallbackToFunctor(base::Bind(updater, item5, base::nullopt))));
+      .WillRepeatedly(InvokeWithoutArgs([=]() {
+        wrapped_provider_.NotifyOnItemUpdated(item5, base::nullopt);
+      }));
   EXPECT_CALL(wrapped_provider_, ResumeDownload(_, _))
-      .WillRepeatedly(InvokeWithoutArgs(
-          CallbackToFunctor(base::Bind(updater, item6, base::nullopt))));
+      .WillRepeatedly(InvokeWithoutArgs([=]() {
+        wrapped_provider_.NotifyOnItemUpdated(item6, base::nullopt);
+      }));
 
   {
     EXPECT_CALL(observer, OnItemUpdated(item1, Eq(base::nullopt))).Times(1);

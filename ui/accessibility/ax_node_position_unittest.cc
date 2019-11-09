@@ -198,6 +198,7 @@ class AXPositionTest : public testing::Test {
   // different language.
   std::unique_ptr<AXTree> CreateMultilingualDocument(
       std::vector<int>* text_offsets) {
+    EXPECT_NE(nullptr, text_offsets);
     text_offsets->push_back(0);
 
     base::string16 english_text;
@@ -212,8 +213,8 @@ class AXPositionTest : public testing::Test {
     base::string16 hindi_text;
     for (int i = 3; i < 5; ++i) {
       base::string16 grapheme = base::WideToUTF16(kGraphemeClusters[i]);
-      EXPECT_LE(2u, grapheme.length())
-          << "All Hindi characters should be two or more UTF16 code units.";
+      EXPECT_LE(2u, grapheme.length()) << "All Hindi characters should be two "
+                                          "or more UTF16 code units in length.";
       text_offsets->push_back(text_offsets->back() + int{grapheme.length()});
       hindi_text.append(grapheme);
     }
@@ -222,7 +223,7 @@ class AXPositionTest : public testing::Test {
     for (int i = 5; i < 8; ++i) {
       base::string16 grapheme = base::WideToUTF16(kGraphemeClusters[i]);
       EXPECT_LT(0u, grapheme.length())
-          << "One of the Thai characters should be one UTF16 code units, "
+          << "One of the Thai characters should be one UTF16 code unit, "
              "whilst others should be two or more.";
       text_offsets->push_back(text_offsets->back() + int{grapheme.length()});
       thai_text.append(grapheme);
@@ -2089,7 +2090,6 @@ TEST_F(AXPositionTest, CreatePositionAtInvalidGraphemeBoundary) {
       new_tree->data().tree_id, new_tree->root()->id(), 10 /* text_offset */,
       ax::mojom::TextAffinity::kUpstream);
   ASSERT_NE(nullptr, test_position);
-  ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(new_tree->root()->id(), test_position->anchor_id());
   EXPECT_EQ(10, test_position->text_offset());
@@ -3747,6 +3747,12 @@ TEST_F(AXPositionTest, CreateNextCharacterPosition) {
   ASSERT_TRUE(text_position->IsTextPosition());
 
   TestPositionType test_position = text_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(4, test_position->text_offset());
+  test_position = text_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
@@ -3772,6 +3778,12 @@ TEST_F(AXPositionTest, CreateNextCharacterPosition) {
   ASSERT_TRUE(text_position->IsTextPosition());
 
   test_position = text_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(5, test_position->text_offset());
+  test_position = text_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
@@ -3796,6 +3808,12 @@ TEST_F(AXPositionTest, CreateNextCharacterPosition) {
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
 
+  test_position = text_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(6, test_position->text_offset());
   test_position = text_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
@@ -3826,6 +3844,12 @@ TEST_F(AXPositionTest, CreateNextCharacterPosition) {
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsNullPosition());
   test_position = text_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+  EXPECT_EQ(6, test_position->text_offset());
+  test_position = text_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::StopAtAnchorBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
@@ -3850,6 +3874,12 @@ TEST_F(AXPositionTest, CreateNextCharacterPosition) {
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
   EXPECT_EQ(1, test_position->text_offset());
+  test_position = text_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(check_box_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
   test_position = text_position->CreateNextCharacterPosition(
       AXBoundaryBehavior::StopAtAnchorBoundary);
   EXPECT_NE(nullptr, test_position);
@@ -3903,7 +3933,13 @@ TEST_F(AXPositionTest, CreatePreviousCharacterPosition) {
 
   TestPositionType test_position =
       text_position->CreatePreviousCharacterPosition(
-          AXBoundaryBehavior::CrossBoundary);
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+  EXPECT_EQ(5, test_position->text_offset());
+  test_position = text_position->CreatePreviousCharacterPosition(
+      AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
@@ -3927,6 +3963,12 @@ TEST_F(AXPositionTest, CreatePreviousCharacterPosition) {
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
 
+  test_position = text_position->CreatePreviousCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+  EXPECT_EQ(1, test_position->text_offset());
   test_position = text_position->CreatePreviousCharacterPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
@@ -3952,6 +3994,12 @@ TEST_F(AXPositionTest, CreatePreviousCharacterPosition) {
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
 
+  test_position = text_position->CreatePreviousCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
   test_position = text_position->CreatePreviousCharacterPosition(
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
@@ -3982,6 +4030,12 @@ TEST_F(AXPositionTest, CreatePreviousCharacterPosition) {
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsNullPosition());
   test_position = text_position->CreatePreviousCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  test_position = text_position->CreatePreviousCharacterPosition(
       AXBoundaryBehavior::StopAtAnchorBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
@@ -4004,6 +4058,12 @@ TEST_F(AXPositionTest, CreatePreviousCharacterPosition) {
       AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsNullPosition());
+  test_position = text_position->CreatePreviousCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(check_box_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
   test_position = text_position->CreatePreviousCharacterPosition(
       AXBoundaryBehavior::StopAtAnchorBoundary);
   EXPECT_NE(nullptr, test_position);
@@ -4062,6 +4122,51 @@ TEST_F(AXPositionTest, CreateNextCharacterPositionAtGraphemeBoundary) {
     EXPECT_EQ(text_offset, test_position->text_offset());
     EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
   }
+
+  test_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, new_tree->root()->id(), 3 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  test_position = test_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(new_tree->root()->id(), test_position->anchor_id());
+  EXPECT_EQ(3, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+
+  test_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, new_tree->root()->id(), 4 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  test_position = test_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(new_tree->root()->id(), test_position->anchor_id());
+  EXPECT_EQ(5, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+
+  test_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, new_tree->root()->id(), 9 /* text_offset */,
+      ax::mojom::TextAffinity::kUpstream);
+  test_position = test_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(new_tree->root()->id(), test_position->anchor_id());
+  EXPECT_EQ(9, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kUpstream, test_position->affinity());
+
+  test_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, new_tree->root()->id(), 10 /* text_offset */,
+      ax::mojom::TextAffinity::kUpstream);
+  test_position = test_position->CreateNextCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(new_tree->root()->id(), test_position->anchor_id());
+  EXPECT_EQ(12, test_position->text_offset());
+  // Affinity should have been reset to downstream because there was a move.
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
 }
 
 TEST_F(AXPositionTest, CreatePreviousCharacterPositionAtGraphemeBoundary) {
@@ -4094,6 +4199,51 @@ TEST_F(AXPositionTest, CreatePreviousCharacterPositionAtGraphemeBoundary) {
     EXPECT_EQ(text_offset, test_position->text_offset());
     EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
   }
+
+  test_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, new_tree->root()->id(), 3 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  test_position = test_position->CreatePreviousCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(new_tree->root()->id(), test_position->anchor_id());
+  EXPECT_EQ(3, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+
+  test_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, new_tree->root()->id(), 4 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  test_position = test_position->CreatePreviousCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(new_tree->root()->id(), test_position->anchor_id());
+  EXPECT_EQ(3, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+
+  test_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, new_tree->root()->id(), 9 /* text_offset */,
+      ax::mojom::TextAffinity::kUpstream);
+  test_position = test_position->CreatePreviousCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(new_tree->root()->id(), test_position->anchor_id());
+  EXPECT_EQ(9, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kUpstream, test_position->affinity());
+
+  test_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, new_tree->root()->id(), 10 /* text_offset */,
+      ax::mojom::TextAffinity::kUpstream);
+  test_position = test_position->CreatePreviousCharacterPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(new_tree->root()->id(), test_position->anchor_id());
+  EXPECT_EQ(9, test_position->text_offset());
+  // Affinity should have been reset to downstream because there was a move.
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
 }
 
 TEST_F(AXPositionTest, ReciprocalCreateNextAndPreviousCharacterPosition) {

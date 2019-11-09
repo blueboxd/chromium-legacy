@@ -169,7 +169,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalIntersectionObserver:
-    case TaskType::kInternalFreezableIPC:
+    case TaskType::kInternalNavigationAssociated:
     case TaskType::kInternalContinueScriptLoading:
       // UnthrottledTaskRunner is generally discouraged in future.
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
@@ -180,7 +180,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kInternalIPC:
     case TaskType::kInternalInspector:
     case TaskType::kInternalTest:
-    case TaskType::kInternalNavigationAssociated:
+    case TaskType::kInternalNavigationAssociatedUnfreezable:
       // kWebLocks can be frozen if for entire page, but not for individual
       // frames. See https://crrev.com/c/1687716
     case TaskType::kWebLocks:
@@ -207,6 +207,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kServiceWorkerClientMessage:
     case TaskType::kInternalContentCapture:
     case TaskType::kExperimentalWebScheduling:
+    case TaskType::kInternalFrameLifecycleControl:
     case TaskType::kCount:
       NOTREACHED();
       break;

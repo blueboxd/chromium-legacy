@@ -16,14 +16,14 @@ void MockChromePromptIPC::PostPromptUserTask(
     const std::vector<base::FilePath>& files_to_delete,
     const std::vector<base::string16>& registry_keys,
     const std::vector<base::string16>& extension_ids,
-    mojom::ChromePrompt::PromptUserCallback callback) {
+    PromptUserCallback callback) {
   MockPostPromptUserTask(files_to_delete, registry_keys, extension_ids,
                          &callback);
 }
 
 void MockChromePromptIPC::PostDisableExtensionsTask(
     const std::vector<base::string16>& extension_ids,
-    mojom::ChromePrompt::DisableExtensionsCallback callback) {
+    DisableExtensionsCallback callback) {
   MockPostDisableExtensionsTask(extension_ids, &callback);
 }
 

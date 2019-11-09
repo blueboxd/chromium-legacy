@@ -2270,35 +2270,43 @@ void RenderFrameImpl::OnAssociatedInterfaceRequest(
 void RenderFrameImpl::BindFullscreen(
     mojo::PendingAssociatedReceiver<mojom::FullscreenVideoElementHandler>
         receiver) {
-  fullscreen_receiver_.Bind(std::move(receiver),
-                            GetTaskRunner(blink::TaskType::kInternalIPC));
+  fullscreen_receiver_.Bind(
+      std::move(receiver),
+      GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
 }
 
 void RenderFrameImpl::BindAutoplayConfiguration(
     mojo::PendingAssociatedReceiver<blink::mojom::AutoplayConfigurationClient>
         receiver) {
   autoplay_configuration_receiver_.Bind(
-      std::move(receiver), GetTaskRunner(blink::TaskType::kInternalIPC));
+      std::move(receiver),
+      GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
 }
 
 void RenderFrameImpl::BindFrame(
     const service_manager::BindSourceInfo& browser_info,
     mojo::PendingReceiver<mojom::Frame> receiver) {
   browser_info_ = browser_info;
-  frame_receiver_.Bind(std::move(receiver),
-                       GetTaskRunner(blink::TaskType::kInternalIPC));
+  // It's not unfreezable at the moment because Frame::SetLifecycleState
+  // has to run for the frozen frames.
+  // TODO(altimin): Move SetLifecycleState to a dedicated scheduling interface.
+  frame_receiver_.Bind(
+      std::move(receiver),
+      GetTaskRunner(blink::TaskType::kInternalFrameLifecycleControl));
 }
 
 void RenderFrameImpl::BindFrameBindingsControl(
     mojo::PendingAssociatedReceiver<mojom::FrameBindingsControl> receiver) {
   frame_bindings_control_receiver_.Bind(
-      std::move(receiver), GetTaskRunner(blink::TaskType::kInternalIPC));
+      std::move(receiver),
+      GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
 }
 
 void RenderFrameImpl::BindFrameNavigationControl(
     mojo::PendingAssociatedReceiver<mojom::FrameNavigationControl> receiver) {
   frame_navigation_control_receiver_.Bind(
-      std::move(receiver), GetTaskRunner(blink::TaskType::kInternalIPC));
+      std::move(receiver),
+      GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
 }
 
 void RenderFrameImpl::BindNavigationClient(
@@ -3042,13 +3050,13 @@ RenderFrameImpl::GetRemoteAssociatedInterfaces() {
       remote_associated_interfaces_ =
           std::make_unique<blink::AssociatedInterfaceProvider>(
               std::move(remote_interfaces),
-              GetTaskRunner(blink::TaskType::kInternalIPC));
+              GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
     } else {
       // In some tests the thread may be null,
       // so set up a self-contained interface provider instead.
       remote_associated_interfaces_ =
           std::make_unique<blink::AssociatedInterfaceProvider>(
-              GetTaskRunner(blink::TaskType::kInternalIPC));
+              GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
     }
   }
   return remote_associated_interfaces_.get();
@@ -4129,7 +4137,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
       service_manager::mojom::InterfaceProviderPtrInfo(
           mojo::ScopedMessagePipeHandle(params_reply.new_interface_provider),
           0u),
-      GetTaskRunner(blink::TaskType::kInternalIPC));
+      GetTaskRunner(blink::TaskType::kInternalDefault));
 
   DCHECK(params_reply.browser_interface_broker_handle.is_valid());
 
@@ -4835,13 +4843,6 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
 
 void RenderFrameImpl::DidUpdateCurrentHistoryItem() {
   render_view_->StartNavStateSyncTimerIfNecessary(this);
-}
-
-void RenderFrameImpl::DidChangeThemeColor() {
-  if (frame_->Parent())
-    return;
-
-  GetFrameHost()->DidChangeThemeColor(frame_->GetDocument().ThemeColor());
 }
 
 void RenderFrameImpl::ForwardResourceTimingToParent(

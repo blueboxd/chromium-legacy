@@ -78,6 +78,16 @@ void OSSyncHandler::HandleSetOsSyncDatatypes(const base::ListValue* args) {
   const base::DictionaryValue* result;
   CHECK(args->GetDictionary(0, &result));
 
+  // Start configuring the SyncService using the configuration passed to us from
+  // the JS layer.
+  syncer::SyncService* service = GetSyncService();
+
+  // If the sync engine has shutdown for some reason, just stop.
+  if (!service || !service->IsEngineInitialized()) {
+    sync_blocker_.reset();
+    return;
+  }
+
   bool sync_all_os_types;
   CHECK(result->GetBoolean("syncAllOsTypes", &sync_all_os_types));
 
@@ -91,23 +101,17 @@ void OSSyncHandler::HandleSetOsSyncDatatypes(const base::ListValue* args) {
       selected_types.Put(type);
   }
 
-  // Start configuring the SyncService using the configuration passed to us from
-  // the JS layer.
-  syncer::SyncService* service = GetSyncService();
-
-  // If the sync engine has shutdown for some reason, just stop.
-  if (!service || !service->IsEngineInitialized()) {
-    sync_blocker_.reset();
-    return;
-  }
-
   // Filter out any non-registered types. The WebUI may echo back values from
   // toggles for in-development features hidden by feature flags.
-  selected_types.RetainAll(
-      service->GetUserSettings()->GetRegisteredSelectableOsTypes());
+  SyncUserSettings* settings = service->GetUserSettings();
+  selected_types.RetainAll(settings->GetRegisteredSelectableOsTypes());
+  settings->SetSelectedOsTypes(sync_all_os_types, selected_types);
 
-  service->GetUserSettings()->SetSelectedOsTypes(sync_all_os_types,
-                                                 selected_types);
+  // Update the enabled state last so that the selected types will be set before
+  // pref observers are notified of the change.
+  bool feature_enabled;
+  CHECK(result->GetBoolean("featureEnabled", &feature_enabled));
+  settings->SetOsSyncFeatureEnabled(feature_enabled);
 
   // TODO(jamescook): Add metrics for selected types.
 }
@@ -124,6 +128,7 @@ void OSSyncHandler::PushSyncPrefs() {
 
   base::DictionaryValue args;
   SyncUserSettings* user_settings = service->GetUserSettings();
+  args.SetBoolean("featureEnabled", user_settings->GetOsSyncFeatureEnabled());
   // Tell the UI layer which data types are registered/enabled by the user.
   UserSelectableOsTypeSet registered_types =
       user_settings->GetRegisteredSelectableOsTypes();

@@ -895,7 +895,7 @@ bool VideoDecoderShim::Initialize(const Config& vda_config, Client* client) {
       gfx::Size(32, 24),  // Small sizes that won't fail.
       gfx::Rect(32, 24), gfx::Size(32, 24),
       // TODO(bbudge): Verify extra data isn't needed.
-      media::EmptyExtraData(), media::Unencrypted());
+      media::EmptyExtraData(), media::EncryptionScheme::kUnencrypted);
 
   media_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoDecoderShim::DecoderImpl::Initialize,

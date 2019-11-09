@@ -6004,7 +6004,7 @@ TEST_F(SpdySessionTest, EnableWebSocketThenDisableIsProtocolError) {
   EXPECT_FALSE(session_);
 }
 
-TEST_F(SpdySessionTest, GreaseFrameType) {
+TEST_F(SpdySessionTest, GreaseFrameTypeAfterSettings) {
   const uint8_t type = 0x0b;
   const uint8_t flags = 0xcc;
   const std::string payload("foo");
@@ -6032,63 +6032,107 @@ TEST_F(SpdySessionTest, GreaseFrameType) {
       CombineFrames({&preface, &settings_frame});
 
   // Greased frame sent on stream 0 after initial SETTINGS frame.
-  const char kRawFrameData0[] = {
+  const char kRawFrameData[] = {
       0x00, 0x00, 0x03,        // length
       0x0b,                    // type
       0xcc,                    // flags
       0x00, 0x00, 0x00, 0x00,  // stream ID
       'f',  'o',  'o'          // payload
   };
-  spdy::SpdySerializedFrame grease0(const_cast<char*>(kRawFrameData0),
-                                    base::size(kRawFrameData0),
-                                    /* owns_buffer = */ false);
-  spdy::SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, DEFAULT_PRIORITY));
-
-  // Greased frame sent on stream 1 after request.
-  const char kRawFrameData1[] = {
-      0x00, 0x00, 0x03,        // length
-      0x0b,                    // type
-      0xcc,                    // flags
-      0x00, 0x00, 0x00, 0x01,  // stream ID
-      'f',  'o',  'o'          // payload
-  };
-  spdy::SpdySerializedFrame grease1(const_cast<char*>(kRawFrameData1),
-                                    base::size(kRawFrameData1),
-                                    /* owns_buffer = */ false);
+  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+                                   base::size(kRawFrameData),
+                                   /* owns_buffer = */ false);
 
   MockWrite writes[] = {CreateMockWrite(combined_frame, 0),
-                        CreateMockWrite(grease0, 1), CreateMockWrite(req, 2),
-                        CreateMockWrite(grease1, 3)};
+                        CreateMockWrite(grease, 1)};
 
-  spdy::SpdySerializedFrame resp(
-      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
-
-  MockRead reads[] = {CreateMockRead(resp, 4), CreateMockRead(body, 5),
-                      MockRead(ASYNC, 0, 6)};
+  MockRead reads[] = {MockRead(ASYNC, 0, 2)};
 
   SequencedSocketData data(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   AddSSLSocketData();
-
   CreateNetworkSession();
 
   SpdySessionPoolPeer pool_peer(spdy_session_pool_);
   pool_peer.SetEnableSendingInitialData(true);
 
   CreateSpdySession();
+  base::RunLoop().RunUntilIdle();
 
-  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+}
+
+TEST_F(SpdySessionTest, GreaseFrameTypeOnRequestStream) {
+  const uint8_t type = 0x0b;
+  const uint8_t flags = 0xcc;
+  const std::string payload("foo");
+  session_deps_.greased_http2_frame =
+      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+          {type, flags, payload});
+
+  // No greased frame is sent after a HEADERS frame with END_STREAM set.
+  spdy::SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, DEFAULT_PRIORITY));
+
+  // A greased frame is sent between the HEADERS and the DATA frame.
+  spdy::SpdySerializedFrame req2(spdy_util_.ConstructSpdyPost(
+      kDefaultUrl, 3, kBodyDataSize, LOWEST, nullptr, 0));
+  const char kRawFrameData[] = {
+      0x00, 0x00, 0x03,        // length
+      0x0b,                    // type
+      0xcc,                    // flags
+      0x00, 0x00, 0x00, 0x03,  // stream ID
+      'f',  'o',  'o'          // payload
+  };
+  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+                                   base::size(kRawFrameData),
+                                   /* owns_buffer = */ false);
+  spdy::SpdySerializedFrame request_body(
+      spdy_util_.ConstructSpdyDataFrame(3, kBodyDataStringPiece, true));
+
+  MockWrite writes[] = {CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
+                        CreateMockWrite(grease, 2),
+                        CreateMockWrite(request_body, 3)};
+
+  spdy::SpdySerializedFrame resp1(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame resp2(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  spdy::SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+
+  MockRead reads[] = {CreateMockRead(resp1, 4), CreateMockRead(body1, 5),
+                      CreateMockRead(resp2, 6), CreateMockRead(body2, 7),
+                      MockRead(ASYNC, 0, 8)};
+
+  SequencedSocketData data(reads, writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, DEFAULT_PRIORITY,
       NetLogWithSource());
-  test::StreamDelegateDoNothing delegate(stream);
-  stream->SetDelegate(&delegate);
+  test::StreamDelegateDoNothing delegate1(stream1);
+  stream1->SetDelegate(&delegate1);
 
-  stream->SendRequestHeaders(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl),
-                             NO_MORE_DATA_TO_SEND);
+  stream1->SendRequestHeaders(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl),
+                              NO_MORE_DATA_TO_SEND);
 
-  EXPECT_THAT(delegate.WaitForClose(), IsOk());
+  base::WeakPtr<SpdyStream> stream2 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, DEFAULT_PRIORITY,
+      NetLogWithSource());
+  test::StreamDelegateWithBody delegate2(stream2, kBodyDataStringPiece);
+  stream2->SetDelegate(&delegate2);
+
+  stream2->SendRequestHeaders(
+      spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kBodyDataSize),
+      MORE_DATA_TO_SEND);
+
+  EXPECT_THAT(delegate1.WaitForClose(), IsOk());
+  EXPECT_THAT(delegate2.WaitForClose(), IsOk());
 
   base::RunLoop().RunUntilIdle();
 

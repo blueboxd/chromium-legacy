@@ -63,12 +63,6 @@ void DistillabilityDriver::CreateDistillabilityService(
       std::move(receiver));
 }
 
-void DistillabilityDriver::AddObserver(DistillabilityObserver* observer) {
-  if (!observers_.HasObserver(observer)) {
-    observers_.AddObserver(observer);
-  }
-}
-
 void DistillabilityDriver::OnDistillability(
     const DistillabilityResult& result) {
   latest_result_ = result;

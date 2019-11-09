@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_tracks.h"
@@ -125,7 +126,14 @@ class RendererFactoryImpl final : public PipelineTestRendererFactory {
 };
 
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
-    : hashing_enabled_(false),
+    :
+// Use a UI type message loop on macOS, because it doesn't seem to schedule
+// callbacks with enough precision to drive our fake audio output. See
+// https://crbug.com/1014646 for more details.
+#if defined(OS_MACOSX)
+      task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+#endif
+      hashing_enabled_(false),
       clockless_playback_(false),
       webaudio_attached_(false),
       mono_output_(false),

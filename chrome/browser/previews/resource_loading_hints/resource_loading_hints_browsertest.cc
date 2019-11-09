@@ -936,14 +936,15 @@ IN_PROC_BROWSER_TEST_P(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
 }
 
-IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMEOS(ResourceLoadingHintsHttp)) {
+IN_PROC_BROWSER_TEST_P(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(ResourceLoadingHintsForHttp)) {
   GURL url = http_url();
 
   // Whitelist resource loading hints for http_hint_setup_url()'s' host.
   SetDefaultOnlyResourceLoadingHints(http_hint_setup_url());
 
-  SetExpectedFooJpgRequest(true);
+  SetExpectedFooJpgRequest(false);
   SetExpectedBarJpgRequest(true);
 
   base::HistogramTester histogram_tester;
@@ -953,11 +954,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
-  histogram_tester.ExpectTotalCount(
-      "Previews.PreviewShown.ResourceLoadingHints", 0);
-  histogram_tester.ExpectTotalCount(
-      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
+      static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 1);
 }
 
 IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,

@@ -566,11 +566,13 @@ void AutocompleteController::UpdateResult(
     }
   }
 
+  const auto last_result_for_logging = result_.GetMatchDedupComparators();
+
   if (regenerate_result)
     result_.Reset();
 
-  AutocompleteResult last_result;
-  last_result.Swap(&result_);
+  AutocompleteResult old_matches_to_reuse;
+  old_matches_to_reuse.Swap(&result_);
 
   for (Providers::const_iterator i(providers_.begin());
        i != providers_.end(); ++i)
@@ -584,7 +586,7 @@ void AutocompleteController::UpdateResult(
 
   // Sort the matches and trim to a small number of "best" matches.
   const AutocompleteMatch* preserve_default_match = nullptr;
-  if (!in_start_ && !regenerate_result && last_default_match &&
+  if (!in_start_ && last_default_match &&
       base::FeatureList::IsEnabled(
           omnibox::kOmniboxPreserveDefaultMatchAgainstAsyncUpdate)) {
     preserve_default_match = &last_default_match.value();
@@ -600,12 +602,15 @@ void AutocompleteController::UpdateResult(
   if (!done_) {
     // This conditional needs to match the conditional in Start that invokes
     // StartExpireTimer.
-    result_.CopyOldMatches(input_, &last_result, template_url_service_);
+    result_.TransferOldMatches(input_, &old_matches_to_reuse,
+                               template_url_service_);
   }
 
   // Log metrics for how many matches are asynchronously changed.
-  if (!in_start_)
-    AutocompleteResult::LogAsynchronousUpdateMetrics(last_result, result_);
+  if (!in_start_) {
+    AutocompleteResult::LogAsynchronousUpdateMetrics(last_result_for_logging,
+                                                     result_);
+  }
 
   UpdateKeywordDescriptions(&result_);
   UpdateAssociatedKeywords(&result_);

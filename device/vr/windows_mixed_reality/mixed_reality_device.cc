@@ -30,13 +30,6 @@ namespace {
 mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
   display_info->id = id;
-  display_info->display_name = "Windows Mixed Reality";
-  display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->has_position = true;
-  display_info->capabilities->has_external_display = true;
-  display_info->capabilities->can_present = true;
-  display_info->webvr_default_framebuffer_scale = 1.0;
-  display_info->webxr_default_framebuffer_scale = 1.0;
 
   display_info->left_eye = mojom::VREyeParameters::New();
   display_info->right_eye = mojom::VREyeParameters::New();

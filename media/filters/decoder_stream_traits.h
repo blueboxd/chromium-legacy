@@ -62,6 +62,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(OutputType* buffer);
   void OnStreamReset(DemuxerStream* stream);
+  void OnOutputReady(OutputType* output);
 
  private:
   void OnConfigChanged(const AudioDecoderConfig& config);
@@ -107,6 +108,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(OutputType* buffer);
   void OnStreamReset(DemuxerStream* stream);
+  void OnOutputReady(OutputType* output);
 
  private:
   base::TimeDelta last_keyframe_timestamp_;
@@ -116,6 +118,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   struct FrameMetadata {
     bool should_drop = false;
     base::TimeDelta duration = kNoTimestamp;
+    base::TimeTicks decode_begin_time;
   };
   base::flat_map<base::TimeDelta, FrameMetadata> frame_metadata_;
 

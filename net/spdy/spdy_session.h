@@ -400,6 +400,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                           spdy::SpdyFrameType frame_type,
                           std::unique_ptr<SpdyBufferProducer> producer);
 
+  // Returns true if this session is configured to send greased HTTP/2 frames.
+  // For more details on greased frames, see
+  // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
+  bool GreasedFramesEnabled() const;
+
+  // Send greased frame, that is, a frame of reserved type.
+  void EnqueueGreasedFrame(const base::WeakPtr<SpdyStream>& stream);
+
   // Runs the handshake to completion to confirm the handshake with the server.
   // If ERR_IO_PENDING is returned, then when the handshake is confirmed,
   // |callback| will be called.

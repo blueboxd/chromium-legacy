@@ -128,6 +128,10 @@ class NetworkListView : public NetworkStateListDetailedView,
   // otherwise false.
   bool NeedUpdateViewForNetwork(const NetworkInfo& info) const;
 
+  // Creates a label for the given network which includes all information
+  // that is shown in the ui.
+  base::string16 GenerateAccessibilityLabel(const NetworkInfo& info);
+
   bool needs_relayout_ = false;
 
   // Owned by the views heirarchy.

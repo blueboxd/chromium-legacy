@@ -1303,8 +1303,7 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
   modified_request_headers_.Clear();
   removed_request_headers_.clear();
 
-  // TODO(zetamoo): Refactor NavigationThrottleRunner to accept one argument.
-  throttle_runner_ = base::WrapUnique(new NavigationThrottleRunner(this, this));
+  throttle_runner_ = base::WrapUnique(new NavigationThrottleRunner(this));
 
 #if defined(OS_ANDROID)
   navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);

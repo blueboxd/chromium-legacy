@@ -2352,12 +2352,13 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesInternal(
   return top_document_url;
 }
 
-void RenderFrameHostImpl::SetOriginOfNewFrame(
+void RenderFrameHostImpl::SetOriginAndNetworkIsolationKeyOfNewFrame(
     const url::Origin& new_frame_creator) {
   // This method should only be called for *new* frames, that haven't committed
   // a navigation yet.
   DCHECK(!has_committed_any_navigation_);
   DCHECK(GetLastCommittedOrigin().opaque());
+  DCHECK(network_isolation_key_.IsEmpty());
 
   // Calculate and set |new_frame_origin|.
   bool new_frame_should_be_sandboxed =
@@ -2367,6 +2368,8 @@ void RenderFrameHostImpl::SetOriginOfNewFrame(
   url::Origin new_frame_origin = new_frame_should_be_sandboxed
                                      ? new_frame_creator.DeriveNewOpaqueOrigin()
                                      : new_frame_creator;
+  network_isolation_key_ = net::NetworkIsolationKey(
+      ComputeTopFrameOrigin(new_frame_origin), new_frame_origin);
   SetLastCommittedOrigin(new_frame_origin);
 }
 
@@ -2391,9 +2394,11 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
   frame_tree_node_->render_manager()->CreateProxiesForChildFrame(child.get());
 
   // When the child is added, it hasn't committed any navigation yet - its
-  // initial empty document should inherit the origin of its parent (the origin
-  // may change after the first commit).  See also https://crbug.com/932067.
-  child->current_frame_host()->SetOriginOfNewFrame(GetLastCommittedOrigin());
+  // initial empty document should inherit the origin and network isolation key
+  // of its parent (the origin may change after the first commit). See also
+  // https://crbug.com/932067.
+  child->current_frame_host()->SetOriginAndNetworkIsolationKeyOfNewFrame(
+      GetLastCommittedOrigin());
 
   children_.push_back(std::move(child));
   return children_.back().get();
@@ -4369,14 +4374,16 @@ void RenderFrameHostImpl::CreateNewWindow(
   RenderFrameHostImpl* main_frame = new_window->GetMainFrame();
 
   // When the popup is created, it hasn't committed any navigation yet - its
-  // initial empty document should inherit the origin of its opener (the origin
-  // may change after the first commit).  See also https://crbug.com/932067.
+  // initial empty document should inherit the origin and network isolation key
+  // of its opener (the origin may change after the first commit). See also
+  // https://crbug.com/932067.
   //
   // Note that that origin of the new frame might depend on sandbox flags.
   // Checking sandbox flags of the new frame should be safe at this point,
   // because the flags should be already inherited by the CreateNewWindow call
   // above.
-  main_frame->SetOriginOfNewFrame(GetLastCommittedOrigin());
+  main_frame->SetOriginAndNetworkIsolationKeyOfNewFrame(
+      GetLastCommittedOrigin());
 
   if (main_frame->waiting_for_init_) {
     // Need to check |waiting_for_init_| as some paths inside CreateNewWindow
@@ -5303,6 +5310,7 @@ void RenderFrameHostImpl::CommitNavigation(
     network_isolation_key_ = net::NetworkIsolationKey(
         ComputeTopFrameOrigin(frame_origin), frame_origin);
   }
+  DCHECK(network_isolation_key_.IsFullyPopulated());
 
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories;

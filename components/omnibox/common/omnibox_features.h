@@ -53,6 +53,7 @@ extern const base::Feature kDebounceDocumentProvider;
 // TODO(tommycli): There are more flags above that belong in this category.
 extern const base::Feature kOmniboxPreserveDefaultMatchScore;
 extern const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate;
+extern const base::Feature kOmniboxDemoteByType;
 
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;

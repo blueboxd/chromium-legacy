@@ -49,9 +49,9 @@ struct LargerStructWithArray {
 };
 
 union UnionOfStructs {
-  StructWithBool swb;
-  StructWithUint swu;
-  LargerStructWithArray lswa;
+  1: StructWithBool swb;
+  2: StructWithUint swu;
+  3: LargerStructWithArray lswa;
 };
 
 struct StructOfMultipleUnions {

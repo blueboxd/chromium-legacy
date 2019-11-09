@@ -46,6 +46,7 @@ class GeoAPIsPage(ToughCanvasPage):
 class RunwayPage(ToughCanvasPage):
   BASE_NAME = 'runway'
   URL = 'http://runway.countlessprojects.com/prototype/performance_test.html'
+  YEAR = '2019'
   TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 

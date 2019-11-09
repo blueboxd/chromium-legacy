@@ -24,6 +24,7 @@
 #include "net/third_party/quiche/src/quic/tools/quic_simple_dispatcher.h"
 #include "net/tools/quic/quic_simple_server_packet_writer.h"
 #include "net/tools/quic/quic_simple_server_session_helper.h"
+#include "net/tools/quic/quic_simple_server_socket.h"
 
 namespace net {
 
@@ -95,50 +96,17 @@ QuicSimpleServer::~QuicSimpleServer() = default;
 
 bool QuicSimpleServer::CreateUDPSocketAndListen(
     const quic::QuicSocketAddress& address) {
-  return Listen(ToIPEndPoint(address)) == 0;
+  return Listen(ToIPEndPoint(address));
 }
 
 void QuicSimpleServer::HandleEventsForever() {
   base::RunLoop().Run();
 }
 
-int QuicSimpleServer::Listen(const IPEndPoint& address) {
-  std::unique_ptr<UDPServerSocket> socket(
-      new UDPServerSocket(nullptr, NetLogSource()));
-
-  socket->AllowAddressReuse();
-
-  int rc = socket->Listen(address);
-  if (rc < 0) {
-    LOG(ERROR) << "Listen() failed: " << ErrorToString(rc);
-    return rc;
-  }
-
-  // These send and receive buffer sizes are sized for a single connection,
-  // because the default usage of QuicSimpleServer is as a test server with
-  // one or two clients.  Adjust higher for use with many clients.
-  rc = socket->SetReceiveBufferSize(
-      static_cast<int32_t>(quic::kDefaultSocketReceiveBuffer));
-  if (rc < 0) {
-    LOG(ERROR) << "SetReceiveBufferSize() failed: " << ErrorToString(rc);
-    return rc;
-  }
-
-  rc = socket->SetSendBufferSize(20 * quic::kMaxOutgoingPacketSize);
-  if (rc < 0) {
-    LOG(ERROR) << "SetSendBufferSize() failed: " << ErrorToString(rc);
-    return rc;
-  }
-
-  rc = socket->GetLocalAddress(&server_address_);
-  if (rc < 0) {
-    LOG(ERROR) << "GetLocalAddress() failed: " << ErrorToString(rc);
-    return rc;
-  }
-
-  DVLOG(1) << "Listening on " << server_address_.ToString();
-
-  socket_.swap(socket);
+bool QuicSimpleServer::Listen(const IPEndPoint& address) {
+  socket_ = CreateQuicSimpleServerSocket(address, &server_address_);
+  if (socket_ == nullptr)
+    return false;
 
   dispatcher_.reset(new quic::QuicSimpleDispatcher(
       &config_, &crypto_config_, &version_manager_,
@@ -153,7 +121,7 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
 
   StartReading();
 
-  return OK;
+  return true;
 }
 
 void QuicSimpleServer::Shutdown() {

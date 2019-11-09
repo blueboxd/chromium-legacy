@@ -28,6 +28,7 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/media/history/media_history_contents_observer.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
 #include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
@@ -99,6 +100,7 @@
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
+#include "media/base/media_switches.h"
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
@@ -379,6 +381,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   if (MediaEngagementService::IsEnabled())
     MediaEngagementService::CreateWebContentsObserver(web_contents);
+
+  if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
+    MediaHistoryContentsObserver::CreateForWebContents(web_contents);
 
   if (performance_manager::PerformanceManager::IsAvailable()) {
     performance_manager::PerformanceManagerTabHelper::CreateForWebContents(

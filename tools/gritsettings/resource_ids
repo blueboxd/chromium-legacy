@@ -83,22 +83,28 @@
     "includes": [11000],
     "structures": [11800],
   },
+  "chrome/browser/resources/bookmarks/bookmarks_resources.grd": {
+    "structures": [11830],
+  },
+  "chrome/browser/resources/bookmarks/bookmarks_resources_vulcanized.grd": {
+    "structures": [11880],
+  },
   "chrome/browser/resources/chromeos/camera/camera_resources.grd": {
-    "includes": [11870],
-    "structures": [11930],
+    "includes": [11890],
+    "structures": [11950],
   },
   "chrome/browser/resources/chromeos/camera/src/strings/camera_strings.grd": {
-    "messages": [11970],
+    "messages": [12000],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
-    "structures": [12040],
+    "structures": [12080],
   },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
-    "structures": [12050],
+    "structures": [12090],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [12060],
-    "structures": [12200],
+    "includes": [12100],
+    "structures": [12230],
   },
   "chrome/browser/resources/downloads/downloads_resources_vulcanized.grd": {
     "includes": [12240],
@@ -342,7 +348,7 @@
     "messages": [23125],
   },
   "ash/components/ash_components_strings.grd": {
-    "messages": [23740],
+    "messages": [23800],
   },
   "ash/keyboard/ui/keyboard_resources.grd": {
     "includes": [23960],

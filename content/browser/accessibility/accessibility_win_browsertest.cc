@@ -5,6 +5,7 @@
 #include <objbase.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <wrl/client.h>
 
 #include <memory>
@@ -3062,6 +3063,51 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   CheckTextAtOffset(textarea_text, IA2_TEXT_OFFSET_CARET,
                     IA2_TEXT_BOUNDARY_CHAR, contents_string_length - 1,
                     contents_string_length, L".");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestMultilingualTextAtOffsetWithBoundaryCharacter) {
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
+  SetUpInputField(&input_text);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kValueChanged);
+  // Place an e acute, and two emoticons in the text field.
+  ExecuteScript(base::UTF8ToUTF16(R"SCRIPT(
+      const input = document.querySelector('input');
+      input.value =
+          'e\u0301\uD83D\uDC69\u200D\u2764\uFE0F\u200D\uD83D\uDC69\uD83D\uDC36';
+      )SCRIPT"));
+  waiter.WaitForNotification();
+
+  LONG n_characters;
+  ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
+  // "n_characters" is the number of valid text offsets.
+  //
+  // Ordinarily, the number of valid text offsets should equal the number of
+  // actual characters which are only three in this case. However, this is
+  // harder to implement given our current UTF16-based representation of IA2
+  // hyptertext.
+  // TODO(nektar): Implement support for base::OffsetAdjuster in AXPosition.
+  ASSERT_EQ(12, n_characters);
+
+  // The expected text consists of an e acute, and two emoticons.
+  const std::vector<std::wstring> expected_text = {
+      L"e\x0301", L"\xD83D\xDC69\x200D\x2764\xFE0F\x200D\xD83D\xDC69",
+      L"\xD83D\xDC36"};
+  LONG offset = 0;
+  for (const std::wstring& expected_character : expected_text) {
+    LONG expected_start_offset = offset;
+    LONG expected_end_offset =
+        expected_start_offset + LONG{expected_character.length()};
+    for (size_t code_unit_offset = 0;
+         code_unit_offset < expected_character.length(); ++code_unit_offset) {
+      CheckTextAtOffset(input_text, offset, IA2_TEXT_BOUNDARY_CHAR,
+                        expected_start_offset, expected_end_offset,
+                        expected_character);
+      ++offset;
+    }
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,

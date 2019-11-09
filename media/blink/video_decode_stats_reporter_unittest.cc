@@ -52,7 +52,7 @@ VideoDecoderConfig MakeVideoConfig(VideoCodec codec,
   return VideoDecoderConfig(
       codec, profile, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace::JPEG(), kNoTransformation, coded_size, visible_rect,
-      natural_size, EmptyExtraData(), Unencrypted());
+      natural_size, EmptyExtraData(), EncryptionScheme::kUnencrypted);
 }
 
 PipelineStatistics MakeStats(int frames_decoded,

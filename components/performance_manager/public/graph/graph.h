@@ -80,6 +80,9 @@ class Graph {
   virtual std::vector<const PageNode*> GetAllPageNodes() const = 0;
   virtual std::vector<const WorkerNode*> GetAllWorkerNodes() const = 0;
 
+  // Returns true if the graph is currently empty.
+  virtual bool IsEmpty() const = 0;
+
   // Returns the associated UKM recorder if it is defined.
   virtual ukm::UkmRecorder* GetUkmRecorder() const = 0;
 

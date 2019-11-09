@@ -76,7 +76,7 @@ class MEDIA_EXPORT BitstreamBuffer {
   scoped_refptr<DecoderBuffer> ToDecoderBuffer();
 
   // TODO(crbug.com/813845): As this is only used by Android, include
-  // EncryptionMode and optional EncryptionPattern when updating for Android.
+  // EncryptionScheme and optional EncryptionPattern when updating for Android.
   void SetDecryptionSettings(const std::string& key_id,
                              const std::string& iv,
                              const std::vector<SubsampleEntry>& subsamples);

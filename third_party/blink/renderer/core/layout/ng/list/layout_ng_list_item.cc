@@ -76,9 +76,13 @@ void LayoutNGListItem::ListStyleTypeChanged() {
 void LayoutNGListItem::OrdinalValueChanged() {
   if (marker_type_ == kOrdinalValue && is_marker_text_updated_) {
     is_marker_text_updated_ = false;
-    DCHECK(marker_);
-    marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        layout_invalidation_reason::kListValueChange);
+
+    // |marker_| can be a nullptr, for example, in the case of :after list item
+    // elements.
+    if (marker_) {
+      marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+          layout_invalidation_reason::kListValueChange);
+    }
   }
 }
 

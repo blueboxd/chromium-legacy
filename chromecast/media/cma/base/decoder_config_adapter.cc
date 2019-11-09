@@ -130,28 +130,13 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
   }
 }
 
-::media::EncryptionScheme::CipherMode ToMediaCipherMode(
-    EncryptionScheme scheme) {
+EncryptionScheme ToEncryptionScheme(::media::EncryptionScheme scheme) {
   switch (scheme) {
-    case EncryptionScheme::kUnencrypted:
-      return ::media::EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
-    case EncryptionScheme::kAesCtr:
-      return ::media::EncryptionScheme::CIPHER_MODE_AES_CTR;
-    case EncryptionScheme::kAesCbc:
-      return ::media::EncryptionScheme::CIPHER_MODE_AES_CBC;
-    default:
-      NOTREACHED();
-      return ::media::EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
-  }
-}
-
-EncryptionScheme ToEncryptionScheme(const ::media::EncryptionScheme& scheme) {
-  switch (scheme.mode()) {
-    case ::media::EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
+    case ::media::EncryptionScheme::kUnencrypted:
       return EncryptionScheme::kUnencrypted;
-    case ::media::EncryptionScheme::CIPHER_MODE_AES_CTR:
+    case ::media::EncryptionScheme::kCenc:
       return EncryptionScheme::kAesCtr;
-    case ::media::EncryptionScheme::CIPHER_MODE_AES_CBC:
+    case ::media::EncryptionScheme::kCbcs:
       return EncryptionScheme::kAesCbc;
     default:
       NOTREACHED();
@@ -159,10 +144,18 @@ EncryptionScheme ToEncryptionScheme(const ::media::EncryptionScheme& scheme) {
   }
 }
 
-// TODO(yucliu): Remove pattern after update ::media::Audio/VideoDecoderConfig.
 ::media::EncryptionScheme ToMediaEncryptionScheme(EncryptionScheme scheme) {
-  return ::media::EncryptionScheme(ToMediaCipherMode(scheme),
-                                   ::media::EncryptionPattern());
+  switch (scheme) {
+    case EncryptionScheme::kUnencrypted:
+      return ::media::EncryptionScheme::kUnencrypted;
+    case EncryptionScheme::kAesCtr:
+      return ::media::EncryptionScheme::kCenc;
+    case EncryptionScheme::kAesCbc:
+      return ::media::EncryptionScheme::kCbcs;
+    default:
+      NOTREACHED();
+      return ::media::EncryptionScheme::kUnencrypted;
+  }
 }
 
 }  // namespace

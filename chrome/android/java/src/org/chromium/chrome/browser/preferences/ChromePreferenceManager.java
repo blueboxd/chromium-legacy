@@ -11,217 +11,16 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * ChromePreferenceManager stores and retrieves various values in Android shared preferences.
+ * ChromePreferenceManager stores and retrieves values in Android shared preferences for specific
+ * features.
  *
- * TODO(crbug.com/1022107): Finish moving constants to ChromePreferenceKeys.
+ * TODO(crbug.com/1022102): Finish moving feature-specific methods out of this class and delete it.
  */
 public class ChromePreferenceManager {
     // For new int values with a default of 0, just document the key and its usage, and call
     // #readInt and #writeInt directly.
     // For new boolean values, document the key and its usage, call #readBoolean and #writeBoolean
     // directly. While calling #readBoolean, default value is required.
-
-    /**
-     * Whether the promotion for data reduction has been skipped on first invocation.
-     * Default value is false.
-     */
-    public static final String PROMOS_SKIPPED_ON_FIRST_START = "promos_skipped_on_first_start";
-    private static final String SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION =
-            "signin_promo_last_shown_chrome_version";
-    private static final String SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES =
-            "signin_promo_last_shown_account_names";
-
-    /**
-     * This value was used prior to KitKat to keep existing low-end devices on the normal UI rather
-     * than the simplified UI.
-     *
-     * This value may still exist in shared preferences file. Do not reuse.
-     */
-    @Deprecated
-    public static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
-
-    @Deprecated
-    private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
-
-    /**
-     * Whether Chrome is set as the default browser.
-     * Default value is false.
-     */
-    public static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
-
-    /**
-     * Deprecated in M70. This value may still exist in the shared preferences file. Do not reuse.
-     * TODO(twellington): Remove preference from the file in a future pref cleanup effort.
-     */
-    @Deprecated
-    private static final String CHROME_MODERN_DESIGN_ENABLED_KEY = "chrome_modern_design_enabled";
-
-    /**
-     * Whether or not the home page button is force enabled.
-     * Default value is false.
-     */
-    @Deprecated
-    public static final String HOME_PAGE_BUTTON_FORCE_ENABLED_KEY =
-            "home_page_button_force_enabled";
-
-    /**
-     * Whether or not the homepage tile will be shown.
-     * Default value is false.
-     */
-    @Deprecated
-    public static final String HOMEPAGE_TILE_ENABLED_KEY = "homepage_tile_enabled";
-
-    /**
-     * Whether or not the new tab page button is enabled.
-     * Default value is false.
-     */
-    @Deprecated
-    public static final String NTP_BUTTON_ENABLED_KEY = "ntp_button_enabled";
-
-    /**
-     * Deprecated in M71. This value may still exist in the shared preferences file. Do not reuse.
-     * TODO(twellington): Remove preference from the file in a future pref cleanup effort.
-     */
-    @Deprecated
-    private static final String NTP_BUTTON_VARIANT_KEY = "ntp_button_variant";
-
-    /**
-     * Deprecated in M77. This value may still exist in shared preferences file. Do not reuse.
-     */
-    @Deprecated
-    public static final String TAB_PERSISTENT_STORE_TASK_RUNNER_ENABLED_KEY =
-            "tab_persistent_store_task_runner_enabled";
-
-    /**
-     * Deprecated in M75. This value may still exist in shared preferences file. Do not reuse.
-     */
-    @Deprecated
-    private static final String INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY =
-            "inflate_toolbar_on_background_thread";
-
-    /**
-     * The current theme setting in the user settings.
-     * Default value is -1. Use NightModeUtils#getThemeSetting() to retrieve current setting or
-     * default theme.
-     */
-    public static final String UI_THEME_SETTING_KEY = "ui_theme_setting";
-
-    /**
-     * Whether or not darken websites is enabled.
-     * Default value is false.
-     */
-    public static final String DARKEN_WEBSITES_ENABLED_KEY = "darken_websites_enabled";
-
-    /**
-     * Marks that the content suggestions surface has been shown.
-     * Default value is false.
-     */
-    public static final String CONTENT_SUGGESTIONS_SHOWN_KEY = "content_suggestions_shown";
-
-    /**
-     * Whether the user dismissed the personalized sign in promo from the Settings.
-     * Default value is false.
-     */
-    public static final String SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED =
-            "settings_personalized_signin_promo_dismissed";
-    /**
-     * Whether the user dismissed the personalized sign in promo from the new tab page.
-     * Default value is false.
-     */
-    public static final String NTP_SIGNIN_PROMO_DISMISSED =
-            "ntp.personalized_signin_promo_dismissed";
-
-    private static final String NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START =
-            "ntp.signin_promo_suppression_period_start";
-
-    private static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
-    private static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
-
-    /**
-     * Deprecated in M76. This value may still exist in the shared preferences file. Do not reuse.
-     */
-    @Deprecated
-    public static final String SOLE_INTEGRATION_ENABLED_KEY = "sole_integration_enabled";
-
-    private static final String VERIFIED_DIGITAL_ASSET_LINKS =
-            "verified_digital_asset_links";
-    private static final String TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES =
-            "trusted_web_activity_disclosure_accepted_packages";
-
-    /**
-     * Whether VR assets component should be registered on startup.
-     * Default value is false.
-     */
-    public static final String SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP =
-            "should_register_vr_assets_component_on_startup";
-
-    /*
-     * Whether the simplified tab switcher is enabled when accessibility mode is enabled. Keep in
-     * sync with accessibility_preferences.xml.
-     * Default value is true.
-     */
-    public static final String ACCESSIBILITY_TAB_SWITCHER = "accessibility_tab_switcher";
-
-    /**
-     * When the user is shown a badge that the current Android OS version is unsupported, and they
-     * tap it to display the menu (which has additional information), we store the current version
-     * of Chrome to this preference to ensure we only show the badge once. The value is cleared
-     * if the Chrome version later changes.
-     */
-    public static final String LATEST_UNSUPPORTED_VERSION = "android_os_unsupported_chrome_version";
-
-    /**
-     * Keys for deferred recording of the outcomes of showing the clear data dialog after
-     * Trusted Web Activity client apps are uninstalled or have their data cleared.
-     */
-    public static final String TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL =
-            "twa_dialog_number_of_dismissals_on_uninstall";
-    public static final String TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA =
-            "twa_dialog_number_of_dismissals_on_clear_data";
-
-    /** Key for deferred recording of WebAPK uninstalls. */
-    @Deprecated
-    public static final String WEBAPK_NUMBER_OF_UNINSTALLS = "webapk_number_of_uninstalls";
-
-    /** Key for deferred recording of list of uninstalled WebAPK packages. */
-    public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
-
-    /**
-     * Key for whether it allows to start in service manager only mode.
-     * Default value is false.
-     */
-    public static final String ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY =
-            "allow_starting_service_manager_only";
-
-    /**
-     * Deprecated keys for Chrome Home.
-     */
-    @Deprecated
-    private static final String CHROME_HOME_USER_ENABLED_KEY = "chrome_home_user_enabled";
-    @Deprecated
-    private static final String CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN =
-            "chrome_home_opt_out_snackbar_shown";
-    @Deprecated
-    public static final String CHROME_HOME_INFO_PROMO_SHOWN_KEY = "chrome_home_info_promo_shown";
-    @Deprecated
-    public static final String CHROME_HOME_SHARED_PREFERENCES_KEY = "chrome_home_enabled_date";
-
-    /**
-     * Contains a trial group that was used to determine whether the reached code profiler should be
-     * enabled.
-     */
-    public static final String REACHED_CODE_PROFILER_GROUP_KEY = "reached_code_profiler_group";
-
-    /**
-     * Key to cache whether offline indicator v2 (persistent offline indicator) is enabled.
-     */
-    public static final String OFFLINE_INDICATOR_V2_ENABLED_KEY = "offline_indicator_v2_enabled";
-
-    /**
-     * Previously used to migrate {@link PrefServiceBridge} preferences to current version.
-     */
-    @Deprecated
-    private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
 
     private static class LazyHolder {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
@@ -259,7 +58,7 @@ public class ChromePreferenceManager {
     }
 
     private String successUploadKey(@ProcessType String process) {
-        return process.toLowerCase(Locale.US) + SUCCESS_UPLOAD_SUFFIX;
+        return process.toLowerCase(Locale.US) + ChromePreferenceKeys.SUCCESS_UPLOAD_SUFFIX;
     }
 
     /**
@@ -278,7 +77,7 @@ public class ChromePreferenceManager {
     }
 
     private String failureUploadKey(@ProcessType String process) {
-        return process.toLowerCase(Locale.US) + FAILURE_UPLOAD_SUFFIX;
+        return process.toLowerCase(Locale.US) + ChromePreferenceKeys.FAILURE_UPLOAD_SUFFIX;
     }
 
     /**
@@ -286,14 +85,14 @@ public class ChromePreferenceManager {
      * isn't known.
      */
     public int getSigninPromoLastShownVersion() {
-        return mManager.readInt(SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION);
+        return mManager.readInt(ChromePreferenceKeys.SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION);
     }
 
     /**
      * Sets Chrome major version number when signin promo was last shown.
      */
     public void setSigninPromoLastShownVersion(int majorVersion) {
-        mManager.writeInt(SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION, majorVersion);
+        mManager.writeInt(ChromePreferenceKeys.SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION, majorVersion);
     }
 
     /**
@@ -301,14 +100,16 @@ public class ChromePreferenceManager {
      * or null if promo hasn't been shown yet.
      */
     public Set<String> getSigninPromoLastAccountNames() {
-        return mManager.readStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, null);
+        return mManager.readStringSet(
+                ChromePreferenceKeys.SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, null);
     }
 
     /**
      * Stores a set of account names on the device when signin promo is shown.
      */
     public void setSigninPromoLastAccountNames(Set<String> accountNames) {
-        mManager.writeStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, accountNames);
+        mManager.writeStringSet(
+                ChromePreferenceKeys.SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, accountNames);
     }
 
     /**
@@ -317,7 +118,7 @@ public class ChromePreferenceManager {
      * @return the epoch time in milliseconds (see {@link System#currentTimeMillis()}).
      */
     public long getNewTabPageSigninPromoSuppressionPeriodStart() {
-        return mManager.readLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
+        return mManager.readLong(ChromePreferenceKeys.NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
     }
 
     /**
@@ -326,7 +127,8 @@ public class ChromePreferenceManager {
      * @param timeMillis the epoch time in milliseconds (see {@link System#currentTimeMillis()}).
      */
     public void setNewTabPageSigninPromoSuppressionPeriodStart(long timeMillis) {
-        mManager.writeLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, timeMillis);
+        mManager.writeLong(
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, timeMillis);
     }
 
     /**
@@ -334,7 +136,7 @@ public class ChromePreferenceManager {
      * Tab Page are no longer suppressed.
      */
     public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
-        mManager.removeKey(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
+        mManager.removeKey(ChromePreferenceKeys.NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START);
     }
 
     /**
@@ -344,7 +146,8 @@ public class ChromePreferenceManager {
     public Set<String> getVerifiedDigitalAssetLinks() {
         // From the official docs, modifying the result of a SharedPreferences.getStringSet can
         // cause bad things to happen including exceptions or ruining the data.
-        return new HashSet<>(mManager.readStringSet(VERIFIED_DIGITAL_ASSET_LINKS));
+        return new HashSet<>(
+                mManager.readStringSet(ChromePreferenceKeys.VERIFIED_DIGITAL_ASSET_LINKS));
     }
 
     /**
@@ -352,12 +155,13 @@ public class ChromePreferenceManager {
      * Can be retrieved by {@link #getVerifiedDigitalAssetLinks()}.
      */
     public void setVerifiedDigitalAssetLinks(Set<String> links) {
-        mManager.writeStringSet(VERIFIED_DIGITAL_ASSET_LINKS, links);
+        mManager.writeStringSet(ChromePreferenceKeys.VERIFIED_DIGITAL_ASSET_LINKS, links);
     }
 
     /** Do not modify the set returned by this method. */
     private Set<String> getTrustedWebActivityDisclosureAcceptedPackages() {
-        return mManager.readStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES);
+        return mManager.readStringSet(
+                ChromePreferenceKeys.TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES);
     }
 
     /**
@@ -365,7 +169,9 @@ public class ChromePreferenceManager {
      * TWAs launched by the given package.
      */
     public void setUserAcceptedTwaDisclosureForPackage(String packageName) {
-        mManager.addToStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
+        mManager.addToStringSet(
+                ChromePreferenceKeys.TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
+                packageName);
     }
 
     /**
@@ -374,7 +180,8 @@ public class ChromePreferenceManager {
      */
     public void removeTwaDisclosureAcceptanceForPackage(String packageName) {
         mManager.removeFromStringSet(
-                TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
+                ChromePreferenceKeys.TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
+                packageName);
     }
 
     /**

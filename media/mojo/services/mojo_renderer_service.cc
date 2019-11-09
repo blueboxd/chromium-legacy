@@ -66,7 +66,7 @@ MojoRendererService::MojoRendererService(
 MojoRendererService::~MojoRendererService() = default;
 
 void MojoRendererService::Initialize(
-    mojom::RendererClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedRemote<mojom::RendererClient> client,
     base::Optional<std::vector<mojo::PendingRemote<mojom::DemuxerStream>>>
         streams,
     mojom::MediaUrlParamsPtr media_url_params,

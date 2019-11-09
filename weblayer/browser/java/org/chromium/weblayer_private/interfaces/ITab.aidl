@@ -4,10 +4,12 @@
 
 package org.chromium.weblayer_private.interfaces;
 
-import org.chromium.weblayer_private.interfaces.ITabClient;
+import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.interfaces.INavigationController;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.ITabClient;
 
 interface ITab {
   void setClient(in ITabClient client) = 0;

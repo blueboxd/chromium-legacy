@@ -11,29 +11,11 @@
 #include <gtk/gtk.h>
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace libgtkui {
-
-namespace {
-
-// Xkb Events store group attribute into XKeyEvent::state bit field, along with
-// other state-related info, while GdkEventKey objects have separate fields for
-// that purpose, they are ::state and ::group. This function is responsible for
-// recomposing them into a single bit field value when translating GdkEventKey
-// into XKeyEvent. This is similar to XkbBuildCoreState(), but assumes state is
-// an uint rather than an uchar.
-//
-// More details:
-// https://gitlab.freedesktop.org/xorg/proto/xorgproto/blob/master/include/X11/extensions/XKB.h#L372
-int BuildXkbStateFromGdkEvent(const GdkEventKey& keyev) {
-  DCHECK_EQ(0u, XkbGroupForCoreState(keyev.state));
-  DCHECK(XkbIsLegalGroup(keyev.group));
-  return keyev.state | ((keyev.group & 0x3) << 13);
-}
-
-}  // namespace
 
 // static
 GtkEventLoopX11* GtkEventLoopX11::GetInstance() {
@@ -88,9 +70,10 @@ void GtkEventLoopX11::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   x_event.xkey.window = GDK_WINDOW_XID(gdk_event_key.window);
   x_event.xkey.root = DefaultRootWindow(x_event.xkey.display);
   x_event.xkey.time = gdk_event_key.time;
-  x_event.xkey.state = BuildXkbStateFromGdkEvent(gdk_event_key);
   x_event.xkey.keycode = gdk_event_key.hardware_keycode;
   x_event.xkey.same_screen = true;
+  x_event.xkey.state =
+      BuildXkbStateFromGdkEvent(gdk_event_key.state, gdk_event_key.group);
 
   // We want to process the gtk event; mapped to an X11 event immediately
   // otherwise if we put it back on the queue we may get items out of order.

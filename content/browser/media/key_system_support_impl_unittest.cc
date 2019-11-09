@@ -25,7 +25,7 @@ namespace content {
 namespace {
 
 using VideoCodec = media::VideoCodec;
-using EncryptionMode = media::EncryptionMode;
+using EncryptionScheme = media::EncryptionScheme;
 using CdmSessionType = media::CdmSessionType;
 
 const base::Token kTestCdmGuid{1234, 5678};
@@ -68,7 +68,7 @@ class KeySystemSupportTest : public testing::Test {
   CdmCapability GetTestCdmCapability() {
     return CdmCapability(
         {VideoCodec::kCodecVP8, VideoCodec::kCodecVP9},
-        {EncryptionMode::kCenc, EncryptionMode::kCbcs},
+        {EncryptionScheme::kCenc, EncryptionScheme::kCbcs},
         {CdmSessionType::kTemporary, CdmSessionType::kPersistentLicense}, {});
   }
 
@@ -114,7 +114,7 @@ TEST_F(KeySystemSupportTest, OneKeySystem) {
 
   EXPECT_TRUE(IsSupported("KeySystem2"));
   EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP8, VideoCodec::kCodecVP9);
-  EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCenc, EncryptionMode::kCbcs);
+  EXPECT_ENCRYPTION_SCHEMES(EncryptionScheme::kCenc, EncryptionScheme::kCbcs);
   EXPECT_SESSION_TYPES(CdmSessionType::kTemporary,
                        CdmSessionType::kPersistentLicense);
 }

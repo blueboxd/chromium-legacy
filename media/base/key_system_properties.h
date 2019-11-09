@@ -28,7 +28,7 @@ class MEDIA_EXPORT KeySystemProperties {
 
   // Returns the configuration rule for supporting |encryption_scheme|.
   virtual EmeConfigRule GetEncryptionSchemeConfigRule(
-      EncryptionMode encryption_scheme) const = 0;
+      EncryptionScheme encryption_scheme) const = 0;
 
   // Returns the codecs supported by this key system.
   virtual SupportedCodecs GetSupportedCodecs() const = 0;

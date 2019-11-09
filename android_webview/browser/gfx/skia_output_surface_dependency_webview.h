@@ -27,12 +27,14 @@ class SkiaOutputSurfaceDependencyWebView
 
   std::unique_ptr<gpu::SingleTaskSequence> CreateSequence() override;
   bool IsUsingVulkan() override;
+  bool IsUsingDawn() override;
   gpu::SharedImageManager* GetSharedImageManager() override;
   gpu::SyncPointManager* GetSyncPointManager() override;
   const gpu::GpuDriverBugWorkarounds& GetGpuDriverBugWorkarounds() override;
   scoped_refptr<gpu::SharedContextState> GetSharedContextState() override;
   gpu::raster::GrShaderCache* GetGrShaderCache() override;
   viz::VulkanContextProvider* GetVulkanContextProvider() override;
+  viz::DawnContextProvider* GetDawnContextProvider() override;
   const gpu::GpuPreferences& GetGpuPreferences() override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() override;
   gpu::MailboxManager* GetMailboxManager() override;

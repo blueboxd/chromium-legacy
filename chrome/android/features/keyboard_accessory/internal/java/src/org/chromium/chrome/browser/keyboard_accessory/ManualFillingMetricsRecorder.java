@@ -62,9 +62,6 @@ public class ManualFillingMetricsRecorder {
      */
     public static void recordSheetTrigger(
             @AccessoryTabType int tabType, @AccessorySheetTrigger int bucket) {
-        // TODO(crbug.com/926372): Add metrics capabilities for credit cards.
-        if (tabType == AccessoryTabType.CREDIT_CARDS) return;
-
         RecordHistogram.recordEnumeratedHistogram(
                 getHistogramForType(UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED, tabType), bucket,
                 AccessorySheetTrigger.COUNT);

@@ -5724,7 +5724,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20191107",
                     "enable_features": [
                         "SetLowPriorityForBeacon"
                     ]
@@ -5893,6 +5893,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SpellingServiceRestApi"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SplitCacheByNetworkIsolationKey": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SplitCacheByNetworkIsolationKey"
                     ]
                 }
             ]
@@ -6615,6 +6635,27 @@
                     "name": "URLLoaderThrottleSafeBrowsingChecksEnabled",
                     "enable_features": [
                         "S13nSafeBrowsingCheckByURLLoaderThrottle"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UmaAndUkmDemographics": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "UKM_Enabled",
+                    "enable_features": [
+                        "DemographicMetricsReporting",
+                        "UkmReportNoisedUserBirthYearAndGender"
                     ]
                 }
             ]

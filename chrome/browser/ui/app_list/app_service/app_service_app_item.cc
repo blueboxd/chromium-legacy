@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 // static
 const char AppServiceAppItem::kItemType[] = "AppServiceAppItem";
@@ -103,6 +104,14 @@ void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
 }
 
 void AppServiceAppItem::Activate(int event_flags) {
+  // TODO(crbug.com/1022541): Move the Chrome special case to ExtensionApps,
+  // when AppService Instance feature is done.
+  if (id() == extension_misc::kChromeAppId) {
+    ChromeLauncherController::instance()->ActivateApp(
+        id(), ash::LAUNCH_FROM_APP_LIST, event_flags,
+        GetController()->GetAppListDisplayId());
+    return;
+  }
   Launch(event_flags, apps::mojom::LaunchSource::kFromAppListGrid);
 }
 

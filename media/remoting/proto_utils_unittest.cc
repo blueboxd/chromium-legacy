@@ -114,8 +114,7 @@ TEST_F(ProtoUtilsTest, PassValidDecoderBuffer) {
 
 TEST_F(ProtoUtilsTest, AudioDecoderConfigConversionTest) {
   const std::string extra_data = "ACEG";
-  const EncryptionScheme encryption_scheme(
-      EncryptionScheme::CIPHER_MODE_AES_CTR, EncryptionPattern(20, 40));
+  const EncryptionScheme encryption_scheme = EncryptionScheme::kCenc;
   AudioDecoderConfig audio_config(
       kCodecAAC, kSampleFormatF32, CHANNEL_LAYOUT_MONO, 48000,
       std::vector<uint8_t>(extra_data.begin(), extra_data.end()),

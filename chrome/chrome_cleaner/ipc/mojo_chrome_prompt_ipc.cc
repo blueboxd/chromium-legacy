@@ -69,29 +69,23 @@ void MojoChromePromptIPC::PostPromptUserTask(
     const std::vector<base::FilePath>& files_to_delete,
     const std::vector<base::string16>& registry_keys,
     const std::vector<base::string16>& extension_ids,
-    mojom::ChromePrompt::PromptUserCallback callback) {
+    PromptUserCallback callback) {
   DCHECK(task_runner_);
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &MojoChromePromptIPC::RunPromptUserTask, base::Unretained(this),
-          files_to_delete, registry_keys, extension_ids,
-          base::BindOnce(&MojoChromePromptIPC::OnChromeResponseReceived,
-                         base::Unretained(this), std::move(callback))));
+      base::BindOnce(&MojoChromePromptIPC::RunPromptUserTask,
+                     base::Unretained(this), files_to_delete, registry_keys,
+                     extension_ids, std::move(callback)));
 }
 
 void MojoChromePromptIPC::PostDisableExtensionsTask(
     const std::vector<base::string16>& extension_ids,
-    mojom::ChromePrompt::DisableExtensionsCallback callback) {
+    DisableExtensionsCallback callback) {
   DCHECK(task_runner_);
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &MojoChromePromptIPC::RunDisableExtensionsTask,
-          base::Unretained(this), extension_ids,
-          base::BindOnce(
-              &MojoChromePromptIPC::OnChromeResponseReceivedExtensions,
-              base::Unretained(this), std::move(callback))));
+      FROM_HERE, base::BindOnce(&MojoChromePromptIPC::RunDisableExtensionsTask,
+                                base::Unretained(this), extension_ids,
+                                std::move(callback)));
 }
 
 void MojoChromePromptIPC::TryDeleteExtensions(
@@ -106,22 +100,23 @@ void MojoChromePromptIPC::TryDeleteExtensions(
 }
 
 void MojoChromePromptIPC::OnChromeResponseReceived(
-    mojom::ChromePrompt::PromptUserCallback callback,
+    PromptUserCallback callback,
     mojom::PromptAcceptance prompt_acceptance) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(State::kWaitingForResponseFromChrome, state_);
 
   state_ = State::kDoneInteraction;
-  std::move(callback).Run(prompt_acceptance);
+  std::move(callback).Run(
+      static_cast<PromptUserResponse::PromptAcceptance>(prompt_acceptance));
 }
 
 void MojoChromePromptIPC::OnChromeResponseReceivedExtensions(
-    mojom::ChromePrompt::DisableExtensionsCallback callback,
-    bool extensions_disabled_callback) {
+    DisableExtensionsCallback callback,
+    bool extensions_disabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(State::kDoneInteraction, state_);
 
-  std::move(callback).Run(extensions_disabled_callback);
+  std::move(callback).Run(extensions_disabled);
 }
 
 void MojoChromePromptIPC::OnConnectionError() {
@@ -186,7 +181,7 @@ void MojoChromePromptIPC::RunPromptUserTask(
     const std::vector<base::FilePath>& files_to_delete,
     const std::vector<base::string16>& registry_keys,
     const std::vector<base::string16>& extension_ids,
-    mojom::ChromePrompt::PromptUserCallback callback) {
+    PromptUserCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(chrome_prompt_service_);
   DCHECK(state_ != State::kUninitialized);
@@ -200,24 +195,38 @@ void MojoChromePromptIPC::RunPromptUserTask(
 
   state_ = State::kWaitingForResponseFromChrome;
 
+  // Mojo will invoke this callback when a response is received. The
+  // |prompt_acceptance| parameter is unbound and will be filled in by Mojo.
+  mojom::ChromePrompt::PromptUserCallback response_callback =
+      base::BindOnce(&MojoChromePromptIPC::OnChromeResponseReceived,
+                     base::Unretained(this), std::move(callback));
+
   const auto& version_callback = base::BindRepeating(
       &MojoChromePromptIPC::PromptUserCheckVersion, base::Unretained(this),
       std::move(files_to_delete), std::move(registry_keys),
       // Uses the AdaptCallbackForRepeating because we are bound by the mojo API
       // to use a RepeatingCallback even though this only should be called once.
-      std::move(extension_ids), AdaptCallbackForRepeating(std::move(callback)));
+      std::move(extension_ids),
+      AdaptCallbackForRepeating(std::move(response_callback)));
   (*chrome_prompt_service_).QueryVersion(version_callback);
 }
 
 void MojoChromePromptIPC::RunDisableExtensionsTask(
     const std::vector<base::string16>& extension_ids,
-    mojom::ChromePrompt::DisableExtensionsCallback callback) {
+    DisableExtensionsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(chrome_prompt_service_);
   DCHECK(state_ == State::kDoneInteraction);
 
+  // Mojo will invoke this callback when a response is received. The
+  // |extensions_disabled| parameter is unbound and will be filled in by Mojo.
+  mojom::ChromePrompt::DisableExtensionsCallback response_callback =
+      base::BindOnce(&MojoChromePromptIPC::OnChromeResponseReceivedExtensions,
+                     base::Unretained(this), std::move(callback));
+
   (*chrome_prompt_service_)
-      ->DisableExtensions(std::move(extension_ids), std::move(callback));
+      ->DisableExtensions(std::move(extension_ids),
+                          std::move(response_callback));
 }
 
 }  // namespace chrome_cleaner

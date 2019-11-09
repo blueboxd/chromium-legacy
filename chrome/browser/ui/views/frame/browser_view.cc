@@ -2342,6 +2342,10 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   // (Windows) or Ctrl+Back/Forward (Chrome OS).  If one of these is
   // invisible or has no focusable children, it will be automatically
   // skipped.
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (webui_tab_strip_)
+    panes->push_back(webui_tab_strip_);
+#endif
   panes->push_back(toolbar_button_provider_->GetAsAccessiblePaneView());
   if (tabstrip_)
     panes->push_back(tabstrip_);

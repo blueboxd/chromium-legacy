@@ -16,13 +16,13 @@
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
 #include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "chrome/chrome_cleaner/ui/mock_main_dialog_delegate.h"
+#include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
 namespace {
 
-using mojom::PromptAcceptance;
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::Invoke;
@@ -58,8 +58,8 @@ TEST_F(ChromeProxyMainDialogTest, NoPUPsFound) {
       .WillOnce(Invoke([](const std::vector<base::FilePath>& files_to_delete,
                           const std::vector<base::string16>& registry_keys,
                           const std::vector<base::string16>& extension_ids,
-                          mojom::ChromePrompt::PromptUserCallback* callback) {
-        std::move(*callback).Run(PromptAcceptance::DENIED);
+                          ChromePromptIPC::PromptUserCallback* callback) {
+        std::move(*callback).Run(PromptUserResponse::DENIED);
       }));
 
   dialog_->NoPUPsFound();
@@ -77,7 +77,7 @@ TEST_F(ChromeProxyMainDialogTest, Close) {
 }
 
 class ConfirmCleanupChromeProxyMainDialogTest
-    : public ::testing::TestWithParam<PromptAcceptance> {
+    : public ::testing::TestWithParam<PromptUserResponse::PromptAcceptance> {
  public:
   void SetUp() override { Settings::SetInstanceForTesting(&mock_settings_); }
 
@@ -88,11 +88,12 @@ class ConfirmCleanupChromeProxyMainDialogTest
 
 TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
   constexpr UwSId kFakePupId = 1024;
-  PromptAcceptance prompt_acceptance = GetParam();
+  PromptUserResponse::PromptAcceptance prompt_acceptance = GetParam();
   bool accept_cleanup =
-      prompt_acceptance == PromptAcceptance::ACCEPTED_WITH_LOGS ||
-      prompt_acceptance == PromptAcceptance::ACCEPTED_WITHOUT_LOGS;
-  bool logs_allowed = prompt_acceptance == PromptAcceptance::ACCEPTED_WITH_LOGS;
+      prompt_acceptance == PromptUserResponse::ACCEPTED_WITH_LOGS ||
+      prompt_acceptance == PromptUserResponse::ACCEPTED_WITHOUT_LOGS;
+  bool logs_allowed =
+      prompt_acceptance == PromptUserResponse::ACCEPTED_WITH_LOGS;
 
   base::test::SingleThreadTaskEnvironment task_environment(
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
@@ -139,7 +140,7 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
                            const std::vector<base::FilePath>& files_to_delete,
                            const std::vector<base::string16>& registry_keys,
                            const std::vector<base::string16>& extension_ids,
-                           mojom::ChromePrompt::PromptUserCallback* callback) {
+                           ChromePromptIPC::PromptUserCallback* callback) {
         std::move(*callback).Run(prompt_acceptance);
       }));
 
@@ -156,9 +157,9 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     ConfirmCleanupChromeProxyMainDialogTest,
-    testing::Values(PromptAcceptance::ACCEPTED_WITH_LOGS,
-                    PromptAcceptance::ACCEPTED_WITHOUT_LOGS,
-                    PromptAcceptance::DENIED));
+    testing::Values(PromptUserResponse::ACCEPTED_WITH_LOGS,
+                    PromptUserResponse::ACCEPTED_WITHOUT_LOGS,
+                    PromptUserResponse::DENIED));
 
 }  // namespace
 }  // namespace chrome_cleaner

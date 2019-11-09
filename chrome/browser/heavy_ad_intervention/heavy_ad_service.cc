@@ -54,3 +54,14 @@ void HeavyAdService::Initialize(const base::FilePath& profile_path) {
   heavy_ad_blocklist_ = std::make_unique<HeavyAdBlocklist>(
       std::move(opt_out_store), base::DefaultClock::GetInstance(), this);
 }
+
+void HeavyAdService::InitializeOffTheRecord() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!base::FeatureList::IsEnabled(features::kHeavyAdPrivacyMitigations))
+    return;
+
+  // Providing a null out_out_store which sets up the blocklist in-memory only.
+  heavy_ad_blocklist_ = std::make_unique<HeavyAdBlocklist>(
+      nullptr /* opt_out_store */, base::DefaultClock::GetInstance(), this);
+}

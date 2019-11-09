@@ -123,7 +123,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
             'benchmark/story',
             output_artifacts={
                 'logs': testing.Artifact('/logs.txt', 'gs://logs.txt'),
-                'trace/telemetry': testing.Artifact('/telemetry.json'),
+                'trace/telemetry.json': testing.Artifact('/telemetry.json'),
                 'trace.html':
                     testing.Artifact('/trace.html', 'gs://trace.html'),
             }
@@ -314,7 +314,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.SerializeIntermediateResults(
         testing.TestResult(
             'benchmark/story',
-            output_artifacts={'trace/json': testing.Artifact(json_trace)},
+            output_artifacts={'trace/trace.json': testing.Artifact(json_trace)},
             tags=['tbmv2:sampleMetric'],
         ),
     )

@@ -29,7 +29,9 @@ import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class is the mediator that contains all business logic for TabSelectionEditor component. It
@@ -45,8 +47,9 @@ class TabSelectionEditorMediator
         /**
          * Handles the reset event.
          * @param tabs List of {@link Tab}s to reset.
+         * @param preSelectedCount First {@code preSelectedCount} {@code tabs} are pre-selected.
          */
-        void resetWithListOfTabs(@Nullable List<Tab> tabs);
+        void resetWithListOfTabs(@Nullable List<Tab> tabs, int preSelectedCount);
     }
 
     /**
@@ -181,8 +184,27 @@ class TabSelectionEditorMediator
      */
     @Override
     public void show(List<Tab> tabs) {
-        mResetHandler.resetWithListOfTabs(tabs);
+        show(tabs, 0);
+    }
+
+    @Override
+    public void show(List<Tab> tabs, int preSelectedTabCount) {
         mSelectionDelegate.setSelectionModeEnabledForZeroItems(true);
+
+        if (preSelectedTabCount > 0) {
+            assert preSelectedTabCount <= tabs.size();
+
+            Set<Integer> preSelectedTabIds = new HashSet<>();
+
+            for (int i = 0; i < preSelectedTabCount; i++) {
+                preSelectedTabIds.add(tabs.get(i).getId());
+            }
+
+            mSelectionDelegate.setSelectedItems(preSelectedTabIds);
+        }
+
+        mResetHandler.resetWithListOfTabs(tabs, preSelectedTabCount);
+
         if (mPositionProvider != null) {
             mModel.set(TabSelectionEditorProperties.SELECTION_EDITOR_POSITION_RECT,
                     mPositionProvider.getSelectionEditorPositionRect());
@@ -221,7 +243,7 @@ class TabSelectionEditorMediator
 
     @Override
     public void hide() {
-        mResetHandler.resetWithListOfTabs(null);
+        mResetHandler.resetWithListOfTabs(null, 0);
         mModel.set(TabSelectionEditorProperties.IS_VISIBLE, false);
     }
 

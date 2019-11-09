@@ -1103,8 +1103,7 @@ bool AdsPageLoadMetricsObserver::IsBlocklisted() {
 
   auto* blocklist = GetHeavyAdBlocklist();
 
-  // Treat instances where the blocklist is unavailable as blocklisted. This
-  // includes incognito profiles, which do not create a blocklist service.
+  // Treat instances where the blocklist is unavailable as blocklisted.
   if (!blocklist) {
     heavy_ads_blocklist_blocklisted_ = true;
     return true;

@@ -142,6 +142,14 @@ UserSelectableOsTypeSet SyncUserSettingsImpl::GetRegisteredSelectableOsTypes()
   }
   return registered_types;
 }
+
+bool SyncUserSettingsImpl::GetOsSyncFeatureEnabled() const {
+  return prefs_->GetOsSyncFeatureEnabled();
+}
+
+void SyncUserSettingsImpl::SetOsSyncFeatureEnabled(bool enabled) {
+  prefs_->SetOsSyncFeatureEnabled(enabled);
+}
 #endif  // defined(OS_CHROMEOS)
 
 UserSelectableTypeSet SyncUserSettingsImpl::GetForcedTypes() const {

@@ -154,8 +154,7 @@ IN_PROC_BROWSER_TEST_P(ScreenRotationTest, MAYBE_RotateInTablet) {
   waiter.Wait();
 }
 
-// Flakily crashes. - crbug.com/1021936
-IN_PROC_BROWSER_TEST_P(ScreenRotationTest, DISABLED_RotateInTabletOverview) {
+IN_PROC_BROWSER_TEST_P(ScreenRotationTest, RotateInTabletOverview) {
   // Browser window is used just to identify display.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   gfx::NativeWindow browser_window =

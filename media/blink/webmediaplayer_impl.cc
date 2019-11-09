@@ -172,29 +172,17 @@ int GetSwitchToLocalMessage(MediaObserverClient::ReasonToSwitchToLocal reason) {
 
 // These values are persisted to UMA. Entries should not be renumbered and
 // numeric values should never be reused.
-// TODO(crbug.com/825041): This should use EncryptionMode when kUnencrypted
+// TODO(crbug.com/825041): This should use EncryptionScheme when kUnencrypted
 // removed.
 enum class EncryptionSchemeUMA { kCenc = 0, kCbcs = 1, kCount };
 
 EncryptionSchemeUMA DetermineEncryptionSchemeUMAValue(
-    const EncryptionScheme& encryption_scheme) {
-  if (encryption_scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CBC)
+    EncryptionScheme encryption_scheme) {
+  if (encryption_scheme == EncryptionScheme::kCbcs)
     return EncryptionSchemeUMA::kCbcs;
 
-  DCHECK_EQ(encryption_scheme.mode(), EncryptionScheme::CIPHER_MODE_AES_CTR);
+  DCHECK_EQ(encryption_scheme, EncryptionScheme::kCenc);
   return EncryptionSchemeUMA::kCenc;
-}
-
-EncryptionMode DetermineEncryptionMode(
-    const EncryptionScheme& encryption_scheme) {
-  switch (encryption_scheme.mode()) {
-    case EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
-      return EncryptionMode::kUnencrypted;
-    case EncryptionScheme::CIPHER_MODE_AES_CTR:
-      return EncryptionMode::kCenc;
-    case EncryptionScheme::CIPHER_MODE_AES_CBC:
-      return EncryptionMode::kCbcs;
-  }
 }
 
 #if BUILDFLAG(ENABLE_FFMPEG)
@@ -3206,10 +3194,8 @@ void WebMediaPlayerImpl::UpdateSecondaryProperties() {
           pipeline_metadata_.video_decoder_config.codec(),
           pipeline_metadata_.video_decoder_config.profile(),
           audio_decoder_name_, video_decoder_name_,
-          DetermineEncryptionMode(
-              pipeline_metadata_.audio_decoder_config.encryption_scheme()),
-          DetermineEncryptionMode(
-              pipeline_metadata_.video_decoder_config.encryption_scheme()),
+          pipeline_metadata_.audio_decoder_config.encryption_scheme(),
+          pipeline_metadata_.video_decoder_config.encryption_scheme(),
           pipeline_metadata_.natural_size));
 }
 
@@ -3585,11 +3571,11 @@ void WebMediaPlayerImpl::RecordTimingUMA(const std::string& key,
 
 void WebMediaPlayerImpl::RecordEncryptionScheme(
     const std::string& stream_name,
-    const EncryptionScheme& encryption_scheme) {
+    EncryptionScheme encryption_scheme) {
   DCHECK(stream_name == "Audio" || stream_name == "Video");
 
   // If the stream is not encrypted, don't record it.
-  if (encryption_scheme.mode() == EncryptionScheme::CIPHER_MODE_UNENCRYPTED)
+  if (encryption_scheme == EncryptionScheme::kUnencrypted)
     return;
 
   base::UmaHistogramEnumeration(

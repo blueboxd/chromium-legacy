@@ -90,9 +90,6 @@ class HomeScreenDelegate {
       base::Optional<AnimationInfo> animation_info,
       UpdateAnimationSettingsCallback callback) = 0;
 
-  // Updates the home launcher view after its show animation has completed.
-  virtual void UpdateAfterHomeLauncherShown() = 0;
-
   // Returns an optional animation duration which is going to be used to set
   // the transition animation if provided.
   virtual base::Optional<base::TimeDelta> GetOptionalAnimationDuration() = 0;

@@ -119,6 +119,8 @@ const ui::AXUniqueId& ViewAccessibility::GetUniqueId() const {
 }
 
 void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
+  data->id = GetUniqueId().Get();
+
   // Views may misbehave if their widget is closed; return an unknown role
   // rather than possibly crashing.
   const views::Widget* widget = view_->GetWidget();

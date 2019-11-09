@@ -513,7 +513,7 @@ void NetworkContext::GetRestrictedCookieManager(
   if (network_service())
     network_service_client = network_service()->client();
 
-  restricted_cookie_manager_bindings_.AddBinding(
+  restricted_cookie_manager_receivers_.Add(
       std::make_unique<RestrictedCookieManager>(
           role, url_request_context_->cookie_store(),
           &cookie_manager_->cookie_settings(), origin, site_for_cookies,

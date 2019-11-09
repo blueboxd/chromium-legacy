@@ -108,6 +108,10 @@
 namespace content {
 namespace {
 
+// Whether an instance of BrowserTestBase has already been created in this
+// process. Browser tests should each be run in a new process.
+bool g_instance_already_created = false;
+
 #if defined(OS_POSIX)
 // On SIGSEGV or SIGTERM (sent by the runner on timeouts), dump a stack trace
 // (to make debugging easier) and also exit with a known error code (so that
@@ -173,6 +177,11 @@ BrowserTestBase::BrowserTestBase()
       enable_pixel_output_(false),
       use_software_compositing_(false),
       set_up_called_(false) {
+  CHECK(!g_instance_already_created)
+      << "Each browser test should be run in a new process. If you are adding "
+         "a new browser test suite that runs on Android, please add it to "
+         "//build/android/pylib/gtest/gtest_test_instance.py.";
+  g_instance_already_created = true;
 #if defined(OS_LINUX)
   ui::test::EnableTestConfigForPlatformWindows();
 #endif

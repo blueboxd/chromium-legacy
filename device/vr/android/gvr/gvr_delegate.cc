@@ -18,63 +18,6 @@ namespace {
 // exposed, use that instead (it defaults to 50ms on most platforms).
 static constexpr int64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 
-// Time offset used for calculating angular velocity from a pair of predicted
-// poses. The precise value shouldn't matter as long as it's nonzero and much
-// less than a frame.
-static constexpr int64_t kAngularVelocityEpsilonNanos = 1000000;
-
-gfx::Vector3dF GetAngularVelocityFromPoses(gfx::Transform head_mat,
-                                           gfx::Transform head_mat_2,
-                                           double epsilon_seconds) {
-  // The angular velocity is a 3-element vector pointing along the rotation
-  // axis with magnitude equal to rotation speed in radians/second, expressed
-  // in the seated frame of reference.
-  //
-  // The 1.1 spec isn't very clear on details, clarification requested in
-  // https://github.com/w3c/webvr/issues/212 . For now, assuming that we
-  // want a vector in the sitting reference frame.
-  //
-  // Assuming that pose prediction is simply based on adding a time * angular
-  // velocity rotation to the pose, we can approximate the angular velocity
-  // from the difference between two successive poses. This is a first order
-  // estimate that assumes small enough rotations so that we can do linear
-  // approximation.
-  //
-  // See:
-  // https://en.wikipedia.org/wiki/Angular_velocity#Calculation_from_the_orientation_matrix
-
-  gfx::Transform delta_mat;
-  gfx::Transform inverse_head_mat;
-  // Calculate difference matrix, and inverse head matrix rotation.
-  // For the inverse rotation, just transpose the 3x3 subsection.
-  //
-  // Assume that epsilon is nonzero since it's based on a compile-time constant
-  // provided by the caller.
-  for (int j = 0; j < 3; ++j) {
-    for (int i = 0; i < 3; ++i) {
-      delta_mat.matrix().set(
-          j, i,
-          (head_mat_2.matrix().get(j, i) - head_mat.matrix().get(j, i)) /
-              epsilon_seconds);
-      inverse_head_mat.matrix().set(j, i, head_mat.matrix().get(i, j));
-    }
-    delta_mat.matrix().set(j, 3, 0);
-    delta_mat.matrix().set(3, j, 0);
-    inverse_head_mat.matrix().set(j, 3, 0);
-    inverse_head_mat.matrix().set(3, j, 0);
-  }
-  delta_mat.matrix().set(3, 3, 1);
-  inverse_head_mat.matrix().set(3, 3, 1);
-  gfx::Transform omega_mat = delta_mat * inverse_head_mat;
-  gfx::Vector3dF omega_vec(-omega_mat.matrix().get(2, 1),
-                           omega_mat.matrix().get(2, 0),
-                           -omega_mat.matrix().get(1, 0));
-
-  // Rotate by inverse head matrix to bring into seated space.
-  inverse_head_mat.TransformVector(&omega_vec);
-  return omega_vec;
-}
-
 }  // namespace
 
 /* static */
@@ -138,18 +81,6 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
   gvr_utils::GvrMatToTransform(gvr_head_mat, head_mat_ptr);
 
   mojom::VRPosePtr pose = GvrDelegate::VRPosePtrFromGvrPose(*head_mat_ptr);
-
-  // Get a second pose a bit later to calculate angular velocity.
-  target_time.monotonic_system_time_nanos += kAngularVelocityEpsilonNanos;
-  gvr::Mat4f gvr_head_mat_2 =
-      gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time);
-  gfx::Transform head_mat_2;
-  gvr_utils::GvrMatToTransform(gvr_head_mat_2, &head_mat_2);
-
-  // Add headset angular velocity to the pose.
-  double epsilon_seconds = kAngularVelocityEpsilonNanos * 1e-9;
-  pose->angular_velocity =
-      GetAngularVelocityFromPoses(*head_mat_ptr, head_mat_2, epsilon_seconds);
 
   // The position is emulated unless the current tracking status is 6DoF and is
   // not still initializing or invalid.

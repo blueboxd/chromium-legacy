@@ -155,10 +155,10 @@ static scoped_refptr<DecoderBuffer> DecryptData(
   CHECK(input.data_size());
   CHECK(input.decrypt_config());
 
-  if (input.decrypt_config()->encryption_mode() == EncryptionMode::kCenc)
+  if (input.decrypt_config()->encryption_scheme() == EncryptionScheme::kCenc)
     return DecryptCencBuffer(input, key);
 
-  if (input.decrypt_config()->encryption_mode() == EncryptionMode::kCbcs)
+  if (input.decrypt_config()->encryption_scheme() == EncryptionScheme::kCbcs)
     return DecryptCbcsBuffer(input, key);
 
   DVLOG(1) << "Only 'cenc' and 'cbcs' modes supported.";

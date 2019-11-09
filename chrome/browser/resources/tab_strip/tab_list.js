@@ -48,6 +48,10 @@ class TabListElement extends CustomElement {
      */
     this.animationPromises = Promise.resolve();
 
+    /** @private {!Function} */
+    this.documentVisibilityChangeListener_ = () =>
+        this.onDocumentVisibilityChange_();
+
     /**
      * The TabElement that is currently being dragged.
      * @private {!TabElement|undefined}
@@ -91,6 +95,12 @@ class TabListElement extends CustomElement {
         /** @type {!Element} */ (
             this.shadowRoot.querySelector('#tabsContainer'));
 
+    /** @private {!Function} */
+    this.windowBlurListener_ = () => this.onWindowBlur_();
+
+    /** @private {!Function} */
+    this.windowFocusListener_ = () => this.onWindowFocus_();
+
     addWebUIListener(
         'layout-changed', layout => this.applyCSSDictionary_(layout));
     addWebUIListener('theme-changed', () => this.fetchAndUpdateColors_());
@@ -105,8 +115,11 @@ class TabListElement extends CustomElement {
         'dragend', (e) => this.onDragEnd_(/** @type {!DragEvent} */ (e)));
     this.addEventListener(
         'dragover', (e) => this.onDragOver_(/** @type {!DragEvent} */ (e)));
+
     document.addEventListener(
-        'visibilitychange', () => this.onVisibilityChange_());
+        'visibilitychange', this.documentVisibilityChangeListener_);
+    window.addEventListener('blur', this.windowBlurListener_);
+    window.addEventListener('focus', this.windowFocusListener_);
 
     if (loadTimeData.getBoolean('showDemoOptions')) {
       this.shadowRoot.querySelector('#demoOptions').style.display = 'block';
@@ -157,10 +170,19 @@ class TabListElement extends CustomElement {
       addWebUIListener(
           'tab-moved', (tabId, newIndex) => this.onTabMoved_(tabId, newIndex));
       addWebUIListener('tab-removed', tabId => this.onTabRemoved_(tabId));
+      addWebUIListener(
+          'tab-replaced', (oldId, newId) => this.onTabReplaced_(oldId, newId));
       addWebUIListener('tab-updated', tab => this.onTabUpdated_(tab));
       addWebUIListener(
           'tab-active-changed', tabId => this.onTabActivated_(tabId));
     });
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener(
+        'visibilitychange', this.documentVisibilityChangeListener_);
+    window.removeEventListener('blur', this.windowBlurListener_);
+    window.removeEventListener('focus', this.windowFocusListener_);
   }
 
   /**
@@ -242,6 +264,13 @@ class TabListElement extends CustomElement {
     } else {
       this.scrollToTab_(activeTab);
     }
+  }
+
+  /** @private */
+  onDocumentVisibilityChange_() {
+    this.moveOrScrollToActiveTab_();
+    Array.from(this.tabsContainerElement_.children)
+        .forEach((tabElement) => this.updateThumbnailTrackStatus_(tabElement));
   }
 
   /**
@@ -387,6 +416,21 @@ class TabListElement extends CustomElement {
   }
 
   /**
+   * @param {number} oldId
+   * @param {number} newId
+   * @private
+   */
+  onTabReplaced_(oldId, newId) {
+    const tabElement = this.findTabElement_(oldId);
+    if (!tabElement) {
+      return;
+    }
+
+    tabElement.tab = /** @type {!TabData} */ (
+        Object.assign({}, tabElement.tab, {id: newId}));
+  }
+
+  /**
    * @param {!TabData} tab
    * @private
    */
@@ -412,10 +456,18 @@ class TabListElement extends CustomElement {
   }
 
   /** @private */
-  onVisibilityChange_() {
-    this.moveOrScrollToActiveTab_();
-    Array.from(this.tabsContainerElement_.children)
-        .forEach((tabElement) => this.updateThumbnailTrackStatus_(tabElement));
+  onWindowBlur_() {
+    if (this.shadowRoot.activeElement) {
+      // Blur the currently focused element when the window is blurred. This
+      // prevents the screen reader from momentarily reading out the
+      // previously focused element when the focus returns to this window.
+      this.shadowRoot.activeElement.blur();
+    }
+  }
+
+  /** @private */
+  onWindowFocus_() {
+    this.shadowRoot.querySelector('tabstrip-tab').focus();
   }
 
   /**

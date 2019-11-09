@@ -11,10 +11,11 @@
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 #include "services/video_capture/video_capture_service_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -172,12 +173,13 @@ TEST_F(VideoCaptureServiceLifecycleTest,
       }));
   media::VideoCaptureParams requestable_settings;
   requestable_settings.requested_format = fake_device_info.supported_formats[0];
-  mojo::PendingRemote<mojom::Receiver> receiver_proxy;
-  MockReceiver mock_receiver(receiver_proxy.InitWithNewPipeAndPassReceiver());
-  fake_device->Start(requestable_settings, std::move(receiver_proxy));
+  mojo::PendingRemote<mojom::VideoFrameHandler> handler_remote;
+  MockVideoFrameHandler mock_video_frame_handler(
+      handler_remote.InitWithNewPipeAndPassReceiver());
+  fake_device->Start(requestable_settings, std::move(handler_remote));
   {
     base::RunLoop wait_loop;
-    EXPECT_CALL(mock_receiver, OnStarted()).WillOnce([&wait_loop]() {
+    EXPECT_CALL(mock_video_frame_handler, OnStarted()).WillOnce([&wait_loop]() {
       wait_loop.Quit();
     });
     wait_loop.Run();

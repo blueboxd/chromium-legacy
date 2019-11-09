@@ -57,7 +57,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -144,15 +145,14 @@ class FakePasswordAutofillAgent
     : public autofill::mojom::PasswordAutofillAgent {
  public:
   FakePasswordAutofillAgent()
-      : called_set_logging_state_(false),
-        logging_state_active_(false),
-        binding_(this) {}
+      : called_set_logging_state_(false), logging_state_active_(false) {}
 
   ~FakePasswordAutofillAgent() override = default;
 
-  void BindRequest(mojo::ScopedInterfaceEndpointHandle handle) {
-    binding_.Bind(autofill::mojom::PasswordAutofillAgentAssociatedRequest(
-        std::move(handle)));
+  void BindReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.Bind(
+        mojo::PendingAssociatedReceiver<autofill::mojom::PasswordAutofillAgent>(
+            std::move(handle)));
   }
 
   bool called_set_logging_state() { return called_set_logging_state_; }
@@ -187,7 +187,8 @@ class FakePasswordAutofillAgent
   // Records data received via SetLoggingState() call.
   bool logging_state_active_;
 
-  mojo::AssociatedBinding<autofill::mojom::PasswordAutofillAgent> binding_;
+  mojo::AssociatedReceiver<autofill::mojom::PasswordAutofillAgent> receiver_{
+      this};
 };
 
 std::unique_ptr<KeyedService> CreateTestSyncService(
@@ -247,7 +248,7 @@ void ChromePasswordManagerClientTest::SetUp() {
       web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces();
   remote_interfaces->OverrideBinderForTesting(
       autofill::mojom::PasswordAutofillAgent::Name_,
-      base::BindRepeating(&FakePasswordAutofillAgent::BindRequest,
+      base::BindRepeating(&FakePasswordAutofillAgent::BindReceiver,
                           base::Unretained(&fake_agent_)));
 
   prefs_.registry()->RegisterBooleanPref(

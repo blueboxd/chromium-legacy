@@ -9,19 +9,23 @@
 
 MediaHistoryContentsObserver::MediaHistoryContentsObserver(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents), service_(nullptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  service_ = media_history::MediaHistoryKeyedServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  DCHECK(service_);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile->IsOffTheRecord()) {
+    service_ =
+        media_history::MediaHistoryKeyedServiceFactory::GetForProfile(profile);
+    DCHECK(service_);
+  }
 }
 
 MediaHistoryContentsObserver::~MediaHistoryContentsObserver() = default;
 
 void MediaHistoryContentsObserver::MediaWatchTimeChanged(
     const content::MediaPlayerWatchTime& watch_time) {
-  service_->GetMediaHistoryStore()->SavePlayback(watch_time);
+  if (service_)
+    service_->GetMediaHistoryStore()->SavePlayback(watch_time);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaHistoryContentsObserver)

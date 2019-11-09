@@ -1073,6 +1073,51 @@ IN_PROC_BROWSER_TEST_F(WebViewNewWindowInteractiveTest,
              NEEDS_TEST_SERVER);
 }
 
+// Ensure that when one <webview> makes a window.open() call that references
+// another <webview> by name, the opener is updated without a crash. Regression
+// test for https://crbug.com/1013553.
+IN_PROC_BROWSER_TEST_F(WebViewNewWindowInteractiveTest,
+                       NewWindow_UpdateOpener) {
+  TestHelper("testNewWindowAndUpdateOpener", "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+
+  // The first <webview> tag in the test will run window.open(), which the
+  // embedder will translate into an injected second <webview> tag, after which
+  // test control will return here.  Wait until there are two guests; i.e.,
+  // until the second <webview>'s guest is also created.
+  GetGuestViewManager()->WaitForNumGuestsCreated(2);
+
+  std::vector<content::WebContents*> guest_contents_list;
+  GetGuestViewManager()->GetGuestWebContentsList(&guest_contents_list);
+  ASSERT_EQ(2u, guest_contents_list.size());
+  content::WebContents* guest1 = guest_contents_list[0];
+  content::WebContents* guest2 = guest_contents_list[1];
+  EXPECT_TRUE(content::WaitForLoadStop(guest1));
+  EXPECT_TRUE(content::WaitForLoadStop(guest2));
+  ASSERT_NE(guest1, guest2);
+
+  // Change first guest's window.name to "foo" and check that it does not
+  // have an opener to start with.
+  EXPECT_TRUE(content::ExecJs(guest1, "window.name = 'foo'"));
+  EXPECT_EQ("foo", content::EvalJs(guest1, "window.name"));
+  EXPECT_EQ(true, content::EvalJs(guest1, "window.opener == null"));
+
+  // Create a subframe in the second guest.  This is needed because the crash
+  // in crbug.com/1013553 only happened when trying to incorrectly create
+  // proxies for a subframe.
+  EXPECT_TRUE(content::ExecuteScript(
+      guest2, "document.body.appendChild(document.createElement('iframe'));"));
+
+  // Update the opener of |guest1| to point to |guest2|.  This triggers
+  // creation of proxies on the new opener chain, which should not crash.
+  EXPECT_TRUE(content::ExecuteScript(guest2, "window.open('', 'foo');"));
+
+  // Ensure both guests have the proper opener relationship set up.  Namely,
+  // each guest's opener should point to the other guest, creating a cycle.
+  EXPECT_EQ(true, content::EvalJs(guest1, "window.opener.opener === window"));
+  EXPECT_EQ(true, content::EvalJs(guest2, "window.opener.opener === window"));
+}
+
 // There is a problem of missing keyup events with the command key after
 // the NSEvent is sent to NSApplication in ui/base/test/ui_controls_mac.mm .
 // This test is disabled on only the Mac until the problem is resolved.

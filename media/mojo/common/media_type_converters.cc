@@ -29,7 +29,7 @@ TypeConverter<media::mojom::DecryptConfigPtr, media::DecryptConfig>::Convert(
   mojo_decrypt_config->key_id = input.key_id();
   mojo_decrypt_config->iv = input.iv();
   mojo_decrypt_config->subsamples = input.subsamples();
-  mojo_decrypt_config->encryption_mode = input.encryption_mode();
+  mojo_decrypt_config->encryption_scheme = input.encryption_scheme();
   mojo_decrypt_config->encryption_pattern = input.encryption_pattern();
 
   return mojo_decrypt_config;
@@ -41,7 +41,7 @@ TypeConverter<std::unique_ptr<media::DecryptConfig>,
               media::mojom::DecryptConfigPtr>::
     Convert(const media::mojom::DecryptConfigPtr& input) {
   return std::make_unique<media::DecryptConfig>(
-      input->encryption_mode, input->key_id, input->iv, input->subsamples,
+      input->encryption_scheme, input->key_id, input->iv, input->subsamples,
       input->encryption_pattern);
 }
 

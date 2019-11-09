@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/enterprise_reporting/browser_report_generator.h"
-#include "chrome/browser/enterprise_reporting/profile_report_generator.h"
+#include "chrome/browser/enterprise_reporting/report_request_queue_generator.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -21,7 +21,12 @@ namespace enterprise_reporting {
 
 class ReportGenerator {
  public:
-  using Requests = std::queue<std::unique_ptr<em::ChromeDesktopReportRequest>>;
+#if defined(OS_CHROMEOS)
+  using Request = em::ChromeOsUserReportRequest;
+#else
+  using Request = em::ChromeDesktopReportRequest;
+#endif
+  using Requests = std::queue<std::unique_ptr<Request>>;
   using ReportCallback = base::OnceCallback<void(Requests)>;
 
   ReportGenerator();
@@ -50,24 +55,13 @@ class ReportGenerator {
   virtual std::string GetSerialNumber();
 
  private:
-  void GenerateProfileReportWithIndex(int profile_index);
-
   void OnBrowserReportReady(std::unique_ptr<em::BrowserReport> browser_report);
 
-  void Response();
-
-  ProfileReportGenerator profile_report_generator_;
+  ReportRequestQueueGenerator report_request_queue_generator_;
   BrowserReportGenerator browser_report_generator_;
-
   ReportCallback callback_;
-
-  Requests requests_;
-
   // Basic information that is shared among requests.
-  em::ChromeDesktopReportRequest basic_request_;
-  size_t basic_request_size_;
-
-  size_t maximum_report_size_;
+  Request basic_request_;
 
   base::WeakPtrFactory<ReportGenerator> weak_ptr_factory_{this};
 

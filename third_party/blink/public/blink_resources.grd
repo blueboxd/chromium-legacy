@@ -25,6 +25,7 @@
       <include name="IDR_UASTYLE_THEME_FORCED_COLORS_CSS" file="../renderer/core/html/resources/forced_colors.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_SVG_CSS" file="../renderer/core/css/svg.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_MATHML_CSS" file="../renderer/core/css/mathml.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_MATHML_FALLBACK_CSS" file="../renderer/core/css/mathml-fallback.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_FULLSCREEN_CSS" file="../renderer/core/css/fullscreen.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_XHTMLMP_CSS" file="../renderer/core/css/xhtmlmp.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_VIEWPORT_ANDROID_CSS" file="../renderer/core/css/viewportAndroid.css" type="BINDATA" compress="gzip"/>

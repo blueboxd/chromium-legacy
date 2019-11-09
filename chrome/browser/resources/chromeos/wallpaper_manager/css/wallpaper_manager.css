@@ -856,20 +856,24 @@ html[dir='rtl'] .top-header-contents .more-options {
 }
 
 #message-container {
-  background-color: rgba(0, 0, 0, 0.7);
-  border-radius: 16px;
   bottom: 12px;
-  color: #fff;
-  display: block;
-  left: 50%;
-  max-width: 90%;
-  min-width: 75%;
-  padding: 8px 28px;
+  display: none;
   position: absolute;
   text-align: center;
-  transform: translateX(-50%);
-  visibility: hidden;  /* Need this for correct positioning. */
+  width: 100%;
   z-index: 4;
+}
+
+#message-content {
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 16px;
+  color: #fff;
+  display: inline-block;
+  left: 50%;
+  margin: 0 auto;
+  max-width: 90%;
+  padding: 8px 28px;
+  text-align: center;
 }
 
 #preview-spinner,

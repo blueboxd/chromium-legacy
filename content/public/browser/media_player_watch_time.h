@@ -15,7 +15,9 @@ struct CONTENT_EXPORT MediaPlayerWatchTime {
   MediaPlayerWatchTime(GURL url,
                        GURL origin,
                        base::TimeDelta cumulative_watch_time,
-                       base::TimeDelta last_timestamp);
+                       base::TimeDelta last_timestamp,
+                       bool has_video,
+                       bool has_audio);
   MediaPlayerWatchTime(const MediaPlayerWatchTime& other);
   ~MediaPlayerWatchTime() = default;
 
@@ -23,6 +25,8 @@ struct CONTENT_EXPORT MediaPlayerWatchTime {
   GURL origin;
   base::TimeDelta cumulative_watch_time;
   base::TimeDelta last_timestamp;
+  bool has_video;
+  bool has_audio;
 };
 
 }  // namespace content

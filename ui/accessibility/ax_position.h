@@ -1541,8 +1541,6 @@ class AXPosition {
   // See also http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
   AXPositionInstance CreateNextCharacterPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary)
-        << "StopIfAlreadyAtBoundary is unreasonable for character boundaries.";
     if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary &&
         AtEndOfAnchor()) {
       return Clone();
@@ -1553,9 +1551,16 @@ class AXPosition {
 
     // There is no next character position.
     if (text_position->IsNullPosition()) {
-      if (boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary)
+      if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary ||
+          boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary) {
         text_position = Clone();
+      }
       return text_position;
+    }
+
+    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
+        *text_position == *this) {
+      return Clone();
     }
 
     DCHECK_LT(text_position->text_offset_, text_position->MaxTextOffset());
@@ -1598,8 +1603,6 @@ class AXPosition {
   // grapheme cluster.
   AXPositionInstance CreatePreviousCharacterPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary)
-        << "StopIfAlreadyAtBoundary is unreasonable for character boundaries.";
     if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary &&
         AtStartOfAnchor()) {
       return Clone();
@@ -1610,9 +1613,16 @@ class AXPosition {
 
     // There is no previous character position.
     if (text_position->IsNullPosition()) {
-      if (boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary)
+      if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary ||
+          boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary) {
         text_position = Clone();
+      }
       return text_position;
+    }
+
+    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
+        *text_position == *this) {
+      return Clone();
     }
 
     DCHECK_GT(text_position->text_offset_, 0);
@@ -2600,7 +2610,7 @@ class AXPosition {
   // platform's text representation. Some platforms use an embedded object
   // character that replaces the text coming from each child node.
   //
-  // Similar to "text_offset_", the length of the text is in Unicode code units,
+  // Similar to "text_offset_", the length of the text is in UTF16 code units,
   // not in grapheme clusters.
   virtual int MaxTextOffset() const {
     if (IsNullPosition())
@@ -3214,7 +3224,7 @@ class AXPosition {
   // For text positions, |child_index_| is initially set to |-1| and only
   // computed on demand. The same with tree positions and |text_offset_|.
   int child_index_;
-  // "text_offset_" represents the number of Unicode code units before this
+  // "text_offset_" represents the number of UTF16 code units before this
   // position. It doesn't count grapheme clusters.
   int text_offset_;
 

@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.test.ReachedCodeProfiler;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -105,7 +105,7 @@ public final class ReachedCodeProfilerTest {
         mActivityTestRule.startMainActivityFromLauncher();
         Assert.assertEquals(FAKE_GROUP_NAME,
                 SharedPreferencesManager.getInstance().readString(
-                        ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY, null));
+                        ChromePreferenceKeys.REACHED_CODE_PROFILER_GROUP_KEY, null));
     }
 
     /**

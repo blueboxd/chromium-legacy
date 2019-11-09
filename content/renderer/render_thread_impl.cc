@@ -1073,11 +1073,13 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
     return;
 
   GetChannel()->AddListenerTaskRunner(
-      routing_id, frame->GetTaskRunner(blink::TaskType::kInternalFreezableIPC));
+      routing_id,
+      frame->GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
 
   unfreezable_message_filter_->AddListenerUnfreezableTaskRunner(
       routing_id,
-      frame->GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
+      frame->GetTaskRunner(
+          blink::TaskType::kInternalNavigationAssociatedUnfreezable));
 
   scoped_refptr<PendingFrameCreate> create(it->second);
   frame->BindFrame(it->second->browser_info(), it->second->TakeFrameReceiver());

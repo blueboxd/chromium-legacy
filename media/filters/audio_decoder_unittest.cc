@@ -209,7 +209,8 @@ class AudioDecoderTest
 
     AudioDecoderConfig config;
     ASSERT_TRUE(AVCodecContextToAudioDecoderConfig(
-        reader_->codec_context_for_testing(), Unencrypted(), &config));
+        reader_->codec_context_for_testing(), EncryptionScheme::kUnencrypted,
+        &config));
 
 #if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
     // MEDIA_CODEC type requires config->extra_data() for AAC codec. For ADTS
@@ -224,7 +225,7 @@ class AudioDecoderTest
                     &channel_layout, nullptr, nullptr, &extra_data),
                 0);
       config.Initialize(kCodecAAC, kSampleFormatS16, channel_layout,
-                        sample_rate, extra_data, Unencrypted(),
+                        sample_rate, extra_data, EncryptionScheme::kUnencrypted,
                         base::TimeDelta(), 0);
       ASSERT_FALSE(config.extra_data().empty());
     }

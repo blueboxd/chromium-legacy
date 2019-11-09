@@ -419,7 +419,9 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
 #if defined(OS_WIN)
     // Don't show the update bubbles to enterprise users.
     if (base::IsMachineExternallyManaged() ||
-        !policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty()) {
+        policy::BrowserDMTokenStorage::Get()
+            ->RetrieveBrowserDMToken()
+            .is_valid()) {
       return false;
     }
 #endif

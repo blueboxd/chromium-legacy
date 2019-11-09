@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using preferences_helper::ChangeStringPref;
@@ -34,6 +35,15 @@ class TwoClientOsPreferencesSyncTest : public SyncTest {
 
   // Needed for AwaitQuiescence().
   bool TestUsesSelfNotifications() override { return true; }
+
+  bool SetupClients() override {
+    bool result = SyncTest::SetupClients();
+    for (Profile* profile : GetAllProfiles()) {
+      profile->GetPrefs()->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled,
+                                      true);
+    }
+    return result;
+  }
 
  private:
   // The names |scoped_feature_list_| and |feature_list_| are both used in

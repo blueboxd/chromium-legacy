@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/video_capture/public/cpp/receiver_media_to_mojo_adapter.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 
 namespace content {
 
@@ -118,7 +119,8 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
           std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
               std::move(receiver),
               base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
-  mojo::PendingRemote<video_capture::mojom::Receiver> pending_remote_proxy;
+  mojo::PendingRemote<video_capture::mojom::VideoFrameHandler>
+      pending_remote_proxy;
   mojo::MakeSelfOwnedReceiver(
       std::move(receiver_adapter),
       pending_remote_proxy.InitWithNewPipeAndPassReceiver());

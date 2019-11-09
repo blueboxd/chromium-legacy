@@ -125,7 +125,7 @@ MojoVideoDecoder::MojoVideoDecoder(
       writer_capacity_(
           GetDefaultDecoderBufferConverterCapacity(DemuxerStream::VIDEO)),
       media_log_service_(media_log),
-      media_log_binding_(&media_log_service_),
+      media_log_receiver_(&media_log_service_),
       request_overlay_info_cb_(request_overlay_info_cb),
       target_color_space_(target_color_space),
       video_decoder_implementation_(implementation) {
@@ -346,16 +346,6 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   remote_decoder_.set_disconnect_handler(
       base::Bind(&MojoVideoDecoder::Stop, base::Unretained(this)));
 
-  // Create |client| interface (bound to |this|).
-  mojo::PendingAssociatedRemote<mojom::VideoDecoderClient>
-      client_pending_remote;
-  client_receiver_.Bind(
-      client_pending_remote.InitWithNewEndpointAndPassReceiver());
-
-  // Create |media_log| interface (bound to |media_log_service_|).
-  mojom::MediaLogAssociatedPtrInfo media_log_ptr_info;
-  media_log_binding_.Bind(mojo::MakeRequest(&media_log_ptr_info));
-
   // Create |video_frame_handle_releaser| interface receiver, and bind
   // |mojo_video_frame_handle_releaser_| to it.
   mojo::PendingRemote<mojom::VideoFrameHandleReleaser>
@@ -384,7 +374,8 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   }
 
   remote_decoder_->Construct(
-      std::move(client_pending_remote), std::move(media_log_ptr_info),
+      client_receiver_.BindNewEndpointAndPassRemote(),
+      media_log_receiver_.BindNewEndpointAndPassRemote(),
       std::move(video_frame_handle_releaser_receiver),
       std::move(remote_consumer_handle), std::move(command_buffer_id),
       video_decoder_implementation_, target_color_space_);

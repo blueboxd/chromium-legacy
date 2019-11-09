@@ -7,14 +7,27 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "remoting/base/string_resources.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using remoting::mac::PermissionWizard;
+using Delegate = PermissionWizard::Delegate;
+using ResultCallback = PermissionWizard::ResultCallback;
+
 namespace {
+
+// Interval between permission checks, used to update the UI when the user
+// grants permission.
+constexpr base::TimeDelta kPollingInterval = base::TimeDelta::FromSeconds(1);
 
 // The steps of the wizard.
 enum class WizardPage {
@@ -27,11 +40,98 @@ enum class WizardPage {
 
 @interface PermissionWizardController : NSWindowController
 
-- (instancetype)initWithWindow:(NSWindow*)window;
+- (instancetype)initWithWindow:(NSWindow*)window
+                          impl:(PermissionWizard::Impl*)impl;
 - (void)hide;
-- (void)initializeWindow;
+- (void)start;
+
+// Used by C++ PermissionWizardImpl to provide the result of a permission check
+// to the WindowController.
+- (void)onPermissionCheckResult:(bool)result;
 
 @end
+
+namespace remoting {
+namespace mac {
+
+// C++ implementation of the PermissionWizard.
+class PermissionWizard::Impl {
+ public:
+  explicit Impl(std::unique_ptr<PermissionWizard::Delegate> checker);
+  ~Impl();
+
+  void Start();
+
+  std::string GetBundleName();
+
+  // Called by PermissionWizardController to initiate permission checks. The
+  // result will be passed back via onPermissionCheckResult().
+  void CheckAccessibilityPermission(base::TimeDelta delay);
+  void CheckScreenRecordingPermission(base::TimeDelta delay);
+
+ private:
+  void CheckAccessibilityPermissionNow();
+  void CheckScreenRecordingPermissionNow();
+
+  void OnPermissionCheckResult(bool result);
+
+  PermissionWizardController* window_controller_ = nil;
+  std::unique_ptr<Delegate> checker_;
+  base::OneShotTimer timer_;
+  base::WeakPtrFactory<Impl> weak_factory_{this};
+};
+
+PermissionWizard::Impl::Impl(
+    std::unique_ptr<PermissionWizard::Delegate> checker)
+    : checker_(std::move(checker)) {}
+
+PermissionWizard::Impl::~Impl() {
+  [window_controller_ hide];
+  [window_controller_ release];
+}
+
+void PermissionWizard::Impl::Start() {
+  NSWindow* window =
+      [[[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
+                                   styleMask:NSWindowStyleMaskTitled
+                                     backing:NSBackingStoreBuffered
+                                       defer:NO] autorelease];
+  window_controller_ = [[PermissionWizardController alloc] initWithWindow:window
+                                                                     impl:this];
+  [window_controller_ start];
+}
+
+std::string PermissionWizard::Impl::GetBundleName() {
+  return checker_->GetBundleName();
+}
+
+void PermissionWizard::Impl::CheckAccessibilityPermission(
+    base::TimeDelta delay) {
+  timer_.Start(FROM_HERE, delay, this, &Impl::CheckAccessibilityPermissionNow);
+}
+
+void PermissionWizard::Impl::CheckScreenRecordingPermission(
+    base::TimeDelta delay) {
+  timer_.Start(FROM_HERE, delay, this,
+               &Impl::CheckScreenRecordingPermissionNow);
+}
+
+void PermissionWizard::Impl::CheckAccessibilityPermissionNow() {
+  checker_->CheckAccessibilityPermission(base::BindOnce(
+      &Impl::OnPermissionCheckResult, weak_factory_.GetWeakPtr()));
+}
+
+void PermissionWizard::Impl::CheckScreenRecordingPermissionNow() {
+  checker_->CheckScreenRecordingPermission(base::BindOnce(
+      &Impl::OnPermissionCheckResult, weak_factory_.GetWeakPtr()));
+}
+
+void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
+  [window_controller_ onPermissionCheckResult:result];
+}
+
+}  // namespace mac
+}  // namespace remoting
 
 @implementation PermissionWizardController {
   NSTextField* _instructionText;
@@ -44,18 +144,44 @@ enum class WizardPage {
   // Whether the relevant permission has been granted for the current page. If
   // YES, the user will be able to advance to the next page of the wizard.
   BOOL _hasPermission;
+
+  // Set to YES when the user cancels the wizard. This allows code to
+  // distinguish between "window hidden because it hasn't been presented yet"
+  // and "window hidden because user closed it".
+  BOOL _cancelled;
+
+  // If YES, the wizard will automatically move onto the next page instead of
+  // showing the "Next" button when permission is granted. This allows the
+  // wizard to skip past any pages whose permission is already granted.
+  BOOL _autoAdvance;
+
+  // Reference used for permission-checking. Its lifetime should outlast this
+  // Controller.
+  PermissionWizard::Impl* _impl;
 }
 
-- (instancetype)initWithWindow:(NSWindow*)window {
-  self = [super initWithWindow:(NSWindow*)window];
+- (instancetype)initWithWindow:(NSWindow*)window
+                          impl:(PermissionWizard::Impl*)impl {
+  DCHECK(window);
+  DCHECK(impl);
+  self = [super initWithWindow:window];
   if (self) {
+    _impl = impl;
     _page = WizardPage::ACCESSIBILITY;
+    _autoAdvance = YES;
   }
   return self;
 }
 
 - (void)hide {
   [self close];
+}
+
+- (void)start {
+  [self initializeWindow];
+
+  // Start polling for permission status.
+  [self requestPermissionCheck:base::TimeDelta()];
 }
 
 - (void)initializeWindow {
@@ -146,24 +272,29 @@ enum class WizardPage {
                                              options:0
                                              metrics:nil
                                                views:views]];
-
-  [self updateUI];
-
-  [self.window makeKeyAndOrderFront:NSApp];
-  [self.window center];
 }
 
 - (void)onCancel:(id)sender {
+  _cancelled = YES;
   [self hide];
 }
 
 - (void)onNext:(id)sender {
-  NOTIMPLEMENTED();
+  if (_page == WizardPage::ALL_SET) {
+    // OK button closes the window.
+    [self hide];
+    return;
+  }
+  if (_hasPermission) {
+    [self advanceToNextPage];
+  } else {
+    [self launchSystemPreferences];
+  }
 }
 
 // Updates the dialog controls according to the object's state.
 - (void)updateUI {
-  // TODO(lambroslambrou): Parameterize the name of the app needing permission.
+  base::string16 bundleName = base::UTF8ToUTF16(_impl->GetBundleName());
   switch (_page) {
     case WizardPage::ACCESSIBILITY:
       _instructionText.stringValue = l10n_util::GetNSStringF(
@@ -171,7 +302,7 @@ enum class WizardPage {
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
           l10n_util::GetStringUTF16(
               IDS_ACCESSIBILITY_PERMISSION_DIALOG_OPEN_BUTTON),
-          base::SysNSStringToUTF16(@"ChromeRemoteDesktopHost"));
+          bundleName);
       break;
     case WizardPage::SCREEN_RECORDING:
       _instructionText.stringValue = l10n_util::GetNSStringF(
@@ -179,7 +310,7 @@ enum class WizardPage {
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
           l10n_util::GetStringUTF16(
               IDS_SCREEN_RECORDING_PERMISSION_DIALOG_OPEN_BUTTON),
-          base::SysNSStringToUTF16(@"ChromeRemoteDesktopHost"));
+          bundleName);
       break;
     case WizardPage::ALL_SET:
       _instructionText.stringValue =
@@ -221,42 +352,110 @@ enum class WizardPage {
   }
 }
 
+- (void)advanceToNextPage {
+  DCHECK(_hasPermission);
+  switch (_page) {
+    case WizardPage::ACCESSIBILITY:
+      _page = WizardPage::SCREEN_RECORDING;
+      break;
+    case WizardPage::SCREEN_RECORDING:
+      _page = WizardPage::ALL_SET;
+      [self updateUI];
+      return;
+    default:
+      NOTREACHED();
+  }
+
+  // Kick off a permission check for the new page. The UI will be updated only
+  // after the result comes back.
+  _hasPermission = NO;
+  _autoAdvance = YES;
+  [self requestPermissionCheck:base::TimeDelta()];
+}
+
+- (void)requestPermissionCheck:(base::TimeDelta)delay {
+  DCHECK(!_hasPermission);
+  switch (_page) {
+    case WizardPage::ACCESSIBILITY:
+      _impl->CheckAccessibilityPermission(delay);
+      break;
+    case WizardPage::SCREEN_RECORDING:
+      _impl->CheckScreenRecordingPermission(delay);
+      return;
+    default:
+      NOTREACHED();
+  }
+}
+
+- (void)launchSystemPreferences {
+  switch (_page) {
+    case WizardPage::ACCESSIBILITY:
+      // Launch the Security and Preferences pane with Accessibility selected.
+      [[NSWorkspace sharedWorkspace]
+          openURL:[NSURL URLWithString:
+                             @"x-apple.systempreferences:com.apple."
+                             @"preference.security?Privacy_Accessibility"]];
+      break;
+    case WizardPage::SCREEN_RECORDING:
+      // Launch the Security and Preferences pane with Screen Recording
+      // selected.
+      [[NSWorkspace sharedWorkspace]
+          openURL:[NSURL URLWithString:
+                             @"x-apple.systempreferences:com.apple."
+                             @"preference.security?Privacy_ScreenCapture"]];
+      return;
+    default:
+      NOTREACHED();
+  }
+}
+
+- (void)onPermissionCheckResult:(bool)result {
+  if (_cancelled)
+    return;
+
+  _hasPermission = result;
+
+  if (_hasPermission && _autoAdvance) {
+    // Skip showing the "Next" button, and immediately kick off a permission
+    // check for the next page, if any.
+    [self advanceToNextPage];
+    return;
+  }
+
+  // Update the whole UI, not just the "Next" button, in case a different page
+  // was previously shown.
+  [self updateUI];
+
+  if (!_hasPermission) {
+    // Permission denied, so turn off auto-advance for this page, and present
+    // the dialog to the user if needed. After the user grants this permission,
+    // they should be able to click "Next" to acknowledge and advance the
+    // wizard. Note that, if all permissions are granted, the user will not
+    // see the wizard at all (not even the ALL_SET page). A dialog is only
+    // shown when a permission-check fails.
+    _autoAdvance = NO;
+    if (![self window].visible) {
+      [self presentWindow];
+    }
+
+    // Keep polling until permission is granted.
+    [self requestPermissionCheck:kPollingInterval];
+  }
+}
+
+- (void)presentWindow {
+  [self.window makeKeyAndOrderFront:NSApp];
+  [self.window center];
+  [self showWindow:nil];
+}
+
 @end
 
 namespace remoting {
 namespace mac {
 
-class PermissionWizard::Impl {
- public:
-  Impl() = default;
-  ~Impl();
-
-  void Start();
-
- private:
-  PermissionWizardController* window_controller_ = nil;
-};
-
-PermissionWizard::Impl::~Impl() {
-  // PermissionWizardController is responsible for releasing itself in its
-  // windowWillClose: method.
-  [window_controller_ hide];
-  window_controller_ = nil;
-}
-
-void PermissionWizard::Impl::Start() {
-  NSWindow* window =
-      [[[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
-                                   styleMask:NSWindowStyleMaskTitled
-                                     backing:NSBackingStoreBuffered
-                                       defer:NO] autorelease];
-  window_controller_ =
-      [[PermissionWizardController alloc] initWithWindow:window];
-  [window_controller_ initializeWindow];
-  [window_controller_ showWindow:nil];
-}
-
-PermissionWizard::PermissionWizard() = default;
+PermissionWizard::PermissionWizard(std::unique_ptr<Delegate> checker)
+    : impl_(std::make_unique<PermissionWizard::Impl>(std::move(checker))) {}
 
 PermissionWizard::~PermissionWizard() {
   ui_task_runner_->DeleteSoon(FROM_HERE, impl_.release());
@@ -265,10 +464,8 @@ PermissionWizard::~PermissionWizard() {
 void PermissionWizard::Start(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   ui_task_runner_ = ui_task_runner;
-  impl_ = std::make_unique<PermissionWizard::Impl>();
-  ui_task_runner->PostTask(FROM_HERE,
-                           base::BindOnce(&PermissionWizard::Impl::Start,
-                                          base::Unretained(impl_.get())));
+  ui_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&Impl::Start, base::Unretained(impl_.get())));
 }
 
 }  // namespace mac

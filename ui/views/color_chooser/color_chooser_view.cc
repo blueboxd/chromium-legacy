@@ -56,8 +56,8 @@ bool GetColorFromText(const base::string16& text, SkColor* result) {
 
   std::string input =
       base::UTF16ToUTF8((text.size() == 6) ? text : text.substr(1));
-  std::vector<uint8_t> hex;
-  if (!base::HexStringToBytes(input, &hex))
+  std::array<uint8_t, 3> hex;
+  if (!base::HexStringToSpan(input, hex))
     return false;
 
   *result = SkColorSetRGB(hex[0], hex[1], hex[2]);

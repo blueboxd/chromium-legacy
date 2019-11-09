@@ -6,7 +6,6 @@
 #define ASH_WM_SPLITVIEW_SPLIT_VIEW_UTILS_H_
 
 #include "ash/ash_export.h"
-#include "ash/display/screen_orientation_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"

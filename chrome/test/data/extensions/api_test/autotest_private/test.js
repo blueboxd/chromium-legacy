@@ -613,15 +613,22 @@ var defaultTests = [
   // This test verifies that test can get the window list and set
   // window state.
   function getWindowInfoAndSetState() {
+    // Button Masks
+    var kMinimizeMask = 1 << 0;
+    var kMaximizeRestoreMask = 1 << 1;
+    var kCloseMask = 1 << 2;
+    var kLeftSnappedMask = 1 << 3;
+    var kRightSnappedMask = 1 << 4;
+
     chrome.autotestPrivate.getAppWindowList(function(list) {
-      var found = false;
+      var browserFrameIndex = -1;
       chrome.test.assertEq(1, list.length);
-      for (i = 0; i < list.length; i++) {
+      for (var i = 0; i < list.length; i++) {
         var window = list[i];
-        if (window.name != 'BrowserFrame') {
+        if (window.windowType != 'Browser') {
           continue;
         }
-        found = true;
+        browserFrameIndex = i;
         // Sanity check
         chrome.test.assertEq('BrowserFrame', window.name);
         chrome.test.assertTrue(window.title.includes('New Tab') > 0);
@@ -634,10 +641,14 @@ var defaultTests = [
         chrome.test.assertTrue(window.hasFocus);
         chrome.test.assertTrue(window.isActive);
         chrome.test.assertFalse(window.hasCapture);
+        chrome.test.assertEq(42, window.captionHeight);
+        chrome.test.assertEq(
+            window.captionButtonVisibleStatus,
+            kMinimizeMask | kMaximizeRestoreMask | kCloseMask |
+            kLeftSnappedMask | kRightSnappedMask);
 
         var change = new Object();
         change.eventType = 'WMEventMaximize';
-        console.log('maximizing');
         chrome.autotestPrivate.setAppWindowState(
             window.id,
             change,
@@ -647,7 +658,7 @@ var defaultTests = [
               chrome.test.succeed();
             });
       }
-      chrome.test.assertTrue(found);
+      chrome.test.assertTrue(-1 != browserFrameIndex);
     });
   },
 

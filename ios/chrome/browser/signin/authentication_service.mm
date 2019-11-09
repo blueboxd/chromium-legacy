@@ -54,8 +54,9 @@ enum LoginMethodAndSyncState {
 constexpr char kFakeAccountIdForRemovedAccount[] = "0000000000000";
 
 // Returns the account id associated with |identity|.
-std::string ChromeIdentityToAccountID(signin::IdentityManager* identity_manager,
-                                      ChromeIdentity* identity) {
+CoreAccountId ChromeIdentityToAccountID(
+    signin::IdentityManager* identity_manager,
+    ChromeIdentity* identity) {
   std::string gaia_id = base::SysNSStringToUTF8([identity gaiaID]);
   auto maybe_account =
       identity_manager
@@ -152,7 +153,7 @@ void AuthenticationService::OnApplicationWillEnterForeground() {
   // Clear signin errors on the accounts that had a specific MDM device status.
   // This will trigger services to fetch data for these accounts again.
   using std::swap;
-  std::map<std::string, NSDictionary*> cached_mdm_infos;
+  std::map<CoreAccountId, NSDictionary*> cached_mdm_infos;
   swap(cached_mdm_infos_, cached_mdm_infos);
 
   if (!cached_mdm_infos.empty()) {
@@ -201,7 +202,7 @@ void AuthenticationService::UpdateHaveAccountsChangedWhileInBackground() {
   // Load accounts from preference before synchronizing the accounts with
   // the system, otherwiser we would never detect any changes to the list
   // of accounts.
-  std::vector<std::string> last_foreground_accounts =
+  std::vector<CoreAccountId> last_foreground_accounts =
       GetLastKnownAccountsFromForeground();
   std::sort(last_foreground_accounts.begin(), last_foreground_accounts.end());
 
@@ -214,7 +215,7 @@ void AuthenticationService::UpdateHaveAccountsChangedWhileInBackground() {
 
   std::vector<CoreAccountInfo> current_accounts_info =
       identity_manager_->GetAccountsWithRefreshTokens();
-  std::vector<std::string> current_accounts;
+  std::vector<CoreAccountId> current_accounts;
   for (const CoreAccountInfo& account_info : current_accounts_info)
     current_accounts.push_back(account_info.account_id);
   std::sort(current_accounts.begin(), current_accounts.end());
@@ -239,11 +240,11 @@ void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
     return;
   }
 
-  std::vector<std::string> account_ids = GetLastKnownAccountsFromForeground();
+  std::vector<CoreAccountId> account_ids = GetLastKnownAccountsFromForeground();
   std::vector<base::Value> accounts_pref_value;
-  for (const std::string& account_id : account_ids) {
+  for (const auto& account_id : account_ids) {
     if (identity_manager_->HasAccountWithRefreshToken(account_id)) {
-      accounts_pref_value.emplace_back(account_id);
+      accounts_pref_value.emplace_back(account_id.id);
     } else {
       // The account for |email| was removed since the last application cold
       // start. Insert |kFakeAccountIdForRemovedAccount| to ensure
@@ -268,16 +269,16 @@ void AuthenticationService::StoreKnownAccountsWhileInForeground() {
                      base::Value(std::move(accounts_pref_value)));
 }
 
-std::vector<std::string>
+std::vector<CoreAccountId>
 AuthenticationService::GetLastKnownAccountsFromForeground() {
   const base::Value* accounts_pref =
       pref_service_->GetList(prefs::kSigninLastAccounts);
 
-  std::vector<std::string> accounts;
+  std::vector<CoreAccountId> accounts;
   for (const auto& value : accounts_pref->GetList()) {
     DCHECK(value.is_string());
     DCHECK(!value.GetString().empty());
-    accounts.push_back(value.GetString());
+    accounts.push_back(CoreAccountId(value.GetString()));
   }
   return accounts;
 }

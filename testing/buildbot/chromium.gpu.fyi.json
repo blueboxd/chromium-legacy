@@ -6752,6 +6752,7 @@
       {
         "args": [
           "--use-vulkan=native",
+          "--gr-context-type=vulkan",
           "--disable-vulkan-fallback-to-gl-for-testing",
           "--enable-features=UseSkiaRenderer",
           "--test-launcher-filter-file=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_content_browsertests.filter",

@@ -137,7 +137,7 @@ class PipelineHelper {
       ::media::AudioDecoderConfig audio_config(
           ::media::kCodecMP3, ::media::kSampleFormatS16,
           ::media::CHANNEL_LAYOUT_STEREO, 44100, ::media::EmptyExtraData(),
-          ::media::Unencrypted());
+          ::media::EncryptionScheme::kUnencrypted);
       AvPipelineClient client;
       client.eos_cb = base::Bind(&PipelineHelper::OnEos, base::Unretained(this),
                                  STREAM_AUDIO);

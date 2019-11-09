@@ -1387,11 +1387,9 @@ crbug.com/591099 external/wpt/css/css-flexbox/flexbox_align-items-stretch-3.html
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/auto-height-column-with-border-and-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-align-vertical-writing-mode.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-align.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-border.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-margins-auto-size.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-padding.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-order.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flexbox-baseline-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flexbox-baseline.html [ Failure ]
@@ -2799,6 +2797,7 @@ crbug.com/1022141 external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Cr
 crbug.com/1022141 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Crash Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/streams/readable-byte-streams/construct-byob-request.any.sharedworker.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]

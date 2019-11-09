@@ -6,8 +6,9 @@ package org.chromium.weblayer_private.interfaces;
 
 import android.os.Bundle;
 
-import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 
 interface IWebLayer {

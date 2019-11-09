@@ -53,7 +53,7 @@ void WebMVideoClient::Reset() {
 bool WebMVideoClient::InitializeConfig(
     const std::string& codec_id,
     const std::vector<uint8_t>& codec_private,
-    const EncryptionScheme& encryption_scheme,
+    EncryptionScheme encryption_scheme,
     VideoDecoderConfig* config) {
   DCHECK(config);
 

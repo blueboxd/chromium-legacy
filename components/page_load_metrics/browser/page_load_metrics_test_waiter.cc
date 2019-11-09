@@ -39,10 +39,6 @@ void PageLoadMetricsTestWaiter::AddSubFrameExpectation(TimingField field) {
   CHECK_NE(field, TimingField::kLoadTimingInfo)
       << "LOAD_TIMING_INFO should only be used as a page-level expectation";
   subframe_expected_fields_.Set(field);
-  // If the given field is also a page-level field, then add a page-level
-  // expectation as well
-  if (IsPageLevelField(field))
-    page_expected_fields_.Set(field);
 }
 
 void PageLoadMetricsTestWaiter::AddWebFeatureExpectation(
@@ -53,9 +49,8 @@ void PageLoadMetricsTestWaiter::AddWebFeatureExpectation(
   }
 }
 
-void PageLoadMetricsTestWaiter::AddSubframeNavigationExpectation(
-    size_t expected_subframe_navigations) {
-  expected_subframe_navigations_ = expected_subframe_navigations;
+void PageLoadMetricsTestWaiter::AddSubframeNavigationExpectation() {
+  expected_subframe_navigation_ = true;
 }
 
 void PageLoadMetricsTestWaiter::AddMinimumCompleteResourcesExpectation(
@@ -184,7 +179,7 @@ void PageLoadMetricsTestWaiter::OnDidFinishSubFrameNavigation(
   if (SubframeNavigationExpectationsSatisfied())
     return;
 
-  ++observed_subframe_navigations_;
+  expected_subframe_navigation_ = false;
 
   if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
@@ -197,17 +192,6 @@ void PageLoadMetricsTestWaiter::FrameSizeChanged(
   expected_frame_sizes_.erase(frame_size);
   if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
-}
-
-bool PageLoadMetricsTestWaiter::IsPageLevelField(TimingField field) {
-  switch (field) {
-    case TimingField::kFirstPaint:
-    case TimingField::kFirstContentfulPaint:
-    case TimingField::kFirstMeaningfulPaint:
-      return true;
-    default:
-      return false;
-  }
 }
 
 PageLoadMetricsTestWaiter::TimingFieldBitSet
@@ -279,7 +263,7 @@ bool PageLoadMetricsTestWaiter::WebFeaturesExpectationsSatisfied() const {
 
 bool PageLoadMetricsTestWaiter::SubframeNavigationExpectationsSatisfied()
     const {
-  return observed_subframe_navigations_ >= expected_subframe_navigations_;
+  return !expected_subframe_navigation_;
 }
 
 bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {

@@ -52,8 +52,8 @@ class QuicSimpleServer : public quic::QuicSpdyServerBase {
       const quic::QuicSocketAddress& address) override;
   void HandleEventsForever() override;
 
-  // Start listening on the specified address. Returns an error code.
-  int Listen(const IPEndPoint& address);
+  // Start listening on the specified address. Returns true on success.
+  bool Listen(const IPEndPoint& address);
 
   // Server deletion is imminent. Start cleaning up.
   void Shutdown();

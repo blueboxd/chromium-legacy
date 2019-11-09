@@ -14,9 +14,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
-#include "media/base/decrypt_config.h"
 #include "media/base/encryption_pattern.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -93,7 +94,7 @@ class MEDIA_EXPORT MediaCodecBridge {
       const std::string& key_id,
       const std::string& iv,
       const std::vector<SubsampleEntry>& subsamples,
-      EncryptionMode encryption_scheme,
+      EncryptionScheme encryption_scheme,
       base::Optional<EncryptionPattern> encryption_pattern,
       base::TimeDelta presentation_time) = 0;
 

@@ -7,9 +7,9 @@ import optparse
 import textwrap
 
 from blinkpy.common.checkout.git_mock import MockGit
-from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
+from blinkpy.common.net.results_fetcher import Build
 from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.log_testing import LoggingTestCase
@@ -95,8 +95,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         })
 
         for build in builds:
-            self.tool.buildbot.set_results(build, web_test_results)
-            self.tool.buildbot.set_retry_sumary_json(build, json.dumps({
+            self.tool.results_fetcher.set_results(build, web_test_results)
+            self.tool.results_fetcher.set_retry_sumary_json(build, json.dumps({
                 'failures': [
                     'one/flaky-fail.html',
                     'one/missing.html',
@@ -344,7 +344,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             Build('MOCK Try Linux', 6000): TryJobStatus('COMPLETED', 'FAILURE'),
         }
         for build in builds:
-            self.tool.buildbot.set_retry_sumary_json(build, json.dumps({
+            self.tool.results_fetcher.set_retry_sumary_json(build, json.dumps({
                 'failures': ['one/text-fail.html'],
                 'ignored': ['two/image-fail.html'],
             }))
@@ -358,7 +358,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_execute_with_no_retry_summary_downloaded(self):
         # In this example, the retry summary could not be downloaded, so
         # a warning is printed and all tests are rebaselined.
-        self.tool.buildbot.set_retry_sumary_json(
+        self.tool.results_fetcher.set_retry_sumary_json(
             Build('MOCK Try Win', 5000), None)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 0)
@@ -427,7 +427,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
 
     def test_execute_missing_results_with_no_fill_missing_prompts(self):
-        self.tool.buildbot.set_results(Build('MOCK Try Win', 5000), None)
+        self.tool.results_fetcher.set_results(Build('MOCK Try Win', 5000), None)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 1)
         self.assertLog([
@@ -442,7 +442,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ])
 
     def test_execute_missing_results_with_fill_missing_continues(self):
-        self.tool.buildbot.set_results(Build('MOCK Try Win', 5000), None)
+        self.tool.results_fetcher.set_results(Build('MOCK Try Win', 5000), None)
         exit_code = self.command.execute(
             self.command_options(fill_missing=True),
             ['one/flaky-fail.html'], self.tool)

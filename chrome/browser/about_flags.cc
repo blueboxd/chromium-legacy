@@ -1709,6 +1709,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kBluetoothAggressiveAppearanceFilter)},
+    {"cryptauth-v1-devicesync-deprecate",
+     flag_descriptions::kCryptAuthV1DeviceSyncDeprecateName,
+     flag_descriptions::kCryptAuthV1DeviceSyncDeprecateDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCryptAuthV1DeviceSyncDeprecate)},
     {"cryptauth-v2-device-activity-status",
      flag_descriptions::kCryptAuthV2DeviceActivityStatusName,
      flag_descriptions::kCryptAuthV2DeviceActivityStatusDescription, kOsCrOS,

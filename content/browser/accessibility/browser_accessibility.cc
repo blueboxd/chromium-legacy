@@ -1373,13 +1373,8 @@ base::Optional<int> BrowserAccessibility::FindTextBoundary(
   // On Windows and Linux ATK, it is standard text navigation behavior to stop
   // if we are searching in the backwards direction and the current position is
   // already at the required text boundary.
-  if (direction == ui::AXTextBoundaryDirection::kBackwards) {
-    // AXPosition disallows ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary when
-    // used on character boundaries because it would be non-sensical.
-    if (boundary == ui::AXTextBoundary::kCharacter)
-      return offset;
+  if (direction == ui::AXTextBoundaryDirection::kBackwards)
     boundary_behavior = ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary;
-  }
 
   return GetBoundaryTextOffsetInsideBaseAnchor(
       direction, position,

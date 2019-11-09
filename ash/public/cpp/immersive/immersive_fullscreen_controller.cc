@@ -278,7 +278,7 @@ void ImmersiveFullscreenController::EnableForWidget(views::Widget* widget,
 }
 
 // static
-ImmersiveFullscreenController* ImmersiveFullscreenController::GetForTest(
+ImmersiveFullscreenController* ImmersiveFullscreenController::Get(
     views::Widget* widget) {
   return widget->GetNativeWindow()->GetProperty(
       kImmersiveFullscreenControllerKey);

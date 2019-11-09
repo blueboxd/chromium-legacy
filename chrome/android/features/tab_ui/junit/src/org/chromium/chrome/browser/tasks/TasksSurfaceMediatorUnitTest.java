@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
-import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
 
@@ -75,7 +75,7 @@ public class TasksSurfaceMediatorUnitTest {
 
     @Test
     public void initialization() {
-        verify(mPropertyModel).set(eq(IS_TAB_CAROUSEL), eq(true));
+        verify(mPropertyModel).set(eq(IS_TAB_CAROUSEL_VISIBLE), eq(true));
         verify(mPropertyModel)
                 .set(eq(FAKE_SEARCH_BOX_CLICK_LISTENER), mFakeboxClickListenerCaptor.capture());
         verify(mPropertyModel)

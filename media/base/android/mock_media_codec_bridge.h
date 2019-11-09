@@ -43,7 +43,7 @@ class MockMediaCodecBridge : public MediaCodecBridge,
                        const std::string& key_id,
                        const std::string& iv,
                        const std::vector<SubsampleEntry>& subsamples,
-                       EncryptionMode encryption_scheme,
+                       EncryptionScheme encryption_scheme,
                        base::Optional<EncryptionPattern> encryption_pattern,
                        base::TimeDelta presentation_time));
   MOCK_METHOD1(QueueEOS, void(int input_buffer_index));

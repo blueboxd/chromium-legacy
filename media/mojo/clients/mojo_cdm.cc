@@ -69,7 +69,6 @@ MojoCdm::MojoCdm(mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
     : remote_cdm_(std::move(remote_cdm)),
       interface_factory_(interface_factory),
-      client_binding_(this),
       cdm_id_(CdmContext::kInvalidCdmId),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
@@ -81,9 +80,7 @@ MojoCdm::MojoCdm(mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
   DCHECK(session_keys_change_cb_);
   DCHECK(session_expiration_update_cb_);
 
-  mojom::ContentDecryptionModuleClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
-  remote_cdm_->SetClient(std::move(client_ptr_info));
+  remote_cdm_->SetClient(client_receiver_.BindNewEndpointAndPassRemote());
 }
 
 MojoCdm::~MojoCdm() {

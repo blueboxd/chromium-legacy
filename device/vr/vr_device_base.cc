@@ -80,10 +80,6 @@ mojo::PendingRemote<mojom::XRRuntime> VRDeviceBase::BindXRRuntime() {
   return runtime_receiver_.BindNewPipeAndPassRemote();
 }
 
-void VRDeviceBase::EnsureInitialized(EnsureInitializedCallback callback) {
-  std::move(callback).Run();
-}
-
 void VRDeviceBase::SetInlinePosesEnabled(bool enable) {
   inline_poses_enabled_ = enable;
 }

@@ -79,7 +79,6 @@ class VRDeviceTest : public testing::Test {
   mojom::VRDisplayInfoPtr MakeVRDisplayInfo(mojom::XRDeviceId device_id) {
     mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
     display_info->id = device_id;
-    display_info->capabilities = mojom::VRDisplayCapabilities::New();
     return display_info;
   }
 

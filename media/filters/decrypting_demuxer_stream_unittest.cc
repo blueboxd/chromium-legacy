@@ -145,7 +145,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
 
     AudioDecoderConfig input_config(kCodecVorbis, kSampleFormatPlanarF32,
                                     CHANNEL_LAYOUT_STEREO, 44100,
-                                    EmptyExtraData(), AesCtrEncryptionScheme());
+                                    EmptyExtraData(), EncryptionScheme::kCenc);
     InitializeAudioAndExpectStatus(input_config, PIPELINE_OK);
 
     const AudioDecoderConfig& output_config =
@@ -326,7 +326,7 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_CdmWithoutDecryptor) {
   SetCdmType(CDM_WITHOUT_DECRYPTOR);
   AudioDecoderConfig input_config(kCodecVorbis, kSampleFormatPlanarF32,
                                   CHANNEL_LAYOUT_STEREO, 44100,
-                                  EmptyExtraData(), AesCtrEncryptionScheme());
+                                  EmptyExtraData(), EncryptionScheme::kCenc);
   InitializeAudioAndExpectStatus(input_config, DECODER_ERROR_NOT_SUPPORTED);
 }
 
@@ -502,7 +502,7 @@ TEST_F(DecryptingDemuxerStreamTest, DemuxerRead_ConfigChanged) {
 
   AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarF32,
                                 CHANNEL_LAYOUT_STEREO, 88200, EmptyExtraData(),
-                                AesCtrEncryptionScheme());
+                                EncryptionScheme::kCenc);
   input_audio_stream_->set_audio_decoder_config(new_config);
 
   EXPECT_CALL(*input_audio_stream_, OnRead(_))

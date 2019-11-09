@@ -195,6 +195,8 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public boolean startAndExpand(boolean forward, boolean animate) {
+        // Called from activity for navigation popup. No need to check
+        // bottom sheet controller since it is guaranteed to available.
         start(forward, /* showCloseIndicator= */ false);
         mOpenedAsPopup = true;
 
@@ -242,6 +244,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public void close(boolean animate) {
+        if (mBottomSheetController.get() == null) return;
         if (!isHidden()) mBottomSheetController.get().hideContent(this, animate);
         mBottomSheetController.get().removeObserver(mSheetObserver);
         mMediator.clear();
@@ -309,7 +312,9 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public int getPeekHeight() {
-        if (mOpenedAsPopup) return BottomSheetContent.HeightMode.DISABLED;
+        if (mBottomSheetController.get() == null || mOpenedAsPopup) {
+            return BottomSheetContent.HeightMode.DISABLED;
+        }
         // Makes peek state as 'not present' when bottom sheet is in expanded state (i.e. animating
         // from expanded to close state). It avoids the sheet animating in two distinct steps, which
         // looks awkward.

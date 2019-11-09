@@ -13,7 +13,10 @@ import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IClientNavigation;
 import org.chromium.weblayer_private.interfaces.INavigation;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
+import org.chromium.weblayer_private.interfaces.LoadError;
+import org.chromium.weblayer_private.interfaces.NavigationState;
 
+import java.util.Arrays;
 import java.util.List;
 
 @JNINamespace("weblayer")
@@ -36,10 +39,28 @@ public final class NavigationImpl extends INavigation.Stub {
         return mClientNavigation;
     }
 
+    @NavigationState
+    private static int implTypeToJavaType(@ImplNavigationState int type) {
+        switch (type) {
+            case ImplNavigationState.WAITING_RESPONSE:
+                return NavigationState.WAITING_RESPONSE;
+            case ImplNavigationState.RECEIVING_BYTES:
+                return NavigationState.RECEIVING_BYTES;
+            case ImplNavigationState.COMPLETE:
+                return NavigationState.COMPLETE;
+            case ImplNavigationState.FAILED:
+                return NavigationState.FAILED;
+        }
+        assert false;
+        return NavigationState.FAILED;
+    }
+
     @Override
+    @NavigationState
     public int getState() {
         throwIfNativeDestroyed();
-        return NavigationImplJni.get().getState(mNativeNavigationImpl, NavigationImpl.this);
+        return implTypeToJavaType(
+                NavigationImplJni.get().getState(mNativeNavigationImpl, NavigationImpl.this));
     }
 
     @Override
@@ -51,7 +72,8 @@ public final class NavigationImpl extends INavigation.Stub {
     @Override
     public List<String> getRedirectChain() {
         throwIfNativeDestroyed();
-        return NavigationImplJni.get().getRedirectChain(mNativeNavigationImpl, NavigationImpl.this);
+        return Arrays.asList(NavigationImplJni.get().getRedirectChain(
+                mNativeNavigationImpl, NavigationImpl.this));
     }
 
     @Override
@@ -60,9 +82,42 @@ public final class NavigationImpl extends INavigation.Stub {
         return NavigationImplJni.get().isSameDocument(mNativeNavigationImpl, NavigationImpl.this);
     }
 
+    @Override
+    public boolean isErrorPage() {
+        throwIfNativeDestroyed();
+        return NavigationImplJni.get().isErrorPage(mNativeNavigationImpl, NavigationImpl.this);
+    }
+
+    @Override
+    public int getLoadError() {
+        throwIfNativeDestroyed();
+        return implLoadErrorToLoadError(
+                NavigationImplJni.get().getLoadError(mNativeNavigationImpl, NavigationImpl.this));
+    }
+
     private void throwIfNativeDestroyed() {
         if (mNativeNavigationImpl == 0) {
             throw new IllegalStateException("Using Navigation after native destroyed");
+        }
+    }
+
+    @LoadError
+    private static int implLoadErrorToLoadError(@ImplLoadError int loadError) {
+        switch (loadError) {
+            case ImplLoadError.NO_ERROR:
+                return LoadError.NO_ERROR;
+            case ImplLoadError.HTTP_CLIENT_ERROR:
+                return LoadError.HTTP_CLIENT_ERROR;
+            case ImplLoadError.HTTP_SERVER_ERROR:
+                return LoadError.HTTP_SERVER_ERROR;
+            case ImplLoadError.SSL_ERROR:
+                return LoadError.SSL_ERROR;
+            case ImplLoadError.CONNECTIVITY_ERROR:
+                return LoadError.CONNECTIVITY_ERROR;
+            case ImplLoadError.OTHER_ERROR:
+                return LoadError.OTHER_ERROR;
+            default:
+                throw new IllegalArgumentException("Unexpected load error " + loadError);
         }
     }
 
@@ -77,7 +132,9 @@ public final class NavigationImpl extends INavigation.Stub {
         void setJavaNavigation(long nativeNavigationImpl, NavigationImpl caller);
         int getState(long nativeNavigationImpl, NavigationImpl caller);
         String getUri(long nativeNavigationImpl, NavigationImpl caller);
-        List<String> getRedirectChain(long nativeNavigationImpl, NavigationImpl caller);
+        String[] getRedirectChain(long nativeNavigationImpl, NavigationImpl caller);
         boolean isSameDocument(long nativeNavigationImpl, NavigationImpl caller);
+        boolean isErrorPage(long nativeNavigationImpl, NavigationImpl caller);
+        int getLoadError(long nativeNavigationImpl, NavigationImpl caller);
     }
 }

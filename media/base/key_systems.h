@@ -42,7 +42,7 @@ class MEDIA_EXPORT KeySystems {
   // Returns the configuration rule for supporting |encryption_scheme|.
   virtual EmeConfigRule GetEncryptionSchemeConfigRule(
       const std::string& key_system,
-      EncryptionMode encryption_scheme) const = 0;
+      EncryptionScheme encryption_scheme) const = 0;
 
   // Returns the configuration rule for supporting a container and a list of
   // codecs.

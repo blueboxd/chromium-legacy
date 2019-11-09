@@ -982,10 +982,6 @@ char* GetTextAtOffset(AtkText* atk_text,
                       AtkTextBoundary atk_boundary,
                       int* start_offset,
                       int* end_offset) {
-  if (atk_boundary == ATK_TEXT_BOUNDARY_CHAR) {
-    return GetCharacter(atk_text, offset, start_offset, end_offset);
-  }
-
   AXTextBoundary boundary = FromAtkTextBoundary(atk_boundary);
   return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
                                  end_offset);
@@ -1129,10 +1125,6 @@ char* GetStringAtOffset(AtkText* atk_text,
                         int* end_offset) {
   *start_offset = -1;
   *end_offset = -1;
-
-  if (atk_granularity == ATK_TEXT_GRANULARITY_CHAR) {
-    return GetCharacter(atk_text, offset, start_offset, end_offset);
-  }
 
   AXTextBoundary boundary = FromAtkTextGranularity(atk_granularity);
   return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
@@ -2078,7 +2070,7 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // for each object.
   interface_mask |= 1 << ATK_ACTION_INTERFACE;
 
-  if (!ui::IsImage(GetData().role)) {
+  if (!ui::IsImageOrVideo(GetData().role)) {
     interface_mask |= 1 << ATK_TEXT_INTERFACE;
     if (!IsPlainTextField())
       interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;

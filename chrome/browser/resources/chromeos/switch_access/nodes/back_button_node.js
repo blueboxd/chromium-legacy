@@ -10,7 +10,7 @@ class BackButtonNode extends SAChildNode {
    * @param {!SARootNode} group
    */
   constructor(group) {
-    super(false /* isGroup */);
+    super();
     /**
      * The group that the back button is shown for.
      * @private {!SARootNode}
@@ -63,6 +63,11 @@ class BackButtonNode extends SAChildNode {
   /** @override */
   isEquivalentTo(node) {
     return this.node_ === node;
+  }
+
+  /** @override */
+  isGroup() {
+    return false;
   }
 
   /** @override */

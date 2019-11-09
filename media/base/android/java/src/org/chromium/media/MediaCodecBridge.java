@@ -556,16 +556,16 @@ class MediaCodecBridge {
         }
     }
 
-    // Incoming |native| values are as defined in media/base/decrypt_config.h. Translated values
+    // Incoming |native| values are as defined in media/base/encryption_scheme.h. Translated values
     // are from MediaCodec. At present, these values are in sync. Returns
     // MEDIA_CODEC_UNKNOWN_CIPHER_MODE in the case of unknown incoming value.
-    private int translateEncryptionModeValue(int nativeValue) {
+    private int translateEncryptionSchemeValue(int nativeValue) {
         switch (nativeValue) {
-            case EncryptionMode.UNENCRYPTED:
+            case EncryptionScheme.UNENCRYPTED:
                 return MediaCodec.CRYPTO_MODE_UNENCRYPTED;
-            case EncryptionMode.CENC:
+            case EncryptionScheme.CENC:
                 return MediaCodec.CRYPTO_MODE_AES_CTR;
-            case EncryptionMode.CBCS:
+            case EncryptionScheme.CBCS:
                 return MediaCodec.CRYPTO_MODE_AES_CBC;
             default:
                 Log.e(TAG, "Unsupported cipher mode: " + nativeValue);
@@ -579,7 +579,7 @@ class MediaCodecBridge {
             int[] numBytesOfClearData, int[] numBytesOfEncryptedData, int numSubSamples,
             int cipherMode, int patternEncrypt, int patternSkip, long presentationTimeUs) {
         try {
-            cipherMode = translateEncryptionModeValue(cipherMode);
+            cipherMode = translateEncryptionSchemeValue(cipherMode);
             if (cipherMode == MEDIA_CODEC_UNKNOWN_CIPHER_MODE) {
                 return MediaCodecStatus.ERROR;
             }

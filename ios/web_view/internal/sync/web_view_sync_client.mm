@@ -135,7 +135,7 @@ base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
 syncer::DataTypeController::TypeVector
 WebViewSyncClient::CreateDataTypeControllers(
     syncer::SyncService* sync_service) {
-  // iOS WebView uses butter sync and so has no need to record user consents.
+  // //ios/web_view clients are supposed to record their own consents.
   syncer::DataTypeController::TypeVector type_vector =
       component_factory_->CreateCommonDataTypeControllers(GetDisabledTypes(),
                                                           sync_service);

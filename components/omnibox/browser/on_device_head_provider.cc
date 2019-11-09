@@ -148,9 +148,6 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
   if (minimal_changes)
     return;
 
-  // Load the new model first before fulfilling the request if it's available.
-  MaybeResetServingInstanceFromNewModel();
-
   matches_.clear();
   if (!input.text().empty() && serving_) {
     done_ = false;
@@ -199,18 +196,21 @@ void OnDeviceHeadProvider::Stop(bool clear_cached_results,
 void OnDeviceHeadProvider::OnModelUpdate(
     const std::string& new_model_filename) {
   if (new_model_filename != current_model_filename_ &&
-      new_model_filename_.empty())
-    new_model_filename_ = new_model_filename;
+      !new_model_filename.empty()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&OnDeviceHeadProvider::ResetServingInstanceFromNewModel,
+                       weak_ptr_factory_.GetWeakPtr(), new_model_filename));
+  }
 }
 
-void OnDeviceHeadProvider::MaybeResetServingInstanceFromNewModel() {
-  if (new_model_filename_.empty())
+void OnDeviceHeadProvider::ResetServingInstanceFromNewModel(
+    const std::string& new_model_filename) {
+  if (new_model_filename.empty())
     return;
-
-  serving_ =
-      OnDeviceHeadServing::Create(new_model_filename_, provider_max_matches_);
-  current_model_filename_ = new_model_filename_;
-  new_model_filename_.clear();
+  current_model_filename_ = new_model_filename;
+  serving_ = OnDeviceHeadServing::Create(current_model_filename_,
+                                         provider_max_matches_);
 }
 
 void OnDeviceHeadProvider::AddProviderInfo(ProvidersInfo* provider_info) const {

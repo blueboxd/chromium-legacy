@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_stats_report.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/rtp_parameters.h"

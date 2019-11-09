@@ -113,7 +113,6 @@ NSArray<NSAttributedString*>* CWVLegalMessagesFromLegalMessageLines(
 
     _saveCompletionHandler = completionHandler;
     DCHECK(_uploadSaveCardCallback);
-    // TODO(crbug.com/993130): Provide additional card details if required.
     std::move(_uploadSaveCardCallback)
         .Run(autofill::AutofillClient::ACCEPTED,
              /*user_provided_card_details=*/{});

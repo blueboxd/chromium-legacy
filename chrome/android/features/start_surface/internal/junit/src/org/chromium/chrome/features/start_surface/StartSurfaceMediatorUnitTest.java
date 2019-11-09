@@ -8,11 +8,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_EXPLORE_SURFACE_VISIBLE;
@@ -34,7 +36,10 @@ import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
@@ -57,13 +62,19 @@ public class StartSurfaceMediatorUnitTest {
     @Mock
     private TabModelSelector mTabModelSelector;
     @Mock
+    private TabModel mNormalTabModel;
+    @Mock
     private FakeboxDelegate mFakeBoxDelegate;
+    @Mock
+    private ExploreSurfaceCoordinator.FeedSurfaceCreator mFeedSurfaceCreator;
     @Mock
     private NightModeStateProvider mNightModeStateProvider;
     @Mock
     private LocationBarVoiceRecognitionHandler mLocationBarVoiceRecognitionHandler;
     @Captor
     private ArgumentCaptor<EmptyTabModelSelectorObserver> mTabModelSelectorObserverCaptor;
+    @Captor
+    private ArgumentCaptor<EmptyTabModelObserver> mTabModelObserverCaptor;
     @Captor
     private ArgumentCaptor<OverviewModeObserver> mOverviewModeObserverCaptor;
     @Captor
@@ -78,6 +89,7 @@ public class StartSurfaceMediatorUnitTest {
                 new ArrayList<>(Arrays.asList(TasksSurfaceProperties.ALL_KEYS));
         allProperties.addAll(Arrays.asList(StartSurfaceProperties.ALL_KEYS));
         mPropertyModel = new PropertyModel(allProperties);
+        doReturn(mNormalTabModel).when(mTabModelSelector).getModel(false);
     }
 
     @After
@@ -154,10 +166,71 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     // TODO(crbug.com/1020223): Test SurfaceMode.SINGLE_PANE and SurfaceMode.TWO_PANES modes.
+    @Test
+    public void hideTabCarouselWithNoTabs() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
+        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
+
+        doReturn(0).when(mNormalTabModel).getCount();
+        mediator.showOverview(false);
+        assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
+        assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
+    }
+
+    @Test
+    public void hideTabCarouselWhenClosingLastTab() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
+        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
+
+        doReturn(1).when(mNormalTabModel).getCount();
+        mediator.showOverview(false);
+        assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
+        assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
+
+        doReturn(0).when(mNormalTabModel).getCount();
+        mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), false);
+        assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
+        assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
+    }
+
+    @Test
+    public void reshowTabCarouselWhenTabClosureUndone() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
+        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
+
+        doReturn(1).when(mNormalTabModel).getCount();
+        mediator.showOverview(false);
+        mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), false);
+        assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
+        assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
+
+        mTabModelObserverCaptor.getValue().tabClosureUndone(mock(Tab.class));
+        assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
+        assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
+    }
 
     private StartSurfaceMediator createStartSurfaceMediator(@SurfaceMode int mode) {
         return new StartSurfaceMediator(mMainTabGridController, mTabModelSelector,
-                mode == SurfaceMode.NO_START_SURFACE ? null : mPropertyModel, null, null, mode,
+                mode == SurfaceMode.NO_START_SURFACE ? null : mPropertyModel,
+                mode == SurfaceMode.SINGLE_PANE ? mFeedSurfaceCreator : null, null, mode,
                 mFakeBoxDelegate, mNightModeStateProvider);
     }
 }

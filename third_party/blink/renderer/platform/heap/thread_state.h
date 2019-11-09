@@ -62,6 +62,7 @@ class IncrementalMarkingScope;
 }  // namespace incremental_marking_test
 
 class CancelableTaskScheduler;
+class HeapObjectHeader;
 class MarkingVisitor;
 class PersistentNode;
 class PersistentRegion;
@@ -93,17 +94,13 @@ class Visitor;
 //     Member<Bar> bar_;
 //   };
 #define USING_PRE_FINALIZER(Class, preFinalizer)                          \
- public:                                                                  \
-  static bool InvokePreFinalizer(void* object) {                          \
-    Class* self = reinterpret_cast<Class*>(object);                       \
-    if (ThreadHeap::IsHeapObjectAlive(self))                              \
-      return false;                                                       \
-    self->Class::preFinalizer();                                          \
-    return true;                                                          \
+ private:                                                                 \
+  static void PreFinalizerDispatch(void* object) {                        \
+    reinterpret_cast<Class*>(object)->Class::preFinalizer();              \
   }                                                                       \
                                                                           \
- private:                                                                 \
-  ThreadState::PrefinalizerRegistration<Class> prefinalizer_dummy_{this}; \
+  friend class ThreadState::PreFinalizerRegistration<Class>;              \
+  ThreadState::PreFinalizerRegistration<Class> prefinalizer_dummy_{this}; \
   using UsingPreFinalizerMacroNeedsTrailingSemiColon = char
 
 class PLATFORM_EXPORT BlinkGCObserver {
@@ -133,24 +130,16 @@ class PLATFORM_EXPORT ThreadState final {
   // Register the pre-finalizer for the |self| object. The class T be using
   // USING_PRE_FINALIZER() macro.
   template <typename T>
-  class PrefinalizerRegistration final {
+  class PreFinalizerRegistration final {
     DISALLOW_NEW();
 
    public:
-    PrefinalizerRegistration(T* self) {
-      static_assert(sizeof(&T::InvokePreFinalizer) > 0,
+    PreFinalizerRegistration(T* self) {
+      static_assert(sizeof(&T::PreFinalizerDispatch) > 0,
                     "USING_PRE_FINALIZER(T) must be defined.");
       ThreadState* state =
           ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-#if DCHECK_IS_ON()
-      DCHECK(state->CheckThread());
-#endif
-      DCHECK(!state->SweepForbidden());
-      DCHECK(std::find(state->ordered_pre_finalizers_.begin(),
-                       state->ordered_pre_finalizers_.end(),
-                       PreFinalizer(self, T::InvokePreFinalizer)) ==
-             state->ordered_pre_finalizers_.end());
-      state->ordered_pre_finalizers_.emplace_back(self, T::InvokePreFinalizer);
+      state->RegisterPreFinalizer(self, T::PreFinalizerDispatch);
     }
   };
 
@@ -385,6 +374,17 @@ class PLATFORM_EXPORT ThreadState final {
  private:
   class IncrementalMarkingScheduler;
 
+  using PreFinalizerCallback = void (*)(void*);
+  struct PreFinalizer {
+    HeapObjectHeader* header;
+    void* object;
+    PreFinalizerCallback callback;
+
+    bool operator==(const PreFinalizer& other) const {
+      return object == other.object && callback == other.callback;
+    }
+  };
+
   // Duration of one incremental marking step. Should be short enough that it
   // doesn't cause jank even though it is scheduled as a normal task.
   static constexpr base::TimeDelta kDefaultIncrementalMarkingStepDuration =
@@ -509,6 +509,7 @@ class PLATFORM_EXPORT ThreadState final {
 
   void SynchronizeAndFinishConcurrentSweeping();
 
+  void RegisterPreFinalizer(void*, PreFinalizerCallback);
   void InvokePreFinalizers();
 
   // Adds the given observer to the ThreadState's observer list. This doesn't
@@ -557,9 +558,6 @@ class PLATFORM_EXPORT ThreadState final {
   BlinkGC::GCReason reason_for_scheduled_gc_ =
       BlinkGC::GCReason::kForcedGCForTesting;
 
-  using PreFinalizerCallback = bool (*)(void*);
-  using PreFinalizer = std::pair<void*, PreFinalizerCallback>;
-
   // Pre-finalizers are called in the reverse order in which they are
   // registered by the constructors (including constructors of Mixin objects)
   // for an object, by processing the ordered_pre_finalizers_ back-to-front.
@@ -607,7 +605,7 @@ class PLATFORM_EXPORT ThreadState final {
   friend class IncrementalMarkingTestDriver;
   friend class HeapAllocator;
   template <typename T>
-  friend class PrefinalizerRegistration;
+  friend class PreFinalizerRegistration;
   friend class TestGCScope;
   friend class ThreadStateSchedulingTest;
   friend class UnifiedHeapController;

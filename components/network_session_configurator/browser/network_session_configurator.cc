@@ -151,12 +151,15 @@ void ConfigureHttp2Params(const base::CommandLine& command_line,
       GetVariationParam(http2_trial_params, "http2_grease_frame_type") ==
           "true") {
     const uint8_t type = 0x0b + 0x1f * base::RandGenerator(8);
-    const uint8_t flags =
-        base::RandGenerator(std::numeric_limits<uint8_t>::max() + 1);
+
+    uint8_t flags;
+    base::RandBytes(&flags, /* output_length = */ sizeof(flags));
+
     const size_t length = base::RandGenerator(7);
     // RandBytesAsString() does not support zero length.
     const std::string payload =
         (length > 0) ? base::RandBytesAsString(length) : std::string();
+
     params->greased_http2_frame =
         base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
             {type, flags, payload});

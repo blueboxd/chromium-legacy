@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+#include <vector>
+
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 
 #include "base/memory/ptr_util.h"
@@ -180,6 +183,19 @@ void MultiDeviceSetupImpl::GetEligibleHostDevices(
   }
 
   std::move(callback).Run(eligible_remote_devices);
+}
+
+void MultiDeviceSetupImpl::GetEligibleActiveHostDevices(
+    GetEligibleActiveHostDevicesCallback callback) {
+  std::vector<mojom::HostDevicePtr> eligible_active_hosts;
+  for (const auto& host_device :
+       eligible_host_devices_provider_->GetEligibleActiveHostDevices()) {
+    eligible_active_hosts.push_back(
+        mojom::HostDevice::New(host_device.remote_device.GetRemoteDevice(),
+                               host_device.connectivity_status));
+  }
+
+  std::move(callback).Run(std::move(eligible_active_hosts));
 }
 
 void MultiDeviceSetupImpl::SetHostDevice(const std::string& host_device_id,

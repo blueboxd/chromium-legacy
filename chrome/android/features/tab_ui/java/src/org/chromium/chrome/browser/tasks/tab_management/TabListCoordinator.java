@@ -129,6 +129,13 @@ public class TabListCoordinator implements Destroyable {
             }, TabGridViewBinder::bindClosableTab);
 
             recyclerListener = (holder) -> {
+                int holderItemViewType = holder.getItemViewType();
+
+                if (holderItemViewType != UiType.CLOSABLE
+                        && holderItemViewType != UiType.SELECTABLE) {
+                    return;
+                }
+
                 ViewLookupCachingFrameLayout root = (ViewLookupCachingFrameLayout) holder.itemView;
                 ImageView thumbnail = (ImageView) root.fastFindViewById(R.id.tab_thumbnail);
                 if (thumbnail == null) return;
@@ -304,5 +311,14 @@ public class TabListCoordinator implements Destroyable {
             MVCListAdapter.ViewBuilder<T> builder,
             PropertyModelChangeProcessor.ViewBinder<PropertyModel, T, PropertyKey> binder) {
         mAdapter.registerType(typeId, builder, binder);
+    }
+
+    /**
+     * Inserts a special {@link org.chromium.ui.modelutil.MVCListAdapter.ListItem} at given index of
+     * the model list.
+     * @see TabListMediator#addSpecialItemToModel(int, int, PropertyModel).
+     */
+    void addSpecialListItem(int index, @UiType int uiType, PropertyModel model) {
+        mMediator.addSpecialItemToModel(index, uiType, model);
     }
 }

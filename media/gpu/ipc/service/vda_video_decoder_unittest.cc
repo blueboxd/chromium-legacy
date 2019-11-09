@@ -144,7 +144,8 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
         kCodecVP9, VP9PROFILE_PROFILE0,
         VideoDecoderConfig::AlphaMode::kIsOpaque, VideoColorSpace::REC709(),
         kNoTransformation, gfx::Size(1920, 1088), gfx::Rect(1920, 1080),
-        gfx::Size(1920, 1080), EmptyExtraData(), Unencrypted()));
+        gfx::Size(1920, 1080), EmptyExtraData(),
+        EncryptionScheme::kUnencrypted));
     RunUntilIdle();
   }
 
@@ -321,7 +322,7 @@ TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedSize) {
       kCodecVP9, VP9PROFILE_PROFILE0, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace::REC601(), kNoTransformation, gfx::Size(320, 240),
       gfx::Rect(320, 240), gfx::Size(320, 240), EmptyExtraData(),
-      Unencrypted()));
+      EncryptionScheme::kUnencrypted));
   EXPECT_CALL(init_cb_, Run(false));
   RunUntilIdle();
 }
@@ -331,7 +332,7 @@ TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedCodec) {
       kCodecH264, H264PROFILE_BASELINE,
       VideoDecoderConfig::AlphaMode::kIsOpaque, VideoColorSpace::REC709(),
       kNoTransformation, gfx::Size(1920, 1088), gfx::Rect(1920, 1080),
-      gfx::Size(1920, 1080), EmptyExtraData(), Unencrypted()));
+      gfx::Size(1920, 1080), EmptyExtraData(), EncryptionScheme::kUnencrypted));
   EXPECT_CALL(init_cb_, Run(false));
   RunUntilIdle();
 }
@@ -342,7 +343,7 @@ TEST_P(VdaVideoDecoderTest, Initialize_RejectedByVda) {
       kCodecVP9, VP9PROFILE_PROFILE0, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace::REC709(), kNoTransformation, gfx::Size(1920, 1088),
       gfx::Rect(1920, 1080), gfx::Size(1920, 1080), EmptyExtraData(),
-      Unencrypted()));
+      EncryptionScheme::kUnencrypted));
   EXPECT_CALL(init_cb_, Run(false));
   RunUntilIdle();
 }
@@ -425,7 +426,7 @@ TEST_P(VdaVideoDecoderTest, Decode_Output_MaintainsAspect) {
       kCodecVP9, VP9PROFILE_PROFILE0, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace::REC709(), kNoTransformation, gfx::Size(640, 480),
       gfx::Rect(640, 480), gfx::Size(1280, 480), EmptyExtraData(),
-      Unencrypted()));
+      EncryptionScheme::kUnencrypted));
   EXPECT_CALL(init_cb_, Run(true));
   RunUntilIdle();
 

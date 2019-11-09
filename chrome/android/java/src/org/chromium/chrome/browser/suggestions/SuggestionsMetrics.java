@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.ntp.cards.ActionItem.State;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.FaviconFetchResult;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -30,10 +30,10 @@ public abstract class SuggestionsMetrics {
 
     public static void recordSurfaceVisible() {
         if (!SharedPreferencesManager.getInstance().readBoolean(
-                    ChromePreferenceManager.CONTENT_SUGGESTIONS_SHOWN_KEY, false)) {
+                    ChromePreferenceKeys.CONTENT_SUGGESTIONS_SHOWN_KEY, false)) {
             RecordUserAction.record("Suggestions.FirstTimeSurfaceVisible");
             SharedPreferencesManager.getInstance().writeBoolean(
-                    ChromePreferenceManager.CONTENT_SUGGESTIONS_SHOWN_KEY, true);
+                    ChromePreferenceKeys.CONTENT_SUGGESTIONS_SHOWN_KEY, true);
         }
 
         RecordUserAction.record("Suggestions.SurfaceVisible");

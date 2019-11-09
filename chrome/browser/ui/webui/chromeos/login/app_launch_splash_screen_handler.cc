@@ -266,7 +266,7 @@ void AppLaunchSplashScreenHandler::HandleNetworkConfigRequested() {
     return;
 
   network_config_requested_ = true;
-  delegate_->OnNetworkConfigRequested(true);
+  delegate_->OnNetworkConfigRequested();
 }
 
 void AppLaunchSplashScreenHandler::HandleContinueAppLaunch() {
@@ -274,7 +274,7 @@ void AppLaunchSplashScreenHandler::HandleContinueAppLaunch() {
   if (delegate_ && online_state_) {
     network_config_requested_ = false;
     network_config_done_ = true;
-    delegate_->OnNetworkConfigRequested(false);
+    delegate_->OnNetworkConfigFinished();
     Show();
   }
 }

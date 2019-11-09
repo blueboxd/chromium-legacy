@@ -38,13 +38,7 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId device_id,
                                             const gfx::Size& frame_size) {
   mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
   device->id = device_id;
-  device->display_name = "ARCore VR Device";
   device->webxr_default_framebuffer_scale = 1.0;
-  device->capabilities = mojom::VRDisplayCapabilities::New();
-  device->capabilities->has_position = true;
-  device->capabilities->has_external_display = false;
-  device->capabilities->can_present = false;
-  device->capabilities->can_provide_environment_integration = true;
   device->left_eye = mojom::VREyeParameters::New();
   device->right_eye = nullptr;
   mojom::VREyeParametersPtr& left_eye = device->left_eye;

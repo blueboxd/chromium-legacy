@@ -20,6 +20,13 @@ namespace http_structured_header {
 // This file implements parsing of HTTP structured headers, as defined in
 // https://httpwg.org/http-extensions/draft-ietf-httpbis-header-structure.html.
 //
+// Both drafts 9 and 13 are currently supported. The major difference
+// between the two drafts is in the various list formats: Draft 9 describes
+// Parameterised lists and lists-of-lists, while draft 13 uses a single List
+// syntax, whose members may be inner lists. There should be no ambiguity,
+// however, as the code which calls this parser should be expecting only a
+// single type for a given header.
+//
 // Currently supported data types are:
 //  Item:
 //   integer: 123
@@ -28,6 +35,9 @@ namespace http_structured_header {
 //   byte sequence: *YWJj*
 //  Parameterised list: abc_123;a=1;b=2; cdef_456, ghi;q="9";r="w"
 //  List-of-lists: "foo";"bar", "baz", "bat"; "one"
+//  List: "foo", "bar", "It was the best of times."
+//        ("foo" "bar"), ("baz"), ("bat" "one"), ()
+//        abc;a=1;b=2; cde_456, (ghi jkl);q="9";r=w
 //
 // Functions are provided to parse each of these, which are intended to be
 // called with the complete value of an HTTP header (that is, any
@@ -87,6 +97,9 @@ class BLINK_COMMON_EXPORT Item {
   std::string string_value_;
 };
 
+// Holds a ParameterizedIdentifier (draft 9 only). The contained Item must be a
+// Token, and there may be any number of parameters. Parameter ordering is not
+// significant.
 struct BLINK_COMMON_EXPORT ParameterisedIdentifier {
   using Parameters = std::map<std::string, Item>;
 
@@ -99,8 +112,45 @@ struct BLINK_COMMON_EXPORT ParameterisedIdentifier {
   ~ParameterisedIdentifier();
 };
 
+inline bool operator==(const ParameterisedIdentifier& lhs,
+                       const ParameterisedIdentifier& rhs) {
+  return lhs.identifier == rhs.identifier && lhs.params == rhs.params;
+}
+
+// Holds a ParameterizedMember, which may be either an Inner List, or a single
+// Item, with any number of parameters. Parameter ordering is significant.
+struct BLINK_COMMON_EXPORT ParameterizedMember {
+  using Parameters = std::vector<std::pair<std::string, Item>>;
+
+  std::vector<Item> member;
+  // If false, then |member| should only hold one Item.
+  bool member_is_inner_list;
+
+  Parameters params;
+
+  ParameterizedMember(const ParameterizedMember&);
+  ParameterizedMember& operator=(const ParameterizedMember&);
+  ParameterizedMember(std::vector<Item>, bool, const Parameters&);
+  // Shorthand constructor for a member which is an inner list.
+  ParameterizedMember(std::vector<Item>, const Parameters&);
+  // Shorthand constructor for a member which is a single Item.
+  ParameterizedMember(Item, const Parameters&);
+  ~ParameterizedMember();
+};
+
+inline bool operator==(const ParameterizedMember& lhs,
+                       const ParameterizedMember& rhs) {
+  return lhs.member == rhs.member &&
+         lhs.member_is_inner_list == rhs.member_is_inner_list &&
+         lhs.params == rhs.params;
+}
+
+// Structured Headers Draft 09 Parameterised List.
 using ParameterisedList = std::vector<ParameterisedIdentifier>;
+// Structured Headers Draft 09 List of Lists.
 using ListOfLists = std::vector<std::vector<Item>>;
+// Structured Headers Draft 13 List.
+using List = std::vector<ParameterizedMember>;
 
 // Returns the result of parsing the header value as an Item, if it can be
 // parsed as one, or nullopt if it cannot.
@@ -117,7 +167,14 @@ BLINK_COMMON_EXPORT base::Optional<ParameterisedList> ParseParameterisedList(
 // Returns the result of parsing the header value as a List of Lists, if it can
 // be parsed as one, or nullopt if it cannot. Inner list items will be returned
 // as Items.
+// Structured-Headers Draft 09 only.
 BLINK_COMMON_EXPORT base::Optional<ListOfLists> ParseListOfLists(
+    const base::StringPiece& str);
+
+// Returns the result of parsing the header value as a general List, if it can
+// be parsed as one, or nullopt if it cannot.
+// Structured-Headers Draft 13 only.
+BLINK_COMMON_EXPORT base::Optional<List> ParseList(
     const base::StringPiece& str);
 
 }  // namespace http_structured_header

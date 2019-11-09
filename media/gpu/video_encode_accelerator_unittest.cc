@@ -1170,17 +1170,17 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   if (IsVP8(profile_)) {
     config.Initialize(kCodecVP8, VP8PROFILE_ANY, alpha_mode, VideoColorSpace(),
                       kNoTransformation, coded_size, visible_size, natural_size,
-                      EmptyExtraData(), Unencrypted());
+                      EmptyExtraData(), EncryptionScheme::kUnencrypted);
   } else if (IsVP9(profile_)) {
     config.Initialize(kCodecVP9, VP9PROFILE_PROFILE0, alpha_mode,
                       VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
-                      Unencrypted());
+                      EncryptionScheme::kUnencrypted);
   } else if (IsH264(profile_)) {
     config.Initialize(kCodecH264, H264PROFILE_MAIN, alpha_mode,
                       VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
-                      Unencrypted());
+                      EncryptionScheme::kUnencrypted);
   } else {
     LOG_ASSERT(0) << "Invalid profile " << GetProfileName(profile_);
   }

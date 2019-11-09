@@ -1050,9 +1050,21 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
     return TestResourceLoadHelper(url, sub_frame, worker);
   }
 
+  // Loads 3p.com/script on |popup| opened from page |url| and returns whether
+  // the script was cached or not.
+  bool TestResourceLoadFromPopup(const GURL& url, const GURL& popup) {
+    DCHECK(popup.is_valid());
+    return TestResourceLoadHelper(url, popup, GURL(), true);
+  }
+
+  // Loads 3p.com/script on page |url|. If |new_frame| is valid, it is loaded
+  // from a new frame with that url; otherwise, it is loaded from the main
+  // frame. This new frame is a popup if |use_popup|; otherwise, it is a
+  // subframe. The load is optionally performed by |worker| if it's valid.
   bool TestResourceLoadHelper(const GURL& url,
-                              const GURL& sub_frame,
-                              const GURL& worker) {
+                              const GURL& new_frame,
+                              const GURL& worker,
+                              bool use_popup = false) {
     DCHECK(url.is_valid());
 
     // Clear the in-memory cache held by the current process:
@@ -1062,9 +1074,6 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
     BackForwardCache::DisableForRenderFrameHost(
         shell()->web_contents()->GetMainFrame(), "test");
     EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL(kChromeUIGpuHost)));
-
-    // Observe network requests.
-    ResourceLoadObserver observer(shell());
 
     // In the case of a redirect, the observed URL will be different from
     // what NavigateToURL(...) expects.
@@ -1078,10 +1087,22 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
     RenderFrameHostImpl* main_frame =
         static_cast<RenderFrameHostImpl*>(host_to_load_resource);
 
-    // If there is supposed to be a subframe, create it.
-    if (sub_frame.is_valid()) {
-      host_to_load_resource = CreateSubframe(sub_frame);
+    Shell* shell_to_observe = shell();
+
+    if (new_frame.is_valid()) {
+      // If there is supposed to be a subframe or popup, create it.
+      if (use_popup) {
+        shell_to_observe = OpenPopup(main_frame, new_frame, "");
+        host_to_load_resource =
+            static_cast<WebContentsImpl*>(shell_to_observe->web_contents())
+                ->GetMainFrame();
+      } else {
+        host_to_load_resource = CreateSubframe(new_frame);
+      }
     }
+
+    // Observe network requests.
+    ResourceLoadObserver observer(shell_to_observe);
 
     GURL resource = GenURL("3p.com", "/script");
 
@@ -1104,14 +1125,16 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
     RenderFrameHostImpl* frame_host =
         static_cast<RenderFrameHostImpl*>(host_to_load_resource);
     url::Origin frame_origin;
-    if (sub_frame.is_empty()) {
+    if (new_frame.is_empty()) {
       frame_origin = top_frame_origin;
     } else {
-      frame_origin = url::Origin::Create(sub_frame);
-      // TODO(crbug.com/888079) in about:blank currently committed origin is
-      // different from the origin at the time of CommitNavigation.
-      if (!frame_origin.opaque()) {
-        // Modify to take redirects into account.
+      frame_origin = url::Origin::Create(new_frame);
+      if (use_popup && !frame_origin.opaque()) {
+        // The popup is in a new WebContents, so its top_frame_origin is also
+        // new unless it is blank.
+        top_frame_origin = frame_origin;
+      } else {
+        // Take redirects and initially empty subframes/popups into account.
         frame_origin = frame_host->GetLastCommittedOrigin();
       }
     }
@@ -1403,6 +1426,19 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
   // (a.com, a.com) which is already in the cache.
   GURL blank_url(url::kAboutBlankURL);
   EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"), blank_url));
+
+  // Load the resource from a popup window that points to about:blank. The
+  // resource is cached because the resource load is using the original main
+  // frame's URLLoaderFactory and the original main frame's factory has the NIK
+  // set to (a.com, a.com) which is already in the cache.
+  EXPECT_TRUE(
+      TestResourceLoadFromPopup(GenURL("a.com", "/title1.html"), blank_url));
+
+  // Load the resource from a popup window that points to a new origin. The
+  // resource is not cached because the resource load is using a NIK set to
+  // (g.com, g.com).
+  EXPECT_FALSE(TestResourceLoadFromPopup(GenURL("a.com", "/title1.html"),
+                                         GenURL("g.com", "/title1.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,

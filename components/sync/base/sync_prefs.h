@@ -130,6 +130,8 @@ class SyncPrefs : public CryptoSyncPrefs,
   void SetSelectedOsTypes(bool sync_all_os_types,
                           UserSelectableOsTypeSet registered_types,
                           UserSelectableOsTypeSet selected_types);
+  bool GetOsSyncFeatureEnabled() const;
+  void SetOsSyncFeatureEnabled(bool enabled);
 #endif
 
   // Whether Sync is forced off by enterprise policy. Note that this only covers

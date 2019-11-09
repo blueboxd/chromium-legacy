@@ -249,4 +249,14 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
       Optional(AllOf(Not(IsDistillable()), IsLast(), Not(IsMobileFriendly()))));
 }
 
+IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
+                       ObserverNotCalledAfterRemoval) {
+  RemoveObserver(web_contents_, &holder_);
+  EXPECT_CALL(holder_, OnResult(_)).Times(0);
+  NavigateAndWait(kSimpleArticlePath, kWaitNoExpectedCall);
+  EXPECT_THAT(
+      GetLatestResult(web_contents_),
+      Optional(AllOf(IsDistillable(), IsLast(), Not(IsMobileFriendly()))));
+}
+
 }  // namespace dom_distiller

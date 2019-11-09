@@ -53,11 +53,9 @@ class OpenXrApiWrapper {
                        base::Optional<gfx::Point3F>* position) const;
   void GetHeadFromEyes(XrView* left, XrView* right) const;
 
-  bool HasPosition() const;
   gfx::Size GetViewSize() const;
   XrTime GetPredictedDisplayTime() const;
   XrResult GetLuid(LUID* luid) const;
-  std::string GetRuntimeName() const;
   bool GetStageParameters(XrExtent2Df* stage_bounds,
                           gfx::Transform* local_from_stage);
   void RegisterInteractionProfileChangeCallback(

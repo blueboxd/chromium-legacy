@@ -12,8 +12,8 @@
 #import "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
+#include "components/password_manager/core/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
-#include "ios/web_view/internal/passwords/mock_credentials_filter.h"
 #include "ios/web_view/internal/passwords/web_view_password_feature_manager.h"
 
 namespace ios_web_view {
@@ -125,8 +125,7 @@ class WebViewPasswordManagerClient
   // password_manager::prefs::kCredentialsEnableService.
   BooleanPrefMember saving_passwords_enabled_;
 
-  // TODO(crbug.com/867297) Replace with SyncCredentialsFilter
-  const MockCredentialsFilter credentials_filter_;
+  const password_manager::SyncCredentialsFilter credentials_filter_;
 
   std::unique_ptr<autofill::LogManager> log_manager_;
 

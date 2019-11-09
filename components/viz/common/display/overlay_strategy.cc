@@ -9,7 +9,7 @@
 
 namespace viz {
 
-std::vector<OverlayStrategy> ParseOverlayStategies(
+std::vector<OverlayStrategy> ParseOverlayStrategies(
     const std::string& strategies_string) {
   std::vector<OverlayStrategy> strategies;
 

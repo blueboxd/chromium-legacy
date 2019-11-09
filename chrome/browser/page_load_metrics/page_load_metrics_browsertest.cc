@@ -479,6 +479,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInChildFrame) {
   auto waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstPaint);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
   waiter->AddSubFrameExpectation(TimingField::kFirstPaint);
   waiter->AddSubFrameExpectation(TimingField::kFirstContentfulPaint);
   ui_test_utils::NavigateToURL(browser(), a_url);
@@ -495,6 +497,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInDynamicChildFrame) {
   auto waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstPaint);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
   waiter->AddSubFrameExpectation(TimingField::kFirstPaint);
   waiter->AddSubFrameExpectation(TimingField::kFirstContentfulPaint);
   ui_test_utils::NavigateToURL(

@@ -294,7 +294,7 @@ bool AccessibilityFocusablePredicate(BrowserAccessibility* start,
 
 bool AccessibilityGraphicPredicate(BrowserAccessibility* start,
                                    BrowserAccessibility* node) {
-  return ui::IsImage(node->GetRole());
+  return ui::IsImageOrVideo(node->GetRole());
 }
 
 bool AccessibilityHeadingPredicate(BrowserAccessibility* start,

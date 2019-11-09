@@ -21,21 +21,23 @@
   await tracingHelper.invokeAsyncWithTracing(performActions);
 
   var schedRecalc = tracingHelper.findEvent('ScheduleStyleRecalculation', 'I');
-  var recalc = tracingHelper.findEvent('UpdateLayoutTree', 'X');
-  testRunner.log('UpdateLayoutTree frames match: ' + (schedRecalc.args.data.frame === recalc.args.beginData.frame));
-  testRunner.log('UpdateLayoutTree elementCount > 0: ' + (recalc.args.elementCount > 0));
+  var recalcBegin = tracingHelper.findEvent('UpdateLayoutTree', 'B');
+  var recalcEnd = tracingHelper.findEvent('UpdateLayoutTree', 'E');
+  testRunner.log('UpdateLayoutTree frames match: ' + (schedRecalc.args.data.frame === recalcBegin.args.beginData.frame));
+  testRunner.log('UpdateLayoutTree elementCount > 0: ' + (recalcEnd.args.elementCount > 0));
 
   var invalidate = tracingHelper.findEvent('InvalidateLayout', 'I');
-  var layout = tracingHelper.findEvent('Layout', 'X');
+  var layoutBegin = tracingHelper.findEvent('Layout', 'B');
+  var layoutEnd = tracingHelper.findEvent('Layout', 'E');
 
-  testRunner.log('InvalidateLayout frames match: ' + (recalc.args.beginData.frame === invalidate.args.data.frame));
+  testRunner.log('InvalidateLayout frames match: ' + (recalcBegin.args.beginData.frame === invalidate.args.data.frame));
 
-  var beginData = layout.args.beginData;
+  var beginData = layoutBegin.args.beginData;
   testRunner.log('Layout frames match: ' + (invalidate.args.data.frame === beginData.frame));
   testRunner.log('dirtyObjects > 0: ' + (beginData.dirtyObjects > 0));
   testRunner.log('totalObjects > 0: ' + (beginData.totalObjects > 0));
 
-  var endData = layout.args.endData;
+  var endData = layoutEnd.args.endData;
   testRunner.log('has rootNode id: ' + (endData.rootNode > 0));
   testRunner.log('has root quad: ' + !!endData.root);
 

@@ -46,6 +46,8 @@ std::string GetSpecificsIdFromAutofillWalletSpecifics(
       return specifics.address().id();
     case AutofillWalletSpecifics::CUSTOMER_DATA:
       return specifics.customer_data().id();
+    case AutofillWalletSpecifics::CREDIT_CARD_CLOUD_TOKEN_DATA:
+      return specifics.cloud_token_data().masked_card_id();
     case AutofillWalletSpecifics::UNKNOWN:
       NOTREACHED();
       return std::string();

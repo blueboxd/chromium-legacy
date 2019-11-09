@@ -480,7 +480,7 @@ void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
     return;
   if (EqualIgnoringASCIICase(name_value, "theme-color") &&
       GetDocument().GetFrame()) {
-    GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+    GetDocument().GetFrame()->DidChangeThemeColor();
   } else if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
     GetDocument().ColorSchemeMetaChanged();
   }
@@ -557,7 +557,7 @@ void HTMLMetaElement::ProcessContent() {
 
   if (EqualIgnoringASCIICase(name_value, "theme-color") &&
       GetDocument().GetFrame()) {
-    GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+    GetDocument().GetFrame()->DidChangeThemeColor();
     return;
   }
   if (EqualIgnoringASCIICase(name_value, "color-scheme")) {

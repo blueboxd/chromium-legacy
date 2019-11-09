@@ -112,7 +112,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DispatchDidFinishDocumentLoad() override;
   void DispatchDidFinishLoad() override;
 
-  void DispatchDidChangeThemeColor() override;
   void BeginNavigation(
       const ResourceRequest&,
       network::mojom::RequestContextFrameType,

@@ -42,6 +42,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "skia/public/mojom/skcolor.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
@@ -8750,64 +8751,73 @@ TEST_F(WebFrameTest, PrintingBasic)
   frame->PrintEnd();
 }
 
-class ThemeColorTestWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
+class ThemeColorTestLocalFrameHost : public FakeLocalFrameHost {
  public:
-  ThemeColorTestWebFrameClient() : did_notify_(false) {}
-  ~ThemeColorTestWebFrameClient() override = default;
+  ThemeColorTestLocalFrameHost() = default;
+  ~ThemeColorTestLocalFrameHost() override = default;
 
   void Reset() { did_notify_ = false; }
 
   bool DidNotify() const { return did_notify_; }
 
  private:
-  // frame_test_helpers::TestWebFrameClient:
-  void DidChangeThemeColor() override { did_notify_ = true; }
+  // FakeLocalFrameHost:
+  void DidChangeThemeColor(
+      const base::Optional<::SkColor>& theme_color) override {
+    did_notify_ = true;
+  }
 
-  bool did_notify_;
+  bool did_notify_ = false;
 };
 
 TEST_F(WebFrameTest, ThemeColor) {
   RegisterMockedHttpURLLoad("theme_color_test.html");
-  ThemeColorTestWebFrameClient client;
+  ThemeColorTestLocalFrameHost host;
+  frame_test_helpers::TestWebFrameClient client;
+  host.Init(client.GetRemoteNavigationAssociatedInterfaces());
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "theme_color_test.html",
                                     &client);
-  EXPECT_TRUE(client.DidNotify());
+  EXPECT_TRUE(host.DidNotify());
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
   // Change color by rgb.
-  client.Reset();
+  host.Reset();
   frame->ExecuteScript(
       WebScriptSource("document.getElementById('tc1').setAttribute('content', "
                       "'rgb(0, 0, 0)');"));
-  EXPECT_TRUE(client.DidNotify());
+  RunPendingTasks();
+  EXPECT_TRUE(host.DidNotify());
   EXPECT_EQ(Color::kBlack, frame->GetDocument().ThemeColor());
   // Change color by hsl.
-  client.Reset();
+  host.Reset();
   frame->ExecuteScript(
       WebScriptSource("document.getElementById('tc1').setAttribute('content', "
                       "'hsl(240,100%, 50%)');"));
-  EXPECT_TRUE(client.DidNotify());
+  RunPendingTasks();
+  EXPECT_TRUE(host.DidNotify());
   EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
   // Change of second theme-color meta tag will not change frame's theme
   // color.
-  client.Reset();
+  host.Reset();
   frame->ExecuteScript(WebScriptSource(
       "document.getElementById('tc2').setAttribute('content', '#00FF00');"));
-  EXPECT_TRUE(client.DidNotify());
+  RunPendingTasks();
+  EXPECT_TRUE(host.DidNotify());
   EXPECT_EQ(Color(0, 0, 255), frame->GetDocument().ThemeColor());
   // Remove the first theme-color meta tag to apply the second.
-  client.Reset();
+  host.Reset();
   frame->ExecuteScript(
       WebScriptSource("document.getElementById('tc1').remove();"));
-  EXPECT_TRUE(client.DidNotify());
+  RunPendingTasks();
+  EXPECT_TRUE(host.DidNotify());
   EXPECT_EQ(Color(0, 255, 0), frame->GetDocument().ThemeColor());
   // Remove the name attribute of the remaining meta.
-  client.Reset();
+  host.Reset();
   frame->ExecuteScript(WebScriptSource(
       "document.getElementById('tc2').removeAttribute('name');"));
-  EXPECT_TRUE(client.DidNotify());
+  RunPendingTasks();
+  EXPECT_TRUE(host.DidNotify());
   EXPECT_EQ(base::nullopt, frame->GetDocument().ThemeColor());
 }
 

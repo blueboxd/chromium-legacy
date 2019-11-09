@@ -677,17 +677,10 @@ Google Chrome is unable to recover your settings.
       </message>
 
       <!-- App list -->
-      <if expr="enable_app_list">
-        <if expr="not use_titlecase">
-          <message name="IDS_APP_LIST_EXTENSIONS_UNINSTALL" desc="Title text for the context menu item of a non-platform-app app list item that removes the app.">
-            Remove from Chrome...
-          </message>
-        </if>
-        <if expr="use_titlecase">
-          <message name="IDS_APP_LIST_EXTENSIONS_UNINSTALL" desc="In Title Case: Title text for the context menu item of a non-platform-app app list item that removes the app.">
-            Remove From Chrome...
-          </message>
-        </if>
+      <if expr="chromeos">
+        <message name="IDS_APP_LIST_EXTENSIONS_UNINSTALL" desc="Title text for the context menu item of a non-platform-app app list item that removes the app.">
+          Remove from Chrome...
+        </message>
       </if>
 
       <!-- App shortcuts -->

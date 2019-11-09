@@ -5,6 +5,7 @@
 module chromeos.multidevice_setup.mojom;
 
 import "chromeos/components/multidevice/mojom/multidevice_types.mojom";
+import "chromeos/services/device_sync/public/mojom/device_sync.mojom";
 
 // Enumeration of event types which can be dispatched. Only used for debugging
 // purposes.
@@ -91,6 +92,13 @@ enum FeatureState {
   kFurtherSetupRequired = 8,
 };
 
+// Metadata describing a device that can used as the host for multidevice
+// features.
+struct HostDevice {
+  chromeos.multidevice.mojom.RemoteDevice remote_device;
+  chromeos.device_sync.mojom.ConnectivityStatus connectivity_status;
+};
+
 interface AccountStatusChangeDelegate {
   // Callback which indicates that one or more MultiDevice host phones are
   // available for setup with the MultiDevice setup flow. This function is only
@@ -153,6 +161,12 @@ interface MultiDeviceSetup {
   // passed to SetHostDevice()).
   GetEligibleHostDevices() =>
       (array<chromeos.multidevice.mojom.RemoteDevice> eligible_host_devices);
+
+  // Provides a list of all active eligible host devices (i.e., those which
+  // can be passed to SetHostDevice()) sorted by last usage as determined by
+  // the server.
+  GetEligibleActiveHostDevices() =>
+      (array<HostDevice> eligible_host_devices);
 
   // Sets the host associated with the provided device ID as the host device
   // for this account. The provided auth token must be valid in order to prove

@@ -462,11 +462,6 @@ void LocalFrameClientImpl::DispatchDidFinishLoad() {
   web_frame_->DidFinish();
 }
 
-void LocalFrameClientImpl::DispatchDidChangeThemeColor() {
-  if (web_frame_->Client())
-    web_frame_->Client()->DidChangeThemeColor();
-}
-
 void LocalFrameClientImpl::BeginNavigation(
     const ResourceRequest& request,
     network::mojom::RequestContextFrameType frame_type,

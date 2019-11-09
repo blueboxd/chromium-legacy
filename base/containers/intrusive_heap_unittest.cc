@@ -652,8 +652,9 @@ TEST(IntrusiveHeapTest, MoveOnlyNoDefaultConstructorTest) {
 TEST(IntrusiveHeapTest, CopyOnlyNoDefaultConstructorTest) {
   using ValueType = Value_dmC;
   ValidateValueType<ValueType, false, false, true>();
-  CopyStressTest<ValueType>();
-  GeneralStressTest<ValueType>();
+  // We cannot perform CopyStressTest nor GeneralStressTest here, because
+  // Value_dmC has deleted move constructor and assignment operator. See
+  // crbug.com/1022576.
 }
 
 TEST(IntrusiveHeapTest, CopyAndMoveNoDefaultConstructorTest) {
@@ -674,8 +675,9 @@ TEST(IntrusiveHeapTest, MoveOnlyWithDefaultConstructorTest) {
 TEST(IntrusiveHeapTest, CopyOnlyWithDefaultConstructorTest) {
   using ValueType = Value_DmC;
   ValidateValueType<ValueType, true, false, true>();
-  CopyStressTest<ValueType>();
-  GeneralStressTest<ValueType>();
+  // We cannot perform CopyStressTest nor GeneralStressTest here, because
+  // Value_DmC has deleted move constructor and assignment operator. See
+  // crbug.com/1022576.
 }
 
 TEST(IntrusiveHeapTest, CopyAndMoveWithDefaultConstructorTest) {

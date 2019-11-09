@@ -22,7 +22,6 @@ import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/viz/public/mojom/compositing/surface_id.mojom";
-import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/commit_result/commit_result.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
@@ -513,7 +512,4 @@ interface FrameHost {
 
   // Sent by the renderer when the frame becomes focused.
   FrameFocused();
-
-  // Notifies the browser that the current frame has changed theme color.
-  DidChangeThemeColor(skia.mojom.SkColor? theme_color);
 };

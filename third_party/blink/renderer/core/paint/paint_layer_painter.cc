@@ -112,8 +112,8 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
                                     const GraphicsContext& context,
                                     const PaintLayerPaintingInfo& painting_info,
                                     PaintLayerFlags paint_flags) {
-  // Caching is not needed during printing.
-  if (context.Printing())
+  // Caching is not needed during printing or painting previews.
+  if (context.Printing() || context.IsPaintingPreview())
     return false;
 
   if (context.GetPaintController().IsSkippingCache())
@@ -198,8 +198,7 @@ static bool IsMainFrameNotClippingContents(const PaintLayer& layer) {
   // of the main frame.
   if (layer.GetLayoutObject().IsLayoutView()) {
     const auto* frame = layer.GetLayoutObject().GetFrame();
-    if (frame && frame->IsMainFrame() &&
-        !frame->GetSettings()->GetMainFrameClipsContent())
+    if (frame && frame->IsMainFrame() && !frame->ClipsContent())
       return true;
   }
   return false;

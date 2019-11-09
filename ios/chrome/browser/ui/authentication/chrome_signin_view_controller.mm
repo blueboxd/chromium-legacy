@@ -259,7 +259,7 @@ enum AuthenticationState {
   int consent_confirmation_id = showAccountsSettings
                                     ? openSettingsStringId
                                     : [self acceptSigninButtonStringId];
-  std::string account_id =
+  CoreAccountId account_id =
       IdentityManagerFactory::GetForBrowserState(self.browserState)
           ->PickAccountIdForAccount(
               base::SysNSStringToUTF8([_selectedIdentity gaiaID]),

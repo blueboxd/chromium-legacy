@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
@@ -190,7 +191,7 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
   class FileSourceRequest;
 
   // Gets the device level DM token to use with deep scans.
-  static std::string GetDMToken();
+  static policy::BrowserDMTokenStorage::BrowserDMToken GetDMToken();
 
   // Uploads data for deep scanning.  Returns true if uploading is occurring in
   // the background and false if there is nothing to do.

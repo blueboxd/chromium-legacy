@@ -72,7 +72,6 @@ void ApplicationContext::PreCreateThreads() {
 
 void ApplicationContext::SaveState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(crbug.com/723854): Commit prefs when entering background.
   if (local_state_) {
     local_state_->CommitPendingWrite();
   }

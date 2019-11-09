@@ -218,7 +218,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         Returns:
             A dict mapping Build to WebTestResults for all completed jobs.
         """
-        buildbot = self._tool.buildbot
+        results_fetcher = self._tool.results_fetcher
         results = {}
         for build, status in jobs.iteritems():
             if status == TryJobStatus('COMPLETED', 'SUCCESS'):
@@ -230,8 +230,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 # Only completed failed builds will contain actual failed
                 # web tests to download baselines for.
                 continue
-            results_url = buildbot.results_url(build.builder_name, build.build_number)
-            web_test_results = buildbot.fetch_results(build)
+            results_url = results_fetcher.results_url(build.builder_name, build.build_number)
+            web_test_results = results_fetcher.fetch_results(build)
             if web_test_results is None:
                 _log.info('Failed to fetch results for "%s".', build.builder_name)
                 _log.info('Results URL: %s/results.html', results_url)
@@ -345,8 +345,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         If the list of new failures could not be obtained, this returns None.
         """
-        buildbot = self._tool.buildbot
-        content = buildbot.fetch_retry_summary_json(build)
+        results_fetcher = self._tool.results_fetcher
+        content = results_fetcher.fetch_retry_summary_json(build)
         if content is None:
             return None
         try:

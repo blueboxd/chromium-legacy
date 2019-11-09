@@ -48,12 +48,13 @@ const char* ProtoEnumToString(sync_pb::AppSpecifics::LaunchType launch_type) {
 const char* ProtoEnumToString(
     sync_pb::AutofillWalletSpecifics::WalletInfoType wallet_info_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::AutofillWalletSpecifics, WalletInfoType, UNKNOWN,
-                     CUSTOMER_DATA);
+                     CREDIT_CARD_CLOUD_TOKEN_DATA);
   switch (wallet_info_type) {
     ENUM_CASE(sync_pb::AutofillWalletSpecifics, UNKNOWN);
     ENUM_CASE(sync_pb::AutofillWalletSpecifics, MASKED_CREDIT_CARD);
     ENUM_CASE(sync_pb::AutofillWalletSpecifics, POSTAL_ADDRESS);
     ENUM_CASE(sync_pb::AutofillWalletSpecifics, CUSTOMER_DATA);
+    ENUM_CASE(sync_pb::AutofillWalletSpecifics, CREDIT_CARD_CLOUD_TOKEN_DATA);
   }
   NOTREACHED();
   return "";

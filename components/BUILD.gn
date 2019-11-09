@@ -568,6 +568,7 @@ if (!is_ios && !is_fuchsia) {
       "//testing/gmock",
       "//testing/gtest",
       "//ui/base",
+      "//ui/native_theme:native_theme",
       "//url",
     ]
 

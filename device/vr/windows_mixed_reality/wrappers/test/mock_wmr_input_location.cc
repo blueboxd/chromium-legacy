@@ -31,20 +31,6 @@ bool MockWMRInputLocation::TryGetPosition(
   return true;
 }
 
-bool MockWMRInputLocation::TryGetVelocity(
-    ABI::Windows::Foundation::Numerics::Vector3* velocity) const {
-  DCHECK(velocity);
-  if (!data_.pose_data.is_valid)
-    return false;
-  // We could potentially store a history of poses and calculate the velocity,
-  // but that is more complicated and doesn't currently provide any benefit for
-  // tests. So, just report 0s.
-  velocity->X = 0;
-  velocity->Y = 0;
-  velocity->Z = 0;
-  return true;
-}
-
 bool MockWMRInputLocation::TryGetOrientation(
     ABI::Windows::Foundation::Numerics::Quaternion* orientation) const {
   DCHECK(orientation);
@@ -55,20 +41,6 @@ bool MockWMRInputLocation::TryGetOrientation(
   orientation->Y = decomposed_device_to_origin_.quaternion.y();
   orientation->Z = decomposed_device_to_origin_.quaternion.z();
   orientation->W = decomposed_device_to_origin_.quaternion.w();
-  return true;
-}
-
-bool MockWMRInputLocation::TryGetAngularVelocity(
-    ABI::Windows::Foundation::Numerics::Vector3* angular_velocity) const {
-  DCHECK(angular_velocity);
-  if (!data_.pose_data.is_valid)
-    return false;
-  // We could potentially store a history of poses and calculate the angular
-  // velocity, but that is more complicated and doesn't currently provide any
-  // benefit for tests. So, just report 0s.
-  angular_velocity->X = 0;
-  angular_velocity->Y = 0;
-  angular_velocity->Z = 0;
   return true;
 }
 

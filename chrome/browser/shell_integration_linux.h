@@ -11,6 +11,10 @@
 #include "chrome/common/buildflags.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#error shell_integration_linux is for desktop linux only.
+#endif
+
 namespace base {
 class CommandLine;
 class Environment;
@@ -85,14 +89,6 @@ std::string GetDesktopFileContentsForCommand(
 // |icon_name| is empty, will use the Chrome icon.
 std::string GetDirectoryFileContents(const base::string16& title,
                                      const std::string& icon_name);
-
-#if BUILDFLAG(ENABLE_APP_LIST)
-// Create shortcuts in the application menu for the app launcher. Duplicate
-// shortcuts are avoided, so if a requested shortcut already exists it is
-// deleted first. Also creates the icon required by the shortcut.
-bool CreateAppListDesktopShortcut(const std::string& wm_class,
-                                  const std::string& title);
-#endif
 
 // Windows that correspond to web apps need to have a deterministic (and
 // different) WMClass than normal chrome windows so the window manager groups

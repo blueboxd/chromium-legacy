@@ -1541,8 +1541,7 @@ static PhysicalRect OverflowClipRect(const LayoutBox& box,
 static bool CanOmitOverflowClip(const LayoutObject& object) {
   DCHECK(NeedsOverflowClip(object));
 
-  if (object.IsLayoutView() && object.GetFrame()->IsMainFrame() &&
-      !object.GetFrame()->GetSettings()->GetMainFrameClipsContent()) {
+  if (object.IsLayoutView() && !object.GetFrame()->ClipsContent()) {
     return true;
   }
 

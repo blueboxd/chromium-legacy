@@ -80,6 +80,11 @@ class SyncUserSettings {
   virtual void SetSelectedOsTypes(bool sync_all_os_types,
                                   UserSelectableOsTypeSet types) = 0;
   virtual UserSelectableOsTypeSet GetRegisteredSelectableOsTypes() const = 0;
+
+  // Whether the OS sync feature is enabled. Implies the user has consented.
+  // Exists in this interface for easier mocking in tests.
+  virtual bool GetOsSyncFeatureEnabled() const = 0;
+  virtual void SetOsSyncFeatureEnabled(bool enabled) = 0;
 #endif  // defined(OS_CHROMEOS)
 
   // Encryption state.

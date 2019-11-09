@@ -401,7 +401,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     content::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle) {
-  bool is_https = url.SchemeIs(url::kHttpsScheme);
 
   // Record whether the hint cache has a matching entry for this committed URL.
   previews_decider->LogHintCacheMatch(url, true /* is_committed */);
@@ -512,10 +511,9 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   if (previews_state & content::DEFER_ALL_SCRIPT_ON) {
     // DeferAllScript was allowed for the original URL but only continue with it
     // if the committed URL has HTTPS scheme and is allowed by decider.
-    if (is_https && previews_decider &&
-        previews_decider->ShouldCommitPreview(
-            previews_data, navigation_handle,
-            previews::PreviewsType::DEFER_ALL_SCRIPT)) {
+    if (previews_decider && previews_decider->ShouldCommitPreview(
+                                previews_data, navigation_handle,
+                                previews::PreviewsType::DEFER_ALL_SCRIPT)) {
       LogCommittedPreview(previews_data, PreviewsType::DEFER_ALL_SCRIPT);
       return content::DEFER_ALL_SCRIPT_ON;
     }
@@ -527,7 +525,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   if (previews_state & content::RESOURCE_LOADING_HINTS_ON) {
     // Resource loading hints was chosen for the original URL but only continue
     // with it if the committed URL has HTTPS scheme and is allowed by decider.
-    if (is_https && previews_decider &&
+    if (previews_decider &&
         previews_decider->ShouldCommitPreview(
             previews_data, navigation_handle,
             previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
@@ -542,10 +540,9 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   if (previews_state & content::NOSCRIPT_ON) {
     // NoScript was chosen for the original URL but only continue with it
     // if the committed URL has HTTPS scheme and is allowed by decider.
-    if (is_https && previews_decider &&
-        previews_decider->ShouldCommitPreview(
-            previews_data, navigation_handle,
-            previews::PreviewsType::NOSCRIPT)) {
+    if (previews_decider && previews_decider->ShouldCommitPreview(
+                                previews_data, navigation_handle,
+                                previews::PreviewsType::NOSCRIPT)) {
       LogCommittedPreview(previews_data, PreviewsType::NOSCRIPT);
       return content::NOSCRIPT_ON;
     }

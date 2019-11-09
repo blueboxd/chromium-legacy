@@ -429,7 +429,7 @@ bool Mp2tStreamParser::ShouldForceEncryptedParser() {
   // use of the encrypted parser variant so that the initial configuration
   // reflects the intended encryption mode (even if the initial segment itself
   // is not encrypted).
-  return initial_encryption_mode_ != EncryptionMode::kUnencrypted;
+  return initial_encryption_scheme_ != EncryptionScheme::kUnencrypted;
 }
 
 std::unique_ptr<EsParser> Mp2tStreamParser::CreateEncryptedH264Parser(
@@ -833,7 +833,7 @@ std::unique_ptr<PidState> Mp2tStreamParser::MakeCatPidState() {
   std::unique_ptr<TsSection> cat_section_parser(new TsSectionCat(
       base::BindRepeating(&Mp2tStreamParser::RegisterCencPids,
                           base::Unretained(this)),
-      base::BindRepeating(&Mp2tStreamParser::RegisterEncryptionMode,
+      base::BindRepeating(&Mp2tStreamParser::RegisterEncryptionScheme,
                           base::Unretained(this))));
   std::unique_ptr<PidState> cat_pid_state(new PidState(
       TsSection::kPidCat, PidState::kPidCat, std::move(cat_section_parser)));
@@ -883,10 +883,10 @@ void Mp2tStreamParser::UnregisterCencPids() {
   }
 }
 
-void Mp2tStreamParser::RegisterEncryptionMode(EncryptionMode mode) {
+void Mp2tStreamParser::RegisterEncryptionScheme(EncryptionScheme scheme) {
   // We only need to record this for the initial decoder config.
   if (!is_initialized_) {
-    initial_encryption_mode_ = mode;
+    initial_encryption_scheme_ = scheme;
   }
   // Reset the DecryptConfig, so that unless and until a CENC-ECM (containing
   // key id and IV) is seen, media data will be considered unencrypted. This is
@@ -897,14 +897,14 @@ void Mp2tStreamParser::RegisterEncryptionMode(EncryptionMode mode) {
 void Mp2tStreamParser::RegisterNewKeyIdAndIv(const std::string& key_id,
                                              const std::string& iv) {
   if (!iv.empty()) {
-    switch (initial_encryption_mode_) {
-      case EncryptionMode::kUnencrypted:
+    switch (initial_encryption_scheme_) {
+      case EncryptionScheme::kUnencrypted:
         decrypt_config_.reset();
         break;
-      case EncryptionMode::kCenc:
+      case EncryptionScheme::kCenc:
         decrypt_config_ = DecryptConfig::CreateCencConfig(key_id, iv, {});
         break;
-      case EncryptionMode::kCbcs:
+      case EncryptionScheme::kCbcs:
         decrypt_config_ =
             DecryptConfig::CreateCbcsConfig(key_id, iv, {}, base::nullopt);
         break;

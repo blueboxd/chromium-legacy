@@ -83,9 +83,6 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   device::mojom::VRDisplayInfoPtr GetVRDisplayInfo() {
     return display_info_.Clone();
   }
-  void InitializeAndGetDisplayInfo(
-      content::RenderFrameHost* render_frame_host,
-      device::mojom::VRService::GetImmersiveVRDisplayInfoCallback callback);
 
   // Methods called to support metrics/overlays on Windows.
   void AddObserver(BrowserXRRuntimeObserver* observer) {
@@ -114,7 +111,6 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
       mojo::PendingRemote<device::mojom::XRSessionController>
           immersive_session_controller);
   void OnImmersiveSessionError();
-  void OnInitialized();
 
   device::mojom::XRDeviceId id_;
   mojo::Remote<device::mojom::XRRuntime> runtime_;
@@ -128,8 +124,6 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
 
   mojo::AssociatedReceiver<device::mojom::XRRuntimeEventListener> receiver_{
       this};
-  std::vector<device::mojom::VRService::GetImmersiveVRDisplayInfoCallback>
-      pending_initialization_callbacks_;
 
   base::ObserverList<BrowserXRRuntimeObserver> observers_;
 

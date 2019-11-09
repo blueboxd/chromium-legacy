@@ -14,7 +14,7 @@ import logging
 import re
 
 from blinkpy.common.checkout.git import Git
-from blinkpy.common.net.buildbot import Build, filter_latest_builds
+from blinkpy.common.net.results_fetcher import Build, filter_latest_builds
 from blinkpy.common.net.luci_auth import LuciAuth
 
 

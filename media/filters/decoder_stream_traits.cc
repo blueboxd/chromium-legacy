@@ -112,6 +112,9 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::OnConfigChanged(
   audio_ts_validator_.reset(new AudioTimestampValidator(config, media_log_));
 }
 
+void DecoderStreamTraits<DemuxerStream::AUDIO>::OnOutputReady(
+    OutputType* buffer) {}
+
 // Video decoder stream traits implementation.
 
 // static
@@ -201,6 +204,7 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
   frame_metadata_[buffer.timestamp()] = {
       buffer.discard_padding().first == kInfiniteDuration,  // should_drop
       buffer.duration(),                                    // duration
+      base::TimeTicks::Now(),                               // decode_begin_time
   };
 
   if (!buffer.is_key_frame())
@@ -220,11 +224,6 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
 
 PostDecodeAction DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecodeDone(
     OutputType* buffer) {
-  // Add a timestamp here (after decoding completed) to enable buffering delay
-  // measurements down the line.
-  buffer->metadata()->SetTimeTicks(media::VideoFrameMetadata::DECODE_TIME,
-                                   base::TimeTicks::Now());
-
   auto it = frame_metadata_.find(buffer->timestamp());
 
   // If the frame isn't in |frame_metadata_| it probably was erased below on a
@@ -233,6 +232,12 @@ PostDecodeAction DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecodeDone(
   // been rendered.
   if (it == frame_metadata_.end())
     return PostDecodeAction::DELIVER;
+
+  // Add a timestamp here to enable buffering delay measurements down the line.
+  buffer->metadata()->SetTimeTicks(VideoFrameMetadata::DECODE_BEGIN_TIME,
+                                   it->second.decode_begin_time);
+  buffer->metadata()->SetTimeTicks(VideoFrameMetadata::DECODE_END_TIME,
+                                   base::TimeTicks::Now());
 
   auto action = it->second.should_drop ? PostDecodeAction::DROP
                                        : PostDecodeAction::DELIVER;
@@ -250,6 +255,18 @@ PostDecodeAction DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecodeDone(
   // returned from the decoder.
   frame_metadata_.erase(frame_metadata_.begin(), it + 1);
   return action;
+}
+
+void DecoderStreamTraits<DemuxerStream::VIDEO>::OnOutputReady(
+    OutputType* buffer) {
+  base::TimeTicks decode_begin_time;
+  if (!buffer->metadata()->GetTimeTicks(VideoFrameMetadata::DECODE_BEGIN_TIME,
+                                        &decode_begin_time)) {
+    return;
+  }
+  // Tag buffer with elapsed time since creation.
+  buffer->metadata()->SetTimeDelta(VideoFrameMetadata::PROCESSING_TIME,
+                                   base::TimeTicks::Now() - decode_begin_time);
 }
 
 }  // namespace media

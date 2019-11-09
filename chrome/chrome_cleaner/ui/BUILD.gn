@@ -24,7 +24,11 @@ source_set("cleaner_ui") {
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/settings",
     "//components/chrome_cleaner/public/constants:constants",
-    "//components/chrome_cleaner/public/interfaces",
+  ]
+
+  public_deps = [
+    "//components/chrome_cleaner/public/proto",
+    "//third_party/protobuf:protobuf_lite",
   ]
 }
 

@@ -233,7 +233,6 @@ class XRSession final
       const device::mojom::blink::VREyeParametersPtr& right_eye);
   void UpdateStageParameters(
       const device::mojom::blink::VRStageParametersPtr& stage_parameters);
-  bool External() const { return is_external_; }
   // Incremented every time display_info_ is changed, so that other objects that
   // depend on it can know when they need to update.
   unsigned int DisplayInfoPtrId() const { return display_info_id_; }
@@ -386,7 +385,6 @@ class XRSession final
   HeapHashSet<Member<ScriptPromiseResolver>> request_hit_test_source_promises_;
   HeapVector<Member<XRReferenceSpace>> reference_spaces_;
 
-  bool is_external_ = false;
   unsigned int display_info_id_ = 0;
   unsigned int stage_parameters_id_ = 0;
   device::mojom::blink::VRDisplayInfoPtr display_info_;

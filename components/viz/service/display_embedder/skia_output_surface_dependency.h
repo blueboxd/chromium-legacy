@@ -44,6 +44,7 @@ class GrShaderCache;
 
 namespace viz {
 
+class DawnContextProvider;
 class VulkanContextProvider;
 
 // This class exists to allow SkiaOutputSurfaceImpl to ignore differences
@@ -59,6 +60,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   // These are client thread methods. All other methods should be called on
   // the GPU thread only.
   virtual bool IsUsingVulkan() = 0;
+  virtual bool IsUsingDawn() = 0;
   // Returns a new task execution sequence. Sequences should not outlive the
   // task executor.
   virtual std::unique_ptr<gpu::SingleTaskSequence> CreateSequence() = 0;
@@ -71,6 +73,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual gpu::raster::GrShaderCache* GetGrShaderCache() = 0;
   // May return null.
   virtual VulkanContextProvider* GetVulkanContextProvider() = 0;
+  // May return null.
+  virtual DawnContextProvider* GetDawnContextProvider() = 0;
   virtual const gpu::GpuPreferences& GetGpuPreferences() = 0;
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() = 0;
   virtual gpu::MailboxManager* GetMailboxManager() = 0;

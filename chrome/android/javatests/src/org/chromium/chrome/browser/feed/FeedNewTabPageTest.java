@@ -45,7 +45,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -178,10 +178,10 @@ public class FeedNewTabPageTest {
     @Feature({"FeedNewTabPage"})
     public void testSignInPromo_DismissBySwipe() {
         boolean dismissed = SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false);
         if (dismissed) {
             SharedPreferencesManager.getInstance().writeBoolean(
-                    ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
+                    ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false);
         }
 
         // Verify that sign-in promo is displayed initially.
@@ -205,7 +205,7 @@ public class FeedNewTabPageTest {
 
         // Reset state.
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, dismissed);
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, dismissed);
     }
 
     @Test

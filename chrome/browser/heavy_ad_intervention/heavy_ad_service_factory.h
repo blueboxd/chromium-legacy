@@ -34,6 +34,8 @@ class HeavyAdServiceFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(HeavyAdServiceFactory);
 };

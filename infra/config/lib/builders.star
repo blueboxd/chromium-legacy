@@ -68,6 +68,10 @@ goma = struct(
             'server_host': 'staging-goma.chromium.org',
             'rpc_extra_params': '?staging',
         },
+        RBE_TOT = {
+            'server_host': 'staging-goma.chromium.org',
+            'rpc_extra_params': '?tot',
+        },
     ),
     jobs = struct(
         J50 = 50,

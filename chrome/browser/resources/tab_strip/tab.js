@@ -88,6 +88,8 @@ export class TabElement extends CustomElement {
 
     this.tabEl_.addEventListener('click', () => this.onClick_());
     this.tabEl_.addEventListener('contextmenu', e => this.onContextMenu_(e));
+    this.tabEl_.addEventListener(
+        'keydown', e => this.onKeyDown_(/** @type {!KeyboardEvent} */ (e)));
     this.closeButtonEl_.addEventListener('click', e => this.onClose_(e));
     this.addEventListener('swipe', () => this.onSwipe_());
 
@@ -151,6 +153,10 @@ export class TabElement extends CustomElement {
     this.tab_ = Object.freeze(tab);
   }
 
+  focus() {
+    this.tabEl_.focus();
+  }
+
   /** @return {!HTMLElement} */
   getDragImage() {
     return this.tabEl_;
@@ -209,6 +215,16 @@ export class TabElement extends CustomElement {
     // Prevent slideOut animation from playing.
     this.remove();
     this.tabsApi_.closeTab(this.tab_.id);
+  }
+
+  /**
+   * @param {!KeyboardEvent} event
+   * @private
+   */
+  onKeyDown_(event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      this.onClick_();
+    }
   }
 
   /**

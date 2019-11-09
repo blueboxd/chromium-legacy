@@ -774,6 +774,12 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   void SetPrinting(PrintingState);
 
+  bool IsPaintingPreview() const { return is_painting_preview_; }
+  bool IsCapturingLayout() const {
+    return printing_ == kPrinting || is_painting_preview_;
+  }
+  void SetIsPaintingPreview(bool);
+
   enum CompatibilityMode { kQuirksMode, kLimitedQuirksMode, kNoQuirksMode };
 
   void SetCompatibilityMode(CompatibilityMode);
@@ -1840,6 +1846,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<CSSStyleSheet> elem_sheet_;
 
   PrintingState printing_;
+  bool is_painting_preview_;
 
   CompatibilityMode compatibility_mode_;
   // This is cheaper than making setCompatibilityMode virtual.

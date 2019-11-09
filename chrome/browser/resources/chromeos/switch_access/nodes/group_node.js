@@ -15,7 +15,7 @@ class GroupNode extends SAChildNode {
    * @private
    */
   constructor(children) {
-    super(true /* isGroup */);
+    super();
 
     /** @type {!Array<!SAChildNode>} */
     this.children_ = children;
@@ -68,6 +68,11 @@ class GroupNode extends SAChildNode {
   /** @override */
   isEquivalentTo(node) {
     return false;
+  }
+
+  /** @override */
+  isGroup() {
+    return true;
   }
 
   /** @override */

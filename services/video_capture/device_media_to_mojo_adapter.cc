@@ -63,14 +63,17 @@ DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {
 
 void DeviceMediaToMojoAdapter::Start(
     const media::VideoCaptureParams& requested_settings,
-    mojo::PendingRemote<mojom::Receiver> receiver_pending_remote) {
+    mojo::PendingRemote<mojom::VideoFrameHandler>
+        video_frame_handler_pending_remote) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  mojo::Remote<mojom::Receiver> receiver(std::move(receiver_pending_remote));
-  receiver.set_disconnect_handler(
+  mojo::Remote<mojom::VideoFrameHandler> handler_remote(
+      std::move(video_frame_handler_pending_remote));
+  handler_remote.set_disconnect_handler(
       base::BindOnce(&DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose,
                      weak_factory_.GetWeakPtr()));
 
-  receiver_ = std::make_unique<ReceiverMojoToMediaAdapter>(std::move(receiver));
+  receiver_ =
+      std::make_unique<ReceiverMojoToMediaAdapter>(std::move(handler_remote));
   auto media_receiver = std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
       receiver_->GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
 
@@ -158,8 +161,8 @@ void DeviceMediaToMojoAdapter::Stop() {
   device_->StopAndDeAllocate();
   // We need to post the deletion of receiver to the end of the message queue,
   // because |device_->StopAndDeAllocate()| may post messages (e.g.
-  // OnBufferRetired()) to a WeakPtr to |receiver_| to this queue, and we need
-  // those messages to be sent before we invalidate the WeakPtr.
+  // OnBufferRetired()) to a WeakPtr to |receiver_| to this queue,
+  // and we need those messages to be sent before we invalidate the WeakPtr.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
                                                   std::move(receiver_));
 }

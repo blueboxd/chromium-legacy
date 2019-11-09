@@ -203,31 +203,17 @@ cdm::KeyStatus ToCdmKeyStatus(CdmKeyInformation::KeyStatus status) {
   return cdm::kInternalError;
 }
 
-cdm::EncryptionScheme ToCdmEncryptionScheme(const EncryptionScheme& scheme) {
-  switch (scheme.mode()) {
-    case EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
+cdm::EncryptionScheme ToCdmEncryptionScheme(EncryptionScheme scheme) {
+  switch (scheme) {
+    case EncryptionScheme::kUnencrypted:
       return cdm::EncryptionScheme::kUnencrypted;
-    case EncryptionScheme::CIPHER_MODE_AES_CTR:
+    case EncryptionScheme::kCenc:
       return cdm::EncryptionScheme::kCenc;
-    case EncryptionScheme::CIPHER_MODE_AES_CBC:
+    case EncryptionScheme::kCbcs:
       return cdm::EncryptionScheme::kCbcs;
   }
 
-  NOTREACHED() << "Unexpected EncryptionScheme mode " << scheme.mode();
-  return cdm::EncryptionScheme::kUnencrypted;
-}
-
-cdm::EncryptionScheme ToCdmEncryptionScheme(const EncryptionMode& mode) {
-  switch (mode) {
-    case EncryptionMode::kUnencrypted:
-      return cdm::EncryptionScheme::kUnencrypted;
-    case EncryptionMode::kCenc:
-      return cdm::EncryptionScheme::kCenc;
-    case EncryptionMode::kCbcs:
-      return cdm::EncryptionScheme::kCbcs;
-  }
-
-  NOTREACHED() << "Unexpected EncryptionMode";
+  NOTREACHED() << "Unexpected EncryptionScheme";
   return cdm::EncryptionScheme::kUnencrypted;
 }
 
@@ -626,7 +612,7 @@ void ToCdmInputBuffer(const DecoderBuffer& encrypted_buffer,
   input_buffer->num_subsamples = num_subsamples;
 
   input_buffer->encryption_scheme =
-      ToCdmEncryptionScheme(decrypt_config->encryption_mode());
+      ToCdmEncryptionScheme(decrypt_config->encryption_scheme());
   if (decrypt_config->HasPattern()) {
     input_buffer->pattern = {
         decrypt_config->encryption_pattern()->crypt_byte_block(),

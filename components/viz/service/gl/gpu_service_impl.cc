@@ -50,6 +50,7 @@
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "media/mojo/services/mojo_video_encode_accelerator_provider.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "skia/buildflags.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -87,6 +88,10 @@
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/quartz_util.h"
+#endif
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+#include "components/viz/common/gpu/dawn_context_provider.h"
 #endif
 
 namespace viz {
@@ -176,6 +181,19 @@ GpuServiceImpl::GpuServiceImpl(
           gpu::kGpuFeatureStatusEnabled;
     } else {
       DLOG(WARNING) << "Failed to create Vulkan context provider.";
+    }
+  }
+#endif
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+  if (gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn) {
+    dawn_context_provider_ = DawnContextProvider::Create();
+    if (dawn_context_provider_) {
+      gpu_info_.oop_rasterization_supported = true;
+      gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+          gpu::kGpuFeatureStatusEnabled;
+    } else {
+      DLOG(WARNING) << "Failed to create Dawn context provider.";
     }
   }
 #endif
@@ -330,7 +348,7 @@ void GpuServiceImpl::InitializeWithHost(
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags), std::move(default_offscreen_surface),
       image_decode_accelerator_worker_.get(), vulkan_context_provider(),
-      metal_context_provider_.get());
+      metal_context_provider_.get(), dawn_context_provider());
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));

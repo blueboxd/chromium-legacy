@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+
 interface IProfile {
   void destroy() = 0;
 

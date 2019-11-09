@@ -467,6 +467,18 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
+    public void setInitialScrollIndexOnRestoreCompleted() {
+        initAndAssertAllProperties();
+        mMediator.showOverview(true);
+        assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
+
+        mModel.set(TabListContainerProperties.INITIAL_SCROLL_INDEX, 1);
+
+        mTabModelObserverCaptor.getValue().restoreCompleted();
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
+    }
+
+    @Test
     public void showOverviewDoesNotUpdateResetHandlerBeforeRestoreCompleted() {
         initAndAssertAllProperties();
         doReturn(false).when(mTabModelFilter).isTabModelRestored();
@@ -506,6 +518,17 @@ public class TabSwitcherMediatorUnitTest {
 
         // MRU will be false unless the start surface is enabled.
         verify(mResetHandler).resetWithTabList(mTabModelFilter, false, false);
+    }
+
+    @Test
+    public void prepareOverviewSetsInitialScrollIndexAfterRestoreCompleted() {
+        initAndAssertAllProperties();
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+
+        mModel.set(TabListContainerProperties.INITIAL_SCROLL_INDEX, 1);
+
+        mMediator.prepareOverview();
+        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
     }
 
     @Test

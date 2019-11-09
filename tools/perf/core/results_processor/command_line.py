@@ -18,6 +18,7 @@ from py_utils import cloud_storage
 
 from core.results_processor import formatters
 from core.results_processor import util
+from core.results_processor import trace_processor
 
 
 def ArgumentParser(standalone=False):
@@ -68,6 +69,11 @@ def ArgumentParser(standalone=False):
       help=Sentences(
           'How to interpret the testPath attribute.',
           'Available options: %(choices)s. Default: %(default)s.'))
+  group.add_argument(
+      '--trace-processor-path', default=trace_processor.DEFAULT_TP_PATH,
+      help=Sentences(
+          'Path to trace processor shell.',
+          'Default: %(default)s.'))
   group.add_argument(
       '--upload-results', action='store_true',
       help='Upload generated artifacts to cloud storage.')

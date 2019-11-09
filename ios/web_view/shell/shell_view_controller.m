@@ -339,6 +339,10 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                          message:message
                   preferredStyle:UIAlertControllerStyleActionSheet];
     for (CWVCreditCard* creditCard in creditCards) {
+      // Cards from Google Play can only be deleted on the Google Pay website.
+      if (creditCard.fromGooglePay) {
+        continue;
+      }
       NSString* title =
           [NSString stringWithFormat:@"Delete %@",
                                      @([creditCards indexOfObject:creditCard])];
@@ -350,6 +354,27 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                  }];
       [alertController addAction:action];
     }
+    __weak ShellViewController* weakSelf = self;
+    [alertController
+        addAction:[UIAlertAction
+                      actionWithTitle:@"Manage Google pay cards"
+                                style:UIAlertActionStyleDefault
+                              handler:^(UIAlertAction* action) {
+                                __weak ShellViewController* strongSelf =
+                                    weakSelf;
+                                NSString* URL;
+                                if ([CWVFlags sharedInstance]
+                                        .usesSyncAndWalletSandbox) {
+                                  URL = @"https://pay.sandbox.google.com/"
+                                        @"payments/home#paymentMethods";
+                                } else {
+                                  URL = @"https://pay.google.com/payments/"
+                                        @"home#paymentMethods";
+                                }
+                                NSURLRequest* request = [NSURLRequest
+                                    requestWithURL:[NSURL URLWithString:URL]];
+                                [strongSelf.webView loadRequest:request];
+                              }]];
     [alertController
         addAction:[UIAlertAction actionWithTitle:@"Done"
                                            style:UIAlertActionStyleCancel

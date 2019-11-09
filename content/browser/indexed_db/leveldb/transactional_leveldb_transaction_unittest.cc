@@ -924,4 +924,74 @@ TEST_F(TransactionalLevelDBTransactionTest,
   EXPECT_TRUE(KeysEqual(it->Key(), key2)) << it->Key() << ", " << key2;
 }
 
+TEST_F(TransactionalLevelDBTransactionTest,
+       IteratorPrevAfterRemovingCurrentKeyAtDatabaseEnd) {
+  SetUpRealDatabase();
+  SetupLevelDBDatabase();
+
+  // This tests that the iterator reloading logic correctly handles not calling
+  // Next when it reloads after the current key was removed.
+
+  const std::string key1("b-key1");
+  const std::string key2("b-key2");
+  const std::string value("value");
+
+  Put(key1, value);
+  Put(key2, value);
+
+  scoped_refptr<TransactionalLevelDBTransaction> transaction =
+      CreateTransaction();
+  std::unique_ptr<TransactionalLevelDBIterator> it =
+      transaction->CreateIterator();
+
+  leveldb::Status s = it->Seek(std::string("b-key2"));
+  ASSERT_TRUE(it->IsValid());
+  EXPECT_TRUE(s.ok());
+
+  // Make sure the iterator is detached, and remove the current key.
+  it->EvictLevelDBIterator();
+  TransactionRemove(transaction.get(), key2);
+
+  // This call reloads the iterator at key "b-key2", which is now deleted. It
+  // should seek to the end of the database instead, which is "b-key1"
+  s = it->Prev();
+  ASSERT_TRUE(it->IsValid());
+  EXPECT_TRUE(s.ok());
+  EXPECT_TRUE(KeysEqual(it->Key(), key1)) << it->Key() << ", " << key1;
+}
+
+TEST_F(TransactionalLevelDBTransactionTest,
+       IteratorPrevAfterRemovingCurrentKeyAtDatabaseStart) {
+  SetUpRealDatabase();
+  SetupLevelDBDatabase();
+
+  // This tests that the iterator reloading logic correctly handles not calling
+  // Next when it reloads after the current key was removed.
+
+  const std::string key1("b-key1");
+  const std::string key2("b-key2");
+  const std::string value("value");
+
+  Put(key1, value);
+  Put(key2, value);
+
+  scoped_refptr<TransactionalLevelDBTransaction> transaction =
+      CreateTransaction();
+  std::unique_ptr<TransactionalLevelDBIterator> it =
+      transaction->CreateIterator();
+
+  leveldb::Status s = it->Seek(std::string("b-key1"));
+  ASSERT_TRUE(it->IsValid());
+  EXPECT_TRUE(s.ok());
+
+  // Make sure the iterator is detached, and remove the current key.
+  it->EvictLevelDBIterator();
+  TransactionRemove(transaction.get(), key1);
+
+  // This call reloads the iterator at key "b-key1", which is now deleted. Since
+  // there is no key before it, it should be invalid.
+  s = it->Prev();
+  ASSERT_FALSE(it->IsValid());
+}
+
 }  // namespace content

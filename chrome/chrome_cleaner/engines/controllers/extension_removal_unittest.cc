@@ -50,7 +50,6 @@
 #include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "chrome/chrome_cleaner/ui/silent_main_dialog.h"
 #include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
-#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom-test-utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/win/src/sandbox_factory.h"
@@ -137,15 +136,12 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   ExtensionCleanupTest() : mojo_task_runner_(MojoTaskRunner::Create()) {}
   void SetUp() override {
     EXPECT_CALL(mock_chrome_prompt_ipc_, MockPostPromptUserTask(_, _, _, _))
-        .WillRepeatedly(
-            [](const std::vector<base::FilePath>& files_to_delete,
-               const std::vector<base::string16>& registry_keys,
-               const std::vector<base::string16>& extension_ids,
-               mojom::ChromePromptInterceptorForTesting::PromptUserCallback*
-                   callback) {
-              std::move(*callback).Run(
-                  mojom::PromptAcceptance::ACCEPTED_WITHOUT_LOGS);
-            });
+        .WillRepeatedly([](const std::vector<base::FilePath>& files_to_delete,
+                           const std::vector<base::string16>& registry_keys,
+                           const std::vector<base::string16>& extension_ids,
+                           ChromePromptIPC::PromptUserCallback* callback) {
+          std::move(*callback).Run(PromptUserResponse::ACCEPTED_WITHOUT_LOGS);
+        });
     EXPECT_CALL(mock_chrome_prompt_ipc_, Initialize(_));
     EXPECT_CALL(mock_chrome_prompt_ipc_, TryDeleteExtensions(_, _))
         .WillRepeatedly([](base::OnceClosure delete_allowed_callback,

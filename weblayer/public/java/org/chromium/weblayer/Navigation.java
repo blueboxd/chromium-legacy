@@ -21,37 +21,16 @@ import java.util.List;
  */
 public final class Navigation extends IClientNavigation.Stub {
     private final INavigation mNavigationImpl;
-    // TODO(sky): investigate using java_cpp_enum.
-    public enum State {
-        WAITING_RESPONSE,
-        RECEIVING_BYTES,
-        COMPLETE,
-        FAILED,
-    }
-
-    private static State ipcStateToState(int state) {
-        switch (state) {
-            case 0:
-                return State.WAITING_RESPONSE;
-            case 1:
-                return State.RECEIVING_BYTES;
-            case 2:
-                return State.COMPLETE;
-            case 3:
-                return State.FAILED;
-            default:
-                throw new IllegalArgumentException("Unexpected state " + state);
-        }
-    }
 
     Navigation(INavigation impl) {
         mNavigationImpl = impl;
     }
 
-    public State getState() {
+    @NavigationState
+    public int getState() {
         ThreadCheck.ensureOnUiThread();
         try {
-            return ipcStateToState(mNavigationImpl.getState());
+            return mNavigationImpl.getState();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -95,8 +74,35 @@ public final class Navigation extends IClientNavigation.Stub {
      *  - same page history navigation
      */
     public boolean isSameDocument() {
+        ThreadCheck.ensureOnUiThread();
         try {
             return mNavigationImpl.isSameDocument();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Whether the navigation resulted in an error page (e.g. interstitial). Note that if an error
+     * page reloads, this will return true even though GetNetErrorCode will be kNoError.
+     */
+    public boolean isErrorPage() {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            return mNavigationImpl.isErrorPage();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Return information about the error, if any, that was encountered while loading the page.
+     */
+    @LoadError
+    public int getLoadError() {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            return mNavigationImpl.getLoadError();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

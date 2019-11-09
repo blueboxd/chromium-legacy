@@ -7,19 +7,19 @@
 
 #include "media/capture/video/video_frame_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/video_capture/public/mojom/receiver.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 
 namespace video_capture {
 
 // Adapter that allows a media::VideoFrameReceiver to be used in place of
-// a mojom::VideoFrameReceiver.
-class ReceiverMediaToMojoAdapter : public mojom::Receiver {
+// a mojom::VideoFrameHandler.
+class ReceiverMediaToMojoAdapter : public mojom::VideoFrameHandler {
  public:
   ReceiverMediaToMojoAdapter(
       std::unique_ptr<media::VideoFrameReceiver> receiver);
   ~ReceiverMediaToMojoAdapter() override;
 
-  // video_capture::mojom::Receiver:
+  // video_capture::mojom::VideoFrameHandler:
   void OnNewBuffer(int32_t buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnFrameReadyInBuffer(

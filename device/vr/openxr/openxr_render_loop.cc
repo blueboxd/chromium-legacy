@@ -150,22 +150,6 @@ void OpenXrRenderLoop::InitializeDisplayInfo() {
   }
 
   current_display_info_->id = device::mojom::XRDeviceId::OPENXR_DEVICE_ID;
-  current_display_info_->display_name = openxr_->GetRuntimeName();
-
-  current_display_info_->capabilities = mojom::VRDisplayCapabilities::New();
-  current_display_info_->capabilities->can_provide_environment_integration =
-      false;
-  current_display_info_->capabilities->has_position = openxr_->HasPosition();
-
-  // OpenXR is initialized when creating the instance and getting the system
-  // was successful. If we are able to get a system, then we can present to
-  // an external display.
-  current_display_info_->capabilities->has_external_display =
-      openxr_->IsInitialized();
-  current_display_info_->capabilities->can_present = openxr_->IsInitialized();
-
-  current_display_info_->webvr_default_framebuffer_scale = 1.0f;
-  current_display_info_->webxr_default_framebuffer_scale = 1.0f;
 
   gfx::Size view_size = openxr_->GetViewSize();
   current_display_info_->left_eye->render_width = view_size.width();

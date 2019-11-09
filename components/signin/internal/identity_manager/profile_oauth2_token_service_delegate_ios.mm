@@ -207,7 +207,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Get the list of new account ids.
-  std::set<std::string> new_account_ids;
+  std::set<CoreAccountId> new_account_ids;
   for (const auto& new_account : provider_->GetAllAccounts()) {
     DCHECK(!new_account.gaia.empty());
     DCHECK(!new_account.email.empty());
@@ -216,7 +216,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
     // the GAIA ID is available if any client of this token service starts
     // a fetch access token operation when it receives a
     // |OnRefreshTokenAvailable| notification.
-    std::string account_id = account_tracker_service_->SeedAccountInfo(
+    CoreAccountId account_id = account_tracker_service_->SeedAccountInfo(
         AccountInfoFromDeviceAccount(new_account));
     new_account_ids.insert(account_id);
   }

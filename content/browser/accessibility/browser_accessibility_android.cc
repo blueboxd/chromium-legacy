@@ -525,7 +525,8 @@ base::string16 BrowserAccessibilityAndroid::GetInnerText() const {
     }
   }
 
-  if (text.empty() && (ui::IsLink(GetRole()) || ui::IsImage(GetRole())) &&
+  if (text.empty() &&
+      (ui::IsLink(GetRole()) || ui::IsImageOrVideo(GetRole())) &&
       !HasExplicitlyEmptyName()) {
     base::string16 url = GetString16Attribute(ax::mojom::StringAttribute::kUrl);
     text = ui::AXUrlBaseText(url);
@@ -1700,7 +1701,7 @@ bool BrowserAccessibilityAndroid::HasFocusableNonOptionChild() const {
 }
 
 base::string16 BrowserAccessibilityAndroid::GetTargetUrl() const {
-  if (ui::IsImage(GetRole()) || ui::IsLink(GetRole()))
+  if (ui::IsImageOrVideo(GetRole()) || ui::IsLink(GetRole()))
     return GetString16Attribute(ax::mojom::StringAttribute::kUrl);
 
   return {};
@@ -1723,7 +1724,7 @@ bool BrowserAccessibilityAndroid::HasCharacterLocations() const {
 }
 
 bool BrowserAccessibilityAndroid::HasImage() const {
-  if (ui::IsImage(GetRole()))
+  if (ui::IsImageOrVideo(GetRole()))
     return true;
 
   for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
@@ -1749,7 +1750,7 @@ bool BrowserAccessibilityAndroid::HasOnlyTextAndImageChildren() const {
   for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
     BrowserAccessibility* child = it.get();
     if (child->GetRole() != ax::mojom::Role::kStaticText &&
-        !ui::IsImage(child->GetRole())) {
+        !ui::IsImageOrVideo(child->GetRole())) {
       return false;
     }
   }

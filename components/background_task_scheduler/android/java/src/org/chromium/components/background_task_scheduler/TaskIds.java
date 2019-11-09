@@ -13,6 +13,7 @@ public final class TaskIds {
     // BackgroundTaskSchedulerUma#toUmaEnumValueFromTaskId(int) method. Also, if the new task id
     // is related to a BackgroundTask class in //chrome, remember to update
     // ChromeBackgroundTaskFactory#getBackgroundTaskFromTaskId(int).
+    // Id from 111000000 to 111999999 are reserved for internal usage.
     public static final int TEST = 0x00008378;
     public static final int OMAHA_JOB_ID = 0x00011684;
 

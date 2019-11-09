@@ -61,8 +61,8 @@ class AndroidPlatformKeySystemProperties : public KeySystemProperties {
   }
 
   EmeConfigRule GetEncryptionSchemeConfigRule(
-      media::EncryptionMode encryption_scheme) const override {
-    return encryption_scheme == media::EncryptionMode::kCenc
+      media::EncryptionScheme encryption_scheme) const override {
+    return encryption_scheme == media::EncryptionScheme::kCenc
                ? EmeConfigRule::SUPPORTED
                : EmeConfigRule::NOT_SUPPORTED;
   }
@@ -140,10 +140,10 @@ void AddAndroidWidevine(
   if (codecs != media::EME_CODEC_NONE) {
     DVLOG(3) << __func__ << " Widevine supported.";
 
-    base::flat_set<media::EncryptionMode> encryption_schemes = {
-        media::EncryptionMode::kCenc};
+    base::flat_set<media::EncryptionScheme> encryption_schemes = {
+        media::EncryptionScheme::kCenc};
     if (response.is_cbcs_encryption_supported) {
-      encryption_schemes.insert(media::EncryptionMode::kCbcs);
+      encryption_schemes.insert(media::EncryptionScheme::kCbcs);
     }
 
     concrete_key_systems->emplace_back(new WidevineKeySystemProperties(

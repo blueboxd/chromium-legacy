@@ -54,6 +54,9 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   void SetSelectedOsTypes(bool sync_all_os_types,
                           UserSelectableOsTypeSet types) override;
   UserSelectableOsTypeSet GetRegisteredSelectableOsTypes() const override;
+
+  bool GetOsSyncFeatureEnabled() const override;
+  void SetOsSyncFeatureEnabled(bool enabled) override;
 #endif
 
   bool IsEncryptEverythingAllowed() const override;

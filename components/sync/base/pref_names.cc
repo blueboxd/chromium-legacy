@@ -28,6 +28,10 @@ const char kSyncFirstSetupComplete[] = "sync.has_setup_completed";
 const char kSyncKeepEverythingSynced[] = "sync.keep_everything_synced";
 
 #if defined(OS_CHROMEOS)
+// Boolean indicating that the user has enabled the Chrome OS system-setting
+// sync feature.
+const char kOsSyncFeatureEnabled[] = "sync.os_sync_feature_enabled";
+
 // Boolean specifying whether to automatically sync all Chrome OS specific data
 // types (including future ones). This includes types like printers, OS-only
 // settings, etc. If set, the individual type preferences can be ignored.

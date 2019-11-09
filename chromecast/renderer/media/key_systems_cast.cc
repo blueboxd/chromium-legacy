@@ -97,8 +97,8 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
   }
 
   EmeConfigRule GetEncryptionSchemeConfigRule(
-      ::media::EncryptionMode encryption_mode) const override {
-    if (encryption_mode == ::media::EncryptionMode::kCenc)
+      ::media::EncryptionScheme encryption_scheme) const override {
+    if (encryption_scheme == ::media::EncryptionScheme::kCenc)
       return EmeConfigRule::SUPPORTED;
     return EmeConfigRule::NOT_SUPPORTED;
   }
@@ -162,8 +162,8 @@ void AddCmaKeySystems(
 #if BUILDFLAG(ENABLE_WIDEVINE)
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
-  base::flat_set<::media::EncryptionMode> encryption_schemes = {
-      ::media::EncryptionMode::kCenc, ::media::EncryptionMode::kCbcs};
+  base::flat_set<::media::EncryptionScheme> encryption_schemes = {
+      ::media::EncryptionScheme::kCenc, ::media::EncryptionScheme::kCbcs};
 
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
       codecs,                            // Regular codecs.

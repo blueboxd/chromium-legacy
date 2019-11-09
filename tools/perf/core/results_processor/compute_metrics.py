@@ -15,9 +15,7 @@ from tracing.metrics import metric_runner
 HTML_TRACE_NAME = 'trace.html'
 
 
-def _RunMetric(test_result):
-  metrics = [tag['value'] for tag in test_result['tags']
-             if tag['key'] == 'tbmv2']
+def _RunMetric(test_result, metrics):
   html_trace = test_result['outputArtifacts'][HTML_TRACE_NAME]
   html_local_path = html_trace['filePath']
   html_remote_url = html_trace.get('remoteUrl')
@@ -59,8 +57,16 @@ def ComputeTBMv2Metrics(test_result):
   if test_result['status'] == 'SKIP':
     return
 
-  if (HTML_TRACE_NAME not in artifacts or
-      not any(tag['key'] == 'tbmv2' for tag in test_result.get('tags', []))):
+  metrics = [tag['value'] for tag in test_result.get('tags', [])
+             if tag['key'] == 'tbmv2']
+  if not metrics:
+    logging.info('%s: No metrics specified.', test_result['testPath'])
+    return
+
+  if HTML_TRACE_NAME not in artifacts:
+    util.SetUnexpectedFailure(test_result)
+    logging.error('%s: No traces to compute metrics on.',
+                  test_result['testPath'])
     return
 
   trace_size_in_mib = (os.path.getsize(artifacts[HTML_TRACE_NAME]['filePath'])
@@ -73,4 +79,4 @@ def ComputeTBMv2Metrics(test_result):
                   test_result['testPath'], trace_size_in_mib)
     return
 
-  test_result['_histograms'].ImportDicts(_RunMetric(test_result))
+  test_result['_histograms'].ImportDicts(_RunMetric(test_result, metrics))

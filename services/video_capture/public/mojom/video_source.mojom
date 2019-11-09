@@ -6,7 +6,7 @@ module video_capture.mojom;
 
 import "media/capture/mojom/image_capture.mojom";
 import "media/capture/mojom/video_capture_types.mojom";
-import "services/video_capture/public/mojom/receiver.mojom";
+import "services/video_capture/public/mojom/video_frame_handler.mojom";
 
 enum CreatePushSubscriptionResultCode {
   kCreatedWithRequestedSettings,
@@ -81,7 +81,7 @@ interface VideoSource {
   // potentially briefly interrupt the video stream received by other
   // subscribers.
   CreatePushSubscription(
-      pending_remote<Receiver> subscriber,
+      pending_remote<VideoFrameHandler> subscriber,
       media.mojom.VideoCaptureParams requested_settings,
       bool force_reopen_with_new_settings,
       pending_receiver<PushVideoStreamSubscription> subscription)

@@ -124,7 +124,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   void ScheduleEvent(const AtomicString& event_type);
   void ScheduleRepeatEvents();
-  void DispatchPendingEvent(const AtomicString& event_type);
 
   virtual bool IsSVGDiscardElement() const { return false; }
 

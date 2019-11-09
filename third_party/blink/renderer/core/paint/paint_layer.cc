@@ -290,10 +290,14 @@ bool PaintLayer::PaintsWithFilters() const {
   if (!GetLayoutObject().HasFilterInducingProperty())
     return false;
 
-  // https://code.google.com/p/chromium/issues/detail?id=343759
-  DisableCompositingQueryAsserts disabler;
-  return !GetCompositedLayerMapping() ||
-         GetCompositingState() != kPaintsIntoOwnBacking;
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // https://code.google.com/p/chromium/issues/detail?id=343759
+    DisableCompositingQueryAsserts disabler;
+    return !GetCompositedLayerMapping() ||
+           GetCompositingState() != kPaintsIntoOwnBacking;
+  } else {
+    return true;
+  }
 }
 
 PhysicalOffset PaintLayer::SubpixelAccumulation() const {
@@ -319,12 +323,7 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
   ClearClipRects();
   UpdateLayerPositionRecursive();
 
-  {
-    // FIXME: Remove incremental compositing updates after fixing the
-    // chicken/egg issues, https://crbug.com/343756
-    DisableCompositingQueryAsserts disabler;
-    UpdatePaginationRecursive(EnclosingPaginationLayer());
-  }
+  UpdatePaginationRecursive(EnclosingPaginationLayer());
 }
 
 void PaintLayer::UpdateLayerPositionRecursive() {

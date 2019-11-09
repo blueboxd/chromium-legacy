@@ -17,9 +17,9 @@ import json
 import logging
 import re
 
-from blinkpy.common.net.buildbot import current_build_link
 from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.net.network_transaction import NetworkTimeout
+from blinkpy.common.net.results_fetcher import current_build_link
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_utils import configure_logging

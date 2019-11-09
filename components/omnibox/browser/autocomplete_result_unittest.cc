@@ -149,10 +149,13 @@ class AutocompleteResultTest : public testing::Test {
                            size_t expected_count);
 
   // Creates an AutocompleteResult from |last| and |current|. The two are
-  // merged by |CopyOldMatches| and compared by |AssertResultMatches|.
-  void RunCopyOldMatchesTest(const TestData* last, size_t last_size,
-                             const TestData* current, size_t current_size,
-                             const TestData* expected, size_t expected_size);
+  // merged by |TransferOldMatches| and compared by |AssertResultMatches|.
+  void RunTransferOldMatchesTest(const TestData* last,
+                                 size_t last_size,
+                                 const TestData* current,
+                                 size_t current_size,
+                                 const TestData* expected,
+                                 size_t expected_size);
 
   // Returns a (mock) AutocompleteProvider of given |provider_id|.
   MockAutocompleteProvider* GetProvider(int provider_id) {
@@ -214,10 +217,12 @@ void AutocompleteResultTest::AssertResultMatches(
   }
 }
 
-void AutocompleteResultTest::RunCopyOldMatchesTest(
-    const TestData* last, size_t last_size,
-    const TestData* current, size_t current_size,
-    const TestData* expected, size_t expected_size) {
+void AutocompleteResultTest::RunTransferOldMatchesTest(const TestData* last,
+                                                       size_t last_size,
+                                                       const TestData* current,
+                                                       size_t current_size,
+                                                       const TestData* expected,
+                                                       size_t expected_size) {
   AutocompleteInput input(base::ASCIIToUTF16("a"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
@@ -233,8 +238,8 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
   AutocompleteResult current_result;
   current_result.AppendMatches(input, current_matches);
   current_result.SortAndCull(input, template_url_service_.get());
-  current_result.CopyOldMatches(input, &last_result,
-                                template_url_service_.get());
+  current_result.TransferOldMatches(input, &last_result,
+                                    template_url_service_.get());
 
   AssertResultMatches(current_result, expected, expected_size);
 }
@@ -273,7 +278,7 @@ TEST_F(AutocompleteResultTest, Swap) {
 
 // Tests that if the new results have a lower max relevance score than last,
 // any copied results have their relevance shifted down.
-TEST_F(AutocompleteResultTest, CopyOldMatches) {
+TEST_F(AutocompleteResultTest, TransferOldMatches) {
   TestData last[] = {
     { 0, 1, 1000, true },
     { 1, 1, 500,  true },
@@ -286,15 +291,15 @@ TEST_F(AutocompleteResultTest, CopyOldMatches) {
     { 1, 1, 399,  true },
   };
 
-  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, base::size(last), current,
-                                                base::size(current), result,
-                                                base::size(result)));
+  ASSERT_NO_FATAL_FAILURE(RunTransferOldMatchesTest(
+      last, base::size(last), current, base::size(current), result,
+      base::size(result)));
 }
 
 // Tests that if the new results have a lower max relevance score than last,
 // any copied results have their relevance shifted down when the allowed to
 // be default constraint comes into play.
-TEST_F(AutocompleteResultTest, CopyOldMatchesAllowedToBeDefault) {
+TEST_F(AutocompleteResultTest, TransferOldMatchesAllowedToBeDefault) {
   TestData last[] = {
     { 0, 1, 1300,  true },
     { 1, 1, 1200,  true },
@@ -312,13 +317,13 @@ TEST_F(AutocompleteResultTest, CopyOldMatchesAllowedToBeDefault) {
     { 2, 1, 899,  true },
   };
 
-  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, base::size(last), current,
-                                                base::size(current), result,
-                                                base::size(result)));
+  ASSERT_NO_FATAL_FAILURE(RunTransferOldMatchesTest(
+      last, base::size(last), current, base::size(current), result,
+      base::size(result)));
 }
 
 // Tests that matches are copied correctly from two distinct providers.
-TEST_F(AutocompleteResultTest, CopyOldMatchesMultipleProviders) {
+TEST_F(AutocompleteResultTest, TransferOldMatchesMultipleProviders) {
   TestData last[] = {
     { 0, 1, 1300, false },
     { 1, 2, 1250, true  },
@@ -341,14 +346,15 @@ TEST_F(AutocompleteResultTest, CopyOldMatchesMultipleProviders) {
     { 4, 1, 499,  false  },
   };
 
-  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, base::size(last), current,
-                                                base::size(current), result,
-                                                base::size(result)));
+  ASSERT_NO_FATAL_FAILURE(RunTransferOldMatchesTest(
+      last, base::size(last), current, base::size(current), result,
+      base::size(result)));
 }
 
 // Tests that matches are copied correctly from two distinct providers when
 // one provider doesn't have a current legal default match.
-TEST_F(AutocompleteResultTest, CopyOldMatchesWithOneProviderWithoutDefault) {
+TEST_F(AutocompleteResultTest,
+       TransferOldMatchesWithOneProviderWithoutDefault) {
   TestData last[] = {
     { 0, 2, 1250, true  },
     { 1, 2, 1150, true  },
@@ -369,9 +375,9 @@ TEST_F(AutocompleteResultTest, CopyOldMatchesWithOneProviderWithoutDefault) {
     { 7, 1, 500,  true  },
   };
 
-  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, base::size(last), current,
-                                                base::size(current), result,
-                                                base::size(result)));
+  ASSERT_NO_FATAL_FAILURE(RunTransferOldMatchesTest(
+      last, base::size(last), current, base::size(current), result,
+      base::size(result)));
 }
 
 // Tests that matches with empty destination URLs aren't treated as duplicates
@@ -844,6 +850,7 @@ TEST_F(AutocompleteResultTest, LogAsynchronousUpdateMetrics) {
   last_result.AppendMatches(input, last_matches);
   for (auto& match : last_result)
     match.ComputeStrippedDestinationURL(input, template_url_service_.get());
+  const auto last_comparators = last_result.GetMatchDedupComparators();
 
   ACMatches current_matches;
   PopulateAutocompleteMatches(current, base::size(current), &current_matches);
@@ -856,12 +863,13 @@ TEST_F(AutocompleteResultTest, LogAsynchronousUpdateMetrics) {
   base::HistogramTester histograms;
 
   // Do the logging.
-  AutocompleteResult::LogAsynchronousUpdateMetrics(last_result, current_result);
+  AutocompleteResult::LogAsynchronousUpdateMetrics(last_comparators,
+                                                   current_result);
 
   // Expect the default match, third match, and last two matches to be logged
   // as changed, and nothing else.
   EXPECT_THAT(
-      histograms.GetAllSamples("Omnibox.MatchStability.AsyncMatchChange"),
+      histograms.GetAllSamples("Omnibox.MatchStability.AsyncMatchChange2"),
       testing::ElementsAre(base::Bucket(0, 1), base::Bucket(2, 1),
                            base::Bucket(3, 1), base::Bucket(4, 1)));
 }

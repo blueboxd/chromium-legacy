@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+
 /** Interface to forward service calls to the service implementation. */
 interface IChildProcessService {
   void onCreate() = 0;

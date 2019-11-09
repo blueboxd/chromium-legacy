@@ -87,7 +87,7 @@ class LocationProvider;
 namespace media {
 class AudioLogFactory;
 class AudioManager;
-enum class EncryptionMode;
+enum class EncryptionScheme;
 }  // namespace media
 
 namespace network {
@@ -1130,7 +1130,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& key_system,
       const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
       base::flat_set<media::VideoCodec>* video_codecs,
-      base::flat_set<media::EncryptionMode>* encryption_schemes);
+      base::flat_set<media::EncryptionScheme>* encryption_schemes);
 
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.

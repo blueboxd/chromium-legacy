@@ -15,7 +15,7 @@ namespace blink {
 
 // The obtainer is a test-only helper class capable of waiting for a GetStats()
 // callback to be called. It takes ownership of and exposes the resulting
-// blink::WebRTCStatsReport.
+// RTCStatsReportPlatform.
 // While WaitForReport() is waiting for the report, tasks posted on the current
 // thread are executed (see base::RunLoop::Run()) making it safe to wait on the
 // same thread that the stats report callback occurs on without blocking the
@@ -27,18 +27,18 @@ class TestWebRTCStatsReportObtainer
 
   blink::WebRTCStatsReportCallback GetStatsCallbackWrapper();
 
-  blink::WebRTCStatsReport* report() const;
-  blink::WebRTCStatsReport* WaitForReport();
+  RTCStatsReportPlatform* report() const;
+  RTCStatsReportPlatform* WaitForReport();
 
  private:
   friend class WTF::ThreadSafeRefCounted<TestWebRTCStatsReportObtainer>;
   friend class CallbackWrapper;
   virtual ~TestWebRTCStatsReportObtainer();
 
-  void OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport> report);
+  void OnStatsDelivered(std::unique_ptr<RTCStatsReportPlatform> report);
 
   base::RunLoop run_loop_;
-  std::unique_ptr<blink::WebRTCStatsReport> report_;
+  std::unique_ptr<RTCStatsReportPlatform> report_;
 };
 
 }  // namespace blink

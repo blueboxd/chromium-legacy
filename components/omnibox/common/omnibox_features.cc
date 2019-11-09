@@ -288,6 +288,12 @@ const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate{
     "OmniboxPreserveDefaultMatchAgainstAsyncUpdate",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Demotes the relevance scores when comparing suggestions based on the
+// suggestion's |AutocompleteMatchType| and the user's |PageClassification|.
+// This feature's main job is to contain the DemoteByType parameter.
+const base::Feature kOmniboxDemoteByType{"OmniboxDemoteByType",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature to configure on-focus suggestions provided by ZeroSuggestProvider.
 // This feature's main job is to contain some field trial parameters such as:
 //  - "ZeroSuggestVariant" configures the per-page-classification mode of

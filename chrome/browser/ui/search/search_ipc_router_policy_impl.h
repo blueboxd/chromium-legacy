@@ -55,7 +55,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessOptOutOfSearchSuggestions() override;
   bool ShouldProcessThemeChangeMessages() override;
   bool ShouldProcessQueryAutocomplete(bool is_active_tab) override;
-  bool ShouldProcessStopAutocomplete(bool is_active_tab) override;
+  bool ShouldProcessStopAutocomplete() override;
   bool ShouldProcessBlocklistPromo() override;
   bool ShouldProcessDeleteAutocompleteMatch() override;
 

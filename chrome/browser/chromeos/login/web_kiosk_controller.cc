@@ -67,17 +67,17 @@ void WebKioskController::OnTimerFire() {
   }
 }
 
-void WebKioskController::OnConfigureNetwork() {
-  // TODO(crbug.com/1006230): Implement when app launch logic is done.
-}
-
 void WebKioskController::OnCancelAppLaunch() {
   KioskAppLaunchError::Save(KioskAppLaunchError::USER_CANCEL);
   CleanUp();
   chrome::AttemptUserExit();
 }
 
-void WebKioskController::OnNetworkConfigRequested(bool requested) {
+void WebKioskController::OnNetworkConfigRequested() {
+  // TODO(crbug.com/1006230): Implement when app launch logic is done.
+}
+
+void WebKioskController::OnNetworkConfigFinished() {
   // TODO(crbug.com/1006230): Implement when app launch logic is done.
 }
 

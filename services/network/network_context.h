@@ -28,7 +28,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
@@ -563,8 +562,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Ordering: this must be after |cookie_manager_| since it points to its
   // CookieSettings object.
-  mojo::StrongBindingSet<mojom::RestrictedCookieManager>
-      restricted_cookie_manager_bindings_;
+  mojo::UniqueReceiverSet<mojom::RestrictedCookieManager>
+      restricted_cookie_manager_receivers_;
 
   int current_resource_scheduler_client_id_ = 0;
 

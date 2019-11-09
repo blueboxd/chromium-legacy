@@ -1047,6 +1047,7 @@ Document::Document(const DocumentInit& initializer,
       http_refresh_scheduler_(MakeGarbageCollected<HttpRefreshScheduler>(this)),
       well_formed_(false),
       printing_(kNotPrinting),
+      is_painting_preview_(false),
       compatibility_mode_(kNoQuirksMode),
       compatibility_mode_locked_(false),
       last_focus_type_(kWebFocusTypeNone),
@@ -3553,6 +3554,10 @@ void Document::SetPrinting(PrintingState state) {
     // to create a layout tree for printing.
     DisplayNoneChangedForFrame();
   }
+}
+
+void Document::SetIsPaintingPreview(bool is_painting_preview) {
+  is_painting_preview_ = is_painting_preview;
 }
 
 // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#document-open-steps

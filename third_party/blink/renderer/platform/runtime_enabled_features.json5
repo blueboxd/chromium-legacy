@@ -711,6 +711,7 @@
     // flat-tree instead of shadow-including ancestors for child dirtiness.
     {
       name: "FlatTreeStyleRecalc",
+      status: "stable",
     },
     {
       name: "FocuslessSpatialNavigation",

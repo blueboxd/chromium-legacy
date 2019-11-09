@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "cc/mojom/touch_action.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
@@ -74,6 +75,12 @@ interface LocalFrameHost {
   // of the viewport, or the need for a layout object changes, e.g. if the
   // frame owner assigns a display: none style.
   VisibilityChanged(blink.mojom.FrameVisibility visibility);
+
+  // Notifies the browser that the associated frame has changed theme color.
+  // This will only be called on main-frames only. |theme_color| is optional
+  // and indicates if a theme color has been specified or not, e.g. removal
+  // of a theme color meta tag  will generate a null value.
+  DidChangeThemeColor(skia.mojom.SkColor? theme_color);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

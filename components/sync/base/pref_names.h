@@ -18,6 +18,7 @@ extern const char kSyncFirstSetupComplete[];
 extern const char kSyncKeepEverythingSynced[];
 
 #if defined(OS_CHROMEOS)
+extern const char kOsSyncFeatureEnabled[];
 extern const char kSyncAllOsTypes[];
 #endif
 

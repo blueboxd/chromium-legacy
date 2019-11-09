@@ -107,7 +107,7 @@ AutocompleteResult::AutocompleteResult() {
 
 AutocompleteResult::~AutocompleteResult() {}
 
-void AutocompleteResult::CopyOldMatches(
+void AutocompleteResult::TransferOldMatches(
     const AutocompleteInput& input,
     AutocompleteResult* old_matches,
     TemplateURLService* template_url_service) {
@@ -755,17 +755,24 @@ size_t AutocompleteResult::EstimateMemoryUsage() const {
   return res;
 }
 
+std::vector<AutocompleteResult::MatchDedupComparator>
+AutocompleteResult::GetMatchDedupComparators() const {
+  std::vector<MatchDedupComparator> comparators;
+  for (const auto& match : *this)
+    comparators.push_back(AutocompleteResult::GetMatchComparisonFields(match));
+  return comparators;
+}
+
 // static
 void AutocompleteResult::LogAsynchronousUpdateMetrics(
-    const AutocompleteResult& old_result,
+    const std::vector<MatchDedupComparator>& old_result,
     const AutocompleteResult& new_result) {
   constexpr char kAsyncMatchChangeHistogramName[] =
-      "Omnibox.MatchStability.AsyncMatchChange";
+      "Omnibox.MatchStability.AsyncMatchChange2";
 
   size_t min_size = std::min(old_result.size(), new_result.size());
   for (size_t i = 0; i < min_size; ++i) {
-    if (GetMatchComparisonFields(old_result.match_at(i)) !=
-        GetMatchComparisonFields(new_result.match_at(i))) {
+    if (old_result[i] != GetMatchComparisonFields(new_result.match_at(i))) {
       base::UmaHistogramExactLinear(kAsyncMatchChangeHistogramName, i,
                                     kMaxAutocompletePositionValue);
     }

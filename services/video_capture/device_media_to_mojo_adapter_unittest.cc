@@ -9,7 +9,8 @@
 #include "base/test/task_environment.h"
 #include "media/capture/video/mock_device.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,8 +25,8 @@ class DeviceMediaToMojoAdapterTest : public ::testing::Test {
   ~DeviceMediaToMojoAdapterTest() override = default;
 
   void SetUp() override {
-    mock_receiver_ = std::make_unique<MockReceiver>(
-        receiver_.InitWithNewPipeAndPassReceiver());
+    mock_video_frame_handler_ = std::make_unique<MockVideoFrameHandler>(
+        video_frame_handler_.InitWithNewPipeAndPassReceiver());
     auto mock_device = std::make_unique<media::MockDevice>();
     mock_device_ptr_ = mock_device.get();
 #if defined(OS_CHROMEOS)
@@ -48,8 +49,8 @@ class DeviceMediaToMojoAdapterTest : public ::testing::Test {
  protected:
   media::MockDevice* mock_device_ptr_;
   std::unique_ptr<DeviceMediaToMojoAdapter> adapter_;
-  std::unique_ptr<MockReceiver> mock_receiver_;
-  mojo::PendingRemote<mojom::Receiver> receiver_;
+  std::unique_ptr<MockVideoFrameHandler> mock_video_frame_handler_;
+  mojo::PendingRemote<mojom::VideoFrameHandler> video_frame_handler_;
   base::test::TaskEnvironment task_environment_;
 };
 
@@ -63,19 +64,18 @@ TEST_F(DeviceMediaToMojoAdapterTest,
                std::unique_ptr<media::VideoCaptureDevice::Client>* client) {
               (*client)->OnStarted();
             }));
-    EXPECT_CALL(*mock_receiver_, OnStarted()).WillOnce(Invoke([&run_loop]() {
-      run_loop.Quit();
-    }));
+    EXPECT_CALL(*mock_video_frame_handler_, OnStarted())
+        .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
 
     const media::VideoCaptureParams kArbitrarySettings;
-    adapter_->Start(kArbitrarySettings, std::move(receiver_));
+    adapter_->Start(kArbitrarySettings, std::move(video_frame_handler_));
     run_loop.Run();
   }
   {
     base::RunLoop run_loop;
     EXPECT_CALL(*mock_device_ptr_, DoStopAndDeAllocate())
         .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
-    mock_receiver_.reset();
+    mock_video_frame_handler_.reset();
     run_loop.Run();
   }
 }
@@ -94,12 +94,11 @@ TEST_F(DeviceMediaToMojoAdapterTest,
                std::unique_ptr<media::VideoCaptureDevice::Client>* client) {
               (*client)->OnStarted();
             }));
-    EXPECT_CALL(*mock_receiver_, OnStarted()).WillOnce(Invoke([&run_loop]() {
-      run_loop.Quit();
-    }));
+    EXPECT_CALL(*mock_video_frame_handler_, OnStarted())
+        .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
 
     const media::VideoCaptureParams kArbitrarySettings;
-    adapter_->Start(kArbitrarySettings, std::move(receiver_));
+    adapter_->Start(kArbitrarySettings, std::move(video_frame_handler_));
     run_loop.Run();
   }
 
@@ -108,7 +107,7 @@ TEST_F(DeviceMediaToMojoAdapterTest,
 
     // This posts invocation of the error event handler to the end of the
     // current sequence.
-    mock_receiver_.reset();
+    mock_video_frame_handler_.reset();
 
     // This destroys the DeviceMediaToMojoAdapter, which in turn posts a
     // DeleteSoon in ~ReceiverOnTaskRunner() to the end of the current sequence.

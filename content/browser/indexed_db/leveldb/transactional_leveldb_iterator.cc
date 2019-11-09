@@ -146,11 +146,14 @@ leveldb::Status TransactionalLevelDBIterator::Prev() {
   if (!s.ok())
     return s;
 
-  // Exit early if not valid.
+  // If invalid, that means the current key has been deleted AND it was at the
+  // end of the database. In this case, seeking to the last item is the same as
+  // 'Prev'-ing from the deleted item.
   if (!IsValid())
-    return WrappedIteratorStatus();
+    iterator_->SeekToLast();
+  else
+    iterator_->Prev();
 
-  iterator_->Prev();
   PrevPastScopesMetadata();
   return WrappedIteratorStatus();
 }

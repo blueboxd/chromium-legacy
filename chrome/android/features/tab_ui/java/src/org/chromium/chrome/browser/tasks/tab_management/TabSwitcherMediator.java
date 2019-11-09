@@ -234,6 +234,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 mResetHandler.resetWithTabList(
                         mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
                         false, mShowTabsInMruOrder);
+                setInitialScrollIndexOffset();
             }
         };
 
@@ -420,15 +421,20 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
         boolean quick = false;
-        if (TabFeatureUtilities.isTabToGtsAnimationEnabled()
-                && mTabModelSelector.getTabModelFilterProvider()
-                           .getCurrentTabModelFilter()
-                           .isTabModelRestored()) {
-            quick = mResetHandler.resetWithTabList(
-                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false,
-                    mShowTabsInMruOrder);
+        if (mTabModelSelector.getTabModelFilterProvider()
+                        .getCurrentTabModelFilter()
+                        .isTabModelRestored()) {
+            if (TabFeatureUtilities.isTabToGtsAnimationEnabled()) {
+                quick = mResetHandler.resetWithTabList(
+                        mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
+                        false, mShowTabsInMruOrder);
+            }
+            setInitialScrollIndexOffset();
         }
+        return quick;
+    }
 
+    private void setInitialScrollIndexOffset() {
         int initialPosition = Math.max(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index()
                         - INITIAL_SCROLL_INDEX_OFFSET,
@@ -436,7 +442,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         // In MRU order, selected Tab is always at the first position.
         if (mShowTabsInMruOrder) initialPosition = 0;
         mContainerViewModel.set(INITIAL_SCROLL_INDEX, initialPosition);
-        return quick;
     }
 
     @Override

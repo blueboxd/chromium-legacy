@@ -90,7 +90,7 @@ class ResultsProcessorUnitTests(unittest.TestCase):
           test_suite_start='2019-10-01T12:00:00.123456Z')
     self.assertEqual(run_identifier, 'src_abc_123_20191001T120000_54321')
 
-  def testAggregateTraces(self):
+  def testAggregateJsonTraces(self):
     test_result = testing.TestResult(
         'benchmark/story2',
         output_artifacts={
@@ -103,7 +103,7 @@ class ResultsProcessorUnitTests(unittest.TestCase):
 
     serialize_method = 'tracing.trace_data.trace_data.SerializeAsHtml'
     with mock.patch(serialize_method) as mock_serialize:
-      processor.AggregateTraces(test_result)
+      processor.AggregateJsonTraces(test_result)
 
     self.assertEqual(mock_serialize.call_count, 1)
     trace_files, file_path = mock_serialize.call_args[0][:2]

@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
@@ -214,9 +215,9 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                     const blink::WebMediaStreamTrack& track));
 };
 
-void OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport>* result,
+void OnStatsDelivered(std::unique_ptr<RTCStatsReportPlatform>* result,
                       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-                      std::unique_ptr<blink::WebRTCStatsReport> report) {
+                      std::unique_ptr<RTCStatsReportPlatform> report) {
   EXPECT_TRUE(main_thread->BelongsToCurrentThread());
   EXPECT_TRUE(report);
   result->reset(report.release());
@@ -917,7 +918,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
       std::unique_ptr<const webrtc::RTCStats>(stats_defined_members.release()));
 
   pc_handler_->native_peer_connection()->SetGetStatsReport(report);
-  std::unique_ptr<blink::WebRTCStatsReport> result;
+  std::unique_ptr<RTCStatsReportPlatform> result;
   pc_handler_->GetStats(
       base::BindOnce(OnStatsDelivered, &result,
                      blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
@@ -927,7 +928,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
 
   int undefined_stats_count = 0;
   int defined_stats_count = 0;
-  for (std::unique_ptr<blink::WebRTCStats> stats = result->Next(); stats;
+  for (std::unique_ptr<RTCStats> stats = result->Next(); stats;
        stats.reset(result->Next().release())) {
     EXPECT_EQ(stats->GetType().Utf8(), webrtc::RTCTestStats::kType);
     if (stats->Id().Utf8() == "RTCUndefinedStats") {
@@ -941,7 +942,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
       EXPECT_EQ(stats->Timestamp(), 2.0);
       std::set<webrtc::RTCStatsMemberInterface::Type> members;
       for (size_t i = 0; i < stats->MembersCount(); ++i) {
-        std::unique_ptr<blink::WebRTCStatsMember> member = stats->GetMember(i);
+        std::unique_ptr<RTCStatsMember> member = stats->GetMember(i);
         // TODO(hbos): A WebRTC-change is adding new members, this would cause
         // not all members to be defined. This if-statement saves Chromium from
         // crashing. As soon as the change has been rolled in, I will update
@@ -970,7 +971,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
             EXPECT_EQ(member->ValueDouble(), 42.0);
             break;
           case webrtc::RTCStatsMemberInterface::kString:
-            EXPECT_EQ(member->ValueString(), blink::WebString::FromUTF8("42"));
+            EXPECT_EQ(member->ValueString(), "42");
             break;
           case webrtc::RTCStatsMemberInterface::kSequenceBool:
             ExpectSequenceEquals(member->ValueSequenceBool(), 1);
@@ -996,7 +997,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
             break;
           case webrtc::RTCStatsMemberInterface::kSequenceString:
             ExpectSequenceEquals(member->ValueSequenceString(),
-                                 blink::WebString::FromUTF8("42"));
+                                 String::FromUTF8("42"));
             break;
           default:
             NOTREACHED();

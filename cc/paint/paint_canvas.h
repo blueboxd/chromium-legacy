@@ -18,6 +18,10 @@ namespace printing {
 class MetafileSkia;
 }  // namespace printing
 
+namespace paint_preview {
+class PaintPreviewTracker;
+}  // namespace paint_preview
+
 namespace cc {
 class SkottieWrapper;
 class PaintFlags;
@@ -191,12 +195,19 @@ class CC_PAINT_EXPORT PaintCanvas {
   void SetPrintingMetafile(printing::MetafileSkia* metafile) {
     metafile_ = metafile;
   }
+  paint_preview::PaintPreviewTracker* GetPaintPreviewTracker() const {
+    return tracker_;
+  }
+  void SetPaintPreviewTracker(paint_preview::PaintPreviewTracker* tracker) {
+    tracker_ = tracker;
+  }
 
   // Subclasses can override to handle custom data.
   virtual void recordCustomData(uint32_t id) {}
 
  private:
   printing::MetafileSkia* metafile_ = nullptr;
+  paint_preview::PaintPreviewTracker* tracker_ = nullptr;
 };
 
 class CC_PAINT_EXPORT PaintCanvasAutoRestore {

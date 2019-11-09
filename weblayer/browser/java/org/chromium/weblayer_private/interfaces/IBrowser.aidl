@@ -7,6 +7,7 @@ package org.chromium.weblayer_private.interfaces;
 import org.chromium.weblayer_private.interfaces.IBrowserClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
+import org.chromium.weblayer_private.interfaces.IProfile;
 
 import java.util.List;
 

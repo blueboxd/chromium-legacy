@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.preferences.themes;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.DARKEN_WEBSITES_ENABLED_KEY;
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.DARKEN_WEBSITES_ENABLED_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
 
 import android.os.Build;
 import android.os.Bundle;

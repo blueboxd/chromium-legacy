@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1397 tests; 1354 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1397 tests; 1357 PASS, 40 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -715,9 +715,9 @@ PASS OffscreenCanvasRenderingContext2D interface: operation scale(unrestricted d
 PASS OffscreenCanvasRenderingContext2D interface: operation rotate(unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation translate(unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-FAIL OffscreenCanvasRenderingContext2D interface: operation getTransform() assert_own_property: interface prototype object missing non-static operation expected property "getTransform" missing
-FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 6
-FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(DOMMatrix2DInit) assert_equals: property has wrong .length expected 0 but got 6
+PASS OffscreenCanvasRenderingContext2D interface: operation getTransform()
+PASS OffscreenCanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
+PASS OffscreenCanvasRenderingContext2D interface: operation setTransform(DOMMatrix2DInit)
 PASS OffscreenCanvasRenderingContext2D interface: operation resetTransform()
 PASS OffscreenCanvasRenderingContext2D interface: attribute globalAlpha
 PASS OffscreenCanvasRenderingContext2D interface: attribute globalCompositeOperation

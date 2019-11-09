@@ -36,7 +36,7 @@ class CONTENT_EXPORT NavigationThrottleRunner {
         NavigationThrottle::ThrottleCheckResult result) = 0;
   };
 
-  NavigationThrottleRunner(Delegate* delegate, NavigationHandle* handle);
+  NavigationThrottleRunner(Delegate* delegate);
   ~NavigationThrottleRunner();
 
   // Will call the appropriate NavigationThrottle function based on |event| on
@@ -69,14 +69,6 @@ class CONTENT_EXPORT NavigationThrottleRunner {
   void InformDelegate(const NavigationThrottle::ThrottleCheckResult& result);
 
   Delegate* delegate_;
-
-  // The NavigationHandle associated with the NavigationThrottles this
-  // NavigationThrottleRunner manages.
-  // Note: |handle_| is not defined as a NavigationRequest* so that a
-  // MockNavigationHandle can be used in unit_tests. Unit tests that use a
-  // MockNavigationHandle should never call RegisterNavigationThrottles as this
-  // function expects |handle_| to be a NavigationRequest instead.
-  NavigationHandle* handle_;
 
   // A list of Throttles registered for this navigation.
   std::vector<std::unique_ptr<NavigationThrottle>> throttles_;

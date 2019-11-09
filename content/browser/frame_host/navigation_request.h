@@ -72,10 +72,11 @@ struct SubresourceLoaderParams;
 // ResourceDispatcherHost (that lives on the IO thread).
 // TODO(clamy): Describe the interactions between the UI and IO thread during
 // the navigation following its refactoring.
-class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
-                                         public NavigationURLLoaderDelegate,
-                                         NavigationThrottleRunner::Delegate,
-                                         private RenderProcessHostObserver {
+class CONTENT_EXPORT NavigationRequest
+    : public NavigationHandle,
+      public NavigationURLLoaderDelegate,
+      public NavigationThrottleRunner::Delegate,
+      private RenderProcessHostObserver {
  public:
   // Keeps track of the various stages of a NavigationRequest.
   enum NavigationState {

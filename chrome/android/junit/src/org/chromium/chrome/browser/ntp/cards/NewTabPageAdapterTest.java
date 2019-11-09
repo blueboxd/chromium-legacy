@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -339,7 +340,7 @@ public class NewTabPageAdapterTest {
     public void tearDown() {
         CardsVariationParameters.setTestVariationParams(null);
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false);
         ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
         PrefServiceBridge.setInstanceForTesting(null);
         ShadowPostTask.reset();
@@ -1042,7 +1043,7 @@ public class NewTabPageAdapterTest {
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false);
         useArticleCategory();
 
         final int signInPromoPosition = mAdapter.getFirstPositionForType(ItemViewType.PROMO);
@@ -1054,7 +1055,7 @@ public class NewTabPageAdapterTest {
         verify(itemDismissedCallback).onResult(anyString());
         assertFalse(isSignInPromoVisible());
         assertTrue(SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false));
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false));
         reloadNtp();
         assertFalse(isSignInPromoVisible());
     }

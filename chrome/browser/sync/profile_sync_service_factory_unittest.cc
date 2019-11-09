@@ -79,15 +79,12 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::SEARCH_ENGINES);
 #endif  // !defined(OS_ANDROID)
 
-#if BUILDFLAG(ENABLE_APP_LIST)
-    datatypes.push_back(syncer::APP_LIST);
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
-
 #if defined(OS_LINUX) || defined(OS_WIN)
     datatypes.push_back(syncer::DICTIONARY);
 #endif
 
 #if defined(OS_CHROMEOS)
+    datatypes.push_back(syncer::APP_LIST);
     if (arc::IsArcAllowedForProfile(profile()))
       datatypes.push_back(syncer::ARC_PACKAGE);
     if (chromeos::features::IsSplitSettingsSyncEnabled()) {

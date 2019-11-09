@@ -68,7 +68,7 @@ void MockDeviceTest::SetUp() {
   requested_settings_.power_line_frequency =
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
-  mock_receiver_ = std::make_unique<MockReceiver>(
+  mock_video_frame_handler_ = std::make_unique<MockVideoFrameHandler>(
       mock_subscriber_.InitWithNewPipeAndPassReceiver());
 }
 

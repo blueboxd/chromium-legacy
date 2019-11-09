@@ -25,14 +25,11 @@ class D3D11TextureSelectorUnittest : public ::testing::Test {
                                          gfx::Size size,
                                          bool encrypted) {
     VideoDecoderConfig result;
-    EncryptionPattern pattern;
     result.Initialize(
         kUnknownVideoCodec,  // It doesn't matter because it won't be used.
         profile, VideoDecoderConfig::AlphaMode::kIsOpaque, VideoColorSpace(),
         kNoTransformation, size, {}, {}, {},
-        EncryptionScheme(encrypted ? EncryptionScheme::CIPHER_MODE_AES_CTR
-                                   : EncryptionScheme::CIPHER_MODE_UNENCRYPTED,
-                         pattern));
+        encrypted ? EncryptionScheme::kCenc : EncryptionScheme::kUnencrypted);
     return result;
   }
 

@@ -21,8 +21,7 @@
 #include "media/base/cdm_session_tracker.h"
 #include "media/base/content_decryption_module.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -142,7 +141,8 @@ class MojoCdm : public ContentDecryptionModule,
 
   mojo::Remote<mojom::ContentDecryptionModule> remote_cdm_;
   mojom::InterfaceFactory* interface_factory_;
-  mojo::AssociatedBinding<ContentDecryptionModuleClient> client_binding_;
+  mojo::AssociatedReceiver<ContentDecryptionModuleClient> client_receiver_{
+      this};
 
   // Protects |cdm_id_|, |decryptor_ptr_|, |decryptor_| and
   // |decryptor_task_runner_| which could be accessed from other threads.

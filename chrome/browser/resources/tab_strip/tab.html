@@ -21,7 +21,6 @@
 
   :host([active]) #tab {
     box-shadow: 0 0 0 2px var(--tabstrip-tab-active-border-color);
-    outline: none;
   }
 
   #title {
@@ -276,7 +275,7 @@
     </div>
     <h2 id="titleText"></h2>
     <tabstrip-alert-indicators id="alertIndicators"></tabstrip-alert-indicators>
-    <button id="close">
+    <button id="close" aria-describedby="titleText">
       <span id="closeIcon"></span>
     </button>
   </header>

@@ -33,7 +33,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   void ListenToDeviceChanges(
       mojo::PendingAssociatedRemote<mojom::XRRuntimeEventListener> listener,
       mojom::XRRuntime::ListenToDeviceChangesCallback callback) final;
-  void EnsureInitialized(EnsureInitializedCallback callback) override;
   void SetInlinePosesEnabled(bool enable) override;
   void ShutdownSession(mojom::XRRuntime::ShutdownSessionCallback) override;
 

@@ -134,12 +134,12 @@ class ClearKeyProperties : public KeySystemProperties {
   }
 
   media::EmeConfigRule GetEncryptionSchemeConfigRule(
-      media::EncryptionMode encryption_scheme) const override {
+      media::EncryptionScheme encryption_scheme) const override {
     switch (encryption_scheme) {
-      case media::EncryptionMode::kCenc:
-      case media::EncryptionMode::kCbcs:
+      case media::EncryptionScheme::kCenc:
+      case media::EncryptionScheme::kCbcs:
         return media::EmeConfigRule::SUPPORTED;
-      case media::EncryptionMode::kUnencrypted:
+      case media::EncryptionScheme::kUnencrypted:
         break;
     }
     NOTREACHED();
@@ -251,7 +251,7 @@ class KeySystemsImpl : public KeySystems {
 
   EmeConfigRule GetEncryptionSchemeConfigRule(
       const std::string& key_system,
-      EncryptionMode encryption_scheme) const override;
+      EncryptionScheme encryption_scheme) const override;
 
   EmeConfigRule GetContentTypeConfigRule(
       const std::string& key_system,
@@ -565,7 +565,7 @@ bool KeySystemsImpl::IsSupportedInitDataType(
 
 EmeConfigRule KeySystemsImpl::GetEncryptionSchemeConfigRule(
     const std::string& key_system,
-    EncryptionMode encryption_scheme) const {
+    EncryptionScheme encryption_scheme) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto key_system_iter = key_system_properties_map_.find(key_system);

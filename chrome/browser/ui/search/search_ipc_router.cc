@@ -454,7 +454,7 @@ void SearchIPCRouter::QueryAutocomplete(
 }
 
 void SearchIPCRouter::StopAutocomplete(bool clear_result) {
-  if (!policy_->ShouldProcessStopAutocomplete(is_active_tab_)) {
+  if (!policy_->ShouldProcessStopAutocomplete()) {
     return;
   }
 

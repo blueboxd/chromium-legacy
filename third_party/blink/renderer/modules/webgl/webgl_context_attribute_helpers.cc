@@ -31,9 +31,9 @@ Platform::ContextAttributes ToPlatformContextAttributes(
     Platform::ContextType context_type,
     bool support_own_offscreen_surface) {
   Platform::ContextAttributes result;
-  // Must keep the meaning of the "default" GPU choice in sync with the code
-  // below, in PowerPreferenceToGpuPreference.
-  result.prefer_low_power_gpu = attrs.power_preference == "low-power";
+  result.prefer_low_power_gpu =
+      (PowerPreferenceToGpuPreference(attrs.power_preference) ==
+       gl::GpuPreference::kLowPower);
   result.fail_if_major_performance_caveat =
       attrs.fail_if_major_performance_caveat;
   result.context_type = context_type;
@@ -49,8 +49,7 @@ Platform::ContextAttributes ToPlatformContextAttributes(
 }
 
 gl::GpuPreference PowerPreferenceToGpuPreference(String power_preference) {
-  // Must keep the interpretation of the "default" GPU in sync with the code
-  // above which sets the prefer_low_power_gpu attribute.
+  // This code determines the handling of the "default" power preference.
   if (power_preference == "low-power")
     return gl::GpuPreference::kLowPower;
   return gl::GpuPreference::kHighPerformance;

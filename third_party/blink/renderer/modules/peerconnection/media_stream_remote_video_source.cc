@@ -100,9 +100,10 @@ void DoNothing(const scoped_refptr<rtc::RefCountInterface>& ref) {}
 void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     const webrtc::VideoFrame& incoming_frame) {
   const bool render_immediately = incoming_frame.timestamp_us() == 0;
+  const base::TimeTicks current_time = base::TimeTicks::Now();
   const base::TimeDelta incoming_timestamp =
       render_immediately
-          ? base::TimeTicks::Now() - base::TimeTicks()
+          ? current_time - base::TimeTicks()
           : base::TimeDelta::FromMicroseconds(incoming_frame.timestamp_us());
   const base::TimeTicks render_time =
       render_immediately ? base::TimeTicks() + incoming_timestamp
@@ -208,8 +209,12 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     video_frame->metadata()->SetTimeTicks(
         media::VideoFrameMetadata::REFERENCE_TIME, render_time);
   }
-  video_frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::DECODE_TIME,
-                                        base::TimeTicks::Now());
+  video_frame->metadata()->SetTimeTicks(
+      media::VideoFrameMetadata::DECODE_END_TIME, current_time);
+
+  video_frame->metadata()->SetDouble(
+      media::VideoFrameMetadata::RTP_TIMESTAMP,
+      static_cast<double>(incoming_frame.timestamp()));
 
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,

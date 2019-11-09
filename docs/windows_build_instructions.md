@@ -306,17 +306,28 @@ steps and slowest build-step types, as shown here:
 ```shell
 $ set NINJA_SUMMARIZE_BUILD=1
 $ autoninja -C out\Default base
-    Longest build steps:
-...
-           1.2 weighted s to build base.dll, base.dll.lib, base.dll.pdb (1.2 s CPU time)
-           8.5 weighted s to build obj/base/base/values.obj (30.1 s CPU time)
-    Time by build-step type:
-...
-           1.2 s weighted time to generate 1 PEFile (linking) files (1.2 s CPU time)
-          30.3 s weighted time to generate 45 .obj files (688.8 s CPU time)
-    31.8 s weighted time (693.8 s CPU time, 21.8x parallelism)
-    86 build steps completed, average of 2.71/s
+Longest build steps:
+       0.1 weighted s to build obj/base/base/trace_log.obj (6.7 s elapsed time)
+       0.2 weighted s to build nasm.exe, nasm.exe.pdb (0.2 s elapsed time)
+       0.3 weighted s to build obj/base/base/win_util.obj (12.4 s elapsed time)
+       1.2 weighted s to build base.dll, base.dll.lib (1.2 s elapsed time)
+Time by build-step type:
+       0.0 s weighted time to generate 6 .lib files (0.3 s elapsed time sum)
+       0.1 s weighted time to generate 25 .stamp files (1.2 s elapsed time sum)
+       0.2 s weighted time to generate 20 .o files (2.8 s elapsed time sum)
+       1.7 s weighted time to generate 4 PEFile (linking) files (2.0 s elapsed
+time sum)
+      23.9 s weighted time to generate 770 .obj files (974.8 s elapsed time sum)
+26.1 s weighted time (982.9 s elapsed time sum, 37.7x parallelism)
+839 build steps completed, average of 32.17/s
 ```
+
+The "weighted" time is the elapsed time of each build step divided by the number
+of tasks that were running in parallel. This makes it an excellent approximation
+of how "important" a slow step was. A link that is entirely or mostly serialized
+will have a weighted time that is the same or similar to its elapsed time. A
+compile that runs in parallel with 999 other compiles will have a weighted time
+that is tiny.
 
 You can also generate these reports by manually running the script after a build:
 

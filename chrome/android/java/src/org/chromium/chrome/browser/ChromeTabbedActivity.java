@@ -110,7 +110,7 @@ import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -817,7 +817,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             boolean isLegacyMultiWindow = MultiWindowUtils.getInstance().isLegacyMultiWindow(this);
             if (!isShowingPromo && !mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete()
                     && preferenceManager.readBoolean(
-                            ChromePreferenceManager.PROMOS_SKIPPED_ON_FIRST_START, false)
+                            ChromePreferenceKeys.PROMOS_SKIPPED_ON_FIRST_START, false)
                     && !VrModuleProvider.getDelegate().isInVr()
                     // VrModuleProvider.getDelegate().isInVr may not return true at this point
                     // even though Chrome is about to enter VR, so we need to also check whether
@@ -827,7 +827,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 isShowingPromo = maybeShowPromo();
             } else {
                 preferenceManager.writeBoolean(
-                        ChromePreferenceManager.PROMOS_SKIPPED_ON_FIRST_START, true);
+                        ChromePreferenceKeys.PROMOS_SKIPPED_ON_FIRST_START, true);
             }
 
             ToolbarButtonInProductHelpController.create(this, isShowingPromo);

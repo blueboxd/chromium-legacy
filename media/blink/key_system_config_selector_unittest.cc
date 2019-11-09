@@ -77,17 +77,18 @@ constexpr EncryptionScheme kSupportedEncryptionScheme = EncryptionScheme::kCenc;
 constexpr EncryptionScheme kDisallowHwSecureCodecEncryptionScheme =
     EncryptionScheme::kCbcs;
 
-EncryptionMode ConvertEncryptionScheme(EncryptionScheme encryption_scheme) {
+media::EncryptionScheme ConvertEncryptionScheme(
+    EncryptionScheme encryption_scheme) {
   switch (encryption_scheme) {
     case EncryptionScheme::kNotSpecified:
     case EncryptionScheme::kCenc:
-      return EncryptionMode::kCenc;
+      return media::EncryptionScheme::kCenc;
     case EncryptionScheme::kCbcs:
-      return EncryptionMode::kCbcs;
+      return media::EncryptionScheme::kCbcs;
   }
 
   NOTREACHED();
-  return EncryptionMode::kUnencrypted;
+  return media::EncryptionScheme::kUnencrypted;
 }
 
 WebString MakeCodecs(const std::string& a, const std::string& b) {
@@ -215,7 +216,7 @@ class FakeKeySystems : public KeySystems {
 
   EmeConfigRule GetEncryptionSchemeConfigRule(
       const std::string& key_system,
-      EncryptionMode encryption_scheme) const override {
+      media::EncryptionScheme encryption_scheme) const override {
     if (encryption_scheme ==
         ConvertEncryptionScheme(kSupportedEncryptionScheme)) {
       return EmeConfigRule::SUPPORTED;

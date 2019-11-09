@@ -1123,6 +1123,10 @@ const IDNTestCase kIdnCases[] = {
     {"xn--mnpqr-jta.com", L"mnðpqr.com", false},
     {"xn--acdef-wva.is", L"aþcdef.is", true},
     {"xn--mnpqr-jta.is", L"mnðpqr.is", true},
+
+    // U+0259 (ə) is only allowed under the .az TLD.
+    {"xn--xample-vyc.com", L"əxample.com", false},
+    {"xn--xample-vyc.az", L"əxample.az", true},
 };  // namespace
 
 namespace test {

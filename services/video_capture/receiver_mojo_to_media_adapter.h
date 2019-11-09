@@ -8,7 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/video_capture/public/mojom/receiver.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 
 namespace video_capture {
 
@@ -16,7 +16,7 @@ namespace video_capture {
 // a media::VideoFrameReceiver.
 class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
  public:
-  ReceiverMojoToMediaAdapter(mojo::Remote<mojom::Receiver> receiver);
+  ReceiverMojoToMediaAdapter(mojo::Remote<mojom::VideoFrameHandler> handler);
   ~ReceiverMojoToMediaAdapter() override;
 
   base::WeakPtr<media::VideoFrameReceiver> GetWeakPtr();
@@ -40,7 +40,7 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
   void OnStopped() override;
 
  private:
-  mojo::Remote<mojom::Receiver> receiver_;
+  mojo::Remote<mojom::VideoFrameHandler> video_frame_handler_;
   base::WeakPtrFactory<ReceiverMojoToMediaAdapter> weak_factory_{this};
 };
 

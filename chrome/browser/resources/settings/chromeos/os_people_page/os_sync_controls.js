@@ -87,6 +87,16 @@ Polymer({
   },
 
   /**
+   * Handler for when the feature enabled checkbox is changed.
+   * @param {!Event} event
+   * @private
+   */
+  onFeatureEnabledChanged_: function(event) {
+    this.set('osSyncPrefs.featureEnabled', !!event.target.checked);
+    this.sendOsSyncDatatypes_();
+  },
+
+  /**
    * Handler for when the sync all data types checkbox is changed.
    * @param {!Event} event
    * @private
@@ -110,14 +120,14 @@ Polymer({
       }
     }
 
-    this.onSingleSyncDataTypeChanged_();
+    this.sendOsSyncDatatypes_();
   },
 
   /**
-   * Handler for when any sync data type checkbox is changed.
+   * Sends the osSyncPrefs dictionary back to the C++ handler.
    * @private
    */
-  onSingleSyncDataTypeChanged_: function() {
+  sendOsSyncDatatypes_: function() {
     assert(this.osSyncPrefs);
     this.browserProxy_.setOsSyncDatatypes(this.osSyncPrefs);
   },

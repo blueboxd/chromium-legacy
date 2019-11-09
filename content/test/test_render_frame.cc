@@ -194,9 +194,6 @@ class MockFrameHost : public mojom::FrameHost {
   void UpdateUserGestureCarryoverInfo() override {}
 #endif
 
-  void DidChangeThemeColor(
-      const base::Optional<::SkColor>& theme_color) override {}
-
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
       last_commit_params_;

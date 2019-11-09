@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "skia/buildflags.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_utils.h"
 
@@ -179,8 +180,10 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
           << "GrContextType is Metal, but Metal is not enabled.";
       gpu_preferences.gr_context_type = GrContextType::kMetal;
 #endif
+#if BUILDFLAG(SKIA_USE_DAWN)
     } else if (value == switches::kGrContextTypeDawn) {
       gpu_preferences.gr_context_type = GrContextType::kDawn;
+#endif
     } else {
       NOTREACHED() << "Invalid GrContextType.";
       gpu_preferences.gr_context_type = GrContextType::kGL;

@@ -13,7 +13,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.base.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
 import static org.chromium.chrome.browser.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
@@ -49,12 +48,9 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.tab_ui.R;
@@ -72,7 +68,6 @@ import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
@@ -137,9 +132,7 @@ public class StartSurfaceLayoutTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
-        // Only skip thumbnail releasing assertion when "warm" (large soft-cleanup-delay) or in
-        // RenderTest.
-        // TODO(wychen): figure out why thumbnails are not released in RenderTest.
+        // Only skip thumbnail releasing assertion when "warm" (large soft-cleanup-delay).
         mSkipAssertThumbnailsAreReleased = false;
     }
 
@@ -153,16 +146,14 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testRenderGrid_3WebTabs() throws InterruptedException, IOException {
-        mSkipAssertThumbnailsAreReleased = true;
-
         prepareTabs(3, 0, mUrl);
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
 
         enterGTS();
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
-                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
-                "3_web_tabs");
+        mRenderTestRule.render(
+                mActivityTestRule.getActivity().findViewById(R.id.tab_list_view), "3_web_tabs");
+        leaveGTS();
     }
 
     @Test
@@ -170,16 +161,14 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testRenderGrid_10WebTabs() throws InterruptedException, IOException {
-        mSkipAssertThumbnailsAreReleased = true;
-
         prepareTabs(10, 0, mUrl);
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
 
         enterGTS();
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
-                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
-                "10_web_tabs");
+        mRenderTestRule.render(
+                mActivityTestRule.getActivity().findViewById(R.id.tab_list_view), "10_web_tabs");
+        leaveGTS();
     }
 
     @Test
@@ -187,8 +176,6 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testRenderGrid_10WebTabs_InitialScroll() throws InterruptedException, IOException {
-        mSkipAssertThumbnailsAreReleased = true;
-
         prepareTabs(10, 0, mUrl);
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         TabUiTestHelper.clickNthCardFromTabSwitcher(mActivityTestRule.getActivity(),
@@ -197,9 +184,9 @@ public class StartSurfaceLayoutTest {
 
         enterGTS();
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
-                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "10_web_tabs-select_last");
+        leaveGTS();
     }
 
     @Test
@@ -207,8 +194,6 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testRenderGrid_Incognito() throws InterruptedException, IOException {
-        mSkipAssertThumbnailsAreReleased = true;
-
         // Prepare some incognito tabs and enter tab switcher.
         prepareTabs(1, 3, mUrl);
         assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
@@ -216,9 +201,28 @@ public class StartSurfaceLayoutTest {
         TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
 
         enterGTS();
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
-                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "3_incognito_web_tabs");
+        leaveGTS();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testRenderGrid_3IncognitoNTPs() throws InterruptedException, IOException {
+        // Prepare some incognito native tabs and enter tab switcher.
+        // NTP in incognito mode is chosen for its consistency in look, and we don't have to mock
+        // away the MV tiles, login promo, feed, etc.
+        prepareTabs(1, 3, null);
+        assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
+
+        enterGTS();
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
+                "3_incognito_ntps");
+        leaveGTS();
     }
 
     @Test
@@ -311,117 +315,16 @@ public class StartSurfaceLayoutTest {
 
     /**
      * Make Chrome have {@code numTabs} of regular Tabs and {@code numIncognitoTabs} of incognito
-     * tabs with {@code url} loaded.
+     * tabs with {@code url} loaded, and assert no bitmap fetching occurred.
      *
      * @param numTabs The number of regular tabs.
      * @param numIncognitoTabs The number of incognito tabs.
      * @param url The URL to load.
      */
     private void prepareTabs(int numTabs, int numIncognitoTabs, @Nullable String url) {
-        assertTrue(numTabs >= 1);
-        assertTrue(numIncognitoTabs >= 0);
-
         int oldCount = mTabListDelegate.getBitmapFetchCountForTesting();
-        assertEquals(1,
-                mActivityTestRule.getActivity().getTabModelSelector().getModel(false).getCount());
-        assertEquals(
-                0, mActivityTestRule.getActivity().getTabModelSelector().getModel(true).getCount());
-
-        if (numTabs == 1) {
-            if (url != null) mActivityTestRule.loadUrl(url);
-        } else {
-            // When Chrome started, there is already one Tab created by default.
-            createTabs(numTabs - 1, url, true, false);
-        }
-        if (numIncognitoTabs > 0) createTabs(numIncognitoTabs, url, true, true);
-
-        assertEquals(numTabs,
-                mActivityTestRule.getActivity().getTabModelSelector().getModel(false).getCount());
-        assertEquals(numIncognitoTabs,
-                mActivityTestRule.getActivity().getTabModelSelector().getModel(true).getCount());
+        TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, numTabs, numIncognitoTabs, url);
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - oldCount);
-    }
-
-    /**
-     * When Chrome started, there is already one Tab created by default. This method is used to add
-     * additional {@code numTabs} of {@link Tab}s with {@code url} loaded to Chrome.
-     * @param numTabs The number of tabs to create.
-     * @param url The URL to load. Skip loading when null, but the thumbnail for the NTP might not
-     *            be saved.
-     * @param waitForLoading Whether wait for URL loading.
-     * @param isIncognito Whether the tab is incognito tab.
-     */
-    private void createTabs(
-            int numTabs, @Nullable String url, boolean waitForLoading, boolean isIncognito) {
-        assertTrue(numTabs >= 1);
-
-        if (url != null) mActivityTestRule.loadUrl(url);
-
-        int previousTabCount = mActivityTestRule.getActivity()
-                                       .getTabModelSelector()
-                                       .getModel(isIncognito)
-                                       .getCount();
-
-        for (int i = 0; i < numTabs; i++) {
-            TabModel previousTabModel =
-                    mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
-            int previousTabIndex = previousTabModel.index();
-            Tab previousTab = previousTabModel.getTabAt(previousTabIndex);
-
-            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
-                    mActivityTestRule.getActivity(), isIncognito, waitForLoading);
-
-            if (url != null) mActivityTestRule.loadUrl(url);
-            if (!waitForLoading) continue;
-
-            TabModel currentTabModel =
-                    mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
-            int currentTabIndex = currentTabModel.index();
-
-            boolean fixPendingReadbacks = mActivityTestRule.getActivity()
-                                                  .getTabContentManager()
-                                                  .getPendingReadbacksForTesting()
-                    != 0;
-
-            // When there are pending readbacks due to detached Tabs, try to fix it by switching
-            // back to that tab.
-            if (fixPendingReadbacks && previousTabIndex != TabModel.INVALID_TAB_INDEX) {
-                // clang-format off
-                TestThreadUtils.runOnUiThreadBlocking(() ->
-                        previousTabModel.setIndex(previousTabIndex, TabSelectionType.FROM_USER)
-                );
-                // clang-format on
-            }
-
-            checkThumbnailsExist(previousTab);
-
-            if (fixPendingReadbacks) {
-                // clang-format off
-                TestThreadUtils.runOnUiThreadBlocking(() -> currentTabModel.setIndex(
-                        currentTabIndex, TabSelectionType.FROM_USER)
-                );
-                // clang-format on
-            }
-        }
-
-        ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(), null,
-                null, WAIT_TIMEOUT_SECONDS * 10);
-
-        assertEquals(numTabs + previousTabCount,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getModel(isIncognito)
-                        .getCount());
-
-        if (waitForLoading) {
-            // clang-format off
-            CriteriaHelper.pollUiThread(Criteria.equals(0, () ->
-                mActivityTestRule.getActivity()
-                        .getTabContentManager()
-                        .getPendingReadbacksForTesting()
-            ));
-            // clang-format on
-        }
     }
 
     private void testTabToGrid(String fromUrl) throws InterruptedException {
@@ -476,10 +379,12 @@ public class StartSurfaceLayoutTest {
         if (!isEmulator()) return;
 
         for (int i = 0; i < 10; i++) {
-            mActivityTestRule.loadUrl(mUrl);
             // Quickly create some tabs, navigate to web pages, and don't wait for thumbnail
             // capturing.
-            createTabs(1, mUrl, false, false);
+            mActivityTestRule.loadUrl(mUrl);
+            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
+                    mActivityTestRule.getActivity(), false, false);
+            mActivityTestRule.loadUrl(mUrl);
             // Hopefully we are in a state where some pending readbacks are stuck because their tab
             // is not attached to the view.
             if (mActivityTestRule.getActivity()
@@ -563,7 +468,7 @@ public class StartSurfaceLayoutTest {
                 waitForCaptureRateControl();
             }
             int count = getCaptureCount();
-            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+            onView(withId(R.id.tab_list_view))
                     .perform(RecyclerViewActions.actionOnItemAtPosition(targetIndex, click()));
             CriteriaHelper.pollUiThread(() -> {
                 boolean doneHiding =
@@ -686,16 +591,16 @@ public class StartSurfaceLayoutTest {
     public void testIncognitoEnterGts() throws InterruptedException {
         prepareTabs(1, 1, null);
         enterGTS();
-        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+        onView(withId(R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(1));
 
-        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+        onView(withId(R.id.tab_list_view))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         CriteriaHelper.pollInstrumentationThread(
                 () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
         enterGTS();
-        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+        onView(withId(R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(1));
     }
 
@@ -708,16 +613,16 @@ public class StartSurfaceLayoutTest {
         // Prepare two incognito tabs and enter tab switcher.
         prepareTabs(1, 2, mUrl);
         enterGTS();
-        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+        onView(withId(R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(2));
 
         for (int i = 0; i < mRepeat; i++) {
             switchTabModel(false);
-            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+            onView(withId(R.id.tab_list_view))
                     .check(TabCountAssertion.havingTabCount(1));
 
             switchTabModel(true);
-            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+            onView(withId(R.id.tab_list_view))
                     .check(TabCountAssertion.havingTabCount(2));
         }
         leaveGTS();
@@ -819,7 +724,7 @@ public class StartSurfaceLayoutTest {
             }
         }
         checkCaptureCount(delta, count);
-        if (checkThumbnail) checkThumbnailsExist(currentTab);
+        if (checkThumbnail) TabUiTestHelper.checkThumbnailsExist(currentTab);
     }
 
     private void leaveGTS() {
@@ -857,18 +762,6 @@ public class StartSurfaceLayoutTest {
         // TODO(wychen): With animation, the 2nd capture might be skipped if the 1st takes too long.
         CriteriaHelper.pollUiThread(
                 Criteria.equals(expectedDelta, () -> getCaptureCount() - initCount));
-    }
-
-    private void checkThumbnailsExist(Tab tab) {
-        File etc1File = TabContentManager.getTabThumbnailFileEtc1(tab);
-        CriteriaHelper.pollInstrumentationThread(etc1File::exists,
-                "The thumbnail " + etc1File.getName() + " is not found",
-                DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
-
-        File jpegFile = TabContentManager.getTabThumbnailFileJpeg(tab);
-        CriteriaHelper.pollInstrumentationThread(jpegFile::exists,
-                "The thumbnail " + jpegFile.getName() + " is not found",
-                DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
     }
 
     private int getCaptureCount() {

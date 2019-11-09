@@ -77,7 +77,7 @@ class DownloadItemView : public views::InkDropHostView,
   // Returns the base color for text on this download item, based on |theme|.
   static SkColor GetTextColorForThemeProvider(const ui::ThemeProvider* theme);
 
-  void OnExtractIconComplete(gfx::Image icon);
+  void OnExtractIconComplete(IconLoader::IconSize icon_size, gfx::Image icon);
 
   // Returns the DownloadUIModel object belonging to this item.
   DownloadUIModel* model() { return model_.get(); }
@@ -158,10 +158,10 @@ class DownloadItemView : public views::InkDropHostView,
   static constexpr int kLabelPadding = 8;
 
   // Height/width of the warning icon, also in dp.
-  static constexpr int kWarningIconSize = 24;
+  static constexpr int kWarningIconSize = 20;
 
   // Height/width of the erro icon, also in dp.
-  static constexpr int kErrorIconSize = 27;
+  static constexpr int kErrorIconSize = 20;
 
   void OpenDownload();
 
@@ -422,6 +422,9 @@ class DownloadItemView : public views::InkDropHostView,
 
   // Deep scanning modal dialog confirming choice to "open now".
   TabModalConfirmDialog* open_now_modal_dialog_;
+
+  // Icon for the download.
+  gfx::ImageSkia icon_;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

@@ -33463,6 +33463,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Requested and granted automatically"/>
 </enum>
 
+<enum name="IppVersion">
+  <int value="0" label="Error">Failed to parse version</int>
+  <int value="1" label="Unknown">Version value not recognized</int>
+  <int value="2" label="IPP 1.0">IPP 1.0</int>
+  <int value="3" label="IPP 1.1">IPP 1.1</int>
+  <int value="4" label="IPP 2.0">IPP 2.0</int>
+  <int value="5" label="IPP 2.1">IPP 2.1</int>
+  <int value="6" label="IPP 2.2">IPP 2.2</int>
+</enum>
+
 <enum name="IPv6ConnectivityStatus">
   <int value="0" label="Incomplete IPv6 Configuration"/>
   <int value="1" label="Complete IPv6 Configuration"/>
@@ -35725,6 +35735,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="AlwaysShowServerCardsInSyncTransport:disabled"/>
   <int value="-1916060206" label="enable-display-zoom-setting"/>
   <int value="-1915854488" label="enable-offline-pages"/>
+  <int value="-1914798479" label="CryptAuthV1DeviceSyncDeprecate:disabled"/>
   <int value="-1913801713"
       label="UploadCrashReportsUsingJobScheduler:disabled"/>
   <int value="-1912999136" label="enable-automatic-password-saving:enabled"/>
@@ -37105,6 +37116,7 @@ from previous Chrome versions.
   <int value="-174564579"
       label="ServiceWorkerImportedScriptUpdateCheck:enabled"/>
   <int value="-174319545" label="BulkPrinters:enabled"/>
+  <int value="-174161156" label="CryptAuthV1DeviceSyncDeprecate:enabled"/>
   <int value="-173268856" label="GesturePropertiesDBusService"/>
   <int value="-171232290" label="ListAllDisplayModes:disabled"/>
   <int value="-171173736" label="VrBrowsingExperimentalFeatures:disabled"/>

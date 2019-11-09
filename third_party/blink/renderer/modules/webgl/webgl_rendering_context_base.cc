@@ -841,6 +841,7 @@ void WebGLRenderingContextBase::
     UpdateNumberOfUserAllocatedMultisampledRenderbuffers(int delta) {
   DCHECK(delta >= -1 && delta <= 1);
   number_of_user_allocated_multisampled_renderbuffers_ += delta;
+  DCHECK_GE(number_of_user_allocated_multisampled_renderbuffers_, 0);
 }
 
 namespace {

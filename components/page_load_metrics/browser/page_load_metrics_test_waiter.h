@@ -50,8 +50,8 @@ class PageLoadMetricsTestWaiter
   // Add a single WebFeature expectation.
   void AddWebFeatureExpectation(blink::mojom::WebFeature web_feature);
 
-  // Add number of subframe navigations expectation.
-  void AddSubframeNavigationExpectation(size_t expected_subframe_navigations);
+  // Wait for the subframe to navigate at least once.
+  void AddSubframeNavigationExpectation();
 
   // Add a minimum completed resource expectation.
   void AddMinimumCompleteResourcesExpectation(
@@ -165,8 +165,6 @@ class PageLoadMetricsTestWaiter
     bool operator()(const gfx::Size a, const gfx::Size b) const;
   };
 
-  static bool IsPageLevelField(TimingField field);
-
   static TimingFieldBitSet GetMatchedBits(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::mojom::PageLoadMetadata& metadata);
@@ -225,12 +223,11 @@ class PageLoadMetricsTestWaiter
   TimingFieldBitSet subframe_expected_fields_;
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       expected_web_features_;
-  size_t expected_subframe_navigations_ = 0;
+  size_t expected_subframe_navigation_ = false;
 
   TimingFieldBitSet observed_page_fields_;
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       observed_web_features_;
-  size_t observed_subframe_navigations_ = 0;
 
   std::set<gfx::Size, FrameSizeComparator> expected_frame_sizes_;
   std::set<gfx::Size, FrameSizeComparator> observed_frame_sizes_;

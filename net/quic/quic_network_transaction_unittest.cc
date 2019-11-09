@@ -705,15 +705,20 @@ class QuicNetworkTransactionTest
 
   void CreateSession() { return CreateSession(supported_versions_); }
 
-  void CheckWasQuicResponse(HttpNetworkTransaction* trans) {
+  void CheckWasQuicResponse(HttpNetworkTransaction* trans,
+                            const std::string& status_line) {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     ASSERT_TRUE(response != nullptr);
     ASSERT_TRUE(response->headers.get() != nullptr);
-    EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+    EXPECT_EQ(status_line, response->headers->GetStatusLine());
     EXPECT_TRUE(response->was_fetched_via_spdy);
     EXPECT_TRUE(response->was_alpn_negotiated);
     EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(version_),
               response->connection_info);
+  }
+
+  void CheckWasQuicResponse(HttpNetworkTransaction* trans) {
+    CheckWasQuicResponse(trans, "HTTP/1.1 200 OK");
   }
 
   void CheckResponsePort(HttpNetworkTransaction* trans, uint16_t port) {
@@ -783,6 +788,11 @@ class QuicNetworkTransactionTest
     } else {
       EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_direct());
     }
+  }
+  void SendRequestAndExpectQuicResponse(const std::string& expected,
+                                        const std::string& status_line) {
+    SendRequestAndExpectQuicResponseMaybeFromProxy(expected, false, 443,
+                                                   status_line);
   }
 
   void SendRequestAndExpectQuicResponse(const std::string& expected) {
@@ -1051,14 +1061,15 @@ class QuicNetworkTransactionTest
   void SendRequestAndExpectQuicResponseMaybeFromProxy(
       const std::string& expected,
       bool used_proxy,
-      uint16_t port) {
+      uint16_t port,
+      const std::string& status_line) {
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
     HeadersHandler headers_handler;
     trans.SetBeforeHeadersSentCallback(
         base::Bind(&HeadersHandler::OnBeforeHeadersSent,
                    base::Unretained(&headers_handler)));
     RunTransaction(&trans);
-    CheckWasQuicResponse(&trans);
+    CheckWasQuicResponse(&trans, status_line);
     CheckResponsePort(&trans, port);
     CheckResponseData(&trans, expected);
     EXPECT_EQ(used_proxy, headers_handler.was_proxied());
@@ -1067,6 +1078,14 @@ class QuicNetworkTransactionTest
     } else {
       EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_direct());
     }
+  }
+
+  void SendRequestAndExpectQuicResponseMaybeFromProxy(
+      const std::string& expected,
+      bool used_proxy,
+      uint16_t port) {
+    SendRequestAndExpectQuicResponseMaybeFromProxy(expected, used_proxy, port,
+                                                   "HTTP/1.1 200 OK");
   }
 };
 
@@ -1490,6 +1509,43 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicForAll) {
   SendRequestAndExpectQuicResponse("hello!");
   EXPECT_TRUE(
       test_socket_performance_watcher_factory_.rtt_notification_received());
+}
+
+// Regression test for https://crbug.com/695225
+TEST_P(QuicNetworkTransactionTest, 408Response) {
+  session_params_.quic_params.origins_to_force_quic_on.insert(HostPortPair());
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
+
+  MockQuicData mock_quic_data(version_);
+  int packet_num = 1;
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            ConstructInitialSettingsPacket(packet_num++));
+  }
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientRequestHeadersPacket(
+          packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
+          true, GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerResponseHeadersPacket(
+                 1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 GetResponseHeaders("408 Request Timeout")));
+  std::string header = ConstructDataHeader(6);
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 header + "hello!"));
+  mock_quic_data.AddWrite(SYNCHRONOUS,
+                          ConstructClientAckPacket(packet_num++, 2, 1, 1));
+  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  SendRequestAndExpectQuicResponse("hello!", "HTTP/1.1 408 Request Timeout");
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicProxy) {

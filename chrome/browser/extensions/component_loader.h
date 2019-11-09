@@ -170,13 +170,10 @@ class ComponentLoader {
                                  const base::FilePath& root_directory,
                                  const std::string& name_string,
                                  const std::string& description_string);
-#if BUILDFLAG(ENABLE_APP_LIST)
-  void AddChromeApp();
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
-
   void AddWebStoreApp();
 
 #if defined(OS_CHROMEOS)
+  void AddChromeApp();
   void AddFileManagerExtension();
   void AddVideoPlayerExtension();
   void AddAudioPlayerExtension();

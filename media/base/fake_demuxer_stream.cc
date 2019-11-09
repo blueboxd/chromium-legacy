@@ -165,7 +165,7 @@ void FakeDemuxerStream::UpdateVideoDecoderConfig() {
       VideoDecoderConfig::AlphaMode::kIsOpaque, VideoColorSpace(),
       kNoTransformation, next_coded_size_, kVisibleRect, next_coded_size_,
       EmptyExtraData(),
-      is_encrypted_ ? AesCtrEncryptionScheme() : Unencrypted());
+      is_encrypted_ ? EncryptionScheme::kCenc : EncryptionScheme::kUnencrypted);
   next_coded_size_.Enlarge(kWidthDelta, kHeightDelta);
 }
 

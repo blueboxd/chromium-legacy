@@ -19,14 +19,14 @@ TEST(VideoDecoderConfigTest, AlphaModeSetCorrectly) {
                             VideoDecoderConfig::AlphaMode::kIsOpaque,
                             VideoColorSpace(), kNoTransformation, kCodedSize,
                             kVisibleRect, kNaturalSize, EmptyExtraData(),
-                            Unencrypted());
+                            EncryptionScheme::kUnencrypted);
   EXPECT_TRUE(config.IsValidConfig());
   EXPECT_EQ(config.alpha_mode(), VideoDecoderConfig::AlphaMode::kIsOpaque);
 
   config.Initialize(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
                     VideoDecoderConfig::AlphaMode::kHasAlpha, VideoColorSpace(),
                     kNoTransformation, kCodedSize, kVisibleRect, kNaturalSize,
-                    EmptyExtraData(), Unencrypted());
+                    EmptyExtraData(), EncryptionScheme::kUnencrypted);
   EXPECT_EQ(config.alpha_mode(), VideoDecoderConfig::AlphaMode::kHasAlpha);
 }
 
@@ -35,7 +35,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioNumeratorZero) {
   VideoDecoderConfig config(
       kCodecVP8, VP8PROFILE_ANY, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace(), kNoTransformation, kCodedSize, kVisibleRect,
-      natural_size, EmptyExtraData(), Unencrypted());
+      natural_size, EmptyExtraData(), EncryptionScheme::kUnencrypted);
   EXPECT_FALSE(config.IsValidConfig());
 }
 
@@ -44,7 +44,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioDenominatorZero) {
   VideoDecoderConfig config(
       kCodecVP8, VP8PROFILE_ANY, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace(), kNoTransformation, kCodedSize, kVisibleRect,
-      natural_size, EmptyExtraData(), Unencrypted());
+      natural_size, EmptyExtraData(), EncryptionScheme::kUnencrypted);
   EXPECT_FALSE(config.IsValidConfig());
 }
 
@@ -53,7 +53,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioNumeratorNegative) {
   VideoDecoderConfig config(
       kCodecVP8, VP8PROFILE_ANY, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace(), kNoTransformation, kCodedSize, kVisibleRect,
-      natural_size, EmptyExtraData(), Unencrypted());
+      natural_size, EmptyExtraData(), EncryptionScheme::kUnencrypted);
   EXPECT_FALSE(config.IsValidConfig());
 }
 
@@ -62,7 +62,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioDenominatorNegative) {
   VideoDecoderConfig config(
       kCodecVP8, VP8PROFILE_ANY, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace(), kNoTransformation, kCodedSize, kVisibleRect,
-      natural_size, EmptyExtraData(), Unencrypted());
+      natural_size, EmptyExtraData(), EncryptionScheme::kUnencrypted);
   EXPECT_FALSE(config.IsValidConfig());
 }
 
@@ -73,7 +73,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioNumeratorTooLarge) {
   VideoDecoderConfig config(
       kCodecVP8, VP8PROFILE_ANY, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace(), kNoTransformation, kCodedSize, kVisibleRect,
-      natural_size, EmptyExtraData(), Unencrypted());
+      natural_size, EmptyExtraData(), EncryptionScheme::kUnencrypted);
   EXPECT_FALSE(config.IsValidConfig());
 }
 
@@ -87,7 +87,7 @@ TEST(VideoDecoderConfigTest, Invalid_AspectRatioDenominatorVeryLarge) {
   VideoDecoderConfig config(
       kCodecVP8, VP8PROFILE_ANY, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace(), kNoTransformation, kCodedSize, kVisibleRect,
-      natural_size, EmptyExtraData(), Unencrypted());
+      natural_size, EmptyExtraData(), EncryptionScheme::kUnencrypted);
   EXPECT_FALSE(config.IsValidConfig());
 }
 

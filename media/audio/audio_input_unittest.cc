@@ -85,42 +85,35 @@ class AudioInputTest : public testing::Test {
   }
 
   void MakeAudioInputStreamOnAudioThread() {
-    RunOnAudioThread(
-        base::Bind(&AudioInputTest::MakeAudioInputStream,
-                   base::Unretained(this)));
+    RunOnAudioThread(base::BindOnce(&AudioInputTest::MakeAudioInputStream,
+                                    base::Unretained(this)));
   }
 
   void CloseAudioInputStreamOnAudioThread() {
-    RunOnAudioThread(
-        base::Bind(&AudioInputStream::Close,
-                   base::Unretained(audio_input_stream_)));
+    RunOnAudioThread(base::BindOnce(&AudioInputStream::Close,
+                                    base::Unretained(audio_input_stream_)));
     audio_input_stream_ = NULL;
   }
 
   void OpenAndCloseAudioInputStreamOnAudioThread() {
     RunOnAudioThread(
-        base::Bind(&AudioInputTest::OpenAndClose,
-                   base::Unretained(this)));
+        base::BindOnce(&AudioInputTest::OpenAndClose, base::Unretained(this)));
   }
 
   void OpenStopAndCloseAudioInputStreamOnAudioThread() {
-    RunOnAudioThread(
-        base::Bind(&AudioInputTest::OpenStopAndClose,
-                   base::Unretained(this)));
+    RunOnAudioThread(base::BindOnce(&AudioInputTest::OpenStopAndClose,
+                                    base::Unretained(this)));
   }
 
   void OpenAndStartAudioInputStreamOnAudioThread(
       AudioInputStream::AudioInputCallback* sink) {
-    RunOnAudioThread(
-        base::Bind(&AudioInputTest::OpenAndStart,
-                   base::Unretained(this),
-                   sink));
+    RunOnAudioThread(base::BindOnce(&AudioInputTest::OpenAndStart,
+                                    base::Unretained(this), sink));
   }
 
   void StopAndCloseAudioInputStreamOnAudioThread() {
     RunOnAudioThread(
-        base::Bind(&AudioInputTest::StopAndClose,
-                   base::Unretained(this)));
+        base::BindOnce(&AudioInputTest::StopAndClose, base::Unretained(this)));
   }
 
   void MakeAudioInputStream() {
@@ -163,9 +156,9 @@ class AudioInputTest : public testing::Test {
   }
 
   // Synchronously runs the provided callback/closure on the audio thread.
-  void RunOnAudioThread(const base::Closure& closure) {
+  void RunOnAudioThread(base::OnceClosure closure) {
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
-    closure.Run();
+    std::move(closure).Run();
   }
 
   void OnLogMessage(const std::string& message) {}

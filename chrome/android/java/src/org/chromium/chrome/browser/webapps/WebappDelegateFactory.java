@@ -9,7 +9,6 @@ import android.os.Build;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
@@ -26,7 +25,7 @@ import org.chromium.webapk.lib.client.WebApkNavigationClient;
 
 /**
  * A {@link TabDelegateFactory} class to be used in all {@link Tab} instances owned by a
- * {@link SingleTabActivity}.
+ * {@link WebappActivity}.
  */
 public class WebappDelegateFactory extends TabDelegateFactoryImpl {
     private static class WebappWebContentsDelegateAndroid

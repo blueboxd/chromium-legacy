@@ -32,12 +32,11 @@ namespace device {
 
 namespace {
 
-// Default downscale factor for computing the recommended WebVR/WebXR
+// Default downscale factor for computing the recommended WebXR
 // render_width/render_height from the 1:1 pixel mapped size. Using a rather
 // aggressive downscale due to the high overhead of copying pixels
 // twice before handing off to GVR. For comparison, the polyfill
 // uses approximately 0.55 on a Pixel XL.
-static constexpr float kWebVrRecommendedResolutionScale = 0.5;
 static constexpr float kWebXrRecommendedResolutionScale = 0.7;
 
 // The scale factor for WebXR on devices that don't have shared buffer
@@ -107,15 +106,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
 
   device->id = device_id;
 
-  device->capabilities = mojom::VRDisplayCapabilities::New();
-  device->capabilities->has_position = false;
-  device->capabilities->has_external_display = false;
-  device->capabilities->can_present = true;
-
-  std::string vendor = gvr_api->GetViewerVendor();
-  std::string model = gvr_api->GetViewerModel();
-  device->display_name = vendor + " " + model;
-
   gvr::BufferViewportList gvr_buffer_viewports =
       gvr_api->CreateEmptyBufferViewportList();
   gvr_buffer_viewports.SetToRecommendedBufferViewports();
@@ -135,7 +125,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
     device->webxr_default_framebuffer_scale =
         kWebXrNoSharedBufferResolutionScale;
   }
-  device->webvr_default_framebuffer_scale = kWebVrRecommendedResolutionScale;
 
   return device;
 }
@@ -270,12 +259,6 @@ void GvrDevice::ResumeTracking() {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_NonPresentingGvrContext_resume(env, non_presenting_context_);
   }
-}
-
-void GvrDevice::EnsureInitialized(EnsureInitializedCallback callback) {
-  Init(base::BindOnce([](EnsureInitializedCallback callback,
-                         bool) { std::move(callback).Run(); },
-                      std::move(callback)));
 }
 
 GvrDelegateProvider* GvrDevice::GetGvrDelegateProvider() {

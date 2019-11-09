@@ -821,6 +821,7 @@ interface OffscreenCanvasRenderingContext2D
     method fillText
     method getImageData
     method getLineDash
+    method getTransform
     method isPointInPath
     method isPointInStroke
     method lineTo

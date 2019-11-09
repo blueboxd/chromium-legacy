@@ -110,15 +110,6 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="ContentSettings.Plugins.AddedAllowException"
-    type="ETLD_PLUS_ONE">
-  <owner>tommycli@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that the user added to the ALLOW site exceptions for the
-    Plugins Content Setting.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="CustomTabs.ServiceClient.PackageName"
     type="UMA_RAPPOR_TYPE">
   <owner>yusufo@chromium.org</owner>
@@ -210,23 +201,6 @@ components/rappor/rappor_parameters.h.
   <owner>jww@chromium.org</owner>
   <summary>
     The host of the URL that uses an Application Cache manifest from an insecure
-    origin.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="PowerfulFeatureUse.Host.DeviceMotion.Insecure"
-    type="ETLD_PLUS_ONE">
-  <owner>jww@chromium.org</owner>
-  <summary>
-    The host of the URL that uses the device motion API from an insecure origin.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="PowerfulFeatureUse.Host.DeviceOrientation.Insecure"
-    type="ETLD_PLUS_ONE">
-  <owner>jww@chromium.org</owner>
-  <summary>
-    The host of the URL that uses the device orientation API from an insecure
     origin.
   </summary>
 </rappor-metric>

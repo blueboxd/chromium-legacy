@@ -16,13 +16,6 @@ namespace device {
 
 namespace {
 
-constexpr char kDisplayName[] = "OpenXR";
-
-constexpr bool kHasPosition = true;
-constexpr bool kHasExternalDisplay = true;
-constexpr bool kCanPresent = true;
-
-constexpr float kFramebufferScale = 1.0f;
 constexpr float kFov = 45.0f;
 
 constexpr unsigned int kRenderWidth = 1024;
@@ -38,15 +31,6 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
 
   display_info->id = id;
-  display_info->display_name = kDisplayName;
-
-  display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->has_position = kHasPosition;
-  display_info->capabilities->has_external_display = kHasExternalDisplay;
-  display_info->capabilities->can_present = kCanPresent;
-
-  display_info->webvr_default_framebuffer_scale = kFramebufferScale;
-  display_info->webxr_default_framebuffer_scale = kFramebufferScale;
 
   display_info->left_eye = mojom::VREyeParameters::New();
   display_info->right_eye = mojom::VREyeParameters::New();

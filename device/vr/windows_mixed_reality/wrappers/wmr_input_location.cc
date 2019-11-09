@@ -51,16 +51,6 @@ bool WMRInputLocationImpl::TryGetPosition(WFN::Vector3* position) const {
   return TryGetValue(ref, position);
 }
 
-bool WMRInputLocationImpl::TryGetVelocity(WFN::Vector3* velocity) const {
-  DCHECK(velocity);
-  if (!location_)
-    return false;
-  ComPtr<IReference<WFN::Vector3>> ref;
-  HRESULT hr = location_->get_Velocity(&ref);
-  DCHECK(SUCCEEDED(hr));
-  return TryGetValue(ref, velocity);
-}
-
 bool WMRInputLocationImpl::TryGetOrientation(
     WFN::Quaternion* orientation) const {
   DCHECK(orientation);
@@ -70,17 +60,6 @@ bool WMRInputLocationImpl::TryGetOrientation(
   HRESULT hr = location2_->get_Orientation(&ref);
   DCHECK(SUCCEEDED(hr));
   return TryGetValue(ref, orientation);
-}
-
-bool WMRInputLocationImpl::TryGetAngularVelocity(
-    WFN::Vector3* angular_velocity) const {
-  DCHECK(angular_velocity);
-  if (!location3_)
-    return false;
-  ComPtr<IReference<WFN::Vector3>> ref;
-  HRESULT hr = location3_->get_AngularVelocity(&ref);
-  DCHECK(SUCCEEDED(hr));
-  return TryGetValue(ref, angular_velocity);
 }
 
 bool WMRInputLocationImpl::TryGetPositionAccuracy(

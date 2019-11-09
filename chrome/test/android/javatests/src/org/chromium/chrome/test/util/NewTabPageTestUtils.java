@@ -12,7 +12,7 @@ import android.os.Build;
 
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.tile.TileSectionType;
@@ -101,6 +101,6 @@ public class NewTabPageTestUtils {
         fakeAccountManager.addAccountHolderExplicitly(new AccountHolder.Builder(account).build());
         assertFalse(AccountManagerFacade.get().isUpdatePending().get());
         assertFalse(SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false));
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false));
     }
 }

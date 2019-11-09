@@ -6,9 +6,8 @@
 #define CHROME_BROWSER_UI_APPS_APP_INFO_DIALOG_H_
 
 #include "base/callback_forward.h"
-#include "chrome/common/buildflags.h"
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 #include "ui/gfx/native_widget_types.h"
 #endif
 
@@ -39,7 +38,7 @@ enum AppInfoLaunchSource {
 // Returns true if the app info dialog is available on the current platform.
 bool CanShowAppInfoDialog();
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 // Shows the chrome app information as a frameless window for the given |app|
 // and |profile| at the given |app_info_bounds|.
 void ShowAppInfoInAppList(gfx::NativeWindow parent,

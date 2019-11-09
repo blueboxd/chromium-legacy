@@ -80,7 +80,8 @@ SharedImageFactory::SharedImageFactory(
       shared_image_manager_(shared_image_manager),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
       using_vulkan_(context_state && context_state->GrContextIsVulkan()),
-      using_metal_(context_state && context_state->GrContextIsMetal()) {
+      using_metal_(context_state && context_state->GrContextIsMetal()),
+      using_dawn_(context_state && context_state->GrContextIsDawn()) {
   bool use_gl = gl::GetGLImplementation() != gl::kGLImplementationNone;
   if (use_gl) {
     gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
@@ -164,13 +165,14 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   }
 
   // Currently we only perform data uploads via two paths,
-  // |gl_backing_factory_| for GL and |wrapped_sk_image_factory_| for Vulkan.
+  // |gl_backing_factory_| for GL and |wrapped_sk_image_factory_| for Vulkan and
+  // Dawn.
   // TODO(ericrk): Make this generic in the future.
   bool allow_legacy_mailbox = false;
   SharedImageBackingFactory* factory = nullptr;
   if (backing_factory_for_testing_) {
     factory = backing_factory_for_testing_;
-  } else if (!using_vulkan_) {
+  } else if (!using_vulkan_ && !using_dawn_) {
     allow_legacy_mailbox = true;
     factory = gl_backing_factory_.get();
   } else {

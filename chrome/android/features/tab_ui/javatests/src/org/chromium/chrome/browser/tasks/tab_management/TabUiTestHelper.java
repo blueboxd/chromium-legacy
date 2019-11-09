@@ -14,10 +14,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.base.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS;
+import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
+import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
+
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.ViewAssertion;
@@ -27,15 +32,20 @@ import android.view.View;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -191,6 +201,121 @@ public class TabUiTestHelper {
                 Settings.Global.getFloat(ContextUtils.getApplicationContext().getContentResolver(),
                         Settings.Global.ANIMATOR_DURATION_SCALE, defaultScale);
         return !(durationScale == 0.0);
+    }
+
+    /**
+     * Make Chrome have {@code numTabs} of regular Tabs and {@code numIncognitoTabs} of incognito
+     * tabs with {@code url} loaded.
+     * @param rule The {@link ChromeTabbedActivityTestRule}.
+     * @param numTabs The number of regular tabs.
+     * @param numIncognitoTabs The number of incognito tabs.
+     * @param url The URL to load.
+     */
+    public static void prepareTabsWithThumbnail(ChromeTabbedActivityTestRule rule, int numTabs,
+            int numIncognitoTabs, @Nullable String url) {
+        assertTrue(numTabs >= 1);
+        assertTrue(numIncognitoTabs >= 0);
+
+        assertEquals(1, rule.getActivity().getTabModelSelector().getModel(false).getCount());
+        assertEquals(0, rule.getActivity().getTabModelSelector().getModel(true).getCount());
+
+        if (url != null) rule.loadUrl(url);
+        if (numTabs > 1) {
+            // When Chrome started, there is already one Tab created by default.
+            createTabsWithThumbnail(rule, numTabs - 1, url, false);
+        }
+        if (numIncognitoTabs > 0) createTabsWithThumbnail(rule, numIncognitoTabs, url, true);
+
+        assertEquals(numTabs, rule.getActivity().getTabModelSelector().getModel(false).getCount());
+        assertEquals(numIncognitoTabs,
+                rule.getActivity().getTabModelSelector().getModel(true).getCount());
+        if (url != null) {
+            verifyAllTabsHaveUrl(rule.getActivity().getTabModelSelector().getModel(false), url);
+            verifyAllTabsHaveUrl(rule.getActivity().getTabModelSelector().getModel(true), url);
+        }
+    }
+
+    private static void verifyAllTabsHaveUrl(TabModel tabModel, String url) {
+        for (int i = 0; i < tabModel.getCount(); i++) {
+            assertEquals(url, tabModel.getTabAt(i).getUrl());
+        }
+    }
+
+    /**
+     * Create {@code numTabs} of {@link Tab}s with {@code url} loaded to Chrome.
+     * Note that if the test doesn't care about thumbnail, use {@link TabUiTestHelper#createTabs}
+     * instead since it's faster.
+     *
+     * @param rule The {@link ChromeTabbedActivityTestRule}.
+     * @param numTabs The number of tabs to create.
+     * @param url The URL to load. Skip loading when null, but the thumbnail for the NTP might not
+     *            be saved.
+     * @param isIncognito Whether the tab is incognito tab.
+     */
+    private static void createTabsWithThumbnail(ChromeTabbedActivityTestRule rule, int numTabs,
+            @Nullable String url, boolean isIncognito) {
+        assertTrue(numTabs >= 1);
+
+        int previousTabCount =
+                rule.getActivity().getTabModelSelector().getModel(isIncognito).getCount();
+
+        for (int i = 0; i < numTabs; i++) {
+            TabModel previousTabModel = rule.getActivity().getTabModelSelector().getCurrentModel();
+            int previousTabIndex = previousTabModel.index();
+            Tab previousTab = previousTabModel.getTabAt(previousTabIndex);
+
+            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
+                    rule.getActivity(), isIncognito, true);
+
+            if (url != null) rule.loadUrl(url);
+
+            TabModel currentTabModel = rule.getActivity().getTabModelSelector().getCurrentModel();
+            int currentTabIndex = currentTabModel.index();
+
+            boolean fixPendingReadbacks =
+                    rule.getActivity().getTabContentManager().getPendingReadbacksForTesting() != 0;
+
+            // When there are pending readbacks due to detached Tabs, try to fix it by switching
+            // back to that tab.
+            if (fixPendingReadbacks && previousTabIndex != TabModel.INVALID_TAB_INDEX) {
+                // clang-format off
+                TestThreadUtils.runOnUiThreadBlocking(() ->
+                        previousTabModel.setIndex(previousTabIndex, TabSelectionType.FROM_USER)
+                );
+                // clang-format on
+            }
+
+            checkThumbnailsExist(previousTab);
+
+            if (fixPendingReadbacks) {
+                // clang-format off
+                TestThreadUtils.runOnUiThreadBlocking(() -> currentTabModel.setIndex(
+                        currentTabIndex, TabSelectionType.FROM_USER)
+                );
+                // clang-format on
+            }
+        }
+
+        ChromeTabUtils.waitForTabPageLoaded(
+                rule.getActivity().getActivityTab(), null, null, WAIT_TIMEOUT_SECONDS * 10);
+
+        assertEquals(numTabs + previousTabCount,
+                rule.getActivity().getTabModelSelector().getModel(isIncognito).getCount());
+
+        CriteriaHelper.pollUiThread(Criteria.equals(0,
+                () -> rule.getActivity().getTabContentManager().getPendingReadbacksForTesting()));
+    }
+
+    public static void checkThumbnailsExist(Tab tab) {
+        File etc1File = TabContentManager.getTabThumbnailFileEtc1(tab);
+        CriteriaHelper.pollInstrumentationThread(etc1File::exists,
+                "The thumbnail " + etc1File.getName() + " is not found",
+                DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
+
+        File jpegFile = TabContentManager.getTabThumbnailFileJpeg(tab);
+        CriteriaHelper.pollInstrumentationThread(jpegFile::exists,
+                "The thumbnail " + jpegFile.getName() + " is not found",
+                DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
     }
 
     /**

@@ -45,4 +45,13 @@ IN_PROC_BROWSER_TEST_F(LoginWebDialogTest, CloseDialogByAccelerator) {
   EXPECT_TRUE(closing_observer.widget_closed());
 }
 
+// Tests that LoginWebDialog does not crash with missing parent window.
+IN_PROC_BROWSER_TEST_F(LoginWebDialogTest, NoParentWindow) {
+  LoginWebDialog* dialog = new LoginWebDialog(
+      browser()->profile(), nullptr, nullptr, base::string16(), GURL());
+  dialog->Show();
+  aura::Window* window = dialog->get_dialog_window_for_test();
+  ASSERT_TRUE(window);
+}
+
 }  // namespace chromeos

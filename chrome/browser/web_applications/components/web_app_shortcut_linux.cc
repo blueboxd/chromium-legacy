@@ -30,12 +30,6 @@ namespace {
 
 const char kDirectoryFilename[] = "chrome-apps.directory";
 
-#if BUILDFLAG(ENABLE_APP_LIST)
-// The Categories for the App Launcher desktop shortcut. Should be the same as
-// the Chrome desktop shortcut, so they are in the same sub-menu.
-const char kAppListCategories[] = "Network;WebBrowser;";
-#endif
-
 std::string CreateShortcutIcon(const gfx::ImageFamily& icon_images,
                                const base::FilePath& shortcut_filename) {
   if (icon_images.empty())

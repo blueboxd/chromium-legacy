@@ -73,17 +73,16 @@ VideoDecoderConfig::VideoDecoderConfig()
       alpha_mode_(AlphaMode::kIsOpaque),
       transformation_(kNoTransformation) {}
 
-VideoDecoderConfig::VideoDecoderConfig(
-    VideoCodec codec,
-    VideoCodecProfile profile,
-    AlphaMode alpha_mode,
-    const VideoColorSpace& color_space,
-    VideoTransformation rotation,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    const std::vector<uint8_t>& extra_data,
-    const EncryptionScheme& encryption_scheme) {
+VideoDecoderConfig::VideoDecoderConfig(VideoCodec codec,
+                                       VideoCodecProfile profile,
+                                       AlphaMode alpha_mode,
+                                       const VideoColorSpace& color_space,
+                                       VideoTransformation rotation,
+                                       const gfx::Size& coded_size,
+                                       const gfx::Rect& visible_rect,
+                                       const gfx::Size& natural_size,
+                                       const std::vector<uint8_t>& extra_data,
+                                       EncryptionScheme encryption_scheme) {
   Initialize(codec, profile, alpha_mode, color_space, rotation, coded_size,
              visible_rect, natural_size, extra_data, encryption_scheme);
 }
@@ -119,7 +118,7 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
                                     const gfx::Rect& visible_rect,
                                     const gfx::Size& natural_size,
                                     const std::vector<uint8_t>& extra_data,
-                                    const EncryptionScheme& encryption_scheme) {
+                                    EncryptionScheme encryption_scheme) {
   codec_ = codec;
   profile_ = profile;
   alpha_mode_ = alpha_mode;
@@ -146,7 +145,7 @@ bool VideoDecoderConfig::Matches(const VideoDecoderConfig& config) const {
          visible_rect() == config.visible_rect() &&
          natural_size() == config.natural_size() &&
          extra_data() == config.extra_data() &&
-         encryption_scheme().Matches(config.encryption_scheme()) &&
+         encryption_scheme() == config.encryption_scheme() &&
          color_space_info() == config.color_space_info() &&
          hdr_metadata() == config.hdr_metadata();
 }
@@ -197,16 +196,17 @@ void VideoDecoderConfig::SetExtraData(const std::vector<uint8_t>& extra_data) {
 
 void VideoDecoderConfig::SetIsEncrypted(bool is_encrypted) {
   if (!is_encrypted) {
-    DCHECK(encryption_scheme_.is_encrypted()) << "Config is already clear.";
-    encryption_scheme_ = Unencrypted();
+    DCHECK_NE(encryption_scheme_, EncryptionScheme::kUnencrypted)
+        << "Config is already clear.";
+    encryption_scheme_ = EncryptionScheme::kUnencrypted;
   } else {
-    DCHECK(!encryption_scheme_.is_encrypted())
+    DCHECK_EQ(encryption_scheme_, EncryptionScheme::kUnencrypted)
         << "Config is already encrypted.";
     // TODO(xhwang): This is only used to guide decoder selection, so set
     // a common encryption scheme that should be supported by all decrypting
     // decoders. We should be able to remove this when we support switching
     // decoders at run time. See http://crbug.com/695595
-    encryption_scheme_ = AesCtrEncryptionScheme();
+    encryption_scheme_ = EncryptionScheme::kCenc;
   }
 }
 

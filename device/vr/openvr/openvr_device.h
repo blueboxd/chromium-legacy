@@ -38,7 +38,6 @@ class DEVICE_VR_EXPORT OpenVRDevice
   void RequestSession(
       mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
-  void EnsureInitialized(EnsureInitializedCallback callback) override;
 
   void OnPollingEvents();
 

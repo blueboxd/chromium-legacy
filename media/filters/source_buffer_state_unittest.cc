@@ -29,7 +29,7 @@ namespace {
 AudioDecoderConfig CreateAudioConfig(AudioCodec codec) {
   return AudioDecoderConfig(codec, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, 1000, EmptyExtraData(),
-                            Unencrypted());
+                            EncryptionScheme::kUnencrypted);
 }
 
 VideoDecoderConfig CreateVideoConfig(VideoCodec codec, int w, int h) {
@@ -39,7 +39,7 @@ VideoDecoderConfig CreateVideoConfig(VideoCodec codec, int w, int h) {
                             VideoDecoderConfig::AlphaMode::kIsOpaque,
                             VideoColorSpace::REC709(), kNoTransformation, size,
                             visible_rect, size, EmptyExtraData(),
-                            Unencrypted());
+                            EncryptionScheme::kUnencrypted);
 }
 
 void AddAudioTrack(std::unique_ptr<MediaTracks>& t, AudioCodec codec, int id) {

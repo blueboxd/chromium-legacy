@@ -3800,34 +3800,4 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
       FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebMidiNotCached) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-
-  // 1) Navigate to A.
-  ASSERT_TRUE(NavigateToURL(shell(), url_a));
-  RenderFrameHostImpl* rfh_a = current_frame_host();
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
-
-  // - Wait until requestMIDIAccess() promise is resolved.
-  EXPECT_TRUE(ExecJs(rfh_a, "navigator.requestMIDIAccess()"));
-
-  // 2) Navigate to B.
-  ASSERT_TRUE(NavigateToURL(shell(), url_b));
-
-  // - Page A should not be in the cache.
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
-
-  // 3) Go back.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
-      FROM_HERE);
-  ExpectBlocklistedFeature(
-      blink::scheduler::WebSchedulerTrackedFeature::kRequestedMIDIPermission,
-      FROM_HERE);
-}
-
 }  // namespace content

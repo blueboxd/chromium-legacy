@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.base.ApplicationState.HAS_RUNNING_ACTIVITIES;
 import static org.chromium.base.ApplicationState.HAS_STOPPED_ACTIVITIES;
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
 
 import android.os.Build;
 

@@ -8,7 +8,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEAR
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
-import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
@@ -30,8 +30,8 @@ class TasksViewBinder {
             view.setFakeSearchBoxVisibility(model.get(IS_FAKE_SEARCH_BOX_VISIBLE));
         } else if (propertyKey == IS_INCOGNITO) {
             view.setIncognitoMode(model.get(IS_INCOGNITO));
-        } else if (propertyKey == IS_TAB_CAROUSEL) {
-            view.setIsTabCarousel(model.get(IS_TAB_CAROUSEL));
+        } else if (propertyKey == IS_TAB_CAROUSEL_VISIBLE) {
+            view.setTabCarouselVisibility(model.get(IS_TAB_CAROUSEL_VISIBLE));
         } else if (propertyKey == IS_VOICE_RECOGNITION_BUTTON_VISIBLE) {
             view.setVoiceRecognitionButtonVisibility(
                     model.get(IS_VOICE_RECOGNITION_BUTTON_VISIBLE));

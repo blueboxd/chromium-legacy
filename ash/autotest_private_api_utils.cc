@@ -85,10 +85,6 @@ std::vector<aura::Window*> GetAppWindowList() {
       ash::kAllDesks);
 }
 
-ash::HeaderView* GetHeaderViewForWindow(aura::Window* window) {
-  return ash::NonClientFrameViewAsh::Get(window)->GetHeaderView();
-}
-
 bool WaitForLauncherState(AppListViewState target_state,
                           base::Closure closure) {
   // In the tablet mode, some of the app-list state switching is handled

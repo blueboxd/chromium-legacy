@@ -25,11 +25,11 @@ namespace {
 // available, so it doesn't need more than one output buffer.
 const size_t kMinClearStreamOutputFrames = 1;
 
-std::string GetEncryptionScheme(EncryptionMode mode) {
+std::string GetEncryptionScheme(EncryptionScheme mode) {
   switch (mode) {
-    case EncryptionMode::kCenc:
+    case EncryptionScheme::kCenc:
       return fuchsia::media::ENCRYPTION_SCHEME_CENC;
-    case EncryptionMode::kCbcs:
+    case EncryptionScheme::kCbcs:
       return fuchsia::media::ENCRYPTION_SCHEME_CBCS;
     default:
       NOTREACHED() << "unknown encryption mode " << static_cast<int>(mode);
@@ -89,13 +89,13 @@ fuchsia::media::FormatDetails GetEncryptedFormatDetails(
   DCHECK(config);
 
   fuchsia::media::EncryptedFormat encrypted_format;
-  encrypted_format.set_scheme(GetEncryptionScheme(config->encryption_mode()))
+  encrypted_format.set_scheme(GetEncryptionScheme(config->encryption_scheme()))
       .set_key_id(std::vector<uint8_t>(config->key_id().begin(),
                                        config->key_id().end()))
       .set_init_vector(
           std::vector<uint8_t>(config->iv().begin(), config->iv().end()))
       .set_subsamples(GetSubsamples(config->subsamples()));
-  if (config->encryption_mode() == EncryptionMode::kCbcs) {
+  if (config->encryption_scheme() == EncryptionScheme::kCbcs) {
     DCHECK(config->encryption_pattern().has_value());
     encrypted_format.set_pattern(
         GetEncryptionPattern(config->encryption_pattern().value()));

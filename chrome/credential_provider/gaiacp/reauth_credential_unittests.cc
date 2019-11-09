@@ -5,6 +5,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlcomcli.h>
+#include <wrl/client.h>
 
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
@@ -49,7 +50,7 @@ TEST_F(GcpReauthCredentialTest, SetOSUserInfoAndReauthEmail) {
   USES_CONVERSION;
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
 
-  CComPtr<IReauthCredential> reauth;
+  Microsoft::WRL::ComPtr<IReauthCredential> reauth;
   ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
                       nullptr, IID_IReauthCredential, (void**)&reauth));
   ASSERT_TRUE(!!reauth);
@@ -61,9 +62,8 @@ TEST_F(GcpReauthCredentialTest, SetOSUserInfoAndReauthEmail) {
   ASSERT_EQ(S_OK, reauth->SetEmailForReauth(CComBSTR(
                       A2COLE(test_data_storage.GetSuccessEmail().c_str()))));
 
-  CComPtr<ICredentialProviderCredential2> cpc2;
-  ASSERT_EQ(S_OK, reauth->QueryInterface(IID_ICredentialProviderCredential2,
-                                         reinterpret_cast<void**>(&cpc2)));
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential2> cpc2;
+  ASSERT_EQ(S_OK, reauth.As(&cpc2));
   wchar_t* sid;
   CComBSTR username;
   ASSERT_EQ(S_OK, cpc2->GetUserSid(&sid));
@@ -97,7 +97,7 @@ TEST_P(GcpReauthCredentialGetStringValueTest, FidDescription) {
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableADAssociation,
                                           is_ad_association_enabled));
 
-  CComPtr<IReauthCredential> reauth;
+  Microsoft::WRL::ComPtr<IReauthCredential> reauth;
   ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
                       nullptr, IID_IReauthCredential, (void**)&reauth));
   ASSERT_TRUE(!!reauth);
@@ -132,9 +132,8 @@ TEST_P(GcpReauthCredentialGetStringValueTest, FidDescription) {
     ASSERT_EQ(S_OK, reauth->SetEmailForReauth(CComBSTR(email)));
   }
 
-  CComPtr<ICredentialProviderCredential2> cpc2;
-  ASSERT_EQ(S_OK, reauth->QueryInterface(IID_ICredentialProviderCredential2,
-                                         reinterpret_cast<void**>(&cpc2)));
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential2> cpc2;
+  ASSERT_EQ(S_OK, reauth.As(&cpc2));
   LPWSTR string_value = nullptr;
   ASSERT_EQ(S_OK, cpc2->GetStringValue(FID_DESCRIPTION, &string_value));
 
@@ -193,7 +192,7 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest, FidDescription) {
 
   GoogleMdmEnrolledStatusForTesting forced_enrolled_status(enrolled_mdm);
 
-  CComPtr<IReauthCredential> reauth;
+  Microsoft::WRL::ComPtr<IReauthCredential> reauth;
   ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
                       nullptr, IID_IReauthCredential, (void**)&reauth));
   ASSERT_TRUE(!!reauth);
@@ -231,9 +230,8 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest, FidDescription) {
 
   ASSERT_EQ(S_OK, reauth->SetEmailForReauth(CComBSTR(email)));
 
-  CComPtr<ICredentialProviderCredential2> cpc2;
-  ASSERT_EQ(S_OK, reauth->QueryInterface(IID_ICredentialProviderCredential2,
-                                         reinterpret_cast<void**>(&cpc2)));
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential2> cpc2;
+  ASSERT_EQ(S_OK, reauth.As(&cpc2));
   LPWSTR string_value = nullptr;
   ASSERT_EQ(S_OK, cpc2->GetStringValue(FID_DESCRIPTION, &string_value));
 
@@ -282,7 +280,7 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailable) {
                 OLE2CW(email), &sid));
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   // Create with invalid token handle response so that a reauth occurs.
   SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
@@ -331,7 +329,7 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailableForADUser) {
                       OLE2CW(email), L"domain", &sid));
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
@@ -387,14 +385,14 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, UserGaiaIdMismatch) {
                       &second_sid));
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   // Create with invalid token handle response so that a reauth occurs.
   SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   // Force the GLS to return an invalid Gaia Id without reporting the usual
   // kUiecEMailMissmatch exit code when this happens. This will test whether
@@ -425,14 +423,14 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauth) {
                 OLE2CW(email), &sid));
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   // Create with invalid token handle response so that a reauth occurs.
   SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
 
@@ -459,14 +457,14 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NormalReauthWithoutEmail) {
                 base::string16(), &sid));
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   // Create with invalid token handle response so that a reauth occurs.
   SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -496,14 +494,14 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, GaiaIdMismatch) {
   std::string unexpected_gaia_id = "unexpected-gaia-id";
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   // Create with invalid token handle response so that a reauth occurs.
   SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
   ASSERT_EQ(S_OK, test->SetGaiaIdOverride(unexpected_gaia_id,

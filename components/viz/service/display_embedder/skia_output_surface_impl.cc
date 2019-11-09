@@ -31,6 +31,7 @@
 #include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/single_task_sequence.h"
 #include "gpu/vulkan/buildflags.h"
+#include "skia/buildflags.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -98,6 +99,41 @@ OutputSurface::Type GetOutputSurfaceType(SkiaOutputSurfaceDependency* deps) {
                                : OutputSurface::Type::kOpenGL;
 }
 
+#if BUILDFLAG(SKIA_USE_DAWN)
+// TODO(sgilhuly): Resolve conflicts with X11/X.h so that this can be moved to
+// resource_format_utils.cc.
+dawn::TextureFormat ToDawnFormat(ResourceFormat format) {
+  switch (format) {
+    case RGBA_8888:
+    case RGBX_8888:
+      return dawn::TextureFormat::RGBA8Unorm;
+    case BGRA_8888:
+    case BGRX_8888:
+      return dawn::TextureFormat::BGRA8Unorm;
+    case RED_8:
+    case ALPHA_8:
+    case LUMINANCE_8:
+      return dawn::TextureFormat::R8Unorm;
+    case RGBA_4444:
+    case RGB_565:
+    case BGR_565:
+    case RG_88:
+    case RGBA_F16:
+    case R16_EXT:
+    case RGBX_1010102:
+    case BGRX_1010102:
+    case YVU_420:
+    case YUV_420_BIPLANAR:
+    case ETC1:
+    case LUMINANCE_F16:
+    case P010:
+      break;
+  }
+  NOTREACHED() << "Unsupported format " << format;
+  return dawn::TextureFormat::Undefined;
+}
+#endif
+
 }  // namespace
 
 SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
@@ -132,7 +168,6 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     const RendererSettings& renderer_settings)
     : SkiaOutputSurface(GetOutputSurfaceType(deps.get())),
       dependency_(std::move(deps)),
-      is_using_vulkan_(dependency_->IsUsingVulkan()),
       renderer_settings_(renderer_settings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
@@ -814,14 +849,7 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     ResourceFormat resource_format,
     uint32_t gl_texture_target,
     const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
-  if (!is_using_vulkan_) {
-    DCHECK(!ycbcr_info);
-    // Convert internal format from GLES2 to platform GL.
-    unsigned int texture_storage_format = gpu::GetGrGLBackendTextureFormat(
-        impl_on_gpu_->GetFeatureInfo(), resource_format);
-
-    return GrBackendFormat::MakeGL(texture_storage_format, gl_texture_target);
-  } else {
+  if (dependency_->IsUsingVulkan()) {
 #if BUILDFLAG(ENABLE_VULKAN)
     if (!ycbcr_info) {
       // YCbCr info is required for YUV images.
@@ -836,11 +864,22 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
                                           ->GetVulkanPhysicalDevice(),
                                       VK_IMAGE_TILING_OPTIMAL, ycbcr_info);
     return GrBackendFormat::MakeVk(gr_ycbcr_info);
-#else
-    NOTREACHED();
-    return GrBackendFormat();
 #endif
+  } else if (dependency_->IsUsingDawn()) {
+#if BUILDFLAG(SKIA_USE_DAWN)
+    dawn::TextureFormat format = ToDawnFormat(resource_format);
+    return GrBackendFormat::MakeDawn(format);
+#endif
+  } else {
+    DCHECK(!ycbcr_info);
+    // Convert internal format from GLES2 to platform GL.
+    unsigned int texture_storage_format = gpu::GetGrGLBackendTextureFormat(
+        impl_on_gpu_->GetFeatureInfo(), resource_format);
+
+    return GrBackendFormat::MakeGL(texture_storage_format, gl_texture_target);
   }
+  NOTREACHED();
+  return GrBackendFormat();
 }
 
 void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {

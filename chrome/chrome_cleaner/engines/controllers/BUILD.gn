@@ -208,7 +208,6 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/test:test_uws_catalog",
     "//chrome/chrome_cleaner/ui:cleaner_ui",
     "//chrome/chrome_cleaner/zip_archiver:common",
-    "//components/chrome_cleaner/public/interfaces",
     "//components/chrome_cleaner/test:test_name_helper",
     "//sandbox/win:sandbox",
     "//testing/gmock",

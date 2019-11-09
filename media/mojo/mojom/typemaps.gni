@@ -11,7 +11,7 @@ typemaps = [
   "//media/mojo/mojom/content_decryption_module.typemap",
   "//media/mojo/mojom/decryptor.typemap",
   "//media/mojo/mojom/demuxer_stream.typemap",
-  "//media/mojo/mojom/encryption_scheme.typemap",
+  "//media/mojo/mojom/encryption_pattern.typemap",
   "//media/mojo/mojom/hdr_metadata.typemap",
   "//media/mojo/mojom/media_drm_storage.typemap",
   "//media/mojo/mojom/media_types.typemap",

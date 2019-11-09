@@ -28,6 +28,9 @@ sql::InitStatus MediaHistoryPlaybackTable::CreateTableIfNonExistent() {
       "url TEXT,"
       "timestamp_ms INTEGER,"
       "watch_time_ms INTEGER,"
+      "has_video INTEGER,"
+      "has_audio INTEGER,"
+      "last_updated_time_s BIGINT NOT NULL,"
       "CONSTRAINT fk_origin "
       "FOREIGN KEY (origin_id) "
       "REFERENCES origin(id) "
@@ -64,12 +67,17 @@ bool MediaHistoryPlaybackTable::SavePlayback(
   sql::Statement statement(DB()->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO playback "
-      "(origin_id, url, watch_time_ms, timestamp_ms) "
-      "VALUES ((SELECT id FROM origin WHERE origin = ?), ?, ?, ?)"));
+      "(origin_id, url, watch_time_ms, timestamp_ms, has_video, has_audio, "
+      "last_updated_time_s) "
+      "VALUES ((SELECT id FROM origin WHERE origin = ?), ?, ?, ?, ?, ?, ?)"));
   statement.BindString(0, watch_time.origin.spec());
   statement.BindString(1, watch_time.url.spec());
   statement.BindInt(2, watch_time.cumulative_watch_time.InMilliseconds());
   statement.BindInt(3, watch_time.last_timestamp.InMilliseconds());
+  statement.BindInt(4, watch_time.has_video);
+  statement.BindInt(5, watch_time.has_audio);
+  statement.BindInt64(6,
+                      base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
   if (!statement.Run()) {
     return false;
   }

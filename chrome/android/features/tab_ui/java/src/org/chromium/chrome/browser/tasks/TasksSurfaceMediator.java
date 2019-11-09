@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.tasks;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
-import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
 
@@ -36,7 +36,7 @@ class TasksSurfaceMediator {
         assert mFakeboxDelegate != null;
 
         mModel = model;
-        mModel.set(IS_TAB_CAROUSEL, isTabCarousel);
+        mModel.set(IS_TAB_CAROUSEL_VISIBLE, isTabCarousel);
         mModel.set(FAKE_SEARCH_BOX_CLICK_LISTENER, new View.OnClickListener() {
             @Override
             public void onClick(View v) {

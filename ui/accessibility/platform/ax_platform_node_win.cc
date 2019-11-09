@@ -4312,7 +4312,7 @@ STDMETHODIMP AXPlatformNodeWin::InternalQueryInterface(
     if (!IsCellOrTableHeader(accessible->GetData().role))
       return E_NOINTERFACE;
   } else if (riid == IID_IAccessibleText || riid == IID_IAccessibleHypertext) {
-    if (ui::IsImage(accessible->GetData().role)) {
+    if (ui::IsImageOrVideo(accessible->GetData().role)) {
       return E_NOINTERFACE;
     }
   }

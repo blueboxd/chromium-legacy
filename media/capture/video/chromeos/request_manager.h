@@ -220,6 +220,10 @@ class CAPTURE_EXPORT RequestManager final
   void SetSensorTimestamp(cros::mojom::CameraMetadataPtr* settings,
                           uint64_t shutter_timestamp);
 
+  // Puts availability of Zero Shutter Lag into the metadata.
+  void SetZeroShutterLag(cros::mojom::CameraMetadataPtr* settings,
+                         bool enabled);
+
   // Prepares a capture request by mixing repeating request with one-shot
   // request if it exists. If there are reprocess requests in the queue, just
   // build the reprocess capture request without mixing the repeating request.

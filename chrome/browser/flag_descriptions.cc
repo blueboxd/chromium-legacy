@@ -3336,6 +3336,12 @@ const char kCrostiniWebUIInstallerName[] = "Crostini WebUI Installer";
 const char kCrostiniWebUIInstallerDescription[] =
     "Enable the new WebUI Crostini Installer.";
 
+const char kCryptAuthV1DeviceSyncDeprecateName[] =
+    "Deprecate CryptAuth v1 DeviceSync";
+const char kCryptAuthV1DeviceSyncDeprecateDescription[] =
+    "Deprecate the CryptAuth v1 DeviceSync protocol. The v2 DeviceSync flag "
+    "should be enabled before this flag is flipped.";
+
 const char kCryptAuthV2DeviceActivityStatusName[] =
     "CryptAuth Device Activity Status";
 const char kCryptAuthV2DeviceActivityStatusDescription[] =
@@ -3343,7 +3349,8 @@ const char kCryptAuthV2DeviceActivityStatusDescription[] =
 
 const char kCryptAuthV2DeviceSyncName[] = "CryptAuth v2 DeviceSync";
 const char kCryptAuthV2DeviceSyncDescription[] =
-    "Use the CryptAuth v2 DeviceSync protocol.";
+    "Use the CryptAuth v2 DeviceSync protocol. Note: v1 DeviceSync will "
+    "continue to run until the deprecation flag is flipped.";
 
 const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =

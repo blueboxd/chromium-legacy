@@ -701,6 +701,12 @@ class WebLocalFrame : public WebFrame {
   virtual bool GetPrintPresetOptionsForPlugin(const WebNode&,
                                               WebPrintPresetOptions*) = 0;
 
+  // Paint Preview ------------------------------------------------------------
+
+  // Captures a full frame paint preview of the WebFrame including subframes.
+  virtual bool CapturePaintPreview(const WebRect& bounds,
+                                   cc::PaintCanvas* canvas) = 0;
+
   // Focus --------------------------------------------------------------
 
   // Advance the focus of the WebView to next text input element from current

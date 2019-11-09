@@ -501,8 +501,6 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   }
 
   if (is_final_state_show) {
-    home_screen_delegate->UpdateAfterHomeLauncherShown();
-
     std::vector<aura::Window*> windows_to_hide_minimize;
     windows_to_hide_minimize.push_back(GetActiveWindow());
 

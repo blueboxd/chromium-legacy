@@ -1196,18 +1196,11 @@ void SVGSMILElement::ScheduleRepeatEvents() {
 }
 
 void SVGSMILElement::ScheduleEvent(const AtomicString& event_type) {
-  GetDocument()
-      .GetTaskRunner(TaskType::kDOMManipulation)
-      ->PostTask(FROM_HERE, WTF::Bind(&SVGSMILElement::DispatchPendingEvent,
-                                      WrapPersistent(this), event_type));
-}
-
-void SVGSMILElement::DispatchPendingEvent(const AtomicString& event_type) {
   DCHECK(event_type == event_type_names::kEndEvent ||
          event_type == event_type_names::kBeginEvent ||
          event_type == event_type_names::kRepeatEvent ||
          event_type == "repeatn");
-  DispatchEvent(*Event::Create(event_type));
+  EnqueueEvent(*Event::Create(event_type), TaskType::kDOMManipulation);
 }
 
 bool SVGSMILElement::HasValidTarget() const {

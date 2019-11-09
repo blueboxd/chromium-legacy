@@ -74,6 +74,32 @@ public class ContentViewRenderView extends FrameLayout {
         void surfaceDestroyed(boolean cacheBackBuffer);
     }
 
+    private final ArrayList<TrackedRunnable> mPendingRunnables = new ArrayList<>();
+
+    // Runnables posted via View.postOnAnimation may not run after the view is detached,
+    // if nothing else causes animation. However a pending runnable may held by a GC root
+    // from the thread itself, and thus can cause leaks. This class here is so ensure that
+    // on destroy, all pending tasks are run immediately so they do not lead to leaks.
+    private abstract class TrackedRunnable implements Runnable {
+        private boolean mHasRun;
+        public TrackedRunnable() {
+            mPendingRunnables.add(this);
+        }
+
+        @Override
+        public final void run() {
+            // View.removeCallbacks is not always reliable, and may run the callback even
+            // after it has been removed.
+            if (mHasRun) return;
+            assert mPendingRunnables.contains(this);
+            mPendingRunnables.remove(this);
+            mHasRun = true;
+            doRun();
+        }
+
+        protected abstract void doRun();
+    }
+
     // Non-static implementation of SurfaceEventListener that forward calls to native Compositor.
     // It is also responsible for updating |mRequested| and |mCurrent|.
     private class SurfaceEventListenerImpl implements SurfaceEventListener {
@@ -122,7 +148,7 @@ public class ContentViewRenderView extends FrameLayout {
 
     // Abstract differences between SurfaceView and TextureView behind this class.
     // Also responsible for holding and calling callbacks.
-    private static class SurfaceData implements SurfaceEventListener {
+    private class SurfaceData implements SurfaceEventListener {
         private class TextureViewWithInvalidate extends TextureView {
             public TextureViewWithInvalidate(Context context) {
                 super(context);
@@ -213,16 +239,19 @@ public class ContentViewRenderView extends FrameLayout {
             }
 
             // This postOnAnimation is to avoid manipulating the view tree inside layout or draw.
-            parent.postOnAnimation(() -> {
-                if (mMarkedForDestroy) return;
-                View view = (mMode == MODE_SURFACE_VIEW) ? mSurfaceView : mTextureView;
-                assert view != null;
-                // Always insert view for new surface below the existing view to avoid artifacts
-                // during surface swaps. Index 0 is the lowest child.
-                mParent.addView(view, 0,
-                        new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
-                                FrameLayout.LayoutParams.MATCH_PARENT));
-                mParent.invalidate();
+            parent.postOnAnimation(new TrackedRunnable() {
+                @Override
+                protected void doRun() {
+                    if (mMarkedForDestroy) return;
+                    View view = (mMode == MODE_SURFACE_VIEW) ? mSurfaceView : mTextureView;
+                    assert view != null;
+                    // Always insert view for new surface below the existing view to avoid artifacts
+                    // during surface swaps. Index 0 is the lowest child.
+                    mParent.addView(view, 0,
+                            new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                                    FrameLayout.LayoutParams.MATCH_PARENT));
+                    mParent.invalidate();
+                }
             });
         }
 
@@ -272,34 +301,47 @@ public class ContentViewRenderView extends FrameLayout {
             assert mMarkedForDestroy;
             runCallbacks();
             // This postOnAnimation is to avoid manipulating the view tree inside layout or draw.
-            mParent.postOnAnimation(() -> {
-                if (mMode == MODE_SURFACE_VIEW) {
-                    // Detaching a SurfaceView causes a flicker because the SurfaceView tears down
-                    // the Surface in SurfaceFlinger before removing its hole in the view tree.
-                    // This is a complicated heuristics to avoid this. It first moves the
-                    // SurfaceView behind the new View. Then wait two frames before detaching
-                    // the SurfaceView. Waiting for a single frame still causes flickers on
-                    // high end devices like Pixel 3.
-                    moveChildToBackWithoutDetach(mParent, mSurfaceView);
-                    mParent.postOnAnimation(() -> mParent.postOnAnimation(() -> {
-                        mParent.removeView(mSurfaceView);
-                        mParent.invalidate();
-                        if (mCachedSurfaceNeedsEviction) {
-                            mEvict.run();
-                            mCachedSurfaceNeedsEviction = false;
-                        }
+            mParent.postOnAnimation(new TrackedRunnable() {
+                @Override
+                protected void doRun() {
+                    if (mMode == MODE_SURFACE_VIEW) {
+                        // Detaching a SurfaceView causes a flicker because the SurfaceView tears
+                        // down the Surface in SurfaceFlinger before removing its hole in the view
+                        // tree. This is a complicated heuristics to avoid this. It first moves the
+                        // SurfaceView behind the new View. Then wait two frames before detaching
+                        // the SurfaceView. Waiting for a single frame still causes flickers on
+                        // high end devices like Pixel 3.
+                        moveChildToBackWithoutDetach(mParent, mSurfaceView);
+                        TrackedRunnable inner = new TrackedRunnable() {
+                            @Override
+                            public void doRun() {
+                                mParent.removeView(mSurfaceView);
+                                mParent.invalidate();
+                                if (mCachedSurfaceNeedsEviction) {
+                                    mEvict.run();
+                                    mCachedSurfaceNeedsEviction = false;
+                                }
+                                runCallbackOnNextSurfaceData();
+                            }
+                        };
+                        TrackedRunnable outer = new TrackedRunnable() {
+                            @Override
+                            public void doRun() {
+                                mParent.postOnAnimation(inner);
+                            }
+                        };
+                        mParent.postOnAnimation(outer);
+                    } else if (mMode == MODE_TEXTURE_VIEW) {
+                        mParent.removeView(mTextureView);
                         runCallbackOnNextSurfaceData();
-                    }));
-                } else if (mMode == MODE_TEXTURE_VIEW) {
-                    mParent.removeView(mTextureView);
-                    runCallbackOnNextSurfaceData();
-                } else {
-                    assert false;
+                    } else {
+                        assert false;
+                    }
                 }
             });
         }
 
-        private static void moveChildToBackWithoutDetach(ViewGroup parent, View child) {
+        private void moveChildToBackWithoutDetach(ViewGroup parent, View child) {
             final int numberOfChildren = parent.getChildCount();
             final int childIndex = parent.indexOfChild(child);
             if (childIndex <= 0) return;
@@ -593,6 +635,13 @@ public class ContentViewRenderView extends FrameLayout {
         mCurrent = null;
 
         mWindowAndroid = null;
+
+        while (!mPendingRunnables.isEmpty()) {
+            TrackedRunnable runnable = mPendingRunnables.get(0);
+            removeCallbacks(runnable);
+            runnable.run();
+            assert !mPendingRunnables.contains(runnable);
+        }
         ContentViewRenderViewJni.get().destroy(mNativeContentViewRenderView);
         mNativeContentViewRenderView = 0;
     }

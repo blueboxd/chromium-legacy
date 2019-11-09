@@ -4,6 +4,7 @@
 
 #include "ash/shelf/scrollable_shelf_view.h"
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/screen_util.h"
@@ -13,6 +14,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -215,6 +217,33 @@ class ScrollableShelfView::ScrollableShelfArrowView
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// ScrollableShelfAnimationMetricsReporter
+
+class ScrollableShelfAnimationMetricsReporter
+    : public ui::AnimationMetricsReporter {
+ public:
+  ScrollableShelfAnimationMetricsReporter() {}
+
+  ~ScrollableShelfAnimationMetricsReporter() override = default;
+
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE("Apps.ScrollableShelf.AnimationSmoothness", value);
+    if (Shell::Get()->app_list_controller()->IsVisible()) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.ScrollableShelf.AnimationSmoothness.VisibleHomeLauncher",
+          value);
+    } else {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.ScrollableShelf.AnimationSmoothness.NotVisibleHomeLauncher",
+          value);
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollableShelfAnimationMetricsReporter);
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // ScrollableShelfContainerView
 
 class ScrollableShelfContainerView : public ShelfContainerView,
@@ -342,7 +371,9 @@ ScrollableShelfView::ScrollableShelfView(ShelfModel* model, Shelf* shelf)
                                 shelf,
                                 /*drag_and_drop_host=*/this,
                                 /*shelf_button_delegate=*/this)),
-      page_flip_time_threshold_(kShelfPageFlipDelay) {
+      page_flip_time_threshold_(kShelfPageFlipDelay),
+      animation_metrics_reporter_(
+          std::make_unique<ScrollableShelfAnimationMetricsReporter>()) {
   Shell::Get()->AddShellObserver(this);
   set_allow_deactivate_on_esc(true);
 }
@@ -512,6 +543,8 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
   animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
   animation_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+  animation_settings.SetAnimationMetricsReporter(
+      animation_metrics_reporter_.get());
   animation_settings.AddObserver(this);
   shelf_view_->layer()->SetTransform(current_transform);
 }

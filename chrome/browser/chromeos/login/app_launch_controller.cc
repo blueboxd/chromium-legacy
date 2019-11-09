@@ -288,15 +288,18 @@ void AppLaunchController::OnCancelAppLaunch() {
   OnLaunchFailed(KioskAppLaunchError::USER_CANCEL);
 }
 
-void AppLaunchController::OnNetworkConfigRequested(bool requested) {
-  network_config_requested_ = requested;
-  if (requested) {
-    MaybeShowNetworkConfigureUI();
-  } else {
-    app_launch_splash_screen_view_->UpdateAppLaunchState(
-        AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
-    startup_app_launcher_->RestartLauncher();
-  }
+void AppLaunchController::OnNetworkConfigRequested() {
+  DCHECK(!network_config_requested_);
+  network_config_requested_ = true;
+  MaybeShowNetworkConfigureUI();
+}
+
+void AppLaunchController::OnNetworkConfigFinished() {
+  DCHECK(network_config_requested_);
+  network_config_requested_ = false;
+  app_launch_splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
+  startup_app_launcher_->RestartLauncher();
 }
 
 void AppLaunchController::OnNetworkStateChanged(bool online) {

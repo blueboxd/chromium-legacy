@@ -197,7 +197,7 @@ void MediaCodecLoop::EnqueueInputBuffer(const InputBuffer& input_buffer) {
 
   media::MediaCodecStatus status = MEDIA_CODEC_OK;
 
-  if (input_data.encryption_scheme != EncryptionMode::kUnencrypted) {
+  if (input_data.encryption_scheme != EncryptionScheme::kUnencrypted) {
     // Note that input_data might not have a valid memory ptr if this is a
     // re-send of a buffer that was sent before decryption keys arrived.
 

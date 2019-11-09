@@ -107,8 +107,8 @@ void CheckCodecs(const std::vector<media::VideoCodec>& actual,
 }
 
 void CheckEncryptionSchemes(
-    const base::flat_set<media::EncryptionMode>& actual,
-    const std::vector<media::EncryptionMode>& expected) {
+    const base::flat_set<media::EncryptionScheme>& actual,
+    const std::vector<media::EncryptionScheme>& expected) {
   EXPECT_EQ(expected.size(), actual.size());
   for (const auto& encryption_scheme : expected) {
     EXPECT_TRUE(base::Contains(actual, encryption_scheme));
@@ -198,7 +198,7 @@ TEST(CdmManifestTest, ValidManifest) {
                media::VideoCodec::kCodecAV1});
   CheckEncryptionSchemes(
       capability.encryption_schemes,
-      {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs});
+      {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs});
   CheckSessionTypes(capability.session_types,
                     {media::CdmSessionType::kTemporary,
                      media::CdmSessionType::kPersistentLicense});
@@ -212,7 +212,7 @@ TEST(CdmManifestTest, EmptyManifest) {
   EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
   CheckCodecs(capability.video_codecs, {});
   CheckEncryptionSchemes(capability.encryption_schemes,
-                         {media::EncryptionMode::kCenc});
+                         {media::EncryptionScheme::kCenc});
   CheckSessionTypes(capability.session_types,
                     {media::CdmSessionType::kTemporary});
   CheckProxyProtocols(capability.cdm_proxy_protocols, {});
@@ -298,14 +298,14 @@ TEST(CdmManifestTest, ManifestEncryptionSchemes) {
     manifest.SetKey(kCdmSupportedEncryptionSchemesName, MakeListValue("cenc"));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
     CheckEncryptionSchemes(capability.encryption_schemes,
-                           {media::EncryptionMode::kCenc});
+                           {media::EncryptionScheme::kCenc});
   }
   {
     CdmCapability capability;
     manifest.SetKey(kCdmSupportedEncryptionSchemesName, MakeListValue("cbcs"));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
     CheckEncryptionSchemes(capability.encryption_schemes,
-                           {media::EncryptionMode::kCbcs});
+                           {media::EncryptionScheme::kCbcs});
   }
   {
     // Try multiple valid entries.
@@ -315,7 +315,7 @@ TEST(CdmManifestTest, ManifestEncryptionSchemes) {
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
     CheckEncryptionSchemes(
         capability.encryption_schemes,
-        {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs});
+        {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs});
   }
   {
     // Invalid encryption schemes are ignored. However, if value specified then
@@ -331,7 +331,7 @@ TEST(CdmManifestTest, ManifestEncryptionSchemes) {
                     MakeListValue("invalid", "cenc"));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
     CheckEncryptionSchemes(capability.encryption_schemes,
-                           {media::EncryptionMode::kCenc});
+                           {media::EncryptionScheme::kCenc});
   }
   {
     // Wrong types are an error.
@@ -345,7 +345,7 @@ TEST(CdmManifestTest, ManifestEncryptionSchemes) {
     EXPECT_TRUE(manifest.RemoveKey(kCdmSupportedEncryptionSchemesName));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
     CheckEncryptionSchemes(capability.encryption_schemes,
-                           {media::EncryptionMode::kCenc});
+                           {media::EncryptionScheme::kCenc});
   }
 }
 
@@ -442,7 +442,7 @@ TEST(CdmManifestTest, FileManifest) {
                media::VideoCodec::kCodecAV1});
   CheckEncryptionSchemes(
       capability.encryption_schemes,
-      {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs});
+      {media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs});
   CheckSessionTypes(capability.session_types,
                     {media::CdmSessionType::kTemporary,
                      media::CdmSessionType::kPersistentLicense});
@@ -522,7 +522,7 @@ TEST(CdmManifestTest, FileManifestLite) {
   EXPECT_TRUE(ParseCdmManifestFromPath(manifest_path, &version, &capability));
   CheckCodecs(capability.video_codecs, {});
   CheckEncryptionSchemes(capability.encryption_schemes,
-                         {media::EncryptionMode::kCenc});
+                         {media::EncryptionScheme::kCenc});
   CheckSessionTypes(capability.session_types,
                     {media::CdmSessionType::kTemporary});
   CheckProxyProtocols(capability.cdm_proxy_protocols, {});

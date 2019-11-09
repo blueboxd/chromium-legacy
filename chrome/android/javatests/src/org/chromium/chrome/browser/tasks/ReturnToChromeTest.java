@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 
 import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS;
 
-import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -18,26 +17,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
-
-import java.util.concurrent.TimeoutException;
 
 /**
  * Tests the functionality of return to chrome features that open overview mode if the timeout
@@ -45,20 +39,29 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=" + ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
+        "force-fieldtrials=Study/Group"})
 public class ReturnToChromeTest {
+    private static final String BASE_PARAMS =
+            "force-fieldtrial-params=Study.Group:" + TAB_SWITCHER_ON_RETURN_MS + "/0";
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
-    private ChromeTabbedActivity mActivity;
+    private String mUrl;
+
+    @Rule
+    public RenderTestRule mRenderTestRule = new RenderTestRule();
 
     @Before
     public void setUp() {
         FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
 
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mActivity = mActivityTestRule.getActivity();
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
 
-        setupTabs();
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     /**
@@ -68,19 +71,14 @@ public class ReturnToChromeTest {
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-            "enable-features=" + ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:" + TAB_SWITCHER_ON_RETURN_MS
-                    + "/100000"})
-    public void
-    testTabSwitcherModeNotTriggeredWithinThreshold() throws Exception {
-        finishActivityCompletely();
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS + "/100000"})
+    public void testTabSwitcherModeNotTriggeredWithinThreshold() throws Exception {
+        TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 2, 0, mUrl);
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
 
         mActivityTestRule.startMainActivityFromLauncher();
-        mActivity = mActivityTestRule.getActivity();
 
-        Assert.assertFalse(mActivity.getLayoutManager().overviewVisible());
+        Assert.assertFalse(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
     }
 
     /**
@@ -90,18 +88,14 @@ public class ReturnToChromeTest {
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-            "enable-features=" + ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:" + TAB_SWITCHER_ON_RETURN_MS + "/0"})
-    public void
-    testTabSwitcherModeTriggeredBeyondThreshold() throws Exception {
-        finishActivityCompletely();
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS + "/0"})
+    public void testTabSwitcherModeTriggeredBeyondThreshold() throws Exception {
+        TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 2, 0, mUrl);
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
 
         mActivityTestRule.startMainActivityFromLauncher();
-        mActivity = mActivityTestRule.getActivity();
 
-        Assert.assertTrue(mActivity.getLayoutManager().overviewVisible());
+        Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
         CriteriaHelper.pollUiThread(Criteria.equals(true,
                 mActivityTestRule.getActivity()
@@ -112,44 +106,29 @@ public class ReturnToChromeTest {
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
     }
 
-    private void setupTabs() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().getTabModelSelector().closeAllTabs());
-        EmbeddedTestServer testServer =
-                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        final String url = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
+    @Test
+    @SmallTest
+    @Feature({"ReturnToChrome", "RenderTest"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS + "/0"})
+    public void testInitialScrollIndex() throws Exception {
+        TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 10, 0, mUrl);
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
 
-        // Add 2 tabs.
-        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
-                mActivity, org.chromium.chrome.R.id.new_tab_menu_id);
-        mActivityTestRule.loadUrl(url);
-        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
-                mActivity, org.chromium.chrome.R.id.new_tab_menu_id);
-        mActivityTestRule.loadUrl(url);
+        mActivityTestRule.startMainActivityFromLauncher();
 
-        assertEquals(2, mActivity.getTabModelSelector().getTotalTabCount());
-    }
+        Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
-    private void finishActivityCompletely() throws TimeoutException {
-        final CallbackHelper activityCallback = new CallbackHelper();
-        ApplicationStatus.ActivityStateListener stateListener =
-                new ApplicationStatus.ActivityStateListener() {
-                    @Override
-                    public void onActivityStateChange(Activity activity, int newState) {
-                        if (newState == ActivityState.STOPPED) {
-                            activityCallback.notifyCalled();
-                            ApplicationStatus.unregisterActivityStateListener(this);
-                        }
-                    }
-                };
+        CriteriaHelper.pollUiThread(Criteria.equals(true,
+                mActivityTestRule.getActivity()
+                        .getTabModelSelector()
+                        .getTabModelFilterProvider()
+                        .getCurrentTabModelFilter()::isTabModelRestored));
 
-        ApplicationStatus.registerStateListenerForAllActivities(stateListener);
-        try {
-            mActivity.finish();
-            activityCallback.waitForCallback("Activity did not stop as expected", 0);
-            mActivityTestRule.setActivity(null);
-        } finally {
-            ApplicationStatus.unregisterActivityStateListener(stateListener);
-        }
+        assertEquals(10, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+        assertEquals(9, mActivityTestRule.getActivity().getCurrentTabModel().index());
+        // Make sure the grid tab switcher is scrolled down to show the selected tab.
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
+                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+                "10_web_tabs-select_last");
     }
 }

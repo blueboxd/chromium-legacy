@@ -471,9 +471,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // WARNING: This method may be called very frequently.
   virtual void DidUpdateCurrentHistoryItem() {}
 
-  // The frame's theme color has changed.
-  virtual void DidChangeThemeColor() {}
-
   // Called to report resource timing information for this frame to the parent.
   // Only used when the parent frame is remote.
   virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) {}

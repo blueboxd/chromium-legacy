@@ -7246,10 +7246,10 @@ WebContentsImpl::GetRecordAggregateWatchTimeCallback() {
   return base::BindRepeating(
       [](base::WeakPtr<RenderFrameHostDelegate> delegate,
          GURL last_committed_url, base::TimeDelta total_watch_time,
-         base::TimeDelta time_stamp) {
-        content::MediaPlayerWatchTime watch_time(last_committed_url,
-                                                 last_committed_url.GetOrigin(),
-                                                 total_watch_time, time_stamp);
+         base::TimeDelta time_stamp, bool has_video, bool has_audio) {
+        content::MediaPlayerWatchTime watch_time(
+            last_committed_url, last_committed_url.GetOrigin(),
+            total_watch_time, time_stamp, has_video, has_audio);
 
         // Save the watch time if the delegate is still alive.
         if (delegate)

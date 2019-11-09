@@ -2342,7 +2342,7 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   DCHECK_EQ(target_state, DocumentLifecycle::kPaintClean);
   RunPaintLifecyclePhase();
   DCHECK(ShouldThrottleRendering() ||
-         (frame_->GetDocument()->Printing() &&
+         (frame_->GetDocument()->IsCapturingLayout() &&
           !RuntimeEnabledFeatures::PrintBrowserEnabled()) ||
          Lifecycle().GetState() == DocumentLifecycle::kPaintClean);
 }
@@ -2495,16 +2495,16 @@ static void ForAllGraphicsLayers(GraphicsLayer& layer,
 
 void LocalFrameView::RunPaintLifecyclePhase() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPaintLifecyclePhase");
-  // While printing a document, the paint walk is done by the printing component
-  // into a special canvas. There is no point doing a normal paint step (or
-  // animations update) when in this mode.
+  // While printing or capturing a paint preview of a document, the paint walk
+  // is done into a special canvas. There is no point doing a normal paint step
+  // (or animations update) when in this mode.
   //
   // RuntimeEnabledFeatures::PrintBrowserEnabled is a mode which runs the
   // browser normally, but renders every page as if it were being printed.
   // See crbug.com/667547
-  bool print_mode_enabled = frame_->GetDocument()->Printing() &&
-                            !RuntimeEnabledFeatures::PrintBrowserEnabled();
-  if (!print_mode_enabled)
+  bool is_capturing_layout = frame_->GetDocument()->IsCapturingLayout() &&
+                             !RuntimeEnabledFeatures::PrintBrowserEnabled();
+  if (!is_capturing_layout)
     PaintTree();
 
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -2513,7 +2513,7 @@ void LocalFrameView::RunPaintLifecyclePhase() {
     }
   }
 
-  if (!print_mode_enabled) {
+  if (!is_capturing_layout) {
     bool needed_update = !paint_artifact_compositor_ ||
                          paint_artifact_compositor_->NeedsUpdate();
     PushPaintArtifactToCompositor();
@@ -3541,9 +3541,11 @@ void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
   // with CompositeAfterPaint.
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
-  // Paint the whole rect if "MainFrameClipsContent" is false, meaning that
-  // WebPreferences::record_whole_document is true.
-  if (!frame_->GetSettings()->GetMainFrameClipsContent())
+  // Paint the whole rect if ClipsContent is false, meaning that the whole
+  // document should be recorded. This occurs if:
+  // - A paint preview is being captured.
+  // - WebPreferences::record_whole_document is true.
+  if (!frame_->ClipsContent())
     return;
 
   // By default we consider the bounds of the FrameView to be what is considered

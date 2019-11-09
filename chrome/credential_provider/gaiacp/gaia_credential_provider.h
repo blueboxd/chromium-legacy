@@ -5,6 +5,8 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_GAIACP_GAIA_CREDENTIAL_PROVIDER_H_
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_GAIA_CREDENTIAL_PROVIDER_H_
 
+#include <wrl/client.h>
+
 #include <limits>
 #include <memory>
 #include <set>
@@ -72,12 +74,12 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   // determine the result of this query.
   static bool CanNewUsersBeCreated(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
 
-  // Struct to allow passing CComPtr by pointer without the implicit conversion
-  // to ** version of the CComPtr
+  // Struct to allow passing ComPtr by pointer without the implicit conversion
+  // to ** version of the ComPtr
   struct GaiaCredentialComPtrStorage {
     GaiaCredentialComPtrStorage();
     ~GaiaCredentialComPtrStorage();
-    CComPtr<IGaiaCredential> gaia_cred;
+    Microsoft::WRL::ComPtr<IGaiaCredential> gaia_cred;
   };
 
   typedef HRESULT (*CredentialCreatorFn)(GaiaCredentialComPtrStorage*);
@@ -124,7 +126,7 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
     // required if a previous call to RequestUserRefreshIfNeeded was made that
     // requested a credential changed event.
     bool SetAutoLogonCredential(
-        const CComPtr<IGaiaCredential>& auto_logon_credential);
+        const Microsoft::WRL::ComPtr<IGaiaCredential>& auto_logon_credential);
 
     // Gets the current valid update state of the provider to determnie whether
     // an auto logon needs to be done or a refresh of the credentials. The two
@@ -143,7 +145,7 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
     void InternalReset();
 
     // Reference to the credential that authenticated the user.
-    CComPtr<IGaiaCredential> auto_logon_credential_;
+    Microsoft::WRL::ComPtr<IGaiaCredential> auto_logon_credential_;
 
     // Set in NotifyUserAccessDenied to notify the main thread that it will need
     // to update credentials on the next call to GetCredentialCount. This
@@ -184,7 +186,7 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   // |auto_logon_credential| with a reference to the credential that needs to
   // perform auto logon (if any).
   void AddCredentialAndCheckAutoLogon(
-      const CComPtr<IGaiaCredential>& cred,
+      const Microsoft::WRL::ComPtr<IGaiaCredential>& cred,
       const base::string16& sid,
       GaiaCredentialComPtrStorage* auto_logon_credential);
 
@@ -231,15 +233,15 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus_ = CPUS_INVALID;
   DWORD cpus_flags_ = 0;
   UINT_PTR advise_context_;
-  CComPtr<ICredentialProviderEvents> events_;
-  CComPtr<ICredentialProviderUserArray> user_array_;
+  Microsoft::WRL::ComPtr<ICredentialProviderEvents> events_;
+  Microsoft::WRL::ComPtr<ICredentialProviderUserArray> user_array_;
 
   // List of credentials exposed by this provider.  The first is always the
   // Gaia credential for creating new users.  The rest are reauth credentials.
-  std::vector<CComPtr<IGaiaCredential>> users_;
+  std::vector<Microsoft::WRL::ComPtr<IGaiaCredential>> users_;
 
   // Reference to the credential that authenticated the user.
-  CComPtr<IGaiaCredential> auto_logon_credential_;
+  Microsoft::WRL::ComPtr<IGaiaCredential> auto_logon_credential_;
 
   // Background thread updater of token handles that is created on startup to
   // ensure that user must sign in through gaia if their token handle becomes

@@ -165,6 +165,10 @@ android_apk("weblayer_support_apk") {
     "//mojo/public/java:system_java",
     "//net/android:net_java",
   ]
+
+  # default upstream safebrowsing related classes
+  deps += [ "//weblayer/browser/java:gms_bridge_upstream_impl_java" ]
+
   apk_name = "WebLayerSupport"
   android_manifest = weblayer_support_manifest
   min_sdk_version = 21

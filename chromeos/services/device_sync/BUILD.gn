@@ -127,6 +127,8 @@ static_library("device_sync") {
     "remote_device_provider.h",
     "remote_device_provider_impl.cc",
     "remote_device_provider_impl.h",
+    "remote_device_v2_loader.cc",
+    "remote_device_v2_loader.h",
     "software_feature_manager.h",
     "software_feature_manager_impl.cc",
     "software_feature_manager_impl.h",
@@ -272,6 +274,7 @@ source_set("unit_tests") {
     "device_sync_service_unittest.cc",
     "remote_device_loader_unittest.cc",
     "remote_device_provider_impl_unittest.cc",
+    "remote_device_v2_loader_unittest.cc",
     "software_feature_manager_impl_unittest.cc",
     "sync_scheduler_impl_unittest.cc",
   ]

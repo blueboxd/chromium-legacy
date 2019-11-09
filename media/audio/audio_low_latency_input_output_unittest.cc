@@ -253,7 +253,7 @@ class AudioInputStreamTraits {
       const AudioParameters& params) {
     return audio_manager->MakeAudioInputStream(
         params, AudioDeviceDescription::kDefaultDeviceId,
-        base::Bind(&OnLogMessage));
+        base::BindRepeating(&OnLogMessage));
   }
 };
 
@@ -269,8 +269,8 @@ class AudioOutputStreamTraits {
 
   static StreamType* CreateStream(AudioManager* audio_manager,
       const AudioParameters& params) {
-    return audio_manager->MakeAudioOutputStream(params, std::string(),
-                                                base::Bind(&OnLogMessage));
+    return audio_manager->MakeAudioOutputStream(
+        params, std::string(), base::BindRepeating(&OnLogMessage));
   }
 };
 

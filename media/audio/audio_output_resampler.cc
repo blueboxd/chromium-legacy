@@ -184,10 +184,11 @@ AudioOutputResampler::AudioOutputResampler(
       output_params_(output_params),
       original_output_params_(output_params),
       device_id_(output_device_id),
-      reinitialize_timer_(FROM_HERE,
-                          close_delay_,
-                          base::Bind(&AudioOutputResampler::Reinitialize,
-                                     base::Unretained(this))),
+      reinitialize_timer_(
+          FROM_HERE,
+          close_delay_,
+          base::BindRepeating(&AudioOutputResampler::Reinitialize,
+                              base::Unretained(this))),
       register_debug_recording_source_callback_(
           register_debug_recording_source_callback) {
   DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());

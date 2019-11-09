@@ -92,7 +92,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                 : media::VideoDecoderConfig::AlphaMode::kIsOpaque,
       color_space, media::VideoTransformation(rotation, reflection), coded_size,
       visible_rect, natural_size, media::EmptyExtraData(),
-      media::Unencrypted());
+      media::EncryptionScheme::kUnencrypted);
 
   if (!config.IsValidConfig())
     return 0;

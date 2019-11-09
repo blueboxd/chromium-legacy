@@ -8,6 +8,7 @@
 #include <lmerr.h>
 #include <objbase.h>
 #include <unknwn.h>
+#include <wrl/client.h>
 
 #include <memory>
 
@@ -348,10 +349,10 @@ TEST_F(GcpSetupTest, LaunchGcpAfterInstall) {
 
   locked_file.Close();
 
-  CComPtr<IGaiaCredentialProvider> provider;
+  Microsoft::WRL::ComPtr<IGaiaCredentialProvider> provider;
   ASSERT_EQ(S_OK,
             CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
-                nullptr, IID_IGaiaCredentialProvider, (void**)&provider));
+                nullptr, IID_PPV_ARGS(&provider)));
 
   // Make sure newer version exists and old version is gone.
   ExpectAllFilesToExist(true, product_version());

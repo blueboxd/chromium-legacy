@@ -207,7 +207,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessOptOutOfSearchSuggestions() = 0;
     virtual bool ShouldProcessThemeChangeMessages() = 0;
     virtual bool ShouldProcessQueryAutocomplete(bool is_active_tab) = 0;
-    virtual bool ShouldProcessStopAutocomplete(bool is_active_tab) = 0;
+    virtual bool ShouldProcessStopAutocomplete() = 0;
     virtual bool ShouldProcessBlocklistPromo() = 0;
     virtual bool ShouldProcessDeleteAutocompleteMatch() = 0;
   };

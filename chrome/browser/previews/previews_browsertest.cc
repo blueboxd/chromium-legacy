@@ -360,9 +360,8 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_TRUE(noscript_js_requested());
 }
 
-IN_PROC_BROWSER_TEST_P(
-    PreviewsNoScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabledButHttpRequest)) {
+IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsForHttp)) {
   GURL url = http_url();
 
   // Whitelist NoScript for http_hint_setup_url() host.
@@ -370,9 +369,9 @@ IN_PROC_BROWSER_TEST_P(
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  // Verify loaded js resource but not css triggered by noscript tag.
-  EXPECT_TRUE(noscript_js_requested());
-  EXPECT_FALSE(noscript_css_requested());
+  // Verify loaded noscript tag triggered css resource but not js one.
+  EXPECT_TRUE(noscript_css_requested());
+  EXPECT_FALSE(noscript_js_requested());
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,

@@ -1860,6 +1860,16 @@ int AppListView::GetCurrentAppListHeight() const {
 }
 
 float AppListView::GetAppListTransitionProgress(int flags) const {
+  // During transition between home and overview in tablet mode, the app list
+  // widget gets scaled down from full screen state - if this is the case,
+  // the app list layout should match the current app list state, so return
+  // the progress for the current app list state.
+  const gfx::Transform transform = GetWidget()->GetLayer()->transform();
+  if (is_tablet_mode_ && transform.IsScaleOrTranslation() &&
+      !transform.IsIdentityOrTranslation()) {
+    return GetTransitionProgressForState(app_list_state_);
+  }
+
   int current_height = GetCurrentAppListHeight();
   if (flags & kProgressFlagWithTransform) {
     current_height -=

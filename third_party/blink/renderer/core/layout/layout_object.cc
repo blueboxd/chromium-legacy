@@ -1416,16 +1416,13 @@ bool LayoutObject::HasDistortingVisualEffects() const {
   // TODO(szager): Check occlusion information propagated from out-of-process
   // parent frame.
 
-  // TODO(szager): Remove CHECK's after diagnosing crash.
-  PaintLayer* enclosing_layer = EnclosingLayer();
-  CHECK(enclosing_layer);
-  CHECK(enclosing_layer->GetLayoutObject()
-            .FirstFragment()
-            .HasLocalBorderBoxProperties());
-  PropertyTreeState paint_properties = EnclosingLayer()
-                                           ->GetLayoutObject()
-                                           .FirstFragment()
-                                           .LocalBorderBoxProperties();
+  auto& first_fragment = EnclosingLayer()->GetLayoutObject().FirstFragment();
+  // This can happen for an iframe element which is outside the viewport and has
+  // therefore never been painted. In that case, we do the safe thing -- report
+  // it as having distorting visual effects.
+  if (!first_fragment.HasLocalBorderBoxProperties())
+    return true;
+  auto paint_properties = first_fragment.LocalBorderBoxProperties();
 
   // No filters, no blends, no opacity < 100%.
   for (const auto* effect = &paint_properties.Effect().Unalias(); effect;
@@ -1438,15 +1435,10 @@ bool LayoutObject::HasDistortingVisualEffects() const {
     }
   }
 
-  // TODO(szager): Remove CHECK's after diagnosing crash.
-  CHECK(GetDocument().IsActive());
-  LocalFrame* frame = GetDocument().GetFrame();
-  CHECK(frame);
-  LayoutView* layout_view = frame->LocalFrameRoot().ContentLayoutObject();
-  CHECK(layout_view);
-  CHECK(layout_view->FirstFragment().HasLocalBorderBoxProperties());
-  PropertyTreeState root_properties =
-      layout_view->FirstFragment().LocalBorderBoxProperties();
+  auto& local_frame_root = GetDocument().GetFrame()->LocalFrameRoot();
+  auto& root_fragment = local_frame_root.ContentLayoutObject()->FirstFragment();
+  CHECK(root_fragment.HasLocalBorderBoxProperties());
+  PropertyTreeState root_properties = root_fragment.LocalBorderBoxProperties();
 
   // The only allowed transforms are 2D translation and proportional up-scaling.
   const auto& translation_2d_or_matrix =

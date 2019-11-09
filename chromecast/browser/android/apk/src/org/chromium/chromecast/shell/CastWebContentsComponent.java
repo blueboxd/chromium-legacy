@@ -13,8 +13,9 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.os.PatternMatcher;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chromecast.base.Controller;
 import org.chromium.content_public.browser.WebContents;
 

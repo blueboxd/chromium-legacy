@@ -255,6 +255,18 @@ void RequestManager::SetSensorTimestamp(
   AddOrUpdateMetadataEntry(settings, std::move(e));
 }
 
+void RequestManager::SetZeroShutterLag(cros::mojom::CameraMetadataPtr* settings,
+                                       bool enabled) {
+  std::vector<uint8_t> control_enable_zsl = {static_cast<uint8_t>(enabled)};
+  cros::mojom::CameraMetadataEntryPtr e =
+      cros::mojom::CameraMetadataEntry::New();
+  e->tag = cros::mojom::CameraMetadataTag::ANDROID_CONTROL_ENABLE_ZSL;
+  e->type = cros::mojom::EntryType::TYPE_BYTE;
+  e->count = 1;
+  e->data = control_enable_zsl;
+  AddOrUpdateMetadataEntry(settings, std::move(e));
+}
+
 void RequestManager::PrepareCaptureRequest() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
@@ -441,6 +453,7 @@ bool RequestManager::TryPrepareOneShotRequest(
     *settings = std::move(take_photo_settings_queue_.front());
     SetJpegOrientation(settings);
   }
+  SetZeroShutterLag(settings, true);
   take_photo_settings_queue_.pop();
   return true;
 }

@@ -137,13 +137,15 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     ~Config();
 
     std::string AsHumanReadableString() const;
-    bool is_encrypted() const { return encryption_scheme.is_encrypted(); }
+    bool is_encrypted() const {
+      return encryption_scheme != EncryptionScheme::kUnencrypted;
+    }
 
     // The video codec and profile.
     VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
 
     // Whether the stream is encrypted, and, if so, the scheme used.
-    EncryptionScheme encryption_scheme;
+    EncryptionScheme encryption_scheme = EncryptionScheme::kUnencrypted;
 
     // The CDM that the VDA should use to decode encrypted streams. Must be
     // set to a valid ID if |is_encrypted|.

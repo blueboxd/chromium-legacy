@@ -98,6 +98,10 @@ fieldset {
   font-size: 13px;
   font-family: 'Roboto Regular', 'Roboto', sans-serif;
   color: #3C4043;
+
+  /* The z-index is set so that any "positioned" elements in the article text
+   * (e.g. footnotes) are rendered below the dialog. */
+  z-index: 1;
 }
 
 #settingsDialog h2 {
@@ -232,7 +236,8 @@ select#fontFamilySelection:focus {
   margin-top: -4px;
 
   /* Render the thumb on top of the tickmarks. We can't just rearrange the HTML
-   * because the tickmarks need to render above the slider's track. */
+   * because the tickmarks need to render above the slider's track but below the
+   * thumb. */
   position: relative;
   z-index: 1;
 }

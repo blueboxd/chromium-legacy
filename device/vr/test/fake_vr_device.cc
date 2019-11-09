@@ -18,12 +18,6 @@ FakeVRDevice::~FakeVRDevice() {}
 mojom::VRDisplayInfoPtr FakeVRDevice::InitBasicDevice() {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
   display_info->id = GetId();
-  display_info->display_name = "FakeVRDevice";
-
-  display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->has_position = false;
-  display_info->capabilities->has_external_display = false;
-  display_info->capabilities->can_present = false;
 
   display_info->left_eye = InitEye(45, -0.03f, 1024);
   display_info->right_eye = InitEye(45, 0.03f, 1024);

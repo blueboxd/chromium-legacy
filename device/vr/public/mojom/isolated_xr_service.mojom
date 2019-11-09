@@ -73,14 +73,6 @@ interface XRRuntime {
       pending_associated_remote<XRRuntimeEventListener> listener) =>
           (VRDisplayInfo? display_info);
 
-  // Ensure that the runtime has installed most prerequisites, and is ready to
-  // start. May result in updated display info being sent to registered
-  // listeners. RequestSession will fail if this hasn't been called.
-  // NOTE: When crbug.com/980000 is resolved, GvrDevice::EnsureInitialized
-  // won't install GVR runtime; it will be installed in
-  // GvrDevice::RequestSession().
-  EnsureInitialized() => ();
-
   SetInlinePosesEnabled(bool enable);
 };
 

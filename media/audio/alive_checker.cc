@@ -63,16 +63,17 @@ AliveChecker::AliveChecker(
     if (power_observer_helper_factory_callback.is_null()) {
       power_observer_ = std::make_unique<PowerObserverHelper>(
           task_runner_, base::DoNothing(),
-          base::Bind(
+          base::BindRepeating(
               &AliveChecker::SetLastAliveNotificationTimeToNowOnTaskRunner,
               base::Unretained(this)));
     } else {
       power_observer_ =
           std::move(power_observer_helper_factory_callback)
               .Run(task_runner_, base::DoNothing(),
-                   base::Bind(&AliveChecker::
-                                  SetLastAliveNotificationTimeToNowOnTaskRunner,
-                              base::Unretained(this)));
+                   base::BindRepeating(
+                       &AliveChecker::
+                           SetLastAliveNotificationTimeToNowOnTaskRunner,
+                       base::Unretained(this)));
     }
   } else {
     // If |pause_check_during_suspend| is false, we expect an empty factory

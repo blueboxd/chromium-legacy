@@ -67,11 +67,20 @@ const base::Feature kCrostiniUsbAllowUnsupported{
 const base::Feature kCrostiniWebUIInstaller{"CrostiniWebUIInstaller",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Deprecates the CryptAuth v1 DeviceSync flow. Note: During the first phase
+// of the v2 DeviceSync rollout, v1 and v2 DeviceSync run in parallel. This flag
+// is needed to deprecate the v1 service during the second phase of the rollout.
+// kCryptAuthV2DeviceSync should be enabled before this flag is flipped.
+const base::Feature kCryptAuthV1DeviceSyncDeprecate{
+    "CryptAuthV1DeviceSyncDeprecate", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables using Cryptauth's GetDevicesActivityStatus API.
 const base::Feature kCryptAuthV2DeviceActivityStatus{
     "CryptAuthV2DeviceActivityStatus", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables the CryptAuth v2 DeviceSync flow.
+// Enables or disables the CryptAuth v2 DeviceSync flow. Regardless of this
+// flag, v1 DeviceSync will continue to operate until it is deprecated via the
+// feature flag kCryptAuthV1DeviceSyncDeprecate.
 const base::Feature kCryptAuthV2DeviceSync{"CryptAuthV2DeviceSync",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 

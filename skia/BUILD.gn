@@ -497,6 +497,7 @@ component("skia") {
     "//third_party/libwebp:libwebp_webp",
   ]
   public_deps = [
+    ":buildflags",
     ":skia_core_and_effects",
   ]
   if (skia_use_dawn) {

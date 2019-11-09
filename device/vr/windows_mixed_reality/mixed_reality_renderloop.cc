@@ -673,18 +673,6 @@ bool MixedRealityRenderLoop::UpdateDisplayInfo() {
     current_display_info_ = mojom::VRDisplayInfo::New();
     current_display_info_->id =
         device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID;
-    current_display_info_->display_name =
-        "Windows Mixed Reality";  // TODO(billorr): share this string.
-    current_display_info_->capabilities = mojom::VRDisplayCapabilities::New(
-        true /* has_position */, true /* has_external_display */,
-        true /* can_present */,
-        false /* can_provide_environment_integration */);
-
-    // TODO(billorr): consider scaling framebuffers after rendering support is
-    // added.
-    current_display_info_->webvr_default_framebuffer_scale = 1.0f;
-    current_display_info_->webxr_default_framebuffer_scale = 1.0f;
-
     changed = true;
   }
 

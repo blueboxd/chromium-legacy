@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/containers/flat_set.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 
@@ -20,38 +21,56 @@ namespace {
 #define LCALPHA "abcdefghijklmnopqrstuvwxyz"
 #define UCALPHA "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-09#section-3.9
+// https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-13#section-3.7
 constexpr char kTokenChars[] = DIGIT UCALPHA LCALPHA "_-.:%*/";
 // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-09#section-3.1
-constexpr char kKeyChars[] = DIGIT LCALPHA "_-";
+constexpr char kKeyChars09[] = DIGIT LCALPHA "_-";
+// https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-13#section-3.1
+constexpr char kKeyChars13[] = DIGIT LCALPHA "_-*";
 #undef DIGIT
 #undef LCALPHA
 #undef UCALPHA
 
 // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-09#section-3.8
+// https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-13#section-3.6
 bool IsPrintableASCII(char c) {
   return ' ' <= c && c <= '~';  // 0x20 (' ') to 0x7E ('~')
 }
 
-// Parser for (a subset of) Structured Headers for HTTP defined in [SH].
-// [SH] https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-09
+// Parser for (a subset of) Structured Headers for HTTP defined in [SH09] and
+// [SH13]. [SH09] compatibility is retained for use by Web Packaging, and can be
+// removed once that spec is updated, and users have migrated to new headers.
+// [SH09] https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-09
+// [SH13] https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-13
 class StructuredHeaderParser {
  public:
-  explicit StructuredHeaderParser(const base::StringPiece& str) : input_(str) {
-    // [SH] 4.2. Step 1. Discard any leading OWS from input_string.
+  enum DraftVersion {
+    kDraft09,
+    kDraft13,
+  };
+  explicit StructuredHeaderParser(const base::StringPiece& str,
+                                  DraftVersion version)
+      : input_(str), version_(version) {
+    // [SH09] 4.2 Step 1.
+    // [SH13] 4.2 Step 2.
+    // Discard any leading OWS from input_string.
     SkipWhitespaces();
   }
 
   // Callers should call this after ReadSomething(), to check if parser has
   // consumed all the input successfully.
   bool FinishParsing() {
-    // [SH] 4.2 Step 7. Discard any leading OWS from input_string.
+    // [SH09] 4.2 Step 7. [SH13] 4.2 Step 6.
+    // Discard any leading OWS from input_string.
     SkipWhitespaces();
-    // [SH] 4.2 Step 8. If input_string is not empty, fail parsing.
+    // [SH09] 4.2 Step 8. [SH13] 4.2 Step 7.
+    // If input_string is not empty, fail parsing.
     return input_.empty();
   }
 
-  // Parses a List of Lists ([SH] 4.2.4).
+  // Parses a List of Lists ([SH09] 4.2.4).
   base::Optional<ListOfLists> ReadListOfLists() {
+    DCHECK_EQ(version_, kDraft09);
     ListOfLists result;
     while (true) {
       std::vector<Item> inner_list;
@@ -74,7 +93,26 @@ class StructuredHeaderParser {
     return result;
   }
 
-  // Parses an Item ([SH] 4.2.7).
+  // Parses a List ([SH13] 4.2.1).
+  base::Optional<List> ReadList() {
+    DCHECK_EQ(version_, kDraft13);
+    List members;
+    while (!input_.empty()) {
+      base::Optional<ParameterizedMember> member(ReadParameterizedMember());
+      if (!member)
+        return base::nullopt;
+      members.push_back(std::move(*member));
+      SkipWhitespaces();
+      if (!ConsumeChar(','))
+        break;
+      SkipWhitespaces();
+      if (input_.empty())
+        return base::nullopt;
+    }
+    return members;
+  }
+
+  // Parses an Item ([SH09] 4.2.7, [SH13] 4.2.3).
   // Currently only limited types (non-negative integers, strings, tokens and
   // byte sequences) are supported.
   // TODO(1011101): Add support for other types.
@@ -96,8 +134,9 @@ class StructuredHeaderParser {
     }
   }
 
-  // Parses a Parameterised List ([SH] 4.2.5).
+  // Parses a Parameterised List ([SH09] 4.2.5).
   base::Optional<ParameterisedList> ReadParameterisedList() {
+    DCHECK_EQ(version_, kDraft09);
     ParameterisedList items;
     while (true) {
       base::Optional<ParameterisedIdentifier> item =
@@ -113,8 +152,9 @@ class StructuredHeaderParser {
   }
 
  private:
-  // Parses a Parameterised Identifier ([SH] 4.2.6).
+  // Parses a Parameterised Identifier ([SH09] 4.2.6).
   base::Optional<ParameterisedIdentifier> ReadParameterisedIdentifier() {
+    DCHECK_EQ(version_, kDraft09);
     base::Optional<Item> primary_identifier = ReadToken();
     if (!primary_identifier)
       return base::nullopt;
@@ -147,13 +187,84 @@ class StructuredHeaderParser {
                                    std::move(parameters));
   }
 
-  // Parses a Key ([SH] 4.2.2).
+  // Parses a Parameterized Member ([SH13] 4.2.1.1).
+  base::Optional<ParameterizedMember> ReadParameterizedMember() {
+    DCHECK_EQ(version_, kDraft13);
+    std::vector<Item> member;
+    bool member_is_inner_list = ConsumeChar('(');
+    if (member_is_inner_list) {
+      base::Optional<std::vector<Item>> inner_list = ReadInnerList();
+      if (!inner_list)
+        return base::nullopt;
+      member = std::move(*inner_list);
+    } else {
+      base::Optional<Item> item = ReadItem();
+      if (!item)
+        return base::nullopt;
+      member.push_back(std::move(*item));
+    }
+
+    ParameterizedMember::Parameters parameters;
+    base::flat_set<std::string> keys;
+
+    SkipWhitespaces();
+    while (ConsumeChar(';')) {
+      SkipWhitespaces();
+
+      base::Optional<std::string> name = ReadKey();
+      if (!name)
+        return base::nullopt;
+      bool is_duplicate_key = !keys.insert(*name).second;
+      if (is_duplicate_key) {
+        DVLOG(1) << "ReadParameterizedMember: duplicated parameter: " << *name;
+        return base::nullopt;
+      }
+
+      Item value;
+      if (ConsumeChar('=')) {
+        auto item = ReadItem();
+        if (!item)
+          return base::nullopt;
+        value = std::move(*item);
+      }
+      parameters.emplace_back(std::move(*name), std::move(value));
+      SkipWhitespaces();
+    }
+    return ParameterizedMember(std::move(member), member_is_inner_list,
+                               std::move(parameters));
+  }
+
+  // Parses an Inner List ([SH13] 4.2.1.2).
+  // Note that the initial '(' character should already have been consumed by
+  // the caller to determine that this is in fact an inner list.
+  base::Optional<std::vector<Item>> ReadInnerList() {
+    DCHECK_EQ(version_, kDraft13);
+    std::vector<Item> inner_list;
+    while (true) {
+      SkipWhitespaces();
+      if (ConsumeChar(')')) {
+        return inner_list;
+      }
+      auto item = ReadItem();
+      if (!item)
+        return base::nullopt;
+      inner_list.push_back(std::move(*item));
+      if (input_.empty() || (input_.front() != ' ' && input_.front() != ')'))
+        return base::nullopt;
+    }
+    NOTREACHED();
+    return base::nullopt;
+  }
+
+  // Parses a Key ([SH09] 4.2.2, [SH13] 4.2.1.3).
   base::Optional<std::string> ReadKey() {
     if (input_.empty() || !base::IsAsciiLower(input_.front())) {
       LogParseError("ReadKey", "lcalpha");
       return base::nullopt;
     }
-    size_t len = input_.find_first_not_of(kKeyChars);
+    const char* allowed_chars =
+        (version_ == kDraft09 ? kKeyChars09 : kKeyChars13);
+    size_t len = input_.find_first_not_of(allowed_chars);
     if (len == base::StringPiece::npos)
       len = input_.size();
     std::string key(input_.substr(0, len));
@@ -161,7 +272,7 @@ class StructuredHeaderParser {
     return key;
   }
 
-  // Parses a Token ([SH] 4.2.10).
+  // Parses a Token ([SH09] 4.2.10, [SH13] 4.2.6).
   base::Optional<Item> ReadToken() {
     if (input_.empty() || !base::IsAsciiAlpha(input_.front())) {
       LogParseError("ReadToken", "ALPHA");
@@ -175,7 +286,7 @@ class StructuredHeaderParser {
     return Item(std::move(token), Item::kTokenType);
   }
 
-  // Parses a Number ([SH] 4.2.8).
+  // Parses a Number ([SH09] 4.2.8, [SH13] 4.2.4).
   // Currently only supports non-negative integers.
   base::Optional<Item> ReadNumber() {
     size_t i = 0;
@@ -198,7 +309,7 @@ class StructuredHeaderParser {
     return Item(n);
   }
 
-  // Parses a String ([SH] 4.2.9).
+  // Parses a String ([SH09] 4.2.9, [SH13] 4.2.5).
   base::Optional<Item> ReadString() {
     std::string s;
     if (!ConsumeChar('"')) {
@@ -237,7 +348,7 @@ class StructuredHeaderParser {
     return s;
   }
 
-  // Parses a Byte Sequence ([SH] 4.2.11).
+  // Parses a Byte Sequence ([SH09] 4.2.11, [SH13] 4.2.7).
   base::Optional<Item> ReadByteSequence() {
     if (!ConsumeChar('*')) {
       LogParseError("ReadByteSequence", "'*'");
@@ -281,6 +392,8 @@ class StructuredHeaderParser {
   }
 
   base::StringPiece input_;
+  DraftVersion version_;
+
   DISALLOW_COPY_AND_ASSIGN(StructuredHeaderParser);
 };
 
@@ -314,6 +427,22 @@ bool operator==(const Item& lhs, const Item& rhs) {
   }
 }
 
+ParameterizedMember::ParameterizedMember(const ParameterizedMember&) = default;
+ParameterizedMember& ParameterizedMember::operator=(
+    const ParameterizedMember&) = default;
+ParameterizedMember::ParameterizedMember(std::vector<Item> id,
+                                         bool member_is_inner_list,
+                                         const Parameters& ps)
+    : member(std::move(id)),
+      member_is_inner_list(member_is_inner_list),
+      params(ps) {}
+ParameterizedMember::ParameterizedMember(std::vector<Item> id,
+                                         const Parameters& ps)
+    : member(std::move(id)), member_is_inner_list(true), params(ps) {}
+ParameterizedMember::ParameterizedMember(Item id, const Parameters& ps)
+    : member({std::move(id)}), member_is_inner_list(false), params(ps) {}
+ParameterizedMember::~ParameterizedMember() = default;
+
 ParameterisedIdentifier::ParameterisedIdentifier(
     const ParameterisedIdentifier&) = default;
 ParameterisedIdentifier& ParameterisedIdentifier::operator=(
@@ -323,7 +452,7 @@ ParameterisedIdentifier::ParameterisedIdentifier(Item id, const Parameters& ps)
 ParameterisedIdentifier::~ParameterisedIdentifier() = default;
 
 base::Optional<Item> ParseItem(const base::StringPiece& str) {
-  StructuredHeaderParser parser(str);
+  StructuredHeaderParser parser(str, StructuredHeaderParser::kDraft09);
   base::Optional<Item> item = parser.ReadItem();
   if (item && parser.FinishParsing())
     return item;
@@ -332,7 +461,7 @@ base::Optional<Item> ParseItem(const base::StringPiece& str) {
 
 base::Optional<ParameterisedList> ParseParameterisedList(
     const base::StringPiece& str) {
-  StructuredHeaderParser parser(str);
+  StructuredHeaderParser parser(str, StructuredHeaderParser::kDraft09);
   base::Optional<ParameterisedList> param_list = parser.ReadParameterisedList();
   if (param_list && parser.FinishParsing())
     return param_list;
@@ -340,10 +469,18 @@ base::Optional<ParameterisedList> ParseParameterisedList(
 }
 
 base::Optional<ListOfLists> ParseListOfLists(const base::StringPiece& str) {
-  StructuredHeaderParser parser(str);
+  StructuredHeaderParser parser(str, StructuredHeaderParser::kDraft09);
   base::Optional<ListOfLists> list_of_lists = parser.ReadListOfLists();
   if (list_of_lists && parser.FinishParsing())
     return list_of_lists;
+  return base::nullopt;
+}
+
+base::Optional<List> ParseList(const base::StringPiece& str) {
+  StructuredHeaderParser parser(str, StructuredHeaderParser::kDraft13);
+  base::Optional<List> list = parser.ReadList();
+  if (list && parser.FinishParsing())
+    return list;
   return base::nullopt;
 }
 

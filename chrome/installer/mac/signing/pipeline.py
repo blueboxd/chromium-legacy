@@ -163,10 +163,15 @@ def _package_and_sign_pkg(paths, dist_config):
     #   2. The outer product archive (which is the installable thing that has
     #      pre-install requirements). This is built with `productbuild`.
 
-    # The component package.
+    ## The component package.
 
-    component_pkg_path = os.path.join(paths.work,
-                                      '{}.pkg'.format(dist_config.app_product))
+    # The spaces are removed from |dist_config.app_product| for the component
+    # package path due to a bug in Installer.app that causes the "Show Files"
+    # window to be blank if there is a space in a component package name.
+    # https://stackoverflow.com/questions/43031272/
+    component_pkg_name = '{}.pkg'.format(dist_config.app_product).replace(
+        ' ', '')
+    component_pkg_path = os.path.join(paths.work, component_pkg_name)
     app_path = os.path.join(paths.work, dist_config.app_dir)
 
     commands.run_command([
@@ -175,7 +180,7 @@ def _package_and_sign_pkg(paths, dist_config):
         '/Applications', component_pkg_path
     ])
 
-    # The product archive.
+    ## The product archive.
 
     # There are two steps here. The first is to create the "distribution file"
     # which describes the product archive. `productbuild` has a mode to generate

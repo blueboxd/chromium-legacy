@@ -378,11 +378,11 @@ EmeConfigRule KeySystemConfigSelector::GetEncryptionSchemeConfigRule(
     // compatibility and simplicity, we treat kNotSpecified the same as kCenc.
     case EmeEncryptionScheme::kNotSpecified:
     case EmeEncryptionScheme::kCenc:
-      return key_systems_->GetEncryptionSchemeConfigRule(key_system,
-                                                         EncryptionMode::kCenc);
+      return key_systems_->GetEncryptionSchemeConfigRule(
+          key_system, EncryptionScheme::kCenc);
     case EmeEncryptionScheme::kCbcs:
-      return key_systems_->GetEncryptionSchemeConfigRule(key_system,
-                                                         EncryptionMode::kCbcs);
+      return key_systems_->GetEncryptionSchemeConfigRule(
+          key_system, EncryptionScheme::kCbcs);
   }
 
   NOTREACHED();

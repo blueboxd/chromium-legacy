@@ -10,11 +10,15 @@ MediaPlayerWatchTime::MediaPlayerWatchTime(
     GURL url,
     GURL origin,
     base::TimeDelta cumulative_watch_time,
-    base::TimeDelta last_timestamp)
+    base::TimeDelta last_timestamp,
+    bool has_video,
+    bool has_audio)
     : url(url),
       origin(origin),
       cumulative_watch_time(cumulative_watch_time),
-      last_timestamp(last_timestamp) {}
+      last_timestamp(last_timestamp),
+      has_video(has_video),
+      has_audio(has_audio) {}
 
 MediaPlayerWatchTime::MediaPlayerWatchTime(const MediaPlayerWatchTime& other) =
     default;

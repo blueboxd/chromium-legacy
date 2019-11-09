@@ -37,7 +37,7 @@ namespace chrome_cleaner {
 //       files_to_delete, registry_keys,
 //       base::BindOnce(&ReceivePromptResult));
 //
-//   void ReceivePromptResult(mojom::PromptAcceptance prompt_acceptance) {
+//   void ReceivePromptResult(PromptAcceptance prompt_acceptance) {
 //     ...
 //   }
 class MojoChromePromptIPC : public ChromePromptIPC {
@@ -55,17 +55,16 @@ class MojoChromePromptIPC : public ChromePromptIPC {
   // response from Chrome is received, |callback| will run on the IPC
   // controller's thread; clients of this class are responsible for posting
   // response on the right thread.
-  void PostPromptUserTask(
-      const std::vector<base::FilePath>& files_to_delete,
-      const std::vector<base::string16>& registry_keys,
-      const std::vector<base::string16>& extension_ids,
-      mojom::ChromePrompt::PromptUserCallback callback) override;
+  void PostPromptUserTask(const std::vector<base::FilePath>& files_to_delete,
+                          const std::vector<base::string16>& registry_keys,
+                          const std::vector<base::string16>& extension_ids,
+                          PromptUserCallback callback) override;
 
   // Posts a PromptDisableExtensions() task to the IPC controller's thread.
   // Internal state must be State::kDoneInteraction when the posted task runs.
   void PostDisableExtensionsTask(
       const std::vector<base::string16>& extension_ids,
-      mojom::ChromePrompt::DisableExtensionsCallback callback) override;
+      DisableExtensionsCallback callback) override;
 
   // Queries Chrome for its version of the ChromePrompt interface. If version
   // >= 3 calls |delete_allowed_callback|. Calls |delete_not_allowed_callback|
@@ -89,24 +88,22 @@ class MojoChromePromptIPC : public ChromePromptIPC {
   void RunPromptUserTask(const std::vector<base::FilePath>& files_to_delete,
                          const std::vector<base::string16>& registry_keys,
                          const std::vector<base::string16>& extension_ids,
-                         mojom::ChromePrompt::PromptUserCallback callback);
+                         PromptUserCallback callback);
 
   void RunDisableExtensionsTask(
       const std::vector<base::string16>& extension_ids,
-      mojom::ChromePrompt::DisableExtensionsCallback callback);
+      DisableExtensionsCallback callback);
 
-  // Callback for ChromePrompt::PromptUser, internal state must be
+  // Callback for mojom::ChromePrompt::PromptUser, internal state must be
   // State::kWaitingForResponseFromChrome. Invokes callback(prompt_acceptance)
   // and transitions to state State::kDoneInteraction.
-  void OnChromeResponseReceived(
-      mojom::ChromePrompt::PromptUserCallback callback,
-      mojom::PromptAcceptance prompt_acceptance);
+  void OnChromeResponseReceived(PromptUserCallback callback,
+                                mojom::PromptAcceptance prompt_acceptance);
 
-  // Callback for ChromePrompt::DisableExtensions, internal state must be
-  // State::kDoneInteraction. Invokes callback(extensions_deleted_callback).
-  void OnChromeResponseReceivedExtensions(
-      mojom::ChromePrompt::DisableExtensionsCallback callback,
-      bool extensions_deleted_callback);
+  // Callback for mojom::ChromePrompt::DisableExtensions, internal state must
+  // be State::kDoneInteraction. Invokes callback(extensions_deleted).
+  void OnChromeResponseReceivedExtensions(DisableExtensionsCallback callback,
+                                          bool extensions_deleted);
 
   // Connection error handler. Invokes either
   // error_handler_->OnConnectionClosed() or

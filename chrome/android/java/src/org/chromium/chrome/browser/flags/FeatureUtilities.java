@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -698,7 +698,7 @@ public class FeatureUtilities {
         }
 
         SharedPreferencesManager.getInstance().writeString(
-                ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY,
+                ChromePreferenceKeys.REACHED_CODE_PROFILER_GROUP_KEY,
                 FieldTrialList.findFullName(ChromeFeatureList.REACHED_CODE_PROFILER));
     }
 
@@ -709,7 +709,7 @@ public class FeatureUtilities {
     public static String getReachedCodeProfilerTrialGroup() {
         if (sReachedCodeProfilerTrialGroup == null) {
             sReachedCodeProfilerTrialGroup = SharedPreferencesManager.getInstance().readString(
-                    ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY, "");
+                    ChromePreferenceKeys.REACHED_CODE_PROFILER_GROUP_KEY, "");
         }
 
         return sReachedCodeProfilerTrialGroup;

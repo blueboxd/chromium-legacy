@@ -1174,7 +1174,7 @@ HRESULT CGaiaCredentialBase::Advise(ICredentialProviderCredentialEvents* cpce) {
 
 HRESULT CGaiaCredentialBase::UnAdvise(void) {
   LOGFN(INFO);
-  events_.Release();
+  events_.Reset();
 
   return S_OK;
 }
@@ -1945,7 +1945,7 @@ HRESULT CGaiaCredentialBase::Initialize(IGaiaCredentialProvider* provider) {
 HRESULT CGaiaCredentialBase::Terminate() {
   LOGFN(INFO);
   SetDeselected();
-  provider_.Release();
+  provider_.Reset();
   return S_OK;
 }
 

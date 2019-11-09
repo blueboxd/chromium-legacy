@@ -18,7 +18,7 @@
 #include "media/base/renderer.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/mojo/mojom/renderer.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -142,8 +142,8 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   // Remote Renderer, bound to |task_runner_| during Initialize().
   mojo::Remote<mojom::Renderer> remote_renderer_;
 
-  // Binding for RendererClient, bound to the |task_runner_|.
-  mojo::AssociatedBinding<RendererClient> client_binding_;
+  // Receiver for RendererClient, bound to the |task_runner_|.
+  mojo::AssociatedReceiver<RendererClient> client_receiver_{this};
 
   bool encountered_error_ = false;
 

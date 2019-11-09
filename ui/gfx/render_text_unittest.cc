@@ -672,6 +672,48 @@ TEST_F(RenderTextTest, ApplyStyles) {
       {{0, false}, {1, true}, {6, false}}));
 }
 
+TEST_F(RenderTextTest, ApplyStyleSurrogatePair) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"x\U0001F601x"));
+  // Apply the style in the middle of a surrogate pair. The style should be
+  // applied to the whole range of the codepoint.
+  gfx::Range range(2, 3);
+  render_text->ApplyWeight(gfx::Font::Weight::BOLD, range);
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, range);
+  render_text->ApplyColor(SK_ColorRED, range);
+  render_text->Draw(canvas());
+
+  EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
+      {{0, false}, {1, true}, {3, false}}));
+  EXPECT_TRUE(test_api()->colors().EqualsForTesting(
+      {{0, SK_ColorBLACK}, {1, SK_ColorRED}, {3, SK_ColorBLACK}}));
+  EXPECT_TRUE(
+      test_api()->weights().EqualsForTesting({{0, Font::Weight::NORMAL},
+                                              {1, Font::Weight::BOLD},
+                                              {3, Font::Weight::NORMAL}}));
+}
+
+TEST_F(RenderTextTest, ApplyStyleGrapheme) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"x\u0065\u0301x"));
+  // Apply the style in the middle of a grapheme. The style should be applied to
+  // the whole range of the grapheme.
+  gfx::Range range(2, 3);
+  render_text->ApplyWeight(gfx::Font::Weight::BOLD, range);
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, range);
+  render_text->ApplyColor(SK_ColorRED, range);
+  render_text->Draw(canvas());
+
+  EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
+      {{0, false}, {1, true}, {3, false}}));
+  EXPECT_TRUE(test_api()->colors().EqualsForTesting(
+      {{0, SK_ColorBLACK}, {1, SK_ColorRED}, {3, SK_ColorBLACK}}));
+  EXPECT_TRUE(
+      test_api()->weights().EqualsForTesting({{0, Font::Weight::NORMAL},
+                                              {1, Font::Weight::BOLD},
+                                              {3, Font::Weight::NORMAL}}));
+}
+
 TEST_F(RenderTextTest, AppendTextKeepsStyles) {
   RenderText* render_text = GetRenderText();
   // Setup basic functionality.
@@ -5770,7 +5812,7 @@ TEST_F(RenderTextTest, ZeroWidthCharacters) {
 
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.
-TEST_F(RenderTextTest, TextDoesntClip) {
+TEST_F(RenderTextTest, DISABLED_TextDoesntClip) {
   const char* kTestStrings[] = {
       "            ",
       // TODO(dschuyler): Underscores draw outside GetStringSize;
@@ -5850,7 +5892,7 @@ TEST_F(RenderTextTest, TextDoesntClip) {
 
 // Ensure that the text will clip to the display rect. Draws to a canvas and
 // checks whether any pixel beyond the bounding rectangle is colored.
-TEST_F(RenderTextTest, TextDoesClip) {
+TEST_F(RenderTextTest, DISABLED_TextDoesClip) {
   const char* kTestStrings[] = {"TEST", "W", "WWWW", "gAXAXWWWW"};
   const Size kCanvasSize(300, 50);
   const int kTestSize = 10;

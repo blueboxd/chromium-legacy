@@ -18,7 +18,11 @@ class OneShotTimer;
 }  // namespace base
 
 namespace enterprise_management {
+#if defined(OS_CHROMEOS)
+class ChromeOsUserReportRequest;
+#else
 class ChromeDesktopReportRequest;
+#endif
 }  // namespace enterprise_management
 
 namespace policy {
@@ -48,7 +52,13 @@ class ReportUploader {
                        // invalid dm token.
   };
 
-  using Requests = std::queue<std::unique_ptr<em::ChromeDesktopReportRequest>>;
+#if defined(OS_CHROMEOS)
+  using Request = em::ChromeOsUserReportRequest;
+#else
+  using Request = em::ChromeDesktopReportRequest;
+#endif
+
+  using Requests = std::queue<std::unique_ptr<Request>>;
   // A callback to notify the upload result.
   using ReportCallback = base::OnceCallback<void(ReportStatus status)>;
 

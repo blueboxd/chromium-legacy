@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
 
 import android.support.v7.app.AppCompatDelegate;
 import android.text.TextUtils;

@@ -10,8 +10,9 @@ import android.media.audiopolicy.AudioPolicy;
 import android.os.Build;
 import android.support.annotation.Nullable;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chromecast.base.Controller;
 import org.chromium.chromecast.base.Observable;
 

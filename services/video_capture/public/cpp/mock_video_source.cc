@@ -11,7 +11,7 @@ MockVideoSource::MockVideoSource() = default;
 MockVideoSource::~MockVideoSource() = default;
 
 void MockVideoSource::CreatePushSubscription(
-    mojo::PendingRemote<video_capture::mojom::Receiver> subscriber,
+    mojo::PendingRemote<video_capture::mojom::VideoFrameHandler> subscriber,
     const media::VideoCaptureParams& requested_settings,
     bool force_reopen_with_new_settings,
     mojo::PendingReceiver<video_capture::mojom::PushVideoStreamSubscription>

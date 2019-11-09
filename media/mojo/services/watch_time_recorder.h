@@ -26,7 +26,9 @@ class MEDIA_MOJO_EXPORT WatchTimeRecorder : public mojom::WatchTimeRecorder {
  public:
   using RecordAggregateWatchTimeCallback =
       base::OnceCallback<void(base::TimeDelta total_watch_time,
-                              base::TimeDelta time_stamp)>;
+                              base::TimeDelta time_stamp,
+                              bool has_video,
+                              bool has_audio)>;
 
   WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties,
                     ukm::SourceId source_id,

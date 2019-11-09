@@ -36,7 +36,7 @@ void VideoSourceImpl::AddToReceiverSet(
 }
 
 void VideoSourceImpl::CreatePushSubscription(
-    mojo::PendingRemote<mojom::Receiver> subscriber,
+    mojo::PendingRemote<mojom::VideoFrameHandler> subscriber,
     const media::VideoCaptureParams& requested_settings,
     bool force_reopen_with_new_settings,
     mojo::PendingReceiver<mojom::PushVideoStreamSubscription>
@@ -105,9 +105,10 @@ void VideoSourceImpl::OnCreateDeviceResponse(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (result_code) {
     case mojom::DeviceAccessResultCode::SUCCESS: {
-      broadcaster_receiver_.reset();
-      device_->Start(device_start_settings_,
-                     broadcaster_receiver_.BindNewPipeAndPassRemote());
+      broadcaster_video_frame_handler_.reset();
+      device_->Start(
+          device_start_settings_,
+          broadcaster_video_frame_handler_.BindNewPipeAndPassRemote());
       device_status_ = DeviceStatus::kStarted;
       if (push_subscriptions_.empty()) {
         StopDeviceAsynchronously();

@@ -459,7 +459,10 @@ bool GLSurfaceGLX::InitializeOneOff() {
     return false;
   }
 
-  const auto& visual_info = gl::GLVisualPickerGLX::GetInstance()->rgba_visual();
+  auto* visual_picker = gl::GLVisualPickerGLX::GetInstance();
+  XVisualInfo visual_info = visual_picker->rgba_visual();
+  if (!visual_info.visual)
+    visual_info = visual_picker->system_visual();
   g_visual = visual_info.visual;
   g_depth = visual_info.depth;
   g_colormap =

@@ -53,6 +53,13 @@ void DummyVoteConsumer::VoteInvalidated(AcceptedVote* vote) {
   --valid_vote_count_;
 }
 
+void DummyVoteConsumer::ExpectInvalidVote(size_t index) {
+  EXPECT_LT(index, votes_.size());
+  const AcceptedVote& accepted_vote = votes_[index];
+  EXPECT_EQ(this, accepted_vote.consumer());
+  EXPECT_FALSE(accepted_vote.IsValid());
+}
+
 void DummyVoteConsumer::ExpectValidVote(size_t index,
                                         VoterId voter_id,
                                         const FrameNode* frame_node,

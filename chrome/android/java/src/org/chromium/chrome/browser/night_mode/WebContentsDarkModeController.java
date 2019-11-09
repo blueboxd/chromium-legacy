@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.DARKEN_WEBSITES_ENABLED_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.DARKEN_WEBSITES_ENABLED_KEY;
 
 import android.text.TextUtils;
 

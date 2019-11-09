@@ -14,7 +14,6 @@
 #include "media/mojo/clients/mojo_media_log_service.h"
 #include "media/mojo/mojom/video_decoder.mojom.h"
 #include "media/video/video_decode_accelerator.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -122,7 +121,7 @@ class MojoVideoDecoder final : public VideoDecoder,
   bool has_connection_error_ = false;
   mojo::AssociatedReceiver<mojom::VideoDecoderClient> client_receiver_{this};
   MojoMediaLogService media_log_service_;
-  mojo::AssociatedBinding<mojom::MediaLog> media_log_binding_;
+  mojo::AssociatedReceiver<mojom::MediaLog> media_log_receiver_;
   RequestOverlayInfoCB request_overlay_info_cb_;
   bool overlay_info_requested_ = false;
   gfx::ColorSpace target_color_space_;

@@ -13,12 +13,7 @@
  * @abstract
  */
 class SAChildNode {
-  /**
-   * @param {boolean} isGroup
-   */
-  constructor(isGroup) {
-    this.isGroup_ = isGroup;
-
+  constructor() {
     /** @private {?SAChildNode} */
     this.previous_ = null;
 
@@ -71,10 +66,9 @@ class SAChildNode {
   /**
    * Returns whether this node should be displayed as a group.
    * @return {boolean}
+   * @abstract
    */
-  isGroup() {
-    return this.isGroup_;
-  }
+  isGroup() {}
 
   /**
    * Returns a list of all the actions available for this node.
@@ -159,7 +153,7 @@ class SAChildNode {
    * @return {string}
    */
   debugString(wholeTree, prefix = '', currentNode = null) {
-    if (this.isGroup_ && wholeTree) {
+    if (this.isGroup() && wholeTree) {
       return this.asRootNode().debugString(
           wholeTree, prefix + '  ', currentNode);
     }
@@ -176,7 +170,7 @@ class SAChildNode {
       str += 'loc(' + RectHelper.toString(loc) + ') ';
     }
 
-    if (this.isGroup_) {
+    if (this.isGroup()) {
       str += '[isGroup]';
     }
 

@@ -535,12 +535,11 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
     // Image is written to shared buffer already. Just submit with a
     // placeholder.
     scoped_refptr<Image> image_ref = nullptr;
-    bool needs_copy = false;
     DVLOG(3) << __FUNCTION__ << ": FrameSubmit for SharedBuffer mode";
-    frame_transport_->FrameSubmit(
-        immersive_presentation_provider_.get(), webgl_context->ContextGL(),
-        webgl_context, std::move(image_ref), std::move(image_release_callback),
-        frame_id_, needs_copy);
+    frame_transport_->FrameSubmit(immersive_presentation_provider_.get(),
+                                  webgl_context->ContextGL(), webgl_context,
+                                  std::move(image_ref),
+                                  std::move(image_release_callback), frame_id_);
     return;
   }
 
@@ -557,14 +556,10 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
     return;
   }
 
-  // TODO(bajones): Remove this when the Windows path has been updated to no
-  // longer require a texture copy.
-  bool needs_copy = immersive_session_->External();
-
-  frame_transport_->FrameSubmit(
-      immersive_presentation_provider_.get(), webgl_context->ContextGL(),
-      webgl_context, std::move(image_ref), std::move(image_release_callback),
-      frame_id_, needs_copy);
+  frame_transport_->FrameSubmit(immersive_presentation_provider_.get(),
+                                webgl_context->ContextGL(), webgl_context,
+                                std::move(image_ref),
+                                std::move(image_release_callback), frame_id_);
 
   // Reset our frame id, since anything we'd want to do (resizing/etc) can
   // no-longer happen to this frame.

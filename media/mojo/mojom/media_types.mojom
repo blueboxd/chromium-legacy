@@ -80,10 +80,6 @@ enum WaitingReason;
 [Native]
 enum WatchTimeKey;
 
-// See media/base/decrypt_config.h for descriptions.
-[Native]
-enum EncryptionMode;
-
 // See media/base/container_names.h for descriptions.
 [Native]
 enum MediaContainerName;
@@ -99,15 +95,9 @@ struct EncryptionPattern {
   uint32 skip_byte_block;
 };
 
-// This defines a mojo transport format for media::EncryptionScheme.
 // See media/base/encryption_scheme.h for description.
-struct EncryptionScheme {
-  [Native]
-  enum CipherMode;
-
-  CipherMode mode;
-  EncryptionPattern pattern;
-};
+[Native]
+enum EncryptionScheme;
 
 // This defines a mojo transport format for media::VideoColorSpace.
 // See media/base/video_color_space.h for description.
@@ -183,7 +173,7 @@ struct SubsampleEntry;
 // This defines a mojo transport format for media::DecryptConfig.
 // See media/base/decrypt_config.h for descriptions.
 struct DecryptConfig {
-  EncryptionMode encryption_mode;
+  EncryptionScheme encryption_scheme;
   string key_id;
   string iv;
   array<SubsampleEntry> subsamples;

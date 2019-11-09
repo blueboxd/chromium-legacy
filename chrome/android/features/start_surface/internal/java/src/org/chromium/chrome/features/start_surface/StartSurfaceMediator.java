@@ -6,6 +6,7 @@ package org.chromium.chrome.features.start_surface;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
@@ -32,6 +33,8 @@ import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -67,6 +70,7 @@ class StartSurfaceMediator
 
     private final ObserverList<StartSurface.OverviewModeObserver> mObservers = new ObserverList<>();
     private final TabSwitcher.Controller mController;
+    private final TabModelSelector mTabModelSelector;
     @Nullable
     private final PropertyModel mPropertyModel;
     @Nullable
@@ -95,6 +99,7 @@ class StartSurfaceMediator
             @SurfaceMode int surfaceMode, @Nullable FakeboxDelegate fakeboxDelegate,
             NightModeStateProvider nightModeStateProvider) {
         mController = controller;
+        mTabModelSelector = tabModelSelector;
         mPropertyModel = propertyModel;
         mFeedSurfaceCreator = feedSurfaceCreator;
         mSecondaryTasksSurfaceInitializer = secondaryTasksSurfaceInitializer;
@@ -107,8 +112,9 @@ class StartSurfaceMediator
                     || mSurfaceMode == SurfaceMode.TASKS_ONLY;
             assert mFakeboxDelegate != null;
 
-            mIsIncognito = tabModelSelector.isIncognitoSelected();
-            tabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
+            mIsIncognito = mTabModelSelector.isIncognitoSelected();
+
+            mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
                 @Override
                 public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                     // TODO(crbug.com/982018): Optimize to not listen for selected Tab model change
@@ -148,6 +154,25 @@ class StartSurfaceMediator
 
             if (mSurfaceMode == SurfaceMode.SINGLE_PANE) {
                 mPropertyModel.set(MORE_TABS_CLICK_LISTENER, this);
+
+                // Hide tab carousel, which does not exist in incognito mode, when closing all
+                // normal tabs.
+                TabModel normalTabModel = mTabModelSelector.getModel(false);
+                normalTabModel.addObserver(new EmptyTabModelObserver() {
+                    @Override
+                    public void willCloseTab(Tab tab, boolean animate) {
+                        if (normalTabModel.getCount() <= 1
+                                || mPropertyModel.get(IS_SHOWING_OVERVIEW)) {
+                            setTabCarouselVisibility(false);
+                        }
+                    }
+                    @Override
+                    public void tabClosureUndone(Tab tab) {
+                        if (mPropertyModel.get(IS_SHOWING_OVERVIEW)) {
+                            setTabCarouselVisibility(true);
+                        }
+                    }
+                });
             }
 
             // Set the initial state.
@@ -241,6 +266,7 @@ class StartSurfaceMediator
                     setSecondaryTasksSurfaceVisibility(true);
                 } else {
                     setExploreSurfaceVisibility(true);
+                    setTabCarouselVisibility(mTabModelSelector.getModel(false).getCount() > 0);
                 }
             } else if (mSurfaceMode == SurfaceMode.TWO_PANES) {
                 RecordUserAction.record("StartSurface.TwoPanes");
@@ -466,5 +492,20 @@ class StartSurfaceMediator
 
         // Do not show Tab switcher toolbar when focusing the Omnibox.
         return mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE);
+    }
+
+    private void setTabCarouselVisibility(boolean isVisible) {
+        assert !mIsIncognito;
+
+        if (isVisible == mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE)) return;
+
+        // Hide the more Tabs view when the last Tab is closed.
+        if (!isVisible && mSecondaryTasksSurfaceController != null
+                && mSecondaryTasksSurfaceController.overviewVisible()) {
+            setSecondaryTasksSurfaceVisibility(false);
+            setExploreSurfaceVisibility(true);
+        }
+
+        mPropertyModel.set(IS_TAB_CAROUSEL_VISIBLE, isVisible);
     }
 }

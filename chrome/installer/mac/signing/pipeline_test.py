@@ -314,7 +314,7 @@ class TestPipelineHelpers(unittest.TestCase):
             '$W/App Product.req',
             _get_adjacent_item(productbuild_synthesize_args, '--product'))
         self.assertEqual(
-            '$W/App Product.pkg',
+            '$W/AppProduct.pkg',
             _get_adjacent_item(productbuild_synthesize_args, '--package'))
 
         self.assertEqual(
@@ -401,7 +401,7 @@ class TestPipelineHelpers(unittest.TestCase):
             '$W/App Product.req',
             _get_adjacent_item(productbuild_synthesize_args, '--product'))
         self.assertEqual(
-            '$W/App Product.pkg',
+            '$W/AppProduct.pkg',
             _get_adjacent_item(productbuild_synthesize_args, '--package'))
 
         self.assertEqual(

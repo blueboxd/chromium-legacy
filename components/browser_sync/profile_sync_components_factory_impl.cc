@@ -319,26 +319,10 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   }
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-    if (!disabled_types.Has(syncer::OS_PREFERENCES)) {
-      controllers.push_back(
-          std::make_unique<SyncableServiceBasedModelTypeController>(
-              syncer::OS_PREFERENCES,
-              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              sync_client_->GetSyncableServiceForType(syncer::OS_PREFERENCES),
-              dump_stack));
-    }
-    if (!disabled_types.Has(syncer::OS_PRIORITY_PREFERENCES)) {
-      controllers.push_back(
-          std::make_unique<SyncableServiceBasedModelTypeController>(
-              syncer::OS_PRIORITY_PREFERENCES,
-              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              sync_client_->GetSyncableServiceForType(
-                  syncer::OS_PRIORITY_PREFERENCES),
-              dump_stack));
-    }
-  }
-  if (!disabled_types.Has(syncer::PRINTERS)) {
+  // When SplitSettingsSync is enabled the controller is created in
+  // ChromeSyncClient so it can live near other printer-related sync code.
+  if (!disabled_types.Has(syncer::PRINTERS) &&
+      !chromeos::features::IsSplitSettingsSyncEnabled()) {
     controllers.push_back(
         CreateModelTypeControllerForModelRunningOnUIThread(syncer::PRINTERS));
   }

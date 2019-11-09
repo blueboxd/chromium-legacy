@@ -25,6 +25,7 @@
 #include "services/video_capture/public/cpp/mock_video_source_provider.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -106,15 +107,15 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
 
     ON_CALL(mock_source_, DoCreatePushSubscription(_, _, _, _, _))
         .WillByDefault(Invoke(
-            [this](
-                mojo::PendingRemote<video_capture::mojom::Receiver> subscriber,
-                const media::VideoCaptureParams& requested_settings,
-                bool force_reopen_with_new_settings,
-                mojo::PendingReceiver<
-                    video_capture::mojom::PushVideoStreamSubscription>
-                    subscription,
-                video_capture::mojom::VideoSource::
-                    CreatePushSubscriptionCallback& callback) {
+            [this](mojo::PendingRemote<video_capture::mojom::VideoFrameHandler>
+                       subscriber,
+                   const media::VideoCaptureParams& requested_settings,
+                   bool force_reopen_with_new_settings,
+                   mojo::PendingReceiver<
+                       video_capture::mojom::PushVideoStreamSubscription>
+                       subscription,
+                   video_capture::mojom::VideoSource::
+                       CreatePushSubscriptionCallback& callback) {
               subscription_receivers_.Add(&mock_subscription_,
                                           std::move(subscription));
               std::move(callback).Run(

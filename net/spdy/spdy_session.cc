@@ -1045,6 +1045,22 @@ void SpdySession::EnqueueStreamWrite(
                stream->traffic_annotation());
 }
 
+bool SpdySession::GreasedFramesEnabled() const {
+  return greased_http2_frame_.has_value();
+}
+
+void SpdySession::EnqueueGreasedFrame(const base::WeakPtr<SpdyStream>& stream) {
+  if (availability_state_ == STATE_DRAINING)
+    return;
+
+  EnqueueWrite(
+      stream->priority(),
+      static_cast<spdy::SpdyFrameType>(greased_http2_frame_.value().type),
+      std::make_unique<GreasedBufferProducer>(
+          stream, &greased_http2_frame_.value(), buffered_spdy_framer_.get()),
+      stream, stream->traffic_annotation());
+}
+
 int SpdySession::ConfirmHandshake(CompletionOnceCallback callback) {
   int rv = ERR_IO_PENDING;
   if (!in_confirm_handshake_) {
@@ -2698,6 +2714,15 @@ void SpdySession::EnqueueSessionWrite(
                std::make_unique<SimpleBufferProducer>(std::move(buffer)),
                base::WeakPtr<SpdyStream>(),
                kSpdySessionCommandsTrafficAnnotation);
+  if (greased_http2_frame_ && frame_type == spdy::SpdyFrameType::SETTINGS) {
+    EnqueueWrite(
+        priority,
+        static_cast<spdy::SpdyFrameType>(greased_http2_frame_.value().type),
+        std::make_unique<GreasedBufferProducer>(base::WeakPtr<SpdyStream>(),
+                                                &greased_http2_frame_.value(),
+                                                buffered_spdy_framer_.get()),
+        base::WeakPtr<SpdyStream>(), kSpdySessionCommandsTrafficAnnotation);
+  }
 }
 
 void SpdySession::EnqueueWrite(
@@ -2711,15 +2736,6 @@ void SpdySession::EnqueueWrite(
 
   write_queue_.Enqueue(priority, frame_type, std::move(producer), stream,
                        traffic_annotation);
-  if (greased_http2_frame_ && (frame_type == spdy::SpdyFrameType::SETTINGS ||
-                               frame_type == spdy::SpdyFrameType::HEADERS)) {
-    write_queue_.Enqueue(
-        priority,
-        static_cast<spdy::SpdyFrameType>(greased_http2_frame_.value().type),
-        std::make_unique<GreasedBufferProducer>(
-            stream, &greased_http2_frame_.value(), buffered_spdy_framer_.get()),
-        stream, traffic_annotation);
-  }
   MaybePostWriteLoop();
 }
 

@@ -1105,8 +1105,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
   };
 
   verify_text_at_offset("d", 2, 2, 3);
-  verify_text_at_offset(nullptr, -1, -1, -1);
-  verify_text_at_offset(nullptr, 42342, -1, -1);
+  verify_text_at_offset(nullptr, -1, 0, 0);
+  verify_text_at_offset(nullptr, 42342, 0, 0);
   verify_text_at_offset("\xE2\x98\xBA", 23, 23, 24);
   verify_text_at_offset(" ", 24, 24, 25);
 

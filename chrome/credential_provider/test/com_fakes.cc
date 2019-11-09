@@ -262,23 +262,18 @@ CTestGaiaCredentialProvider::CTestGaiaCredentialProvider() {
       [](CGaiaCredentialProvider::GaiaCredentialComPtrStorage*
              cred_ptr_storage) {
         return CComCreator<CComObject<CTestGaiaCredential>>::CreateInstance(
-            nullptr, IID_IGaiaCredential,
-            reinterpret_cast<void**>(&cred_ptr_storage->gaia_cred));
+            nullptr, IID_PPV_ARGS(&cred_ptr_storage->gaia_cred));
       },
       [](CGaiaCredentialProvider::GaiaCredentialComPtrStorage*
              cred_ptr_storage) {
         return CComCreator<CComObject<CTestOtherUserGaiaCredential>>::
-            CreateInstance(
-                nullptr, IID_IGaiaCredential,
-                reinterpret_cast<void**>(&cred_ptr_storage->gaia_cred));
+            CreateInstance(nullptr, IID_PPV_ARGS(&cred_ptr_storage->gaia_cred));
       },
       [](CGaiaCredentialProvider::GaiaCredentialComPtrStorage*
              cred_ptr_storage) {
         return CComCreator<CComObject<testing::CTestCredentialForInherited<
             CReauthCredential, IReauthCredential>>>::
-            CreateInstance(
-                nullptr, IID_IGaiaCredential,
-                reinterpret_cast<void**>(&cred_ptr_storage->gaia_cred));
+            CreateInstance(nullptr, IID_PPV_ARGS(&cred_ptr_storage->gaia_cred));
       });
 }
 

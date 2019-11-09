@@ -29,9 +29,9 @@
 #include "net/url_request/url_request_status.h"
 #include "services/network/test/test_url_loader_factory.h"
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
+#endif  // defined(OS_CHROMEOS)
 
 // The E2E tests are designed to run against real backend servers. To identify
 // those tests we use *E2ETest* test name filter and run disabled tests.
@@ -509,7 +509,7 @@ class SyncTest : public InProcessBrowserTest {
   // Disable extension install verification.
   extensions::ScopedInstallVerifierBypassForTest ignore_install_verification_;
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
   // A factory-like callback to create a model updater for testing, which will
   // take the place of the real updater in AppListSyncableService for testing.
   std::unique_ptr<

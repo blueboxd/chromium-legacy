@@ -8,9 +8,12 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
+import static android.support.test.espresso.contrib.RecyclerViewActions.scrollToPosition;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
+import static android.support.test.espresso.matcher.ViewMatchers.isClickable;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
+import static android.support.test.espresso.matcher.ViewMatchers.isFocusable;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -20,6 +23,10 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+
+import static org.chromium.chrome.browser.tasks.tab_management.RecyclerViewMatcherUtils.atPosition;
+import static org.chromium.chrome.browser.tasks.tab_management.RecyclerViewMatcherUtils.atPositionWithViewHolder;
+import static org.chromium.chrome.browser.tasks.tab_management.RecyclerViewMatcherUtils.withItemType;
 
 import android.os.Build;
 import android.support.test.espresso.NoMatchingRootException;
@@ -41,7 +48,7 @@ public class TabSelectionEditorTestingRobot {
     /**
      * @return A root matcher that matches the TabSelectionEditor popup decor view.
      */
-    private static Matcher<Root> isTabSelectionEditorPopup() {
+    public static Matcher<Root> isTabSelectionEditorPopup() {
         return new TypeSafeMatcher<Root>() {
             @Override
             public void describeTo(Description description) {
@@ -50,7 +57,7 @@ public class TabSelectionEditorTestingRobot {
 
             @Override
             public boolean matchesSafely(Root root) {
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
                     return withDecorView(
                             withClassName(is(TabSelectionEditorLayout.class.getName())))
                             .matches(root);
@@ -66,7 +73,7 @@ public class TabSelectionEditorTestingRobot {
     /**
      * @return A view matcher that matches the item is selected.
      */
-    private static Matcher<View> itemIsSelected() {
+    public static Matcher<View> itemIsSelected() {
         return new BoundedMatcher<View, SelectableTabGridView>(SelectableTabGridView.class) {
             private SelectableTabGridView mSelectableTabGridView;
             @Override
@@ -101,6 +108,23 @@ public class TabSelectionEditorTestingRobot {
                 } else {
                     return mSelectableTabGridView.getForeground() != null;
                 }
+            }
+        };
+    }
+
+    /**
+     * @return A view matcher that matches a divider view.
+     */
+    public static Matcher<View> isDivider() {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View view) {
+                return view.getId() == org.chromium.chrome.tab_ui.R.id.divider_view;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("is divider");
             }
         };
     }
@@ -250,6 +274,68 @@ public class TabSelectionEditorTestingRobot {
 
         TabSelectionEditorTestingRobot.Result verifyUndoSnackbarWithTextIsShown(String text) {
             onView(withText(text)).check(matches(isDisplayed()));
+            return this;
+        }
+
+        Result verifyDividerAlwaysStartsAtTheEdgeOfScreen() {
+            onView(allOf(isDivider(),
+                           withParent(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))))
+                    .inRoot(isTabSelectionEditorPopup())
+                    .check(matches(isDisplayed()))
+                    .check((v, noMatchException) -> {
+                        if (noMatchException != null) throw noMatchException;
+
+                        View parentView = (View) v.getParent();
+                        Assert.assertEquals(parentView.getPaddingStart(), (int) v.getX());
+                    });
+            return this;
+        }
+
+        Result verifyDividerAlwaysStartsAtTheEdgeOfScreenAtPosition(int position) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                    .inRoot(isTabSelectionEditorPopup())
+                    .perform(scrollToPosition(position));
+
+            onView(atPosition(position, isDivider()))
+                    .inRoot(isTabSelectionEditorPopup())
+                    .check(matches(isDisplayed()))
+                    .check((v, noMatchException) -> {
+                        if (noMatchException != null) throw noMatchException;
+
+                        View parentView = (View) v.getParent();
+                        Assert.assertEquals(parentView.getPaddingStart(), (int) v.getX());
+                    });
+
+            return this;
+        }
+
+        Result verifyDividerNotClickableNotFocusable() {
+            onView(allOf(isDivider(),
+                           withParent(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))))
+                    .inRoot(isTabSelectionEditorPopup())
+                    .check(matches(not(isClickable())))
+                    .check(matches(not(isFocusable())));
+            return this;
+        }
+
+        /**
+         * Verifies the TabSelectionEditor has an ItemView at given position that matches the given
+         * targetItemViewType.
+         *
+         * First this method scrolls to the given adapter position to make sure ViewHolder for the
+         * given position is visible.
+         *
+         * @param position Adapter position.
+         * @param targetItemViewType The item view type to be matched.
+         * @return {@link Result} to do chain verification.
+         */
+        Result verifyHasItemViewTypeAtAdapterPosition(int position, int targetItemViewType) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                    .inRoot(isTabSelectionEditorPopup())
+                    .perform(scrollToPosition(position));
+            onView(atPositionWithViewHolder(position, withItemType(targetItemViewType)))
+                    .inRoot(isTabSelectionEditorPopup())
+                    .check(matches(isDisplayed()));
             return this;
         }
     }

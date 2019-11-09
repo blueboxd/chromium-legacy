@@ -162,6 +162,14 @@ bookmark_manager_private::BookmarkNodeData CreateApiBookmarkNodeData(
   return node_data;
 }
 
+bool HasPermanentNodes(const std::vector<const BookmarkNode*>& list) {
+  for (const BookmarkNode* node : list) {
+    if (node->is_permanent_node())
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 BookmarkManagerPrivateEventRouter::BookmarkManagerPrivateEventRouter(
@@ -314,6 +322,10 @@ bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut,
   bookmarks::ManagedBookmarkService* managed = GetManagedBookmarkService();
   if (cut && bookmarks::HasDescendantsOf(nodes, managed->managed_node())) {
     error_ = bookmark_keys::kModifyManagedError;
+    return false;
+  }
+  if (cut && HasPermanentNodes(nodes)) {
+    error_ = bookmark_keys::kModifySpecialError;
     return false;
   }
   bookmarks::CopyToClipboard(model, nodes, cut);

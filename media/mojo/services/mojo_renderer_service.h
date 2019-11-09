@@ -21,6 +21,8 @@
 #include "media/base/renderer_client.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -53,7 +55,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
 
   // mojom::Renderer implementation.
   void Initialize(
-      mojom::RendererClientAssociatedPtrInfo client,
+      mojo::PendingAssociatedRemote<mojom::RendererClient> client,
       base::Optional<std::vector<mojo::PendingRemote<mojom::DemuxerStream>>>
           streams,
       mojom::MediaUrlParamsPtr media_url_params,
@@ -123,7 +125,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   base::RepeatingTimer time_update_timer_;
   base::TimeDelta last_media_time_;
 
-  mojom::RendererClientAssociatedPtr client_;
+  mojo::AssociatedRemote<mojom::RendererClient> client_;
 
   // Holds the CdmContextRef to keep the CdmContext alive for the lifetime of
   // the |renderer_|.

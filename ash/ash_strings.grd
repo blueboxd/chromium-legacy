@@ -877,14 +877,56 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header.">
         Network
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACCESSIBILITY_LABEL" desc="Accessibility label for a network in the quick settings network list, to be read outloud by a screenreader or braile console.">
-        <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph> - <ph name="CONNECTION_STATUS">$2<ex>Connecting</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_ETHERNET_A11Y_LABEL_WITH_CONNECTION_STATUS" desc="Accessibility label for an ethernet network in the quick settings network list.">
+        <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>, <ph name="CONNECTION_STATUS">$2<ex>Connected</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ETHERNET_A11Y_LABEL_MANAGED" desc="Accessibility label for an enterprise managed ethernet network in the quick settings network list.">
+        <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>, Managed by your Administrator
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ETHERNET_A11Y_LABEL_MANAGED_WITH_CONNECTION_STATUS" desc="Accessibility label for an enterprise managed ethernet network in the quick settings network list.  Includes connection status.">
+        <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>, <ph name="CONNECTION_STATUS">$2<ex>Connected</ex></ph>, Managed by your Administrator
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CELLULAR_NETWORK_A11Y_LABEL" desc="Accessibility label for a cellular network in the quick settings network list.">
+        <ph name="NETWORK_NAME">$1<ex>Verizon Wireless</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$2<ex>80%</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CELLULAR_NETWORK_A11Y_LABEL_WITH_CONNECTION_STATUS" desc="Accessibility label for a cellular network in the quick settings network list .  Includes connection status.">
+        <ph name="NETWORK_NAME">$1<ex>Verizon Wireless</ex></ph>, <ph name="CONNECTION_STATUS">$2<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$3<ex>80%</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CELLULAR_NETWORK_A11Y_LABEL_MANAGED" desc="Accessibility label for an enterprise managed cellular network in the quick settings network list.">
+        <ph name="NETWORK_NAME">$1<ex>Verizon Wireless</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$2<ex>80%</ex></ph>, Managed by your Administrator
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CELLULAR_NETWORK_A11Y_LABEL_MANAGED_WITH_CONNECTION_STATUS" desc="Accessibility label for an enterprise managed cellular network in the quick settings network list.  Includes connection status.">
+        <ph name="NETWORK_NAME">$1<ex>Verizon Wireless</ex></ph>, <ph name="CONNECTION_STATUS">$2<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$3<ex>80%</ex></ph>, Managed by your Administrator
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_LABEL" desc="Accessibility label for a Wi-Fi network in the quick settings network list.">
+        <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$2<ex>Unsecured</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$3<ex>80%</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_LABEL_WITH_CONNECTION_STATUS" desc="Accessibility label for a Wi-Fi network in the quick settings network list.  Includes connection status.">
+        <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$2<ex>Unsecured</ex></ph>, <ph name="CONNECTION_STATUS">$3<ex>Connecting</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80%</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_LABEL_MANAGED" desc="Accessibility label for an enterprise managed Wi-Fi network in the quick settings network list.">
+        <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$2<ex>Unsecured</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$3<ex>80%</ex></ph>, Managed by your Administrator
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_LABEL_MANAGED_WITH_CONNECTION_STATUS" desc="Accessibility label for an enterprise managed Wi-Fi network in the quick settings network list.  Incldues connection status.">
+        <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$2<ex>Unsecured</ex></ph>, <ph name="CONNECTION_STATUS">$3<ex>Connecting</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80%</ex></ph>, Managed by your Administrator
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_TETHER_NETWORK_A11Y_LABEL" desc="Accessibility label for a phone tether network in the quick settings network list.">
+        <ph name="PHONE_NAME">$1<ex>Pixel 4</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$2<ex>80%</ex></ph>, Phone Battery <ph name="BATTERY_STATUS">$3<ex>80%</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_TETHER_NETWORK_A11Y_LABEL_WITH_CONNECTION_STATUS" desc="Accessibility label for a phone tether network in the quick settings network list.  Includes connection status.">
+        <ph name="PHONE_NAME">$1<ex>Pixel 4</ex></ph>, <ph name="CONNECTION_STATUS">$2<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$3<ex>80%</ex></ph>, Phone Battery <ph name="BATTERY_STATUS">$4<ex>80%</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED" desc="The label used when a network connection is connected.">
         Connected
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING" desc="The label used when a network connection is connecting.">
         Connecting...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_SECURED" desc="a11y label used when a Wi-Fi network is secured.">
+        Secured
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_UNSECURED" desc="a11y label used when a Wi-Fi network connection is not secured.">
+        Unsecured
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VPN" desc="The label used in the VPN detailed view header.">
         Private network

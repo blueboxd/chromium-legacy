@@ -26,7 +26,7 @@ class RTCStatsReport final : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  RTCStatsReport(std::unique_ptr<WebRTCStatsReport>);
+  RTCStatsReport(std::unique_ptr<RTCStatsReportPlatform>);
 
   uint32_t size() const;
 
@@ -40,7 +40,7 @@ class RTCStatsReport final : public ScriptWrappable,
                    ExceptionState&) override;
 
  private:
-  std::unique_ptr<WebRTCStatsReport> report_;
+  std::unique_ptr<RTCStatsReportPlatform> report_;
 };
 
 }  // namespace blink

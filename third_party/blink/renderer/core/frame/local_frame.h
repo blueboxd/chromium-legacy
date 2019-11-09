@@ -154,6 +154,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
                                          ScrollGranularity granularity,
                                          Frame* child) override;
 
+  void DidChangeThemeColor();
+
   void DetachChildren();
   // After Document is attached, resets state related to document, and sets
   // context to the current document.
@@ -410,6 +412,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void WasHidden();
   void WasShown();
+
+  // Whether the frame clips its content to the frame's size.
+  bool ClipsContent() const;
 
   // For a navigation initiated from this LocalFrame with user gesture, record
   // the UseCounter AdClickNavigation if this frame is an adframe.

@@ -43,6 +43,7 @@ namespace media {
 
 const int kNumConfigs = 4;
 const int kNumBuffersInOneConfig = 5;
+constexpr base::TimeDelta kPrepareDelay = base::TimeDelta::FromMilliseconds(5);
 
 static std::string GetDecoderName(int i) {
   return std::string("VideoDecoder") + base::NumberToString(i);
@@ -139,6 +140,15 @@ class VideoDecoderStreamTest
   void PrepareFrame(scoped_refptr<VideoFrame> frame,
                     VideoDecoderStream::OutputReadyCB output_ready_cb) {
     // Simulate some delay in return of the output.
+    task_environment_.GetMainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(output_ready_cb), std::move(frame)));
+  }
+
+  void PrepareFrameWithDelay(
+      scoped_refptr<VideoFrame> frame,
+      VideoDecoderStream::OutputReadyCB output_ready_cb) {
+    task_environment_.FastForwardBy(kPrepareDelay);
     task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(output_ready_cb), std::move(frame)));
@@ -463,7 +473,8 @@ class VideoDecoderStreamTest
     SatisfyPendingCallback(DECODER_REINIT);
   }
 
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<VideoDecoderStream> video_decoder_stream_;
@@ -569,6 +580,56 @@ TEST_P(VideoDecoderStreamTest, Read_AfterReset) {
   Read();
   Reset();
   Read();
+}
+
+TEST_P(VideoDecoderStreamTest, Read_ProperMetadata) {
+  // For testing simplicity, omit parallel decode tests with a delay in frames.
+  if (GetParam().parallel_decoding > 1 && GetParam().decoding_delay > 0)
+    return;
+
+  if (GetParam().has_prepare) {
+    // Override the basic PrepareFrame() for a version that moves the MockTime
+    // by kPrepareDelay. This simulates real work done (e.g. YUV conversion).
+    video_decoder_stream_->SetPrepareCB(
+        base::BindRepeating(&VideoDecoderStreamTest::PrepareFrameWithDelay,
+                            base::Unretained(this)));
+  }
+
+  constexpr base::TimeDelta kDecodeDelay =
+      base::TimeDelta::FromMilliseconds(10);
+
+  Initialize();
+
+  // Simulate time elapsed by the decoder.
+  EnterPendingState(DECODER_DECODE);
+  task_environment_.FastForwardBy(kDecodeDelay);
+
+  SatisfyPendingCallback(DECODER_DECODE);
+
+  EXPECT_TRUE(frame_read_);
+
+  auto* metadata = frame_read_->metadata();
+
+  // Verify the decoding metadata is accurate.
+  base::TimeTicks decode_start;
+  EXPECT_TRUE(metadata->GetTimeTicks(VideoFrameMetadata::DECODE_BEGIN_TIME,
+                                     &decode_start));
+
+  base::TimeTicks decode_end;
+  EXPECT_TRUE(
+      metadata->GetTimeTicks(VideoFrameMetadata::DECODE_END_TIME, &decode_end));
+
+  EXPECT_EQ(decode_end - decode_start, kDecodeDelay);
+
+  // Verify the processing metadata is accurate.
+  const base::TimeDelta expected_processing_time =
+      GetParam().has_prepare ? (kDecodeDelay + kPrepareDelay) : kDecodeDelay;
+
+  base::TimeDelta processing_time;
+  EXPECT_TRUE(metadata->GetTimeDelta(VideoFrameMetadata::PROCESSING_TIME,
+                                     &processing_time));
+
+  EXPECT_EQ(processing_time, expected_processing_time);
 }
 
 TEST_P(VideoDecoderStreamTest, Read_BlockedDemuxer) {

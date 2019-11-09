@@ -28,7 +28,10 @@ class AppLaunchSplashScreenView {
     virtual void OnCancelAppLaunch() {}
 
     // Invoked when the network config shortcut key is pressed.
-    virtual void OnNetworkConfigRequested(bool requested) {}
+    virtual void OnNetworkConfigRequested() {}
+
+    // Invoked when the network config did prepare network and is closed.
+    virtual void OnNetworkConfigFinished() {}
 
     // Invoked when network state is changed. |online| is true if the device
     // is connected to the Internet.

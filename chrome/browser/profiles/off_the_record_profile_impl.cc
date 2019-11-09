@@ -31,6 +31,8 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -187,6 +189,8 @@ void OffTheRecordProfileImpl::Init() {
 
   // AccessibilityLabelsService has a default prefs behavior in incognito.
   AccessibilityLabelsService::InitOffTheRecordPrefs(this);
+
+  HeavyAdServiceFactory::GetForBrowserContext(this)->InitializeOffTheRecord();
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {

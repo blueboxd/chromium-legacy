@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA;
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL;
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;

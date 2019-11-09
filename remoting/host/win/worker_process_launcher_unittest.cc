@@ -27,18 +27,14 @@
 #include "remoting/host/win/launch_process_with_token.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::ScopedHandle;
 using testing::_;
 using testing::AnyNumber;
-using testing::CreateFunctor;
-using testing::DoAll;
 using testing::Expectation;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
-using testing::Return;
 
 namespace remoting {
 
@@ -434,12 +430,10 @@ TEST_F(WorkerProcessLauncherTest, Restart) {
   Expectation first_connect =
       EXPECT_CALL(server_listener_, OnChannelConnected(_))
           .Times(2)
-          .WillOnce(InvokeWithoutArgs(CreateFunctor(
-              &WorkerProcessLauncherTest::TerminateWorker,
-              base::Unretained(this),
-              CONTROL_C_EXIT)))
-          .WillOnce(InvokeWithoutArgs(this,
-                                      &WorkerProcessLauncherTest::StopWorker));
+          .WillOnce(
+              InvokeWithoutArgs([=]() { TerminateWorker(CONTROL_C_EXIT); }))
+          .WillOnce(
+              InvokeWithoutArgs(this, &WorkerProcessLauncherTest::StopWorker));
 
   EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(0);
@@ -485,10 +479,8 @@ TEST_F(WorkerProcessLauncherTest, PermanentError) {
 
   EXPECT_CALL(server_listener_, OnChannelConnected(_))
       .Times(1)
-      .WillOnce(InvokeWithoutArgs(CreateFunctor(
-          &WorkerProcessLauncherTest::TerminateWorker,
-          base::Unretained(this),
-          kMinPermanentErrorExitCode)));
+      .WillOnce(InvokeWithoutArgs(
+          [=] { TerminateWorker(kMinPermanentErrorExitCode); }));
   EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(this,
@@ -516,10 +508,8 @@ TEST_F(WorkerProcessLauncherTest, Crash) {
 
   EXPECT_CALL(client_listener_, OnCrash(_, _, _))
       .Times(1)
-      .WillOnce(InvokeWithoutArgs(CreateFunctor(
-          &WorkerProcessLauncherTest::TerminateWorker,
-          base::Unretained(this),
-          EXCEPTION_BREAKPOINT)));
+      .WillOnce(
+          InvokeWithoutArgs([=]() { TerminateWorker(EXCEPTION_BREAKPOINT); }));
   EXPECT_CALL(server_listener_, OnWorkerProcessStopped())
       .Times(1);
 

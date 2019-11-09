@@ -18,7 +18,7 @@ import androidx.annotation.IntDef;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.webapps.WebApkDistributor;
@@ -128,8 +128,8 @@ public class WebApkUma {
     /** Makes recordings that were deferred in order to not load native. */
     public static void recordDeferredUma() {
         SharedPreferencesManager preferencesManager = SharedPreferencesManager.getInstance();
-        Set<String> uninstalledPackages = preferencesManager.readStringSet(
-                ChromePreferenceManager.WEBAPK_UNINSTALLED_PACKAGES);
+        Set<String> uninstalledPackages =
+                preferencesManager.readStringSet(ChromePreferenceKeys.WEBAPK_UNINSTALLED_PACKAGES);
         if (uninstalledPackages.isEmpty()) return;
 
         long fallbackUninstallTimestamp = System.currentTimeMillis();
@@ -152,7 +152,7 @@ public class WebApkUma {
             }
         }
         preferencesManager.writeStringSet(
-                ChromePreferenceManager.WEBAPK_UNINSTALLED_PACKAGES, new HashSet<String>());
+                ChromePreferenceKeys.WEBAPK_UNINSTALLED_PACKAGES, new HashSet<String>());
 
         // TODO(http://crbug.com/1000312): Clear WebappDataStorage for uninstalled WebAPK.
     }
@@ -160,7 +160,7 @@ public class WebApkUma {
     /** Sets WebAPK uninstall to be recorded next time that native is loaded. */
     public static void deferRecordWebApkUninstalled(String packageName) {
         SharedPreferencesManager.getInstance().addToStringSet(
-                ChromePreferenceManager.WEBAPK_UNINSTALLED_PACKAGES, packageName);
+                ChromePreferenceKeys.WEBAPK_UNINSTALLED_PACKAGES, packageName);
         String webApkId = WebappRegistry.webApkIdForPackage(packageName);
         WebappRegistry.warmUpSharedPrefsForId(webApkId);
         WebappDataStorage webappDataStorage =

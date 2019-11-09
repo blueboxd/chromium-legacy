@@ -26,6 +26,7 @@ BROWSER_TEST_SUITES = [
     'android_browsertests',
     'components_browsertests',
     'content_browsertests',
+    'weblayer_browsertests',
 ]
 
 RUN_IN_SUB_THREAD_TEST_SUITES = [

@@ -1102,8 +1102,8 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterSecondaryProperties) {
       has_video_ ? H264PROFILE_MAIN : VIDEO_CODEC_PROFILE_UNKNOWN,
       has_audio_ ? "FirstAudioDecoder" : "",
       has_video_ ? "FirstVideoDecoder" : "",
-      has_audio_ ? EncryptionMode::kCenc : EncryptionMode::kUnencrypted,
-      has_video_ ? EncryptionMode::kCbcs : EncryptionMode::kUnencrypted,
+      has_audio_ ? EncryptionScheme::kCenc : EncryptionScheme::kUnencrypted,
+      has_video_ ? EncryptionScheme::kCbcs : EncryptionScheme::kUnencrypted,
       has_video_ ? gfx::Size(800, 600) : gfx::Size());
 
   // Get a pointer to our original properties since we're not allowed to use
@@ -1137,7 +1137,7 @@ TEST_P(WatchTimeReporterTest, SecondaryProperties_SizeIncreased) {
       .Times((has_audio_ && has_video_) ? 3 : 2);
   wtr_->UpdateSecondaryProperties(mojom::SecondaryPlaybackProperties::New(
       kUnknownAudioCodec, kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN, "",
-      "", EncryptionMode::kUnencrypted, EncryptionMode::kUnencrypted,
+      "", EncryptionScheme::kUnencrypted, EncryptionScheme::kUnencrypted,
       kSizeJustRight));
   EXPECT_TRUE(IsMonitoring());
 
@@ -1159,7 +1159,7 @@ TEST_P(WatchTimeReporterTest, SecondaryProperties_SizeDecreased) {
       .Times((has_audio_ && has_video_) ? 3 : 2);
   wtr_->UpdateSecondaryProperties(mojom::SecondaryPlaybackProperties::New(
       kUnknownAudioCodec, kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN, "",
-      "", EncryptionMode::kUnencrypted, EncryptionMode::kUnencrypted,
+      "", EncryptionScheme::kUnencrypted, EncryptionScheme::kUnencrypted,
       kSizeTooSmall));
   EXPECT_WATCH_TIME_FINALIZED();
   CycleReportingTimer();

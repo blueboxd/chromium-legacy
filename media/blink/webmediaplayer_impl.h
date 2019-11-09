@@ -27,6 +27,7 @@
 #include "cc/layers/surface_layer.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "media/base/cdm_config.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/media_observer.h"
 #include "media/base/media_tracks.h"
 #include "media/base/overlay_info.h"
@@ -77,7 +78,6 @@ class GLES2Interface;
 namespace media {
 class CdmContextRef;
 class ChunkDemuxer;
-class EncryptionScheme;
 class VideoDecodeStatsReporter;
 class MediaLog;
 class UrlIndex;
@@ -594,7 +594,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Records the encryption scheme used by the stream |stream_name|. This is
   // only recorded when metadata is available.
   void RecordEncryptionScheme(const std::string& stream_name,
-                              const EncryptionScheme& encryption_scheme);
+                              EncryptionScheme encryption_scheme);
 
   // Returns whether the player is currently displayed in Picture-in-Picture.
   // It will return true even if the player is in AutoPIP mode.

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/testing/fake_local_frame_host.h"
 
+#include "skia/public/mojom/skcolor.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom-blink.h"
 
 namespace blink {
@@ -44,6 +45,9 @@ void FakeLocalFrameHost::EvictFromBackForwardCache() {}
 
 void FakeLocalFrameHost::VisibilityChanged(
     mojom::blink::FrameVisibility visibility) {}
+
+void FakeLocalFrameHost::DidChangeThemeColor(
+    const base::Optional<::SkColor>& theme_color) {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

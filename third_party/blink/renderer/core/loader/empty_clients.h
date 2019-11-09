@@ -285,7 +285,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                            WebHistoryCommitType) override {}
   void DispatchDidFinishDocumentLoad() override {}
   void DispatchDidFinishLoad() override {}
-  void DispatchDidChangeThemeColor() override {}
 
   void BeginNavigation(
       const ResourceRequest&,

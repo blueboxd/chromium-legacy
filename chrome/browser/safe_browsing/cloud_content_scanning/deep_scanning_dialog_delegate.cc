@@ -34,6 +34,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 
+using BrowserDMToken = policy::BrowserDMTokenStorage::BrowserDMToken;
+
 namespace safe_browsing {
 
 const base::Feature kDeepScanningOfUploads{"SafeBrowsingDeepScanningOfUploads",
@@ -45,9 +47,15 @@ const base::Feature kDeepScanningOfUploadsUI{
 
 namespace {
 
-std::string* GetDMTokenForTestingStorage() {
-  static std::string dm_token;
-  return &dm_token;
+const char** GetDMTokenForTestingStorage() {
+  static const char* dm_token_storage = "";
+  return &dm_token_storage;
+}
+
+BrowserDMToken GetDMTokenForTesting() {
+  const char* dm_token = *GetDMTokenForTestingStorage();
+  return dm_token && dm_token[0] ? BrowserDMToken::CreateValidToken(dm_token)
+                                 : BrowserDMToken::CreateEmptyToken();
 }
 
 // Global pointer of factory function (RepeatingCallback) used to create
@@ -298,8 +306,8 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
   if (profile->IsOffTheRecord())
     return false;
 
-  // If there's no DM token, the upload will fail.
-  if (GetDMToken().empty())
+  // If there's no valid DM token, the upload will fail.
+  if (!GetDMToken().is_valid())
     return false;
 
   // See if content compliance checks are needed.
@@ -473,8 +481,8 @@ void DeepScanningDialogDelegate::FileRequestCallback(
 }
 
 // static
-std::string DeepScanningDialogDelegate::GetDMToken() {
-  std::string dm_token = *GetDMTokenForTestingStorage();
+BrowserDMToken DeepScanningDialogDelegate::GetDMToken() {
+  auto dm_token = GetDMTokenForTesting();
 
 #if !defined(OS_CHROMEOS)
   // This is not compiled on chromeos because
@@ -482,9 +490,9 @@ std::string DeepScanningDialogDelegate::GetDMToken() {
   // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does not return a
   // valid token either.  Once these are fixed the #if !defined can be removed.
 
-  if (dm_token.empty() &&
+  if (dm_token.is_empty() &&
       policy::ChromeBrowserCloudManagementController::IsEnabled()) {
-    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
+    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
   }
 #endif
 
@@ -550,7 +558,7 @@ void DeepScanningDialogDelegate::PrepareRequest(
     request->set_request_malware_scan(std::move(malware_request));
   }
 
-  request->set_dm_token(GetDMToken());
+  request->set_dm_token(GetDMToken().value());
 }
 
 void DeepScanningDialogDelegate::FillAllResultsWith(bool status) {

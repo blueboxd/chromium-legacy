@@ -2397,9 +2397,6 @@ const char kNetworkProfileLastWarningTime[] =
 const char kRLZBrand[] = "rlz.brand";
 // Whether RLZ pings are disabled.
 const char kRLZDisabled[] = "rlz.disabled";
-#endif
-
-#if BUILDFLAG(ENABLE_APP_LIST)
 // Keeps local state of app list while sync service is not available.
 const char kAppListLocalState[] = "app_list.local_state";
 #endif

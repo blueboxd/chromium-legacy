@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
-#include "services/video_capture/public/mojom/receiver.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "services/video_capture/public/mojom/virtual_device.mojom.h"
 
 namespace video_capture {
@@ -37,7 +37,7 @@ class SharedMemoryVirtualDeviceMojoAdapter
 
   // mojom::Device implementation.
   void Start(const media::VideoCaptureParams& requested_settings,
-             mojo::PendingRemote<mojom::Receiver> receiver) override;
+             mojo::PendingRemote<mojom::VideoFrameHandler> receiver) override;
   void MaybeSuspend() override;
   void Resume() override;
   void GetPhotoState(GetPhotoStateCallback callback) override;
@@ -54,7 +54,7 @@ class SharedMemoryVirtualDeviceMojoAdapter
  private:
   void OnReceiverConnectionErrorOrClose();
 
-  mojo::Remote<mojom::Receiver> receiver_;
+  mojo::Remote<mojom::VideoFrameHandler> video_frame_handler_;
   mojo::Remote<mojom::Producer> producer_;
   const bool send_buffer_handles_to_producer_as_raw_file_descriptors_;
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;

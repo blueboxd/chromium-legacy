@@ -1120,7 +1120,19 @@ bool AXNodeObject::IsHovered() const {
 }
 
 bool AXNodeObject::IsImage() const {
-  return RoleValue() == ax::mojom::Role::kImage;
+  // Canvas is not currently included so that it is not exposed unless there is
+  // a label, fallback content or something to make it accessible. This decision
+  // may be revisited at a later date.
+  switch (RoleValue()) {
+    case ax::mojom::Role::kDocCover:
+    case ax::mojom::Role::kGraphicsSymbol:
+    case ax::mojom::Role::kImage:
+    case ax::mojom::Role::kImageMap:
+    case ax::mojom::Role::kSvgRoot:
+      return true;
+    default:
+      return false;
+  }
 }
 
 bool AXNodeObject::IsImageButton() const {

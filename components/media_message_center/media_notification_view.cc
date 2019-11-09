@@ -322,11 +322,23 @@ void MediaNotificationView::UpdateWithMediaMetadata(
 
   accessible_name_ = GetAccessibleNameFromMetadata(metadata);
 
-  if (!metadata.title.empty())
+  // The title label should only be a11y-focusable when there is text to be
+  // read.
+  if (metadata.title.empty()) {
+    title_label_->SetFocusBehavior(FocusBehavior::NEVER);
+  } else {
+    title_label_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     RecordMetadataHistogram(Metadata::kTitle);
+  }
 
-  if (!metadata.artist.empty())
+  // The artist label should only be a11y-focusable when there is text to be
+  // read.
+  if (metadata.artist.empty()) {
+    artist_label_->SetFocusBehavior(FocusBehavior::NEVER);
+  } else {
+    artist_label_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     RecordMetadataHistogram(Metadata::kArtist);
+  }
 
   if (!metadata.album.empty())
     RecordMetadataHistogram(Metadata::kAlbum);

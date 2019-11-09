@@ -28,7 +28,9 @@ class DistillabilityDriver
   void CreateDistillabilityService(
       mojo::PendingReceiver<mojom::DistillabilityService> receiver);
 
-  void AddObserver(DistillabilityObserver* observer);
+  base::ObserverList<DistillabilityObserver>* GetObserverList() {
+    return &observers_;
+  }
   base::Optional<DistillabilityResult> GetLatestResult() const {
     return latest_result_;
   }

@@ -136,7 +136,7 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
 
   static void EnableForWidget(views::Widget* widget, bool enabled);
 
-  static ImmersiveFullscreenController* GetForTest(views::Widget* widget);
+  static ImmersiveFullscreenController* Get(views::Widget* widget);
 
  private:
   friend class ImmersiveFullscreenControllerTest;

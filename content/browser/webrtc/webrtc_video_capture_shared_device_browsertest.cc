@@ -15,9 +15,10 @@
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -125,12 +126,14 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   void Initialize() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    mock_receiver_ = std::make_unique<video_capture::MockReceiver>(
-        subscriber_.InitWithNewPipeAndPassReceiver());
+    mock_video_frame_handler_ =
+        std::make_unique<video_capture::MockVideoFrameHandler>(
+            subscriber_.InitWithNewPipeAndPassReceiver());
   }
 
   scoped_refptr<base::TaskRunner> main_task_runner_;
-  std::unique_ptr<video_capture::MockReceiver> mock_receiver_;
+  std::unique_ptr<video_capture::MockVideoFrameHandler>
+      mock_video_frame_handler_;
 
  private:
   void OnDeviceInfosReceived(
@@ -203,7 +206,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   mojo::Remote<video_capture::mojom::VideoSource> video_source_;
   mojo::Remote<video_capture::mojom::PushVideoStreamSubscription> subscription_;
 
-  mojo::PendingRemote<video_capture::mojom::Receiver> subscriber_;
+  mojo::PendingRemote<video_capture::mojom::VideoFrameHandler> subscriber_;
   base::WeakPtrFactory<WebRtcVideoCaptureSharedDeviceBrowserTest> weak_factory_{
       this};
 
@@ -220,13 +223,13 @@ IN_PROC_BROWSER_TEST_P(
 
   base::RunLoop receive_frame_from_service_wait_loop;
   auto expected_buffer_handle_tag = GetParam().GetExpectedBufferHandleTag();
-  ON_CALL(*mock_receiver_, DoOnNewBuffer(_, _))
+  ON_CALL(*mock_video_frame_handler_, DoOnNewBuffer(_, _))
       .WillByDefault(Invoke(
           [expected_buffer_handle_tag](
               int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
             ASSERT_EQ(expected_buffer_handle_tag, (*buffer_handle)->which());
           }));
-  EXPECT_CALL(*mock_receiver_, DoOnFrameReadyInBuffer(_, _, _, _))
+  EXPECT_CALL(*mock_video_frame_handler_, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillOnce(InvokeWithoutArgs([&receive_frame_from_service_wait_loop]() {
         receive_frame_from_service_wait_loop.Quit();
       }))
@@ -235,7 +238,8 @@ IN_PROC_BROWSER_TEST_P(
   OpenDeviceViaService();
   // Note, if we do not wait for the first frame to arrive before opening the
   // device in the Renderer, it could happen that the Renderer takes ove access
-  // to the device before a first frame is received by mock_receiver_.
+  // to the device before a first frame is received by
+  // mock_video_frame_handler_.
   receive_frame_from_service_wait_loop.Run();
 
   OpenDeviceInRendererAndWaitForPlaying();
@@ -251,13 +255,13 @@ IN_PROC_BROWSER_TEST_P(
 
   base::RunLoop receive_frame_from_service_wait_loop;
   auto expected_buffer_handle_tag = GetParam().GetExpectedBufferHandleTag();
-  ON_CALL(*mock_receiver_, DoOnNewBuffer(_, _))
+  ON_CALL(*mock_video_frame_handler_, DoOnNewBuffer(_, _))
       .WillByDefault(Invoke(
           [expected_buffer_handle_tag](
               int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
             ASSERT_EQ(expected_buffer_handle_tag, (*buffer_handle)->which());
           }));
-  EXPECT_CALL(*mock_receiver_, DoOnFrameReadyInBuffer(_, _, _, _))
+  EXPECT_CALL(*mock_video_frame_handler_, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillOnce(InvokeWithoutArgs([&receive_frame_from_service_wait_loop]() {
         receive_frame_from_service_wait_loop.Quit();
       }))

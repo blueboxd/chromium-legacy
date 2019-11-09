@@ -139,7 +139,7 @@ class AuthenticationService : public KeyedService,
   // is only updated when the app is in foreground and used to detect
   // if any change occurred while the app was in background.
   // See HaveAccountsChangesWhileInBackground().
-  std::vector<std::string> GetLastKnownAccountsFromForeground();
+  std::vector<CoreAccountId> GetLastKnownAccountsFromForeground();
 
   // Returns the cached MDM infos associated with |identity|. If the cache
   // is stale for |identity|, the entry might be removed.
@@ -222,7 +222,7 @@ class AuthenticationService : public KeyedService,
   bool is_reloading_credentials_ = false;
 
   // Map between account IDs and their associated MDM error.
-  mutable std::map<std::string, NSDictionary*> cached_mdm_infos_;
+  mutable std::map<CoreAccountId, NSDictionary*> cached_mdm_infos_;
 
   ScopedObserver<ios::ChromeIdentityService,
                  ios::ChromeIdentityService::Observer>

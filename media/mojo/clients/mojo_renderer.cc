@@ -17,7 +17,6 @@
 #include "media/mojo/clients/mojo_demuxer_stream_impl.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/renderers/video_overlay_factory.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 
@@ -30,7 +29,6 @@ MojoRenderer::MojoRenderer(
       video_overlay_factory_(std::move(video_overlay_factory)),
       video_renderer_sink_(video_renderer_sink),
       remote_renderer_pending_remote_(std::move(remote_renderer)),
-      client_binding_(this),
       media_time_interpolator_(base::DefaultTickClock::GetInstance()) {
   DVLOG(1) << __func__;
 }
@@ -96,14 +94,12 @@ void MojoRenderer::InitializeRendererFromStreams(
 
   BindRemoteRendererIfNeeded();
 
-  mojom::RendererClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
-
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
   remote_renderer_->Initialize(
-      std::move(client_ptr_info), std::move(stream_proxies), nullptr,
+      client_receiver_.BindNewEndpointAndPassRemote(),
+      std::move(stream_proxies), nullptr,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 
@@ -112,9 +108,6 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   BindRemoteRendererIfNeeded();
-
-  mojom::RendererClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
 
   const MediaUrlParams& url_params = media_resource_->GetMediaUrlParams();
 
@@ -126,7 +119,8 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
       url_params.top_frame_origin, url_params.allow_credentials,
       url_params.is_hls);
   remote_renderer_->Initialize(
-      std::move(client_ptr_info), base::nullopt, std::move(media_url_params),
+      client_receiver_.BindNewEndpointAndPassRemote(), base::nullopt,
+      std::move(media_url_params),
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 

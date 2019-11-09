@@ -65,10 +65,6 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
       device::mojom::VRService::SupportsSessionCallback callback) override;
   void ExitPresent(ExitPresentCallback on_exited) override;
   void SetFramesThrottled(bool throttled) override;
-  // device::mojom::VRService WebVR compatibility functions
-  void GetImmersiveVRDisplayInfo(
-      device::mojom::VRService::GetImmersiveVRDisplayInfoCallback callback)
-      override;
 
   void InitializationComplete();
 
@@ -81,7 +77,6 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   void OnExitPresent();
   void OnVisibilityStateChanged(
       device::mojom::XRVisibilityState visibility_state);
-  bool InFocusedFrame() { return in_focused_frame_; }
   void OnDisplayInfoChanged();
   void RuntimesChanged();
 

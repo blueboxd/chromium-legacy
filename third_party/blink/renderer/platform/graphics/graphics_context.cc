@@ -306,6 +306,8 @@ void GraphicsContext::BeginRecording(const FloatRect& bounds) {
   canvas_ = paint_recorder_.beginRecording(bounds);
   if (metafile_)
     canvas_->SetPrintingMetafile(metafile_);
+  if (tracker_)
+    canvas_->SetPaintPreviewTracker(tracker_);
 }
 
 namespace {

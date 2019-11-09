@@ -700,8 +700,7 @@ Polymer({
       this.logicalResolutionText_ = '';
       return;
     }
-    const mode = this.selectedDisplay.modes[
-        /** @type {number} */ (this.selectedModePref_.value)];
+    const mode = this.selectedDisplay.modes[this.currentSelectedModeIndex_];
     const deviceScaleFactor = mode.deviceScaleFactor;
     const inverseZoomFactor = 1.0 / zoomFactor;
     let logicalResolutionStrId = 'displayZoomLogicalResolutionText';
@@ -710,15 +709,36 @@ Polymer({
     } else if (Math.abs(inverseZoomFactor - 1.0) < 0.001) {
       logicalResolutionStrId = 'displayZoomLogicalResolutionDefaultText';
     }
-    const widthStr =
+    let widthStr =
         Math.round(mode.widthInNativePixels / (deviceScaleFactor * zoomFactor))
             .toString();
-    const heightStr =
+    let heightStr =
         Math.round(mode.heightInNativePixels / (deviceScaleFactor * zoomFactor))
             .toString();
+    if (this.shouldSwapLogicalResolutionText_()) {
+      const temp = widthStr;
+      widthStr = heightStr;
+      heightStr = temp;
+    }
     this.logicalResolutionText_ =
         this.i18n(logicalResolutionStrId, widthStr, heightStr);
   },
+
+  /**
+   * Determines whether width and height should be swapped in the
+   * Logical Resolution Text. Returns true if the aspect ratio of the display's
+   * native pixels is not equal to the aspect ratio of the displays current
+   * bounds.
+   * @private
+   */
+  shouldSwapLogicalResolutionText_: function() {
+    const mode = this.selectedDisplay.modes[this.currentSelectedModeIndex_];
+    const bounds = this.selectedDisplay.bounds;
+
+    return (bounds.width / bounds.height).toPrecision(4) !=
+        (mode.widthInNativePixels / mode.heightInNativePixels).toPrecision(4);
+  },
+
 
   /**
    * Handles the event where the display size slider is being dragged, i.e. the

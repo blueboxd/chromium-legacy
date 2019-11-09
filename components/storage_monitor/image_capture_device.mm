@@ -263,4 +263,36 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   NOTIMPLEMENTED();
 }
 
+// Mac 10.15 SDK methods, not yet implemented (https://crbug.com/849689)
+
+- (void)cameraDevice:(ICCameraDevice*)camera didRemoveItems:(NSArray*)items {
+  NOTIMPLEMENTED();
+}
+
+- (void)cameraDevice:(ICCameraDevice*)camera
+    didReceiveThumbnail:(CGImageRef)thumbnail
+                forItem:(ICCameraItem*)item
+                  error:(NSError*)error {
+  NOTIMPLEMENTED();
+}
+
+- (void)cameraDevice:(ICCameraDevice*)camera
+    didReceiveMetadata:(NSDictionary*)metadata
+               forItem:(ICCameraItem*)item
+                 error:(NSError*)error {
+  NOTIMPLEMENTED();
+}
+
+- (void)cameraDeviceDidEnableAccessRestriction:(ICDevice*)device {
+  NOTIMPLEMENTED();
+}
+
+- (void)cameraDeviceDidRemoveAccessRestriction:(ICDevice*)device {
+  NOTIMPLEMENTED();
+}
+
+- (void)device:(ICDevice*)device didCloseSessionWithError:(NSError*)error {
+  NOTIMPLEMENTED();
+}
+
 @end  // ImageCaptureDevice

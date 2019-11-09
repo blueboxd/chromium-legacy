@@ -124,10 +124,15 @@ if (skia_use_dawn) {
 
     public_deps = [
       "//skia",
+      "//third_party/dawn/src/dawn:dawn_headers",
     ]
 
     deps = [
       "//base",
+      "//third_party/dawn:libdawn_native",
+      "//third_party/dawn:libdawn_native_sources",
+      "//third_party/dawn/src/dawn:dawncpp",
+      "//third_party/dawn/src/dawn:libdawn_proc",
     ]
   }
 }

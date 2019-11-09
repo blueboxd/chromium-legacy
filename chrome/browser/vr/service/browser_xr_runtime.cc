@@ -116,12 +116,6 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
   // Rather than just cloning everything, we copy over each field and validate
   // individually.  This ensures new fields don't bypass validation.
   ret->id = id;
-  ret->display_name = info->display_name;
-  DCHECK(info->capabilities);  // Ensured by mojo.
-  ret->capabilities = device::mojom::VRDisplayCapabilities::New(
-      info->capabilities->has_position,
-      info->capabilities->has_external_display, info->capabilities->can_present,
-      info->capabilities->can_provide_environment_integration);
 
   // Maximum 1000km translation.
   if (info->stage_parameters &&
@@ -137,13 +131,6 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
 
   float kMinFramebufferScale = 0.1f;
   float kMaxFramebufferScale = 1.0f;
-  if (info->webvr_default_framebuffer_scale <= kMaxFramebufferScale &&
-      info->webvr_default_framebuffer_scale >= kMinFramebufferScale) {
-    ret->webvr_default_framebuffer_scale =
-        info->webvr_default_framebuffer_scale;
-  } else {
-    ret->webvr_default_framebuffer_scale = 1;
-  }
 
   if (info->webxr_default_framebuffer_scale <= kMaxFramebufferScale &&
       info->webxr_default_framebuffer_scale >= kMinFramebufferScale) {
@@ -403,14 +390,6 @@ void BrowserXRRuntime::OnVisibilityStateChanged(
   }
 }
 
-void BrowserXRRuntime::OnInitialized() {
-  DVLOG(2) << __func__;
-  for (auto& callback : pending_initialization_callbacks_) {
-    std::move(callback).Run(display_info_.Clone());
-  }
-  pending_initialization_callbacks_.clear();
-}
-
 void BrowserXRRuntime::OnServiceAdded(VRServiceImpl* service) {
   DVLOG(2) << __func__ << ": id=" << id_;
   services_.insert(service);
@@ -499,21 +478,6 @@ void BrowserXRRuntime::OnRequestSessionResult(
 void BrowserXRRuntime::OnImmersiveSessionError() {
   DVLOG(2) << __func__ << ": id=" << id_;
   StopImmersiveSession(base::DoNothing());
-}
-
-void BrowserXRRuntime::InitializeAndGetDisplayInfo(
-    content::RenderFrameHost* render_frame_host,
-    device::mojom::VRService::GetImmersiveVRDisplayInfoCallback callback) {
-  DVLOG(2) << __func__ << ": id=" << id_;
-  device::mojom::VRDisplayInfoPtr device_info = GetVRDisplayInfo();
-  if (device_info) {
-    std::move(callback).Run(std::move(device_info));
-    return;
-  }
-
-  pending_initialization_callbacks_.push_back(std::move(callback));
-  runtime_->EnsureInitialized(
-      base::BindOnce(&BrowserXRRuntime::OnInitialized, base::Unretained(this)));
 }
 
 }  // namespace vr

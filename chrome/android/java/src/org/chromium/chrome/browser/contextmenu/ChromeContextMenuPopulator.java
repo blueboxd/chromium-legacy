@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTa
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.LensUtils;
@@ -430,7 +430,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 } catch (URISyntaxException ignore) {
                 }
                 if (SharedPreferencesManager.getInstance().readBoolean(
-                            ChromePreferenceManager.CHROME_DEFAULT_BROWSER, false)
+                            ChromePreferenceKeys.CHROME_DEFAULT_BROWSER, false)
                         && addNewEntries) {
                     if (mDelegate.isIncognitoSupported()) {
                         tab.add(0, new ChromeContextMenuItem(Item.OPEN_IN_CHROME_INCOGNITO_TAB));

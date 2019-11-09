@@ -1723,6 +1723,30 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       EntireMarkupSuccessiveMoveByCharacter) {
+  AssertMoveByUnitForMarkup(
+      TextUnit_Character, "Test ing.",
+      {L"T", L"e", L"s", L"t", L" ", L"i", L"n", L"g", L"."});
+
+  // The text consists of an e acute, and two emoticons.
+  const std::string html = R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          <input type="text" value="">
+          <script>
+            document.querySelector('input').value = 'e\u0301' +
+                '\uD83D\uDC69\u200D\u2764\uFE0F\u200D\uD83D\uDC69' +
+                '\uD83D\uDC36';
+          </script>
+        </body>
+      </html>)HTML";
+  AssertMoveByUnitForMarkup(
+      TextUnit_Character, html,
+      {L"e\x0301", L"\xD83D\xDC69\x200D\x2764\xFE0F\x200D\xD83D\xDC69",
+       L"\xD83D\xDC36"});
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                        EntireMarkupSuccessiveMoveByWord) {
   AssertMoveByUnitForMarkup(TextUnit_Word, "this is a test.",
                             {L"this ", L"is ", L"a ", L"test."});

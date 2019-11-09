@@ -19,10 +19,6 @@ namespace cc {
 class PaintCanvas;
 }
 
-namespace paint_preview {
-class PaintPreviewTracker;
-}
-
 namespace blink {
 class GraphicsContext;
 class PaintController;

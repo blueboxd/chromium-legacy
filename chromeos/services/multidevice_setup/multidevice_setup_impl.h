@@ -87,6 +87,8 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
   void AddFeatureStateObserver(
       mojo::PendingRemote<mojom::FeatureStateObserver> observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
+  void GetEligibleActiveHostDevices(
+      GetEligibleActiveHostDevicesCallback callback) override;
   void SetHostDevice(const std::string& host_device_id,
                      const std::string& auth_token,
                      SetHostDeviceCallback callback) override;

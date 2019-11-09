@@ -7,8 +7,9 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "services/video_capture/test/fake_device_descriptor_test.h"
 
 using testing::_;
@@ -120,10 +121,11 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, CanUseSecondRequestedProxy) {
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
   base::RunLoop wait_loop_2;
-  mojo::PendingRemote<mojom::Receiver> subscriber;
-  MockReceiver receiver(subscriber.InitWithNewPipeAndPassReceiver());
-  EXPECT_CALL(receiver, DoOnNewBuffer(_, _)).Times(AtLeast(1));
-  EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
+  mojo::PendingRemote<mojom::VideoFrameHandler> subscriber;
+  MockVideoFrameHandler video_frame_handler(
+      subscriber.InitWithNewPipeAndPassReceiver());
+  EXPECT_CALL(video_frame_handler, DoOnNewBuffer(_, _)).Times(AtLeast(1));
+  EXPECT_CALL(video_frame_handler, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillRepeatedly(
           InvokeWithoutArgs([&wait_loop_2]() { wait_loop_2.Quit(); }));
 

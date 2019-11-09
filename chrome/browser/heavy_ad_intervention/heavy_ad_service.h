@@ -29,6 +29,9 @@ class HeavyAdService : public KeyedService,
   // disk.
   void Initialize(const base::FilePath& profile_path);
 
+  // Initializes the blocklist with no backing store for incognito mode.
+  void InitializeOffTheRecord();
+
   HeavyAdBlocklist* heavy_ad_blocklist() { return heavy_ad_blocklist_.get(); }
 
  private:

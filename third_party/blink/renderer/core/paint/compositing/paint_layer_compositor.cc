@@ -652,6 +652,8 @@ static void FullyInvalidatePaintRecursive(PaintLayer* layer) {
 }
 
 void PaintLayerCompositor::FullyInvalidatePaint() {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
   // We're walking all compositing layers and invalidating them, so there's
   // no need to have up-to-date compositing state.
   DisableCompositingQueryAsserts disabler;

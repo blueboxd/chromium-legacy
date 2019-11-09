@@ -21,7 +21,7 @@ that allow individual frames to be frozen.
 Once a page is frozen, it cannot run any tasks. In particular, callbacks
 associated with DOM timers, XHR requests or the push API will not run until the
 page is resumed. To verify the behavior of your site when it is frozen, go to
-chrome://discards and click [Freeze] next to a background tab which contains
+`chrome://discards` and click [Freeze] next to a background tab which contains
 your site. See [Will my site be frozen?](#Will-my-site-be-frozen_) for how
 Chrome tries to avoid frezing sites when this is likely to break functionality.
 

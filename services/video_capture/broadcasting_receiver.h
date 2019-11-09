@@ -15,14 +15,14 @@
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/video_capture/public/mojom/receiver.mojom.h"
 #include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 
 namespace video_capture {
 
-// Implementation of mojom::VideoFrameReceiver that distributes frames to
+// Implementation of mojom::VideoFrameHandler that distributes frames to
 // potentially multiple clients.
-class BroadcastingReceiver : public mojom::Receiver {
+class BroadcastingReceiver : public mojom::VideoFrameHandler {
  public:
   class BufferContext {
    public:
@@ -77,14 +77,14 @@ class BroadcastingReceiver : public mojom::Receiver {
   void SetOnStoppedHandler(base::OnceClosure on_stopped_handler);
 
   // Returns a client_id that can be used for a call to Suspend/Resume/Remove.
-  int32_t AddClient(mojo::PendingRemote<mojom::Receiver> client,
+  int32_t AddClient(mojo::PendingRemote<mojom::VideoFrameHandler> client,
                     media::VideoCaptureBufferType target_buffer_type);
   void SuspendClient(int32_t client_id);
   void ResumeClient(int32_t client_id);
   // Returns ownership of the client back to the caller.
-  mojo::Remote<mojom::Receiver> RemoveClient(int32_t client_id);
+  mojo::Remote<mojom::VideoFrameHandler> RemoveClient(int32_t client_id);
 
-  // video_capture::mojom::Receiver:
+  // video_capture::mojom::VideoFrameHandler:
   void OnNewBuffer(int32_t buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnFrameReadyInBuffer(
@@ -115,7 +115,7 @@ class BroadcastingReceiver : public mojom::Receiver {
   // a client is suspended.
   class ClientContext {
    public:
-    ClientContext(mojo::PendingRemote<mojom::Receiver> client,
+    ClientContext(mojo::PendingRemote<mojom::VideoFrameHandler> client,
                   media::VideoCaptureBufferType target_buffer_type);
     ~ClientContext();
     ClientContext(ClientContext&& other);
@@ -123,7 +123,7 @@ class BroadcastingReceiver : public mojom::Receiver {
     void OnStarted();
     void OnStartedUsingGpuDecode();
 
-    mojo::Remote<mojom::Receiver>& client() { return client_; }
+    mojo::Remote<mojom::VideoFrameHandler>& client() { return client_; }
     media::VideoCaptureBufferType target_buffer_type() {
       return target_buffer_type_;
     }
@@ -131,7 +131,7 @@ class BroadcastingReceiver : public mojom::Receiver {
     bool is_suspended() const { return is_suspended_; }
 
    private:
-    mojo::Remote<mojom::Receiver> client_;
+    mojo::Remote<mojom::VideoFrameHandler> client_;
     media::VideoCaptureBufferType target_buffer_type_;
     bool is_suspended_;
     bool on_started_has_been_called_;

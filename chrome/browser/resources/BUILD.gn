@@ -108,6 +108,34 @@ grit("webapks_ui_resources") {
 }
 
 if (!is_android) {
+  grit("bookmarks_resources") {
+    if (optimize_webui) {
+      source = "bookmarks/bookmarks_resources_vulcanized.grd"
+
+      # The .grd contains references to generated files.
+      source_is_generated = true
+
+      deps = [
+        "//chrome/browser/resources/bookmarks:build",
+      ]
+      grit_flags = [
+        "-E",
+        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+      ]
+    } else {
+      source = "bookmarks/bookmarks_resources.grd"
+    }
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/bookmarks_resources.h",
+      "grit/bookmarks_resources_map.cc",
+      "grit/bookmarks_resources_map.h",
+      "bookmarks_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
   grit("component_extension_resources") {
     source = "component_extension_resources.grd"
 
@@ -381,27 +409,34 @@ repack("dev_ui_paks") {
   ]
 }
 
-js2gtest("resources_unitjs_tests") {
-  test_type = "webui"
-  sources = [
-    "gaia_auth_host/password_change_authenticator_test.unitjs",
-  ]
+# TODO(https://crbug.com/930109): Figure out why this test fails on MAC ASAN.
+if (!is_asan || !is_mac) {
+  js2gtest("resources_unitjs_tests") {
+    test_type = "webui"
+    sources = [
+      "gaia_auth_host/password_change_authenticator_test.unitjs",
+    ]
 
-  # This has to be a gen_include, so it doesn't collide with other js2gtests
-  gen_include_files = [ "//ui/webui/resources/js/cr.js" ]
+    # This has to be a gen_include, so it doesn't collide with other js2gtests
+    gen_include_files = [ "//ui/webui/resources/js/cr.js" ]
 
-  # But these have to be extra_js_files, since it uses a native object
-  # EventTarget, which doesn't work at compile time.
-  extra_js_files = [
-    "//ui/webui/resources/js/cr/event_target.js",
-    "gaia_auth_host/password_change_authenticator.js",
-  ]
-  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-}
+    # But these have to be extra_js_files, since it uses a native object
+    # EventTarget, which doesn't work at compile time.
+    extra_js_files = [
+      "//ui/webui/resources/js/cr/event_target.js",
+      "gaia_auth_host/password_change_authenticator.js",
+    ]
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+  }
 
-source_set("browser_tests") {
-  testonly = true
-  deps = [
-    ":resources_unitjs_tests",
-  ]
+  source_set("browser_tests") {
+    testonly = true
+    deps = [
+      ":resources_unitjs_tests",
+    ]
+  }
+} else {
+  source_set("browser_tests") {
+    testonly = true
+  }
 }

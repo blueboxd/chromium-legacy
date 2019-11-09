@@ -1155,4 +1155,17 @@ class TabListMediator {
     void setTabRestoreCompletedForTesting(boolean isRestored) {
         mTabRestoreCompleted = isRestored;
     }
+
+    /**
+     * Inserts a special {@link org.chromium.ui.modelutil.MVCListAdapter.ListItem} at given index of
+     * the current {@link TabListModel}.
+     *
+     * @param index The index of the {@link org.chromium.ui.modelutil.MVCListAdapter.ListItem} to be
+     *              inserted.
+     * @param uiType The view type the model will bind to.
+     * @param model The model that will be bound to a view.
+     */
+    void addSpecialItemToModel(int index, @UiType int uiType, PropertyModel model) {
+        mModel.add(index, new SimpleRecyclerViewAdapter.ListItem(uiType, model));
+    }
 }

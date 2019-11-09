@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.preferences.themes;
 
 import static org.chromium.chrome.browser.ChromeFeatureList.ANDROID_NIGHT_MODE;
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;

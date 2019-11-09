@@ -858,11 +858,6 @@ void AppListControllerImpl::UpdateScaleAndOpacityForHomeLauncher(
       std::move(callback));
 }
 
-void AppListControllerImpl::UpdateAfterHomeLauncherShown() {
-  // Show or hide the expand arrow view.
-  UpdateExpandArrowVisibility();
-}
-
 base::Optional<base::TimeDelta>
 AppListControllerImpl::GetOptionalAnimationDuration() {
   if (model_->state() == ash::AppListState::kStateEmbeddedAssistant) {
@@ -1406,6 +1401,12 @@ void AppListControllerImpl::OnVisibilityWillChange(bool visible,
   if (last_target_visible_ != real_target_visibility) {
     last_target_visible_ = real_target_visibility;
     last_target_visible_display_id_ = display_id;
+
+    // Update the arrow visibility when starting to show the home screen
+    // (presumably, the visibility has already been updated if home is being
+    // hidden).
+    if (real_target_visibility && IsTabletMode())
+      UpdateExpandArrowVisibility();
 
     if (client_)
       client_->OnAppListVisibilityWillChange(real_target_visibility);

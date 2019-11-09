@@ -995,10 +995,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               const url::Origin& source_origin,
                               const base::Optional<url::Origin>& target_origin);
 
-  // mojom::FrameHost:
-  void VisibilityChanged(blink::mojom::FrameVisibility) override;
-  void DidChangeThemeColor(const base::Optional<SkColor>& theme_color) override;
-
   blink::mojom::FrameVisibility visibility() const { return visibility_; }
 
   // A CommitCallbackInterceptor is used to modify parameters for or cancel a
@@ -1206,6 +1202,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidDisplayInsecureContent() override;
   void DidContainInsecureFormAction() override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
+  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
+  void EvictFromBackForwardCache() override;
+  void VisibilityChanged(blink::mojom::FrameVisibility) override;
+  void DidChangeThemeColor(const base::Optional<SkColor>& theme_color) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1457,7 +1457,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
           validated_params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
       override;
-  void EvictFromBackForwardCache() override;
 
   // This function mimics DidCommitProvisionalLoad but is a direct mojo
   // callback from NavigationClient::CommitNavigation.
@@ -1494,7 +1493,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CancelInitialHistoryLoad() override;
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
-  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
   void DocumentOnLoadCompleted() override;
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
   void DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
@@ -1730,10 +1728,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Update this frame's last committed origin.
   void SetLastCommittedOrigin(const url::Origin& origin);
 
-  // Set the |last_committed_origin_| of |this| frame, inheriting the origin
-  // from |new_frame_creator| as appropriate (e.g. depending on whether |this|
-  // frame should be sandboxed / should have an opaque origin instead).
-  void SetOriginOfNewFrame(const url::Origin& new_frame_creator);
+  // Set the |last_committed_origin_| and |network_isolation_key_| of |this|
+  // frame, inheriting the origin from |new_frame_creator| as appropriate
+  // (e.g. depending on whether |this| frame should be sandboxed / should have
+  // an opaque origin instead).
+  void SetOriginAndNetworkIsolationKeyOfNewFrame(
+      const url::Origin& new_frame_creator);
 
   // Called when a navigation commits succesfully to |url|. This will update
   // |last_committed_site_url_| with the site URL corresponding to |url|.
@@ -2462,7 +2462,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Network isolation key to be used for subresources from the currently
   // committed navigation. This is specific to a document and should be reset on
-  // every document commit.
+  // every cross-document commit. When a new frame is created, the new frame
+  // inherits the network isolation key from the creator frame, similarly to the
+  // last committed origin.
   net::NetworkIsolationKey network_isolation_key_;
 
   // Hold onto hashes of the last |kMaxCookieSameSiteDeprecationUrls| cookie

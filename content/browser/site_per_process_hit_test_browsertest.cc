@@ -5598,9 +5598,8 @@ void CreateContextMenuTestHelper(
   EXPECT_NEAR(point.y(), params.y, kHitTestTolerance);
 }
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID)
 // High DPI tests don't work properly on Android, which has fixed scale factor.
-// Windows is disabled because of https://crbug.com/545547.
 #define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
 #else
 #define MAYBE_CreateContextMenuTest CreateContextMenuTest

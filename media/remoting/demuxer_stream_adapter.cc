@@ -68,8 +68,8 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
 
   stream_sender_.Bind(std::move(stream_sender_info));
   stream_sender_.set_connection_error_handler(
-      base::Bind(&DemuxerStreamAdapter::OnFatalError,
-                 weak_factory_.GetWeakPtr(), MOJO_PIPE_ERROR));
+      base::BindOnce(&DemuxerStreamAdapter::OnFatalError,
+                     weak_factory_.GetWeakPtr(), MOJO_PIPE_ERROR));
 }
 
 DemuxerStreamAdapter::~DemuxerStreamAdapter() {

@@ -62,9 +62,6 @@ bool IsComponentExtensionWhitelisted(const std::string& extension_id) {
 bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
   switch (manifest_resource_id) {
     // Please keep the list in alphabetical order.
-#if BUILDFLAG(ENABLE_APP_LIST)
-    case IDR_CHROME_APP_MANIFEST:
-#endif
 #if BUILDFLAG(ENABLE_PRINTING)
     case IDR_CLOUDPRINT_MANIFEST:
 #endif
@@ -74,9 +71,6 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
     case IDR_HANGOUT_SERVICES_MANIFEST:
 #endif
     case IDR_IDENTITY_API_SCOPE_APPROVAL_MANIFEST:
-#if defined(OS_CHROMEOS)
-    case IDR_IMAGE_LOADER_MANIFEST:
-#endif
     case IDR_NETWORK_SPEECH_SYNTHESIS_MANIFEST:
     case IDR_WEBSTORE_MANIFEST:
 
@@ -84,6 +78,7 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
     // Separate ChromeOS list, as it is quite large.
     case IDR_ARC_SUPPORT_MANIFEST:
     case IDR_AUDIO_PLAYER_MANIFEST:
+    case IDR_CHROME_APP_MANIFEST:
     case IDR_CONNECTIVITY_DIAGNOSTICS_LAUNCHER_MANIFEST:
     case IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST:
     case IDR_CROSH_BUILTIN_MANIFEST:
@@ -92,6 +87,7 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
     case IDR_FILEMANAGER_MANIFEST:
     case IDR_FIRST_RUN_DIALOG_MANIFEST:
     case IDR_GALLERY_MANIFEST:
+    case IDR_IMAGE_LOADER_MANIFEST:
     case IDR_KEYBOARD_MANIFEST:
     case IDR_MOBILE_MANIFEST:
     case IDR_VIDEO_PLAYER_MANIFEST:

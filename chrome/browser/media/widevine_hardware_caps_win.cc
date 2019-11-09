@@ -110,7 +110,7 @@ bool IsD3D11DecoderProfileSupportedWithCenc(ID3D11VideoDevice* video_device,
 void GetWidevineHardwareCaps(
     const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
     base::flat_set<media::VideoCodec>* video_codecs,
-    base::flat_set<media::EncryptionMode>* encryption_schemes) {
+    base::flat_set<media::EncryptionScheme>* encryption_schemes) {
   DCHECK(!cdm_proxy_protocols.empty());
   DCHECK(video_codecs->empty());
   DCHECK(encryption_schemes->empty());
@@ -155,5 +155,5 @@ void GetWidevineHardwareCaps(
   }
 
   if (!video_codecs->empty())
-    encryption_schemes->insert(media::EncryptionMode::kCenc);
+    encryption_schemes->insert(media::EncryptionScheme::kCenc);
 }

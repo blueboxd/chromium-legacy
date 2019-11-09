@@ -281,9 +281,19 @@ void OmniboxFieldTrial::GetDemotionsByType(
     OmniboxEventProto::PageClassification current_page_classification,
     DemotionMultipliers* demotions_by_type) {
   demotions_by_type->clear();
+
+  // Explicitly check whether the feature is enabled before calling
+  // |GetValueForRuleInContextByFeature| because it is possible for
+  // |GetValueForRuleInContextByFeature| to return an empty string even if the
+  // feature is enabled, and we don't want to fallback to
+  // |GetValueForRuleInContext| in this case.
   std::string demotion_rule =
-      OmniboxFieldTrial::internal::GetValueForRuleInContext(
-          kDemoteByTypeRule, current_page_classification);
+      base::FeatureList::IsEnabled(omnibox::kOmniboxDemoteByType)
+          ? OmniboxFieldTrial::internal::GetValueForRuleInContextByFeature(
+                omnibox::kOmniboxDemoteByType, kDemoteByTypeRule,
+                current_page_classification)
+          : OmniboxFieldTrial::internal::GetValueForRuleInContext(
+                kDemoteByTypeRule, current_page_classification);
   // If there is no demotion rule for this context, then use the default
   // value for that context.
   if (demotion_rule.empty()) {

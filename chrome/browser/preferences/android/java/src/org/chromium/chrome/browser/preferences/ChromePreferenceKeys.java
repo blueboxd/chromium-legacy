@@ -12,7 +12,6 @@ package org.chromium.chrome.browser.preferences;
  * Do not remove constants from here. Keys that were used in past versions but are not used anymore
  * cannot be reused. Mark them as @Deprecated.
  *
- * TODO(crbug.com/1022107): Finish moving constants from ChromePreferenceManager.
  * TODO(crbug.com/1013781): Implement key deprecation. For now, just mark them as @Deprecated.
  */
 public final class ChromePreferenceKeys {
@@ -97,6 +96,205 @@ public final class ChromePreferenceKeys {
             "contextual_search_last_animation_time";
     public static final String CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER =
             "contextual_search_current_week_number";
+
+    /**
+     * Whether the promotion for data reduction has been skipped on first invocation.
+     * Default value is false.
+     */
+    public static final String PROMOS_SKIPPED_ON_FIRST_START = "promos_skipped_on_first_start";
+    public static final String SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION =
+            "signin_promo_last_shown_chrome_version";
+    public static final String SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES =
+            "signin_promo_last_shown_account_names";
+
+    /**
+     * This value was used prior to KitKat to keep existing low-end devices on the normal UI rather
+     * than the simplified UI.
+     *
+     * This value may still exist in shared preferences file. Do not reuse.
+     */
+    @Deprecated
+    private static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
+
+    @Deprecated
+    private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
+
+    /**
+     * Whether Chrome is set as the default browser.
+     * Default value is false.
+     */
+    public static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
+
+    /**
+     * Deprecated in M70. This value may still exist in the shared preferences file. Do not reuse.
+     */
+    @Deprecated
+    private static final String CHROME_MODERN_DESIGN_ENABLED_KEY = "chrome_modern_design_enabled";
+
+    /**
+     * Whether or not the home page button is force enabled.
+     * Default value is false.
+     */
+    @Deprecated
+    private static final String HOME_PAGE_BUTTON_FORCE_ENABLED_KEY =
+            "home_page_button_force_enabled";
+
+    /**
+     * Whether or not the homepage tile will be shown.
+     * Default value is false.
+     */
+    @Deprecated
+    private static final String HOMEPAGE_TILE_ENABLED_KEY = "homepage_tile_enabled";
+
+    /**
+     * Whether or not the new tab page button is enabled.
+     * Default value is false.
+     */
+    @Deprecated
+    private static final String NTP_BUTTON_ENABLED_KEY = "ntp_button_enabled";
+
+    /**
+     * Deprecated in M71. This value may still exist in the shared preferences file. Do not reuse.
+     */
+    @Deprecated
+    private static final String NTP_BUTTON_VARIANT_KEY = "ntp_button_variant";
+
+    /**
+     * Deprecated in M77. This value may still exist in shared preferences file. Do not reuse.
+     */
+    @Deprecated
+    private static final String TAB_PERSISTENT_STORE_TASK_RUNNER_ENABLED_KEY =
+            "tab_persistent_store_task_runner_enabled";
+
+    /**
+     * Deprecated in M75. This value may still exist in shared preferences file. Do not reuse.
+     */
+    @Deprecated
+    private static final String INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY =
+            "inflate_toolbar_on_background_thread";
+
+    /**
+     * The current theme setting in the user settings.
+     * Default value is -1. Use NightModeUtils#getThemeSetting() to retrieve current setting or
+     * default theme.
+     */
+    public static final String UI_THEME_SETTING_KEY = "ui_theme_setting";
+
+    /**
+     * Whether or not darken websites is enabled.
+     * Default value is false.
+     */
+    public static final String DARKEN_WEBSITES_ENABLED_KEY = "darken_websites_enabled";
+
+    /**
+     * Marks that the content suggestions surface has been shown.
+     * Default value is false.
+     */
+    public static final String CONTENT_SUGGESTIONS_SHOWN_KEY = "content_suggestions_shown";
+
+    /**
+     * Whether the user dismissed the personalized sign in promo from the Settings.
+     * Default value is false.
+     */
+    public static final String SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED =
+            "settings_personalized_signin_promo_dismissed";
+    /**
+     * Whether the user dismissed the personalized sign in promo from the new tab page.
+     * Default value is false.
+     */
+    public static final String NTP_SIGNIN_PROMO_DISMISSED =
+            "ntp.personalized_signin_promo_dismissed";
+
+    public static final String NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START =
+            "ntp.signin_promo_suppression_period_start";
+
+    public static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
+    public static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
+
+    /**
+     * Deprecated in M76. This value may still exist in the shared preferences file. Do not reuse.
+     */
+    @Deprecated
+    private static final String SOLE_INTEGRATION_ENABLED_KEY = "sole_integration_enabled";
+
+    public static final String VERIFIED_DIGITAL_ASSET_LINKS = "verified_digital_asset_links";
+    public static final String TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES =
+            "trusted_web_activity_disclosure_accepted_packages";
+
+    /**
+     * Whether VR assets component should be registered on startup.
+     * Default value is false.
+     */
+    public static final String SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP =
+            "should_register_vr_assets_component_on_startup";
+
+    /*
+     * Whether the simplified tab switcher is enabled when accessibility mode is enabled. Keep in
+     * sync with accessibility_preferences.xml.
+     * Default value is true.
+     */
+    public static final String ACCESSIBILITY_TAB_SWITCHER = "accessibility_tab_switcher";
+
+    /**
+     * When the user is shown a badge that the current Android OS version is unsupported, and they
+     * tap it to display the menu (which has additional information), we store the current version
+     * of Chrome to this preference to ensure we only show the badge once. The value is cleared
+     * if the Chrome version later changes.
+     */
+    public static final String LATEST_UNSUPPORTED_VERSION = "android_os_unsupported_chrome_version";
+
+    /**
+     * Keys for deferred recording of the outcomes of showing the clear data dialog after
+     * Trusted Web Activity client apps are uninstalled or have their data cleared.
+     */
+    public static final String TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL =
+            "twa_dialog_number_of_dismissals_on_uninstall";
+    public static final String TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA =
+            "twa_dialog_number_of_dismissals_on_clear_data";
+
+    /** Key for deferred recording of WebAPK uninstalls. */
+    @Deprecated
+    private static final String WEBAPK_NUMBER_OF_UNINSTALLS = "webapk_number_of_uninstalls";
+
+    /** Key for deferred recording of list of uninstalled WebAPK packages. */
+    public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
+
+    /**
+     * Key for whether it allows to start in service manager only mode.
+     * Default value is false.
+     */
+    public static final String ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY =
+            "allow_starting_service_manager_only";
+
+    /**
+     * Deprecated keys for Chrome Home.
+     */
+    @Deprecated
+    private static final String CHROME_HOME_USER_ENABLED_KEY = "chrome_home_user_enabled";
+    @Deprecated
+    private static final String CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN =
+            "chrome_home_opt_out_snackbar_shown";
+    @Deprecated
+    private static final String CHROME_HOME_INFO_PROMO_SHOWN_KEY = "chrome_home_info_promo_shown";
+    @Deprecated
+    private static final String CHROME_HOME_SHARED_PREFERENCES_KEY = "chrome_home_enabled_date";
+
+    /**
+     * Contains a trial group that was used to determine whether the reached code profiler should be
+     * enabled.
+     */
+    public static final String REACHED_CODE_PROFILER_GROUP_KEY = "reached_code_profiler_group";
+
+    /**
+     * Key to cache whether offline indicator v2 (persistent offline indicator) is enabled.
+     */
+    public static final String OFFLINE_INDICATOR_V2_ENABLED_KEY = "offline_indicator_v2_enabled";
+
+    /**
+     * Previously used to migrate {@link PrefServiceBridge} preferences to current version.
+     */
+    @Deprecated
+    private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
 
     private ChromePreferenceKeys() {}
 }

@@ -140,7 +140,7 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
   ~ImmersiveFullscreenControllerTest() override = default;
 
   ImmersiveFullscreenController* controller() {
-    return ImmersiveFullscreenController::GetForTest(widget());
+    return ImmersiveFullscreenController::Get(widget());
   }
 
   views::NativeViewHost* content_view() { return content_view_; }

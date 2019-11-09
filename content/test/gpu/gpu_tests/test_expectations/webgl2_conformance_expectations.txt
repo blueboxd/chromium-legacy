@@ -396,6 +396,9 @@ crbug.com/952282 [ mac nvidia-0xfe9 ] conformance2/rendering/framebuffer-unsuppo
 crbug.com/965209 [ mac nvidia-0xfe9 ] conformance2/samplers/multi-context-sampler-test.html [ RetryOnFailure ]
 crbug.com/756537 [ mac nvidia ] deqp/functional/gles3/shaderoperator/* [ Failure ]
 crbug.com/907599 [ mac nvidia debug ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
+crbug.com/1022831 [ mac nvidia-0xfe9 ] deqp/functional/gles3/vertexarrays/single_attribute.usage.stream_draw.html [ RetryOnFailure ]
+crbug.com/1022831 [ mac nvidia-0xfe9 ] deqp/functional/gles3/vertexarrays/single_attribute.usage.dynamic_copy.html [ RetryOnFailure ]
+crbug.com/1022831 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shaderloop_while.html [ RetryOnFailure ]
 
 # Mac AMD
 # TODO(kbr): uncomment the following two exepectations after test

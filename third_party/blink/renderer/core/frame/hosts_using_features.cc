@@ -129,12 +129,6 @@ void HostsUsingFeatures::Value::Aggregate(HostsUsingFeatures::Value other) {
 }
 
 void HostsUsingFeatures::Value::RecordHostToRappor(const String& host) {
-  if (Get(Feature::kDeviceMotionInsecureHost))
-    Platform::Current()->RecordRappor(
-        "PowerfulFeatureUse.Host.DeviceMotion.Insecure", host);
-  if (Get(Feature::kDeviceOrientationInsecureHost))
-    Platform::Current()->RecordRappor(
-        "PowerfulFeatureUse.Host.DeviceOrientation.Insecure", host);
   if (Get(Feature::kFullscreenInsecureHost))
     Platform::Current()->RecordRappor(
         "PowerfulFeatureUse.Host.Fullscreen.Insecure", host);

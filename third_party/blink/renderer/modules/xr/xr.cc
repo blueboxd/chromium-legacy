@@ -1001,15 +1001,8 @@ void XR::OnRequestSessionReturned(
 
   // immersive sessions must supply display info.
   DCHECK(session_ptr->display_info);
-  // If the session supports environment integration, ensure the device does
-  // as well.
-  DCHECK(!environment_integration || session_ptr->display_info->capabilities
-                                         ->can_provide_environment_integration);
   DVLOG(2) << __func__
-           << ": environment_integration=" << environment_integration
-           << "can_provide_environment_integration="
-           << session_ptr->display_info->capabilities
-                  ->can_provide_environment_integration;
+           << ": environment_integration=" << environment_integration;
 
   // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;

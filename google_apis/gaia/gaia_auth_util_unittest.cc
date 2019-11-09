@@ -84,6 +84,11 @@ TEST(GaiaAuthUtilTest, ExtractDomainName) {
   EXPECT_EQ(domain, ExtractDomainName("who@EXAMPLE.cOm"));
 }
 
+TEST(GaiaAuthUtilTest, IsGoogleInternalAccountEmail) {
+  EXPECT_TRUE(IsGoogleInternalAccountEmail("hello@google.com"));
+  EXPECT_FALSE(IsGoogleInternalAccountEmail("internal@gmail.com"));
+}
+
 TEST(GaiaAuthUtilTest, SanitizeMissingDomain) {
   EXPECT_EQ("nodomain@gmail.com", SanitizeEmail("nodomain"));
 }

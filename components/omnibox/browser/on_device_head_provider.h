@@ -64,7 +64,7 @@ class OnDeviceHeadProvider : public AutocompleteProvider {
 
   // Resets |serving_| if new model is available and cleans up the old model if
   // it exists.
-  void MaybeResetServingInstanceFromNewModel();
+  void ResetServingInstanceFromNewModel(const std::string& new_model_filename);
 
   AutocompleteProviderClient* client_;
   AutocompleteProviderListener* listener_;
@@ -73,8 +73,9 @@ class OnDeviceHeadProvider : public AutocompleteProvider {
   // suggestions matching the Autocomplete input.
   std::unique_ptr<OnDeviceHeadServing> serving_;
 
-  // The task runner instance where asynchronous searches to the head model will
-  // be run.
+  // The task runner instance where asynchronous operations using |serving_|
+  // will be run. Note that SequencedTaskRunner guarantees that operations will
+  // be executed in sequence so we don't need to apply a lock to |serving_|.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The request id used to trace current request to the on device head model.
@@ -84,9 +85,6 @@ class OnDeviceHeadProvider : public AutocompleteProvider {
 
   // The filename for the on device model currently being used.
   std::string current_model_filename_;
-
-  // The filename for the new model updated by Component Updater.
-  std::string new_model_filename_;
 
   // Owns the subscription after adding the model update callback to the
   // listener such that the callback can be removed automatically from the

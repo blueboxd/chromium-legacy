@@ -158,6 +158,9 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void DestroyRenderer();
   void ReportMetadata(StartType start_type);
 
+  // Returns whether there's any encrypted stream in the demuxer.
+  bool HasEncryptedStream();
+
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   CreateRendererCB create_renderer_cb_;
@@ -191,6 +194,10 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
 
   // Series of tasks to Start(), Seek(), and Resume().
   std::unique_ptr<SerialRunner> pending_callbacks_;
+
+  // Callback to store the |done_cb| when CreateRenderer() needs to wait for a
+  // CDM to be set. Should only be set in kStarting or kResuming states.
+  PipelineStatusCallback create_renderer_done_cb_;
 
   // Called from non-media threads when an error occurs.
   PipelineStatusCB error_cb_;
@@ -480,6 +487,17 @@ void PipelineImpl::RendererWrapper::SetCdm(CdmContext* cdm_context,
   if (!shared_state_.renderer) {
     cdm_context_ = cdm_context;
     std::move(cdm_attached_cb).Run(true);
+
+    if (create_renderer_done_cb_) {
+      DCHECK(state_ == kStarting || state_ == kResuming);
+      DVLOG(1) << __func__ << ": CDM set; continue pipeline start/resume.";
+      // Use BindToCurrentLoop to make sure OnRendererCreated() is called on the
+      // media task runner.
+      create_renderer_cb_.Run(BindToCurrentLoop(base::BindOnce(
+          &RendererWrapper::OnRendererCreated, weak_factory_.GetWeakPtr(),
+          std::move(create_renderer_done_cb_))));
+    }
+
     return;
   }
 
@@ -889,6 +907,14 @@ void PipelineImpl::RendererWrapper::CreateRenderer(
     PipelineStatusCallback done_cb) {
   DVLOG(1) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(state_ == kStarting || state_ == kResuming);
+
+  if (HasEncryptedStream() && !cdm_context_) {
+    DVLOG(1) << __func__ << ": Has encrypted stream but CDM is not set.";
+    create_renderer_done_cb_ = std::move(done_cb);
+    OnWaiting(WaitingReason::kNoCdm);
+    return;
+  }
 
   // Use BindToCurrentLoop to make sure OnRendererCreated() is called on the
   // media task runner.
@@ -1014,6 +1040,21 @@ void PipelineImpl::RendererWrapper::ReportMetadata(StartType start_type) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&PipelineImpl::OnSeekDone, weak_pipeline_, true));
+}
+
+bool PipelineImpl::RendererWrapper::HasEncryptedStream() {
+  auto streams = demuxer_->GetAllStreams();
+
+  for (auto* stream : streams) {
+    if (stream->type() == DemuxerStream::AUDIO &&
+        stream->audio_decoder_config().is_encrypted())
+      return true;
+    if (stream->type() == DemuxerStream::VIDEO &&
+        stream->video_decoder_config().is_encrypted())
+      return true;
+  }
+
+  return false;
 }
 
 PipelineImpl::PipelineImpl(

@@ -16,6 +16,7 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/demuxer_memory_limit.h"
 #include "media/base/encryption_pattern.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/media_util.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/mp4/rcheck.h"
@@ -56,7 +57,7 @@ struct TrackRunInfo {
   std::vector<uint8_t> aux_info_sizes;  // Populated if default_size == 0.
   int aux_info_total_size;
 
-  EncryptionMode encryption_mode;
+  EncryptionScheme encryption_scheme = EncryptionScheme::kUnencrypted;
   EncryptionPattern encryption_pattern;
 
   std::vector<CencSampleEncryptionInfoEntry> fragment_sample_encryption_info;
@@ -372,11 +373,11 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       }
 
       if (!sinf->HasSupportedScheme()) {
-        tri.encryption_mode = EncryptionMode::kUnencrypted;
+        tri.encryption_scheme = EncryptionScheme::kUnencrypted;
       } else {
-        tri.encryption_mode = sinf->IsCbcsEncryptionScheme()
-                                  ? EncryptionMode::kCbcs
-                                  : EncryptionMode::kCenc;
+        tri.encryption_scheme = sinf->IsCbcsEncryptionScheme()
+                                    ? EncryptionScheme::kCbcs
+                                    : EncryptionScheme::kCenc;
         tri.encryption_pattern =
             EncryptionPattern(track_encryption->default_crypt_byte_block,
                               track_encryption->default_skip_byte_block);
@@ -747,13 +748,13 @@ std::unique_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
       std::string iv(reinterpret_cast<const char*>(
                          sample_encryption_entry.initialization_vector),
                      base::size(sample_encryption_entry.initialization_vector));
-      switch (run_itr_->encryption_mode) {
-        case EncryptionMode::kUnencrypted:
+      switch (run_itr_->encryption_scheme) {
+        case EncryptionScheme::kUnencrypted:
           return nullptr;
-        case EncryptionMode::kCenc:
+        case EncryptionScheme::kCenc:
           return DecryptConfig::CreateCencConfig(
               key_id, iv, sample_encryption_entry.subsamples);
-        case EncryptionMode::kCbcs:
+        case EncryptionScheme::kCbcs:
           return DecryptConfig::CreateCbcsConfig(
               key_id, iv, sample_encryption_entry.subsamples,
               run_itr_->encryption_pattern);

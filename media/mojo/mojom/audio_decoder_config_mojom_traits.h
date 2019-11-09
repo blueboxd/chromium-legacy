@@ -7,7 +7,6 @@
 
 #include "media/base/audio_decoder_config.h"
 #include "media/base/ipc/media_param_traits.h"
-#include "media/mojo/mojom/encryption_scheme_mojom_traits.h"
 #include "media/mojo/mojom/media_types.mojom.h"
 
 namespace mojo {
@@ -46,7 +45,7 @@ struct StructTraits<media::mojom::AudioDecoderConfigDataView,
     return input.codec_delay();
   }
 
-  static const media::EncryptionScheme& encryption_scheme(
+  static media::EncryptionScheme encryption_scheme(
       const media::AudioDecoderConfig& input) {
     return input.encryption_scheme();
   }

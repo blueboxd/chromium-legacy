@@ -154,7 +154,8 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
       GuessVideoCodecProfile(format),
       media::VideoDecoderConfig::AlphaMode::kIsOpaque, media::VideoColorSpace(),
       media::kNoTransformation, kDefaultSize, gfx::Rect(kDefaultSize),
-      kDefaultSize, media::EmptyExtraData(), media::Unencrypted());
+      kDefaultSize, media::EmptyExtraData(),
+      media::EncryptionScheme::kUnencrypted);
   if (!gpu_factories->IsDecoderConfigSupported(kImplementation, config))
     return nullptr;
 

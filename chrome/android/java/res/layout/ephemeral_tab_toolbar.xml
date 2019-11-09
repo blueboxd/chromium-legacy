@@ -64,6 +64,7 @@
                 android:layout_marginTop="16dp"
                 android:layout_toStartOf="@id/open_in_new_tab"
                 android:layout_toEndOf="@id/favicon"
+                android:textAlignment="viewStart"
                 android:ellipsize="end"
                 android:singleLine="true"
                 android:textAppearance="@style/TextAppearance.BlackBodyDefault" />
@@ -85,6 +86,7 @@
                 android:layout_toEndOf="@id/security_icon"
                 android:layout_below="@id/ephemeral_tab_text"
                 android:layout_marginLeft="4dp"
+                android:textAlignment="viewStart"
                 android:ellipsize="start"
                 android:singleLine="true"
                 android:textAppearance="@style/TextAppearance.BlackHint2" />

@@ -18,6 +18,7 @@
 #include "services/video_capture/broadcasting_receiver.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 
@@ -36,7 +37,7 @@ class VideoSourceImpl : public mojom::VideoSource {
 
   // mojom::VideoSource implementation.
   void CreatePushSubscription(
-      mojo::PendingRemote<mojom::Receiver> subscriber,
+      mojo::PendingRemote<mojom::VideoFrameHandler> subscriber,
       const media::VideoCaptureParams& requested_settings,
       bool force_reopen_with_new_settings,
       mojo::PendingReceiver<mojom::PushVideoStreamSubscription> subscription,
@@ -70,7 +71,8 @@ class VideoSourceImpl : public mojom::VideoSource {
            std::unique_ptr<PushVideoStreamSubscriptionImpl>>
       push_subscriptions_;
   BroadcastingReceiver broadcaster_;
-  mojo::Receiver<mojom::Receiver> broadcaster_receiver_{&broadcaster_};
+  mojo::Receiver<mojom::VideoFrameHandler> broadcaster_video_frame_handler_{
+      &broadcaster_};
   DeviceStatus device_status_;
   mojo::Remote<mojom::Device> device_;
   media::VideoCaptureParams device_start_settings_;

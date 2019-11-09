@@ -298,6 +298,11 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
       icelandic_characters_.containsSome(label_string))
     return false;
 
+  // Disallow Latin Schwa (U+0259) for domains outside Azerbaijan's ccTLD (.az).
+  if (label_string.length() > 1 && top_level_domain != "az" &&
+      label_string.indexOf("ə") != -1)
+    return false;
+
   // If there's no script mixing, the input is regarded as safe without any
   // extra check unless it falls into one of three categories:
   //   - contains Kana letter exceptions

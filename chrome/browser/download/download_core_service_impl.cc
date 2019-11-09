@@ -142,6 +142,11 @@ void DownloadCoreServiceImpl::SetDownloadManagerDelegateForTesting(
     new_delegate->Shutdown();
 }
 
+void DownloadCoreServiceImpl::SetDownloadHistoryForTesting(
+    std::unique_ptr<DownloadHistory> download_history) {
+  download_history_ = std::move(download_history);
+}
+
 bool DownloadCoreServiceImpl::IsShelfEnabled() {
 #if defined(OS_ANDROID)
   return true;

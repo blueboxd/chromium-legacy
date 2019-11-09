@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from blinkpy.common.checkout.git_mock import MockGit
-from blinkpy.common.net.buildbot_mock import MockBuildBot
+from blinkpy.common.net.results_fetcher_mock import MockTestResultsFetcher
 from blinkpy.common.net.web_mock import MockWeb
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.system_host_mock import MockSystemHost
@@ -59,7 +59,7 @@ class MockHost(MockSystemHost):
         self.web = web or MockWeb()
         self._git = git
 
-        self.buildbot = MockBuildBot()
+        self.results_fetcher = MockTestResultsFetcher()
 
         # Note: We're using a real PortFactory here. Tests which don't wish to depend
         # on the list of known ports should override this with a MockPortFactory.

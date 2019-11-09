@@ -28,7 +28,7 @@
 #include "ui/views/window/native_frame_view.h"
 #include "ui/views/window/non_client_view.h"
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/native_theme/native_theme.h"
@@ -46,7 +46,7 @@ const views::BubbleBorder::Shadow kShadowType =
     views::BubbleBorder::SMALL_SHADOW;
 #endif
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 // The background for App List dialogs, which appears as a rounded rectangle
 // with the same border radius and color as the app list contents.
 class AppListOverlayBackground : public views::Background {
@@ -71,7 +71,7 @@ class AppListOverlayBackground : public views::Background {
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListOverlayBackground);
 };
-#endif  // ENABLE_APP_LIST
+#endif  // defined(OS_CHROMEOS)
 
 // Base container for modal dialogs. Encases a content view in a modal dialog
 // with an accelerator to close on escape.
@@ -103,7 +103,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(BaseDialogContainer);
 };
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 
 // The contents view for an App List Dialog, which covers the entire app list
 // and adds a close button.
@@ -153,7 +153,7 @@ class AppListDialogContainer : public BaseDialogContainer,
   DISALLOW_COPY_AND_ASSIGN(AppListDialogContainer);
 };
 
-#endif  // ENABLE_APP_LIST
+#endif  // defined(OS_CHROMEOS)
 
 // A BubbleFrameView that allows its client view to extend all the way to the
 // top of the dialog, overlapping the BubbleFrameView's close button. This
@@ -218,12 +218,12 @@ class NativeDialogContainer : public BaseDialogContainer {
 
 }  // namespace
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 views::DialogDelegateView* CreateAppListContainerForView(
     std::unique_ptr<views::View> view) {
   return new AppListDialogContainer(std::move(view));
 }
-#endif  // ENABLE_APP_LIST
+#endif  // defined(OS_CHROMEOS)
 
 views::DialogDelegateView* CreateDialogContainerForView(
     std::unique_ptr<views::View> view,

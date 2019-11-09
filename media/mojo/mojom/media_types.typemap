@@ -49,8 +49,7 @@ type_mappings = [
   "media.mojom.ChannelLayout=::media::ChannelLayout",
   "media.mojom.ColorSpace=::media::ColorSpace",
   "media.mojom.DecodeStatus=::media::DecodeStatus",
-  "media.mojom.EncryptionMode=::media::EncryptionMode",
-  "media.mojom.EncryptionScheme.CipherMode=::media::EncryptionScheme::CipherMode",
+  "media.mojom.EncryptionScheme=::media::EncryptionScheme",
   "media.mojom.MediaContainerName=::media::container_names::MediaContainerName",
   "media.mojom.MediaLogEvent=::media::MediaLogEvent",
   "media.mojom.OutputDeviceStatus=::media::OutputDeviceStatus",
@@ -64,6 +63,5 @@ type_mappings = [
   "media.mojom.VideoTransformation=::media::VideoTransformation",
   "media.mojom.WaitingReason=::media::WaitingReason",
   "media.mojom.WatchTimeKey=::media::WatchTimeKey",
-  "media.mojom.EncryptionPattern=::media::EncryptionPattern",
   "media.mojom.MediaStatusState=::media::MediaStatus::State",
 ]

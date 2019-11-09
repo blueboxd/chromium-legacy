@@ -64,6 +64,10 @@ class GL_EXPORT GLImageMemory : public GLImage {
   gfx::BufferFormat format_;
   size_t stride_;
 
+  unsigned buffer_ = 0;
+  size_t buffer_bytes_ = 0;
+  int memcpy_tasks_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(GLImageMemory);
 };
 

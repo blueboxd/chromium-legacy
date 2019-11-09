@@ -7,7 +7,6 @@
 
 #include "media/base/ipc/media_param_traits.h"
 #include "media/base/video_decoder_config.h"
-#include "media/mojo/mojom/encryption_scheme_mojom_traits.h"
 #include "media/mojo/mojom/hdr_metadata_mojom_traits.h"
 #include "media/mojo/mojom/media_types.mojom.h"
 #include "media/mojo/mojom/video_color_space_mojom_traits.h"
@@ -50,7 +49,7 @@ struct StructTraits<media::mojom::VideoDecoderConfigDataView,
     return input.extra_data();
   }
 
-  static const media::EncryptionScheme& encryption_scheme(
+  static media::EncryptionScheme encryption_scheme(
       const media::VideoDecoderConfig& input) {
     return input.encryption_scheme();
   }

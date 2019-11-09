@@ -21,7 +21,8 @@ TEST(AudioDecoderConfigStructTraitsTest, ConvertAudioDecoderConfig_Normal) {
 
   AudioDecoderConfig input;
   input.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                   kExtraDataVector, Unencrypted(), base::TimeDelta(), 0);
+                   kExtraDataVector, EncryptionScheme::kUnencrypted,
+                   base::TimeDelta(), 0);
   std::vector<uint8_t> data =
       media::mojom::AudioDecoderConfig::Serialize(&input);
   AudioDecoderConfig output;
@@ -34,7 +35,8 @@ TEST(AudioDecoderConfigStructTraitsTest,
      ConvertAudioDecoderConfig_EmptyExtraData) {
   AudioDecoderConfig input;
   input.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                   EmptyExtraData(), Unencrypted(), base::TimeDelta(), 0);
+                   EmptyExtraData(), EncryptionScheme::kUnencrypted,
+                   base::TimeDelta(), 0);
   std::vector<uint8_t> data =
       media::mojom::AudioDecoderConfig::Serialize(&input);
   AudioDecoderConfig output;
@@ -46,8 +48,8 @@ TEST(AudioDecoderConfigStructTraitsTest,
 TEST(AudioDecoderConfigStructTraitsTest, ConvertAudioDecoderConfig_Encrypted) {
   AudioDecoderConfig input;
   input.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                   EmptyExtraData(), AesCtrEncryptionScheme(),
-                   base::TimeDelta(), 0);
+                   EmptyExtraData(), EncryptionScheme::kCenc, base::TimeDelta(),
+                   0);
   std::vector<uint8_t> data =
       media::mojom::AudioDecoderConfig::Serialize(&input);
   AudioDecoderConfig output;

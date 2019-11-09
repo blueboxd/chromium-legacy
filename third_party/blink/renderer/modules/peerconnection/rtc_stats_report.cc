@@ -7,16 +7,16 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace blink {
 
 namespace {
 
-v8::Local<v8::Value> WebRTCStatsToValue(ScriptState* script_state,
-                                        const WebRTCStats* stats) {
+v8::Local<v8::Value> RTCStatsToValue(ScriptState* script_state,
+                                     const RTCStats* stats) {
   V8ObjectBuilder builder(script_state);
 
   builder.AddString("id", stats->Id());
@@ -31,7 +31,7 @@ v8::Local<v8::Value> WebRTCStatsToValue(ScriptState* script_state,
   };
 
   for (size_t i = 0; i < stats->MembersCount(); ++i) {
-    std::unique_ptr<WebRTCStatsMember> member = stats->GetMember(i);
+    std::unique_ptr<RTCStatsMember> member = stats->GetMember(i);
     if (!member->IsDefined())
       continue;
     WebString name = member->GetName();
@@ -98,23 +98,23 @@ v8::Local<v8::Value> WebRTCStatsToValue(ScriptState* script_state,
 class RTCStatsReportIterationSource final
     : public PairIterable<String, v8::Local<v8::Value>>::IterationSource {
  public:
-  RTCStatsReportIterationSource(std::unique_ptr<WebRTCStatsReport> report)
+  RTCStatsReportIterationSource(std::unique_ptr<RTCStatsReportPlatform> report)
       : report_(std::move(report)) {}
 
   bool Next(ScriptState* script_state,
             String& key,
             v8::Local<v8::Value>& value,
             ExceptionState& exception_state) override {
-    std::unique_ptr<WebRTCStats> stats = report_->Next();
+    std::unique_ptr<RTCStats> stats = report_->Next();
     if (!stats)
       return false;
     key = stats->Id();
-    value = WebRTCStatsToValue(script_state, stats.get());
+    value = RTCStatsToValue(script_state, stats.get());
     return true;
   }
 
  private:
-  std::unique_ptr<WebRTCStatsReport> report_;
+  std::unique_ptr<RTCStatsReportPlatform> report_;
 };
 
 }  // namespace
@@ -136,7 +136,7 @@ WebVector<webrtc::NonStandardGroupId> GetExposedGroupIds(
   return enabled_origin_trials;
 }
 
-RTCStatsReport::RTCStatsReport(std::unique_ptr<WebRTCStatsReport> report)
+RTCStatsReport::RTCStatsReport(std::unique_ptr<RTCStatsReportPlatform> report)
     : report_(std::move(report)) {}
 
 uint32_t RTCStatsReport::size() const {
@@ -153,10 +153,10 @@ bool RTCStatsReport::GetMapEntry(ScriptState* script_state,
                                  const String& key,
                                  v8::Local<v8::Value>& value,
                                  ExceptionState&) {
-  std::unique_ptr<WebRTCStats> stats = report_->GetStats(key);
+  std::unique_ptr<RTCStats> stats = report_->GetStats(key);
   if (!stats)
     return false;
-  value = WebRTCStatsToValue(script_state, stats.get());
+  value = RTCStatsToValue(script_state, stats.get());
   return true;
 }
 

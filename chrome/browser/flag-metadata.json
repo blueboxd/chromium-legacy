@@ -590,6 +590,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "cryptauth-v1-devicesync-deprecate",
+    "owners": [ "khorimoto", "nohle" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "cryptauth-v2-device-activity-status",
     "owners": [ "khorimoto", "nohle", "themaxli" ],
     "expiry_milestone": 85
@@ -1669,7 +1674,7 @@
   {
     "name": "enable-reader-mode",
     "owners": [ "gilmanmh@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "enable-reader-mode-in-cct",

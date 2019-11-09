@@ -35,7 +35,7 @@ class RebaselineTest(AbstractRebaseliningCommand):
         if options.results_directory:
             results_url = 'file://' + options.results_directory
         else:
-            results_url = self._tool.buildbot.results_url(
+            results_url = self._tool.results_fetcher.results_url(
                 options.builder, build_number=options.build_number,
                 step_name=options.step_name)
 

@@ -162,9 +162,21 @@ class MEDIA_EXPORT VideoFrameMetadata {
     TOP_CONTROLS_SHOWN_RATIO,
 
     // If present, this field represents the local time at which the VideoFrame
-    // was decoded from whichever format it was encoded in.
-    // Use Get/SetTimeTicks() for this key.
-    DECODE_TIME,
+    // was decoded from whichever format it was encoded in. Sometimes only
+    // DECODE_END_TIME will be present. Use Get/SetTimeTicks() for this key.
+    DECODE_BEGIN_TIME,
+    DECODE_END_TIME,
+
+    // If present, this field represents the elapsed time from the submission of
+    // the encoded packet with the same PTS as this frame to the decoder until
+    // the decoded frame was ready for presentation. Stored as base::TimeDelta.
+    PROCESSING_TIME,
+
+    // The RTP timestamp associated with this video frame. Stored as a double
+    // since base::DictionaryValue doesn't have a uint32_t type.
+    //
+    // https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource
+    RTP_TIMESTAMP,
 
     NUM_KEYS
   };

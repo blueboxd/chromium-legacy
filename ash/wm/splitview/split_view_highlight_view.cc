@@ -4,6 +4,7 @@
 
 #include "ash/wm/splitview/split_view_highlight_view.h"
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/splitview/split_view_controller.h"

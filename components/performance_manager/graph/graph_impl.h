@@ -70,6 +70,7 @@ class GraphImpl : public Graph {
   std::vector<const FrameNode*> GetAllFrameNodes() const override;
   std::vector<const PageNode*> GetAllPageNodes() const override;
   std::vector<const WorkerNode*> GetAllWorkerNodes() const override;
+  bool IsEmpty() const override;
   ukm::UkmRecorder* GetUkmRecorder() const override;
   uintptr_t GetImplType() const override;
   const void* GetImpl() const override;

@@ -16,7 +16,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
@@ -168,7 +168,7 @@ public class SignInPreference
         }
 
         boolean personalizedPromoDismissed = SharedPreferencesManager.getInstance().readBoolean(
-                ChromePreferenceManager.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false);
+                ChromePreferenceKeys.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false);
         if (!mPersonalizedPromoEnabled || personalizedPromoDismissed) {
             setupGenericPromo();
             return;
@@ -280,7 +280,7 @@ public class SignInPreference
         SigninPromoUtil.setupPromoViewFromCache(
                 mSigninPromoController, mProfileDataCache, signinPromoView, () -> {
                     SharedPreferencesManager.getInstance().writeBoolean(
-                            ChromePreferenceManager.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED,
+                            ChromePreferenceKeys.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED,
                             true);
                     update();
                 });

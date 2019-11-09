@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/frame/header_view.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback.h"
 
@@ -18,13 +17,9 @@ class Window;
 
 // Utility functions for autotest private APIs and ShellTestAPI.
 namespace ash {
-class HeaderView;
 
 // Get application windows, windows that are shown in overview grid.
 ASH_EXPORT std::vector<aura::Window*> GetAppWindowList();
-
-// Get HeaderView from application windows.
-ASH_EXPORT ash::HeaderView* GetHeaderViewForWindow(aura::Window* window);
 
 // Runs the callback when the launcher state becomes |state| after
 // state transition animation. For clamshell launcher, it invokes closure

@@ -11,6 +11,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -65,9 +66,8 @@ WindowTransformToHomeScreenAnimation::~WindowTransformToHomeScreenAnimation() {
 
 void WindowTransformToHomeScreenAnimation::OnImplicitAnimationsCompleted() {
   // Minimize the dragged window after transform animation is completed.
-  ScopedAnimationDisabler disable(window_);
-  window_->Hide();
-  WindowState::Get(window_)->Minimize();
+  window_util::HideAndMaybeMinimizeWithoutAnimation({window_},
+                                                    /*minimize=*/true);
 
   // Reset its transform to identity transform and its original backdrop mode.
   window_->layer()->SetTransform(gfx::Transform());

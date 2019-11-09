@@ -99,7 +99,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
     auth_error_changed_count_ = 0;
   }
 
-  std::string GetAccountId(const ProviderAccount& provider_account) {
+  CoreAccountId GetAccountId(const ProviderAccount& provider_account) {
     return account_tracker_.PickAccountIdForAccount(provider_account.gaia,
                                                     provider_account.email);
   }
@@ -139,7 +139,8 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
   EXPECT_EQ(0, tokens_loaded_count_);
   EXPECT_EQ(1, token_revoked_count_);
   EXPECT_EQ(0U, oauth2_delegate_->GetAccounts().size());
-  EXPECT_FALSE(oauth2_delegate_->RefreshTokenIsAvailable("another_account"));
+  EXPECT_FALSE(oauth2_delegate_->RefreshTokenIsAvailable(
+      CoreAccountId("another_account")));
 }
 
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
@@ -277,7 +278,7 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
   ResetObserverCounts();
   GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_ERROR);
   oauth2_delegate_->UpdateAuthError(GetAccountId(account1), error);
-  EXPECT_EQ(error, oauth2_delegate_->GetAuthError("gaia_1"));
+  EXPECT_EQ(error, oauth2_delegate_->GetAuthError(GetAccountId(account1)));
   EXPECT_EQ(1, auth_error_changed_count_);
 
   oauth2_delegate_->RevokeAllCredentials();
@@ -292,15 +293,15 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, GetAuthError) {
   oauth2_delegate_->ReloadCredentials();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
-            oauth2_delegate_->GetAuthError("gaia_1"));
+            oauth2_delegate_->GetAuthError(GetAccountId(account1)));
   // Update the error.
   GoogleServiceAuthError error =
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
               CREDENTIALS_REJECTED_BY_SERVER);
-  oauth2_delegate_->UpdateAuthError("gaia_1", error);
-  EXPECT_EQ(error, oauth2_delegate_->GetAuthError("gaia_1"));
+  oauth2_delegate_->UpdateAuthError(GetAccountId(account1), error);
+  EXPECT_EQ(error, oauth2_delegate_->GetAuthError(GetAccountId(account1)));
   // Unknown account has no error.
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
-            oauth2_delegate_->GetAuthError("gaia_2"));
+            oauth2_delegate_->GetAuthError(CoreAccountId("gaia_2")));
 }

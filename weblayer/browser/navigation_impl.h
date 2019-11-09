@@ -34,12 +34,20 @@ class NavigationImpl : public Navigation {
   base::android::ScopedJavaLocalRef<jstring> GetUri(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jobject> GetRedirectChain(
+  base::android::ScopedJavaLocalRef<jobjectArray> GetRedirectChain(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
   bool IsSameDocument(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj) {
     return IsSameDocument();
+  }
+  bool IsErrorPage(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj) {
+    return IsErrorPage();
+  }
+  int GetLoadError(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj) {
+    return static_cast<int>(GetLoadError());
   }
 
   base::android::ScopedJavaGlobalRef<jobject> java_navigation() {
@@ -51,8 +59,10 @@ class NavigationImpl : public Navigation {
   // Navigation implementation:
   GURL GetURL() override;
   const std::vector<GURL>& GetRedirectChain() override;
-  State GetState() override;
+  NavigationState GetState() override;
   bool IsSameDocument() override;
+  bool IsErrorPage() override;
+  LoadError GetLoadError() override;
 
   content::NavigationHandle* navigation_handle_;
 

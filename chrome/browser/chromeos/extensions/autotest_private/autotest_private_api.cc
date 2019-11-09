@@ -17,6 +17,7 @@
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/desks_helper.h"
 #include "ash/public/cpp/frame_header.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -3056,36 +3057,43 @@ AutotestPrivateGetAppWindowListFunction::Run() {
         static_cast<int>(ash::AppType::ARC_APP)) {
       window_info.arc_package_name = std::make_unique<std::string>(
           *window->GetProperty(ash::kArcPackageNameKey));
-
-      ash::HeaderView* header_view = ash::GetHeaderViewForWindow(window);
-      ash::DefaultFrameHeader* frame_header = header_view->GetFrameHeader();
-      window_info.caption_height = frame_header->GetHeaderHeight();
-
-      const ash::CaptionButtonModel* buttonModel =
-          header_view->caption_button_container()->model();
-      int caption_button_enabled_status = 0;
-      int caption_button_visible_status = 0;
-      constexpr views::CaptionButtonIcon all_button_icons[] = {
-          views::CAPTION_BUTTON_ICON_MINIMIZE,
-          views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-          views::CAPTION_BUTTON_ICON_CLOSE,
-          views::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-          views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-          views::CAPTION_BUTTON_ICON_BACK,
-          views::CAPTION_BUTTON_ICON_LOCATION,
-          views::CAPTION_BUTTON_ICON_MENU,
-          views::CAPTION_BUTTON_ICON_ZOOM,
-          views::CAPTION_BUTTON_ICON_COUNT};
-
-      for (const auto button : all_button_icons) {
-        if (buttonModel->IsEnabled(button))
-          caption_button_enabled_status |= (1 << button);
-        if (buttonModel->IsVisible(button))
-          caption_button_visible_status |= (1 << button);
-      }
-      window_info.caption_button_enabled_status = caption_button_enabled_status;
-      window_info.caption_button_visible_status = caption_button_visible_status;
     }
+
+    // Frame information
+    auto* widget = views::Widget::GetWidgetForNativeWindow(window);
+    auto* immersive_controller =
+        ash::ImmersiveFullscreenController::Get(widget);
+    // The widget that hosts the immersive frame can be different from the
+    // application's widget itself. Use the widget from the immersive
+    // controller to obtain the FrameHeader.
+    auto* frame_header = ash::FrameHeader::Get(immersive_controller->widget());
+    window_info.caption_height = frame_header->GetHeaderHeight();
+
+    const ash::CaptionButtonModel* button_model =
+        frame_header->GetCaptionButtonModel();
+    int caption_button_enabled_status = 0;
+    int caption_button_visible_status = 0;
+
+    constexpr views::CaptionButtonIcon all_button_icons[] = {
+        views::CAPTION_BUTTON_ICON_MINIMIZE,
+        views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+        views::CAPTION_BUTTON_ICON_CLOSE,
+        views::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+        views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+        views::CAPTION_BUTTON_ICON_BACK,
+        views::CAPTION_BUTTON_ICON_LOCATION,
+        views::CAPTION_BUTTON_ICON_MENU,
+        views::CAPTION_BUTTON_ICON_ZOOM};
+
+    for (const auto button : all_button_icons) {
+      if (button_model->IsEnabled(button))
+        caption_button_enabled_status |= (1 << button);
+      if (button_model->IsVisible(button))
+        caption_button_visible_status |= (1 << button);
+    }
+    window_info.caption_button_enabled_status = caption_button_enabled_status;
+    window_info.caption_button_visible_status = caption_button_visible_status;
+
     result_list.emplace_back(std::move(window_info));
   }
   return RespondNow(ArgumentList(

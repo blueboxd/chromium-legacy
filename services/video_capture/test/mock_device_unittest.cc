@@ -47,7 +47,7 @@ TEST_F(MockVideoCaptureDeviceTest, DeviceIsStoppedWhenDiscardingDeviceClient) {
         .WillOnce(Invoke([&wait_loop]() { wait_loop.Quit(); }));
 
     device_remote_->Start(requested_settings_, std::move(mock_subscriber_));
-    mock_receiver_.reset();
+    mock_video_frame_handler_.reset();
 
     wait_loop.Run();
   }

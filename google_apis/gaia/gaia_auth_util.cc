@@ -24,6 +24,7 @@ namespace gaia {
 namespace {
 
 const char kGmailDomain[] = "gmail.com";
+const char kGoogleDomain[] = "google.com";
 const char kGooglemailDomain[] = "googlemail.com";
 
 const void* const kURLRequestUserDataKey = &kURLRequestUserDataKey;
@@ -103,6 +104,10 @@ std::string ExtractDomainName(const std::string& email_address) {
   else
     NOTREACHED() << "Not a proper email address: " << email;
   return std::string();
+}
+
+bool IsGoogleInternalAccountEmail(const std::string& email) {
+  return ExtractDomainName(email) == kGoogleDomain;
 }
 
 bool IsGaiaSignonRealm(const GURL& url) {

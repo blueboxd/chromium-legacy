@@ -514,6 +514,60 @@ class ChromePluginPrintContext final : public ChromePrintContext {
   WebPrintParams print_params_;
 };
 
+class PaintPreviewContext : public PrintContext {
+ public:
+  PaintPreviewContext(LocalFrame* frame) : PrintContext(frame, false) {}
+  ~PaintPreviewContext() override = default;
+
+  bool Capture(cc::PaintCanvas* canvas, FloatSize size) {
+    // This code is based on ChromePrintContext::SpoolSinglePage()/SpoolPage().
+    // It differs in that it:
+    //   1. Uses a different set of flags for painting and the graphics context.
+    //   2. Paints a single page of |size| rather than a specific page in a
+    //      reformatted document.
+    //   3. Does no scaling.
+    if (!GetFrame()->GetDocument() ||
+        !GetFrame()->GetDocument()->GetLayoutView())
+      return false;
+    GetFrame()->View()->UpdateLifecyclePhasesForPrinting();
+    if (!GetFrame()->GetDocument() ||
+        !GetFrame()->GetDocument()->GetLayoutView())
+      return false;
+    FloatRect bounds(0, 0, size.Width(), size.Height());
+    PaintRecordBuilder builder(nullptr, nullptr, nullptr,
+                               canvas->GetPaintPreviewTracker());
+    builder.Context().SetIsPaintingPreview(true);
+
+    LocalFrameView* frame_view = GetFrame()->View();
+    DCHECK(frame_view);
+    PropertyTreeState property_tree_state =
+        frame_view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties();
+
+    // This calls BeginRecording on |builder| with dimensions specified by the
+    // CullRect.
+    frame_view->PaintContentsOutsideOfLifecycle(
+        builder.Context(),
+        kGlobalPaintNormalPhase | kGlobalPaintFlattenCompositingLayers |
+            kGlobalPaintAddUrlMetadata,
+        CullRect(RoundedIntRect(bounds)));
+    {
+      // Add anchors.
+      ScopedPaintChunkProperties scoped_paint_chunk_properties(
+          builder.Context().GetPaintController(), property_tree_state, builder,
+          DisplayItem::kPrintedContentDestinationLocations);
+      DrawingRecorder line_boundary_recorder(
+          builder.Context(), builder,
+          DisplayItem::kPrintedContentDestinationLocations);
+      OutputLinkedDestinations(builder.Context(), RoundedIntRect(bounds));
+    }
+    canvas->drawPicture(builder.EndRecording(property_tree_state));
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaintPreviewContext);
+};
+
 static WebDocumentLoader* DocumentLoaderForDocLoader(DocumentLoader* loader) {
   return loader ? WebDocumentLoaderImpl::FromDocumentLoader(loader) : nullptr;
 }
@@ -1546,6 +1600,21 @@ bool WebLocalFrameImpl::GetPrintPresetOptionsForPlugin(
     return false;
 
   return plugin_container->GetPrintPresetOptionsFromDocument(preset_options);
+}
+
+bool WebLocalFrameImpl::CapturePaintPreview(const WebRect& bounds,
+                                            cc::PaintCanvas* canvas) {
+  FloatSize float_bounds(bounds.width, bounds.height);
+  GetFrame()->GetDocument()->SetIsPaintingPreview(true);
+  ResourceCacheValidationSuppressor validation_suppressor(
+      GetFrame()->GetDocument()->Fetcher());
+  GetFrame()->View()->ForceLayoutForPagination(float_bounds, float_bounds, 1);
+  PaintPreviewContext* paint_preview_context =
+      MakeGarbageCollected<PaintPreviewContext>(GetFrame());
+  bool success = paint_preview_context->Capture(canvas, float_bounds);
+  GetFrame()->GetDocument()->SetIsPaintingPreview(false);
+  GetFrame()->EndPrinting();
+  return success;
 }
 
 bool WebLocalFrameImpl::HasCustomPageSizeStyle(int page_index) {

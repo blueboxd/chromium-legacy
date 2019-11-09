@@ -13,9 +13,10 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -44,9 +45,9 @@ class MockDeviceTest : public ::testing::Test {
       device_infos_receiver_;
 
   media::MockDevice mock_device_;
-  std::unique_ptr<MockReceiver> mock_receiver_;
+  std::unique_ptr<MockVideoFrameHandler> mock_video_frame_handler_;
   mojo::Remote<mojom::Device> device_remote_;
-  mojo::PendingRemote<mojom::Receiver> mock_subscriber_;
+  mojo::PendingRemote<mojom::VideoFrameHandler> mock_subscriber_;
   media::VideoCaptureParams requested_settings_;
 
  private:

@@ -188,9 +188,9 @@ void Receiver::ScheduleMediaTimeUpdates() {
   if (time_update_timer_.IsRunning())
     return;
   SendMediaTimeUpdate();
-  time_update_timer_.Start(
-      FROM_HERE, kTimeUpdateInterval,
-      base::Bind(&Receiver::SendMediaTimeUpdate, weak_factory_.GetWeakPtr()));
+  time_update_timer_.Start(FROM_HERE, kTimeUpdateInterval,
+                           base::BindRepeating(&Receiver::SendMediaTimeUpdate,
+                                               weak_factory_.GetWeakPtr()));
 }
 
 void Receiver::SetVolume(std::unique_ptr<pb::RpcMessage> message) {

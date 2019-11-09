@@ -256,7 +256,7 @@ void AudioInputDevice::OnStreamCreated(
   const bool pause_check_during_suspend = true;
 #endif
   alive_checker_ = std::make_unique<AliveChecker>(
-      base::Bind(&AudioInputDevice::DetectedDeadInputStream, this),
+      base::BindRepeating(&AudioInputDevice::DetectedDeadInputStream, this),
       base::TimeDelta::FromSeconds(kCheckMissingCallbacksIntervalSeconds),
       base::TimeDelta::FromSeconds(kMissingCallbacksTimeBeforeErrorSeconds),
       stop_at_first_alive_notification, pause_check_during_suspend);

@@ -173,6 +173,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillWalletSpecifics& proto) {
   VISIT(masked_card);
   VISIT(address);
   VISIT(customer_data);
+  VISIT(cloud_token_data);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::BookmarkSpecifics& proto) {
@@ -1076,6 +1077,15 @@ VISIT_PROTO_FIELDS(const sync_pb::WalletPostalAddress& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::PaymentsCustomerData& proto) {
   VISIT(id);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::WalletCreditCardCloudTokenData& proto) {
+  VISIT(masked_card_id);
+  VISIT(suffix);
+  VISIT(exp_month);
+  VISIT(exp_year);
+  VISIT(art_fife_url);
+  VISIT(instrument_token);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WalletSyncFlags& proto) {

@@ -33,13 +33,6 @@ TypeConverter<device::mojom::VRPosePtr, vr::TrackedDevicePose_t>::Convert(
     }
 
     pose->position->SetPoint(m[0][3], m[1][3], m[2][3]);
-
-    pose->linear_velocity =
-        gfx::Vector3dF(hmd_pose.vVelocity.v[0], hmd_pose.vVelocity.v[1],
-                       hmd_pose.vVelocity.v[2]);
-    pose->angular_velocity = gfx::Vector3dF(hmd_pose.vAngularVelocity.v[0],
-                                            hmd_pose.vAngularVelocity.v[1],
-                                            hmd_pose.vAngularVelocity.v[2]);
   }
 
   return pose;

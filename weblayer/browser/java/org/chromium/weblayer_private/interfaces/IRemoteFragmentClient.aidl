@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+
 interface IRemoteFragmentClient {
   void superOnCreate(in IObjectWrapper savedInstanceState) = 0;
   void superOnAttach(in IObjectWrapper context) = 1;

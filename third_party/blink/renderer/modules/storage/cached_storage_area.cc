@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "components/services/storage/public/mojom/key_value_pair.mojom-blink.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -29,11 +30,14 @@ namespace {
 // are serialized on disk.
 enum class StorageFormat : uint8_t { UTF16 = 0, Latin1 = 1 };
 
-class GetAllCallback : public mojom::blink::StorageAreaGetAllCallback {
+class GetAllCallback
+    : public storage::mojom::blink::DomStorageAreaGetAllCallback {
  public:
-  static mojo::PendingAssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
+  static mojo::PendingAssociatedRemote<
+      storage::mojom::blink::DomStorageAreaGetAllCallback>
   CreateAndBind(base::OnceCallback<void(bool)> callback) {
-    mojo::PendingAssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
+    mojo::PendingAssociatedRemote<
+        storage::mojom::blink::DomStorageAreaGetAllCallback>
         pending_remote;
     mojo::MakeSelfOwnedAssociatedReceiver(
         base::WrapUnique(new GetAllCallback(std::move(callback))),
@@ -70,7 +74,7 @@ void UnpackSource(const String& source,
 // static
 scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForLocalStorage(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::PendingRemote<mojom::blink::StorageArea> area,
+    mojo::PendingRemote<storage::mojom::blink::DomStorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener) {
   return base::AdoptRef(new CachedStorageArea(
@@ -80,7 +84,7 @@ scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForLocalStorage(
 // static
 scoped_refptr<CachedStorageArea> CachedStorageArea::CreateForSessionStorage(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area,
+    mojo::PendingAssociatedRemote<storage::mojom::blink::DomStorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener) {
   return base::AdoptRef(new CachedStorageArea(
@@ -110,7 +114,7 @@ bool CachedStorageArea::SetItem(const String& key,
   // A quick check to reject obviously overbudget items to avoid priming the
   // cache.
   if ((key.length() + value.length()) * 2 >
-      mojom::blink::StorageArea::kPerStorageAreaQuota)
+      storage::mojom::blink::DomStorageArea::kPerStorageAreaQuota)
     return false;
 
   EnsureLoaded();
@@ -200,7 +204,7 @@ void CachedStorageArea::Clear(Source* source) {
   // No need to prime the cache in this case.
   Reset();
   map_ = std::make_unique<StorageAreaMap>(
-      mojom::blink::StorageArea::kPerStorageAreaQuota);
+      storage::mojom::blink::DomStorageArea::kPerStorageAreaQuota);
   ignore_all_mutations_ = true;
 
   KURL page_url = source->GetPageUrl();
@@ -228,7 +232,7 @@ String CachedStorageArea::RegisterSource(Source* source) {
 // LocalStorage constructor.
 CachedStorageArea::CachedStorageArea(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::PendingRemote<mojom::blink::StorageArea> area,
+    mojo::PendingRemote<storage::mojom::blink::DomStorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener)
     : origin_(std::move(origin)),
@@ -246,7 +250,7 @@ CachedStorageArea::CachedStorageArea(
 // SessionStorage constructor.
 CachedStorageArea::CachedStorageArea(
     scoped_refptr<const SecurityOrigin> origin,
-    mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area,
+    mojo::PendingAssociatedRemote<storage::mojom::blink::DomStorageArea> area,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
     InspectorEventListener* listener)
     : origin_(std::move(origin)),
@@ -332,7 +336,7 @@ void CachedStorageArea::AllDeleted(const String& source) {
   if (map_ && !from_local_area && !ignore_all_mutations_) {
     auto old = std::move(map_);
     map_ = std::make_unique<StorageAreaMap>(
-        mojom::blink::StorageArea::kPerStorageAreaQuota);
+        storage::mojom::blink::DomStorageArea::kPerStorageAreaQuota);
 
     // We have to retain local additions which happened after this clear
     // operation from another process.
@@ -457,7 +461,7 @@ void CachedStorageArea::EnsureLoaded() {
   base::TimeTicks before = base::TimeTicks::Now();
   ignore_all_mutations_ = true;
   bool success = false;
-  Vector<mojom::blink::KeyValuePtr> data;
+  Vector<storage::mojom::blink::KeyValuePairPtr> data;
   mojo_area_->GetAll(
       GetAllCallback::CreateAndBind(WTF::Bind(
           &CachedStorageArea::OnGetAllComplete, weak_factory_.GetWeakPtr())),
@@ -468,7 +472,7 @@ void CachedStorageArea::EnsureLoaded() {
   const FormatOption value_format = GetValueFormat();
 
   map_ = std::make_unique<StorageAreaMap>(
-      mojom::blink::StorageArea::kPerStorageAreaQuota);
+      storage::mojom::blink::DomStorageArea::kPerStorageAreaQuota);
   for (const auto& item : data) {
     map_->SetItemIgnoringQuota(Uint8VectorToString(item->key, key_format),
                                Uint8VectorToString(item->value, value_format));

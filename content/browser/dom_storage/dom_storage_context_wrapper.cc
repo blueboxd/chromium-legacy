@@ -396,7 +396,7 @@ void DOMStorageContextWrapper::Flush() {
 
 void DOMStorageContextWrapper::OpenLocalStorage(
     const url::Origin& origin,
-    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+    mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver) {
   DCHECK(mojo_state_);
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
   // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and

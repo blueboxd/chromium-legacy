@@ -1558,7 +1558,7 @@ void StoragePartitionImpl::SetProtoDatabaseProvider(
 
 void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
-    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+    mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver) {
   DCHECK(initialized_);
   int process_id = receivers_.current_context();
   // TODO(943887): Replace HasSecurityState() call with something that can

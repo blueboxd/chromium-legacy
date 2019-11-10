@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 
+#include "components/services/storage/public/mojom/key_value_pair.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/modules/storage/testing/fake_area_source.h"
@@ -215,8 +216,8 @@ TEST_P(CachedStorageAreaTestWithParam, Clear_AlreadyEmpty) {
 
 TEST_P(CachedStorageAreaTestWithParam, Clear_WithData) {
   mock_storage_area_.mutable_get_all_return_values().push_back(
-      mojom::blink::KeyValue::New(KeyToUint8Vector(kKey),
-                                  ValueToUint8Vector(kValue)));
+      storage::mojom::blink::KeyValuePair::New(KeyToUint8Vector(kKey),
+                                               ValueToUint8Vector(kValue)));
 
   EXPECT_FALSE(IsCacheLoaded());
   cached_area_->Clear(source_area_);
@@ -263,8 +264,8 @@ TEST_P(CachedStorageAreaTestWithParam, RemoveItem) {
   // RemoveItem with something to remove, expect a call to load followed
   // by a call to remove.
   mock_storage_area_.mutable_get_all_return_values().push_back(
-      mojom::blink::KeyValue::New(KeyToUint8Vector(kKey),
-                                  ValueToUint8Vector(kValue)));
+      storage::mojom::blink::KeyValuePair::New(KeyToUint8Vector(kKey),
+                                               ValueToUint8Vector(kValue)));
   EXPECT_FALSE(IsCacheLoaded());
   cached_area_->RemoveItem(kKey, source_area_);
   mock_storage_area_.Flush();
@@ -290,8 +291,8 @@ TEST_P(CachedStorageAreaTestWithParam, RemoveItem) {
 TEST_P(CachedStorageAreaTestWithParam, BrowserDisconnect) {
   // GetLength to prime the cache.
   mock_storage_area_.mutable_get_all_return_values().push_back(
-      mojom::blink::KeyValue::New(KeyToUint8Vector(kKey),
-                                  ValueToUint8Vector(kValue)));
+      storage::mojom::blink::KeyValuePair::New(KeyToUint8Vector(kKey),
+                                               ValueToUint8Vector(kValue)));
   EXPECT_EQ(1u, cached_area_->GetLength());
   EXPECT_TRUE(IsCacheLoaded());
   mock_storage_area_.CompleteAllPendingCallbacks();
@@ -323,7 +324,7 @@ TEST_P(CachedStorageAreaTestWithParam, BrowserDisconnect) {
 }
 
 TEST_F(CachedStorageAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
-  mojom::blink::StorageAreaObserver* observer = cached_area_.get();
+  storage::mojom::blink::DomStorageAreaObserver* observer = cached_area_.get();
 
   EXPECT_TRUE(cached_area_->GetItem(kKey).IsNull());
   EXPECT_TRUE(IsCacheLoaded());
@@ -371,7 +372,7 @@ TEST_F(CachedStorageAreaTest, MutationsAreIgnoredUntilClearCompletion) {
 }
 
 TEST_F(CachedStorageAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
-  mojom::blink::StorageAreaObserver* observer = cached_area_.get();
+  storage::mojom::blink::DomStorageAreaObserver* observer = cached_area_.get();
 
   // SetItem
   EXPECT_TRUE(cached_area_->SetItem(kKey, kValue, source_area_));
@@ -416,7 +417,7 @@ TEST_F(CachedStorageAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
 }
 
 TEST_F(CachedStorageAreaTest, ChangeEvents) {
-  mojom::blink::StorageAreaObserver* observer = cached_area_.get();
+  storage::mojom::blink::DomStorageAreaObserver* observer = cached_area_.get();
 
   observer->KeyAdded(KeyToUint8Vector(kKey), ValueToUint8Vector(kValue),
                      source_);

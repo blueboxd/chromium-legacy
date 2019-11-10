@@ -9,13 +9,14 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "components/services/storage/public/mojom/dom_storage_area.mojom.h"
+#include "components/services/storage/public/mojom/key_value_pair.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
-// Utility functions and classes for testing StorageArea implementations.
+// Utility functions and classes for testing DomStorageArea implementations.
 
 namespace content {
 namespace test {
@@ -27,52 +28,55 @@ base::OnceCallback<void(bool)> MakeSuccessCallback(base::OnceClosure callback,
 
 // Does a |Put| call on the given |area| and waits until the response is
 // received. Returns if the call was successful.
-bool PutSync(blink::mojom::StorageArea* area,
+bool PutSync(storage::mojom::DomStorageArea* area,
              const std::vector<uint8_t>& key,
              const std::vector<uint8_t>& value,
              const base::Optional<std::vector<uint8_t>>& old_value,
              const std::string& source);
 
-bool GetSync(blink::mojom::StorageArea* area,
+bool GetSync(storage::mojom::DomStorageArea* area,
              const std::vector<uint8_t>& key,
              std::vector<uint8_t>* data_out);
 
-bool GetAllSync(blink::mojom::StorageArea* area,
-                std::vector<blink::mojom::KeyValuePtr>* data_out);
+bool GetAllSync(storage::mojom::DomStorageArea* area,
+                std::vector<storage::mojom::KeyValuePairPtr>* data_out);
 
 // Unlike GetAllSync above, this method uses
 // mojo::MakeRequestAssociatedWithDedicatedPipe for the GetAllCallback object's
 // binding to the area. This can be necessary if the area is an
 // implementation and not a binding with it's own pipe already.
 bool GetAllSyncOnDedicatedPipe(
-    blink::mojom::StorageArea* area,
-    std::vector<blink::mojom::KeyValuePtr>* data_out);
+    storage::mojom::DomStorageArea* area,
+    std::vector<storage::mojom::KeyValuePairPtr>* data_out);
 
 // Does a |Delete| call on the area and waits until the response is
 // received. Returns if the call was successful.
-bool DeleteSync(blink::mojom::StorageArea* area,
+bool DeleteSync(storage::mojom::DomStorageArea* area,
                 const std::vector<uint8_t>& key,
                 const base::Optional<std::vector<uint8_t>>& client_old_value,
                 const std::string& source);
 
 // Does a |DeleteAll| call on the area and waits until the response is
 // received. Returns if the call was successful.
-bool DeleteAllSync(blink::mojom::StorageArea* area, const std::string& source);
+bool DeleteAllSync(storage::mojom::DomStorageArea* area,
+                   const std::string& source);
 
 // Creates a callback that simply sets the  |*_out| variables to the arguments.
-base::OnceCallback<void(bool, std::vector<blink::mojom::KeyValuePtr>)>
+base::OnceCallback<void(bool, std::vector<storage::mojom::KeyValuePairPtr>)>
 MakeGetAllCallback(bool* success_out,
-                   std::vector<blink::mojom::KeyValuePtr>* data_out);
+                   std::vector<storage::mojom::KeyValuePairPtr>* data_out);
 
 // Utility class to help using the StorageArea::GetAll method. Use
 // |CreateAndBind| to create the PtrInfo to send to the |GetAll| method.
 // When the call is complete, the |callback| will be called.
-class GetAllCallback : public blink::mojom::StorageAreaGetAllCallback {
+class GetAllCallback : public storage::mojom::DomStorageAreaGetAllCallback {
  public:
-  static mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+  static mojo::PendingAssociatedRemote<
+      storage::mojom::DomStorageAreaGetAllCallback>
   CreateAndBind(bool* result, base::OnceClosure callback);
 
-  static mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+  static mojo::PendingAssociatedRemote<
+      storage::mojom::DomStorageAreaGetAllCallback>
   CreateAndBindOnDedicatedPipe(bool* result, base::OnceClosure callback);
 
   ~GetAllCallback() override;
@@ -87,7 +91,7 @@ class GetAllCallback : public blink::mojom::StorageAreaGetAllCallback {
 };
 
 // Mock observer implementation for use with StorageArea.
-class MockLevelDBObserver : public blink::mojom::StorageAreaObserver {
+class MockLevelDBObserver : public storage::mojom::DomStorageAreaObserver {
  public:
   MockLevelDBObserver();
   ~MockLevelDBObserver() override;
@@ -108,10 +112,11 @@ class MockLevelDBObserver : public blink::mojom::StorageAreaObserver {
   MOCK_METHOD1(AllDeleted, void(const std::string& source));
   MOCK_METHOD1(ShouldSendOldValueOnMutations, void(bool value));
 
-  mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> Bind();
+  mojo::PendingAssociatedRemote<storage::mojom::DomStorageAreaObserver> Bind();
 
  private:
-  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> receiver_{this};
+  mojo::AssociatedReceiver<storage::mojom::DomStorageAreaObserver> receiver_{
+      this};
 };
 
 }  // namespace test

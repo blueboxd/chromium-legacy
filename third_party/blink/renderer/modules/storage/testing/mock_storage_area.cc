@@ -12,23 +12,24 @@ namespace blink {
 MockStorageArea::MockStorageArea() = default;
 MockStorageArea::~MockStorageArea() = default;
 
-mojo::PendingRemote<mojom::blink::StorageArea>
+mojo::PendingRemote<storage::mojom::blink::DomStorageArea>
 MockStorageArea::GetInterfaceRemote() {
-  mojo::PendingRemote<mojom::blink::StorageArea> result;
+  mojo::PendingRemote<storage::mojom::blink::DomStorageArea> result;
   receivers_.Add(this, result.InitWithNewPipeAndPassReceiver());
   return result;
 }
 
-mojo::PendingAssociatedRemote<mojom::blink::StorageArea>
+mojo::PendingAssociatedRemote<storage::mojom::blink::DomStorageArea>
 MockStorageArea::GetAssociatedInterfaceRemote() {
-  mojo::AssociatedRemote<mojom::blink::StorageArea> result;
+  mojo::AssociatedRemote<storage::mojom::blink::DomStorageArea> result;
   associated_receivers_.Add(
       this, result.BindNewEndpointAndPassDedicatedReceiverForTesting());
   return result.Unbind();
 }
 
 void MockStorageArea::AddObserver(
-    mojo::PendingAssociatedRemote<mojom::blink::StorageAreaObserver> observer) {
+    mojo::PendingAssociatedRemote<storage::mojom::blink::DomStorageAreaObserver>
+        observer) {
   ++observer_count_;
 }
 
@@ -68,13 +69,13 @@ void MockStorageArea::Get(const Vector<uint8_t>& key, GetCallback callback) {
 }
 
 void MockStorageArea::GetAll(
-    mojo::PendingAssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
-        complete_callback,
+    mojo::PendingAssociatedRemote<
+        storage::mojom::blink::DomStorageAreaGetAllCallback> complete_callback,
     GetAllCallback callback) {
-  mojo::AssociatedRemote<mojom::blink::StorageAreaGetAllCallback>
+  mojo::AssociatedRemote<storage::mojom::blink::DomStorageAreaGetAllCallback>
       complete_remote(std::move(complete_callback));
   pending_callbacks_.push_back(
-      WTF::Bind(&mojom::blink::StorageAreaGetAllCallback::Complete,
+      WTF::Bind(&storage::mojom::blink::DomStorageAreaGetAllCallback::Complete,
                 std::move(complete_remote)));
 
   observed_get_all_ = true;

@@ -15,7 +15,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/variations/variations_associated_data.h"
 
 namespace password_bubble_experiment {
 

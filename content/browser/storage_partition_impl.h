@@ -188,7 +188,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   // blink::mojom::StoragePartitionService interface.
   void OpenLocalStorage(
       const url::Origin& origin,
-      mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
+      mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver) override;
   void OpenSessionStorage(
       const std::string& namespace_id,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver)

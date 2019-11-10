@@ -11,7 +11,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/url_formatter/elide_url.h"
-#include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon_stdstring.h"

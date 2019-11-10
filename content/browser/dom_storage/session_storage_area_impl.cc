@@ -31,7 +31,7 @@ SessionStorageAreaImpl::~SessionStorageAreaImpl() {
 }
 
 void SessionStorageAreaImpl::Bind(
-    mojo::PendingAssociatedReceiver<blink::mojom::StorageArea> receiver) {
+    mojo::PendingAssociatedReceiver<storage::mojom::DomStorageArea> receiver) {
   if (IsBound()) {
     receiver_.reset();
   } else {
@@ -57,9 +57,10 @@ void SessionStorageAreaImpl::NotifyObserversAllDeleted() {
   };
 }
 
-// blink::mojom::StorageArea:
+// storage::mojom::DomStorageArea:
 void SessionStorageAreaImpl::AddObserver(
-    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer) {
+    mojo::PendingAssociatedRemote<storage::mojom::DomStorageAreaObserver>
+        observer) {
   observers_.Add(std::move(observer));
 }
 
@@ -110,7 +111,7 @@ void SessionStorageAreaImpl::Get(const std::vector<uint8_t>& key,
 }
 
 void SessionStorageAreaImpl::GetAll(
-    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
+    mojo::PendingAssociatedRemote<storage::mojom::DomStorageAreaGetAllCallback>
         complete_callback,
     GetAllCallback callback) {
   DCHECK(IsBound());

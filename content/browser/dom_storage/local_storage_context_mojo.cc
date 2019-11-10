@@ -369,7 +369,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
     }
   }
 
-  void Bind(mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+  void Bind(mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver) {
     has_bindings_ = true;
     storage_area()->Bind(std::move(receiver));
   }
@@ -446,7 +446,7 @@ LocalStorageContextMojo::LocalStorageContextMojo(
 
 void LocalStorageContextMojo::OpenLocalStorage(
     const url::Origin& origin,
-    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+    mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver) {
   RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::BindLocalStorage,
                                   weak_ptr_factory_.GetWeakPtr(), origin,
                                   std::move(receiver)));
@@ -896,7 +896,7 @@ void LocalStorageContextMojo::OnDBDestroyed(bool recreate_in_memory,
 // directly from that function, or through |on_database_open_callbacks_|.
 void LocalStorageContextMojo::BindLocalStorage(
     const url::Origin& origin,
-    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
+    mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver) {
   GetOrCreateStorageArea(origin)->Bind(std::move(receiver));
 }
 

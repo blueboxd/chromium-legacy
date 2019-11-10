@@ -1659,341 +1659,40 @@ class AXPosition {
 
   AXPositionInstance CreateNextWordStartPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    const bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsLeafTextPosition();
-    if (text_position->IsNullPosition())
-      return text_position;
-
-    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-        text_position->AtStartOfWord()) {
-      AXPositionInstance clone = Clone();
-      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      return clone;
-    }
-
-    std::vector<int32_t> word_starts = text_position->GetWordStartOffsets();
-    auto iterator =
-        std::upper_bound(word_starts.begin(), word_starts.end(),
-                         static_cast<int32_t>(text_position->text_offset_));
-    do {
-      if (iterator == word_starts.end()) {
-        bool at_last_anchor_boundary = false;
-
-        // Ignore any nodes with no text or no word boundaries.
-        do {
-          AXPositionInstance next_position =
-              text_position->CreateNextLeafTextPosition();
-
-          if (next_position->IsNullPosition()) {
-            if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-              return CreatePositionAtEndOfAnchor();
-            if (boundary_behavior ==
-                AXBoundaryBehavior::StopAtLastAnchorBoundary) {
-              // We can't simply return the following position; after breaking
-              // both loops we'll try to do some adjustments to text_position.
-              text_position = text_position->CreatePositionAtEndOfAnchor();
-              at_last_anchor_boundary = true;
-              break;
-            }
-            return next_position;
-          }
-
-          text_position = std::move(next_position);
-        } while (!text_position->MaxTextOffset() ||
-                 text_position->GetWordStartOffsets().empty() ||
-                 (text_position->IsIgnored()));
-
-        if (at_last_anchor_boundary)
-          break;
-
-        word_starts = text_position->GetWordStartOffsets();
-        DCHECK(!word_starts.empty());
-        iterator =
-            std::upper_bound(word_starts.begin(), word_starts.end(),
-                             static_cast<int32_t>(text_position->text_offset_));
-        text_position->text_offset_ = static_cast<int>(word_starts[0]);
-      } else {
-        text_position->text_offset_ = static_cast<int>(*iterator);
-        text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
-        iterator++;
-      }
-
-      // Continue searching for the next word start until the next logical text
-      // position is reached.
-    } while (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-             *this == *text_position);
-
-    // If the word boundary is in the same subtree, return a position rooted at
-    // this position's anchor. This is necessary because we don't want to return
-    // a position that might be in the shadow DOM when this position is not.
-    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
-    if (GetAnchor() == common_anchor) {
-      text_position = text_position->CreateAncestorPosition(common_anchor);
-    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtEndOfAnchor();
-    }
-
-    if (was_tree_position)
-      text_position = text_position->AsTreePosition();
-    return text_position;
+    return CreateBoundaryStartPosition(
+        boundary_behavior, AXTextBoundaryDirection::kForwards,
+        base::BindRepeating(&AtStartOfWordPredicate),
+        base::BindRepeating(&AtEndOfWordPredicate),
+        base::BindRepeating(&GetWordStartOffsetsFunc));
   }
 
   AXPositionInstance CreatePreviousWordStartPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    const bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsLeafTextPosition();
-    if (text_position->IsNullPosition())
-      return text_position;
-
-    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-        text_position->AtStartOfWord()) {
-      AXPositionInstance clone = Clone();
-      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      return clone;
-    }
-
-    std::vector<int32_t> word_starts = text_position->GetWordStartOffsets();
-    auto iterator =
-        std::lower_bound(word_starts.begin(), word_starts.end(),
-                         static_cast<int32_t>(text_position->text_offset_));
-    do {
-      if (word_starts.empty() || iterator == word_starts.begin()) {
-        bool at_last_anchor_boundary = false;
-
-        // Ignore any nodes with no text or no word boundaries.
-        do {
-          AXPositionInstance previous_position =
-              text_position->CreatePreviousLeafTextPosition()
-                  ->CreatePositionAtEndOfAnchor();
-
-          if (previous_position->IsNullPosition()) {
-            if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-              return CreatePositionAtStartOfAnchor();
-            if (boundary_behavior ==
-                AXBoundaryBehavior::StopAtLastAnchorBoundary) {
-              // We can't simply return the following position; after breaking
-              // both loops we'll try to do some adjustments to text_position.
-              text_position = text_position->CreatePositionAtStartOfAnchor();
-              at_last_anchor_boundary = true;
-              break;
-            }
-            return previous_position;
-          }
-
-          text_position = std::move(previous_position);
-        } while (!text_position->MaxTextOffset() ||
-                 text_position->GetWordStartOffsets().empty() ||
-                 text_position->IsIgnored());
-
-        if (at_last_anchor_boundary)
-          break;
-
-        word_starts = text_position->GetWordStartOffsets();
-        DCHECK(!word_starts.empty());
-        iterator =
-            std::upper_bound(word_starts.begin(), word_starts.end(),
-                             static_cast<int32_t>(text_position->text_offset_));
-        text_position->text_offset_ =
-            static_cast<int>(*(word_starts.end() - 1));
-      } else {
-        text_position->text_offset_ = static_cast<int>(*(--iterator));
-        text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
+    return CreateBoundaryStartPosition(
+        boundary_behavior, AXTextBoundaryDirection::kBackwards,
+        base::BindRepeating(&AtStartOfWordPredicate),
+        base::BindRepeating(&AtEndOfWordPredicate),
+        base::BindRepeating(&GetWordStartOffsetsFunc));
       }
-
-      // Continue searching for the previous word start until the next logical
-      // text position is reached.
-    } while (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-             *this == *text_position);
-
-    // If the word boundary is in the same subtree, return a position rooted at
-    // this position's anchor. This is necessary because we don't want to return
-    // a position that might be in the shadow DOM when this position is not.
-    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
-    if (GetAnchor() == common_anchor) {
-      text_position = text_position->CreateAncestorPosition(common_anchor);
-    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtStartOfAnchor();
-    }
-
-    if (was_tree_position)
-      text_position = text_position->AsTreePosition();
-    return text_position;
-  }
 
   // Word end positions are one past the last character of the word.
   AXPositionInstance CreateNextWordEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    const bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsLeafTextPosition();
-    if (text_position->IsNullPosition())
-      return text_position;
-
-    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-        text_position->AtEndOfWord()) {
-      AXPositionInstance clone = Clone();
-      // If there is no ambiguity as to whether the position is at the end of
-      // the current line or the start of the next line, affinity should be
-      // reset in order to get consistent output from this function regardless
-      // of input affinity.
-      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      if (clone->AtStartOfLine())
-        clone->affinity_ = ax::mojom::TextAffinity::kUpstream;
-      return clone;
-    }
-
-    std::vector<int32_t> word_ends = text_position->GetWordEndOffsets();
-    auto iterator =
-        std::upper_bound(word_ends.begin(), word_ends.end(),
-                         static_cast<int32_t>(text_position->text_offset_));
-    do {
-      if (iterator == word_ends.end()) {
-        bool at_last_anchor_boundary = false;
-
-        // Ignore any nodes with no text or no word boundaries.
-        do {
-          AXPositionInstance next_position =
-              text_position->CreateNextLeafTextPosition();
-
-          if (next_position->IsNullPosition()) {
-            if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-              return CreatePositionAtEndOfAnchor();
-            if (boundary_behavior ==
-                AXBoundaryBehavior::StopAtLastAnchorBoundary) {
-              // We can't simply return the following position; after breaking
-              // both loops we'll try to do some adjustments to text_position.
-              text_position = text_position->CreatePositionAtEndOfAnchor();
-              at_last_anchor_boundary = true;
-              break;
-            }
-            return next_position;
-          }
-
-          text_position = std::move(next_position);
-        } while (!text_position->MaxTextOffset() ||
-                 text_position->GetWordEndOffsets().empty() ||
-                 text_position->IsIgnored());
-
-        if (at_last_anchor_boundary)
-          break;
-
-        word_ends = text_position->GetWordEndOffsets();
-        DCHECK(!word_ends.empty());
-        iterator =
-            std::upper_bound(word_ends.begin(), word_ends.end(),
-                             static_cast<int32_t>(text_position->text_offset_));
-        text_position->text_offset_ = static_cast<int>(word_ends[0]);
-      } else {
-        text_position->text_offset_ = static_cast<int>(*iterator);
-        text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
-        iterator++;
-      }
-
-      // Continue searching for the next word end until the next logical text
-      // position is reached.
-    } while (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-             *this == *text_position);
-
-    // If the word boundary is in the same subtree, return a position rooted at
-    // this position's anchor. This is necessary because we don't want to return
-    // a position that might be in the shadow DOM when this position is not.
-    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
-    if (GetAnchor() == common_anchor) {
-      text_position = text_position->CreateAncestorPosition(common_anchor);
-    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtEndOfAnchor();
-    }
-
-    if (was_tree_position)
-      text_position = text_position->AsTreePosition();
-    return text_position;
+    return CreateBoundaryEndPosition(
+        boundary_behavior, AXTextBoundaryDirection::kForwards,
+        base::BindRepeating(&AtStartOfWordPredicate),
+        base::BindRepeating(&AtEndOfWordPredicate),
+        base::BindRepeating(&GetWordEndOffsetsFunc));
   }
 
   // Word end positions are one past the last character of the word.
   AXPositionInstance CreatePreviousWordEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    const bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsLeafTextPosition();
-    if (text_position->IsNullPosition())
-      return text_position;
-
-    if (boundary_behavior == AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-        text_position->AtEndOfWord()) {
-      AXPositionInstance clone = Clone();
-      // If there is no ambiguity as to whether the position is at the end of
-      // the current line or the start of the next line, affinity should be
-      // reset in order to get consistent output from this function regardless
-      // of input affinity.
-      clone->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      if (clone->AtStartOfLine())
-        clone->affinity_ = ax::mojom::TextAffinity::kUpstream;
-      return clone;
-    }
-
-    std::vector<int32_t> word_ends = text_position->GetWordEndOffsets();
-    auto iterator =
-        std::lower_bound(word_ends.begin(), word_ends.end(),
-                         static_cast<int32_t>(text_position->text_offset_));
-    do {
-      if (word_ends.empty() || iterator == word_ends.begin()) {
-        bool at_last_anchor_boundary = false;
-
-        // Ignore any nodes with no text or no word boundaries.
-        do {
-          AXPositionInstance previous_position =
-              text_position->CreatePreviousLeafTextPosition()
-                  ->CreatePositionAtEndOfAnchor();
-
-          if (previous_position->IsNullPosition()) {
-            if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-              return CreatePositionAtStartOfAnchor();
-            if (boundary_behavior ==
-                AXBoundaryBehavior::StopAtLastAnchorBoundary) {
-              // We can't simply return the following position; after breaking
-              // both loops we'll try to do some adjustments to text_position.
-              text_position = text_position->CreatePositionAtStartOfAnchor();
-              at_last_anchor_boundary = true;
-              break;
-            }
-            return previous_position;
-          }
-
-          text_position = std::move(previous_position);
-        } while (!text_position->MaxTextOffset() ||
-                 text_position->GetWordStartOffsets().empty() ||
-                 text_position->IsIgnored());
-
-        if (at_last_anchor_boundary)
-          break;
-
-        word_ends = text_position->GetWordEndOffsets();
-        DCHECK(!word_ends.empty());
-        iterator =
-            std::lower_bound(word_ends.begin(), word_ends.end(),
-                             static_cast<int32_t>(text_position->text_offset_));
-        text_position->text_offset_ = static_cast<int>(*(word_ends.end() - 1));
-      } else {
-        text_position->text_offset_ = static_cast<int>(*(--iterator));
-        text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
-      }
-
-      // Continue searching for the previous word end until the next logical
-      // text position is reached.
-    } while (boundary_behavior != AXBoundaryBehavior::StopIfAlreadyAtBoundary &&
-             *this == *text_position);
-
-    // If the word boundary is in the same subtree, return a position rooted at
-    // this position's anchor. This is necessary because we don't want to return
-    // a position that might be in the shadow DOM when this position is not.
-    const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
-    if (GetAnchor() == common_anchor) {
-      text_position = text_position->CreateAncestorPosition(common_anchor);
-    } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      return CreatePositionAtStartOfAnchor();
-    }
-
-    if (was_tree_position)
-      text_position = text_position->AsTreePosition();
-    return text_position;
+    return CreateBoundaryEndPosition(
+        boundary_behavior, AXTextBoundaryDirection::kBackwards,
+        base::BindRepeating(&AtStartOfWordPredicate),
+        base::BindRepeating(&AtEndOfWordPredicate),
+        base::BindRepeating(&GetWordEndOffsetsFunc));
   }
 
   AXPositionInstance CreateNextLineStartPosition(
@@ -2311,9 +2010,13 @@ class AXPosition {
       if (boundary_direction == AXTextBoundaryDirection::kForwards) {
         next_position = text_position->CreateNextLeafTextPosition();
       } else {
-        next_position = text_position->AtStartOfAnchor()
-                            ? text_position->CreatePreviousLeafTextPosition()
-                            : text_position->CreatePositionAtStartOfAnchor();
+        if (text_position->AtStartOfAnchor()) {
+          next_position = text_position->CreatePreviousLeafTextPosition();
+        } else {
+          text_position = text_position->CreatePositionAtStartOfAnchor();
+          DCHECK(!text_position->IsNullPosition());
+          continue;
+        }
       }
 
       if (next_position->IsNullPosition()) {
@@ -2387,10 +2090,13 @@ class AXPosition {
 
       AXPositionInstance next_position;
       if (boundary_direction == AXTextBoundaryDirection::kForwards) {
-        next_position = !text_position->AtEndOfAnchor()
-                            ? text_position->CreatePositionAtEndOfAnchor()
-                            : text_position->CreateNextLeafTextPosition()
-                                  ->CreatePositionAtEndOfAnchor();
+        if (text_position->AtEndOfAnchor()) {
+          next_position = text_position->CreateNextLeafTextPosition();
+        } else {
+          text_position = text_position->CreatePositionAtEndOfAnchor();
+          DCHECK(!text_position->IsNullPosition());
+          continue;
+        }
       } else {
         next_position = text_position->CreatePreviousLeafTextPosition()
                             ->CreatePositionAtEndOfAnchor();
@@ -2959,6 +2665,14 @@ class AXPosition {
     return !position->IsIgnored() && position->AtEndOfLine();
   }
 
+  static bool AtStartOfWordPredicate(const AXPositionInstance& position) {
+    return !position->IsIgnored() && position->AtStartOfWord();
+  }
+
+  static bool AtEndOfWordPredicate(const AXPositionInstance& position) {
+    return !position->IsIgnored() && position->AtEndOfWord();
+  }
+
   // Default behavior is to never abort.
   static bool DefaultAbortMovePredicate(const AXPosition& move_from,
                                         const AXPosition& move_to,
@@ -3185,8 +2899,10 @@ class AXPosition {
   // Creates a text position that is in the same anchor as the current position,
   // but adjusts its text offset to be either at the first or last offset
   // boundary, based on the boundary direction. When moving forward, the text
-  // position is adjusted to point to the first offset boundary. When moving
-  // backward, it is adjusted to point to the last offset boundary.
+  // position is adjusted to point to the first offset boundary, or to the end
+  // of its anchor if there are no offset boundaries. When moving backward, it
+  // is adjusted to point to the last offset boundary, or to the start of its
+  // anchor if there are no offset boundaries.
   AXPositionInstance CreatePositionAtFirstOffsetBoundary(
       AXTextBoundaryDirection boundary_direction,
       BoundaryTextOffsetsFunc get_offsets) const {
@@ -3199,7 +2915,7 @@ class AXPosition {
     switch (boundary_direction) {
       case AXTextBoundaryDirection::kForwards:
         if (boundary_offsets.empty()) {
-          return text_position->CreatePositionAtStartOfAnchor();
+          return text_position->CreatePositionAtEndOfAnchor();
         } else {
           text_position->text_offset_ = int{boundary_offsets[0]};
           return text_position;
@@ -3207,7 +2923,7 @@ class AXPosition {
         break;
       case AXTextBoundaryDirection::kBackwards:
         if (boundary_offsets.empty()) {
-          return text_position->CreatePositionAtEndOfAnchor();
+          return text_position->CreatePositionAtStartOfAnchor();
         } else {
           text_position->text_offset_ =
               int{boundary_offsets[boundary_offsets.size() - 1]};
@@ -3228,8 +2944,21 @@ class AXPosition {
   // position. It doesn't count grapheme clusters.
   int text_offset_;
 
-  // TODO(nektar): Get rid of affinity and make Blink handle affinity
-  // internally since inline text objects don't span lines.
+  // Affinity is used to distinguish between two text positions that point to
+  // the same text offset, but which happens to fall on a soft line break. A
+  // soft line break doesn't insert any white space in the accessibility tree,
+  // so without affinity there would be no way to determine whether a text
+  // position is before or after the soft line break. An upstream affinity means
+  // that the position is before the soft line break, whilst a downstream
+  // affinity means that the position is after the soft line break.
+  //
+  // Please note that affinity could only be set to upstream for positions that
+  // are anchored to non-leaf nodes. When on a leaf node, there could never be
+  // an ambiguity as to which line a position points to because Blink creates
+  // separate inline text boxes for each line of text. Therefore, a leaf text
+  // position before the soft line break would be pointing to the end of its
+  // anchor node, whilst a leaf text position after the soft line break would be
+  // pointing to the start of the next node.
   ax::mojom::TextAffinity affinity_;
 
   //

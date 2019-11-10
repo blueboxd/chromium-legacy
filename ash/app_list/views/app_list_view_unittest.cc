@@ -2650,7 +2650,7 @@ TEST_F(AppListViewTest, BackAction) {
 // Tests selecting search result to show embedded Assistant UI.
 TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
   scoped_feature_list_.InitWithFeatures(
-      {app_list_features::kEnableEmbeddedAssistantUI}, {});
+      {app_list_features::kEnableAssistantLauncherUI}, {});
   Show();
 
   // Initially the search box is inactive, hitting Enter to activate it.
@@ -2683,7 +2683,7 @@ TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
 TEST_F(AppListViewTest, AppsGridVisibilityOnResetForShow) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableEmbeddedAssistantUI}, {});
+      {app_list_features::kEnableAssistantLauncherUI}, {});
   Initialize(true /*is_tablet_mode*/);
   Show(true /*is_tablet_mode*/);
 
@@ -2702,12 +2702,15 @@ TEST_F(AppListViewTest, AppsGridVisibilityOnResetForShow) {
       contents_view()->GetPageView(assistant_page_index)->GetVisible());
 }
 
-// Tests that no answer card view when kEnableEmbeddedAssistantUI is enabled.
+// Tests that no answer card view when kEnableAssistantLauncherUI is enabled.
 TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableEmbeddedAssistantUI}, {});
-  ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
+      {app_list_features::kEnableAssistantLauncherUI,
+       app_list_features::kEnableAssistantSearch},
+      {});
+  ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
+  ASSERT_TRUE(app_list_features::IsAssistantSearchEnabled());
 
   Initialize(false /*is_tablet_mode*/);
   Show();
@@ -2720,8 +2723,8 @@ TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
 TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableEmbeddedAssistantUI}, {});
-  ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
+      {app_list_features::kEnableAssistantLauncherUI}, {});
+  ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
   Show();
@@ -2742,8 +2745,8 @@ TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
 TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableEmbeddedAssistantUI}, {});
-  ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
+      {app_list_features::kEnableAssistantLauncherUI}, {});
+  ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
   Show();
@@ -2777,8 +2780,8 @@ TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
 TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableEmbeddedAssistantUI}, {});
-  ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
+      {app_list_features::kEnableAssistantLauncherUI}, {});
+  ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
   Show();

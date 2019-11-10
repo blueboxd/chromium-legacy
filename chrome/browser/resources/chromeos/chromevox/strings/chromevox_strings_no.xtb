@@ -153,7 +153,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Semantikk av</translation>
 <translation id="2086961585857038472">Neste ord</translation>
-<translation id="2087981446621639008">dtlj for beskrliste</translation>
+<translation id="2087981446621639008">dtlj i beskr.liste</translation>
 <translation id="2089387485033699258">no</translation>
 <translation id="2091933974477985526">Forrige redigerbare tekstområde</translation>
 <translation id="2100350898815792233">All tegnsetting</translation>
@@ -373,7 +373,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3497063866483065785">{COUNT,plural, =1{spørsmålstegn}other{# spørsmålstegn}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{circumflekstegn}other{# circumflekstegn}}</translation>
 <translation id="352577523970648069">Et tekstfelt som kan endres</translation>
-<translation id="3538907380453898475">beskrliste</translation>
+<translation id="3538907380453898475">beskr.liste</translation>
 <translation id="3549141990712742152">klipp ut <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Trykk med to fingre for å stoppe høytlesningen midlertidig</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, avmerkingsruten er ikke avmerket</translation>
@@ -793,6 +793,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6459511626086141404">Flatt tastaturoppsett</translation>
 <translation id="6468049171101508116">Neste-knappen</translation>
 <translation id="646954774886932461">Stikkordregister</translation>
+<translation id="6479792383819319132">Det finnes ikke noe neste avsnitt.</translation>
 <translation id="6493991254603208962">Lysstyrke ned</translation>
 <translation id="6501595918865591267">Turkis</translation>
 <translation id="6508059270146105198">Flytt leselisten til nederst på siden</translation>
@@ -815,6 +816,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6637586476836377253">logg</translation>
 <translation id="6657128831881431364">Fremdriftsrad</translation>
 <translation id="6659594942844771486">Tab</translation>
+<translation id="6675661017770918201">Det finnes ikke noe forrige avsnitt.</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6688209025607531203">Et ikke-modalt varsel</translation>
 <translation id="6689672606256159458">Mørk lakserosa</translation>
@@ -918,7 +920,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7332592614823088566">Rad <ph name="ROWINDEX" /> av <ph name="ROWTOTAL" />, kolonne <ph name="COLINDEX" /> av <ph name="COLTOTAL" /></translation>
 <translation id="7336596009609913925">har forgrunnsvindu</translation>
 <translation id="7356165926712028380">Bytt til 8-punkts punktskrift</translation>
-<translation id="7356610683936413584">Detalj for beskrivelsesliste</translation>
+<translation id="7356610683936413584">Detalj i beskrivelsesliste</translation>
 <translation id="7362871137496673139">Det finnes ikke tidligere overskrifter på nivå 2.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{og-tegn}other{# og-tegn}}</translation>
 <translation id="737396357417333429">clk</translation>

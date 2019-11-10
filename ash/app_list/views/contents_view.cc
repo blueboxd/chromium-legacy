@@ -133,7 +133,7 @@ void ContentsView::Init(AppListModel* model) {
   AddLauncherPage(search_results_page_view_,
                   ash::AppListState::kStateSearchResults);
 
-  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+  if (app_list_features::IsAssistantLauncherUIEnabled()) {
     assistant_page_view_ =
         new AssistantPageView(view_delegate->GetAssistantViewDelegate(), this);
     assistant_page_view_->SetVisible(false);

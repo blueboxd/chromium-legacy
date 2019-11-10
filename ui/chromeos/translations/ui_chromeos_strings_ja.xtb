@@ -564,6 +564,7 @@
 <translation id="7589661784326793847">少々お待ちください</translation>
 <translation id="7603724359189955920">グリッド</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> は既に存在しています。名前を変更してもう一度お試しください。</translation>
+<translation id="7628656427739290098"><ph name="PERCENT" />% 完了しました。</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムを移動しています...</translation>
 <translation id="7658239707568436148">キャンセル</translation>

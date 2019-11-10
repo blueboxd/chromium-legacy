@@ -49,7 +49,7 @@ AssistantAshTestBase::~AssistantAshTestBase() = default;
 
 void AssistantAshTestBase::SetUp() {
   scoped_feature_list_.InitAndEnableFeature(
-      app_list_features::kEnableEmbeddedAssistantUI);
+      app_list_features::kEnableAssistantLauncherUI);
 
   // Enable virtual keyboard.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(

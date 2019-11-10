@@ -89,7 +89,7 @@
 <translation id="209965399369889474">ネットワークに接続されていません</translation>
 <translation id="2126242104232412123">新しいデスク</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
-<translation id="2135456203358955318">拡大鏡（ドッキング）</translation>
+<translation id="2135456203358955318">ドッキング拡大鏡</translation>
 <translation id="2144487987174258011">Adobe Flash Player を更新するには再起動してください</translation>
 <translation id="2148902151539191989">戻る</translation>
 <translation id="2208323208084708176">デスクトップ統合モード</translation>
@@ -99,6 +99,7 @@
 <translation id="2268813581635650749">すべてログアウト</translation>
 <translation id="2277103315734023688">前方に移動</translation>
 <translation id="2292698582925480719">表示スケール</translation>
+<translation id="2298170939937364391">全画面拡大鏡がオンになっています。オフにするには Ctrl+検索+M キーをもう一度押します。</translation>
 <translation id="2302092602801625023">このアカウントはファミリー リンクによって管理されています</translation>
 <translation id="2303600792989757991">ウィンドウ切り替えの概要</translation>
 <translation id="2339073806695260576">シェルフにあるタッチペン ボタンをタップして、メモやスクリーンショットをとったり、レーザー ポインタや虫メガネを使用したりすることができます。</translation>
@@ -118,7 +119,7 @@
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
 <translation id="2542089167727451762">プロフィール画像をタップしてください</translation>
 <translation id="255671100581129685">Google アシスタントは、公開セッションではご利用いただけません。</translation>
-<translation id="256712445991462162">拡大鏡（ドッキング）</translation>
+<translation id="256712445991462162">ドッキング拡大鏡</translation>
 <translation id="2575685495496069081">マルチログインは無効にされています</translation>
 <translation id="2582112259361606227">再起動して更新</translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
@@ -137,7 +138,7 @@
 <translation id="2872961005593481000">終了</translation>
 <translation id="2878884018241093801">最近使用されたアイテムはありません</translation>
 <translation id="2903844815300039659"><ph name="NAME" /> に接続されています（<ph name="STRENGTH" />）</translation>
-<translation id="2942350706960889382">拡大鏡（ドッキング）</translation>
+<translation id="2942350706960889382">ドッキング拡大鏡</translation>
 <translation id="2942516765047364088">シェルフの位置</translation>
 <translation id="2946119680249604491">接続を追加</translation>
 <translation id="2961963223658824723">エラーが発生しました。数秒後にもう一度お試しください。</translation>
@@ -145,7 +146,7 @@
 <translation id="2970920913501714344">アプリ、拡張機能、テーマをインストールする</translation>
 <translation id="2977598380246111477">次の番号</translation>
 <translation id="2995447421581609334">キャスト デバイスを表示します。</translation>
-<translation id="2996462380875591307">拡大鏡（ドッキング）がオンになっています。オフにするには Ctrl+検索+D キーをもう一度押します。</translation>
+<translation id="2996462380875591307">ドッキング拡大鏡がオンになっています。オフにするには Ctrl+検索+D キーをもう一度押します。</translation>
 <translation id="3000461861112256445">モノラル音声</translation>
 <translation id="3009178788565917040">出力</translation>
 <translation id="3051128274746680507">管理対象のユーザー プロフィールはまもなく削除されます。ログインして詳細をご確認ください。</translation>
@@ -174,7 +175,7 @@
 <translation id="3364721542077212959">タッチペン ツール</translation>
 <translation id="3368922792935385530">接続済み</translation>
 <translation id="3371140690572404006">USB-C デバイス（右手前のポート）</translation>
-<translation id="3386978599540877378">拡大鏡（全画面）</translation>
+<translation id="3386978599540877378">全画面拡大鏡</translation>
 <translation id="3400357268283240774">その他の設定</translation>
 <translation id="3413817803639110246">通知はありません</translation>
 <translation id="343571671045587506">リマインダーの編集</translation>
@@ -200,7 +201,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ロック</translation>
 <translation id="3798670284305777884">スピーカー（内蔵）</translation>
-<translation id="3799080171973636491">拡大鏡（全画面）のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
+<translation id="3799080171973636491">全画面拡大鏡のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="380165613292957338">はい、どんなご用でしょう？</translation>
 <translation id="383629559565718788">キーボード設定を表示</translation>
 <translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
@@ -243,7 +244,7 @@
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4379531060876907730">タッチペン ツール</translation>
 <translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
-<translation id="4389184120735010762">拡大鏡（ドッキング）のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
+<translation id="4389184120735010762">ドッキング拡大鏡のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4450893287417543264">次回から表示しない</translation>
@@ -298,7 +299,6 @@
 <translation id="5302048478445481009">言語</translation>
 <translation id="5313326810920013265">Bluetooth 設定</translation>
 <translation id="5331975486040154427">USB-C デバイス（左奥のポート）</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">試行回数が上限を超えました</translation>
 <translation id="5397578532367286026">このユーザーの利用状況や履歴は、chrome.com で管理者（<ph name="MANAGER_EMAIL" />）によって確認されます。</translation>
 <translation id="5430931332414098647">インスタント テザリング</translation>
@@ -321,7 +321,7 @@
 <translation id="5682642926269496722">Google アシスタントは、現在のユーザー アカウントではご利用いただけません。</translation>
 <translation id="5691772641933328258">指紋を認識できません</translation>
 <translation id="5710450975648804523">サイレント モードがオンになっています</translation>
-<translation id="573413375004481890">このデバイスでサポートされるディスプレイの上限数を超えたため、一部のディスプレイが切断されました</translation>
+<translation id="573413375004481890">このデバイスでサポートできるディスプレイの上限数を超えたため、ディスプレイが 1 台切断されました</translation>
 <translation id="574392208103952083">中</translation>
 <translation id="5744083938413354016">タップによるドラッグ</translation>
 <translation id="5750765938512549687">Bluetooth がオフです</translation>
@@ -374,7 +374,7 @@
 <translation id="6452181791372256707">拒否</translation>
 <translation id="6453179446719226835">言語が変更されました</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> へ画面を拡張しています</translation>
-<translation id="6482559668224714696">拡大鏡（全画面）</translation>
+<translation id="6482559668224714696">全画面拡大鏡</translation>
 <translation id="6490471652906364588">USB-C デバイス（右側面のポート）</translation>
 <translation id="649452524636452238">スマートカードの PIN</translation>
 <translation id="6501401484702599040">画面を <ph name="RECEIVER_NAME" /> にキャスト中</translation>
@@ -477,6 +477,7 @@
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
 <translation id="7933084174919150729">Google アシスタントはメインのプロフィールでのみご利用いただけます。</translation>
 <translation id="79341161159229895">このアカウントは <ph name="FIRST_PARENT_EMAIL" /> と <ph name="SECOND_PARENT_EMAIL" /> により管理されています</translation>
+<translation id="7955885781510802139">ハイコントラスト モード</translation>
 <translation id="7977927628060636163">モバイル ネットワークを検索しています...</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
 <translation id="7984197416080286869">指紋認証の試行回数が上限を超えています</translation>
@@ -564,6 +565,7 @@
 <translation id="9091626656156419976">ディスプレイ「<ph name="DISPLAY_NAME" />」が取り外されました</translation>
 <translation id="9151726767154816831">更新するには、再起動して Powerwash を実行してください</translation>
 <translation id="9179259655489829027">この機能を使用すると、パスワードを入力せずにログイン ユーザーにすばやくアクセスできます。この機能は信頼できるアカウントにのみ使用してください。</translation>
+<translation id="9183456764293710005">全画面拡大鏡</translation>
 <translation id="9193626018745640770">不明な受信デバイスにキャストしています</translation>
 <translation id="9194617393863864469">別のユーザーとしてログイン...</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>

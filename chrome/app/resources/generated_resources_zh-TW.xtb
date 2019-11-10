@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1002469766576243227">這是由 <ph name="EXTENSION_NAME" /> 代管的驗證服務</translation>
 <translation id="1003088604756913841">在新的「<ph name="APP" />」視窗中開啟連結</translation>
 <translation id="1004218526896219317">網站存取權</translation>
 <translation id="1005274289863221750">使用你的麥克風和相機</translation>
@@ -33,6 +32,7 @@
 <translation id="1038168778161626396">只有 Encipher</translation>
 <translation id="1039337018183941703">檔案無效或毀損</translation>
 <translation id="1041175011127912238">這個網頁沒有回應</translation>
+<translation id="1041263367839475438">可用的裝置</translation>
 <translation id="1042174272890264476">你的電腦也內建了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 程式庫。RLZ 可指定非重複、非個人的可辨識標記，以評估特定宣傳廣告活動所提升的搜尋數與 <ph name="SHORT_PRODUCT_NAME" /> 使用量。這些標籤有時也會顯示在 <ph name="PRODUCT_NAME" /> 的 Google 搜尋查詢中。</translation>
 <translation id="1045692658517323508">{0,plural, =1{請在 1 分鐘內更新}other{請在 # 分鐘內更新}}</translation>
 <translation id="1046635659603195359">你似乎已在其他裝置上設定 Google 助理的 Voice Match 功能。你可以使用先前的錄音檔在這個裝置上建立語音模型，通常不到 1 分鐘即可完成。</translation>
@@ -105,6 +105,7 @@
 <translation id="1145532888383813076">搜尋你的裝置、應用程式和網路。</translation>
 <translation id="1146678959555564648">進入 VR</translation>
 <translation id="114721135501989771">在 Chrome 中體驗 Google 智慧功能</translation>
+<translation id="1147991416141538220">如需要求存取權限，請與這個裝置的系統管理員聯絡。</translation>
 <translation id="1149401351239820326">到期月份</translation>
 <translation id="1150565364351027703">太陽眼鏡</translation>
 <translation id="1151917987301063366">一律允許 <ph name="HOST" /> 存取感應器</translation>
@@ -129,6 +130,7 @@
 <translation id="1177863135347784049">自訂</translation>
 <translation id="1178581264944972037">暫停</translation>
 <translation id="117916940443676133">你的安全金鑰未受 PIN 碼保護。如要管理登入資料，請先建立 PIN 碼。</translation>
+<translation id="118069123878619799">- 你的身體特徵，例如身高</translation>
 <translation id="1181037720776840403">移除</translation>
 <translation id="1183237619868651138">無法在本機快取中安裝 <ph name="EXTERNAL_CRX_FILE" />。</translation>
 <translation id="1185924365081634987">你也可以嘗試<ph name="GUEST_SIGNIN_LINK_START" />以訪客身分瀏覽<ph name="GUEST_SIGNIN_LINK_END" />，藉此修復網路問題。</translation>
@@ -301,6 +303,7 @@
 <translation id="1433811987160647649">存取前詢問我</translation>
 <translation id="1434696352799406980">這項功能會重設您的起始網頁、新分頁、搜尋引擎和固定分頁，同時停用所有擴充功能並清除 Cookie 等暫存資料，但不會清除您的書籤、歷史記錄和已儲存的密碼。</translation>
 <translation id="1434886155212424586">首頁是新分頁</translation>
+<translation id="1435979430299962295">如要授予這個網站的存取權，請點選該擴充功能。</translation>
 <translation id="1436390408194692385">有效期間：<ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436671784520050284">繼續設定</translation>
 <translation id="1436784010935106834">已移除</translation>
@@ -816,7 +819,7 @@
 <translation id="2173801458090845390">新增這部裝置的申請 ID</translation>
 <translation id="2175042898143291048">一律執行這項操作</translation>
 <translation id="2175607476662778685">快速啟動列</translation>
-<translation id="217576141146192373">無法新增印表機。請檢查你的印表機配置，然後再試一次。</translation>
+<translation id="217576141146192373">無法新增印表機。請檢查你的印表機設定，然後再試一次。</translation>
 <translation id="2177950615300672361">無痕式分頁：<ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> 的「<ph name="PEPPER_PLUGIN_NAME" />」要求存取你的電腦</translation>
 <translation id="2178614541317717477">CA 洩露</translation>
@@ -1363,12 +1366,14 @@
 <translation id="2932883381142163287">檢舉濫用情形</translation>
 <translation id="2936851848721175671">備份與還原</translation>
 <translation id="2938225289965773019">開啟<ph name="PROTOCOL" />連結</translation>
+<translation id="2938845886082362843">查看並刪除安全金鑰上儲存的登入資料</translation>
 <translation id="2939938020978911855">顯示可用的藍牙裝置</translation>
 <translation id="2941112035454246133">低</translation>
 <translation id="2942560570858569904">等待中…</translation>
 <translation id="2942581856830209953">自訂這個頁面</translation>
 <translation id="2944060181911631861">傳送使用狀況與診斷資料。讓系統自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google，協助改善你的 Android 使用體驗。這些資料將有助於系統和應用程式提高穩定性及做出其他改善。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。如果你的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到你的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">新增連線</translation>
+<translation id="2947605845283690091">網路瀏覽速度應該要快速流暢。現在就花點時間<ph name="BEGIN_LINK" />檢查擴充功能<ph name="END_LINK" />吧。</translation>
 <translation id="2948300991547862301">前往<ph name="PAGE_TITLE" /></translation>
 <translation id="29488703364906173">一款快速、簡單又安全的新世代網路瀏覽器。</translation>
 <translation id="2949289451367477459">使用定位服務。允許具有位置存取權的應用程式和服務使用這個裝置的位置資訊。Google 可能會定期收集位置資料，並以匿名方式使用這類資料，藉此提高定位精確度及改善適地性服務。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
@@ -1545,6 +1550,7 @@
 <translation id="3241680850019875542">請選取要封裝的擴充功能根目錄。如要更新擴充功能，請一併選取要重複使用的秘密金鑰。</translation>
 <translation id="3244294424315804309">繼續維持靜音</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - 網路錯誤</translation>
+<translation id="3248902735035392926">安全至上。現在就花點時間<ph name="BEGIN_LINK" />檢查擴充功能<ph name="END_LINK" />吧</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;不是憑證的一部分&gt;</translation>
 <translation id="3253225298092156258">無法使用</translation>
@@ -2041,6 +2047,7 @@
 <translation id="3926002189479431949">Smart Lock 手機已變更</translation>
 <translation id="3927932062596804919">拒絕</translation>
 <translation id="3928570707778085600">要將變更儲存至「<ph name="FILE_OR_FOLDER_NAME" />」嗎？</translation>
+<translation id="3929426037718431833">這些擴充功能可以查看並變更這個網站上的資訊。</translation>
 <translation id="3930737994424905957">正在尋找裝置</translation>
 <translation id="3930968231047618417">背景顏色</translation>
 <translation id="3933283459331715412">還原已刪除的 <ph name="USERNAME" /> 密碼</translation>
@@ -2107,6 +2114,7 @@
 <translation id="4010917659463429001">如要在行動裝置上取得你的書籤，請<ph name="GET_IOS_APP_LINK" />。</translation>
 <translation id="4013132157686828973">「<ph name="CLIENT_NAME" />」正在為這個瀏覽器偵錯</translation>
 <translation id="4014432863917027322">修復「<ph name="EXTENSION_NAME" />」？</translation>
+<translation id="4015163439792426608">你有使用擴充功能嗎？<ph name="BEGIN_LINK" />集中管理擴充功能<ph name="END_LINK" />，輕鬆又方便。</translation>
 <translation id="4020106588733303597">糟糕！系統無法載入可用的授權。</translation>
 <translation id="4020327272915390518">選項選單</translation>
 <translation id="4021279097213088397">–</translation>
@@ -2265,6 +2273,7 @@
 <translation id="4267953847983678297">自動連線至行動數據網路</translation>
 <translation id="4268025649754414643">金鑰編密</translation>
 <translation id="4270393598798225102">第 <ph name="NUMBER" /> 版</translation>
+<translation id="4274667386947315930">登入資料</translation>
 <translation id="4275663329226226506">媒體</translation>
 <translation id="4275830172053184480">重新啟動裝置</translation>
 <translation id="4278101229438943600">你的 Google 助理已準備就緒</translation>
@@ -2308,6 +2317,7 @@
 <translation id="4349828822184870497">有幫助</translation>
 <translation id="4350019051035968019">這台裝置已標示為由其他網域管理，因此無法註冊到你帳戶所屬的網域。</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> 要求掃描附近的藍牙裝置。已找到下列裝置：</translation>
+<translation id="4353114845960720315">當你進入 VR 時，這個網站可能會取得以下資訊：</translation>
 <translation id="4354344420232759511">這裡會顯示你曾造訪的網站</translation>
 <translation id="435527878592612277">請選取你的相片</translation>
 <translation id="4358313196493694334">穩定點擊位置</translation>
@@ -2367,6 +2377,7 @@
 <translation id="443475966875174318">更新或移除不相容的應用程式</translation>
 <translation id="4438043733494739848">透明</translation>
 <translation id="4441124369922430666">你要在裝置開機時自動啟動這個應用程式嗎？</translation>
+<translation id="4441147046941420429">如要繼續，請將安全金鑰從裝置上移除，然後重新插入並輕觸安全金鑰</translation>
 <translation id="444134486829715816">展開...</translation>
 <translation id="4442424173763614572">DNS 查詢失敗</translation>
 <translation id="4443536555189480885">說明(&amp;H)</translation>
@@ -2593,6 +2604,7 @@
 <translation id="4804818685124855865">中斷連線</translation>
 <translation id="4804827417948292437">酪梨</translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
+<translation id="4808319664292298116">要從 <ph name="DOMAIN" /> 進入 VR 嗎？</translation>
 <translation id="4808667324955055115">已封鎖彈出式視窗：</translation>
 <translation id="480990236307250886">開啟首頁</translation>
 <translation id="4813136279048157860">我的圖片</translation>
@@ -2817,6 +2829,7 @@
 <translation id="5135085122826131075">只要說出「Ok Google」就能存取 Google 助理。</translation>
 <translation id="5135533361271311778">無法建立書籤項目。</translation>
 <translation id="5137501176474113045">刪除此項目</translation>
+<translation id="5139823398361067371">請輸入安全金鑰的 PIN 碼。如果你不知道 PIN 碼，則必須重設安全金鑰。</translation>
 <translation id="5139955368427980650">開啟(&amp;O)</translation>
 <translation id="5142961317498132443">驗證</translation>
 <translation id="5143374789336132547">擴充功能「<ph name="EXTENSION_NAME" />」已變更您點選 [首頁] 按鈕時所顯示的網頁。</translation>
@@ -2835,6 +2848,7 @@
 <translation id="5170568018924773124">在資料夾中顯示</translation>
 <translation id="5171045022955879922">搜尋或輸入網址</translation>
 <translation id="5171343362375269016">交換的記憶體</translation>
+<translation id="5173668317844998239">新增及刪除安全金鑰上儲存的指紋</translation>
 <translation id="5175379009094579629">裝置名稱無效。請輸入有效的裝置名稱，然後再試一次。</translation>
 <translation id="5177479852722101802">繼續封鎖存取攝影機和麥克風</translation>
 <translation id="5177549709747445269">您正在使用行動數據</translation>
@@ -2910,6 +2924,7 @@
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">你的帳戶</translation>
 <translation id="5288678174502918605">重新開啟先前關閉的分頁(&amp;E)</translation>
+<translation id="52895863590846877">網頁原文不是<ph name="LANGUAGE" /></translation>
 <translation id="52912272896845572">秘密金鑰檔案無效。</translation>
 <translation id="529175790091471945">格式化這台裝置</translation>
 <translation id="5293170712604732402">將設定還原成原始預設值</translation>
@@ -3064,6 +3079,7 @@
 <translation id="5511379779384092781">特小</translation>
 <translation id="5511823366942919280">你確定要將這個裝置設為「Shark」嗎？</translation>
 <translation id="5512653252560939721">必須使用硬體支援的使用者憑證。</translation>
+<translation id="5517304475148761050">這個應用程式需要存取 Play 商店才能執行</translation>
 <translation id="551752069230578406">正在將印表機新增到你的帳戶中，這可能需要幾分鐘的時間...</translation>
 <translation id="5518219166343146486">當網站要讀取已複製到剪貼簿的文字和圖片時，必須先詢問你</translation>
 <translation id="5518584115117143805">電子郵件加密憑證</translation>
@@ -3267,12 +3283,14 @@
 <translation id="5804175651771201311">已關閉漫遊服務</translation>
 <translation id="5804241973901381774">權限</translation>
 <translation id="5805697420284793859">視窗管理員</translation>
+<translation id="5806773519584576205">0° (預設)</translation>
 <translation id="5811750797187914944">設定完成</translation>
 <translation id="5812674658566766066">全部展開</translation>
 <translation id="5814126672212206791">連線類型</translation>
 <translation id="5815645614496570556">X.400 地址</translation>
 <translation id="5816434091619127343">要求的印表機變更會讓這部印表機無法使用。</translation>
 <translation id="5817918615728894473">配對</translation>
+<translation id="5819762621475381970">- 你的房間配置</translation>
 <translation id="5821565227679781414">建立捷徑</translation>
 <translation id="5825412242012995131">啟用 (建議設定)</translation>
 <translation id="5826395379250998812">請將 <ph name="DEVICE_TYPE" /> 連線至手機。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
@@ -3422,7 +3440,6 @@
 <translation id="6022705094403139349">準備好配對你的安全金鑰了嗎？</translation>
 <translation id="6023643151125006053">這部裝置 (序號：<ph name="SERIAL_NUMBER" />) 已被 <ph name="SAML_DOMAIN" /> 管理員鎖定。</translation>
 <translation id="6025215716629925253">堆疊追蹤</translation>
-<translation id="6026047032548434446">要安裝應用程式嗎？</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - 已連接 USB 裝置</translation>
 <translation id="6029587122245504742">最慢</translation>
 <translation id="6032912588568283682">檔案系統</translation>
@@ -3804,6 +3821,7 @@
 <translation id="6589660129740381104">現在可透過單一控制項存取同步處理與個人化相關功能，讓你更容易管理 <ph name="IDS_SHORT_PRODUCT_NAME" /> 體驗。開啟這項設定後，目前的設定可能會有所變更。</translation>
 <translation id="6590458744723262880">重新命名資料夾</translation>
 <translation id="6592267180249644460">WebRTC 記錄擷取時間：<ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
+<translation id="6592808042417736307">已擷取你的指紋</translation>
 <translation id="6594883168703494535">使用 Smart Lock 登入你的 Google 帳戶</translation>
 <translation id="6596325263575161958">加密選項</translation>
 <translation id="6596816719288285829">IP 位址</translation>
@@ -3938,6 +3956,7 @@
 <translation id="6805038906417219576">確定</translation>
 <translation id="6805647936811177813">登入 <ph name="TOKEN_NAME" /> 即可從 <ph name="HOST_NAME" /> 匯入用戶端憑證。</translation>
 <translation id="680572642341004180">針對 <ph name="SHORT_PRODUCT_OS_NAME" /> 啟用 RLZ  追蹤功能。</translation>
+<translation id="6808039367995747522">如要繼續，請插入並輕觸安全金鑰</translation>
 <translation id="6808193438228982088">狐狸</translation>
 <translation id="6810613314571580006">自動使用已儲存的憑證登入網站。如果停用這項功能，每當您登入網站時，都必須向系統確認您的登入憑證。</translation>
 <translation id="6810768462515084623">糟糕！你的密碼已過期。請在其他裝置上更新密碼，然後再試一次。</translation>
@@ -3945,6 +3964,7 @@
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> 無法以根使用者的身分執行。</translation>
 <translation id="6812841287760418429">保留變更</translation>
 <translation id="6817174620439930047">每當有網站要使用系統專用訊息存取 MIDI 裝置時詢問我 (建議使用)</translation>
+<translation id="6818198425579322765">要翻譯的網頁語言</translation>
 <translation id="682123305478866682">投放桌面</translation>
 <translation id="6823506025919456619">你必須登入 Chrome 才能查看自己的裝置</translation>
 <translation id="6824564591481349393">複製電子郵件地址(&amp;E)</translation>
@@ -3978,6 +3998,7 @@
 <translation id="6860097299815761905">Proxy 設定...</translation>
 <translation id="6860427144121307915">在分頁中開啟</translation>
 <translation id="6865313869410766144">自動填入表單資料</translation>
+<translation id="6865598234501509159">網頁原文不是<ph name="LANGUAGE" /></translation>
 <translation id="6865708901122695652">WebRTC 事件記錄 (<ph name="WEBRTC_EVENT_LOG_COUNT" /> 筆)</translation>
 <translation id="686664946474413495">色溫</translation>
 <translation id="6870888490422746447">選擇要共用的應用程式：</translation>
@@ -3992,6 +4013,7 @@
 <translation id="6885771755599377173">預覽系統資訊</translation>
 <translation id="6886476658664859389">NFC 安全金鑰</translation>
 <translation id="6886871292305414135">在新分頁中開啟連結(&amp;T)</translation>
+<translation id="6890912377247906520">這些擴充功能不需要存取這個網站。</translation>
 <translation id="6892812721183419409">以 <ph name="USER" /> 身分開啟連結</translation>
 <translation id="6895032998810961280">在清理作業期間，如果於電腦上發現有害的軟體、系統設定和處理程序，將詳細資訊回報給 Google</translation>
 <translation id="6896758677409633944">複製</translation>
@@ -4387,6 +4409,7 @@
 <translation id="7461924472993315131">固定</translation>
 <translation id="746216226901520237">下次手機會為你的 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="7463006580194749499">新增使用者</translation>
+<translation id="7465522323587461835">{NUM_OPEN_TABS,plural, =1{已開啟 # 個分頁，按下即可切換分頁列}other{已開啟 # 個分頁，按下即可切換分頁列}}</translation>
 <translation id="7465778193084373987">Netscape 憑證撤銷網址</translation>
 <translation id="7469894403370665791">自動連線至這個網路</translation>
 <translation id="747114903913869239">錯誤：無法為擴充功能解碼</translation>
@@ -4814,6 +4837,7 @@
 <translation id="8037117027592400564">讀取使用合成語音朗讀的所有文字</translation>
 <translation id="8037357227543935929">詢問 (預設)</translation>
 <translation id="803771048473350947">檔案</translation>
+<translation id="8041089156583427627">提供意見</translation>
 <translation id="8042142357103597104">文字不透明度</translation>
 <translation id="8044262338717486897">「<ph name="LINUX_APP_NAME" />」沒有回應。</translation>
 <translation id="8044899503464538266">慢</translation>
@@ -4843,6 +4867,7 @@
 <translation id="808089508890593134">Google</translation>
 <translation id="8084114998886531721">已儲存的密碼</translation>
 <translation id="8086015605808120405">正在設定 <ph name="PRINTER_NAME" />...</translation>
+<translation id="8086442853986205778">設定 <ph name="PRINTER_NAME" /></translation>
 <translation id="8090234456044969073">讀取最常造訪的網站清單</translation>
 <translation id="8093359998839330381">「<ph name="PLUGIN_NAME" />」無回應</translation>
 <translation id="8095105960962832018"><ph name="BEGIN_PARAGRAPH1" />備份到 Google 雲端硬碟。你隨時可以輕鬆還原資料或改用其他裝置。備份內容包含應用程式資料。<ph name="END_PARAGRAPH1" />
@@ -5153,6 +5178,7 @@
 <translation id="8551388862522347954">授權</translation>
 <translation id="8553342806078037065">管理其他使用者</translation>
 <translation id="8554899698005018844">未指定語言</translation>
+<translation id="8557022314818157177">請持續輕觸安全金鑰，直到指紋擷取完成</translation>
 <translation id="855773602626431402">已禁止這個網頁執行無沙箱防護的外掛程。</translation>
 <translation id="8557930019681227453">資訊清單</translation>
 <translation id="8561206103590473338">大象</translation>
@@ -5310,6 +5336,7 @@
 <translation id="8770406935328356739">擴充功能根目錄</translation>
 <translation id="8770507190024617908">管理使用者</translation>
 <translation id="8771300903067484968">起始網頁背景已重設為預設背景。</translation>
+<translation id="8773302562181397928">儲存 <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">確認還原</translation>
 <translation id="8774934320277480003">上邊界</translation>
 <translation id="8775144690796719618">網址無效</translation>
@@ -5652,6 +5679,7 @@
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 個分頁}other{# 個分頁}}</translation>
 <translation id="971774202801778802">書籤網址</translation>
 <translation id="973473557718930265">結束</translation>
+<translation id="975893173032473675">翻譯目標語言</translation>
 <translation id="97905529126098460">此視窗將在完成取消作業後關閉。</translation>
 <translation id="981121421437150478">離線</translation>
 <translation id="983511809958454316">無法在 VR 狀態下使用這項功能</translation>

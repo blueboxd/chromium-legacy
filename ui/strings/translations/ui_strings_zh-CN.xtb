@@ -41,6 +41,7 @@
 <translation id="1938451708255335766">要调整窗口显示密度，请重启该应用。</translation>
 <translation id="2006524834898217237">请确保此设备已连接到互联网。</translation>
 <translation id="208586643495776849">请重试</translation>
+<translation id="2090963878406559571">要从 <ph name="ORIGIN" /> 向您的 Android 手机发送电话号码，请在这两部设备的设置中分别<ph name="TROUBLESHOOT_LINK" />。</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2161656808144014275">文字</translation>

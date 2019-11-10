@@ -65,13 +65,13 @@ constexpr int kEmbeddedUiElementAnimationMoveUpDistanceDip = 32;
 // Helpers ---------------------------------------------------------------------
 
 int GetFirstCardMarginTopDip() {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
+  return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiFirstCardMarginTopDip
              : kMainUiFirstCardMarginTopDip;
 }
 
 int GetPaddingBottomDip() {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
+  return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiPaddingBottomDip
              : kMainUiPaddingBottomDip;
 }
@@ -215,7 +215,7 @@ using EmbeddedUiTextAnimator = EmbeddedUiAnimator;
 
 std::unique_ptr<ElementAnimator> CreateCardAnimator(
     AssistantCardElementView* card_element) {
-  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (app_list_features::IsAssistantLauncherUIEnabled())
     return std::make_unique<EmbeddedUiCardAnimator>(card_element);
   else
     return std::make_unique<MainUiCardAnimator>(card_element);
@@ -223,7 +223,7 @@ std::unique_ptr<ElementAnimator> CreateCardAnimator(
 
 std::unique_ptr<ElementAnimator> CreateTextAnimator(
     AssistantTextElementView* text_element) {
-  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (app_list_features::IsAssistantLauncherUIEnabled())
     return std::make_unique<EmbeddedUiTextAnimator>(text_element);
   else
     return std::make_unique<MainUiTextAnimator>(text_element);

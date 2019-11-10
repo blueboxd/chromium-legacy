@@ -4073,7 +4073,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-assistant-launcher-integration",
      flag_descriptions::kEnableAssistantLauncherIntegrationName,
      flag_descriptions::kEnableAssistantLauncherIntegrationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableEmbeddedAssistantUI)},
+     FEATURE_VALUE_TYPE(app_list_features::kEnableAssistantSearch)},
 #endif  // OS_CHROMEOS
 
     {"autofill-enable-local-card-migration-for-non-sync-user",

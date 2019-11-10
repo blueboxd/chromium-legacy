@@ -868,23 +868,35 @@ TEST_F(BrowserAccessibilityTest, NextWordPositionWithHypertext) {
   ASSERT_NE(nullptr, input_accessible);
 
   // Create a text position at offset 0 in the input control
-  auto position =
-      input_accessible
-          ->CreatePositionAt(0, ax::mojom::TextAffinity::kDownstream)
-          ->AsTextPosition();
+  auto position = input_accessible->CreatePositionAt(
+      0, ax::mojom::TextAffinity::kDownstream);
 
-  // On hypertext-based platforms (e.g., Windows IA2), the INPUT control will
-  // have a max-text-offset of zero, and so advancing to the next-word positions
-  // should return null positions.  On non-hypertext platforms, the next-word
-  // positions will be non-null.
-  bool is_hypertext_platform = position->MaxTextOffset() == 0;
+  // On platforms that expose IA2 or ATK hypertext, moving by word should have
+  // no effect, i.e. return the same position, since the visible text is just a
+  // placeholder and should not appear in the input field's hypertext.
   auto next_word_start = position->CreateNextWordStartPosition(
       ui::AXBoundaryBehavior::CrossBoundary);
-  ASSERT_EQ(is_hypertext_platform, next_word_start->IsNullPosition());
+  ASSERT_TRUE(next_word_start->IsTextPosition());
+  if (position->MaxTextOffset() == 0) {
+    EXPECT_EQ(*position, *next_word_start);
+  } else {
+    EXPECT_EQ(
+        "TextPosition anchor_id=2 text_offset=7 affinity=downstream "
+        "annotated_text=Search <t>he web",
+        next_word_start->ToString());
+  }
 
   auto next_word_end = position->CreateNextWordEndPosition(
       ui::AXBoundaryBehavior::CrossBoundary);
-  ASSERT_EQ(is_hypertext_platform, next_word_end->IsNullPosition());
+  ASSERT_TRUE(next_word_end->IsTextPosition());
+  if (position->MaxTextOffset() == 0) {
+    EXPECT_EQ(*position, *next_word_end);
+  } else {
+    EXPECT_EQ(
+        "TextPosition anchor_id=2 text_offset=6 affinity=downstream "
+        "annotated_text=Search< >the web",
+        next_word_end->ToString());
+  }
 }
 
 }  // namespace content

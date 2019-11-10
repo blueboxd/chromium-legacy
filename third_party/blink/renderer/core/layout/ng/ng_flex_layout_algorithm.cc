@@ -515,6 +515,8 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
                            ? LayoutUnit()
                            : border_scrollbar_padding_.block_start;
     cross_axis_offset = border_scrollbar_padding_.inline_start;
+  } else if (Style().ResolvedIsRowReverseFlexDirection()) {
+    main_axis_offset = border_scrollbar_padding_.inline_end;
   }
   FlexLine* line;
   while (

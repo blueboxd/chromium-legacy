@@ -153,7 +153,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2063539687800151747">Motto</translation>
 <translation id="207477615537953741">Semantik fra</translation>
 <translation id="2086961585857038472">Næste ord</translation>
-<translation id="2087981446621639008">oplsng i bskrvlst</translation>
+<translation id="2087981446621639008">oplysn i bskrvlst</translation>
 <translation id="2089387485033699258">da</translation>
 <translation id="2091933974477985526">Forrige tekstområde, som kan redigeres</translation>
 <translation id="2100350898815792233">Al tegnsætning</translation>
@@ -793,6 +793,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6459511626086141404">Flad tasteoversigt</translation>
 <translation id="6468049171101508116">Knappen Næste</translation>
 <translation id="646954774886932461">Indeks</translation>
+<translation id="6479792383819319132">Der er intet næste afsnit.</translation>
 <translation id="6493991254603208962">Lysstyrke ned</translation>
 <translation id="6501595918865591267">Turkis</translation>
 <translation id="6508059270146105198">Flyt braille-visningen til bunden af siden</translation>
@@ -815,6 +816,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6637586476836377253">log</translation>
 <translation id="6657128831881431364">Statuslinje</translation>
 <translation id="6659594942844771486">Fane</translation>
+<translation id="6675661017770918201">Der er ingen tidligere afsnit.</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6688209025607531203">En ikke-modal advarsel</translation>
 <translation id="6689672606256159458">Mørk laksefarvet</translation>

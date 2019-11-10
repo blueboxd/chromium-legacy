@@ -1585,6 +1585,7 @@ class ChannelValueContainer extends HTMLInputElement {
     this.setValue(initialColor);
 
     this.addEventListener('input', this.onValueChange_);
+    this.addEventListener('blur', this.onBlur_);
   }
 
   get channelValue() {
@@ -1678,6 +1679,31 @@ class ChannelValueContainer extends HTMLInputElement {
           }
           break;
       }
+    }
+  }
+
+  onBlur_ = () => {
+    switch (this.colorChannel_) {
+      case ColorChannel.HEX:
+        if (this.channelValue_ !== Number(this.value.substr(1))) {
+          this.value = '#' + this.channelValue_;
+        }
+        break;
+      case ColorChannel.R:
+      case ColorChannel.G:
+      case ColorChannel.B:
+      case ColorChannel.H:
+        if (this.channelValue_ !== Number(this.value)) {
+          this.value = this.channelValue_;
+        }
+        break;
+      case ColorChannel.S:
+      case ColorChannel.L:
+        if (this.channelValue_ !==
+            Number(this.value.substring(0, this.value.length - 1))) {
+          this.value = this.channelValue_ + '%';
+        }
+        break;
     }
   }
 }

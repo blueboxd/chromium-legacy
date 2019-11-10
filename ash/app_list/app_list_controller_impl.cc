@@ -71,7 +71,7 @@ bool IsTabletMode() {
 
 // Close current Assistant UI.
 void CloseAssistantUi(AssistantExitPoint exit_point) {
-  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (app_list_features::IsAssistantLauncherUIEnabled())
     Shell::Get()->assistant_controller()->ui_controller()->CloseUi(exit_point);
 }
 
@@ -173,7 +173,7 @@ AppListControllerImpl::AppListControllerImpl()
   AssistantState::Get()->AddObserver(this);
   shell->window_tree_host_manager()->AddObserver(this);
   shell->mru_window_tracker()->AddObserver(this);
-  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+  if (app_list_features::IsAssistantLauncherUIEnabled()) {
     shell->assistant_controller()->AddObserver(this);
     shell->assistant_controller()->ui_controller()->AddModelObserver(this);
   }
@@ -520,7 +520,7 @@ void AppListControllerImpl::OnAppListItemUpdated(AppListItem* item) {
 
 void AppListControllerImpl::OnAppListStateChanged(ash::AppListState new_state,
                                                   ash::AppListState old_state) {
-  if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (!app_list_features::IsAssistantLauncherUIEnabled())
     return;
 
   UpdateLauncherContainer();
@@ -971,7 +971,7 @@ void AppListControllerImpl::RecordShelfAppLaunched(
 // Methods of |client_|:
 
 void AppListControllerImpl::StartAssistant() {
-  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+  if (app_list_features::IsAssistantLauncherUIEnabled()) {
     ash::Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
         ash::AssistantEntryPoint::kLauncherSearchBoxMic);
     return;
@@ -1040,7 +1040,7 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
 
   if (presenter_.IsVisibleDeprecated() && result->is_omnibox_search() &&
       IsAssistantAllowedAndEnabled() &&
-      app_list_features::IsEmbeddedAssistantUIEnabled()) {
+      app_list_features::IsAssistantSearchEnabled()) {
     // Record the assistant result. Other types of results are recorded in
     // |client_| where there is richer data on SearchResultType.
     DCHECK_EQ(AppListLaunchedFrom::kLaunchedFromSearchBox, launched_from)
@@ -1094,7 +1094,7 @@ void AppListControllerImpl::GetSearchResultContextMenuModel(
 }
 
 void AppListControllerImpl::ViewShown(int64_t display_id) {
-  if (app_list_features::IsEmbeddedAssistantUIEnabled() &&
+  if (app_list_features::IsAssistantLauncherUIEnabled() &&
       GetAssistantViewDelegate()->GetUiModel()->ui_mode() !=
           ash::AssistantUiMode::kLauncherEmbeddedUi) {
     CloseAssistantUi(AssistantExitPoint::kLauncherOpen);
@@ -1274,7 +1274,7 @@ bool AppListControllerImpl::ShouldShowAssistantPrivacyInfo() const {
   if (!IsAssistantAllowedAndEnabled())
     return false;
 
-  if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (!app_list_features::IsAssistantSearchEnabled())
     return false;
 
   const bool dismissed = IsAssistantPrivacyInfoDismissed();
@@ -1583,7 +1583,7 @@ void AppListControllerImpl::Shutdown() {
   is_shutdown_ = true;
 
   Shell* shell = Shell::Get();
-  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+  if (app_list_features::IsAssistantLauncherUIEnabled()) {
     shell->assistant_controller()->RemoveObserver(this);
     shell->assistant_controller()->ui_controller()->RemoveModelObserver(this);
   }

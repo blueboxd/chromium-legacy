@@ -135,7 +135,7 @@ void AssistantUiController::OnInteractionStateChanged(
   // already so that the interaction is visible to the user. Note that we
   // indicate that this UI mode change is occurring due to an interaction so
   // that we won't inadvertently stop the interaction due to the UI mode change.
-  UpdateUiMode(app_list_features::IsEmbeddedAssistantUIEnabled()
+  UpdateUiMode(app_list_features::IsAssistantLauncherUIEnabled()
                    ? AssistantUiMode::kLauncherEmbeddedUi
                    : AssistantUiMode::kMainUi,
                /*due_to_interaction=*/true);
@@ -251,7 +251,7 @@ void AssistantUiController::OnScreenContextRequestStateChanged(
 bool AssistantUiController::OnCaptionButtonPressed(AssistantButtonId id) {
   switch (id) {
     case AssistantButtonId::kBack:
-      UpdateUiMode(app_list_features::IsEmbeddedAssistantUIEnabled()
+      UpdateUiMode(app_list_features::IsAssistantLauncherUIEnabled()
                        ? AssistantUiMode::kLauncherEmbeddedUi
                        : AssistantUiMode::kMainUi);
       return true;
@@ -351,7 +351,7 @@ void AssistantUiController::OnProactiveSuggestionsViewPressed() {
 
 void AssistantUiController::OnHighlighterEnabledChanged(
     HighlighterEnabledState state) {
-  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+  if (app_list_features::IsAssistantLauncherUIEnabled()) {
     if (state == HighlighterEnabledState::kEnabled) {
       ShowToast(kStylusPromptToastId, IDS_ASH_ASSISTANT_PROMPT_STYLUS);
       CloseUi(AssistantExitPoint::kStylus);
@@ -426,13 +426,13 @@ void AssistantUiController::OnOpeningUrl(const GURL& url,
   // navigation was initiated by a server response. Otherwise the navigation
   // was user initiated so we only hide the UI to retain session state. That way
   // the user can choose to resume their session if they are so inclined.
-  // However, we close the UI if the feature |IsEmbeddedAssistantUIEnabled| is
+  // However, we close the UI if the feature |IsAssistantLauncherUIEnabled| is
   // enabled, where we only maintain |kVisible| and |kClosed| two states.
-  if (in_background && !app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (in_background && !app_list_features::IsAssistantLauncherUIEnabled())
     UpdateUiMode(AssistantUiMode::kMiniUi);
   else if (from_server)
     CloseUi(AssistantExitPoint::kNewBrowserTabFromServer);
-  else if (app_list_features::IsEmbeddedAssistantUIEnabled())
+  else if (app_list_features::IsAssistantLauncherUIEnabled())
     CloseUi(AssistantExitPoint::kNewBrowserTabFromUser);
   else
     HideUi(AssistantExitPoint::kNewBrowserTabFromUser);
@@ -545,7 +545,7 @@ void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
     return;
   }
 
-  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+  if (app_list_features::IsAssistantLauncherUIEnabled()) {
     model_.SetUiMode(AssistantUiMode::kLauncherEmbeddedUi);
     model_.SetVisible(entry_point);
     return;
@@ -627,7 +627,7 @@ void AssistantUiController::UpdateUiMode(
     return;
   }
 
-  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+  if (app_list_features::IsAssistantLauncherUIEnabled()) {
     model_.SetUiMode(AssistantUiMode::kLauncherEmbeddedUi, due_to_interaction);
     return;
   }
@@ -757,7 +757,7 @@ AssistantContainerView* AssistantUiController::GetViewForTest() {
 
 void AssistantUiController::CreateContainerView() {
   DCHECK(!container_view_);
-  DCHECK(!app_list_features::IsEmbeddedAssistantUIEnabled());
+  DCHECK(!app_list_features::IsAssistantLauncherUIEnabled());
 
   container_view_ =
       new AssistantContainerView(assistant_controller_->view_delegate());

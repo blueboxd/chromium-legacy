@@ -34,19 +34,19 @@ constexpr int kEmbeddedUiSpacingDip = 3;
 constexpr int kEmbeddedUiPreferredHeightDip = 9;
 
 float GetDotLargeSizeDip() {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
+  return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiDotLargeSizeDip
              : kDotLargeSizeDip;
 }
 
 float GetDotSmallSizeDip() {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
+  return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiDotSmallSizeDip
              : kDotSmallSizeDip;
 }
 
 int GetDotSpacingDip() {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
+  return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiSpacingDip
              : kSpacingDip;
 }
@@ -100,7 +100,7 @@ gfx::Size AssistantProgressIndicator::CalculatePreferredSize() const {
 }
 
 int AssistantProgressIndicator::GetHeightForWidth(int width) const {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
+  return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiPreferredHeightDip
              : views::View::GetHeightForWidth(width);
 }

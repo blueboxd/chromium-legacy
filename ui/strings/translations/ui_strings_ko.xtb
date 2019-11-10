@@ -41,6 +41,7 @@
 <translation id="1938451708255335766">창 표시 밀도를 조정하려면 앱을 다시 시작하세요.</translation>
 <translation id="2006524834898217237">기기가 인터넷에 연결되어 있는지 확인하세요.</translation>
 <translation id="208586643495776849">다시 시도해 주세요.</translation>
+<translation id="2090963878406559571"><ph name="ORIGIN" />에서 Android 휴대전화로 번호를 전송하려면 설정에서 두 기기 모두의 <ph name="TROUBLESHOOT_LINK" />하세요.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1일}other{#일}}</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2161656808144014275">텍스트</translation>

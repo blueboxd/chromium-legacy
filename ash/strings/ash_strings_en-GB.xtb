@@ -99,6 +99,7 @@
 <translation id="2268813581635650749">Sign out all</translation>
 <translation id="2277103315734023688">Seek forwards</translation>
 <translation id="2292698582925480719">Display scale</translation>
+<translation id="2298170939937364391">Full-screen Magnifier enabled. Press Ctrl+Search+M again to toggle it off.</translation>
 <translation id="2302092602801625023">This account is managed by Family Link</translation>
 <translation id="2303600792989757991">Toggle window overview</translation>
 <translation id="2339073806695260576">Tap the stylus button on the shelf to take a note, screenshot, use the laser pointer or magnifying glass.</translation>
@@ -298,7 +299,6 @@
 <translation id="5302048478445481009">Language</translation>
 <translation id="5313326810920013265">Bluetooth settings</translation>
 <translation id="5331975486040154427">USB-C device (left side back port)</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Too many attempts</translation>
 <translation id="5397578532367286026">Usage and history of this user can be reviewed by the manager (<ph name="MANAGER_EMAIL" />) on chrome.com.</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
@@ -476,6 +476,7 @@
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
 <translation id="7933084174919150729">The Google Assistant is only available for primary profile.</translation>
 <translation id="79341161159229895">Account managed by <ph name="FIRST_PARENT_EMAIL" /> and <ph name="SECOND_PARENT_EMAIL" /></translation>
+<translation id="7955885781510802139">High-contrast mode</translation>
 <translation id="7977927628060636163">Searching for mobile networks...</translation>
 <translation id="7982789257301363584">Network</translation>
 <translation id="7984197416080286869">Too many fingerprint attempts</translation>
@@ -563,6 +564,7 @@
 <translation id="9091626656156419976">Removed display <ph name="DISPLAY_NAME" /></translation>
 <translation id="9151726767154816831">Restart and powerwash to update</translation>
 <translation id="9179259655489829027">This feature allows you to quickly access any signed-in user without requiring a password. Only use this feature with accounts that you trust.</translation>
+<translation id="9183456764293710005">Full-screen Magnifier</translation>
 <translation id="9193626018745640770">Casting on an unknown receiver</translation>
 <translation id="9194617393863864469">Sign in another user...</translation>
 <translation id="9210037371811586452">Exiting unified desktop mode</translation>

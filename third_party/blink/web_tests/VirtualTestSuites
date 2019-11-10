@@ -85,12 +85,13 @@
   {
     "prefix": "stable",
     "bases": ["fast/css3-text/css3-text-decoration/stable",
-              "media/stable",
+              "fast/dom/Window",
               "http/tests/streams/transferable/enabled",
               "http/tests/navigation",
               "http/tests/origin_trials/feature-policy-reporting",
               "http/tests/sendbeacon",
               "http/tests/serviceworker/webexposed",
+              "media/stable",
               "webexposed"],
     "args": ["--stable-release-mode"]
   },

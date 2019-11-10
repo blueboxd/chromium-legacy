@@ -515,11 +515,11 @@
       Chính sách này cho phép người dùng tính năng WebDriver ghi đè
       các chính sách có thể can thiệp vào hoạt động của chính sách đó.
 
-      Hiện tại, chính sách này tắt các chính sách SitePerProcess và IsolateOrigins.
+      Hiện tại, chính sách này vô hiệu hóa các chính sách SitePerProcess và IsolateOrigins.
 
       Nếu bạn bật chính sách này, WebDriver có thể ghi đè các chính sách
       không tương thích.
-      Nếu bạn tắt hay không định cấu hình chính sách này, thì WebDriver sẽ không được phép
+      Nếu bạn tắt hoặc không định cấu hình chính sách này, thì WebDriver sẽ không được phép
       ghi đè các chính sách không tương thích.</translation>
 <translation id="1843117931376765605">Chính sách tốc độ làm mới cho người dùng</translation>
 <translation id="1844620919405873871">Định cấu hình chính sách liên quan đến mở khóa nhanh.</translation>
@@ -686,7 +686,7 @@
         </translation>
 <translation id="2108169571875569435">Chính sách này sẽ kiểm soát lệnh nào dùng để mở URL trên một trình duyệt thay thế.
 
-      Khi bạn không đặt chính sách này thì một giá trị mặc định dành riêng cho nền tảng sẽ được dùng: Internet Explorer dành cho Windows hoặc Safari dành cho Mac OS X. Trên Linux, bạn sẽ không chạy được trình duyệt thay thế khi chưa đặt chính sách này.
+      Khi bạn không đặt chính sách này thì một giá trị mặc định dành riêng cho nền tảng sẽ được dùng: Internet Explorer cho Windows, hoặc Safari cho Mac OS X. Trên Linux, bạn sẽ không chạy được trình duyệt thay thế khi chưa đặt chính sách này.
 
       Khi bạn đặt chính sách này thành một trong các trình duyệt như <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" /> hoặc
       <ph name="OPERA_VALUE_PLACEHOLDER" />, thì trình duyệt đó sẽ chạy nếu đã được cài đặt. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> chỉ
@@ -984,7 +984,7 @@
 
       Khi bạn đặt chính sách này thành một danh sách chuỗi, thì mỗi chuỗi sẽ được chuyển tới trình duyệt thay thế dưới dạng một tham số dòng lệnh. Trên Windows, các tham số được liên kết bằng dấu cách. Trên Mac OS X và Linux, một tham số có thể chứa các dấu cách nhưng vẫn bị coi là một tham số đơn lẻ.
 
-      Phần <ph name="URL_PLACEHOLDER" /> trong một phần tử sẽ được thay thế bằng URL của trang cần mở.
+      Phần <ph name="URL_PLACEHOLDER" /> (nếu có) trong một phần tử sẽ được thay thế bằng URL của trang cần mở.
 
       Nếu không có phần tử nào chứa <ph name="URL_PLACEHOLDER" />, thì URL này sẽ được thêm vào cuối dòng lệnh.
 
@@ -1450,7 +1450,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3240655340884151271">Địa chỉ NIC MAC tích hợp sẵn của đế sạc</translation>
 <translation id="3242756958360374888">Có chứa danh sách các mẫu dùng để kiểm soát khả năng hiển thị của tài khoản trong <ph name="PRODUCT_NAME" />.
 
-      Từng Tài khoản Google trên thiết bị sẽ được so sánh với các mẫu lưu trữ trong chính sách này để xác định mức hiển thị của tài khoản trong <ph name="PRODUCT_NAME" />. Tài khoản sẽ hiển thị nếu tên của tài khoản khớp với bất kỳ mẫu nào trong danh sách. Nếu không, tài khoản sẽ bị ẩn.
+      Từng Tài khoản Google trên thiết bị sẽ được so sánh với các mẫu lưu trữ trong chính sách này để xác định tình trạng hiển thị của tài khoản trong <ph name="PRODUCT_NAME" />. Tài khoản sẽ hiển thị nếu tên của tài khoản khớp với bất kỳ mẫu nào trong danh sách. Nếu không, tài khoản sẽ bị ẩn.
 
       Hãy dùng ký tự đại diện '*' để khớp với ký tự 0 hoặc các ký tự ngẫu nhiên khác. Ký tự thoát là '\', do vậy, để khớp với ký tự '*' hoặc '\' thực, hãy đặt '\' ở trước các ký tự đó.
 
@@ -2304,11 +2304,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Ký tự đại diện '*' và '?' có thể dùng để khớp với chuỗi các ký tự bất kỳ. '*' khớp với số lượng ký tự bất kỳ trong khi '?' chỉ định một ký tự đơn tùy chọn, tức là khớp các ký tự 0 hoặc 1. Ký tự thoát là '\', do vậy, để khớp với ký tự '*', '?' hoặc '\' thực, bạn có thể đặt một ký tự '\' ở trước các ký tự đó.
 
-      Luôn sử dụng danh sách plugin được chỉ định trong <ph name="PRODUCT_NAME" /> nếu đã cài đặt các plugin này. Các plugin này được đánh dấu là đã bật trong 'about:plugins' và người dùng không thể tắt các plugin này.
+      Danh sách plugin được chỉ định luôn được dùng trong <ph name="PRODUCT_NAME" /> nếu các plugin này đã được cài đặt. Các plugin này được đánh dấu là đã bật trong 'about:plugins' và người dùng không thể tắt các plugin này.
 
       Xin lưu ý rằng chính sách này ghi đè cả DisabledPlugins và DisabledPluginsExceptions.
 
-      Nếu bạn không đặt chính sách này, người dùng có thể tắt bất kỳ plugin nào đã cài đặt trên hệ thống.</translation>
+      Nếu bạn không đặt chính sách này, thì người dùng có thể tắt bất kỳ plugin nào đã cài đặt trên hệ thống.</translation>
 <translation id="4554651132977135445">Chế độ xử lý vòng lặp trở lại của chính sách người dùng</translation>
 <translation id="4554841826517980623">Chính sách này kiểm soát việc tính năng Chia sẻ tệp trong mạng dành cho <ph name="PRODUCT_NAME" /> có phải dùng <ph name="NETBIOS_PROTOCOL" /> để phát hiện các mục chia sẻ trên mạng hay không.
       Nếu đặt chính sách này thành True, tính năng phát hiện chia sẻ sẽ dùng giao thức <ph name="NETBIOS_PROTOCOL" /> để phát hiện các mục chia sẻ trên mạng.
@@ -2592,9 +2592,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì chỉ các mục danh sách từ nguồn có mức ưu tiên cao nhất mới được sử dụng, còn tất cả các nguồn khác sẽ hiển thị dưới dạng nguồn xung đột nhưng bị bỏ qua.</translation>
 <translation id="5141670636904227950">Đặt loại kính lúp màn hình mặc định được bật trên màn hình đăng nhập</translation>
 <translation id="5142301680741828703">Luôn hiển thị các mẫu URL sau đây trong <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5146261336206349846">Khi bạn đặt chính sách này thành bật, tất cả các URL đã truy cập sẽ được kiểm tra danh tiếng Duyệt web an toàn trong thời gian thực.
-
-      Khi bạn không đặt hoặc đặt chính sách này thành tắt, hoạt động kiểm tra danh tiếng Duyệt web an toàn của người tiêu dùng sẽ được áp dụng.</translation>
 <translation id="5148753489738115745">Cho phép bạn chỉ định tham số bổ sung được sử dụng khi <ph name="PRODUCT_FRAME_NAME" /> chạy <ph name="PRODUCT_NAME" />.
 
           Nếu chính sách này không được đặt, dòng lệnh mặc định sẽ được sử dụng.</translation>
@@ -3109,7 +3106,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Khi bạn đặt chính sách này là một danh sách các chuỗi, thì các chuỗi đó được nối với nhau bằng dấu cách và được chuyển tới Chrome dưới dạng một tham số dòng lệnh.
 
-      Phần <ph name="URL_PLACEHOLDER" /> trong một phần tử sẽ được thay thế bằng URL của trang cần mở.
+      Phần <ph name="URL_PLACEHOLDER" /> (nếu có) trong một phần tử sẽ được thay thế bằng URL của trang cần mở.
 
       Nếu không có phần tử nào chứa <ph name="URL_PLACEHOLDER" />, thì URL này sẽ được thêm vào cuối dòng lệnh.
 
@@ -3447,7 +3444,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Khi bạn đặt chính sách này, chính sách sẽ được dùng để chạy <ph name="PRODUCT_NAME" /> khi chạy <ph name="PRODUCT_NAME" /> từ Internet Explorer.
 
-      Bạn có thể đặt chính sách này thành một đường dẫn tệp thực thi hay <ph name="PRODUCT_NAME_PLACEHOLDER" /> để tự động phát hiện vị trí cài đặt của Chrome.</translation>
+      Bạn có thể đặt chính sách này thành một đường dẫn tệp thực thi hoặc <ph name="PRODUCT_NAME_PLACEHOLDER" /> để tự động phát hiện vị trí cài đặt của Chrome.</translation>
 <translation id="6536600139108165863">Tự động khởi động lại khi tắt thiết bị</translation>
 <translation id="6539246272469751178">Chính sách này không ảnh hưởng đến ứng dụng Android. Ứng dụng Android luôn sử dụng thư mục nội dung tải xuống mặc định và không thể truy cập bất kỳ tệp nào do <ph name="PRODUCT_OS_NAME" /> tải xuống thư mục nội dung tải xuống không phải mặc định.</translation>
 <translation id="654303922206238013">Chiến lược di chuyển cho ecryptfs</translation>
@@ -3471,7 +3468,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Xin lưu ý rằng EnabledPlugins và DisabledPluginsExceptions có thể ghi đè chính sách này.
 
-      Nếu bạn không đặt chính sách này, người dùng có thể sử dụng bất kỳ plugin nào được cài đặt trên hệ thống, ngoại trừ các plugin không tương thích, lỗi thời hoặc nguy hiểm đã được mã hóa cứng.</translation>
+      Nếu bạn không đặt chính sách này, thì người dùng có thể sử dụng bất kỳ plugin nào được cài đặt trên hệ thống, ngoại trừ các plugin không tương thích, lỗi thời hoặc nguy hiểm đã được mã hóa cứng.</translation>
 <translation id="6573305661369899995">Đặt nguồn bên ngoài cho hạn chế URL</translation>
 <translation id="6583851521569686409">Định cấu hình danh sách máy in.
 
@@ -4353,7 +4350,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Các dấu trang này được đặt trong một thư mục mà người dùng không thể sửa đổi (nhưng có thể chọn ẩn khỏi thanh dấu trang). Theo mặc định, tên thư mục là "Dấu trang được quản lý" nhưng có thể tùy chỉnh bằng cách thêm vào danh sách dấu trang một từ điển chứa khóa "<ph name="TOPLEVEL_NAME" />" với giá trị là tên thư mục mong muốn.
 
       Các dấu trang được quản lý không đồng bộ hóa với tài khoản người dùng và không thể sửa đổi bằng tiện ích.</translation>
-<translation id="8077245272412229388">Thêm các tài khoản Kerberos đã điền trước. Nếu thông tin xác thực Kerberos khớp với thông tin đăng nhập, thì bạn có thể định cấu hình một tài khoản để sử dụng lại thông tin đăng nhập bằng cách chỉ định '<ph name="LOGIN_EMAIL_PLACEHOLDER" />' và <ph name="PASSWORD_PLACEHOLDER" />' tương ứng với tài khoản chính và mật khẩu. Nhờ vậy, hệ thống có thể tự động truy xuất các phiếu Kerberos, trừ khi bạn định cấu hình tính năng xác thực hai yếu tố. Người dùng không thể sửa đổi các tài khoản đã thêm thông qua chính sách này.
+<translation id="8077245272412229388">Thêm các tài khoản Kerberos đã điền trước. Nếu thông tin đăng nhập Kerberos khớp với thông tin đăng nhập, thì bạn có thể định cấu hình một tài khoản để sử dụng lại thông tin đăng nhập bằng cách chỉ định '<ph name="LOGIN_EMAIL_PLACEHOLDER" />' và <ph name="PASSWORD_PLACEHOLDER" />' tương ứng với tài khoản chính và mật khẩu. Nhờ vậy, hệ thống có thể tự động truy xuất các phiếu Kerberos, trừ khi bạn định cấu hình tính năng xác thực hai yếu tố. Người dùng không thể sửa đổi các tài khoản đã thêm thông qua chính sách này.
 
           Nếu bạn bật chính sách này, thì danh sách các tài khoản do chính sách xác định sẽ được thêm vào phần cài đặt của Tài khoản Kerberos.
 

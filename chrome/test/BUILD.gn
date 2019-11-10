@@ -1234,6 +1234,7 @@ if (!is_android) {
       "../browser/ui/passwords/password_generation_popup_view_tester.h",
       "../browser/ui/permission_bubble/permission_bubble_browser_test_util.cc",
       "../browser/ui/permission_bubble/permission_bubble_browser_test_util.h",
+      "../browser/ui/popup_browsertest.cc",
       "../browser/ui/prefs/prefs_tab_helper_browsertest.cc",
       "../browser/ui/profile_error_browsertest.cc",
       "../browser/ui/renderer_event_injection_browsertest.cc",

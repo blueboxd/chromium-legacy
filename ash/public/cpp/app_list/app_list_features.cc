@@ -33,8 +33,15 @@ const base::Feature kEnableZeroStateMixedTypesRanker{
     "EnableZeroStateMixedTypesRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppReinstallZeroState{
     "EnableAppReinstallZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableEmbeddedAssistantUI{
-    "EnableEmbeddedAssistantUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// "EnableEmbeddedAssistantUI" is used in finch experiment therefore we cannot
+// change it until fully launched. It is used to redirect Launcher search to
+// Assistant search.
+const base::Feature kEnableAssistantSearch{"EnableEmbeddedAssistantUI",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAssistantLauncherUI{
+    "EnableAssistantLauncherUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableAppGridGhost{"EnableAppGridGhost",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppListLaunchRecording{
@@ -54,7 +61,7 @@ bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
   // Do not show answer card if the embedded Assistant UI is enabled.
   return base::FeatureList::IsEnabled(kEnableAnswerCard) &&
-         !IsEmbeddedAssistantUIEnabled();
+         !IsAssistantSearchEnabled();
 }
 
 bool IsPlayStoreAppSearchEnabled() {
@@ -98,8 +105,13 @@ bool IsAppReinstallZeroStateEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppReinstallZeroState);
 }
 
-bool IsEmbeddedAssistantUIEnabled() {
-  return base::FeatureList::IsEnabled(kEnableEmbeddedAssistantUI);
+bool IsAssistantSearchEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAssistantSearch);
+}
+
+bool IsAssistantLauncherUIEnabled() {
+  return IsAssistantSearchEnabled() ||
+         base::FeatureList::IsEnabled(kEnableAssistantLauncherUI);
 }
 
 bool IsAppGridGhostEnabled() {

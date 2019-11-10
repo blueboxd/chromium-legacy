@@ -564,6 +564,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7589661784326793847">Vydržte chvíľu</translation>
 <translation id="7603724359189955920">Mriežky</translation>
 <translation id="7627790789328695202">Hops, súbor <ph name="FILE_NAME" /> už existuje. Premenujte ho a skúste to znova.</translation>
+<translation id="7628656427739290098">Dokončené: <ph name="PERCENT" /> %.</translation>
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7654209398114106148">Presúvajú sa položky (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="7658239707568436148">Zrušiť</translation>

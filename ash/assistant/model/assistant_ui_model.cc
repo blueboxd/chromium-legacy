@@ -10,7 +10,7 @@
 namespace ash {
 
 AssistantUiModel::AssistantUiModel()
-    : ui_mode_(app_list_features::IsEmbeddedAssistantUIEnabled()
+    : ui_mode_(app_list_features::IsAssistantLauncherUIEnabled()
                    ? AssistantUiMode::kLauncherEmbeddedUi
                    : AssistantUiMode::kMainUi) {}
 

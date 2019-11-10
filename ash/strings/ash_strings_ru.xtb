@@ -99,6 +99,7 @@
 <translation id="2268813581635650749">Выйти из всех аккаунтов</translation>
 <translation id="2277103315734023688">Перемотать вперед</translation>
 <translation id="2292698582925480719">Масштаб экрана</translation>
+<translation id="2298170939937364391">Полноэкранная лупа включена. Чтобы отключить ее, ещё раз нажмите Ctrl + Поиск + M.</translation>
 <translation id="2302092602801625023">Аккаунт находится под управлением Family Link</translation>
 <translation id="2303600792989757991">Переключить режим обзора</translation>
 <translation id="2339073806695260576">Нажмите кнопку стилуса на панели запуска, чтобы создать заметку, сделать скриншот или использовать стилус в качестве лупы или лазерной указки.</translation>
@@ -298,7 +299,6 @@
 <translation id="5302048478445481009">Язык</translation>
 <translation id="5313326810920013265">Настройки Bluetooth</translation>
 <translation id="5331975486040154427">Устройство USB-C (дальний порт слева)</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Слишком много попыток</translation>
 <translation id="5397578532367286026">Менеджер (<ph name="MANAGER_EMAIL" />) может просматривать данные об использовании и историю этого профиля на сайте chrome.com.</translation>
 <translation id="5430931332414098647">Мгновенная точка доступа</translation>
@@ -321,7 +321,7 @@
 <translation id="5682642926269496722">Google Ассистент недоступен в этом аккаунте.</translation>
 <translation id="5691772641933328258">Не удалось распознать отпечаток</translation>
 <translation id="5710450975648804523">Режим "Не беспокоить" включен</translation>
-<translation id="573413375004481890">Вы подключили к устройству больше дисплеев, чем оно может поддерживать, поэтому с одним из них пришлось разорвать соединение</translation>
+<translation id="573413375004481890">Вы подключили к устройству больше дисплеев, чем оно может поддерживать, поэтому один из них пришлось отключить</translation>
 <translation id="574392208103952083">Средний</translation>
 <translation id="5744083938413354016">Перетаскивание нажатием</translation>
 <translation id="5750765938512549687">Bluetooth выключен</translation>
@@ -476,6 +476,7 @@
 <translation id="7904094684485781019">Администратор этого аккаунта запретил множественный вход</translation>
 <translation id="7933084174919150729">Google Ассистент доступен только в основном профиле</translation>
 <translation id="79341161159229895">Администраторы аккаунта: <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
+<translation id="7955885781510802139">Режим высокой контрастности</translation>
 <translation id="7977927628060636163">Поиск мобильных сетей...</translation>
 <translation id="7982789257301363584">Сеть</translation>
 <translation id="7984197416080286869">Вы сделали слишком много попыток</translation>
@@ -563,6 +564,7 @@
 <translation id="9091626656156419976">Удален экран "<ph name="DISPLAY_NAME" />"</translation>
 <translation id="9151726767154816831">Чтобы обновить систему, перезапустите ее и выполните Powerwash</translation>
 <translation id="9179259655489829027">Эта функция позволяет быстро и без пароля получить доступ к любому аккаунту, в который выполнен вход. Используйте ее только для надежных аккаунтов.</translation>
+<translation id="9183456764293710005">Полноэкранная лупа</translation>
 <translation id="9193626018745640770">Трансляция на неизвестное устройство</translation>
 <translation id="9194617393863864469">Войти в другой аккаунт...</translation>
 <translation id="9210037371811586452">Выход из режима единого рабочего стола…</translation>

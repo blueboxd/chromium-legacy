@@ -111,8 +111,10 @@
 <translation id="1442386063175183758">Фальцовка правой четверти</translation>
 <translation id="1442987760062738829">Отверстие</translation>
 <translation id="1455413310270022028">Ластик</translation>
+<translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5x7</translation>
 <translation id="1472675084647422956">Показать больше...</translation>
+<translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Выбрать адрес доставки посылок</translation>
 <translation id="1492194039220927094">Обновление правил:</translation>
@@ -154,6 +156,7 @@
 <translation id="1640244768702815859">Попробуйте <ph name="BEGIN_LINK" />открыть главную страницу сайта<ph name="END_LINK" />.</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="1645368109819982629">Неподдерживаемый протокол</translation>
+<translation id="1652415888492971589">JIS B8</translation>
 <translation id="1656489000284462475">Получение</translation>
 <translation id="1662550410081243962">Сохранять и автоматически подставлять платежные данные</translation>
 <translation id="1663943134801823270">Это карты и адреса, указанные в Chrome. Вы можете изменить их на странице <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
@@ -172,8 +175,9 @@
 <translation id="173080396488393970">Этот тип карты не поддерживается.</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Обратитесь за помощью к системному администратору.</translation>
-<translation id="1739107442478692187">На сайте или в приложении, которые вы используете, произошла утечка данных. Рекомендуем проверить безопасность сохраненных паролей и сменить пароль для сайта <ph name="ORIGIN" />.</translation>
+<translation id="1739107442478692187">На сайте или в приложении, которые вы используете, произошла утечка данных. Рекомендуем проверить безопасность сохраненных паролей и сменить пароль для следующего источника: <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Недопустимый формат месяца.</translation>
+<translation id="1741613555002899862">Необходимо указать значение и ввести действительную строку, если для правила DnsOverHttpsMode выбрано значение <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Чтобы ускорить процесс оплаты в будущем, сохраните карту, свое имя, а также платежный адрес в аккаунте Google и на этом устройстве.</translation>
 <translation id="1743570585616704562">Не распознано</translation>
 <translation id="1745880797583122200">Этот браузер управляется администратором</translation>
@@ -181,6 +185,7 @@
 <translation id="1753706481035618306">Номер страницы</translation>
 <translation id="1763864636252898013">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Операционная система устройства не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Выполните диагностику сети в Windows<ph name="END_LINK" />.</translation>
+<translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Обновите кодовую фразу для синхронизации.</translation>
 <translation id="1787142507584202372">Здесь появятся открытые вкладки.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
@@ -218,6 +223,7 @@
 <translation id="1974883374937189061">Отправлять в Google <ph name="BEGIN_WHITEPAPER_LINK" />URL и контент некоторых посещенных страниц, а также ограниченную информацию о системе<ph name="END_WHITEPAPER_LINK" /> для повышения безопасности Chrome. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1978555033938440688">Версия ПО</translation>
 <translation id="1981206234434200693">Удалить данные о работе в браузере Chrome</translation>
+<translation id="1992331125980284532">JIS B3</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{и ещё 1}one{и ещё #}few{и ещё #}many{и ещё #}other{и ещё #}}</translation>
 <translation id="2003709556000175978">Сброс пароля</translation>
 <translation id="2003775180883135320">Четыре отверстия сверху</translation>
@@ -245,6 +251,7 @@
 <translation id="2119867082804433120">Отверстие в правом нижнем углу</translation>
 <translation id="2124528555835617522">На сайте или в приложении, которые вы используете, произошла утечка данных. Рекомендуем проверить безопасность сохраненных паролей.</translation>
 <translation id="2129079103035905234">Датчики движения</translation>
+<translation id="2130448033692577677">Указанные вами шаблоны нельзя применить, поскольку правило DnsOverHttpsMode не настроено.</translation>
 <translation id="213826338245044447">Закладки на мобильном</translation>
 <translation id="214556005048008348">Отменить оплату</translation>
 <translation id="2147827593068025794">Фоновая синхронизация</translation>
@@ -271,6 +278,7 @@
 <translation id="2250931979407627383">Скобы по левому краю</translation>
 <translation id="225207911366869382">Это значение для данного правила больше не используется.</translation>
 <translation id="2257315177824333709">Сейчас невозможно сохранить карту.</translation>
+<translation id="2258928405015593961">Введите правильный срок окончания действия и повторите попытку.</translation>
 <translation id="2262243747453050782">Ошибка HTTP</translation>
 <translation id="2263079731045660823">Обновить данные автозаполнения для кредитной карты в настройках Chrome</translation>
 <translation id="2267047181501709434">Проверка данных…</translation>
@@ -472,7 +480,7 @@
 <translation id="3282497668470633863">Укажите имя владельца карты</translation>
 <translation id="3287510313208355388">Скачать при подключении к Интернету</translation>
 <translation id="3293642807462928945">Подробнее о политике <ph name="POLICY_NAME" />…</translation>
-<translation id="3295439534709115864">На сайте или в приложении, которые вы используете, произошла утечка данных. Рекомендуем сменить пароль для сайта <ph name="ORIGIN" />.</translation>
+<translation id="3295439534709115864">На сайте или в приложении, которые вы используете, произошла утечка данных. Рекомендуем сменить пароль для следующего источника: <ph name="ORIGIN" />.</translation>
 <translation id="3303855915957856445">Ничего не найдено</translation>
 <translation id="3320021301628644560">Добавьте платежный адрес</translation>
 <translation id="3324983252691184275">Малиновый</translation>
@@ -495,6 +503,7 @@
 <translation id="3427092606871434483">Разрешать (по умолчанию)</translation>
 <translation id="3427342743765426898">&amp;Повторить изменения</translation>
 <translation id="342781501876943858">Chromium рекомендует сбросить пароль, если вы использовали его на других сайтах.</translation>
+<translation id="3428151540071562330">Один или несколько серверных шаблонов URI DnsOverHttpsTemplates недействительны и не будут использоваться.</translation>
 <translation id="3431636764301398940">Сохранить карту на этом устройстве</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Владелец этого устройства отключил игру с динозавром.</translation>
@@ -624,6 +633,7 @@
 <translation id="4110652170750985508">Просмотр платежа</translation>
 <translation id="4112140312785995938">Перемотать назад</translation>
 <translation id="4116663294526079822">Всегда разрешать на этом сайте</translation>
+<translation id="4116701314593212016">JIS B7</translation>
 <translation id="4117700440116928470">Область действия правил не поддерживается.</translation>
 <translation id="4123572138124678573">Три отверстия снизу</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{ещё 1 вариант}one{ещё # вариант}few{ещё # варианта}many{ещё # вариантов}other{ещё # варианта}}</translation>
@@ -689,6 +699,7 @@
 <translation id="4346197816712207223">Кредитные карты, которые принимаются к оплате</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
 <translation id="4356973930735388585">Злоумышленники могут использовать этот сайт, чтобы установить на ваш компьютер вредоносное ПО, которое крадет или удаляет личную информацию (например, фотографии, пароли, сообщения и реквизиты банковских карт).</translation>
+<translation id="4358059973562876591">Указанные вами шаблоны нельзя применить из-за ошибки в настройке правила DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Управление способами оплаты…</translation>
 <translation id="4367563149485757821">Number-12 (конверт)</translation>
 <translation id="437058704415269440">Баланс</translation>
@@ -951,6 +962,7 @@
 <translation id="5685654322157854305">Добавить адрес доставки посылок</translation>
 <translation id="5689199277474810259">Экспортировать как JSON</translation>
 <translation id="5689516760719285838">Геоданные</translation>
+<translation id="569000877158168851">Значение правила DnsOverHttpsTemplates не релевантно и не будет использоваться, пока для правила DnsOverHttpsMode не будет выбрано значение <ph name="SECURE_DNS_MODE_AUTOMATIC" /> или <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="570530837424789914">Управление…</translation>
 <translation id="57094364128775171">Сгенерировать надежный пароль</translation>
 <translation id="5710435578057952990">Идентификационные данные этого сайта не проверены.</translation>
@@ -976,6 +988,7 @@
 <translation id="5813119285467412249">&amp;Повторить добавление</translation>
 <translation id="583281660410589416">Неизвестно</translation>
 <translation id="5838278095973806738">Не сообщайте этому сайту конфиденциальную информацию (например, пароли и номера банковских карт). К ней могут получить доступ злоумышленники.</translation>
+<translation id="5851548754964597211">Список вкладок</translation>
 <translation id="5855253129151731373">Имя хоста этого сайта похоже на <ph name="LOOKALIKE_DOMAIN" />. Иногда злоумышленники создают копии сайтов, слегка изменяя доменное имя.
 
     Если вы думаете, что это сообщение показано по ошибке, заполните форму на странице https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -1035,6 +1048,7 @@
 <translation id="6064217302520318294">Блокировка экрана</translation>
 <translation id="6080696365213338172">Вы используете сертификат, предоставленный администратором, поэтому он может заблокировать передачу данных на сайт <ph name="DOMAIN" />.</translation>
 <translation id="6094273045989040137">Аннотировать</translation>
+<translation id="6104072995492677441">JIS B6</translation>
 <translation id="610911394827799129">Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6132597952260690497">Информация об установленных расширениях и плагинах</translation>
 <translation id="6146055958333702838">Проверьте соединение кабелей, перезагрузите маршрутизаторы, модемы и другие
@@ -1060,9 +1074,16 @@
 <translation id="6266934640124581640">Светло-бирюзовый</translation>
 <translation id="6276112860590028508">Здесь будут страницы из списка для чтения.</translation>
 <translation id="627746635834430766">Чтобы ускорить процесс оплаты в будущем, сохраните карту и платежный адрес в аккаунте Google.</translation>
+<translation id="6279516281132775660">В Chrome <ph name="BEGIN_EMPHASIS" />не будет сохраняться<ph name="END_EMPHASIS" /> следующая информация:
+        <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />история браузера;
+          <ph name="LIST_ITEM" />файлы cookie и данные сайтов;
+          <ph name="LIST_ITEM" />сведения, которые вы указываете в формах.
+        <ph name="END_LIST" /></translation>
 <translation id="6280223929691119688">Невозможно доставить заказ по этому адресу. Выберите другой вариант.</translation>
 <translation id="6282194474023008486">Почтовый индекс</translation>
 <translation id="6290238015253830360">Здесь появятся рекомендуемые статьи.</translation>
+<translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Google Ассистент в Chrome отключится</translation>
 <translation id="6305205051461490394">Сайт <ph name="URL" /> недоступен.</translation>
 <translation id="6321917430147971392">Проверьте настройки DNS</translation>
@@ -1126,11 +1147,13 @@
 <translation id="6596325263575161958">Параметры шифрования</translation>
 <translation id="6604181099783169992">Датчики движения и освещенности</translation>
 <translation id="6609880536175561541">Prc7 (конверт)</translation>
+<translation id="6612358246767739896">Защищенный контент</translation>
 <translation id="6624427990725312378">Контактная информация</translation>
 <translation id="6626291197371920147">Введите номер действующей карты</translation>
 <translation id="6628463337424475685">Поиск <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может установить на ваш компьютер Mac вредоносное ПО, которое крадет или удаляет личную информацию (например, фотографии, пароли, сообщения и реквизиты банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6631202559048444592">Для этого правила существует более одного источника с одинаковыми значениями.</translation>
+<translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="6644283850729428850">Правило устарело.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Нет}=1{С 1 сайта (вы останетесь в аккаунте Google)}one{С # сайта (вы останетесь в аккаунте Google)}few{С # сайтов (вы останетесь в аккаунте Google)}many{С # сайтов (вы останетесь в аккаунте Google)}other{С # сайта (вы останетесь в аккаунте Google)}}</translation>
@@ -1153,6 +1176,7 @@
 <translation id="6753269504797312559">Значение правила</translation>
 <translation id="6757797048963528358">Устройство находится в спящем режиме.</translation>
 <translation id="6768213884286397650">Hagaki (открытка)</translation>
+<translation id="6775759552199460396">JIS B2</translation>
 <translation id="67862343314499040">Фиолетовый</translation>
 <translation id="6786747875388722282">Расширения</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
@@ -1455,6 +1479,7 @@
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8262952874573525464">Скобы по нижнему краю</translation>
 <translation id="8267698848189296333">Вход в аккаунт <ph name="USERNAME" /></translation>
+<translation id="8269981117540303696">Ваши действия в режиме инкогнито будут недоступны другим пользователям этого устройства. Однако закладки и скачанные файлы сохранятся.</translation>
 <translation id="8277900682056760511">Лист с обработчиком платежа открыт</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Вход</translation>
@@ -1508,6 +1533,7 @@
 <translation id="8571890674111243710">Перевод страницы на <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Добавьте номер</translation>
 <translation id="860043288473659153">Имя владельца карты</translation>
+<translation id="8616822740383114808">Вы включили эту настройку, выбрав параметр "<ph name="ENFORCING_SETTING" />" на странице "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">Размер: 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Сохранить карту на этом устройстве</translation>
@@ -1553,6 +1579,7 @@
 <translation id="8891727572606052622">Недопустимый режим работы прокси-сервера.</translation>
 <translation id="8903921497873541725">Увеличить</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="8910670906166981838">Вы перешли в режим инкогнито</translation>
 <translation id="8912362522468806198">Аккаунт Google</translation>
 <translation id="8918231688545606538">Подозрительная страница</translation>
 <translation id="892588693504540538">Отверстие в правом верхнем углу</translation>
@@ -1649,6 +1676,7 @@
     &lt;li&gt;Попробуйте удалить или отключить программу "<ph name="SOFTWARE_NAME" />".&lt;/li&gt;
     &lt;li&gt;Попробуйте подключиться к другой сети.&lt;/li&gt;
     &lt;/ul&gt;</translation>
+<translation id="994346157028146140">JIS B1</translation>
 <translation id="997986563973421916">Из Google Pay</translation>
 <translation id="998893882640184078">Открыть новое окно Chrome в режиме инкогнито</translation>
 </translationbundle>

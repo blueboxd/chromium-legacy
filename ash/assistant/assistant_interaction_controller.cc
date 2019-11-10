@@ -273,7 +273,7 @@ void AssistantInteractionController::OnHighlighterEnabledChanged(
       // Skip setting input modality to stylus when the embedded Assistant
       // feature is enabled to prevent highlighter aborting sessions in
       // OnUiModeChanged.
-      if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+      if (!app_list_features::IsAssistantLauncherUIEnabled())
         model_.SetInputModality(InputModality::kStylus);
       break;
     case HighlighterEnabledState::kDisabledByUser:
@@ -801,7 +801,7 @@ void AssistantInteractionController::OnUiVisible(
     should_attempt_warmer_welcome_ = false;
     // When the embedded Assistant feature is enabled, we call ShowUi(kStylus)
     // OnHighlighterSelectionRecognized. But we are not actually using stylus.
-    if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+    if (!app_list_features::IsAssistantLauncherUIEnabled())
       model_.SetInputModality(InputModality::kStylus);
     return;
   }

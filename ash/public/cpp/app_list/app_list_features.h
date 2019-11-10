@@ -55,8 +55,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateMixedTypesRanker;
 // zero-state.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppReinstallZeroState;
 
+// Enables the Assistant search redirection in the app list.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAssistantSearch;
+
 // Enables the embedded Assistant UI in the app list.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableEmbeddedAssistantUI;
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAssistantLauncherUI;
 
 // Enables ghosting in any AppsGridView (folder or root) when dragging an item.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppGridGhost;
@@ -92,7 +95,8 @@ bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
-bool ASH_PUBLIC_EXPORT IsEmbeddedAssistantUIEnabled();
+bool ASH_PUBLIC_EXPORT IsAssistantSearchEnabled();
+bool ASH_PUBLIC_EXPORT IsAssistantLauncherUIEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListLaunchRecordingEnabled();
 bool ASH_PUBLIC_EXPORT IsSearchBoxSelectionEnabled();

@@ -126,7 +126,7 @@ void AssistantOptInView::InitLayout() {
           views::BoxLayout::Orientation::kHorizontal));
 
   layout_manager->set_cross_axis_alignment(
-      app_list_features::IsEmbeddedAssistantUIEnabled()
+      app_list_features::IsAssistantLauncherUIEnabled()
           ? views::BoxLayout::CrossAxisAlignment::kCenter
           : views::BoxLayout::CrossAxisAlignment::kEnd);
 

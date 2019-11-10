@@ -451,6 +451,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           설정되지 않으면 처음에는 로그인 화면에서 음성기록이 사용되지 않지만 사용자가 언제든지 사용 설정할 수 있습니다.</translation>
 <translation id="1675002386741412210">지원:</translation>
+<translation id="1676141669324989554">사용자가 특정 사이트에 혼합 콘텐츠를 허용하는 예외를 추가할 수 있는지 여부를 설정하도록 허용합니다.
+
+          'InsecureContentAllowedForUrls' 정책 및 'InsecureContentBlockedForUrls' 정책을 사용하면 특정 URL 패턴에서 이 정책을 재정의할 수 있습니다.
+
+          정책이 설정되지 않으면 사용자는 차단 가능한 혼합 콘텐츠를 허용하는 예외를 추가할 수 있습니다.</translation>
 <translation id="1695708467571967752">이 정책은 기기가 잠겨있을 때 사용자가 미디어를 재생할 수 있는지 결정합니다.
 
       이 정책을 False로 설정하면 잠금 화면의 미디어 제어 기능이 사용 중지됩니다.
@@ -514,8 +519,8 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       현재 이 정책을 적용하면 SitePerProcess 및 IsolateOrigins 정책이 사용 중지됩니다.
 
-      정책을 사용 설정하면 WebDriver가 호환되지 않는 정책을 재정의할 수 있습니다.
-      정책을 사용 중지하거나 설정하지 않으면 WebDriver가 호환되지 않는 정책을 재정의할 수 없습니다.</translation>
+      정책을 사용 설정하면 WebDriver가 호환되지 않는 정책을 무시할 수 있습니다.
+      정책을 사용 중지하거나 설정하지 않으면 WebDriver가 호환되지 않는 정책을 무시할 수 없습니다.</translation>
 <translation id="1843117931376765605">사용자 정책에 대한 새로고침 빈도</translation>
 <translation id="1844620919405873871">빠른 잠금 해제 관련 정책을 설정합니다.</translation>
 <translation id="1845405905602899692">키오스크 설정</translation>
@@ -578,6 +583,18 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 설정이 사용되면 비밀번호 보호 서비스에서 비밀번호 재사용 감지 시 사용할 비밀번호 지문을 이러한 URL에서 캡처합니다.
       이 설정이 사용 중지되거나 설정되지 않으면 비밀번호 보호 서비스가 https://accounts.google.com에서만 비밀번호 지문을 캡처합니다.
       이 정책은 <ph name="MS_AD_NAME" /> 도메인에 참여하는 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴트에서만 사용할 수 있습니다.</translation>
+<translation id="1910704279188129272">앱별 사용 제한을 설정하도록 허용합니다.
+        사용 제한은 특정 사용자를 위해 <ph name="PRODUCT_OS_NAME" />에 설치된 앱에 적용될 수 있습니다.
+        제한은 |app_limits| 목록으로 전달되어야 합니다. 앱당 하나의 항목만 허용됩니다. 목록에 포함되지 않은 앱에는 제한이 없습니다.
+        운영체제에 꼭 필요한 앱은 차단할 수 없으며 그러한 앱의 제한은 무시됩니다.
+        앱은 |app_id|에 의해 개별적으로 식별됩니다. 앱 유형별로 다른 ID 형식을 사용할 수 있기 때문에 |app_id| 옆에 |app_type|이(가) 지정되어야 합니다.
+        앱별 시간 제한은 현재 |ARC| 앱에서만 지원합니다. Android 패키지 이름은 |app_id|(으)로 사용됩니다.
+        다른 애플리케이션 유형에 대한 지원은 향후에 추가될 예정이며 현재 이러한 유형을 정책에 명시할 수는 있지만 제한은 적용되지 않습니다.
+        사용 가능한 제한은 |BLOCK|과(와) |TIME_LIMIT| 두 가지입니다.
+        |BLOCK|이(가) 적용되면 사용자가 앱을 사용할 수 없습니다. |daily_limit_mins|이(가) |BLOCK| 제한과 함께 지정되면 |daily_limit_mins|이(가) 무시됩니다.
+        |TIME_LIMITS|은(는) 일일 사용 제한을 적용하여 지정된 날짜에서 제한에 도달한 후에는 앱을 사용할 수 없게 합니다. 사용 제한은 |daily_limit_mins|에 지정됩니다. 사용 제한은 매일 |reset_at|(UTC 기준)에 재설정됩니다.
+        이 정책은 자녀 사용자에게만 사용됩니다.
+        이 정책은 'UsageTimeLimit'을 보완합니다. 기기 사용 시간 및 취침 시간과 같이 'UsageTimeLimit'에 지정된 제한은 'PerAppTimeLimits'와 관계없이 시행됩니다.</translation>
 <translation id="1914840757300882918">이 정책이 설정되면 호스트가 RemoteAccessHostTokenValidationUrl을 인증하기 위해 특정 발급자 CN이 포함된 클라이언트 인증서를 사용합니다. '*'로 설정하여 사용 가능한 모든 클라이언트 인증서를 사용하세요.
 
           이 기능은 현재 서버 측에서 사용 중지되어 있습니다.</translation>
@@ -687,7 +704,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
         </translation>
 <translation id="2108169571875569435">대체 브라우저에서 URL을 열 때 사용하는 명령어를 제어하는 정책입니다.
 
-      이 정책이 설정되어 있지 않으면 Windows에서는 Internet Explorer 또는 Mac OS X에서 Safari 등 플랫폼별 기본값이 사용됩니다. Linux에서는 이 정책이 설정되어 있지 않으면 대체 브라우저가 실행되지 않습니다.
+      이 정책이 설정되어 있지 않으면 Windows에서는 Internet Explorer, Mac OS X에서는 Safari와 같이 플랫폼별 기본값이 사용됩니다. Linux에서는 이 정책이 설정되어 있지 않으면 대체 브라우저가 실행되지 않습니다.
 
       이 정책이 <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" />, <ph name="OPERA_VALUE_PLACEHOLDER" /> 중 하나로 설정되면 정책에서 설정한 브라우저가 실행됩니다(설치된 경우). <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />은(는) Windows에서, <ph name="SAFARI_VALUE_PLACEHOLDER" />은(는) Windows 및 Mac OS X에서만 사용할 수 있습니다.
 
@@ -738,6 +755,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="2149330464730004005">컬러 인쇄 제한</translation>
 <translation id="2156132677421487971">사용자가 탭, 사이트 또는 데스크톱의 콘텐츠를 브라우저에서 원격 디스플레이와 사운드 시스템으로 전송하도록 해 주는 기능인 <ph name="PRODUCT_NAME" />의 정책을 설정합니다.</translation>
 <translation id="2156755242840687300">외부 프린트 서버가 사용 설정됨</translation>
+<translation id="2160336427036785721">메모리 절약을 위해 탭에서 삭제(탭에 사용된 메모리는 회수되며 전환 시 탭이 다시 로드됨)를 시작하기 전에 단일 <ph name="PRODUCT_NAME" /> 인스턴스에서 사용할 수 있는 메모리의 양을 설정합니다.
+
+      정책이 설정되면 브라우저가 메모리 절약을 위해 제한 초과 시 탭을 삭제하기 시작합니다. 하지만 브라우저가 항상 제한 하에서 실행된다고 보장하지 않습니다. 1,024 미만의 값은 1,024로 반올림됩니다.
+
+      이 정책이 설정되지 않으면 컴퓨터의 물리적 메모리양이 부족하다고 감지된 후에만 브라우저에서 메모리 절약을 시도하기 시작합니다.</translation>
 <translation id="2166472654199325139">사이트에 성인용 콘텐츠 필터링을 적용하지 않음</translation>
 <translation id="2168397434410358693">AC 전원으로 실행할 때 유휴 지연</translation>
 <translation id="217013996107840632">다른 브라우저에서 Chrome으로 전환하기 위한 명령줄 매개변수입니다.</translation>
@@ -844,6 +866,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="2303795211377219696">신용카드 정보 자동 완성 사용</translation>
 <translation id="2309390639296060546">기본 위치정보 설정</translation>
 <translation id="2327252517317514801">G Suite에 액세스할 수 있게 허용된 도메인 정의</translation>
+<translation id="2331354174913096226">원하는 DNS-over-HTTPS 리졸버의 URI 템플릿입니다. 여러 개의 DNS-over-HTTPS 리졸버를 지정하려면 해당하는 URI 템플릿을 공백으로 구분하세요.
+
+      DnsOverHttpsMode가 <ph name="SECURE_DNS_MODE_SECURE" />(으)로 설정되어 있으면 이 정책이 설정되어 있어야 하며 비어있으면 안 됩니다.
+
+      DnsOverHttpsMode가 <ph name="SECURE_DNS_MODE_AUTOMATIC" />(으)로 설정되어 있고 이 정책이 설정되어 있으면 지정된 URI 템플릿이 사용됩니다. 이 정책이 설정되어 있지 않으면 하드코딩된 매핑이 사용되어 사용자의 현재 DNS 리졸버를 동일한 제공업체가 운영하는 DoH 리졸버로 업그레이드하려고 시도합니다.
+
+      URI 템플릿에 <ph name="HTTP_VARIABLE_DNS" /> 변수가 포함된 경우 리졸버에 관한 요청에서 <ph name="HTTP_METHOD_GET" />을(를) 사용하며, 그 외의 경우에는 <ph name="HTTP_METHOD_POST" />을(를) 사용합니다.
+
+      잘못된 형식의 템플릿은 무시됩니다.</translation>
 <translation id="2345547870894930157">안전하지 않은 대체 없이 DNS-over-HTTPS 사용</translation>
 <translation id="237494535617297575">알림 표시가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
@@ -1011,11 +1042,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="2517466659416174529">백그라운드 탭 중단 허용</translation>
 <translation id="2518231489509538392">오디오 재생 허용</translation>
 <translation id="2521581787935130926">북마크바에 앱 단축키 표시</translation>
-<translation id="2526082146909867346">사이트에서 인증서를 요청하는 경우 <ph name="PRODUCT_NAME" />에서 자동으로 클라이언트 인증서를 선택해야 하는 사이트를 지정하는 URL 패턴 목록을 지정하도록 합니다.
+<translation id="2526082146909867346">사이트에서 인증서를 요청하는 경우 <ph name="PRODUCT_NAME" />에서 자동으로 클라이언트 인증서를 선택해야 하는 사이트를 지정하는 URL 패턴 목록을 지정할 수 있도록 합니다.
 
-          이 값은 stringified JSON 사전의 배열이어야 합니다. 각 사전은 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형태여야 하며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은(는) 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />에서는 브라우저에서 자동으로 선택될 클라이언트 인증서가 제한됩니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. 예를 들어 <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> 형태인 경우 CommonName <ph name="ISSUER_CN_PLACEHOLDER" />으로 된 인증서에 의해 발급된 클라이언트 인증서만이 추가로 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="ISSUER_STRING_VALUE" /> 및 <ph name="SUBJECT_STRING_VALUE" /> 섹션을 포함하는 경우 클라이언트 인증서가 선택되려면 모든 조건을 충족해야 합니다. <ph name="FILTER_PLACEHOLDER" />이(가) 조직('O')을 지정하는 경우 인증서가 선택되려면 지정된 값과 일치하는 조직이 인증서에 하나 이상 있어야 합니다. <ph name="FILTER_PLACEHOLDER" />이(가) 조직 단위('OU')를 지정하는 경우 인증서가 선택되려면 지정된 값과 일치하는 조직 단위가 인증서에 하나 이상 있어야 합니다. <ph name="FILTER_PLACEHOLDER" />이(가) 빈 사전(<ph name="EMPTY_DICTIONARY" />)인 경우 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다.
+          이 값은 stringified JSON 사전의 배열이어야 합니다. 각 사전은 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형태여야 하며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은(는) 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />에서는 브라우저에서 자동으로 선택할 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. 예를 들어 <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> 형태인 경우 CommonName <ph name="ISSUER_CN_PLACEHOLDER" />으로 된 인증서에 의해 발급된 클라이언트 인증서만이 추가로 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="ISSUER_STRING_VALUE" /> 및 <ph name="SUBJECT_STRING_VALUE" /> 섹션을 포함하는 경우 클라이언트 인증서가 선택되려면 모든 조건을 충족해야 합니다. <ph name="FILTER_PLACEHOLDER" />이(가) 조직('O')을 지정하는 경우 인증서가 선택되려면 지정된 값과 일치하는 조직이 인증서에 하나 이상 있어야 합니다. <ph name="FILTER_PLACEHOLDER" />이(가) 조직 단위('OU')를 지정하는 경우 인증서가 선택되려면 지정된 값과 일치하는 조직 단위가 인증서에 하나 이상 있어야 합니다. <ph name="FILTER_PLACEHOLDER" />이(가) 빈 사전(<ph name="EMPTY_DICTIONARY" />)인 경우 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다.
 
-          이 정책이 설정되지 않으면 어떠한 사이트에서도 자동으로 선택되지 않습니다.</translation>
+          이 정책이 설정되지 않으면 어떠한 사이트에서도 인증서가 자동으로 선택되지 않습니다.</translation>
 <translation id="2529659024053332711">시작 시 행동을 지정할 수 있습니다.
 
           '새 탭 페이지 열기'를 선택하면 <ph name="PRODUCT_NAME" />을(를) 시작할 때 항상 새 탭 페이지가 열립니다.
@@ -1335,6 +1366,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 정책은 <ph name="MS_AD_NAME" /> 도메인에 참여하는 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴트에서만 사용할 수 있습니다.</translation>
 <translation id="3016255526521614822"><ph name="PRODUCT_OS_NAME" /> 잠금 화면에서 사용 설정된 메모 앱을 허용 목록에 추가</translation>
+<translation id="3020064401262077616">자녀 계정에만 적용되는 Parental Supervision 정책을 제어합니다.</translation>
 <translation id="3021562480854470924">허용된 주요 롤백의 수</translation>
 <translation id="3023572080620427845">대체 브라우저에서 로드할 URL이 포함된 XML 파일의 URL입니다.</translation>
 <translation id="3026740867910702435">로그인 화면에서 큰 커서 접근성 기능을 사용 설정합니다.
@@ -1432,6 +1464,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 설정을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 사용자 수준 기본 메시지 호스트 사용을 허용합니다.</translation>
 <translation id="3177802893484440532">로컬 트러스트 앵커에 온라인 OCSP/CRL 확인을 요구합니다.</translation>
+<translation id="3184161739683646075">DNS-over-HTTPS 모드 제어</translation>
 <translation id="3185009703220253572">버전 <ph name="SINCE_VERSION" /> 이상</translation>
 <translation id="3187220842205194486">Android 앱은 기업 키에 액세스할 수 없습니다. 이 정책은 Android 앱에 아무런 영향을 미치지 않습니다.</translation>
 <translation id="3205825995289802549">처음 실행 시 첫 번째 브라우저 창 최대화</translation>
@@ -1622,7 +1655,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="3524204464536655762">어떤 사이트든지 WebUSB API를 통해 USB 기기의 액세스를 요청하도록 허용하지 않습니다.</translation>
 <translation id="3526752951628474302">단색 인쇄만</translation>
 <translation id="3528000905991875314">대체 오류 페이지 사용</translation>
+<translation id="3531084733660068324">Parental Supervision 설정</translation>
 <translation id="3534882636155369445">대용량 파일 차단 안함</translation>
+<translation id="3540935459049973317">앱별 시간 제한</translation>
 <translation id="3545457887306538845">Developer Tools 사용이 허용되는 위치를 제어할 수 있습니다.
 
       정책이 'DeveloperToolsDisallowedForForceInstalledExtensions'(값 0, 기본값)로 설정되면 일반적인 경우 Developer Tools 및 자바스크립트 콘솔에 액세스할 수 있지만, 엔터프라이즈 정책에 의해 설치된 확장 프로그램의 컨텍스트에서는 액세스할 수 없습니다.
@@ -2584,6 +2619,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5102203758995933166">네트워크 설정을 푸시하여 사용자별로 <ph name="PRODUCT_OS_NAME" /> 기기에 적용할 수 있도록 합니다. 네트워크 설정은 오픈 네트워크 구성 형식에 정의된 JSON 형식 문자열입니다.</translation>
 <translation id="5105313908130842249">배터리 전원으로 실행할 때 화면 잠금 지연</translation>
 <translation id="5108031557082757679">사용 중지된 엔터프라이즈 기기 프린터</translation>
+<translation id="5112121363469561920">로그인 화면에서 사용 설정된 화면 돋보기의 기본 유형을 설정합니다.
+
+          이 정책이 설정되어 있으면 정책에 따라 로그인 화면이 표시될 때 사용 설정된 화면 돋보기 유형이 제어됩니다. 이 정책을 'None'으로 설정하면 화면 돋보기가 사용 중지됩니다.
+
+          정책을 설정하면 사용자가 화면 돋보기를 사용 설정하거나 중지하여 설정을 임시로 재정의할 수 있습니다. 하지만 사용자의 선택은 유지되지 않으며 로그인 화면이 새로 표시되거나 사용자가 로그인 화면에서 1분 동안 유휴 상태로 있으면 기본값이 복원됩니다.
+
+          정책을 설정하지 않으면 로그인 화면이 처음 표시될 때 화면 돋보기가 사용 중지됩니다. 사용자는 언제든지 화면 돋보기를 사용 설정하거나 중지할 수 있으며 로그인 화면에서 화면 돋보기의 상태가 사용자 간에 유지됩니다.
+
+          참고: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" />이(가) 지정된 경우 이 정책을 재정의합니다.</translation>
 <translation id="5124368997194894978">AC(교류 전원)로 부팅 사용</translation>
 <translation id="5131211790949066746">확장 프로그램 설치 목록 정책 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />의 병합을 사용 설정합니다.
 
@@ -2592,9 +2636,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 설정을 끄거나 설정하지 않으면 우선순위가 가장 높은 출처의 목록 항목만 가져오며, 다른 모든 출처는 충돌되지만 무시된 것으로 표시됩니다.</translation>
 <translation id="5141670636904227950">로그인 화면에서 기본 화면 돋보기 유형을 사용하도록 설정</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" />에서 다음 URL 패턴을 항상 렌더링</translation>
-<translation id="5146261336206349846">이 정책이 사용 설정되어 있는 경우 세이프 브라우징을 이용해 방문한 모든 URL을 실시간으로 확인합니다.
-
-      사용 중지되어 있거나 설정되어 있지 않은 경우 일반 세이프 브라우징 확인이 적용됩니다.</translation>
 <translation id="5148753489738115745"><ph name="PRODUCT_FRAME_NAME" />이(가) <ph name="PRODUCT_NAME" />을(를) 실행할 때 사용되는 추가 매개변수를 지정하도록 허용합니다.
 
           해당 정책이 설정되지 않았다면 기본 명령줄이 사용됩니다.</translation>
@@ -2979,7 +3020,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       정책을 설정하지 않거나 잘못된 값으로 설정하면 사용자에게 서버 프린터가 표시되지 않습니다.
 
-      현재 인쇄 서버 수는 16개로 제한됩니다. 목록 앞에서부터 16개의 인쇄 서버만 쿼리됩니다.
+      현재 인쇄 서버 수는 16개로 제한되어 있습니다. 목록 앞에서부터 16개의 인쇄 서버만 쿼리됩니다.
       </translation>
 <translation id="5592242031005200087">
       이 정책이 사용 설정되어 있으면 쉼표로 구분된 목록에서
@@ -3105,7 +3146,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5836064773277134605">원격 액세스 호스트에서 사용되는 UDP 포트 범위 제한</translation>
 <translation id="5855010364142818361">이 정책은 Internet Explorer에서 Chrome 명령줄 매개변수를 제어합니다.
 
-      Internet Explorer용 '이전 브라우저 지원' 추가 기능이 설치되지 않았으면 이 정책은 적용되지 않습니다.
+      Internet Explorer의 '이전 브라우저 지원' 추가 기능이 설치되지 않았으면 이 정책은 적용되지 않습니다.
 
       이 정책이 설정되어 있지 않으면 Internet Explorer는 URL만 명령줄 매개변수로 Chrome에 전달합니다.
 
@@ -3242,6 +3283,10 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6145799962557135888">자바스크립트 실행이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultJavaScriptSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
+<translation id="614616930188030377">이 목록의 패턴을 요청 URL의 보안 출처와 비교합니다.
+      일치하는 항목이 확인되거나 chrome://flags/#enable-webrtc-hide-local-ips-with-mdns가 사용 중지되면 로컬 IP 주소가 WebRTC ICE 후보에 표시됩니다.
+      그러지 않으면 로컬 IP 주소가 mDNS 호스트 이름으로 숨겨집니다.
+      관리자가 필요로 하는 경우 이 정책은 로컬 IP의 보안 단계를 낮춥니다.</translation>
 <translation id="614662973812186053">이 정책은 Android 사용 및 진단 데이터 수집도 제어합니다.</translation>
 <translation id="6153048425064249648">이 정책을 사용하면 브라우저 작업에 관한 정보를 Google 관리 콘솔에 업로드하는 <ph name="PRODUCT_NAME" /> 클라우드 보고 기능을 관리할 수 있습니다.
 
@@ -3443,7 +3488,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6532769014584932288">wake lock 허용</translation>
 <translation id="653645667373317432">이 정책은 Internet Explorer로부터 전환할 때 <ph name="PRODUCT_NAME" />에서 URL을 여는 데 사용되는 명령을 제어합니다.
 
-      Internet Explorer용 '이전 브라우저 지원' 추가 기능이 설치되지 않았으면 이 정책은 적용되지 않습니다.
+      Internet Explorer의 '이전 브라우저 지원' 추가 기능이 설치되지 않았으면 이 정책은 적용되지 않습니다.
 
       이 정책이 설정되어 있지 않으면 Internet Explorer에서 <ph name="PRODUCT_NAME" />을(를) 실행할 때 Internet Explorer에서 <ph name="PRODUCT_NAME" />의 자체 실행 경로를 자동으로 감지합니다.
 
@@ -3556,11 +3601,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 설정은 사용자가 <ph name="PRODUCT_NAME" />에 로그인하는 시작 페이지의 표시를 제어하며, 이를 기본 브라우저로 선택할지 또는 제품 기능을 사용자에게 알릴지 선택할 수 있습니다.</translation>
 <translation id="6766216162565713893">사이트에서 사용자에게 근처 블루투스 기기에 대한 액세스 권한을 부여할 것인지 묻도록 허용합니다.</translation>
 <translation id="6770454900105963262">활성 키오스크 세션에 관한 정보 보고</translation>
-<translation id="6780908086869332493">사이트에서 인증서를 요청하는 경우 SAML 플로를 호스팅하는 프레임의 로그인 화면에서 어떤 클라이언트 인증서가 사이트에 대해 자동으로 선택되어야 하는지 지정하는 URL 패턴 목록을 지정하도록 합니다. 예를 들어 SAML IdP에 제시될 기기 수준 인증서를 구성하는 데 사용할 수 있습니다.
+<translation id="6780908086869332493">사이트에서 인증서를 요청하는 경우 SAML 플로를 호스팅하는 프레임의 로그인 화면에서 클라이언트 인증서가 자동으로 선택되는 사이트를 지정하는 URL 패턴 목록을 지정하도록 합니다. 예를 들어 SAML IdP에 제시될 기기 수준 인증서를 구성하는 데 사용할 수 있습니다.
 
-      이 값은 stringified JSON 사전의 배열이어야 합니다. 각 사전은 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형태여야 하며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은(는) 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />에서는 브라우저에서 자동으로 선택될 클라이언트 인증서가 제한됩니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="JSON_DICTIONARY_EXAMPLE" />인 경우 추가로 CommonName이 <ph name="ISSUER_CN_PLACEHOLDER" />인 인증서에서 발행된 클라이언트 인증서만 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) 빈 사전 {}인 경우 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다.
+      이 값은 stringified JSON 사전의 배열이어야 합니다. 각 사전은 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형태여야 하며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은(는) 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />에서는 브라우저에서 자동으로 선택할 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="JSON_DICTIONARY_EXAMPLE" />인 경우 추가로 CommonName이 <ph name="ISSUER_CN_PLACEHOLDER" />인 인증서에서 발행된 클라이언트 인증서만 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) 빈 사전 {}인 경우 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다.
 
-      이 정책이 설정되지 않으면 어떠한 사이트에서도 자동으로 선택되지 않습니다.</translation>
+      이 정책이 설정되지 않으면 어떠한 사이트에서도 인증서가 자동으로 선택되지 않습니다.</translation>
 <translation id="6786747875388722282">확장 프로그램</translation>
 <translation id="6786967369487349613">로밍 프로필 디렉터리를 설정합니다.</translation>
 <translation id="6795485990775913659">PIN이 없으면 인쇄만 허용</translation>
@@ -3591,6 +3636,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6843296367238757293">지원 중단된 정책입니다. 사용하지 마시기 바랍니다. https://support.google.com/chrome/a/answer/7643500에서 자세히 알아보세요.</translation>
 <translation id="684856667300805181">이 정책은 <ph name="PRODUCT_NAME" /> 68에서 삭제되었으며 <ph name="ARC_GLS_POLICY_NAME" />(으)로 교체되었습니다.</translation>
 <translation id="6851199885688265233">커서 강조표시 접근성 기능 사용</translation>
+<translation id="6851315055469993882">전역적으로 범위가 지정된 HTTP 인증 캐시 사용 설정</translation>
 <translation id="6856743875250214792">이 정책은 내부 테스트용으로만 사용되었으며 보안 문제를 일으킬 수 있기 때문에 M66에서 지원 중단되고 삭제됩니다.
 
       <ph name="PRODUCT_NAME" />을(를) 시작할 때 적용할 플래그를 지정합니다. 지정된 플래그는 로그인 화면에만 적용됩니다. 이 정책에서 설정된 플래그는 사용자 세션에 반영되지 않습니다.</translation>
@@ -4006,7 +4052,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       정책이 비어있지 않은 문자열로 설정된 경우 해당 문자열이 DHCP 요청 중에 기기 호스트 이름으로 사용됩니다.
 
-      문자열에는 변수 <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" />이(가) 포함될 수 있으며, 이는 호스트 이름으로 사용되기 전에 기기의 값으로 대체됩니다. 그 결과로 나오는 대체값은 유효한 호스트 이름이어여 합니다(RFC 1035, 섹션 3.1 준수).
+      문자열에는 <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" />과(와) 같은 변수들이 포함될 수 있으며, 이는 호스트 이름으로 사용되기 전에 기기의 값으로 대체됩니다. 그 결과로 나오는 대체값은 유효한 호스트 이름이어여 합니다(RFC 1035, 섹션 3.1 준수).
 
       이 정책이 설정되어 있지 않거나 대체 후 값이 유효한 호스트 이름이 아닌 경우 DHCP 요청에서 어떠한 호스트 이름도 설정되지 않습니다. </translation>
 <translation id="7389872682701720082">이 설정을 사용하면 항상 최신 플러그인이 실행됩니다.
@@ -4253,6 +4299,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           정책이 설정되지 않으면 로그인 화면이 처음 표시될 때 고대비 모드가 사용되지 않습니다. 사용자는 언제든지 고대비 모드를 사용 설정하거나 사용 중지할 수 있으며 로그인 화면에서 고대비 모드의 상태가 사용자 간에 유지됩니다.
 
           참고: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" />이(가) 지정된 경우 이 정책을 재정의합니다.</translation>
+<translation id="7846952520291088817">WebRTC ICE 후보에 노출된 로컬 IP의 URL</translation>
 <translation id="7858404742201086014">이 설정을 사용하면 오래된 플러그인이 표준 플러그인으로 사용됩니다.
 
       이 설정을 사용 중지하면 오래된 플러그인은 사용할 수 없으며 사용자에게 실행 권한을 요청하는 메시지가 표시되지 않습니다
@@ -5100,7 +5147,17 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="966854160628341653"><ph name="PRODUCT_OS_NAME" />이(가) 새 사용자 계정을 생성할 수 있는지를 조정합니다. 이 정책을 false로 설정하면 계정이 없는 사용자는 로그인할 수 없습니다.
 
       이 정책을 true로 설정하거나 구성하지 않으면 <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" />이(가) 사용자 로그인을 차단하지 않을 경우 새 사용자 계정이 생성될 수 있습니다.</translation>
+<translation id="974349541138387272">원하는 DNS-over-HTTPS 리졸버의 URI 템플릿 지정</translation>
 <translation id="981346395360763138">Google 위치 서비스가 사용 중지됨</translation>
 <translation id="982497069985795632">맞춤법 검사 사용 설정</translation>
 <translation id="991560005425213776">기본 프린터로 사용자 이름과 파일 이름 보내기</translation>
+<translation id="99232017131102456">이 정책은 HTTP 서버 사용자 인증 정보로 단일 전역 프로필별 캐시를 구성합니다.
+
+      이 정책이 설정되지 않았거나 사용 중지된 경우 브라우저에서 크로스 사이트 인증의 기본 동작을 사용합니다. 크로스 사이트 인증은 버전 80부터 최상위 수준 사이트의 HTTP 서버 사용자 인증 정보 범위를 지정합니다. 이에 따라 두 개의 사이트가 동일한 인증 도메인에서 리소스를 사용하면 두 사이트 모두의 컨텍스트에서 사용자 인증 정보가 개별적으로 제공되어야 합니다. 캐시된 프록시 사용자 인증 정보는 사이트 전반에서 다시 사용됩니다.
+
+      정책이 사용 설정되면 한 사이트의 컨텍스트에 입력된 HTTP 사용자 인증 정보가 자동으로 다른 사이트의 컨텍스트에 사용됩니다.
+
+      또한 사이트가 일부 크로스 사이트 공격에 노출되며 URL에 삽입된 사용자 인증 정보를 사용하여 HTTP 인증 캐시에 항목을 추가해 쿠키 없이도 사이트 전반에서 사용자를 추적할 수 있습니다.
+
+      이 정책은 레거시 동작에 따라 기업이 로그인 절차를 업데이트할 기회를 제공하기 위한 임시방편이며 향후 삭제될 예정입니다.</translation>
 </translationbundle>

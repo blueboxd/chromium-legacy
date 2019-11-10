@@ -99,6 +99,7 @@
 <translation id="2268813581635650749">Desconectar todos</translation>
 <translation id="2277103315734023688">Avançar</translation>
 <translation id="2292698582925480719">Escala de exibição</translation>
+<translation id="2298170939937364391">Lupa de tela cheia ativada. Pressione Ctrl+Pesquisa+M novamente para desativá-la.</translation>
 <translation id="2302092602801625023">Esta conta é gerenciada pelo Family Link</translation>
 <translation id="2303600792989757991">Visão geral da janela de alternância</translation>
 <translation id="2339073806695260576">Toque no botão da stylus na estante para criar uma nota, fazer uma captura de tela e usar o apontador laser ou a lupa.</translation>
@@ -298,7 +299,6 @@
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configurações de Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira da esquerda)</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" />: <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5379115545237091094">Muitas tentativas</translation>
 <translation id="5397578532367286026">O uso e o histórico deste usuário podem ser analisados pelo administrador (<ph name="MANAGER_EMAIL" />) em chrome.com.</translation>
 <translation id="5430931332414098647">Tethering instantâneo</translation>
@@ -321,7 +321,7 @@
 <translation id="5682642926269496722">O Google Assistente não está disponível para a conta de usuário atual.</translation>
 <translation id="5691772641933328258">Impressão digital não reconhecida</translation>
 <translation id="5710450975648804523">O "Não perturbe" está ativado</translation>
-<translation id="573413375004481890">Este dispositivo não é compatível essa quantidade de telas. Por isso, uma delas foi desconectada</translation>
+<translation id="573413375004481890">Este dispositivo não é compatível com essa quantidade de telas. Por isso, uma delas foi desconectada</translation>
 <translation id="574392208103952083">Médio</translation>
 <translation id="5744083938413354016">Arrastar com toque</translation>
 <translation id="5750765938512549687">Bluetooth desativado</translation>
@@ -477,6 +477,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7904094684485781019">O administrador desta conta bloqueou o login múltiplo.</translation>
 <translation id="7933084174919150729">O Google Assistente só está disponível para o perfil principal.</translation>
 <translation id="79341161159229895">Conta gerenciada por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
+<translation id="7955885781510802139">Modo de alto contraste</translation>
 <translation id="7977927628060636163">Pesquisando redes móveis…</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="7984197416080286869">Muitas tentativas de usar impressão digital</translation>
@@ -564,6 +565,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="9091626656156419976">Tela <ph name="DISPLAY_NAME" /> removida</translation>
 <translation id="9151726767154816831">Reinicie e execute um powerwash para atualizar</translation>
 <translation id="9179259655489829027">Este recurso permite acessar rapidamente qualquer usuário conectado sem a necessidade de uma senha. Use esse recurso somente com contas em que você confia.</translation>
+<translation id="9183456764293710005">Lupa de tela cheia</translation>
 <translation id="9193626018745640770">Transmitindo para um destinatário desconhecido</translation>
 <translation id="9194617393863864469">Fazer login com outro usuário...</translation>
 <translation id="9210037371811586452">Saindo do modo de área de trabalho unificada</translation>

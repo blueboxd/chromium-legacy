@@ -157,7 +157,7 @@ bool IsVoiceMatchDisabled() {
 }
 
 bool IsAssistantWebContainerEnabled() {
-  return app_list_features::IsEmbeddedAssistantUIEnabled() &&
+  return app_list_features::IsAssistantLauncherUIEnabled() &&
          base::FeatureList::IsEnabled(kEnableAssistantWebContainer);
 }
 

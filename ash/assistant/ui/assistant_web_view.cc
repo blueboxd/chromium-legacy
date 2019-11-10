@@ -65,7 +65,7 @@ int AssistantWebView::GetHeightForWidth(int width) const {
   if (chromeos::assistant::features::IsAssistantWebContainerEnabled())
     return INT_MAX;
 
-  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (app_list_features::IsAssistantLauncherUIEnabled())
     return kMaxHeightEmbeddedDip;
 
   // |height| <= |kMaxHeightDip|.
@@ -106,7 +106,7 @@ void AssistantWebView::InitLayout() {
   caption_bar_ = new CaptionBar();
   caption_bar_->set_delegate(this);
   caption_bar_->SetButtonVisible(AssistantButtonId::kMinimize, false);
-  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (app_list_features::IsAssistantLauncherUIEnabled())
     caption_bar_->SetButtonVisible(AssistantButtonId::kClose, false);
   AddChildView(caption_bar_);
 }

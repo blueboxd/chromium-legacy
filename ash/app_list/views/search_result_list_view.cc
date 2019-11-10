@@ -44,8 +44,8 @@ constexpr base::TimeDelta kZeroStateImpressionThreshold =
 constexpr SkColor kListVerticalBarIconColor =
     SkColorSetARGB(0xFF, 0xE8, 0xEA, 0xED);
 
-bool IsEmbeddedAssistantUiEnabled(AppListViewDelegate* view_delegate) {
-  if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+bool IsAssistantSearchEnabled(AppListViewDelegate* view_delegate) {
+  if (!app_list_features::IsAssistantSearchEnabled())
     return false;
 
   return view_delegate && view_delegate->IsAssistantAllowedAndEnabled();
@@ -212,7 +212,7 @@ int SearchResultListView::DoUpdate() {
   const size_t display_size = display_results.size();
   std::vector<const gfx::VectorIcon*> assistant_item_icons(display_size,
                                                            nullptr);
-  if (IsEmbeddedAssistantUiEnabled(view_delegate_))
+  if (IsAssistantSearchEnabled(view_delegate_))
     CalculateDisplayIcons(display_results, &assistant_item_icons);
 
   bool found_zero_state_file = false;

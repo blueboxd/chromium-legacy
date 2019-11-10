@@ -6,7 +6,7 @@
 <translation id="1122869341872663659">「<ph name="QUERY" />」の検索結果 <ph name="N" /> 件を表示しています</translation>
 <translation id="1195667586424773550">リンクをドラッグしてタブのアドレスバーに移動する</translation>
 <translation id="1204450209689312104">新しいウィンドウをシークレット モードで開く</translation>
-<translation id="1251638888133819822">拡大鏡（全画面）のオンとオフを切り替えます</translation>
+<translation id="1251638888133819822">全画面拡大鏡のオンとオフを切り替えます</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">現在のページを印刷する</translation>
@@ -115,7 +115,7 @@
 <translation id="5236674127086649162">キャッシュされたコンテンツを使用しないで現在のページを再読み込みする</translation>
 <translation id="526651782186312376">行頭までのテキストを選択する</translation>
 <translation id="5316716239522500219">モニターをミラーリングする</translation>
-<translation id="539072479502328326">拡大鏡（ドッキング）のオンとオフを切り替えます</translation>
+<translation id="539072479502328326">ドッキング拡大鏡のオンとオフを切り替えます</translation>
 <translation id="5541719484267030947">タブをドラッグしながら、<ph name="ESC" /> キーを押す</translation>
 <translation id="5554139136362089836">現在のページ内を検索する</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> キーを押しながらリンクをクリックする</translation>

@@ -38,7 +38,6 @@ void SkiaOutputDevice::SetGpuVSyncEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 
-#if defined(OS_WIN)
 void SkiaOutputDevice::SetEnableDCLayers(bool enable) {
   NOTIMPLEMENTED();
 }
@@ -46,7 +45,6 @@ void SkiaOutputDevice::SetEnableDCLayers(bool enable) {
 void SkiaOutputDevice::ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) {
   NOTIMPLEMENTED();
 }
-#endif
 
 void SkiaOutputDevice::StartSwapBuffers(
     base::Optional<BufferPresentedCallback> feedback) {

@@ -682,7 +682,7 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
 
 bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope,
                                                    const GURL& script_url) {
-  DCHECK(IsContextAlive());
+  DCHECK(context_);
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     return GetContentClient()->browser()->AllowServiceWorkerOnUI(
         scope, site_for_cookies(), top_frame_origin(), script_url,
@@ -786,7 +786,6 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
       ServiceWorkerContext::IsServiceWorkerOnUIEnabled() &&
       provider_type() == blink::mojom::ServiceWorkerProviderType::kForWindow) {
     auto* rfh = RenderFrameHostImpl::FromID(render_process_id_, frame_id_);
-    // At this point, |rfh| should point at the correct one. (crbug.com/1012238)
     // |rfh| may be null in tests (but it should not happen in production).
     if (rfh)
       rfh->AddServiceWorkerProviderHost(this);
@@ -871,7 +870,7 @@ void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerProviderHost::GetRegistrationForReady",
                          this, "Registration ID", registration->id());
-  if (!IsContextAlive()) {
+  if (!context_) {
     // Here no need to run or destroy |get_ready_callback_|, which will destroy
     // together with |receiver_| when |this| destroys.
     return;
@@ -880,10 +879,6 @@ void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {
   std::move(*get_ready_callback_)
       .Run(CreateServiceWorkerRegistrationObjectInfo(
           scoped_refptr<ServiceWorkerRegistration>(registration)));
-}
-
-bool ServiceWorkerProviderHost::IsContextAlive() {
-  return context_ != nullptr;
 }
 
 void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
@@ -1084,7 +1079,7 @@ void ServiceWorkerProviderHost::RegistrationComplete(
                             std::string(), nullptr);
     return;
   }
-  if (!IsContextAlive()) {
+  if (!context_) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
         base::StringPrintf(
@@ -1191,7 +1186,7 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
       "Status", blink::ServiceWorkerStatusToString(status), "Registration ID",
       registration ? registration->id()
                    : blink::mojom::kInvalidServiceWorkerRegistrationId);
-  if (!IsContextAlive()) {
+  if (!context_) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
         std::string(
@@ -1234,7 +1229,7 @@ void ServiceWorkerProviderHost::GetRegistrationsComplete(
   TRACE_EVENT_ASYNC_END1(
       "ServiceWorker", "ServiceWorkerProviderHost::GetRegistrations", trace_id,
       "Status", blink::ServiceWorkerStatusToString(status));
-  if (!IsContextAlive()) {
+  if (!context_) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
         std::string(
@@ -1303,7 +1298,7 @@ void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
     blink::mojom::ControllerServiceWorkerPurpose purpose) {
   // TODO(kinuko): Log the reasons we drop the request.
-  if (!IsContextAlive() || !controller_)
+  if (!context_ || !controller_)
     return;
 
   controller_->RunAfterStartWorker(
@@ -1448,7 +1443,7 @@ bool ServiceWorkerProviderHost::CanServeContainerHostMethods(
     const GURL& script_url,
     const char* error_prefix,
     Args... args) {
-  if (!IsContextAlive()) {
+  if (!context_) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
         std::string(error_prefix) +

@@ -33,14 +33,14 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   explicit NDEFRecord(const ExecutionContext*, const String&);
 
   // Construct a "mime" record from the raw payload bytes.
-  explicit NDEFRecord(WTF::Vector<uint8_t> payload_data);
+  explicit NDEFRecord(WTF::Vector<uint8_t> /* payload_data */,
+                      const String& /* media_type */);
 
-  NDEFRecord(const String&, const String&, WTF::Vector<uint8_t>);
-  NDEFRecord(const String&,
-             const String&,
-             const String&,
-             const String&,
-             WTF::Vector<uint8_t>);
+  NDEFRecord(const String& /* record_type */, WTF::Vector<uint8_t> /* data */);
+  NDEFRecord(const String& /* record_type */,
+             const String& /* encoding */,
+             const String& /* lang */,
+             WTF::Vector<uint8_t> /* data */);
   explicit NDEFRecord(const device::mojom::blink::NDEFRecord&);
 
   const String& recordType() const;

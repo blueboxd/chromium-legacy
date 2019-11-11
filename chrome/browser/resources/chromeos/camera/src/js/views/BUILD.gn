@@ -13,7 +13,18 @@ group("closure_compile") {
 
 js_type_check("compile_resources") {
   deps = [
+    ":settings",
     ":view",
+  ]
+}
+
+js_library("settings") {
+  deps = [
+    ":view",
+    "..:nav",
+    "..:type",
+    "../device:camera3_device_info",
+    "../device:device_info_updater",
   ]
 }
 

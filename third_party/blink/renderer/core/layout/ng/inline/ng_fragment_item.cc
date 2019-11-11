@@ -28,6 +28,13 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
     DCHECK_EQ(text_.shape_result->EndIndex(), text_.end_offset);
   }
 #endif
+  if (text.TextType() == NGPhysicalTextFragment::kGeneratedText) {
+    type_ = kGeneratedText;
+    // Note: Because of |text_| and |generated_text_| are in same union and
+    // we initialize |text_| instead of |generated_text_|, we should construct
+    // |generated_text_.text_| instead copying, |generated_text_.text = ...|.
+    new (&generated_text_.text) String(text.Text().ToString());
+  }
 }
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
@@ -167,6 +174,8 @@ StringView NGFragmentItem::Text(const NGFragmentItems& items) const {
     return StringView(items.Text(UsesFirstLineStyle()), text_.start_offset,
                       text_.end_offset - text_.start_offset);
   }
+  if (Type() == kGeneratedText)
+    return GeneratedText();
   NOTREACHED();
   return StringView();
 }

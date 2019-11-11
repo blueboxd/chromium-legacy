@@ -143,6 +143,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kMovedOrResizedPopup,
           WebFeature::kMovedOrResizedPopup2sAfterCreation,
           WebFeature::kDOMWindowOpenPositioningFeatures,
+          WebFeature::kCSSSelectorInternalMediaControlsOverlayCastButton,
       }));
   return *opt_in_features;
 }

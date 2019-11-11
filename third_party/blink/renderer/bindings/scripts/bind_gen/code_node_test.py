@@ -17,6 +17,10 @@ from .mako_renderer import MakoRenderer
 
 
 class CodeNodeTest(unittest.TestCase):
+    def setUp(self):
+        super(CodeNodeTest, self).setUp()
+        self.addTypeEqualityFunc(str, self.assertMultiLineEqual)
+
     def assertRenderResult(self, node, expected):
         if node.renderer is None:
             node.set_renderer(MakoRenderer())

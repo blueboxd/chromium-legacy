@@ -112,6 +112,10 @@ There are some fundamental metrics.
 - [WorkerStart](https://www.chromestatus.com/metrics/feature/timeline/popularity/4)
 : Counts of `new DedicatedWorker()` calls in `Document` and
 `DedicatedWorkerGlobalScope`.
+- [ClassicDedicatedWorker](https://www.chromestatus.com/metrics/feature/timeline/popularity/3084)
+: Counts of new DedicatedWorker() calls with `{ type: 'classic' }` or without `WorkerOptions#type` argument.
+- [ModuleDedicatedWorker](https://www.chromestatus.com/metrics/feature/timeline/popularity/3085)
+: Counts of new DedicatedWorker() calls with `{ type: 'module' }`.
 - [NestedDedicatedWorker](https://www.chromestatus.com/metrics/feature/timeline/popularity/2499)
 : Counts of `new DedicatedWorker()` calls in `DedicatedWorkerGlobalScope`.
 - [SharedWorkerStart](https://www.chromestatus.com/metrics/feature/timeline/popularity/5)

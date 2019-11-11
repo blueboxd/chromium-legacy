@@ -5,6 +5,7 @@
 import copy
 
 from . import name_style
+from .path_manager import PathManager
 
 
 class CodeGenContext(object):
@@ -60,6 +61,9 @@ class CodeGenContext(object):
             "class_like",
             "function_like",
             "idl_definition",
+            "idl_location",
+            "idl_location_and_name",
+            "idl_name",
             "is_return_by_argument",
             "may_throw_exception",
             "member_like",
@@ -153,6 +157,31 @@ class CodeGenContext(object):
         return (self.callback_function or self.callback_interface
                 or self.dictionary or self.enumeration or self.interface
                 or self.namespace or self.typedef or self.union)
+
+    @property
+    def idl_location(self):
+        idl_def = self.member_like or self.idl_definition
+        if idl_def:
+            location = idl_def.debug_info.location
+            text = PathManager.relpath_to_project_root(location.filepath)
+            if location.line_number is not None:
+                text += ":{}".format(location.line_number)
+            return text
+        return "<<unknown path>>"
+
+    @property
+    def idl_location_and_name(self):
+        return "{}: {}".format(self.idl_location, self.idl_name)
+
+    @property
+    def idl_name(self):
+        member = self.member_like or self.property_
+        if member:
+            return "{}.{}".format(self.class_like.identifier,
+                                  member.identifier)
+        if self.idl_definition:
+            return self.idl_definition.identifier
+        return "<<unknown name>>"
 
     @property
     def is_return_by_argument(self):

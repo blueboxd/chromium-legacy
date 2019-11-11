@@ -15,6 +15,7 @@
 #include "extensions/common/mojom/wifi_display_session_service.mojom.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_packetizer.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_video_encoder.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/wds/src/libwds/public/media_manager.h"
 
@@ -69,9 +70,10 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
   void OnMediaPipelineInitialized(bool success);
   void RegisterMediaService(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_runner,
-      mojom::WiFiDisplayMediaServiceRequest service,
+      mojo::PendingReceiver<mojom::WiFiDisplayMediaService> service,
       const base::Closure& on_completed);
-  void ConnectToRemoteService(mojom::WiFiDisplayMediaServiceRequest request);
+  void ConnectToRemoteService(
+      mojo::PendingReceiver<mojom::WiFiDisplayMediaService> receiver);
   blink::WebMediaStreamTrack video_track_;
   blink::WebMediaStreamTrack audio_track_;
 

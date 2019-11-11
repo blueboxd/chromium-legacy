@@ -756,12 +756,21 @@ bool LayoutFlexibleBox::MainAxisLengthIsDefinite(const LayoutBox& child,
       return true;
     if (has_definite_height_ == SizeDefiniteness::kIndefinite)
       return false;
+    if (child.HasOverrideContainingBlockContentLogicalHeight()) {
+      // We don't want to cache this. To be a bit more efficient, just check
+      // whether the override height is -1 or not and return the value based on
+      // that.
+      DCHECK(!add_to_cb);
+      LayoutUnit override_height =
+          child.OverrideContainingBlockContentLogicalHeight();
+      return override_height == LayoutUnit(-1) ? false : true;
+    }
     LayoutBlock* cb = nullptr;
     bool definite =
         child.ContainingBlockLogicalHeightForPercentageResolution(&cb) != -1;
     if (add_to_cb)
       cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(&child));
-    if (in_layout_ && !child.HasOverrideContainingBlockContentLogicalHeight()) {
+    if (in_layout_) {
       // We can reach this code even while we're not laying ourselves out, such
       // as from mainSizeForPercentageResolution.
       has_definite_height_ = definite ? SizeDefiniteness::kDefinite

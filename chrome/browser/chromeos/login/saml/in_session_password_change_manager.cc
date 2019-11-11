@@ -209,6 +209,18 @@ InSessionPasswordChangeManager::~InSessionPasswordChangeManager() {
   }
 }
 
+// static
+void InSessionPasswordChangeManager::SetForTesting(
+    InSessionPasswordChangeManager* instance) {
+  CHECK(!g_test_instance);
+  g_test_instance = instance;
+}
+
+// static
+void InSessionPasswordChangeManager::ResetForTesting() {
+  g_test_instance = nullptr;
+}
+
 void InSessionPasswordChangeManager::MaybeShowExpiryNotification() {
   // We are checking password expiry now, and this function will decide if we
   // want to check again in the future, so for now, make sure there are no other
@@ -414,18 +426,6 @@ InSessionPasswordChangeManager* InSessionPasswordChangeManager::GetNullable() {
   return g_test_instance ? g_test_instance
                          : g_browser_process->platform_part()
                                ->in_session_password_change_manager();
-}
-
-// static
-void InSessionPasswordChangeManager::SetForTesting(
-    InSessionPasswordChangeManager* instance) {
-  CHECK(!g_test_instance);
-  g_test_instance = instance;
-}
-
-// static
-void InSessionPasswordChangeManager::ResetForTesting() {
-  g_test_instance = nullptr;
 }
 
 void InSessionPasswordChangeManager::NotifyObservers(Event event) {

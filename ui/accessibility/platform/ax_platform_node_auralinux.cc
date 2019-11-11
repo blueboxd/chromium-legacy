@@ -3593,12 +3593,24 @@ AXPlatformNodeAuraLinux::GetEmbeddedObjectIndices() {
 }
 
 void AXPlatformNodeAuraLinux::UpdateHypertext() {
+  // For text only objects, ensure that the parent's hypertext is updated as
+  // well. Text only objects insert their text directly into their parents
+  // hypertext, instead of being represented as embedded object characters.
+  if (IsTextOnlyObject()) {
+    if (AtkObject* parent = GetParent()) {
+      if (auto* parent_node = AtkObjectToAXPlatformNodeAuraLinux(parent)) {
+        parent_node->UpdateHypertext();
+      }
+    }
+  }
+
   EnsureAtkObjectIsValid();
   AXHypertext old_hypertext = hypertext_;
   base::OffsetAdjuster::Adjustments old_adjustments = GetHypertextAdjustments();
 
   UpdateComputedHypertext();
   text_unicode_adjustments_ = base::nullopt;
+  offset_to_text_attributes_.clear();
 
   if ((!GetData().HasState(ax::mojom::State::kEditable) ||
        GetData().GetRestriction() == ax::mojom::Restriction::kReadOnly) &&
@@ -3606,17 +3618,13 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
     return;
   }
 
-  size_t shared_prefix, old_len, new_len;
-  ComputeHypertextRemovedAndInserted(old_hypertext, &shared_prefix, &old_len,
-                                     &new_len);
-
-  offset_to_text_attributes_.clear();
-
-  AtkObject* atk_object = GetOrCreateAtkObject();
-
   if (!EmitsAtkTextEvents())
     return;
 
+  size_t shared_prefix, old_len, new_len;
+  ComputeHypertextRemovedAndInserted(old_hypertext, &shared_prefix, &old_len,
+                                     &new_len);
+  AtkObject* atk_object = GetOrCreateAtkObject();
   if (old_len > 0) {
     base::string16 removed_substring =
         old_hypertext.hypertext.substr(shared_prefix, old_len);

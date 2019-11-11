@@ -284,7 +284,8 @@ class CORE_EXPORT ContentSecurityPolicy final
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
   bool AllowWorkerContextFromSource(const KURL&) const;
 
-  bool AllowTrustedTypePolicy(const String& policy_name) const;
+  bool AllowTrustedTypePolicy(const String& policy_name,
+                              bool is_duplicate) const;
 
   // Passing 'String()' into the |nonce| arguments in the following methods
   // represents an unnonced resource load.

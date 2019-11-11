@@ -16,7 +16,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
 #include "media/mojo/mojom/cdm_storage.mojom.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/unique_associated_receiver_set.h"
 
 namespace storage {
 class FileSystemContext;
@@ -40,7 +41,7 @@ class CONTENT_EXPORT CdmStorageImpl final
   // |request|.
   static void Create(RenderFrameHost* render_frame_host,
                      const std::string& cdm_file_system_id,
-                     media::mojom::CdmStorageRequest request);
+                     mojo::PendingReceiver<media::mojom::CdmStorage> receiver);
 
   // media::mojom::CdmStorage implementation.
   void Open(const std::string& file_name, OpenCallback callback) final;
@@ -54,7 +55,7 @@ class CONTENT_EXPORT CdmStorageImpl final
   CdmStorageImpl(RenderFrameHost* render_frame_host,
                  const std::string& cdm_file_system_id,
                  scoped_refptr<storage::FileSystemContext> file_system_context,
-                 media::mojom::CdmStorageRequest request);
+                 mojo::PendingReceiver<media::mojom::CdmStorage> receiver);
   ~CdmStorageImpl() final;
 
   // Called when the file system is opened.
@@ -90,10 +91,10 @@ class CONTENT_EXPORT CdmStorageImpl final
   // returned, and it needs permission to access the file(s).
   const int child_process_id_;
 
-  // Keep track of all media::mojom::CdmFile bindings, as each CdmFileImpl
+  // Keep track of all media::mojom::CdmFile receivers, as each CdmFileImpl
   // object keeps a reference to |this|. If |this| goes away unexpectedly,
-  // all remaining CdmFile bindings will be closed.
-  mojo::StrongAssociatedBindingSet<media::mojom::CdmFile> cdm_file_bindings_;
+  // all remaining CdmFile receivers will be closed.
+  mojo::UniqueAssociatedReceiverSet<media::mojom::CdmFile> cdm_file_receivers_;
 
   base::WeakPtrFactory<CdmStorageImpl> weak_factory_{this};
 

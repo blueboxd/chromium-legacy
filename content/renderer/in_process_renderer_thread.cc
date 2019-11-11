@@ -16,10 +16,6 @@
 
 namespace content {
 
-#if defined(OS_ANDROID)
-extern bool g_browser_main_loop_shutting_down;
-#endif
-
 InProcessRendererThread::InProcessRendererThread(
     const InProcessChildThreadParams& params,
     int32_t renderer_client_id)
@@ -28,13 +24,6 @@ InProcessRendererThread::InProcessRendererThread(
       renderer_client_id_(renderer_client_id) {}
 
 InProcessRendererThread::~InProcessRendererThread() {
-#if defined(OS_ANDROID)
-  // Don't allow the render thread to be shut down in single process mode on
-  // Android unless the browser is shutting down.
-  // Temporary CHECK() to debug http://crbug.com/514141
-  CHECK(g_browser_main_loop_shutting_down);
-#endif
-
   Stop();
 }
 
@@ -61,13 +50,6 @@ void InProcessRendererThread::Init() {
 }
 
 void InProcessRendererThread::CleanUp() {
-#if defined(OS_ANDROID)
-  // Don't allow the render thread to be shut down in single process mode on
-  // Android unless the browser is shutting down.
-  // Temporary CHECK() to debug http://crbug.com/514141
-  CHECK(g_browser_main_loop_shutting_down);
-#endif
-
   render_process_.reset();
 
   // It's a little lame to manually set this flag.  But the single process

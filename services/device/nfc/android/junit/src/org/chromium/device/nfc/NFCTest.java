@@ -224,7 +224,7 @@ public class NFCTest {
         assertNull(emptyMojoNdefMessage.url);
         assertEquals(1, emptyMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_EMPTY, emptyMojoNdefMessage.data[0].recordType);
-        assertEquals(true, emptyMojoNdefMessage.data[0].mediaType.isEmpty());
+        assertEquals(null, emptyMojoNdefMessage.data[0].mediaType);
         assertEquals(true, emptyMojoNdefMessage.data[0].id.isEmpty());
         assertNull(emptyMojoNdefMessage.data[0].encoding);
         assertNull(emptyMojoNdefMessage.data[0].lang);
@@ -238,7 +238,7 @@ public class NFCTest {
         assertNull(urlMojoNdefMessage.url);
         assertEquals(1, urlMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_URL, urlMojoNdefMessage.data[0].recordType);
-        assertEquals(TEXT_MIME, urlMojoNdefMessage.data[0].mediaType);
+        assertEquals(null, urlMojoNdefMessage.data[0].mediaType);
         assertEquals(true, urlMojoNdefMessage.data[0].id.isEmpty());
         assertNull(urlMojoNdefMessage.data[0].encoding);
         assertNull(urlMojoNdefMessage.data[0].lang);
@@ -253,7 +253,7 @@ public class NFCTest {
         assertEquals(1, absUrlMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_ABSOLUTE_URL,
                 absUrlMojoNdefMessage.data[0].recordType);
-        assertEquals(TEXT_MIME, absUrlMojoNdefMessage.data[0].mediaType);
+        assertEquals(null, absUrlMojoNdefMessage.data[0].mediaType);
         assertEquals(true, absUrlMojoNdefMessage.data[0].id.isEmpty());
         assertEquals(TEST_URL, new String(absUrlMojoNdefMessage.data[0].data));
 
@@ -264,7 +264,7 @@ public class NFCTest {
         assertNull(utf8TextMojoNdefMessage.url);
         assertEquals(1, utf8TextMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_TEXT, utf8TextMojoNdefMessage.data[0].recordType);
-        assertEquals(TEXT_MIME, utf8TextMojoNdefMessage.data[0].mediaType);
+        assertEquals(null, utf8TextMojoNdefMessage.data[0].mediaType);
         assertEquals(true, utf8TextMojoNdefMessage.data[0].id.isEmpty());
         assertEquals(ENCODING_UTF8, utf8TextMojoNdefMessage.data[0].encoding);
         assertEquals(LANG_EN_US, utf8TextMojoNdefMessage.data[0].lang);
@@ -287,7 +287,7 @@ public class NFCTest {
         assertEquals(1, utf16TextMojoNdefMessage.data.length);
         assertEquals(
                 NdefMessageUtils.RECORD_TYPE_TEXT, utf16TextMojoNdefMessage.data[0].recordType);
-        assertEquals(TEXT_MIME, utf16TextMojoNdefMessage.data[0].mediaType);
+        assertEquals(null, utf16TextMojoNdefMessage.data[0].mediaType);
         assertEquals(true, utf16TextMojoNdefMessage.data[0].id.isEmpty());
         assertEquals(ENCODING_UTF16, utf16TextMojoNdefMessage.data[0].encoding);
         assertEquals(LANG_EN_US, utf16TextMojoNdefMessage.data[0].lang);
@@ -345,7 +345,7 @@ public class NFCTest {
         assertEquals(1, extMojoNdefMessage.data.length);
         assertEquals(DUMMY_EXTERNAL_RECORD_DOMAIN + ':' + DUMMY_EXTERNAL_RECORD_TYPE,
                 extMojoNdefMessage.data[0].recordType);
-        assertEquals(OCTET_STREAM_MIME, extMojoNdefMessage.data[0].mediaType);
+        assertEquals(null, extMojoNdefMessage.data[0].mediaType);
         assertEquals(true, extMojoNdefMessage.data[0].id.isEmpty());
         assertNull(extMojoNdefMessage.data[0].encoding);
         assertNull(extMojoNdefMessage.data[0].lang);
@@ -363,13 +363,13 @@ public class NFCTest {
         assertEquals(1, extMojoNdefMessage1.data.length);
         assertEquals(DUMMY_EXTERNAL_RECORD_DOMAIN + ':' + DUMMY_EXTERNAL_RECORD_TYPE,
                 extMojoNdefMessage1.data[0].recordType);
-        assertEquals(OCTET_STREAM_MIME, extMojoNdefMessage1.data[0].mediaType);
+        assertEquals(null, extMojoNdefMessage1.data[0].mediaType);
         // The embedded ndef message should have content corresponding with the original
         // |payloadMessage|.
         NdefMessage payloadMojoMessage = extMojoNdefMessage1.data[0].payloadMessage;
         assertEquals(1, payloadMojoMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_TEXT, payloadMojoMessage.data[0].recordType);
-        assertEquals(TEXT_MIME, payloadMojoMessage.data[0].mediaType);
+        assertEquals(null, payloadMojoMessage.data[0].mediaType);
         assertEquals(TEST_TEXT, new String(payloadMojoMessage.data[0].data));
 
         // Test NdefMessage with an additional WebNFC author record.
@@ -434,7 +434,6 @@ public class NFCTest {
         // Test TEXT record conversion for UTF-8 content.
         NdefRecord utf8TextMojoNdefRecord = new NdefRecord();
         utf8TextMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_TEXT;
-        utf8TextMojoNdefRecord.mediaType = TEXT_MIME;
         utf8TextMojoNdefRecord.encoding = ENCODING_UTF8;
         utf8TextMojoNdefRecord.lang = LANG_EN_US;
         utf8TextMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
@@ -462,7 +461,6 @@ public class NFCTest {
         // Test TEXT record conversion for UTF-16 content.
         NdefRecord utf16TextMojoNdefRecord = new NdefRecord();
         utf16TextMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_TEXT;
-        utf16TextMojoNdefRecord.mediaType = TEXT_MIME;
         utf16TextMojoNdefRecord.encoding = ENCODING_UTF16;
         utf16TextMojoNdefRecord.lang = LANG_EN_US;
         utf16TextMojoNdefRecord.data = TEST_TEXT.getBytes(Charset.forName("UTF-16"));
@@ -745,7 +743,6 @@ public class NFCTest {
 
         // Should match by media type.
         NdefScanOptions options2 = createNdefScanOptions();
-        options2.mediaType = TEXT_MIME;
         int watchId2 = mNextWatchId++;
         WatchResponse mockWatchCallback2 = mock(WatchResponse.class);
         nfc.watch(options2, watchId2, mockWatchCallback2);
@@ -1343,7 +1340,6 @@ public class NFCTest {
 
         NdefRecord nfcRecord = new NdefRecord();
         nfcRecord.recordType = NdefMessageUtils.RECORD_TYPE_TEXT;
-        nfcRecord.mediaType = TEXT_MIME;
         nfcRecord.encoding = ENCODING_UTF8;
         nfcRecord.lang = LANG_EN_US;
         nfcRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
@@ -1362,7 +1358,6 @@ public class NFCTest {
     private android.nfc.NdefMessage createUrlWebNFCNdefMessage(String webNfcId) {
         NdefRecord urlMojoNdefRecord = new NdefRecord();
         urlMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_URL;
-        urlMojoNdefRecord.mediaType = TEXT_MIME;
         urlMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_URL);
         NdefMessage urlNdefMessage = createMojoNdefMessage(webNfcId, urlMojoNdefRecord);
         try {

@@ -25,6 +25,7 @@ js_type_check("compile_resources") {
     ":state",
     ":toast",
     ":tooltip",
+    ":type",
     ":util",
   ]
 }
@@ -42,6 +43,9 @@ js_library("metrics") {
 }
 
 js_library("resolution_event_broker") {
+}
+
+js_library("type") {
 }
 
 js_library("nav") {

@@ -144,6 +144,7 @@ class CodeNode(object):
         self._template_vars = {}
 
         self._accumulator = None  # CodeGenAccumulator
+        self._accumulate_requests = []
 
         self._renderer = None  # MakoRenderer
 
@@ -178,6 +179,11 @@ class CodeNode(object):
                 renderer=self.renderer, last_render_state=last_render_state)
         finally:
             self._is_rendering = False
+
+        if self._accumulate_requests:
+            assert self.accumulator
+            for request in self._accumulate_requests:
+                request(self.accumulator)
 
         return text
 
@@ -286,6 +292,14 @@ class CodeNode(object):
         assert self._accumulator is None
         self._accumulator = accumulator
 
+    def accumulate(self, request):
+        """
+        While rendering the code node, |request| will be called with the
+        argument of self.accumulator.
+        """
+        assert callable(request)
+        self._accumulate_requests.append(request)
+
     @property
     def renderer(self):
         # Always use the renderer of the root node in order not to mix renderers
@@ -379,6 +393,9 @@ class TextNode(CodeNode):
 class SequenceNode(CodeNode):
     """
     Represents a sequence of nodes.
+
+    append, extend, insert, and remove work just like built-in list's methods
+    except that addition and removal of None have no effect.
     """
 
     def __init__(self, code_nodes=None, separator=" ", separator_last=""):
@@ -420,6 +437,8 @@ ${node}\\
         return len(self._element_nodes)
 
     def append(self, node):
+        if node is None:
+            return
         assert isinstance(node, CodeNode)
         assert node.outer is None and node.prev is None
 
@@ -435,6 +454,8 @@ ${node}\\
             self.append(node)
 
     def insert(self, index, node):
+        if node is None:
+            return
         assert isinstance(index, (int, long))
         assert isinstance(node, CodeNode)
         assert node.outer is None and node.prev is None
@@ -455,6 +476,8 @@ ${node}\\
         self._element_nodes.insert(index, node)
 
     def remove(self, node):
+        if node is None:
+            return
         assert node in self
 
         index = self._element_nodes.index(node)

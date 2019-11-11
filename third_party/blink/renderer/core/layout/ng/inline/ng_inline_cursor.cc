@@ -223,8 +223,10 @@ bool NGInlineCursor::IsHorizontal() const {
 }
 
 bool NGInlineCursor::IsInlineLeaf() const {
+  if (IsHiddenForPaint())
+    return false;
   if (IsText())
-    return true;
+    return !IsGeneratedTextType();
   if (!IsAtomicInline())
     return false;
   return !IsListMarker();
@@ -259,7 +261,7 @@ bool NGInlineCursor::IsLineBreak() const {
     return false;
   }
   if (current_item_)
-    return current_item_->IsLineBreak();
+    return IsText() && current_item_->IsLineBreak();
   NOTREACHED();
   return false;
 }
@@ -360,6 +362,12 @@ TextDirection NGInlineCursor::CurrentBaseDirection() const {
 
 UBiDiLevel NGInlineCursor::CurrentBidiLevel() const {
   if (IsText()) {
+    if (IsGeneratedTextType()) {
+      // TODO(yosin): Until we have clients, we don't support bidi-level for
+      // ellipsis and soft hyphens.
+      NOTREACHED() << this;
+      return 0;
+    }
     const LayoutText& layout_text = *ToLayoutText(CurrentLayoutObject());
     DCHECK(!layout_text.NeedsLayout()) << this;
     const auto* const items = layout_text.GetNGInlineItems();
@@ -513,6 +521,19 @@ unsigned NGInlineCursor::CurrentTextEndOffset() const {
     return current_item_->EndOffset();
   NOTREACHED();
   return 0u;
+}
+
+StringView NGInlineCursor::CurrentText() const {
+  DCHECK(IsText());
+  if (current_paint_fragment_) {
+    return To<NGPhysicalTextFragment>(
+               current_paint_fragment_->PhysicalFragment())
+        .Text();
+  }
+  if (current_item_)
+    return current_item_->Text(*fragment_items_);
+  NOTREACHED();
+  return "";
 }
 
 const ShapeResultView* NGInlineCursor::CurrentTextShapeResult() const {

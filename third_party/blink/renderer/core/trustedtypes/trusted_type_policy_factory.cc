@@ -35,18 +35,27 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
       GetExecutionContext()->GetContentSecurityPolicy() &&
       !GetExecutionContext()
            ->GetContentSecurityPolicy()
-           ->AllowTrustedTypePolicy(policy_name)) {
-    exception_state.ThrowTypeError("Policy " + policy_name + " disallowed.");
+           ->AllowTrustedTypePolicy(policy_name,
+                                    policy_map_.Contains(policy_name))) {
+    // For a better error message, we'd like to disambiguate between
+    // "disallowed" and "disallowed because of a duplicate name". Instead of
+    // piping the reason through all the layers, we'll just check whether it
+    // had also been disallowed as a non-duplicate name.
+    bool disallowed_because_of_duplicate_name =
+        policy_map_.Contains(policy_name) &&
+        GetExecutionContext()
+            ->GetContentSecurityPolicy()
+            ->AllowTrustedTypePolicy(policy_name, false);
+    const String message =
+        disallowed_because_of_duplicate_name
+            ? "Policy with name \"" + policy_name + "\" already exists."
+            : "Policy \"" + policy_name + "\" disallowed.";
+    exception_state.ThrowTypeError(message);
     return nullptr;
   }
-  // TODO(orsibatiz): After policy naming rules are estabilished, check for the
-  // policy_name to be according to them.
-  if (policy_map_.Contains(policy_name)) {
-    exception_state.ThrowTypeError("Policy with name " + policy_name +
-                                   " already exists.");
-    return nullptr;
-  }
+
   if (policy_name == "default") {
+    DCHECK(!policy_map_.Contains("default"));
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kTrustedTypesDefaultPolicyUsed);
   }

@@ -128,7 +128,7 @@ cca.views.camera.Modes = function(
 
   /**
    * Mode classname and related functions and attributes.
-   * @type {Object<string, Object>}
+   * @type {Object<string, !MediaStreamConstraints>}
    * @private
    */
   this.allModes_ = {
@@ -232,7 +232,8 @@ cca.views.camera.Modes.prototype.updateModeUI_ = function(mode) {
  * Returns a set of available constraints for HALv1 device.
  * @param {boolean} videoMode Is getting constraints for video mode.
  * @param {?string} deviceId Id of video device.
- * @return {!Promise<Array<Object>>} Result of constraints-candidates.
+ * @return {!Promise<!Array<!MediaStreamConstraints>>} Result of
+ *     constraints-candidates.
  */
 cca.views.camera.Modes.getV1Constraints = async function(videoMode, deviceId) {
   const defaultFacing = await cca.util.getDefaultFacing();
@@ -297,9 +298,8 @@ cca.views.camera.Modes.prototype.getModeCandidates = function() {
  * constraints for the given mode.
  * @param {string} mode
  * @param {string} deviceId
- * @param {ResolList} previewResolutions
- * @return {Array<[[number, number], Array<Object>]>} Result capture resolution
- *     width, height and constraints-candidates for its preview.
+ * @param {!ResolutionList} previewResolutions
+ * @return {!Array<!CaptureCandidate>}
  */
 cca.views.camera.Modes.prototype.getResolutionCandidates = function(
     mode, deviceId, previewResolutions) {
@@ -312,13 +312,12 @@ cca.views.camera.Modes.prototype.getResolutionCandidates = function(
  * given mode on camera HALv1 device.
  * @param {string} mode
  * @param {?string} deviceId
- * @return {!Promise<Array<[?[number, number], Array<Object>]>>} Result capture
- *     resolution width, height and constraints-candidates for its preview.
+ * @return {!Promise<!Array<!CaptureCandidate>>}
  */
 cca.views.camera.Modes.prototype.getResolutionCandidatesV1 =
     async function(mode, deviceId) {
-  const v1Configs = await this.allModes_[mode].v1Config(deviceId);
-  return v1Configs.map((constraints) => [null, [constraints]]);
+  const previewCandidates = await this.allModes_[mode].v1Config(deviceId);
+  return [{resolution: null, previewCandidates}];
 };
 
 /**
@@ -369,7 +368,7 @@ cca.views.camera.Modes.prototype.updateModeSelectionUI =
  * @param {string} mode Classname of mode to be updated.
  * @param {MediaStream} stream Stream of the new switching mode.
  * @param {?string} deviceId Device id of currently working video device.
- * @param {?[number, number]} captureResolution Capturing resolution width and
+ * @param {?Resolution} captureResolution Capturing resolution width and
  *     height.
  */
 cca.views.camera.Modes.prototype.updateMode =

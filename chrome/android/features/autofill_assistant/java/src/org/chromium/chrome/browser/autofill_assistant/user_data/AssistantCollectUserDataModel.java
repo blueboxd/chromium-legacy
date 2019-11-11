@@ -366,4 +366,9 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     private void setThirdPartyPrivacyNoticeText(String text) {
         set(THIRDPARTY_PRIVACY_NOTICE_TEXT, text);
     }
+
+    @CalledByNative
+    private void setDefaultEmail(String email) {
+        set(DEFAULT_EMAIL, email);
+    }
 }

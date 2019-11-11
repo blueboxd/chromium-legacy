@@ -64,6 +64,8 @@ base::Optional<Member<Element>> FirstFlatTreeAncestorForChildDirty(
     // V0. It is too complicated to try to find the closest flat tree parent.
     return base::nullopt;
   }
+  if (!root->HasSlotAssignment())
+    return base::nullopt;
   // The child has already been removed, so we cannot look up its slot
   // assignment directly. Find the slot which was part of the ancestor chain
   // before the removal by checking the child-dirty bits. Since the recalc root

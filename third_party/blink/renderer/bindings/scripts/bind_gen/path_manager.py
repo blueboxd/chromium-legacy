@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os.path
+import posixpath
 
 import web_idl
 
@@ -34,16 +34,24 @@ class PathManager(object):
         assert not cls._is_initialized
         assert isinstance(output_dirs, dict)
         cls._output_dirs = output_dirs
-        cls._blink_path_prefix = os.path.sep + os.path.join(
+        cls._blink_path_prefix = posixpath.sep + posixpath.join(
             "third_party", "blink", "renderer", "")
         cls._is_initialized = True
+
+    @classmethod
+    def relpath_to_project_root(cls, path):
+        index = path.find(cls._blink_path_prefix)
+        if index < 0:
+            assert path.startswith(cls._blink_path_prefix[1:])
+            return path
+        return path[index + 1:]
 
     def __init__(self, idl_definition):
         assert self._is_initialized, self._REQUIRE_INIT_MESSAGE
 
         idl_path = idl_definition.debug_info.location.filepath
-        self._idl_basepath, _ = os.path.splitext(idl_path)
-        self._idl_dir, self._idl_basename = os.path.split(self._idl_basepath)
+        self._idl_basepath, _ = posixpath.splitext(idl_path)
+        self._idl_dir, self._idl_basename = posixpath.split(self._idl_basepath)
 
         components = sorted(idl_definition.components)
 
@@ -82,7 +90,7 @@ class PathManager(object):
         Returns a path to a Blink implementation file relative to the project
         root directory, e.g. "third_party/blink/renderer/..."
         """
-        return self._rel_to_root(
+        return self.relpath_to_project_root(
             self._join(
                 dirpath=self._blink_dir,
                 filename=(filename or self._blink_basename),
@@ -120,14 +128,8 @@ class PathManager(object):
             filename=(filename or self._out_basename),
             ext=ext)
 
-    def _rel_to_root(self, path):
-        index = path.find(self._blink_path_prefix)
-        if index < 0:
-            assert path.startswith(self._blink_path_prefix[1:])
-            return path
-        return path[index + 1:]
-
-    def _join(self, dirpath, filename, ext=None):
+    @staticmethod
+    def _join(dirpath, filename, ext=None):
         if ext is not None:
-            filename = os.path.extsep.join([filename, ext])
-        return os.path.join(dirpath, filename)
+            filename = posixpath.extsep.join([filename, ext])
+        return posixpath.join(dirpath, filename)

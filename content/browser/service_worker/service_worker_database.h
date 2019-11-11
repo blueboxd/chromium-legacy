@@ -22,7 +22,6 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
-#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "url/gurl.h"
@@ -53,6 +52,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   ~ServiceWorkerDatabase();
 
   // Used in UMA. A new value must be appended only.
+  // TODO(bashi): Change this enum to an enum class and migrate from legacy
+  // histogram APIs to new ones. See //tools/metrics/histograms/README.md.
   enum Status {
     STATUS_OK,
     STATUS_ERROR_NOT_FOUND,

@@ -639,8 +639,8 @@ testcase.transferInfoIsRemembered = async () => {
   // The feedback panel should appear: record the feedback panel text.
   let panel = await remoteCall.waitForElement(
       appId, ['#progress-panel', 'xf-panel-item']);
-  const primaryText = panel.primaryText;
-  const secondaryText = panel.secondaryText;
+  const primaryText = panel.attributes['primary-text'];
+  const secondaryText = panel.attributes['secondary-text'];
 
   // Close the Files app window.
   await remoteCall.closeWindowAndWait(appId);
@@ -651,6 +651,6 @@ testcase.transferInfoIsRemembered = async () => {
   // Check the feedback panel text is remembered.
   panel = await remoteCall.waitForElement(
       appId, ['#progress-panel', 'xf-panel-item']);
-  chrome.test.assertEq(primaryText, panel.primaryText);
-  chrome.test.assertEq(secondaryText, panel.secondaryText);
+  chrome.test.assertEq(primaryText, panel.attributes['primary-text']);
+  chrome.test.assertEq(secondaryText, panel.attributes['secondary-text']);
 };

@@ -15,6 +15,7 @@ js_type_check("closure_compile") {
 
 js_library("camera3_device_info") {
   deps = [
+    "..:type",
     "../mojo:image_capture",
   ]
 }
@@ -24,6 +25,7 @@ js_library("constraints_preferrer") {
     ":camera3_device_info",
     "..:resolution_event_broker",
     "..:state",
+    "..:type",
     "../browser_proxy:browser_proxy",
   ]
 }
@@ -34,6 +36,7 @@ js_library("device_info_updater") {
     ":constraints_preferrer",
     ":error",
     "..:state",
+    "..:type",
   ]
 }
 

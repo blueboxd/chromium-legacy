@@ -102,6 +102,10 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer,
   explicit InSessionPasswordChangeManager(Profile* primary_profile);
   ~InSessionPasswordChangeManager() override;
 
+  // Sets the given instance as the singleton for testing.
+  static void SetForTesting(InSessionPasswordChangeManager* instance);
+  static void ResetForTesting();
+
   // Checks if the primary user's password has expired or will soon expire, and
   // shows a notification if needed. If the password will expire in the distant
   // future, posts a task to check again in the distant future.
@@ -161,10 +165,6 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer,
 
  private:
   static InSessionPasswordChangeManager* GetNullable();
-
-  // Sets the given instance as the singleton for testing.
-  static void SetForTesting(InSessionPasswordChangeManager* instance);
-  static void ResetForTesting();
 
   void NotifyObservers(Event event);
 

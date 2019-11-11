@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "build/build_config.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/test_context_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -90,10 +89,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       bool mipmap,
       sk_sp<SkColorSpace> color_space) override;
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
-#if defined(OS_WIN)
   void SetEnableDCLayers(bool enable) override {}
   void ScheduleDCLayers(std::vector<DCLayerOverlay> overlays) override {}
-#endif
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,

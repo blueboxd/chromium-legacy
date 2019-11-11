@@ -72,6 +72,7 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
@@ -97,6 +98,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_paths.h"
@@ -105,6 +107,7 @@
 #include "chromeos/login/auth/mock_auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/policy_certificate_provider.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -311,29 +314,93 @@ class TestingUpdateManifestProvider
   DISALLOW_COPY_AND_ASSIGN(TestingUpdateManifestProvider);
 };
 
-// Helper that observes the dictionary |pref| in local state and waits until the
-// value stored for |key| matches |expected_value|.
-class DictionaryPrefValueWaiter {
+// Helper base class used for waiting for a pref value stored in local state
+// to change to a particular expected value.
+class PrefValueWaiter {
  public:
-  DictionaryPrefValueWaiter(const std::string& pref,
-                            const std::string& key,
-                            const std::string& expected_value);
-  ~DictionaryPrefValueWaiter();
+  PrefValueWaiter(const std::string& pref, base::Value expected_value)
+      : pref_(pref), expected_value_(std::move(expected_value)) {
+    pref_change_registrar_.Init(g_browser_process->local_state());
+  }
+
+  PrefValueWaiter(const PrefValueWaiter&) = delete;
+  PrefValueWaiter& operator=(const PrefValueWaiter&) = delete;
+
+  virtual bool ExpectedValueFound();
+  virtual ~PrefValueWaiter() = default;
 
   void Wait();
 
- private:
-  void QuitLoopIfExpectedValueFound();
-
+ protected:
   const std::string pref_;
-  const std::string key_;
-  const std::string expected_value_;
+  const base::Value expected_value_;
 
-  base::RunLoop run_loop_;
   PrefChangeRegistrar pref_change_registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(DictionaryPrefValueWaiter);
+ private:
+  base::RunLoop run_loop_;
+  void QuitLoopIfExpectedValueFound();
 };
+
+bool PrefValueWaiter::ExpectedValueFound() {
+  const base::Value* pref_value =
+      pref_change_registrar_.prefs()->Get(pref_.c_str());
+  if (!pref_value) {
+    // Can't use ASSERT_* in non-void functions so this is the next best
+    // thing.
+    ADD_FAILURE() << "Pref " << pref_ << " not found";
+    return true;
+  }
+  return *pref_value == expected_value_;
+}
+
+void PrefValueWaiter::QuitLoopIfExpectedValueFound() {
+  if (ExpectedValueFound())
+    run_loop_.Quit();
+}
+
+void PrefValueWaiter::Wait() {
+  pref_change_registrar_.Add(
+      pref_.c_str(), base::Bind(&PrefValueWaiter::QuitLoopIfExpectedValueFound,
+                                base::Unretained(this)));
+  // Necessary if the pref value changes before the run loop is run. It is
+  // safe to call RunLoop::Quit before RunLoop::Run (in which case the call
+  // to Run will do nothing).
+  QuitLoopIfExpectedValueFound();
+  run_loop_.Run();
+}
+
+class DictionaryPrefValueWaiter : public PrefValueWaiter {
+ public:
+  DictionaryPrefValueWaiter(const std::string& pref,
+                            const std::string& expected_value,
+                            const std::string& key)
+      : PrefValueWaiter(pref, base::Value(expected_value)), key_(key) {}
+
+  DictionaryPrefValueWaiter(const DictionaryPrefValueWaiter&) = delete;
+  DictionaryPrefValueWaiter& operator=(const DictionaryPrefValueWaiter&) =
+      delete;
+  ~DictionaryPrefValueWaiter() override = default;
+
+ private:
+  bool ExpectedValueFound() override;
+
+  const std::string key_;
+};
+
+bool DictionaryPrefValueWaiter::ExpectedValueFound() {
+  const base::DictionaryValue* pref =
+      pref_change_registrar_.prefs()->GetDictionary(pref_.c_str());
+  if (!pref) {
+    // Can't use ASSERT_* in non-void functions so this is the next best
+    // thing.
+    ADD_FAILURE() << "Pref " << pref_ << " not found";
+    return true;
+  }
+  std::string actual_value;
+  return (pref->GetStringWithoutPathExpansion(key_, &actual_value) &&
+          actual_value == expected_value_.GetString());
+}
 
 TestingUpdateManifestProvider::Update::Update(const std::string& version,
                                               const GURL& crx_url)
@@ -393,38 +460,6 @@ TestingUpdateManifestProvider::HandleRequest(
 TestingUpdateManifestProvider::~TestingUpdateManifestProvider() {
 }
 
-DictionaryPrefValueWaiter::DictionaryPrefValueWaiter(
-    const std::string& pref,
-    const std::string& key,
-    const std::string& expected_value)
-    : pref_(pref),
-      key_(key),
-      expected_value_(expected_value) {
-  pref_change_registrar_.Init(g_browser_process->local_state());
-}
-
-DictionaryPrefValueWaiter::~DictionaryPrefValueWaiter() {
-}
-
-void DictionaryPrefValueWaiter::Wait() {
-  pref_change_registrar_.Add(
-      pref_.c_str(),
-      base::Bind(&DictionaryPrefValueWaiter::QuitLoopIfExpectedValueFound,
-                 base::Unretained(this)));
-  QuitLoopIfExpectedValueFound();
-  run_loop_.Run();
-}
-
-void DictionaryPrefValueWaiter::QuitLoopIfExpectedValueFound() {
-  const base::DictionaryValue* pref =
-      pref_change_registrar_.prefs()->GetDictionary(pref_.c_str());
-  ASSERT_TRUE(pref);
-  std::string actual_value;
-  if (pref->GetStringWithoutPathExpansion(key_, &actual_value) &&
-      actual_value == expected_value_) {
-    run_loop_.Quit();
-  }
-}
 
 bool DoesInstallFailureReferToId(const std::string& id,
                                  const content::NotificationSource& source,
@@ -643,6 +678,18 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     EXPECT_EQ(user_manager::USER_TYPE_PUBLIC_ACCOUNT, user->GetType());
   }
 
+  void SetSystemTimezoneAutomaticDetectionPolicy(
+      em::SystemTimezoneProto_AutomaticTimezoneDetectionType policy) {
+    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+    proto.mutable_system_timezone()->set_timezone_detection_type(policy);
+    RefreshDevicePolicy();
+
+    PrefValueWaiter(prefs::kSystemTimezoneAutomaticDetectionPolicy,
+                    base::Value(policy))
+        .Wait();
+    ASSERT_TRUE(local_policy_mixin_.UpdateDevicePolicy(proto));
+  }
+
   base::FilePath GetExtensionCacheDirectoryForAccountID(
       const std::string& account_id) {
     base::FilePath extension_cache_root_dir;
@@ -676,9 +723,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   void WaitForDisplayName(const std::string& user_id,
                           const std::string& expected_display_name) {
-    DictionaryPrefValueWaiter("UserDisplayName",
-                              user_id,
-                              expected_display_name).Wait();
+    DictionaryPrefValueWaiter("UserDisplayName", expected_display_name, user_id)
+        .Wait();
   }
 
   void WaitForPolicy() {
@@ -1839,6 +1885,63 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, NoRecommendedLocaleSwitch) {
                 ->GetActiveIMEState()
                 ->GetCurrentInputMethod()
                 .id());
+}
+
+// Tests whether or not managed guest session users can change the system
+// timezone, which should be possible iff the timezone automatic detection
+// policy is set to either DISABLED or USERS_DECIDE.
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ManagedSessionTimezoneChange) {
+  SetManagedSessionsEnabled(true);
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  EnableAutoLogin();
+
+  WaitForPolicy();
+
+  WaitForSessionStart();
+
+  CheckPublicSessionPresent(account_id_1_);
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id_1_);
+  ASSERT_TRUE(user);
+  ASSERT_EQ(user->GetType(), user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+
+  std::string timezone_id1("America/Los_Angeles");
+  std::string timezone_id2("Europe/Berlin");
+  base::string16 timezone_id1_utf16(base::UTF8ToUTF16(timezone_id1));
+  base::string16 timezone_id2_utf16(base::UTF8ToUTF16(timezone_id2));
+
+  chromeos::system::TimezoneSettings* timezone_settings =
+      chromeos::system::TimezoneSettings::GetInstance();
+
+  timezone_settings->SetTimezoneFromID(timezone_id1_utf16);
+  SetSystemTimezoneAutomaticDetectionPolicy(em::SystemTimezoneProto::DISABLED);
+  chromeos::system::SetSystemTimezone(user, timezone_id2);
+  EXPECT_EQ(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
+
+  timezone_settings->SetTimezoneFromID(timezone_id1_utf16);
+  SetSystemTimezoneAutomaticDetectionPolicy(
+      em::SystemTimezoneProto::USERS_DECIDE);
+  chromeos::system::SetSystemTimezone(user, timezone_id2);
+  EXPECT_EQ(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
+
+  timezone_settings->SetTimezoneFromID(timezone_id1_utf16);
+  SetSystemTimezoneAutomaticDetectionPolicy(em::SystemTimezoneProto::IP_ONLY);
+  chromeos::system::SetSystemTimezone(user, timezone_id2);
+  EXPECT_NE(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
+
+  timezone_settings->SetTimezoneFromID(timezone_id1_utf16);
+  SetSystemTimezoneAutomaticDetectionPolicy(
+      em::SystemTimezoneProto::SEND_WIFI_ACCESS_POINTS);
+  chromeos::system::SetSystemTimezone(user, timezone_id2);
+  EXPECT_NE(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
+
+  timezone_settings->SetTimezoneFromID(timezone_id1_utf16);
+  SetSystemTimezoneAutomaticDetectionPolicy(
+      em::SystemTimezoneProto::SEND_ALL_LOCATION_INFO);
+  chromeos::system::SetSystemTimezone(user, timezone_id2);
+  EXPECT_NE(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, OneRecommendedLocale) {

@@ -732,4 +732,40 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
   manager.reset();
 }
 
+TEST_F(BrowserAccessibilityAuraLinuxTest, TextAtkStaticTextChange) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddState(ax::mojom::State::kFocusable);
+
+  ui::AXNodeData div_editable;
+  div_editable.id = 2;
+  div_editable.role = ax::mojom::Role::kGenericContainer;
+
+  ui::AXNodeData text;
+  text.id = 3;
+  text.role = ax::mojom::Role::kStaticText;
+  text.SetName("Text1 ");
+
+  root.child_ids.push_back(div_editable.id);
+  div_editable.child_ids.push_back(text.id);
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, div_editable, text),
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+
+  text.SetName("Text2");
+  ui::AXTree* tree = const_cast<ui::AXTree*>(manager->ax_tree());
+  ASSERT_TRUE(tree->Unserialize(MakeAXTreeUpdate(text)));
+
+  // The change to the static text node should have triggered an update of the
+  // containing div's hypertext.
+  ui::AXPlatformNodeAuraLinux* div_node =
+      ToBrowserAccessibilityAuraLinux(manager->GetFromID(div_editable.id))
+          ->GetNode();
+  EXPECT_STREQ(base::UTF16ToUTF8(div_node->GetHypertext()).c_str(), "Text2");
+}
+
 }  // namespace content

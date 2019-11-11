@@ -49,8 +49,8 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
         static_cast<uint8_t*>(source.GetAsArrayBuffer()->Data()),
         source.GetAsArrayBuffer()->ByteLength());
     NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
-    message->records_.push_back(
-        MakeGarbageCollected<NDEFRecord>(std::move(payload_data)));
+    message->records_.push_back(MakeGarbageCollected<NDEFRecord>(
+        std::move(payload_data), "application/octet-stream"));
     return message;
   }
 
@@ -61,8 +61,8 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
             source.GetAsArrayBufferView().View()->BaseAddress()),
         source.GetAsArrayBufferView().View()->byteLength());
     NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
-    message->records_.push_back(
-        MakeGarbageCollected<NDEFRecord>(std::move(payload_data)));
+    message->records_.push_back(MakeGarbageCollected<NDEFRecord>(
+        std::move(payload_data), "application/octet-stream"));
     return message;
   }
 

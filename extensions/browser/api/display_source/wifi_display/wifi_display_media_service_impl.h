@@ -9,7 +9,8 @@
 
 #include "base/containers/queue.h"
 #include "extensions/common/mojom/wifi_display_session_service.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/udp_socket.h"
@@ -23,8 +24,9 @@ namespace extensions {
 class WiFiDisplayMediaServiceImpl : public mojom::WiFiDisplayMediaService {
  public:
   ~WiFiDisplayMediaServiceImpl() override;
-  static void BindToRequest(mojom::WiFiDisplayMediaServiceRequest request,
-                            content::RenderFrameHost* render_frame_host);
+  static void BindToRequest(
+      mojo::PendingReceiver<mojom::WiFiDisplayMediaService> receiver,
+      content::RenderFrameHost* render_frame_host);
 
   void SetDestinationPoint(
       const net::IPEndPoint& ip_end_point,
@@ -32,7 +34,8 @@ class WiFiDisplayMediaServiceImpl : public mojom::WiFiDisplayMediaService {
   void SendMediaPacket(mojom::WiFiDisplayMediaPacketPtr packet) override;
 
  private:
-  static void Create(mojom::WiFiDisplayMediaServiceRequest request);
+  static void Create(
+      mojo::PendingReceiver<mojom::WiFiDisplayMediaService> receiver);
   WiFiDisplayMediaServiceImpl();
   void Send();
   void OnSent(int code);
@@ -40,7 +43,7 @@ class WiFiDisplayMediaServiceImpl : public mojom::WiFiDisplayMediaService {
   class PacketIOBuffer;
   base::queue<scoped_refptr<PacketIOBuffer>> write_buffers_;
   int last_send_code_;
-  mojo::StrongBindingPtr<mojom::WiFiDisplayMediaService> binding_;
+  mojo::SelfOwnedReceiverRef<mojom::WiFiDisplayMediaService> receiver_;
   base::WeakPtrFactory<WiFiDisplayMediaServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WiFiDisplayMediaServiceImpl);

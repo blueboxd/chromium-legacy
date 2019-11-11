@@ -25,14 +25,17 @@ class NGCaretPositionTest : public NGLayoutTest {
   void SetInlineFormattingContext(const char* id,
                                   const char* html,
                                   unsigned width,
-                                  TextDirection dir = TextDirection::kLtr) {
+                                  TextDirection dir = TextDirection::kLtr,
+                                  const char* style = nullptr) {
+    InsertStyleElement(
+        "body { font: 10px/10px Ahem;  }"
+        "bdo { display:block; }");
     const char* pattern =
         dir == TextDirection::kLtr
-            ? "<div id='%s' style='font: 10px/10px Ahem; width: %u0px; "
-              "word-break: break-all'>%s</div>"
-            : "<bdo dir=rtl id='%s' style='font: 10px/10px Ahem; width: %u0px; "
-              "word-break: break-all; display: block'>%s</bdo>";
-    SetBodyInnerHTML(String::Format(pattern, id, width, html));
+            ? "<div id='%s' style='width: %u0px; %s'>%s</div>"
+            : "<bdo dir=rtl id='%s' style='width: %u0px; %s'>%s</bdo>";
+    SetBodyInnerHTML(String::Format(
+        pattern, id, width, style ? style : "word-break: break-all", html));
     container_ = GetElementById(id);
     DCHECK(container_);
     context_ = To<LayoutBlockFlow>(container_->GetLayoutObject());
@@ -84,6 +87,23 @@ TEST_F(NGCaretPositionTest, CaretPositionInOneLineOfText) {
              text_fragment, kAtTextOffset, base::Optional<unsigned>(3));
   TEST_CARET(ComputeNGCaretPosition(3, TextAffinity::kUpstream), text_fragment,
              kAtTextOffset, base::Optional<unsigned>(3));
+}
+
+// For http://crbug.com/1021993
+// We should not call |NGInlineCursor::CurrentBidiLevel()| for soft hyphen
+TEST_F(NGCaretPositionTest, CaretPositionAtSoftHyphen) {
+  // We have three fragment "foo\u00AD", "\u2010", "bar"
+  SetInlineFormattingContext("t", "foo&shy;bar", 3, TextDirection::kLtr, "");
+  const LayoutText& text =
+      *To<Text>(container_->firstChild())->GetLayoutObject();
+  NGInlineCursor cursor;
+  cursor.MoveTo(text);
+  const NGInlineCursor foo_fragment = cursor;
+
+  TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kDownstream), foo_fragment,
+             kAtTextOffset, base::Optional<unsigned>(4));
+  TEST_CARET(ComputeNGCaretPosition(4, TextAffinity::kUpstream), foo_fragment,
+             kAtTextOffset, base::Optional<unsigned>(4));
 }
 
 TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrap) {

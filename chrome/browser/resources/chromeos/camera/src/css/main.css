@@ -714,6 +714,14 @@ body.mirror #preview-focus {
   transform: translate(-50%, -50%);
 }
 
+#preview-video {
+  transition: opacity 200ms ease-in-out;
+}
+
+#preview-video.animate {
+  opacity: 0;
+}
+
 body:not(.streaming) #preview-video {
   filter: blur(10px);
   /* Scale up to hide blurred edges. */

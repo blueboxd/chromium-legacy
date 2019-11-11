@@ -237,7 +237,7 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_GmbToGmb) {
   ASSERT_TRUE(output_image.LoadMetadata());
 
   auto ip_client = CreateImageProcessorClient(
-      input_image, {VideoFrame::STORAGE_GPU_MEMORY_BUFFER}, output_image,
+      input_image, {VideoFrame::STORAGE_GPU_MEMORY_BUFFER}, &output_image,
       {VideoFrame::STORAGE_GPU_MEMORY_BUFFER});
 
   ip_client->Process(input_image, output_image);

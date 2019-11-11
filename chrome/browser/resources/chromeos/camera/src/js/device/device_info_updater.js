@@ -20,26 +20,26 @@ cca.device = cca.device || {};
  */
 cca.device.DeviceInfoUpdater = class {
   /**
-   * @param {cca.device.PhotoResolPreferrer} photoPreferrer
-   * @param {cca.device.VideoConstraintsPreferrer} videoPreferrer
+   * @param {!cca.device.PhotoResolPreferrer} photoPreferrer
+   * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
    * @public
    * */
   constructor(photoPreferrer, videoPreferrer) {
     /**
-     * @type {cca.device.PhotoResolPreferrer}
+     * @type {!cca.device.PhotoResolPreferrer}
      * @private
      */
     this.photoPreferrer_ = photoPreferrer;
 
     /**
-     * @type {cca.device.VideoConstraintsPreferrer}
+     * @type {!cca.device.VideoConstraintsPreferrer}
      * @private
      */
     this.videoPreferrer_ = videoPreferrer;
 
     /**
      * Listeners to be called after new camera information is available.
-     * @type {!Array<function(!cca.device.DeviceInfoUpdater): Promise>}
+     * @type {!Array<!function(!cca.device.DeviceInfoUpdater): Promise>}
      * @private
      */
     this.deviceChangeListeners_ = [];
@@ -168,7 +168,7 @@ cca.device.DeviceInfoUpdater = class {
 
   /**
    * Registers listener to be called when state of available devices changes.
-   * @param {function(!cca.device.DeviceInfoUpdater)} listener
+   * @param {!function(!cca.device.DeviceInfoUpdater)} listener
    */
   addDeviceChangeListener(listener) {
     this.deviceChangeListeners_.push(listener);
@@ -178,8 +178,8 @@ cca.device.DeviceInfoUpdater = class {
    * Requests to lock update of device information. This function is preserved
    * for device information reader to lock the update capability so as to ensure
    * getting consistent data between all information providers.
-   * @param {function(!cca.device.DeviceInfoUpdater): Promise} callback Callback
-   *     called after update capability is locked. Getting information from all
+   * @param {!function(!cca.device.DeviceInfoUpdater): Promise} callback Called
+   *     after update capability is locked. Getting information from all
    *     providers in callback are guaranteed to be consistent.
    */
   async lockDeviceInfo(callback) {
@@ -223,8 +223,8 @@ cca.device.DeviceInfoUpdater = class {
   /**
    * Gets supported photo and video resolutions for specified video device.
    * @param {string} deviceId Device id of the video device.
-   * @return {!Promise<!Array<!ResolList>>} Supported photo and video
-   *     resolutions formatted as [photo resolutions, video resolutions].
+   * @return {!Promise<!{photo: !ResolutionList, video: !ResolutionList}>}
+   *     Supported photo and video resolutions.
    * @throws {Error} May fail on HALv1 device without capability of querying
    *     supported resolutions.
    */
@@ -234,6 +234,6 @@ cca.device.DeviceInfoUpdater = class {
       throw new cca.device.LegacyVCDError();
     }
     const info = devices.find((info) => info.deviceId === deviceId);
-    return [info.photoResols, info.videoResols];
+    return {photo: info.photoResols, video: info.videoResols};
   }
 };

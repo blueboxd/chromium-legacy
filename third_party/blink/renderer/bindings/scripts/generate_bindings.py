@@ -39,6 +39,7 @@ def main():
     options, tasks = parse_options()
 
     dispatch_table = {
+        'dictionary': bind_gen.generate_dictionaries,
         'example': bind_gen.run_example,
         'interface': bind_gen.generate_interfaces,
     }

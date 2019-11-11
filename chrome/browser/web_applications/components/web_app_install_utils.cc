@@ -153,21 +153,13 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
 }
 
 std::vector<GURL> GetValidIconUrlsToDownload(
-    const WebApplicationInfo& web_app_info,
-    const InstallableData* data) {
-  // Add icon urls to download from the WebApplicationInfo.
+    const WebApplicationInfo& web_app_info) {
   std::vector<GURL> web_app_info_icon_urls;
   for (auto& info : web_app_info.icons) {
     if (!info.url.is_valid())
       continue;
-
-    // Skip downloading icon if we already have it from the InstallableManager.
-    if (data && data->primary_icon && data->primary_icon_url == info.url)
-      continue;
-
     web_app_info_icon_urls.push_back(info.url);
   }
-
   return web_app_info_icon_urls;
 }
 

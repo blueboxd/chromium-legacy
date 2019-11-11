@@ -12,7 +12,6 @@
 #include "url/gurl.h"
 
 enum class WebappInstallSource;
-struct InstallableData;
 struct WebApplicationInfo;
 class SkBitmap;
 
@@ -40,12 +39,9 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
                                   WebApplicationInfo* web_app_info,
                                   ForInstallableSite installable_site);
 
-// Form a list of icons to download: Remove icons with invalid urls. If |data|
-// is specified and contains a valid primary icon, we skip downloading any
-// matching icon in |web_app_info|.
+// Form a list of icons to download: Remove icons with invalid urls.
 std::vector<GURL> GetValidIconUrlsToDownload(
-    const WebApplicationInfo& web_app_info,
-    const InstallableData* data);
+    const WebApplicationInfo& web_app_info);
 
 // A map of icon urls to the bitmaps provided by that url.
 using IconsMap = std::map<GURL, std::vector<SkBitmap>>;

@@ -125,6 +125,7 @@ copy("chrome_camera_app_js") {
     "src/js/state.js",
     "src/js/toast.js",
     "src/js/tooltip.js",
+    "src/js/type.js",
     "src/js/util.js",
   ]
 

@@ -18,6 +18,8 @@
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_audio_encoder.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_packetizer.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_video_encoder.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/wds/src/libwds/public/media_manager.h"
 
@@ -33,7 +35,7 @@ class WiFiDisplayMediaPipeline {
   using ErrorCallback = base::Callback<void(const std::string&)>;
   using InitCompletionCallback = base::Callback<void(bool)>;
   using RegisterMediaServiceCallback =
-      base::Callback<void(mojom::WiFiDisplayMediaServiceRequest,
+      base::Callback<void(mojo::PendingReceiver<mojom::WiFiDisplayMediaService>,
                           const base::Closure&)>;
 
   static std::unique_ptr<WiFiDisplayMediaPipeline> Create(
@@ -98,7 +100,7 @@ class WiFiDisplayMediaPipeline {
 
   RegisterMediaServiceCallback service_callback_;
   ErrorCallback error_callback_;
-  mojom::WiFiDisplayMediaServicePtr media_service_;
+  mojo::Remote<mojom::WiFiDisplayMediaService> media_service_;
 
   base::WeakPtrFactory<WiFiDisplayMediaPipeline> weak_factory_;
 

@@ -708,7 +708,6 @@ class DirectoryItem extends TreeItem {
     ejectButton.className = 'root-eject align-right-icon';
     ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
     ejectButton.setAttribute('tabindex', '0');
-    ejectButton.circleRipple = true;
 
     // Block mouse handlers, handle click.
     ejectButton.addEventListener('mouseup', (event) => {
@@ -732,6 +731,11 @@ class DirectoryItem extends TreeItem {
       command.canExecuteChange(this);
       command.execute(this);
     });
+
+    // Append eject iron-icon.
+    const ironIcon = document.createElement('iron-icon');
+    ironIcon.setAttribute('icon', 'files16:eject');
+    ejectButton.appendChild(ironIcon);
 
     // Add the eject button as the last element of the tree row content.
     const parent = rowElement.querySelector('.label').parentElement;
@@ -1663,6 +1667,11 @@ class AndroidAppItem extends TreeItem {
     // element need aria-label, role, tabindex, etc?
     const externalLinkIcon = document.createElement('span');
     externalLinkIcon.className = 'external-link-icon align-right-icon';
+
+    // Append external-link iron-icon.
+    const ironIcon = document.createElement('iron-icon');
+    ironIcon.setAttribute('icon', 'files16:external-link');
+    externalLinkIcon.appendChild(ironIcon);
 
     // Add the external link as the last element of the tree row content.
     const parent = this.rowElement.querySelector('.label').parentElement;

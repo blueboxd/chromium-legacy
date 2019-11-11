@@ -11,10 +11,10 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "content/browser/service_worker/service_worker_database.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "ui/base/page_transition_types.h"
 
@@ -184,12 +184,6 @@ class ServiceWorkerMetrics {
   static void CountInitDiskCacheResult(bool result);
   static void CountReadResponseResult(ReadResponseResult result);
   static void CountWriteResponseResult(WriteResponseResult result);
-
-  // Used for ServiceWorkerDatabase.
-  static void CountOpenDatabaseResult(ServiceWorkerDatabase::Status status);
-  static void CountReadDatabaseResult(ServiceWorkerDatabase::Status status);
-  static void CountWriteDatabaseResult(ServiceWorkerDatabase::Status status);
-  static void RecordDestroyDatabaseResult(ServiceWorkerDatabase::Status status);
 
   // Used for ServiceWorkerStorage.
   static void RecordPurgeResourceResult(int net_error);

@@ -803,15 +803,15 @@ bool ContentSecurityPolicy::AllowWorkerContextFromSource(
   return AllowFromSource(ContentSecurityPolicy::DirectiveType::kWorkerSrc, url);
 }
 
-bool ContentSecurityPolicy::AllowTrustedTypePolicy(
-    const String& policy_name) const {
+bool ContentSecurityPolicy::AllowTrustedTypePolicy(const String& policy_name,
+                                                   bool is_duplicate) const {
   bool is_allowed = true;
   for (const auto& policy : policies_) {
     if (!CheckHeaderTypeMatches(CheckHeaderType::kCheckAll,
                                 policy->HeaderType())) {
       continue;
     }
-    is_allowed &= policy->AllowTrustedTypePolicy(policy_name);
+    is_allowed &= policy->AllowTrustedTypePolicy(policy_name, is_duplicate);
   }
 
   return is_allowed;

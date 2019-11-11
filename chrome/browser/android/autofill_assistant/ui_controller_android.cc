@@ -960,6 +960,10 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       env, jmodel,
       CreateJavaAdditionalSections(
           env, collect_user_data_options->additional_appended_sections));
+  Java_AssistantCollectUserDataModel_setDefaultEmail(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, collect_user_data_options->default_email));
 
   Java_AssistantCollectUserDataModel_setVisible(env, jmodel, true);
 }

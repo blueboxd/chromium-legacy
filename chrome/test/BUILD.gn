@@ -765,6 +765,16 @@ if (!is_android) {
       "//tools/media_engagement_preload:generator",
     ]
 
+    if (!is_component_build) {
+      # WebRTC's frame_analyzer doesn't build correctly on component builds,
+      # because some compilers will get confused by the fact that WebRTC
+      # symbols are exported while liking a WebRTC executable (which should
+      # instead statically link WebRTC).
+      # In any case, the tests that require frame_analyzer are only run in
+      # release mode.
+      data_deps += [ "//third_party/webrtc/rtc_tools:frame_analyzer" ]
+    }
+
     data = [
       "data/",
       "//chrome/common/extensions/docs/examples/apps/calculator/",
@@ -2153,6 +2163,7 @@ if (!is_android) {
         "../browser/chromeos/login/proxy_auth_dialog_browsertest.cc",
         "../browser/chromeos/login/quick_unlock/pin_migration_browsertest.cc",
         "../browser/chromeos/login/reset_browsertest.cc",
+        "../browser/chromeos/login/saml/password_change_success_detection_browsertest.cc",
         "../browser/chromeos/login/saml/saml_browsertest.cc",
         "../browser/chromeos/login/screens/app_downloading_screen_browsertest.cc",
         "../browser/chromeos/login/screens/assistant_optin_flow_screen_browsertest.cc",

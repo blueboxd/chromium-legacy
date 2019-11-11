@@ -861,8 +861,9 @@ bool CSPDirectiveList::AllowFromSource(
   return result;
 }
 
-bool CSPDirectiveList::AllowTrustedTypePolicy(const String& policy_name) const {
-  if (!trusted_types_ || trusted_types_->Allows(policy_name))
+bool CSPDirectiveList::AllowTrustedTypePolicy(const String& policy_name,
+                                              bool is_duplicate) const {
+  if (!trusted_types_ || trusted_types_->Allows(policy_name, is_duplicate))
     return true;
 
   ReportViolation(
@@ -878,7 +879,6 @@ bool CSPDirectiveList::AllowTrustedTypePolicy(const String& policy_name) const {
 
   return DenyIfEnforcingPolicy();
 }
-
 
 bool CSPDirectiveList::AllowAncestors(
     LocalFrame* frame,

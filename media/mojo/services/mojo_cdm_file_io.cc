@@ -80,12 +80,13 @@ void MojoCdmFileIO::Open(const char* file_name, uint32_t file_name_size) {
   // Open() failed.
   auto callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       base::BindOnce(&MojoCdmFileIO::OnFileOpened, weak_factory_.GetWeakPtr()),
-      StorageStatus::kFailure, nullptr);
+      StorageStatus::kFailure, mojo::NullAssociatedRemote());
   cdm_storage_->Open(file_name_string, std::move(callback));
 }
 
-void MojoCdmFileIO::OnFileOpened(StorageStatus status,
-                                 mojom::CdmFileAssociatedPtrInfo cdm_file) {
+void MojoCdmFileIO::OnFileOpened(
+    StorageStatus status,
+    mojo::PendingAssociatedRemote<mojom::CdmFile> cdm_file) {
   DVLOG(3) << __func__ << " file: " << file_name_ << ", status: " << status;
 
   // This logs the end of the async Open() request, and separately logs

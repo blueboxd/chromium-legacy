@@ -26,8 +26,6 @@ public final class NdefMessageUtils {
     private static final String TAG = "NdefMessageUtils";
     private static final String AUTHOR_RECORD_DOMAIN = "w3.org";
     private static final String AUTHOR_RECORD_TYPE = "A";
-    private static final String TEXT_MIME = "text/plain";
-    private static final String OCTET_STREAM_MIME = "application/octet-stream";
     private static final String ENCODING_UTF8 = "utf-8";
     private static final String ENCODING_UTF16 = "utf-16";
 
@@ -187,7 +185,6 @@ public final class NdefMessageUtils {
     private static NdefRecord createEmptyRecord() {
         NdefRecord nfcRecord = new NdefRecord();
         nfcRecord.recordType = RECORD_TYPE_EMPTY;
-        nfcRecord.mediaType = "";
         nfcRecord.data = new byte[0];
         return nfcRecord;
     }
@@ -203,7 +200,6 @@ public final class NdefMessageUtils {
         } else {
             nfcRecord.recordType = RECORD_TYPE_URL;
         }
-        nfcRecord.mediaType = TEXT_MIME;
         nfcRecord.data = ApiCompatibilityUtils.getBytesUtf8(uri.toString());
         return nfcRecord;
     }
@@ -231,7 +227,6 @@ public final class NdefMessageUtils {
 
         NdefRecord nfcRecord = new NdefRecord();
         nfcRecord.recordType = RECORD_TYPE_TEXT;
-        nfcRecord.mediaType = TEXT_MIME;
         // According to NFCForum-TS-RTD_Text_1.0 specification, section 3.2.1 Syntax.
         // First byte of the payload is status byte, defined in Table 3: Status Byte Encodings.
         // 0-5: lang code length
@@ -283,7 +278,6 @@ public final class NdefMessageUtils {
         // |type| may be a custom type name or a local type name (for an embedded record).
         NdefRecord nfcRecord = new NdefRecord();
         nfcRecord.recordType = type;
-        nfcRecord.mediaType = OCTET_STREAM_MIME;
         nfcRecord.data = payload;
         nfcRecord.payloadMessage = getNdefMessageFromPayload(payload);
         return nfcRecord;

@@ -29,6 +29,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_status_code.h"
 
+using BrowserDMToken = policy::BrowserDMTokenStorage::BrowserDMToken;
+
 namespace safe_browsing {
 namespace {
 
@@ -38,13 +40,19 @@ const int kScanningTimeoutSeconds = 5 * 60;           // 5 minutes
 // here.
 const char kSbBinaryUploadUrl[] = "";
 
-std::string* GetTestingDMToken() {
-  static std::string dm_token;
+const char** GetTestingDMTokenStorage() {
+  static const char* dm_token = "";
   return &dm_token;
 }
 
-std::string GetDMToken() {
-  std::string dm_token = *GetTestingDMToken();
+BrowserDMToken GetTestingDMToken() {
+  const char* dm_token = *GetTestingDMTokenStorage();
+  return dm_token && dm_token[0] ? BrowserDMToken::CreateValidToken(dm_token)
+                                 : BrowserDMToken::CreateEmptyToken();
+}
+
+policy::BrowserDMTokenStorage::BrowserDMToken GetDMToken() {
+  auto dm_token = GetTestingDMToken();
 
 #if !defined(OS_CHROMEOS)
   // This is not compiled on chromeos because
@@ -52,9 +60,9 @@ std::string GetDMToken() {
   // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does not return a
   // valid token either.  Once these are fixed the #if !defined can be removed.
 
-  if (dm_token.empty() &&
+  if (dm_token.is_empty() &&
       policy::ChromeBrowserCloudManagementController::IsEnabled()) {
-    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
+    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
   }
 #endif
 
@@ -412,8 +420,8 @@ void BinaryUploadService::IsAuthorized(AuthorizationCallback callback) {
   if (!can_upload_data_.has_value()) {
     // Send a request to check if the browser can upload data.
     if (!pending_validate_data_upload_request_) {
-      std::string dm_token = GetDMToken();
-      if (dm_token.empty()) {
+      auto dm_token = GetDMToken();
+      if (!dm_token.is_valid()) {
         std::move(callback).Run(false);
         return;
       }
@@ -422,7 +430,7 @@ void BinaryUploadService::IsAuthorized(AuthorizationCallback callback) {
       auto request = std::make_unique<ValidateDataUploadRequest>(base::BindOnce(
           &BinaryUploadService::ValidateDataUploadRequestCallback,
           weakptr_factory_.GetWeakPtr()));
-      request->set_dm_token(dm_token);
+      request->set_dm_token(dm_token.value());
       UploadForDeepScanning(std::move(request));
     }
     authorization_callbacks_.push_back(std::move(callback));

@@ -64,6 +64,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
   if (options->type() == "classic") {
     // "classic: Fetch a classic worker script given url, outside settings,
     // destination, and inside settings."
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kClassicDedicatedWorker);
     switch (off_main_thread_fetch_option) {
       case OffMainThreadWorkerScriptFetchOption::kEnabled: {
         auto* resource_timing_notifier =
@@ -86,6 +88,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     // "module: Fetch a module worker script graph given url, outside settings,
     // destination, the value of the credentials member of options, and inside
     // settings."
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kModuleDedicatedWorker);
     network::mojom::CredentialsMode credentials_mode;
     bool result = Request::ParseCredentialsMode(options->credentials(),
                                                 &credentials_mode);

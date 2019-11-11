@@ -22,3 +22,8 @@ namespace TestNamespace {
   readonly attribute TestInterfaceConstructor attr2;
   void op1(long x, boolean y, TestInterfaceConstructor z);
 };
+
+dictionary ExampleDictionary {
+  Node node;
+  long fooMember;
+};

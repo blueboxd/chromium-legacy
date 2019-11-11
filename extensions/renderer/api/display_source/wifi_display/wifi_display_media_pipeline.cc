@@ -133,7 +133,7 @@ void WiFiDisplayMediaPipeline::OnInitialize(
       break;
     case InitializationStep::MEDIA_SERVICE:
       service_callback_.Run(
-          mojo::MakeRequest(&media_service_),
+          media_service_.BindNewPipeAndPassReceiver(),
           base::Bind(&WiFiDisplayMediaPipeline::OnMediaServiceRegistered,
                      weak_factory_.GetWeakPtr(), callback));
       break;
@@ -204,7 +204,7 @@ void WiFiDisplayMediaPipeline::OnMediaServiceRegistered(
     const InitCompletionCallback& callback) {
   DCHECK(media_service_);
   auto error_callback = base::Bind(error_callback_, kErrorUnableSendMedia);
-  media_service_.set_connection_error_handler(error_callback);
+  media_service_.set_disconnect_handler(error_callback);
   media_service_->SetDestinationPoint(
       net::IPEndPoint(sink_ip_address_,
                       static_cast<uint16_t>(sink_rtp_ports_.first)),

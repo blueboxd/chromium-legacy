@@ -347,51 +347,9 @@ void ElementFinder::OnDescribeNode(
   auto* node = result->GetNode();
   std::vector<int> backend_ids;
 
-  if (node->HasContentDocument()) {
-    // If the frame has a ContentDocument, it's considered a local frame.
-    // We need to resolve the RenderFrameHost for autofill.
+  if (node->GetNodeName() == "IFRAME") {
+    DCHECK(node->HasFrameId());  // Ensure all frames have an id.
 
-    backend_ids.emplace_back(node->GetContentDocument()->GetBackendNodeId());
-
-    element_result_->container_frame_selector_index = index;
-
-    if (node->HasFrameId()) {
-      element_result_->container_frame_host =
-          FindCorrespondingRenderFrameHost(node->GetFrameId());
-    } else {
-      // TODO(b/143318024): Remove the fallback.
-      std::string frame_name;
-      if (node->HasAttributes()) {
-        const std::vector<std::string>* attributes = node->GetAttributes();
-        for (size_t i = 0; i < attributes->size();) {
-          if ((*attributes)[i] == "name") {
-            frame_name = (*attributes)[i + 1];
-            break;
-          }
-          // Jump two positions since attribute name and value are always
-          // paired.
-          i = i + 2;
-        }
-      }
-      element_result_->container_frame_host = FindCorrespondingRenderFrameHost(
-          frame_name, node->GetContentDocument()->GetDocumentURL());
-    }
-
-    if (!element_result_->container_frame_host) {
-      DVLOG(1) << __func__ << " Failed to find corresponding owner frame.";
-      SendResult(ClientStatus(FRAME_HOST_NOT_FOUND));
-      return;
-    }
-  } else if (node->HasFrameId()) {
-    // If the frame has no ContentDocument, it's considered an
-    // OutOfProcessIFrame.
-    // See https://www.chromium.org/developers/design-documents/oop-iframes for
-    // full documentation.
-    // We need to assign the frame id, such that devtools can resolve the
-    // session calls should be executed on. We also need to resolve the
-    // RenderFrameHost for autofill.
-
-    element_result_->node_frame_id = node->GetFrameId();
     element_result_->container_frame_selector_index = index;
     element_result_->container_frame_host =
         FindCorrespondingRenderFrameHost(node->GetFrameId());
@@ -402,12 +360,29 @@ void ElementFinder::OnDescribeNode(
       return;
     }
 
-    // Kick off another find element chain to walk down the OOP iFrame.
-    devtools_client_->GetRuntime()->Evaluate(
-        std::string(kGetDocumentElement), element_result_->node_frame_id,
-        base::BindOnce(&ElementFinder::OnGetDocumentElement,
-                       weak_ptr_factory_.GetWeakPtr(), index + 1));
-    return;
+    if (node->HasContentDocument()) {
+      // If the frame has a ContentDocument it's considered a local frame. We
+      // don't need to assign the frame id, since devtools can just send the
+      // commands to the main session.
+
+      backend_ids.emplace_back(node->GetContentDocument()->GetBackendNodeId());
+    } else {
+      // If the frame has no ContentDocument, it's considered an
+      // OutOfProcessIFrame.
+      // See https://www.chromium.org/developers/design-documents/oop-iframes
+      // for full documentation.
+      // With the iFrame running in a different process it is necessary to pass
+      // the correct session id from devtools. We need to set the frame id,
+      // such that devtools can resolve the corresponding session id.
+      element_result_->node_frame_id = node->GetFrameId();
+
+      // Kick off another find element chain to walk down the OOP iFrame.
+      devtools_client_->GetRuntime()->Evaluate(
+          std::string(kGetDocumentElement), element_result_->node_frame_id,
+          base::BindOnce(&ElementFinder::OnGetDocumentElement,
+                         weak_ptr_factory_.GetWeakPtr(), index + 1));
+      return;
+    }
   }
 
   if (node->HasShadowRoots()) {
@@ -452,21 +427,6 @@ content::RenderFrameHost* ElementFinder::FindCorrespondingRenderFrameHost(
   }
 
   return nullptr;
-}
-
-content::RenderFrameHost* ElementFinder::FindCorrespondingRenderFrameHost(
-    std::string name,
-    std::string document_url) {
-  content::RenderFrameHost* ret_frame = nullptr;
-  for (auto* frame : web_contents_->GetAllFrames()) {
-    if (frame->GetFrameName() == name &&
-        frame->GetLastCommittedURL().spec() == document_url) {
-      DCHECK(!ret_frame);
-      ret_frame = frame;
-    }
-  }
-
-  return ret_frame;
 }
 
 }  // namespace autofill_assistant

@@ -367,10 +367,12 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "details."};
 
     case WebFeature::kCSSSelectorInternalMediaControlsOverlayCastButton:
-      return {
-          "CSSSelectorInternalMediaControlsOverlayCastButton", kM61,
-          WillBeRemoved("-internal-media-controls-overlay-cast-button selector",
-                        kM61, "5714245488476160")};
+      return {"CSSSelectorInternalMediaControlsOverlayCastButton", kUnknown,
+              "The disableRemotePlayback attribute should be used in order to "
+              "disable the default Cast integration instead of using "
+              "-internal-media-controls-overlay-cast-button selector. See "
+              "https://www.chromestatus.com/feature/5714245488476160 for more "
+              "details."};
 
     case WebFeature::kSelectionAddRangeIntersect:
       return {

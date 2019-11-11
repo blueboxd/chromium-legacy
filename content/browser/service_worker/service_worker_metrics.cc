@@ -260,30 +260,6 @@ void ServiceWorkerMetrics::CountWriteResponseResult(
                             result, NUM_WRITE_RESPONSE_RESULT_TYPES);
 }
 
-void ServiceWorkerMetrics::CountOpenDatabaseResult(
-    ServiceWorkerDatabase::Status status) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.OpenResult",
-                            status, ServiceWorkerDatabase::STATUS_ERROR_MAX);
-}
-
-void ServiceWorkerMetrics::CountReadDatabaseResult(
-    ServiceWorkerDatabase::Status status) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.ReadResult",
-                            status, ServiceWorkerDatabase::STATUS_ERROR_MAX);
-}
-
-void ServiceWorkerMetrics::CountWriteDatabaseResult(
-    ServiceWorkerDatabase::Status status) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.WriteResult",
-                            status, ServiceWorkerDatabase::STATUS_ERROR_MAX);
-}
-
-void ServiceWorkerMetrics::RecordDestroyDatabaseResult(
-    ServiceWorkerDatabase::Status status) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.DestroyDatabaseResult",
-                            status, ServiceWorkerDatabase::STATUS_ERROR_MAX);
-}
-
 void ServiceWorkerMetrics::RecordPurgeResourceResult(int net_error) {
   base::UmaHistogramSparse("ServiceWorker.Storage.PurgeResourceResult",
                            std::abs(net_error));

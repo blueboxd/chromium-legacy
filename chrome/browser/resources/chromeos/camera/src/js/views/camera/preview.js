@@ -105,6 +105,13 @@ cca.views.camera.Preview.prototype = {
   get stream() {
     return this.stream_;
   },
+
+  /**
+   * @return {!HTMLVideoElement}
+   */
+  get video() {
+    return this.video_;
+  },
 };
 
 /**

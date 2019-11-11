@@ -232,7 +232,7 @@ void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
   background_installation_ = true;
 
   std::vector<GURL> icon_urls =
-      GetValidIconUrlsToDownload(*web_application_info, /*data=*/nullptr);
+      GetValidIconUrlsToDownload(*web_application_info);
 
   // Skip downloading the page favicons as everything in is the URL list.
   data_retriever_->GetIcons(
@@ -255,7 +255,7 @@ void WebAppInstallTask::UpdateWebAppFromInfo(
   background_installation_ = true;
 
   std::vector<GURL> icon_urls =
-      GetValidIconUrlsToDownload(*web_application_info, /*data=*/nullptr);
+      GetValidIconUrlsToDownload(*web_application_info);
 
   data_retriever_->GetIcons(
       web_contents, std::move(icon_urls),
@@ -462,8 +462,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
     return;
   }
 
-  std::vector<GURL> icon_urls =
-      GetValidIconUrlsToDownload(*web_app_info, /*data=*/nullptr);
+  std::vector<GURL> icon_urls = GetValidIconUrlsToDownload(*web_app_info);
 
   // A system app should always have a manifest icon.
   if (install_source_ == WebappInstallSource::SYSTEM_DEFAULT) {

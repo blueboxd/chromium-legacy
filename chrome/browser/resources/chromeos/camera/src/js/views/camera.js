@@ -186,7 +186,9 @@ cca.views.Camera.prototype.beginTake_ = function() {
   this.take_ = (async () => {
     try {
       await cca.views.camera.timertick.start();
-
+      if (!cca.state.get('video-mode')) {
+        cca.util.animateOnce(this.preview_.video);
+      }
       await this.modes_.current.startCapture();
     } catch (e) {
       if (e && e.message == 'cancel') {
@@ -309,7 +311,7 @@ cca.views.Camera.prototype.startWithMode_ = async function(deviceId, mode) {
   if (deviceOperator !== null) {
     if (deviceId !== null) {
       const previewRs =
-          (await this.infoUpdater_.getDeviceResolutions(deviceId))[1];
+          (await this.infoUpdater_.getDeviceResolutions(deviceId)).video;
       resolCandidates =
           this.modes_.getResolutionCandidates(mode, deviceId, previewRs);
     } else {
@@ -320,7 +322,7 @@ cca.views.Camera.prototype.startWithMode_ = async function(deviceId, mode) {
     resolCandidates =
         await this.modes_.getResolutionCandidatesV1(mode, deviceId);
   }
-  for (const [captureResolution, previewCandidates] of resolCandidates) {
+  for (const {resolution: captureR, previewCandidates} of resolCandidates) {
     for (const constraints of previewCandidates) {
       if (this.suspended) {
         throw new cca.views.CameraSuspendedError();
@@ -333,10 +335,11 @@ cca.views.Camera.prototype.startWithMode_ = async function(deviceId, mode) {
         }
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         await this.preview_.start(stream);
-        this.facingMode_ =
-            await this.options_.updateValues(constraints, stream);
+        this.facingMode_ = await this.options_.updateValues(stream);
         await this.modes_.updateModeSelectionUI(deviceId);
-        await this.modes_.updateMode(mode, stream, deviceId, captureResolution);
+        await this.modes_.updateMode(
+            mode, stream, deviceId,
+            captureR && [captureR.width, captureR.height]);
         cca.nav.close('warning', 'no-camera');
         return true;
       } catch (e) {

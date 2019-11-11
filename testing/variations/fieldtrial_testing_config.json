@@ -601,21 +601,6 @@
             ]
         }
     ],
-    "AppListQueryBasedMixedTypesRanker": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "AppListQueryBasedMixedTypesRanker",
-                    "enable_features": [
-                        "EnableQueryBasedMixedTypesRanker"
-                    ]
-                }
-            ]
-        }
-    ],
     "AppListZeroStateMixedTypesRanker": [
         {
             "platforms": [
@@ -2549,6 +2534,21 @@
                     },
                     "enable_features": [
                         "freeze-background-tab-on-network-idle"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FuzzyAppSearch": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableFuzzyAppSearch"
                     ]
                 }
             ]
@@ -5656,6 +5656,24 @@
                     "enable_features": [
                         "SearchEnginePromo.ExistingDevice",
                         "SearchEnginePromo.NewDevice"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SearchRankerQueryBasedMixedTypes": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "use_aggregated_model": "true"
+                    },
+                    "enable_features": [
+                        "EnableQueryBasedMixedTypesRanker"
                     ]
                 }
             ]

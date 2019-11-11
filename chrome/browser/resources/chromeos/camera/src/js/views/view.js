@@ -25,7 +25,7 @@ cca.views.View = function(
     selector, dismissByEsc = false, dismissByBkgndClick = false) {
   /**
    * @type {!HTMLElement}
-   * @private
+   * @protected
    */
   this.rootElement_ =
       /** @type {!HTMLElement} */ (document.querySelector(selector));

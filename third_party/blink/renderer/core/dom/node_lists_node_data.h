@@ -54,7 +54,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   EmptyNodeList* EnsureEmptyChildNodeList(Node& node) {
     DCHECK(ThreadState::Current()->IsGCForbidden());
     if (child_node_list_)
-      return ToEmptyNodeList(child_node_list_);
+      return To<EmptyNodeList>(child_node_list_.Get());
     auto* list = MakeGarbageCollected<EmptyNodeList>(node);
     child_node_list_ = list;
     return list;

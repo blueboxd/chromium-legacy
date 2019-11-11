@@ -2465,6 +2465,8 @@ enum WebFeature {
   kHasGlyphRelativeUnits = 3081,
   kCountQueuingStrategyConstructor = 3082,
   kByteLengthQueuingStrategyConstructor = 3083,
+  kClassicDedicatedWorker = 3084,
+  kModuleDedicatedWorker = 3085,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 
@@ -134,6 +135,9 @@ class CORE_EXPORT NGInlineCursor {
   bool IsHorizontal() const;
 
   // True if the current position is text or atomic inline box.
+  // Note: Because of this function is used for caret rect, hit testing, etc,
+  // this function returns false for hidden for paint, text overflow ellipsis,
+  // and line break hyphen.
   bool IsInlineLeaf() const;
 
   // True if the current position is a line box. It is error to call at end.
@@ -161,7 +165,7 @@ class CORE_EXPORT NGInlineCursor {
   Node* CurrentNode() const;
 
   // Returns bidi level of current position. It is error to call other than
-  // text and atomic inline.
+  // text and atomic inline. It is also error to call |IsGeneratedTextType()|.
   UBiDiLevel CurrentBidiLevel() const;
 
   // Returns text direction of current text or atomic inline. It is error to
@@ -182,6 +186,10 @@ class CORE_EXPORT NGInlineCursor {
   // It is error when this cursor doesn't point to text fragment.
   unsigned CurrentTextStartOffset() const;
   unsigned CurrentTextEndOffset() const;
+
+  // Returns text of the current position. It is error to call other than
+  // text.
+  StringView CurrentText() const;
 
   // Returns |ShapeResultView| of the current position. It is error to call
   // other than text.

@@ -90,9 +90,6 @@ class ElementFinder : public WebControllerWorker {
 
   content::RenderFrameHost* FindCorrespondingRenderFrameHost(
       std::string frame_id);
-  content::RenderFrameHost* FindCorrespondingRenderFrameHost(
-      std::string name,
-      std::string document_url);
 
   content::WebContents* const web_contents_;
   DevtoolsClient* const devtools_client_;

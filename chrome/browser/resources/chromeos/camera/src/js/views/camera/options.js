@@ -167,12 +167,10 @@ cca.views.camera.Options.prototype.animatePreviewGrid_ = function() {
 
 /**
  * Updates the options' values for the current constraints and stream.
- * @param {Object} constraints Current stream constraints in use.
  * @param {MediaStream} stream Current Stream in use.
  * @return {?string} Facing-mode in use.
  */
-cca.views.camera.Options.prototype.updateValues =
-    async function(constraints, stream) {
+cca.views.camera.Options.prototype.updateValues = async function(stream) {
   var track = stream.getVideoTracks()[0];
   var trackSettings = track.getSettings && track.getSettings();
   let facingMode = trackSettings && trackSettings.facingMode;
@@ -186,34 +184,11 @@ cca.views.camera.Options.prototype.updateValues =
     this.isV1NoFacingConfig_ = facingMode === undefined;
   }
   facingMode = this.isV1NoFacingConfig_ ? null : facingMode || 'external';
-  this.updateVideoDeviceId_(constraints, trackSettings);
+  this.videoDeviceId_ = trackSettings && trackSettings.deviceId || null;
   this.updateMirroring_(facingMode);
   this.audioTrack_ = stream.getAudioTracks()[0];
   this.updateAudioByMic_();
   return facingMode;
-};
-
-/**
- * Updates the video device id by the new stream.
- * @param {Object} constraints Stream constraints in use.
- * @param {MediaTrackSettings} trackSettings Video track settings in use.
- * @private
- */
-cca.views.camera.Options.prototype.updateVideoDeviceId_ = function(
-    constraints, trackSettings) {
-  if (constraints.video.deviceId) {
-    // For non-default cameras fetch the deviceId from constraints.
-    // Works on all supported Chrome versions.
-    this.videoDeviceId_ = constraints.video.deviceId.exact;
-  } else {
-    // For default camera, obtain the deviceId from settings, which is
-    // a feature available only from 59. For older Chrome versions,
-    // it's impossible to detect the device id. As a result, if the
-    // default camera was changed to rear in chrome://settings, then
-    // toggling the camera may not work when pressed for the first time
-    // (the same camera would be opened).
-    this.videoDeviceId_ = trackSettings && trackSettings.deviceId || null;
-  }
 };
 
 /**

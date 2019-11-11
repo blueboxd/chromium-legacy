@@ -221,38 +221,39 @@ html[class*='col-resize'] #directory-tree {
 }
 
 #directory-tree .tree-row > .align-right-icon {
+  --iron-icon-height: 16px;
+  --iron-icon-width: 16px;
   border-style: none;
   cursor: pointer;
   flex: none;
   height: 40px;
   position: relative;
   width: 40px;
-  z-index: 1;  /* Make sure the icon is on upper layer than paper-ripple. */
+  z-index: 1;
 }
 
-#directory-tree .tree-row > .external-link-icon {
-  background: url(../images/files/ui/external_link.svg) no-repeat center;
+#directory-tree .tree-row > .external-link-icon iron-icon {
+  padding: 12px;
 }
 
 #directory-tree .tree-row > .root-eject {
-  background: -webkit-image-set(
-      url(../images/files/ui/eject.png) 1x,
-      url(../images/files/ui/2x/eject.png) 2x) no-repeat center;
-  border-style: none;
+  --active-bg: none;  /* prevent dark-mode activation color */
+  --text-color: currentColor;
   box-shadow: none;
-  min-width: 16px;
-  outline-color: rgb(77, 144, 254);
-  outline-width: 1px;
-  padding: 10px;
+  min-width: 40px;
+  padding: 12px;
 }
 
-#directory-tree .tree-row[selected] > .root-eject {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/eject_active.png) 1x,
-      url(../images/files/ui/2x/eject_active.png) 2x);
+html[class*='col-resize'] #directory-tree .tree-row > .root-eject:hover {
+  --hover-bg-color: none;
+}
+
+#directory-tree .tree-row > .root-eject:focus {
+  outline: 1px auto rgb(77, 144, 254);
 }
 
 #directory-tree .tree-row > .root-eject:active {
+  border-radius: 20px;
   outline-width: 0;
 }
 

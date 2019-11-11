@@ -331,10 +331,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // May return nullptr if the context has shut down.
   base::WeakPtr<ServiceWorkerContextCore> context() { return context_; }
 
-  // Returns true if the context referred to by this host (i.e. |context_|) is
-  // still alive.
-  bool IsContextAlive();
-
   // Dispatches message event to the document.
   void PostMessageToClient(ServiceWorkerVersion* version,
                            blink::TransferableMessage message);

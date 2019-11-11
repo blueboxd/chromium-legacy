@@ -52,6 +52,7 @@
       <structure name="IDR_CAMERA_TIMERTICK_JS" file="src/js/views/camera/timertick.js" type="chrome_html" />
       <structure name="IDR_CAMERA_TOAST_JS" file="src/js/toast.js" type="chrome_html" />
       <structure name="IDR_CAMERA_TOOLTIP_JS" file="src/js/tooltip.js" type="chrome_html" />
+      <structure name="IDR_CAMERA_TYPE_JS" file="src/js/type.js" type="chrome_html" />
       <structure name="IDR_CAMERA_UTIL_JS" file="src/js/util.js" type="chrome_html" />
       <structure name="IDR_CAMERA_VIDEO_SAVER_INTERFACE_JS" file="src/js/models/video_saver_interface.js" type="chrome_html" />
       <structure name="IDR_CAMERA_INTENT_VIDEO_SAVER_JS" file="src/js/models/file_video_saver.js" type="chrome_html" />

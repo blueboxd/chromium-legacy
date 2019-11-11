@@ -1629,24 +1629,18 @@ crbug.com/6606 external/wpt/mathml/relations/css-styling/visibility-004.html [ F
 crbug.com/6606 external/wpt/mathml/relations/css-styling/width-height-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/writing-mode/writing-mode-001.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/writing-mode/writing-mode-002.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/html5-tree/clipboard-event-handlers.tentative.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/color-attributes-1.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/html5-tree/css-inline-style-interface.tentative.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/display-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/display-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-2.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/html5-tree/html-or-foreign-element-interfaces.tentative.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/integration-point-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/integration-point-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/integration-point-4.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/html5-tree/math-global-event-handlers.tentative.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/required-extensions-2.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/html5-tree/tabindex-001.html [ Failure ]
 
 # These tests time out when MathML is not implemented.
 # See https://github.com/mathml-refresh/mathml/issues/167
-crbug.com/6606 external/wpt/mathml/relations/html5-tree/css-inline-style-dynamic.tentative.html [ Timeout ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-3.html [ Timeout ]
 
 # This test fails on macOS.

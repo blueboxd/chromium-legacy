@@ -25,7 +25,7 @@ interface CdmStorage {
   //   and must not start with an underscore ('_'). If this happens,
   //   |status| == kFailure is returned.
   Open(string file_name)
-    => (Status status, associated CdmFile? cdm_file);
+    => (Status status, pending_associated_remote<CdmFile>? cdm_file);
 };
 
 // Provides a way to access the contents of the file opened. When the connection

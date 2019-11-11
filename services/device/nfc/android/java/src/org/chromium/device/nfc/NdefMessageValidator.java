@@ -36,8 +36,13 @@ public final class NdefMessageValidator {
         if (record == null) return false;
         if (record.recordType.equals(NdefMessageUtils.RECORD_TYPE_EMPTY)) return true;
         if (record.data == null) return false;
-        if (record.recordType.equals(NdefMessageUtils.RECORD_TYPE_MIME)
-                && (record.mediaType == null || record.mediaType.isEmpty())) {
+        if (record.recordType.equals(NdefMessageUtils.RECORD_TYPE_MIME)) {
+            // 'mime' type records must have mediaType.
+            if (record.mediaType == null || record.mediaType.isEmpty()) {
+                return false;
+            }
+        } else if (record.mediaType != null) {
+            // Other types must not have mediaType.
             return false;
         }
         return true;

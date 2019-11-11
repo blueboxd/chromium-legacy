@@ -145,6 +145,7 @@ RESOURCES = \
 	src/js/state.js \
 	src/js/toast.js \
 	src/js/tooltip.js \
+	src/js/type.js \
 	src/js/util.js \
 	src/js/views/browser.js \
 	src/js/views/camera.js \

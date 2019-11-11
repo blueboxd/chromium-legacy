@@ -871,7 +871,7 @@ cca.util.openHelp = function() {
 
 /**
  * Sets up i18n messages on DOM subtree by i18n attributes.
- * @param {HTMLElement} rootElement Root of DOM subtree to be set up with.
+ * @param {!HTMLElement} rootElement Root of DOM subtree to be set up with.
  */
 cca.util.setupI18nElements = function(rootElement) {
   var getElements = (attr) => rootElement.querySelectorAll('[' + attr + ']');

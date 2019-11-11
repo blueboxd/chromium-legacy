@@ -176,7 +176,6 @@ void SkiaOutputDeviceGL::SetGpuVSyncEnabled(bool enabled) {
   gl_surface_->SetGpuVSyncEnabled(enabled);
 }
 
-#if defined(OS_WIN)
 void SkiaOutputDeviceGL::SetEnableDCLayers(bool enable) {
   gl_surface_->SetEnableDCLayers(enable);
 }
@@ -221,7 +220,6 @@ void SkiaOutputDeviceGL::ScheduleDCLayers(
       DLOG(ERROR) << "ScheduleDCLayer failed";
   }
 }
-#endif
 
 void SkiaOutputDeviceGL::EnsureBackbuffer() {
   gl_surface_->SetBackbufferAllocation(true);

@@ -18,7 +18,7 @@ cca.ResolutionEventBroker = class {
     /**
      * Handler for requests of changing user-preferred resolution used in photo
      * taking.
-     * @type {function(string, number, number)}
+     * @type {!function(string, number, number)}
      * @private
      */
     this.photoChangePrefResolHandler_ = () => {};
@@ -26,7 +26,7 @@ cca.ResolutionEventBroker = class {
     /**
      * Handler for requests of changing user-preferred resolution used in video
      * recording.
-     * @type {function(string, number, number)}
+     * @type {!function(string, number, number)}
      * @private
      */
     this.videoChangePrefResolHandler_ = () => {};
@@ -34,7 +34,7 @@ cca.ResolutionEventBroker = class {
     /**
      * Listener for changes of preferred photo resolution used on particular
      * video device.
-     * @type {function(string, number, number)}
+     * @type {!function(string, number, number)}
      * @private
      */
     this.photoPrefResolChangeListener_ = () => {};
@@ -42,7 +42,7 @@ cca.ResolutionEventBroker = class {
     /**
      * Listener for changes of preferred video resolution used on particular
      * video device.
-     * @type {function(string, number, number)}
+     * @type {!function(string, number, number)}
      * @private
      */
     this.videoPrefResolChangeListener_ = () => {};
@@ -51,7 +51,7 @@ cca.ResolutionEventBroker = class {
   /**
    * Registers handler for requests of changing user-preferred resolution used
    * in photo taking.
-   * @param {function(string, number, number)} handler Called with device id of
+   * @param {!function(string, number, number)} handler Called with device id of
    *     video device to be changed and width, height of new resolution.
    */
   registerChangePhotoPrefResolHandler(handler) {
@@ -61,7 +61,7 @@ cca.ResolutionEventBroker = class {
   /**
    * Registers handler for requests of changing user-preferred resolution used
    * in video recording.
-   * @param {function(string, number, number)} handler Called with device id of
+   * @param {!function(string, number, number)} handler Called with device id of
    *     video device to be changed and width, height of new resolution.
    */
   registerChangeVideoPrefResolHandler(handler) {
@@ -91,7 +91,7 @@ cca.ResolutionEventBroker = class {
   /**
    * Adds listener for changes of preferred resolution used in taking photo on
    * particular video device.
-   * @param {function(string, number, number)} listener Called with changed
+   * @param {!function(string, number, number)} listener Called with changed
    *     video device id and new preferred resolution width, height.
    */
   addPhotoPrefResolChangeListener(listener) {
@@ -101,7 +101,7 @@ cca.ResolutionEventBroker = class {
   /**
    * Adds listener for changes of preferred resolution used in video recording
    * on particular video device.
-   * @param {function(string, number, number)} listener Called with changed
+   * @param {!function(string, number, number)} listener Called with changed
    *     video device id and new preferred resolution width, height.
    */
   addVideoPrefResolChangeListener(listener) {

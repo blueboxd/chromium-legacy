@@ -16,11 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
-#include "content/browser/service_worker/service_worker_metrics.h"
-#include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/common/content_switches.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -1337,7 +1332,10 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DestroyDatabase() {
 
   Status status = LevelDBStatusToServiceWorkerDBStatus(
       leveldb_chrome::DeleteDB(path_, leveldb_env::Options()));
-  ServiceWorkerMetrics::RecordDestroyDatabaseResult(status);
+
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.DestroyDatabaseResult",
+                            status, ServiceWorkerDatabase::STATUS_ERROR_MAX);
+
   return status;
 }
 
@@ -1980,7 +1978,9 @@ void ServiceWorkerDatabase::HandleOpenResult(const base::Location& from_here,
   DCHECK(sequence_checker_.CalledOnValidSequence());
   if (status != STATUS_OK)
     Disable(from_here, status);
-  ServiceWorkerMetrics::CountOpenDatabaseResult(status);
+
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.OpenResult", status,
+                            ServiceWorkerDatabase::STATUS_ERROR_MAX);
 }
 
 void ServiceWorkerDatabase::HandleReadResult(const base::Location& from_here,
@@ -1988,7 +1988,9 @@ void ServiceWorkerDatabase::HandleReadResult(const base::Location& from_here,
   DCHECK(sequence_checker_.CalledOnValidSequence());
   if (status != STATUS_OK)
     Disable(from_here, status);
-  ServiceWorkerMetrics::CountReadDatabaseResult(status);
+
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.ReadResult", status,
+                            ServiceWorkerDatabase::STATUS_ERROR_MAX);
 }
 
 void ServiceWorkerDatabase::HandleWriteResult(const base::Location& from_here,
@@ -1996,7 +1998,9 @@ void ServiceWorkerDatabase::HandleWriteResult(const base::Location& from_here,
   DCHECK(sequence_checker_.CalledOnValidSequence());
   if (status != STATUS_OK)
     Disable(from_here, status);
-  ServiceWorkerMetrics::CountWriteDatabaseResult(status);
+
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.WriteResult", status,
+                            ServiceWorkerDatabase::STATUS_ERROR_MAX);
 }
 
 bool ServiceWorkerDatabase::IsDatabaseInMemory() const {

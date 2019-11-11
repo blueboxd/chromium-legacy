@@ -43,6 +43,7 @@
 namespace safe_browsing {
 
 using content::BrowserThread;
+using policy::BrowserDMTokenStorage;
 
 namespace {
 
@@ -359,8 +360,9 @@ void CheckClientDownloadRequest::UploadBinary(
     request->set_request_malware_scan(std::move(malware_request));
   }
 
-  request->set_dm_token(
-      policy::BrowserDMTokenStorage::Get()->RetrieveDMToken());
+  auto dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+  DCHECK(dm_token.is_valid());
+  request->set_dm_token(dm_token.value());
 
   service()->UploadForDeepScanning(profile, std::move(request));
 }
@@ -389,8 +391,9 @@ bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
           CheckContentComplianceValues::CHECK_UPLOADS_AND_DOWNLOADS)
     return false;
 
-  // If there's no DM token, the upload will fail, so we can skip uploading now.
-  if (policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty())
+  // If there's no valid DM token, the upload will fail, so we can skip
+  // uploading now.
+  if (!BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken().is_valid())
     return false;
 
   const base::ListValue* domains = g_browser_process->local_state()->GetList(
@@ -428,8 +431,9 @@ bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(
           SendFilesForMalwareCheckValues::SEND_UPLOADS_AND_DOWNLOADS)
     return false;
 
-  // If there's no DM token, the upload will fail, so we can skip uploading now.
-  return !policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty();
+  // If there's no valid DM token, the upload will fail, so we can skip
+  // uploading now.
+  return BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken().is_valid();
 }
 
 void CheckClientDownloadRequest::OnDeepScanningComplete(

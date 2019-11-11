@@ -9,9 +9,9 @@ PASS NDEFMessage interface: existence and properties of interface prototype obje
 PASS NDEFMessage interface: existence and properties of interface prototype object's "constructor" property
 PASS NDEFMessage interface: existence and properties of interface prototype object's @@unscopables property
 PASS NDEFMessage interface: attribute records
-PASS NDEFMessage must be primary interface of new NDEFMessage({"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]});
-PASS Stringification of new NDEFMessage({"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]});
-PASS NDEFMessage interface: new NDEFMessage({"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]}); must inherit property "records" with the proper type
+PASS NDEFMessage must be primary interface of new NDEFMessage({"url":"/custom/path","records":[{"recordType":"text","data":"Hello World","id":"/custom/path"}]});
+PASS Stringification of new NDEFMessage({"url":"/custom/path","records":[{"recordType":"text","data":"Hello World","id":"/custom/path"}]});
+PASS NDEFMessage interface: new NDEFMessage({"url":"/custom/path","records":[{"recordType":"text","data":"Hello World","id":"/custom/path"}]}); must inherit property "records" with the proper type
 PASS NDEFRecord interface: existence and properties of interface object
 PASS NDEFRecord interface object length
 PASS NDEFRecord interface object name
@@ -25,15 +25,15 @@ PASS NDEFRecord interface: attribute data
 PASS NDEFRecord interface: attribute encoding
 PASS NDEFRecord interface: attribute lang
 PASS NDEFRecord interface: operation toRecords()
-PASS NDEFRecord must be primary interface of new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"});
-PASS Stringification of new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"});
-PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "recordType" with the proper type
-PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "mediaType" with the proper type
-PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "id" with the proper type
-FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "data" with the proper type Unrecognized type DataView
-PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "encoding" with the proper type
-PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "lang" with the proper type
-PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "toRecords()" with the proper type
+PASS NDEFRecord must be primary interface of new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"});
+PASS Stringification of new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"});
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "recordType" with the proper type
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "mediaType" with the proper type
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "id" with the proper type
+FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "data" with the proper type Unrecognized type DataView
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "encoding" with the proper type
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "lang" with the proper type
+PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","data":"Hello World","id":"/custom/path"}); must inherit property "toRecords()" with the proper type
 PASS NDEFWriter interface: existence and properties of interface object
 PASS NDEFWriter interface object length
 PASS NDEFWriter interface object name
@@ -68,9 +68,9 @@ PASS NDEFReadingEvent interface: existence and properties of interface prototype
 PASS NDEFReadingEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS NDEFReadingEvent interface: attribute serialNumber
 PASS NDEFReadingEvent interface: attribute message
-PASS NDEFReadingEvent must be primary interface of new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} })
-PASS Stringification of new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} })
-PASS NDEFReadingEvent interface: new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} }) must inherit property "serialNumber" with the proper type
-PASS NDEFReadingEvent interface: new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} }) must inherit property "message" with the proper type
+PASS NDEFReadingEvent must be primary interface of new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World","id":"/custom/path"}]} })
+PASS Stringification of new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World","id":"/custom/path"}]} })
+PASS NDEFReadingEvent interface: new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World","id":"/custom/path"}]} }) must inherit property "serialNumber" with the proper type
+PASS NDEFReadingEvent interface: new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","data":"Hello World","id":"/custom/path"}]} }) must inherit property "message" with the proper type
 Harness: the test ran to completion.
 

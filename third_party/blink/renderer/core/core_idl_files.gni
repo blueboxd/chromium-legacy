@@ -317,6 +317,7 @@ core_idl_files =
                     "layout/ng/custom/layout_child.idl",
                     "layout/ng/custom/layout_worklet_global_scope.idl",
                     "loader/appcache/application_cache.idl",
+                    "mathml/mathml_element.idl",
                     "messaging/message_channel.idl",
                     "messaging/message_port.idl",
                     "mojo/mojo.idl",

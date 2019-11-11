@@ -13,6 +13,8 @@
 namespace blink {
 
 class CORE_EXPORT MathMLElement : public Element {
+  DEFINE_WRAPPERTYPEINFO();
+
  public:
   MathMLElement(const QualifiedName& tagName,
                 Document& document,
@@ -24,6 +26,8 @@ class CORE_EXPORT MathMLElement : public Element {
   }
 
  private:
+  void ParseAttribute(const AttributeModificationParams&) final;
+
   bool IsMathMLElement() const =
       delete;  // This will catch anyone doing an unnecessary check.
 };

@@ -85,7 +85,6 @@
   },
   "WebRTC Chromium Linux Builder": {
     "additional_compile_targets": [
-      "frame_analyzer",
       "jingle_unittests",
       "remoting_unittests"
     ]
@@ -265,7 +264,6 @@
   },
   "WebRTC Chromium Mac Builder": {
     "additional_compile_targets": [
-      "frame_analyzer",
       "jingle_unittests",
       "remoting_unittests"
     ]
@@ -405,7 +403,6 @@
   },
   "WebRTC Chromium Win Builder": {
     "additional_compile_targets": [
-      "frame_analyzer",
       "jingle_unittests",
       "remoting_unittests"
     ]

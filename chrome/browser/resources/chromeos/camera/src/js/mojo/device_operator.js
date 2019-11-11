@@ -15,6 +15,11 @@ var cca = cca || {};
 cca.mojo = cca.mojo || {};
 
 /**
+ * import {Resolution} from '../type.js';
+ */
+var Resolution = Resolution || {};
+
+/**
  * Operates video capture device through CrOS Camera App Mojo interface.
  */
 cca.mojo.DeviceOperator = class {
@@ -64,8 +69,7 @@ cca.mojo.DeviceOperator = class {
    * Gets supported photo resolutions for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!Array<!Array<number>>>} Promise of supported
-   *     resolutions. Each photo resolution is represented as [width, height].
+   * @return {!Promise<!ResolutionList>} Promise of supported resolutions.
    * @throws {Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
    */
@@ -93,7 +97,7 @@ cca.mojo.DeviceOperator = class {
       const [format, width, height, type] =
           streamConfigs.slice(i, i + numElementPerEntry);
       if (format === formatBlob && type === typeOutputStream) {
-        supportedResolutions.push([width, height]);
+        supportedResolutions.push(new Resolution(width, height));
       }
     }
     return supportedResolutions;
@@ -103,9 +107,8 @@ cca.mojo.DeviceOperator = class {
    * Gets supported video configurations for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!Array<!Array<number>>>} Promise of supported video
-   *     configurations. Each configuration is represented as [width, height,
-   *     maxFps].
+   * @return {!Promise<!Array<VideoConfig>>} Promise of supported video
+   *     configurations.
    * @throws {Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
    */
@@ -137,7 +140,7 @@ cca.mojo.DeviceOperator = class {
           minFrameDurationConfigs.slice(i, i + numElementPerEntry);
       if (format === formatYuv) {
         const maxFps = Math.round(oneSecondInNs / minDuration);
-        supportedConfigs.push([width, height, maxFps]);
+        supportedConfigs.push({width, height, maxFps});
       }
     }
     return supportedConfigs;
@@ -160,7 +163,7 @@ cca.mojo.DeviceOperator = class {
    * Gets supported fps ranges for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!Array<Array<number>>>} Promise of supported fps ranges.
+   * @return {!Promise<!FpsRangeList>} Promise of supported fps ranges.
    *     Each range is represented as [min, max].
    * @throws {Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
@@ -182,11 +185,11 @@ cca.mojo.DeviceOperator = class {
       throw new Error('Unexpected length of available fps range configs');
     }
 
-    const supportedFpsRanges = [];
+    const /** !FpsRangeList */ supportedFpsRanges = [];
     for (let i = 0; i < availableFpsRanges.length; i += numElementPerEntry) {
-      const [rangeMin, rangeMax] =
+      const [minFps, maxFps] =
           availableFpsRanges.slice(i, i + numElementPerEntry);
-      supportedFpsRanges.push([rangeMin, rangeMax]);
+      supportedFpsRanges.push({minFps, maxFps});
     }
     return supportedFpsRanges;
   }

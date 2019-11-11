@@ -13,7 +13,6 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/util/type_safety/pass_key.h"
-#include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/skia_output_surface.h"
@@ -115,10 +114,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       sk_sp<SkColorSpace> color_space) override;
 
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
-#if defined(OS_WIN)
   void SetEnableDCLayers(bool enable) override;
   void ScheduleDCLayers(std::vector<DCLayerOverlay> overlays) override;
-#endif
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,

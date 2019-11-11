@@ -25,6 +25,10 @@ class CodeGenAccumulator(object):
     def add_include_headers(self, headers):
         self._include_headers.update(headers)
 
+    @staticmethod
+    def require_include_headers(headers):
+        return lambda accumulator: accumulator.add_include_headers(headers)
+
     @property
     def class_decls(self):
         return self._class_decls
@@ -34,3 +38,7 @@ class CodeGenAccumulator(object):
 
     def add_class_decls(self, class_names):
         self._class_decls.update(class_names)
+
+    @staticmethod
+    def require_class_decls(class_names):
+        return lambda accumulator: accumulator.add_class_decls(class_names)

@@ -39,17 +39,18 @@ class NGInlineCursorTest : public NGLayoutTest,
     if (cursor.IsLineBox())
       return "#linebox";
 
-    const String text_content =
-        cursor.GetLayoutBlockFlow()->GetNGInlineNodeData()->text_content;
+    if (cursor.IsGeneratedTextType()) {
+      StringBuilder result;
+      result.Append("#'");
+      result.Append(cursor.CurrentText());
+      result.Append("'");
+      return result.ToString();
+    }
+
+    if (cursor.IsText())
+      return cursor.CurrentText().ToString().StripWhiteSpace();
+
     if (const LayoutObject* layout_object = cursor.CurrentLayoutObject()) {
-      if (layout_object->IsText()) {
-        String result = text_content
-                            .Substring(cursor.CurrentTextStartOffset(),
-                                       cursor.CurrentTextEndOffset() -
-                                           cursor.CurrentTextStartOffset())
-                            .StripWhiteSpace();
-        return result;
-      }
       if (const Element* element =
               DynamicTo<Element>(layout_object->GetNode())) {
         if (const AtomicString& id = element->GetIdAttribute())
@@ -347,6 +348,31 @@ TEST_P(NGInlineCursorTest, Next) {
                                 "#span2", "text3", "text4", "text5"));
 }
 
+TEST_P(NGInlineCursorTest, NextWithEllipsis) {
+  LoadAhem();
+  InsertStyleElement(
+      "#root {"
+      "font: 10px/10px Ahem;"
+      "width: 5ch;"
+      "overflow-x: hidden;"
+      "text-overflow: ellipsis;"
+      "}");
+  NGInlineCursor cursor = SetupCursor("<div id=root>abcdefghi</div>");
+  Vector<String> list = ToDebugStringList(cursor);
+  // Note: "abcdefghi" is hidden for paint.
+  EXPECT_THAT(list, ElementsAre("#linebox", "abcdefghi", "abcd", u"#'\u2026'"));
+}
+
+TEST_P(NGInlineCursorTest, NextWithSoftHyphens) {
+  // Use "Ahem" font to get U+2010 as soft hyphen instead of U+002D
+  LoadAhem();
+  InsertStyleElement("#root {width: 3ch; font: 10px/10px Ahem;}");
+  NGInlineCursor cursor = SetupCursor("<div id=root>abc&shy;def</div>");
+  Vector<String> list = ToDebugStringList(cursor);
+  EXPECT_THAT(list, ElementsAre("#linebox", u"abc\u00AD", u"#'\u2010'",
+                                "#linebox", "def"));
+}
+
 TEST_P(NGInlineCursorTest, NextInlineLeaf) {
   // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
   InsertStyleElement("b { background: gray; }");
@@ -358,6 +384,38 @@ TEST_P(NGInlineCursorTest, NextInlineLeaf) {
     cursor.MoveToNextInlineLeaf();
   }
   EXPECT_THAT(list, ElementsAre("#linebox", "abc", "DEF", "", "xyz"));
+}
+
+TEST_P(NGInlineCursorTest, NextInlineLeafWithEllipsis) {
+  LoadAhem();
+  InsertStyleElement(
+      "#root {"
+      "font: 10px/10px Ahem;"
+      "width: 5ch;"
+      "overflow-x: hidden;"
+      "text-overflow: ellipsis;"
+      "}");
+  NGInlineCursor cursor = SetupCursor("<div id=root>abcdefghi</div>");
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToNextInlineLeaf();
+  }
+  // Note: We don't see hidden for paint and generated soft hyphen.
+  // See also |NextWithEllipsis|.
+  EXPECT_THAT(list, ElementsAre("#linebox", "abcd"));
+}
+
+TEST_P(NGInlineCursorTest, NextInlineLeafWithSoftHyphens) {
+  NGInlineCursor cursor =
+      SetupCursor("<div id=root style='width:3ch'>abc&shy;def</div>");
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToNextInlineLeaf();
+  }
+  // Note: We don't see generated soft hyphen. See also |NextWithSoftHyphens|.
+  EXPECT_THAT(list, ElementsAre("#linebox", u"abc\u00AD", "def"));
 }
 
 TEST_P(NGInlineCursorTest, NextInlineLeafIgnoringLineBreak) {

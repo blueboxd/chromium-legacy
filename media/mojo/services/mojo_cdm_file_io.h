@@ -16,6 +16,8 @@
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/mojo/mojom/cdm_storage.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace media {
 
@@ -68,7 +70,7 @@ class MEDIA_MOJO_EXPORT MojoCdmFileIO : public cdm::FileIO {
 
   // Called when the file is opened (or not).
   void OnFileOpened(mojom::CdmStorage::Status status,
-                    mojom::CdmFileAssociatedPtrInfo cdm_file);
+                    mojo::PendingAssociatedRemote<mojom::CdmFile> cdm_file);
 
   // Called when the read operation is done.
   void OnFileRead(mojom::CdmFile::Status status,
@@ -101,7 +103,7 @@ class MEDIA_MOJO_EXPORT MojoCdmFileIO : public cdm::FileIO {
   // |cdm_file_| is used to read and write the file and is released when the
   // file is closed so that CdmStorage can tell that the file is no longer being
   // used.
-  mojom::CdmFileAssociatedPtr cdm_file_;
+  mojo::AssociatedRemote<mojom::CdmFile> cdm_file_;
 
   // Keep track of operations in progress.
   State state_ = State::kUnopened;

@@ -22,6 +22,7 @@ js_library("chrome_helper") {
 
 js_library("device_operator") {
   deps = [
+    "..:type",
     "//media/capture/video/chromeos/mojom:cros_camera_js_library_for_compile",
   ]
   externs_list = [ "$externs_path/pending.js" ]

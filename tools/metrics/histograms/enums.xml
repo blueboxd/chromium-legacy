@@ -25404,6 +25404,8 @@ Called by update_net_error_codes.py.-->
   <int value="3081" label="HasGlyphRelativeUnits"/>
   <int value="3082" label="CountQueuingStrategyConstructor"/>
   <int value="3083" label="ByteLengthQueuingStrategyConstructor"/>
+  <int value="3084" label="ClassicDedicatedWorker"/>
+  <int value="3085" label="ModuleDedicatedWorker"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

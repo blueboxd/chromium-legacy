@@ -14,16 +14,15 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "media/mojo/mojom/cdm_storage.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 using media::mojom::CdmFile;
-using media::mojom::CdmFileAssociatedPtr;
-using media::mojom::CdmFileAssociatedPtrInfo;
 using media::mojom::CdmStorage;
-using media::mojom::CdmStoragePtr;
 
 namespace content {
 
@@ -93,13 +92,13 @@ class CdmStorageTest : public RenderViewHostTestHarness {
     // Create the CdmStorageImpl object. |cdm_storage_| will own the resulting
     // object.
     CdmStorageImpl::Create(rfh_, file_system_id,
-                           mojo::MakeRequest(&cdm_storage_));
+                           cdm_storage_.BindNewPipeAndPassReceiver());
   }
 
   // Open the file |name|. Returns true if the file returned is valid, false
   // otherwise. On success |cdm_file| is bound to the CdmFileImpl object.
   bool Open(const std::string& name,
-            CdmFileAssociatedPtr* cdm_file) {
+            mojo::AssociatedRemote<CdmFile>* cdm_file) {
     DVLOG(3) << __func__;
 
     CdmStorage::Status status;
@@ -169,17 +168,21 @@ class CdmStorageTest : public RenderViewHostTestHarness {
 
  private:
   void OpenDone(CdmStorage::Status* status,
-                CdmFileAssociatedPtr* cdm_file,
+                mojo::AssociatedRemote<CdmFile>* cdm_file,
                 CdmStorage::Status actual_status,
-                CdmFileAssociatedPtrInfo actual_cdm_file) {
+                mojo::PendingAssociatedRemote<CdmFile> actual_cdm_file) {
     DVLOG(3) << __func__;
     *status = actual_status;
 
-    // Open() returns a CdmFileAssociatedPtrInfo, so bind it to the
-    // CdmFileAssociatedPtr provided.
-    CdmFileAssociatedPtr cdm_file_ptr;
-    cdm_file_ptr.Bind(std::move(actual_cdm_file));
-    *cdm_file = std::move(cdm_file_ptr);
+    if (!actual_cdm_file) {
+      run_loop_with_count_->Quit();
+      return;
+    }
+    // Open() returns a mojo::PendingAssociatedRemote<CdmFile>, so bind it to
+    // the mojo::AssociatedRemote<CdmFileAssociated> provided.
+    mojo::AssociatedRemote<CdmFile> cdm_file_remote;
+    cdm_file_remote.Bind(std::move(actual_cdm_file));
+    *cdm_file = std::move(cdm_file_remote);
     run_loop_with_count_->Quit();
   }
 
@@ -206,7 +209,7 @@ class CdmStorageTest : public RenderViewHostTestHarness {
   }
 
   RenderFrameHost* rfh_ = nullptr;
-  CdmStoragePtr cdm_storage_;
+  mojo::Remote<CdmStorage> cdm_storage_;
   std::unique_ptr<RunLoopWithExpectedCount> run_loop_with_count_;
 };
 
@@ -214,7 +217,7 @@ TEST_F(CdmStorageTest, InvalidFileSystemIdWithSlash) {
   Initialize("name/");
 
   const char kFileName[] = "valid_file_name";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_FALSE(Open(kFileName, &cdm_file));
   EXPECT_FALSE(cdm_file.is_bound());
 }
@@ -223,7 +226,7 @@ TEST_F(CdmStorageTest, InvalidFileSystemIdWithBackSlash) {
   Initialize("name\\");
 
   const char kFileName[] = "valid_file_name";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_FALSE(Open(kFileName, &cdm_file));
   EXPECT_FALSE(cdm_file.is_bound());
 }
@@ -232,7 +235,7 @@ TEST_F(CdmStorageTest, InvalidFileSystemIdEmpty) {
   Initialize("");
 
   const char kFileName[] = "valid_file_name";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_FALSE(Open(kFileName, &cdm_file));
   EXPECT_FALSE(cdm_file.is_bound());
 }
@@ -243,7 +246,7 @@ TEST_F(CdmStorageTest, InvalidFileName) {
   // Anything other than ASCII letter, digits, and -._ will fail. Add a
   // Unicode character to the name.
   const char kFileName[] = "openfile\u1234";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_FALSE(Open(kFileName, &cdm_file));
   EXPECT_FALSE(cdm_file.is_bound());
 }
@@ -252,7 +255,7 @@ TEST_F(CdmStorageTest, InvalidFileNameEmpty) {
   Initialize(kTestFileSystemId);
 
   const char kFileName[] = "";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_FALSE(Open(kFileName, &cdm_file));
   EXPECT_FALSE(cdm_file.is_bound());
 }
@@ -261,7 +264,7 @@ TEST_F(CdmStorageTest, InvalidFileNameStartWithUnderscore) {
   Initialize(kTestFileSystemId);
 
   const char kFileName[] = "_invalid";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_FALSE(Open(kFileName, &cdm_file));
   EXPECT_FALSE(cdm_file.is_bound());
 }
@@ -271,7 +274,7 @@ TEST_F(CdmStorageTest, InvalidFileNameTooLong) {
 
   // Limit is 256 characters, so try a file name with 257.
   const std::string kFileName(257, 'a');
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_FALSE(Open(kFileName, &cdm_file));
   EXPECT_FALSE(cdm_file.is_bound());
 }
@@ -280,7 +283,7 @@ TEST_F(CdmStorageTest, OpenFile) {
   Initialize(kTestFileSystemId);
 
   const char kFileName[] = "test_file_name";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_TRUE(Open(kFileName, &cdm_file));
   EXPECT_TRUE(cdm_file.is_bound());
 }
@@ -289,19 +292,19 @@ TEST_F(CdmStorageTest, OpenFileLocked) {
   Initialize(kTestFileSystemId);
 
   const char kFileName[] = "test_file_name";
-  CdmFileAssociatedPtr cdm_file1;
+  mojo::AssociatedRemote<CdmFile> cdm_file1;
   EXPECT_TRUE(Open(kFileName, &cdm_file1));
   EXPECT_TRUE(cdm_file1.is_bound());
 
   // Second attempt on the same file should fail as the file is locked.
-  CdmFileAssociatedPtr cdm_file2;
+  mojo::AssociatedRemote<CdmFile> cdm_file2;
   EXPECT_FALSE(Open(kFileName, &cdm_file2));
   EXPECT_FALSE(cdm_file2.is_bound());
 
   // Now close the first file and try again. It should be free now.
   cdm_file1.reset();
 
-  CdmFileAssociatedPtr cdm_file3;
+  mojo::AssociatedRemote<CdmFile> cdm_file3;
   EXPECT_TRUE(Open(kFileName, &cdm_file3));
   EXPECT_TRUE(cdm_file3.is_bound());
 }
@@ -310,17 +313,17 @@ TEST_F(CdmStorageTest, MultipleFiles) {
   Initialize(kTestFileSystemId);
 
   const char kFileName1[] = "file1";
-  CdmFileAssociatedPtr cdm_file1;
+  mojo::AssociatedRemote<CdmFile> cdm_file1;
   EXPECT_TRUE(Open(kFileName1, &cdm_file1));
   EXPECT_TRUE(cdm_file1.is_bound());
 
   const char kFileName2[] = "file2";
-  CdmFileAssociatedPtr cdm_file2;
+  mojo::AssociatedRemote<CdmFile> cdm_file2;
   EXPECT_TRUE(Open(kFileName2, &cdm_file2));
   EXPECT_TRUE(cdm_file2.is_bound());
 
   const char kFileName3[] = "file3";
-  CdmFileAssociatedPtr cdm_file3;
+  mojo::AssociatedRemote<CdmFile> cdm_file3;
   EXPECT_TRUE(Open(kFileName3, &cdm_file3));
   EXPECT_TRUE(cdm_file3.is_bound());
 }
@@ -329,7 +332,7 @@ TEST_F(CdmStorageTest, WriteThenReadFile) {
   Initialize(kTestFileSystemId);
 
   const char kFileName[] = "test_file_name";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_TRUE(Open(kFileName, &cdm_file));
   EXPECT_TRUE(cdm_file.is_bound());
 
@@ -346,7 +349,7 @@ TEST_F(CdmStorageTest, ReadThenWriteEmptyFile) {
   Initialize(kTestFileSystemId);
 
   const char kFileName[] = "empty_file_name";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_TRUE(Open(kFileName, &cdm_file));
   EXPECT_TRUE(cdm_file.is_bound());
 
@@ -367,7 +370,7 @@ TEST_F(CdmStorageTest, ParallelRead) {
   Initialize(kTestFileSystemId);
 
   const char kFileName[] = "duplicate_read_file_name";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_TRUE(Open(kFileName, &cdm_file));
   EXPECT_TRUE(cdm_file.is_bound());
 
@@ -386,7 +389,7 @@ TEST_F(CdmStorageTest, ParallelWrite) {
   Initialize(kTestFileSystemId);
 
   const char kFileName[] = "duplicate_write_file_name";
-  CdmFileAssociatedPtr cdm_file;
+  mojo::AssociatedRemote<CdmFile> cdm_file;
   EXPECT_TRUE(Open(kFileName, &cdm_file));
   EXPECT_TRUE(cdm_file.is_bound());
 

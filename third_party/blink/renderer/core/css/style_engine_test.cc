@@ -2369,4 +2369,32 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTree) {
             innermost_style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
+TEST_F(StyleEngineTest, MoveSlottedOutsideFlatTreeCrash) {
+  ScopedFlatTreeStyleRecalcForTest feature_scope(true);
+
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div id="host1"><span></span></div>
+    <div id="host2"></div>
+  )HTML");
+
+  auto* host1 = GetDocument().getElementById("host1");
+  auto* host2 = GetDocument().getElementById("host2");
+  auto* span = host1->firstChild();
+
+  ShadowRoot& shadow_root =
+      host1->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString("<slot></slot>");
+  host2->AttachShadowRootInternal(ShadowRootType::kOpen);
+
+  UpdateAllLifecyclePhases();
+
+  host2->appendChild(span);
+  EXPECT_EQ(span, GetStyleRecalcRoot());
+
+  // Removing the span will fall back to using the host parent as the new style
+  // recalc root.
+  span->remove();
+  EXPECT_EQ(host2, GetStyleRecalcRoot());
+}
+
 }  // namespace blink

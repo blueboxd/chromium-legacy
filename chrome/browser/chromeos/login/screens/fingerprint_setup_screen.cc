@@ -15,6 +15,11 @@ constexpr char kUserActionClose[] = "fingerprint-setup-done";
 
 }  // namespace
 
+FingerprintSetupScreen* FingerprintSetupScreen::Get(ScreenManager* manager) {
+  return static_cast<FingerprintSetupScreen*>(
+      manager->GetScreen(FingerprintSetupScreenView::kScreenId));
+}
+
 FingerprintSetupScreen::FingerprintSetupScreen(
     FingerprintSetupScreenView* view,
     const base::RepeatingClosure& exit_callback)

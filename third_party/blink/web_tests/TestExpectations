@@ -5896,8 +5896,4 @@ crbug.com/963183 http/tests/devtools/sources/debugger/debugger-proto-property.js
 # Temporarily disabled to land scope changes in DevTools
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/set-return-value.js [ Pass Failure ]
 
-# Adjusting v8 console implementation, pass failure until v8 change lands
-crbug.com/948678 external/wpt/console/idlharness.any.html [ Pass Failure ]
-crbug.com/948678 external/wpt/console/idlharness.any.worker.html [ Pass Failure ]
-
 crbug.com/892983 external/wpt/css/css-pseudo/first-line-with-before-after.html [ Failure ]

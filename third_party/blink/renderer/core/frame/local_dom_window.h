@@ -298,7 +298,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void EnqueueWindowEvent(Event&, TaskType);
   void EnqueueDocumentEvent(Event&, TaskType);
-  void EnqueuePageshowEvent(PageTransitionEventPersistence);
+  void EnqueueNonPersistedPageshowEvent();
   void EnqueueHashchangeEvent(const String& old_url, const String& new_url);
   void EnqueuePopstateEvent(scoped_refptr<SerializedScriptValue>);
   void DispatchWindowLoadEvent();
@@ -309,11 +309,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   TrustedTypePolicyFactory* trustedTypes() const;
 
-  void DispatchPageshowEvent(PageTransitionEventPersistence persistence) {
-    DispatchEvent(
-        *PageTransitionEvent::Create(event_type_names::kPageshow, persistence),
-        document_.Get());
-  }
+  void DispatchPersistedPageshowEvent(base::TimeTicks navigation_start);
 
   void DispatchPagehideEvent(PageTransitionEventPersistence persistence) {
     DispatchEvent(

@@ -57,6 +57,7 @@
 #include "chrome/browser/chromeos/dbus/plugin_vm_service_provider.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
+#include "chrome/browser/chromeos/dbus/smb_fs_service_provider.h"
 #include "chrome/browser/chromeos/dbus/virtual_file_request_service_provider.h"
 #include "chrome/browser/chromeos/dbus/vm_applications_service_provider.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
@@ -315,6 +316,12 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<CryptohomeKeyDelegateServiceProvider>()));
 
+    smb_fs_service_ =
+        CrosDBusService::Create(system_bus, smbfs::kSmbFsServiceName,
+                                dbus::ObjectPath(smbfs::kSmbFsServicePath),
+                                CrosDBusService::CreateServiceProviderList(
+                                    std::make_unique<SmbFsServiceProvider>()));
+
     if (arc::IsArcVmEnabled()) {
       libvda_service_ = CrosDBusService::Create(
           system_bus, libvda::kLibvdaServiceName,
@@ -401,6 +408,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> cryptohome_key_delegate_service_;
   std::unique_ptr<CrosDBusService> libvda_service_;
   std::unique_ptr<CrosDBusService> machine_learning_decision_service_;
+  std::unique_ptr<CrosDBusService> smb_fs_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };

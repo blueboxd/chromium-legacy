@@ -2,16 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("gmock_mutant") {
-  sources = [
-    "gmock_mutant.h",  # gMock helpers
-  ]
-
-  deps = [
-    "//base",
-  ]
-}
-
 # Used by linux-gcc-rel to ensure gcc doesn't choke on clang-only flags.
 executable("empty_main") {
   sources = [

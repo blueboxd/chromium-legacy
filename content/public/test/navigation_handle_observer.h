@@ -37,6 +37,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   base::Optional<net::AuthChallengeInfo> auth_challenge_info() {
     return auth_challenge_info_;
   }
+  base::TimeTicks navigation_start() { return navigation_start_; }
 
  private:
   // A reference to the NavigationHandle so this class will track only
@@ -58,6 +59,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   int64_t navigation_id_ = -1;
   bool is_download_ = false;
   base::Optional<net::AuthChallengeInfo> auth_challenge_info_;
+  base::TimeTicks navigation_start_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleObserver);
 };

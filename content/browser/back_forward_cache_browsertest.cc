@@ -16,6 +16,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
@@ -3630,6 +3631,89 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeWithNoStoreCached) {
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
+}
+
+// On windows, the expected value is off by ~20ms. In order to get the
+// feature out to canary, the test is disabled for WIN.
+// TODO(crbug.com/1022191): Fix this for Win.
+#if defined(OS_WIN)
+#define MAYBE_NavigationStart DISABLED_NavigationStart
+#else
+#define MAYBE_NavigationStart NavigationStart
+#endif
+// Make sure we are exposing the duration between back navigation's
+// navigationStart and the page's original navigationStart through pageshow
+// event's timeStamp, and that we aren't modifying
+// performance.timing.navigationStart.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, MAYBE_NavigationStart) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/back_forward_cache/record_navigation_start_time_stamp.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  double initial_page_show_time_stamp =
+      EvalJs(shell(), "window.initialPageShowTimeStamp").ExtractDouble();
+  EXPECT_EQ(initial_page_show_time_stamp,
+            EvalJs(shell(), "window.latestPageShowTimeStamp"));
+  double initial_navigation_start =
+      EvalJs(shell(), "window.initialNavigationStart").ExtractDouble();
+
+  // 2) Navigate to B. A should be in the back forward cache.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // 3) Navigate back and expect everything to be restored.
+  NavigationHandleObserver observer(web_contents(), url_a);
+  base::TimeTicks time_before_navigation = base::TimeTicks::Now();
+  double js_time_before_navigation =
+      EvalJs(shell(), "performance.now()").ExtractDouble();
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  base::TimeTicks time_after_navigation = base::TimeTicks::Now();
+  double js_time_after_navigation =
+      EvalJs(shell(), "performance.now()").ExtractDouble();
+
+  // The navigation start time should be between the time we saved just before
+  // calling GoBack() and the time we saved just after calling GoBack().
+  base::TimeTicks back_navigation_start = observer.navigation_start();
+  EXPECT_LT(time_before_navigation, back_navigation_start);
+  EXPECT_GT(time_after_navigation, back_navigation_start);
+
+  // Check JS values. window.initialNavigationStart should not change.
+  EXPECT_EQ(initial_navigation_start,
+            EvalJs(shell(), "window.initialNavigationStart"));
+  // performance.timing.navigationStart should not change.
+  EXPECT_EQ(initial_navigation_start,
+            EvalJs(shell(), "performance.timing.navigationStart"));
+  // window.initialPageShowTimeStamp should not change.
+  EXPECT_EQ(initial_page_show_time_stamp,
+            EvalJs(shell(), "window.initialPageShowTimeStamp"));
+  // window.latestPageShowTimeStamp should be updated with the timestamp of the
+  // last pageshow event, which occurs after the page is restored. This should
+  // be greater than the initial pageshow event's timestamp.
+  double latest_page_show_time_stamp =
+      EvalJs(shell(), "window.latestPageShowTimeStamp").ExtractDouble();
+  EXPECT_LT(initial_page_show_time_stamp, latest_page_show_time_stamp);
+
+  // |latest_page_show_time_stamp| should be the duration between initial
+  // navigation start and |back_navigation_start|. Note that since
+  // performance.timing.navigationStart returns a 64-bit integer instead of
+  // double, we might be losing somewhere between 0 to 1 milliseconds of
+  // precision, hence the usage of EXPECT_NEAR.
+  EXPECT_NEAR(
+      (back_navigation_start - base::TimeTicks::UnixEpoch()).InMillisecondsF(),
+      latest_page_show_time_stamp + initial_navigation_start, 1.0);
+  // Expect that the back navigation start value calculated from the JS results
+  // are between time taken before & after navigation, just like
+  // |before_navigation_start|.
+  EXPECT_LT(js_time_before_navigation, latest_page_show_time_stamp);
+  EXPECT_GT(js_time_after_navigation, latest_page_show_time_stamp);
 }
 
 // Do a same document navigation and make sure we do not fire the

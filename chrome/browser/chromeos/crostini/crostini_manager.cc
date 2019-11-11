@@ -286,7 +286,7 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
     if (!is_started) {
-      FinishRestart(CrostiniResult::CONTAINER_START_FAILED);
+      FinishRestart(CrostiniResult::CONCIERGE_START_FAILED);
       return;
     }
 

@@ -7,8 +7,6 @@ import os.path
 from . import name_style
 from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_v8_to_blink_value
-from .code_generation_accumulator import CodeGenerationAccumulator
-from .code_generation_context import CodeGenerationContext
 from .code_node import CodeNode
 from .code_node import FunctionDefinitionNode
 from .code_node import LiteralNode
@@ -17,6 +15,8 @@ from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
 from .code_node import UnlikelyExitNode
+from .codegen_accumulator import CodeGenAccumulator
+from .codegen_context import CodeGenContext
 from .codegen_utils import collect_include_headers
 from .codegen_utils import enclose_with_namespace
 from .codegen_utils import make_copyright_header
@@ -29,7 +29,7 @@ _format = CodeNode.format_template
 
 def bind_callback_local_vars(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     S = SymbolNode
     T = TextNode
@@ -115,7 +115,7 @@ def bind_callback_local_vars(code_node, cg_context):
 
 def bind_blink_api_arguments(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     if cg_context.attribute_get:
         return
@@ -140,7 +140,7 @@ def bind_blink_api_arguments(code_node, cg_context):
 
 def bind_blink_api_call(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     property_implemented_as = (
         cg_context.member_like.code_generator_info.property_implemented_as)
@@ -191,7 +191,7 @@ def bind_blink_api_call(code_node, cg_context):
 
 def bind_return_value(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     def create_definition(symbol_node):
         if cg_context.return_type.unwrap().is_void:
@@ -216,7 +216,7 @@ def bind_return_value(code_node, cg_context):
 
 def bind_v8_set_return_value(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     pattern = "{_1}({_2});"
     _1 = "V8SetReturnValue"
@@ -237,7 +237,7 @@ def bind_v8_set_return_value(code_node, cg_context):
 
 
 def make_attribute_get_def(cg_context):
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     L = LiteralNode
     T = TextNode
@@ -271,7 +271,7 @@ def make_attribute_get_def(cg_context):
 
 
 def make_operation_def(cg_context):
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     L = LiteralNode
     T = TextNode
@@ -304,7 +304,7 @@ def make_operation_def(cg_context):
 
 def bind_template_installer_local_vars(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     S = SymbolNode
 
@@ -337,7 +337,7 @@ def bind_template_installer_local_vars(code_node, cg_context):
 
 
 def make_install_interface_template_def(cg_context):
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     L = LiteralNode
     T = TextNode
@@ -387,10 +387,10 @@ def generate_interfaces(web_idl_database, output_dirs):
 
     interface = web_idl_database.find("Node")
 
-    cg_context = CodeGenerationContext(interface=interface)
+    cg_context = CodeGenContext(interface=interface)
 
     root_node = SymbolScopeNode(separator_last="\n")
-    root_node.set_accumulator(CodeGenerationAccumulator())
+    root_node.set_accumulator(CodeGenAccumulator())
     root_node.set_renderer(MakoRenderer())
 
     root_node.accumulator.add_include_headers(

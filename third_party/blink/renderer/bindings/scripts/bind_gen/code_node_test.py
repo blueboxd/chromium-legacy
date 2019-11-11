@@ -18,6 +18,9 @@ from .mako_renderer import MakoRenderer
 
 class CodeNodeTest(unittest.TestCase):
     def assertRenderResult(self, node, expected):
+        if node.renderer is None:
+            node.set_renderer(MakoRenderer())
+
         def simplify(text):
             return "\n".join(
                 [" ".join(line.split()) for line in text.split("\n")])
@@ -32,24 +35,20 @@ class CodeNodeTest(unittest.TestCase):
         Tests that, in LiteralNode, the special characters of template (%, ${},
         etc) are not processed.
         """
-        renderer = MakoRenderer()
-        root = LiteralNode("<% x = 42 %>${x}", renderer=renderer)
+        root = LiteralNode("<% x = 42 %>${x}")
         self.assertRenderResult(root, "<% x = 42 %>${x}")
 
     def test_empty_literal_node(self):
-        renderer = MakoRenderer()
-        root = LiteralNode("", renderer=renderer)
+        root = LiteralNode("")
         self.assertRenderResult(root, "")
 
     def test_text_node(self):
         """Tests that the template language works in TextNode."""
-        renderer = MakoRenderer()
-        root = TextNode("<% x = 42 %>${x}", renderer=renderer)
+        root = TextNode("<% x = 42 %>${x}")
         self.assertRenderResult(root, "42")
 
     def test_empty_text_node(self):
-        renderer = MakoRenderer()
-        root = TextNode("", renderer=renderer)
+        root = TextNode("")
         self.assertRenderResult(root, "")
 
     def test_list_operations_of_sequence_node(self):
@@ -57,8 +56,7 @@ class CodeNodeTest(unittest.TestCase):
         Tests that list operations (insert, append, and extend) of SequenceNode
         work just same as Python built-in list.
         """
-        renderer = MakoRenderer()
-        root = SequenceNode(separator=",", renderer=renderer)
+        root = SequenceNode(separator=",")
         root.extend([
             LiteralNode("2"),
             LiteralNode("4"),
@@ -75,8 +73,7 @@ class CodeNodeTest(unittest.TestCase):
 
     def test_nested_sequence(self):
         """Tests nested SequenceNodes."""
-        renderer = MakoRenderer()
-        root = SequenceNode(separator=",", renderer=renderer)
+        root = SequenceNode(separator=",")
         nested = SequenceNode(separator=",")
         nested.extend([
             LiteralNode("2"),
@@ -95,8 +92,7 @@ class CodeNodeTest(unittest.TestCase):
         Tests that use of SymbolNode inserts necessary SymbolDefinitionNode
         appropriately.
         """
-        renderer = MakoRenderer()
-        root = SymbolScopeNode(separator_last="\n", renderer=renderer)
+        root = SymbolScopeNode(separator_last="\n")
 
         root.register_code_symbols([
             SymbolNode("var1", "int ${var1} = ${var2} + ${var3};"),
@@ -119,8 +115,7 @@ int var1 = var2 + var3;
 """)
 
     def test_symbol_definition_with_exit_branches(self):
-        renderer = MakoRenderer()
-        root = SymbolScopeNode(separator_last="\n", renderer=renderer)
+        root = SymbolScopeNode(separator_last="\n")
 
         root.register_code_symbols([
             SymbolNode("var1", "int ${var1} = 1;"),
@@ -167,8 +162,7 @@ var3;
 """)
 
     def test_symbol_definition_with_nested_exit_branches(self):
-        renderer = MakoRenderer()
-        root = SymbolScopeNode(separator_last="\n", renderer=renderer)
+        root = SymbolScopeNode(separator_last="\n")
 
         root.register_code_symbols([
             SymbolNode("var1", "int ${var1} = 1;"),
@@ -221,8 +215,7 @@ if (true) {
 """)
 
     def test_function_definition_minimum(self):
-        renderer = MakoRenderer()
-        root = SymbolScopeNode(separator_last="\n", renderer=renderer)
+        root = SymbolScopeNode(separator_last="\n")
         root.append(
             FunctionDefinitionNode(
                 name=LiteralNode("blink::bindings::func"),
@@ -237,8 +230,7 @@ void blink::bindings::func() {
 """)
 
     def test_function_definition_full(self):
-        renderer = MakoRenderer()
-        root = SymbolScopeNode(separator_last="\n", renderer=renderer)
+        root = SymbolScopeNode(separator_last="\n")
 
         local_vars = [
             SymbolNode("var1", "int ${var1} = 1;"),
@@ -278,7 +270,8 @@ void blink::bindings::func(int arg1, int arg2) {
 
     def test_template_error_handling(self):
         renderer = MakoRenderer()
-        root = SymbolScopeNode(renderer=renderer)
+        root = SymbolScopeNode()
+        root.set_renderer(renderer)
 
         root.append(
             SymbolScopeNode([

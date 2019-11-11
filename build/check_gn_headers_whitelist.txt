@@ -191,7 +191,6 @@ remoting/protocol/video_stream.h
 sandbox/linux/system_headers/capability.h
 skia/ext/convolver_mips_dspr2.h
 skia/ext/skia_commit_hash.h
-testing/gmock_mutant.h
 third_party/cacheinvalidation/src/google/cacheinvalidation/impl/build_constants.h
 third_party/hunspell/src/hunspell/hunvisapi.h
 third_party/khronos/EGL/egl.h

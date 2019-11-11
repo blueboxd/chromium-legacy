@@ -200,6 +200,9 @@ void AppServiceProxy::Launch(const std::string& app_id,
   if (app_service_.is_connected()) {
     cache_.ForOneApp(app_id, [this, event_flags, launch_source,
                               display_id](const apps::AppUpdate& update) {
+      if (update.Paused() == apps::mojom::OptionalBool::kTrue) {
+        return;
+      }
       RecordAppLaunch(update.AppId(), launch_source);
       app_service_->Launch(update.AppType(), update.AppId(), event_flags,
                            launch_source, display_id);
@@ -215,6 +218,9 @@ void AppServiceProxy::LaunchAppWithIntent(
   if (app_service_.is_connected()) {
     cache_.ForOneApp(app_id, [this, &intent, launch_source,
                               display_id](const apps::AppUpdate& update) {
+      if (update.Paused() == apps::mojom::OptionalBool::kTrue) {
+        return;
+      }
       RecordAppLaunch(update.AppId(), launch_source);
       app_service_->LaunchAppWithIntent(update.AppType(), update.AppId(),
                                         std::move(intent), launch_source,

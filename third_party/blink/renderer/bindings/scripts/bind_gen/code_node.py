@@ -11,7 +11,7 @@ specific bindings, such as ECMAScript bindings.
 import copy
 import string
 
-from .code_generation_accumulator import CodeGenerationAccumulator
+from .codegen_accumulator import CodeGenAccumulator
 from .mako_renderer import MakoRenderer
 
 
@@ -130,26 +130,22 @@ class CodeNode(object):
         cls._gensym_seq_id += 1
         return "gensym{}".format(cls._gensym_seq_id)
 
-    def __init__(self,
-                 template_text=None,
-                 template_vars=None,
-                 renderer=None):
+    def __init__(self, template_text=None, template_vars=None):
         assert template_text is None or isinstance(template_text, str)
         assert template_vars is None or isinstance(template_vars, dict)
-        assert renderer is None or isinstance(renderer, MakoRenderer)
 
         # The outer CodeNode or None iff this is a top-level node
         self._outer = None
         # The previous CodeNode if this is a Sequence or None
         self._prev = None
 
-        # Mako's template text, bindings dict, and the renderer object
+        # Mako's template text, bindings dict
         self._template_text = template_text
         self._template_vars = {}
 
-        self._accumulator = None
+        self._accumulator = None  # CodeGenAccumulator
 
-        self._renderer = renderer
+        self._renderer = None  # MakoRenderer
 
         self._render_state = CodeNode._RenderState()
         self._is_rendering = False
@@ -286,7 +282,7 @@ class CodeNode(object):
         return self._accumulator
 
     def set_accumulator(self, accumulator):
-        assert isinstance(accumulator, CodeGenerationAccumulator)
+        assert isinstance(accumulator, CodeGenAccumulator)
         assert self._accumulator is None
         self._accumulator = accumulator
 
@@ -357,17 +353,14 @@ class LiteralNode(CodeNode):
     magic applied.
     """
 
-    def __init__(self, literal_text, renderer=None):
+    def __init__(self, literal_text):
         literal_text_gensym = CodeNode.gensym()
         template_text = CodeNode.format_template(
             "${{{literal_text}}}", literal_text=literal_text_gensym)
         template_vars = {literal_text_gensym: literal_text}
 
         CodeNode.__init__(
-            self,
-            template_text=template_text,
-            template_vars=template_vars,
-            renderer=renderer)
+            self, template_text=template_text, template_vars=template_vars)
 
 
 class TextNode(CodeNode):
@@ -379,8 +372,8 @@ class TextNode(CodeNode):
     All template magics will be applied to |template_text|.
     """
 
-    def __init__(self, template_text, renderer=None):
-        CodeNode.__init__(self, template_text=template_text, renderer=renderer)
+    def __init__(self, template_text):
+        CodeNode.__init__(self, template_text=template_text)
 
 
 class SequenceNode(CodeNode):
@@ -388,11 +381,7 @@ class SequenceNode(CodeNode):
     Represents a sequence of nodes.
     """
 
-    def __init__(self,
-                 code_nodes=None,
-                 separator=" ",
-                 separator_last="",
-                 renderer=None):
+    def __init__(self, code_nodes=None, separator=" ", separator_last=""):
         assert isinstance(separator, str)
         assert isinstance(separator_last, str)
 
@@ -414,10 +403,7 @@ ${node}\\
         template_vars = {element_nodes_gensym: element_nodes}
 
         CodeNode.__init__(
-            self,
-            template_text=template_text,
-            template_vars=template_vars,
-            renderer=renderer)
+            self, template_text=template_text, template_vars=template_vars)
 
         self._element_nodes = element_nodes
 
@@ -489,17 +475,12 @@ class SymbolScopeNode(SequenceNode):
     insert corresponding SymbolDefinitionNodes appropriately.
     """
 
-    def __init__(self,
-                 code_nodes=None,
-                 separator="\n",
-                 separator_last="",
-                 renderer=None):
+    def __init__(self, code_nodes=None, separator="\n", separator_last=""):
         SequenceNode.__init__(
             self,
             code_nodes=code_nodes,
             separator=separator,
-            separator_last=separator_last,
-            renderer=renderer)
+            separator_last=separator_last)
 
         self._registered_code_symbols = set()
 
@@ -730,7 +711,7 @@ class ConditionalExitNode(ConditionalNode):
     where BODY ends with a return statement.
     """
 
-    def __init__(self, cond, body, body_likeliness, renderer=None):
+    def __init__(self, cond, body, body_likeliness):
         assert isinstance(cond, CodeNode)
         assert isinstance(body, SymbolScopeNode)
         assert isinstance(body_likeliness, Likeliness.Level)
@@ -751,10 +732,7 @@ if (${{{conditional}}}) {{
         }
 
         ConditionalNode.__init__(
-            self,
-            template_text=template_text,
-            template_vars=template_vars,
-            renderer=renderer)
+            self, template_text=template_text, template_vars=template_vars)
 
         self._cond_node = cond
         self._body_node = body
@@ -803,8 +781,7 @@ class FunctionDefinitionNode(CodeNode):
                  return_type,
                  local_vars=None,
                  body=None,
-                 comment=None,
-                 renderer=None):
+                 comment=None):
         """
         Args:
             name: Function name node, which may include nested-name-specifier
@@ -856,10 +833,7 @@ ${{{return_type}}} ${{{name}}}(${{{arg_decls}}}) {{
         }
 
         CodeNode.__init__(
-            self,
-            template_text=template_text,
-            template_vars=template_vars,
-            renderer=renderer)
+            self, template_text=template_text, template_vars=template_vars)
 
         self._body_node = body
 

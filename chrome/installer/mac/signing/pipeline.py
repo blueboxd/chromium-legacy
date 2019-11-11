@@ -118,31 +118,63 @@ def _staple_chrome(paths, dist_config):
         notarize.staple(os.path.join(paths.work, part_path))
 
 
-def _productbuild_requirements_path(paths, dist_config):
-    """Creates a requirements file for use by `productbuild`. This specifies
+def _productbuild_distribution_path(paths, dist_config, component_pkg_path):
+    """Creates a distribution XML file for use by `productbuild`. This specifies
     that an x64 machine is required, and copies the OS requirement from the copy
     of Chrome being packaged.
 
     Args:
         paths: A |model.Paths| object.
         dist_config: The |config.CodeSignConfig| object.
+        component_pkg_path: The path to the existing component .pkg file.
 
     Returns:
-        The path to the requirements file.
+        The path to the distribution file.
     """
-    requirements_path = os.path.join(paths.work,
-                                     '{}.req'.format(dist_config.app_product))
+    distribution_path = os.path.join(paths.work,
+                                     '{}.dist'.format(dist_config.app_product))
 
     app_plist_path = os.path.join(paths.work, dist_config.app_dir, 'Contents',
                                   'Info.plist')
     with commands.PlistContext(app_plist_path) as app_plist:
-        with commands.PlistContext(
-                requirements_path, rewrite=True,
-                create_new=True) as requirements:
-            requirements['os'] = [app_plist['LSMinimumSystemVersion']]
-            requirements['arch'] = ['x86_64']
+        distribution_xml = """<?xml version="1.0" encoding="utf-8"?>
+<installer-gui-script minSpecVersion="2">
 
-    return requirements_path
+    <!-- Top-level info about the distribution. -->
+    <title>{app_product}</title>
+    <options customize="never" require-scripts="false" hostArchitectures="x86_64"/>
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="{minimum_system}"/>
+        </allowed-os-versions>
+    </volume-check>
+
+    <!-- The hierarchy of installation choices. -->
+    <choices-outline>
+        <line choice="default">
+            <line choice="{bundle_id}"/>
+        </line>
+    </choices-outline>
+
+    <!-- The individual choices. -->
+    <choice id="default"/>
+    <choice id="{bundle_id}" visible="false" title="{app_product}">
+        <pkg-ref id="{bundle_id}"/>
+    </choice>
+
+    <!-- The lone component package. -->
+    <pkg-ref id="{bundle_id}" version="{version}" onConclusion="none">{component_pkg_filename}</pkg-ref>
+
+</installer-gui-script>""".format(
+            app_product=dist_config.app_product,
+            bundle_id=dist_config.base_bundle_id,
+            minimum_system=app_plist['LSMinimumSystemVersion'],
+            component_pkg_filename=os.path.basename(component_pkg_path),
+            version=dist_config.version)
+
+        commands.write_file(distribution_path, distribution_xml)
+
+    return distribution_path
 
 
 def _package_and_sign_pkg(paths, dist_config):
@@ -182,26 +214,8 @@ def _package_and_sign_pkg(paths, dist_config):
 
     ## The product archive.
 
-    # There are two steps here. The first is to create the "distribution file"
-    # which describes the product archive. `productbuild` has a mode to generate
-    # such a file, with the optional input of a "requirements file" that
-    # describes the desired installation requirements of the product archive.
-    # Use this mode to generate a distribution file. Note that if, in the
-    # future, it's desired that the product archive have UI customization, then
-    # this distribution file will need to be hand-crafted. With any luck, this
-    # auto-generated distribution file continue to suffice.
-
-    requirements_path = _productbuild_requirements_path(paths, dist_config)
-
-    distribution_path = os.path.join(paths.work,
-                                     '{}.dist'.format(dist_config.app_product))
-    commands.run_command([
-        'productbuild', '--synthesize', '--product', requirements_path,
-        '--package', component_pkg_path, distribution_path
-    ])
-
-    # The second step is to actually create the product archive using
-    # `productbuild`.
+    distribution_path = _productbuild_distribution_path(paths, dist_config,
+                                                        component_pkg_path)
 
     product_pkg_path = os.path.join(
         paths.output, '{}.pkg'.format(dist_config.packaging_basename))

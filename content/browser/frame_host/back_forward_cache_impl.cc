@@ -39,11 +39,18 @@ static constexpr size_t kBackForwardCacheLimit = 1;
 // The default time to live in seconds for documents in BackForwardCache.
 static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 15;
 
+// Invalid |navigation_start| value, for calls to SetPageFrozenImpl where we
+// don't need |navigation_start|.
+constexpr base::TimeTicks kInvalidNavigationStart = base::TimeTicks();
+
 void SetPageFrozenImpl(
     RenderFrameHostImpl* render_frame_host,
     bool frozen,
-    std::unordered_set<RenderViewHostImpl*>* render_view_hosts) {
+    std::unordered_set<RenderViewHostImpl*>* render_view_hosts,
+    base::TimeTicks navigation_start) {
   RenderViewHostImpl* render_view_host = render_frame_host->render_view_host();
+  // |navigation_start| should only be valid if we're restoring a page.
+  DCHECK_EQ(frozen, navigation_start == kInvalidNavigationStart);
   // (Un)Freeze the frame's page if it is not (un)frozen yet.
   if (render_view_hosts->find(render_view_host) == render_view_hosts->end()) {
     // The state change for bfcache is:
@@ -58,8 +65,8 @@ void SetPageFrozenImpl(
       render_view_host->Send(
           new PageMsg_PutPageIntoBackForwardCache(rvh_routing_id));
     } else {
-      render_view_host->Send(
-          new PageMsg_RestorePageFromBackForwardCache(rvh_routing_id));
+      render_view_host->Send(new PageMsg_RestorePageFromBackForwardCache(
+          rvh_routing_id, navigation_start));
     }
     render_view_hosts->insert(render_view_host);
   }
@@ -67,7 +74,8 @@ void SetPageFrozenImpl(
   for (size_t index = 0; index < render_frame_host->child_count(); ++index) {
     RenderFrameHostImpl* child_frame_host =
         render_frame_host->child_at(index)->current_frame_host();
-    SetPageFrozenImpl(child_frame_host, frozen, render_view_hosts);
+    SetPageFrozenImpl(child_frame_host, frozen, render_view_hosts,
+                      navigation_start);
   }
 }
 
@@ -329,14 +337,20 @@ void BackForwardCacheImpl::Freeze(RenderFrameHostImpl* main_rfh) {
   // |frozen_render_view_hosts| keeps track of the ones that freezing has been
   // applied to.
   std::unordered_set<RenderViewHostImpl*> frozen_render_view_hosts;
-  SetPageFrozenImpl(main_rfh, /*frozen = */ true, &frozen_render_view_hosts);
+  // |navigation_start| is used only when resuming a page, hence an invalid
+  // value is passed here.
+
+  SetPageFrozenImpl(main_rfh, /*frozen = */ true, &frozen_render_view_hosts,
+                    kInvalidNavigationStart);
 }
 
-void BackForwardCacheImpl::Resume(RenderFrameHostImpl* main_rfh) {
+void BackForwardCacheImpl::Resume(RenderFrameHostImpl* main_rfh,
+                                  base::TimeTicks navigation_start) {
   // |unfrozen_render_view_hosts| keeps track of the ones that resuming has
   // been applied to.
   std::unordered_set<RenderViewHostImpl*> unfrozen_render_view_hosts;
-  SetPageFrozenImpl(main_rfh, /*frozen = */ false, &unfrozen_render_view_hosts);
+  SetPageFrozenImpl(main_rfh, /*frozen = */ false, &unfrozen_render_view_hosts,
+                    navigation_start);
 }
 
 std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(

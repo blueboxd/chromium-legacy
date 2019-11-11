@@ -5,10 +5,10 @@
 import web_idl
 
 from .clang_format import clang_format
-from .code_generation_accumulator import CodeGenerationAccumulator
 from .code_node import CodeNode
 from .code_node import LiteralNode
 from .code_node import SymbolScopeNode
+from .codegen_accumulator import CodeGenAccumulator
 from .path_manager import PathManager
 
 
@@ -21,7 +21,7 @@ def make_copyright_header():
 
 
 def make_header_include_directives(accumulator):
-    assert isinstance(accumulator, CodeGenerationAccumulator)
+    assert isinstance(accumulator, CodeGenAccumulator)
 
     class HeaderIncludeDirectives(object):
         def __init__(self, accumulator):

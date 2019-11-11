@@ -436,7 +436,8 @@ class WebView {
   virtual void PutPageIntoBackForwardCache() = 0;
 
   // Unhooks eviction, resumes a page and dispatches a pageshow event.
-  virtual void RestorePageFromBackForwardCache() = 0;
+  virtual void RestorePageFromBackForwardCache(
+      base::TimeTicks navigation_start) = 0;
 
   // Testing functionality for TestRunner ---------------------------------
 

@@ -4,6 +4,7 @@
 
 import os.path
 import unittest
+from xml.etree import ElementTree
 
 from . import model, pipeline, test_common, test_config
 
@@ -18,8 +19,12 @@ def _get_work_dir(*args, **kwargs):
 _get_work_dir.count = 0
 
 
-def _productbuild_requirements_path(p, d):
-    return '$W/App Product.req'
+def _productbuild_distribution_path(p, d, c):
+    return '$W/App Product.dist'
+
+
+def _read_plist(p):
+    return {'LSMinimumSystemVersion': '10.19.7'}
 
 
 def _get_adjacent_item(l, o):
@@ -32,16 +37,15 @@ def _get_adjacent_item(l, o):
 
 @mock.patch.multiple(
     'signing.commands', **{
-        m: mock.DEFAULT for m in ('move_file', 'copy_files',
-                                  'copy_dir_overwrite_and_count_changes',
-                                  'run_command', 'make_dir', 'shutil')
+        m: mock.DEFAULT
+        for m in ('move_file', 'copy_files',
+                  'copy_dir_overwrite_and_count_changes', 'run_command',
+                  'make_dir', 'shutil', 'write_file')
     })
 @mock.patch.multiple(
     'signing.signing',
     **{m: mock.DEFAULT for m in ('sign_part', 'sign_chrome', 'verify_part')})
 @mock.patch('signing.commands.tempfile.mkdtemp', _get_work_dir)
-@mock.patch('signing.pipeline._productbuild_requirements_path',
-            _productbuild_requirements_path)
 class TestPipelineHelpers(unittest.TestCase):
 
     def setUp(self):
@@ -246,6 +250,38 @@ class TestPipelineHelpers(unittest.TestCase):
             mock.call('$W/App Product Canary.app')
         ])
 
+    @mock.patch('signing.commands.plistlib.readPlist', _read_plist)
+    def test_productbuild_distribution_path(self, **kwargs):
+        manager = mock.Mock()
+        for attr in kwargs:
+            manager.attach_mock(kwargs[attr], attr)
+
+        dist = model.Distribution()
+        dist_config = dist.to_config(test_config.TestConfig())
+        paths = self.paths.replace_work('$W')
+
+        component_pkg_path = os.path.join(
+            paths.work, '{}.pkg'.format(dist_config.app_product))
+
+        self.assertEqual(
+            '$W/App Product.dist',
+            pipeline._productbuild_distribution_path(paths, dist_config,
+                                                     component_pkg_path))
+
+        manager.assert_has_calls([
+            mock.call.write_file('$W/App Product.dist', mock.ANY),
+        ])
+
+        xml_string = manager.mock_calls[0][1][1]
+
+        xml_root = ElementTree.fromstring(xml_string)
+        volume_check = xml_root.find('volume-check')
+        allowed_os_versions = volume_check.find('allowed-os-versions')
+        os_versions = allowed_os_versions.findall('os-version')
+        self.assertEqual(len(os_versions), 1)
+        os_version = os_versions[0].get('min')
+        self.assertEqual(os_version, '10.19.7')
+
     def test_package_and_sign_dmg_no_branding(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
@@ -278,6 +314,8 @@ class TestPipelineHelpers(unittest.TestCase):
         self.assertEqual('AppProduct-99.0.9999.99',
                          kwargs['sign_part'].mock_calls[0][1][2].identifier)
 
+    @mock.patch('signing.pipeline._productbuild_distribution_path',
+                _productbuild_distribution_path)
     def test_package_and_sign_pkg_no_branding(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
@@ -293,7 +331,6 @@ class TestPipelineHelpers(unittest.TestCase):
 
         manager.assert_has_calls([
             mock.call.run_command(mock.ANY),
-            mock.call.run_command(mock.ANY),
             mock.call.run_command(mock.ANY)
         ])
 
@@ -301,21 +338,12 @@ class TestPipelineHelpers(unittest.TestCase):
             call for call in manager.mock_calls if call[0] == 'run_command'
         ]
         pkgbuild_args = run_commands[0][1][0]
-        productbuild_synthesize_args = run_commands[1][1][0]
-        productbuild_args = run_commands[2][1][0]
+        productbuild_args = run_commands[1][1][0]
 
         self.assertEqual('test.signing.bundle_id',
                          _get_adjacent_item(pkgbuild_args, '--identifier'))
         self.assertEqual('99.0.9999.99',
                          _get_adjacent_item(pkgbuild_args, '--version'))
-
-        self.assertTrue('--synthesize' in productbuild_synthesize_args)
-        self.assertEqual(
-            '$W/App Product.req',
-            _get_adjacent_item(productbuild_synthesize_args, '--product'))
-        self.assertEqual(
-            '$W/AppProduct.pkg',
-            _get_adjacent_item(productbuild_synthesize_args, '--package'))
 
         self.assertEqual(
             '$W/App Product.dist',
@@ -361,6 +389,8 @@ class TestPipelineHelpers(unittest.TestCase):
         self.assertEqual('AppProduct-99.0.9999.99-MOO',
                          kwargs['sign_part'].mock_calls[0][1][2].identifier)
 
+    @mock.patch('signing.pipeline._productbuild_distribution_path',
+                _productbuild_distribution_path)
     def test_package_and_sign_pkg_branding(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
@@ -380,7 +410,6 @@ class TestPipelineHelpers(unittest.TestCase):
 
         manager.assert_has_calls([
             mock.call.run_command(mock.ANY),
-            mock.call.run_command(mock.ANY),
             mock.call.run_command(mock.ANY)
         ])
 
@@ -388,21 +417,12 @@ class TestPipelineHelpers(unittest.TestCase):
             call for call in manager.mock_calls if call[0] == 'run_command'
         ]
         pkgbuild_args = run_commands[0][1][0]
-        productbuild_synthesize_args = run_commands[1][1][0]
-        productbuild_args = run_commands[2][1][0]
+        productbuild_args = run_commands[1][1][0]
 
         self.assertEqual('test.signing.bundle_id',
                          _get_adjacent_item(pkgbuild_args, '--identifier'))
         self.assertEqual('99.0.9999.99',
                          _get_adjacent_item(pkgbuild_args, '--version'))
-
-        self.assertTrue('--synthesize' in productbuild_synthesize_args)
-        self.assertEqual(
-            '$W/App Product.req',
-            _get_adjacent_item(productbuild_synthesize_args, '--product'))
-        self.assertEqual(
-            '$W/AppProduct.pkg',
-            _get_adjacent_item(productbuild_synthesize_args, '--package'))
 
         self.assertEqual(
             '$W/App Product.dist',

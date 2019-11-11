@@ -88,7 +88,8 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // Iterates over all the RenderViewHost inside |main_rfh| and freeze or
   // resume them.
   static void Freeze(RenderFrameHostImpl* main_rfh);
-  static void Resume(RenderFrameHostImpl* main_rfh);
+  static void Resume(RenderFrameHostImpl* main_rfh,
+                     base::TimeTicks navigation_start);
 
   // Returns a pointer to a cached BackForwardCache entry matching
   // |navigation_entry_id| if it exists in the BackForwardCache. Returns nullptr

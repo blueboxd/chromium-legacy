@@ -459,7 +459,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^sandbox/win/',
   '^services/',
   '^storage/browser/',
-  '^testing/gmock_mutant.h',
   '^testing/libfuzzer/',
   '^third_party/blink/',
   '^third_party/crashpad/crashpad/test/gtest_main.cc',

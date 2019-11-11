@@ -7,7 +7,6 @@ import os.path
 from blinkbuild.name_style_converter import NameStyleConverter
 
 from .clang_format import clang_format
-from .code_generation_context import CodeGenerationContext
 from .code_node import CodeNode
 from .code_node import FunctionDefinitionNode
 from .code_node import LiteralNode
@@ -17,6 +16,7 @@ from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
 from .code_node import UnlikelyExitNode
+from .codegen_context import CodeGenContext
 from .mako_renderer import MakoRenderer
 
 _format = CodeNode.format_template
@@ -32,7 +32,7 @@ def _upper_camel_case(name):
 
 def bind_callback_local_vars(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     S = SymbolNode
     T = TextNode
@@ -146,7 +146,7 @@ def make_v8_to_blink_value(blink_var_name, v8_value_expr, idl_type):
 
 def bind_blink_api_arguments(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     if cg_context.attribute_get:
         return
@@ -171,7 +171,7 @@ def bind_blink_api_arguments(code_node, cg_context):
 
 def bind_blink_api_call(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     property_implemented_as = (
         cg_context.member_like.code_generator_info.property_implemented_as)
@@ -220,7 +220,7 @@ def bind_blink_api_call(code_node, cg_context):
 
 def bind_return_value(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     def create_definition(symbol_node):
         if cg_context.return_type.unwrap().is_void:
@@ -243,7 +243,7 @@ def bind_return_value(code_node, cg_context):
 
 def bind_v8_set_return_value(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     pattern = "{_1}({_2});"
     _1 = "V8SetReturnValue"
@@ -264,7 +264,7 @@ def bind_v8_set_return_value(code_node, cg_context):
 
 
 def make_attribute_get_def(cg_context):
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     L = LiteralNode
     T = TextNode
@@ -298,7 +298,7 @@ def make_attribute_get_def(cg_context):
 
 
 def make_operation_def(cg_context):
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     L = LiteralNode
     T = TextNode
@@ -331,7 +331,7 @@ def make_operation_def(cg_context):
 
 def bind_template_installer_local_vars(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     S = SymbolNode
 
@@ -364,7 +364,7 @@ def bind_template_installer_local_vars(code_node, cg_context):
 
 
 def make_install_interface_template_def(cg_context):
-    assert isinstance(cg_context, CodeGenerationContext)
+    assert isinstance(cg_context, CodeGenContext)
 
     L = LiteralNode
     T = TextNode
@@ -409,16 +409,15 @@ def make_install_interface_template_def(cg_context):
 
 
 def run_example(web_idl_database, output_dirs):
-    renderer = MakoRenderer()
-
     filename = 'v8_example.cc'
     filepath = os.path.join(output_dirs['core'], filename)
 
     namespace = list(web_idl_database.namespaces)[0]
 
-    cg_context = CodeGenerationContext(namespace=namespace)
+    cg_context = CodeGenContext(namespace=namespace)
 
-    root_node = SymbolScopeNode(separator_last="\n", renderer=renderer)
+    root_node = SymbolScopeNode(separator_last="\n")
+    root_node.set_renderer(MakoRenderer())
 
     for attribute in namespace.attributes:
         root_node.append(

@@ -884,6 +884,8 @@ source_set("chromeos") {
     "dbus/proxy_resolution_service_provider.h",
     "dbus/screen_lock_service_provider.cc",
     "dbus/screen_lock_service_provider.h",
+    "dbus/smb_fs_service_provider.cc",
+    "dbus/smb_fs_service_provider.h",
     "dbus/virtual_file_request_service_provider.cc",
     "dbus/virtual_file_request_service_provider.h",
     "dbus/vm_applications_service_provider.cc",
@@ -2354,6 +2356,7 @@ action("dbus_service_files") {
     "dbus/org.chromium.NetworkProxyService.conf",
     "dbus/org.chromium.PluginVmService.conf",
     "dbus/org.chromium.ScreenLockService.conf",
+    "dbus/org.chromium.SmbFsService.conf",
     "dbus/org.chromium.VirtualFileRequestService.conf",
     "dbus/org.chromium.VmApplicationsService.conf",
   ]

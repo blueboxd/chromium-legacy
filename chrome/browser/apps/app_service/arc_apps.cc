@@ -583,10 +583,14 @@ void ArcApps::OnPackageListInitialRefreshed() {
   if (!prefs) {
     return;
   }
+  // This method is called when ARC++ finishes booting. Do not update the icon;
+  // it should be impossible for the icon to have changed since ARC++ has not
+  // been running.
+  static constexpr bool update_icon = false;
   for (const auto& app_id : prefs->GetAppIds()) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
     if (app_info) {
-      Publish(Convert(prefs, app_id, *app_info));
+      Publish(Convert(prefs, app_id, *app_info, update_icon));
     }
   }
 }

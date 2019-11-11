@@ -405,6 +405,8 @@ bool IsElementReflectionAttribute(const QualifiedName& name) {
     return true;
   if (name == html_names::kAriaFlowtoAttr)
     return true;
+  if (name == html_names::kAriaLabeledbyAttr)
+    return true;
   if (name == html_names::kAriaLabelledbyAttr)
     return true;
   if (name == html_names::kAriaOwnsAttr)
@@ -414,7 +416,7 @@ bool IsElementReflectionAttribute(const QualifiedName& name) {
 
 HeapVector<Member<Element>>* GetExplicitlySetElementsForAttr(
     Element* element,
-    QualifiedName name) {
+    const QualifiedName& name) {
   ExplicitlySetAttrElementsMap* element_attribute_map =
       element->GetDocument().GetExplicitlySetAttrElementsMap(element);
   return element_attribute_map->at(name);
@@ -667,6 +669,11 @@ void Element::SetBooleanAttribute(const QualifiedName& name, bool value) {
     removeAttribute(name);
 }
 
+bool Element::HasExplicitlySetAttrAssociatedElements(
+    const QualifiedName& name) {
+  return GetExplicitlySetElementsForAttr(this, name);
+}
+
 void Element::SynchronizeContentAttributeAndElementReference(
     const QualifiedName& name) {
   ExplicitlySetAttrElementsMap* element_attribute_map =
@@ -723,8 +730,7 @@ Element* Element::GetElementAttribute(const QualifiedName& name) {
     DCHECK_EQ(element_attribute_vector->size(), 1u);
     Element* explicitly_set_element = element_attribute_vector->at(0);
     // Only return the explicit element if it still exists in the same scope.
-    if (explicitly_set_element && ElementIsDescendantOfShadowIncludingAncestor(
-                                      *this, *explicitly_set_element))
+    if (explicitly_set_element)
       return explicitly_set_element;
   }
 
@@ -744,6 +750,7 @@ void Element::SetElementArrayAttribute(
   ExplicitlySetAttrElementsMap* element_attribute_map =
       GetDocument().GetExplicitlySetAttrElementsMap(this);
 
+  // Not sure if this can happen, as FrozenArrays aren't nullable?
   if (is_null) {
     element_attribute_map->erase(name);
     removeAttribute(name);
@@ -795,6 +802,10 @@ void Element::SetElementArrayAttribute(
   }
 
   setAttribute(name, value.SerializeToString());
+  if (isConnected()) {
+    if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+      cache->HandleAttributeChanged(name, this);
+  }
   element_attribute_map->Set(name, elements);
 }
 
@@ -805,12 +816,7 @@ HeapVector<Member<Element>> Element::GetElementArrayAttribute(
       GetExplicitlySetElementsForAttr(this, name);
   is_null = false;
   if (explicitly_set_elements) {
-    HeapVector<Member<Element>> return_elements;
-    for (auto element : *explicitly_set_elements) {
-      if (ElementIsDescendantOfShadowIncludingAncestor(*this, *element))
-        return_elements.push_back(element);
-    }
-    return return_elements;
+    return *explicitly_set_elements;
   }
 
   String attribute_value = getAttribute(name).GetString();

@@ -41,7 +41,7 @@
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -695,7 +695,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
         error_called_(false) {}
   void OnError(const IndexedDBDatabaseError& error) override {
     error_called_ = true;
-    EXPECT_EQ(blink::kWebIDBDatabaseExceptionQuotaError, error.code());
+    EXPECT_EQ(blink::mojom::IDBException::kQuotaError, error.code());
   }
   bool error_called() const { return error_called_; }
 

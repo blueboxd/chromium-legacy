@@ -134,12 +134,11 @@ cca.views.MasterSettings.prototype.openFeedback = function() {
  * @param {!cca.device.DeviceInfoUpdater} infoUpdater
  * @param {!cca.device.PhotoResolPreferrer} photoPreferrer
  * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
- * @param {!cca.ResolutionEventBroker} resolBroker
  * @extends {cca.views.BaseSettings}
  * @constructor
  */
 cca.views.ResolutionSettings = function(
-    infoUpdater, photoPreferrer, videoPreferrer, resolBroker) {
+    infoUpdater, photoPreferrer, videoPreferrer) {
   /**
    * @param {function(): ?cca.views.DeviceSetting} getSetting
    * @param {function(): !HTMLElement} getElement
@@ -173,10 +172,16 @@ cca.views.ResolutionSettings = function(
   });
 
   /**
-   * @type {!cca.ResolutionEventBroker}
+   * @type {!cca.device.PhotoResolPreferrer}
    * @private
    */
-  this.resolBroker_ = resolBroker;
+  this.photoPreferrer_ = photoPreferrer;
+
+  /**
+   * @type {!cca.device.VideoConstraintsPreferrer}
+   * @private
+   */
+  this.videoPreferrer_ = videoPreferrer;
 
   /**
    * @type {!HTMLElement}
@@ -317,9 +322,9 @@ cca.views.ResolutionSettings = function(
     this.updateResolutions_();
   });
 
-  this.resolBroker_.addPhotoPrefResolChangeListener(
+  this.photoPreferrer_.setPreferredResolutionChangeListener(
       this.updateSelectedPhotoResolution_.bind(this));
-  this.resolBroker_.addVideoPrefResolChangeListener(
+  this.videoPreferrer_.setPreferredResolutionChangeListener(
       this.updateSelectedVideoResolution_.bind(this));
 };
 
@@ -497,14 +502,13 @@ cca.views.ResolutionSettings.prototype.updateResolutions_ = function() {
 /**
  * Updates current selected photo resolution.
  * @param {string} deviceId Device id of the selected resolution.
- * @param {number} width Width of selected resolution.
- * @param {number} height Height of selected resolution.
+ * @param {!Resolution} resolution Selected resolution.
  * @private
  */
 cca.views.ResolutionSettings.prototype.updateSelectedPhotoResolution_ =
-    function(deviceId, width, height) {
+    function(deviceId, resolution) {
   const {photo} = this.getDeviceSetting_(deviceId);
-  photo.prefResol = new Resolution(width, height);
+  photo.prefResol = resolution;
   let /** !HTMLElement */ photoItem;
   if (this.frontSetting_ && this.frontSetting_.deviceId === deviceId) {
     photoItem = this.frontPhotoItem_;
@@ -521,7 +525,10 @@ cca.views.ResolutionSettings.prototype.updateSelectedPhotoResolution_ =
   if (cca.state.get('photoresolutionsettings') &&
       this.openedSettingDeviceId_ === deviceId) {
     this.photoResMenu_
-        .querySelector(`input[data-width="${width}"][data-height="${height}"]`)
+        .querySelector(
+            'input' +
+            `[data-width="${resolution.width}"]` +
+            `[data-height="${resolution.height}"]`)
         .checked = true;
   }
 };
@@ -529,14 +536,13 @@ cca.views.ResolutionSettings.prototype.updateSelectedPhotoResolution_ =
 /**
  * Updates current selected video resolution.
  * @param {string} deviceId Device id of the selected resolution.
- * @param {number} width Width of selected resolution.
- * @param {number} height Height of selected resolution.
+ * @param {!Resolution} resolution Selected resolution.
  * @private
  */
 cca.views.ResolutionSettings.prototype.updateSelectedVideoResolution_ =
-    function(deviceId, width, height) {
+    function(deviceId, resolution) {
   const {video} = this.getDeviceSetting_(deviceId);
-  video.prefResol = new Resolution(width, height);
+  video.prefResol = resolution;
   let /** !HTMLElement */ videoItem;
   if (this.frontSetting_ && this.frontSetting_.deviceId === deviceId) {
     videoItem = this.frontVideoItem_;
@@ -553,7 +559,10 @@ cca.views.ResolutionSettings.prototype.updateSelectedVideoResolution_ =
   if (cca.state.get('videoresolutionsettings') &&
       this.openedSettingDeviceId_ === deviceId) {
     this.videoResMenu_
-        .querySelector(`input[data-width="${width}"][data-height="${height}"]`)
+        .querySelector(
+            'input' +
+            `[data-width="${resolution.width}"]` +
+            `[data-height="${resolution.height}"]`)
         .checked = true;
   }
 };
@@ -570,8 +579,7 @@ cca.views.ResolutionSettings.prototype.openPhotoResSettings_ = function(
   this.openedSettingDeviceId_ = deviceId;
   this.updateMenu_(
       resolItem, this.photoResMenu_, this.photoOptTextTempl_,
-      (r) => this.resolBroker_.requestChangePhotoPrefResol(
-          deviceId, r.width, r.height),
+      (r) => this.photoPreferrer_.changePreferredResolution(deviceId, r),
       photo.resols, photo.prefResol);
   this.openSubSettings('photoresolutionsettings');
 };
@@ -588,8 +596,7 @@ cca.views.ResolutionSettings.prototype.openVideoResSettings_ = function(
   this.openedSettingDeviceId_ = deviceId;
   this.updateMenu_(
       resolItem, this.videoResMenu_, this.videoOptTextTempl_,
-      (r) => this.resolBroker_.requestChangeVideoPrefResol(
-          deviceId, r.width, r.height),
+      (r) => this.videoPreferrer_.changePreferredResolution(deviceId, r),
       video.resols, video.prefResol);
   this.openSubSettings('videoresolutionsettings');
 };

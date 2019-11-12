@@ -550,13 +550,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // WebRTC ----------------------------------------------------------
 
-  // Returns the SingleThreadTaskRunner suitable for running WebRTC networking.
-  // An rtc::Thread will have already been created.
-  // May return null if WebRTC functionality is not implemented.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() {
-    return nullptr;
-  }
-
   // Checks if the default minimum starting volume value for the AGC is
   // overridden on the command line.
   virtual base::Optional<double> GetWebRtcMaxCaptureFrameRate() {

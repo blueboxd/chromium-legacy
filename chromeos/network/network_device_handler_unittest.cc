@@ -310,8 +310,8 @@ TEST_F(NetworkDeviceHandlerTest, UsbEthernetMacAddressSourceNotSupported) {
                                  shill::kUsbEthernetMacAddressSourceProperty,
                                  base::Value(kSourceToOverride),
                                  /*notify_changed=*/true);
-  device_test->SetUsbEthernetMacAddressSourceError(kUsbEthernetDevicePath,
-                                                   "not-supported");
+  device_test->SetUsbEthernetMacAddressSourceError(
+      kUsbEthernetDevicePath, shill::kErrorResultNotSupported);
 
   network_device_handler_->SetUsbEthernetMacAddressSource("some_source1");
   base::RunLoop().RunUntilIdle();
@@ -356,8 +356,8 @@ TEST_F(NetworkDeviceHandlerTest, UsbEthernetMacAddressSource) {
   device_test->SetDeviceProperty(kUsbEthernetDevicePath2,
                                  shill::kLinkUpProperty, base::Value(true),
                                  /*notify_changed=*/true);
-  device_test->SetUsbEthernetMacAddressSourceError(kUsbEthernetDevicePath2,
-                                                   "not-supported");
+  device_test->SetUsbEthernetMacAddressSourceError(
+      kUsbEthernetDevicePath2, shill::kErrorResultNotSupported);
 
   constexpr char kUsbEthernetDevicePath3[] = "usb_ethernet_device3";
   device_test->AddDevice(kUsbEthernetDevicePath3, shill::kTypeEthernet, "eth3");

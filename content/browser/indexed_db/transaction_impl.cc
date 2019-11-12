@@ -21,7 +21,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
 namespace {
@@ -29,7 +29,7 @@ const char kInvalidBlobUuid[] = "Blob does not exist";
 const char kInvalidBlobFilePath[] = "Blob file path is invalid";
 
 IndexedDBDatabaseError CreateBackendAbortError() {
-  return IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+  return IndexedDBDatabaseError(blink::mojom::IDBException::kAbortError,
                                 "Backend aborted error");
 }
 
@@ -181,7 +181,7 @@ void TransactionImpl::Put(
       return;
     }
     case IOHelper::LoadResultCode::kAbort: {
-      IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+      IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                    kInvalidBlobUuid);
       std::move(callback).Run(
           blink::mojom::IDBTransactionPutResult::NewErrorResult(
@@ -207,9 +207,8 @@ void TransactionImpl::Put(
     }
     case IOHelper::LoadResultCode::kSuccess: {
       if (!transaction_) {
-        IndexedDBDatabaseError error(
-            blink::kWebIDBDatabaseExceptionUnknownError,
-            "Unknown transaction.");
+        IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
+                                     "Unknown transaction.");
         std::move(callback).Run(
             blink::mojom::IDBTransactionPutResult::NewErrorResult(
                 blink::mojom::IDBError::New(error.code(), error.message())));
@@ -218,8 +217,8 @@ void TransactionImpl::Put(
 
       IndexedDBConnection* connection = transaction_->connection();
       if (!connection->IsConnected()) {
-        IndexedDBDatabaseError error(
-            blink::kWebIDBDatabaseExceptionUnknownError, "Not connected.");
+        IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
+                                     "Not connected.");
         std::move(callback).Run(
             blink::mojom::IDBTransactionPutResult::NewErrorResult(
                 blink::mojom::IDBError::New(error.code(), error.message())));
@@ -381,7 +380,7 @@ void TransactionImpl::OnGotUsageAndQuotaForCommit(
   } else {
     connection->AbortTransactionAndTearDownOnError(
         transaction_.get(),
-        IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionQuotaError));
+        IndexedDBDatabaseError(blink::mojom::IDBException::kQuotaError));
   }
 }
 

@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/math_constants.h"
 #include "base/win/core_winrt_util.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/public/mojom/sensor.mojom.h"
@@ -445,9 +446,9 @@ HRESULT PlatformSensorReaderWinrtAccelerometer::OnReadingChangedCallback(
     // The generic sensor interface exposes acceleration simply as
     // m/s^2, so the data must be converted.
     SensorReading reading;
-    reading.accel.x = -x * kMeanGravity;
-    reading.accel.y = -y * kMeanGravity;
-    reading.accel.z = -z * kMeanGravity;
+    reading.accel.x = -x * base::kMeanGravityDouble;
+    reading.accel.y = -y * base::kMeanGravityDouble;
+    reading.accel.z = -z * base::kMeanGravityDouble;
     reading.accel.timestamp = timestamp_delta.InSecondsF();
     client_->OnReadingUpdated(reading);
 

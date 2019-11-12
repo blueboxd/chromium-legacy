@@ -439,6 +439,11 @@ NGBlockNode::CachedLayoutResultForOutOfFlowPositioned(
   if (!cached_layout_result)
     return nullptr;
 
+  // The containing-block may have borders/scrollbars which might change
+  // between passes affecting the final position.
+  if (!cached_layout_result->CanUseOutOfFlowPositionedFirstTierCache())
+    return nullptr;
+
   // TODO(layout-dev): There are potentially more cases where we can reuse this
   // layout result.
   // E.g. when we have a fixed-length top position constraint (top: 5px), we

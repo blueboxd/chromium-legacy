@@ -126,7 +126,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const media::AudioSourceParameters& params) override;
   viz::ContextProvider* SharedMainThreadContextProvider() override;
   bool RTCSmoothnessAlgorithmEnabled() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() override;
   base::Optional<double> GetWebRtcMaxCaptureFrameRate() override;
   scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(
       blink::WebAudioDeviceSourceType source_type,

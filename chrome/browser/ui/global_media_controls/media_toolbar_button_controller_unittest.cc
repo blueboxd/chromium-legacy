@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
+#include "chrome/browser/ui/global_media_controls/overlay_media_notification.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
@@ -69,6 +70,9 @@ class MockMediaDialogDelegate : public MediaDialogDelegate {
           const std::string& id,
           base::WeakPtr<media_message_center::MediaNotificationItem> item));
   MOCK_METHOD1(HideMediaSession, void(const std::string& id));
+  MOCK_METHOD2(PopOut,
+               std::unique_ptr<OverlayMediaNotification>(const std::string& id,
+                                                         gfx::Rect bounds));
 
  private:
   MediaNotificationService* service_;

@@ -128,6 +128,16 @@ cca.views.camera.Options = function(infoUpdater, doSwitchDevice) {
   });
 };
 
+cca.views.camera.Options.prototype = {
+  /**
+   * Device id of the camera device currently used or selected.
+   * @return {string}
+   */
+  get currentDeviceId() {
+    return this.videoDeviceId_;
+  },
+};
+
 /**
  * Switches to the next available camera device.
  * @private
@@ -148,12 +158,6 @@ cca.views.camera.Options.prototype.switchDevice_ = async function() {
     this.videoDeviceId_ = devices[index].deviceId;
   }
   await this.doSwitchDevice_();
-  // Make the active camera announced by screen reader.
-  var found = devices.find((entry) => entry.deviceId == this.videoDeviceId_);
-  if (found) {
-    cca.toast.speak(
-        chrome.i18n.getMessage('status_msg_camera_switched', found.label));
-  }
 };
 
 /**

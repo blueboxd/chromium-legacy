@@ -151,6 +151,7 @@ cca.views.CameraIntent = class extends cca.views.Camera {
         window.close();
         return;
       }
+      this.focus();  // Refocus the visible shutter button for ChromeVox.
       cca.state.set('suspend', false);
       await this.intent_.clearData();
       await this.restart();

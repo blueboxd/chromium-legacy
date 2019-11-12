@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accelerometer/accelerometer_constants.h"
 #include "ash/display/display_configuration_observer.h"
 #include "ash/display/display_util.h"
 #include "ash/display/resolution_notification_controller.h"
@@ -27,6 +26,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/numerics/math_constants.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -849,17 +849,19 @@ TEST_F(DisplayPrefsTest, DontSaveTabletModeControllerRotations) {
   // Open up 270 degrees to trigger tablet mode
   scoped_refptr<AccelerometerUpdate> update(new AccelerometerUpdate());
   update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, false, 0.0f, 0.0f,
-              -kMeanGravity);
-  update->Set(ACCELEROMETER_SOURCE_SCREEN, false, 0.0f, kMeanGravity, 0.0f);
+              -base::kMeanGravityFloat);
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, false, 0.0f, base::kMeanGravityFloat,
+              0.0f);
   ash::TabletModeController* controller =
       ash::Shell::Get()->tablet_mode_controller();
   controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(controller->InTabletMode());
 
   // Trigger 90 degree rotation
-  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, false, kMeanGravity, 0.0f,
+  update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, false,
+              base::kMeanGravityFloat, 0.0f, 0.0f);
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, false, base::kMeanGravityFloat, 0.0f,
               0.0f);
-  update->Set(ACCELEROMETER_SOURCE_SCREEN, false, kMeanGravity, 0.0f, 0.0f);
   controller->OnAccelerometerUpdated(update);
   shell->screen_orientation_controller()->OnAccelerometerUpdated(update);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
@@ -998,8 +1000,9 @@ TEST_F(DisplayPrefsTest, LoadRotationNoLogin) {
   // Open up 270 degrees to trigger tablet mode
   scoped_refptr<AccelerometerUpdate> update(new AccelerometerUpdate());
   update->Set(ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, false, 0.0f, 0.0f,
-              -kMeanGravity);
-  update->Set(ACCELEROMETER_SOURCE_SCREEN, false, 0.0f, kMeanGravity, 0.0f);
+              -base::kMeanGravityFloat);
+  update->Set(ACCELEROMETER_SOURCE_SCREEN, false, 0.0f, base::kMeanGravityFloat,
+              0.0f);
   ash::TabletModeController* tablet_mode_controller =
       ash::Shell::Get()->tablet_mode_controller();
   tablet_mode_controller->OnAccelerometerUpdated(update);

@@ -90,7 +90,8 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
       container_builder_(container_builder),
       writing_mode_(container_style.GetWritingMode()),
       is_absolute_container_(is_absolute_container),
-      is_fixed_container_(is_fixed_container) {
+      is_fixed_container_(is_fixed_container),
+      allow_first_tier_oof_cache_(border_scrollbar.IsEmpty()) {
   if (!container_builder->HasOutOfFlowPositionedCandidates() &&
       !To<LayoutBlock>(container_builder_->GetLayoutObject())
            ->HasPositionedObjects())
@@ -460,10 +461,13 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
   // Determine if we need to actually run the full OOF-positioned sizing, and
   // positioning algorithm.
   //
-  // When this candidate has an inline container, the container may move without
-  // setting |NeedsLayout()| to the candidate and that there are cases where the
-  // cache validity cannot be determined.
-  if (!candidate.inline_container) {
+  // The first-tier cache compares the given available-size. However we can't
+  // reuse the result if the |ContainingBlockInfo::container_offset| may change.
+  // This can occur when:
+  //  - The default containing-block has borders and/or scrollbars.
+  //  - The candidate has an inline container (instead of the default
+  //    containing-block).
+  if (allow_first_tier_oof_cache_ && !candidate.inline_container) {
     LogicalSize container_content_size_in_candidate_writing_mode =
         container_physical_content_size.ConvertToLogical(
             candidate_writing_mode);
@@ -732,7 +736,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
       offset.inline_offset = *y;
   }
 
-  layout_result->GetMutableForOutOfFlow().SetOutOfFlowPositionedOffset(offset);
+  layout_result->GetMutableForOutOfFlow().SetOutOfFlowPositionedOffset(
+      offset, allow_first_tier_oof_cache_);
   return layout_result;
 }
 
@@ -740,8 +745,8 @@ bool NGOutOfFlowLayoutPart::IsContainingBlockForCandidate(
     const NGLogicalOutOfFlowPositionedNode& candidate) {
   EPosition position = candidate.node.Style().GetPosition();
 
-  // Candidates whose containing block is inline are always positioned
-  // inside closest parent block flow.
+  // Candidates whose containing block is inline are always positioned inside
+  // closest parent block flow.
   if (candidate.inline_container) {
     DCHECK(
         candidate.node.Style().GetPosition() == EPosition::kAbsolute &&
@@ -765,15 +770,13 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
     const LogicalSize& container_content_size_in_candidate_writing_mode,
     const base::Optional<LayoutUnit>& block_estimate,
     const NGLogicalOutOfFlowPosition& node_position) {
-  // As the |block_estimate| is always in the node's writing mode, we
-  // build the constraint space in the node's writing mode.
+  // As the |block_estimate| is always in the node's writing mode, we build the
+  // constraint space in the node's writing mode.
   WritingMode writing_mode = node.Style().GetWritingMode();
 
   LayoutUnit inline_size = node_position.size.inline_size;
-  LayoutUnit block_size =
-      block_estimate
-          ? *block_estimate
-          : container_content_size_in_candidate_writing_mode.block_size;
+  LayoutUnit block_size = block_estimate.value_or(
+      container_content_size_in_candidate_writing_mode.block_size);
 
   LogicalSize available_size(inline_size, block_size);
 

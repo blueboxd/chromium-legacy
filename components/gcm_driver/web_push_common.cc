@@ -21,4 +21,8 @@ void LogSendWebPushMessagePayloadSize(int size) {
   base::UmaHistogramCounts10000("GCM.SendWebPushMessagePayloadSize", size);
 }
 
+void LogSendWebPushMessageStatusCode(int status_code) {
+  base::UmaHistogramSparse("GCM.SendWebPushMessageStatusCode", status_code);
+}
+
 }  // namespace gcm

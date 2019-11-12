@@ -18,9 +18,7 @@ import java.lang.annotation.RetentionPolicy;
 public @interface NavigationState {
     int WAITING_RESPONSE =
             org.chromium.weblayer_private.interfaces.NavigationState.WAITING_RESPONSE;
-
     int RECEIVING_BYTES = org.chromium.weblayer_private.interfaces.NavigationState.RECEIVING_BYTES;
     int COMPLETE = org.chromium.weblayer_private.interfaces.NavigationState.COMPLETE;
-
     int FAILED = org.chromium.weblayer_private.interfaces.NavigationState.FAILED;
 }

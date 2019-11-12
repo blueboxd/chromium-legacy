@@ -75,21 +75,21 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
 TEST_F(StructTraitsTest, SelectionBound) {
   const gfx::SelectionBound::Type type = gfx::SelectionBound::CENTER;
-  const gfx::PointF edge_top(1234.5f, 5678.6f);
-  const gfx::PointF edge_bottom(910112.5f, 13141516.6f);
+  const gfx::PointF edge_start(1234.5f, 5678.6f);
+  const gfx::PointF edge_end(910112.5f, 13141516.6f);
   const bool visible = true;
   gfx::SelectionBound input;
   input.set_type(type);
-  input.SetEdge(edge_top, edge_bottom);
+  input.SetEdge(edge_start, edge_end);
   input.set_visible(visible);
   mojo::Remote<mojom::TraitsTestService> remote = GetTraitsTestRemote();
   gfx::SelectionBound output;
   remote->EchoSelectionBound(input, &output);
   EXPECT_EQ(type, output.type());
-  EXPECT_EQ(edge_top, output.edge_top());
-  EXPECT_EQ(edge_bottom, output.edge_bottom());
-  EXPECT_EQ(input.edge_top_rounded(), output.edge_top_rounded());
-  EXPECT_EQ(input.edge_bottom_rounded(), output.edge_bottom_rounded());
+  EXPECT_EQ(edge_start, output.edge_start());
+  EXPECT_EQ(edge_end, output.edge_end());
+  EXPECT_EQ(input.edge_start_rounded(), output.edge_start_rounded());
+  EXPECT_EQ(input.edge_end_rounded(), output.edge_end_rounded());
   EXPECT_EQ(visible, output.visible());
 }
 

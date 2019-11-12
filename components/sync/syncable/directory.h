@@ -144,7 +144,6 @@ class Directory {
     PersistedKernelInfo kernel_info;
     OwnedEntryKernelSet dirty_metas;
     MetahandleSet metahandles_to_purge;
-    OwnedEntryKernelSet delete_journals;
     MetahandleSet delete_journals_to_purge;
   };
 
@@ -586,10 +585,7 @@ class Directory {
 
   // Helper methods used by PurgeDisabledTypes.
   void UnapplyEntry(EntryKernel* entry);
-  void DeleteEntry(const ScopedKernelLock& lock,
-                   bool save_to_journal,
-                   EntryKernel* entry,
-                   OwnedEntryKernelSet* entries_to_journal);
+  void DeleteEntry(const ScopedKernelLock& lock, EntryKernel* entry);
 
   // A private version of the public GetMetaHandlesOfType for when you already
   // have a ScopedKernelLock.

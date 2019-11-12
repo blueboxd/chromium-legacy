@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -148,6 +149,10 @@ struct BLINK_EXPORT WebNavigationInfo {
   // The navigation initiator's address space.
   network::mojom::IPAddressSpace initiator_address_space =
       network::mojom::IPAddressSpace::kUnknown;
+
+  // The frame policy specified by the frame owner element.
+  // Should be base::nullopt for top level navigations
+  base::Optional<FramePolicy> frame_policy;
 };
 
 // This structure holds all information provided by the embedder that is
@@ -352,6 +357,10 @@ struct BLINK_EXPORT WebNavigationParams {
   // The base URL which will be set for the document to support relative path
   // subresource loading in unsigned bundled exchanges file.
   WebURL base_url_override_for_bundled_exchanges;
+
+  // The frame policy specified by the frame owner element.
+  // Should be base::nullopt for top level navigations
+  base::Optional<FramePolicy> frame_policy;
 };
 
 }  // namespace blink

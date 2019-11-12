@@ -43,6 +43,9 @@ void InvokeWebPushCallback(
 // web push message is sent.
 void LogSendWebPushMessagePayloadSize(int size);
 
+// Logs the network error or status code after a web push message is sent.
+void LogSendWebPushMessageStatusCode(int status_code);
+
 }  // namespace gcm
 
 #endif  // COMPONENTS_GCM_DRIVER_WEB_PUSH_COMMON_H_

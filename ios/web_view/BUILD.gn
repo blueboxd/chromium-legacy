@@ -320,6 +320,7 @@ ios_web_view_deps = [
   "//ios/web/public/deprecated",
   "//ios/web/public/security",
   "//ios/web/public/js_messaging",
+  "//ios/web/public/web_view_only",
   "//net",
   "//net:extras",
   "//services/metrics/public/cpp:metrics_cpp",

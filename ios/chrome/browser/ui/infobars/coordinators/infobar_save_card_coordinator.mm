@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_table_view_controller.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -154,8 +155,9 @@
   self.modalViewController =
       [[InfobarSaveCardTableViewController alloc] initWithModalDelegate:self];
   // TODO(crbug.com/1014652): Replace with Modal specific text.
-  self.modalViewController.title =
-      base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->GetMessageText());
+  self.modalViewController.title = @"Save Credit Card";
+  self.modalViewController.cardIssuerIcon =
+      NativeImage(self.saveCardInfoBarDelegate->issuer_icon_id());
 
   return YES;
 }

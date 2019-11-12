@@ -92,74 +92,85 @@ WKWebViewConfigurationProvider::WKWebViewConfigurationProvider(
 
 WKWebViewConfigurationProvider::~WKWebViewConfigurationProvider() = default;
 
+void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
+    WKWebViewConfiguration* configuration) {
+  DCHECK([NSThread isMainThread]);
+
+  if (!configuration) {
+    configuration = [[WKWebViewConfiguration alloc] init];
+  } else {
+    configuration = [configuration copy];
+  }
+  configuration_ = configuration;
+
+  if (browser_state_->IsOffTheRecord()) {
+    [configuration_
+        setWebsiteDataStore:[WKWebsiteDataStore nonPersistentDataStore]];
+  }
+
+  if (base::FeatureList::IsEnabled(
+          web::features::kIgnoresViewportScaleLimits)) {
+    [configuration_ setIgnoresViewportScaleLimits:YES];
+  }
+
+  if (@available(iOS 13, *)) {
+    @try {
+      // Disable system context menu on iOS 13 and later. Disabling
+      // "longPressActions" prevents the WKWebView ContextMenu from being
+      // displayed.
+      // https://github.com/WebKit/webkit/blob/1233effdb7826a5f03b3cdc0f67d713741e70976/Source/WebKit/UIProcess/API/Cocoa/WKWebViewConfiguration.mm#L307
+      [configuration_ setValue:@NO forKey:@"longPressActionsEnabled"];
+    } @catch (NSException* exception) {
+      NOTREACHED() << "Error setting value for longPressActionsEnabled";
+    }
+  }
+
+  [configuration_ setAllowsInlineMediaPlayback:YES];
+  // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
+  [[configuration_ preferences] setJavaScriptCanOpenWindowsAutomatically:YES];
+  // Main frame script depends upon scripts injected into all frames, so the
+  // "AllFrames" scripts must be injected first.
+  [[configuration_ userContentController]
+      addUserScript:InternalGetDocumentStartScriptForAllFrames(browser_state_)];
+  [[configuration_ userContentController]
+      addUserScript:InternalGetDocumentStartScriptForMainFrame(browser_state_)];
+  [[configuration_ userContentController]
+      addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
+  [[configuration_ userContentController]
+      addUserScript:InternalGetDocumentEndScriptForMainFrame(browser_state_)];
+
+  if (!scheme_handler_) {
+    scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory =
+        browser_state_->GetSharedURLLoaderFactory();
+    scheme_handler_ = [[CRWWebUISchemeHandler alloc]
+        initWithURLLoaderFactory:shared_loader_factory];
+  }
+  WebClient::Schemes schemes;
+  GetWebClient()->AddAdditionalSchemes(&schemes);
+  GetWebClient()->GetAdditionalWebUISchemes(&(schemes.standard_schemes));
+  for (std::string scheme : schemes.standard_schemes) {
+    [configuration_ setURLSchemeHandler:scheme_handler_
+                           forURLScheme:base::SysUTF8ToNSString(scheme)];
+  }
+
+  for (auto& observer : observers_)
+    observer.DidCreateNewConfiguration(this, configuration_);
+
+  // Workaround to force the creation of the WKWebsiteDataStore. This
+  // workaround need to be done here, because this method returns a copy of
+  // the already created configuration.
+  NSSet* data_types = [NSSet setWithObject:WKWebsiteDataTypeCookies];
+  [configuration_.websiteDataStore
+      fetchDataRecordsOfTypes:data_types
+            completionHandler:^(NSArray<WKWebsiteDataRecord*>* records){
+            }];
+}
+
 WKWebViewConfiguration*
 WKWebViewConfigurationProvider::GetWebViewConfiguration() {
   DCHECK([NSThread isMainThread]);
   if (!configuration_) {
-    configuration_ = [[WKWebViewConfiguration alloc] init];
-    if (browser_state_->IsOffTheRecord()) {
-      [configuration_
-          setWebsiteDataStore:[WKWebsiteDataStore nonPersistentDataStore]];
-    }
-
-    if (base::FeatureList::IsEnabled(
-            web::features::kIgnoresViewportScaleLimits)) {
-      [configuration_ setIgnoresViewportScaleLimits:YES];
-    }
-
-    if (@available(iOS 13, *)) {
-      @try {
-        // Disable system context menu on iOS 13 and later. Disabling
-        // "longPressActions" prevents the WKWebView ContextMenu from being
-        // displayed.
-        // https://github.com/WebKit/webkit/blob/1233effdb7826a5f03b3cdc0f67d713741e70976/Source/WebKit/UIProcess/API/Cocoa/WKWebViewConfiguration.mm#L307
-        [configuration_ setValue:@NO forKey:@"longPressActionsEnabled"];
-      } @catch (NSException* exception) {
-        NOTREACHED() << "Error setting value for longPressActionsEnabled";
-      }
-    }
-
-    [configuration_ setAllowsInlineMediaPlayback:YES];
-    // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
-    [[configuration_ preferences] setJavaScriptCanOpenWindowsAutomatically:YES];
-    // Main frame script depends upon scripts injected into all frames, so the
-    // "AllFrames" scripts must be injected first.
-    [[configuration_ userContentController]
-        addUserScript:InternalGetDocumentStartScriptForAllFrames(
-                          browser_state_)];
-    [[configuration_ userContentController]
-        addUserScript:InternalGetDocumentStartScriptForMainFrame(
-                          browser_state_)];
-    [[configuration_ userContentController]
-        addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
-    [[configuration_ userContentController]
-        addUserScript:InternalGetDocumentEndScriptForMainFrame(browser_state_)];
-
-    if (!scheme_handler_) {
-      scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory =
-          browser_state_->GetSharedURLLoaderFactory();
-      scheme_handler_ = [[CRWWebUISchemeHandler alloc]
-          initWithURLLoaderFactory:shared_loader_factory];
-    }
-    WebClient::Schemes schemes;
-    GetWebClient()->AddAdditionalSchemes(&schemes);
-    GetWebClient()->GetAdditionalWebUISchemes(&(schemes.standard_schemes));
-    for (std::string scheme : schemes.standard_schemes) {
-      [configuration_ setURLSchemeHandler:scheme_handler_
-                             forURLScheme:base::SysUTF8ToNSString(scheme)];
-    }
-
-    for (auto& observer : observers_)
-      observer.DidCreateNewConfiguration(this, configuration_);
-
-    // Workaround to force the creation of the WKWebsiteDataStore. This
-    // workaround need to be done here, because this method returns a copy of
-    // the already created configuration.
-    NSSet* data_types = [NSSet setWithObject:WKWebsiteDataTypeCookies];
-    [configuration_.websiteDataStore
-        fetchDataRecordsOfTypes:data_types
-              completionHandler:^(NSArray<WKWebsiteDataRecord*>* records){
-              }];
+    ResetWithWebViewConfiguration(nil);
   }
 
   // This is a shallow copy to prevent callers from changing the internals of

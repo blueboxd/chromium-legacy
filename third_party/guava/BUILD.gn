@@ -15,6 +15,14 @@ android_java_prebuilt("guava_android_java") {
 
   # Avoids dependency cycle.
   no_build_hooks = true
+
+  # Depend on this to replace excluded ListenableFuture.class
+  deps = [
+    "//third_party/android_deps:com_google_guava_listenablefuture_java",
+  ]
+
+  # Avoid class conflict in com_google_guava_listenablefuture.
+  jar_excluded_patterns = [ "*/ListenableFuture.class" ]
 }
 
 java_prebuilt("guava_java") {

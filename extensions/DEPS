@@ -43,4 +43,8 @@ specific_include_rules = {
   "mime_handler_view_browsertest.cc": [
     "+components/printing/common",
   ],
+  "mime_handler_view_interactive_uitest.cc": [
+    "+chrome/browser/ui/exclusive_access/fullscreen_controller_test.h",
+    "+chrome/test/base/interactive_test_utils.h",
+  ],
 }

@@ -578,6 +578,13 @@ aura::Window* GetActiveWindow() {
   return wm::GetActivationClient(list[0]->GetRootWindow())->GetActiveWindow();
 }
 
+bool IsFrameVisible(views::Widget* widget) {
+  views::NonClientFrameView* frame_view =
+      widget->non_client_view() ? widget->non_client_view()->frame_view()
+                                : nullptr;
+  return frame_view && frame_view->GetEnabled() && frame_view->GetVisible();
+}
+
 }  // namespace
 
 class WindowStateChangeObserver : public aura::WindowObserver {
@@ -3060,39 +3067,60 @@ AutotestPrivateGetAppWindowListFunction::Run() {
     }
 
     // Frame information
-    auto* widget = views::Widget::GetWidgetForNativeWindow(window);
-    auto* immersive_controller =
-        ash::ImmersiveFullscreenController::Get(widget);
-    // The widget that hosts the immersive frame can be different from the
-    // application's widget itself. Use the widget from the immersive
-    // controller to obtain the FrameHeader.
-    auto* frame_header = ash::FrameHeader::Get(immersive_controller->widget());
-    window_info.caption_height = frame_header->GetHeaderHeight();
+    auto* immersive_controller = ash::ImmersiveFullscreenController::Get(
+        views::Widget::GetWidgetForNativeWindow(window));
+    if (immersive_controller) {
+      // The widget that hosts the immersive frame can be different from the
+      // application's widget itself. Use the widget from the immersive
+      // controller to obtain the FrameHeader.
+      auto* widget = immersive_controller->widget();
+      if (immersive_controller->IsEnabled()) {
+        window_info.frame_mode =
+            api::autotest_private::FrameMode::FRAME_MODE_IMMERSIVE;
+        window_info.is_frame_visible = immersive_controller->IsRevealed();
+      } else {
+        window_info.frame_mode =
+            api::autotest_private::FrameMode::FRAME_MODE_NORMAL;
+        window_info.is_frame_visible = IsFrameVisible(widget);
+      }
+      auto* frame_header = ash::FrameHeader::Get(widget);
+      window_info.caption_height = frame_header->GetHeaderHeight();
 
-    const ash::CaptionButtonModel* button_model =
-        frame_header->GetCaptionButtonModel();
-    int caption_button_enabled_status = 0;
-    int caption_button_visible_status = 0;
+      const ash::CaptionButtonModel* button_model =
+          frame_header->GetCaptionButtonModel();
+      int caption_button_enabled_status = 0;
+      int caption_button_visible_status = 0;
 
-    constexpr views::CaptionButtonIcon all_button_icons[] = {
-        views::CAPTION_BUTTON_ICON_MINIMIZE,
-        views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-        views::CAPTION_BUTTON_ICON_CLOSE,
-        views::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-        views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-        views::CAPTION_BUTTON_ICON_BACK,
-        views::CAPTION_BUTTON_ICON_LOCATION,
-        views::CAPTION_BUTTON_ICON_MENU,
-        views::CAPTION_BUTTON_ICON_ZOOM};
+      constexpr views::CaptionButtonIcon all_button_icons[] = {
+          views::CAPTION_BUTTON_ICON_MINIMIZE,
+          views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+          views::CAPTION_BUTTON_ICON_CLOSE,
+          views::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+          views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+          views::CAPTION_BUTTON_ICON_BACK,
+          views::CAPTION_BUTTON_ICON_LOCATION,
+          views::CAPTION_BUTTON_ICON_MENU,
+          views::CAPTION_BUTTON_ICON_ZOOM};
 
-    for (const auto button : all_button_icons) {
-      if (button_model->IsEnabled(button))
-        caption_button_enabled_status |= (1 << button);
-      if (button_model->IsVisible(button))
-        caption_button_visible_status |= (1 << button);
+      for (const auto button : all_button_icons) {
+        if (button_model->IsEnabled(button))
+          caption_button_enabled_status |= (1 << button);
+        if (button_model->IsVisible(button))
+          caption_button_visible_status |= (1 << button);
+      }
+      window_info.caption_button_enabled_status = caption_button_enabled_status;
+      window_info.caption_button_visible_status = caption_button_visible_status;
+    } else {
+      auto* widget = views::Widget::GetWidgetForNativeWindow(window);
+      // All widgets for app windows in chromeos should have a frame with
+      // immersive controller. Non app windows may not have a frame and
+      // frame mode will be NONE.
+      DCHECK(!widget || widget->GetNativeWindow()->type() !=
+                            aura::client::WINDOW_TYPE_NORMAL);
+      window_info.frame_mode =
+          api::autotest_private::FrameMode::FRAME_MODE_NONE;
+      window_info.is_frame_visible = false;
     }
-    window_info.caption_button_enabled_status = caption_button_enabled_status;
-    window_info.caption_button_visible_status = caption_button_visible_status;
 
     result_list.emplace_back(std::move(window_info));
   }

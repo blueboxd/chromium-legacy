@@ -113,10 +113,10 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   int NextTrackingId();
 
   // Input device file descriptor.
-  base::ScopedFD input_device_fd_;
+  const base::ScopedFD input_device_fd_;
 
   // Dispatcher for events.
-  DeviceEventDispatcherEvdev* dispatcher_;
+  DeviceEventDispatcherEvdev* const dispatcher_;
 
   // Set if we drop events in kernel (SYN_DROPPED) or in process.
   bool dropped_events_ = false;

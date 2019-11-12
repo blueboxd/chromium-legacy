@@ -95,7 +95,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
                 int64_t transaction_id) override {}
 
-  void Error(int32_t code, const String& message) override {
+  void Error(mojom::blink::IDBException code, const String& message) override {
     if (!promise_resolver_)
       return;
 

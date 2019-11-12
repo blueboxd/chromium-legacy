@@ -115,6 +115,7 @@ class WebViewPasswordManagerClient
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsIsolationForPasswordSitesEnabled() const override;
   bool IsNewTabPage() const override;
+  password_manager::FieldInfoManager* GetFieldInfoManager() const override;
 
  private:
   __weak id<CWVPasswordManagerClientDelegate> delegate_;

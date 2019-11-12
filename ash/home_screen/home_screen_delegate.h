@@ -113,10 +113,10 @@ class HomeScreenDelegate {
   virtual void OnHomeLauncherDragInProgress() {}
   virtual void OnHomeLauncherDragEnd() {}
 
-  // Called when the HomeLauncher has started to be dragged, or a positional
-  // animation has begun.
-  virtual void OnHomeLauncherTargetPositionChanged(bool showing,
-                                                   int64_t display_id) {}
+  // Called when the HomeLauncher has changed its position on the screen,
+  // during either an animation or a drag.
+  virtual void OnHomeLauncherPositionChanged(bool showing, int64_t display_id) {
+  }
 
   // Called when the HomeLauncher positional animation has completed.
   virtual void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) {

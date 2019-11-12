@@ -4711,6 +4711,24 @@
             ]
         }
     ],
+    "PreconnectOnDidFinishNavigation": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_3_seconds",
+                    "params": {
+                        "delay_after_commit_in_ms": "3000"
+                    },
+                    "enable_features": [
+                        "PreconnectOnDidFinishNavigation"
+                    ]
+                }
+            ]
+        }
+    ],
     "PrefetchSRPAndroid": [
         {
             "platforms": [
@@ -6693,6 +6711,27 @@
                     "enable_features": [
                         "DemographicMetricsReporting",
                         "UkmReportNoisedUserBirthYearAndGender"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UnidoOnSignIn": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SharingDeriveVapidKey",
+                        "SharingUseDeviceInfo",
+                        "SyncDeviceInfoInTransportMode"
                     ]
                 }
             ]

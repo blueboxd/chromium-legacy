@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/accelerometer/accelerometer_reader.h"
-#include "ash/accelerometer/accelerometer_constants.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/singleton.h"
+#include "base/numerics/math_constants.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -643,7 +643,7 @@ bool AccelerometerFileReader::InitializeLegacyAccelerometers(
 
     configuration_.has[i] = true;
     for (size_t j = 0; j < base::size(kLegacyAccelerometerAxes); ++j) {
-      configuration_.scale[i][j] = kMeanGravity / scale_divisor;
+      configuration_.scale[i][j] = base::kMeanGravityFloat / scale_divisor;
       std::string accelerometer_index_path = base::StringPrintf(
           kLegacyAccelerometerScanIndexPathFormatString,
           kLegacyAccelerometerAxes[j], kAccelerometerNames[i]);

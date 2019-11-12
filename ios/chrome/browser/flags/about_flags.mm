@@ -566,6 +566,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePersistentDownloadsName,
      flag_descriptions::kEnablePersistentDownloadsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kEnablePersistentDownloads)},
+    {"force-unstacked-tabstrip", flag_descriptions::kForceUnstackedTabstripName,
+     flag_descriptions::kForceUnstackedTabstripDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kForceUnstackedTabstrip)},
 };
 
 // Add all switches from experimental flags to |command_line|.

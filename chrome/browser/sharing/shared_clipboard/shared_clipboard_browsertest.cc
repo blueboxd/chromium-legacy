@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_browsertest.h"
 #include "chrome/browser/sharing/sharing_constants.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "url/gurl.h"
 
 namespace {
@@ -126,6 +128,14 @@ IN_PROC_BROWSER_TEST_F(SharedClipboardBrowserTest, ContextMenu_NoDevices) {
 }
 
 IN_PROC_BROWSER_TEST_F(SharedClipboardBrowserTest, ContextMenu_SyncTurnedOff) {
+  if (base::FeatureList::IsEnabled(kSharingUseDeviceInfo) &&
+      base::FeatureList::IsEnabled(kSharingDeriveVapidKey) &&
+      base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
+    // Turning off sync will have no effect when Shared Clipboard is available
+    // on sign-in.
+    return;
+  }
+
   Init(sync_pb::SharingSpecificFields::SHARED_CLIPBOARD,
        sync_pb::SharingSpecificFields::UNKNOWN);
   auto devices = sharing_service()->GetDeviceCandidates(

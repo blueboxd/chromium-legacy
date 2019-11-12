@@ -104,6 +104,9 @@ public class PickerCategoryView extends OptimizedFrameLayout
     // Whether the picker is in multi-selection mode.
     private boolean mMultiSelectionAllowed;
 
+    // Whether the contacts data returned includes icons.
+    public final boolean includeIcons;
+
     // Whether the contacts data returned includes names.
     public final boolean includeNames;
 
@@ -123,12 +126,13 @@ public class PickerCategoryView extends OptimizedFrameLayout
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public PickerCategoryView(Context context, boolean multiSelectionAllowed,
             boolean shouldIncludeNames, boolean shouldIncludeEmails, boolean shouldIncludeTel,
-            boolean shouldIncludeAddresses, String formattedOrigin,
+            boolean shouldIncludeAddresses, boolean shouldIncludeIcons, String formattedOrigin,
             ContactsPickerToolbar.ContactsToolbarDelegate delegate) {
         super(context, null);
 
         mActivity = (ChromeActivity) context;
         mMultiSelectionAllowed = multiSelectionAllowed;
+        includeIcons = shouldIncludeIcons;
         includeNames = shouldIncludeNames;
         includeEmails = shouldIncludeEmails;
         includeTel = shouldIncludeTel;
@@ -393,6 +397,9 @@ public class PickerCategoryView extends OptimizedFrameLayout
         if (includeTel) propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_TELS;
         if (includeAddresses) {
             propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_ADDRESSES;
+        }
+        if (includeIcons) {
+            propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_ICONS;
         }
 
         mListener.onContactsPickerUserAction(

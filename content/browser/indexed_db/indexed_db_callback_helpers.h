@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 // Since functions in this file use templates, they must be in a header file
@@ -34,9 +34,8 @@ template <typename R>
 R AbortCallback(base::WeakPtr<IndexedDBTransaction> transaction) {
   if (transaction)
     transaction->IncrementNumErrorsSent();
-  IndexedDBDatabaseError error(
-      blink::kWebIDBDatabaseExceptionIgnorableAbortError,
-      "Backend aborted error");
+  IndexedDBDatabaseError error(blink::mojom::IDBException::kIgnorableAbortError,
+                               "Backend aborted error");
   return R::Struct::NewErrorResult(
       blink::mojom::IDBError::New(error.code(), error.message()));
 }

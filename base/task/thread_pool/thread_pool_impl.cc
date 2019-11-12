@@ -123,6 +123,9 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
 
   internal::InitializeThreadPrioritiesFeature();
 
+  if (FeatureList::IsEnabled(kNoPriorityInheritanceFromThreadPool))
+    internal::SetNoPriorityInheritanceFromThreadPool();
+
   // The max number of concurrent BEST_EFFORT tasks is |kMaxBestEffortTasks|,
   // unless the max number of foreground threads is lower.
   const int max_best_effort_tasks =

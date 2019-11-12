@@ -6,6 +6,7 @@
 
 #include <objbase.h>
 
+#include "base/numerics/math_constants.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
@@ -903,9 +904,9 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckAccelerometerReadingConversion) {
   auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
   EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
       .WillOnce(testing::Invoke([&](const SensorReading& reading) {
-        EXPECT_EQ(-expected_x * kMeanGravity, reading.accel.x);
-        EXPECT_EQ(-expected_y * kMeanGravity, reading.accel.y);
-        EXPECT_EQ(-expected_z * kMeanGravity, reading.accel.z);
+        EXPECT_EQ(-expected_x * base::kMeanGravityDouble, reading.accel.x);
+        EXPECT_EQ(-expected_y * base::kMeanGravityDouble, reading.accel.y);
+        EXPECT_EQ(-expected_z * base::kMeanGravityDouble, reading.accel.z);
       }));
 
   sensor->SetClient(mock_client.get());

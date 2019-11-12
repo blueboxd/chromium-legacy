@@ -68,10 +68,10 @@ class ASH_EXPORT AppListControllerImpl
   AppListControllerImpl();
   ~AppListControllerImpl() override;
 
-  enum HomeLauncherAnimationState {
-    kFinished,
-    kShowing,
-    kHiding,
+  enum HomeLauncherTransitionState {
+    kFinished,      // No drag or animation is in progress
+    kMostlyShown,   // The home launcher occupies more than half of the screen
+    kMostlyHidden,  // The home launcher occupies less than half of the screen
   };
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -285,16 +285,15 @@ class ASH_EXPORT AppListControllerImpl
       UpdateAnimationSettingsCallback callback) override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
   void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
-  void OnHomeLauncherTargetPositionChanged(bool showing,
-                                           int64_t display_id) override;
+  void OnHomeLauncherPositionChanged(bool showing, int64_t display_id) override;
   bool IsHomeScreenVisible() override;
   gfx::Rect GetInitialAppListItemScreenBoundsForWindow(
       aura::Window* window) override;
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
-  HomeLauncherAnimationState home_launcher_animation_state() const {
-    return home_launcher_animation_state_;
+  HomeLauncherTransitionState home_launcher_transition_state() const {
+    return home_launcher_transition_state_;
   }
 
   // Performs the 'back' action for the active page.
@@ -389,7 +388,7 @@ class ASH_EXPORT AppListControllerImpl
   // information given by "showing" versus "hiding" is the starting point of
   // the drag and the assumed final state (which won't be accurate if the
   // gesture is reversed).
-  HomeLauncherAnimationState home_launcher_animation_state_ = kFinished;
+  HomeLauncherTransitionState home_launcher_transition_state_ = kFinished;
 
   AppListClient* client_ = nullptr;
 

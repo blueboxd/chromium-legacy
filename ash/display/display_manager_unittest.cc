@@ -5,7 +5,6 @@
 #include "ui/display/manager/display_manager.h"
 
 #include "ash/accelerators/accelerator_commands.h"
-#include "ash/accelerometer/accelerometer_constants.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accelerometer/accelerometer_types.h"
 #include "ash/app_list/app_list_controller_impl.h"
@@ -31,6 +30,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
+#include "base/numerics/math_constants.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -3555,11 +3555,11 @@ class DisplayManagerOrientationTest : public DisplayManagerTest {
   void SetUp() override {
     DisplayManagerTest::SetUp();
     portrait_primary->Set(ACCELEROMETER_SOURCE_SCREEN, false,
-                          -kMeanGravity, 0.f, 0.f);
+                          -base::kMeanGravityFloat, 0.f, 0.f);
     portrait_secondary->Set(ACCELEROMETER_SOURCE_SCREEN, false,
-                            kMeanGravity, 0.f, 0.f);
-    landscape_primary->Set(ACCELEROMETER_SOURCE_SCREEN, false,
-                           0, -kMeanGravity, 0.f);
+                            base::kMeanGravityFloat, 0.f, 0.f);
+    landscape_primary->Set(ACCELEROMETER_SOURCE_SCREEN, false, 0,
+                           -base::kMeanGravityFloat, 0.f);
   }
 
  protected:

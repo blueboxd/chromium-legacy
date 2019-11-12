@@ -173,6 +173,7 @@ DocumentLoader::DocumentLoader(
   ip_address_space_ = params_->ip_address_space;
   grant_load_local_resources_ = params_->grant_load_local_resources;
   force_fetch_cache_mode_ = params_->force_fetch_cache_mode;
+  frame_policy_ = params_->frame_policy;
 
   WebNavigationTimings& timings = params_->navigation_timings;
   if (!timings.input_start.is_null())
@@ -1487,6 +1488,7 @@ void DocumentLoader::InstallNewDocument(
           .WithSrcdocDocument(loading_srcdoc_)
           .WithBlockedByCSP(was_blocked_by_csp_)
           .WithGrantLoadLocalResources(grant_load_local_resources_)
+          .WithFramePolicy(frame_policy_)
           .WithNewRegistrationContext()
           .WithFeaturePolicyHeader(feature_policy.ToString())
           .WithOriginTrialsHeader(

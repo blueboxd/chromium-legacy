@@ -2327,6 +2327,8 @@ source_set("chromeos") {
       "printing/cups_proxy_service_manager.h",
       "printing/cups_proxy_service_manager_factory.cc",
       "printing/cups_proxy_service_manager_factory.h",
+      "printing/cups_wrapper.cc",
+      "printing/cups_wrapper.h",
       "printing/printer_info_cups.cc",
     ]
   } else {
@@ -2406,6 +2408,8 @@ static_library("test_support") {
     "crostini/ansible/ansible_management_test_helper.h",
     "crostini/crostini_test_helper.cc",
     "crostini/crostini_test_helper.h",
+    "crostini/crostini_test_util.cc",
+    "crostini/crostini_test_util.h",
     "crostini/fake_crostini_features.cc",
     "crostini/fake_crostini_features.h",
     "drive/drivefs_test_support.cc",

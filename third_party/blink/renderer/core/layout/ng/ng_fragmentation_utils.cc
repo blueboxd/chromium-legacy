@@ -164,14 +164,14 @@ NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
 }
 
 void SetupFragmentation(const NGConstraintSpace& parent_space,
-                        LayoutUnit new_bfc_block_offset,
+                        LayoutUnit fragmentainer_offset_delta,
                         NGConstraintSpaceBuilder* builder,
                         bool is_new_fc) {
   DCHECK(parent_space.HasBlockFragmentation());
 
   builder->SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
-  new_bfc_block_offset += parent_space.FragmentainerOffsetAtBfc();
-  builder->SetFragmentainerOffsetAtBfc(new_bfc_block_offset);
+  builder->SetFragmentainerOffsetAtBfc(parent_space.FragmentainerOffsetAtBfc() +
+                                       fragmentainer_offset_delta);
   builder->SetFragmentationType(parent_space.BlockFragmentationType());
 
   if (parent_space.IsInColumnBfc() && !is_new_fc)

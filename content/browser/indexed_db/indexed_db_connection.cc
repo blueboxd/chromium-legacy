@@ -16,7 +16,7 @@
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
 
@@ -74,7 +74,7 @@ leveldb::Status IndexedDBConnection::AbortTransactionsAndClose(
   callbacks_ = nullptr;
 
   // Finish up any transaction, in case there were any running.
-  IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+  IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                "Connection is closing.");
   leveldb::Status status;
   switch (error_handling) {

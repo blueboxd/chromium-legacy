@@ -44,11 +44,11 @@ void TouchSelectionControllerClientChildFrame::
   // TODO(wjmaclean): Get the transform between the views to lower the
   // overhead here, instead of calling the transform functions four times.
   transformed_selection_start.SetEdge(
-      rwhv_->TransformPointToRootCoordSpaceF(selection_start_.edge_top()),
-      rwhv_->TransformPointToRootCoordSpaceF(selection_start_.edge_bottom()));
+      rwhv_->TransformPointToRootCoordSpaceF(selection_start_.edge_start()),
+      rwhv_->TransformPointToRootCoordSpaceF(selection_start_.edge_end()));
   transformed_selection_end.SetEdge(
-      rwhv_->TransformPointToRootCoordSpaceF(selection_end_.edge_top()),
-      rwhv_->TransformPointToRootCoordSpaceF(selection_end_.edge_bottom()));
+      rwhv_->TransformPointToRootCoordSpaceF(selection_end_.edge_start()),
+      rwhv_->TransformPointToRootCoordSpaceF(selection_end_.edge_end()));
 
   manager_->UpdateClientSelectionBounds(transformed_selection_start,
                                         transformed_selection_end, this, this);

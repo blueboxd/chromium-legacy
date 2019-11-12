@@ -184,7 +184,8 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       mojom::NavigationType navigation_type,
       PreviewsState previews_state,
       base::TimeTicks navigation_start,
-      base::TimeTicks input_start);
+      base::TimeTicks input_start,
+      const blink::FramePolicy& frame_policy);
   mojom::CommitNavigationParamsPtr ConstructCommitNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const GURL& original_url,

@@ -49,6 +49,10 @@ cr-toggle {
   margin-inline-start: 16px;
 }
 
+#usageStatsLabel {
+  cursor: pointer;
+}
+
 #settings-close-button {
   padding-inline-end: 18px;
 }

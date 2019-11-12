@@ -42,6 +42,30 @@ cca.views.camera.ReviewResult = class {
         document.querySelector('#review-video-result'));
 
     /**
+     * @const {!HTMLButtonElement}
+     * @private
+     */
+    this.confirmResultButton_ =
+        /** @type {!HTMLButtonElement} */ (
+            document.querySelector('#confirm-result'));
+
+    /**
+     * @const {!HTMLButtonElement}
+     * @private
+     */
+    this.cancelResultButton_ =
+        /** @type {!HTMLButtonElement} */ (
+            document.querySelector('#cancel-result'));
+
+    /**
+     * @const {!HTMLButtonElement}
+     * @private
+     */
+    this.playResultVideoButton_ =
+        /** @type {!HTMLButtonElement} */ (
+            document.querySelector('#play-result-video'));
+
+    /**
      * Function resolving open result call called with whether user confirms
      * after reviewing intent result.
      * @type {?function(boolean)}
@@ -54,11 +78,12 @@ cca.views.camera.ReviewResult = class {
       cca.state.set('playing-result-video', false);
     };
 
-    const addClickListener = (selector, handler) =>
-        document.querySelector(selector).addEventListener('click', handler);
-    addClickListener('#confirm-result', () => this.close_(true));
-    addClickListener('#cancel-result', () => this.close_(false));
-    addClickListener('#play-result-video', () => this.playResultVideo_());
+    this.confirmResultButton_.addEventListener(
+        'click', () => this.close_(true));
+    this.cancelResultButton_.addEventListener(
+        'click', () => this.close_(false));
+    this.playResultVideoButton_.addEventListener(
+        'click', () => this.playResultVideo_());
   }
 
   /**
@@ -106,6 +131,8 @@ cca.views.camera.ReviewResult = class {
     this.reviewPhotoResult_.src = img.src;
     cca.state.set('review-photo-result', true);
     cca.state.set('review-result', true);
+    this.confirmResultButton_.focus();
+
     return new Promise((resolve) => {
       this.resolveOpen_ = resolve;
     });
@@ -121,6 +148,8 @@ cca.views.camera.ReviewResult = class {
     this.reviewVideoResult_.src = fileEntry.toURL();
     cca.state.set('review-video-result', true);
     cca.state.set('review-result', true);
+    this.playResultVideoButton_.focus();
+
     return new Promise((resolve) => {
       this.resolveOpen_ = resolve;
     });

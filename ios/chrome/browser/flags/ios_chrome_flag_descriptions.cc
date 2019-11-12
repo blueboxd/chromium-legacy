@@ -201,6 +201,10 @@ const char kFindInPageiFrameName[] = "Find in Page in iFrames.";
 const char kFindInPageiFrameDescription[] =
     "When enabled, Find In Page will search in iFrames.";
 
+const char kForceUnstackedTabstripName[] = "Force unstacked tabstrip.";
+const char kForceUnstackedTabstripDescription[] =
+    "When enabled, the tabstrip will draw unstacked, without tab collapsing.";
+
 const char kFullscreenSmoothScrollingName[] = "Fullscreen Smooth Scrolling";
 const char kFullscreenSmoothScrollingDescription[] =
     "When enabled, the web view's insets are updated for scoll events. If "

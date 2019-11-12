@@ -517,11 +517,14 @@ void DWriteFontProxyImpl::FallbackFamilyAndStyleForCodepoint(
                                                 /* width */ 0,
                                                 /* slant */ 0));
 
-  if (!codepoint)
+  if (!codepoint || !collection_ || !factory_)
     return;
 
   sk_sp<SkFontMgr> font_mgr(
       SkFontMgr_New_DirectWrite(factory_.Get(), collection_.Get()));
+
+  if (!font_mgr)
+    return;
 
   const char* bcp47_locales[] = {locale_name.c_str()};
   int num_locales = locale_name.empty() ? 0 : 1;

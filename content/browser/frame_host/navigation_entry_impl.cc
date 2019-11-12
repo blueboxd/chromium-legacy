@@ -702,7 +702,8 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
     mojom::NavigationType navigation_type,
     PreviewsState previews_state,
     base::TimeTicks navigation_start,
-    base::TimeTicks input_start) {
+    base::TimeTicks input_start,
+    const blink::FramePolicy& frame_policy) {
   NavigationDownloadPolicy download_policy;
   if (IsViewSourceMode())
     download_policy.SetDisallowed(NavigationDownloadType::kViewSource);
@@ -715,7 +716,8 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
       post_body ? post_body : post_data_, base::Optional<SourceLocation>(),
       has_started_from_context_menu(), has_user_gesture(), InitiatorCSPInfo(),
       std::vector<int>(), std::string(),
-      false /* is_history_navigation_in_new_child_frame */, input_start);
+      false /* is_history_navigation_in_new_child_frame */, input_start,
+      frame_policy);
 }
 
 mojom::CommitNavigationParamsPtr

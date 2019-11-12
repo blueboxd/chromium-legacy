@@ -14,6 +14,8 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -24,10 +26,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task_runner_util.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
+#include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/local_storage_database.pb.h"
@@ -202,6 +206,39 @@ void RecordCachePurgedHistogram(CachePurgeReason reason,
   }
 }
 
+const base::FilePath::CharType kLegacyDatabaseFileExtension[] =
+    FILE_PATH_LITERAL(".localstorage");
+
+std::vector<StorageUsageInfo> GetLegacyLocalStorageUsage(
+    const base::FilePath& directory) {
+  std::vector<StorageUsageInfo> infos;
+  base::FileEnumerator enumerator(directory, false,
+                                  base::FileEnumerator::FILES);
+  for (base::FilePath path = enumerator.Next(); !path.empty();
+       path = enumerator.Next()) {
+    if (path.MatchesExtension(kLegacyDatabaseFileExtension)) {
+      base::FileEnumerator::FileInfo find_info = enumerator.GetInfo();
+      infos.emplace_back(
+          LocalStorageContextMojo::OriginFromLegacyDatabaseFileName(path),
+          find_info.GetSize(), find_info.GetLastModifiedTime());
+    }
+  }
+  return infos;
+}
+
+void InvokeLocalStorageUsageCallbackHelper(
+    LocalStorageContextMojo::GetStorageUsageCallback callback,
+    std::unique_ptr<std::vector<StorageUsageInfo>> infos) {
+  std::move(callback).Run(*infos);
+}
+
+void CollectLocalStorageUsage(std::vector<StorageUsageInfo>* out_info,
+                              base::OnceClosure done_callback,
+                              std::vector<StorageUsageInfo> in_info) {
+  out_info->insert(out_info->end(), in_info.begin(), in_info.end());
+  std::move(done_callback).Run();
+}
+
 }  // namespace
 
 class LocalStorageContextMojo::StorageAreaHolder final
@@ -285,25 +322,23 @@ class LocalStorageContextMojo::StorageAreaHolder final
     // Delete any old database that might still exist if we successfully wrote
     // data to LevelDB, and our LevelDB is actually disk backed.
     if (status.ok() && !deleted_old_data_ && !context_->directory_.empty() &&
-        context_->task_runner_ && !context_->old_localstorage_path_.empty()) {
+        context_->legacy_task_runner_) {
       deleted_old_data_ = true;
-      context_->task_runner_->PostShutdownBlockingTask(
-          FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-          base::BindOnce(base::IgnoreResult(&sql::Database::Delete),
-                         sql_db_path()));
+      context_->legacy_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(base::IgnoreResult(&sql::Database::Delete),
+                                    sql_db_path()));
     }
 
     context_->OnCommitResult(status);
   }
 
   void MigrateData(StorageAreaImpl::ValueMapCallback callback) override {
-    if (context_->task_runner_ && !context_->old_localstorage_path_.empty()) {
-      context_->task_runner_->PostShutdownBlockingTask(
-          FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-          base::BindOnce(
-              &MigrateStorageHelper, sql_db_path(),
-              base::ThreadTaskRunnerHandle::Get(),
-              base::BindOnce(&CallMigrationCalback, base::Passed(&callback))));
+    if (context_->legacy_task_runner_ && !context_->directory_.empty()) {
+      context_->legacy_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&MigrateStorageHelper, sql_db_path(),
+                                    base::ThreadTaskRunnerHandle::Get(),
+                                    base::BindOnce(&CallMigrationCalback,
+                                                   base::Passed(&callback))));
       return;
     }
     std::move(callback).Run(nullptr);
@@ -378,9 +413,9 @@ class LocalStorageContextMojo::StorageAreaHolder final
 
  private:
   base::FilePath sql_db_path() const {
-    if (context_->old_localstorage_path_.empty())
+    if (context_->directory_.empty())
       return base::FilePath();
-    return context_->old_localstorage_path_.Append(
+    return context_->directory_.Append(
         LocalStorageContextMojo::LegacyDatabaseFileNameFromOrigin(origin_));
   }
 
@@ -395,10 +430,6 @@ class LocalStorageContextMojo::StorageAreaHolder final
   bool deleted_old_data_ = false;
   bool has_bindings_ = false;
 };
-
-const base::FilePath::CharType
-    LocalStorageContextMojo::kLegacyDatabaseFileExtension[] =
-        FILE_PATH_LITERAL(".localstorage");
 
 // static
 base::FilePath LocalStorageContextMojo::LegacyDatabaseFileNameFromOrigin(
@@ -421,23 +452,20 @@ url::Origin LocalStorageContextMojo::OriginFromLegacyDatabaseFileName(
 }
 
 LocalStorageContextMojo::LocalStorageContextMojo(
-    const base::FilePath& partition_directory,
+    const base::FilePath& storage_root,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_refptr<DOMStorageTaskRunner> legacy_task_runner,
-    const base::FilePath& old_localstorage_path,
-    const base::FilePath& subdirectory,
+    scoped_refptr<base::SequencedTaskRunner> legacy_task_runner,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy)
-    : directory_(subdirectory.empty()
-                     ? base::FilePath()
-                     : partition_directory.Append(subdirectory)),
+    : directory_(storage_root.empty()
+                     ? storage_root
+                     : storage_root.Append(storage::kLocalStoragePath)),
       special_storage_policy_(std::move(special_storage_policy)),
       leveldb_task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       memory_dump_id_(base::StringPrintf("LocalStorage/0x%" PRIXPTR,
                                          reinterpret_cast<uintptr_t>(this))),
-      task_runner_(std::move(legacy_task_runner)),
-      old_localstorage_path_(old_localstorage_path),
+      legacy_task_runner_(std::move(legacy_task_runner)),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()) {
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(
@@ -483,6 +511,14 @@ void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin,
                        std::move(callback)));
   } else {
     std::move(callback).Run();
+  }
+
+  if (!directory_.empty()) {
+    legacy_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            base::IgnoreResult(&sql::Database::Delete),
+            directory_.Append(LegacyDatabaseFileNameFromOrigin(origin))));
   }
 }
 
@@ -739,8 +775,8 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
 
     in_memory_ = false;
     database_ = storage::AsyncDomStorageDatabase::OpenDirectory(
-        std::move(options), directory_, "leveldb", memory_dump_id_,
-        leveldb_task_runner_,
+        std::move(options), directory_, storage::kLocalStorageLeveldbName,
+        memory_dump_id_, leveldb_task_runner_,
         base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
                        weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -872,7 +908,7 @@ void LocalStorageContextMojo::DeleteAndRecreateDatabase(
   // Destroy database, and try again.
   if (!in_memory_) {
     storage::DomStorageDatabase::Destroy(
-        directory_, "leveldb", leveldb_task_runner_,
+        directory_, storage::kLocalStorageLeveldbName, leveldb_task_runner_,
         base::BindOnce(&LocalStorageContextMojo::OnDBDestroyed,
                        weak_ptr_factory_.GetWeakPtr(), recreate_in_memory));
   } else {
@@ -925,6 +961,25 @@ LocalStorageContextMojo::GetOrCreateStorageArea(const url::Origin& origin) {
 
 void LocalStorageContextMojo::RetrieveStorageUsage(
     GetStorageUsageCallback callback) {
+  auto infos = std::make_unique<std::vector<StorageUsageInfo>>();
+  auto* infos_ptr = infos.get();
+  base::RepeatingClosure got_local_storage_usage = base::BarrierClosure(
+      2, base::BindOnce(&InvokeLocalStorageUsageCallbackHelper,
+                        std::move(callback), std::move(infos)));
+  auto collect_callback = base::BindRepeating(
+      CollectLocalStorageUsage, infos_ptr, std::move(got_local_storage_usage));
+
+  // Grab metadata about pre-migration Local Storage data in the background
+  // while we query |database_| below.
+  if (directory_.empty()) {
+    collect_callback.Run({});
+  } else {
+    base::PostTaskAndReplyWithResult(
+        legacy_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&GetLegacyLocalStorageUsage, directory_),
+        base::BindOnce(collect_callback));
+  }
+
   if (!database_) {
     // If for whatever reason no leveldb database is available, no storage is
     // used, so return an array only containing the current areas.
@@ -932,18 +987,18 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
     base::Time now = base::Time::Now();
     for (const auto& it : areas_)
       result.emplace_back(it.first, 0, now);
-    std::move(callback).Run(std::move(result));
-    return;
+    collect_callback.Run(std::move(result));
+  } else {
+    database_->RunDatabaseTask(
+        base::BindOnce([](const storage::DomStorageDatabase& db) {
+          std::vector<storage::DomStorageDatabase::KeyValuePair> data;
+          db.GetPrefixed(base::make_span(kMetaPrefix), &data);
+          return data;
+        }),
+        base::BindOnce(&LocalStorageContextMojo::OnGotMetaData,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::BindOnce(collect_callback)));
   }
-
-  database_->RunDatabaseTask(
-      base::BindOnce([](const storage::DomStorageDatabase& db) {
-        std::vector<storage::DomStorageDatabase::KeyValuePair> data;
-        db.GetPrefixed(base::make_span(kMetaPrefix), &data);
-        return data;
-      }),
-      base::BindOnce(&LocalStorageContextMojo::OnGotMetaData,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void LocalStorageContextMojo::OnGotMetaData(

@@ -597,7 +597,8 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
                                  info->initiator_csp.self_source.value()))
                            : base::nullopt),
       initiator_origin_trial_features, info->href_translate.Latin1(),
-      is_history_navigation_in_new_child_frame, info->input_start);
+      is_history_navigation_in_new_child_frame, info->input_start,
+      info->frame_policy);
 }
 
 WebFrameLoadType NavigationTypeToLoadType(mojom::NavigationType navigation_type,
@@ -1009,6 +1010,8 @@ void FillMiscNavigationParams(
   }
   navigation_params->appcache_host_id =
       commit_params.appcache_host_id.value_or(base::UnguessableToken());
+
+  navigation_params->frame_policy = common_params.frame_policy;
 
   if (common_params.navigation_type == mojom::NavigationType::RESTORE) {
     // We're doing a load of a page that was restored from the last session.

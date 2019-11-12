@@ -9583,13 +9583,13 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   UpdateDrawProperties(host_impl_->active_tree());
 
   // Plumb the layer-local selection bounds.
-  gfx::Point selection_top(5, 0);
-  gfx::Point selection_bottom(5, 5);
+  gfx::Point selection_start(5, 0);
+  gfx::Point selection_end(5, 5);
   LayerSelection selection;
   selection.start.type = gfx::SelectionBound::CENTER;
   selection.start.layer_id = root->id();
-  selection.start.edge_bottom = selection_bottom;
-  selection.start.edge_top = selection_top;
+  selection.start.edge_end = selection_end;
+  selection.start.edge_start = selection_start;
   selection.end = selection.start;
   host_impl_->active_tree()->RegisterSelection(selection);
 
@@ -9601,8 +9601,8 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
       metadata.selection;
   EXPECT_EQ(selection.start.type, selection_after.start.type());
   EXPECT_EQ(selection.end.type, selection_after.end.type());
-  EXPECT_EQ(gfx::PointF(selection_bottom), selection_after.start.edge_bottom());
-  EXPECT_EQ(gfx::PointF(selection_top), selection_after.start.edge_top());
+  EXPECT_EQ(gfx::PointF(selection_end), selection_after.start.edge_end());
+  EXPECT_EQ(gfx::PointF(selection_start), selection_after.start.edge_start());
   EXPECT_TRUE(selection_after.start.visible());
   EXPECT_TRUE(selection_after.end.visible());
 }
@@ -9613,8 +9613,8 @@ TEST_F(LayerTreeHostImplTest, HiddenSelectionBoundsStayHidden) {
   UpdateDrawProperties(host_impl_->active_tree());
 
   // Plumb the layer-local selection bounds.
-  gfx::Point selection_top(5, 0);
-  gfx::Point selection_bottom(5, 5);
+  gfx::Point selection_start(5, 0);
+  gfx::Point selection_end(5, 5);
   LayerSelection selection;
 
   // Mark the start as hidden.
@@ -9622,8 +9622,8 @@ TEST_F(LayerTreeHostImplTest, HiddenSelectionBoundsStayHidden) {
 
   selection.start.type = gfx::SelectionBound::CENTER;
   selection.start.layer_id = root->id();
-  selection.start.edge_bottom = selection_bottom;
-  selection.start.edge_top = selection_top;
+  selection.start.edge_end = selection_end;
+  selection.start.edge_start = selection_start;
   selection.end = selection.start;
   host_impl_->active_tree()->RegisterSelection(selection);
 
@@ -9635,8 +9635,8 @@ TEST_F(LayerTreeHostImplTest, HiddenSelectionBoundsStayHidden) {
       metadata.selection;
   EXPECT_EQ(selection.start.type, selection_after.start.type());
   EXPECT_EQ(selection.end.type, selection_after.end.type());
-  EXPECT_EQ(gfx::PointF(selection_bottom), selection_after.start.edge_bottom());
-  EXPECT_EQ(gfx::PointF(selection_top), selection_after.start.edge_top());
+  EXPECT_EQ(gfx::PointF(selection_end), selection_after.start.edge_end());
+  EXPECT_EQ(gfx::PointF(selection_start), selection_after.start.edge_start());
   EXPECT_FALSE(selection_after.start.visible());
   EXPECT_FALSE(selection_after.end.visible());
 }
@@ -12814,19 +12814,19 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToRenderFrameMetadata) {
       observer_ptr->last_metadata()->selection;
   EXPECT_EQ(gfx::SelectionBound::EMPTY, selection_1.start.type());
   EXPECT_EQ(gfx::SelectionBound::EMPTY, selection_1.end.type());
-  EXPECT_EQ(gfx::PointF(), selection_1.start.edge_bottom());
-  EXPECT_EQ(gfx::PointF(), selection_1.start.edge_top());
+  EXPECT_EQ(gfx::PointF(), selection_1.start.edge_end());
+  EXPECT_EQ(gfx::PointF(), selection_1.start.edge_start());
   EXPECT_FALSE(selection_1.start.visible());
   EXPECT_FALSE(selection_1.end.visible());
 
   // Plumb the layer-local selection bounds.
-  gfx::Point selection_top(5, 0);
-  gfx::Point selection_bottom(5, 5);
+  gfx::Point selection_start(5, 0);
+  gfx::Point selection_end(5, 5);
   LayerSelection selection;
   selection.start.type = gfx::SelectionBound::CENTER;
   selection.start.layer_id = root->id();
-  selection.start.edge_bottom = selection_bottom;
-  selection.start.edge_top = selection_top;
+  selection.start.edge_end = selection_end;
+  selection.start.edge_start = selection_start;
   selection.end = selection.start;
   host_impl_->active_tree()->RegisterSelection(selection);
 
@@ -12840,8 +12840,8 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToRenderFrameMetadata) {
       observer_ptr->last_metadata()->selection;
   EXPECT_EQ(selection.start.type, selection_2.start.type());
   EXPECT_EQ(selection.end.type, selection_2.end.type());
-  EXPECT_EQ(gfx::PointF(selection_bottom), selection_2.start.edge_bottom());
-  EXPECT_EQ(gfx::PointF(selection_top), selection_2.start.edge_top());
+  EXPECT_EQ(gfx::PointF(selection_end), selection_2.start.edge_end());
+  EXPECT_EQ(gfx::PointF(selection_start), selection_2.start.edge_start());
   EXPECT_TRUE(selection_2.start.visible());
   EXPECT_TRUE(selection_2.end.visible());
 }

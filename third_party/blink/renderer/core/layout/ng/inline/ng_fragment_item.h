@@ -237,7 +237,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   }
 
   WritingMode GetWritingMode() const {
-    DCHECK_EQ(Type(), kText);
+    DCHECK(Type() == kText || Type() == kGeneratedText) << this;
     return Style().GetWritingMode();
   }
 

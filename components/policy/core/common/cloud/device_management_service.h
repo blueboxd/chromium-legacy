@@ -164,6 +164,7 @@ class POLICY_EXPORT DeviceManagementService {
       TYPE_UPLOAD_POLICY_VALIDATION_REPORT = 21,
       TYPE_UPLOAD_REAL_TIME_REPORT = 22,
       TYPE_REQUEST_SAML_URL = 23,
+      TYPE_CHROME_OS_USER_REPORT = 24,
     };
 
     // The set of HTTP query parmaters of the request.

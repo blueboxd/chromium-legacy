@@ -2293,27 +2293,27 @@ static gfx::SelectionBound ComputeViewportSelectionBound(
   if (!layer || layer_bound.type == gfx::SelectionBound::EMPTY)
     return viewport_bound;
 
-  auto layer_top = gfx::PointF(layer_bound.edge_top);
-  auto layer_bottom = gfx::PointF(layer_bound.edge_bottom);
+  auto layer_start = gfx::PointF(layer_bound.edge_start);
+  auto layer_end = gfx::PointF(layer_bound.edge_end);
   gfx::Transform screen_space_transform = layer->ScreenSpaceTransform();
 
   bool clipped = false;
-  gfx::PointF screen_top =
-      MathUtil::MapPoint(screen_space_transform, layer_top, &clipped);
-  gfx::PointF screen_bottom =
-      MathUtil::MapPoint(screen_space_transform, layer_bottom, &clipped);
+  gfx::PointF screen_start =
+      MathUtil::MapPoint(screen_space_transform, layer_start, &clipped);
+  gfx::PointF screen_end =
+      MathUtil::MapPoint(screen_space_transform, layer_end, &clipped);
 
   // MapPoint can produce points with NaN components (even when no inputs are
-  // NaN). Since consumers of gfx::SelectionBounds may round |edge_top| or
-  // |edge_bottom| (and since rounding will crash on NaN), we return an empty
+  // NaN). Since consumers of gfx::SelectionBounds may round |edge_start| or
+  // |edge_end| (and since rounding will crash on NaN), we return an empty
   // bound instead.
-  if (std::isnan(screen_top.x()) || std::isnan(screen_top.y()) ||
-      std::isnan(screen_bottom.x()) || std::isnan(screen_bottom.y()))
+  if (std::isnan(screen_start.x()) || std::isnan(screen_start.y()) ||
+      std::isnan(screen_end.x()) || std::isnan(screen_end.y()))
     return gfx::SelectionBound();
 
   const float inv_scale = 1.f / device_scale_factor;
-  viewport_bound.SetEdgeTop(gfx::ScalePoint(screen_top, inv_scale));
-  viewport_bound.SetEdgeBottom(gfx::ScalePoint(screen_bottom, inv_scale));
+  viewport_bound.SetEdgeStart(gfx::ScalePoint(screen_start, inv_scale));
+  viewport_bound.SetEdgeEnd(gfx::ScalePoint(screen_end, inv_scale));
 
   // If |layer_bound| is already hidden due to being occluded by painted content
   // within the layer, it must remain hidden. Otherwise, check whether its
@@ -2326,9 +2326,9 @@ static gfx::SelectionBound ComputeViewportSelectionBound(
     // Shifting the visibility point fractionally inward ensures that
     // neighboring or logically coincident layers aligned to integral DPI
     // coordinates will not spuriously occlude the bound.
-    gfx::Vector2dF visibility_offset = layer_top - layer_bottom;
+    gfx::Vector2dF visibility_offset = layer_start - layer_end;
     visibility_offset.Scale(device_scale_factor / visibility_offset.Length());
-    gfx::PointF visibility_point = layer_bottom + visibility_offset;
+    gfx::PointF visibility_point = layer_end + visibility_offset;
     if (visibility_point.x() <= 0)
       visibility_point.set_x(visibility_point.x() + device_scale_factor);
     visibility_point =
@@ -2340,27 +2340,27 @@ static gfx::SelectionBound ComputeViewportSelectionBound(
   }
 
   if (viewport_bound.visible()) {
-    viewport_bound.SetVisibleEdge(viewport_bound.edge_top(),
-                                  viewport_bound.edge_bottom());
+    viewport_bound.SetVisibleEdge(viewport_bound.edge_start(),
+                                  viewport_bound.edge_end());
   } else {
-    // The |layer_top| and |layer_bottom| might be clipped.
+    // The |layer_start| and |layer_end| might be clipped.
     gfx::RectF visible_layer_rect(layer->visible_layer_rect());
-    auto visible_layer_start = layer_top;
-    auto visible_layer_end = layer_bottom;
+    auto visible_layer_start = layer_start;
+    auto visible_layer_end = layer_end;
     if (!visible_layer_rect.Contains(visible_layer_start) &&
         !visible_layer_rect.Contains(visible_layer_end))
       std::tie(visible_layer_start, visible_layer_end) =
-          GetVisibleSelectionEndPoints(visible_layer_rect, layer_top,
-                                       layer_bottom);
+          GetVisibleSelectionEndPoints(visible_layer_rect, layer_start,
+                                       layer_end);
 
     gfx::PointF visible_screen_start = MathUtil::MapPoint(
         screen_space_transform, visible_layer_start, &clipped);
     gfx::PointF visible_screen_end =
         MathUtil::MapPoint(screen_space_transform, visible_layer_end, &clipped);
 
-    viewport_bound.SetVisibleEdgeTop(
+    viewport_bound.SetVisibleEdgeStart(
         gfx::ScalePoint(visible_screen_start, inv_scale));
-    viewport_bound.SetVisibleEdgeBottom(
+    viewport_bound.SetVisibleEdgeEnd(
         gfx::ScalePoint(visible_screen_end, inv_scale));
   }
 

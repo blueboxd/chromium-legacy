@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -73,8 +74,11 @@ void AccountManagerWelcomeDialog::AdjustWidgetInitParams(
 
 void AccountManagerWelcomeDialog::OnDialogClosed(
     const std::string& json_retval) {
-  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      ProfileManager::GetActiveUserProfile(), chrome::kAccountManagerSubPage);
+  // Opening Settings during shutdown leads to a crash.
+  if (!chrome::IsAttemptingShutdown()) {
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        ProfileManager::GetActiveUserProfile(), chrome::kAccountManagerSubPage);
+  }
 
   SystemWebDialogDelegate::OnDialogClosed(json_retval);
 }

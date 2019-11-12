@@ -7,6 +7,7 @@
 #include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
@@ -90,7 +91,8 @@ RTCQuicTransport* RTCQuicTransport::Create(
     ExceptionState& exception_state) {
   return Create(context, transport, certificates, exception_state,
                 std::make_unique<DefaultP2PQuicTransportFactory>(
-                    Platform::Current()->GetWebRtcWorkerThread()));
+                    PeerConnectionDependencyFactory::GetInstance()
+                        ->GetWebRtcWorkerTaskRunner()));
 }
 
 RTCQuicTransport* RTCQuicTransport::Create(

@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/math_constants.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -103,9 +104,9 @@ std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
     // https://msdn.microsoft.com/en-us/library/windows/hardware/dn642102(v=vs.85).aspx
     // Change sign of values, to report 'reaction force', and convert values
     // from G/s^2 to m/s^2 units.
-    reading->accel.x = -x * kMeanGravity;
-    reading->accel.y = -y * kMeanGravity;
-    reading->accel.z = -z * kMeanGravity;
+    reading->accel.x = -x * base::kMeanGravityDouble;
+    reading->accel.y = -y * base::kMeanGravityDouble;
+    reading->accel.z = -z * base::kMeanGravityDouble;
     return S_OK;
   };
   return params;

@@ -73,10 +73,10 @@ class EVENTS_OZONE_EVDEV_EXPORT GamepadEventConverterEvdev
   base::flat_set<unsigned int> pressed_buttons_;
 
   // Input device file descriptor.
-  base::ScopedFD input_device_fd_;
+  const base::ScopedFD input_device_fd_;
 
   // Callbacks for dispatching events.
-  DeviceEventDispatcherEvdev* dispatcher_;
+  DeviceEventDispatcherEvdev* const dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadEventConverterEvdev);
 };

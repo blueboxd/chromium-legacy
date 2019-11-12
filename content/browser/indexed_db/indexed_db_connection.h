@@ -16,7 +16,7 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 
 namespace content {
 class IndexedDBDatabaseCallbacks;

@@ -65,7 +65,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       storage::SpecialStoragePolicy* special_storage_policy);
 
   DOMStorageContextWrapper(
-      base::FilePath legacy_local_storage_path,
       scoped_refptr<base::SequencedTaskRunner> mojo_task_runner,
       LocalStorageContextMojo* mojo_local_storage_context,
       SessionStorageContextMojo* mojo_session_storage_context);
@@ -161,8 +160,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   std::map<std::string, SessionStorageNamespaceImpl*> alive_namespaces_
       GUARDED_BY(alive_namespaces_lock_);
   mutable base::Lock alive_namespaces_lock_;
-
-  base::FilePath legacy_localstorage_path_;
 
   // To receive memory pressure signals.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;

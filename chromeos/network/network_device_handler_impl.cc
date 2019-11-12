@@ -586,7 +586,7 @@ void NetworkDeviceHandlerImpl::OnSetUsbEthernetMacAddressSourceError(
     const std::string& shill_error_message) {
   HandleShillCallFailure(device_path, error_callback, shill_error_name,
                          shill_error_message);
-  if (shill_error_name == NetworkDeviceHandler::kErrorNotSupported &&
+  if (shill_error_name == shill::kErrorResultNotSupported &&
       mac_address_source == usb_ethernet_mac_address_source_) {
     mac_address_change_not_supported_.insert(device_mac_address);
     ApplyUsbEthernetMacAddressSourceToShill();

@@ -361,11 +361,6 @@ bool DirectoryBackingStore::SaveChanges(
 
   PrepareSaveEntryStatement(DELETE_JOURNAL_TABLE,
                             &save_delete_journal_statement_);
-  for (auto i = snapshot.delete_journals.begin();
-       i != snapshot.delete_journals.end(); ++i) {
-    if (!SaveEntryToDB(&save_delete_journal_statement_, **i))
-      return false;
-  }
 
   if (!DeleteEntries(DELETE_JOURNAL_TABLE, snapshot.delete_journals_to_purge))
     return false;

@@ -16,9 +16,15 @@ namespace weblayer {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ImplNavigationState
 enum class NavigationState {
+  // Waiting to receive initial response data.
   kWaitingResponse = 0,
+  // Processing the response.
   kReceivingBytes = 1,
+  // The navigation succeeded. Any NavigationObservers would have had
+  // NavigationCompleted() called.
   kComplete = 2,
+  // The navigation failed. IsErrorPage() will return true, and any
+  // NavigationObservers would have had NavigationFailed() called.
   kFailed = 3,
 };
 

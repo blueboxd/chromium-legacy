@@ -94,10 +94,10 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   InputDeviceFactoryEvdevProxy* input_device_factory_ = nullptr;
 
   // Keyboard state.
-  KeyboardEvdev* keyboard_;
+  KeyboardEvdev* const keyboard_;
 
   // Mouse button map.
-  MouseButtonMapEvdev* button_map_;
+  MouseButtonMapEvdev* const button_map_;
 
   // Device presence.
   bool has_mouse_ = false;

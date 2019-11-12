@@ -163,6 +163,18 @@ java_prebuilt("androidx_collection_collection_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("androidx_concurrent_concurrent_futures_java") {
+  jar_path =
+      "libs/androidx_concurrent_concurrent_futures/concurrent-futures-1.0.0.jar"
+  output_name = "androidx_concurrent_concurrent_futures"
+  supports_android = true
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":com_google_guava_listenablefuture_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_coordinatorlayout_coordinatorlayout_java") {
   aar_path = "libs/androidx_coordinatorlayout_coordinatorlayout/coordinatorlayout-1.0.0.aar"
   info_path = "libs/androidx_coordinatorlayout_coordinatorlayout/androidx_coordinatorlayout_coordinatorlayout.info"
@@ -1064,6 +1076,13 @@ java_prebuilt("com_google_dagger_dagger_compiler_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("com_google_guava_listenablefuture_java") {
+  jar_path = "libs/com_google_guava_listenablefuture/listenablefuture-1.0.jar"
+  output_name = "com_google_guava_listenablefuture"
+  supports_android = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_protobuf_protobuf_lite_java") {
   jar_path = "libs/com_google_protobuf_protobuf_lite/protobuf-lite-3.0.1.jar"
   output_name = "com_google_protobuf_protobuf_lite"
@@ -1794,6 +1813,8 @@ java_prebuilt("com_google_guava_guava_java") {
     ":org_checkerframework_checker_compat_qual_java",
     ":org_codehaus_mojo_animal_sniffer_annotations_java",
   ]
+  deps += [ ":com_google_guava_listenablefuture_java" ]
+  jar_excluded_patterns = [ "*/ListenableFuture.class" ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

@@ -206,6 +206,10 @@ void FrameLoader::Init() {
 
   auto navigation_params = std::make_unique<WebNavigationParams>();
   navigation_params->url = KURL(g_empty_string);
+  navigation_params->frame_policy =
+      frame_->Owner() ? base::make_optional(frame_->Owner()->GetFramePolicy())
+                      : base::nullopt;
+
   provisional_document_loader_ = Client()->CreateDocumentLoader(
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
       nullptr /* extra_data */);

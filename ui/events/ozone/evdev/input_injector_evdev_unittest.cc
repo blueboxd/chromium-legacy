@@ -80,7 +80,7 @@ class InputInjectorEvdevTest : public testing::Test {
   void ExpectClick(int x, int y, int button, int count);
 
   EventObserver event_observer_;
-  EventDispatchCallback dispatch_callback_;
+  const EventDispatchCallback dispatch_callback_;
   FakeCursorDelegateEvdev cursor_;
 
   std::unique_ptr<DeviceManager> device_manager_;

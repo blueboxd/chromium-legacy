@@ -58,7 +58,7 @@ class PLATFORM_EXPORT WebRtcVideoTrackSource
   // |frame->visible_rect()|) has changed since the last delivered frame, the
   // whole frame is marked as updated.
   void DeliverFrame(scoped_refptr<media::VideoFrame> frame,
-                    gfx::Rect update_rect,
+                    gfx::Rect* update_rect,
                     int64_t timestamp_us);
 
   // |thread_checker_| is bound to the libjingle worker thread.
@@ -72,7 +72,7 @@ class PLATFORM_EXPORT WebRtcVideoTrackSource
 
   // Stores the accumulated value of CAPTURE_UPDATE_RECT in case that frames
   // are dropped.
-  gfx::Rect accumulated_update_rect_;
+  base::Optional<gfx::Rect> accumulated_update_rect_;
   base::Optional<int> previous_capture_counter_;
   gfx::Rect cropping_rect_of_previous_delivered_frame_;
   gfx::Size natural_size_of_previous_delivered_frame_;

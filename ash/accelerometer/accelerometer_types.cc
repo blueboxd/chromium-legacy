@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/accelerometer/accelerometer_types.h"
-#include "ash/accelerometer/accelerometer_constants.h"
 
+#include "base/numerics/math_constants.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace ash {
@@ -34,7 +34,7 @@ bool AccelerometerUpdate::IsReadingStable(AccelerometerSource source) const {
   if (!has(source))
     return false;
 
-  return std::abs(GetVector(source).Length() - kMeanGravity) <=
+  return std::abs(GetVector(source).Length() - base::kMeanGravityFloat) <=
          kDeviationFromGravityThreshold;
 }
 

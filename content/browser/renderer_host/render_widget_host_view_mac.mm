@@ -640,8 +640,8 @@ void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
   // Create a rectangle for the edge of the selection focus, which will be
   // the same as the caret position if the selection is collapsed. That's
   // what we want to try to keep centered on-screen if possible.
-  gfx::Rect gfx_caret_rect(region->focus.edge_top_rounded().x(),
-                           region->focus.edge_top_rounded().y(), 1,
+  gfx::Rect gfx_caret_rect(region->focus.edge_start_rounded().x(),
+                           region->focus.edge_start_rounded().y(), 1,
                            region->focus.GetHeight());
   gfx_caret_rect += view_bounds_in_window_dip_.OffsetFromOrigin();
   gfx_caret_rect += window_frame_in_screen_dip_.OffsetFromOrigin();

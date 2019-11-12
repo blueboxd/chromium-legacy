@@ -566,6 +566,24 @@ TEST_F(SharingServiceTest, DeviceUnregistrationSyncDisabled) {
             GetSharingService()->GetStateForTesting());
 }
 
+TEST_F(SharingServiceTest, DeviceUnregistrationLocalSyncEnabled) {
+  // Enable the registration feature and transport mode required features.
+  scoped_feature_list_.InitWithFeatures(
+      /*enabled_features=*/{kSharingDeviceRegistration, kSharingUseDeviceInfo,
+                            kSharingDeriveVapidKey},
+      /*disabled_features=*/{});
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
+  test_sync_service_.SetActiveDataTypes({syncer::DEVICE_INFO});
+  test_sync_service_.SetLocalSyncEnabled(true);
+
+  // Create new SharingService instance with sync disabled at constructor.
+  GetSharingService();
+  EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
+  EXPECT_EQ(SharingService::State::DISABLED,
+            GetSharingService()->GetStateForTesting());
+}
+
 TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   // Enable the feature.
   scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
@@ -657,6 +675,29 @@ TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
       kAuthorizedEntity, base::Time::Now()));
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   GetSharingService();
+}
+
+TEST_F(SharingServiceTest, NoDevicesWhenLocalSyncEnabled) {
+  // Enable the registration feature and transport mode required features.
+  scoped_feature_list_.InitWithFeatures(
+      /*enabled_features=*/{kSharingDeviceRegistration, kSharingUseDeviceInfo,
+                            kSharingDeriveVapidKey},
+      /*disabled_features=*/{});
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
+  test_sync_service_.SetActiveDataTypes({syncer::DEVICE_INFO});
+  test_sync_service_.SetLocalSyncEnabled(true);
+
+  std::string id = base::GenerateGUID();
+  std::unique_ptr<syncer::DeviceInfo> device_info =
+      CreateFakeDeviceInfo(id, kDeviceName);
+  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(device_info.get());
+
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
+      GetSharingService()->GetDeviceCandidates(
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+
+  ASSERT_EQ(0u, candidates.size());
 }
 
 TEST_F(SharingServiceTest, NoDevicesWhenSyncDisabled) {

@@ -46,26 +46,6 @@ void SpokenFeedbackEventRewriterDelegate::DispatchMouseEventToChromeVox(
   }
 }
 
-bool SpokenFeedbackEventRewriterDelegate::ShouldDispatchKeyEventToChromeVox(
-    const ui::Event* event) const {
-  chromeos::AccessibilityManager* accessibility_manager =
-      chromeos::AccessibilityManager::Get();
-  if (!accessibility_manager->IsSpokenFeedbackEnabled() ||
-      accessibility_manager->keyboard_listener_extension_id().empty() ||
-      !chromeos::GetAccessibilityExtensionHost(
-          extension_misc::kChromeVoxExtensionId)) {
-    VLOG(1) << "Event sent to Spoken Feedback when disabled or unavailable";
-    return false;
-  }
-
-  if (!event || !event->IsKeyEvent()) {
-    NOTREACHED() << "Unexpected event sent to Spoken Feedback";
-    return false;
-  }
-
-  return true;
-}
-
 void SpokenFeedbackEventRewriterDelegate::OnUnhandledSpokenFeedbackEvent(
     std::unique_ptr<ui::Event> event) const {
   ash::EventRewriterController::Get()->OnUnhandledSpokenFeedbackEvent(

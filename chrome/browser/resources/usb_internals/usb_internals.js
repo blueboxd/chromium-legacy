@@ -21,7 +21,7 @@ cr.define('usb_internals', function() {
       /** @type {device.mojom.UsbDeviceManagerRemote} */
       const usbManager = new device.mojom.UsbDeviceManagerRemote;
       await pageHandler.bindUsbDeviceManagerInterface(
-          usbManager.$.createRequest());
+          usbManager.$.bindNewPipeAndPassReceiver());
 
       /** @private {devices_page.DevicesPage} */
       this.devicesPage_ = new devices_page.DevicesPage(usbManager);
@@ -29,7 +29,7 @@ cr.define('usb_internals', function() {
       /** @private {device.mojom.UsbDeviceManagerTestRemote} */
       this.usbManagerTest_ = new device.mojom.UsbDeviceManagerTestRemote;
       await pageHandler.bindTestInterface(
-          this.usbManagerTest_.$.createRequest());
+          this.usbManagerTest_.$.bindNewPipeAndPassReceiver());
 
       $('add-test-device-form').addEventListener('submit', (event) => {
         this.addTestDevice(event);

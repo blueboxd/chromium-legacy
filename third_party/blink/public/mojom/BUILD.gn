@@ -53,6 +53,7 @@ mojom("mojom_platform") {
     "filesystem/file_system.mojom",
     "frame/find_in_page.mojom",
     "frame/frame.mojom",
+    "frame/frame_policy.mojom",
     "frame/fullscreen.mojom",
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",

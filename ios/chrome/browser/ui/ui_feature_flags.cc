@@ -33,3 +33,9 @@ const base::Feature kEmbedderBlockRestoreUrl{"EmbedderBlockRestoreUrl",
 
 const base::Feature kDisableAnimationOnLowBattery{
     "DisableAnimationOnLowBattery", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kVoiceOverUnstackedTabstrip{
+    "VoiceOverUnstackedTabstrip", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kForceUnstackedTabstrip{"ForceUnstackedTabstrip",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};

@@ -11,12 +11,6 @@ option optimize_for = LITE_RUNTIME;
 
 // Message to pass content for the remote copy feature.
 message RemoteCopyMessage {
-  // The content to write to the clipboard. Required.
-  oneof content {
-    // Plain text.
-    string text = 1;
-
-    // The URL of an image to download and write to the clipboard.
-    string image_url = 2;
-  }
+  // optional
+  string text = 1;
 }

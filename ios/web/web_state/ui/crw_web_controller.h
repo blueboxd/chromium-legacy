@@ -26,6 +26,7 @@ enum class WKNavigationState;
 @class CRWWebViewContentView;
 @protocol CRWWebViewProxy;
 class GURL;
+@class WKWebView;
 
 namespace web {
 class NavigationItem;
@@ -188,6 +189,9 @@ class WebStateImpl;
 // snapshot. |completion| may be called more than once.
 - (void)takeSnapshotWithRect:(CGRect)rect
                   completion:(void (^)(UIImage* snapshot))completion;
+
+// Creates a web view if it's not yet created. Returns the web view.
+- (WKWebView*)ensureWebViewCreated;
 
 @end
 

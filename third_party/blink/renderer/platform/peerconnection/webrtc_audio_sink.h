@@ -150,6 +150,9 @@ class PLATFORM_EXPORT WebRtcAudioSink : public WebMediaStreamAudioSink {
     DISALLOW_COPY_AND_ASSIGN(Adapter);
   };
 
+  template <typename>
+  friend struct WTF::CrossThreadCopier;
+
   // WebMediaStreamAudioSink implementation.
   void OnData(const media::AudioBus& audio_bus,
               base::TimeTicks estimated_capture_time) override;

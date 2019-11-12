@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
+#include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -71,6 +72,11 @@ class MediaNotificationService
   void OnContainerClicked(const std::string& id) override;
   void OnContainerDismissed(const std::string& id) override;
   void OnContainerDestroyed(const std::string& id) override;
+  void OnContainerDraggedOut(const std::string& id, gfx::Rect bounds) override;
+
+  // Called by the |overlay_media_notifications_manager_| when an overlay
+  // notification is closed.
+  void OnOverlayNotificationClosed(const std::string& id);
 
   void OnCastNotificationsChanged();
 
@@ -123,6 +129,8 @@ class MediaNotificationService
   service_manager::Connector* const connector_;
   MediaDialogDelegate* dialog_delegate_ = nullptr;
 
+  OverlayMediaNotificationsManager overlay_media_notifications_manager_;
+
   // Used to track whether there are any active controllable media sessions. If
   // not, then there's nothing to show in the dialog and we can hide the toolbar
   // icon.
@@ -131,6 +139,11 @@ class MediaNotificationService
   // Tracks the sessions that are currently frozen. If there are only frozen
   // sessions, we will disable the toolbar icon and wait to hide it.
   std::unordered_set<std::string> frozen_session_ids_;
+
+  // Tracks the sessions that are currently dragged out of the dialog. These
+  // should not be shown in the dialog and will be ignored for showing the
+  // toolbar icon.
+  std::unordered_set<std::string> dragged_out_session_ids_;
 
   // Stores a Session for each media session keyed by its |request_id| in string
   // format.

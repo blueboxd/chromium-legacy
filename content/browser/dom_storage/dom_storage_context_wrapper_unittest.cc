@@ -38,8 +38,8 @@ class DOMStorageContextWrapperTest : public testing::Test {
         /*leveldb_name=*/"");
     session_storage_context->PretendToConnectForTesting();
     context_ = new DOMStorageContextWrapper(
-        /*legacy_local_storage_path=*/base::FilePath(), fake_mojo_task_runner_,
-        /*mojo_local_storage_context=*/nullptr, session_storage_context);
+        fake_mojo_task_runner_, /*mojo_local_storage_context=*/nullptr,
+        session_storage_context);
   }
 
   void TearDown() override {

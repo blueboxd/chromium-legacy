@@ -6138,39 +6138,39 @@ class CompositedSelectionBoundsTest
     v8::Local<v8::Context> context =
         v8::Isolate::GetCurrent()->GetCurrentContext();
 
-    const int start_edge_top_in_layer_x = expected_result.Get(context, 1)
+    const int start_edge_start_in_layer_x = expected_result.Get(context, 1)
+                                                .ToLocalChecked()
+                                                .As<v8::Int32>()
+                                                ->Value();
+    const int start_edge_start_in_layer_y = expected_result.Get(context, 2)
+                                                .ToLocalChecked()
+                                                .As<v8::Int32>()
+                                                ->Value();
+    const int start_edge_end_in_layer_x = expected_result.Get(context, 3)
                                               .ToLocalChecked()
                                               .As<v8::Int32>()
                                               ->Value();
-    const int start_edge_top_in_layer_y = expected_result.Get(context, 2)
+    const int start_edge_end_in_layer_y = expected_result.Get(context, 4)
                                               .ToLocalChecked()
                                               .As<v8::Int32>()
                                               ->Value();
-    const int start_edge_bottom_in_layer_x = expected_result.Get(context, 3)
-                                                 .ToLocalChecked()
-                                                 .As<v8::Int32>()
-                                                 ->Value();
-    const int start_edge_bottom_in_layer_y = expected_result.Get(context, 4)
-                                                 .ToLocalChecked()
-                                                 .As<v8::Int32>()
-                                                 ->Value();
 
-    const int end_edge_top_in_layer_x = expected_result.Get(context, 6)
+    const int end_edge_start_in_layer_x = expected_result.Get(context, 6)
+                                              .ToLocalChecked()
+                                              .As<v8::Int32>()
+                                              ->Value();
+    const int end_edge_start_in_layer_y = expected_result.Get(context, 7)
+                                              .ToLocalChecked()
+                                              .As<v8::Int32>()
+                                              ->Value();
+    const int end_edge_end_in_layer_x = expected_result.Get(context, 8)
                                             .ToLocalChecked()
                                             .As<v8::Int32>()
                                             ->Value();
-    const int end_edge_top_in_layer_y = expected_result.Get(context, 7)
+    const int end_edge_end_in_layer_y = expected_result.Get(context, 9)
                                             .ToLocalChecked()
                                             .As<v8::Int32>()
                                             ->Value();
-    const int end_edge_bottom_in_layer_x = expected_result.Get(context, 8)
-                                               .ToLocalChecked()
-                                               .As<v8::Int32>()
-                                               ->Value();
-    const int end_edge_bottom_in_layer_y = expected_result.Get(context, 9)
-                                               .ToLocalChecked()
-                                               .As<v8::Int32>()
-                                               ->Value();
 
     FloatPoint hit_point;
 
@@ -6185,11 +6185,11 @@ class CompositedSelectionBoundsTest
                                  ->Value());
     } else {
       hit_point =
-          FloatPoint((start_edge_top_in_layer_x + start_edge_bottom_in_layer_x +
-                      end_edge_top_in_layer_x + end_edge_bottom_in_layer_x) /
+          FloatPoint((start_edge_start_in_layer_x + start_edge_end_in_layer_x +
+                      end_edge_start_in_layer_x + end_edge_end_in_layer_x) /
                          4,
-                     (start_edge_top_in_layer_y + start_edge_bottom_in_layer_y +
-                      end_edge_top_in_layer_y + end_edge_bottom_in_layer_y) /
+                     (start_edge_start_in_layer_y + start_edge_end_in_layer_y +
+                      end_edge_start_in_layer_y + end_edge_end_in_layer_y) /
                              4 +
                          3);
     }
@@ -6224,9 +6224,9 @@ class CompositedSelectionBoundsTest
                   ->id(),
               selection.start.layer_id);
 
-    EXPECT_EQ(start_edge_top_in_layer_x, selection.start.edge_top.x());
-    EXPECT_EQ(start_edge_top_in_layer_y, selection.start.edge_top.y());
-    EXPECT_EQ(start_edge_bottom_in_layer_x, selection.start.edge_bottom.x());
+    EXPECT_EQ(start_edge_start_in_layer_x, selection.start.edge_start.x());
+    EXPECT_EQ(start_edge_start_in_layer_y, selection.start.edge_start.y());
+    EXPECT_EQ(start_edge_end_in_layer_x, selection.start.edge_end.x());
 
     blink::Node* layer_owner_node_for_end = V8Node::ToImplWithTypeCheck(
         v8::Isolate::GetCurrent(),
@@ -6237,9 +6237,9 @@ class CompositedSelectionBoundsTest
         GetExpectedLayerForSelection(layer_owner_node_for_end)->CcLayer()->id(),
         selection.end.layer_id);
 
-    EXPECT_EQ(end_edge_top_in_layer_x, selection.end.edge_top.x());
-    EXPECT_EQ(end_edge_top_in_layer_y, selection.end.edge_top.y());
-    EXPECT_EQ(end_edge_bottom_in_layer_x, selection.end.edge_bottom.x());
+    EXPECT_EQ(end_edge_start_in_layer_x, selection.end.edge_start.x());
+    EXPECT_EQ(end_edge_start_in_layer_y, selection.end.edge_start.y());
+    EXPECT_EQ(end_edge_end_in_layer_x, selection.end.edge_end.x());
 
     // Platform differences can introduce small stylistic deviations in
     // y-axis positioning, the details of which aren't relevant to
@@ -6254,10 +6254,10 @@ class CompositedSelectionBoundsTest
     }
 
     int y_bottom_deviation =
-        start_edge_bottom_in_layer_y - selection.start.edge_bottom.y();
+        start_edge_end_in_layer_y - selection.start.edge_end.y();
     EXPECT_GE(y_bottom_epsilon, std::abs(y_bottom_deviation));
     EXPECT_EQ(y_bottom_deviation,
-              end_edge_bottom_in_layer_y - selection.end.edge_bottom.y());
+              end_edge_end_in_layer_y - selection.end.edge_end.y());
 
     if (expected_result.Length() >= 15) {
       bool start_hidden = expected_result.Get(context, 13)

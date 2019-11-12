@@ -27,6 +27,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -130,6 +131,14 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_NoDevicesAvailable) {
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_DevicesAvailable_SyncTurnedOff) {
+  if (base::FeatureList::IsEnabled(kSharingUseDeviceInfo) &&
+      base::FeatureList::IsEnabled(kSharingDeriveVapidKey) &&
+      base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
+    // Turning off sync will have no effect when Click to Call is available on
+    // sign-in.
+    return;
+  }
+
   Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
        sync_pb::SharingSpecificFields::UNKNOWN);
   auto devices = sharing_service()->GetDeviceCandidates(

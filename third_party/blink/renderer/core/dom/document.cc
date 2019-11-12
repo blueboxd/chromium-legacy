@@ -868,8 +868,22 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
     }
 
     ParsedFeaturePolicy container_policy;
-    if (frame && frame->Owner())
-      container_policy = frame->Owner()->GetFramePolicy().container_policy;
+
+    if (frame && frame->Owner()) {
+      // TODO(chenleihu): Due to the data replication mechanism in
+      // multi-process site-per-process environment, the container_policy
+      // value in remote frame owner gets lazily updated only when the next
+      // navigation is initiated on the remote frame. We need a more robust way
+      // to enforce the validity of container_policy value.
+      // https://crbug.com/972089
+      if (frame->Owner()->IsRemote()) {
+        container_policy = frame->Owner()->GetFramePolicy().container_policy;
+      } else {
+        container_policy = initializer.GetFramePolicy()
+                               .value_or(FramePolicy())
+                               .container_policy;
+      }
+    }
 
     // TODO(icelland): This is problematic querying sandbox flags before
     // feature policy is initialized.

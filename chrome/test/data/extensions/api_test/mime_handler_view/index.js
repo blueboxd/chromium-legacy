@@ -234,6 +234,28 @@ var tests = [
         () => document.body.webkitRequestFullscreen());
   },
 
+  function testFullscreenEscape() {
+    checkStreamDetails('testFullscreenEscape.csv', false);
+    var calls = 0;
+    var windowId;
+    window.addEventListener('webkitfullscreenchange', async e => {
+      switch(calls) {
+        case 0: // On fullscreen entered.
+          chrome.test.assertTrue(document.webkitIsFullScreen);
+          chrome.test.assertEq(document.body, document.webkitFullscreenElement);
+          break;
+        case 1: // On fullscreen exited.
+          chrome.test.assertFalse(document.webkitIsFullScreen);
+          chrome.test.assertEq(null, document.webkitFullscreenElement);
+          chrome.test.succeed();
+          break;
+      }
+      calls++;
+    });
+    chrome.test.runWithUserGesture(
+        () => document.body.webkitRequestFullscreen());
+  },
+
   function testBackgroundPage() {
     checkStreamDetails('testBackgroundPage.csv', false);
     chrome.runtime.getBackgroundPage(backgroundPage => {

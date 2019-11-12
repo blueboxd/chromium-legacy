@@ -33,7 +33,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -63,7 +63,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
                 int64_t transaction_id) override;
 
   // Pointers transfer ownership.
-  void Error(int32_t code, const String& message) override;
+  void Error(mojom::blink::IDBException code, const String& message) override;
   void SuccessNamesAndVersionsList(
       Vector<mojom::blink::IDBNameAndVersionPtr>) override;
   void SuccessStringList(const Vector<String>&) override;

@@ -86,13 +86,13 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev
   std::bitset<KEY_CNT> key_state_;
 
   // Callback for dispatching events.
-  EventDispatchCallback callback_;
+  const EventDispatchCallback callback_;
 
   // Shared modifier state.
-  EventModifiers* modifiers_;
+  EventModifiers* const modifiers_;
 
   // Shared layout engine.
-  KeyboardLayoutEngine* keyboard_layout_engine_;
+  KeyboardLayoutEngine* const keyboard_layout_engine_;
 
   // Key repeat handler.
   EventAutoRepeatHandler auto_repeat_handler_;

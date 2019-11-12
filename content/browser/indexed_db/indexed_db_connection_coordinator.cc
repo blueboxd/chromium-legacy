@@ -25,6 +25,7 @@
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 using base::ASCIIToUTF16;
 using base::NumberToString16;
@@ -152,7 +153,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
               NumberToString16(pending_->version);
         }
         pending_->callbacks->OnError(IndexedDBDatabaseError(
-            blink::kWebIDBDatabaseExceptionUnknownError, message));
+            blink::mojom::IDBException::kUnknownError, message));
         state_ = RequestState::kError;
         return;
       }
@@ -199,7 +200,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
       // Requested version is lower than current version - fail the request.
       DCHECK(!is_new_database);
       pending_->callbacks->OnError(IndexedDBDatabaseError(
-          blink::kWebIDBDatabaseExceptionVersionError,
+          blink::mojom::IDBException::kVersionError,
           ASCIIToUTF16("The requested version (") +
               NumberToString16(pending_->version) +
               ASCIIToUTF16(") is less than the existing version (") +
@@ -248,7 +249,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
       connection_ptr_for_close_comparision_ = nullptr;
       if (!pending_->callbacks->is_complete()) {
         pending_->callbacks->OnError(
-            IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+            IndexedDBDatabaseError(blink::mojom::IDBException::kAbortError,
                                    "The connection was closed."));
       }
       state_ = RequestState::kDone;
@@ -332,7 +333,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
     } else {
       DCHECK_NE(pending_->version, db_->metadata_.version);
       pending_->callbacks->OnError(
-          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+          IndexedDBDatabaseError(blink::mojom::IDBException::kAbortError,
                                  "Version change transaction was aborted in "
                                  "upgradeneeded event handler."));
     }
@@ -344,7 +345,7 @@ class IndexedDBConnectionCoordinator::OpenRequest
     DCHECK(pending_);
     if (!pending_->callbacks->is_complete()) {
       pending_->callbacks->OnError(
-          IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+          IndexedDBDatabaseError(blink::mojom::IDBException::kAbortError,
                                  "The connection was closed."));
     }
     if (state_ != RequestState::kError)
@@ -464,7 +465,7 @@ class IndexedDBConnectionCoordinator::DeleteRequest
 
     if (!saved_leveldb_status_.ok()) {
       // TODO(jsbell): Consider including sanitized leveldb status message.
-      IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+      IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                    "Internal error deleting database.");
       callbacks_->OnError(error);
       state_ = RequestState::kError;

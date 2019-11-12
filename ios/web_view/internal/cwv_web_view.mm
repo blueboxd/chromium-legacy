@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <utility>
 
+#import <WebKit/WebKit.h>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/mac/foundation_util.h"
@@ -34,6 +36,7 @@
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
+#import "ios/web/public/web_view_only/wk_web_view_configuration_util.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_controller_internal.h"
 #import "ios/web_view/internal/cwv_favicon_internal.h"
@@ -215,12 +218,25 @@ static NSString* gUserAgentProduct = nil;
 
 - (instancetype)initWithFrame:(CGRect)frame
                 configuration:(CWVWebViewConfiguration*)configuration {
+  return [self initWithFrame:frame
+               configuration:configuration
+             WKConfiguration:nil
+            createdWKWebView:nil];
+}
+
+- (instancetype)initWithFrame:(CGRect)frame
+                configuration:(CWVWebViewConfiguration*)configuration
+              WKConfiguration:(WKWebViewConfiguration*)wkConfiguration
+             createdWKWebView:(WKWebView**)createdWebView {
   self = [super initWithFrame:frame];
   if (self) {
     _configuration = configuration;
     [_configuration registerWebView:self];
     _scrollView = [[CWVScrollView alloc] init];
-    [self resetWebStateWithSessionStorage:nil];
+
+    [self resetWebStateWithSessionStorage:nil
+                          WKConfiguration:wkConfiguration
+                         createdWKWebView:createdWebView];
   }
   return self;
 }
@@ -586,7 +602,9 @@ static NSString* gUserAgentProduct = nil;
   [super decodeRestorableStateWithCoder:coder];
   CRWSessionStorage* sessionStorage =
       [coder decodeObjectForKey:kSessionStorageKey];
-  [self resetWebStateWithSessionStorage:sessionStorage];
+  [self resetWebStateWithSessionStorage:sessionStorage
+                        WKConfiguration:nil
+                       createdWKWebView:nil];
 }
 
 #pragma mark - Private methods
@@ -605,8 +623,15 @@ static NSString* gUserAgentProduct = nil;
 // Creates a WebState instance and assigns it to |_webState|.
 // It replaces the old |_webState| if any.
 // The WebState is restored from |sessionStorage| if provided.
-- (void)resetWebStateWithSessionStorage:
-    (nullable CRWSessionStorage*)sessionStorage {
+//
+// If |wkConfiguration| is provided, the underlying WKWebView is
+// initialized with |wkConfiguration|, and assigned to
+// |*createdWKWebView| if |createdWKWebView| is not nil.
+// |*createdWKWebView| will be provided only if |wkConfiguration| is provided,
+// otherwise it will always be reset to nil.
+- (void)resetWebStateWithSessionStorage:(CRWSessionStorage*)sessionStorage
+                        WKConfiguration:(WKWebViewConfiguration*)wkConfiguration
+                       createdWKWebView:(WKWebView**)createdWebView {
   if (_webState) {
     if (_webStateObserver) {
       _webState->RemoveObserver(_webStateObserver.get());
@@ -630,6 +655,19 @@ static NSString* gUserAgentProduct = nil;
                                                         sessionStorage);
   } else {
     _webState = web::WebState::Create(webStateCreateParams);
+  }
+
+  // WARNING: NOTHING should be here between |web::WebState::Create()| and
+  // |web::EnsureWebViewCreatedWithConfiguration()|, as this is the requirement
+  // of |web::EnsureWebViewCreatedWithConfiguration()|
+
+  WKWebView* webView = nil;
+  if (wkConfiguration) {
+    webView = web::EnsureWebViewCreatedWithConfiguration(_webState.get(),
+                                                         wkConfiguration);
+  }
+  if (createdWebView) {
+    *createdWebView = webView;
   }
 
   WebViewHolder::CreateForWebState(_webState.get());

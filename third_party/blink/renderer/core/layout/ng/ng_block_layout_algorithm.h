@@ -113,7 +113,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGInflowChildData& child_data,
       const LogicalSize child_available_size,
       bool is_new_fc,
-      const base::Optional<LayoutUnit> forced_bfc_block_offset = base::nullopt,
+      const base::Optional<LayoutUnit> bfc_block_offset = base::nullopt,
       bool has_clearance_past_adjoining_floats = false);
 
   // @return Estimated BFC block offset for the "to be layout" child.
@@ -337,7 +337,12 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Returns kIndefiniteSize in all other cases.
   LayoutUnit CalculateMinimumBlockSize(const NGMarginStrut& end_margin_strut);
 
+  // Border + padding sum, resolved from the node's computed style.
   const NGBoxStrut border_padding_;
+
+  // Border + scrollbar + padding sum for the fragment to be generated (most
+  // importantly, for non-first fragments, leading block border + scrollbar +
+  // padding is zero).
   NGBoxStrut border_scrollbar_padding_;
 
   LogicalSize child_available_size_;

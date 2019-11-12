@@ -562,21 +562,19 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
 
     // Find fragments that have text for the specified range.
     DCHECK_LE(start, end);
-    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     const LayoutBlock* block_for_flipping = nullptr;
     if (UNLIKELY(HasFlippedBlocksWritingMode()))
       block_for_flipping = ContainingBlock();
-    for (const NGPaintFragment* fragment : fragments) {
-      const auto& text_fragment =
-          To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
-      if (start > text_fragment.EndOffset() ||
-          end < text_fragment.StartOffset())
+    NGInlineCursor cursor;
+    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
+      const unsigned start_offset = cursor.CurrentTextStartOffset();
+      const unsigned end_offset = cursor.CurrentTextEndOffset();
+      if (start > end_offset || end < start_offset)
         continue;
-      const unsigned clamped_start =
-          std::max(start, text_fragment.StartOffset());
-      const unsigned clamped_end = std::min(end, text_fragment.EndOffset());
-      PhysicalRect rect = text_fragment.LocalRect(clamped_start, clamped_end);
-      rect.Move(fragment->InlineOffsetToContainerBox());
+      const unsigned clamped_start = std::max(start, start_offset);
+      const unsigned clamped_end = std::min(end, end_offset);
+      PhysicalRect rect = cursor.CurrentLocalRect(clamped_start, clamped_end);
+      rect.Move(cursor.CurrentOffset());
       const FloatQuad quad = LocalRectToAbsoluteQuad(rect);
       if (clamped_start < clamped_end) {
         quads.push_back(quad);

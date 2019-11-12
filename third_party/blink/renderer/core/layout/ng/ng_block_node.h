@@ -53,7 +53,11 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   //
   // As OOF-positioned objects have their position, and size computed
   // pre-layout, we need a way to quickly determine if we need to perform this
-  // work. This method compares the containing-block size to determine this.
+  // work.
+  //
+  // We have this "first-tier" cache explicitly for this purpose.
+  // This method compares the containing-block size to determine if we can skip
+  // the position, and size calculation.
   //
   // If the containing-block size hasn't changed, and we are layout-clean we
   // can reuse the previous layout result.

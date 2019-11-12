@@ -266,3 +266,8 @@ bool IOSChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled()
 bool IOSChromePasswordManagerClient::IsNewTabPage() const {
   return false;
 }
+
+password_manager::FieldInfoManager*
+IOSChromePasswordManagerClient::GetFieldInfoManager() const {
+  return nullptr;
+}

@@ -119,7 +119,6 @@ copy("chrome_camera_app_js") {
     "src/js/main.js",
     "src/js/metrics.js",
     "src/js/nav.js",
-    "src/js/resolution_event_broker.js",
     "src/js/scrollbar.js",
     "src/js/sound.js",
     "src/js/state.js",

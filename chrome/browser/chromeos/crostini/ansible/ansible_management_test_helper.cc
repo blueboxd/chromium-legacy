@@ -7,15 +7,14 @@
 #include "base/files/file_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_service.h"
 
 namespace crostini {
 
-AnsibleManagementTestHelper::AnsibleManagementTestHelper(
-    TestingProfile* profile)
+AnsibleManagementTestHelper::AnsibleManagementTestHelper(Profile* profile)
     : profile_(profile) {
   fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
       chromeos::DBusThreadManager::Get()->GetCiceroneClient());

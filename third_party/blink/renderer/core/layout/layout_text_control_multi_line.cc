@@ -56,18 +56,6 @@ bool LayoutTextControlMultiLine::NodeAtPoint(
   return true;
 }
 
-float LayoutTextControlMultiLine::GetAvgCharWidth(
-    const AtomicString& family) const {
-  // Match the default system font to the width of MS Shell Dlg, the default
-  // font for textareas in Firefox, Safari Win and IE for some encodings (in
-  // IE, the default font is encoding specific). 1229 is the avgCharWidth
-  // value in the OS/2 table for Courier New.
-  if (LayoutTheme::GetTheme().NeedsHackForTextControlWithFontFamily(family))
-    return ScaleEmToUnits(1229);
-
-  return LayoutTextControl::GetAvgCharWidth(family);
-}
-
 LayoutUnit LayoutTextControlMultiLine::PreferredContentLogicalWidth(
     float char_width) const {
   int factor = ToHTMLTextAreaElement(GetNode())->cols();

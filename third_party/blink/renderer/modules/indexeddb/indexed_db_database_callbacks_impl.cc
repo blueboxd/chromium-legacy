@@ -31,7 +31,7 @@ void IndexedDBDatabaseCallbacksImpl::VersionChange(int64_t old_version,
 }
 
 void IndexedDBDatabaseCallbacksImpl::Abort(int64_t transaction_id,
-                                           int32_t code,
+                                           mojom::blink::IDBException code,
                                            const String& message) {
   callbacks_->OnAbort(
       transaction_id,

@@ -1177,85 +1177,125 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
 }
 
 // static
-VideoCodecProfile V4L2Device::V4L2VP9ProfileToVideoCodecProfile(
-    uint32_t profile) {
-  switch (profile) {
-    case V4L2_MPEG_VIDEO_VP9_PROFILE_0:
-      return VP9PROFILE_PROFILE0;
-    case V4L2_MPEG_VIDEO_VP9_PROFILE_1:
-      return VP9PROFILE_PROFILE1;
-    case V4L2_MPEG_VIDEO_VP9_PROFILE_2:
-      return VP9PROFILE_PROFILE2;
-    case V4L2_MPEG_VIDEO_VP9_PROFILE_3:
-      return VP9PROFILE_PROFILE3;
+VideoCodecProfile V4L2Device::V4L2ProfileToVideoCodecProfile(VideoCodec codec,
+                                                             uint32_t profile) {
+  switch (codec) {
+    case kCodecH264:
+      switch (profile) {
+        case V4L2_MPEG_VIDEO_H264_PROFILE_BASELINE:
+        case V4L2_MPEG_VIDEO_H264_PROFILE_CONSTRAINED_BASELINE:
+          return H264PROFILE_BASELINE;
+        case V4L2_MPEG_VIDEO_H264_PROFILE_MAIN:
+          return H264PROFILE_MAIN;
+        case V4L2_MPEG_VIDEO_H264_PROFILE_EXTENDED:
+          return H264PROFILE_EXTENDED;
+        case V4L2_MPEG_VIDEO_H264_PROFILE_HIGH:
+          return H264PROFILE_HIGH;
+      }
+      break;
+    case kCodecVP8:
+      switch (profile) {
+        case V4L2_MPEG_VIDEO_VP8_PROFILE_0:
+        case V4L2_MPEG_VIDEO_VP8_PROFILE_1:
+        case V4L2_MPEG_VIDEO_VP8_PROFILE_2:
+        case V4L2_MPEG_VIDEO_VP8_PROFILE_3:
+          return VP8PROFILE_ANY;
+      }
+      break;
+    case kCodecVP9:
+      switch (profile) {
+        case V4L2_MPEG_VIDEO_VP9_PROFILE_0:
+          return VP9PROFILE_PROFILE0;
+        case V4L2_MPEG_VIDEO_VP9_PROFILE_1:
+          return VP9PROFILE_PROFILE1;
+        case V4L2_MPEG_VIDEO_VP9_PROFILE_2:
+          return VP9PROFILE_PROFILE2;
+        case V4L2_MPEG_VIDEO_VP9_PROFILE_3:
+          return VP9PROFILE_PROFILE3;
+      }
+      break;
     default:
-      VLOGF(2) << "Not a VP9 profile: " << profile;
-      return VIDEO_CODEC_PROFILE_UNKNOWN;
+      VLOGF(2) << "Unknown codec: " << codec;
   }
+  VLOGF(2) << "Unknown profile: " << profile;
+  return VIDEO_CODEC_PROFILE_UNKNOWN;
 }
 
-// static
 std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
     uint32_t pix_fmt,
     bool is_encoder) {
-  VideoCodecProfile min_profile, max_profile;
-  std::vector<VideoCodecProfile> profiles;
+  auto get_supported_profiles = [this](
+                                    VideoCodec codec,
+                                    std::vector<VideoCodecProfile>* profiles) {
+    uint32_t query_id = 0;
+    switch (codec) {
+      case kCodecH264:
+        query_id = V4L2_CID_MPEG_VIDEO_H264_PROFILE;
+        break;
+      case kCodecVP8:
+        query_id = V4L2_CID_MPEG_VIDEO_VP8_PROFILE;
+        break;
+      case kCodecVP9:
+        query_id = V4L2_CID_MPEG_VIDEO_VP9_PROFILE;
+        break;
+      default:
+        return false;
+    }
 
+    v4l2_queryctrl query_ctrl = {};
+    query_ctrl.id = query_id;
+    if (Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) != 0) {
+      return false;
+    }
+    v4l2_querymenu query_menu = {};
+    query_menu.id = query_ctrl.id;
+    for (query_menu.index = query_ctrl.minimum;
+         static_cast<int>(query_menu.index) <= query_ctrl.maximum;
+         query_menu.index++) {
+      if (Ioctl(VIDIOC_QUERYMENU, &query_menu) == 0) {
+        const VideoCodecProfile profile =
+            V4L2Device::V4L2ProfileToVideoCodecProfile(codec, query_menu.index);
+        if (profile != VIDEO_CODEC_PROFILE_UNKNOWN)
+          profiles->push_back(profile);
+      }
+    }
+    return true;
+  };
+
+  std::vector<VideoCodecProfile> profiles;
   switch (pix_fmt) {
     case V4L2_PIX_FMT_H264:
     case V4L2_PIX_FMT_H264_SLICE:
-      if (is_encoder) {
-        // TODO(posciak): need to query the device for supported H.264 profiles,
-        // for now choose Main as a sensible default.
-        min_profile = H264PROFILE_MAIN;
-        max_profile = H264PROFILE_MAIN;
-      } else {
-        min_profile = H264PROFILE_MIN;
-        max_profile = H264PROFILE_MAX;
+      if (!get_supported_profiles(kCodecH264, &profiles)) {
+        DLOG(WARNING) << "Driver doesn't support QUERY H264 profiles, "
+                      << "use default values, Base, Main, High";
+        profiles = {
+            H264PROFILE_BASELINE,
+            H264PROFILE_MAIN,
+            H264PROFILE_HIGH,
+        };
       }
       break;
-
     case V4L2_PIX_FMT_VP8:
     case V4L2_PIX_FMT_VP8_FRAME:
-      min_profile = VP8PROFILE_MIN;
-      max_profile = VP8PROFILE_MAX;
+      profiles = {VP8PROFILE_ANY};
       break;
-
     case V4L2_PIX_FMT_VP9:
-    case V4L2_PIX_FMT_VP9_FRAME: {
-      v4l2_queryctrl query_ctrl = {};
-      query_ctrl.id = V4L2_CID_MPEG_VIDEO_VP9_PROFILE;
-      if (Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0) {
-        v4l2_querymenu query_menu = {};
-        query_menu.id = query_ctrl.id;
-        for (query_menu.index = query_ctrl.minimum;
-             static_cast<int>(query_menu.index) <= query_ctrl.maximum;
-             query_menu.index++) {
-          if (Ioctl(VIDIOC_QUERYMENU, &query_menu) == 0) {
-            const VideoCodecProfile profile =
-                V4L2VP9ProfileToVideoCodecProfile(query_menu.index);
-            if (profile != VIDEO_CODEC_PROFILE_UNKNOWN)
-              profiles.push_back(profile);
-          }
-        }
-        return profiles;
-      } else {
-        // TODO(keiichiw): need a fallback here?
-        VLOGF(2) << "V4L2_CID_MPEG_VIDEO_VP9_PROFILE is not supported.";
-        min_profile = VP9PROFILE_PROFILE0;
-        max_profile = VP9PROFILE_PROFILE0;
+    case V4L2_PIX_FMT_VP9_FRAME:
+      if (!get_supported_profiles(kCodecVP9, &profiles)) {
+        DLOG(WARNING) << "Driver doesn't support QUERY VP9 profiles, "
+                      << "use default values, Profile0";
+        profiles = {VP9PROFILE_PROFILE0};
       }
       break;
-    }
-
     default:
       VLOGF(1) << "Unhandled pixelformat " << FourccToString(pix_fmt);
-      return profiles;
+      return {};
   }
 
-  for (int profile = min_profile; profile <= max_profile; ++profile)
-    profiles.push_back(static_cast<VideoCodecProfile>(profile));
-
+  // Erase duplicated profiles.
+  std::sort(profiles.begin(), profiles.end());
+  profiles.erase(std::unique(profiles.begin(), profiles.end()), profiles.end());
   return profiles;
 }
 

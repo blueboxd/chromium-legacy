@@ -115,10 +115,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   int last_device_id_ = 0;
 
   // Interface for scanning & monitoring input devices.
-  DeviceManager* device_manager_;  // Not owned.
+  DeviceManager* const device_manager_;  // Not owned.
 
   // Gamepad provider to dispatch gamepad events.
-  GamepadProviderOzone* gamepad_provider_;
+  GamepadProviderOzone* const gamepad_provider_;
 
   // Proxy for input device factory (manages device I/O objects).
   // The real object lives on a different thread.
@@ -134,7 +134,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   KeyboardEvdev keyboard_;
 
   // Cursor movement.
-  CursorDelegateEvdev* cursor_;
+  CursorDelegateEvdev* const cursor_;
 
   // Object for controlling input devices.
   InputControllerEvdev input_controller_;

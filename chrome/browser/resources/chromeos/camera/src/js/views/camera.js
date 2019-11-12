@@ -73,6 +73,14 @@ cca.views.Camera = function(
    */
   this.resultSaver_ = resultSaver;
 
+  /**
+   * Device id of video device of active preview stream. Sets to null when
+   * preview become inactive.
+   * @type {?string}
+   * @private
+   */
+  this.activeDeviceId_ = null;
+
   const createVideoSaver = async () => resultSaver.startSaveVideo();
 
   /**
@@ -381,6 +389,17 @@ cca.views.Camera.prototype.start_ = async function() {
       if (!this.suspended) {
         for (const id of await this.options_.videoDeviceIds()) {
           if (await this.startWithDevice_(id)) {
+            // Make the different active camera announced by screen reader.
+            const currentId = this.options_.currentDeviceId;
+            if (currentId === this.activeDeviceId_) {
+              return;
+            }
+            this.activeDeviceId_ = currentId;
+            const info = await this.infoUpdater_.getDeviceInfo(id);
+            if (info !== null) {
+              cca.toast.speak(chrome.i18n.getMessage(
+                  'status_msg_camera_switched', info.label));
+            }
             return;
           }
         }
@@ -390,6 +409,7 @@ cca.views.Camera.prototype.start_ = async function() {
     this.configuring_ = null;
     return true;
   } catch (error) {
+    this.activeDeviceId_ = null;
     if (!(error instanceof cca.views.CameraSuspendedError)) {
       console.error(error);
       cca.nav.open('warning', 'no-camera');

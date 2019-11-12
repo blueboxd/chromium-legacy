@@ -80,8 +80,7 @@ class ASH_EXPORT HomeLauncherGestureHandler
 
   bool IsDragInProgress() const;
 
-  void NotifyHomeLauncherTargetPositionChanged(bool showing,
-                                               int64_t display_id);
+  void NotifyHomeLauncherPositionChanged(bool showing, int64_t display_id);
   void NotifyHomeLauncherAnimationComplete(bool shown, int64_t display_id);
 
   // TODO(sammiequon): Investigate if it is needed to observe potential window

@@ -36,6 +36,10 @@ class ChromiumDepGraph {
             url: "https://github.com/google/guava",
             licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
             licenseName: "Apache 2.0"),
+        'com_google_guava_listenablefuture':  new PropertyOverride(
+            url: "https://github.com/google/guava",
+            licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+            licenseName: "Apache 2.0"),
         'org_codehaus_mojo_animal_sniffer_annotations': new PropertyOverride(
             url: "http://www.mojohaus.org/animal-sniffer/animal-sniffer-annotations/",
             licenseUrl: "https://raw.githubusercontent.com/mojohaus/animal-sniffer/master/animal-sniffer-annotations/pom.xml",

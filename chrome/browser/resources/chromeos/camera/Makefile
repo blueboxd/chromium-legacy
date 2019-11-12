@@ -139,7 +139,6 @@ RESOURCES = \
 	src/js/mojo/device_operator.js \
 	src/js/mojo/image_capture.js \
 	src/js/nav.js \
-	src/js/resolution_event_broker.js \
 	src/js/scrollbar.js \
 	src/js/sound.js \
 	src/js/state.js \

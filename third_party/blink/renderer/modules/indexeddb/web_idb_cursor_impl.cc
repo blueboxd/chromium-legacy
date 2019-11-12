@@ -8,7 +8,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -69,7 +69,7 @@ void WebIDBCursorImpl::AdvanceCallback(
     callbacks.reset();
     return;
   } else if (result->is_empty()) {
-    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+    callbacks->Error(blink::mojom::IDBException::kUnknownError,
                      "Invalid response");
     callbacks.reset();
     return;
@@ -78,7 +78,7 @@ void WebIDBCursorImpl::AdvanceCallback(
   if (result->get_values()->keys.size() != 1u ||
       result->get_values()->primary_keys.size() != 1u ||
       result->get_values()->values.size() != 1u) {
-    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+    callbacks->Error(blink::mojom::IDBException::kUnknownError,
                      "Invalid response");
     callbacks.reset();
     return;
@@ -153,7 +153,7 @@ void WebIDBCursorImpl::CursorContinueCallback(
     callbacks.reset();
     return;
   } else if (result->is_empty()) {
-    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+    callbacks->Error(blink::mojom::IDBException::kUnknownError,
                      "Invalid response");
     callbacks.reset();
     return;
@@ -162,7 +162,7 @@ void WebIDBCursorImpl::CursorContinueCallback(
   if (result->get_values()->keys.size() != 1u ||
       result->get_values()->primary_keys.size() != 1u ||
       result->get_values()->values.size() != 1u) {
-    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+    callbacks->Error(blink::mojom::IDBException::kUnknownError,
                      "Invalid response");
     callbacks.reset();
     return;
@@ -190,7 +190,7 @@ void WebIDBCursorImpl::PrefetchCallback(
     callbacks.reset();
     return;
   } else if (result->is_empty()) {
-    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+    callbacks->Error(blink::mojom::IDBException::kUnknownError,
                      "Invalid response");
     callbacks.reset();
     return;
@@ -200,7 +200,7 @@ void WebIDBCursorImpl::PrefetchCallback(
           result->get_values()->primary_keys.size() ||
       result->get_values()->keys.size() !=
           result->get_values()->values.size()) {
-    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+    callbacks->Error(blink::mojom::IDBException::kUnknownError,
                      "Invalid response");
     callbacks.reset();
     return;

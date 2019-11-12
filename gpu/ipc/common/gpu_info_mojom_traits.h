@@ -395,6 +395,13 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static bool subpixel_font_rendering(const gpu::GPUInfo& input) {
     return input.subpixel_font_rendering;
   }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  static const base::Optional<gpu::VulkanInfo> vulkan_info(
+      const gpu::GPUInfo& input) {
+    return input.vulkan_info;
+  }
+#endif
 };
 
 }  // namespace mojo

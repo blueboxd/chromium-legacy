@@ -37,6 +37,14 @@ void ShowCrostiniAnsibleSoftwareConfigView(Profile* profile) {
   g_crostini_ansible_software_configuration_view->GetWidget()->Show();
 }
 
+void CloseCrostiniAnsibleSoftwareConfigViewForTesting() {
+  if (g_crostini_ansible_software_configuration_view) {
+    g_crostini_ansible_software_configuration_view->GetWidget()
+        ->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
+  }
+  g_crostini_ansible_software_configuration_view = nullptr;
+}
+
 }  // namespace crostini
 
 int CrostiniAnsibleSoftwareConfigView::GetDialogButtons() const {
@@ -69,13 +77,9 @@ void CrostiniAnsibleSoftwareConfigView::
 void CrostiniAnsibleSoftwareConfigView::OnAnsibleSoftwareConfigurationFinished(
     bool success) {
   DCHECK_EQ(state_, State::CONFIGURING);
-  ansible_management_service_->RemoveObserver(this);
 
   if (!success) {
     state_ = State::ERROR;
-
-    // Bring dialog to front.
-    GetWidget()->Show();
 
     GetWidget()->UpdateWindowTitle();
     subtext_label_->SetText(l10n_util::GetStringUTF16(
@@ -136,5 +140,6 @@ CrostiniAnsibleSoftwareConfigView::CrostiniAnsibleSoftwareConfigView(
 }
 
 CrostiniAnsibleSoftwareConfigView::~CrostiniAnsibleSoftwareConfigView() {
+  ansible_management_service_->RemoveObserver(this);
   g_crostini_ansible_software_configuration_view = nullptr;
 }

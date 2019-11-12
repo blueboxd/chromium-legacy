@@ -259,7 +259,8 @@ public class ProcessInitializationHandler {
                     boolean allowMultiple, boolean includeNames, boolean includeEmails,
                     boolean includeTel, boolean includeAddresses, String formattedOrigin) {
                 mDialog = new ContactsPickerDialog(context, listener, allowMultiple, includeNames,
-                        includeEmails, includeTel, includeAddresses, formattedOrigin);
+                        includeEmails, includeTel, includeAddresses, /*includeIcons=*/false,
+                        formattedOrigin);
                 mDialog.getWindow().getAttributes().windowAnimations =
                         R.style.PickerDialogAnimation;
                 mDialog.show();

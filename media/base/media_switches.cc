@@ -313,6 +313,11 @@ const base::Feature kGlobalMediaControls{"GlobalMediaControls",
 const base::Feature kGlobalMediaControlsForCast{
     "GlobalMediaControlsForCast", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow global media controls notifications to be dragged out into overlay
+// notifications. It is no-op if kGlobalMediaControls is not enabled.
+const base::Feature kGlobalMediaControlsOverlayControls{
+    "GlobalMediaControlsOverlayControls", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
 // TODO(nisse): Delete once we have switched over to always using the

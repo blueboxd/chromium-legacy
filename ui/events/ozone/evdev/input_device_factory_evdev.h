@@ -107,10 +107,10 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void EnableDevices();
 
   // Task runner for our thread.
-  scoped_refptr<base::TaskRunner> task_runner_;
+  const scoped_refptr<base::TaskRunner> task_runner_;
 
   // Cursor movement.
-  CursorDelegateEvdev* cursor_;
+  CursorDelegateEvdev* const cursor_;
 
   // Shared Palm state.
   const std::unique_ptr<SharedPalmDetectionFilterState> shared_palm_state_;
@@ -122,7 +122,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 #endif
 
   // Dispatcher for events.
-  std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher_;
+  const std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher_;
 
   // Number of pending device additions & device classes.
   int pending_device_changes_ = 0;

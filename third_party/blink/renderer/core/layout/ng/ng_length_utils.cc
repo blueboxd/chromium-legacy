@@ -8,7 +8,6 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -1270,20 +1269,6 @@ base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
     return sizes;
 
   return base::nullopt;
-}
-
-LayoutUnit ConsumedBlockSizeInContentBox(
-    LayoutUnit border_scrollbar_padding_block_start,
-    const NGBlockBreakToken* break_token) {
-  if (!break_token)
-    return LayoutUnit();
-  LayoutUnit consumed_block_size =
-      break_token->ConsumedBlockSize() - border_scrollbar_padding_block_start;
-  // There are no valid break points inside borders and padding, but if the
-  // fragmentainer is actually shorter than the space taken up bby borders
-  // and/or padding, we may end up slicing them into multiple fragmentainers
-  // anyway - in which case the size we just calculated becomes negative.
-  return consumed_block_size.ClampNegativeToZero();
 }
 
 }  // namespace blink

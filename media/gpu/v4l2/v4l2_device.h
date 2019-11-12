@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
@@ -384,7 +385,8 @@ class MEDIA_GPU_EXPORT V4L2Device
   // If there is no corresponding single- or multi-planar format, returns 0.
   static uint32_t VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
                                                 bool slice_based);
-  static VideoCodecProfile V4L2VP9ProfileToVideoCodecProfile(uint32_t profile);
+  static VideoCodecProfile V4L2ProfileToVideoCodecProfile(VideoCodec codec,
+                                                          uint32_t profile);
   std::vector<VideoCodecProfile> V4L2PixFmtToVideoCodecProfiles(
       uint32_t pix_fmt,
       bool is_encoder);

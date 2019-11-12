@@ -31,7 +31,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/optional.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_observer_callback.h"
@@ -613,19 +613,21 @@ ExecutionContext* IDBDatabase::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionUnknownError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kNoError,
+                   DOMExceptionCode::kNoError);
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kUnknownError,
                    DOMExceptionCode::kUnknownError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionConstraintError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kConstraintError,
                    DOMExceptionCode::kConstraintError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionDataError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kDataError,
                    DOMExceptionCode::kDataError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionVersionError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kVersionError,
                    DOMExceptionCode::kVersionError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionAbortError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kAbortError,
                    DOMExceptionCode::kAbortError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionQuotaError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kQuotaError,
                    DOMExceptionCode::kQuotaExceededError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionTimeoutError,
+STATIC_ASSERT_ENUM(mojom::blink::IDBException::kTimeoutError,
                    DOMExceptionCode::kTimeoutError);
 
 }  // namespace blink

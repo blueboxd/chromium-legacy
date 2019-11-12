@@ -24,7 +24,6 @@ class ComputedStyle;
 class Length;
 struct MinMaxSizeInput;
 class NGConstraintSpace;
-class NGBlockBreakToken;
 class NGBlockNode;
 class NGLayoutInputNode;
 
@@ -483,11 +482,6 @@ base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
     const NGBoxStrut& border_scrollbar_padding,
     NGMinMaxSizeType);
 
-// Return the sum of the block-size of the content-boxes in all preceding
-// fragments.
-LayoutUnit ConsumedBlockSizeInContentBox(
-    LayoutUnit border_scrollbar_padding_block_start,
-    const NGBlockBreakToken*);
 
 }  // namespace blink
 

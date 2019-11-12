@@ -108,14 +108,14 @@ std::pair<PhysicalOffset, PhysicalOffset> static GetLocalSelectionEndpoints(
 }
 
 static PhysicalOffset GetSamplePointForVisibility(
-    const PhysicalOffset& edge_top_in_layer,
-    const PhysicalOffset& edge_bottom_in_layer,
+    const PhysicalOffset& edge_start_in_layer,
+    const PhysicalOffset& edge_end_in_layer,
     float zoom_factor) {
-  FloatSize diff(edge_top_in_layer - edge_bottom_in_layer);
+  FloatSize diff(edge_start_in_layer - edge_end_in_layer);
   // Adjust by ~1px to avoid integer snapping error. This logic is the same
   // as that in ComputeViewportSelectionBound in cc.
   diff.Scale(zoom_factor / diff.DiagonalLength());
-  PhysicalOffset sample_point = edge_bottom_in_layer;
+  PhysicalOffset sample_point = edge_end_in_layer;
   sample_point += PhysicalOffset::FromFloatSizeRound(diff);
   return sample_point;
 }
@@ -123,8 +123,8 @@ static PhysicalOffset GetSamplePointForVisibility(
 // Returns whether this position is not visible on the screen (because
 // clipped out).
 static bool IsVisible(const LayoutObject& rect_layout_object,
-                      const PhysicalOffset& edge_top_in_layer,
-                      const PhysicalOffset& edge_bottom_in_layer) {
+                      const PhysicalOffset& edge_start_in_layer,
+                      const PhysicalOffset& edge_end_in_layer) {
   Node* const node = rect_layout_object.GetNode();
   if (!node)
     return true;
@@ -139,7 +139,7 @@ static bool IsVisible(const LayoutObject& rect_layout_object,
     return true;
 
   const PhysicalOffset sample_point =
-      GetSamplePointForVisibility(edge_top_in_layer, edge_bottom_in_layer,
+      GetSamplePointForVisibility(edge_start_in_layer, edge_end_in_layer,
                                   rect_layout_object.View()->ZoomFactor());
 
   LayoutBox* const text_control_object = ToLayoutBox(layout_object);
@@ -153,17 +153,17 @@ static bool IsVisible(const LayoutObject& rect_layout_object,
 static cc::LayerSelectionBound ComputeSelectionBound(
     const LayoutObject& layout_object,
     const GraphicsLayer& graphics_layer,
-    const PhysicalOffset& edge_top_in_layer,
-    const PhysicalOffset& edge_bottom_in_layer) {
+    const PhysicalOffset& edge_start_in_layer,
+    const PhysicalOffset& edge_end_in_layer) {
   cc::LayerSelectionBound bound;
 
-  bound.edge_top = LocalToInvalidationBackingPoint(
-      edge_top_in_layer, layout_object, graphics_layer);
-  bound.edge_bottom = LocalToInvalidationBackingPoint(
-      edge_bottom_in_layer, layout_object, graphics_layer);
+  bound.edge_start = LocalToInvalidationBackingPoint(
+      edge_start_in_layer, layout_object, graphics_layer);
+  bound.edge_end = LocalToInvalidationBackingPoint(
+      edge_end_in_layer, layout_object, graphics_layer);
   bound.layer_id = graphics_layer.CcLayer()->id();
   bound.hidden =
-      !IsVisible(layout_object, edge_top_in_layer, edge_bottom_in_layer);
+      !IsVisible(layout_object, edge_start_in_layer, edge_end_in_layer);
   return bound;
 }
 
@@ -201,11 +201,11 @@ StartPositionInGraphicsLayerBacking(const SelectionInDOMTree& selection) {
   if (!graphics_layer)
     return base::nullopt;
 
-  PhysicalOffset edge_top_in_layer, edge_bottom_in_layer;
-  std::tie(edge_top_in_layer, edge_bottom_in_layer) =
+  PhysicalOffset edge_start_in_layer, edge_end_in_layer;
+  std::tie(edge_start_in_layer, edge_end_in_layer) =
       GetLocalSelectionStartpoints(local_caret_rect);
   cc::LayerSelectionBound bound = ComputeSelectionBound(
-      *layout_object, *graphics_layer, edge_top_in_layer, edge_bottom_in_layer);
+      *layout_object, *graphics_layer, edge_start_in_layer, edge_end_in_layer);
   if (selection.IsRange()) {
     bound.type = IsTextDirectionRTL(*position.AnchorNode(), *layout_object)
                      ? gfx::SelectionBound::Type::RIGHT
@@ -228,11 +228,11 @@ EndPositionInGraphicsLayerBacking(const SelectionInDOMTree& selection) {
   if (!graphics_layer)
     return base::nullopt;
 
-  PhysicalOffset edge_top_in_layer, edge_bottom_in_layer;
-  std::tie(edge_top_in_layer, edge_bottom_in_layer) =
+  PhysicalOffset edge_start_in_layer, edge_end_in_layer;
+  std::tie(edge_start_in_layer, edge_end_in_layer) =
       GetLocalSelectionEndpoints(local_caret_rect);
   cc::LayerSelectionBound bound = ComputeSelectionBound(
-      *layout_object, *graphics_layer, edge_top_in_layer, edge_bottom_in_layer);
+      *layout_object, *graphics_layer, edge_start_in_layer, edge_end_in_layer);
   if (selection.IsRange()) {
     bound.type = IsTextDirectionRTL(*position.AnchorNode(), *layout_object)
                      ? gfx::SelectionBound::Type::LEFT

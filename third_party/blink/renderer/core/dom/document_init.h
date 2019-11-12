@@ -31,6 +31,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -139,6 +140,12 @@ class CORE_EXPORT DocumentInit final {
     return content_security_policy_;
   }
 
+  DocumentInit& WithFramePolicy(
+      const base::Optional<FramePolicy>& frame_policy);
+  const base::Optional<FramePolicy>& GetFramePolicy() const {
+    return frame_policy_;
+  }
+
  private:
   DocumentInit(HTMLImportsController*);
 
@@ -205,6 +212,9 @@ class CORE_EXPORT DocumentInit final {
 
   network::mojom::IPAddressSpace ip_address_space_ =
       network::mojom::IPAddressSpace::kUnknown;
+
+  // The frame policy snapshot from the beginning of navigation.
+  base::Optional<FramePolicy> frame_policy_ = base::nullopt;
 };
 
 }  // namespace blink

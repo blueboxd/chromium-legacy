@@ -25,21 +25,22 @@ public class ContactsPickerDialog
      * @param context The context to use.
      * @param listener The listener object that gets notified when an action is taken.
      * @param allowMultiple Whether the contacts picker should allow multiple items to be selected.
-     * @param includeNames Whether the contacts data returned includes names.
-     * @param includeEmails Whether the contacts data returned includes emails.
-     * @param includeTel Whether the contacts data returned includes telephone numbers.
-     * @param includeAddresses Whether the contacts data returned includes addresses.
+     * @param includeNames Whether the contacts data returned should include names.
+     * @param includeEmails Whether the contacts data returned should include emails.
+     * @param includeTel Whether the contacts data returned should include telephone numbers.
+     * @param includeAddresses Whether the contacts data returned should include addresses.
+     * @param includeIcons Whether the contacts data returned should include icons.
      * @param formattedOrigin The origin the data will be shared with, formatted for display with
      *                        the scheme omitted.
      */
     public ContactsPickerDialog(Context context, ContactsPickerListener listener,
             boolean allowMultiple, boolean includeNames, boolean includeEmails, boolean includeTel,
-            boolean includeAddresses, String formattedOrigin) {
+            boolean includeAddresses, boolean includeIcons, String formattedOrigin) {
         super(context, R.style.Theme_Chromium_Fullscreen);
 
         // Initialize the main content view.
         mCategoryView = new PickerCategoryView(context, allowMultiple, includeNames, includeEmails,
-                includeTel, includeAddresses, formattedOrigin, this);
+                includeTel, includeAddresses, includeIcons, formattedOrigin, this);
         mCategoryView.initialize(this, listener);
         setView(mCategoryView);
     }

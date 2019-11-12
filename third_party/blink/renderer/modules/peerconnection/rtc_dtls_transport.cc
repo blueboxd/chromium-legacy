@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -57,7 +57,9 @@ std::unique_ptr<DtlsTransportProxy> CreateProxy(
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       frame->GetTaskRunner(TaskType::kNetworking);
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =
-      Platform::Current()->GetWebRtcWorkerThread();
+      PeerConnectionDependencyFactory::GetInstance()
+          ->GetWebRtcWorkerTaskRunner();
+
   return DtlsTransportProxy::Create(*frame, proxy_thread, host_thread,
                                     native_transport, delegate);
 }

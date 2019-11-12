@@ -67,7 +67,9 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
         },
         scan_succeeds);
 
-    safe_browsing::DeepScanningDialogDelegate::SetDMTokenForTesting("dm_token");
+    safe_browsing::DeepScanningDialogDelegate::SetDMTokenForTesting(
+        policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
+            "dm_token"));
     safe_browsing::DeepScanningDialogDelegate::SetFactoryForTesting(
         base::BindRepeating(
             &safe_browsing::FakeDeepScanningDialogDelegate::Create,

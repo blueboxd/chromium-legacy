@@ -118,7 +118,6 @@ jumbo_static_library("weblayer_lib") {
     "//cc",
     "//components/crash/content/app",
     "//components/crash/content/browser",
-    "//components/resources",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/content/renderer:security_interstitial_page_controller",
     "//components/security_interstitials/core",

@@ -175,7 +175,7 @@ void TestClipboard::WriteText(const char* text_data, size_t text_len) {
   if (IsSupportedClipboardBuffer(ClipboardBuffer::kSelection))
     GetStore(ClipboardBuffer::kSelection)
         .data[ClipboardFormatType::GetPlainTextType()] = text;
-  ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
+  ui::ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
 }
 
 void TestClipboard::WriteHTML(const char* markup_data,
@@ -217,7 +217,6 @@ void TestClipboard::WriteBitmap(const SkBitmap& bitmap) {
     NOTREACHED() << "Unable to convert bitmap for clipboard";
     return;
   }
-  ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
 }
 
 void TestClipboard::WriteData(const ClipboardFormatType& format,

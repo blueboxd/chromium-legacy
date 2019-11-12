@@ -131,6 +131,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   const WritingMode writing_mode_;
   bool is_absolute_container_;
   bool is_fixed_container_;
+  bool allow_first_tier_oof_cache_;
 };
 
 }  // namespace blink

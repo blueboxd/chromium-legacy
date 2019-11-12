@@ -60,6 +60,8 @@ _TEST_CODE_EXCLUDED_PATHS = (
     r'mojo[\\/]examples[\\/].*',
     # Launcher for running iOS tests on the simulator.
     r'testing[\\/]iossim[\\/]iossim\.mm$',
+    # EarlGrey app side code for tests.
+    r'ios[\\/].*_app_interface\.mm$',
 )
 
 _THIRD_PARTY_EXCEPT_BLINK = 'third_party/(?!blink/)'

@@ -14,6 +14,8 @@ import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "third_party/blink/public/mojom/referrer.mojom";
+import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
+import "third_party/blink/public/mojom/frame/frame_policy.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -207,6 +209,20 @@ struct CommonNavigationParams {
   // not always be set; it depends on the creator of the CommonNavigationParams
   // setting it.
   mojo_base.mojom.TimeTicks input_start;
+
+  // A snapshot value of frame policy(both sandbox flags and container policy)
+  // of the frame that is being navigated. The snapshot value is captured at the
+  // start of navigation.
+  // The value is set to null for top-level browser-initiated navigation.
+  // The value is also set to null when Ctrl-click was used to create a new tab
+  // and navigate, i.e. the document in new tab will inherit no frame_policy.
+  // For navigation created from NavigationControllerImpl::
+  // CreateNavigationRequestFromEntry which corresponds to history navigation,
+  // the value is set to current FrameTreeNode::pending_frame_policy in
+  // frame_tree_node. This behavior is currently undocumented and probably need
+  // further discussion. Another potential approach is to record frame policy
+  // value in NavigationEntry and reuse the historical value.
+  blink.mojom.FramePolicy? frame_policy;
 };
 
 // Provided by the browser -----------------------------------------------------

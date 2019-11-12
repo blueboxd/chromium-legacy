@@ -821,7 +821,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           std::vector<int>() /* initiator_origin_trial_features */,
           std::string() /* href_translate */,
           false /* is_history_navigation_in_new_child_frame */,
-          base::TimeTicks::Now());
+          base::TimeTicks::Now(), base::nullopt /* frame policy */);
   mojom::CommitNavigationParamsPtr commit_params =
       mojom::CommitNavigationParams::New(
           params.origin, params.is_overriding_user_agent, params.redirects,

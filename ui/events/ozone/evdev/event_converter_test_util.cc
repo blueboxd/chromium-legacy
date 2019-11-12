@@ -118,7 +118,7 @@ class TestEventFactoryEvdev : public EventFactoryEvdev {
     return POST_DISPATCH_NONE;
   }
 
-  EventDispatchCallback callback_;
+  const EventDispatchCallback callback_;
 };
 
 }  // namespace

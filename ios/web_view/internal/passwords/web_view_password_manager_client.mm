@@ -233,4 +233,9 @@ bool WebViewPasswordManagerClient::IsNewTabPage() const {
   return false;
 }
 
+password_manager::FieldInfoManager*
+WebViewPasswordManagerClient::GetFieldInfoManager() const {
+  return nullptr;
+}
+
 }  // namespace ios_web_view

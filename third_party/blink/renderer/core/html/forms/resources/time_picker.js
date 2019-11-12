@@ -256,6 +256,8 @@ class TimePicker extends HTMLElement {
   };
 
   onWindowResize_ = (event) => {
+    // Scroll columns to the second half to allow scrolling up.
+    this.timeColumns_.scrollColumnsToMiddle();
     this.timeColumns_.firstChild.focus();
   };
 
@@ -376,6 +378,18 @@ class TimeColumns extends HTMLElement {
     }
     return new Time(hour, minute, second, millisecond);
   };
+
+  scrollColumnsToMiddle = () => {
+    this.hourColumn_.scrollTop = this.hourColumn_.scrollHeight / 2;
+    this.minuteColumn_.scrollTop = this.minuteColumn_.scrollHeight / 2;
+    if (this.secondColumn_) {
+      this.secondColumn_.scrollTop = this.secondColumn_.scrollHeight / 2;
+    }
+    if (this.millisecondColumn_) {
+      this.millisecondColumn_.scrollTop =
+          this.millisecondColumn_.scrollHeight / 2;
+    }
+  }
 }
 TimeColumns.ClassName = 'time-columns';
 TimeColumns.Margin = 1;
@@ -417,7 +431,7 @@ class TimeColumn extends HTMLUListElement {
       duplicateCells.push(duplicatedTimeCell);
       currentTime.next(this.columnType_);
     }
-    this.selectedTimeCell = cells[0];
+    this.selectedTimeCell = duplicateCells[0];
     this.middleTimeCell_ = duplicateCells[0];
     this.append(...cells, ...duplicateCells);
   };

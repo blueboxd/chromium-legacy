@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 56 tests; 34 PASS, 22 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 58 tests; 34 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS ResizeObserverEntry creator
@@ -33,12 +33,14 @@ PASS ResizeObserverEntry interface: attribute target
 PASS ResizeObserverEntry interface: attribute contentRect
 FAIL ResizeObserverEntry interface: attribute borderBoxSize assert_true: The prototype object must have a property "borderBoxSize" expected true got false
 FAIL ResizeObserverEntry interface: attribute contentBoxSize assert_true: The prototype object must have a property "contentBoxSize" expected true got false
+FAIL ResizeObserverEntry interface: attribute devicePixelContentBoxSize assert_true: The prototype object must have a property "devicePixelContentBoxSize" expected true got false
 PASS ResizeObserverEntry must be primary interface of entry
 PASS Stringification of entry
 PASS ResizeObserverEntry interface: entry must inherit property "target" with the proper type
 PASS ResizeObserverEntry interface: entry must inherit property "contentRect" with the proper type
 FAIL ResizeObserverEntry interface: entry must inherit property "borderBoxSize" with the proper type assert_inherits: property "borderBoxSize" not found in prototype chain
 FAIL ResizeObserverEntry interface: entry must inherit property "contentBoxSize" with the proper type assert_inherits: property "contentBoxSize" not found in prototype chain
+FAIL ResizeObserverEntry interface: entry must inherit property "devicePixelContentBoxSize" with the proper type assert_inherits: property "devicePixelContentBoxSize" not found in prototype chain
 FAIL ResizeObserverSize interface: existence and properties of interface object assert_own_property: self does not have own property "ResizeObserverSize" expected property "ResizeObserverSize" missing
 FAIL ResizeObserverSize interface object length assert_own_property: self does not have own property "ResizeObserverSize" expected property "ResizeObserverSize" missing
 FAIL ResizeObserverSize interface object name assert_own_property: self does not have own property "ResizeObserverSize" expected property "ResizeObserverSize" missing

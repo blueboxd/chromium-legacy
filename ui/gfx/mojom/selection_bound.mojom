@@ -17,10 +17,10 @@ enum SelectionBoundType {
 // See ui/gfx/selection_bound.h.
 struct SelectionBound {
   SelectionBoundType type;
-  gfx.mojom.PointF edge_top;
-  gfx.mojom.PointF edge_bottom;
-  gfx.mojom.PointF visible_edge_top;
-  gfx.mojom.PointF visible_edge_bottom;
+  gfx.mojom.PointF edge_start;
+  gfx.mojom.PointF edge_end;
+  gfx.mojom.PointF visible_edge_start;
+  gfx.mojom.PointF visible_edge_end;
   bool visible;
 };
 

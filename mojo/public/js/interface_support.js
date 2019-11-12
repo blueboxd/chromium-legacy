@@ -375,15 +375,6 @@ mojo.internal.interfaceSupport.InterfaceRemoteBaseWrapper = class {
     this.remote_ = remote;
   }
 
-  // TODO(ortuno): Remove once new names are used in the exposed interfaces.
-  /**
-   * @return {!T}
-   * @export
-   */
-  createRequest() {
-    return this.remote_.bindNewPipeAndPassReceiver();
-  }
-
   /**
    * @return {!T}
    * @export
@@ -725,18 +716,6 @@ mojo.internal.interfaceSupport.InterfaceReceiverHelper = class {
    */
   bindHandle(handle) {
     this.helper_internal_.bindHandle(handle);
-  }
-
-  // TODO(ortuno): Remove once new names are used in the exposed interfaces.
-  /**
-   * Returns a remote for this interface which sends messages directly to this
-   * object. Any number of proxies may be created to the same object.
-   *
-   * @return {!T}
-   * @export
-   */
-  createProxy() {
-    return this.helper_internal_.bindNewPipeAndPassRemote();
   }
 
   /**

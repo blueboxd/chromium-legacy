@@ -308,6 +308,12 @@ class BuildConfigGenerator extends DefaultTask {
                 // and android_aar_prebuilt template will fail if it's not set explictly.
                 sb.append('  extract_native_libraries = true\n')
                 break
+            case 'com_google_guava_guava':
+                // Need to exclude class and replace it with class library as
+                // com_google_guava_listenablefuture has support_androids=true.
+	        sb.append('  deps += [":com_google_guava_listenablefuture_java"]\n')
+                sb.append('  jar_excluded_patterns = ["*/ListenableFuture.class"]\n')
+                break
             case 'androidx_test_rules':
                 // Target needs Android SDK deps which exist in third_party/android_sdk.
                 sb.append("""\

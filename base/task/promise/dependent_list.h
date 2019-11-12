@@ -6,10 +6,12 @@
 #define BASE_TASK_PROMISE_DEPENDENT_LIST_H_
 
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -57,8 +59,6 @@ class BASE_EXPORT DependentList {
     FAIL_PROMISE_CANCELED,
   };
 
-  // Align Node on an 8-byte boundary to ensure the first 3 bits are 0 and can
-  // be used to store additional state (see static_asserts below).
   class BASE_EXPORT ALIGNAS(8) Node {
    public:
     Node();
@@ -245,10 +245,24 @@ class BASE_EXPORT DependentList {
       NextPowerOfTwo(static_cast<uintptr_t>(State::kLastValue)) - 1;
   static constexpr uintptr_t kAllowInsertsBitMask = kStateMask + 1;
   static constexpr uintptr_t kHeadMask = ~(kAllowInsertsBitMask | kStateMask);
+  static constexpr uintptr_t kRequiredNodeAlignment = ~kHeadMask + 1;
 
+  // It is really important that Node instances get aligned so that we can store
+  // state in the lower bits of pointers.
+  //
+  // Allocators are required to return memory aligned at least as strictly as
+  // std::max_align_t but not more, so we can not ask for a bigger alignment
+  // here otherwise we risk not getting proper alignment from heap allocations.
+  // Also, to make sure that stack allocations also get properly aligned (used
+  // currently in tests) we need the ALIGNAS(8) attribute, which is ignored by
+  // allocators. Thus we need the two following static_asserts.
   static_assert(
-      std::alignment_of<Node>() > kAllowInsertsBitMask,
+      std::alignment_of<Node>() >= kRequiredNodeAlignment,
       "Will not be able to hold the Node* and all the state in a uintptr_t");
+  static_assert(
+      std::alignment_of<std::max_align_t>() >= std::alignment_of<Node>(),
+      "malloc (et al.) will not return memory propery aligned to be able to "
+      "hold the Node* and all the state in a uintptr_t");
 
   static State ExtractState(uintptr_t data) {
     return static_cast<State>(data & kStateMask);

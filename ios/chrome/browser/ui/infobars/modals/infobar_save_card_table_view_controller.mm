@@ -4,12 +4,15 @@
 
 #import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_table_view_controller.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 
@@ -17,9 +20,21 @@
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarSaveCardTableViewController ()
+typedef NS_ENUM(NSInteger, SectionIdentifier) {
+  SectionIdentifierContent = kSectionIdentifierEnumZero,
+};
 
-// InfobarPasswordModalDelegate for this ViewController.
+typedef NS_ENUM(NSInteger, ItemType) {
+  ItemTypeCardLastDigits = kItemTypeEnumZero,
+  ItemTypeCardHolderName,
+  ItemTypeCardExpireMonth,
+  ItemTypeCardExpireYear,
+  ItemTypeCardSave,
+};
+
+@interface InfobarSaveCardTableViewController () <UITextFieldDelegate>
+
+// InfobarModalDelegate for this ViewController.
 @property(nonatomic, strong) id<InfobarModalDelegate> infobarModalDelegate;
 // Used to build and record metrics.
 @property(nonatomic, strong) InfobarMetricsRecorder* metricsRecorder;
@@ -57,9 +72,200 @@
   cancelButton.accessibilityIdentifier = kInfobarModalCancelButton;
   self.navigationItem.leftBarButtonItem = cancelButton;
   self.navigationController.navigationBar.prefersLargeTitles = NO;
+
+  [self loadModel];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Presented];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  [self.infobarModalDelegate modalInfobarWasDismissed:self];
+  [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Dismissed];
+  [super viewDidDisappear:animated];
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  self.tableView.scrollEnabled =
+      self.tableView.contentSize.height > self.view.frame.size.height;
+}
+
+#pragma mark - TableViewModel
+
+- (void)loadModel {
+  [super loadModel];
+
+  TableViewModel* model = self.tableViewModel;
+  [model addSectionWithIdentifier:SectionIdentifierContent];
+
+  // TODO(crbug.com/1014652): Use the real strings once they are exposed in the
+  // delegate.
+  TableViewTextEditItem* cardLastDigitsItem =
+      [self textEditItemWithType:ItemTypeCardExpireYear
+                   textFieldName:@"Card Number"
+                  textFieldValue:@"•••• 1234"
+                textFieldEnabled:NO];
+  cardLastDigitsItem.identifyingIcon = self.cardIssuerIcon;
+  [model addItem:cardLastDigitsItem
+      toSectionWithIdentifier:SectionIdentifierContent];
+
+  // TODO(crbug.com/1014652): Use the real strings once they are exposed in the
+  // delegate.
+  TableViewTextEditItem* cardholderNameItem =
+      [self textEditItemWithType:ItemTypeCardExpireYear
+                   textFieldName:@"Cardholder Name"
+                  textFieldValue:@"Sergio Collazos"
+                textFieldEnabled:YES];
+  [model addItem:cardholderNameItem
+      toSectionWithIdentifier:SectionIdentifierContent];
+
+  // TODO(crbug.com/1014652): Use the real strings once they are exposed in the
+  // delegate.
+  TableViewTextEditItem* expireMonthItem =
+      [self textEditItemWithType:ItemTypeCardExpireYear
+                   textFieldName:@"Expiration Month"
+                  textFieldValue:@"07"
+                textFieldEnabled:YES];
+  [model addItem:expireMonthItem
+      toSectionWithIdentifier:SectionIdentifierContent];
+
+  // TODO(crbug.com/1014652): Use the real strings once they are exposed in the
+  // delegate.
+  TableViewTextEditItem* expireYearItem =
+      [self textEditItemWithType:ItemTypeCardExpireYear
+                   textFieldName:@"Expiration Year"
+                  textFieldValue:@"2020"
+                textFieldEnabled:YES];
+  [model addItem:expireYearItem
+      toSectionWithIdentifier:SectionIdentifierContent];
+
+  // TODO(crbug.com/1014652): Use the real strings once they are exposed in the
+  // delegate.
+  TableViewTextButtonItem* saveCardButtonItem =
+      [[TableViewTextButtonItem alloc] initWithType:ItemTypeCardSave];
+  saveCardButtonItem.textAlignment = NSTextAlignmentNatural;
+  // TODO(crbug.com/1014652): Implement TOS with Links. This might require a
+  // separate item.
+  saveCardButtonItem.text = @"TOS Agreement";
+  saveCardButtonItem.buttonText = @"Save Credit Card";
+  saveCardButtonItem.enabled = YES;
+  saveCardButtonItem.disableButtonIntrinsicWidth = YES;
+  [model addItem:saveCardButtonItem
+      toSectionWithIdentifier:SectionIdentifierContent];
+}
+
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  ItemType itemType = static_cast<ItemType>(
+      [self.tableViewModel itemTypeForIndexPath:indexPath]);
+
+  switch (itemType) {
+    case ItemTypeCardLastDigits: {
+      cell.selectionStyle = UITableViewCellSelectionStyleNone;
+      break;
+    }
+    case ItemTypeCardHolderName: {
+      TableViewTextEditCell* editCell =
+          base::mac::ObjCCast<TableViewTextEditCell>(cell);
+      [editCell.textField addTarget:self
+                             action:@selector(nameEditDidBegin)
+                   forControlEvents:UIControlEventEditingDidBegin];
+      [editCell.textField addTarget:self
+                             action:@selector(updateSaveCardButtonState)
+                   forControlEvents:UIControlEventEditingChanged];
+      editCell.selectionStyle = UITableViewCellSelectionStyleNone;
+      editCell.textField.delegate = self;
+      break;
+    }
+    case ItemTypeCardExpireMonth: {
+      TableViewTextEditCell* editCell =
+          base::mac::ObjCCast<TableViewTextEditCell>(cell);
+      [editCell.textField addTarget:self
+                             action:@selector(monthEditDidBegin)
+                   forControlEvents:UIControlEventEditingDidBegin];
+      [editCell.textField addTarget:self
+                             action:@selector(updateSaveCardButtonState)
+                   forControlEvents:UIControlEventEditingChanged];
+      editCell.selectionStyle = UITableViewCellSelectionStyleNone;
+      editCell.textField.delegate = self;
+      break;
+    }
+    case ItemTypeCardExpireYear: {
+      TableViewTextEditCell* editCell =
+          base::mac::ObjCCast<TableViewTextEditCell>(cell);
+      [editCell.textField addTarget:self
+                             action:@selector(yearEditDidBegin)
+                   forControlEvents:UIControlEventEditingDidBegin];
+      [editCell.textField addTarget:self
+                             action:@selector(updateSaveCardButtonState)
+                   forControlEvents:UIControlEventEditingChanged];
+      editCell.selectionStyle = UITableViewCellSelectionStyleNone;
+      editCell.textField.delegate = self;
+      break;
+    }
+    case ItemTypeCardSave: {
+      TableViewTextButtonCell* tableViewTextButtonCell =
+          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      [tableViewTextButtonCell.button
+                 addTarget:self
+                    action:@selector(saveCardButtonWasPressed:)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
+  }
+
+  return cell;
+}
+
+#pragma mark - UITableViewDelegate
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForFooterInSection:(NSInteger)section {
+  return 0;
+}
+
+#pragma mark - UITextFieldDelegate
+
+- (BOOL)textFieldShouldReturn:(UITextField*)textField {
+  [textField resignFirstResponder];
+  return YES;
 }
 
 #pragma mark - Private Methods
+
+- (void)updateSaveCardButtonState {
+  // TODO(crbug.com/1014652): Implement
+
+  // TODO(crbug.com/1014652):Ideally the InfobarDelegate should update the
+  // button text. Once we have a consumer protocol we should be able to create a
+  // delegate that asks the InfobarDelegate for the correct text.
+}
+
+- (void)saveCardButtonWasPressed:(UIButton*)sender {
+  // TODO(crbug.com/1014652): Implement and record metrics.
+}
+
+- (void)nameEditDidBegin {
+  // TODO(crbug.com/1014652): Implement, should only be needed to record
+  // SaveCard specific editing metrics.
+}
+
+- (void)monthEditDidBegin {
+  // TODO(crbug.com/1014652): Implement, should only be needed to record
+  // SaveCard specific editing metrics.
+}
+
+- (void)yearEditDidBegin {
+  // TODO(crbug.com/1014652): Implement, should only be needed to record
+  // SaveCard specific editing metrics.
+}
 
 - (void)dismissInfobarModal:(UIButton*)sender {
   base::RecordAction(
@@ -68,6 +274,23 @@
   [self.infobarModalDelegate dismissInfobarModal:sender
                                         animated:YES
                                       completion:nil];
+}
+
+#pragma mark - Helpers
+
+- (TableViewTextEditItem*)textEditItemWithType:(ItemType)type
+                                 textFieldName:(NSString*)name
+                                textFieldValue:(NSString*)value
+                              textFieldEnabled:(BOOL)enabled {
+  TableViewTextEditItem* textEditItem =
+      [[TableViewTextEditItem alloc] initWithType:type];
+  textEditItem.textFieldName = name;
+  textEditItem.textFieldValue = value;
+  textEditItem.textFieldEnabled = enabled;
+  textEditItem.hideIcon = !enabled;
+  textEditItem.returnKeyType = UIReturnKeyDone;
+
+  return textEditItem;
 }
 
 @end

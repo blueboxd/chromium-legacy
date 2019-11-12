@@ -40,7 +40,8 @@
               on-change="onUsageChanged_" aria-labelledby="usageStatsLabel">
           </cr-toggle>
           <div id="usageStatsLabelContainer">
-            <span id="usageStatsLabel" i18n-content="checkboxLogging"></span>
+            <span id="usageStatsLabel" i18n-content="checkboxLogging"
+                on-click="usageStatsLabelClicked_"></span>
             <a id="learn-more" href="#" i18n-content="learnMore"
                 on-tap="onUsageStatsHelpLinkClicked_">
             </a>

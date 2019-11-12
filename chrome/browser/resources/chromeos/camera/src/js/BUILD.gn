@@ -21,7 +21,6 @@ js_type_check("compile_resources") {
     ":intent",
     ":metrics",
     ":nav",
-    ":resolution_event_broker",
     ":state",
     ":toast",
     ":tooltip",
@@ -40,9 +39,6 @@ js_library("metrics") {
   deps = [
     "externs:chrome_platform_analytics",
   ]
-}
-
-js_library("resolution_event_broker") {
 }
 
 js_library("type") {

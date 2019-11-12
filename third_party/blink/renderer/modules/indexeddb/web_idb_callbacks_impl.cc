@@ -33,7 +33,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
@@ -104,7 +103,8 @@ void WebIDBCallbacksImpl::SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
   transaction_id_ = transaction_id;
 }
 
-void WebIDBCallbacksImpl::Error(int32_t code, const String& message) {
+void WebIDBCallbacksImpl::Error(mojom::blink::IDBException code,
+                                const String& message) {
   if (!request_)
     return;
 
@@ -112,7 +112,7 @@ void WebIDBCallbacksImpl::Error(int32_t code, const String& message) {
   // destroys all pending tasks.  If our callback was queued with a task that
   // gets cleared, we'll get a signal with an IgnorableAbortError as the task is
   // torn down.  This means the error response can be safely ignored.
-  if (code == kWebIDBDatabaseExceptionIgnorableAbortError) {
+  if (code == mojom::blink::IDBException::kIgnorableAbortError) {
     Detach();
     return;
   }

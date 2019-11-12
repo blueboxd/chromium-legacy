@@ -53,20 +53,20 @@ struct StructTraits<gfx::mojom::SelectionBoundDataView, gfx::SelectionBound> {
     return GfxSelectionBoundTypeToMojo(input.type());
   }
 
-  static gfx::PointF edge_top(const gfx::SelectionBound& input) {
-    return input.edge_top();
+  static gfx::PointF edge_start(const gfx::SelectionBound& input) {
+    return input.edge_start();
   }
 
-  static gfx::PointF edge_bottom(const gfx::SelectionBound& input) {
-    return input.edge_bottom();
+  static gfx::PointF edge_end(const gfx::SelectionBound& input) {
+    return input.edge_end();
   }
 
-  static gfx::PointF visible_edge_top(const gfx::SelectionBound& input) {
-    return input.visible_edge_top();
+  static gfx::PointF visible_edge_start(const gfx::SelectionBound& input) {
+    return input.visible_edge_start();
   }
 
-  static gfx::PointF visible_edge_bottom(const gfx::SelectionBound& input) {
-    return input.visible_edge_bottom();
+  static gfx::PointF visible_edge_end(const gfx::SelectionBound& input) {
+    return input.visible_edge_end();
   }
 
   static bool visible(const gfx::SelectionBound& input) {
@@ -75,16 +75,16 @@ struct StructTraits<gfx::mojom::SelectionBoundDataView, gfx::SelectionBound> {
 
   static bool Read(gfx::mojom::SelectionBoundDataView data,
                    gfx::SelectionBound* out) {
-    gfx::PointF edge_top;
-    gfx::PointF edge_bottom;
-    gfx::PointF visible_edge_top;
-    gfx::PointF visible_edge_bottom;
-    if (!data.ReadEdgeTop(&edge_top) || !data.ReadEdgeBottom(&edge_bottom) ||
-        !data.ReadVisibleEdgeTop(&visible_edge_top) ||
-        !data.ReadVisibleEdgeBottom(&visible_edge_bottom))
+    gfx::PointF edge_start;
+    gfx::PointF edge_end;
+    gfx::PointF visible_edge_start;
+    gfx::PointF visible_edge_end;
+    if (!data.ReadEdgeStart(&edge_start) || !data.ReadEdgeEnd(&edge_end) ||
+        !data.ReadVisibleEdgeStart(&visible_edge_start) ||
+        !data.ReadVisibleEdgeEnd(&visible_edge_end))
       return false;
-    out->SetEdge(edge_top, edge_bottom);
-    out->SetVisibleEdge(visible_edge_top, visible_edge_bottom);
+    out->SetEdge(edge_start, edge_end);
+    out->SetVisibleEdge(visible_edge_start, visible_edge_end);
     out->set_type(MojoSelectionBoundTypeToGfx(data.type()));
     out->set_visible(data.visible());
     return true;

@@ -91,6 +91,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsIsolationForPasswordSitesEnabled() const override;
   bool IsNewTabPage() const override;
+  FieldInfoManager* GetFieldInfoManager() const override;
 
  private:
   const StubCredentialsFilter credentials_filter_;

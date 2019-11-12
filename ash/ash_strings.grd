@@ -1817,6 +1817,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_NEXT_NUMBER_PROMPT" desc="Accessible prompt read when next access code input field has been focused. Asks user to enter next piece of the access code.">
         Next number
       </message>
+      <message name="IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE" desc="Message shown in the login screen when online sign-in is required.">
+        Sign in required
+      </message>
       <message name="IDS_ASH_LOGIN_SMART_CARD_SIGN_IN_MESSAGE" desc="Label for the button shown in the user pod that starts signing in via a smart card.">
         Sign in with smart card
       </message>

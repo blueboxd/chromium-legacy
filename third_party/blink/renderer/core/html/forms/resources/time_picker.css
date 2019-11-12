@@ -103,6 +103,7 @@ body {
     background-color: Window;
     color: WindowText;
     forced-color-adjust: none;
+    scroll-margin: 0px;
   }
 
   .time-cell:hover {

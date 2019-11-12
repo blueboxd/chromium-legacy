@@ -168,11 +168,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'eab1e281fa5e9ade35f25ef0d3a69ffc5a2b7457',
+  'skia_revision': 'ad21d47cfa8d9adb2145216c5e514d978d649096',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '52f8e51c1b6e7390c72dcb8278104d245735c3ff',
+  'v8_revision': 'e8fc00fb9ea3d8e5e4fa7193d45afee764165a0e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -180,15 +180,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e33c1582b4bc6da24c08f14aa2b74d1677c974dd',
+  'angle_revision': 'b9b1bae4effb7002133da1964fd893e0d8cb9790',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '503d196f2b702c5d15eb4ebae8a02dd0d7fe7a8e',
+  'swiftshader_revision': '9da287fd0264892a8997426a2d7d154aae560de4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '5eb17d38f7f7021a08c13cf986f68a363a4d82f2',
+  'pdfium_revision': 'c85c137c5de6aed6db4914ca5375d100bd29d0c8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -287,7 +287,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '3e4abc9ac382b6fc7a88316a700652404b6fb9f7',
+  'spv_tools_revision': '12e54dae167c8ea2c194447805ac6f96f09448f6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -299,7 +299,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': 'f4cf10c66fbfeeba95e71d672d33b83da9ec95aa',
+  'shaderc_revision': 'c9d5be6b01708bf7d8a8401a7edb98bf3ab82f17',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -867,7 +867,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'fc903818f3013dfa9465f47ae359a8445c9254b6',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '92ac890fc48d4ccb19b871cbc7a0d53005289868',
       'condition': 'checkout_linux',
   },
 
@@ -892,7 +892,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ea1884b651e69975e897b15cf2063f36317538a4',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '79d4f9950680c588d4c3a2cc8595179f3adc90d4',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -961,7 +961,7 @@ deps = {
   },
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'f34cdc70ca1b4e741a9ea5a906f86d3593623356',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '37dcb894574e94a876c0165c4df96eeba68e6a5a',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1484,7 +1484,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'dd55f3ca8f2ea716ca917a4aaf36f0729fe902b1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '64e07f445a1009d82238e43df89c0d6bd5e15a4f',
+    Var('webrtc_git') + '/src.git' + '@' + 'bd27b14638e4d9ad4e394785defd09140b9293ef',
 
   # Wuffs' canonical repository is at github.com/google/wuffs, but we use
   # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.
@@ -1551,7 +1551,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2d0a87cb7e91faab932f8afe72037c5b2ab462cd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ed16d1d29e2f891c14764d138dd019b68cf5f96e',
     'condition': 'checkout_src_internal',
   },
 
@@ -1726,6 +1726,17 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_collection_collection',
+              'version': 'version:1.0.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/androidx_concurrent_concurrent_futures': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/androidx_concurrent_concurrent_futures',
               'version': 'version:1.0.0-cr0',
           },
       ],
@@ -2959,6 +2970,17 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_guava_guava',
               'version': 'version:25.0-jre-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_guava_listenablefuture': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_guava_listenablefuture',
+              'version': 'version:1.0-cr0',
           },
       ],
       'condition': 'checkout_android',

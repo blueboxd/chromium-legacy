@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_NOTIFICATION_CONTAINER_OBSERVER_H_
 
 #include "base/observer_list_types.h"
+#include "ui/gfx/geometry/rect.h"
 
 class MediaNotificationContainerObserver : public base::CheckedObserver {
  public:
@@ -23,6 +24,10 @@ class MediaNotificationContainerObserver : public base::CheckedObserver {
 
   // Called when the container is about to be deleted.
   virtual void OnContainerDestroyed(const std::string& id) = 0;
+
+  // Called when the container has been dragged out of a dialog.
+  virtual void OnContainerDraggedOut(const std::string& id,
+                                     gfx::Rect bounds) = 0;
 
  protected:
   ~MediaNotificationContainerObserver() override = default;

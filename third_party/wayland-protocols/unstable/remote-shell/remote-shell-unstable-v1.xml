@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="23">
+  <interface name="zcr_remote_shell_v1" version="24">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -237,7 +237,7 @@
 
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="23">
+  <interface name="zcr_remote_surface_v1" version="24">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -276,6 +276,7 @@
       </description>
       <entry name="normal" value="1" summary="normal app window"/>
       <entry name="system_ui" value="2" summary="window is treated as systemui"/>
+      <entry name="hidden_in_overview" value="3" summary="window is normal, but hidden in overview"/>
     </enum>
 
     <request name="destroy" type="destructor">

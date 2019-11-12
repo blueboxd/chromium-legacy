@@ -160,6 +160,19 @@ void BindMimeHandlerService(
   extensions::MimeHandlerServiceImpl::Create(guest_view->GetStreamWeakPtr(),
                                              std::move(receiver));
 }
+
+void BindBeforeUnloadControl(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<extensions::mime_handler::BeforeUnloadControl>
+        receiver) {
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(frame_host);
+  auto* guest_view =
+      extensions::MimeHandlerViewGuest::FromWebContents(contents);
+  if (!guest_view)
+    return;
+  guest_view->FuseBeforeUnloadControl(std::move(receiver));
+}
 #endif
 
 void PopulateChromeFrameBinders(
@@ -219,6 +232,8 @@ void PopulateChromeFrameBinders(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   map->Add<extensions::mime_handler::MimeHandlerService>(
       base::BindRepeating(&BindMimeHandlerService));
+  map->Add<extensions::mime_handler::BeforeUnloadControl>(
+      base::BindRepeating(&BindBeforeUnloadControl));
 #endif
 }
 

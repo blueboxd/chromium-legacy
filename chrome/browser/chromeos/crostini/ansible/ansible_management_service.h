@@ -59,6 +59,8 @@ class AnsibleManagementService : public KeyedService,
  private:
   void InstallAnsibleInDefaultContainer();
   void OnInstallAnsibleInDefaultContainer(CrostiniResult result);
+  void GetAnsiblePlaybookToApply();
+  void OnAnsiblePlaybookRetrieved(bool success);
   void ApplyAnsiblePlaybookToDefaultContainer();
   void OnApplyAnsiblePlaybook(
       base::Optional<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
@@ -67,11 +69,10 @@ class AnsibleManagementService : public KeyedService,
   // Helper function that runs relevant callback and notifies observers.
   void OnConfigurationFinished(bool success);
 
-  std::string GetAnsiblePlaybookToApply();
-
   Profile* profile_;
   base::ObserverList<Observer> observers_;
   base::OnceCallback<void(bool success)> configuration_finished_callback_;
+  std::string playbook_;
   base::WeakPtrFactory<AnsibleManagementService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AnsibleManagementService);

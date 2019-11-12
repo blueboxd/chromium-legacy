@@ -401,11 +401,10 @@ bool HomeLauncherGestureHandler::IsDragInProgress() const {
   return mode_ != Mode::kNone;
 }
 
-void HomeLauncherGestureHandler::NotifyHomeLauncherTargetPositionChanged(
+void HomeLauncherGestureHandler::NotifyHomeLauncherPositionChanged(
     bool showing,
     int64_t display_id) {
-  GetHomeScreenDelegate()->OnHomeLauncherTargetPositionChanged(showing,
-                                                               display_id);
+  GetHomeScreenDelegate()->OnHomeLauncherPositionChanged(showing, display_id);
 }
 
 void HomeLauncherGestureHandler::NotifyHomeLauncherAnimationComplete(
@@ -561,11 +560,11 @@ void HomeLauncherGestureHandler::AnimateToFinalState(AnimationTrigger trigger) {
                                 trigger /**animation_trigger*/);
 
   if (!is_final_state_show && mode_ == Mode::kSlideDownToHide) {
-    NotifyHomeLauncherTargetPositionChanged(false /*showing*/, display_.id());
+    NotifyHomeLauncherPositionChanged(false /*showing*/, display_.id());
     base::RecordAction(
         base::UserMetricsAction("AppList_HomeLauncherToMRUWindow"));
   } else if (is_final_state_show && mode_ == Mode::kSlideUpToShow) {
-    NotifyHomeLauncherTargetPositionChanged(true /*showing*/, display_.id());
+    NotifyHomeLauncherPositionChanged(true /*showing*/, display_.id());
     base::RecordAction(
         base::UserMetricsAction("AppList_CurrentWindowToHomeLauncher"));
   }
@@ -917,8 +916,8 @@ void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
     swipe_home_to_overview_controller_ =
         std::make_unique<SwipeHomeToOverviewController>(display_.id());
   } else {
-    NotifyHomeLauncherTargetPositionChanged(
-        mode_ == Mode::kSlideUpToShow /*showing*/, display_.id());
+    NotifyHomeLauncherPositionChanged(mode_ == Mode::kSlideUpToShow /*showing*/,
+                                      display_.id());
 
     HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
     DCHECK(home_screen_delegate);

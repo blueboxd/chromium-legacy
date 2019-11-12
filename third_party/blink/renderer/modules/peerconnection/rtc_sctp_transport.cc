@@ -7,7 +7,7 @@
 #include <limits>
 #include <memory>
 
-#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -70,7 +70,8 @@ RTCSctpTransport::RTCSctpTransport(
                        native_transport,
                        To<Document>(context)->GetFrame()->GetTaskRunner(
                            TaskType::kNetworking),
-                       Platform::Current()->GetWebRtcWorkerThread()) {}
+                       PeerConnectionDependencyFactory::GetInstance()
+                           ->GetWebRtcWorkerTaskRunner()) {}
 
 RTCSctpTransport::RTCSctpTransport(
     ExecutionContext* context,

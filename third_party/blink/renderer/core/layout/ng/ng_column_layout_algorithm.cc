@@ -95,6 +95,7 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
                       params.fragment_geometry.padding),
       border_scrollbar_padding_(border_padding_ +
                                 params.fragment_geometry.scrollbar) {
+  AdjustForFragmentation(BreakToken(), &border_scrollbar_padding_);
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
@@ -135,9 +136,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
   container_builder_.SetIsBlockFragmentationContextRoot();
 
-  // Omit leading border+padding+scrollbar for all fragments but the first.
-  if (!IsResumingLayout(BreakToken()))
-    intrinsic_block_size_ = border_scrollbar_padding_.block_start;
+  intrinsic_block_size_ = border_scrollbar_padding_.block_start;
 
   if (!LayoutChildren()) {
     // We need to discard this layout and do it again. We found an earlier break
@@ -376,8 +375,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
   // fragmentation context.
   if (is_constrained_by_outer_fragmentation_context_ &&
       column_size.block_size != kIndefiniteSize) {
-    column_size.block_size -= ConsumedBlockSizeInContentBox(
-        border_scrollbar_padding_.block_start, BreakToken());
+    if (BreakToken())
+      column_size.block_size -= BreakToken()->ConsumedBlockSize();
 
     // Subtract the space already taken in the current fragment (spanners and
     // earlier column rows).
@@ -856,14 +855,6 @@ LayoutUnit NGColumnLayoutAlgorithm::ConstrainColumnBlockSize(
   // Constrain and convert the value back to content-box.
   size = std::min(size, max);
   return size - extra;
-}
-
-LayoutUnit NGColumnLayoutAlgorithm::CurrentContentBlockOffset() const {
-  // If we're past the block-start border and padding, this is simple:
-  if (IsResumingLayout(BreakToken()))
-    return intrinsic_block_size_;
-  // Otherwise subtract those.
-  return intrinsic_block_size_ - border_scrollbar_padding_.block_start;
 }
 
 void NGColumnLayoutAlgorithm::FinishAfterBreakBeforeSpanner(

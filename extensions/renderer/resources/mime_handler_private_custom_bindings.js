@@ -24,7 +24,7 @@ var beforeUnloadControlPtr =
     new extensions.mimeHandler.BeforeUnloadControlPtr;
 Mojo.bindInterface(
     extensions.mimeHandler.BeforeUnloadControl.name,
-    mojo.makeRequest(beforeUnloadControlPtr).handle);
+    mojo.makeRequest(beforeUnloadControlPtr).handle, "context", true);
 
 // Stores a promise to the GetStreamInfo() result to avoid making additional
 // calls in response to getStreamInfo() calls.

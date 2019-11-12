@@ -147,6 +147,19 @@ enum IDBStatus {
   IOError,
 };
 
+// These values need to match core/dom/exception_code.h
+enum IDBException {
+  kNoError = 0,
+  kUnknownError = 28,
+  kConstraintError = 29,
+  kDataError = 30,
+  kVersionError = 33,
+  kAbortError = 20,
+  kIgnorableAbortError = 11,
+  kQuotaError = 22,
+  kTimeoutError = 23,
+};
+
 struct IDBIndexMetadata {
   int64 id;
   mojo_base.mojom.String16 name;
@@ -233,7 +246,7 @@ struct IDBObserverChanges {
 // TODO(https://crbug.com/627484): Many of these could be replaced with
 // replies associated with particular messages.
 interface IDBCallbacks {
-  Error(int32 code, mojo_base.mojom.String16 message);
+  Error(IDBException code, mojo_base.mojom.String16 message);
 
   // Factory::GetDatabaseInfo
   SuccessNamesAndVersionsList(array<IDBNameAndVersion> value);
@@ -267,14 +280,14 @@ interface IDBCallbacks {
 interface IDBDatabaseCallbacks {
   ForcedClose();
   VersionChange(int64 old_version, int64 new_version);
-  Abort(int64 transaction_id, int32 code,
+  Abort(int64 transaction_id, IDBException code,
         mojo_base.mojom.String16 message);
   Complete(int64 transaction_id);
   Changes(IDBObserverChanges changes);
 };
 
 struct IDBError {
-  int32 error_code;
+  IDBException error_code;
   mojo_base.mojom.String16 error_message;
 };
 

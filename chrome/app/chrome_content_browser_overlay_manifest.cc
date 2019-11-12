@@ -69,7 +69,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/api/mime_handler.mojom.h"  // nogncheck
 #include "extensions/common/mojom/keep_alive.mojom.h"  // nogncheck
 #endif
 
@@ -158,7 +157,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 contextual_search::mojom::ContextualSearchJsApiService,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
                 extensions::KeepAlive,
-                extensions::mime_handler::BeforeUnloadControl,
 #endif
                 media::mojom::MediaEngagementScoreDetailsProvider,
                 media_router::mojom::MediaRouter,

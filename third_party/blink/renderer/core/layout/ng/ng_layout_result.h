@@ -68,6 +68,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                          : oof_positioned_offset_;
   }
 
+  // Returns if we can use the first-tier OOF-positioned cache.
+  bool CanUseOutOfFlowPositionedFirstTierCache() const {
+    DCHECK(physical_fragment_->IsOutOfFlowPositioned());
+    return bitfields_.can_use_out_of_flow_positioned_first_tier_cache;
+  }
+
   const NGUnpositionedListMarker UnpositionedListMarker() const {
     return HasRareData() ? rare_data_->unpositioned_list_marker
                          : NGUnpositionedListMarker();
@@ -243,13 +249,18 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
    protected:
     friend class NGOutOfFlowLayoutPart;
 
-    void SetOutOfFlowPositionedOffset(const LogicalOffset& offset) {
+    void SetOutOfFlowPositionedOffset(
+        const LogicalOffset& offset,
+        bool can_use_out_of_flow_positioned_first_tier_cache) {
       // OOF-positioned nodes *must* always have an initial BFC-offset.
       DCHECK(layout_result_->physical_fragment_->IsOutOfFlowPositioned());
       DCHECK_EQ(layout_result_->BfcLineOffset(), LayoutUnit());
       DCHECK_EQ(layout_result_->BfcBlockOffset().value_or(LayoutUnit()),
                 LayoutUnit());
 
+      layout_result_->bitfields_
+          .can_use_out_of_flow_positioned_first_tier_cache =
+          can_use_out_of_flow_positioned_first_tier_cache;
       layout_result_->bitfields_.has_oof_positioned_offset = true;
       if (layout_result_->HasRareData())
         layout_result_->rare_data_->oof_positioned_offset = offset;
@@ -376,6 +387,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
         : has_rare_data(false),
           has_rare_data_exclusion_space(false),
           has_oof_positioned_offset(false),
+          can_use_out_of_flow_positioned_first_tier_cache(false),
           is_bfc_block_offset_nullopt(false),
           has_forced_break(false),
           is_self_collapsing(is_self_collapsing),
@@ -392,6 +404,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     unsigned has_rare_data : 1;
     unsigned has_rare_data_exclusion_space : 1;
     unsigned has_oof_positioned_offset : 1;
+    unsigned can_use_out_of_flow_positioned_first_tier_cache : 1;
     unsigned is_bfc_block_offset_nullopt : 1;
 
     unsigned has_forced_break : 1;

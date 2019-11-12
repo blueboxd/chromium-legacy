@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 
+#include "base/feature_list.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/slide_out_controller.h"
@@ -32,6 +34,10 @@ constexpr SkColor kDefaultBackgroundColor = SK_ColorTRANSPARENT;
 // The minimum number of enabled and visible user actions such that we should
 // force the MediaNotificationView to be expanded.
 constexpr int kMinVisibleActionsForExpanding = 4;
+
+// Once the container is dragged this distance, we will not treat the mouse
+// press as a click.
+constexpr int kMinMovementSquaredToBeDragging = 10;
 
 }  // anonymous namespace
 
@@ -123,6 +129,63 @@ void MediaNotificationContainerImplView::RemovedFromWidget() {
     GetFocusManager()->RemoveFocusChangeListener(this);
 }
 
+bool MediaNotificationContainerImplView::OnMousePressed(
+    const ui::MouseEvent& event) {
+  // Reset the |is_dragging_| flag to track whether this is a drag or a click.
+  is_dragging_ = false;
+
+  bool button_result = views::Button::OnMousePressed(event);
+  if (!ShouldHandleMouseEvent(event, /*is_press=*/true))
+    return button_result;
+
+  // Set the |is_mouse_pressed_| flag to mark that we're tracking a potential
+  // drag.
+  is_mouse_pressed_ = true;
+
+  // Keep track of the initial location to calculate movement.
+  initial_drag_location_ = event.location();
+
+  // We want to keep receiving events.
+  return true;
+}
+
+bool MediaNotificationContainerImplView::OnMouseDragged(
+    const ui::MouseEvent& event) {
+  bool button_result = views::Button::OnMouseDragged(event);
+  if (!ShouldHandleMouseEvent(event, /*is_press=*/false))
+    return button_result;
+
+  gfx::Vector2d movement = event.location() - initial_drag_location_;
+
+  // If we ever move enough to be dragging, set the |is_dragging_| flag to
+  // prevent this mouse press from firing an |OnContainerClicked| event.
+  if (movement.LengthSquared() >= kMinMovementSquaredToBeDragging)
+    is_dragging_ = true;
+
+  gfx::Transform transform;
+  transform.Translate(movement);
+  swipeable_container_->layer()->SetTransform(transform);
+  return true;
+}
+
+void MediaNotificationContainerImplView::OnMouseReleased(
+    const ui::MouseEvent& event) {
+  views::Button::OnMouseReleased(event);
+  if (!ShouldHandleMouseEvent(event, /*is_press=*/false))
+    return;
+
+  gfx::Vector2d movement = event.location() - initial_drag_location_;
+
+  gfx::Rect bounds_in_screen = GetBoundsInScreen();
+  gfx::Rect dragged_bounds = bounds_in_screen + movement;
+  swipeable_container_->layer()->SetTransform(gfx::Transform());
+
+  if (!dragged_bounds.Intersects(bounds_in_screen)) {
+    for (auto& observer : observers_)
+      observer.OnContainerDraggedOut(id_, dragged_bounds);
+  }
+}
+
 void MediaNotificationContainerImplView::OnMouseEntered(
     const ui::MouseEvent& event) {
   UpdateDismissButtonVisibility();
@@ -198,7 +261,10 @@ void MediaNotificationContainerImplView::ButtonPressed(views::Button* sender,
   if (sender == dismiss_button_) {
     DismissNotification();
   } else if (sender == this) {
-    ContainerClicked();
+    // If |is_dragging_| is set, this click should be treated as a drag and not
+    // fire the |OnContainerClicked()| event.
+    if (!is_dragging_)
+      ContainerClicked();
   } else {
     NOTREACHED();
   }
@@ -212,6 +278,14 @@ void MediaNotificationContainerImplView::AddObserver(
 void MediaNotificationContainerImplView::RemoveObserver(
     MediaNotificationContainerObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void MediaNotificationContainerImplView::PopOut() {
+  // Ensure that we don't keep separator lines around.
+  SetBorder(nullptr);
+
+  dragged_out_ = true;
+  SetPosition(gfx::Point(0, 0));
 }
 
 views::ImageButton*
@@ -261,4 +335,25 @@ void MediaNotificationContainerImplView::ForceExpandedState() {
 void MediaNotificationContainerImplView::ContainerClicked() {
   for (auto& observer : observers_)
     observer.OnContainerClicked(id_);
+}
+
+bool MediaNotificationContainerImplView::ShouldHandleMouseEvent(
+    const ui::MouseEvent& event,
+    bool is_press) {
+  // We only manually handle mouse events for dragging out of the dialog, so if
+  // the feature is disabled there's no need to handle the event.
+  if (!base::FeatureList::IsEnabled(media::kGlobalMediaControlsOverlayControls))
+    return false;
+
+  // We also don't need to handle if we're already dragged out.
+  if (dragged_out_)
+    return false;
+
+  // We only handle non-press events if we've handled the associated press
+  // event.
+  if (!is_press && !is_mouse_pressed_)
+    return false;
+
+  // We only drag via the left button.
+  return event.IsLeftMouseButton();
 }

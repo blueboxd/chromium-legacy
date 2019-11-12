@@ -2288,6 +2288,19 @@ void WebContentsImpl::RenderWidgetWasResized(
 
 KeyboardEventProcessingResult WebContentsImpl::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
+  auto* outermost_contents = GetOutermostWebContents();
+  // TODO(wjmaclean): Generalize this to forward all key events to the outermost
+  // delegate's handler.
+  if (outermost_contents != this && IsFullscreenForCurrentTab() &&
+      event.windows_key_code == ui::VKEY_ESCAPE) {
+    // When an inner WebContents has focus and is fullscreen, redirect <esc>
+    // key events to the outermost WebContents so it can be handled by that
+    // WebContents' delegate.
+    if (outermost_contents->PreHandleKeyboardEvent(event) ==
+        KeyboardEventProcessingResult::HANDLED) {
+      return KeyboardEventProcessingResult::HANDLED;
+    }
+  }
   return delegate_ ? delegate_->PreHandleKeyboardEvent(this, event)
                    : KeyboardEventProcessingResult::NOT_HANDLED;
 }

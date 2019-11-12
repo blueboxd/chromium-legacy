@@ -21,7 +21,6 @@
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "components/services/storage/public/mojom/dom_storage_area.mojom.h"
-#include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -35,7 +34,6 @@ class SpecialStoragePolicy;
 
 namespace content {
 
-class DOMStorageTaskRunner;
 struct StorageUsageInfo;
 
 // Used for mojo-based LocalStorage implementation (can be disabled with
@@ -50,19 +48,15 @@ class CONTENT_EXPORT LocalStorageContextMojo
   using GetStorageUsageCallback =
       base::OnceCallback<void(std::vector<StorageUsageInfo>)>;
 
-  static const base::FilePath::CharType kLegacyDatabaseFileExtension[];
-
   static base::FilePath LegacyDatabaseFileNameFromOrigin(
       const url::Origin& origin);
   static url::Origin OriginFromLegacyDatabaseFileName(
       const base::FilePath& file_name);
 
   LocalStorageContextMojo(
-      const base::FilePath& partition_directory,
+      const base::FilePath& storage_root,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      scoped_refptr<DOMStorageTaskRunner> legacy_task_runner,
-      const base::FilePath& old_localstorage_path,
-      const base::FilePath& subdirectory,
+      scoped_refptr<base::SequencedTaskRunner> legacy_task_runner,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
   void OpenLocalStorage(
@@ -102,10 +96,6 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   // Converts a string from the old storage format to the new storage format.
   static std::vector<uint8_t> MigrateString(const base::string16& input);
-
-  scoped_refptr<DOMStorageTaskRunner> legacy_task_runner() {
-    return task_runner_;
-  }
 
   // Access the underlying DomStorageDatabase. May be null if the database is
   // not yet open.
@@ -199,8 +189,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   std::map<url::Origin, std::unique_ptr<StorageAreaHolder>> areas_;
 
   // Used to access old data for migration.
-  scoped_refptr<DOMStorageTaskRunner> task_runner_;
-  base::FilePath old_localstorage_path_;
+  scoped_refptr<base::SequencedTaskRunner> legacy_task_runner_;
 
   bool is_low_end_device_;
   // Counts consecutive commit errors. If this number reaches a threshold, the

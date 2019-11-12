@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_test_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -190,13 +191,9 @@ class CrostiniManagerTest : public testing::Test {
     mojo::Remote<device::mojom::UsbDeviceManager> fake_usb_manager;
     fake_usb_manager_.AddReceiver(
         fake_usb_manager.BindNewPipeAndPassReceiver());
-
-    ansible_management_test_helper_ =
-        std::make_unique<AnsibleManagementTestHelper>(profile_.get());
   }
 
   void TearDown() override {
-    ansible_management_test_helper_.reset();
     scoped_user_manager_.reset();
     crostini_manager_->Shutdown();
     profile_.reset();
@@ -218,7 +215,6 @@ class CrostiniManagerTest : public testing::Test {
   CrostiniManager* crostini_manager_;
   device::FakeUsbDeviceManager fake_usb_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<AnsibleManagementTestHelper> ansible_management_test_helper_;
 
  private:
   content::BrowserTaskEnvironment task_environment_;
@@ -1572,8 +1568,33 @@ TEST_F(CrostiniManagerTest, StartContainerSuccess) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraInstallFailure) {
-  ansible_management_test_helper_->SetUpAnsibleInfra();
+class CrostiniManagerAnsibleInfraTest : public CrostiniManagerTest {
+ public:
+  void SetUp() override {
+    CrostiniManagerTest::SetUp();
+    ansible_management_test_helper_ =
+        std::make_unique<AnsibleManagementTestHelper>(profile_.get());
+    ansible_management_test_helper_->SetUpAnsibleInfra();
+
+    SetUpViewsEnvironmentForTesting();
+  }
+
+  void TearDown() override {
+    crostini::CloseCrostiniAnsibleSoftwareConfigViewForTesting();
+    // Wait for view triggered to be closed.
+    base::RunLoop().RunUntilIdle();
+
+    TearDownViewsEnvironmentForTesting();
+
+    ansible_management_test_helper_.reset();
+    CrostiniManagerTest::TearDown();
+  }
+
+ protected:
+  std::unique_ptr<AnsibleManagementTestHelper> ansible_management_test_helper_;
+};
+
+TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerAnsibleInstallFailure) {
   ansible_management_test_helper_->SetUpAnsibleInstallation(
       vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
 
@@ -1585,8 +1606,7 @@ TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraInstallFailure) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraApplyFailure) {
-  ansible_management_test_helper_->SetUpAnsibleInfra();
+TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerApplyFailure) {
   ansible_management_test_helper_->SetUpAnsibleInstallation(
       vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
   ansible_management_test_helper_->SetUpPlaybookApplication(
@@ -1596,15 +1616,14 @@ TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraApplyFailure) {
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::UNKNOWN_ERROR));
-
   base::RunLoop().RunUntilIdle();
+
   ansible_management_test_helper_->SendSucceededInstallSignal();
 
   run_loop()->Run();
 }
 
-TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraSuccess) {
-  ansible_management_test_helper_->SetUpAnsibleInfra();
+TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerSuccess) {
   ansible_management_test_helper_->SetUpAnsibleInstallation(
       vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
   ansible_management_test_helper_->SetUpPlaybookApplication(
@@ -1614,11 +1633,11 @@ TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraSuccess) {
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
-
   base::RunLoop().RunUntilIdle();
+
   ansible_management_test_helper_->SendSucceededInstallSignal();
-
   base::RunLoop().RunUntilIdle();
+
   ansible_management_test_helper_->SendSucceededApplySignal();
 
   run_loop()->Run();

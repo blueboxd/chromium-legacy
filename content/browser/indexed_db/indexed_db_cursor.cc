@@ -20,7 +20,7 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 using blink::IndexedDBKey;
 
@@ -33,12 +33,12 @@ namespace {
 // back end; in that case the tx will already have sent an abort to the request
 // so this would be ignored.
 IndexedDBDatabaseError CreateCursorClosedError() {
-  return IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
+  return IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
                                 "The cursor has been closed.");
 }
 
 IndexedDBDatabaseError CreateError(
-    uint16_t code,
+    blink::mojom::IDBException code,
     const char* message,
     base::WeakPtr<IndexedDBTransaction> transaction) {
   if (transaction)
@@ -113,7 +113,7 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
 
     // CreateError() needs to be called before calling Close() so
     // |transaction_| is alive.
-    auto error = CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+    auto error = CreateError(blink::mojom::IDBException::kUnknownError,
                              "Error advancing cursor", transaction_);
     Close();
     std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
@@ -200,7 +200,7 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
     // |transaction_| must be valid for CreateError(), so we can't call
     // Close() until after calling CreateError().
     IndexedDBDatabaseError error =
-        CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+        CreateError(blink::mojom::IDBException::kUnknownError,
                     "Error continuing cursor.", transaction_);
     Close();
     std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
@@ -294,7 +294,7 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
       // |transaction_| must be valid for CreateError(), so we can't call
       // Close() until after calling CreateError().
       IndexedDBDatabaseError error =
-          CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+          CreateError(blink::mojom::IDBException::kUnknownError,
                       "Error continuing cursor.", transaction_);
       Close();
       std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(

@@ -28,7 +28,7 @@ class MockMojoIndexedDBDatabaseCallbacks
   MOCK_METHOD2(VersionChange, void(int64_t old_version, int64_t new_version));
   MOCK_METHOD3(Abort,
                void(int64_t transaction_id,
-                    int32_t code,
+                    blink::mojom::IDBException code,
                     const base::string16& message));
   MOCK_METHOD1(Complete, void(int64_t transaction_id));
 

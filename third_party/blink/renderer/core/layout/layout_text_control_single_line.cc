@@ -208,18 +208,6 @@ PhysicalRect LayoutTextControlSingleLine::ControlClipRect(
   return clip_rect;
 }
 
-float LayoutTextControlSingleLine::GetAvgCharWidth(
-    const AtomicString& family) const {
-  // Match the default system font to the width of MS Shell Dlg, the default
-  // font for textareas in Firefox, Safari Win and IE for some encodings (in
-  // IE, the default font is encoding specific). 901 is the avgCharWidth value
-  // in the OS/2 table for MS Shell Dlg.
-  if (LayoutTheme::GetTheme().NeedsHackForTextControlWithFontFamily(family))
-    return ScaleEmToUnits(901);
-
-  return LayoutTextControl::GetAvgCharWidth(family);
-}
-
 LayoutUnit LayoutTextControlSingleLine::PreferredContentLogicalWidth(
     float char_width) const {
   int factor;
@@ -233,13 +221,7 @@ LayoutUnit LayoutTextControlSingleLine::PreferredContentLogicalWidth(
   float max_char_width = 0.f;
   const Font& font = StyleRef().GetFont();
   AtomicString family = font.GetFontDescription().Family().Family();
-  // Match the default system font to the width of MS Shell Dlg, the default
-  // font for textareas in Firefox, Safari Win and IE for some encodings (in
-  // IE, the default font is encoding specific). 4027 is the (xMax - xMin)
-  // value in the "head" font table for MS Shell Dlg.
-  if (LayoutTheme::GetTheme().NeedsHackForTextControlWithFontFamily(family))
-    max_char_width = ScaleEmToUnits(4027);
-  else if (HasValidAvgCharWidth(font.PrimaryFont(), family))
+  if (HasValidAvgCharWidth(font.PrimaryFont(), family))
     max_char_width = roundf(font.PrimaryFont()->MaxCharWidth());
 
   // For text inputs, IE adds some extra width.

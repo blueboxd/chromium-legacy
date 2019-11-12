@@ -151,4 +151,8 @@ bool StubPasswordManagerClient::IsNewTabPage() const {
   return false;
 }
 
+FieldInfoManager* StubPasswordManagerClient::GetFieldInfoManager() const {
+  return nullptr;
+}
+
 }  // namespace password_manager

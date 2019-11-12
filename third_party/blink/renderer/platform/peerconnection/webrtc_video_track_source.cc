@@ -98,15 +98,22 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   DVLOG(3) << "has_valid_update_rect = " << has_valid_update_rect;
   if (has_capture_counter)
     previous_capture_counter_ = capture_counter;
-  if (has_valid_update_rect)
-    accumulated_update_rect_.Union(update_rect);
-  else
-    accumulated_update_rect_.Union(gfx::Rect(frame->coded_size()));
+  if (has_valid_update_rect) {
+    if (!accumulated_update_rect_) {
+      accumulated_update_rect_ = update_rect;
+    } else {
+      accumulated_update_rect_->Union(update_rect);
+    }
+  } else {
+    accumulated_update_rect_ = base::nullopt;
+  }
 
-  DVLOG(3) << "accumulated_update_rect_ = [" << accumulated_update_rect_.x()
-           << ", " << accumulated_update_rect_.y() << ", "
-           << accumulated_update_rect_.width() << ", "
-           << accumulated_update_rect_.height() << "]";
+  if (accumulated_update_rect_) {
+    DVLOG(3) << "accumulated_update_rect_ = [" << accumulated_update_rect_->x()
+             << ", " << accumulated_update_rect_->y() << ", "
+             << accumulated_update_rect_->width() << ", "
+             << accumulated_update_rect_->height() << "]";
+  }
 
   // Calculate desired target cropping and scaling of the received frame. Note,
   // that the frame may already have some cropping and scaling soft-applied via
@@ -132,9 +139,14 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
       frame->storage_type() != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     // The webrtc::VideoFrame::UpdateRect expected by WebRTC must
     // be relative to the |visible_rect()|. We need to translate.
-    const auto cropped_rect =
-        CropRectangle(accumulated_update_rect_, frame->visible_rect());
-    DeliverFrame(std::move(frame), cropped_rect, translated_camera_time_us);
+    base::Optional<gfx::Rect> cropped_rect;
+    if (accumulated_update_rect_) {
+      cropped_rect =
+          CropRectangle(*accumulated_update_rect_, frame->visible_rect());
+    }
+
+    DeliverFrame(std::move(frame), OptionalOrNullptr(cropped_rect),
+                 translated_camera_time_us);
     return;
   }
 
@@ -174,9 +186,12 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   if (video_frame->natural_size() == video_frame->visible_rect().size()) {
     // The webrtc::VideoFrame::UpdateRect expected by WebRTC must be
     // relative to the |visible_rect()|. We need to translate.
-    const auto cropped_rect =
-        CropRectangle(accumulated_update_rect_, video_frame->visible_rect());
-    DeliverFrame(std::move(video_frame), cropped_rect,
+    base::Optional<gfx::Rect> cropped_rect;
+    if (accumulated_update_rect_) {
+      cropped_rect =
+          CropRectangle(*accumulated_update_rect_, frame->visible_rect());
+    }
+    DeliverFrame(std::move(video_frame), OptionalOrNullptr(cropped_rect),
                  translated_camera_time_us);
     return;
   }
@@ -184,13 +199,15 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   // Delay scaling if |video_frame| is backed by GpuMemoryBuffer.
   if (video_frame->storage_type() ==
       media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
-    // When scaling is applied and any part of the frame has changed, we mark
-    // the whole frame as changed.
-    const auto update_rect_on_scaled =
-        accumulated_update_rect_.IsEmpty()
-            ? gfx::Rect()
-            : gfx::Rect(video_frame->natural_size());
-    DeliverFrame(std::move(video_frame), update_rect_on_scaled,
+    // When scaling is applied and any part of the frame has changed, we don't
+    // have reliable changed rect information.
+    if (accumulated_update_rect_.has_value() &&
+        !accumulated_update_rect_->IsEmpty()) {
+      accumulated_update_rect_ = base::nullopt;
+    }
+
+    DeliverFrame(std::move(video_frame),
+                 OptionalOrNullptr(accumulated_update_rect_),
                  translated_camera_time_us);
     return;
   }
@@ -228,14 +245,15 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
                        adapted_size.width(), adapted_size.height(),
                        libyuv::kFilterBilinear);
   }
-  // When scaling is applied and any part of the frame has changed, we mark the
-  // whole frame as changed.
-  DeliverFrame(
-      std::move(scaled_frame),
-      accumulated_update_rect_.IsEmpty()
-          ? gfx::Rect()
-          : gfx::Rect(0, 0, adapted_size.width(), adapted_size.height()),
-      translated_camera_time_us);
+  // When scaling is applied and any part of the frame has changed, we don't
+  // have a reliable update rect information.
+  if (accumulated_update_rect_.has_value() &&
+      !accumulated_update_rect_->IsEmpty()) {
+    accumulated_update_rect_ = base::nullopt;
+  }
+  DeliverFrame(std::move(scaled_frame),
+               OptionalOrNullptr(accumulated_update_rect_),
+               translated_camera_time_us);
 }
 
 WebRtcVideoTrackSource::FrameAdaptationParams
@@ -254,11 +272,13 @@ WebRtcVideoTrackSource::ComputeAdaptationParams(int width,
 
 void WebRtcVideoTrackSource::DeliverFrame(
     scoped_refptr<media::VideoFrame> frame,
-    gfx::Rect update_rect,
+    gfx::Rect* update_rect,
     int64_t timestamp_us) {
-  DVLOG(3) << "update_rect = "
-           << "[" << update_rect.x() << ", " << update_rect.y() << ", "
-           << update_rect.width() << ", " << update_rect.height() << "]";
+  if (update_rect) {
+    DVLOG(3) << "update_rect = "
+             << "[" << update_rect->x() << ", " << update_rect->y() << ", "
+             << update_rect->width() << ", " << update_rect->height() << "]";
+  }
 
   // If the cropping or the size have changed since the previous
   // frame, even if nothing in the incoming coded frame content has changed, we
@@ -267,27 +287,24 @@ void WebRtcVideoTrackSource::DeliverFrame(
       frame->natural_size() != natural_size_of_previous_delivered_frame_) {
     cropping_rect_of_previous_delivered_frame_ = frame->visible_rect();
     natural_size_of_previous_delivered_frame_ = frame->natural_size();
-    if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
-      // Use the frame natural size since we delay the scaling.
-      update_rect = gfx::Rect(frame->natural_size());
-    } else {
-      update_rect = gfx::Rect(0, 0, frame->visible_rect().width(),
-                              frame->visible_rect().height());
-    }
+    update_rect = nullptr;
   }
 
   // Clear accumulated_update_rect_.
   accumulated_update_rect_ = gfx::Rect();
 
-  OnFrame(webrtc::VideoFrame::Builder()
-              .set_video_frame_buffer(
-                  new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame))
-              .set_rotation(webrtc::kVideoRotation_0)
-              .set_timestamp_us(timestamp_us)
-              .set_update_rect(webrtc::VideoFrame::UpdateRect{
-                  update_rect.x(), update_rect.y(), update_rect.width(),
-                  update_rect.height()})
-              .build());
+  webrtc::VideoFrame::Builder frame_builder =
+      webrtc::VideoFrame::Builder()
+          .set_video_frame_buffer(
+              new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame))
+          .set_rotation(webrtc::kVideoRotation_0)
+          .set_timestamp_us(timestamp_us);
+  if (update_rect) {
+    frame_builder.set_update_rect(webrtc::VideoFrame::UpdateRect{
+        update_rect->x(), update_rect->y(), update_rect->width(),
+        update_rect->height()});
+  }
+  OnFrame(frame_builder.build());
 }
 
 }  // namespace blink

@@ -20,6 +20,9 @@
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
 
+// Card Issuer icon image to be displayed.
+@property(nonatomic, strong) UIImage* cardIssuerIcon;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_MODALS_INFOBAR_SAVE_CARD_TABLE_VIEW_CONTROLLER_H_

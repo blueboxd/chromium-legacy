@@ -703,8 +703,8 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     // If the home launcher is shown, being animated, or dragged, show the
     // default background.
     if (app_list_is_visible ||
-        Shell::Get()->app_list_controller()->home_launcher_animation_state() !=
-            AppListControllerImpl::HomeLauncherAnimationState::kFinished)
+        Shell::Get()->app_list_controller()->home_launcher_transition_state() !=
+            AppListControllerImpl::HomeLauncherTransitionState::kFinished)
       return SHELF_BACKGROUND_DEFAULT;
   } else if (app_list_is_visible) {
     return maximized ? SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST
@@ -1102,12 +1102,12 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
   switch (drag_status_) {
     case kDragNone:
     case kDragHomeToOverviewInProgress: {
-      switch (app_list_controller->home_launcher_animation_state()) {
-        case AppListControllerImpl::HomeLauncherAnimationState::kShowing:
+      switch (app_list_controller->home_launcher_transition_state()) {
+        case AppListControllerImpl::HomeLauncherTransitionState::kMostlyShown:
           return HotseatState::kShown;
-        case AppListControllerImpl::HomeLauncherAnimationState::kHiding:
+        case AppListControllerImpl::HomeLauncherTransitionState::kMostlyHidden:
           return in_overview ? HotseatState::kExtended : HotseatState::kHidden;
-        case AppListControllerImpl::HomeLauncherAnimationState::kFinished:
+        case AppListControllerImpl::HomeLauncherTransitionState::kFinished:
           // Consider the AppList visible if it is beginning to show. Also
           // detect the case where the last window is being minimized.
           if (app_list_visible)
@@ -1436,8 +1436,8 @@ void ShelfLayoutManager::CalculateTargetBounds(
 
   if (state.IsShelfAutoHidden()) {
     shelf_in_screen_portion =
-        Shell::Get()->app_list_controller()->home_launcher_animation_state() ==
-                AppListControllerImpl::HomeLauncherAnimationState::kShowing
+        Shell::Get()->app_list_controller()->home_launcher_transition_state() ==
+                AppListControllerImpl::HomeLauncherTransitionState::kMostlyShown
             ? shelf_size
             : ShelfConfig::Get()->hidden_shelf_in_screen_portion();
   } else if (state.visibility_state == SHELF_HIDDEN ||
@@ -1892,8 +1892,8 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
   // The shelf should not become transparent during the animation to or from
   // HomeLauncher.
   if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletModeEnabled() &&
-      Shell::Get()->app_list_controller()->home_launcher_animation_state() !=
-          AppListControllerImpl::HomeLauncherAnimationState::kFinished) {
+      Shell::Get()->app_list_controller()->home_launcher_transition_state() !=
+          AppListControllerImpl::HomeLauncherTransitionState::kFinished) {
     return 1.0f;
   }
 

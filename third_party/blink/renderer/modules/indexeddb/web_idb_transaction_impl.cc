@@ -9,7 +9,7 @@
 
 #include "base/format_macros.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
@@ -64,7 +64,7 @@ void WebIDBTransactionImpl::Put(int64_t object_store_id,
       value->DataSize() + primary_key->SizeEstimate() + index_keys_size;
   if (arg_size >= max_put_value_size_) {
     callbacks->Error(
-        blink::kWebIDBDatabaseExceptionUnknownError,
+        mojom::blink::IDBException::kUnknownError,
         String::Format("The serialized keys and/or value are too large"
                        " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",
                        arg_size, max_put_value_size_));

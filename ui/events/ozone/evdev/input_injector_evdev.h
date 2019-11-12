@@ -33,10 +33,10 @@ class EVENTS_OZONE_EVDEV_EXPORT InputInjectorEvdev
 
  private:
   // Shared cursor state.
-  CursorDelegateEvdev* cursor_;
+  CursorDelegateEvdev* const cursor_;
 
   // Interface for dispatching events.
-  std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher_;
+  const std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InputInjectorEvdev);
 };

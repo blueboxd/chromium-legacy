@@ -117,7 +117,10 @@ class BLINK_MODULES_EXPORT PeerConnectionDependencyFactory
   blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
   void EnsureInitialized();
-  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() const;
+
+  // Returns the SingleThreadTaskRunner suitable for running WebRTC networking.
+  // An rtc::Thread will have already been created.
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerTaskRunner();
 
   // Returns the rtc::Thread instance associated with the WebRTC worker thread.
   // TODO(bugs.webrtc.org/9419): Remove once WebRTC can be built as a component.

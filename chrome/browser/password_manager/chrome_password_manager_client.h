@@ -153,6 +153,7 @@ class ChromePasswordManagerClient
   void NavigateToManagePasswordsPage(
       password_manager::ManagePasswordsReferrer referrer) override;
   bool IsNewTabPage() const override;
+  password_manager::FieldInfoManager* GetFieldInfoManager() const override;
 
   // autofill::mojom::PasswordGenerationDriver overrides.
   void AutomaticGenerationAvailable(

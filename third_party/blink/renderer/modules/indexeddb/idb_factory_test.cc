@@ -105,7 +105,7 @@ TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksRejectsPromise) {
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);
 
-  callbacks->Error(0, String());
+  callbacks->Error(mojom::blink::IDBException::kNoError, String());
 
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);

@@ -13,6 +13,10 @@ function newAcceletator(keyCode, shift, control, alt, search) {
   return accelerator;
 };
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 var defaultTests = [
   // logout/restart/shutdown don't do anything as we don't want to kill the
   // browser with these tests.
@@ -646,16 +650,35 @@ var defaultTests = [
             window.captionButtonVisibleStatus,
             kMinimizeMask | kMaximizeRestoreMask | kCloseMask |
             kLeftSnappedMask | kRightSnappedMask);
+        chrome.test.assertEq('Normal', window.frameMode);
+        chrome.test.assertTrue(window.isFrameVisible);
 
         var change = new Object();
-        change.eventType = 'WMEventMaximize';
+        change.eventType = 'WMEventFullscreen';
         chrome.autotestPrivate.setAppWindowState(
             window.id,
             change,
             function(state) {
-              chrome.test.assertEq(state, 'Maximized');
-              chrome.test.assertNoLastError();
-              chrome.test.succeed();
+              chrome.test.assertEq(state, 'Fullscreen');
+              chrome.autotestPrivate.getAppWindowList(async function(list) {
+                var window = list[browserFrameIndex];
+                chrome.test.assertEq('Immersive', window.frameMode);
+                chrome.test.assertTrue(window.isFrameVisible);
+                // Hide animation finishes in 400ms. Wait 2x for safety.
+                await sleep(800);
+                chrome.autotestPrivate.getAppWindowList(function(list) {
+                  var window = list[browserFrameIndex];
+                  chrome.test.assertEq('Immersive', window.frameMode);
+                  chrome.test.assertFalse(window.isFrameVisible);
+                  // The frame should still have the same buttons.
+                  chrome.test.assertEq(
+                      window.captionButtonVisibleStatus,
+                      kMinimizeMask | kMaximizeRestoreMask | kCloseMask |
+                        kLeftSnappedMask | kRightSnappedMask);
+                  chrome.test.assertNoLastError();
+                  chrome.test.succeed();
+                });
+              });
             });
       }
       chrome.test.assertTrue(-1 != browserFrameIndex);
@@ -833,9 +856,6 @@ var arcPerformanceTracingTests = [
   function arcAppTracingNormal() {
     chrome.autotestPrivate.arcAppTracingStart(async function() {
       chrome.test.assertNoLastError();
-      function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-      }
       // We generate 15 frames in test.
       await sleep(250);
       chrome.autotestPrivate.arcAppTracingStopAndAnalyze(

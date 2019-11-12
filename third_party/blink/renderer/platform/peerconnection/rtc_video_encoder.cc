@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -37,6 +36,7 @@
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -842,8 +842,9 @@ void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput() {
   }
 
   constexpr int kDummyIndex = -1;
-  frame->AddDestructionObserver(media::BindToCurrentLoop(base::BindOnce(
-      &RTCVideoEncoder::Impl::EncodeFrameFinished, this, kDummyIndex)));
+  frame->AddDestructionObserver(media::BindToCurrentLoop(
+      WTF::Bind(&RTCVideoEncoder::Impl::EncodeFrameFinished,
+                CrossThreadUnretained(this), kDummyIndex)));
   if (!failed_timestamp_match_) {
     DCHECK(std::find_if(pending_timestamps_.begin(), pending_timestamps_.end(),
                         [&frame](const RTCTimestamps& entry) {

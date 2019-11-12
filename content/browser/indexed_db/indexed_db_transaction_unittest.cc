@@ -29,7 +29,7 @@
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
 namespace indexed_db_transaction_unittest {
@@ -224,7 +224,7 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
 
   // Clean up to avoid leaks.
   transaction->Abort(IndexedDBDatabaseError(
-      IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+      IndexedDBDatabaseError(blink::mojom::IDBException::kAbortError,
                              "Transaction aborted by user.")));
   EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
@@ -438,9 +438,8 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
 
   RunPostedTasks();
 
-  transaction->Abort(
-      IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
-                             "Transaction aborted by user."));
+  transaction->Abort(IndexedDBDatabaseError(
+      blink::mojom::IDBException::kAbortError, "Transaction aborted by user."));
   EXPECT_EQ(IndexedDBTransaction::FINISHED, transaction->state());
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
   EXPECT_EQ(0, transaction->pending_preemptive_events_);
@@ -548,7 +547,7 @@ TEST_F(IndexedDBTransactionTest, AbortCancelsLockRequest) {
   // Abort the transaction, which should cancel the
   // |RegisterAndScheduleTransaction()| pending lock request.
   transaction->Abort(
-      IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError));
+      IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError));
   EXPECT_EQ(transaction->state(), IndexedDBTransaction::FINISHED);
 
   // Clear |temp_lock_receiver| so we can test later that all locks have

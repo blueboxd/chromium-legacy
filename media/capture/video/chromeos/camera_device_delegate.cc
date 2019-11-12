@@ -765,8 +765,15 @@ void CameraDeviceDelegate::ConstructDefaultRequestSettings(
          device_context_->GetState() == CameraDeviceContext::State::kCapturing);
 
   if (stream_type == StreamType::kPreviewOutput) {
+    // CCA uses the same stream for preview and video recording. Choose proper
+    // template here so the underlying camera HAL can set 3A tuning accordingly.
+    auto request_template =
+        camera_app_device_ && camera_app_device_->GetCaptureIntent() ==
+                                  cros::mojom::CaptureIntent::VIDEO_RECORD
+            ? cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_VIDEO_RECORD
+            : cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_PREVIEW;
     device_ops_->ConstructDefaultRequestSettings(
-        cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_PREVIEW,
+        request_template,
         base::BindOnce(
             &CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings,
             GetWeakPtr()));

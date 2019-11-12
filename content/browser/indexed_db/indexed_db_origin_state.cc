@@ -26,7 +26,7 @@
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
 namespace {
@@ -138,7 +138,7 @@ void IndexedDBOriginState::AbortAllTransactions(bool compact) {
       if (connection) {
         leveldb::Status status =
             connection->AbortAllTransactions(IndexedDBDatabaseError(
-                blink::kWebIDBDatabaseExceptionUnknownError,
+                blink::mojom::IDBException::kUnknownError,
                 "Aborting all transactions for the origin."));
         if (!status.ok()) {
           // This call should delete this object.

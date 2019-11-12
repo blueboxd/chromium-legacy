@@ -26,6 +26,11 @@ class CORE_EXPORT MathMLElement : public Element {
   }
 
  private:
+  bool IsPresentationAttribute(const QualifiedName&) const final;
+  void CollectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableCSSPropertyValueSet*) final;
+
   void ParseAttribute(const AttributeModificationParams&) final;
 
   bool IsMathMLElement() const =

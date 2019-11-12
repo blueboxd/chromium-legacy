@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 507 tests; 406 PASS, 101 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 499 tests; 402 PASS, 97 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Test driver for asyncInitCertificate
@@ -40,7 +40,6 @@ PASS RTCPeerConnection interface: attribute iceConnectionState
 PASS RTCPeerConnection interface: attribute connectionState
 FAIL RTCPeerConnection interface: attribute canTrickleIceCandidates assert_true: The prototype object must have a property "canTrickleIceCandidates" expected true got false
 PASS RTCPeerConnection interface: operation restartIce()
-FAIL RTCPeerConnection interface: operation getDefaultIceServers() assert_own_property: interface object missing static operation expected property "getDefaultIceServers" missing
 PASS RTCPeerConnection interface: operation getConfiguration()
 PASS RTCPeerConnection interface: operation setConfiguration(RTCConfiguration)
 PASS RTCPeerConnection interface: operation close()
@@ -92,7 +91,6 @@ PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property 
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "connectionState" with the proper type
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "canTrickleIceCandidates" with the proper type assert_inherits: property "canTrickleIceCandidates" not found in prototype chain
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "restartIce()" with the proper type
-PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getDefaultIceServers()" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getConfiguration()" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "setConfiguration(RTCConfiguration)" with the proper type
 PASS RTCPeerConnection interface: calling setConfiguration(RTCConfiguration) on new RTCPeerConnection() with too few arguments must throw TypeError
@@ -223,12 +221,10 @@ PASS RTCCertificate interface: existence and properties of interface prototype o
 PASS RTCCertificate interface: existence and properties of interface prototype object's "constructor" property
 PASS RTCCertificate interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCCertificate interface: attribute expires
-FAIL RTCCertificate interface: operation getSupportedAlgorithms() assert_own_property: interface object missing static operation expected property "getSupportedAlgorithms" missing
 PASS RTCCertificate interface: operation getFingerprints()
 PASS RTCCertificate must be primary interface of idlTestObjects.certificate
 PASS Stringification of idlTestObjects.certificate
 PASS RTCCertificate interface: idlTestObjects.certificate must inherit property "expires" with the proper type
-PASS RTCCertificate interface: idlTestObjects.certificate must inherit property "getSupportedAlgorithms()" with the proper type
 PASS RTCCertificate interface: idlTestObjects.certificate must inherit property "getFingerprints()" with the proper type
 PASS RTCRtpSender interface: existence and properties of interface object
 PASS RTCRtpSender interface object length
@@ -238,7 +234,6 @@ PASS RTCRtpSender interface: existence and properties of interface prototype obj
 PASS RTCRtpSender interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCRtpSender interface: attribute track
 PASS RTCRtpSender interface: attribute transport
-PASS RTCRtpSender interface: attribute rtcpTransport
 PASS RTCRtpSender interface: operation getCapabilities(DOMString)
 FAIL RTCRtpSender interface: operation setParameters(RTCRtpSendParameters) assert_equals: property has wrong .length expected 1 but got 0
 PASS RTCRtpSender interface: operation getParameters()
@@ -250,7 +245,6 @@ FAIL RTCRtpSender must be primary interface of new RTCPeerConnection().addTransc
 FAIL Stringification of new RTCPeerConnection().addTransceiver('audio').sender assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "track" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "transport" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
-FAIL RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "rtcpTransport" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "getCapabilities(DOMString)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpSender interface: calling getCapabilities(DOMString) on new RTCPeerConnection().addTransceiver('audio').sender with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "setParameters(RTCRtpSendParameters)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
@@ -270,7 +264,6 @@ PASS RTCRtpReceiver interface: existence and properties of interface prototype o
 PASS RTCRtpReceiver interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCRtpReceiver interface: attribute track
 PASS RTCRtpReceiver interface: attribute transport
-PASS RTCRtpReceiver interface: attribute rtcpTransport
 PASS RTCRtpReceiver interface: operation getCapabilities(DOMString)
 PASS RTCRtpReceiver interface: operation getParameters()
 PASS RTCRtpReceiver interface: operation getContributingSources()
@@ -280,7 +273,6 @@ FAIL RTCRtpReceiver must be primary interface of new RTCPeerConnection().addTran
 FAIL Stringification of new RTCPeerConnection().addTransceiver('audio').receiver assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "track" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "transport" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
-FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "rtcpTransport" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getCapabilities(DOMString)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpReceiver interface: calling getCapabilities(DOMString) on new RTCPeerConnection().addTransceiver('audio').receiver with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getParameters()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."

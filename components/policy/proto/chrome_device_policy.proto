@@ -1578,7 +1578,7 @@ message ChromeDeviceSettingsProto {
   optional LoginScreenLocalesProto login_screen_locales = 49;
   optional LoginScreenInputMethodsProto login_screen_input_methods = 50;
   optional DeviceEcryptfsMigrationStrategyProto
-      device_ecryptfs_migration_strategy = 51;
+      device_ecryptfs_migration_strategy = 51 [deprecated = true];
   optional DeviceSecondFactorAuthenticationProto
       device_second_factor_authentication = 52;
   optional CastReceiverNameProto cast_receiver_name = 53;

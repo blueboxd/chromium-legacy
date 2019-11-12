@@ -6,8 +6,10 @@
 
 #include "base/containers/flat_set.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
+#include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/display/test/scoped_screen_override.h"
@@ -39,6 +41,8 @@ class MockMediaNotificationContainerObserver
   MOCK_METHOD1(OnContainerClicked, void(const std::string& id));
   MOCK_METHOD1(OnContainerDismissed, void(const std::string& id));
   MOCK_METHOD1(OnContainerDestroyed, void(const std::string& id));
+  MOCK_METHOD2(OnContainerDraggedOut,
+               void(const std::string& id, gfx::Rect bounds));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaNotificationContainerObserver);
@@ -259,6 +263,37 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationContainerImplViewTest);
 };
 
+// TODO(https://crbug.com/1022452): Remove this class once
+// |kGlobalMediaControlsOverlayControls| is enabled by default.
+class MediaNotificationContainerImplViewOverlayControlsTest
+    : public MediaNotificationContainerImplViewTest {
+ public:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        media::kGlobalMediaControlsOverlayControls);
+    MediaNotificationContainerImplViewTest::SetUp();
+  }
+
+  void SimulateMouseDrag(gfx::Vector2d drag_distance) {
+    gfx::Rect start_bounds = notification_container()->bounds();
+    gfx::Point drag_start = start_bounds.CenterPoint();
+    gfx::Point drag_end = drag_start + drag_distance;
+
+    notification_container()->OnMousePressed(
+        ui::MouseEvent(ui::ET_MOUSE_PRESSED, drag_start, drag_start,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+    notification_container()->OnMouseDragged(
+        ui::MouseEvent(ui::ET_MOUSE_DRAGGED, drag_end, drag_end,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+    notification_container()->OnMouseReleased(
+        ui::MouseEvent(ui::ET_MOUSE_RELEASED, drag_end, drag_end,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 TEST_F(MediaNotificationContainerImplViewTest, SwipeToDismiss) {
   EXPECT_CALL(observer(), OnContainerDismissed(kTestNotificationId));
   SimulateNotificationSwipedToDismiss();
@@ -371,4 +406,38 @@ TEST_F(MediaNotificationContainerImplViewTest, SendsClicks) {
   // It should also notify its observers when the header is clicked.
   EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId));
   SimulateHeaderClicked();
+}
+
+TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
+       Dragging_VeryShortSendsClick) {
+  // If the user presses and releases the mouse with only a very short drag,
+  // then it should be considered a click.
+  EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId));
+  EXPECT_CALL(observer(), OnContainerDraggedOut(kTestNotificationId, _))
+      .Times(0);
+  SimulateMouseDrag(gfx::Vector2d(1, 1));
+  testing::Mock::VerifyAndClearExpectations(&observer());
+}
+
+TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
+       Dragging_ShortDoesNothing) {
+  // If the user presses and releases the mouse with a drag that doesn't go
+  // outside of the container, then it should just return to its initial
+  // position and do nothing.
+  EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId)).Times(0);
+  EXPECT_CALL(observer(), OnContainerDraggedOut(kTestNotificationId, _))
+      .Times(0);
+  SimulateMouseDrag(gfx::Vector2d(20, 20));
+  testing::Mock::VerifyAndClearExpectations(&observer());
+}
+
+TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
+       Dragging_LongFiresDraggedOut) {
+  // If the user presses and releases the mouse with a long enough drag to pull
+  // the container out of the dialog, then it should fire an
+  // |OnContainerDraggedOut()| notification.
+  EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId)).Times(0);
+  EXPECT_CALL(observer(), OnContainerDraggedOut(kTestNotificationId, _));
+  SimulateMouseDrag(gfx::Vector2d(300, 300));
+  testing::Mock::VerifyAndClearExpectations(&observer());
 }

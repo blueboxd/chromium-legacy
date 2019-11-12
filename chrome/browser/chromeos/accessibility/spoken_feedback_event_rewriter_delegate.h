@@ -27,9 +27,6 @@ class SpokenFeedbackEventRewriterDelegate
   void DispatchMouseEventToChromeVox(std::unique_ptr<ui::Event> event) override;
 
  private:
-  // Returns whether the event should be dispatched to the ChromeVox extension.
-  bool ShouldDispatchKeyEventToChromeVox(const ui::Event* event) const;
-
   // Reports unhandled key events to the EventRewriterController for dispatch.
   void OnUnhandledSpokenFeedbackEvent(std::unique_ptr<ui::Event> event) const;
 

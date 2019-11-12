@@ -263,6 +263,14 @@ class POLICY_EXPORT CloudPolicyClient {
           chrome_desktop_report,
       const StatusCallback& callback);
 
+  // Uploads Chrome OS User report to the server. The user dm token must be set
+  // properly. |chrome_os_user_report| will be included in the upload request.
+  // The |callback| will be called when the operation completes.
+  virtual void UploadChromeOsUserReport(
+      std::unique_ptr<enterprise_management::ChromeOsUserReportRequest>
+          chrome_os_user_report,
+      const StatusCallback& callback);
+
   // Uploads |report| using the real-time reporting API.  As above, the client
   // must be in a registered state.  The |callback| will be called when the
   // operation completes.

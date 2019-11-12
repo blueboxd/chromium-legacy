@@ -68,7 +68,6 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
   LayoutUnit ScrollHeight() const final;
 
   int TextBlockWidth() const;
-  float GetAvgCharWidth(const AtomicString& family) const final;
   LayoutUnit PreferredContentLogicalWidth(float char_width) const final;
   LayoutUnit ComputeControlLogicalHeight(
       LayoutUnit line_height,

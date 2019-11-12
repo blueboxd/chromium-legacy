@@ -15,7 +15,6 @@
 #include "extensions/common/api/mime_handler.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 class WebContents;
@@ -93,6 +92,9 @@ class MimeHandlerViewGuest
           pending_before_unload_control);
 
   void SetPluginCanSave(bool can_save) { plugin_can_save_ = can_save; }
+
+  void FuseBeforeUnloadControl(
+      mojo::PendingReceiver<mime_handler::BeforeUnloadControl> receiver);
 
   // Asks the plugin to do save.
   bool PluginDoSave();
@@ -174,15 +176,8 @@ class MimeHandlerViewGuest
 
   // content::WebContentsObserver implementation.
   void DocumentOnLoadCompletedInMainFrame() final;
-  void OnInterfaceRequestFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) final;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) final;
-
-  void FuseBeforeUnloadControl(
-      mojo::PendingReceiver<mime_handler::BeforeUnloadControl> receiver);
 
   std::unique_ptr<MimeHandlerViewGuestDelegate> delegate_;
   std::unique_ptr<StreamContainer> stream_;
@@ -190,8 +185,6 @@ class MimeHandlerViewGuest
   int embedder_frame_process_id_;
   int embedder_frame_routing_id_;
   int embedder_widget_routing_id_;
-
-  service_manager::BinderRegistry registry_;
 
   bool is_guest_fullscreen_ = false;
   bool is_embedder_fullscreen_ = false;

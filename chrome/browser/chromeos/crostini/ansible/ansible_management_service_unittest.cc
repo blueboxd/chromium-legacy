@@ -6,6 +6,7 @@
 
 #include "base/test/mock_callback.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_test_helper.h"
+#include "chrome/browser/chromeos/crostini/crostini_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -24,8 +25,17 @@ class AnsibleManagementServiceTest : public testing::Test {
         AnsibleManagementService::GetForProfile(profile_.get());
     test_helper_ =
         std::make_unique<AnsibleManagementTestHelper>(profile_.get());
+    test_helper_->SetUpAnsibleInfra();
+
+    SetUpViewsEnvironmentForTesting();
   }
+
   ~AnsibleManagementServiceTest() override {
+    crostini::CloseCrostiniAnsibleSoftwareConfigViewForTesting();
+    // Wait for view triggered to be closed.
+    base::RunLoop().RunUntilIdle();
+    TearDownViewsEnvironmentForTesting();
+
     test_helper_.reset();
     ansible_management_service_->Shutdown();
     crostini_manager_->Shutdown();
@@ -38,19 +48,20 @@ class AnsibleManagementServiceTest : public testing::Test {
     return ansible_management_service_;
   }
 
-  std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<AnsibleManagementTestHelper> test_helper_;
   content::BrowserTaskEnvironment task_environment_;
-  CrostiniManager* crostini_manager_;
-  AnsibleManagementService* ansible_management_service_;
+  std::unique_ptr<AnsibleManagementTestHelper> test_helper_;
   base::MockCallback<base::OnceCallback<void(bool)>>
       configuration_finished_mock_callback_;
+
+ private:
+  std::unique_ptr<TestingProfile> profile_;
+  CrostiniManager* crostini_manager_;
+  AnsibleManagementService* ansible_management_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AnsibleManagementServiceTest);
 };
 
 TEST_F(AnsibleManagementServiceTest, ConfigureDefaultContainerSuccess) {
-  test_helper_->SetUpAnsibleInfra();
   test_helper_->SetUpAnsibleInstallation(
       vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
   test_helper_->SetUpPlaybookApplication(
@@ -60,16 +71,16 @@ TEST_F(AnsibleManagementServiceTest, ConfigureDefaultContainerSuccess) {
 
   ansible_management_service()->ConfigureDefaultContainer(
       configuration_finished_mock_callback_.Get());
-
   base::RunLoop().RunUntilIdle();
+
   test_helper_->SendSucceededInstallSignal();
-
   base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
+
   test_helper_->SendSucceededApplySignal();
 }
 
 TEST_F(AnsibleManagementServiceTest, ConfigureDefaultContainerInstallFail) {
-  test_helper_->SetUpAnsibleInfra();
   test_helper_->SetUpAnsibleInstallation(
       vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
 
@@ -77,12 +88,10 @@ TEST_F(AnsibleManagementServiceTest, ConfigureDefaultContainerInstallFail) {
 
   ansible_management_service()->ConfigureDefaultContainer(
       configuration_finished_mock_callback_.Get());
-
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(AnsibleManagementServiceTest, ConfigureDefaultContainerApplyFail) {
-  test_helper_->SetUpAnsibleInfra();
   test_helper_->SetUpAnsibleInstallation(
       vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
   test_helper_->SetUpPlaybookApplication(
@@ -92,11 +101,11 @@ TEST_F(AnsibleManagementServiceTest, ConfigureDefaultContainerApplyFail) {
 
   ansible_management_service()->ConfigureDefaultContainer(
       configuration_finished_mock_callback_.Get());
-
   base::RunLoop().RunUntilIdle();
+
   test_helper_->SendSucceededInstallSignal();
-
   base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace crostini

@@ -204,6 +204,7 @@ test("ios_web_unittests") {
     "//ios/web/favicon:unittests",
     "//ios/web/find_in_page:find_in_page_unittests",
     "//ios/web/js_messaging:unittests",
+    "//ios/web/public/web_view_only:unittests",
     "//ios/web/security:unittests",
     "//ios/web/session:unittests",
     "//ios/web/test:packed_resources",

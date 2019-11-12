@@ -162,7 +162,7 @@ class StartSurfaceMediator
                     @Override
                     public void willCloseTab(Tab tab, boolean animate) {
                         if (normalTabModel.getCount() <= 1
-                                || mPropertyModel.get(IS_SHOWING_OVERVIEW)) {
+                                && mPropertyModel.get(IS_SHOWING_OVERVIEW)) {
                             setTabCarouselVisibility(false);
                         }
                     }

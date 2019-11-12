@@ -335,6 +335,12 @@ namespace autotestPrivate {
     ExtensionApp
   };
 
+  // The frame mode of a window. None if the window is framesless.
+  enum FrameMode {
+    Normal,
+    Immersive
+  };
+
   dictionary AppWindowInfo {
     // The identifier of the window. This shouldn't change across the time.
     long id;
@@ -380,6 +386,8 @@ namespace autotestPrivate {
     boolean hasCapture;
 
     // Window frame info
+    FrameMode frameMode;
+    boolean isFrameVisible;
     long captionHeight;
     // The bitset of the enabled caption buttons. See
     // ui/views/window/caption_button_types.h.

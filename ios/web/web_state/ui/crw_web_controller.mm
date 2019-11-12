@@ -1599,15 +1599,21 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 // Creates a web view if it's not yet created.
-- (void)ensureWebViewCreated {
+- (WKWebView*)ensureWebViewCreated {
   WKWebViewConfiguration* config =
       [self webViewConfigurationProvider].GetWebViewConfiguration();
-  [self ensureWebViewCreatedWithConfiguration:config];
+  return [self ensureWebViewCreatedWithConfiguration:config];
 }
 
 // Creates a web view with given |config|. No-op if web view is already created.
-- (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config {
+- (WKWebView*)ensureWebViewCreatedWithConfiguration:
+    (WKWebViewConfiguration*)config {
   if (!self.webView) {
+    // This has to be called to ensure the container view of `self.webView` is
+    // created. Otherwise `self.webView.frame.size` will be CGSizeZero which
+    // fails a DCHECK later.
+    [self ensureContainerViewCreated];
+
     [self setWebView:[self webViewWithConfiguration:config]];
     // The following is not called in -setWebView: as the latter used in unit
     // tests with fake web view, which cannot be added to view hierarchy.
@@ -1651,6 +1657,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     if (![self.legacyNativeController shouldLoadURLInNativeView:visibleURL])
       [self displayWebView];
   }
+
+  return self.webView;
 }
 
 // Returns a new autoreleased web view created with given configuration.

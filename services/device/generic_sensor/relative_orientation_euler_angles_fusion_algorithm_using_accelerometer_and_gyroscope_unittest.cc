@@ -150,7 +150,7 @@ TEST_F(
     GryoscopeZReadingPositiveValues) {
   double accel_x = 0.0;
   double accel_y = 0.0;
-  double accel_z = device::kMeanGravity;
+  double accel_z = base::kMeanGravityDouble;
   double gyro_x = 0.0;
   double gyro_y = 0.0;
   double gyro_z = base::kPiDouble;
@@ -174,7 +174,7 @@ TEST_F(
     GryoscopeZReadingNegativeValues) {
   double accel_x = 0.0;
   double accel_y = 0.0;
-  double accel_z = device::kMeanGravity;
+  double accel_z = base::kMeanGravityDouble;
   double gyro_x = 0.0;
   double gyro_y = 0.0;
   double gyro_z = -base::kPiDouble;
@@ -238,8 +238,8 @@ TEST_F(
 
     gyro_timestamp += kTimestampIncrement;
     angle += kAngleIncrement;
-    accel_y = device::kMeanGravity * std::sin(angle);
-    accel_z = device::kMeanGravity * std::cos(angle);
+    accel_y = base::kMeanGravityDouble * std::sin(angle);
+    accel_z = base::kMeanGravityDouble * std::cos(angle);
   }
 
   // Test the device rotates around x-axis in 360 degrees with negative |gyro_x|
@@ -261,8 +261,8 @@ TEST_F(
     angle += kAngleIncrement;
     // Here the |accel_y| is different from the above because the device
     // rotates around x-axis in the opposite direction.
-    accel_y = -device::kMeanGravity * std::sin(angle);
-    accel_z = device::kMeanGravity * std::cos(angle);
+    accel_y = -base::kMeanGravityDouble * std::sin(angle);
+    accel_z = base::kMeanGravityDouble * std::cos(angle);
   }
 }
 
@@ -302,8 +302,8 @@ TEST_F(
 
     gyro_timestamp += kTimestampIncrement;
     angle += kAngleIncrement;
-    accel_x = -device::kMeanGravity * std::sin(angle);
-    accel_z = device::kMeanGravity * std::cos(angle);
+    accel_x = -base::kMeanGravityDouble * std::sin(angle);
+    accel_z = base::kMeanGravityDouble * std::cos(angle);
   }
 
   // Test the device rotates around y-axis in 360 degrees with negative |gyro_y|
@@ -325,8 +325,8 @@ TEST_F(
     angle += kAngleIncrement;
     // Here the |accel_x| is different from the above because the device
     // rotates around y-axis in the opposite direction.
-    accel_x = device::kMeanGravity * std::sin(angle);
-    accel_z = device::kMeanGravity * std::cos(angle);
+    accel_x = base::kMeanGravityDouble * std::sin(angle);
+    accel_z = base::kMeanGravityDouble * std::cos(angle);
   }
 }
 

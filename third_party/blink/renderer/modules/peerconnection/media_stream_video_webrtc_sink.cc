@@ -267,7 +267,8 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
   video_track_->set_enabled(track.IsEnabled());
 
   source_adapter_ = base::MakeRefCounted<WebRtcVideoSourceAdapter>(
-      factory->GetWebRtcWorkerThread(), video_source_.get(), refresh_interval,
+      factory->GetWebRtcWorkerTaskRunner(), video_source_.get(),
+      refresh_interval,
       base::Bind(&MediaStreamVideoWebRtcSink::RequestRefreshFrame,
                  weak_factory_.GetWeakPtr()),
       std::move(task_runner));

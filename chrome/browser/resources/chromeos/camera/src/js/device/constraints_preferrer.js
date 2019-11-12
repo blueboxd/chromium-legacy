@@ -42,18 +42,11 @@ var CaptureCandidate;
  */
 cca.device.ConstraintsPreferrer = class {
   /**
-   * @param {!cca.ResolutionEventBroker} resolBroker
    * @param {!function()} doReconfigureStream Trigger stream reconfiguration to
    *     reflect changes in user preferred settings.
    * @protected
    */
-  constructor(resolBroker, doReconfigureStream) {
-    /**
-     * @type {!cca.ResolutionEventBroker}
-     * @protected
-     */
-    this.resolBroker_ = resolBroker;
-
+  constructor(doReconfigureStream) {
     /**
      * @type {!function()}
      * @protected
@@ -82,6 +75,14 @@ cca.device.ConstraintsPreferrer = class {
      * @protected
      */
     this.deviceResolutions_ = {};
+
+    /**
+     * Listener for changes of preferred resolution used on particular video
+     * device.
+     * @type {!function(string, !Resolution)}
+     * @private
+     */
+    this.preferredResolutionChangeListener_ = () => {};
   }
 
   /**
@@ -150,6 +151,23 @@ cca.device.ConstraintsPreferrer = class {
    *     constraints-candidates.
    */
   getSortedCandidates(deviceId, previewResolutions) {}
+
+  /**
+   * Changes user preferred capture resolution.
+   * @abstract
+   * @param {string} deviceId Device id of the video device to be changed.
+   * @param {!Resolution} resolution Preferred capture resolution.
+   */
+  changePreferredResolution(deviceId, resolution) {}
+
+  /**
+   * Sets listener for changes of preferred resolution used in taking photo on
+   * particular video device.
+   * @param {!function(string, !Resolution)} listener
+   */
+  setPreferredResolutionChangeListener(listener) {
+    this.preferredResolutionChangeListener_ = listener;
+  }
 };
 
 /**
@@ -165,12 +183,11 @@ cca.device.SUPPORTED_CONSTANT_FPS = [30, 60];
 cca.device.VideoConstraintsPreferrer =
     class extends cca.device.ConstraintsPreferrer {
   /**
-   * @param {!cca.ResolutionEventBroker} resolBroker
    * @param {!function()} doReconfigureStream
    * @public
    */
-  constructor(resolBroker, doReconfigureStream) {
-    super(resolBroker, doReconfigureStream);
+  constructor(doReconfigureStream) {
+    super(doReconfigureStream);
 
     /**
      * Object saving information of device supported constant fps. Each of its
@@ -206,17 +223,6 @@ cca.device.VideoConstraintsPreferrer =
     this.resolution_ = new Resolution(0, -1);
     this.restoreResolutionPreference_('deviceVideoResolution');
     this.restoreFpsPreference_();
-    this.resolBroker_.registerChangeVideoPrefResolHandler(
-        (deviceId, width, height) => {
-          this.prefResolution_[deviceId] = new Resolution(width, height);
-          this.saveResolutionPreference_('deviceVideoResolution');
-          if (cca.state.get('video-mode') && deviceId == this.deviceId_) {
-            this.doReconfigureStream_();
-          } else {
-            this.resolBroker_.notifyVideoPrefResolChange(
-                deviceId, width, height);
-          }
-        });
 
     this.toggleFps_.addEventListener('click', (event) => {
       if (!cca.state.get('streaming') || cca.state.get('taking')) {
@@ -250,6 +256,19 @@ cca.device.VideoConstraintsPreferrer =
   }
 
   /**
+   * @override
+   */
+  changePreferredResolution(deviceId, resolution) {
+    this.prefResolution_[deviceId] = resolution;
+    this.saveResolutionPreference_('deviceVideoResolution');
+    if (cca.state.get('video-mode') && deviceId === this.deviceId_) {
+      this.doReconfigureStream_();
+    } else {
+      this.preferredResolutionChangeListener_(deviceId, resolution);
+    }
+  }
+
+  /**
    * Sets the preferred fps used in video recording for particular video device
    * with particular resolution.
    * @param {string} deviceId Device id of video device to be set with.
@@ -263,7 +282,7 @@ cca.device.VideoConstraintsPreferrer =
     }
     this.toggleFps_.checked = prefFps === 60;
     cca.device.SUPPORTED_CONSTANT_FPS.forEach(
-        (fps) => cca.state.set(`_${fps}fps`, fps == prefFps));
+        (fps) => cca.state.set(`_${fps}fps`, fps === prefFps));
     this.prefFpses_[deviceId] = this.prefFpses_[deviceId] || {};
     this.prefFpses_[deviceId][resolution] = prefFps;
     this.saveFpsPreference_();
@@ -284,7 +303,7 @@ cca.device.VideoConstraintsPreferrer =
        * @return {!Resolution|undefined}
        */
       const findResol = (width, height) =>
-          videoResols.find((r) => r.width == width && r.height == height);
+          videoResols.find((r) => r.width === width && r.height === height);
       /** @type {!Resolution} */
       let prefR = this.getPrefResolution(deviceId) || findResol(1920, 1080) ||
           findResol(1280, 720) || new Resolution(0, -1);
@@ -316,7 +335,7 @@ cca.device.VideoConstraintsPreferrer =
     this.resolution_ = new Resolution(width, height);
     this.prefResolution_[deviceId] = this.resolution_;
     this.saveResolutionPreference_('deviceVideoResolution');
-    this.resolBroker_.notifyVideoPrefResolChange(deviceId, width, height);
+    this.preferredResolutionChangeListener_(deviceId, this.resolution_);
 
     const fps = stream.getVideoTracks()[0].getSettings().frameRate;
     this.setPreferredConstFps_(deviceId, this.resolution_, fps);
@@ -381,7 +400,7 @@ cca.device.VideoConstraintsPreferrer =
       if (constFpsInfo.includes(30) && constFpsInfo.includes(60)) {
         const prefFps =
             this.prefFpses_[deviceId] && this.prefFpses_[deviceId][r] || 30;
-        constFpses = prefFps == 30 ? [30, 60] : [60, 30];
+        constFpses = prefFps === 30 ? [30, 60] : [60, 30];
       } else {
         constFpses =
             [...constFpsInfo.filter((fps) => fps >= 30).sort().reverse(), null];
@@ -420,25 +439,26 @@ cca.device.VideoConstraintsPreferrer =
  */
 cca.device.PhotoResolPreferrer = class extends cca.device.ConstraintsPreferrer {
   /**
-   * @param {!cca.ResolutionEventBroker} resolBroker
    * @param {!function()} doReconfigureStream
    * @public
    */
-  constructor(resolBroker, doReconfigureStream) {
-    super(resolBroker, doReconfigureStream);
+  constructor(doReconfigureStream) {
+    super(doReconfigureStream);
 
     this.restoreResolutionPreference_('devicePhotoResolution');
-    this.resolBroker_.registerChangePhotoPrefResolHandler(
-        (deviceId, width, height) => {
-          this.prefResolution_[deviceId] = new Resolution(width, height);
-          this.saveResolutionPreference_('devicePhotoResolution');
-          if (!cca.state.get('video-mode') && deviceId == this.deviceId_) {
-            this.doReconfigureStream_();
-          } else {
-            this.resolBroker_.notifyPhotoPrefResolChange(
-                deviceId, width, height);
-          }
-        });
+  }
+
+  /**
+   * @override
+   */
+  changePreferredResolution(deviceId, resolution) {
+    this.prefResolution_[deviceId] = resolution;
+    this.saveResolutionPreference_('devicePhotoResolution');
+    if (!cca.state.get('video-mode') && deviceId === this.deviceId_) {
+      this.doReconfigureStream_();
+    } else {
+      this.preferredResolutionChangeListener_(deviceId, resolution);
+    }
   }
 
   /**
@@ -465,10 +485,11 @@ cca.device.PhotoResolPreferrer = class extends cca.device.ConstraintsPreferrer {
    * @override
    */
   updateValues(deviceId, stream, width, height) {
+    const resolution = new Resolution(width, height);
     this.deviceId_ = deviceId;
-    this.prefResolution_[deviceId] = new Resolution(width, height);
+    this.prefResolution_[deviceId] = resolution;
     this.saveResolutionPreference_('devicePhotoResolution');
-    this.resolBroker_.notifyPhotoPrefResolChange(deviceId, width, height);
+    this.preferredResolutionChangeListener_(deviceId, resolution);
   }
 
   /**
@@ -549,7 +570,7 @@ cca.device.PhotoResolPreferrer = class extends cca.device.ConstraintsPreferrer {
        * @return {!ResolutionList}
        */
       const sortPreview = (rs) => {
-        if (rs.length == 0) {
+        if (rs.length === 0) {
           return [];
         }
         rs = [...rs].sort((r1, r2) => r2.width - r1.width);

@@ -45,12 +45,6 @@ class DeleteJournal {
   explicit DeleteJournal(std::unique_ptr<JournalIndex> initial_journal);
   ~DeleteJournal();
 
-  // Add/remove |entry| to/from |delete_journals_| according to its
-  // SERVER_IS_DEL field and |was_deleted|. Called on sync thread.
-  void UpdateDeleteJournalForServerDelete(BaseTransaction* trans,
-                                          bool was_deleted,
-                                          const EntryKernel& entry);
-
   // Purge entries of specified type in |delete_journals_| if their handles are
   // in |to_purge|. This should be called after model association and
   // |to_purge| should contain handles of the entries whose deletions are
@@ -63,18 +57,6 @@ class DeleteJournal {
   void TakeSnapshotAndClear(BaseTransaction* trans,
                             MetahandleSet* journals_to_purge);
 
-  // Add |entries| to |delete_journals_| regardless of their SERVER_IS_DEL
-  // value. This is used to:
-  // * restore delete journals from snapshot if snapshot failed to save.
-  // * batch add entries of a data type with unrecoverable error to delete
-  //   journal before purging them.
-  // Called on sync thread.
-  void AddJournalBatch(BaseTransaction* trans,
-                       const OwnedEntryKernelSet& entries);
-
-  // Return true if delete journals of |type| are maintained.
-  static bool IsDeleteJournalEnabled(ModelType type);
-
   // Adds entry to JournalIndex if it doesn't already exist.
   static void AddEntryToJournalIndex(JournalIndex* journal_index,
                                      std::unique_ptr<EntryKernel> entry);
@@ -86,6 +68,7 @@ class DeleteJournal {
   // in case of unrecoverable error, all purged entries are moved here for
   // bookkeeping to prevent back-from-dead entries that are deleted elsewhere
   // when sync's down.
+  // TODO(crbug.com/854684): We never read from this; get rid of it.
   JournalIndex delete_journals_;
 
   // Contains meta handles of deleted entries that have been persisted or

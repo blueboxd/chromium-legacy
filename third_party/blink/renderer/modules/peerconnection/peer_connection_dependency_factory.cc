@@ -602,7 +602,7 @@ void PeerConnectionDependencyFactory::EnsureInitialized() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-PeerConnectionDependencyFactory::GetWebRtcWorkerThread() const {
+PeerConnectionDependencyFactory::GetWebRtcWorkerTaskRunner() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return chrome_worker_thread_.IsRunning() ? chrome_worker_thread_.task_runner()
                                            : nullptr;

@@ -47,15 +47,9 @@ const base::Feature kDeepScanningOfUploadsUI{
 
 namespace {
 
-const char** GetDMTokenForTestingStorage() {
-  static const char* dm_token_storage = "";
+BrowserDMToken* GetDMTokenForTestingStorage() {
+  static BrowserDMToken dm_token_storage = BrowserDMToken::CreateEmptyToken();
   return &dm_token_storage;
-}
-
-BrowserDMToken GetDMTokenForTesting() {
-  const char* dm_token = *GetDMTokenForTestingStorage();
-  return dm_token && dm_token[0] ? BrowserDMToken::CreateValidToken(dm_token)
-                                 : BrowserDMToken::CreateEmptyToken();
 }
 
 // Global pointer of factory function (RepeatingCallback) used to create
@@ -405,7 +399,8 @@ void DeepScanningDialogDelegate::SetFactoryForTesting(Factory factory) {
 }
 
 // static
-void DeepScanningDialogDelegate::SetDMTokenForTesting(const char* dm_token) {
+void DeepScanningDialogDelegate::SetDMTokenForTesting(
+    const BrowserDMToken& dm_token) {
   *GetDMTokenForTestingStorage() = dm_token;
 }
 
@@ -482,7 +477,7 @@ void DeepScanningDialogDelegate::FileRequestCallback(
 
 // static
 BrowserDMToken DeepScanningDialogDelegate::GetDMToken() {
-  auto dm_token = GetDMTokenForTesting();
+  BrowserDMToken* dm_token = GetDMTokenForTestingStorage();
 
 #if !defined(OS_CHROMEOS)
   // This is not compiled on chromeos because
@@ -490,13 +485,13 @@ BrowserDMToken DeepScanningDialogDelegate::GetDMToken() {
   // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does not return a
   // valid token either.  Once these are fixed the #if !defined can be removed.
 
-  if (dm_token.is_empty() &&
+  if (dm_token->is_empty() &&
       policy::ChromeBrowserCloudManagementController::IsEnabled()) {
-    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+    return policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
   }
 #endif
 
-  return dm_token;
+  return *dm_token;
 }
 
 bool DeepScanningDialogDelegate::UploadData() {

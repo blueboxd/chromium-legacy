@@ -169,7 +169,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
   if (!active_windows.empty()) {
     {
       // Disable window animations before updating home launcher target
-      // position. Calling OnHomeLauncherTargetPositionChanged() can cause
+      // position. Calling OnHomeLauncherPositionChanged() can cause
       // display work area update, and resulting cross-fade window bounds change
       // animation can interfere with WindowTransformToHomeScreenAnimation
       // visuals.
@@ -182,8 +182,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
             std::make_unique<ScopedAnimationDisabler>(window));
       }
 
-      delegate_->OnHomeLauncherTargetPositionChanged(true /* showing */,
-                                                     display_id);
+      delegate_->OnHomeLauncherPositionChanged(true /* showing */, display_id);
     }
 
     base::RepeatingClosure window_transforms_callback = base::BarrierClosure(

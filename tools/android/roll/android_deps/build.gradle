@@ -32,6 +32,7 @@ dependencies {
     compile "androidx.appcompat:appcompat:${androidXSupportLibVersion}"
     compile "androidx.asynclayoutinflater:asynclayoutinflater:${androidXSupportLibVersion}"
     compile "androidx.cardview:cardview:${androidXSupportLibVersion}"
+    compile "androidx.concurrent:concurrent-futures:${androidXSupportLibVersion}"
     compile "androidx.collection:collection:${androidXSupportLibVersion}"
     compile "androidx.coordinatorlayout:coordinatorlayout:${androidXSupportLibVersion}"
     compile "androidx.customview:customview:${androidXSupportLibVersion}"
@@ -125,6 +126,9 @@ dependencies {
 
     // Matches version depended on by Dagger.
     buildCompile "com.squareup:javapoet:1.11.0"
+
+    compile "com.google.guava:listenablefuture:1.0"
+    compile "com.google.protobuf:protobuf-lite:3.0.1"
 
     // testCompile targets have test_only = true.
     testCompile "androidx.test:core:1.0.0"

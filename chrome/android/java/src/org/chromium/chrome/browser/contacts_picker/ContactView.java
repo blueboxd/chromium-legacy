@@ -198,7 +198,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
 
         if (contactDetails.isSelf()) mStar.setVisibility(View.VISIBLE);
 
-        if (icon == null) {
+        if (icon == null || !PickerAdapter.includesIcons()) {
             icon = mCategoryView.getIconGenerator().generateIconForText(
                     contactDetails.getDisplayNameAbbreviation());
             setIconDrawable(new BitmapDrawable(getResources(), icon));

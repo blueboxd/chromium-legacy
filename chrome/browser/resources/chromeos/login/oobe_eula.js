@@ -200,4 +200,13 @@ Polymer({
   isPasswordEmpty_: function(password) {
     return password != null && password.length == 0;
   },
+
+  /**
+   * Switches usage stats toggle state.
+   *
+   * @private
+   */
+  usageStatsLabelClicked_: function() {
+    this.usageStatsChecked = !this.usageStatsChecked;
+  },
 });

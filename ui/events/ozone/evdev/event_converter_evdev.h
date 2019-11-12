@@ -127,10 +127,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
   // File descriptor to read.
-  int fd_;
+  const int fd_;
 
   // Path to input device.
-  base::FilePath path_;
+  const base::FilePath path_;
 
   // Input device information, including id (which uniquely identifies an
   // event converter) and type.

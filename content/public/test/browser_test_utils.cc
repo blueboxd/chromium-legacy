@@ -2205,6 +2205,10 @@ RenderWidgetHost* GetFocusedRenderWidgetHost(WebContents* web_contents) {
       web_contents_impl->GetMainFrame()->GetRenderWidgetHost());
 }
 
+bool IsRenderWidgetHostFocused(const RenderWidgetHost* host) {
+  return static_cast<const RenderWidgetHostImpl*>(host)->is_focused();
+}
+
 WebContents* GetFocusedWebContents(WebContents* web_contents) {
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents);

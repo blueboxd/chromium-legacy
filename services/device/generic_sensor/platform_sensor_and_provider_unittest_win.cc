@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/numerics/math_constants.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -562,9 +563,9 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckAccelerometerReadingConversion) {
   base::RunLoop().RunUntilIdle();
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
-  EXPECT_THAT(buffer->reading.accel.x, -x_accel * kMeanGravity);
-  EXPECT_THAT(buffer->reading.accel.y, -y_accel * kMeanGravity);
-  EXPECT_THAT(buffer->reading.accel.z, -z_accel * kMeanGravity);
+  EXPECT_THAT(buffer->reading.accel.x, -x_accel * base::kMeanGravityDouble);
+  EXPECT_THAT(buffer->reading.accel.y, -y_accel * base::kMeanGravityDouble);
+  EXPECT_THAT(buffer->reading.accel.z, -z_accel * base::kMeanGravityDouble);
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 

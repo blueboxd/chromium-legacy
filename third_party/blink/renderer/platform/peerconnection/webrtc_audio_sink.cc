@@ -7,12 +7,31 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
+
+namespace WTF {
+
+template <>
+struct CrossThreadCopier<scoped_refptr<webrtc::AudioProcessorInterface>>
+    : public CrossThreadCopierPassThrough<
+          scoped_refptr<webrtc::AudioProcessorInterface>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<scoped_refptr<blink::WebRtcAudioSink::Adapter>>
+    : public CrossThreadCopierPassThrough<
+          scoped_refptr<blink::WebRtcAudioSink::Adapter>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+}  // namespace WTF
 
 namespace blink {
 
@@ -26,8 +45,9 @@ WebRtcAudioSink::WebRtcAudioSink(
                                              std::move(track_source),
                                              std::move(signaling_task_runner),
                                              std::move(main_task_runner))),
-      fifo_(base::BindRepeating(&WebRtcAudioSink::DeliverRebufferedAudio,
-                                base::Unretained(this))) {
+      fifo_(ConvertToBaseCallback(
+          CrossThreadBindRepeating(&WebRtcAudioSink::DeliverRebufferedAudio,
+                                   CrossThreadUnretained(this)))) {
   DVLOG(1) << "WebRtcAudioSink::WebRtcAudioSink()";
 }
 
@@ -52,10 +72,11 @@ void WebRtcAudioSink::SetLevel(
 
 void WebRtcAudioSink::OnEnabledChanged(bool enabled) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  adapter_->signaling_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&WebRtcAudioSink::Adapter::set_enabled),
-                     adapter_, enabled));
+  PostCrossThreadTask(
+      *adapter_->signaling_task_runner(), FROM_HERE,
+      CrossThreadBindOnce(
+          base::IgnoreResult(&WebRtcAudioSink::Adapter::set_enabled), adapter_,
+          enabled));
 }
 
 void WebRtcAudioSink::OnData(const media::AudioBus& audio_bus,
@@ -117,9 +138,9 @@ WebRtcAudioSink::Adapter::Adapter(
 
 WebRtcAudioSink::Adapter::~Adapter() {
   if (audio_processor_) {
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DereferenceOnMainThread, std::move(audio_processor_)));
+    PostCrossThreadTask(*main_task_runner_.get(), FROM_HERE,
+                        CrossThreadBindOnce(&DereferenceOnMainThread,
+                                            std::move(audio_processor_)));
   }
 }
 

@@ -181,6 +181,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       is_resuming_(IsResumingLayout(params.break_token)),
       exclusion_space_(params.space.ExclusionSpace()),
       early_break_(params.early_break) {
+  AdjustForFragmentation(BreakToken(), &border_scrollbar_padding_);
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
@@ -462,10 +463,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     container_builder_.SetAdjoiningObjectTypes(adjoining_object_types);
   }
 
-  // If we are resuming from a break token our start border and padding is
-  // within a previous fragment.
-  LayoutUnit content_edge =
-      is_resuming_ ? LayoutUnit() : border_scrollbar_padding_.block_start;
+  LayoutUnit content_edge = border_scrollbar_padding_.block_start;
 
   NGPreviousInflowPosition previous_inflow_position = {
       LayoutUnit(), ConstraintSpace().MarginStrut(),
@@ -1327,7 +1325,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     NGConstraintSpace child_space = CreateConstraintSpaceForChild(
         child, child_data,
         {child_available_inline_size, child_available_size_.block_size},
-        /* is_new_fc */ true);
+        /* is_new_fc */ true, opportunity.rect.start_offset.block_offset);
 
     // All formatting context roots (like this child) should start with an empty
     // exclusion space.
@@ -2308,7 +2306,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     const NGInflowChildData& child_data,
     const LogicalSize child_available_size,
     bool is_new_fc,
-    const base::Optional<LayoutUnit> forced_bfc_block_offset,
+    const base::Optional<LayoutUnit> child_bfc_block_offset,
     bool has_clearance_past_adjoining_floats) {
   const ComputedStyle& style = Style();
   const ComputedStyle& child_style = child.Style();
@@ -2349,8 +2347,8 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   // children.
   if (!has_bfc_block_offset && ConstraintSpace().ForcedBfcBlockOffset())
     builder.SetForcedBfcBlockOffset(*ConstraintSpace().ForcedBfcBlockOffset());
-  if (forced_bfc_block_offset)
-    builder.SetForcedBfcBlockOffset(*forced_bfc_block_offset);
+  if (child_bfc_block_offset && !is_new_fc)
+    builder.SetForcedBfcBlockOffset(*child_bfc_block_offset);
 
   if (has_bfc_block_offset && child.IsBlock()) {
     // Typically we aren't allowed to look at the previous layout result within
@@ -2426,13 +2424,13 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   }
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    LayoutUnit new_bfc_block_offset;
+    LayoutUnit fragmentainer_offset_delta;
     // If a block establishes a new formatting context, we must know our
     // position in the formatting context, to be able to adjust the
     // fragmentation line.
     if (is_new_fc)
-      new_bfc_block_offset = child_data.bfc_offset_estimate.block_offset;
-    SetupFragmentation(ConstraintSpace(), new_bfc_block_offset, &builder,
+      fragmentainer_offset_delta = *child_bfc_block_offset;
+    SetupFragmentation(ConstraintSpace(), fragmentainer_offset_delta, &builder,
                        is_new_fc);
     builder.SetEarlyBreakAppeal(container_builder_.BreakAppeal());
   }

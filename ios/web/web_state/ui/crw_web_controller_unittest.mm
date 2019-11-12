@@ -415,6 +415,14 @@ TEST_P(CRWWebControllerTest, BackForwardWithPendingNavigation) {
   EXPECT_EQ(web::WKNavigationState::FINISHED, web_controller().navigationState);
 }
 
+// Tests that a web view is created after calling -[ensureWebViewCreated].
+TEST_P(CRWWebControllerTest, WebViewCreatedAfterEnsureWebViewCreated) {
+  [web_controller() removeWebView];
+  WKWebView* web_view = [web_controller() ensureWebViewCreated];
+  EXPECT_TRUE(web_view);
+  EXPECT_NSEQ(web_view, web_controller().jsInjector.webView);
+}
+
 INSTANTIATE_TEST_SUITES(CRWWebControllerTest);
 
 // Test fixture to test JavaScriptDialogPresenter.

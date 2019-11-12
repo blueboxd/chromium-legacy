@@ -125,18 +125,30 @@ public class ContactsPickerDialogTest
         return (RecyclerView) mDialog.findViewById(R.id.recycler_view);
     }
 
+    /**
+     * Creates a ContactPicker dialog with no filtering (default case). For a more fine-grained
+     * version, see below.
+     */
+    private ContactsPickerDialog createDialog(final boolean multiselect) throws Exception {
+        return createDialog(multiselect, /* includeNames = */ true,
+                /* includeEmails = */ true,
+                /* includeTel = */ true,
+                /* includeAddresses = */ true,
+                /* includeIcons = */ true);
+    }
+
     private ContactsPickerDialog createDialog(final boolean multiselect, final boolean includeNames,
-            final boolean includeEmails, final boolean includeTel, final boolean includeAddresses)
-            throws Exception {
+            final boolean includeEmails, final boolean includeTel, final boolean includeAddresses,
+            final boolean includeIcons) throws Exception {
         mClosing = false;
         final ContactsPickerDialog dialog =
                 TestThreadUtils.runOnUiThreadBlocking(new Callable<ContactsPickerDialog>() {
                     @Override
                     public ContactsPickerDialog call() {
-                        final ContactsPickerDialog dialog =
-                                new ContactsPickerDialog(mActivityTestRule.getActivity(),
-                                        ContactsPickerDialogTest.this, multiselect, includeNames,
-                                        includeEmails, includeTel, includeAddresses, "example.com");
+                        final ContactsPickerDialog dialog = new ContactsPickerDialog(
+                                mActivityTestRule.getActivity(), ContactsPickerDialogTest.this,
+                                multiselect, includeNames, includeEmails, includeTel,
+                                includeAddresses, includeIcons, "example.com");
                         dialog.show();
                         return dialog;
                     }
@@ -325,10 +337,7 @@ public class ContactsPickerDialogTest
     @LargeTest
     public void testOriginString() throws Throwable {
         setTestContacts(/*ownerEmail=*/null);
-        createDialog(/* multiselect = */ true, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         TopView topView = getTopView();
@@ -349,7 +358,8 @@ public class ContactsPickerDialogTest
         createDialog(/* multiselect = */ false, /* includeNames = */ true,
                 /* includeEmails = */ false,
                 /* includeTel = */ true,
-                /* includeAddresses = */ false);
+                /* includeAddresses = */ false,
+                /* includeIcons = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         TopView topView = getTopView();
@@ -363,6 +373,8 @@ public class ContactsPickerDialogTest
         Assert.assertNotNull(telFilter);
         View addrFilter = topView.findViewById(R.id.address_filter);
         Assert.assertNotNull(addrFilter);
+        View iconFilter = topView.findViewById(R.id.icon_filter);
+        Assert.assertNotNull(iconFilter);
 
         // Per configuration given in the createDialog() call, the names and telephone filters
         // should be visible, but the e-mail and address filter should be gone.
@@ -370,6 +382,7 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(emailFilter.getVisibility(), View.GONE);
         Assert.assertEquals(telFilter.getVisibility(), View.VISIBLE);
         Assert.assertEquals(addrFilter.getVisibility(), View.GONE);
+        Assert.assertEquals(iconFilter.getVisibility(), View.VISIBLE);
     }
 
     @Test
@@ -379,7 +392,8 @@ public class ContactsPickerDialogTest
         createDialog(/* multiselect = */ false, /* includeNames = */ false,
                 /* includeEmails = */ true,
                 /* includeTel = */ false,
-                /* includeAddresses = */ true);
+                /* includeAddresses = */ true,
+                /* includeIcons = */ false);
         Assert.assertTrue(mDialog.isShowing());
 
         TopView topView = getTopView();
@@ -393,6 +407,8 @@ public class ContactsPickerDialogTest
         Assert.assertNotNull(telFilter);
         View addrFilter = topView.findViewById(R.id.address_filter);
         Assert.assertNotNull(addrFilter);
+        View iconFilter = topView.findViewById(R.id.icon_filter);
+        Assert.assertNotNull(iconFilter);
 
         // Per configuration given in the createDialog() call, the names and telephone filters
         // should be hidden, but the e-mail and address filter should be visible.
@@ -400,16 +416,14 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(emailFilter.getVisibility(), View.VISIBLE);
         Assert.assertEquals(telFilter.getVisibility(), View.GONE);
         Assert.assertEquals(addrFilter.getVisibility(), View.VISIBLE);
+        Assert.assertEquals(iconFilter.getVisibility(), View.GONE);
     }
 
     @Test
     @LargeTest
     public void testNoSelection() throws Throwable {
         setTestContacts(/*ownerEmail=*/"notanowner@example.com");
-        createDialog(/* multiselect = */ false, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ false);
         Assert.assertTrue(mDialog.isShowing());
 
         int expectedSelectionCount = 1;
@@ -418,7 +432,7 @@ public class ContactsPickerDialogTest
 
         Assert.assertEquals(null, mLastSelectedContacts);
         Assert.assertEquals(0, mLastPercentageShared);
-        Assert.assertEquals(15, mLastPropertiesRequested);
+        Assert.assertEquals(31, mLastPropertiesRequested);
         Assert.assertEquals(ContactsPickerAction.CANCEL, mLastActionRecorded);
     }
 
@@ -426,10 +440,7 @@ public class ContactsPickerDialogTest
     @LargeTest
     public void testOwnerContact() throws Throwable {
         setTestContacts(/*ownerEmail=*/"owner@example.com");
-        createDialog(/* multiselect = */ false, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ false);
         Assert.assertTrue(mDialog.isShowing());
 
         int expectedSelectionCount = 1;
@@ -441,17 +452,14 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
         Assert.assertEquals(12, mLastPercentageShared);
-        Assert.assertEquals(15, mLastPropertiesRequested);
+        Assert.assertEquals(31, mLastPropertiesRequested);
     }
 
     @Test
     @LargeTest
     public void testSingleSelectionContacts() throws Throwable {
         setTestContacts(/*ownerEmail=*/null);
-        createDialog(/* multiselect = */ false, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ false);
         Assert.assertTrue(mDialog.isShowing());
 
         // Expected selection count is 1 because clicking on a new view deselects other.
@@ -465,17 +473,14 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(
                 mTestContacts.get(1).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
         Assert.assertEquals(16, mLastPercentageShared);
-        Assert.assertEquals(15, mLastPropertiesRequested);
+        Assert.assertEquals(31, mLastPropertiesRequested);
     }
 
     @Test
     @LargeTest
     public void testMultiSelectionContacts() throws Throwable {
         setTestContacts(/*ownerEmail=*/null);
-        createDialog(/* multiselect = */ true, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         // Multi-selection is enabled, so each click is counted.
@@ -494,17 +499,14 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(2).names.get(0));
         Assert.assertEquals(50, mLastPercentageShared);
-        Assert.assertEquals(15, mLastPropertiesRequested);
+        Assert.assertEquals(31, mLastPropertiesRequested);
     }
 
     @Test
     @LargeTest
     public void testNamesRemoved() throws Throwable {
         setTestContacts(/*ownerEmail=*/null);
-        createDialog(/* multiselect = */ false, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ false);
         Assert.assertTrue(mDialog.isShowing());
 
         toggleFilter(PickerAdapter.FilterType.NAMES);
@@ -531,17 +533,14 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(selectedAddress.region, testAddress.region);
 
         Assert.assertEquals(16, mLastPercentageShared);
-        Assert.assertEquals(15, mLastPropertiesRequested);
+        Assert.assertEquals(31, mLastPropertiesRequested);
     }
 
     @Test
     @LargeTest
     public void testEmailsRemoved() throws Throwable {
         setTestContacts(/*ownerEmail=*/null);
-        createDialog(/* multiselect = */ false, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ false);
         Assert.assertTrue(mDialog.isShowing());
 
         toggleFilter(PickerAdapter.FilterType.EMAILS);
@@ -556,17 +555,14 @@ public class ContactsPickerDialogTest
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
         Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).emails);
         Assert.assertEquals(16, mLastPercentageShared);
-        Assert.assertEquals(15, mLastPropertiesRequested);
+        Assert.assertEquals(31, mLastPropertiesRequested);
     }
 
     @Test
     @LargeTest
     public void testTelephonesRemoved() throws Throwable {
         setTestContacts(/*ownerEmail=*/null);
-        createDialog(/* multiselect = */ false, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ false);
         Assert.assertTrue(mDialog.isShowing());
 
         toggleFilter(PickerAdapter.FilterType.TELEPHONES);
@@ -581,8 +577,11 @@ public class ContactsPickerDialogTest
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
         Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).tel);
         Assert.assertEquals(16, mLastPercentageShared);
-        Assert.assertEquals(15, mLastPropertiesRequested);
+        Assert.assertEquals(31, mLastPropertiesRequested);
     }
+
+    // TODO(crbug.com/1020564): Add a test (once icons have been implemented end-to-end) that
+    //                          validates that icons are not returned when the filter chip is off.
 
     @Test
     @LargeTest
@@ -592,7 +591,8 @@ public class ContactsPickerDialogTest
         createDialog(/* multiselect = */ false, /* includeNames = */ true,
                 /* includeEmails = */ false,
                 /* includeTel = */ false,
-                /* includeAddresses = */ false);
+                /* includeAddresses = */ false,
+                /* includeIcons = */ false);
         Assert.assertTrue(mDialog.isShowing());
         clickCancel();
         Assert.assertEquals(4, mLastPropertiesRequested);
@@ -601,7 +601,8 @@ public class ContactsPickerDialogTest
         createDialog(/* multiselect = */ false, /* includeNames = */ false,
                 /* includeEmails = */ true,
                 /* includeTel = */ false,
-                /* includeAddresses = */ false);
+                /* includeAddresses = */ false,
+                /* includeIcons = */ false);
         Assert.assertTrue(mDialog.isShowing());
         clickCancel();
         Assert.assertEquals(2, mLastPropertiesRequested);
@@ -610,7 +611,8 @@ public class ContactsPickerDialogTest
         createDialog(/* multiselect = */ false, /* includeNames = */ false,
                 /* includeEmails = */ false,
                 /* includeTel = */ true,
-                /* includeAddresses = */ false);
+                /* includeAddresses = */ false,
+                /* includeIcons = */ false);
         Assert.assertTrue(mDialog.isShowing());
         clickCancel();
         Assert.assertEquals(1, mLastPropertiesRequested);
@@ -619,20 +621,28 @@ public class ContactsPickerDialogTest
         createDialog(/* multiselect = */ false, /* includeNames = */ false,
                 /* includeEmails = */ false,
                 /* includeTel = */ false,
-                /* includeAddresses = */ true);
+                /* includeAddresses = */ true,
+                /* includeIcons = */ false);
         Assert.assertTrue(mDialog.isShowing());
         clickCancel();
         Assert.assertEquals(8, mLastPropertiesRequested);
+
+        // Create a dialog showing icons only.
+        createDialog(/* multiselect = */ false, /* includeNames = */ false,
+                /* includeEmails = */ false,
+                /* includeTel = */ false,
+                /* includeAddresses = */ false,
+                /* includeIcons = */ true);
+        Assert.assertTrue(mDialog.isShowing());
+        clickCancel();
+        Assert.assertEquals(16, mLastPropertiesRequested);
     }
 
     @Test
     @LargeTest
     public void testSelectAll() throws Throwable {
         setTestContacts(/*ownerEmail=*/"owner@example.com");
-        createDialog(/* multiselect = */ true, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         toggleSelectAll(8, ContactsPickerAction.SELECT_ALL);
@@ -662,10 +672,7 @@ public class ContactsPickerDialogTest
     @LargeTest
     public void testSearchString() throws Throwable {
         setTestContacts(/*ownerEmail=*/null);
-        createDialog(/* multiselect = */ false, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ false);
         Assert.assertTrue(mDialog.isShowing());
 
         clickSearchButton();
@@ -682,17 +689,14 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(
                 mTestContacts.get(3).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
         Assert.assertEquals(16, mLastPercentageShared);
-        Assert.assertEquals(15, mLastPropertiesRequested);
+        Assert.assertEquals(31, mLastPropertiesRequested);
     }
 
     @Test
     @LargeTest
     public void testNoSearchStringNoCrash() throws Throwable {
         setTestContacts(/*ownerEmail=*/null);
-        createDialog(/* multiselect = */ true, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         clickSearchButton();
@@ -704,10 +708,7 @@ public class ContactsPickerDialogTest
     public void testEmptyContactListCrash() throws Throwable {
         PickerAdapter.setTestContactsAndOwner(new ArrayList<ContactDetails>(), null);
 
-        createDialog(/* multiselect = */ true, /* includeNames = */ true,
-                /* includeEmails = */ true,
-                /* includeTel = */ true,
-                /* includeAddresses = */ true);
+        createDialog(/* multiselect = */ true);
         Assert.assertTrue(mDialog.isShowing());
 
         dismissDialog();

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
+#include "chrome/browser/ui/views/global_media_controls/overlay_media_notification_view.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
@@ -61,8 +62,25 @@ void MediaNotificationListView::ShowNotification(
 }
 
 void MediaNotificationListView::HideNotification(const std::string& id) {
+  RemoveNotification(id);
+}
+
+std::unique_ptr<OverlayMediaNotification> MediaNotificationListView::PopOut(
+    const std::string& id,
+    gfx::Rect bounds) {
+  std::unique_ptr<MediaNotificationContainerImplView> notification =
+      RemoveNotification(id);
+  if (!notification)
+    return nullptr;
+
+  return std::make_unique<OverlayMediaNotificationView>(
+      id, std::move(notification), bounds);
+}
+
+std::unique_ptr<MediaNotificationContainerImplView>
+MediaNotificationListView::RemoveNotification(const std::string& id) {
   if (!base::Contains(notifications_, id))
-    return;
+    return nullptr;
 
   // If we're removing the topmost notification and there are others, then we
   // need to remove the top-sided separator border from the new topmost
@@ -73,11 +91,14 @@ void MediaNotificationListView::HideNotification(const std::string& id) {
   }
 
   // Remove the notification. Note that since |RemoveChildView()| does not
-  // delete the notification, we must do so manually here.
+  // delete the notification, we now have ownership.
   contents()->RemoveChildView(notifications_[id]);
-  delete notifications_[id];
+  std::unique_ptr<MediaNotificationContainerImplView> notification(
+      notifications_[id]);
   notifications_.erase(id);
 
   contents()->InvalidateLayout();
   PreferredSizeChanged();
+
+  return notification;
 }

@@ -20,7 +20,7 @@
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/transaction_impl.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBKey;
@@ -186,7 +186,7 @@ void DatabaseImpl::Get(int64_t transaction_id,
                        blink::mojom::IDBDatabase::GetCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected()) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Not connected.");
     std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
         blink::mojom::IDBError::New(error.code(), error.message())));
@@ -196,7 +196,7 @@ void DatabaseImpl::Get(int64_t transaction_id,
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
   if (!transaction) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Unknown transaction.");
     std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
         blink::mojom::IDBError::New(error.code(), error.message())));
@@ -225,7 +225,7 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
                           blink::mojom::IDBDatabase::GetAllCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected()) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Not connected.");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
@@ -236,7 +236,7 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
   if (!transaction) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Unknown transaction.");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
@@ -245,7 +245,7 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
   }
 
   if (!connection_->database()->IsObjectStoreIdInMetadata(object_store_id)) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Bad request");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
@@ -330,7 +330,7 @@ void DatabaseImpl::OpenCursor(
     blink::mojom::IDBDatabase::OpenCursorCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected()) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Not connected.");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseOpenCursorResult::NewErrorResult(
@@ -341,7 +341,7 @@ void DatabaseImpl::OpenCursor(
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
   if (!transaction) {
-    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Unknown transaction.");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseOpenCursorResult::NewErrorResult(
@@ -573,7 +573,7 @@ void DatabaseImpl::Abort(int64_t transaction_id) {
 
   connection_->AbortTransactionAndTearDownOnError(
       transaction,
-      IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+      IndexedDBDatabaseError(blink::mojom::IDBException::kAbortError,
                              "Transaction aborted by user."));
 }
 

@@ -26,6 +26,7 @@ import org.chromium.weblayer.LoadError;
 import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
+import org.chromium.weblayer.NavigationState;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class NavigationTest {
             private int mHttpStatusCode;
             private List<Uri> mRedirectChain;
             private @LoadError int mLoadError;
+            private @NavigationState int mNavigationState;
 
             public void notifyCalled(Navigation navigation) {
                 mUri = navigation.getUri();
@@ -62,6 +64,7 @@ public class NavigationTest {
                 mHttpStatusCode = navigation.getHttpStatusCode();
                 mRedirectChain = navigation.getRedirectChain();
                 mLoadError = navigation.getLoadError();
+                mNavigationState = navigation.getState();
                 notifyCalled();
             }
 
@@ -92,6 +95,11 @@ public class NavigationTest {
 
             public int getHttpStatusCode() {
                 return mHttpStatusCode;
+            }
+
+            @NavigationState
+            public int getNavigationState() {
+                return mNavigationState;
             }
         }
 
@@ -373,6 +381,7 @@ public class NavigationTest {
         mCallback.onCompletedCallback.assertCalledWith(
                 curCompletedCount, url, LoadError.HTTP_CLIENT_ERROR);
         assertEquals(mCallback.onCompletedCallback.getHttpStatusCode(), 404);
+        assertEquals(mCallback.onCompletedCallback.getNavigationState(), NavigationState.COMPLETE);
     }
 
     private void setNavigationCallback(InstrumentationActivity activity) {

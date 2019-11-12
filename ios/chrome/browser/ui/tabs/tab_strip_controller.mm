@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 #include "ios/chrome/browser/ui/tabs/target_frame_cache.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -68,23 +69,23 @@ const NSTimeInterval kTabStripFadeAnimationDuration = 0.15;
 const NSTimeInterval kDragAndDropLongPressDuration = 0.4;
 
 // Tab dimensions.
-const CGFloat kTabOverlap = 32.0;
-const CGFloat kTabOverlapForCompactLayout = 30.0;
+const CGFloat kTabOverlapStacked = 32.0;
+const CGFloat kTabOverlapUnstacked = 30.0;
 
 const CGFloat kNewTabOverlap = 13.0;
-const CGFloat kMaxTabWidth = 265.0;
-const CGFloat kMaxTabWidthForCompactLayout = 225.0;
+const CGFloat kMaxTabWidthStacked = 265.0;
+const CGFloat kMaxTabWidthUnstacked = 225.0;
 
 // Tab Switcher button dimensions.
 const CGFloat kTabSwitcherButtonWidth = 46.0;
 const CGFloat kTabSwitcherButtonBackgroundWidth = 62.0;
 
-const CGFloat kMinTabWidth = 200.0;
-const CGFloat kMinTabWidthForCompactLayout = 160.0;
+const CGFloat kMinTabWidthStacked = 200.0;
+const CGFloat kMinTabWidthUnstacked = 160.0;
 
 const CGFloat kCollapsedTabOverlap = 5.0;
-const NSUInteger kMaxNumCollapsedTabs = 3;
-const NSUInteger kMaxNumCollapsedTabsForCompactLayout = 0;
+const NSUInteger kMaxNumCollapsedTabsStacked = 3;
+const NSUInteger kMaxNumCollapsedTabsUnstacked = 0;
 
 // Tabs with a visible width smaller than this draw as collapsed tabs..
 const CGFloat kCollapsedTabWidthThreshold = 40.0;
@@ -168,7 +169,7 @@ UIColor* BackgroundColor() {
   UIButton* _buttonNewTab;
   UIButton* _tabSwitcherButton;
 
-  // Background view of the tab switcher button. Only visible while in compact
+  // Background view of the tab switcher button. Only visible while in unstacked
   // layout.
   UIImageView* _tabSwitcherButtonBackgroundView;
 
@@ -258,6 +259,13 @@ UIColor* BackgroundColor() {
 
 // YES if the controller has been disconnected.
 @property(nonatomic) BOOL disconnected;
+
+// If set to |YES|, tabs at either end of the tabstrip are "collapsed" into a
+// stack, such that the visible width of the tabstrip is constant.  If set to
+// |NO|, tabs are never collapsed and the tabstrip scrolls horizontally as a
+// normal scroll view would.  Changing this property causes the tabstrip to
+// redraw and relayout.  Defaults to |YES|.
+@property(nonatomic, assign) BOOL useTabStacking;
 
 // Initializes the tab array based on the the entries in the TabModel.  Creates
 // one TabView per Tab and adds it to the tabstrip.  A later call to
@@ -367,14 +375,13 @@ UIColor* BackgroundColor() {
 // Returns the minimum tab view width depending on the current layout mode.
 - (CGFloat)minTabWidth;
 
-// Automatically scroll the tab strip view to keep the newly inserted tab view
-// visible.
+// Automatically scroll the tab strip view to keep the given tab view visible.
 // This method must be called with a valid |tabIndex|.
-- (void)autoScrollForNewTab:(NSUInteger)tabIndex;
+- (void)scrollTabToVisible:(NSUInteger)tabIndex;
 
 // Updates the content offset of the tab strip view in order to keep the
 // selected tab view visible.
-// Content offset adjustement is only needed/performed in compact mode or
+// Content offset adjustement is only needed/performed in unstacked mode or
 // regular mode for newly opened webStates.
 // This method must be called with a valid |WebStateIndex|.
 - (void)updateContentOffsetForWebStateIndex:(int)WebStateIndex
@@ -390,6 +397,9 @@ UIColor* BackgroundColor() {
 // Returns the existing tab view for |webState| or nil if there is no TabView
 // for it.
 - (TabView*)tabViewForWebState:(web::WebState*)webState;
+
+// Computes whether the tabstrip should use tab stacking.
+- (BOOL)shouldUseTabStacking;
 
 @end
 
@@ -427,6 +437,7 @@ UIColor* BackgroundColor() {
     _dispatcher = dispatcher;
 
     // |self.view| setup.
+    _useTabStacking = [self shouldUseTabStacking];
     CGRect tabStripFrame = [UIApplication sharedApplication].keyWindow.bounds;
     tabStripFrame.size.height = kTabStripHeight;
     _view = [[UIView alloc] initWithFrame:tabStripFrame];
@@ -507,6 +518,15 @@ UIColor* BackgroundColor() {
 
     // Don't highlight the selected tab by default.
     self.highlightsSelectedTab = NO;
+
+    // Register for VoiceOver notifications.
+    if (base::FeatureList::IsEnabled(kVoiceOverUnstackedTabstrip)) {
+      [[NSNotificationCenter defaultCenter]
+          addObserver:self
+             selector:@selector(voiceOverStatusDidChange)
+                 name:UIAccessibilityVoiceOverStatusDidChangeNotification
+               object:nil];
+    }
   }
   return self;
 }
@@ -521,6 +541,7 @@ UIColor* BackgroundColor() {
   _allWebStateObservationForwarder.reset();
   _webStateListFaviconObserver.reset();
   _tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   self.disconnected = YES;
 }
 
@@ -1323,28 +1344,26 @@ UIColor* BackgroundColor() {
 }
 
 #pragma mark -
-#pragma mark - compact layout
+#pragma mark - Unstacked layout
 
 - (NSUInteger)maxNumCollapsedTabs {
-  return IsCompactTablet() ? kMaxNumCollapsedTabsForCompactLayout
-                           : kMaxNumCollapsedTabs;
+  return self.useTabStacking ? kMaxNumCollapsedTabsStacked
+                             : kMaxNumCollapsedTabsUnstacked;
 }
 
 - (CGFloat)tabOverlap {
-  if (!IsCompactTablet())
-    return kTabOverlap;
-  return kTabOverlapForCompactLayout;
+  return self.useTabStacking ? kTabOverlapStacked : kTabOverlapUnstacked;
 }
 
 - (CGFloat)maxTabWidth {
-  return IsCompactTablet() ? kMaxTabWidthForCompactLayout : kMaxTabWidth;
+  return self.useTabStacking ? kMaxTabWidthStacked : kMaxTabWidthUnstacked;
 }
 
 - (CGFloat)minTabWidth {
-  return IsCompactTablet() ? kMinTabWidthForCompactLayout : kMinTabWidth;
+  return self.useTabStacking ? kMinTabWidthStacked : kMinTabWidthUnstacked;
 }
 
-- (void)autoScrollForNewTab:(NSUInteger)tabIndex {
+- (void)scrollTabToVisible:(NSUInteger)tabIndex {
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(tabIndex));
 
   // The following code calculates the amount of scroll needed to make
@@ -1388,6 +1407,8 @@ UIColor* BackgroundColor() {
                      ([self tabOverlap] * (numNonClosingTabsToLeft - 1)),
                  0, _currentTabWidth, tabHeight);
   [_tabStripView scrollRectToVisible:scrollRect animated:YES];
+  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                  nil);
 }
 
 - (void)updateContentOffsetForWebStateIndex:(int)webStateIndex
@@ -1395,11 +1416,11 @@ UIColor* BackgroundColor() {
   DCHECK_NE(WebStateList::kInvalidIndex, webStateIndex);
 
   if (isNewWebState) {
-    [self autoScrollForNewTab:webStateIndex];
+    [self scrollTabToVisible:webStateIndex];
     return;
   }
 
-  if (IsCompactTablet()) {
+  if (!self.useTabStacking) {
     if (webStateIndex == static_cast<int>([_tabArray count]) - 1) {
       const CGFloat tabStripAvailableSpace =
           _tabStripView.frame.size.width - _tabStripView.contentInset.right;
@@ -1422,7 +1443,7 @@ UIColor* BackgroundColor() {
 - (void)updateScrollViewFrameForTabSwitcherButton {
   CGRect tabFrame = _tabStripView.frame;
   tabFrame.size.width = _view.bounds.size.width;
-  if (!IsCompactTablet()) {
+  if (self.useTabStacking) {
     tabFrame.size.width -= kTabSwitcherButtonWidth;
     _tabStripView.contentInset = UIEdgeInsetsZero;
     [_tabSwitcherButtonBackgroundView setHidden:YES];
@@ -1474,11 +1495,12 @@ UIColor* BackgroundColor() {
 
   const CGFloat tabHeight = CGRectGetHeight([_tabStripView bounds]);
 
-  // In compact layout mode the space used to layout the tabs is not
-  // constrained and uses the whole scroll view content size width. In regular
-  // layout mode the available space is constrained to the visible space.
-  CGFloat availableSpace = IsCompactTablet() ? _tabStripView.contentSize.width
-                                             : [self tabStripVisibleSpace];
+  // In unstacked mode the space used to layout the tabs is not constrained and
+  // uses the whole scroll view content size width. In stacked mode the
+  // available space is constrained to the visible space.
+  CGFloat availableSpace = self.useTabStacking
+                               ? [self tabStripVisibleSpace]
+                               : _tabStripView.contentSize.width;
 
   // The array and model indexes of the selected tab.
   NSUInteger selectedModelIndex =
@@ -1504,7 +1526,7 @@ UIColor* BackgroundColor() {
   // real frame.
   CGFloat virtualMinX = 0;
   CGFloat virtualMaxX = 0;
-  CGFloat offset = IsCompactTablet() ? 0 : [_tabStripView contentOffset].x;
+  CGFloat offset = self.useTabStacking ? [_tabStripView contentOffset].x : 0;
 
   // Keeps track of which tabs need to be animated.  Using an autoreleased array
   // instead of scoped_nsobject because scoped_nsobject doesn't seem to work
@@ -1740,16 +1762,6 @@ UIColor* BackgroundColor() {
   }
 }
 
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [self updateScrollViewFrameForTabSwitcherButton];
-  [self updateContentSizeAndRepositionViews];
-  int selectedModelIndex = _tabModel.webStateList->active_index();
-  if (selectedModelIndex != WebStateList::kInvalidIndex) {
-    [self updateContentOffsetForWebStateIndex:selectedModelIndex
-                                isNewWebState:NO];
-  }
-}
-
 - (void)setNeedsLayoutWithAnimation {
   _animateLayout = YES;
   [_tabStripView setNeedsLayout];
@@ -1813,6 +1825,43 @@ UIColor* BackgroundColor() {
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_GENERATED;
   webState->GetNavigationManager()->LoadURLWithParams(params);
+}
+
+#pragma mark - Tab Stacking
+
+- (BOOL)shouldUseTabStacking {
+  BOOL useTabStacking = !IsCompactTablet();
+  if (base::FeatureList::IsEnabled(kVoiceOverUnstackedTabstrip) &&
+      UIAccessibilityIsVoiceOverRunning()) {
+    useTabStacking = NO;
+  }
+  if (base::FeatureList::IsEnabled(kForceUnstackedTabstrip)) {
+    useTabStacking = NO;
+  }
+  return useTabStacking;
+}
+
+- (void)setUseTabStacking:(BOOL)useTabStacking {
+  if (_useTabStacking == useTabStacking) {
+    return;
+  }
+
+  _useTabStacking = useTabStacking;
+  [self updateScrollViewFrameForTabSwitcherButton];
+  [self updateContentSizeAndRepositionViews];
+  int selectedModelIndex = _tabModel.webStateList->active_index();
+  if (selectedModelIndex != WebStateList::kInvalidIndex) {
+    [self updateContentOffsetForWebStateIndex:selectedModelIndex
+                                isNewWebState:NO];
+  }
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  self.useTabStacking = [self shouldUseTabStacking];
+}
+
+- (void)voiceOverStatusDidChange {
+  self.useTabStacking = [self shouldUseTabStacking];
 }
 
 @end

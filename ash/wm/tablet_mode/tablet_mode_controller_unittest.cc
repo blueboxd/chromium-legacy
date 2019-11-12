@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accelerometer/accelerometer_constants.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accelerometer/accelerometer_types.h"
 #include "ash/app_list/app_list_controller_impl.h"
@@ -35,6 +34,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
+#include "base/numerics/math_constants.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -60,8 +60,9 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-
 namespace {
+
+using base::kMeanGravityFloat;
 
 // The strings are "Touchview" as they're already used in metrics.
 constexpr char kTabletModeInitiallyDisabled[] = "Touchview_Initially_Disabled";
@@ -353,14 +354,14 @@ TEST_P(TabletModeControllerTest, TabletModeTransition) {
 // rely on the tablet mode switch.
 TEST_P(TabletModeControllerTest, TabletModeTransitionNoKeyboardAccelerometer) {
   ASSERT_FALSE(IsTabletModeStarted());
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravityFloat));
   ASSERT_FALSE(IsTabletModeStarted());
 
   SetTabletMode(true);
   EXPECT_TRUE(IsTabletModeStarted());
 
   // Single sensor reading should not change mode.
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravityFloat));
   EXPECT_TRUE(IsTabletModeStarted());
 
   // With a single sensor we should exit immediately on the tablet mode switch
@@ -453,29 +454,29 @@ TEST_P(TabletModeControllerTest, NotExitTabletModeWithUnstableLidAngle) {
 // persists as the computed angle is highly inaccurate in this orientation.
 TEST_P(TabletModeControllerTest, HingeAligned) {
   // Laptop in normal orientation lid open 90 degrees.
-  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
-                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravityFloat),
+                          gfx::Vector3dF(0.0f, -kMeanGravityFloat, 0.0f));
   EXPECT_FALSE(IsTabletModeStarted());
 
   // Completely vertical.
-  TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f),
-                          gfx::Vector3dF(kMeanGravity, 0.0f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravityFloat, 0.0f, 0.0f),
+                          gfx::Vector3dF(kMeanGravityFloat, 0.0f, 0.0f));
   EXPECT_FALSE(IsTabletModeStarted());
 
   // Close to vertical but with hinge appearing to be open 270 degrees.
-  TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, -0.1f),
-                          gfx::Vector3dF(kMeanGravity, 0.1f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravityFloat, 0.0f, -0.1f),
+                          gfx::Vector3dF(kMeanGravityFloat, 0.1f, 0.0f));
   EXPECT_FALSE(IsTabletModeStarted());
 
   // Flat and open 270 degrees should start tablet mode.
-  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravity),
-                          gfx::Vector3dF(0.0f, kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, -kMeanGravityFloat),
+                          gfx::Vector3dF(0.0f, kMeanGravityFloat, 0.0f));
   EXPECT_TRUE(IsTabletModeStarted());
 
   // Normal 90 degree orientation but near vertical should stay in maximize
   // mode.
-  TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravity, 0.0f, -0.1f),
-                          gfx::Vector3dF(kMeanGravity, -0.1f, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(kMeanGravityFloat, 0.0f, -0.1f),
+                          gfx::Vector3dF(kMeanGravityFloat, -0.1f, 0.0f));
   EXPECT_TRUE(IsTabletModeStarted());
 }
 
@@ -489,11 +490,11 @@ TEST_P(TabletModeControllerTest, LaptopTest) {
     gfx::Vector3dF base(-kAccelerometerLaptopModeTestData[i * 6 + 1],
                         -kAccelerometerLaptopModeTestData[i * 6],
                         -kAccelerometerLaptopModeTestData[i * 6 + 2]);
-    base.Scale(kMeanGravity);
+    base.Scale(kMeanGravityFloat);
     gfx::Vector3dF lid(-kAccelerometerLaptopModeTestData[i * 6 + 4],
                        kAccelerometerLaptopModeTestData[i * 6 + 3],
                        kAccelerometerLaptopModeTestData[i * 6 + 5]);
-    lid.Scale(kMeanGravity);
+    lid.Scale(kMeanGravityFloat);
     TriggerBaseAndLidUpdate(base, lid);
     // There are a lot of samples, so ASSERT rather than EXPECT to only generate
     // one failure rather than potentially hundreds.
@@ -503,8 +504,8 @@ TEST_P(TabletModeControllerTest, LaptopTest) {
 
 TEST_P(TabletModeControllerTest, TabletModeTest) {
   // Trigger tablet mode by opening to 270 to begin the test in tablet mode.
-  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravityFloat),
+                          gfx::Vector3dF(0.0f, -kMeanGravityFloat, 0.0f));
   ASSERT_TRUE(IsTabletModeStarted());
 
   // Feeds in sample accelerometer data and verifies that there are no
@@ -516,11 +517,11 @@ TEST_P(TabletModeControllerTest, TabletModeTest) {
     gfx::Vector3dF base(-kAccelerometerFullyOpenTestData[i * 6 + 1],
                         -kAccelerometerFullyOpenTestData[i * 6],
                         -kAccelerometerFullyOpenTestData[i * 6 + 2]);
-    base.Scale(kMeanGravity);
+    base.Scale(kMeanGravityFloat);
     gfx::Vector3dF lid(-kAccelerometerFullyOpenTestData[i * 6 + 4],
                        kAccelerometerFullyOpenTestData[i * 6 + 3],
                        kAccelerometerFullyOpenTestData[i * 6 + 5]);
-    lid.Scale(kMeanGravity);
+    lid.Scale(kMeanGravityFloat);
     TriggerBaseAndLidUpdate(base, lid);
     // There are a lot of samples, so ASSERT rather than EXPECT to only generate
     // one failure rather than potentially hundreds.
@@ -645,8 +646,8 @@ TEST_P(TabletModeControllerTest, TabletModeAfterExitingDockedMode) {
 // angles when hinge is nearly vertical
 TEST_P(TabletModeControllerTest, VerticalHingeUnstableAnglesTest) {
   // Trigger tablet mode by opening to 270 to begin the test in tablet mode.
-  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity),
-                          gfx::Vector3dF(0.0f, -kMeanGravity, 0.0f));
+  TriggerBaseAndLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravityFloat),
+                          gfx::Vector3dF(0.0f, -kMeanGravityFloat, 0.0f));
   ASSERT_TRUE(IsTabletModeStarted());
 
   // Feeds in sample accelerometer data and verifies that there are no
@@ -742,7 +743,7 @@ TEST_P(TabletModeControllerTest, RecordLidAngle) {
 
   // The timer should be stopped in response to a lid-only update since we can
   // no longer compute an angle.
-  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravityFloat));
   EXPECT_FALSE(
       tablet_mode_controller()->TriggerRecordLidAngleTimerForTesting());
   histogram_tester.ExpectTotalCount(

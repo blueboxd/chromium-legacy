@@ -65,12 +65,14 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
      * The types of filters supported.
      */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({FilterType.NAMES, FilterType.EMAILS, FilterType.TELEPHONES, FilterType.ADDRESSES})
+    @IntDef({FilterType.NAMES, FilterType.EMAILS, FilterType.TELEPHONES, FilterType.ADDRESSES,
+            FilterType.ICONS})
     public @interface FilterType {
         int NAMES = 0;
         int EMAILS = 1;
         int TELEPHONES = 2;
         int ADDRESSES = 3;
+        int ICONS = 4;
     }
 
     /**
@@ -135,6 +137,9 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     // Whether to include telephone numbers in the returned results.
     private static boolean sIncludeTelephones;
 
+    // Whether to include icons in the returned results.
+    private static boolean sIncludeIcons;
+
     // A list of contacts to use for testing (instead of querying Android).
     private static ArrayList<ContactDetails> sTestContacts;
 
@@ -156,6 +161,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         sIncludeNames = true;
         sIncludeEmails = true;
         sIncludeTelephones = true;
+        sIncludeIcons = true;
         mProfileDataCache = new ProfileDataCache(context,
                 mContext.getResources().getDimensionPixelSize(R.dimen.contact_picker_icon_size));
 
@@ -284,7 +290,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
                 mTopView.updateCheckboxVisibility(mCategoryView.multiSelectionAllowed());
                 mTopView.updateChipVisibility(mCategoryView.includeNames,
                         mCategoryView.includeAddresses, mCategoryView.includeEmails,
-                        mCategoryView.includeTel);
+                        mCategoryView.includeTel, mCategoryView.includeIcons);
                 mCategoryView.setTopView(mTopView);
                 if (mContactDetails != null) mTopView.updateContactCount(mContactDetails.size());
                 return new TopViewHolder(mTopView);
@@ -350,6 +356,9 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
             case FilterType.TELEPHONES:
                 sIncludeTelephones = !sIncludeTelephones;
                 break;
+            case FilterType.ICONS:
+                sIncludeIcons = !sIncludeIcons;
+                break;
             default:
                 assert false;
         }
@@ -383,6 +392,13 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
      */
     public static boolean includesTelephones() {
         return sIncludeTelephones;
+    }
+
+    /**
+     * Returns true unless the adapter is filtering out icons.
+     */
+    public static boolean includesIcons() {
+        return sIncludeIcons;
     }
 
     /**

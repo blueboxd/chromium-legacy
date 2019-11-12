@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service_observer.h"
+#include "chrome/browser/ui/global_media_controls/overlay_media_notification.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
@@ -71,7 +72,7 @@ void MediaNotificationService::Session::WebContentsDestroyed() {
 MediaNotificationService::MediaNotificationService(
     Profile* profile,
     service_manager::Connector* connector)
-    : connector_(connector) {
+    : connector_(connector), overlay_media_notifications_manager_(this) {
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForCast) &&
       media_router::MediaRouterEnabled(profile)) {
     cast_notification_provider_ =
@@ -145,7 +146,8 @@ void MediaNotificationService::OnFocusGained(
     // controller because the mojo pipe would have been reset.
     it->second.item()->SetController(std::move(controller),
                                      std::move(session->session_info));
-    active_controllable_session_ids_.insert(id);
+    if (!base::Contains(dragged_out_session_ids_, id))
+      active_controllable_session_ids_.insert(id);
     frozen_session_ids_.erase(id);
     for (auto& observer : observers_)
       observer.OnNotificationListChanged();
@@ -179,7 +181,9 @@ void MediaNotificationService::OnFocusLost(
 }
 
 void MediaNotificationService::ShowNotification(const std::string& id) {
-  active_controllable_session_ids_.insert(id);
+  if (!base::Contains(dragged_out_session_ids_, id))
+    active_controllable_session_ids_.insert(id);
+
   for (auto& observer : observers_)
     observer.OnNotificationListChanged();
 
@@ -201,6 +205,12 @@ void MediaNotificationService::ShowNotification(const std::string& id) {
 void MediaNotificationService::HideNotification(const std::string& id) {
   active_controllable_session_ids_.erase(id);
   frozen_session_ids_.erase(id);
+
+  if (base::Contains(dragged_out_session_ids_, id)) {
+    overlay_media_notifications_manager_.CloseOverlayNotification(id);
+    dragged_out_session_ids_.erase(id);
+  }
+
   for (auto& observer : observers_)
     observer.OnNotificationListChanged();
 
@@ -218,6 +228,12 @@ MediaNotificationService::GetTaskRunner() const {
 void MediaNotificationService::RemoveItem(const std::string& id) {
   active_controllable_session_ids_.erase(id);
   frozen_session_ids_.erase(id);
+
+  if (base::Contains(dragged_out_session_ids_, id)) {
+    overlay_media_notifications_manager_.CloseOverlayNotification(id);
+    dragged_out_session_ids_.erase(id);
+  }
+
   sessions_.erase(id);
 
   for (auto& observer : observers_)
@@ -255,6 +271,13 @@ void MediaNotificationService::OnContainerClicked(const std::string& id) {
 }
 
 void MediaNotificationService::OnContainerDismissed(const std::string& id) {
+  // If the notification is dragged out, then dismissing should just close the
+  // overlay notification.
+  if (base::Contains(dragged_out_session_ids_, id)) {
+    overlay_media_notifications_manager_.CloseOverlayNotification(id);
+    return;
+  }
+
   auto it = sessions_.find(id);
   if (it != sessions_.end())
     it->second.item()->Dismiss();
@@ -266,6 +289,62 @@ void MediaNotificationService::OnContainerDestroyed(const std::string& id) {
 
   iter->second->RemoveObserver(this);
   observed_containers_.erase(iter);
+}
+
+void MediaNotificationService::OnContainerDraggedOut(const std::string& id,
+                                                     gfx::Rect bounds) {
+  if (!dialog_delegate_)
+    return;
+
+  std::unique_ptr<OverlayMediaNotification> overlay_notification =
+      dialog_delegate_->PopOut(id, bounds);
+  if (!overlay_notification)
+    return;
+
+  overlay_media_notifications_manager_.ShowOverlayNotification(
+      id, std::move(overlay_notification));
+  active_controllable_session_ids_.erase(id);
+  dragged_out_session_ids_.insert(id);
+
+  for (auto& observer : observers_)
+    observer.OnNotificationListChanged();
+}
+
+void MediaNotificationService::OnOverlayNotificationClosed(
+    const std::string& id) {
+  // If the session has been destroyed, no action is needed.
+  auto it = sessions_.find(id);
+  if (it == sessions_.end())
+    return;
+
+  // Since the overlay is closing, we no longer need to observe the associated
+  // container.
+  auto observed_iter = observed_containers_.find(id);
+  if (observed_iter != observed_containers_.end()) {
+    observed_iter->second->RemoveObserver(this);
+    observed_containers_.erase(observed_iter);
+  }
+
+  // Otherwise, if it's a non-frozen item, then it's now an active one.
+  if (!base::Contains(frozen_session_ids_, id))
+    active_controllable_session_ids_.insert(id);
+  dragged_out_session_ids_.erase(id);
+
+  for (auto& observer : observers_)
+    observer.OnNotificationListChanged();
+
+  // If there's a dialog currently open, then we should show the item in the
+  // dialog.
+  if (!dialog_delegate_)
+    return;
+
+  MediaNotificationContainerImpl* container =
+      dialog_delegate_->ShowMediaSession(id, it->second.item()->GetWeakPtr());
+
+  if (container) {
+    container->AddObserver(this);
+    observed_containers_[id] = container;
+  }
 }
 
 void MediaNotificationService::OnCastNotificationsChanged() {

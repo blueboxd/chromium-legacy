@@ -163,7 +163,8 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
   static void SetFactoryForTesting(Factory factory);
 
   // Overrides the DM token used for testing purposes.
-  static void SetDMTokenForTesting(const char* dm_token);
+  static void SetDMTokenForTesting(
+      const policy::BrowserDMTokenStorage::BrowserDMToken& dm_token);
 
   // Returns true if the given file type is supported for scanning.
   static bool FileTypeSupported(const bool for_malware_scan,

@@ -3120,9 +3120,10 @@ bool RTCPeerConnection::SetIceGatheringState(
 
 void RTCPeerConnection::ChangeIceConnectionState(
     webrtc::PeerConnectionInterface::IceConnectionState ice_connection_state) {
-  if (ice_connection_state_ ==
-          webrtc::PeerConnectionInterface::kIceConnectionClosed ||
-      ice_connection_state_ == ice_connection_state) {
+  if (closed_) {
+    return;
+  }
+  if (ice_connection_state_ == ice_connection_state) {
     return;
   }
   ice_connection_state_ = ice_connection_state;

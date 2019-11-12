@@ -113,6 +113,7 @@ MEDIA_EXPORT extern const base::Feature kFailUrlProvisionFetcherForTesting;
 MEDIA_EXPORT extern const base::Feature kFallbackAfterDecodeError;
 MEDIA_EXPORT extern const base::Feature kGlobalMediaControls;
 MEDIA_EXPORT extern const base::Feature kGlobalMediaControlsForCast;
+MEDIA_EXPORT extern const base::Feature kGlobalMediaControlsOverlayControls;
 MEDIA_EXPORT extern const base::Feature kHardwareMediaKeyHandling;
 MEDIA_EXPORT extern const base::Feature kHardwareSecureDecryption;
 MEDIA_EXPORT extern const base::Feature kInternalMediaSession;

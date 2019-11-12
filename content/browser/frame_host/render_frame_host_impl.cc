@@ -4826,7 +4826,8 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       InitiatorCSPInfo(), std::vector<int>(), std::string(),
-      false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
+      false /* is_history_navigation_in_new_child_frame */, base::TimeTicks(),
+      base::nullopt /* frame_policy */);
   CommitNavigation(nullptr /* navigation_request */, std::move(common_params),
                    CreateCommitNavigationParams(), nullptr /* response_head */,
                    mojo::ScopedDataPipeConsumerHandle(),

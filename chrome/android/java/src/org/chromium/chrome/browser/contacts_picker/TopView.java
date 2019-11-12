@@ -73,6 +73,9 @@ public class TopView extends RelativeLayout
     // A Chip for filtering out telephones.
     private ChipView mTelephonesFilterChip;
 
+    // A Chip for filtering out telephones.
+    private ChipView mIconsFilterChip;
+
     // The callback to use to notify when the filter chips are toggled.
     private ChipToggledCallback mChipToggledCallback;
 
@@ -121,6 +124,12 @@ public class TopView extends RelativeLayout
         textView.setText(R.string.top_view_telephone_filter_label);
         mTelephonesFilterChip.setSelected(true);
         mTelephonesFilterChip.setOnClickListener(this);
+
+        mIconsFilterChip = findViewById(R.id.icon_filter);
+        textView = mIconsFilterChip.getPrimaryTextView();
+        textView.setText(R.string.top_view_icon_filter_label);
+        mIconsFilterChip.setSelected(true);
+        mIconsFilterChip.setOnClickListener(this);
     }
 
     @Override
@@ -134,6 +143,8 @@ public class TopView extends RelativeLayout
             notifyChipToggled(PickerAdapter.FilterType.EMAILS);
         } else if (id == R.id.tel_filter) {
             notifyChipToggled(PickerAdapter.FilterType.TELEPHONES);
+        } else if (id == R.id.icon_filter) {
+            notifyChipToggled(PickerAdapter.FilterType.ICONS);
         }
     }
 
@@ -156,6 +167,9 @@ public class TopView extends RelativeLayout
                 break;
             case PickerAdapter.FilterType.TELEPHONES:
                 chipView = mTelephonesFilterChip;
+                break;
+            case PickerAdapter.FilterType.ICONS:
+                chipView = mIconsFilterChip;
                 break;
             default:
                 assert false;
@@ -213,11 +227,12 @@ public class TopView extends RelativeLayout
      * @param shouldDisplayTel Whether the telephone chip should be displayed.
      */
     public void updateChipVisibility(boolean shouldDisplayNames, boolean shouldDisplayAddresses,
-            boolean shouldDisplayEmails, boolean shouldDisplayTel) {
+            boolean shouldDisplayEmails, boolean shouldDisplayTel, boolean shouldDisplayIcons) {
         mNamesFilterChip.setVisibility(shouldDisplayNames ? View.VISIBLE : View.GONE);
         mAddressFilterChip.setVisibility(shouldDisplayAddresses ? View.VISIBLE : View.GONE);
         mEmailFilterChip.setVisibility(shouldDisplayEmails ? View.VISIBLE : View.GONE);
         mTelephonesFilterChip.setVisibility(shouldDisplayTel ? View.VISIBLE : View.GONE);
+        mIconsFilterChip.setVisibility(shouldDisplayIcons ? View.VISIBLE : View.GONE);
     }
 
     /**

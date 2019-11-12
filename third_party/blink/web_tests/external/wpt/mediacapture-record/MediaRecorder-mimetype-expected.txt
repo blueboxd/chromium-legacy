@@ -23,8 +23,8 @@ PASS Unsupported MIMEType video/webm; codecs="vp9, vorbis" throws
 PASS Supported MIMEType video/webm; codecs="vp9, opus" is set immediately after constructing
 PASS Unsupported MIMEType video/webm; codecs="av1" throws
 PASS Unsupported MIMEType video/webm; codecs="av1, opus" throws
-FAIL MediaRecorder sets a MIMEType after start() for audio assert_regexp_match: MIMEtype has one codec expected object "/^[a-z]+\/[a-z]+; codecs=[^,]+$/" but got "audio/webm;codecs=opus"
-FAIL MediaRecorder sets a MIMEType after start() for video assert_regexp_match: MIMEtype has one codec expected object "/^[a-z]+\/[a-z]+; codecs=[^,]+$/" but got "video/webm;codecs=vp8"
-FAIL MediaRecorder sets a MIMEType after start() for audio/video assert_regexp_match: MIMEtype has two codecs expected object "/^[a-z]+\/[a-z]+; codecs=[^,]+,[^,]+$/" but got "video/webm;codecs=vp8,opus"
+FAIL MediaRecorder sets a MIMEType after 'start' for audio assert_equals: MediaRecorder has no MIMEtype after start() for audio expected "" but got "audio/webm;codecs=opus"
+FAIL MediaRecorder sets a MIMEType after 'start' for video assert_equals: MediaRecorder has no MIMEtype after start() for video expected "" but got "video/webm;codecs=vp8"
+FAIL MediaRecorder sets a MIMEType after 'start' for audio/video assert_equals: MediaRecorder has no MIMEtype after start() for audio/video expected "" but got "video/webm;codecs=vp8,opus"
 Harness: the test ran to completion.
 

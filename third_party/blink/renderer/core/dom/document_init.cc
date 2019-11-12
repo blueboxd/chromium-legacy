@@ -275,4 +275,10 @@ DocumentInit& DocumentInit::WithContentSecurityPolicy(
   return *this;
 }
 
+DocumentInit& DocumentInit::WithFramePolicy(
+    const base::Optional<FramePolicy>& frame_policy) {
+  frame_policy_ = frame_policy;
+  return *this;
+}
+
 }  // namespace blink

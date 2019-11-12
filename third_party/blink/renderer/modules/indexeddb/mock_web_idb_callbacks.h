@@ -26,7 +26,7 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
 
   void SetState(base::WeakPtr<WebIDBCursorImpl>, int64_t);
 
-  MOCK_METHOD2(Error, void(int32_t, const String&));
+  MOCK_METHOD2(Error, void(mojom::blink::IDBException, const String&));
 
   void SuccessCursorContinue(
       std::unique_ptr<IDBKey>,

@@ -70,22 +70,6 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
   }
 }
 
-int LayoutTextControl::TextBlockLogicalHeight() const {
-  return (LogicalHeight() - BorderAndPaddingLogicalHeight()).ToInt();
-}
-
-int LayoutTextControl::TextBlockLogicalWidth() const {
-  Element* inner_editor = InnerEditorElement();
-  DCHECK(inner_editor);
-
-  LayoutUnit unit_width = LogicalWidth() - BorderAndPaddingLogicalWidth();
-  if (inner_editor->GetLayoutObject())
-    unit_width -= inner_editor->GetLayoutBox()->PaddingStart() +
-                  inner_editor->GetLayoutBox()->PaddingEnd();
-
-  return unit_width.ToInt();
-}
-
 int LayoutTextControl::ScrollbarThickness() const {
   // FIXME: We should get the size of the scrollbar from the LayoutTheme
   // instead.
@@ -222,14 +206,6 @@ float LayoutTextControl::GetAvgCharWidth(const AtomicString& family) const {
   TextRun text_run =
       ConstructTextRun(font, str, StyleRef(), TextRun::kAllowTrailingExpansion);
   return font.Width(text_run);
-}
-
-float LayoutTextControl::ScaleEmToUnits(int x) const {
-  // This matches the unitsPerEm value for MS Shell Dlg and Courier New from the
-  // "head" font table.
-  float units_per_em = 2048.0f;
-  return roundf(StyleRef().GetFont().GetFontDescription().ComputedSize() * x /
-                units_per_em);
 }
 
 void LayoutTextControl::ComputeIntrinsicLogicalWidths(

@@ -36,14 +36,16 @@ const int kMaximumTrackedProfiles = 21;
 // Reads DM token and client id. Returns true if boths are non empty.
 bool GetDMTokenAndDeviceId(std::string* dm_token, std::string* client_id) {
   DCHECK(dm_token && client_id);
-  *dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
+  auto browser_dm_token =
+      policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
   *client_id = policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
 
-  if (dm_token->empty() || client_id->empty()) {
+  if (!browser_dm_token.is_valid() || client_id->empty()) {
     VLOG(1)
         << "Enterprise reporting is disabled because device is not enrolled.";
     return false;
   }
+  *dm_token = browser_dm_token.value();
   return true;
 }
 

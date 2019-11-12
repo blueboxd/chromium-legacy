@@ -397,7 +397,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
             *frame_entry, request_body, frame_entry->url(),
             blink::mojom::Referrer::New(referrer.url, referrer.policy),
             navigate_type, PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(),
-            base::TimeTicks::Now());
+            base::TimeTicks::Now(),
+            frame_tree_node->current_replication_state().frame_policy);
     mojom::CommitNavigationParamsPtr commit_params =
         entry->ConstructCommitNavigationParams(
             *frame_entry, common_params->url, frame_entry->committed_origin(),
@@ -2746,7 +2747,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
           *frame_entry, nullptr, frame_entry->url(),
           blink::mojom::Referrer::New(referrer.url, referrer.policy),
           mojom::NavigationType::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
-          base::TimeTicks::Now(), base::TimeTicks::Now());
+          base::TimeTicks::Now(), base::TimeTicks::Now(),
+          frame_tree_node->current_replication_state().frame_policy);
   mojom::CommitNavigationParamsPtr commit_params =
       entry.ConstructCommitNavigationParams(
           *frame_entry, common_params->url, frame_entry->committed_origin(),

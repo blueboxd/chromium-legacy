@@ -194,12 +194,16 @@ public class StartSurfaceMediatorUnitTest {
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
         verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
 
-        doReturn(1).when(mNormalTabModel).getCount();
+        doReturn(2).when(mNormalTabModel).getCount();
         mediator.showOverview(false);
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
 
-        doReturn(0).when(mNormalTabModel).getCount();
+        mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), false);
+        assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
+        assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
+
+        doReturn(1).when(mNormalTabModel).getCount();
         mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), false);
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));

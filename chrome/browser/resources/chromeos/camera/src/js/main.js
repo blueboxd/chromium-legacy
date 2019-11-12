@@ -25,24 +25,18 @@ cca.App = function() {
   this.gallery_ = new cca.models.Gallery();
 
   /**
-   * @type {cca.ResolutionEventBroker}
-   * @private
-   */
-  this.resolBroker_ = new cca.ResolutionEventBroker();
-
-  /**
    * @type {cca.device.PhotoResolPreferrer}
    * @private
    */
-  this.photoPreferrer_ = new cca.device.PhotoResolPreferrer(
-      this.resolBroker_, () => this.cameraView_.restart());
+  this.photoPreferrer_ =
+      new cca.device.PhotoResolPreferrer(() => this.cameraView_.restart());
 
   /**
    * @type {cca.device.VideoConstraintsPreferrer}
    * @private
    */
   this.videoPreferrer_ = new cca.device.VideoConstraintsPreferrer(
-      this.resolBroker_, () => this.cameraView_.restart());
+      () => this.cameraView_.restart());
 
   /**
    * @type {cca.device.DeviceInfoUpdater}
@@ -91,8 +85,7 @@ cca.App = function() {
     new cca.views.BaseSettings('#gridsettings'),
     new cca.views.BaseSettings('#timersettings'),
     new cca.views.ResolutionSettings(
-        this.infoUpdater_, this.photoPreferrer_, this.videoPreferrer_,
-        this.resolBroker_),
+        this.infoUpdater_, this.photoPreferrer_, this.videoPreferrer_),
     new cca.views.BaseSettings('#photoresolutionsettings'),
     new cca.views.BaseSettings('#videoresolutionsettings'),
     new cca.views.BaseSettings('#expertsettings'),

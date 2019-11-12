@@ -200,13 +200,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   void SystemFont(CSSValueID system_font_id, FontDescription&);
   virtual Color SystemColor(CSSValueID, WebColorScheme color_scheme) const;
 
-  // Whether the default system font should have its average character width
-  // adjusted to match MS Shell Dlg.
-  virtual bool NeedsHackForTextControlWithFontFamily(
-      const AtomicString&) const {
-    return false;
-  }
-
   virtual int MinimumMenuListSize(const ComputedStyle&) const { return 0; }
 
   virtual void AdjustSliderThumbSize(ComputedStyle&) const;

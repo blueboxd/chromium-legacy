@@ -8,6 +8,7 @@
 #include "base/auto_reset.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -255,6 +256,31 @@ TEST_F(DocumentLoaderSimTest, DocumentOpenUpdatesUrl) {
   EXPECT_EQ(KURL("https://example.com"), child_document->Url());
   // Similarly, the URL of the DocumentLoader should also match.
   EXPECT_EQ(KURL("https://example.com"), child_document->Loader()->Url());
+}
+
+TEST_F(DocumentLoaderSimTest, FramePolicyIntegrityOnNavigationCommit) {
+  SimRequest main_resource("https://example.com", "text/html");
+  SimRequest iframe_resource("https://example.com/foo.html", "text/html");
+  LoadURL("https://example.com");
+
+  main_resource.Write(R"(
+    <iframe id='frame1'></iframe>
+    <script>
+      const iframe = document.getElementById('frame1');
+      iframe.src = 'https://example.com/foo.html'; // navigation triggered
+      iframe.allow = "payment 'none'"; // should not take effect until the
+                                       // next navigation on iframe
+    </script>
+  )");
+
+  main_resource.Finish();
+  iframe_resource.Finish();
+
+  auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
+  auto* child_document = child_frame->GetFrame()->GetDocument();
+
+  EXPECT_TRUE(child_document->IsFeatureEnabled(
+      blink::mojom::FeaturePolicyFeature::kPayment));
 }
 
 TEST_F(DocumentLoaderTest, CommitsDeferredOnSameOriginNavigation) {

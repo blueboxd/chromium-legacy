@@ -42,7 +42,6 @@
       <structure name="IDR_CAMERA_OPTIONS_JS" file="src/js/views/camera/options.js" type="chrome_html" />
       <structure name="IDR_CAMERA_PREVIEW_JS" file="src/js/views/camera/preview.js" type="chrome_html" />
       <structure name="IDR_CAMERA_RECORDTIME_JS" file="src/js/views/camera/recordtime.js" type="chrome_html" />
-      <structure name="IDR_CAMERA_RESOLUTION_EVENT_BROKER_JS" file="src/js/resolution_event_broker.js" type="chrome_html" />
       <structure name="IDR_CAMERA_RESULT_SAVER_JS" file="src/js/models/result_saver.js" type="chrome_html" />
       <structure name="IDR_CAMERA_REVIEW_RESULT_JS" file="src/js/views/camera/review_result.js" type="chrome_html" />
       <structure name="IDR_CAMERA_SCROLLBAR_JS" file="src/js/scrollbar.js" type="chrome_html" />

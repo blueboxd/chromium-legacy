@@ -46,7 +46,7 @@
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 using base::ASCIIToUTF16;
@@ -85,7 +85,7 @@ leveldb::Status GetDBSizeFromEnv(leveldb::Env* env,
 
 IndexedDBDatabaseError CreateDefaultError() {
   return IndexedDBDatabaseError(
-      blink::kWebIDBDatabaseExceptionUnknownError,
+      blink::mojom::IDBException::kUnknownError,
       ASCIIToUTF16("Internal error opening backing store"
                    " for indexedDB.open."));
 }
@@ -200,7 +200,7 @@ void IndexedDBFactoryImpl::GetDatabaseInfo(
       factory->backing_store_->db(),
       factory->backing_store_->origin_identifier(), &names_and_versions);
   if (!s.ok()) {
-    error = IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
+    error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
                                    "Internal error opening backing store for "
                                    "indexedDB.databases().");
     callbacks->OnError(error);
@@ -243,7 +243,7 @@ void IndexedDBFactoryImpl::GetDatabaseNames(
       factory->backing_store_->db(),
       factory->backing_store_->origin_identifier(), &names);
   if (!s.ok()) {
-    error = IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
+    error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
                                    "Internal error opening backing store for "
                                    "indexedDB.webkitGetDatabaseNames.");
     callbacks->OnError(error);
@@ -291,7 +291,7 @@ void IndexedDBFactoryImpl::Open(
       std::make_unique<IndexedDBMetadataCoding>(), std::move(unique_identifier),
       factory->lock_manager());
   if (!database.get()) {
-    error = IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
+    error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
                                    ASCIIToUTF16("Internal error creating "
                                                 "database backend for "
                                                 "indexedDB.open."));
@@ -357,7 +357,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
       factory->backing_store()->db(),
       factory->backing_store()->origin_identifier(), &names);
   if (!s.ok()) {
-    error = IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
+    error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
                                    "Internal error opening backing store for "
                                    "indexedDB.deleteDatabase.");
     callbacks->OnError(error);
@@ -382,7 +382,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
       factory->lock_manager());
   if (!database.get()) {
     error = IndexedDBDatabaseError(
-        blink::kWebIDBDatabaseExceptionUnknownError,
+        blink::mojom::IDBException::kUnknownError,
         ASCIIToUTF16("Internal error creating database backend for "
                      "indexedDB.deleteDatabase."));
     callbacks->OnError(error);
@@ -718,7 +718,7 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
     if (disk_full) {
       return {IndexedDBOriginStateHandle(), s,
               IndexedDBDatabaseError(
-                  blink::kWebIDBDatabaseExceptionQuotaError,
+                  blink::mojom::IDBException::kQuotaError,
                   ASCIIToUTF16("Encountered full disk while opening "
                                "backing store for indexedDB.open.")),
               data_loss_info, /*was_cold_open=*/true};
@@ -941,11 +941,10 @@ void IndexedDBFactoryImpl::OnDatabaseError(const url::Origin& origin,
   if (status.IsCorruption()) {
     IndexedDBDatabaseError error =
         message != nullptr
-            ? IndexedDBDatabaseError(
-                  blink::kWebIDBDatabaseExceptionUnknownError, message)
-            : IndexedDBDatabaseError(
-                  blink::kWebIDBDatabaseExceptionUnknownError,
-                  base::ASCIIToUTF16(status.ToString()));
+            ? IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
+                                     message)
+            : IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
+                                     base::ASCIIToUTF16(status.ToString()));
     HandleBackingStoreCorruption(origin, error);
   } else {
     HandleBackingStoreFailure(origin);

@@ -586,6 +586,10 @@ void LocalFrameClientImpl::BeginNavigation(
         devtools->NavigationInitiatorInfo(web_frame_->GetFrame());
   }
 
+  auto* owner = ToCoreFrame(web_frame_)->Owner();
+  navigation_info->frame_policy =
+      owner ? base::make_optional(owner->GetFramePolicy()) : base::nullopt;
+
   navigation_info->href_translate = href_translate;
 
   web_frame_->Client()->BeginNavigation(std::move(navigation_info));

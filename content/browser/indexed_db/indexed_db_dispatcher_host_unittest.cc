@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/utf_offset_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
@@ -41,7 +41,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "url/origin.h"
 
 using blink::IndexedDBDatabaseMetadata;
@@ -496,18 +495,18 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_PutWithInvalidBlob) {
 
         EXPECT_CALL(
             put_callback,
-            Run(IsCallbackError(blink::kWebIDBDatabaseExceptionUnknownError)))
+            Run(IsCallbackError(blink::mojom::IDBException::kUnknownError)))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
 
-        EXPECT_CALL(*connection->connection_callbacks,
-                    Abort(kTransactionId,
-                          blink::kWebIDBDatabaseExceptionUnknownError, _))
+        EXPECT_CALL(
+            *connection->connection_callbacks,
+            Abort(kTransactionId, blink::mojom::IDBException::kUnknownError, _))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
 
         EXPECT_CALL(*connection->open_callbacks,
-                    Error(blink::kWebIDBDatabaseExceptionAbortError, _))
+                    Error(blink::mojom::IDBException::kAbortError, _))
             .Times(1)
             .WillOnce(RunClosure(std::move(quit_closure2)));
 
@@ -667,13 +666,13 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
       FROM_HERE, base::BindLambdaForTesting([&]() {
         ::testing::InSequence dummy;
 
-        EXPECT_CALL(*connection->connection_callbacks,
-                    Abort(kTransactionId,
-                          blink::kWebIDBDatabaseExceptionUnknownError, _))
+        EXPECT_CALL(
+            *connection->connection_callbacks,
+            Abort(kTransactionId, blink::mojom::IDBException::kUnknownError, _))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
         EXPECT_CALL(*connection->open_callbacks,
-                    Error(blink::kWebIDBDatabaseExceptionAbortError, _))
+                    Error(blink::mojom::IDBException::kAbortError, _))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
         EXPECT_CALL(*connection->connection_callbacks, ForcedClose())
@@ -743,13 +742,13 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
       FROM_HERE, base::BindLambdaForTesting([&]() {
         ::testing::InSequence dummy;
 
-        EXPECT_CALL(*connection->connection_callbacks,
-                    Abort(kTransactionId,
-                          blink::kWebIDBDatabaseExceptionUnknownError, _))
+        EXPECT_CALL(
+            *connection->connection_callbacks,
+            Abort(kTransactionId, blink::mojom::IDBException::kUnknownError, _))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
         EXPECT_CALL(*connection->open_callbacks,
-                    Error(blink::kWebIDBDatabaseExceptionAbortError, _))
+                    Error(blink::mojom::IDBException::kAbortError, _))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
         EXPECT_CALL(*connection->connection_callbacks, ForcedClose())
@@ -894,13 +893,13 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
       FROM_HERE, base::BindLambdaForTesting([&]() {
         ::testing::InSequence dummy;
 
-        EXPECT_CALL(*connection->connection_callbacks,
-                    Abort(kTransactionId,
-                          blink::kWebIDBDatabaseExceptionUnknownError, _))
+        EXPECT_CALL(
+            *connection->connection_callbacks,
+            Abort(kTransactionId, blink::mojom::IDBException::kUnknownError, _))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
         EXPECT_CALL(*connection->open_callbacks,
-                    Error(blink::kWebIDBDatabaseExceptionAbortError, _))
+                    Error(blink::mojom::IDBException::kAbortError, _))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
         EXPECT_CALL(*connection->connection_callbacks, ForcedClose())
@@ -971,13 +970,13 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
       FROM_HERE, base::BindLambdaForTesting([&]() {
         ::testing::InSequence dummy;
 
-        EXPECT_CALL(*connection->connection_callbacks,
-                    Abort(kTransactionId,
-                          blink::kWebIDBDatabaseExceptionUnknownError, _))
+        EXPECT_CALL(
+            *connection->connection_callbacks,
+            Abort(kTransactionId, blink::mojom::IDBException::kUnknownError, _))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
         EXPECT_CALL(*connection->open_callbacks,
-                    Error(blink::kWebIDBDatabaseExceptionAbortError, _))
+                    Error(blink::mojom::IDBException::kAbortError, _))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
         EXPECT_CALL(*connection->connection_callbacks, ForcedClose())

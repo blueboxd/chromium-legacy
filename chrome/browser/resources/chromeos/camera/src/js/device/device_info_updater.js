@@ -202,7 +202,6 @@ cca.device.DeviceInfoUpdater = class {
     await this.lockingUpdate_;
   }
 
-
   /**
    * Gets MediaDeviceInfo for all available video devices.
    * @return {!Promise<!Array<!MediaDeviceInfo>>}
@@ -210,6 +209,17 @@ cca.device.DeviceInfoUpdater = class {
    */
   async getDevicesInfo() {
     return this.devicesInfo_;
+  }
+
+  /**
+   * Gets MediaDeviceInfo of specific video device.
+   * @param {string} deviceId Device id of video device to get information from.
+   * @return {!Promise<?MediaDeviceInfo>}
+   * @private
+   */
+  async getDeviceInfo(deviceId) {
+    const /** !Array<!MediaDeviceInfo> */ infos = await this.getDevicesInfo();
+    return infos.find((d) => d.deviceId === deviceId) || null;
   }
 
   /**

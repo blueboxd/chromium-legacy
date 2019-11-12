@@ -27,6 +27,9 @@ class TestGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
 
   void AddBool(const char* name, bool value) override {}
 
+  void AddBinary(const char* name,
+                 const base::span<const uint8_t>& blob) override {}
+
   void AddTimeDeltaInSecondsF(const char* name,
                               const base::TimeDelta& value) override {}
 

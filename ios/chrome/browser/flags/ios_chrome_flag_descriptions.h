@@ -167,6 +167,10 @@ extern const char kEnableSyncUSSNigoriDescription[];
 extern const char kFindInPageiFrameName[];
 extern const char kFindInPageiFrameDescription[];
 
+// Title and description for the flag to force an unstacked tabstrip.
+extern const char kForceUnstackedTabstripName[];
+extern const char kForceUnstackedTabstripDescription[];
+
 // Title and description for the command line switch used to determine the
 // active fullscreen viewport adjustment mode.
 extern const char kFullscreenSmoothScrollingName[];

@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/numerics/math_constants.h"
 #include "base/run_loop.h"
 #include "base/time/default_tick_clock.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
@@ -84,9 +85,9 @@ void TabletModeControllerTestApi::OpenLidToAngle(float degrees) {
   DCHECK(degrees <= 360.0f);
 
   float radians = degrees * kDegreesToRadians;
-  gfx::Vector3dF base_vector(0.0f, -kMeanGravity, 0.0f);
-  gfx::Vector3dF lid_vector(0.0f, kMeanGravity * cos(radians),
-                            kMeanGravity * sin(radians));
+  gfx::Vector3dF base_vector(0.0f, -base::kMeanGravityFloat, 0.0f);
+  gfx::Vector3dF lid_vector(0.0f, base::kMeanGravityFloat * cos(radians),
+                            base::kMeanGravityFloat * sin(radians));
   TriggerBaseAndLidUpdate(base_vector, lid_vector);
 }
 

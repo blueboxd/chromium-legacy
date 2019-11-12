@@ -9,7 +9,7 @@
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 
-class TestingProfile;
+class Profile;
 
 namespace crostini {
 
@@ -18,8 +18,9 @@ namespace crostini {
 // DBusThreadManager is already initialized and Crostini is enabled.
 class AnsibleManagementTestHelper {
  public:
-  explicit AnsibleManagementTestHelper(TestingProfile* profile);
+  explicit AnsibleManagementTestHelper(Profile* profile);
 
+  void SetUpAnsiblePlaybookPreference();
   void SetUpAnsibleInfra();
 
   void SetUpAnsibleInstallation(
@@ -30,9 +31,7 @@ class AnsibleManagementTestHelper {
   void SendSucceededApplySignal();
 
  private:
-  void SetUpAnsiblePlaybookPreference();
-
-  TestingProfile* profile_;
+  Profile* profile_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // Owned by chromeos::DBusThreadManager

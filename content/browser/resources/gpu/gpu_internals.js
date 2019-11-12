@@ -4,6 +4,7 @@
 
 // <include src="browser_bridge.js">
 // <include src="info_view.js">
+// <include src="vulkan_info.js">
 
 let browserBridge;
 

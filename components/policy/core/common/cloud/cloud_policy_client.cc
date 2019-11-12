@@ -555,6 +555,28 @@ void CloudPolicyClient::UploadChromeDesktopReport(
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
+void CloudPolicyClient::UploadChromeOsUserReport(
+    std::unique_ptr<enterprise_management::ChromeOsUserReportRequest>
+        chrome_os_user_report,
+    const CloudPolicyClient::StatusCallback& callback) {
+  CHECK(is_registered());
+  DCHECK(chrome_os_user_report);
+  std::unique_ptr<DMServerJobConfiguration> config =
+      std::make_unique<DMServerJobConfiguration>(
+          DeviceManagementService::JobConfiguration::TYPE_CHROME_OS_USER_REPORT,
+          this,
+          /*critical=*/false, DMAuth::FromDMToken(dm_token_),
+          /*oauth_token=*/base::nullopt,
+          base::BindRepeating(&CloudPolicyClient::OnReportUploadCompleted,
+                              weak_ptr_factory_.GetWeakPtr(), callback));
+
+  em::DeviceManagementRequest* request = config->request();
+  request->set_allocated_chrome_os_user_report_request(
+      chrome_os_user_report.release());
+
+  request_jobs_.push_back(service_->CreateJob(std::move(config)));
+}
+
 void CloudPolicyClient::UploadRealtimeReport(base::Value report,
                                              const StatusCallback& callback) {
   CHECK(is_registered());

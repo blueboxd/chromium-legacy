@@ -9,5 +9,8 @@
   data: [
     "definitionURL",
     "encoding",
+    "mathbackground",
+    "mathcolor",
+    "mathsize",
   ],
 }

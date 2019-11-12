@@ -44,7 +44,6 @@ class LayoutTextControlMultiLine final : public LayoutTextControl {
                    const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
-  float GetAvgCharWidth(const AtomicString& family) const override;
   LayoutUnit PreferredContentLogicalWidth(float char_width) const override;
   LayoutUnit ComputeControlLogicalHeight(
       LayoutUnit line_height,

@@ -45,6 +45,9 @@ class MediaNotificationContainerImplView
   // views::Button:
   void AddedToWidget() override;
   void RemovedFromWidget() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
 
@@ -79,6 +82,10 @@ class MediaNotificationContainerImplView
   void AddObserver(MediaNotificationContainerObserver* observer) override;
   void RemoveObserver(MediaNotificationContainerObserver* observer) override;
 
+  // Sets up the notification to be ready to display in an overlay instead of
+  // the dialog.
+  void PopOut();
+
   views::ImageButton* GetDismissButtonForTesting();
 
   media_message_center::MediaNotificationView* view_for_testing() {
@@ -102,6 +109,9 @@ class MediaNotificationContainerImplView
   // Notify observers that we've been clicked.
   void ContainerClicked();
 
+  // True if we should handle the given mouse event for dragging purposes.
+  bool ShouldHandleMouseEvent(const ui::MouseEvent& event, bool is_press);
+
   const std::string id_;
   views::View* swipeable_container_ = nullptr;
 
@@ -122,6 +132,23 @@ class MediaNotificationContainerImplView
 
   bool has_artwork_ = false;
   bool has_many_actions_ = false;
+
+  // True if we've been dragged out of the dialog and into an overlay.
+  bool dragged_out_ = false;
+
+  // True if we're currently tracking a mouse drag. Used for dragging
+  // notifications out into an overlay notification, not for swiping to dismiss
+  // (see |slide_out_controller_| for swiping to dismiss).
+  bool is_mouse_pressed_ = false;
+
+  // The start point of a mouse drag. Used for dragging notifications out into
+  // an overlay notification, not for swiping to dismiss (see
+  // |slide_out_controller_| for swiping to dismiss).
+  gfx::Point initial_drag_location_;
+
+  // True if the current mouse press has been dragged enough to be considered a
+  // drag instead of a button click.
+  bool is_dragging_ = false;
 
   base::ObserverList<MediaNotificationContainerObserver> observers_;
 

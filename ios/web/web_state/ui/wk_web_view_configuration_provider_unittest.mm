@@ -182,5 +182,34 @@ TEST_F(WKWebViewConfigurationProviderTest, Observers) {
   EXPECT_FALSE(observer.GetLastCreatedWKConfiguration());
 }
 
+// Tests that if -[ResetWithWebViewConfiguration:] copies and applies Chrome's
+// initialization logic to the |config| that passed into that method
+TEST_F(WKWebViewConfigurationProviderTest, ResetConfiguration) {
+  std::unique_ptr<TestBrowserState> browser_state =
+      std::make_unique<TestBrowserState>();
+  WKWebViewConfigurationProvider* provider = &GetProvider(browser_state.get());
+
+  FakeWKConfigurationProviderObserver observer(provider);
+  ASSERT_FALSE(observer.GetLastCreatedWKConfiguration());
+
+  WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
+  config.allowsInlineMediaPlayback = NO;
+  provider->ResetWithWebViewConfiguration(config);
+  WKWebViewConfiguration* actual = observer.GetLastCreatedWKConfiguration();
+  ASSERT_TRUE(actual);
+
+  // To check the configuration inside is reset.
+  EXPECT_EQ(config.preferences, actual.preferences);
+
+  // To check Chrome's initialization logic has been applied to |actual|,
+  // where the |actual.allowsInlineMediaPlayback| should be overwriten by YES.
+  EXPECT_EQ(NO, config.allowsInlineMediaPlayback);
+  EXPECT_EQ(YES, actual.allowsInlineMediaPlayback);
+
+  // Compares the POINTERS to make sure the |config| has been shallow cloned
+  // inside the |provider|.
+  EXPECT_NE(config, actual);
+}
+
 }  // namespace
 }  // namespace web

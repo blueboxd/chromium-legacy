@@ -31,6 +31,25 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   static web::WKWebViewConfigurationProvider& FromBrowserState(
       web::BrowserState* browser_state);
 
+  // Resets the configuration saved in this WKWebViewConfigurationProvider
+  // using the given |configuration|. First |configuration| is shallow cloned
+  // and then Chrome's configuration initialization logic will be applied to
+  // make it work for //ios/web. If |configuration| is nil, a new
+  // WKWebViewConfiguration object will be created and set.
+  //
+  // WARNING: This method should NOT be used
+  // for any |configuration| that is originated from a //ios/web managed
+  // WKWebView (e.g. you will get a WKWebViewConfiguration from a delegate
+  // method when window.open() is called in a //ios/web managed WKWebView),
+  // because such a |configuration| is based on the current //ios/web
+  // configuration which has already been initialized with the Chrome's
+  // configuration initialization logic when it was passed to a initializer of
+  // //ios/web. Which means, this method should only be used for a newly created
+  // |configuration| or a |configuration| originated from somewhere outside
+  // //ios/web. This method is mainly used by
+  // WKWebViewConfigurationProvider::GetWebViewConfiguration().
+  void ResetWithWebViewConfiguration(WKWebViewConfiguration* configuration);
+
   // Returns an autoreleased shallow copy of WKWebViewConfiguration associated
   // with browser state. Lazily creates the config. Configuration's
   // |preferences| will have scriptCanOpenWindowsAutomatically property set to
@@ -59,7 +78,7 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   explicit WKWebViewConfigurationProvider(BrowserState* browser_state);
   WKWebViewConfigurationProvider() = delete;
   CRWWebUISchemeHandler* scheme_handler_ = nil;
-  WKWebViewConfiguration* configuration_;
+  WKWebViewConfiguration* configuration_ = nil;
   CRWWKScriptMessageRouter* router_;
   BrowserState* browser_state_;
 

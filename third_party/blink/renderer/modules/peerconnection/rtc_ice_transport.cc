@@ -122,8 +122,11 @@ RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
   LocalFrame* frame = To<Document>(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       frame->GetTaskRunner(TaskType::kNetworking);
+
+  PeerConnectionDependencyFactory::GetInstance()->EnsureInitialized();
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =
-      Platform::Current()->GetWebRtcWorkerThread();
+      PeerConnectionDependencyFactory::GetInstance()
+          ->GetWebRtcWorkerTaskRunner();
   return MakeGarbageCollected<RTCIceTransport>(
       context, std::move(proxy_thread), std::move(host_thread),
       std::make_unique<DefaultIceTransportAdapterCrossThreadFactory>());
@@ -136,8 +139,11 @@ RTCIceTransport* RTCIceTransport::Create(
   LocalFrame* frame = To<Document>(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       frame->GetTaskRunner(TaskType::kNetworking);
+
+  PeerConnectionDependencyFactory::GetInstance()->EnsureInitialized();
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =
-      Platform::Current()->GetWebRtcWorkerThread();
+      PeerConnectionDependencyFactory::GetInstance()
+          ->GetWebRtcWorkerTaskRunner();
   return MakeGarbageCollected<RTCIceTransport>(
       context, std::move(proxy_thread), std::move(host_thread),
       std::make_unique<DtlsIceTransportAdapterCrossThreadFactory>(

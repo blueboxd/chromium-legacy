@@ -29,7 +29,9 @@ class MockMojoIndexedDBCallbacks : public blink::mojom::IDBCallbacks {
   mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
   CreateInterfacePtrAndBind();
 
-  MOCK_METHOD2(Error, void(int32_t code, const base::string16& message));
+  MOCK_METHOD2(Error,
+               void(blink::mojom::IDBException code,
+                    const base::string16& message));
 
   MOCK_METHOD1(SuccessNamesAndVersionsList,
                void(std::vector<blink::mojom::IDBNameAndVersionPtr> list));

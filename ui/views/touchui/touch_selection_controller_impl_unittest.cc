@@ -48,8 +48,8 @@ const int kBarBottomAllowance = 3;
 // the same location.
 int CompareTextSelectionBounds(const gfx::SelectionBound& b1,
                                const gfx::SelectionBound& b2) {
-  if (b1.edge_top().y() < b2.edge_top().y() ||
-      b1.edge_top().x() < b2.edge_top().x()) {
+  if (b1.edge_start().y() < b2.edge_start().y() ||
+      b1.edge_start().x() < b2.edge_start().x()) {
     return -1;
   }
   if (b1 == b2)

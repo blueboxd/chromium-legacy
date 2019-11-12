@@ -527,16 +527,6 @@ bool RendererBlinkPlatformImpl::RTCSmoothnessAlgorithmEnabled() {
 
 //------------------------------------------------------------------------------
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RendererBlinkPlatformImpl::GetWebRtcWorkerThread() {
-  auto* rtc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  rtc_dependency_factory->EnsureInitialized();
-  return rtc_dependency_factory->GetWebRtcWorkerThread();
-}
-
-//------------------------------------------------------------------------------
-
 base::Optional<double>
 RendererBlinkPlatformImpl::GetWebRtcMaxCaptureFrameRate() {
   const std::string max_fps_str =

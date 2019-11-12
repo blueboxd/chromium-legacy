@@ -415,6 +415,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       network::mojom::IPAddressSpace::kUnknown;
   bool grant_load_local_resources_ = false;
   base::Optional<blink::mojom::FetchCacheMode> force_fetch_cache_mode_;
+  base::Optional<FramePolicy> frame_policy_;
 
   // Params are saved in constructor and are cleared after StartLoading().
   // TODO(dgozman): remove once StartLoading is merged with constructor.

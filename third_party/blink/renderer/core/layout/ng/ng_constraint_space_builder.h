@@ -251,8 +251,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     DCHECK(!is_forced_bfc_block_offset_set_);
     is_forced_bfc_block_offset_set_ = true;
 #endif
-    if (LIKELY(!is_new_fc_))
-      space_.EnsureRareData()->SetForcedBfcBlockOffset(forced_bfc_block_offset);
+    DCHECK(!is_new_fc_);
+    space_.EnsureRareData()->SetForcedBfcBlockOffset(forced_bfc_block_offset);
   }
 
   void SetClearanceOffset(LayoutUnit clearance_offset) {

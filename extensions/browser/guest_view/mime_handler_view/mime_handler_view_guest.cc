@@ -221,9 +221,6 @@ void MimeHandlerViewGuest::CreateWebContents(
           params,
           owner_web_contents()->GetController().GetSessionStorageNamespaceMap())
           .release());
-
-  registry_.AddInterface(base::BindRepeating(
-      &MimeHandlerViewGuest::FuseBeforeUnloadControl, base::Unretained(this)));
 }
 
 void MimeHandlerViewGuest::DidAttachToEmbedder() {
@@ -456,13 +453,6 @@ void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
     rwh->Send(new ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted(
         element_instance_id()));
   }
-}
-
-void MimeHandlerViewGuest::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void MimeHandlerViewGuest::ReadyToCommitNavigation(

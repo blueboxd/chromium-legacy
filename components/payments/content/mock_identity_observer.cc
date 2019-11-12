@@ -10,7 +10,7 @@ MockIdentityObserver::MockIdentityObserver() = default;
 
 MockIdentityObserver::~MockIdentityObserver() = default;
 
-base::WeakPtr<ServiceWorkerPaymentInstrument::IdentityObserver>
+base::WeakPtr<ServiceWorkerPaymentApp::IdentityObserver>
 MockIdentityObserver::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }

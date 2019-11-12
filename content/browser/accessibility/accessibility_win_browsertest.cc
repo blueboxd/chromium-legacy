@@ -129,9 +129,9 @@ class AccessibilityWinBrowserTest : public AccessibilityBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityWinBrowserTest);
 };
 
-AccessibilityWinBrowserTest::AccessibilityWinBrowserTest() {}
+AccessibilityWinBrowserTest::AccessibilityWinBrowserTest() = default;
 
-AccessibilityWinBrowserTest::~AccessibilityWinBrowserTest() {}
+AccessibilityWinBrowserTest::~AccessibilityWinBrowserTest() = default;
 
 base::string16 AccessibilityWinBrowserTest::PrintAXTree() const {
   std::unique_ptr<AccessibilityTreeFormatter> formatter(
@@ -143,10 +143,7 @@ base::string16 AccessibilityWinBrowserTest::PrintAXTree() const {
 
   base::string16 str;
   formatter->FormatAccessibilityTree(
-      static_cast<WebContentsImpl*>(shell()->web_contents())
-          ->GetRootBrowserAccessibilityManager()
-          ->GetRoot(),
-      &str);
+      GetRootAccessibilityNode(shell()->web_contents()), &str);
   return str;
 }
 

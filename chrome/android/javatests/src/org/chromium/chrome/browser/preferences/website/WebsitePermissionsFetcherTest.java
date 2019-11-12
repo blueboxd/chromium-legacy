@@ -267,7 +267,7 @@ public class WebsitePermissionsFetcherTest {
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
         // Add permission info types.
-        Assert.assertEquals(8, PermissionInfo.Type.NUM_ENTRIES);
+        Assert.assertEquals(9, PermissionInfo.Type.NUM_ENTRIES);
         String googleOrigin = "https://google.com";
         websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
                 PermissionInfo.Type.GEOLOCATION, googleOrigin, googleOrigin, false));
@@ -275,6 +275,8 @@ public class WebsitePermissionsFetcherTest {
                 new PermissionInfo(PermissionInfo.Type.MIDI, googleOrigin, googleOrigin, false));
         websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
                 PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER, googleOrigin, googleOrigin, false));
+        websitePreferenceBridge.addPermissionInfo(
+                new PermissionInfo(PermissionInfo.Type.NFC, googleOrigin, googleOrigin, false));
         websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
                 PermissionInfo.Type.NOTIFICATION, googleOrigin, googleOrigin, false));
         websitePreferenceBridge.addPermissionInfo(

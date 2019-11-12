@@ -62,7 +62,7 @@ IPC_STRUCT_TRAITS_BEGIN(InstantMostVisitedInfo)
   IPC_STRUCT_TRAITS_MEMBER(is_visible)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(ThemeBackgroundInfo)
+IPC_STRUCT_TRAITS_BEGIN(NtpTheme)
   IPC_STRUCT_TRAITS_MEMBER(using_default_theme)
   IPC_STRUCT_TRAITS_MEMBER(using_dark_colors)
   IPC_STRUCT_TRAITS_MEMBER(custom_background_url)

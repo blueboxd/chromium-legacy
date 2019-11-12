@@ -259,7 +259,18 @@ bool SandboxNtChangeRegistryValue(
 }
 
 bool SandboxDeleteService(const base::string16& name) {
-  // TODO(joenotcharles): Add some sanity checks.
+  if (name.empty()) {
+    LOG(ERROR) << "Sandbox called DeleteService with empty name.";
+    return false;
+  }
+
+  // https://docs.microsoft.com/en-us/windows/win32/api/winsvc/nf-winsvc-createservicea?redirectedfrom=MSDN
+  // says that the maximum service name length is 256 characters.
+  if (name.size() > 256) {
+    LOG(ERROR) << "Sandbox called DeleteService with a long string (length "
+               << name.size() << ")";
+    return false;
+  }
 
   // Attempt to stop the service, but don't let failure to stop the service
   // prevent deletion.

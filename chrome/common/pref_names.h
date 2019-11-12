@@ -542,6 +542,10 @@ extern const char kDefaultTasksBySuffix[];
 
 extern const char kSharedClipboardEnabled[];
 
+#if BUILDFLAG(ENABLE_CLICK_TO_CALL)
+extern const char kClickToCallEnabled[];
+#endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
+
 extern const char kSelectFileLastDirectory[];
 
 extern const char kExcludedSchemes[];

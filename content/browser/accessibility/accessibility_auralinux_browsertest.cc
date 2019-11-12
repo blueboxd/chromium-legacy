@@ -144,8 +144,9 @@ void AccessibilityAuraLinuxBrowserTest::CheckTextAtOffset(
     int expected_end_offset,
     const char* expected_text) {
   testing::Message message;
-  message << "While checking for \'" << expected_text << "\' at "
-          << expected_start_offset << '-' << expected_end_offset << '.';
+  message << "While checking at index \'" << offset << "\' for \'"
+          << expected_text << "\' at " << expected_start_offset << '-'
+          << expected_end_offset << '.';
   SCOPED_TRACE(message);
 
   int start_offset = 0;
@@ -297,6 +298,49 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   }
 
   g_object_unref(atk_text);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestParagraphTextAtOffsetWithBoundarySentence) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(
+      R"HTML(<!DOCTYPE html>
+          <html>
+          <body>
+            <div>One sentence. Two sentences. Three sentences!</div>
+          </body>
+          </html>)HTML"));
+
+  AtkObject* document = GetRendererAccessible();
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
+
+  AtkText* div_element = ATK_TEXT(atk_object_ref_accessible_child(document, 0));
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(ATK_OBJECT(div_element)));
+  AtkText* atk_text =
+      ATK_TEXT(atk_object_ref_accessible_child(ATK_OBJECT(div_element), 0));
+
+  int first_sentence_offset = 14;
+  int second_sentence_offset = first_sentence_offset + 15;
+  int third_sentence_offset = second_sentence_offset + 16;
+
+  for (int i = 0; i < first_sentence_offset; ++i) {
+    CheckTextAtOffset(atk_text, i, ATK_TEXT_BOUNDARY_SENTENCE_START, 0,
+                      first_sentence_offset, "One sentence. ");
+  }
+
+  for (int i = first_sentence_offset + 1; i < second_sentence_offset; ++i) {
+    CheckTextAtOffset(atk_text, i, ATK_TEXT_BOUNDARY_SENTENCE_START,
+                      first_sentence_offset, second_sentence_offset,
+                      "Two sentences. ");
+  }
+
+  for (int i = second_sentence_offset + 1; i < third_sentence_offset; ++i) {
+    CheckTextAtOffset(atk_text, i, ATK_TEXT_BOUNDARY_SENTENCE_START,
+                      second_sentence_offset, third_sentence_offset,
+                      "Three sentences!");
+  }
+
+  g_object_unref(atk_text);
+  g_object_unref(div_element);
 }
 
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)

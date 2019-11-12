@@ -2,26 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('destination_dialog_interactive_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {Destination, makeRecentDestination, NativeLayer, State} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
+import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {getDestinations, setupTestListenerElement} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+
+  window.destination_dialog_interactive_test = {};
+  destination_dialog_interactive_test.suiteName =
+      'DestinationDialogInteractiveTest';
   /** @enum {string} */
-  const TestNames = {
+  destination_dialog_interactive_test.TestNames = {
     FocusSearchBox: 'focus search box',
     FocusSearchBoxOnSignIn: 'focus search box on sign in',
     EscapeSearchBox: 'escape search box',
   };
 
-  const suiteName = 'DestinationDialogInteractiveTest';
-
-  suite(suiteName, function() {
+  suite(destination_dialog_interactive_test.suiteName, function() {
     /** @type {?PrintPreviewDestinationDialogElement} */
     let dialog = null;
 
-    /** @type {?print_preview.NativeLayer} */
+    /** @type {?NativeLayer} */
     let nativeLayer = null;
 
     /** @override */
     suiteSetup(function() {
-      print_preview_test_utils.setupTestListenerElement();
+      setupTestListenerElement();
     });
 
     /** @override */
@@ -29,15 +37,15 @@ cr.define('destination_dialog_interactive_test', function() {
       PolymerTest.clearBody();
 
       // Create destinations.
-      nativeLayer = new print_preview.NativeLayerStub();
-      print_preview.NativeLayer.setInstance(nativeLayer);
+      nativeLayer = new NativeLayerStub();
+      NativeLayer.setInstance(nativeLayer);
       const localDestinations = [];
-      const destinations = print_preview_test_utils.getDestinations(
+      const destinations = getDestinations(
           nativeLayer, localDestinations);
       const recentDestinations =
-          [print_preview.makeRecentDestination(destinations[4])];
+          [makeRecentDestination(destinations[4])];
       nativeLayer.setLocalDestinations(localDestinations);
-      cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
+      const cloudPrintInterface = new CloudPrintInterfaceStub();
 
       const model = document.createElement('print-preview-model');
       document.body.appendChild(model);
@@ -46,9 +54,9 @@ cr.define('destination_dialog_interactive_test', function() {
       const destinationSettings =
           document.createElement('print-preview-destination-settings');
       destinationSettings.settings = model.settings;
-      destinationSettings.state = print_preview.State.READY;
+      destinationSettings.state = State.READY;
       destinationSettings.disabled = false;
-      test_util.fakeDataBind(model, destinationSettings, 'settings');
+      fakeDataBind(model, destinationSettings, 'settings');
       document.body.appendChild(destinationSettings);
 
       // Initialize
@@ -65,10 +73,11 @@ cr.define('destination_dialog_interactive_test', function() {
 
     // Tests that the search input text field is automatically focused when the
     // dialog is shown.
-    test(assert(TestNames.FocusSearchBox), function() {
+    test(assert(destination_dialog_interactive_test.TestNames.FocusSearchBox),
+        function() {
       const searchInput = dialog.$.searchBox.getSearchInput();
       assertTrue(!!searchInput);
-      const whenFocusDone = test_util.eventToPromise('focus', searchInput);
+      const whenFocusDone = eventToPromise('focus', searchInput);
       dialog.destinationStore.startLoadAllDestinations();
       dialog.show();
       return whenFocusDone;
@@ -77,12 +86,14 @@ cr.define('destination_dialog_interactive_test', function() {
     // Tests that the search input text field is automatically focused when the
     // user signs in successfully after clicking the sign in link. See
     // https://crbug.com/924921
-    test(assert(TestNames.FocusSearchBoxOnSignIn), function() {
+    test(assert(
+        destination_dialog_interactive_test.TestNames.FocusSearchBoxOnSignIn),
+        function() {
       const searchInput = dialog.$.searchBox.getSearchInput();
       assertTrue(!!searchInput);
       const signInLink = dialog.$$('.sign-in');
       assertTrue(!!signInLink);
-      const whenFocusDone = test_util.eventToPromise('focus', searchInput);
+      const whenFocusDone = eventToPromise('focus', searchInput);
       dialog.destinationStore.startLoadAllDestinations();
       dialog.show();
       return whenFocusDone
@@ -98,7 +109,7 @@ cr.define('destination_dialog_interactive_test', function() {
             assertEquals(signInLink, dialog.shadowRoot.activeElement);
             nativeLayer.setSignIn(['foo@chromium.org']);
             const whenSearchFocused =
-                test_util.eventToPromise('focus', searchInput);
+                eventToPromise('focus', searchInput);
             signInLink.click();
             return whenSearchFocused;
           })
@@ -110,10 +121,11 @@ cr.define('destination_dialog_interactive_test', function() {
 
     // Tests that pressing the escape key while the search box is focused
     // closes the dialog if and only if the query is empty.
-    test(assert(TestNames.EscapeSearchBox), function() {
+    test(assert(destination_dialog_interactive_test.TestNames.EscapeSearchBox),
+        function() {
       const searchInput = dialog.$.searchBox.getSearchInput();
       assertTrue(!!searchInput);
-      const whenFocusDone = test_util.eventToPromise('focus', searchInput);
+      const whenFocusDone = eventToPromise('focus', searchInput);
       dialog.destinationStore.startLoadAllDestinations();
       dialog.show();
       return whenFocusDone
@@ -122,7 +134,7 @@ cr.define('destination_dialog_interactive_test', function() {
 
             // Put something in the search box.
             const whenSearchChanged =
-                test_util.eventToPromise('search-changed', dialog.$.searchBox);
+                eventToPromise('search-changed', dialog.$.searchBox);
             dialog.$.searchBox.setValue('query');
             return whenSearchChanged;
           })
@@ -130,8 +142,8 @@ cr.define('destination_dialog_interactive_test', function() {
             assertEquals('query', searchInput.value);
 
             // Simulate escape
-            const whenKeyDown = test_util.eventToPromise('keydown', dialog);
-            MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+            const whenKeyDown = eventToPromise('keydown', dialog);
+            keyDownOn(searchInput, 19, [], 'Escape');
             return whenKeyDown;
           })
           .then(() => {
@@ -140,7 +152,7 @@ cr.define('destination_dialog_interactive_test', function() {
 
             // Clear the search box.
             const whenSearchChanged =
-                test_util.eventToPromise('search-changed', dialog.$.searchBox);
+                eventToPromise('search-changed', dialog.$.searchBox);
             dialog.$.searchBox.setValue('');
             return whenSearchChanged;
           })
@@ -148,8 +160,8 @@ cr.define('destination_dialog_interactive_test', function() {
             assertEquals('', searchInput.value);
 
             // Simulate escape
-            const whenKeyDown = test_util.eventToPromise('keydown', dialog);
-            MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+            const whenKeyDown = eventToPromise('keydown', dialog);
+            keyDownOn(searchInput, 19, [], 'Escape');
             return whenKeyDown;
           })
           .then(() => {
@@ -158,9 +170,3 @@ cr.define('destination_dialog_interactive_test', function() {
           });
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

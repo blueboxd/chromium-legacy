@@ -8,7 +8,7 @@
  * @param {Object} dict A dictionary representing the key event.
  * @return {!Event} A key event.
  */
-function DeserializeKeyEvent(dict) {
+export function DeserializeKeyEvent(dict) {
   const e = document.createEvent('Event');
   e.initEvent('keydown', true, true);
   e.keyCode = dict.keyCode;
@@ -27,7 +27,7 @@ function DeserializeKeyEvent(dict) {
  * @param {Event} event A key event.
  * @return {Object} A dictionary representing the key event.
  */
-function SerializeKeyEvent(event) {
+export function SerializeKeyEvent(event) {
   return {
     keyCode: event.keyCode,
     code: event.code,
@@ -43,7 +43,7 @@ function SerializeKeyEvent(event) {
  * has finished loading or failed to load.
  * @enum {string}
  */
-const LoadState = {
+export const LoadState = {
   LOADING: 'loading',
   SUCCESS: 'success',
   FAILED: 'failed'
@@ -54,7 +54,7 @@ const LoadState = {
  * the PDF viewer so that it can be customized by things like print preview.
  *
  */
-class PDFScriptingAPI {
+export class PDFScriptingAPI {
   /**
    * @param {Window} window the window of the page containing the pdf viewer.
    * @param {Object} plugin the plugin element containing the pdf viewer.
@@ -298,7 +298,7 @@ class PDFScriptingAPI {
  * @param {string} baseUrl the base URL of the PDF viewer
  * @return {!HTMLIFrameElement} the iframe element containing the PDF viewer.
  */
-function PDFCreateOutOfProcessPlugin(src, baseUrl) {
+export function PDFCreateOutOfProcessPlugin(src, baseUrl) {
   const client = new PDFScriptingAPI(window, null);
   const iframe = /** @type {!HTMLIFrameElement} */ (
       window.document.createElement('iframe'));

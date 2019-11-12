@@ -75,17 +75,17 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                                       public LocaleChangeObserver,
                                       public DesksController::Observer {
  public:
-  // Suspend shelf visibility update within its scope. Note that relevant
+  // Suspend work area updates within its scope. Note that relevant
   // ShelfLayoutManager must outlive this class.
-  class ScopedSuspendVisibilityUpdate {
+  class ScopedSuspendWorkAreaUpdate {
    public:
     // |manager| is the ShelfLayoutManager whose visibility update is suspended.
-    explicit ScopedSuspendVisibilityUpdate(ShelfLayoutManager* manager);
-    ~ScopedSuspendVisibilityUpdate();
+    explicit ScopedSuspendWorkAreaUpdate(ShelfLayoutManager* manager);
+    ~ScopedSuspendWorkAreaUpdate();
 
    private:
     ShelfLayoutManager* const manager_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedSuspendVisibilityUpdate);
+    DISALLOW_COPY_AND_ASSIGN(ScopedSuspendWorkAreaUpdate);
   };
 
   ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf);
@@ -163,10 +163,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Cancel the drag if the shelf is in drag progress.
   void CancelDragOnShelfIfInProgress();
 
-  // Suspends/resumes visibility update. Use ScopedSuspendVisibilityUpdate when
-  // possible to ensure there are balanced calls.
-  void SuspendVisibilityUpdate();
-  void ResumeVisiblityUpdate();
+  // Suspends shelf visibility updates, to be used during shutdown. Since there
+  // is no balanced "resume" public API, the suspension will be indefinite.
+  void SuspendVisibilityUpdateForShutdown();
 
   // Called when ShelfItems are interacted with in the shelf.
   void OnShelfItemSelected(ShelfAction action);
@@ -186,6 +185,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                                SplitViewController::State state) override;
 
   // OverviewObserver:
+  void OnOverviewModeWillStart() override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeStartingAnimationComplete(bool canceled) override;
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
@@ -366,6 +366,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
     session_manager::SessionState session_state;
   };
 
+  // Suspends/resumes work area updates.
+  void SuspendWorkAreaUpdate();
+  void ResumeWorkAreaUpdate();
+
   // Sets the visibility of the shelf to |state|.
   void SetState(ShelfVisibilityState visibility_state);
 
@@ -530,9 +534,13 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   ShelfWidget* shelf_widget_;
   Shelf* shelf_;
 
-  // Count of pending visibility update suspensions. Skip updating shelf
+  // Count of pending visibility update suspensions. Skip updating the shelf
   // visibility state if it is greater than 0.
   int suspend_visibility_update_ = 0;
+
+  // Count of pending work area update suspensions. Skip updating the work
+  // area if it is greater than 0.
+  int suspend_work_area_update_ = 0;
 
   base::OneShotTimer auto_hide_timer_;
 
@@ -570,6 +578,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Whether the EXTENDED hotseat should be hidden. Set when HotseatEventHandler
   // detects that the background has been interacted with.
   bool should_hide_hotseat_ = false;
+
+  // Whether the overview mode is about to start. This becomes false again
+  // once the overview mode has actually started.
+  bool overview_mode_will_start_ = false;
 
   // Tracks the amount of the drag. The value is only valid when
   // |drag_status_| is set to kDragInProgress.
@@ -630,12 +642,12 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // state.
   bool is_auto_hide_state_locked_ = false;
 
-  // An optional ScopedSuspendVisibilityUpdate that gets created when suspend
+  // An optional ScopedSuspendWorkAreaUpdate that gets created when suspend
   // visibility update is requested for overview and resets when overview no
   // longer needs it. It is used because OnOverviewModeStarting() and
   // OnOverviewModeStartingAnimationComplete() calls are not balanced.
-  base::Optional<ScopedSuspendVisibilityUpdate>
-      overview_suspend_visibility_update_;
+  base::Optional<ScopedSuspendWorkAreaUpdate>
+      overview_suspend_work_area_update_;
 
   // The window drag controller that will be used when a window can be dragged
   // up from shelf to homescreen, overview or splitview.

@@ -29,8 +29,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -58,10 +60,11 @@ using ScrollbarId = uint64_t;
 // reasons, touch action regions, and non-fast-scrollable regions into the
 // compositor, as well as creating and managing scrollbar layers.
 class CORE_EXPORT ScrollingCoordinator final
-    : public GarbageCollected<ScrollingCoordinator> {
+    : public GarbageCollected<ScrollingCoordinator>,
+      public CompositorScrollCallbacks {
  public:
   explicit ScrollingCoordinator(Page*);
-  ~ScrollingCoordinator();
+  ~ScrollingCoordinator() override;
   void Trace(blink::Visitor*);
 
   // The LocalFrameView argument is optional, nullptr causes the the scrolling
@@ -137,8 +140,13 @@ class CORE_EXPORT ScrollingCoordinator final
   ScrollableArea* ScrollableAreaWithElementIdInAllLocalFrames(
       const CompositorElementId&);
 
-  // Callback for compositor-side layer scrolls.
-  void DidScroll(const gfx::ScrollOffset&, const CompositorElementId&);
+  // ScrollCallbacks implementation
+  void DidScroll(CompositorElementId, const gfx::ScrollOffset&) override;
+  void DidChangeScrollbarsHidden(CompositorElementId, bool hidden) override;
+
+  base::WeakPtr<ScrollingCoordinator> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
   // For testing purposes only. This ScrollingCoordinator is reused between
   // web tests, and must be reset for the results to be valid.
@@ -172,6 +180,8 @@ class CORE_EXPORT ScrollingCoordinator final
                                    scoped_refptr<cc::ScrollbarLayerBase>>;
   ScrollbarMap horizontal_scrollbars_;
   ScrollbarMap vertical_scrollbars_;
+
+  base::WeakPtrFactory<ScrollingCoordinator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScrollingCoordinator);
 };

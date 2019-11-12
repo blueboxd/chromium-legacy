@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview_test_utils', function() {
-  /** @return {!print_preview.NativeInitialSettings} */
-  function getDefaultInitialSettings() {
+import {Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType} from 'chrome://print/print_preview.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+  /** @return {!NativeInitialSettings} */
+  export function getDefaultInitialSettings() {
     return {
       isInKioskAutoPrintMode: false,
       isInAppKioskMode: false,
@@ -26,9 +31,9 @@ cr.define('print_preview_test_utils', function() {
   /**
    * @param {string} printerId
    * @param {string=} opt_printerName Defaults to an empty string.
-   * @return {!print_preview.PrinterCapabilitiesResponse}
+   * @return {!PrinterCapabilitiesResponse}
    */
-  function getCddTemplate(printerId, opt_printerName) {
+  export function getCddTemplate(printerId, opt_printerName) {
     const template = {
       printer: {
         deviceName: printerId,
@@ -84,7 +89,7 @@ cr.define('print_preview_test_utils', function() {
         }
       }
     };
-    if (cr.isChromeOS) {
+    if (isChromeOS) {
       template.capabilities.printer.pin = {supported: true};
     }
     return template;
@@ -98,12 +103,11 @@ cr.define('print_preview_test_utils', function() {
    * @param {number} numSettings
    * @param {string} printerId
    * @param {string=} opt_printerName Defaults to an empty string.
-   * @return {!print_preview.PrinterCapabilitiesResponse}
+   * @return {!PrinterCapabilitiesResponse}
    */
-  function getCddTemplateWithAdvancedSettings(
+  export function getCddTemplateWithAdvancedSettings(
       numSettings, printerId, opt_printerName) {
-    const template =
-        print_preview_test_utils.getCddTemplate(printerId, opt_printerName);
+    const template = getCddTemplate(printerId, opt_printerName);
     if (numSettings < 1) {
       return template;
     }
@@ -174,27 +178,27 @@ cr.define('print_preview_test_utils', function() {
    * @param {string} id Printer id
    * @param {string} name Printer display name
    * @param {boolean} invalid Whether printer has an invalid certificate.
-   * @return {!print_preview.Destination}
+   * @return {!Destination}
    */
-  function createDestinationWithCertificateStatus(id, name, invalid) {
+  export function createDestinationWithCertificateStatus(id, name, invalid) {
     const tags = {
       certificateStatus: invalid ?
-          print_preview.DestinationCertificateStatus.NO :
-          print_preview.DestinationCertificateStatus.UNKNOWN,
+          DestinationCertificateStatus.NO :
+          DestinationCertificateStatus.UNKNOWN,
       account: 'foo@chromium.org',
     };
-    const dest = new print_preview.Destination(
-        id, print_preview.DestinationType.GOOGLE,
-        print_preview.DestinationOrigin.COOKIES, name,
-        print_preview.DestinationConnectionStatus.ONLINE, tags);
+    const dest = new Destination(
+        id, DestinationType.GOOGLE,
+        DestinationOrigin.COOKIES, name,
+        DestinationConnectionStatus.ONLINE, tags);
     return dest;
   }
 
   /**
-   * @return {!print_preview.PrinterCapabilitiesResponse} The capabilities of
+   * @return {!PrinterCapabilitiesResponse} The capabilities of
    *     the Save as PDF destination.
    */
-  function getPdfPrinter() {
+  export function getPdfPrinter() {
     return {
       printer: {
         deviceName: 'Save as PDF',
@@ -224,12 +228,12 @@ cr.define('print_preview_test_utils', function() {
 
   /**
    * Get the default media size for |device|.
-   * @param {!print_preview.PrinterCapabilitiesResponse} device
+   * @param {!PrinterCapabilitiesResponse} device
    * @return {{width_microns: number,
    *           height_microns: number}} The width and height of the default
    *     media.
    */
-  function getDefaultMediaSize(device) {
+  export function getDefaultMediaSize(device) {
     const size = device.capabilities.printer.media_size.option.find(
         opt => opt.is_default);
     return {
@@ -240,10 +244,10 @@ cr.define('print_preview_test_utils', function() {
 
   /**
    * Get the default page orientation for |device|.
-   * @param {!print_preview.PrinterCapabilitiesResponse} device
+   * @param {!PrinterCapabilitiesResponse} device
    * @return {string} The default orientation.
    */
-  function getDefaultOrientation(device) {
+  export function getDefaultOrientation(device) {
     return device.capabilities.printer.page_orientation.option
         .find(opt => opt.is_default)
         .type;
@@ -252,14 +256,14 @@ cr.define('print_preview_test_utils', function() {
   /**
    * Creates 5 local destinations, adds them to |localDestinations| and
    * sets the capabilities in |nativeLayer|, if it is non-null.
-   * @param {?print_preview.NativeLayerStub} nativeLayer
-   * @param {!Array<!print_preview.LocalDestinationInfo>} localDestinations
-   * @return {!Array<!print_preview.Destination>}
+   * @param {?NativeLayerStub} nativeLayer
+   * @param {!Array<!LocalDestinationInfo>} localDestinations
+   * @return {!Array<!Destination>}
    */
-  function getDestinations(nativeLayer, localDestinations) {
+  export function getDestinations(nativeLayer, localDestinations) {
     const destinations = [];
-    const origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
-                                   print_preview.DestinationOrigin.LOCAL;
+    const origin = isChromeOS ? DestinationOrigin.CROS :
+                                DestinationOrigin.LOCAL;
     // Five destinations. FooDevice is the system default.
     [{deviceName: 'ID1', printerName: 'One'},
      {deviceName: 'ID2', printerName: 'Two'},
@@ -267,15 +271,14 @@ cr.define('print_preview_test_utils', function() {
      {deviceName: 'ID4', printerName: 'Four'},
      {deviceName: 'FooDevice', printerName: 'FooName'}]
         .forEach((info, index) => {
-          const destination = new print_preview.Destination(
-              info.deviceName, print_preview.DestinationType.LOCAL, origin,
+          const destination = new Destination(
+              info.deviceName, DestinationType.LOCAL, origin,
               info.printerName,
-              print_preview.DestinationConnectionStatus.ONLINE);
+              DestinationConnectionStatus.ONLINE);
           if (nativeLayer) {
             nativeLayer.setLocalDestinationCapabilities({
               printer: info,
-              capabilities: print_preview_test_utils.getCddTemplate(
-                  info.deviceName, info.printerName),
+              capabilities: getCddTemplate(info.deviceName, info.printerName),
             });
           }
           localDestinations.push(info);
@@ -286,9 +289,9 @@ cr.define('print_preview_test_utils', function() {
 
   /**
    * Returns a media size capability with custom and localized names.
-   * @return {!{ option: Array<!print_preview.SelectOption> }}
+   * @return {!{ option: Array<!SelectOption> }}
    */
-  function getMediaSizeCapabilityWithCustomNames() {
+  export function getMediaSizeCapabilityWithCustomNames() {
     const customLocalizedMediaName = 'Vendor defined localized media name';
     const customMediaName = 'Vendor defined media name';
 
@@ -320,14 +323,14 @@ cr.define('print_preview_test_utils', function() {
    * @return {!Promise} Promise that resolves when the input-change event has
    *     fired.
    */
-  function triggerInputEvent(inputElement, input, parentElement) {
+  export function triggerInputEvent(inputElement, input, parentElement) {
     inputElement.value = input;
     inputElement.dispatchEvent(
         new CustomEvent('input', {composed: true, bubbles: true}));
-    return test_util.eventToPromise('input-change', parentElement);
+    return eventToPromise('input-change', parentElement);
   }
 
-  function setupTestListenerElement() {
+  export function setupTestListenerElement() {
     const domModule = document.createElement('dom-module');
     domModule.setAttribute('id', 'test-listener-element');
     domModule.appendChild(document.createElement('template'));
@@ -338,36 +341,36 @@ cr.define('print_preview_test_utils', function() {
     });
   }
 
-  /** @return {!print_preview.DestinationStore} */
-  function createDestinationStore() {
+  /** @return {!DestinationStore} */
+  export function createDestinationStore() {
     const testListenerElement = document.createElement('test-listener-element');
     document.body.appendChild(testListenerElement);
-    return new print_preview.DestinationStore(
+    return new DestinationStore(
         testListenerElement.addWebUIListener.bind(testListenerElement));
   }
 
   /**
    * @param {string} account The user account the destination should be
    *     associated with.
-   * @return {!print_preview.Destination} The Google Drive destination.
+   * @return {!Destination} The Google Drive destination.
    */
-  function getGoogleDriveDestination(account) {
-    return new print_preview.Destination(
-        print_preview.Destination.GooglePromotedId.DOCS,
-        print_preview.DestinationType.GOOGLE,
-        print_preview.DestinationOrigin.COOKIES,
-        print_preview.Destination.GooglePromotedId.DOCS,
-        print_preview.DestinationConnectionStatus.ONLINE, {account: account});
+  export function getGoogleDriveDestination(account) {
+    return new Destination(
+        Destination.GooglePromotedId.DOCS,
+        DestinationType.GOOGLE,
+        DestinationOrigin.COOKIES,
+        Destination.GooglePromotedId.DOCS,
+        DestinationConnectionStatus.ONLINE, {account: account});
   }
 
-  /** @return {!print_preview.Destination} The Save as PDF destination. */
-  function getSaveAsPdfDestination() {
-    return new print_preview.Destination(
-        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-        print_preview.DestinationType.LOCAL,
-        print_preview.DestinationOrigin.LOCAL,
+  /** @return {!Destination} The Save as PDF destination. */
+  export function getSaveAsPdfDestination() {
+    return new Destination(
+        Destination.GooglePromotedId.SAVE_AS_PDF,
+        DestinationType.LOCAL,
+        DestinationOrigin.LOCAL,
         loadTimeData.getString('printToPDF'),
-        print_preview.DestinationConnectionStatus.ONLINE);
+        DestinationConnectionStatus.ONLINE);
   }
 
   /**
@@ -377,30 +380,9 @@ cr.define('print_preview_test_utils', function() {
    * @return {!Promise} Promise that resolves when the option has been
    *     selected and the process-select-change event has fired.
    */
-  function selectOption(section, option) {
+  export function selectOption(section, option) {
     const select = section.$$('select');
     select.value = option;
     select.dispatchEvent(new CustomEvent('change'));
-    return test_util.eventToPromise('process-select-change', section);
+    return eventToPromise('process-select-change', section);
   }
-
-  return {
-    createDestinationStore: createDestinationStore,
-    createDestinationWithCertificateStatus:
-        createDestinationWithCertificateStatus,
-    getCddTemplate: getCddTemplate,
-    getCddTemplateWithAdvancedSettings: getCddTemplateWithAdvancedSettings,
-    getDefaultInitialSettings: getDefaultInitialSettings,
-    getDefaultMediaSize: getDefaultMediaSize,
-    getDefaultOrientation: getDefaultOrientation,
-    getDestinations: getDestinations,
-    getGoogleDriveDestination: getGoogleDriveDestination,
-    getMediaSizeCapabilityWithCustomNames:
-        getMediaSizeCapabilityWithCustomNames,
-    getPdfPrinter: getPdfPrinter,
-    getSaveAsPdfDestination: getSaveAsPdfDestination,
-    selectOption: selectOption,
-    setupTestListenerElement: setupTestListenerElement,
-    triggerInputEvent: triggerInputEvent,
-  };
-});

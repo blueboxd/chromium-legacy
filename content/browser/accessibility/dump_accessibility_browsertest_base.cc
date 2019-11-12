@@ -133,12 +133,9 @@ DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
       PropertyFilter(base::ASCIIToUTF16("*"), PropertyFilter::ALLOW));
   formatter->SetPropertyFilters(property_filters);
   formatter->set_show_ids(true);
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
   base::string16 ax_tree_dump;
   formatter->FormatAccessibilityTree(
-      web_contents->GetRootBrowserAccessibilityManager()->GetRoot(),
-      &ax_tree_dump);
+      GetRootAccessibilityNode(shell()->web_contents()), &ax_tree_dump);
   return ax_tree_dump;
 }
 

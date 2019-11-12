@@ -39,6 +39,11 @@ MappedHostResolver::CreateRequest(
                               optional_parameters);
 }
 
+std::unique_ptr<HostResolver::ProbeRequest>
+MappedHostResolver::CreateDohProbeRequest() {
+  return impl_->CreateDohProbeRequest();
+}
+
 HostCache* MappedHostResolver::GetHostCache() {
   return impl_->GetHostCache();
 }

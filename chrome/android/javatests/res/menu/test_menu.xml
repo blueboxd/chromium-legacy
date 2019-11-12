@@ -18,7 +18,8 @@
             <item android:id="@+id/icon_one"
                 android:title="Icon One" />
             <item android:id="@+id/icon_two"
-                android:title="Icon Two" />
+                android:title="Icon Two"
+                android:titleCondensed="2" />
             <item android:id="@+id/icon_three"
                 android:title="Icon Three" />
         </menu>

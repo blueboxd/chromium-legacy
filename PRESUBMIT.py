@@ -1167,6 +1167,16 @@ _BANNED_CPP_FUNCTIONS = (
         r'^content/renderer/.*\.(cc|h)$',
       ),
     ),
+    (
+      'CComPtr',
+      (
+        'New code should use Microsoft::WRL::ComPtr from wrl/client.h as a ',
+        'replacement for CComPtr from ATL. See http://crbug.com/5027 for more ',
+        'details.'
+      ),
+      False,
+      (),
+    ),
 )
 
 # Format: Sequence of tuples containing:

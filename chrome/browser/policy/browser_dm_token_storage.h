@@ -57,7 +57,6 @@ class BrowserDMTokenStorage {
    private:
     enum class Status { kValid, kInvalid, kEmpty };
 
-    BrowserDMToken();
     BrowserDMToken(Status status, const base::StringPiece value);
 
     Status status_;
@@ -77,9 +76,7 @@ class BrowserDMTokenStorage {
   // Asynchronously stores |dm_token| and calls |callback| with a boolean to
   // indicate success or failure. It is an error to attempt concurrent store
   // operations.
-  // TODO(domfc): Remove overload after updating callers.
   void StoreDMToken(const std::string& dm_token, StoreCallback callback);
-  void StoreDMToken(const BrowserDMToken& dm_token, StoreCallback callback);
   // Returns an already stored DM token. An empty token is returned if no DM
   // token exists on the system or an error is encountered.
   // TODO(domfc): Remove overload after updating callers. Note that the names

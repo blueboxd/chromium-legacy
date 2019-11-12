@@ -75,7 +75,6 @@ void OverlayPanelLayer::SetProperties(
     float bar_text_opacity,
     bool bar_border_visible,
     float bar_border_height,
-    bool bar_shadow_visible,
     int icon_tint,
     int drag_handlebar_tint,
     float icon_opacity,
@@ -361,7 +360,6 @@ void OverlayPanelLayer::SetProperties(
   // ---------------------------------------------------------------------------
   // Bar Shadow
   // ---------------------------------------------------------------------------
-  if (bar_shadow_visible) {
     ui::Resource* bar_shadow_resource = resource_manager_->GetResource(
         ui::ANDROID_RESOURCE_TYPE_STATIC, bar_shadow_resource_id_);
 
@@ -377,10 +375,6 @@ void OverlayPanelLayer::SetProperties(
       bar_shadow_->SetPosition(gfx::PointF(0.f, bar_bottom));
       bar_shadow_->SetOpacity(1.0f);
     }
-  } else {
-    if (bar_shadow_.get() && bar_shadow_->parent())
-      bar_shadow_->RemoveFromParent();
-  }
 
   // ---------------------------------------------------------------------------
   // Panel

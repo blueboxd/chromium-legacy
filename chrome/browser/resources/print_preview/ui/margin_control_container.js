@@ -2,18 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-cr.define('print_preview', function() {
-  'use strict';
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import './margin_control.js';
+import {SettingsBehavior} from './settings_behavior.js';
+import {Coordinate2d} from '../data/coordinate2d.js';
+import {CustomMarginsOrientation, Margins, MarginsSetting, MarginsType} from '../data/margins.js';
+import {MeasurementSystem} from '../data/measurement_system.js';
+import {Size} from '../data/size.js';
+import {State} from '../data/state.js';
 
   /**
-   * @const {!Map<!print_preview.CustomMarginsOrientation, string>}
+   * @const {!Map<!CustomMarginsOrientation, string>}
    */
-  const MARGIN_KEY_MAP = new Map([
-    [print_preview.CustomMarginsOrientation.TOP, 'marginTop'],
-    [print_preview.CustomMarginsOrientation.RIGHT, 'marginRight'],
-    [print_preview.CustomMarginsOrientation.BOTTOM, 'marginBottom'],
-    [print_preview.CustomMarginsOrientation.LEFT, 'marginLeft']
+  export const MARGIN_KEY_MAP = new Map([
+    [CustomMarginsOrientation.TOP, 'marginTop'],
+    [CustomMarginsOrientation.RIGHT, 'marginRight'],
+    [CustomMarginsOrientation.BOTTOM, 'marginBottom'],
+    [CustomMarginsOrientation.LEFT, 'marginLeft']
   ]);
 
   /** @const {number} */
@@ -22,16 +29,18 @@ cr.define('print_preview', function() {
   Polymer({
     is: 'print-preview-margin-control-container',
 
+    _template: html`{__html_template__}`,
+
     behaviors: [SettingsBehavior],
 
     properties: {
-      /** @type {!print_preview.Size} */
+      /** @type {!Size} */
       pageSize: {
         type: Object,
         notify: true,
       },
 
-      /** @type {!print_preview.Margins} */
+      /** @type {!Margins} */
       documentMargins: {
         type: Object,
         notify: true,
@@ -39,10 +48,10 @@ cr.define('print_preview', function() {
 
       previewLoaded: Boolean,
 
-      /** @type {?print_preview.MeasurementSystem} */
+      /** @type {?MeasurementSystem} */
       measurementSystem: Object,
 
-      /** @type {!print_preview.State} */
+      /** @type {!State} */
       state: {
         type: Number,
         observer: 'onStateChanged_',
@@ -55,14 +64,14 @@ cr.define('print_preview', function() {
         value: 0,
       },
 
-      /** @private {!print_preview.Coordinate2d} */
+      /** @private {!Coordinate2d} */
       translateTransform_: {
         type: Object,
         notify: true,
-        value: new print_preview.Coordinate2d(0, 0),
+        value: new Coordinate2d(0, 0),
       },
 
-      /** @private {?print_preview.Size} */
+      /** @private {?Size} */
       clipSize_: {
         type: Object,
         notify: true,
@@ -85,16 +94,16 @@ cr.define('print_preview', function() {
       },
 
       /**
-       * @private {!Array<!print_preview.CustomMarginsOrientation>}
+       * @private {!Array<!CustomMarginsOrientation>}
        */
       marginSides_: {
         type: Array,
         notify: true,
         value: [
-          print_preview.CustomMarginsOrientation.TOP,
-          print_preview.CustomMarginsOrientation.RIGHT,
-          print_preview.CustomMarginsOrientation.BOTTOM,
-          print_preview.CustomMarginsOrientation.LEFT,
+          CustomMarginsOrientation.TOP,
+          CustomMarginsOrientation.RIGHT,
+          CustomMarginsOrientation.BOTTOM,
+          CustomMarginsOrientation.LEFT,
         ],
       },
 
@@ -121,10 +130,10 @@ cr.define('print_preview', function() {
           'settings.mediaSize.value, settings.layout.value)',
     ],
 
-    /** @private {!print_preview.Coordinate2d} */
-    pointerStartPositionInPixels_: new print_preview.Coordinate2d(0, 0),
+    /** @private {!Coordinate2d} */
+    pointerStartPositionInPixels_: new Coordinate2d(0, 0),
 
-    /** @private {?print_preview.Coordinate2d} */
+    /** @private {?Coordinate2d} */
     marginStartPositionInPixels_: null,
 
     /** @private {?boolean} */
@@ -136,7 +145,7 @@ cr.define('print_preview', function() {
      */
     computeAvailable_: function() {
       return this.previewLoaded && !!this.clipSize_ &&
-          this.getSettingValue('margins') == print_preview.MarginsType.CUSTOM &&
+          this.getSettingValue('margins') == MarginsType.CUSTOM &&
           !!this.pageSize;
     },
 
@@ -147,8 +156,8 @@ cr.define('print_preview', function() {
         // custom margins were reset.
         const newMargins = {};
         for (const side of Object.values(
-                 print_preview.CustomMarginsOrientation)) {
-          const key = print_preview.MARGIN_KEY_MAP.get(side);
+                 CustomMarginsOrientation)) {
+          const key = MARGIN_KEY_MAP.get(side);
           newMargins[key] = this.documentMargins.get(side);
         }
         this.setSetting('customMargins', newMargins);
@@ -167,7 +176,7 @@ cr.define('print_preview', function() {
       }
       this.shadowRoot.querySelectorAll('print-preview-margin-control')
           .forEach(control => {
-            const key = print_preview.MARGIN_KEY_MAP.get(control.side);
+            const key = MARGIN_KEY_MAP.get(control.side);
             const newValue = margins[key] || 0;
             control.setPositionInPts(newValue);
             control.setTextboxValue(newValue);
@@ -184,9 +193,9 @@ cr.define('print_preview', function() {
 
       this.resetMargins_ = true;
       const marginsSetting = this.getSetting('margins');
-      if (marginsSetting.value == print_preview.MarginsType.CUSTOM) {
+      if (marginsSetting.value == MarginsType.CUSTOM) {
         // Set the margins value to default first.
-        this.setSetting('margins', print_preview.MarginsType.DEFAULT);
+        this.setSetting('margins', MarginsType.DEFAULT);
       }
       // Reset custom margins so that the sticky value is not restored for the
       // new paper size.
@@ -195,7 +204,7 @@ cr.define('print_preview', function() {
 
     /** @private */
     onStateChanged_: function() {
-      if (this.state == print_preview.State.READY &&
+      if (this.state == State.READY &&
           this.resetMargins_ === null) {
         // Don't reset margins if there are sticky values. Otherwise, set them
         // to the document margins when the user selects custom margins.
@@ -209,23 +218,23 @@ cr.define('print_preview', function() {
      * @private
      */
     controlsDisabled_: function() {
-      return this.state !== print_preview.State.READY || this.invisible_;
+      return this.state !== State.READY || this.invisible_;
     },
 
     /**
-     * @param {!print_preview.CustomMarginsOrientation} orientation
+     * @param {!CustomMarginsOrientation} orientation
      *     Orientation value to test.
      * @return {boolean} Whether the given orientation is TOP or BOTTOM.
      * @private
      */
     isTopOrBottom_: function(orientation) {
-      return orientation == print_preview.CustomMarginsOrientation.TOP ||
-          orientation == print_preview.CustomMarginsOrientation.BOTTOM;
+      return orientation == CustomMarginsOrientation.TOP ||
+          orientation == CustomMarginsOrientation.BOTTOM;
     },
 
     /**
      * @param {!HTMLElement} control Control being repositioned.
-     * @param {!print_preview.Coordinate2d} posInPixels Desired position, in
+     * @param {!Coordinate2d} posInPixels Desired position, in
      *     pixels.
      * @return {number} The new position for the control, in pts. Returns the
      *     position for the dimension that the control operates in, i.e.
@@ -234,7 +243,7 @@ cr.define('print_preview', function() {
      */
     posInPixelsToPts_: function(control, posInPixels) {
       const side =
-          /** @type {print_preview.CustomMarginsOrientation} */ (control.side);
+          /** @type {CustomMarginsOrientation} */ (control.side);
       return this.clipAndRoundValue_(
           side,
           control.convertPixelsToPts(
@@ -258,12 +267,12 @@ cr.define('print_preview', function() {
     /**
      * Translates the position of the margin control relative to the pointer
      * position in pixels.
-     * @param {!print_preview.Coordinate2d} pointerPosition New position of
+     * @param {!Coordinate2d} pointerPosition New position of
      *     the pointer.
-     * @return {!print_preview.Coordinate2d} New position of the margin control.
+     * @return {!Coordinate2d} New position of the margin control.
      */
     translatePointerToPositionInPixels: function(pointerPosition) {
-      return new print_preview.Coordinate2d(
+      return new Coordinate2d(
           pointerPosition.x - this.pointerStartPositionInPixels_.x +
               this.marginStartPositionInPixels_.x,
           pointerPosition.y - this.pointerStartPositionInPixels_.y +
@@ -282,7 +291,7 @@ cr.define('print_preview', function() {
       const posInPts = this.posInPixelsToPts_(
           control,
           this.translatePointerToPositionInPixels(
-              new print_preview.Coordinate2d(event.x, event.y)));
+              new Coordinate2d(event.x, event.y)));
       this.moveControlWithConstraints_(control, posInPts);
     },
 
@@ -297,7 +306,7 @@ cr.define('print_preview', function() {
           /** @type {!PrintPreviewMarginControlElement} */ (event.target);
       this.dragging_ = '';
       const posInPixels = this.translatePointerToPositionInPixels(
-          new print_preview.Coordinate2d(event.x, event.y));
+          new Coordinate2d(event.x, event.y));
       const posInPts = this.posInPixelsToPts_(control, posInPixels);
       this.moveControlWithConstraints_(control, posInPts);
       this.setMargin_(control.side, posInPts);
@@ -341,7 +350,7 @@ cr.define('print_preview', function() {
       const x = control.offsetLeft;
       const y = control.offsetTop;
       const isTopOrBottom = this.isTopOrBottom_(
-          /** @type {!print_preview.CustomMarginsOrientation} */ (
+          /** @type {!CustomMarginsOrientation} */ (
               control.side));
       const position = {};
       // Extra padding, in px, to ensure the full textbox will be visible and
@@ -387,10 +396,10 @@ cr.define('print_preview', function() {
      */
     setMargin_: function(side, marginValue) {
       const marginSide =
-          /** @type {!print_preview.CustomMarginsOrientation} */ (side);
-      const oldMargins = /** @type {print_preview.MarginsSetting} */ (
+          /** @type {!CustomMarginsOrientation} */ (side);
+      const oldMargins = /** @type {MarginsSetting} */ (
           this.getSettingValue('customMargins'));
-      const key = print_preview.MARGIN_KEY_MAP.get(marginSide);
+      const key = MARGIN_KEY_MAP.get(marginSide);
       if (oldMargins[key] == marginValue) {
         return;
       }
@@ -407,11 +416,11 @@ cr.define('print_preview', function() {
      */
     clipAndRoundValue_: function(side, value) {
       const marginSide =
-          /** @type {!print_preview.CustomMarginsOrientation} */ (side);
+          /** @type {!CustomMarginsOrientation} */ (side);
       if (value < 0) {
         return 0;
       }
-      const Orientation = print_preview.CustomMarginsOrientation;
+      const Orientation = CustomMarginsOrientation;
       let limit = 0;
       const margins = this.getSettingValue('customMargins');
       if (marginSide == Orientation.TOP) {
@@ -469,11 +478,11 @@ cr.define('print_preview', function() {
       }
 
       this.pointerStartPositionInPixels_ =
-          new print_preview.Coordinate2d(e.x, e.y);
+          new Coordinate2d(e.x, e.y);
       this.marginStartPositionInPixels_ =
-          new print_preview.Coordinate2d(control.offsetLeft, control.offsetTop);
+          new Coordinate2d(control.offsetLeft, control.offsetTop);
       this.dragging_ = this.isTopOrBottom_(
-                           /** @type {print_preview.CustomMarginsOrientation} */
+                           /** @type {CustomMarginsOrientation} */
                            (control.side)) ?
           'dragging-vertical' :
           'dragging-horizontal';
@@ -498,7 +507,7 @@ cr.define('print_preview', function() {
     /**
      * Updates the translation transformation that translates pixel values in
      * the space of the HTML DOM.
-     * @param {print_preview.Coordinate2d} translateTransform Updated value of
+     * @param {Coordinate2d} translateTransform Updated value of
      *     the translation transformation.
      */
     updateTranslationTransform: function(translateTransform) {
@@ -519,7 +528,7 @@ cr.define('print_preview', function() {
 
     /**
      * Clips margin controls to the given clip size in pixels.
-     * @param {print_preview.Size} clipSize Size to clip the margin controls to.
+     * @param {Size} clipSize Size to clip the margin controls to.
      */
     updateClippingMask: function(clipSize) {
       if (!clipSize) {
@@ -530,7 +539,3 @@ cr.define('print_preview', function() {
     },
   });
 
-  return {
-    MARGIN_KEY_MAP: MARGIN_KEY_MAP,
-  };
-});

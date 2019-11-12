@@ -21,6 +21,11 @@ struct TypeConverter<gfx::Transform, device::mojom::VRPosePtr> {
   static gfx::Transform Convert(const device::mojom::VRPosePtr& pose);
 };
 
+template <>
+struct TypeConverter<gfx::Transform, device::mojom::PosePtr> {
+  static gfx::Transform Convert(const device::mojom::PosePtr& pose);
+};
+
 }  // namespace mojo
 
 #endif  // CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_TYPE_CONVERTERS_H_

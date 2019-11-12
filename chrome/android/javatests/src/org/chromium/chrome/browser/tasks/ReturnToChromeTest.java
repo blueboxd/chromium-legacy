@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -110,10 +109,15 @@ public class ReturnToChromeTest {
     @Test
     @SmallTest
     @Feature({"ReturnToChrome", "RenderTest"})
-    @FlakyTest(message = "crbug.com/1023079")
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS + "/0"})
     public void testInitialScrollIndex() throws Exception {
         TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 10, 0, mUrl);
+
+        // Trigger thumbnail capturing for the last tab.
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        TabUiTestHelper.verifyAllTabsHaveThumbnail(
+                mActivityTestRule.getActivity().getCurrentTabModel());
+
         ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
 
         mActivityTestRule.startMainActivityFromLauncher();

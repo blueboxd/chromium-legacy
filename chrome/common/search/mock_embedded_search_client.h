@@ -6,6 +6,7 @@
 #define CHROME_COMMON_SEARCH_MOCK_EMBEDDED_SEARCH_CLIENT_H_
 
 #include "chrome/common/search.mojom.h"
+#include "chrome/common/search/instant_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class MockEmbeddedSearchClient : public chrome::mojom::EmbeddedSearchClient {
@@ -17,7 +18,7 @@ class MockEmbeddedSearchClient : public chrome::mojom::EmbeddedSearchClient {
   MOCK_METHOD2(FocusChanged, void(OmniboxFocusState, OmniboxFocusChangeReason));
   MOCK_METHOD1(MostVisitedInfoChanged, void(const InstantMostVisitedInfo&));
   MOCK_METHOD1(SetInputInProgress, void(bool));
-  MOCK_METHOD1(ThemeChanged, void(const ThemeBackgroundInfo&));
+  MOCK_METHOD1(ThemeChanged, void(const NtpTheme&));
   MOCK_METHOD0(LocalBackgroundSelected, void());
 };
 

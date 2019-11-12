@@ -92,14 +92,16 @@ class ASH_PUBLIC_EXPORT LoginScreenModel {
   // |show|: Whether the system information should be displayed to user.
   // |enforced|: Whether the display of system information is enforced and
   // cannot be changed by some specific user operations (e.g., pressing alt-v).
-  // |os_version_label_text|: The OS version.
-  // |enterprise_info_text|:  The enterprise info.
-  // |bluetooth_name|:        The name of the bluetooth adapter.
+  // |os_version_label_text|:   The OS version.
+  // |enterprise_info_text|:    The enterprise info.
+  // |bluetooth_name|:          The name of the bluetooth adapter.
+  // |adb_sideloading_enabled|: The device status of adb sideoading.
   virtual void SetSystemInfo(bool show,
                              bool enforced,
                              const std::string& os_version_label_text,
                              const std::string& enterprise_info_text,
-                             const std::string& bluetooth_name) = 0;
+                             const std::string& bluetooth_name,
+                             bool adb_sideloading_enabled) = 0;
 
   // Set the public session display name for user with |account_id|.
   virtual void SetPublicSessionDisplayName(const AccountId& account_id,

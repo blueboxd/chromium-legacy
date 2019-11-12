@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_CSP_VIOLATION_REPORT_BODY_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/events/security_policy_violation_event_init.h"
 #include "third_party/blink/renderer/core/frame/location_report_body.h"
 
@@ -44,6 +45,8 @@ class CORE_EXPORT CSPViolationReportBody : public LocationReportBody {
   String sample() const { return sample_; }
   String disposition() const { return disposition_; }
   uint16_t statusCode() const { return status_code_; }
+
+  void BuildJSONValue(V8ObjectBuilder& builder) const override;
 
  private:
   const String document_url_;

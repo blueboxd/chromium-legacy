@@ -25,7 +25,7 @@ namespace payments {
 PaymentResponseHelper::PaymentResponseHelper(
     const std::string& app_locale,
     PaymentRequestSpec* spec,
-    PaymentInstrument* selected_instrument,
+    PaymentApp* selected_app,
     PaymentRequestDelegate* payment_request_delegate,
     autofill::AutofillProfile* selected_shipping_profile,
     autofill::AutofillProfile* selected_contact_profile,
@@ -35,18 +35,17 @@ PaymentResponseHelper::PaymentResponseHelper(
       is_waiting_for_instrument_details_(false),
       spec_(spec),
       delegate_(delegate),
-      selected_instrument_(selected_instrument),
+      selected_app_(selected_app),
       payment_request_delegate_(payment_request_delegate),
       selected_contact_profile_(selected_contact_profile) {
   DCHECK(spec_);
-  DCHECK(selected_instrument_);
+  DCHECK(selected_app_);
   DCHECK(delegate_);
 
   is_waiting_for_instrument_details_ = true;
 
   // Start to normalize the shipping address, if necessary.
-  if (spec_->request_shipping() &&
-      !selected_instrument_->HandlesShippingAddress()) {
+  if (spec_->request_shipping() && !selected_app_->HandlesShippingAddress()) {
     DCHECK(selected_shipping_profile);
     DCHECK(spec_->selected_shipping_option());
 
@@ -61,7 +60,7 @@ PaymentResponseHelper::PaymentResponseHelper(
 
   // Start to get the instrument details. Will call back into
   // OnInstrumentDetailsReady.
-  selected_instrument_->InvokePaymentApp(this);
+  selected_app_->InvokePaymentApp(this);
 }
 
 PaymentResponseHelper::~PaymentResponseHelper() {}
@@ -75,12 +74,11 @@ void PaymentResponseHelper::OnInstrumentDetailsReady(
 
   method_name_ = method_name;
   stringified_details_ = stringified_details;
-  payer_data_from_instrument_.payer_name = payer_data.payer_name;
-  payer_data_from_instrument_.payer_email = payer_data.payer_email;
-  payer_data_from_instrument_.payer_phone = payer_data.payer_phone;
-  payer_data_from_instrument_.shipping_address =
-      payer_data.shipping_address.Clone();
-  payer_data_from_instrument_.selected_shipping_option_id =
+  payer_data_from_app_.payer_name = payer_data.payer_name;
+  payer_data_from_app_.payer_email = payer_data.payer_email;
+  payer_data_from_app_.payer_phone = payer_data.payer_phone;
+  payer_data_from_app_.shipping_address = payer_data.shipping_address.Clone();
+  payer_data_from_app_.selected_shipping_option_id =
       payer_data.selected_shipping_option_id;
   is_waiting_for_instrument_details_ = false;
 
@@ -116,8 +114,8 @@ mojom::PayerDetailPtr PaymentResponseHelper::GeneratePayerDetail(
   mojom::PayerDetailPtr payer = mojom::PayerDetail::New();
 
   if (spec_->request_payer_name()) {
-    if (selected_instrument_->HandlesPayerName()) {
-      payer->name = payer_data_from_instrument_.payer_name;
+    if (selected_app_->HandlesPayerName()) {
+      payer->name = payer_data_from_app_.payer_name;
     } else {
       DCHECK(selected_contact_profile);
       payer->name = base::UTF16ToUTF8(
@@ -125,8 +123,8 @@ mojom::PayerDetailPtr PaymentResponseHelper::GeneratePayerDetail(
     }
   }
   if (spec_->request_payer_email()) {
-    if (selected_instrument_->HandlesPayerEmail()) {
-      payer->email = payer_data_from_instrument_.payer_email;
+    if (selected_app_->HandlesPayerEmail()) {
+      payer->email = payer_data_from_app_.payer_email;
     } else {
       DCHECK(selected_contact_profile);
       payer->email = base::UTF16ToUTF8(
@@ -134,8 +132,8 @@ mojom::PayerDetailPtr PaymentResponseHelper::GeneratePayerDetail(
     }
   }
   if (spec_->request_payer_phone()) {
-    if (selected_instrument_->HandlesPayerPhone()) {
-      payer->phone = payer_data_from_instrument_.payer_phone;
+    if (selected_app_->HandlesPayerPhone()) {
+      payer->phone = payer_data_from_app_.payer_phone;
     } else {
       DCHECK(selected_contact_profile);
 
@@ -164,8 +162,8 @@ void PaymentResponseHelper::GeneratePaymentResponse() {
   mojom::PaymentResponsePtr payment_response = mojom::PaymentResponse::New();
 
   // Make sure that we return the method name that the merchant specified for
-  // this instrument: cards can be either specified through their name (e.g.,
-  // "visa") or through basic-card's supportedNetworks.
+  // this app: cards can be either specified through their name (e.g., "visa")
+  // or through basic-card's supportedNetworks.
   payment_response->method_name =
       spec_->IsMethodSupportedThroughBasicCard(method_name_)
           ? methods::kBasicCard
@@ -174,11 +172,11 @@ void PaymentResponseHelper::GeneratePaymentResponse() {
 
   // Shipping Address section
   if (spec_->request_shipping()) {
-    if (selected_instrument_->HandlesShippingAddress()) {
+    if (selected_app_->HandlesShippingAddress()) {
       payment_response->shipping_address =
-          std::move(payer_data_from_instrument_.shipping_address);
+          std::move(payer_data_from_app_.shipping_address);
       payment_response->shipping_option =
-          payer_data_from_instrument_.selected_shipping_option_id;
+          payer_data_from_app_.selected_shipping_option_id;
     } else {
       payment_response->shipping_address =
           data_util::GetPaymentAddressFromAutofillProfile(shipping_address_,

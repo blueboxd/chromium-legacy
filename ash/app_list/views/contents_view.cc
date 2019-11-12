@@ -185,12 +185,12 @@ void ContentsView::ResetForShow() {
   // final state. In tablet mode, opacity of the elements is controlled by the
   // HomeLauncherGestureHandler which expects these elements to be opaque.
   // Otherwise the contents animate from 0 to 1 so set the initial opacity to 0.
-  const float initial_opacity =
-      app_list_view_->is_side_shelf() || app_list_view_->is_tablet_mode()
-          ? 1.0f
-          : 0.0f;
-  GetSearchBoxView()->layer()->SetOpacity(initial_opacity);
-  layer()->SetOpacity(initial_opacity);
+  if (app_list_view_->is_side_shelf() || app_list_view_->is_tablet_mode()) {
+    AnimateToViewState(AppListViewState::kFullscreenAllApps, base::TimeDelta());
+  } else if (last_target_view_state_.has_value() &&
+             *last_target_view_state_ != AppListViewState::kClosed) {
+    AnimateToViewState(AppListViewState::kClosed, base::TimeDelta());
+  }
 }
 
 void ContentsView::CancelDrag() {
@@ -827,10 +827,11 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
   //     overall view state transition. Used during transition to closed state
   //     to speed up the search box and contenst view animation so the don't
   //     show under the shelf.
-  auto animate_opacity = [duration](ui::Layer* layer, bool target_visibility,
-                                    bool half_duration) {
+  auto animate_opacity = [](base::TimeDelta duration, views::View* view,
+                            bool target_visibility) {
+    ui::Layer* const layer = view->layer();
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
-    animation.SetTransitionDuration(duration / (half_duration ? 2 : 1));
+    animation.SetTransitionDuration(duration / (target_visibility ? 1 : 2));
     animation.SetTweenType(gfx::Tween::EASE_IN);
     animation.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
@@ -839,23 +840,19 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
 
   // Fade in or out the contents view, the search box.
   const bool closing = target_view_state == ash::AppListViewState::kClosed;
-  animate_opacity(layer(), !closing /*target_visibility*/,
-                  closing /*half_duration*/);
-  animate_opacity(GetSearchBoxView()->layer(), !closing /*target_visibility*/,
-                  closing /*half_duration*/);
+  animate_opacity(duration, GetSearchBoxView(), !closing /*target_visibility*/);
 
   // Fade in or out the expand arrow.
   const bool target_arrow_visibility =
       target_page == ash::AppListState::kStateApps && !closing;
-  animate_opacity(expand_arrow_view_->layer(),
-                  target_arrow_visibility /*target_visibility*/,
-                  false /*half_duration*/);
+  animate_opacity(duration, expand_arrow_view_, target_arrow_visibility);
 
   // Animates layer's vertical position (using transform animation).
   // |layer| - The layer to transform.
   // |y_offset| - The initial vertical offset - the layer's vertical offset will
   //              be animated to 0.
-  auto animate_transform = [duration](views::View* view, int y_offset) {
+  auto animate_transform = [](base::TimeDelta duration, int y_offset,
+                              views::View* view) {
     ui::Layer* layer = view->layer();
     gfx::Transform transform;
     transform.Translate(0, y_offset);
@@ -907,11 +904,10 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
       selected_page == ash::AppListState::kStateSearchResults
           ? AppListView::kProgressFlagSearchResults
           : AppListView::kProgressFlagNone;
+  const float progress = app_list_view_->GetAppListTransitionProgress(
+      AppListView::kProgressFlagWithTransform | progress_baseline_flag);
   const gfx::Rect current_search_box_bounds =
-      GetSearchBoxExpectedBoundsForProgress(
-          selected_page, app_list_view_->GetAppListTransitionProgress(
-                             AppListView::kProgressFlagWithTransform |
-                             progress_baseline_flag));
+      GetSearchBoxExpectedBoundsForProgress(selected_page, progress);
 
   const int y_offset =
       current_search_box_bounds.y() -
@@ -920,7 +916,7 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
   // For search box, animate the search_box view layer instead of the widget
   // layer to avoid conflict with pagination model transitions (which update the
   // search box widget layer transform as the transition progresses).
-  animate_transform(search_box, y_offset);
+  animate_transform(duration, y_offset, search_box);
 
   // Update app list page bounds to their target values. This assumes that
   // potential in-progress pagination transition does not directly animate page
@@ -928,25 +924,25 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
   for (AppListPage* page : app_list_pages_) {
     page->UpdatePageBoundsForState(target_page, GetContentsBounds(),
                                    target_search_box_bounds);
+    if (page != horizontal_page_container_) {
+      animate_opacity(duration, page, closing ? 0.0f : 1.0f);
+      animate_transform(duration, y_offset, page);
+    } else {
+      GetAppsContainerView()->AnimateOpacity(
+          progress, target_view_state,
+          base::BindRepeating(animate_opacity, duration));
+      GetAppsContainerView()->AnimateYPosition(
+          target_view_state,
+          base::BindRepeating(animate_transform, duration, y_offset));
+    }
   }
 
-  // Update apps container layout separately from horizontal container bounds.
-  GetAppsContainerView()->UpdateYPositionAndOpacity(
-      AppListView::GetTransitionProgressForState(target_view_state),
-      target_view_state != ash::AppListViewState::kClosed /*restore_opacity*/);
+  last_target_view_state_ = target_view_state;
   target_page_for_last_view_state_update_ = target_page;
 
   // Schedule expand arrow repaint to ensure the view picks up the new target
   // state.
   expand_arrow_view()->SchedulePaint();
-
-  // Animate contents view to the target bounds.
-  animate_transform(this, y_offset);
-
-  // The expand arrow view should stay in the same place relative to the
-  // app list bounds, so apply the inverse translation to the one set for
-  // the contents view layer.
-  animate_transform(expand_arrow_view_, -y_offset);
 }
 
 void ContentsView::SetExpandArrowViewVisibility(bool show) {

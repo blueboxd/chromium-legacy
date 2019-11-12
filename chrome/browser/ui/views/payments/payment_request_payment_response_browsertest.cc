@@ -18,21 +18,19 @@
 
 namespace payments {
 
-class PaymentRequestPaymentResponseAutofillPaymentInstrumentTest
+class PaymentRequestPaymentResponseAutofillPaymentAppTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestPaymentResponseAutofillPaymentInstrumentTest() {}
+  PaymentRequestPaymentResponseAutofillPaymentAppTest() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(
-      PaymentRequestPaymentResponseAutofillPaymentInstrumentTest);
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestPaymentResponseAutofillPaymentAppTest);
 };
 
 // Tests that the PaymentResponse contains all the required fields for an
-// Autofill payment instrument.
-IN_PROC_BROWSER_TEST_F(
-    PaymentRequestPaymentResponseAutofillPaymentInstrumentTest,
-    TestPaymentResponse) {
+// Autofill payment app.
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseAutofillPaymentAppTest,
+                       TestPaymentResponse) {
   NavigateTo("/payment_request_no_shipping_test.html");
   // Setup a credit card with an associated billing address.
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();

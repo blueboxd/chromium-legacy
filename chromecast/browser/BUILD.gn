@@ -389,8 +389,14 @@ cast_source_set("browser") {
       "exo/cast_wm_helper.h",
       "exo/wayland_server_controller.cc",
       "exo/wayland_server_controller.h",
+      "webview/cast_app_controller.cc",
+      "webview/cast_app_controller.h",
+      "webview/cast_app_rpc_instance.cc",
+      "webview/cast_app_rpc_instance.h",
       "webview/js_channel_service.cc",
       "webview/js_channel_service.h",
+      "webview/platform_views_grpc_service.cc",
+      "webview/platform_views_grpc_service.h",
       "webview/platform_views_rpc_instance.cc",
       "webview/platform_views_rpc_instance.h",
       "webview/web_content_controller.cc",
@@ -410,6 +416,7 @@ cast_source_set("browser") {
     ]
     configs += [ "//third_party/grpc:grpc_config" ]
     deps += [
+      ":web_contents_provider",
       "//chromecast/browser/webview/proto",
       "//components/exo",
       "//components/exo/wayland",
@@ -576,4 +583,14 @@ if (is_android) {
       "cast_content_window.h",
     ]
   }
+}
+
+cast_source_set("web_contents_provider") {
+  sources = [
+    "webview/web_contents_provider.h",
+  ]
+
+  deps = [
+    "//content/public/browser",
+  ]
 }

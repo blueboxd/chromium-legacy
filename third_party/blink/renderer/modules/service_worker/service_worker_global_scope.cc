@@ -607,11 +607,16 @@ void ServiceWorkerGlobalScope::BindControllerServiceWorker(
     mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> receiver) {
   DCHECK(IsContextThread());
   DCHECK(controller_receivers_.empty());
+  // This receiver won't get any FetchEvents because it's used only for
+  // bootstrapping, and the actual clients connect over Clone() later. kNone is
+  // passed as COEP value as a placeholder.
+  //
   // TODO(falken): Consider adding task types for "the handle fetch task source"
   // and "handle functional event task source" defined in the service worker
   // spec and use them when dispatching events.
   controller_receivers_.Add(
       this, std::move(receiver),
+      network::mojom::blink::CrossOriginEmbedderPolicy::kNone,
       GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 
@@ -1429,6 +1434,9 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
                "ServiceWorkerGlobalScope::DispatchFetchEventForSubresource",
                "url", params->request->url.ElidedString().Utf8(), "queued",
                RequestedTermination() ? "true" : "false");
+  // TODO(https://crbug.com/999049): Retrieve the COEP value from
+  // controller_receivers_.current_context() and respect it on the corresponding
+  // respondWith().
   if (RequestedTermination()) {
     timeout_timer_->PushPendingTask(
         WTF::Bind(&ServiceWorkerGlobalScope::DispatchFetchEventInternal,
@@ -1441,10 +1449,12 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
 }
 
 void ServiceWorkerGlobalScope::Clone(
-    mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> receiver) {
+    mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> receiver,
+    network::mojom::blink::CrossOriginEmbedderPolicy
+        cross_origin_embedder_policy) {
   DCHECK(IsContextThread());
   controller_receivers_.Add(
-      this, std::move(receiver),
+      this, std::move(receiver), cross_origin_embedder_policy,
       GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 

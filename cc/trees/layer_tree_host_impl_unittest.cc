@@ -8158,14 +8158,14 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // Opaque layer, drawn without blending.
   layer1->SetContentsOpaque(true);
   layer1->SetExpectation(false, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
 
   // Layer with translucent content and painting, so drawn with blending.
   layer1->SetContentsOpaque(false);
   layer1->SetExpectation(true, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
 
@@ -8173,7 +8173,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetContentsOpaque(true);
   SetOpacity(layer1, 0.5f);
   layer1->SetExpectation(true, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
 
@@ -8181,7 +8181,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetContentsOpaque(true);
   SetOpacity(layer1, 0.5f);
   layer1->SetExpectation(true, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
 
@@ -8195,11 +8195,11 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetContentsOpaque(true);
   SetOpacity(layer1, 1.f);
   layer1->SetExpectation(false, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(true);
   SetOpacity(layer2, 1.f);
   layer2->SetExpectation(false, false, root);
-  layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer2->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
@@ -8208,9 +8208,9 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // Child layer with opaque content, drawn without blending.
   layer1->SetContentsOpaque(false);
   layer1->SetExpectation(true, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetExpectation(false, false, root);
-  layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer2->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
@@ -8220,9 +8220,9 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // Child layer with opaque content, drawn without blending.
   layer1->SetContentsOpaque(true);
   layer1->SetExpectation(false, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetExpectation(false, false, root);
-  layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer2->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
@@ -8236,9 +8236,9 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   SetOpacity(layer1, 0.5f);
   GetEffectNode(layer1)->render_surface_reason = RenderSurfaceReason::kTest;
   layer1->SetExpectation(false, true, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetExpectation(false, false, layer1);
-  layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer2->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
@@ -8249,11 +8249,11 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetContentsOpaque(true);
   SetOpacity(layer1, 1.f);
   layer1->SetExpectation(false, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(true);
   SetOpacity(layer2, 0.5f);
   layer2->SetExpectation(true, false, layer1);
-  layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer2->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
@@ -8262,11 +8262,11 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetContentsOpaque(true);
   SetOpacity(layer1, 1.f);
   layer1->SetExpectation(false, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(false);
   SetOpacity(layer2, 1.f);
   layer2->SetExpectation(true, false, root);
-  layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer2->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
@@ -8276,11 +8276,11 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetContentsOpaque(true);
   SetOpacity(layer1, 1.f);
   layer1->SetExpectation(false, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(true);
   SetOpacity(layer2, 1.f);
   layer2->SetExpectation(false, false, root);
-  layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer2->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
   EXPECT_TRUE(layer2->quads_appended());
@@ -8291,7 +8291,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetQuadVisibleRect(gfx::Rect(5, 5, 5, 5));
   layer1->SetOpaqueContentRect(gfx::Rect(5, 5, 2, 5));
   layer1->SetExpectation(true, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
 
@@ -8301,7 +8301,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetQuadVisibleRect(gfx::Rect(5, 5, 5, 2));
   layer1->SetOpaqueContentRect(gfx::Rect(5, 5, 2, 5));
   layer1->SetExpectation(true, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
 
@@ -8311,7 +8311,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetQuadVisibleRect(gfx::Rect(7, 5, 3, 5));
   layer1->SetOpaqueContentRect(gfx::Rect(5, 5, 2, 5));
   layer1->SetExpectation(true, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
 
@@ -8322,7 +8322,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   layer1->SetQuadVisibleRect(gfx::Rect(5, 5, 2, 5));
   layer1->SetOpaqueContentRect(gfx::Rect(5, 5, 2, 5));
   layer1->SetExpectation(false, false, root);
-  layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
+  layer1->UnionUpdateRect(gfx::Rect(layer1->bounds()));
   DrawFrame();
   EXPECT_TRUE(layer1->quads_appended());
 }
@@ -8943,7 +8943,7 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   // The second frame has damage that doesn't touch the child layer. Its quads
   // should still be generated.
   gfx::Rect small_damage = gfx::Rect(0, 0, 1, 1);
-  root->SetUpdateRect(small_damage);
+  root->UnionUpdateRect(small_damage);
   DrawFrameAndTestDamage(small_damage, child);
 
   // The third frame should have no damage, so no quads should be generated.

@@ -2,35 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {Size} from './size.js';
+import {Coordinate2d} from './coordinate2d.js';
 
-  class PrintableArea {
+  export class PrintableArea {
     /**
      * Object describing the printable area of a page in the document.
-     * @param {!print_preview.Coordinate2d} origin Top left corner of the
+     * @param {!Coordinate2d} origin Top left corner of the
      *     printable area of the document.
-     * @param {!print_preview.Size} size Size of the printable area of the
+     * @param {!Size} size Size of the printable area of the
      *     document.
      */
     constructor(origin, size) {
       /**
        * Top left corner of the printable area of the document.
-       * @type {!print_preview.Coordinate2d}
+       * @type {!Coordinate2d}
        * @private
        */
       this.origin_ = origin;
 
       /**
        * Size of the printable area of the document.
-       * @type {!print_preview.Size}
+       * @type {!Size}
        * @private
        */
       this.size_ = size;
     }
 
     /**
-     * @return {!print_preview.Coordinate2d} Top left corner of the printable
+     * @return {!Coordinate2d} Top left corner of the printable
      *     area of the document.
      */
     get origin() {
@@ -38,14 +38,14 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {!print_preview.Size} Size of the printable area of the document.
+     * @return {!Size} Size of the printable area of the document.
      */
     get size() {
       return this.size_;
     }
 
     /**
-     * @param {print_preview.PrintableArea} other Other printable area to check
+     * @param {PrintableArea} other Other printable area to check
      *     for equality.
      * @return {boolean} Whether another printable area is equal to this one.
      */
@@ -55,6 +55,3 @@ cr.define('print_preview', function() {
     }
   }
 
-  // Export
-  return {PrintableArea: PrintableArea};
-});

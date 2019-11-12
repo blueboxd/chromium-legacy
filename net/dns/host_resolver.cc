@@ -26,12 +26,14 @@ namespace net {
 
 namespace {
 
-class FailingRequestImpl : public HostResolver::ResolveHostRequest {
+class FailingRequestImpl : public HostResolver::ResolveHostRequest,
+                           public HostResolver::ProbeRequest {
  public:
   explicit FailingRequestImpl(int error) : error_(error) {}
   ~FailingRequestImpl() override = default;
 
   int Start(CompletionOnceCallback callback) override { return error_; }
+  int Start() override { return error_; }
 
   const base::Optional<AddressList>& GetAddressResults() const override {
     static base::NoDestructor<base::Optional<AddressList>> nullopt_result;
@@ -105,6 +107,14 @@ std::unique_ptr<HostResolver::ResolveHostRequest> HostResolver::CreateRequest(
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   return CreateRequest(host, NetworkIsolationKey(), net_log,
                        optional_parameters);
+}
+
+std::unique_ptr<HostResolver::ProbeRequest>
+HostResolver::CreateDohProbeRequest() {
+  // Should be overridden in any HostResolver implementation where this method
+  // may be called.
+  NOTREACHED();
+  return nullptr;
 }
 
 std::unique_ptr<HostResolver::MdnsListener> HostResolver::CreateMdnsListener(
@@ -231,6 +241,12 @@ HostResolver::HostResolver() = default;
 // static
 std::unique_ptr<HostResolver::ResolveHostRequest>
 HostResolver::CreateFailingRequest(int error) {
+  return std::make_unique<FailingRequestImpl>(error);
+}
+
+// static
+std::unique_ptr<HostResolver::ProbeRequest>
+HostResolver::CreateFailingProbeRequest(int error) {
   return std::make_unique<FailingRequestImpl>(error);
 }
 

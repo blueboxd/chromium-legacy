@@ -2,18 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('user_manager_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {DestinationStore, InvitationStore, NativeLayer} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
+import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
+import {createDestinationStore, getDestinations, getGoogleDriveDestination, setupTestListenerElement} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
   suite('UserManagerTest', function() {
     /** @type {?PrintPreviewUserManagerElement} */
     let userManager = null;
 
-    /** @type {?print_preview.DestinationStore} */
+    /** @type {?DestinationStore} */
     let destinationStore = null;
 
-    /** @type {?print_preview.NativeLayer} */
+    /** @type {?NativeLayer} */
     let nativeLayer = null;
 
-    /** @type {?print_preview.CloudPrintInterface} */
+    /** @type {?CloudPrintInterface} */
     let cloudPrintInterface = null;
 
     const account1 = 'foo@chromium.org';
@@ -21,7 +26,7 @@ cr.define('user_manager_test', function() {
 
     /** @override */
     suiteSetup(function() {
-      print_preview_test_utils.setupTestListenerElement();
+      setupTestListenerElement();
     });
 
     /** @override */
@@ -29,17 +34,17 @@ cr.define('user_manager_test', function() {
       PolymerTest.clearBody();
 
       // Create data classes
-      nativeLayer = new print_preview.NativeLayerStub();
-      print_preview.NativeLayer.setInstance(nativeLayer);
-      cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
+      nativeLayer = new NativeLayerStub();
+      NativeLayer.setInstance(nativeLayer);
+      cloudPrintInterface = new CloudPrintInterfaceStub();
 
       userManager = document.createElement('print-preview-user-manager');
 
       // Initialize destination store.
-      destinationStore = print_preview_test_utils.createDestinationStore();
+      destinationStore = createDestinationStore();
       destinationStore.setCloudPrintInterface(cloudPrintInterface);
       const localDestinations = [];
-      const destinations = print_preview_test_utils.getDestinations(
+      const destinations = getDestinations(
           nativeLayer, localDestinations);
       destinationStore.init(
           false /* isInAppKioskMode */, 'FooDevice' /* printerName */,
@@ -49,7 +54,7 @@ cr.define('user_manager_test', function() {
       // Set up user manager
       userManager.appKioskMode = false;
       userManager.destinationStore = destinationStore;
-      userManager.invitationStore = new print_preview.InvitationStore();
+      userManager.invitationStore = new InvitationStore();
       userManager.shouldReloadCookies = false;
       document.body.appendChild(userManager);
     });
@@ -58,9 +63,9 @@ cr.define('user_manager_test', function() {
     test('update users', function() {
       // Set up a cloud printer for each account.
       cloudPrintInterface.setPrinter(
-          print_preview_test_utils.getGoogleDriveDestination(account1));
+          getGoogleDriveDestination(account1));
       cloudPrintInterface.setPrinter(
-          print_preview_test_utils.getGoogleDriveDestination(account2));
+          getGoogleDriveDestination(account2));
 
       assertTrue(userManager.cloudPrintDisabled);
 
@@ -122,7 +127,7 @@ cr.define('user_manager_test', function() {
             // This should update the list of users and the active user and
             // trigger a call to search.
             cloudPrintInterface.setPrinter(
-                print_preview_test_utils.getGoogleDriveDestination(account1));
+                getGoogleDriveDestination(account1));
             cr.webUIListenerCallback('check-for-account-update');
             return cloudPrintInterface.whenCalled('search');
           })
@@ -133,7 +138,7 @@ cr.define('user_manager_test', function() {
 
             // Simulate signing in to a second account.
             cloudPrintInterface.setPrinter(
-                print_preview_test_utils.getGoogleDriveDestination(account2));
+                getGoogleDriveDestination(account2));
             cr.webUIListenerCallback('check-for-account-update');
             return cloudPrintInterface.whenCalled('search');
           })
@@ -168,7 +173,7 @@ cr.define('user_manager_test', function() {
             // This should update the list of users and the active user and
             // trigger a call to search.
             cloudPrintInterface.setPrinter(
-                print_preview_test_utils.getGoogleDriveDestination(account1));
+                getGoogleDriveDestination(account1));
             cr.webUIListenerCallback('check-for-account-update');
             return cloudPrintInterface.whenCalled('search');
           })
@@ -179,7 +184,7 @@ cr.define('user_manager_test', function() {
 
             // Simulate signing in to a second account.
             cloudPrintInterface.setPrinter(
-                print_preview_test_utils.getGoogleDriveDestination(account2));
+                getGoogleDriveDestination(account2));
             cr.webUIListenerCallback('check-for-account-update');
             return cloudPrintInterface.whenCalled('search');
           })
@@ -193,9 +198,9 @@ cr.define('user_manager_test', function() {
     test('update active user', function() {
       // Set up a cloud printer for each account.
       cloudPrintInterface.setPrinter(
-          print_preview_test_utils.getGoogleDriveDestination(account1));
+          getGoogleDriveDestination(account1));
       cloudPrintInterface.setPrinter(
-          print_preview_test_utils.getGoogleDriveDestination(account2));
+          getGoogleDriveDestination(account2));
       userManager.cloudPrintInterface = cloudPrintInterface;
       userManager.initUserAccounts(
           [account1, account2], true /* syncAvailable */);
@@ -226,4 +231,3 @@ cr.define('user_manager_test', function() {
       });
     });
   });
-});

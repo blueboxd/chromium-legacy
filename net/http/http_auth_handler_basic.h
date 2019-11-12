@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerBasic : public HttpAuthHandler {
       HttpAuthChallengeTokenizer* challenge) override;
 
  private:
-  ~HttpAuthHandlerBasic() override {}
+  ~HttpAuthHandlerBasic() override = default;
 
   bool ParseChallenge(HttpAuthChallengeTokenizer* challenge);
 };

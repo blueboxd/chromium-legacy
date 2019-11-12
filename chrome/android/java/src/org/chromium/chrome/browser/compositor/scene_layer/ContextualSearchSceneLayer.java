@@ -112,8 +112,6 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         boolean searchBarBorderVisible = panel.isBarBorderVisible();
         float searchBarBorderHeight = panel.getBarBorderHeight();
 
-        boolean searchBarShadowVisible = panel.getBarShadowVisible();
-
         final int iconColor = panel.getIconColor();
         final int dragHandlebarColor = panel.getDragHandlebarColor();
         float arrowIconOpacity = panel.getArrowIconOpacity();
@@ -146,10 +144,9 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         // The panel shadow goes all the way around in the old layout, but in the new layout
         // the top_round resource also includes the shadow so we only need a side shadow.
         // In either case there's just one shadow-only resource needed.
-        int panelShadowResourceId = panel.getPanelShadowVisible()
-                ? (OverlayPanel.isNewLayout() ? R.drawable.overlay_side_shadow
-                                              : R.drawable.contextual_search_bar_background)
-                : INVALID_RESOURCE_ID;
+        int panelShadowResourceId = OverlayPanel.isNewLayout()
+                ? R.drawable.overlay_side_shadow
+                : R.drawable.contextual_search_bar_background;
         int closeIconResourceId = OverlayPanel.isNewLayout()
                 ? INVALID_RESOURCE_ID
                 : ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID;
@@ -174,7 +171,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 searchBarControl.getTextLayerMinHeight(), searchTermOpacity,
                 searchBarControl.getSearchTermCaptionSpacing(), searchCaptionAnimationPercentage,
                 searchCaptionVisible, searchBarBorderVisible, searchBarBorderHeight * mDpToPx,
-                searchBarShadowVisible, quickActionIconVisible, thumbnailVisible, thumbnailUrl,
+                quickActionIconVisible, thumbnailVisible, thumbnailUrl,
                 customImageVisibilityPercentage, barImageSize, iconColor, dragHandlebarColor,
                 arrowIconOpacity, arrowIconRotation, closeIconOpacity, isProgressBarVisible,
                 progressBarHeight * mDpToPx, progressBarOpacity, progressBarCompletion,
@@ -249,8 +246,8 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 float searchTextLayerMinHeight, float searchTermOpacity,
                 float searchTermCaptionSpacing, float searchCaptionAnimationPercentage,
                 boolean searchCaptionVisible, boolean searchBarBorderVisible,
-                float searchBarBorderHeight, boolean searchBarShadowVisible,
-                boolean quickActionIconVisible, boolean thumbnailVisible, String thumbnailUrl,
+                float searchBarBorderHeight, boolean quickActionIconVisible,
+                boolean thumbnailVisible, String thumbnailUrl,
                 float customImageVisibilityPercentage, int barImageSize, int iconColor,
                 int dragHandlebarColor, float arrowIconOpacity, float arrowIconRotation,
                 float closeIconOpacity, boolean isProgressBarVisible, float progressBarHeight,

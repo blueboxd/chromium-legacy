@@ -14,13 +14,13 @@
 #endif
 
 struct InstantMostVisitedInfo;
-struct ThemeBackgroundInfo;
+struct NtpTheme;
 
 // InstantServiceObserver defines the observer interface for InstantService.
 class InstantServiceObserver {
  public:
   // Indicates that the user's custom theme has changed in some way.
-  virtual void ThemeInfoChanged(const ThemeBackgroundInfo&);
+  virtual void NtpThemeChanged(const NtpTheme&);
 
   // Indicates that the most visited items have changed in some way.
   virtual void MostVisitedInfoChanged(const InstantMostVisitedInfo&);

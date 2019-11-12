@@ -458,7 +458,7 @@ class DeclarativeNetRequestBrowserTest
   void AddDynamicRules(const ExtensionId& extension_id,
                        const std::vector<TestRule>& rules) {
     static constexpr char kScript[] = R"(
-      chrome.declarativeNetRequest.addDynamicRules($1, function () {
+      chrome.declarativeNetRequest.updateDynamicRules([], $1, function () {
         window.domAutomationController.send(chrome.runtime.lastError ?
             chrome.runtime.lastError.message : 'success');
       });
@@ -478,7 +478,7 @@ class DeclarativeNetRequestBrowserTest
   void RemoveDynamicRules(const ExtensionId& extension_id,
                           const std::vector<int> rule_ids) {
     static constexpr char kScript[] = R"(
-      chrome.declarativeNetRequest.removeDynamicRules($1, function () {
+      chrome.declarativeNetRequest.updateDynamicRules($1, [], function () {
         window.domAutomationController.send(chrome.runtime.lastError ?
             chrome.runtime.lastError.message : 'success');
       });

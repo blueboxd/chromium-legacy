@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('cloudprint', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {Cdd, Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationType} from './destination.js';
+import {Invitation} from './invitation.js';
 
   /**
    * Enumeration of cloud destination field names.
@@ -52,38 +53,38 @@ cr.define('cloudprint', function() {
    * Parses the destination type.
    * @param {string} typeStr Destination type given by the Google Cloud Print
    *     server.
-   * @return {!print_preview.DestinationType} Destination type.
+   * @return {!DestinationType} Destination type.
    * @private
    */
   function parseType(typeStr) {
     if (typeStr == DestinationCloudType.ANDROID ||
         typeStr == DestinationCloudType.IOS) {
-      return print_preview.DestinationType.MOBILE;
+      return DestinationType.MOBILE;
     }
     if (typeStr == DestinationCloudType.DOCS) {
-      return print_preview.DestinationType.GOOGLE_PROMOTED;
+      return DestinationType.GOOGLE_PROMOTED;
     }
-    return print_preview.DestinationType.GOOGLE;
+    return DestinationType.GOOGLE;
   }
 
   /**
    * @param {!Array<string>} tags The array of tag strings sent by GCP server.
-   * @return {!print_preview.DestinationCertificateStatus} The certificate
+   * @return {!DestinationCertificateStatus} The certificate
    *     status indicated by the tag. Returns NONE if certificate tag is not
    *     found.
    */
   function extractCertificateStatus(tags) {
     const certTag = tags.find(tag => tag.startsWith(CERT_TAG));
     if (!certTag) {
-      return print_preview.DestinationCertificateStatus.NONE;
+      return DestinationCertificateStatus.NONE;
     }
-    const value = /** @type {print_preview.DestinationCertificateStatus} */ (
+    const value = /** @type {DestinationCertificateStatus} */ (
         certTag.substring(CERT_TAG.length));
     // Only 2 valid values sent by GCP server.
     assert(
-        value == print_preview.DestinationCertificateStatus.UNKNOWN ||
-        value == print_preview.DestinationCertificateStatus.YES ||
-        value == print_preview.DestinationCertificateStatus.NO);
+        value == DestinationCertificateStatus.UNKNOWN ||
+        value == DestinationCertificateStatus.YES ||
+        value == DestinationCertificateStatus.NO);
     return value;
   }
 
@@ -92,13 +93,13 @@ cr.define('cloudprint', function() {
    * response.
    * @param {!Object} json Object that represents a Google Cloud Print search or
    *     printer response.
-   * @param {!print_preview.DestinationOrigin} origin The origin of the
+   * @param {!DestinationOrigin} origin The origin of the
    *     response.
    * @param {string} account The account this destination is registered for or
    *     empty string, if origin != COOKIES.
-   * @return {!print_preview.Destination} Parsed destination.
+   * @return {!Destination} Parsed destination.
    */
-  function parseCloudDestination(json, origin, account) {
+  export function parseCloudDestination(json, origin, account) {
     if (!json.hasOwnProperty(CloudDestinationField.ID) ||
         !json.hasOwnProperty(CloudDestinationField.TYPE) ||
         !json.hasOwnProperty(CloudDestinationField.DISPLAY_NAME)) {
@@ -107,7 +108,7 @@ cr.define('cloudprint', function() {
     const id = json[CloudDestinationField.ID];
     const tags = json[CloudDestinationField.TAGS] || [];
     const connectionStatus = json[CloudDestinationField.CONNECTION_STATUS] ||
-        print_preview.DestinationConnectionStatus.UNKNOWN;
+        DestinationConnectionStatus.UNKNOWN;
     const optionalParams = {
       account: account,
       tags: tags,
@@ -118,12 +119,12 @@ cr.define('cloudprint', function() {
       description: json[CloudDestinationField.DESCRIPTION],
       certificateStatus: extractCertificateStatus(tags),
     };
-    const cloudDest = new print_preview.Destination(
+    const cloudDest = new Destination(
         id, parseType(json[CloudDestinationField.TYPE]), origin,
         json[CloudDestinationField.DISPLAY_NAME], connectionStatus,
         optionalParams);
     if (json.hasOwnProperty(CloudDestinationField.CAPABILITIES)) {
-      cloudDest.capabilities = /** @type {!print_preview.Cdd} */ (
+      cloudDest.capabilities = /** @type {!Cdd} */ (
           json[CloudDestinationField.CAPABILITIES]);
     }
     return cloudDest;
@@ -150,9 +151,9 @@ cr.define('cloudprint', function() {
    * Parses printer sharing invitation from JSON from GCP invite API response.
    * @param {!Object} json Object that represents a invitation search response.
    * @param {string} account The account this invitation is sent for.
-   * @return {!print_preview.Invitation} Parsed invitation.
+   * @return {!Invitation} Parsed invitation.
    */
-  function parseInvitation(json, account) {
+  export function parseInvitation(json, account) {
     if (!json.hasOwnProperty(InvitationField.SENDER) ||
         !json.hasOwnProperty(InvitationField.RECEIVER) ||
         !json.hasOwnProperty(InvitationField.PRINTER)) {
@@ -179,17 +180,11 @@ cr.define('cloudprint', function() {
       throw Error('Invitation of unsupported receiver type');
     }
 
-    const destination = cloudprint.parseCloudDestination(
-        json[InvitationField.PRINTER], print_preview.DestinationOrigin.COOKIES,
+    const destination = parseCloudDestination(
+        json[InvitationField.PRINTER], DestinationOrigin.COOKIES,
         account);
 
-    return new print_preview.Invitation(
+    return new Invitation(
         senderName, receiverName, destination, receiver, account);
   }
 
-  // Export
-  return {
-    parseCloudDestination: parseCloudDestination,
-    parseInvitation: parseInvitation,
-  };
-});

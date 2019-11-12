@@ -48,6 +48,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/download_item.h"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/viz/common/features.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/test/zoom_test_utils.h"
@@ -74,6 +77,7 @@
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/test/result_catcher.h"
@@ -96,6 +100,10 @@
 #endif
 
 using content::WebContents;
+using extensions::ExtensionsAPIClient;
+using guest_view::GuestViewManager;
+using guest_view::TestGuestViewManager;
+using guest_view::TestGuestViewManagerFactory;
 
 const int kNumberLoadTestParts = 10;
 
@@ -392,6 +400,95 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
     EXPECT_EQ(1, CountPDFProcesses());
   }
 };
+
+class PDFExtensionTestWithTestGuestViewManager : public PDFExtensionTest {
+ public:
+  PDFExtensionTestWithTestGuestViewManager() {
+    GuestViewManager::set_factory_for_testing(&factory_);
+  }
+
+ protected:
+  TestGuestViewManager* GetGuestViewManager() {
+    // TODO(wjmaclean): Re-implement FromBrowserContext in the
+    // TestGuestViewManager class to avoid all callers needing this cast.
+    auto* manager = static_cast<TestGuestViewManager*>(
+        TestGuestViewManager::FromBrowserContext(browser()->profile()));
+    // TestGuestViewManager::WaitForSingleGuestCreated can and will get called
+    // before a guest is created. Since GuestViewManager is usually not created
+    // until the first guest is created, this means that |manager| will be
+    // nullptr if trying to use the manager to wait for the first guest. Because
+    // of this, the manager must be created here if it does not already exist.
+    if (!manager) {
+      manager = static_cast<TestGuestViewManager*>(
+          GuestViewManager::CreateWithDelegate(
+              browser()->profile(),
+              ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
+                  browser()->profile())));
+    }
+    return manager;
+  }
+
+ private:
+  TestGuestViewManagerFactory factory_;
+};
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+                       LoadingPdfDoesNotStealFocus) {
+  // Load test HTML, and verify the text area has focus.
+  GURL main_url(embedded_test_server()->GetURL("/pdf/two_iframes.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  auto* embedder_web_contents = GetActiveWebContents();
+
+  // Make sure we can see the iframe's document.
+  ASSERT_TRUE(
+      content::EvalJs(embedder_web_contents,
+                      "new Promise((resolve) => {"
+                      "  var iframe1 = document.getElementById('iframe1');"
+                      "  var iframe1doc = iframe1.contentDocument;"
+                      "  resolve(iframe1doc != null);"
+                      "});")
+          .ExtractBool());
+
+  // Make sure the text area is focused.
+  ASSERT_TRUE(content::EvalJs(
+                  embedder_web_contents,
+                  "new Promise((resolve) => {"
+                  "  iframe1doc = "
+                  "      document.getElementById('iframe1').contentDocument;"
+                  "  resolve(iframe1doc.hasFocus());"
+                  "});")
+                  .ExtractBool());
+
+  GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ASSERT_TRUE(content::ExecJs(
+      embedder_web_contents,
+      content::JsReplace("document.getElementById('iframe2').src = $1;",
+                         pdf_url.spec())));
+
+  // Verify the pdf has loaded.
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  ASSERT_TRUE(guest_web_contents);
+  EXPECT_NE(embedder_web_contents, guest_web_contents);
+  while (guest_web_contents->IsLoading()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  // Make sure the text area still has focus.
+  ASSERT_TRUE(
+      content::EvalJs(
+          embedder_web_contents,
+          "new Promise((resolve) => {"
+          "  iframe1doc = "
+          "      document.getElementById('iframe1').contentDocument;"
+          "  text_area = iframe1doc.getElementById('text_area');"
+          "  text_area_is_active = iframe1doc.activeElement == text_area;"
+          "  resolve(iframe1doc.hasFocus() && text_area_is_active);"
+          "});")
+          .ExtractBool());
+}
 
 class PDFExtensionLoadTest : public PDFExtensionTest,
                              public testing::WithParamInterface<int> {

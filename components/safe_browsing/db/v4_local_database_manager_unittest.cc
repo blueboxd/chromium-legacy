@@ -789,7 +789,7 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckUrlForHCAllowlistWithNoMatch) {
   EXPECT_FALSE(client.callback_called());
 }
 
-// When allowlist is unavailable, all URLS should be considered no-match.
+// When allowlist is unavailable, all URLS should be considered MATCH.
 TEST_F(V4LocalDatabaseManagerTest, TestCheckUrlForHCAllowlistUnavailable) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures({safe_browsing::kRealTimeUrlLookupEnabled}, {});
@@ -809,7 +809,7 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckUrlForHCAllowlistUnavailable) {
       /* expected_sb_threat_type= */ SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST);
 
   const GURL url_check("https://example.com/safe");
-  EXPECT_EQ(AsyncMatch::NO_MATCH,
+  EXPECT_EQ(AsyncMatch::MATCH,
             v4_local_database_manager_->CheckUrlForHighConfidenceAllowlist(
                 url_check, &client));
 

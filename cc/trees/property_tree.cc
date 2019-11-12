@@ -1148,11 +1148,12 @@ ScrollTree::~ScrollTree() = default;
 ScrollTree& ScrollTree::operator=(const ScrollTree& from) {
   PropertyTree::operator=(from);
   currently_scrolling_node_id_ = kInvalidNodeId;
-  // Maps for ScrollOffsets/SyncedScrollOffsets are intentionally ommitted here
+  // Maps for ScrollOffsets/SyncedScrollOffsets are intentionally omitted here
   // since we can not directly copy them. Pushing of these updates from main
   // currently depends on Layer properties for scroll offset animation changes
   // (setting clobber_active_value for scroll offset animations interrupted on
   // the main thread) being pushed to impl first.
+  // |callbacks_| is omitted because it's for the main thread only.
   return *this;
 }
 
@@ -1160,6 +1161,8 @@ bool ScrollTree::operator==(const ScrollTree& other) const {
   if (scroll_offset_map_ != other.scroll_offset_map_)
     return false;
   if (synced_scroll_offset_map_ != other.synced_scroll_offset_map_)
+    return false;
+  if (callbacks_.get() != other.callbacks_.get())
     return false;
 
   bool is_currently_scrolling_node_equal =
@@ -1173,6 +1176,7 @@ void ScrollTree::CopyCompleteTreeState(const ScrollTree& other) {
   currently_scrolling_node_id_ = other.currently_scrolling_node_id_;
   scroll_offset_map_ = other.scroll_offset_map_;
   synced_scroll_offset_map_ = other.synced_scroll_offset_map_;
+  callbacks_ = other.callbacks_;
 }
 #endif
 
@@ -1202,7 +1206,9 @@ void ScrollTree::clear() {
 
 #if DCHECK_IS_ON()
   ScrollTree tree;
-  if (!property_trees()->is_main_thread) {
+  if (property_trees()->is_main_thread) {
+    tree.callbacks_ = callbacks_;
+  } else {
     DCHECK(scroll_offset_map_.empty());
     tree.currently_scrolling_node_id_ = currently_scrolling_node_id_;
     tree.synced_scroll_offset_map_ = synced_scroll_offset_map_;
@@ -1624,6 +1630,25 @@ gfx::ScrollOffset ScrollTree::ClampScrollOffsetToLimits(
   offset.SetToMin(MaxScrollOffset(scroll_node.id));
   offset.SetToMax(gfx::ScrollOffset());
   return offset;
+}
+
+void ScrollTree::SetScrollCallbacks(base::WeakPtr<ScrollCallbacks> callbacks) {
+  DCHECK(property_trees()->is_main_thread);
+  callbacks_ = std::move(callbacks);
+}
+
+void ScrollTree::NotifyDidScroll(ElementId scroll_element_id,
+                                 const gfx::ScrollOffset& scroll_offset) {
+  DCHECK(property_trees()->is_main_thread);
+  if (callbacks_)
+    callbacks_->DidScroll(scroll_element_id, scroll_offset);
+}
+
+void ScrollTree::NotifyDidChangeScrollbarsHidden(ElementId scroll_element_id,
+                                                 bool hidden) {
+  DCHECK(property_trees()->is_main_thread);
+  if (callbacks_)
+    callbacks_->DidChangeScrollbarsHidden(scroll_element_id, hidden);
 }
 
 PropertyTreesCachedData::PropertyTreesCachedData()

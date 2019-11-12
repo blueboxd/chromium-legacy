@@ -42,14 +42,12 @@ constexpr base::TimeDelta kNotifyCycleDelta = base::TimeDelta::FromMinutes(20);
 // The default amount of time it takes for the detector's annoyance level
 // (upgrade_notification_stage()) to reach UPGRADE_ANNOYANCE_HIGH once an
 // upgrade is detected.
-constexpr base::TimeDelta kDefaultHighThreshold = base::TimeDelta::FromDays(4);
+constexpr base::TimeDelta kDefaultHighThreshold = base::TimeDelta::FromDays(7);
 
 // The default amount of time between the detector's annoyance level change
 // from UPGRADE_ANNOYANCE_ELEVATED to UPGRADE_ANNOYANCE_HIGH in ms.
-constexpr int kDefaultHeadsUpPeriodMs = 24 * 60 * 60 * 1000;  // 1 day.
-
 constexpr base::TimeDelta kDefaultHeadsUpPeriod =
-    base::TimeDelta::FromMilliseconds(kDefaultHeadsUpPeriodMs);
+    base::TimeDelta::FromDays(3);  // 3 days.
 
 // The reason of the rollback used in the UpgradeDetector.RollbackReason
 // histogram.
@@ -140,7 +138,7 @@ UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {}
 // static
 void UpgradeDetectorChromeos::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kRelaunchHeadsUpPeriod,
-                                kDefaultHeadsUpPeriodMs);
+                                kDefaultHeadsUpPeriod.InMilliseconds());
 }
 
 void UpgradeDetectorChromeos::Init() {

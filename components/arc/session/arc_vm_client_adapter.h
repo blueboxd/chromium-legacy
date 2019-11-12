@@ -22,6 +22,8 @@ std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter(
 
 // Function(s) below are for testing.
 bool IsAndroidDebuggableForTesting(const base::FilePath& json_path);
+bool ExpandPropertyFilesForTesting(const base::FilePath& source_path,
+                                   const base::FilePath& dest_path);
 
 }  // namespace arc
 

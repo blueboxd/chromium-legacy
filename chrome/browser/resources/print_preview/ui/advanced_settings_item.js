@@ -2,13 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/search_highlight_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import {getStringForCurrentLocale} from '../print_preview_utils.js';
+import {Destination, VendorCapability, VendorCapabilitySelectOption} from '../data/destination.js';
+import {updateHighlights, HighlightResults} from './highlight_utils.js';
+import './print_preview_shared_css.js';
+import {SettingsBehavior} from './settings_behavior.js';
+
 Polymer({
   is: 'print-preview-advanced-settings-item',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SettingsBehavior],
 
   properties: {
-    /** @type {!print_preview.VendorCapability} */
+    /** @type {!VendorCapability} */
     capability: Object,
 
     /** @private {string} */
@@ -44,8 +59,8 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview.VendorCapability |
-   *         !print_preview.VendorCapabilitySelectOption} item
+   * @param {!VendorCapability |
+   *         !VendorCapabilitySelectOption} item
    * @return {string} The display name for the setting.
    * @private
    */
@@ -94,7 +109,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview.VendorCapabilitySelectOption} option The option
+   * @param {!VendorCapabilitySelectOption} option The option
    *     for a select capability.
    * @return {boolean} Whether the option is selected.
    * @private
@@ -146,7 +161,7 @@ Polymer({
     }
 
     for (const option of
-         /** @type {!Array<!print_preview.VendorCapabilitySelectOption>} */ (
+         /** @type {!Array<!VendorCapabilitySelectOption>} */ (
              this.capability.select_cap.option)) {
       if (this.getDisplayName_(option).match(query)) {
         return true;
@@ -189,10 +204,10 @@ Polymer({
 
   /**
    * @param {?RegExp} query The current search query.
-   * @return {!print_preview.HighlightResults} The highlight wrappers and
+   * @return {!HighlightResults} The highlight wrappers and
    *     search bubbles that were created.
    */
   updateHighlighting: function(query) {
-    return print_preview.updateHighlights(this, query);
+    return updateHighlights(this, query);
   },
 });

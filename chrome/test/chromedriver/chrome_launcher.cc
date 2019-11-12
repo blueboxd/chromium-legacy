@@ -1104,6 +1104,8 @@ Status RemoveOldDevToolsActivePortFile(const base::FilePath& user_data_dir) {
 
 std::string GetTerminationReason(base::TerminationStatus status) {
   switch (status) {
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+      return "still running";
     case base::TERMINATION_STATUS_NORMAL_TERMINATION:
       return "exited normally";
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
@@ -1112,14 +1114,26 @@ std::string GetTerminationReason(base::TerminationStatus status) {
 #if defined(OS_CHROMEOS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
+    case base::TERMINATION_STATUS_OOM:
       return "was killed";
+#if defined(OS_ANDROID)
+    case base::TERMINATION_STATUS_OOM_PROTECTED:
+      return "protected from oom";
+#endif
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
       return "crashed";
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
       return "failed to launch";
-    default:
-      return "unknown";
+#if defined(OS_WIN)
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+      return "integrity failure";
+#endif
+    case base::TERMINATION_STATUS_MAX_ENUM:
+      NOTREACHED();
+      return "max enum";
   }
+  NOTREACHED() << "Unknown Termination Status.";
+  return "unknown";
 }
 
 }  // namespace internal

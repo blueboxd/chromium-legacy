@@ -480,6 +480,7 @@ goma_builder(
 goma_builder(
     name = 'chromeos-amd64-generic-rel (Goma RBE FYI)',
     builderless = True,
+    goma_backend = goma.backend.RBE_PROD,
     goma_enable_ats = True,
 )
 

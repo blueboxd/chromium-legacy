@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/declarative_net_request/file_sequence_helper.h"
 
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -125,30 +126,6 @@ class ReindexHelper {
   DISALLOW_COPY_AND_ASSIGN(ReindexHelper);
 };
 
-std::vector<dnr_api::Rule> AddRulesToVector(
-    std::vector<dnr_api::Rule> current_rules,
-    std::vector<dnr_api::Rule> new_rules) {
-  std::vector<dnr_api::Rule> result = std::move(current_rules);
-  result.insert(result.end(), std::make_move_iterator(new_rules.begin()),
-                std::make_move_iterator(new_rules.end()));
-  return result;
-}
-
-std::vector<dnr_api::Rule> RemoveRulesFromVector(
-    std::vector<dnr_api::Rule> current_rules,
-    std::vector<dnr_api::Rule> to_remove_rules) {
-  std::set<int> ids_to_remove;
-  for (const auto& rule : to_remove_rules)
-    ids_to_remove.insert(rule.id);
-
-  std::vector<dnr_api::Rule> result = std::move(current_rules);
-  base::EraseIf(result, [&ids_to_remove](const dnr_api::Rule& rule) {
-    return base::Contains(ids_to_remove, rule.id);
-  });
-
-  return result;
-}
-
 UpdateDynamicRulesStatus GetStatusForLoadRulesetError(
     RulesetMatcher::LoadRulesetResult result) {
   using Result = RulesetMatcher::LoadRulesetResult;
@@ -174,8 +151,8 @@ UpdateDynamicRulesStatus GetStatusForLoadRulesetError(
 // Helper to create the new list of dynamic rules. Returns false on failure and
 // populates |error| and |status|.
 bool GetNewDynamicRules(const RulesetSource& source,
-                        std::vector<dnr_api::Rule> rules,
-                        DynamicRuleUpdateAction action,
+                        std::vector<int> rule_ids_to_remove,
+                        std::vector<dnr_api::Rule> rules_to_add,
                         std::vector<dnr_api::Rule>* new_rules,
                         std::string* error,
                         UpdateDynamicRulesStatus* status) {
@@ -203,15 +180,18 @@ bool GetNewDynamicRules(const RulesetSource& source,
     return false;
   }
 
-  switch (action) {
-    case DynamicRuleUpdateAction::kAdd:
-      *new_rules = AddRulesToVector(std::move(result.rules), std::move(rules));
-      break;
-    case DynamicRuleUpdateAction::kRemove:
-      *new_rules =
-          RemoveRulesFromVector(std::move(result.rules), std::move(rules));
-      break;
-  }
+  *new_rules = std::move(result.rules);
+
+  // Remove old rules
+  std::set<int> ids_to_remove(rule_ids_to_remove.begin(), rule_ids_to_remove.end());
+  base::EraseIf(*new_rules, [&ids_to_remove](const dnr_api::Rule& rule) {
+    return base::Contains(ids_to_remove, rule.id);
+  });
+
+  // Add new rules
+  new_rules->insert(new_rules->end(),
+                    std::make_move_iterator(rules_to_add.begin()),
+                    std::make_move_iterator(rules_to_add.end()));
 
   if (new_rules->size() > source.rule_count_limit()) {
     *status = UpdateDynamicRulesStatus::kErrorRuleCountExceeded;
@@ -226,8 +206,8 @@ bool GetNewDynamicRules(const RulesetSource& source,
 // failure and populates |error| and |status|.
 bool UpdateAndIndexDynamicRules(
     const RulesetSource& source,
-    std::vector<api::declarative_net_request::Rule> rules,
-    DynamicRuleUpdateAction action,
+    std::vector<int> rule_ids_to_remove,
+    std::vector<api::declarative_net_request::Rule> rules_to_add,
     int* ruleset_checksum,
     std::string* error,
     UpdateDynamicRulesStatus* status) {
@@ -236,8 +216,8 @@ bool UpdateAndIndexDynamicRules(
   DCHECK(status);
 
   std::vector<dnr_api::Rule> new_rules;
-  if (!GetNewDynamicRules(source, std::move(rules), action, &new_rules, error,
-                          status)) {
+  if (!GetNewDynamicRules(source, std::move(rule_ids_to_remove),
+                          std::move(rules_to_add), &new_rules, error, status)) {
     return false;  // |error| and |status| already populated.
   }
 
@@ -387,8 +367,8 @@ void FileSequenceHelper::LoadRulesets(
 
 void FileSequenceHelper::UpdateDynamicRules(
     LoadRequestData load_data,
-    std::vector<api::declarative_net_request::Rule> rules,
-    DynamicRuleUpdateAction action,
+    std::vector<int> rule_ids_to_remove,
+    std::vector<api::declarative_net_request::Rule> rules_to_add,
     UpdateDynamicRulesUICallback ui_callback) const {
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK_EQ(1u, load_data.rulesets.size());
@@ -412,9 +392,9 @@ void FileSequenceHelper::UpdateDynamicRules(
   int new_ruleset_checksum = -1;
   std::string error;
   UpdateDynamicRulesStatus status = UpdateDynamicRulesStatus::kSuccess;
-  if (!UpdateAndIndexDynamicRules(dynamic_ruleset.source(), std::move(rules),
-                                  action, &new_ruleset_checksum, &error,
-                                  &status)) {
+  if (!UpdateAndIndexDynamicRules(
+          dynamic_ruleset.source(), std::move(rule_ids_to_remove),
+          std::move(rules_to_add), &new_ruleset_checksum, &error, &status)) {
     DCHECK(!error.empty());
     log_status_and_dispatch_callback(std::move(error), status);
     return;

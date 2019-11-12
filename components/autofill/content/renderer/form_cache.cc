@@ -559,23 +559,11 @@ bool FormCache::ShouldShowAutocompleteConsoleWarnings(
 
 void FormCache::PruneInitialValueCaches(
     const std::set<uint32_t>& ids_to_retain) {
-  // Prune initial_select_values_.
-  for (auto iter = initial_select_values_.begin();
-       iter != initial_select_values_.end();) {
-    if (!base::Contains(ids_to_retain, iter->first))
-      iter = initial_select_values_.erase(iter);
-    else
-      ++iter;
-  }
-
-  // Prune initial_checked_state_.
-  for (auto iter = initial_checked_state_.begin();
-       iter != initial_checked_state_.end();) {
-    if (!base::Contains(ids_to_retain, iter->first))
-      iter = initial_checked_state_.erase(iter);
-    else
-      ++iter;
-  }
+  auto should_not_retain = [&ids_to_retain](const auto& p) {
+    return !base::Contains(ids_to_retain, p.first);
+  };
+  base::EraseIf(initial_select_values_, should_not_retain);
+  base::EraseIf(initial_checked_state_, should_not_retain);
 }
 
 }  // namespace autofill

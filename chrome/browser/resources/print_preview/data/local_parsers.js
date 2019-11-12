@@ -2,33 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {LocalDestinationInfo, PrivetPrinterDescription, ProvisionalDestinationInfo} from '../native_layer.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationProvisionalType, DestinationType} from './destination.js';
+import {PrinterType} from './destination_match.js';
 
   /**
-   * @param{!print_preview.PrinterType} type The type of printer to parse.
-   * @param{!print_preview.LocalDestinationInfo |
-   *        !print_preview.PrivetPrinterDescription |
-   *        !print_preview.ProvisionalDestinationInfo} printer Information
+   * @param{!PrinterType} type The type of printer to parse.
+   * @param{!LocalDestinationInfo |
+   *        !PrivetPrinterDescription |
+   *        !ProvisionalDestinationInfo} printer Information
    *     about the printer. Type expected depends on |type|:
-   *       For LOCAL_PRINTER => print_preview.LocalDestinationInfo
-   *       For PRIVET_PRINTER => print_preview.PrivetPrinterDescription
-   *       For EXTENSION_PRINTER => print_preview.ProvisionalDestinationInfo
-   * @return {?print_preview.Destination} Only returns null if an invalid value
+   *       For LOCAL_PRINTER => LocalDestinationInfo
+   *       For PRIVET_PRINTER => PrivetPrinterDescription
+   *       For EXTENSION_PRINTER => ProvisionalDestinationInfo
+   * @return {?Destination} Only returns null if an invalid value
    *     is provided for |type|.
    */
-  function parseDestination(type, printer) {
-    if (type === print_preview.PrinterType.LOCAL_PRINTER) {
+  export function parseDestination(type, printer) {
+    if (type === PrinterType.LOCAL_PRINTER) {
       return parseLocalDestination(
-          /** @type {!print_preview.LocalDestinationInfo} */ (printer));
+          /** @type {!LocalDestinationInfo} */ (printer));
     }
-    if (type === print_preview.PrinterType.PRIVET_PRINTER) {
+    if (type === PrinterType.PRIVET_PRINTER) {
       return parsePrivetDestination(
-          /** @type {!print_preview.PrivetPrinterDescription} */ (printer));
+          /** @type {!PrivetPrinterDescription} */ (printer));
     }
-    if (type === print_preview.PrinterType.EXTENSION_PRINTER) {
+    if (type === PrinterType.EXTENSION_PRINTER) {
       return parseExtensionDestination(
-          /** @type {!print_preview.ProvisionalDestinationInfo} */ (printer));
+          /** @type {!ProvisionalDestinationInfo} */ (printer));
     }
     assertNotReached('Unknown printer type ' + type);
     return null;
@@ -36,9 +39,9 @@ cr.define('print_preview', function() {
 
   /**
    * Parses a local print destination.
-   * @param {!print_preview.LocalDestinationInfo} destinationInfo Information
+   * @param {!LocalDestinationInfo} destinationInfo Information
    *     describing a local print destination.
-   * @return {!print_preview.Destination} Parsed local print destination.
+   * @return {!Destination} Parsed local print destination.
    */
   function parseLocalDestination(destinationInfo) {
     const options = {
@@ -53,44 +56,44 @@ cr.define('print_preview', function() {
             return '__cp__' + key + '=' + this[key];
           }, destinationInfo.printerOptions);
     }
-    return new print_preview.Destination(
-        destinationInfo.deviceName, print_preview.DestinationType.LOCAL,
-        cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
-                        print_preview.DestinationOrigin.LOCAL,
+    return new Destination(
+        destinationInfo.deviceName, DestinationType.LOCAL,
+        isChromeOS ? DestinationOrigin.CROS :
+                        DestinationOrigin.LOCAL,
         destinationInfo.printerName,
-        print_preview.DestinationConnectionStatus.ONLINE, options);
+        DestinationConnectionStatus.ONLINE, options);
   }
 
   /**
    * Parses a privet destination as a local printer.
-   * @param {!print_preview.PrivetPrinterDescription} destinationInfo Object
+   * @param {!PrivetPrinterDescription} destinationInfo Object
    *     that describes a privet printer.
-   * @return {!print_preview.Destination} Parsed destination info.
+   * @return {!Destination} Parsed destination info.
    */
   function parsePrivetDestination(destinationInfo) {
-    return new print_preview.Destination(
-        destinationInfo.serviceName, print_preview.DestinationType.LOCAL,
-        print_preview.DestinationOrigin.PRIVET, destinationInfo.name,
-        print_preview.DestinationConnectionStatus.ONLINE,
+    return new Destination(
+        destinationInfo.serviceName, DestinationType.LOCAL,
+        DestinationOrigin.PRIVET, destinationInfo.name,
+        DestinationConnectionStatus.ONLINE,
         {cloudID: destinationInfo.cloudID});
   }
 
   /**
    * Parses an extension destination from an extension supplied printer
    * description.
-   * @param {!print_preview.ProvisionalDestinationInfo} destinationInfo Object
+   * @param {!ProvisionalDestinationInfo} destinationInfo Object
    *     describing an extension printer.
-   * @return {!print_preview.Destination} Parsed destination.
+   * @return {!Destination} Parsed destination.
    */
-  function parseExtensionDestination(destinationInfo) {
+  export function parseExtensionDestination(destinationInfo) {
     const provisionalType = destinationInfo.provisional ?
-        print_preview.DestinationProvisionalType.NEEDS_USB_PERMISSION :
-        print_preview.DestinationProvisionalType.NONE;
+        DestinationProvisionalType.NEEDS_USB_PERMISSION :
+        DestinationProvisionalType.NONE;
 
-    return new print_preview.Destination(
-        destinationInfo.id, print_preview.DestinationType.LOCAL,
-        print_preview.DestinationOrigin.EXTENSION, destinationInfo.name,
-        print_preview.DestinationConnectionStatus.ONLINE, {
+    return new Destination(
+        destinationInfo.id, DestinationType.LOCAL,
+        DestinationOrigin.EXTENSION, destinationInfo.name,
+        DestinationConnectionStatus.ONLINE, {
           description: destinationInfo.description || '',
           extensionId: destinationInfo.extensionId,
           extensionName: destinationInfo.extensionName || '',
@@ -98,9 +101,3 @@ cr.define('print_preview', function() {
         });
   }
 
-  // Export
-  return {
-    parseDestination: parseDestination,
-    parseExtensionDestination: parseExtensionDestination
-  };
-});

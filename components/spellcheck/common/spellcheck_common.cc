@@ -111,10 +111,11 @@ base::FilePath GetVersionedFileName(base::StringPiece input_language,
   // number if you're updating either dic or aff files. Increment the minor
   // version number if you're updating only dic_delta files.
   static constexpr LanguageVersion kSpecialVersionString[] = {
-      {"tr-TR",
-       "-4-0"},  // Jan 9, 2013: Add "FLAG num" to aff to avoid heapcheck
-                 // crash.
-      {"tg-TG", "-5-0"},  // Mar 4, 2014: Add Tajik dictionary.
+      // Jan 9, 2013: Add "FLAG num" to aff to avoid heapcheck crash.
+      {"tr-TR", "-4-0"},
+
+      // Mar 4, 2014: Add Tajik dictionary.
+      {"tg-TG", "-5-0"},
 
       // October 2017: Update from upstream.
       {"en-AU", "-8-0"},
@@ -130,6 +131,10 @@ base::FilePath GetVersionedFileName(base::StringPiece input_language,
 
       // April 2019: Update Persian
       {"fa-IR", "-8-0"},
+
+      // November 2019: Update Serbian-Latin and Serbian-Cyrillic
+      {"sh", "-4-0"},
+      {"sr", "-4-0"},
   };
 
   // Generate the bdict file name using default version string or special

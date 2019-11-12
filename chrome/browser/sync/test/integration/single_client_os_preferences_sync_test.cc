@@ -4,12 +4,12 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shelf_prefs.h"
-#include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/sync/test/integration/os_sync_test.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "chromeos/constants/chromeos_features.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using preferences_helper::ChangeStringPref;
@@ -17,21 +17,10 @@ using preferences_helper::StringPrefMatches;
 
 namespace {
 
-class SingleClientOsPreferencesSyncTest : public SyncTest {
+class SingleClientOsPreferencesSyncTest : public OsSyncTest {
  public:
-  SingleClientOsPreferencesSyncTest() : SyncTest(SINGLE_CLIENT) {
-    settings_feature_list_.InitAndEnableFeature(
-        chromeos::features::kSplitSettingsSync);
-  }
-
+  SingleClientOsPreferencesSyncTest() : OsSyncTest(SINGLE_CLIENT) {}
   ~SingleClientOsPreferencesSyncTest() override = default;
-
- private:
-  // The names |scoped_feature_list_| and |feature_list_| are both used in
-  // superclasses.
-  base::test::ScopedFeatureList settings_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleClientOsPreferencesSyncTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientOsPreferencesSyncTest, Sanity) {
@@ -43,6 +32,20 @@ IN_PROC_BROWSER_TEST_F(SingleClientOsPreferencesSyncTest, Sanity) {
                    ash::kShelfAlignmentRight);
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   EXPECT_TRUE(StringPrefMatches(ash::prefs::kShelfAlignment));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientOsPreferencesSyncTest,
+                       DisablingOsSyncFeatureDisablesDataType) {
+  ASSERT_TRUE(SetupSync());
+  syncer::SyncService* service = GetSyncService(0);
+  syncer::SyncUserSettings* settings = service->GetUserSettings();
+
+  EXPECT_TRUE(settings->GetOsSyncFeatureEnabled());
+  EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::OS_PREFERENCES));
+
+  settings->SetOsSyncFeatureEnabled(false);
+  EXPECT_FALSE(settings->GetOsSyncFeatureEnabled());
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::OS_PREFERENCES));
 }
 
 }  // namespace

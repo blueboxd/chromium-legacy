@@ -218,8 +218,8 @@ std::unique_ptr<TypedInterpolationValue> SampleAnimation(
 
 // Returns the start time of an animation given the start delay. A negative
 // start delay results in the animation starting with non-zero progress.
-double StartTimeFromDelay(double start_delay) {
-  return start_delay < 0 ? -start_delay : 0;
+AnimationTimeDelta StartTimeFromDelay(double start_delay) {
+  return AnimationTimeDelta::FromSecondsD(start_delay < 0 ? -start_delay : 0);
 }
 
 }  // namespace
@@ -1104,7 +1104,7 @@ EventTarget* CSSAnimations::AnimationEventDelegate::GetEventTarget() const {
 void CSSAnimations::AnimationEventDelegate::MaybeDispatch(
     Document::ListenerType listener_type,
     const AtomicString& event_name,
-    double elapsed_time) {
+    const AnimationTimeDelta& elapsed_time) {
   if (animation_target_->GetDocument().HasListenerType(listener_type)) {
     String pseudo_element_name = PseudoElement::PseudoElementNameForEvents(
         animation_target_->GetPseudoId());
@@ -1132,7 +1132,8 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
       (previous_phase_ == Timing::kPhaseNone ||
        previous_phase_ == Timing::kPhaseBefore)) {
     const double start_delay = animation_node.SpecifiedTiming().start_delay;
-    const double elapsed_time = start_delay < 0 ? -start_delay : 0;
+    const auto& elapsed_time =
+        AnimationTimeDelta::FromSecondsD(start_delay < 0 ? -start_delay : 0);
     MaybeDispatch(Document::kAnimationStartListener,
                   event_type_names::kAnimationstart, elapsed_time);
   }
@@ -1149,15 +1150,15 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
         animation_node.SpecifiedTiming().iteration_duration.value() *
         (previous_iteration_.value() + 1);
     MaybeDispatch(Document::kAnimationIterationListener,
-                  event_type_names::kAnimationiteration,
-                  elapsed_time.InSecondsF());
+                  event_type_names::kAnimationiteration, elapsed_time);
   }
 
   if (current_phase == Timing::kPhaseAfter &&
       previous_phase_ != Timing::kPhaseAfter) {
     MaybeDispatch(Document::kAnimationEndListener,
                   event_type_names::kAnimationend,
-                  animation_node.SpecifiedTiming().ActiveDuration());
+                  AnimationTimeDelta::FromSecondsD(
+                      animation_node.SpecifiedTiming().ActiveDuration()));
   }
 
   previous_phase_ = current_phase;
@@ -1200,9 +1201,9 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
                previous_phase_ == Timing::kPhaseAfter) {
       // If the transition is progressing backwards it is considered to have
       // started at the end position.
-      EnqueueEvent(
-          event_type_names::kTransitionstart,
-          animation_node.SpecifiedTiming().iteration_duration->InSecondsF());
+      DCHECK(animation_node.SpecifiedTiming().iteration_duration.has_value());
+      EnqueueEvent(event_type_names::kTransitionstart,
+                   animation_node.SpecifiedTiming().iteration_duration.value());
     }
   }
 
@@ -1211,9 +1212,9 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
         (previous_phase_ == Timing::kPhaseActive ||
          previous_phase_ == Timing::kPhaseBefore ||
          previous_phase_ == Timing::kPhaseNone)) {
-      EnqueueEvent(
-          event_type_names::kTransitionend,
-          animation_node.SpecifiedTiming().iteration_duration->InSecondsF());
+      DCHECK(animation_node.SpecifiedTiming().iteration_duration.has_value());
+      EnqueueEvent(event_type_names::kTransitionend,
+                   animation_node.SpecifiedTiming().iteration_duration.value());
     } else if (current_phase == Timing::kPhaseBefore &&
                (previous_phase_ == Timing::kPhaseActive ||
                 previous_phase_ == Timing::kPhaseAfter)) {
@@ -1241,7 +1242,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
       // current_phase != previous_phase_ (see early return at the beginning).
       DCHECK(cancel_active_time);
       EnqueueEvent(event_type_names::kTransitioncancel,
-                   cancel_active_time->InSecondsF());
+                   cancel_active_time.value());
     }
   }
 
@@ -1250,7 +1251,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
 
 void CSSAnimations::TransitionEventDelegate::EnqueueEvent(
     const WTF::AtomicString& type,
-    double elapsed_time) {
+    const AnimationTimeDelta& elapsed_time) {
   String property_name =
       property_.IsCSSCustomProperty()
           ? property_.CustomPropertyName()

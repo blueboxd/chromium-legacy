@@ -44,13 +44,13 @@ enum ThemeBackgroundImageTiling {
   THEME_BKGRND_IMAGE_LAST = THEME_BKGRND_IMAGE_REPEAT,
 };
 
-// Theme background settings for the NTP.
-struct ThemeBackgroundInfo {
-  ThemeBackgroundInfo();
-  ThemeBackgroundInfo(const ThemeBackgroundInfo& other);
-  ~ThemeBackgroundInfo();
+// Theme settings for the NTP.
+struct NtpTheme {
+  NtpTheme();
+  NtpTheme(const NtpTheme& other);
+  ~NtpTheme();
 
-  bool operator==(const ThemeBackgroundInfo& rhs) const;
+  bool operator==(const NtpTheme& rhs) const;
 
   // True if the default theme is selected.
   bool using_default_theme = true;

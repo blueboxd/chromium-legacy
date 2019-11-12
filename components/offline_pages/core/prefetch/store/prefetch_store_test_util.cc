@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
@@ -199,9 +202,7 @@ bool SetPrefetchQuotaSync(int64_t available_quota,
 
 }  // namespace
 
-PrefetchStoreTestUtil::PrefetchStoreTestUtil(
-    scoped_refptr<base::TestMockTimeTaskRunner> task_runner)
-    : task_runner_(task_runner) {}
+PrefetchStoreTestUtil::PrefetchStoreTestUtil() = default;
 
 PrefetchStoreTestUtil::~PrefetchStoreTestUtil() = default;
 
@@ -209,13 +210,13 @@ void PrefetchStoreTestUtil::BuildStore() {
   if (!temp_directory_.CreateUniqueTempDir())
     DVLOG(1) << "temp_directory_ not created";
 
-  owned_store_.reset(
-      new PrefetchStore(task_runner_, temp_directory_.GetPath()));
+  owned_store_.reset(new PrefetchStore(base::ThreadTaskRunnerHandle::Get(),
+                                       temp_directory_.GetPath()));
   store_ = owned_store_.get();
 }
 
 void PrefetchStoreTestUtil::BuildStoreInMemory() {
-  owned_store_.reset(new PrefetchStore(task_runner_));
+  owned_store_.reset(new PrefetchStore(base::ThreadTaskRunnerHandle::Get()));
   store_ = owned_store_.get();
 }
 
@@ -229,42 +230,52 @@ void PrefetchStoreTestUtil::DeleteStore() {
     if (!temp_directory_.Delete())
       DVLOG(1) << "temp_directory_ not created";
   }
-  task_runner_->FastForwardUntilNoTasksRemain();
+  // The actual deletion happens in a task. So wait until all have been
+  // processed.
+  base::RunLoop().RunUntilIdle();
 }
 
 bool PrefetchStoreTestUtil::InsertPrefetchItem(const PrefetchItem& item) {
+  base::RunLoop run_loop;
   bool success = false;
-  store_->Execute(
-      base::BindOnce(&InsertPrefetchItemSync, item),
-      base::BindOnce([](bool* alias, bool s) { *alias = s; }, &success), false);
-  RunUntilIdle();
+  store_->Execute(base::BindOnce(&InsertPrefetchItemSync, item),
+                  base::BindOnce(base::BindLambdaForTesting([&](bool s) {
+                    success = s;
+                    run_loop.Quit();
+                  })),
+                  false);
+  run_loop.Run();
   return success;
 }
 
 int PrefetchStoreTestUtil::CountPrefetchItems() {
+  base::RunLoop run_loop;
   int count = 0;
-  store_->Execute(
-      base::BindOnce(&CountPrefetchItemsSync),
-      base::BindOnce([](int* alias, int result) { *alias = result; }, &count),
-      kPrefetchStoreCommandFailed);
-  RunUntilIdle();
+  store_->Execute(base::BindOnce(&CountPrefetchItemsSync),
+                  base::BindOnce(base::BindLambdaForTesting([&](int result) {
+                    count = result;
+                    run_loop.Quit();
+                  })),
+                  kPrefetchStoreCommandFailed);
+  run_loop.Run();
   return count;
 }
 
 std::unique_ptr<PrefetchItem> PrefetchStoreTestUtil::GetPrefetchItem(
     int64_t offline_id) {
+  base::RunLoop run_loop;
   std::unique_ptr<PrefetchItem> item;
-  store_->Execute(base::BindOnce(&GetPrefetchItemSync, offline_id),
-                  base::BindOnce(
-                      [](std::unique_ptr<PrefetchItem>* alias,
-                         base::Optional<PrefetchItem> result) {
-                        if (result)
-                          *alias = std::make_unique<PrefetchItem>(
-                              std::move(result).value());
-                      },
-                      &item),
-                  base::Optional<PrefetchItem>());
-  RunUntilIdle();
+  store_->Execute(
+      base::BindOnce(&GetPrefetchItemSync, offline_id),
+      base::BindOnce(
+          base::BindLambdaForTesting([&](base::Optional<PrefetchItem> result) {
+            if (result) {
+              item = std::make_unique<PrefetchItem>(std::move(result).value());
+            }
+            run_loop.Quit();
+          })),
+      base::Optional<PrefetchItem>());
+  run_loop.Run();
   return item;
 }
 
@@ -276,16 +287,16 @@ std::size_t PrefetchStoreTestUtil::GetAllItems(
 }
 
 std::set<PrefetchItem> PrefetchStoreTestUtil::GetAllItems() {
+  base::RunLoop run_loop;
   std::set<PrefetchItem> items;
-  store_->Execute(
-      base::BindOnce(&GetAllItemsSync),
-      base::BindOnce(
-          [](std::set<PrefetchItem>* alias, std::set<PrefetchItem> result) {
-            *alias = std::move(result);
-          },
-          &items),
-      std::set<PrefetchItem>());
-  RunUntilIdle();
+  store_->Execute(base::BindOnce(&GetAllItemsSync),
+                  base::BindOnce(base::BindLambdaForTesting(
+                      [&](std::set<PrefetchItem> result) {
+                        items = std::move(result);
+                        run_loop.Quit();
+                      })),
+                  std::set<PrefetchItem>());
+  run_loop.Run();
   return items;
 }
 
@@ -303,51 +314,58 @@ std::string PrefetchStoreTestUtil::ToString() {
 
 int PrefetchStoreTestUtil::ZombifyPrefetchItems(const std::string& name_space,
                                                 const GURL& url) {
+  base::RunLoop run_loop;
   int count = -1;
-  store_->Execute(
-      base::BindOnce(&UpdateItemsStateSync, name_space, url.spec(),
-                     PrefetchItemState::ZOMBIE),
-      base::BindOnce([](int* alias, int result) { *alias = result; }, &count),
-      kPrefetchStoreCommandFailed);
-  RunUntilIdle();
+  store_->Execute(base::BindOnce(&UpdateItemsStateSync, name_space, url.spec(),
+                                 PrefetchItemState::ZOMBIE),
+                  base::BindOnce(base::BindLambdaForTesting([&](int result) {
+                    count = result;
+                    run_loop.Quit();
+                  })),
+                  kPrefetchStoreCommandFailed);
+  run_loop.Run();
   return count;
 }
 
-void PrefetchStoreTestUtil::RunUntilIdle() {
-  task_runner_->RunUntilIdle();
-}
-
 int PrefetchStoreTestUtil::LastCommandChangeCount() {
+  base::RunLoop run_loop;
   int count = 0;
-  store_->Execute(
-      base::BindOnce([](sql::Database* connection) {
-        return connection->GetLastChangeCount();
-      }),
-      base::BindOnce([](int* result, int count) { *result = count; }, &count),
-      0);
-  RunUntilIdle();
+  store_->Execute(base::BindOnce([](sql::Database* connection) {
+                    return connection->GetLastChangeCount();
+                  }),
+                  base::BindOnce(base::BindLambdaForTesting([&](int result) {
+                    count = result;
+                    run_loop.Quit();
+                  })),
+                  0);
+  run_loop.Run();
   return count;
 }
 
 int64_t PrefetchStoreTestUtil::GetPrefetchQuota() {
+  base::RunLoop run_loop;
   int64_t result;
-  store_->Execute(
-      base::BindOnce(&GetPrefetchQuotaSync, clock()),
-      base::BindOnce([](int64_t* result, int64_t quota) { *result = quota; },
-                     &result),
-      int64_t());
-  RunUntilIdle();
+  store_->Execute(base::BindOnce(&GetPrefetchQuotaSync, clock()),
+                  base::BindOnce(base::BindLambdaForTesting([&](int64_t quota) {
+                    result = quota;
+                    run_loop.Quit();
+                  })),
+                  int64_t());
+  run_loop.Run();
   return result;
 }
 
 bool PrefetchStoreTestUtil::SetPrefetchQuota(int64_t available_quota) {
+  base::RunLoop run_loop;
   bool result;
   store_->Execute(
       base::BindOnce(&SetPrefetchQuotaSync, available_quota, clock()),
-      base::BindOnce([](bool* result, bool success) { *result = success; },
-                     &result),
+      base::BindOnce(base::BindLambdaForTesting([&](bool success) {
+        result = success;
+        run_loop.Quit();
+      })),
       false);
-  RunUntilIdle();
+  run_loop.Run();
   return result;
 }
 

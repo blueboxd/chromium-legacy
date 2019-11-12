@@ -4,8 +4,6 @@
 
 #include "chrome/chrome_cleaner/engines/broker/cleaner_sandbox_interface.h"
 
-#include <aclapi.h>
-
 #include <limits>
 #include <memory>
 #include <utility>
@@ -44,7 +42,6 @@
 #include "chrome/chrome_cleaner/test/test_task_scheduler.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
-#include "sandbox/win/src/nt_internals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome_cleaner::CreateEmptyFile;
@@ -60,73 +57,6 @@ namespace {
 constexpr wchar_t kDirectNonRegistryPath[] = L"\\DosDevice\\C:";
 constexpr wchar_t kTrickyNonRegistryPath[] =
     L"\\Registry\\Machine\\..\\..\\DosDevice\\C:";
-
-// Similar in intent to the ScopedProcessProtector, this does not take ownership
-// of a handle but twiddles the ACL on it on initialization and restores the
-// ACL on de-initialization. Useful for tests that require denying access to
-// something. |handle| should probably be opened with ALL_ACCESS or equivalent
-// and it would be a Bad Idea to CloseHandle or similar on the handle before
-// this goes out of scope.
-class ScopedHandleProtector {
- public:
-  explicit ScopedHandleProtector(HANDLE handle) : handle_(handle) { Protect(); }
-  ~ScopedHandleProtector() { Release(); }
-
- private:
-  void Protect() {
-    // Store its existing DACL for cleanup purposes. This API function is weird:
-    // the pointer placed into |original_dacl_| is actually a pointer into a
-    // the structure pointed to by |original_descriptor_|. To use this, one
-    // stores both, but frees ONLY the structure stuffed into
-    // |original_descriptor_|.
-    if (GetSecurityInfo(handle_, SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION,
-                        /*ppsidOwner=*/NULL, /*ppsidOwner=*/NULL,
-                        &original_dacl_, /*ppsidOwner=*/NULL,
-                        &original_descriptor_) != ERROR_SUCCESS) {
-      PLOG(ERROR) << "Failed to retreieve original DACL.";
-      return;
-    }
-
-    // Set a new empty DACL, effectively denying all things on the process
-    // object.
-    ACL dacl;
-    if (!InitializeAcl(&dacl, sizeof(dacl), ACL_REVISION)) {
-      PLOG(ERROR) << "Failed to initialize DACL";
-      return;
-    }
-    if (SetSecurityInfo(handle_, SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION,
-                        /*psidOwner=*/NULL, /*psidGroup=*/NULL, &dacl,
-                        /*pSacl=*/NULL) != ERROR_SUCCESS) {
-      PLOG(ERROR) << "Failed to set new DACL.";
-      return;
-    }
-
-    initialized_ = true;
-  }
-
-  void Release() {
-    if (initialized_) {
-      if (SetSecurityInfo(handle_, SE_KERNEL_OBJECT, DACL_SECURITY_INFORMATION,
-                          /*psidOwner=*/NULL, /*psidGroup=*/NULL,
-                          original_dacl_, /*pSacl=*/NULL) != ERROR_SUCCESS) {
-        PLOG(ERROR) << "Failed to restore original DACL.";
-      }
-    }
-
-    if (original_descriptor_) {
-      ::LocalFree(original_descriptor_);
-      original_dacl_ = nullptr;
-      original_descriptor_ = nullptr;
-    }
-
-    initialized_ = false;
-  }
-
-  bool initialized_ = false;
-  HANDLE handle_;
-  PACL original_dacl_ = nullptr;
-  PSECURITY_DESCRIPTOR original_descriptor_ = nullptr;
-};
 
 String16EmbeddedNulls FullyQualifiedKeyPathWithTrailingNull(
     const ScopedTempRegistryKey& temp_key,
@@ -558,22 +488,6 @@ TEST_F(CleanerInterfaceRegistryTest, NtDeleteRegistryKey_KeyMissingTerminator) {
   EXPECT_FALSE(SandboxNtDeleteRegistryKey(no_terminating_null_key));
 }
 
-// TODO(veranika): This test is failing on win10 bots. Fix and re-enable it.
-TEST_F(CleanerInterfaceRegistryTest,
-       DISABLED_NtDeleteRegistryKey_AccessDenied) {
-  {
-    // Protect the key, expect deletion to fail.
-    ScopedHandleProtector protector(subkey_handle_);
-    EXPECT_FALSE(SandboxNtDeleteRegistryKey(full_key_path_));
-  }
-
-  // Key should now be unprotected and deletion should succeed.
-  EXPECT_TRUE(SandboxNtDeleteRegistryKey(full_key_path_));
-
-  // Shouldn't be able to do that twice.
-  EXPECT_FALSE(SandboxNtDeleteRegistryKey(full_key_path_));
-}
-
 TEST_F(CleanerInterfaceRegistryTest, NtDeleteRegistryKey_NonRegistryPath) {
   EXPECT_FALSE(SandboxNtDeleteRegistryKey(
       StringWithTrailingNull(kDirectNonRegistryPath)));
@@ -773,22 +687,6 @@ TEST_F(CleanerInterfaceRegistryTest, NtChangeRegistryValue_NullName) {
       subkey_handle_, String16EmbeddedNulls(nullptr), &type, &actual_value));
   EXPECT_EQ(REG_SZ, type);
   EXPECT_EQ(valid_changed_value_, actual_value);
-}
-
-// TODO(veranika): This test is failing on win10 bots. Fix and re-enable it.
-TEST_F(CleanerInterfaceRegistryTest,
-       DISABLED_NtChangeRegistryValue_AccessDenied) {
-  {
-    // Protect the key, expect modification to fail.
-    ScopedHandleProtector protector(subkey_handle_);
-    EXPECT_FALSE(SandboxNtChangeRegistryValue(
-        full_key_path_, value_, valid_changed_value_,
-        default_value_should_be_normalized_));
-  }
-
-  EXPECT_TRUE(
-      SandboxNtChangeRegistryValue(full_key_path_, value_, valid_changed_value_,
-                                   default_value_should_be_normalized_));
 }
 
 TEST_F(CleanerInterfaceRegistryTest, NtChangeRegistryValue_NonRegistryPath) {

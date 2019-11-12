@@ -2,10 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html, Base} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import 'chrome://resources/js/util.m.js';
+import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
+import 'chrome://resources/polymer/v3_0/iron-meta/iron-meta.js';
+import './icons.js';
+import {getSelectDropdownBackground} from '../print_preview_utils.js';
+import {createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, RecentDestination} from '../data/destination.js';
+import './print_preview_shared_css.js';
+import {SelectBehavior} from './select_behavior.js';
+import '../strings.m.js';
+
 Polymer({
   is: 'print-preview-destination-select',
 
-  behaviors: [I18nBehavior, print_preview.SelectBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [I18nBehavior, SelectBehavior],
 
   properties: {
     activeUser: String,
@@ -14,20 +31,20 @@ Polymer({
 
     dark: Boolean,
 
-    /** @type {!print_preview.Destination} */
+    /** @type {!Destination} */
     destination: Object,
 
     disabled: Boolean,
 
     noDestinations: Boolean,
 
-    /** @type {!Array<!print_preview.RecentDestination>} */
+    /** @type {!Array<!RecentDestination>} */
     recentDestinationList: Array,
   },
 
   /** @private {!IronMetaElement} */
   meta_: /** @type {!IronMetaElement} */ (
-      Polymer.Base.create('iron-meta', {type: 'iconset'})),
+      Base.create('iron-meta', {type: 'iconset'})),
 
   focus: function() {
     this.$$('.md-select').focus();
@@ -43,9 +60,9 @@ Polymer({
    * @private
    */
   getPdfDestinationKey_: function() {
-    return print_preview.createDestinationKey(
-        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-        print_preview.DestinationOrigin.LOCAL, '');
+    return createDestinationKey(
+        Destination.GooglePromotedId.SAVE_AS_PDF,
+        DestinationOrigin.LOCAL, '');
   },
 
   /**
@@ -53,9 +70,9 @@ Polymer({
    * @private
    */
   getGoogleDriveDestinationKey_: function() {
-    return print_preview.createDestinationKey(
-        print_preview.Destination.GooglePromotedId.DOCS,
-        print_preview.DestinationOrigin.COOKIES, this.activeUser);
+    return createDestinationKey(
+        Destination.GooglePromotedId.DOCS,
+        DestinationOrigin.COOKIES, this.activeUser);
   },
 
   /**
@@ -78,17 +95,17 @@ Polymer({
 
     // Check for the Docs or Save as PDF ids first.
     const keyParams = this.selectedValue.split('/');
-    if (keyParams[0] === print_preview.Destination.GooglePromotedId.DOCS) {
+    if (keyParams[0] === Destination.GooglePromotedId.DOCS) {
       return 'print-preview:save-to-drive';
     }
     if (keyParams[0] ===
-        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+        Destination.GooglePromotedId.SAVE_AS_PDF) {
       return 'cr:insert-drive-file';
     }
 
     // Otherwise, must be in the recent list.
     const recent = this.recentDestinationList.find(d => {
-      return print_preview.createRecentDestinationKey(d) === this.selectedValue;
+      return createRecentDestinationKey(d) === this.selectedValue;
     });
     if (recent && recent.icon) {
       return recent.icon;
@@ -123,17 +140,16 @@ Polymer({
     return getSelectDropdownBackground(iconset, iconSetAndIcon[1], this);
   },
 
-  /** @private */
   onProcessSelectChange: function(value) {
     this.fire('selected-option-change', value);
   },
 
   /**
-   * @param {!print_preview.RecentDestination} recentDestination
+   * @param {!RecentDestination} recentDestination
    * @return {string} Key for the recent destination
    * @private
    */
   getKey_: function(recentDestination) {
-    return print_preview.createRecentDestinationKey(recentDestination);
+    return createRecentDestinationKey(recentDestination);
   },
 });

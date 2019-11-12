@@ -15,7 +15,7 @@ import androidx.annotation.StringRes;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.ui.base.PermissionCallback;
@@ -50,7 +50,7 @@ public class AndroidPermissionRequester {
             WindowAndroid windowAndroid, int[] contentSettingsTypes) {
         SparseArray<String[]> permissionsToRequest = new SparseArray<>();
         for (int i = 0; i < contentSettingsTypes.length; i++) {
-            String[] permissions = PrefServiceBridge.getAndroidPermissionsForContentSetting(
+            String[] permissions = WebsitePreferenceBridge.getAndroidPermissionsForContentSetting(
                     contentSettingsTypes[i]);
             if (permissions == null) continue;
             List<String> missingPermissions = new ArrayList<>();

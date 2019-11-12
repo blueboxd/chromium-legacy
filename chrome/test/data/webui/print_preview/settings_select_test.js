@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('settings_select_test', function() {
+import 'chrome://print/print_preview.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {getMediaSizeCapabilityWithCustomNames, selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
   suite('SettingsSelectTest', function() {
     /** @type {?PrintPreviewSettingsSelectElement} */
     let settingsSelect = null;
@@ -19,7 +24,7 @@ cr.define('settings_select_test', function() {
       settingsSelect = document.createElement('print-preview-settings-select');
       settingsSelect.settings = model.settings;
       settingsSelect.disabled = false;
-      test_util.fakeDataBind(model, settingsSelect, 'settings');
+      fakeDataBind(model, settingsSelect, 'settings');
       document.body.appendChild(settingsSelect);
     });
 
@@ -29,14 +34,13 @@ cr.define('settings_select_test', function() {
 
       // Set a capability with custom paper sizes.
       settingsSelect.settingName = 'mediaSize';
-      settingsSelect.capability =
-          print_preview_test_utils.getMediaSizeCapabilityWithCustomNames();
+      settingsSelect.capability = getMediaSizeCapabilityWithCustomNames();
       const customLocalizedMediaName = settingsSelect.capability.option[0]
                                            .custom_display_name_localized[0]
                                            .value;
       const customMediaName =
           settingsSelect.capability.option[1].custom_display_name;
-      Polymer.dom.flush();
+      flush();
 
       const select = settingsSelect.$$('select');
       // Verify that the selected option and names are as expected.
@@ -67,7 +71,7 @@ cr.define('settings_select_test', function() {
           {name: 'orange', color: 'orange', size: 5, is_default: true},
         ],
       };
-      Polymer.dom.flush();
+      flush();
       const option0 = JSON.stringify(settingsSelect.capability.option[0]);
       const option1 = JSON.stringify(settingsSelect.capability.option[1]);
       const select = settingsSelect.$$('select');
@@ -87,7 +91,7 @@ cr.define('settings_select_test', function() {
       assertEquals(option1, select.options[1].value);
 
       // Verify that selecting an new option in the dropdown sets the setting.
-      await print_preview_test_utils.selectOption(settingsSelect, option0);
+      await selectOption(settingsSelect, option0);
       assertEquals(
           option0, JSON.stringify(settingsSelect.getSettingValue('fruit')));
       assertTrue(settingsSelect.getSetting('fruit').setFromUi);
@@ -95,10 +99,9 @@ cr.define('settings_select_test', function() {
 
       // Verify that selecting from outside works.
       settingsSelect.selectValue(option1);
-      await test_util.eventToPromise('process-select-change', settingsSelect);
+      await eventToPromise('process-select-change', settingsSelect);
       assertEquals(
           option1, JSON.stringify(settingsSelect.getSettingValue('fruit')));
       assertEquals(1, select.selectedIndex);
     });
   });
-});

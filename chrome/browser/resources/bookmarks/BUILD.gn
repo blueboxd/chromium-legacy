@@ -55,6 +55,7 @@ js_type_check("closure_compile") {
     ":actions",
     ":api_listener",
     ":app",
+    ":browser_proxy",
     ":command_manager",
     ":constants",
     ":debouncer",
@@ -88,6 +89,7 @@ js_library("actions") {
 js_library("api_listener") {
   deps = [
     ":actions",
+    ":browser_proxy",
     ":debouncer",
     ":store",
     ":util",
@@ -112,9 +114,17 @@ js_library("app") {
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
+js_library("browser_proxy") {
+  deps = [
+    ":constants",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
 js_library("command_manager") {
   deps = [
     ":api_listener",
+    ":browser_proxy",
     ":dialog_focus_manager",
     ":edit_dialog",
     ":store_client",
@@ -197,6 +207,7 @@ js_library("item") {
 js_library("list") {
   deps = [
     ":actions",
+    ":browser_proxy",
     ":command_manager",
     ":item",
     ":store_client",

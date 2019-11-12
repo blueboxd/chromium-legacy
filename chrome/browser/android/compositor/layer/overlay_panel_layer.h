@@ -54,7 +54,6 @@ class OverlayPanelLayer : public Layer {
                      float bar_text_opacity,
                      bool bar_border_visible,
                      float bar_border_height,
-                     bool bar_shadow_visible,
                      int icon_tint,
                      int drag_handlebar_tint,
                      float icon_opacity,

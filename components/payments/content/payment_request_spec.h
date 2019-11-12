@@ -23,7 +23,7 @@
 
 namespace payments {
 
-class PaymentInstrument;
+class PaymentApp;
 
 // The spec contains all the options that the merchant has specified about this
 // Payment Request. It's a (mostly) read-only view, which can be updated in
@@ -189,13 +189,12 @@ class PaymentRequestSpec : public PaymentOptionsProvider,
   UpdateReason current_update_reason() const { return current_update_reason_; }
 
   // Returns the total object of this payment request, taking into account the
-  // applicable modifier for |selected_instrument| if any.
-  const mojom::PaymentItemPtr& GetTotal(
-      PaymentInstrument* selected_instrument) const;
+  // applicable modifier for |selected_app| if any.
+  const mojom::PaymentItemPtr& GetTotal(PaymentApp* selected_app) const;
   // Returns the display items for this payment request, taking into account the
-  // applicable modifier for |selected_instrument| if any.
+  // applicable modifier for |selected_app| if any.
   std::vector<const mojom::PaymentItemPtr*> GetDisplayItems(
-      PaymentInstrument* selected_instrument) const;
+      PaymentApp* selected_app) const;
 
   const std::vector<mojom::PaymentShippingOptionPtr>& GetShippingOptions()
       const;
@@ -207,9 +206,9 @@ class PaymentRequestSpec : public PaymentOptionsProvider,
 
  private:
   // Returns the first applicable modifier in the Payment Request for the
-  // |selected_instrument|.
+  // |selected_app|.
   const mojom::PaymentDetailsModifierPtr* GetApplicableModifier(
-      PaymentInstrument* selected_instrument) const;
+      PaymentApp* selected_app) const;
 
   // Updates the |selected_shipping_option| based on the data passed to this
   // payment request by the website. This will set selected_shipping_option_ to

@@ -14859,7 +14859,7 @@
 
       Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices, a restart notification appears in the system tray according to the <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME">RelaunchHeadsUpPeriod</ph> policy. For <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes color once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME">RelaunchNotification</ph> policy follow this same schedule.
 
-      If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If not set, the default period of 604800000 milliseconds (one week) is used.''',
     },
     {
       'id': 567,
@@ -14878,7 +14878,7 @@
       'example_value': 86400000,
       'desc': '''Allows you to set the time period, in milliseconds, between the first notification that a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device must be restarted to apply a pending update and the end of the time period specified by the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME">RelaunchNotificationPeriod</ph> policy.
 
-      If not set, the default period of 86400000 milliseconds (one day) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.''',
+      If not set, the default period of 259200000 milliseconds (three days) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.''',
     },
     {
       'name': 'VirtualMachinesAllowed',
@@ -18987,6 +18987,30 @@
       If this policy is set to False or not set, the Web Components v0 features will be disabled by default, starting in M80.
 
       This policy will be removed after Chrome 84.'''
+    },
+    {
+      'name': 'ClickToCallEnabled',
+      'owners': ['knollr@chromium.org', 'mvanouwerkerk@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 645,
+      'caption': '''Enable the Click to Call Feature''',
+      'tags': [],
+      'desc': '''Enable the Click to Call feature which allows users to send phone numbers from Chrome Desktops to an Android device when the user is Signed-in. For more information, see help center article: https://support.google.com/chrome/answer/9430554?hl=en.
+
+      If this policy is set to enabled, the capability of sending phone numbers to Android devices will be enabled for the Chrome user.
+
+      If this policy is set to disabled, the capability of sending phone numbers to Android devices will be disabled for the Chrome user.
+
+      If you set this policy, users cannot change or override it.
+
+      If this policy is left unset, the Click to Call feature is enabled by default.''',
     }
   ],
 
@@ -19811,6 +19835,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 644,
+  'highest_id_currently_used': 645,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -13,9 +13,13 @@
 #include "base/logging.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/util/display_util.h"
-#include "ui/display/util/x11/edid_parser_x11.h"
+#include "ui/display/util/edid_parser.h"
+#include "ui/gfx/color_space.h"
+#include "ui/gfx/geometry/matrix3_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 
@@ -149,6 +153,55 @@ int DefaultBitsPerComponent(XDisplay* xdisplay) {
   return visual->bits_per_rgb;
 }
 
+bool IsRandRAvailable() {
+  int randr_version_major = 0;
+  int randr_version_minor = 0;
+  static bool is_randr_available = XRRQueryVersion(
+      gfx::GetXDisplay(), &randr_version_major, &randr_version_minor);
+  return is_randr_available;
+}
+
+// Get the EDID data from the |output| and stores to |edid|.
+void GetEDIDProperty(XID output, std::vector<uint8_t>* edid) {
+  if (!IsRandRAvailable())
+    return;
+
+  Display* display = gfx::GetXDisplay();
+
+  Atom edid_property = gfx::GetAtom(RR_PROPERTY_RANDR_EDID);
+
+  bool has_edid_property = false;
+  int num_properties = 0;
+  gfx::XScopedPtr<Atom[]> properties(
+      XRRListOutputProperties(display, output, &num_properties));
+  for (int i = 0; i < num_properties; ++i) {
+    if (properties[i] == edid_property) {
+      has_edid_property = true;
+      break;
+    }
+  }
+  if (!has_edid_property)
+    return;
+
+  Atom actual_type;
+  int actual_format;
+  unsigned long bytes_after;
+  unsigned long nitems = 0;
+  unsigned char* prop = nullptr;
+  XRRGetOutputProperty(display, output, edid_property,
+                       0,                // offset
+                       128,              // length
+                       false,            // _delete
+                       false,            // pending
+                       AnyPropertyType,  // req_type
+                       &actual_type, &actual_format, &nitems, &bytes_after,
+                       &prop);
+  DCHECK_EQ(XA_INTEGER, actual_type);
+  DCHECK_EQ(8, actual_format);
+  edid->assign(prop, prop + nitems);
+  XFree(prop);
+}
+
 }  // namespace
 
 int GetXrandrVersion(XDisplay* xdisplay) {
@@ -243,13 +296,14 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
                       gfx::XObjectDeleter<XRRCrtcInfo, void, XRRFreeCrtcInfo>>
           crtc(XRRGetCrtcInfo(xdisplay, resources.get(), output_info->crtc));
 
-      int64_t display_id = -1;
-      if (!display::EDIDParserX11(output_id).GetDisplayId(
-              static_cast<uint8_t>(i), &display_id)) {
-        // It isn't ideal, but if we can't parse the EDID data, fall back on the
-        // display number.
+      std::vector<uint8_t> edid_bytes;
+      GetEDIDProperty(output_id, &edid_bytes);
+      display::EdidParser edid_parser(edid_bytes);
+      int64_t display_id = edid_parser.GetDisplayId(output_id);
+      // It isn't ideal, but if we can't parse the EDID data, fall back on the
+      // display number.
+      if (!display_id)
         display_id = i;
-      }
 
       gfx::Rect crtc_bounds(crtc->x, crtc->y, crtc->width, crtc->height);
       display::Display display(display_id, crtc_bounds);
@@ -286,7 +340,16 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
         gfx::ICCProfile icc_profile = ui::GetICCProfileForMonitor(
             monitor_iter == output_to_monitor.end() ? 0 : monitor_iter->second);
         icc_profile.HistogramDisplay(display.id());
-        display.set_color_space(icc_profile.GetPrimariesOnlyColorSpace());
+        gfx::ColorSpace color_space = icc_profile.GetPrimariesOnlyColorSpace();
+
+        // Most folks do not have an ICC profile set up, but we still want to
+        // detect if a display has a wide color gamut so that HDR videos can be
+        // enabled.  Only do this if |bits_per_component| > 8 or else SDR
+        // screens may have washed out colors.
+        if (bits_per_component > 8 && !color_space.IsValid())
+          color_space = display::GetColorSpaceFromEdid(edid_parser);
+
+        display.set_color_space(color_space);
       }
 
       display.set_color_depth(depth);

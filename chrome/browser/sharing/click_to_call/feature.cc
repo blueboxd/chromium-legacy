@@ -9,12 +9,10 @@ const base::Feature kClickToCallReceiver{"ClickToCallReceiver",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_CLICK_TO_CALL)
 const base::Feature kClickToCallContextMenuForSelectedText{
     "ClickToCallContextMenuForSelectedText", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kClickToCallUI{"ClickToCallUI",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)

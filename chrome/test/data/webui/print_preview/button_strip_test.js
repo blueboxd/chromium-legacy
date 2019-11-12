@@ -2,16 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('button_strip_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isWindows} from 'chrome://resources/js/cr.m.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, State} from 'chrome://print/print_preview.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+
+  window.button_strip_test = {};
+  button_strip_test.suiteName = 'ButtonStripTest';
   /** @enum {string} */
-  const TestNames = {
+  button_strip_test.TestNames = {
     ButtonStripChangesForState: 'button strip changes for state',
     ButtonOrder: 'button order',
     ButtonStripFiresEvents: 'button strip fires events',
   };
 
-  const suiteName = 'ButtonStripTest';
-  suite(suiteName, function() {
+  suite(button_strip_test.suiteName, function() {
     /** @type {?PrintPreviewButtonStripElement} */
     let buttonStrip = null;
 
@@ -20,36 +25,37 @@ cr.define('button_strip_test', function() {
       PolymerTest.clearBody();
       buttonStrip = document.createElement('print-preview-button-strip');
 
-      buttonStrip.destination = new print_preview.Destination(
-          'FooDevice', print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.COOKIES, 'FooName',
-          print_preview.DestinationConnectionStatus.ONLINE);
-      buttonStrip.state = print_preview.State.READY;
+      buttonStrip.destination = new Destination(
+          'FooDevice', DestinationType.GOOGLE,
+          DestinationOrigin.COOKIES, 'FooName',
+          DestinationConnectionStatus.ONLINE);
+      buttonStrip.state = State.READY;
       document.body.appendChild(buttonStrip);
     });
 
     // Tests that the correct message is shown for non-READY states, and that
     // the print button is disabled appropriately.
-    test(assert(TestNames.ButtonStripChangesForState), function() {
+    test(assert(button_strip_test.TestNames.ButtonStripChangesForState),
+        function() {
       const printButton = buttonStrip.$$('.action-button');
       assertFalse(printButton.disabled);
 
-      buttonStrip.state = print_preview.State.NOT_READY;
+      buttonStrip.state = State.NOT_READY;
       assertTrue(printButton.disabled);
 
-      buttonStrip.state = print_preview.State.PRINTING;
+      buttonStrip.state = State.PRINTING;
       assertTrue(printButton.disabled);
 
-      buttonStrip.state = print_preview.State.ERROR;
+      buttonStrip.state = State.ERROR;
       assertTrue(printButton.disabled);
 
-      buttonStrip.state = print_preview.State.FATAL_ERROR;
+      buttonStrip.state = State.FATAL_ERROR;
       assertTrue(printButton.disabled);
     });
 
     // Tests that the buttons are in the correct order for different platforms.
     // See https://crbug.com/880562.
-    test(assert(TestNames.ButtonOrder), function() {
+    test(assert(button_strip_test.TestNames.ButtonOrder), function() {
       // Verify that there are only 2 buttons.
       assertEquals(
           2, buttonStrip.shadowRoot.querySelectorAll('cr-button').length);
@@ -59,7 +65,7 @@ cr.define('button_strip_test', function() {
       const printButton = buttonStrip.$$('cr-button.action-button');
       const cancelButton = buttonStrip.$$('cr-button.cancel-button');
 
-      if (cr.isWindows) {
+      if (isWindows) {
         // On Windows, the print button is on the left.
         assertEquals(firstButton, printButton);
         assertEquals(lastButton, cancelButton);
@@ -71,24 +77,19 @@ cr.define('button_strip_test', function() {
 
     // Tests that the button strip fires print-requested and cancel-requested
     // events.
-    test(assert(TestNames.ButtonStripFiresEvents), function() {
+    test(assert(button_strip_test.TestNames.ButtonStripFiresEvents),
+        function() {
       const printButton = buttonStrip.$$('cr-button.action-button');
       const cancelButton = buttonStrip.$$('cr-button.cancel-button');
 
       const whenPrintRequested =
-          test_util.eventToPromise('print-requested', buttonStrip);
+          eventToPromise('print-requested', buttonStrip);
       printButton.click();
       return whenPrintRequested.then(() => {
         const whenCancelRequested =
-            test_util.eventToPromise('cancel-requested', buttonStrip);
+            eventToPromise('cancel-requested', buttonStrip);
         cancelButton.click();
         return whenCancelRequested;
       });
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

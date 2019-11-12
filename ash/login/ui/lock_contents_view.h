@@ -89,6 +89,7 @@ class ASH_EXPORT LockContentsView
     LoginErrorBubble* warning_banner_bubble() const;
     LoginErrorBubble* supervised_user_deprecation_bubble() const;
     views::View* system_info() const;
+    views::View* warning_indicator() const;
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
 
@@ -166,7 +167,8 @@ class ASH_EXPORT LockContentsView
                            bool enforced,
                            const std::string& os_version_label_text,
                            const std::string& enterprise_info_text,
-                           const std::string& bluetooth_name) override;
+                           const std::string& bluetooth_name,
+                           bool adb_sideloading_enabled) override;
   void OnPublicSessionDisplayNameChanged(
       const AccountId& account_id,
       const std::string& display_name) override;
@@ -266,6 +268,10 @@ class ASH_EXPORT LockContentsView
   // Lay out the top header. This is called when the children of the top header
   // change contents or visibility.
   void LayoutTopHeader();
+
+  // Lay out the warning indicator. This is called when system information is
+  // shown.
+  void LayoutWarningIndicator();
 
   // Lay out the expanded public session view.
   void LayoutPublicSessionView();
@@ -385,6 +391,9 @@ class ASH_EXPORT LockContentsView
   // placed on the top right corner of the screen without affecting layout of
   // other views.
   views::View* top_header_ = nullptr;
+
+  // View for the warning indicator at login screen.
+  views::View* warning_indicator_ = nullptr;
 
   // View for launching a note taking action handler from the lock screen.
   NoteActionLaunchButton* note_action_ = nullptr;

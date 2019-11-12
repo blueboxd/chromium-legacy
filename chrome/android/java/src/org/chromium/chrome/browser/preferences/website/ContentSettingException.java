@@ -8,7 +8,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 import java.io.Serializable;
 import java.lang.annotation.Retention;
@@ -80,8 +79,7 @@ public class ContentSettingException implements Serializable {
      * Sets the content setting value for this exception.
      */
     public void setContentSetting(@ContentSettingValues @Nullable Integer value) {
-        PrefServiceBridge.getInstance().setContentSettingForPattern(
-                mContentSettingType, mPattern, value);
+        WebsitePreferenceBridge.setContentSettingForPattern(mContentSettingType, mPattern, value);
     }
 
     public static @ContentSettingsType int getContentSettingsType(@Type int type) {

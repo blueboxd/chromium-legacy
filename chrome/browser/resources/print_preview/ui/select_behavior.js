@@ -1,8 +1,8 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-cr.define('print_preview', function() {
   /**
    * Helper functions for a select with timeout. Implemented by select settings
    * sections, so that the preview does not immediately begin generating and
@@ -11,7 +11,7 @@ cr.define('print_preview', function() {
    * select element.
    * @polymerBehavior
    */
-  const SelectBehavior = {
+  export const SelectBehavior = {
     properties: {
       selectedValue: {
         type: String,
@@ -45,6 +45,3 @@ cr.define('print_preview', function() {
      */
     onProcessSelectChange: function(value) {},
   };
-
-  return {SelectBehavior: SelectBehavior};
-});

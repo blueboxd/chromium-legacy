@@ -1,20 +1,22 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {getInstance, Setting, Settings} from '../data/model.js';
 
 /** @polymerBehavior */
-const SettingsBehavior = {
+export const SettingsBehavior = {
   properties: {
-    /** @type {print_preview.Settings} */
+    /** @type {Settings} */
     settings: Object,
   },
 
   /**
    * @param {string} settingName Name of the setting to get.
-   * @return {print_preview.Setting} The setting object.
+   * @return {Setting} The setting object.
    */
   getSetting: function(settingName) {
-    return print_preview.Model.getInstance().getSetting(settingName);
+    return getInstance().getSetting(settingName);
   },
 
   /**
@@ -22,7 +24,7 @@ const SettingsBehavior = {
    * @return {*} The value of the setting, accounting for availability.
    */
   getSettingValue: function(settingName) {
-    return print_preview.Model.getInstance().getSettingValue(settingName);
+    return getInstance().getSettingValue(settingName);
   },
 
   /**
@@ -36,7 +38,7 @@ const SettingsBehavior = {
    *     to false.
    */
   setSetting: function(settingName, value, noSticky) {
-    print_preview.Model.getInstance().setSetting(settingName, value, noSticky);
+    getInstance().setSetting(settingName, value, noSticky);
   },
 
   /**
@@ -48,7 +50,7 @@ const SettingsBehavior = {
    *     to false.
    */
   setSettingSplice: function(settingName, start, end, newValue, noSticky) {
-    print_preview.Model.getInstance().setSettingSplice(
+    getInstance().setSettingSplice(
         settingName, start, end, newValue, noSticky);
   },
 
@@ -59,6 +61,6 @@ const SettingsBehavior = {
    * @param {boolean} valid Whether the setting value is currently valid.
    */
   setSettingValid: function(settingName, valid) {
-    print_preview.Model.getInstance().setSettingValid(settingName, valid);
+    getInstance().setSettingValid(settingName, valid);
   },
 };

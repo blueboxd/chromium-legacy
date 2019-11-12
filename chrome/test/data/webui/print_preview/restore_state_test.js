@@ -2,31 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('restore_state_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {NativeLayer, PluginProxy, getInstance, MarginsType, ScalingType} from 'chrome://print/print_preview.js';
+import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
+import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
+import {getCddTemplate, getCddTemplateWithAdvancedSettings, getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
+  window.restore_state_test = {};
+  restore_state_test.suiteName = 'RestoreStateTest';
   /** @enum {string} */
-  const TestNames = {
+  restore_state_test.TestNames = {
     RestoreTrueValues: 'restore true values',
     RestoreFalseValues: 'restore false values',
     SaveValues: 'save values',
   };
 
-  const suiteName = 'RestoreStateTest';
-  suite(suiteName, function() {
+  suite(restore_state_test.suiteName, function() {
     let page = null;
     let nativeLayer = null;
 
-    const initialSettings =
-        print_preview_test_utils.getDefaultInitialSettings();
+    const initialSettings = getDefaultInitialSettings();
 
     /** @override */
     setup(function() {
-      nativeLayer = new print_preview.NativeLayerStub();
-      print_preview.NativeLayer.setInstance(nativeLayer);
+      nativeLayer = new NativeLayerStub();
+      NativeLayer.setInstance(nativeLayer);
       PolymerTest.clearBody();
     });
 
     /**
-     * @param {!print_preview.SerializedSettings} stickySettings Settings
+     * @param {!SerializedSettings} stickySettings Settings
      *     to verify.
      */
     function verifyStickySettingsApplied(stickySettings) {
@@ -66,7 +72,7 @@ cr.define('restore_state_test', function() {
     }
 
     /**
-     * @param {!print_preview.SerializedSettings} stickySettings
+     * @param {!SerializedSettings} stickySettings
      * @return {!Promise} Promise that resolves when initialization is done and
      *     settings have been verified.
      */
@@ -75,10 +81,10 @@ cr.define('restore_state_test', function() {
 
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinationCapabilities(
-          print_preview_test_utils.getCddTemplateWithAdvancedSettings(
+          getCddTemplateWithAdvancedSettings(
               2, initialSettings.printerName));
-      const pluginProxy = new print_preview.PDFPluginStub();
-      print_preview.PluginProxy.setInstance(pluginProxy);
+      const pluginProxy = new PDFPluginStub();
+      PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
@@ -97,7 +103,7 @@ cr.define('restore_state_test', function() {
      * Tests state restoration with all boolean settings set to true, scaling =
      * 90, dpi = 100, custom square paper, and custom margins.
      */
-    test(assert(TestNames.RestoreTrueValues), function() {
+    test(assert(restore_state_test.TestNames.RestoreTrueValues), function() {
       const stickySettings = {
         version: 2,
         recentDestinations: [],
@@ -115,8 +121,8 @@ cr.define('restore_state_test', function() {
         },
         marginsType: 3, /* custom */
         scaling: '90',
-        scalingType: print_preview.ScalingType.CUSTOM,
-        scalingTypePdf: print_preview.ScalingType.FIT_TO_PAGE,
+        scalingType: ScalingType.CUSTOM,
+        scalingTypePdf: ScalingType.FIT_TO_PAGE,
         isHeaderFooterEnabled: true,
         isCssBackgroundEnabled: true,
         isCollateEnabled: true,
@@ -125,7 +131,7 @@ cr.define('restore_state_test', function() {
         isLandscapeEnabled: true,
         isColorEnabled: true,
       };
-      if (cr.isChromeOS) {
+      if (isChromeOS) {
         stickySettings.pin = true;
         stickySettings.pinValue = '0000';
       }
@@ -136,7 +142,7 @@ cr.define('restore_state_test', function() {
      * Tests state restoration with all boolean settings set to false, scaling =
      * 120, dpi = 200, letter paper and default margins.
      */
-    test(assert(TestNames.RestoreFalseValues), function() {
+    test(assert(restore_state_test.TestNames.RestoreFalseValues), function() {
       const stickySettings = {
         version: 2,
         recentDestinations: [],
@@ -155,8 +161,8 @@ cr.define('restore_state_test', function() {
         },
         marginsType: 0, /* default */
         scaling: '120',
-        scalingType: print_preview.ScalingType.DEFAULT,
-        scalingTypePdf: print_preview.ScalingType.DEFAULT,
+        scalingType: ScalingType.DEFAULT,
+        scalingTypePdf: ScalingType.DEFAULT,
         isHeaderFooterEnabled: false,
         isCssBackgroundEnabled: false,
         isCollateEnabled: false,
@@ -165,7 +171,7 @@ cr.define('restore_state_test', function() {
         isLandscapeEnabled: false,
         isColorEnabled: false,
       };
-      if (cr.isChromeOS) {
+      if (isChromeOS) {
         stickySettings.pin = false;
         stickySettings.pinValue = '';
       }
@@ -176,7 +182,7 @@ cr.define('restore_state_test', function() {
      * Tests that setting the settings values results in the correct serialized
      * values being sent to the native layer.
      */
-    test(assert(TestNames.SaveValues), function() {
+    test(assert(restore_state_test.TestNames.SaveValues), function() {
       /**
        * Array of section names, setting names, keys for serialized state, and
        * values for testing.
@@ -219,7 +225,7 @@ cr.define('restore_state_test', function() {
           section: 'print-preview-margins-settings',
           settingName: 'margins',
           key: 'marginsType',
-          value: print_preview.MarginsType.MINIMUM,
+          value: MarginsType.MINIMUM,
         },
         {
           section: 'print-preview-dpi-settings',
@@ -231,13 +237,13 @@ cr.define('restore_state_test', function() {
           section: 'print-preview-scaling-settings',
           settingName: 'scalingType',
           key: 'scalingType',
-          value: print_preview.ScalingType.CUSTOM,
+          value: ScalingType.CUSTOM,
         },
         {
           section: 'print-preview-scaling-settings',
           settingName: 'scalingTypePdf',
           key: 'scalingTypePdf',
-          value: print_preview.ScalingType.CUSTOM,
+          value: ScalingType.CUSTOM,
         },
         {
           section: 'print-preview-scaling-settings',
@@ -279,7 +285,7 @@ cr.define('restore_state_test', function() {
           },
         }
       ];
-      if (cr.isChromeOS) {
+      if (isChromeOS) {
         testData.push(
             {
               section: 'print-preview-pin-settings',
@@ -298,12 +304,12 @@ cr.define('restore_state_test', function() {
       // Setup
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinationCapabilities(
-          print_preview_test_utils.getCddTemplate(initialSettings.printerName));
+          getCddTemplate(initialSettings.printerName));
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
       const previewArea = page.$$('print-preview-preview-area');
-      previewArea.plugin_ = new print_preview.PDFPluginStub(
+      previewArea.plugin_ = new PDFPluginStub(
           previewArea.onPluginLoad_.bind(previewArea));
 
       return nativeLayer.whenCalled('getInitialSettings')
@@ -319,7 +325,7 @@ cr.define('restore_state_test', function() {
               // Since advanced options settings doesn't set this setting in
               // production, just use the model instead of creating the dialog.
               const element = testValue.settingName === 'vendorItems' ?
-                  print_preview.Model.getInstance() :
+                  getInstance() :
                   page.$$('print-preview-sidebar').$$(testValue.section);
               element.setSetting(testValue.settingName, testValue.value);
             });
@@ -338,9 +344,3 @@ cr.define('restore_state_test', function() {
           });
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

@@ -1,15 +1,12 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-cr.exportPath('print_preview');
-
-(function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
 
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
 
 /** @polymerBehavior */
-print_preview.DarkModeBehavior = {
+export const DarkModeBehavior = {
   properties: {
     /** Whether or not the OS is in dark mode. */
     inDarkMode: {
@@ -35,5 +32,4 @@ print_preview.DarkModeBehavior = {
   },
 };
 
-print_preview.DarkModeBehavior.inDarkMode = () => prefersDark.matches;
-}());
+DarkModeBehavior.inDarkMode = () => prefersDark.matches;

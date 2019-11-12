@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
@@ -99,8 +98,8 @@ class PermissionParamsListBuilder {
             } else if (!hasAndroidPermission(permission.type)) {
                 permissionParams.warningTextResource =
                         R.string.page_info_android_permission_blocked;
-                androidPermissions =
-                        PrefServiceBridge.getAndroidPermissionsForContentSetting(permission.type);
+                androidPermissions = WebsitePreferenceBridge.getAndroidPermissionsForContentSetting(
+                        permission.type);
             }
 
             if (permissionParams.warningTextResource != 0) {
@@ -167,7 +166,7 @@ class PermissionParamsListBuilder {
 
     private boolean hasAndroidPermission(int contentSettingType) {
         String[] androidPermissions =
-                PrefServiceBridge.getAndroidPermissionsForContentSetting(contentSettingType);
+                WebsitePreferenceBridge.getAndroidPermissionsForContentSetting(contentSettingType);
         if (androidPermissions == null) return true;
         for (int i = 0; i < androidPermissions.length; i++) {
             if (!mPermissionDelegate.hasPermission(androidPermissions[i])) {

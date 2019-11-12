@@ -247,14 +247,28 @@ void ContextProviderImpl::Create(
   }
 
   if (enable_vulkan) {
+    DLOG(ERROR) << "Enabling Vulkan GPU acceleration.";
+
+    // Vulkan requires use of SkiaRenderer, configured to a use Vulkan context.
     launch_command.AppendSwitch(switches::kUseVulkan);
     launch_command.AppendSwitchASCII(switches::kEnableFeatures,
                                      features::kUseSkiaRenderer.name);
-    launch_command.AppendSwitch(switches::kEnableOopRasterization);
-    launch_command.AppendSwitchASCII(switches::kUseGL,
-                                     gl::kGLImplementationStubName);
     launch_command.AppendSwitchASCII(switches::kGrContextType,
                                      switches::kGrContextTypeVulkan);
+
+    // SkiaRenderer requires out-of-process rasterization be enabled.
+    launch_command.AppendSwitch(switches::kEnableOopRasterization);
+
+    // TODO(https://crbug.com/766360): Provide a no-op GL implementation until
+    // vANGLE is available.
+    launch_command.AppendSwitchASCII(switches::kUseGL,
+                                     gl::kGLImplementationStubName);
+  } else {
+    DLOG(ERROR) << "Disabling GPU acceleration.";
+    // Disable use of Vulkan GPU, and use of the software-GL rasterizer. The
+    // Context will still run a GPU process, but will not support WebGL.
+    launch_command.AppendSwitch(switches::kDisableGpu);
+    launch_command.AppendSwitch(switches::kDisableSoftwareRasterizer);
   }
 
   if (enable_widevine) {

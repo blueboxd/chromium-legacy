@@ -77,6 +77,13 @@ public final class NavigationImpl extends INavigation.Stub {
     }
 
     @Override
+    public int getHttpStatusCode() {
+        throwIfNativeDestroyed();
+        return NavigationImplJni.get().getHttpStatusCode(
+                mNativeNavigationImpl, NavigationImpl.this);
+    }
+
+    @Override
     public boolean isSameDocument() {
         throwIfNativeDestroyed();
         return NavigationImplJni.get().isSameDocument(mNativeNavigationImpl, NavigationImpl.this);
@@ -133,6 +140,7 @@ public final class NavigationImpl extends INavigation.Stub {
         int getState(long nativeNavigationImpl, NavigationImpl caller);
         String getUri(long nativeNavigationImpl, NavigationImpl caller);
         String[] getRedirectChain(long nativeNavigationImpl, NavigationImpl caller);
+        int getHttpStatusCode(long nativeNavigationImpl, NavigationImpl caller);
         boolean isSameDocument(long nativeNavigationImpl, NavigationImpl caller);
         boolean isErrorPage(long nativeNavigationImpl, NavigationImpl caller);
         int getLoadError(long nativeNavigationImpl, NavigationImpl caller);

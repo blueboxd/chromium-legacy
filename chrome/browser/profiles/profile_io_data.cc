@@ -220,8 +220,7 @@ void StartNSSInitOnIOThread(const AccountId& account_id,
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::unique_ptr<ProfileParams> params(new ProfileParams);
-  params->path = profile->GetPath();
+  auto params = std::make_unique<ProfileParams>();
 
   params->cookie_settings = CookieSettingsFactory::GetForProfile(profile);
   params->host_content_settings_map =
@@ -256,7 +255,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   }
 #endif
 
-  params->profile = profile;
   profile_params_ = std::move(params);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =

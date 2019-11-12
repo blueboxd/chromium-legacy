@@ -54,8 +54,8 @@ jumbo_static_library("content") {
       "payment_request_web_contents_manager.h",
       "payment_response_helper.cc",
       "payment_response_helper.h",
-      "service_worker_payment_instrument.cc",
-      "service_worker_payment_instrument.h",
+      "service_worker_payment_app.cc",
+      "service_worker_payment_app.h",
     ]
 
     deps += [ "//components/payments/core:method_strings" ]
@@ -130,11 +130,11 @@ jumbo_source_set("unit_tests") {
 
   if (!is_android) {
     sources += [
-      "payment_instrument_unittest.cc",
+      "payment_app_unittest.cc",
       "payment_request_spec_unittest.cc",
       "payment_request_state_unittest.cc",
       "payment_response_helper_unittest.cc",
-      "service_worker_payment_instrument_unittest.cc",
+      "service_worker_payment_app_unittest.cc",
     ]
   }
 

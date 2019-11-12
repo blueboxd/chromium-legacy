@@ -60,6 +60,7 @@ class PermissionWizard::Impl {
   explicit Impl(std::unique_ptr<PermissionWizard::Delegate> checker);
   ~Impl();
 
+  void SetCompletionCallback(ResultCallback callback);
   void Start();
 
   std::string GetBundleName();
@@ -68,6 +69,10 @@ class PermissionWizard::Impl {
   // result will be passed back via onPermissionCheckResult().
   void CheckAccessibilityPermission(base::TimeDelta delay);
   void CheckScreenRecordingPermission(base::TimeDelta delay);
+
+  // Called by PermissionWizardController to notify that the wizard was
+  // completed/cancelled.
+  void NotifyCompletion(bool result);
 
  private:
   void CheckAccessibilityPermissionNow();
@@ -78,6 +83,10 @@ class PermissionWizard::Impl {
   PermissionWizardController* window_controller_ = nil;
   std::unique_ptr<Delegate> checker_;
   base::OneShotTimer timer_;
+
+  // Notified when the wizard is completed/cancelled. May be null.
+  ResultCallback completion_callback_;
+
   base::WeakPtrFactory<Impl> weak_factory_{this};
 };
 
@@ -88,6 +97,10 @@ PermissionWizard::Impl::Impl(
 PermissionWizard::Impl::~Impl() {
   [window_controller_ hide];
   [window_controller_ release];
+}
+
+void PermissionWizard::Impl::SetCompletionCallback(ResultCallback callback) {
+  completion_callback_ = std::move(callback);
 }
 
 void PermissionWizard::Impl::Start() {
@@ -114,6 +127,11 @@ void PermissionWizard::Impl::CheckScreenRecordingPermission(
     base::TimeDelta delay) {
   timer_.Start(FROM_HERE, delay, this,
                &Impl::CheckScreenRecordingPermissionNow);
+}
+
+void PermissionWizard::Impl::NotifyCompletion(bool result) {
+  if (completion_callback_)
+    std::move(completion_callback_).Run(result);
 }
 
 void PermissionWizard::Impl::CheckAccessibilityPermissionNow() {
@@ -275,6 +293,7 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
 }
 
 - (void)onCancel:(id)sender {
+  _impl->NotifyCompletion(false);
   _cancelled = YES;
   [self hide];
 }
@@ -282,6 +301,7 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
 - (void)onNext:(id)sender {
   if (_page == WizardPage::ALL_SET) {
     // OK button closes the window.
+    _impl->NotifyCompletion(true);
     [self hide];
     return;
   }
@@ -360,7 +380,13 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
       break;
     case WizardPage::SCREEN_RECORDING:
       _page = WizardPage::ALL_SET;
-      [self updateUI];
+      if ([self window].visible) {
+        [self updateUI];
+      } else {
+        // If the wizard hasn't been shown yet, this means that all permissions
+        // were already granted, and the final ALL_SET page will not be shown.
+        _impl->NotifyCompletion(true);
+      }
       return;
     default:
       NOTREACHED();
@@ -459,6 +485,10 @@ PermissionWizard::PermissionWizard(std::unique_ptr<Delegate> checker)
 
 PermissionWizard::~PermissionWizard() {
   ui_task_runner_->DeleteSoon(FROM_HERE, impl_.release());
+}
+
+void PermissionWizard::SetCompletionCallback(ResultCallback callback) {
+  impl_->SetCompletionCallback(std::move(callback));
 }
 
 void PermissionWizard::Start(

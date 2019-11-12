@@ -47,8 +47,6 @@ const int kAudioProcessingNumberOfChannel = 1;
 // The number of packers used for testing.
 const int kNumberOfPacketsForTest = 100;
 
-const int kMaxNumberOfPlayoutDataChannels = 2;
-
 void ReadDataFromSpeechFile(char* data, int length) {
   base::FilePath file;
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &file));
@@ -91,14 +89,15 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     std::unique_ptr<media::AudioBus> data_bus =
         media::AudioBus::Create(params.channels(), params.frames_per_buffer());
 
-    // |data_bus_playout| is used if the number of capture channels is larger
-    // that max allowed playout channels. |data_bus_playout_to_use| points to
-    // the AudioBus to use, either |data_bus| or |data_bus_playout|.
+    // |data_bus_playout| is used if the capture channels include a keyboard
+    // channel. |data_bus_playout_to_use| points to the AudioBus to use, either
+    // |data_bus| or |data_bus_playout|.
     std::unique_ptr<media::AudioBus> data_bus_playout;
     media::AudioBus* data_bus_playout_to_use = data_bus.get();
-    if (params.channels() > kMaxNumberOfPlayoutDataChannels) {
-      data_bus_playout =
-          media::AudioBus::CreateWrapper(kMaxNumberOfPlayoutDataChannels);
+    const bool has_keyboard_mic = params.channel_layout() ==
+                                  media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC;
+    if (has_keyboard_mic) {
+      data_bus_playout = media::AudioBus::CreateWrapper(2);
       data_bus_playout->set_frames(params.frames_per_buffer());
       data_bus_playout_to_use = data_bus_playout.get();
     }
@@ -118,8 +117,8 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
       webrtc::AudioProcessing* ap = audio_processor->audio_processing_.get();
       const bool is_aec_enabled = ap && ap->GetConfig().echo_canceller.enabled;
       if (is_aec_enabled) {
-        if (params.channels() > kMaxNumberOfPlayoutDataChannels) {
-          for (int i = 0; i < kMaxNumberOfPlayoutDataChannels; ++i) {
+        if (has_keyboard_mic) {
+          for (int i = 0; i < data_bus_playout->channels(); ++i) {
             data_bus_playout->SetChannelData(
                 i, const_cast<float*>(data_bus->channel(i)));
           }

@@ -5,6 +5,7 @@
 #include "ui/gl/gl_visual_picker_glx.h"
 
 #include <algorithm>
+#include <bitset>
 #include <cstring>
 #include <numeric>
 #include <vector>

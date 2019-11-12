@@ -14,8 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/payments/core/native_error_strings.h"
+#include "components/payments/core/payment_app.h"
 #include "components/payments/core/payment_details.h"
-#include "components/payments/core/payment_instrument.h"
 #import "ios/chrome/browser/payments/payment_request_constants.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/navigation_manager.h"
@@ -60,7 +60,7 @@ bool IOSPaymentInstrumentLauncher::LaunchIOSPaymentInstrument(
     payments::PaymentRequest* payment_request,
     web::WebState* active_web_state,
     GURL& universal_link,
-    payments::PaymentInstrument::Delegate* delegate) {
+    payments::PaymentApp::Delegate* delegate) {
   DCHECK(delegate);
 
   // Only one request can be handled at a time.

@@ -40,6 +40,27 @@ class PluginVmImageManager
     : public KeyedService,
       public chromeos::ConciergeClient::DiskImageObserver {
  public:
+  // FailureReasons values can be shown to the user. Do not reorder or renumber
+  // these values without careful consideration.
+  enum class FailureReason {
+    LOGIC_ERROR = 0,
+    SIGNAL_NOT_CONNECTED = 1,
+    OPERATION_IN_PROGRESS = 2,
+    NOT_ALLOWED = 3,
+    INVALID_IMAGE_URL = 4,
+    UNEXPECTED_DISK_IMAGE_STATUS = 5,
+    INVALID_DISK_IMAGE_STATUS_RESPONSE = 6,
+    DOWNLOAD_FAILED_UNKNOWN = 7,
+    DOWNLOAD_FAILED_NETWORK = 8,
+    DOWNLOAD_FAILED_ABORTED = 9,
+    HASH_MISMATCH = 10,
+    DISPATCHER_NOT_AVAILABLE = 11,
+    CONCIERGE_NOT_AVAILABLE = 12,
+    COULD_NOT_OPEN_IMAGE = 13,
+    INVALID_IMPORT_RESPONSE = 14,
+    IMAGE_IMPORT_FAILED = 15,
+  };
+
   // Observer class for the PluginVm image related events.
   class Observer {
    public:
@@ -50,13 +71,12 @@ class PluginVmImageManager
                                            base::TimeDelta elapsed_time) = 0;
     virtual void OnDownloadCompleted() = 0;
     virtual void OnDownloadCancelled() = 0;
-    // TODO(https://crbug.com/904851): Add failure reasons.
-    virtual void OnDownloadFailed() = 0;
+    virtual void OnDownloadFailed(FailureReason reason) = 0;
     virtual void OnImportProgressUpdated(int percent_completed,
                                          base::TimeDelta elapsed_time) = 0;
     virtual void OnImported() = 0;
     virtual void OnImportCancelled() = 0;
-    virtual void OnImportFailed() = 0;
+    virtual void OnImportFailed(FailureReason reason) = 0;
   };
 
   explicit PluginVmImageManager(Profile* profile);
@@ -86,7 +106,7 @@ class PluginVmImageManager
                                  int64_t content_length);
   void OnDownloadCompleted(const download::CompletionInfo& info);
   void OnDownloadCancelled();
-  void OnDownloadFailed();
+  void OnDownloadFailed(FailureReason reason);
 
   // ConciergeClient::DiskImageObserver:
   void OnDiskImageProgress(
@@ -171,8 +191,9 @@ class PluginVmImageManager
   void OnFinalDiskImageStatus(
       base::Optional<vm_tools::concierge::DiskImageStatusResponse> reply);
 
-  // Finishes the processing of PluginVm image.
-  void OnImported(bool success);
+  // Finishes the processing of PluginVm image. If |failure_reason| has a value,
+  // then the import has failed, otherwise it was successful.
+  void OnImported(base::Optional<FailureReason> failure_reason);
 
   // Callback for the concierge CancelDiskImageOperation call.
   void OnImportDiskImageCancelled(

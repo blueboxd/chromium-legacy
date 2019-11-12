@@ -10,6 +10,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.common.ContentSwitches;
 
 import java.util.ArrayList;
@@ -130,6 +131,10 @@ public class WebsitePermissionsFetcher {
             // Bluetooth scanning permission is per-origin.
             queue.add(new ExceptionInfoFetcher(ContentSettingsType.BLUETOOTH_SCANNING));
         }
+        if (ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
+            // NFC permission is per-origin and per-embedder.
+            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.NFC));
+        }
 
         queue.add(new PermissionsAvailableCallbackRunner(callback));
 
@@ -213,6 +218,11 @@ public class WebsitePermissionsFetcher {
             if (commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
                 // Bluetooth scanning permission is per-origin.
                 queue.add(new ExceptionInfoFetcher(ContentSettingsType.BLUETOOTH_SCANNING));
+            }
+        } else if (category.showSites(SiteSettingsCategory.Type.NFC)) {
+            if (ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
+                // NFC permission is per-origin and per-embedder.
+                queue.add(new PermissionInfoFetcher(PermissionInfo.Type.NFC));
             }
         }
         queue.add(new PermissionsAvailableCallbackRunner(callback));

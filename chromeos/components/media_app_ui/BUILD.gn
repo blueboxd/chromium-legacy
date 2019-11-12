@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/test/base/js2gtest.gni")
+import("//third_party/closure_compiler/compile_js.gni")
 
 assert(is_chromeos, "Media App is Chrome OS only")
 
@@ -34,6 +35,67 @@ js2gtest("browser_tests_js") {
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   deps = [
+    ":browser_test_support",
     "//chromeos/constants",
+  ]
+}
+
+source_set("browser_test_support") {
+  testonly = true
+  sources = [
+    "test/media_app_ui_browsertest.cc",
+    "test/media_app_ui_browsertest.h",
+  ]
+
+  deps = [
+    ":media_app_ui",
+    "//base/test:test_support",
+    "//chrome/test:test_support_ui",
+    "//chromeos/constants:constants",
+    "//content/test:test_support",
+  ]
+
+  data = [
+    "test/driver.js",
+    "test/driver_api.js",
+    "test/guest_query_receiver.js",
+  ]
+}
+
+js_type_check("closure_compile") {
+  testonly = true
+  closure_flags = default_closure_args + [ "jscomp_error=strictCheckTypes" ]
+  deps = [
+    ":test_driver_api_js",
+    ":test_driver_js",
+    ":test_guest_query_receiver_js",
+  ]
+}
+
+js_library("test_driver_api_js") {
+  testonly = true
+  sources = [
+    "test/driver_api.js",
+  ]
+}
+
+js_library("test_guest_query_receiver_js") {
+  testonly = true
+  sources = [
+    "test/guest_query_receiver.js",
+  ]
+  deps = [
+    ":test_driver_api_js",
+  ]
+}
+
+js_library("test_driver_js") {
+  testonly = true
+  sources = [
+    "test/driver.js",
+  ]
+  deps = [
+    ":test_driver_api_js",
+    "//ui/webui/resources/js:assert",
   ]
 }

@@ -2,8 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import {areRangesEqual} from '../print_preview_utils.js';
+import {InputBehavior} from './input_behavior.js';
+import './print_preview_shared_css.js';
+import {SelectBehavior} from './select_behavior.js';
+import {SettingsBehavior} from './settings_behavior.js';
+import './settings_section.js';
+import '../strings.m.js';
 
 /** @enum {number} */
 const PagesInputErrorState = {
@@ -37,9 +47,9 @@ function parseIntStrict(value) {
 Polymer({
   is: 'print-preview-pages-settings',
 
-  behaviors: [
-    SettingsBehavior, print_preview.InputBehavior, print_preview.SelectBehavior
-  ],
+  _template: html`{__html_template__}`,
+
+  behaviors: [ SettingsBehavior, InputBehavior, SelectBehavior ],
 
   properties: {
     disabled: Boolean,
@@ -128,7 +138,7 @@ Polymer({
 
   /** @return {!CrInputElement} The cr-input field element for InputBehavior. */
   getInput: function() {
-    return this.$.pageSettingsCustomInput;
+    return /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput);
   },
 
   /**
@@ -448,4 +458,3 @@ Polymer({
     }
   },
 });
-})();

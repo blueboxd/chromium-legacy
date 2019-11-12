@@ -2,19 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_button_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {NativeLayer, PluginProxy} from 'chrome://print/print_preview.js';
+import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
+import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
+import {getCddTemplate, getDefaultInitialSettings, getPdfPrinter} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
+  window.print_button_test = {};
+  print_button_test.suiteName = 'PrintButtonTest';
   /** @enum {string} */
-  const TestNames = {
+  print_button_test.TestNames = {
     LocalPrintHidePreview: 'local print hide preview',
     PDFPrintVisiblePreview: 'pdf print visible preview',
   };
 
-  const suiteName = 'PrintButtonTest';
-  suite(suiteName, function() {
+  suite(print_button_test.suiteName, function() {
     /** @type {?PrintPreviewAppElement} */
     let page = null;
 
-    /** @type {?print_preview.NativeLayer} */
+    /** @type {?NativeLayer} */
     let nativeLayer = null;
 
     /** @type {boolean} */
@@ -23,14 +29,13 @@ cr.define('print_button_test', function() {
     /** @type {boolean} */
     let previewHidden = false;
 
-    /** @type {!print_preview.NativeInitialSettings} */
-    const initialSettings =
-        print_preview_test_utils.getDefaultInitialSettings();
+    /** @type {!NativeInitialSettings} */
+    const initialSettings = getDefaultInitialSettings();
 
     /** @override */
     setup(function() {
-      nativeLayer = new print_preview.NativeLayerStub();
-      print_preview.NativeLayer.setInstance(nativeLayer);
+      nativeLayer = new NativeLayerStub();
+      NativeLayer.setInstance(nativeLayer);
       PolymerTest.clearBody();
       nativeLayer.setInitialSettings(initialSettings);
       const localDestinationInfos = [
@@ -38,14 +43,14 @@ cr.define('print_button_test', function() {
       ];
       nativeLayer.setLocalDestinations(localDestinationInfos);
       nativeLayer.setLocalDestinationCapabilities(
-          print_preview_test_utils.getCddTemplate(
+          getCddTemplate(
               initialSettings.printerName));
       nativeLayer.setLocalDestinationCapabilities(
-          print_preview_test_utils.getPdfPrinter());
+          getPdfPrinter());
 
-      const pluginProxy = new print_preview.PDFPluginStub();
+      const pluginProxy = new PDFPluginStub();
       pluginProxy.setPluginCompatible(true);
-      print_preview.PluginProxy.setInstance(pluginProxy);
+      PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
@@ -82,7 +87,7 @@ cr.define('print_button_test', function() {
 
     // Tests that hidePreview() is called before print() if a local printer is
     // selected and the user clicks print while the preview is loading.
-    test(assert(TestNames.LocalPrintHidePreview), function() {
+    test(assert(print_button_test.TestNames.LocalPrintHidePreview), function() {
       printBeforePreviewReady = true;
 
       return waitForInitialPreview().then(function() {
@@ -99,7 +104,7 @@ cr.define('print_button_test', function() {
 
     // Tests that hidePreview() is not called if Save as PDF is selected and
     // the user clicks print while the preview is loading.
-    test(assert(TestNames.PDFPrintVisiblePreview), function() {
+    test(assert(print_button_test.TestNames.PDFPrintVisiblePreview), function() {
       printBeforePreviewReady = false;
 
       return waitForInitialPreview()
@@ -131,9 +136,3 @@ cr.define('print_button_test', function() {
           });
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

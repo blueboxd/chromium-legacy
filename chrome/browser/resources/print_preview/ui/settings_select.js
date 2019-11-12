@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import {getStringForCurrentLocale} from '../print_preview_utils.js';
+import './print_preview_shared_css.js';
+import {SelectBehavior} from './select_behavior.js';
+import {SettingsBehavior} from './settings_behavior.js';
+
 /**
  * @typedef {{
  *   is_default: (boolean | undefined),
@@ -12,15 +19,17 @@ cr.exportPath('print_preview');
  *   name: (string | undefined),
  * }}
  */
-print_preview.SelectOption;
+export let SelectOption;
 
 Polymer({
   is: 'print-preview-settings-select',
 
-  behaviors: [SettingsBehavior, print_preview.SelectBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [SettingsBehavior, SelectBehavior],
 
   properties: {
-    /** @type {{ option: Array<!print_preview.SelectOption> }} */
+    /** @type {{ option: Array<!SelectOption> }} */
     capability: Object,
 
     settingName: String,
@@ -29,7 +38,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview.SelectOption} option Option to check.
+   * @param {!SelectOption} option Option to check.
    * @return {boolean} Whether the option is selected.
    * @private
    */
@@ -44,7 +53,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview.SelectOption} option Option to get the value
+   * @param {!SelectOption} option Option to get the value
    *    for.
    * @return {string} Value for the option.
    * @private
@@ -54,7 +63,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview.SelectOption} option Option to get the display
+   * @param {!SelectOption} option Option to get the display
    *    name for.
    * @return {string} Display name for the option.
    * @private

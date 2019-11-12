@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {Destination} from './destination.js';
 
-  class Invitation {
+  export class Invitation {
     /**
      * Printer sharing invitation data object.
      * @param {string} sender Text identifying invitation sender.
      * @param {string} receiver Text identifying invitation receiver. Empty in
      *     case of a personal invitation. Identifies a group or domain in case
      *     of an invitation received by a group manager.
-     * @param {!print_preview.Destination} destination Shared destination.
+     * @param {!Destination} destination Shared destination.
      * @param {!Object} aclEntry JSON representation of the ACL entry this
      *     invitation was sent to.
      * @param {string} account User account this invitation is sent for.
@@ -34,7 +33,7 @@ cr.define('print_preview', function() {
 
       /**
        * Shared destination.
-       * @private {!print_preview.Destination}
+       * @private {!Destination}
        */
       this.destination_ = destination;
 
@@ -69,7 +68,7 @@ cr.define('print_preview', function() {
       return !!this.receiver_;
     }
 
-    /** @return {!print_preview.Destination} Shared destination. */
+    /** @return {!Destination} Shared destination. */
     get destination() {
       return this.destination_;
     }
@@ -85,6 +84,3 @@ cr.define('print_preview', function() {
     }
   }
 
-  // Export
-  return {Invitation: Invitation};
-});

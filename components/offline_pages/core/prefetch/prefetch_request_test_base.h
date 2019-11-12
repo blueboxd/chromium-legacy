@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -45,17 +46,13 @@ class PrefetchRequestTestBase : public testing::Test {
   }
 
   void RunUntilIdle();
+  void FastForwardBy(base::TimeDelta delta);
   void FastForwardUntilNoTasksRemain();
 
- protected:
-  // Derived classes may need these to construct other members.
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner() {
-    return task_runner_;
-  }
-
  private:
-  base::MessageLoopForIO message_loop_;
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO,
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>

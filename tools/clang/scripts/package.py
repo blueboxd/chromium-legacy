@@ -238,6 +238,10 @@ def main():
       # Profile runtime (used by profiler and code coverage).
       'lib/clang/$V/lib/darwin/libclang_rt.profile_iossim.a',
       'lib/clang/$V/lib/darwin/libclang_rt.profile_osx.a',
+
+      # UndefinedBehaviorSanitizer runtime.
+      'lib/clang/$V/lib/darwin/libclang_rt.ubsan_iossim_dynamic.dylib',
+      'lib/clang/$V/lib/darwin/libclang_rt.ubsan_osx_dynamic.dylib',
     ])
   elif sys.platform.startswith('linux'):
     want.extend([

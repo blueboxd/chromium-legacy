@@ -73,14 +73,14 @@ QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 QUIC_FLAG(int32_t, FLAGS_quic_anti_amplification_factor, 3)
 
 // Enables 3 new connection options to make PROBE_RTT more aggressive
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_99, true)
 
 // When true, set the initial congestion control window from connection options
 // in QuicSentPacketManager rather than TcpCubicSenderBytes.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, false)
 
 // Number of packets that the pacing sender allows in bursts during pacing.
 QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 2)
@@ -109,18 +109,18 @@ QUIC_FLAG(int32_t, FLAGS_quic_ietf_draft_version, 0)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_donot_reset_ideal_next_packet_send_time,
-    true)
+    false)
 
 // If true, enable experiment for testing PCC congestion-control.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc3, false)
 
 // When true, ensure BBR allows at least one MSS to be sent in response to an
 // ACK in packet conservation.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_one_mss_conservation, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_one_mss_conservation, false)
 
 // Enables the BBQ5 connection option, which forces saved aggregation values to
 // expire when the bandwidth increases more than 25% in QUIC BBR STARTUP.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, false)
 
 // When true and the BBR9 connection option is present, BBR only considers
 // bandwidth samples app-limited if they're not filling the pipe.
@@ -130,31 +130,31 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_flexible_app_limited, false)
 // will cause the sequencer to discard future data.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_stop_reading_when_level_triggered,
-          true)
+          false)
 
 // When the STMP connection option is sent by the client, timestamps in the QUIC
 // ACK frame are sent and processed.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
 
 // When in STARTUP and recovery, do not add bytes_acked to QUIC BBR's CWND in
 // CalculateCongestionWindow()
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr_no_bytes_acked_in_startup_recovery,
-    true)
+    false)
 
 // If true, use common code for checking whether a new stream ID may be
 // allocated.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_common_stream_check, false)
 
 // If true, QuicEpollClock::Now() will monotonically increase.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
 
 // If true, enables the BBS4 and BBS5 connection options, which reduce BBR's
 // pacing rate in STARTUP as more losses occur as a fraction of CWND.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
-          true)
+          false)
 
 // If true and using Leto for QUIC shared-key calculations, GFE will react to a
 // failure to contact Leto by sending a REJ containing a fallback ServerConfig,
@@ -177,7 +177,7 @@ QUIC_FLAG(bool,
 // it's received.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_do_not_accept_stop_waiting,
-          true)
+          false)
 
 // If true, set burst token to 2 in cwnd bootstrapping experiment.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
@@ -205,7 +205,7 @@ QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_reject_unprocessable_packets_statelessly,
-    false)
+    true)
 
 // Maximum number of tracked packets.
 QUIC_FLAG(int64_t, FLAGS_quic_max_tracked_packet_count, 10000)
@@ -214,39 +214,23 @@ QUIC_FLAG(int64_t, FLAGS_quic_max_tracked_packet_count, 10000)
 // descendents) will be automatically converted to lower case.
 QUIC_FLAG(bool, FLAGS_quic_client_convert_http_header_name_to_lowercase, true)
 
-// If true, do not send STOP_WAITING if no_stop_waiting_frame_.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, true)
-
 // If true, allow client to enable BBRv2 on server via connection option 'B2ON'.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_allow_client_enabled_bbr_v2,
           false)
 
 // If true, will negotiate the ACK delay time.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)
 
 // If true, QuicFramer::WriteClientVersionNegotiationProbePacket uses
 // length-prefixed connection IDs.
 QUIC_FLAG(bool, FLAGS_quic_prober_uses_length_prefixed_connection_ids, false)
-
-// When true, QuicFramer allows parsing failures of source connection ID for
-// the PROX version.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_parse_prox_source_connection_id,
-          true)
 
 // If true and H2PR connection option is received, write_blocked_streams_ uses
 // HTTP2 (tree-style) priority write scheduler.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_use_http2_priority_write_scheduler,
           true)
-
-// If true, close connection if there are too many (> 1000) buffered control
-// frames.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames3,
-    true)
 
 // If true and FIFO connection option is received, write_blocked_streams uses
 // FIFO(stream with smallest ID has highest priority) write scheduler.
@@ -289,22 +273,12 @@ QUIC_FLAG(bool,
 // If true, enable HTTP/2 default scheduling(round robin).
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_rr_write_scheduler, true)
 
-// If true, combine QuicPacketGenerator and QuicPacketCreator.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_combine_generator_and_creator,
-          true)
-
 // If true, QuicFramer does not create an encrypter/decrypter for the
 // ENCRYPTION_INITIAL level.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_framer_doesnt_create_initial_encrypter,
     true)
-
-// If true, server drops client initial packets in datagrams < 1200 bytes.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_donot_process_small_initial_packets,
-          true)
 
 // If true, treat queued QUIC packets as sent.
 QUIC_FLAG(bool,
@@ -366,7 +340,7 @@ QUIC_FLAG(bool,
           false)
 
 // If true, re-calculate pacing rate when cwnd gets bootstrapped.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_pacing_rate, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_pacing_rate, true)
 
 // The maximum congestion window in packets.
 QUIC_FLAG(int32_t, FLAGS_quic_max_congestion_window, 2000)

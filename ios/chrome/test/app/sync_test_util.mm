@@ -339,7 +339,7 @@ void DeleteTypedUrlFromClient(const GURL& url) {
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS);
 
-  history_service->DeleteURL(url);
+  history_service->DeleteURLs({url});
 }
 
 void DeleteTypedUrlFromFakeSyncServer(std::string url) {

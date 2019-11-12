@@ -758,7 +758,7 @@ bool PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
   gfx::Rect bounds_rect(bounds());
   invalidation_ = Region(bounds_rect);
   tilings_->Invalidate(invalidation_);
-  SetUpdateRect(bounds_rect);
+  UnionUpdateRect(bounds_rect);
   return true;
 }
 
@@ -1584,14 +1584,9 @@ PictureLayerImpl::InvalidateRegionForImages(
   if (invalidation.IsEmpty())
     return ImageInvalidationResult::kNoInvalidation;
 
-  // Make sure to union the rect from this invalidation with the update_rect
-  // instead of over-writing it. We don't want to reset the update that came
-  // from the main thread.
   // Note: We can use a rect here since this is only used to track damage for a
   // frame and not raster invalidation.
-  gfx::Rect new_update_rect = invalidation.bounds();
-  new_update_rect.Union(update_rect());
-  SetUpdateRect(new_update_rect);
+  UnionUpdateRect(invalidation.bounds());
 
   invalidation_.Union(invalidation);
   tilings_->Invalidate(invalidation);

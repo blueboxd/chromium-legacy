@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('model_settings_policy_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {BackgroundGraphicsModeRestriction, ColorModeRestriction, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, DuplexModeRestriction, Margins, MarginsType, PinModeRestriction, Size} from 'chrome://print/print_preview.js';
+import {getCddTemplate} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
   suite('ModelSettingsPolicyTest', function() {
     let model = null;
 
@@ -22,32 +25,32 @@ cr.define('model_settings_policy_test', function() {
         title: 'title',
       };
 
-      model.pageSize = new print_preview.Size(612, 792);
-      model.margins = new print_preview.Margins(72, 72, 72, 72);
+      model.pageSize = new Size(612, 792);
+      model.margins = new Margins(72, 72, 72, 72);
 
       // Create a test destination.
-      model.destination = new print_preview.Destination(
-          'FooDevice', print_preview.DestinationType.LOCAL,
-          print_preview.DestinationOrigin.LOCAL, 'FooName',
-          print_preview.DestinationConnectionStatus.ONLINE);
+      model.destination = new Destination(
+          'FooDevice', DestinationType.LOCAL,
+          DestinationOrigin.LOCAL, 'FooName',
+          DestinationConnectionStatus.ONLINE);
       model.set(
           'destination.capabilities',
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities);
     });
 
     test('color managed', function() {
       // Remove color capability.
       let capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.color;
 
       [{
         // Policy has no effect, setting unavailable
         colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
-        colorPolicy: print_preview.ColorModeRestriction.COLOR,
-        colorDefault: print_preview.ColorModeRestriction.COLOR,
+        colorPolicy: ColorModeRestriction.COLOR,
+        colorDefault: ColorModeRestriction.COLOR,
         expectedValue: true,
         expectedAvailable: false,
         expectedManaged: false,
@@ -56,8 +59,8 @@ cr.define('model_settings_policy_test', function() {
        {
          // Policy contradicts actual capabilities, setting unavailable.
          colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
-         colorPolicy: print_preview.ColorModeRestriction.MONOCHROME,
-         colorDefault: print_preview.ColorModeRestriction.MONOCHROME,
+         colorPolicy: ColorModeRestriction.MONOCHROME,
+         colorDefault: ColorModeRestriction.MONOCHROME,
          expectedValue: true,
          expectedAvailable: false,
          expectedManaged: false,
@@ -71,9 +74,9 @@ cr.define('model_settings_policy_test', function() {
              {type: 'STANDARD_COLOR'}
            ]
          },
-         colorPolicy: print_preview.ColorModeRestriction.COLOR,
+         colorPolicy: ColorModeRestriction.COLOR,
          // Default mismatches restriction and is ignored.
-         colorDefault: print_preview.ColorModeRestriction.MONOCHROME,
+         colorDefault: ColorModeRestriction.MONOCHROME,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: true,
@@ -87,14 +90,14 @@ cr.define('model_settings_policy_test', function() {
              {type: 'STANDARD_COLOR'}
            ]
          },
-         colorDefault: print_preview.ColorModeRestriction.COLOR,
+         colorDefault: ColorModeRestriction.COLOR,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: false,
          expectedEnforced: false,
        }].forEach(subtestParams => {
         capabilities =
-            print_preview_test_utils.getCddTemplate(model.destination.id)
+            getCddTemplate(model.destination.id)
                 .capabilities;
         capabilities.printer.color = subtestParams.colorCap;
         const policies = {
@@ -119,15 +122,15 @@ cr.define('model_settings_policy_test', function() {
     test('duplex managed', function() {
       // Remove duplex capability.
       let capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.duplex;
 
       [{
         // Policy has no effect.
         duplexCap: {option: [{type: 'NO_DUPLEX', is_default: true}]},
-        duplexPolicy: print_preview.DuplexModeRestriction.SIMPLEX,
-        duplexDefault: print_preview.DuplexModeRestriction.SIMPLEX,
+        duplexPolicy: DuplexModeRestriction.SIMPLEX,
+        duplexDefault: DuplexModeRestriction.SIMPLEX,
         expectedValue: false,
         expectedAvailable: false,
         expectedManaged: false,
@@ -139,8 +142,8 @@ cr.define('model_settings_policy_test', function() {
        {
          // Policy contradicts actual capabilities and is ignored.
          duplexCap: {option: [{type: 'NO_DUPLEX', is_default: true}]},
-         duplexPolicy: print_preview.DuplexModeRestriction.DUPLEX,
-         duplexDefault: print_preview.DuplexModeRestriction.LONG_EDGE,
+         duplexPolicy: DuplexModeRestriction.DUPLEX,
+         duplexDefault: DuplexModeRestriction.LONG_EDGE,
          expectedValue: false,
          expectedAvailable: false,
          expectedManaged: false,
@@ -157,9 +160,9 @@ cr.define('model_settings_policy_test', function() {
              {type: 'SHORT_EDGE'}
            ]
          },
-         duplexPolicy: print_preview.DuplexModeRestriction.DUPLEX,
+         duplexPolicy: DuplexModeRestriction.DUPLEX,
          // Default mismatches restriction and is ignored.
-         duplexDefault: print_preview.DuplexModeRestriction.SIMPLEX,
+         duplexDefault: DuplexModeRestriction.SIMPLEX,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: true,
@@ -176,9 +179,9 @@ cr.define('model_settings_policy_test', function() {
              {type: 'SHORT_EDGE'}
            ]
          },
-         duplexPolicy: print_preview.DuplexModeRestriction.SHORT_EDGE,
+         duplexPolicy: DuplexModeRestriction.SHORT_EDGE,
          // Default mismatches restriction and is ignored.
-         duplexDefault: print_preview.DuplexModeRestriction.LONG_EDGE,
+         duplexDefault: DuplexModeRestriction.LONG_EDGE,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: true,
@@ -195,7 +198,7 @@ cr.define('model_settings_policy_test', function() {
              {type: 'SHORT_EDGE'}
            ]
          },
-         duplexDefault: print_preview.DuplexModeRestriction.LONG_EDGE,
+         duplexDefault: DuplexModeRestriction.LONG_EDGE,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: false,
@@ -205,7 +208,7 @@ cr.define('model_settings_policy_test', function() {
          expectedShortEdgeEnforced: false,
        }].forEach(subtestParams => {
         capabilities =
-            print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
+            getCddTemplate('FooPrinter').capabilities;
         capabilities.printer.duplex = subtestParams.duplexCap;
         const policies = {
           allowedDuplexModes: subtestParams.duplexPolicy,
@@ -238,7 +241,7 @@ cr.define('model_settings_policy_test', function() {
     test('pin managed', function() {
       // Remove pin capability.
       let capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.pin;
 
@@ -257,8 +260,8 @@ cr.define('model_settings_policy_test', function() {
        {
          // Policy has no effect, setting unavailable.
          pinCap: {},
-         pinPolicy: print_preview.PinModeRestriction.PIN,
-         pinDefault: print_preview.PinModeRestriction.PIN,
+         pinPolicy: PinModeRestriction.PIN,
+         pinDefault: PinModeRestriction.PIN,
          expectedValue: false,
          expectedAvailable: false,
          expectedManaged: false,
@@ -267,8 +270,8 @@ cr.define('model_settings_policy_test', function() {
        {
          // Policy has no effect, setting is not supported.
          pinCap: {supported: false},
-         pinPolicy: print_preview.PinModeRestriction.UNSET,
-         pinDefault: print_preview.PinModeRestriction.PIN,
+         pinPolicy: PinModeRestriction.UNSET,
+         pinDefault: PinModeRestriction.PIN,
          expectedValue: false,
          expectedAvailable: false,
          expectedManaged: false,
@@ -277,7 +280,7 @@ cr.define('model_settings_policy_test', function() {
        {
          // Policy is UNSECURE, setting is not available.
          pinCap: {supported: true},
-         pinPolicy: print_preview.PinModeRestriction.NO_PIN,
+         pinPolicy: PinModeRestriction.NO_PIN,
          expectedValue: false,
          expectedAvailable: false,
          expectedManaged: false,
@@ -286,8 +289,8 @@ cr.define('model_settings_policy_test', function() {
        {
          // No restriction policy, setting is modifiable.
          pinCap: {supported: true},
-         pinPolicy: print_preview.PinModeRestriction.UNSET,
-         pinDefault: print_preview.PinModeRestriction.NO_PIN,
+         pinPolicy: PinModeRestriction.UNSET,
+         pinDefault: PinModeRestriction.NO_PIN,
          expectedValue: false,
          expectedAvailable: true,
          expectedManaged: false,
@@ -296,9 +299,9 @@ cr.define('model_settings_policy_test', function() {
        {
          // Policy overrides default.
          pinCap: {supported: true},
-         pinPolicy: print_preview.PinModeRestriction.PIN,
+         pinPolicy: PinModeRestriction.PIN,
          // Default mismatches restriction and is ignored.
-         pinDefault: print_preview.PinModeRestriction.NO_PIN,
+         pinDefault: PinModeRestriction.NO_PIN,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: true,
@@ -307,14 +310,14 @@ cr.define('model_settings_policy_test', function() {
        {
          // Default defined by policy but setting is modifiable.
          pinCap: {supported: true},
-         pinDefault: print_preview.PinModeRestriction.PIN,
+         pinDefault: PinModeRestriction.PIN,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: false,
          expectedEnforced: false,
        }].forEach(subtestParams => {
         capabilities =
-            print_preview_test_utils.getCddTemplate(model.destination.id)
+            getCddTemplate(model.destination.id)
                 .capabilities;
         capabilities.printer.pin = subtestParams.pinCap;
         const policies = {
@@ -349,9 +352,9 @@ cr.define('model_settings_policy_test', function() {
          // content.
          documentIsModifiable: false,
          backgroundGraphicsPolicy:
-             print_preview.BackgroundGraphicsModeRestriction.UNSET,
+             BackgroundGraphicsModeRestriction.UNSET,
          backgroundGraphicsDefault:
-             print_preview.BackgroundGraphicsModeRestriction.ENABLED,
+             BackgroundGraphicsModeRestriction.ENABLED,
          expectedValue: false,
          expectedAvailable: false,
          expectedManaged: false,
@@ -361,7 +364,7 @@ cr.define('model_settings_policy_test', function() {
          // Policy is DISABLED, setting is not modifiable.
          documentIsModifiable: true,
          backgroundGraphicsPolicy:
-             print_preview.BackgroundGraphicsModeRestriction.DISABLED,
+             BackgroundGraphicsModeRestriction.DISABLED,
          expectedValue: false,
          expectedAvailable: true,
          expectedManaged: true,
@@ -371,9 +374,9 @@ cr.define('model_settings_policy_test', function() {
          // No restriction policy, setting is modifiable.
          documentIsModifiable: true,
          backgroundGraphicsPolicy:
-             print_preview.BackgroundGraphicsModeRestriction.UNSET,
+             BackgroundGraphicsModeRestriction.UNSET,
          backgroundGraphicsDefault:
-             print_preview.BackgroundGraphicsModeRestriction.DISABLED,
+             BackgroundGraphicsModeRestriction.DISABLED,
          expectedValue: false,
          expectedAvailable: true,
          expectedManaged: false,
@@ -383,10 +386,10 @@ cr.define('model_settings_policy_test', function() {
          // Policy overrides default.
          documentIsModifiable: true,
          backgroundGraphicsPolicy:
-             print_preview.BackgroundGraphicsModeRestriction.ENABLED,
+             BackgroundGraphicsModeRestriction.ENABLED,
          // Default mismatches restriction and is ignored.
          backgroundGraphicsDefault:
-             print_preview.BackgroundGraphicsModeRestriction.DISABLED,
+             BackgroundGraphicsModeRestriction.DISABLED,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: true,
@@ -396,7 +399,7 @@ cr.define('model_settings_policy_test', function() {
          // Default defined by policy but setting is modifiable.
          documentIsModifiable: true,
          backgroundGraphicsDefault:
-             print_preview.BackgroundGraphicsModeRestriction.ENABLED,
+             BackgroundGraphicsModeRestriction.ENABLED,
          expectedValue: true,
          expectedAvailable: true,
          expectedManaged: false,
@@ -426,4 +429,3 @@ cr.define('model_settings_policy_test', function() {
       });
     });
   });
-});

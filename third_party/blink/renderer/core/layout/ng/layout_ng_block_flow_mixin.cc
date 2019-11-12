@@ -205,6 +205,9 @@ bool LayoutNGBlockFlowMixin<
   if (PaintFragment())
     return false;
 
+  if (Base::StyleRef().HasColumnRule())
+    return false;
+
   return Base::PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
 }
 
@@ -281,12 +284,6 @@ void LayoutNGBlockFlowMixin<Base>::Paint(const PaintInfo& paint_info) const {
         return;
       }
     }
-  }
-
-  // |NGBoxFragmentPainter| currently doesn't support column rules.
-  if (UNLIKELY(Base::MultiColumnFlowThread())) {
-    Base::Paint(paint_info);
-    return;
   }
 
   if (const NGPaintFragment* paint_fragment = PaintFragment()) {

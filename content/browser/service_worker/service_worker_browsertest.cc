@@ -3349,7 +3349,7 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
   }
 
  protected:
-  virtual const char* GetWorkerURL() { return kWorkerUrl; }
+  virtual std::string GetWorkerURL() { return kWorkerUrl; }
 
   void RegisterAndActivateServiceWorker() {
     scoped_refptr<WorkerActivatedObserver> observer =
@@ -3595,7 +3595,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest,
 class ServiceWorkerCacheStorageFullCodeCacheFromInstallEventTest
     : public ServiceWorkerV8CodeCacheForCacheStorageTest {
  public:
-  const char* GetWorkerURL() override {
+  std::string GetWorkerURL() override {
     return "/service_worker/install_event_caches_script.js";
   }
 };
@@ -3619,7 +3619,7 @@ class ServiceWorkerCacheStorageFullCodeCacheFromInstallEventDisabledByHintTest
                                     "CacheStorageCodeCacheHint");
   }
 
-  const char* GetWorkerURL() override {
+  std::string GetWorkerURL() override {
     return "/service_worker/install_event_caches_script_with_hint.js";
   }
 };
@@ -3630,6 +3630,34 @@ IN_PROC_BROWSER_TEST_F(
   RegisterAndActivateServiceWorker();
   // The full code cache should not be generated when the script was
   // stored in the install event and the header hint disables code cache.
+  WaitUntilSideDataSizeIs(0);
+}
+
+class ServiceWorkerCacheStorageFullCodeCacheFromInstallEventOpaqueResponseTest
+    : public ServiceWorkerV8CodeCacheForCacheStorageTest {
+ public:
+  ServiceWorkerCacheStorageFullCodeCacheFromInstallEventOpaqueResponseTest() {}
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ServiceWorkerV8CodeCacheForCacheStorageTest::SetUpOnMainThread();
+  }
+
+  std::string GetWorkerURL() override {
+    GURL cross_origin_script = embedded_test_server()->GetURL(
+        "bar.com", "/service_worker/v8_cache_test.js");
+    return "/service_worker/"
+           "install_event_caches_no_cors_script.js?script_url=" +
+           cross_origin_script.spec();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    ServiceWorkerCacheStorageFullCodeCacheFromInstallEventOpaqueResponseTest,
+    FullCodeCacheGenerated) {
+  RegisterAndActivateServiceWorker();
+  // The full code cache should not be generated when the script is an opaque
+  // response.
   WaitUntilSideDataSizeIs(0);
 }
 

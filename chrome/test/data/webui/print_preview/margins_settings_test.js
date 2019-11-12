@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('margins_settings_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {MarginsType} from 'chrome://print/print_preview.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
   suite('MarginsSettingsTest', function() {
     let marginsSection = null;
 
@@ -18,8 +22,8 @@ cr.define('margins_settings_test', function() {
       document.body.appendChild(marginsSection);
       marginsSection.settings = model.settings;
       marginsSection.disabled = false;
-      test_util.fakeDataBind(model, marginsSection, 'settings');
-      marginsTypeEnum = print_preview.MarginsType;
+      fakeDataBind(model, marginsSection, 'settings');
+      marginsTypeEnum = MarginsType;
     });
 
     // Tests that setting the setting updates the UI.
@@ -28,7 +32,7 @@ cr.define('margins_settings_test', function() {
       assertEquals(marginsTypeEnum.DEFAULT.toString(), select.value);
 
       marginsSection.setSetting('margins', marginsTypeEnum.MINIMUM);
-      await test_util.eventToPromise('process-select-change', marginsSection);
+      await eventToPromise('process-select-change', marginsSection);
       assertEquals(marginsTypeEnum.MINIMUM.toString(), select.value);
     });
 
@@ -43,7 +47,7 @@ cr.define('margins_settings_test', function() {
       assertFalse(marginsSection.getSetting('margins').setFromUi);
 
       // Verify that selecting an new option in the dropdown sets the setting.
-      await print_preview_test_utils.selectOption(
+      await selectOption(
           marginsSection, marginsTypeEnum.MINIMUM.toString());
       assertEquals(
           marginsTypeEnum.MINIMUM, marginsSection.getSettingValue('margins'));
@@ -63,4 +67,3 @@ cr.define('margins_settings_test', function() {
       assertFalse(select.disabled);
     });
   });
-});

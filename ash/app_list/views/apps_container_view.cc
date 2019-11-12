@@ -24,6 +24,9 @@
 #include "base/command_line.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -210,6 +213,47 @@ void AppsContainerView::UpdateControlVisibility(
   suggestion_chip_container_view_->SetVisible(
       app_list_state == ash::AppListViewState::kFullscreenAllApps ||
       app_list_state == ash::AppListViewState::kPeeking || is_in_drag);
+}
+
+void AppsContainerView::AnimateOpacity(float current_progress,
+                                       ash::AppListViewState target_view_state,
+                                       const OpacityAnimator& animator) {
+  const bool target_suggestion_chip_visibility =
+      target_view_state == ash::AppListViewState::kFullscreenAllApps ||
+      target_view_state == ash::AppListViewState::kPeeking;
+  animator.Run(suggestion_chip_container_view_,
+               target_suggestion_chip_visibility);
+
+  if (!apps_grid_view_->layer()->GetAnimator()->IsAnimatingProperty(
+          ui::LayerAnimationElement::OPACITY)) {
+    apps_grid_view_->UpdateOpacity(true /*restore_opacity*/);
+    apps_grid_view_->layer()->SetOpacity(current_progress > 1.0f ? 1.0f : 0.0f);
+  }
+
+  const bool target_grid_visibility =
+      target_view_state == ash::AppListViewState::kFullscreenAllApps ||
+      target_view_state == ash::AppListViewState::kFullscreenSearch;
+  animator.Run(apps_grid_view_, target_grid_visibility);
+
+  animator.Run(page_switcher_, target_grid_visibility);
+}
+
+void AppsContainerView::AnimateYPosition(
+    ash::AppListViewState target_view_state,
+    const TransformAnimator& animator) {
+  const int target_suggestion_chip_y = GetExpectedSuggestionChipY(
+      AppListView::GetTransitionProgressForState(target_view_state));
+
+  suggestion_chip_container_view_->SetY(target_suggestion_chip_y);
+  animator.Run(suggestion_chip_container_view_);
+
+  apps_grid_view_->SetY(suggestion_chip_container_view_->y() +
+                        chip_grid_y_distance_);
+  animator.Run(apps_grid_view_);
+
+  page_switcher_->SetY(suggestion_chip_container_view_->y() +
+                       chip_grid_y_distance_);
+  animator.Run(page_switcher_);
 }
 
 void AppsContainerView::UpdateYPositionAndOpacity(float progress,

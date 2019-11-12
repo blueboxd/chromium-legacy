@@ -119,7 +119,7 @@ TEST_F(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   // These properties are internal, and should not be considered "change" when
   // they are used.
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetUpdateRect(arbitrary_rect));
+      root->UnionUpdateRect(arbitrary_rect));
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBounds(arbitrary_size));
   UpdatePendingTreeDrawProperties();
 

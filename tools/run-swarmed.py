@@ -134,7 +134,7 @@ def main():
                       help='Number of copies to spawn.')
   parser.add_argument('--device-os', default='M',
                       help='Run tests on the given version of Android.')
-  parser.add_argument('--pool', default='Chrome',
+  parser.add_argument('--pool', default='chromium.tests',
                       help='Use the given swarming pool.')
   parser.add_argument('--results', '-r', default='results',
                       help='Directory in which to store results.')

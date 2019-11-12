@@ -4,8 +4,8 @@
 
 #include "media/webrtc/audio_processor.h"
 
+#include <array>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "media/base/limits.h"
 #include "media/webrtc/helpers.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
@@ -98,22 +99,16 @@ void AudioProcessor::AnalyzePlayout(const AudioBus& audio,
 
   render_delay_ = playout_time - base::TimeTicks::Now();
 
-  constexpr int kMaxChannels = 2;
   DCHECK_GE(parameters.channels(), 1);
-  const float* channel_ptrs[kMaxChannels];
-  channel_ptrs[0] = audio.channel(0);
-  webrtc::AudioProcessing::ChannelLayout webrtc_layout =
-      webrtc::AudioProcessing::ChannelLayout::kMono;
-  // Limit the number of channels to two (stereo) even in a multi-channel case.
-  // TODO(crbug.com/982276): process all channels when multi-channel AEC is
-  // supported.
-  if (parameters.channels() > 1) {
-    channel_ptrs[1] = audio.channel(1);
-    webrtc_layout = webrtc::AudioProcessing::ChannelLayout::kStereo;
+  DCHECK_LE(parameters.channels(), audio.channels());
+  DCHECK_LE(parameters.channels(), media::limits::kMaxChannels);
+  std::array<const float*, media::limits::kMaxChannels> input_ptrs;
+  for (int i = 0; i < parameters.channels(); ++i) {
+    input_ptrs[i] = audio.channel(i);
   }
 
   const int apm_error = audio_processing_->AnalyzeReverseStream(
-      channel_ptrs, CreateStreamConfig(parameters));
+      input_ptrs.data(), CreateStreamConfig(parameters));
 
   DCHECK_EQ(apm_error, webrtc::AudioProcessing::kNoError);
 }
@@ -308,7 +303,8 @@ void AudioProcessor::UpdateAnalogLevel(double volume) {
 }
 
 void AudioProcessor::FeedDataToAPM(const AudioBus& source) {
-  std::vector<const float*> input_ptrs(source.channels());
+  DCHECK_LE(source.channels(), media::limits::kMaxChannels);
+  std::array<const float*, media::limits::kMaxChannels> input_ptrs;
   for (int i = 0; i < source.channels(); ++i) {
     input_ptrs[i] = source.channel(i);
   }

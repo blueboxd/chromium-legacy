@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchPrefs;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 
 /**
  * Settings fragment that allows the user to configure notifications. It contains general
@@ -75,9 +76,8 @@ public class NotificationsPreferences extends PreferenceFragmentCompat {
                             : R.string.notifications_content_suggestions_summary_disabled);
         }
 
-        mFromWebsitesPref.setSummary(
-                ContentSettingsResources.getCategorySummary(ContentSettingsType.NOTIFICATIONS,
-                        PrefServiceBridge.getInstance().isCategoryEnabled(
-                                ContentSettingsType.NOTIFICATIONS)));
+        mFromWebsitesPref.setSummary(ContentSettingsResources.getCategorySummary(
+                ContentSettingsType.NOTIFICATIONS,
+                WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.NOTIFICATIONS)));
     }
 }

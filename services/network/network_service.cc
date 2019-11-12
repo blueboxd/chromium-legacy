@@ -422,9 +422,7 @@ void NetworkService::ConfigureStubHostResolver(
   for (auto* network_context : network_contexts_) {
     if (!network_context->IsPrimaryNetworkContext())
       continue;
-
-    host_resolver_manager_->SetRequestContextForProbes(
-        network_context->url_request_context());
+    network_context->ActivateDohProbes();
   }
 
   // Configure DNS over HTTPS.

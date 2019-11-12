@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('pin_settings_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {State} from 'chrome://print/print_preview.js';
+import {fakeDataBind} from 'chrome://test/test_util.m.js';
+import {triggerInputEvent} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
   suite('PinSettingsTest', function() {
     /** @type {?PrintPreviewPinSettingsElement} */
     let pinSection = null;
@@ -22,11 +27,11 @@ cr.define('pin_settings_test', function() {
 
       pinSection = document.createElement('print-preview-pin-settings');
       pinSection.settings = model.settings;
-      pinSection.state = print_preview.State.READY;
+      pinSection.state = State.READY;
       pinSection.disabled = false;
-      test_util.fakeDataBind(model, pinSection, 'settings');
+      fakeDataBind(model, pinSection, 'settings');
       document.body.appendChild(pinSection);
-      Polymer.dom.flush();
+      flush();
     });
 
     // Tests that checking the box or entering the pin value updates the
@@ -52,7 +57,7 @@ cr.define('pin_settings_test', function() {
       assertFalse(pinSection.getSetting('pinValue').setFromUi);
 
       // Verify that entering the pin value in the input sets the setting.
-      await print_preview_test_utils.triggerInputEvent(
+      await triggerInputEvent(
           input, '0000', pinSection);
       assertTrue(pinSection.getSettingValue('pin'));
       assertEquals('0000', pinSection.getSettingValue('pinValue'));
@@ -70,7 +75,7 @@ cr.define('pin_settings_test', function() {
 
       // Verify that entering the non-digit pin value in the input updates the
       // setting validity and doesn't update its value.
-      await print_preview_test_utils.triggerInputEvent(
+      await triggerInputEvent(
           input, 'aaaa', pinSection);
       assertTrue(pinSection.getSettingValue('pin'));
       assertEquals('', pinSection.getSettingValue('pinValue'));
@@ -93,7 +98,7 @@ cr.define('pin_settings_test', function() {
 
       // Verify that entering too short pin value in the input updates the
       // setting validity and doesn't update its value.
-      await print_preview_test_utils.triggerInputEvent(
+      await triggerInputEvent(
           input, '000', pinSection);
       assertTrue(pinSection.getSettingValue('pin'));
       assertEquals('', pinSection.getSettingValue('pinValue'));
@@ -119,7 +124,7 @@ cr.define('pin_settings_test', function() {
       assertEquals(false, pinSection.getSetting('pinValue').valid);
 
       // Verify that entering the pin value in the input sets the setting.
-      await print_preview_test_utils.triggerInputEvent(
+      await triggerInputEvent(
           input, '0000', pinSection);
       assertTrue(pinSection.getSettingValue('pin'));
       assertEquals('0000', pinSection.getSettingValue('pinValue'));
@@ -127,7 +132,7 @@ cr.define('pin_settings_test', function() {
 
       // Verify that entering empty pin value in the input updates the
       // setting validity and its value.
-      await print_preview_test_utils.triggerInputEvent(input, '', pinSection);
+      await triggerInputEvent(input, '', pinSection);
       assertTrue(pinSection.getSettingValue('pin'));
       assertEquals('', pinSection.getSettingValue('pinValue'));
       assertEquals(false, pinSection.getSetting('pinValue').valid);
@@ -158,4 +163,3 @@ cr.define('pin_settings_test', function() {
       assertFalse(input.disabled);
     });
   });
-});

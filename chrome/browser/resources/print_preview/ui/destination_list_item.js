@@ -2,11 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {removeHighlights} from 'chrome://resources/js/search_highlight_utils.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import './icons.js';
+import {Destination, DestinationOrigin} from '../data/destination.js';
+import {HighlightResults, updateHighlights} from './highlight_utils.js';
+import './print_preview_vars_css.js';
+import '../strings.m.js';
 
 // <if expr="chromeos">
 /** @enum {number} */
-print_preview.DestinationConfigStatus = {
+const DestinationConfigStatus = {
   IDLE: 0,
   IN_PROGRESS: 1,
   FAILED: 2,
@@ -16,8 +28,10 @@ print_preview.DestinationConfigStatus = {
 Polymer({
   is: 'print-preview-destination-list-item',
 
+  _template: html`{__html_template__}`,
+
   properties: {
-    /** @type {!print_preview.Destination} */
+    /** @type {!Destination} */
     destination: Object,
 
     /** @type {?RegExp} */
@@ -33,10 +47,10 @@ Polymer({
     searchHint_: String,
 
     // <if expr="chromeos">
-    /** @private {!print_preview.DestinationConfigStatus} */
+    /** @private {!DestinationConfigStatus} */
     configurationStatus_: {
       type: Number,
-      value: print_preview.DestinationConfigStatus.IDLE,
+      value: DestinationConfigStatus.IDLE,
     },
 
     /**
@@ -45,7 +59,7 @@ Polymer({
      */
     statusEnum_: {
       type: Object,
-      value: print_preview.DestinationConfigStatus,
+      value: DestinationConfigStatus,
     },
     // </if>
   },
@@ -82,10 +96,10 @@ Polymer({
   onConfigureRequestAccepted: function() {
     // It must be a Chrome OS CUPS printer which hasn't been set up before.
     assert(
-        this.destination.origin == print_preview.DestinationOrigin.CROS &&
+        this.destination.origin == DestinationOrigin.CROS &&
         !this.destination.capabilities);
     this.configurationStatus_ =
-        print_preview.DestinationConfigStatus.IN_PROGRESS;
+        DestinationConfigStatus.IN_PROGRESS;
   },
 
   /**
@@ -94,12 +108,12 @@ Polymer({
    */
   onConfigureComplete: function(success) {
     this.configurationStatus_ = success ?
-        print_preview.DestinationConfigStatus.IDLE :
-        print_preview.DestinationConfigStatus.FAILED;
+        DestinationConfigStatus.IDLE :
+        DestinationConfigStatus.FAILED;
   },
 
   /**
-   * @param {!print_preview.DestinationConfigStatus} status
+   * @param {!DestinationConfigStatus} status
    * @return {boolean} Whether the current configuration status is |status|.
    * @private
    */
@@ -111,7 +125,7 @@ Polymer({
   /** @private */
   updateHighlightsAndHint_: function() {
     this.updateSearchHint_();
-    cr.search_highlight_utils.removeHighlights(this.highlights_);
+    removeHighlights(this.highlights_);
     this.highlights_ = this.updateHighlighting_().highlights;
   },
 
@@ -127,12 +141,12 @@ Polymer({
   },
 
   /**
-   * @return {!print_preview.HighlightResults} The highlight wrappers and
+   * @return {!HighlightResults} The highlight wrappers and
    *     search bubbles that were created.
    * @private
    */
   updateHighlighting_: function() {
-    return print_preview.updateHighlights(this, this.searchQuery);
+    return updateHighlights(this, this.searchQuery);
   },
 
   /**

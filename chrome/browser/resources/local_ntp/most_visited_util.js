@@ -175,11 +175,11 @@ function getTextColor(params, isTitle) {
   // For backward compatibility with server-side NTP, look at themes directly
   // and use param.c for non-title or as fallback.
   const apiHandle = chrome.embeddedSearch.newTabPage;
-  const themeInfo = assert(apiHandle.themeBackgroundInfo);
+  const ntpTheme = assert(apiHandle.ntpTheme);
   let c = '#777';
-  if (isTitle && themeInfo && !themeInfo.usingDefaultTheme) {
+  if (isTitle && ntpTheme && !ntpTheme.usingDefaultTheme) {
     // Read from theme directly
-    c = convertArrayToRGBAColor(themeInfo.textColorRgba) || c;
+    c = convertArrayToRGBAColor(ntpTheme.textColorRgba) || c;
   } else if ('c' in params) {
     c = convertToHexColor(parseInt(params.c, 16)) || c;
   }

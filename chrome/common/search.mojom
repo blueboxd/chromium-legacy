@@ -204,7 +204,7 @@ enum OmniboxFocusChangeReason;
 struct InstantMostVisitedInfo;
 
 [Native]
-struct ThemeBackgroundInfo;
+struct NtpTheme;
 
 // Renderer interface used by the browser to push updates to the client. For
 // example, the browser will tell the frame if the omnibox got focus.
@@ -224,8 +224,8 @@ interface EmbeddedSearchClient {
   // Input into the Omnibox has started/stopped.
   SetInputInProgress(bool input_in_progress);
 
-  // The browser theme has changed, the NTP should be updated accordingly.
-  ThemeChanged(ThemeBackgroundInfo value);
+  // The NTP theme has changed; update accordingly.
+  ThemeChanged(NtpTheme them);
 
   // A background image was selected from the file upload dialog.
   LocalBackgroundSelected();

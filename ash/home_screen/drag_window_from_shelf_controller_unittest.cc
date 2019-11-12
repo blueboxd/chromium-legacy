@@ -35,6 +35,13 @@ class DragWindowFromShelfControllerTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
+  void TearDown() override {
+    // Destroy |window_drag_controller_| so that its scheduled task won't get
+    // run after the test environment is gone.
+    window_drag_controller_.reset();
+    AshTestBase::TearDown();
+  }
+
   void StartDrag(aura::Window* window,
                  const gfx::Point& location_in_screen,
                  HotseatState hotseat_state) {

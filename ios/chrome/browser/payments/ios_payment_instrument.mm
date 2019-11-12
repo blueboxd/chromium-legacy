@@ -37,8 +37,8 @@ IOSPaymentInstrument::IOSPaymentInstrument(
     const std::string& app_name,
     UIImage* icon_image,
     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
-    : PaymentInstrument(-1 /* resource id not used */,
-                        PaymentInstrument::Type::NATIVE_MOBILE_APP),
+    : PaymentApp(-1 /* resource id not used */,
+                 PaymentApp::Type::NATIVE_MOBILE_APP),
       method_name_(method_name),
       universal_link_(universal_link),
       app_name_(app_name),
@@ -46,8 +46,7 @@ IOSPaymentInstrument::IOSPaymentInstrument(
       payment_request_ui_delegate_(payment_request_ui_delegate) {}
 IOSPaymentInstrument::~IOSPaymentInstrument() {}
 
-void IOSPaymentInstrument::InvokePaymentApp(
-    PaymentInstrument::Delegate* delegate) {
+void IOSPaymentInstrument::InvokePaymentApp(PaymentApp::Delegate* delegate) {
   DCHECK(delegate);
   [payment_request_ui_delegate_ paymentInstrument:this
                        launchAppWithUniversalLink:universal_link_
@@ -134,7 +133,7 @@ bool IOSPaymentInstrument::HandlesPayerPhone() const {
   return false;
 }
 
-base::WeakPtr<PaymentInstrument> IOSPaymentInstrument::AsWeakPtr() {
+base::WeakPtr<PaymentApp> IOSPaymentInstrument::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 

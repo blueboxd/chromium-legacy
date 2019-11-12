@@ -12,6 +12,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.components.location.LocationSettingsDialogContext;
 import org.chromium.components.location.LocationSettingsDialogOutcome;
 import org.chromium.components.location.LocationUtils;
@@ -101,7 +102,7 @@ public class LocationSettings {
      * Returns whether Chrome's user-configurable location setting is enabled.
      */
     public boolean isChromeLocationSettingEnabled() {
-        return PrefServiceBridge.getInstance().isAllowLocationEnabled();
+        return WebsitePreferenceBridge.isAllowLocationEnabled();
     }
 
     @VisibleForTesting

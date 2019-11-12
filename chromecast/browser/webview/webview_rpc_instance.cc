@@ -17,20 +17,40 @@
 
 namespace chromecast {
 
+// TODO(sagallea): Remove this when ready to deprecate WebviewService.
 WebviewRpcInstance::WebviewRpcInstance(
     webview::WebviewService::AsyncService* service,
     grpc::ServerCompletionQueue* cq,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     WebviewWindowManager* window_manager)
     : PlatformViewsRpcInstance(cq, task_runner, window_manager),
-      service_(service) {
-  service_->RequestCreateWebview(&ctx_, &io_, cq_, cq_, &init_callback_);
+      webview_service_(service),
+      platform_views_service_(nullptr) {
+  webview_service_->RequestCreateWebview(&ctx_, &io_, cq_, cq_,
+                                         &init_callback_);
+}
+
+WebviewRpcInstance::WebviewRpcInstance(
+    webview::PlatformViewsService::AsyncService* service,
+    grpc::ServerCompletionQueue* cq,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    WebviewWindowManager* window_manager)
+    : PlatformViewsRpcInstance(cq, task_runner, window_manager),
+      webview_service_(nullptr),
+      platform_views_service_(service) {
+  platform_views_service_->RequestCreateWebview(&ctx_, &io_, cq_, cq_,
+                                                &init_callback_);
 }
 
 WebviewRpcInstance::~WebviewRpcInstance() {}
 
 void WebviewRpcInstance::CreateNewInstance() {
-  new WebviewRpcInstance(service_, cq_, task_runner_, window_manager_);
+  if (webview_service_)
+    new WebviewRpcInstance(webview_service_, cq_, task_runner_,
+                           window_manager_);
+  else
+    new WebviewRpcInstance(platform_views_service_, cq_, task_runner_,
+                           window_manager_);
 }
 
 bool WebviewRpcInstance::Initialize() {

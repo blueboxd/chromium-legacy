@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('cloudprint', function() {
-  'use strict';
+import {CloudPrintInterface} from './cloud_print_interface.js';
 
-  /** @implements {cloudprint.CloudPrintInterface} */
-  class CloudPrintInterfaceNative {
+  /** @implements {CloudPrintInterface} */
+  export class CloudPrintInterfaceNative {
     constructor() {}
 
     /** @override */
@@ -33,9 +32,3 @@ cr.define('cloudprint', function() {
     /** @override */
     printer(printerId, origin, account) {}
   }
-
-  // Export
-  return {
-    CloudPrintInterfaceNative: CloudPrintInterfaceNative,
-  };
-});

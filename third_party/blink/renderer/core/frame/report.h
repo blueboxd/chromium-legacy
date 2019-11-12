@@ -39,6 +39,8 @@ class CORE_EXPORT Report : public ScriptWrappable {
     ScriptWrappable::Trace(visitor);
   }
 
+  ScriptValue toJSON(ScriptState* script_state) const;
+
  private:
   const String type_;
   const String url_;

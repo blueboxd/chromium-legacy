@@ -2474,7 +2474,9 @@ void NavigationRequest::CommitNavigation() {
     // about to go.
     service_worker_handle_->OnBeginNavigationCommit(
         render_frame_host_->GetProcess()->GetID(),
-        render_frame_host_->GetRoutingID(), &service_worker_provider_info);
+        render_frame_host_->GetRoutingID(),
+        render_frame_host_->cross_origin_embedder_policy(),
+        &service_worker_provider_info);
   }
 
   if (bundled_exchanges_handle_ &&

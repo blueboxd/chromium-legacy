@@ -2,11 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {Polymer, html, beforeNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {CloudPrintInterface} from '../cloud_print_interface.js';
+import {createRecentDestinationKey, Destination, DestinationOrigin, makeRecentDestination, RecentDestination} from '../data/destination.js';
+import {DestinationErrorType, DestinationStore} from '../data/destination_store.js';
+import {InvitationStore} from '../data/invitation_store.js';
+import {Error, State} from '../data/state.js';
+import '../data/user_manager.js';
+import './destination_dialog.js';
+import './destination_select.js';
+import './print_preview_shared_css.js';
+import './print_preview_vars_css.js';
+import './throbber_css.js';
+import {SettingsBehavior} from './settings_behavior.js';
+import './settings_section.js';
+import '../strings.m.js';
 
   /** @enum {number} */
-  const DestinationState = {
+  export const DestinationState = {
     INIT: 0,
     SELECTED: 1,
     SET: 2,
@@ -20,6 +40,8 @@ cr.define('print_preview', function() {
   Polymer({
     is: 'print-preview-destination-settings',
 
+    _template: html`{__html_template__}`,
+
     behaviors: [
       I18nBehavior,
       SettingsBehavior,
@@ -29,7 +51,7 @@ cr.define('print_preview', function() {
     properties: {
       appKioskMode: Boolean,
 
-      /** @type {cloudprint.CloudPrintInterface} */
+      /** @type {CloudPrintInterface} */
       cloudPrintInterface: {
         type: Object,
         observer: 'onCloudPrintInterfaceSet_',
@@ -37,14 +59,14 @@ cr.define('print_preview', function() {
 
       dark: Boolean,
 
-      /** @type {?print_preview.Destination} */
+      /** @type {?Destination} */
       destination: {
         type: Object,
         notify: true,
         value: null,
       },
 
-      /** @private {!print_preview.DestinationState} */
+      /** @private {!DestinationState} */
       destinationState: {
         type: Number,
         notify: true,
@@ -54,7 +76,7 @@ cr.define('print_preview', function() {
 
       disabled: Boolean,
 
-      /** @type {!print_preview.Error} */
+      /** @type {!Error} */
       error: {
         type: Number,
         notify: true,
@@ -63,7 +85,7 @@ cr.define('print_preview', function() {
 
       firstLoad: Boolean,
 
-      /** @type {!print_preview.State} */
+      /** @type {!State} */
       state: Number,
 
       /** @private {string} */
@@ -75,13 +97,13 @@ cr.define('print_preview', function() {
       /** @private {boolean} */
       cloudPrintDisabled_: Boolean,
 
-      /** @private {?print_preview.DestinationStore} */
+      /** @private {?DestinationStore} */
       destinationStore_: {
         type: Object,
         value: null,
       },
 
-      /** @private {!Array<!print_preview.RecentDestination>} */
+      /** @private {!Array<!RecentDestination>} */
       displayedDestinations_: Array,
 
       // <if expr="chromeos">
@@ -92,7 +114,7 @@ cr.define('print_preview', function() {
       },
       // </if>
 
-      /** @private {?print_preview.InvitationStore} */
+      /** @private {?InvitationStore} */
       invitationStore_: {
         type: Object,
         value: null,
@@ -135,20 +157,20 @@ cr.define('print_preview', function() {
     /** @override */
     attached: function() {
       this.destinationStore_ =
-          new print_preview.DestinationStore(this.addWebUIListener.bind(this));
-      this.invitationStore_ = new print_preview.InvitationStore();
+          new DestinationStore(this.addWebUIListener.bind(this));
+      this.invitationStore_ = new InvitationStore();
       this.tracker_.add(
           this.destinationStore_,
-          print_preview.DestinationStore.EventType.DESTINATION_SELECT,
+          DestinationStore.EventType.DESTINATION_SELECT,
           this.onDestinationSelect_.bind(this));
       this.tracker_.add(
           this.destinationStore_,
-          print_preview.DestinationStore.EventType
+          DestinationStore.EventType
               .SELECTED_DESTINATION_CAPABILITIES_READY,
           this.onDestinationCapabilitiesReady_.bind(this));
       this.tracker_.add(
           this.destinationStore_,
-          print_preview.DestinationStore.EventType.ERROR,
+          DestinationStore.EventType.ERROR,
           this.onDestinationError_.bind(this));
       // Need to update the recent list when the destination store inserts
       // destinations, in case any recent destinations have been added to the
@@ -157,7 +179,7 @@ cr.define('print_preview', function() {
       // fetched by the DestinationStore, to ensure that they still exist.
       this.tracker_.add(
           assert(this.destinationStore_),
-          print_preview.DestinationStore.EventType.DESTINATIONS_INSERTED,
+          DestinationStore.EventType.DESTINATIONS_INSERTED,
           this.updateDropdownDestinations_.bind(this));
     },
 
@@ -185,7 +207,7 @@ cr.define('print_preview', function() {
       }
 
       if (!this.destination ||
-          this.destination.origin !== print_preview.DestinationOrigin.COOKIES) {
+          this.destination.origin !== DestinationOrigin.COOKIES) {
         // Active user changing doesn't impact non-cookie based destinations.
         return;
       }
@@ -213,12 +235,12 @@ cr.define('print_preview', function() {
       // the most recent destination associated with the new account, or the
       // default.
       const recent = this.displayedDestinations_.find(d => {
-        return d.origin !== print_preview.DestinationOrigin.COOKIES ||
+        return d.origin !== DestinationOrigin.COOKIES ||
             d.account === this.activeUser_;
       });
       if (recent) {
         const success = this.destinationStore_.selectRecentDestinationByKey(
-            print_preview.createRecentDestinationKey(recent),
+            createRecentDestinationKey(recent),
             this.displayedDestinations_);
         if (success) {
           return;
@@ -243,7 +265,7 @@ cr.define('print_preview', function() {
       this.destinationStore_.init(
           this.appKioskMode, defaultPrinter,
           serializedDefaultDestinationRulesStr,
-          /** @type {!Array<print_preview.RecentDestination>} */
+          /** @type {!Array<RecentDestination>} */
           (this.getSettingValue('recentDestinations')));
     },
 
@@ -255,14 +277,14 @@ cr.define('print_preview', function() {
         this.updateDropdownDestinations_();
       }
 
-      if (this.state === print_preview.State.FATAL_ERROR) {
+      if (this.state === State.FATAL_ERROR) {
         // Don't let anything reset if there is a fatal error.
         return;
       }
 
       const destination = this.destinationStore_.selectedDestination;
       if (!!this.activeUser_ ||
-          destination.origin !== print_preview.DestinationOrigin.COOKIES) {
+          destination.origin !== DestinationOrigin.COOKIES) {
         this.destinationState = DestinationState.SET;
       } else {
         this.destinationState = DestinationState.SELECTED;
@@ -283,21 +305,21 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {!CustomEvent<!print_preview.DestinationErrorType>} e
+     * @param {!CustomEvent<!DestinationErrorType>} e
      * @private
      */
     onDestinationError_: function(e) {
-      let errorType = print_preview.Error.NONE;
+      let errorType = Error.NONE;
       switch (e.detail) {
-        case print_preview.DestinationErrorType.INVALID:
-          errorType = print_preview.Error.INVALID_PRINTER;
+        case DestinationErrorType.INVALID:
+          errorType = Error.INVALID_PRINTER;
           break;
-        case print_preview.DestinationErrorType.UNSUPPORTED:
-          errorType = print_preview.Error.UNSUPPORTED_PRINTER;
+        case DestinationErrorType.UNSUPPORTED:
+          errorType = Error.UNSUPPORTED_PRINTER;
           break;
         // <if expr="chromeos">
-        case print_preview.DestinationErrorType.NO_DESTINATIONS:
-          errorType = print_preview.Error.NO_DESTINATIONS;
+        case DestinationErrorType.NO_DESTINATIONS:
+          errorType = Error.NO_DESTINATIONS;
           this.noDestinations_ = true;
           break;
         // </if>
@@ -309,22 +331,22 @@ cr.define('print_preview', function() {
 
     /** @private */
     onErrorChanged_: function() {
-      if (this.error == print_preview.Error.INVALID_PRINTER ||
-          this.error == print_preview.Error.UNSUPPORTED_PRINTER ||
-          this.error == print_preview.Error.NO_DESTINATIONS) {
+      if (this.error == Error.INVALID_PRINTER ||
+          this.error == Error.UNSUPPORTED_PRINTER ||
+          this.error == Error.NO_DESTINATIONS) {
         this.destinationState = DestinationState.ERROR;
       }
     },
 
     /**
-     * @param {!print_preview.RecentDestination} destination
+     * @param {!RecentDestination} destination
      * @return {boolean} Whether the destination is Save as PDF or Save to
      *     Drive.
      */
     destinationIsDriveOrPdf_: function(destination) {
       return destination.id ===
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
-          destination.id === print_preview.Destination.GooglePromotedId.DOCS;
+          Destination.GooglePromotedId.SAVE_AS_PDF ||
+          destination.id === Destination.GooglePromotedId.DOCS;
     },
 
     /** @private */
@@ -336,9 +358,9 @@ cr.define('print_preview', function() {
       // Determine if this destination is already in the recent destinations,
       // and where in the array it is located.
       const newDestination =
-          print_preview.makeRecentDestination(assert(this.destination));
+          makeRecentDestination(assert(this.destination));
       const recentDestinations =
-          /** @type {!Array<!print_preview.RecentDestination>} */ (
+          /** @type {!Array<!RecentDestination>} */ (
               this.getSettingValue('recentDestinations'));
       let indexFound = recentDestinations.findIndex(function(recent) {
         return (
@@ -372,11 +394,11 @@ cr.define('print_preview', function() {
     /** @private */
     updateDropdownDestinations_: function() {
       this.displayedDestinations_ =
-          /** @type {!Array<!print_preview.RecentDestination>} */ (
+          /** @type {!Array<!RecentDestination>} */ (
               this.getSettingValue('recentDestinations'))
               .filter(d => {
                 return !this.destinationIsDriveOrPdf_(d) &&
-                    (d.origin !== print_preview.DestinationOrigin.COOKIES ||
+                    (d.origin !== DestinationOrigin.COOKIES ||
                      d.account === this.activeUser_);
               });
     },
@@ -386,9 +408,9 @@ cr.define('print_preview', function() {
      * @private
      */
     shouldDisableDropdown_: function() {
-      return this.state === print_preview.State.FATAL_ERROR ||
+      return this.state === State.FATAL_ERROR ||
           (this.destinationState === DestinationState.UPDATED &&
-           this.disabled && this.state !== print_preview.State.NOT_READY);
+           this.disabled && this.state !== State.NOT_READY);
     },
 
     /** @private */
@@ -399,7 +421,7 @@ cr.define('print_preview', function() {
            !!this.destination &&
            (!!this.destination.capabilities ||
             this.destination.id ===
-                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF));
+                Destination.GooglePromotedId.SAVE_AS_PDF));
     },
 
     /**
@@ -446,7 +468,7 @@ cr.define('print_preview', function() {
         const success = this.destinationStore_.selectRecentDestinationByKey(
             value, this.displayedDestinations_);
         if (!success) {
-          this.error = print_preview.Error.INVALID_PRINTER;
+          this.error = Error.INVALID_PRINTER;
         }
       }
     },
@@ -487,7 +509,7 @@ cr.define('print_preview', function() {
 
       const shouldFocus =
           this.destinationState !== DestinationState.SET && !this.firstLoad;
-      Polymer.RenderStatus.beforeNextRender(this.$.destinationSelect, () => {
+      beforeNextRender(this.$.destinationSelect, () => {
         this.$.destinationSelect.updateDestination();
         if (shouldFocus) {
           this.$.destinationSelect.focus();
@@ -496,7 +518,3 @@ cr.define('print_preview', function() {
     },
   });
 
-  return {
-    DestinationState: DestinationState,
-  };
-});

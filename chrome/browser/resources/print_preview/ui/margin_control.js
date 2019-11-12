@@ -2,8 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input_style_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {observerDepsDefined} from '../print_preview_utils.js';
+import {Coordinate2d} from '../data/coordinate2d.js';
+import {CustomMarginsOrientation} from '../data/margins.js';
+import {MeasurementSystem} from '../data/measurement_system.js';
+import {Size} from '../data/size.js';
+import {InputBehavior} from './input_behavior.js';
+import '../strings.m.js';
 
 /**
  * Radius of the margin control in pixels. Padding of control + 1 for border.
@@ -14,7 +24,9 @@ const RADIUS_PX = 9;
 Polymer({
   is: 'print-preview-margin-control',
 
-  behaviors: [print_preview.InputBehavior, I18nBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [InputBehavior, I18nBehavior],
 
   properties: {
     disabled: {
@@ -39,7 +51,7 @@ Polymer({
       observer: 'onClipSizeChange_',
     },
 
-    /** @type {?print_preview.MeasurementSystem} */
+    /** @type {?MeasurementSystem} */
     measurementSystem: Object,
 
     /** @private {boolean} */
@@ -62,19 +74,19 @@ Polymer({
       notify: true,
     },
 
-    /** @type {!print_preview.Coordinate2d} */
+    /** @type {!Coordinate2d} */
     translateTransform: {
       type: Object,
       notify: true,
     },
 
-    /** @type {!print_preview.Size} */
+    /** @type {!Size} */
     pageSize: {
       type: Object,
       notify: true,
     },
 
-    /** @type {?print_preview.Size} */
+    /** @type {?Size} */
     clipSize: {
       type: Object,
       notify: true,
@@ -92,7 +104,7 @@ Polymer({
 
   /** @return {!HTMLInputElement} The input element for InputBehavior. */
   getInput: function() {
-    return this.$.input;
+    return /** @type {!HTMLInputElement} */ (this.$.input);
   },
 
   /**
@@ -138,7 +150,7 @@ Polymer({
    */
   convertPixelsToPts: function(pixels) {
     let pts;
-    const Orientation = print_preview.CustomMarginsOrientation;
+    const Orientation = CustomMarginsOrientation;
     if (this.side == Orientation.TOP) {
       pts = pixels - this.translateTransform.y + RADIUS_PX;
       pts /= this.scaleTransform;
@@ -253,7 +265,7 @@ Polymer({
       return;
     }
 
-    const Orientation = print_preview.CustomMarginsOrientation;
+    const Orientation = CustomMarginsOrientation;
     let x = this.translateTransform.x;
     let y = this.translateTransform.y;
     let width = null;
@@ -302,4 +314,3 @@ Polymer({
     });
   },
 });
-})();

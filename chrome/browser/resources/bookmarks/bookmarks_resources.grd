@@ -34,6 +34,12 @@
       <structure name="IDR_BOOKMARKS_BOOKMARKS_HTML"
                  file="bookmarks.html"
                  type="chrome_html" />
+      <structure name="IDR_BOOKMARKS_BROWSER_PROXY_HTML"
+                 file="browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_BOOKMARKS_BROWSER_PROXY_JS"
+                 file="browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_BOOKMARKS_COMMAND_MANAGER_HTML"
                  file="command_manager.html"
                  type="chrome_html" />

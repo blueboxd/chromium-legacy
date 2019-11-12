@@ -150,6 +150,29 @@ TEST_F(ContextHostResolverTest, DestroyRequest) {
   EXPECT_EQ(0u, resolver->GetNumActiveRequestsForTesting());
 }
 
+TEST_F(ContextHostResolverTest, DohProbeRequest) {
+  // Set empty MockDnsClient rules to ensure DnsClient is mocked out.
+  MockDnsClientRuleList rules;
+  SetMockDnsRules(std::move(rules));
+
+  URLRequestContext context;
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), HostCache::CreateDefaultCache());
+  resolver->SetRequestContext(&context);
+
+  std::unique_ptr<HostResolver::ProbeRequest> request =
+      resolver->CreateDohProbeRequest();
+
+  ASSERT_FALSE(dns_client_->factory()->doh_probes_running());
+
+  EXPECT_THAT(request->Start(), test::IsError(ERR_IO_PENDING));
+  EXPECT_TRUE(dns_client_->factory()->doh_probes_running());
+
+  request.reset();
+
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+}
+
 // Test that cancelling a resolver cancels its (and only its) requests.
 TEST_F(ContextHostResolverTest, DestroyResolver) {
   // Set up delayed results for "example.com" and "google.com".
@@ -283,6 +306,27 @@ TEST_F(ContextHostResolverTest, DestroyResolver_CompletedRequests) {
               testing::ElementsAre(kEndpoint));
 }
 
+TEST_F(ContextHostResolverTest, DestroyResolver_DohProbeRequest) {
+  // Set empty MockDnsClient rules to ensure DnsClient is mocked out.
+  MockDnsClientRuleList rules;
+  SetMockDnsRules(std::move(rules));
+
+  URLRequestContext context;
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
+  resolver->SetRequestContext(&context);
+
+  std::unique_ptr<HostResolver::ProbeRequest> request =
+      resolver->CreateDohProbeRequest();
+
+  request->Start();
+  ASSERT_TRUE(dns_client_->factory()->doh_probes_running());
+
+  resolver.reset();
+
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+}
+
 // Test a request created before resolver destruction but not yet started.
 TEST_F(ContextHostResolverTest, DestroyResolver_DelayedStartRequest) {
   // Set up delayed result for "example.com".
@@ -309,6 +353,25 @@ TEST_F(ContextHostResolverTest, DestroyResolver_DelayedStartRequest) {
 
   EXPECT_THAT(callback.GetResult(rv), test::IsError(ERR_FAILED));
   EXPECT_FALSE(request->GetAddressResults());
+}
+
+TEST_F(ContextHostResolverTest, DestroyResolver_DelayedStartDohProbeRequest) {
+  // Set empty MockDnsClient rules to ensure DnsClient is mocked out.
+  MockDnsClientRuleList rules;
+  SetMockDnsRules(std::move(rules));
+
+  URLRequestContext context;
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
+  resolver->SetRequestContext(&context);
+
+  std::unique_ptr<HostResolver::ProbeRequest> request =
+      resolver->CreateDohProbeRequest();
+
+  resolver = nullptr;
+
+  EXPECT_THAT(request->Start(), test::IsError(ERR_FAILED));
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
 }
 
 TEST_F(ContextHostResolverTest, OnShutdown_PendingRequest) {
@@ -343,6 +406,27 @@ TEST_F(ContextHostResolverTest, OnShutdown_PendingRequest) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(rv, test::IsError(ERR_IO_PENDING));
   EXPECT_FALSE(callback.have_result());
+}
+
+TEST_F(ContextHostResolverTest, OnShutdown_DohProbeRequest) {
+  // Set empty MockDnsClient rules to ensure DnsClient is mocked out.
+  MockDnsClientRuleList rules;
+  SetMockDnsRules(std::move(rules));
+
+  URLRequestContext context;
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
+  resolver->SetRequestContext(&context);
+
+  std::unique_ptr<HostResolver::ProbeRequest> request =
+      resolver->CreateDohProbeRequest();
+
+  request->Start();
+  ASSERT_TRUE(dns_client_->factory()->doh_probes_running());
+
+  resolver->OnShutdown();
+
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
 }
 
 TEST_F(ContextHostResolverTest, OnShutdown_CompletedRequests) {
@@ -403,6 +487,24 @@ TEST_F(ContextHostResolverTest, OnShutdown_SubsequentRequests) {
   EXPECT_FALSE(request2->GetAddressResults());
 }
 
+TEST_F(ContextHostResolverTest, OnShutdown_SubsequentDohProbeRequest) {
+  // Set empty MockDnsClient rules to ensure DnsClient is mocked out.
+  MockDnsClientRuleList rules;
+  SetMockDnsRules(std::move(rules));
+
+  URLRequestContext context;
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
+  resolver->SetRequestContext(&context);
+  resolver->OnShutdown();
+
+  std::unique_ptr<HostResolver::ProbeRequest> request =
+      resolver->CreateDohProbeRequest();
+
+  EXPECT_THAT(request->Start(), test::IsError(ERR_CONTEXT_SHUT_DOWN));
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+}
+
 // Test a request created before shutdown but not yet started.
 TEST_F(ContextHostResolverTest, OnShutdown_DelayedStartRequest) {
   // Set up delayed result for "example.com".
@@ -431,6 +533,25 @@ TEST_F(ContextHostResolverTest, OnShutdown_DelayedStartRequest) {
 
   EXPECT_THAT(callback.GetResult(rv), test::IsError(ERR_CONTEXT_SHUT_DOWN));
   EXPECT_FALSE(request->GetAddressResults());
+}
+
+TEST_F(ContextHostResolverTest, OnShutdown_DelayedStartDohProbeRequest) {
+  // Set empty MockDnsClient rules to ensure DnsClient is mocked out.
+  MockDnsClientRuleList rules;
+  SetMockDnsRules(std::move(rules));
+
+  URLRequestContext context;
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), nullptr /* host_cache */);
+  resolver->SetRequestContext(&context);
+
+  std::unique_ptr<HostResolver::ProbeRequest> request =
+      resolver->CreateDohProbeRequest();
+
+  resolver->OnShutdown();
+
+  EXPECT_THAT(request->Start(), test::IsError(ERR_CONTEXT_SHUT_DOWN));
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
 }
 
 TEST_F(ContextHostResolverTest, ResolveFromCache) {

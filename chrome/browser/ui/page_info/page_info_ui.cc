@@ -184,6 +184,7 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
      IDS_PAGE_INFO_TYPE_NATIVE_FILE_SYSTEM_WRITE},
     {ContentSettingsType::BLUETOOTH_SCANNING,
      IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING},
+    {ContentSettingsType::NFC, IDS_PAGE_INFO_TYPE_NFC},
   };
   return kPermissionsUIInfo;
 }

@@ -1056,10 +1056,6 @@ ScrollbarTheme& VisualViewport::GetPageScrollbarTheme() const {
   return GetPage().GetScrollbarTheme();
 }
 
-void VisualViewport::DidChangeScrollbarsHiddenIfOverlay(bool hidden) {
-  ScrollableArea::SetScrollbarsHiddenIfOverlay(hidden);
-}
-
 PaintArtifactCompositor* VisualViewport::GetPaintArtifactCompositor() const {
   if (MainFrame() && MainFrame()->View())
     return MainFrame()->View()->GetPaintArtifactCompositor();

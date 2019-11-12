@@ -2406,11 +2406,6 @@ bool CompositedLayerMapping::IsTrackingRasterInvalidations() const {
   return GetLayoutObject().GetFrameView()->IsTrackingPaintInvalidations();
 }
 
-void CompositedLayerMapping::SetOverlayScrollbarsHidden(bool hidden) {
-  if (ScrollableArea* scrollable_area = owning_layer_.GetScrollableArea())
-    scrollable_area->SetScrollbarsHiddenIfOverlay(hidden);
-}
-
 void CompositedLayerMapping::GraphicsLayersDidChange() {
   LocalFrameView* frame_view = GetLayoutObject().GetFrameView();
   DCHECK(frame_view);

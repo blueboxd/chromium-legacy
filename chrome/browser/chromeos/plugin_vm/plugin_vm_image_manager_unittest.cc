@@ -62,12 +62,14 @@ class MockObserver : public PluginVmImageManager::Observer {
                     base::TimeDelta elapsed_time));
   MOCK_METHOD0(OnDownloadCompleted, void());
   MOCK_METHOD0(OnDownloadCancelled, void());
-  MOCK_METHOD0(OnDownloadFailed, void());
+  MOCK_METHOD1(OnDownloadFailed,
+               void(plugin_vm::PluginVmImageManager::FailureReason));
   MOCK_METHOD2(OnImportProgressUpdated,
                void(int percent_completed, base::TimeDelta elapsed_time));
   MOCK_METHOD0(OnImported, void());
   MOCK_METHOD0(OnImportCancelled, void());
-  MOCK_METHOD0(OnImportFailed, void());
+  MOCK_METHOD1(OnImportFailed,
+               void(plugin_vm::PluginVmImageManager::FailureReason));
 };
 
 class PluginVmImageManagerTest : public testing::Test {
@@ -252,7 +254,10 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
 TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
   SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
 
-  EXPECT_CALL(*observer_, OnDownloadFailed());
+  EXPECT_CALL(
+      *observer_,
+      OnDownloadFailed(
+          PluginVmImageManager::FailureReason::DOWNLOAD_FAILED_ABORTED));
   EXPECT_CALL(*observer_, OnDownloadCompleted());
   EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
@@ -287,7 +292,9 @@ TEST_F(PluginVmImageManagerTest, ImportNonExistingImageTest) {
   SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
 
   EXPECT_CALL(*observer_, OnDownloadCompleted());
-  EXPECT_CALL(*observer_, OnImportFailed());
+  EXPECT_CALL(*observer_,
+              OnImportFailed(
+                  PluginVmImageManager::FailureReason::COULD_NOT_OPEN_IMAGE));
 
   ProcessImageUntilImporting();
   // Should fail as fake downloaded file isn't set.
@@ -318,7 +325,9 @@ TEST_F(PluginVmImageManagerTest, CancelledImportTest) {
 
 TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {
   SetPluginVmImagePref("", kHash);
-  EXPECT_CALL(*observer_, OnDownloadFailed());
+  EXPECT_CALL(
+      *observer_,
+      OnDownloadFailed(PluginVmImageManager::FailureReason::INVALID_IMAGE_URL));
   ProcessImageUntilImporting();
 
   histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSizeHistogram, 0);
@@ -334,7 +343,9 @@ TEST_F(PluginVmImageManagerTest, VerifyDownloadTest) {
 TEST_F(PluginVmImageManagerTest, CannotStartDownloadIfPluginVmGetsDisabled) {
   profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
       chromeos::kPluginVmAllowed, false);
-  EXPECT_CALL(*observer_, OnDownloadFailed());
+  EXPECT_CALL(
+      *observer_,
+      OnDownloadFailed(PluginVmImageManager::FailureReason::NOT_ALLOWED));
   ProcessImageUntilImporting();
 }
 

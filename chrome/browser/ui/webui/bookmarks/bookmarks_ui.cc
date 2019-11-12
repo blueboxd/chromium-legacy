@@ -129,6 +129,9 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("api_listener.js", IDR_BOOKMARKS_API_LISTENER_JS);
   source->AddResourcePath("app.html", IDR_BOOKMARKS_APP_HTML);
   source->AddResourcePath("app.js", IDR_BOOKMARKS_APP_JS);
+  source->AddResourcePath("browser_proxy.html",
+                          IDR_BOOKMARKS_BROWSER_PROXY_HTML);
+  source->AddResourcePath("browser_proxy.js", IDR_BOOKMARKS_BROWSER_PROXY_JS);
   source->AddResourcePath("command_manager.html",
                           IDR_BOOKMARKS_COMMAND_MANAGER_HTML);
   source->AddResourcePath("command_manager.js",

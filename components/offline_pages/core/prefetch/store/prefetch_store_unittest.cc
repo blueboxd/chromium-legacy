@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -22,32 +23,23 @@ using InitializationStatus = SqlStoreBase::InitializationStatus;
 
 class PrefetchStoreTest : public testing::Test {
  public:
-  PrefetchStoreTest();
-  ~PrefetchStoreTest() override = default;
+  PrefetchStoreTest() { store_test_util_.BuildStoreInMemory(); }
 
-  void SetUp() override { store_test_util_.BuildStoreInMemory(); }
-
-  void TearDown() override {
-    store_test_util_.DeleteStore();
-  }
+  ~PrefetchStoreTest() override { store_test_util_.DeleteStore(); }
 
   PrefetchStore* store() { return store_test_util_.store(); }
 
   PrefetchStoreTestUtil* store_util() { return &store_test_util_; }
   MockPrefetchItemGenerator* item_generator() { return &item_generator_; }
-  base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
+
+ protected:
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
   PrefetchStoreTestUtil store_test_util_;
   MockPrefetchItemGenerator item_generator_;
 };
-
-PrefetchStoreTest::PrefetchStoreTest()
-    : task_runner_(new base::TestMockTimeTaskRunner),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_) {}
 
 TEST_F(PrefetchStoreTest, InitializeStore) {
   EXPECT_EQ(0, store_util()->CountPrefetchItems());
@@ -93,7 +85,7 @@ TEST_F(PrefetchStoreTest, CloseStore) {
   EXPECT_EQ(InitializationStatus::kSuccess,
             store()->initialization_status_for_testing());
 
-  task_runner()->FastForwardBy(PrefetchStore::kClosingDelay);
+  task_environment_.FastForwardBy(PrefetchStore::kClosingDelay);
   EXPECT_EQ(InitializationStatus::kNotInitialized,
             store()->initialization_status_for_testing());
 
@@ -113,7 +105,7 @@ TEST_F(PrefetchStoreTest, CloseStorePostponed) {
   EXPECT_EQ(InitializationStatus::kSuccess,
             store()->initialization_status_for_testing());
 
-  task_runner()->FastForwardBy(PrefetchStore::kClosingDelay / 2);
+  task_environment_.FastForwardBy(PrefetchStore::kClosingDelay / 2);
   EXPECT_EQ(InitializationStatus::kSuccess,
             store()->initialization_status_for_testing());
 
@@ -127,15 +119,15 @@ TEST_F(PrefetchStoreTest, CloseStorePostponed) {
   // This adds up to more than kClosingDelay after the first call, which means
   // the closing would trigger, it does not however, since second call caused it
   // to be postponed.
-  task_runner()->FastForwardBy(2 * PrefetchStore::kClosingDelay / 3);
+  task_environment_.FastForwardBy(2 * PrefetchStore::kClosingDelay / 3);
   // Store should still be initialized.
   EXPECT_EQ(InitializationStatus::kSuccess,
             store()->initialization_status_for_testing());
   // There is still a pending task to close the store.
-  EXPECT_TRUE(task_runner()->HasPendingTask());
+  EXPECT_NE(0u, task_environment_.GetPendingMainThreadTaskCount());
 
   // After this step the store should be closed.
-  task_runner()->FastForwardBy(PrefetchStore::kClosingDelay);
+  task_environment_.FastForwardBy(PrefetchStore::kClosingDelay);
   EXPECT_EQ(InitializationStatus::kNotInitialized,
             store()->initialization_status_for_testing());
 }

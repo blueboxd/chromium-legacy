@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <algorithm>
+#include <array>
 #include <limits>
 #include <string>
 #include <utility>
@@ -23,6 +24,7 @@
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/base/limits.h"
 #include "media/webrtc/helpers.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -31,7 +33,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config_json.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
@@ -428,21 +429,16 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
             std::numeric_limits<base::subtle::Atomic32>::max());
   base::subtle::Release_Store(&render_delay_ms_, audio_delay_milliseconds);
 
-  // Limit the number of channels to two (stereo) now when multi-channel audio
-  // sources are supported. We still want to prevent the AEC from "seeing" the
-  // full signal.
-  // TODO(crbug.com/982276): process all channels when multi-channel AEC is
-  // supported.
-  int channels = std::min(2, audio_bus->channels());
-
-  Vector<const float*> channel_ptrs(channels);
-  for (int i = 0; i < channels; ++i)
-    channel_ptrs[i] = audio_bus->channel(i);
+  DCHECK_LE(audio_bus->channels(), media::limits::kMaxChannels);
+  std::array<const float*, media::limits::kMaxChannels> input_ptrs;
+  for (int i = 0; i < audio_bus->channels(); ++i)
+    input_ptrs[i] = audio_bus->channel(i);
 
   // TODO(ajm): Should AnalyzeReverseStream() account for the
   // |audio_delay_milliseconds|?
   const int apm_error = audio_processing_->AnalyzeReverseStream(
-      channel_ptrs.data(), webrtc::StreamConfig(sample_rate, channels));
+      input_ptrs.data(),
+      webrtc::StreamConfig(sample_rate, audio_bus->channels()));
   if (apm_error != webrtc::AudioProcessing::kNoError &&
       apm_playout_error_code_log_count_ < 10) {
     LOG(ERROR) << "MSAP::OnPlayoutData: AnalyzeReverseStream error="

@@ -32,8 +32,6 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
     /** The conversion multiple from dp to px. */
     private final float mDpToPx;
 
-    private final int mFaviconSizePx;
-
     /** Interface to get notified that favicon is available. */
     interface FaviconCallback {
         /**
@@ -50,7 +48,6 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
      */
     public EphemeralTabSceneLayer(float dpToPx, int faviconSizeDp) {
         mDpToPx = dpToPx;
-        mFaviconSizePx = (int) (faviconSizeDp * dpToPx);
     }
 
     /**
@@ -80,10 +77,9 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
             // The panel shadow goes all the way around in the old layout, but in the new layout
             // the top_round resource also includes the shadow so we only need a side shadow.
             // In either case there's just one shadow-only resource needed.
-            int panelShadowResourceId = panel.getPanelShadowVisible()
-                    ? (OverlayPanel.isNewLayout() ? R.drawable.overlay_side_shadow
-                                                  : R.drawable.contextual_search_bar_background)
-                    : INVALID_RESOURCE_ID;
+            int panelShadowResourceId = OverlayPanel.isNewLayout()
+                    ? R.drawable.overlay_side_shadow
+                    : R.drawable.contextual_search_bar_background;
             EphemeralTabSceneLayerJni.get().setResourceIds(mNativePtr, EphemeralTabSceneLayer.this,
                     title.getViewId(), panelShadowResourceId, roundedBarTopId,
                     R.drawable.modern_toolbar_shadow, R.drawable.infobar_chrome, dragHandlebarId,
@@ -121,9 +117,9 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
                 panel.getBarBackgroundColor(), panel.getBarMarginSide() * mDpToPx,
                 panel.getBarMarginTop() * mDpToPx, panel.getBarHeight() * mDpToPx,
                 panel.isBarBorderVisible(), panel.getBarBorderHeight() * mDpToPx,
-                panel.getBarShadowVisible(), panel.getIconColor(), panel.getDragHandlebarColor(),
-                panel.getFaviconOpacity(), isProgressBarVisible, progressBarHeight * mDpToPx,
-                progressBarOpacity, progressBarCompletion, separatorLineColor);
+                panel.getIconColor(), panel.getDragHandlebarColor(), panel.getFaviconOpacity(),
+                isProgressBarVisible, progressBarHeight * mDpToPx, progressBarOpacity,
+                progressBarCompletion, separatorLineColor);
     }
 
     @Override
@@ -179,9 +175,9 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
                 float basePageBrightness, float basePageYOffset, WebContents webContents,
                 float panelX, float panelY, float panelWidth, float panelHeight,
                 int barBackgroundColor, float barMarginSide, float barMarginTop, float barHeight,
-                boolean barBorderVisible, float barBorderHeight, boolean barShadowVisible,
-                int iconColor, int dragHandlebarColor, float faviconOpacity,
-                boolean isProgressBarVisible, float progressBarHeight, float progressBarOpacity,
-                float progressBarCompletion, int separatorLineColor);
+                boolean barBorderVisible, float barBorderHeight, int iconColor,
+                int dragHandlebarColor, float faviconOpacity, boolean isProgressBarVisible,
+                float progressBarHeight, float progressBarOpacity, float progressBarCompletion,
+                int separatorLineColor);
     }
 }

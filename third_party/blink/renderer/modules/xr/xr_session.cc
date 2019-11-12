@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
+#include "third_party/blink/renderer/modules/xr/type_converters.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_anchor_set.h"
 #include "third_party/blink/renderer/modules/xr/xr_bounded_reference_space.h"
@@ -129,6 +130,16 @@ base::Optional<device::mojom::XRSessionFeature> MapReferenceSpaceTypeToFeature(
 
   NOTREACHED();
   return base::nullopt;
+}
+
+std::unique_ptr<TransformationMatrix> getPoseMatrix(
+    const device::mojom::blink::VRPosePtr& pose) {
+  if (!pose)
+    return nullptr;
+
+  return std::make_unique<TransformationMatrix>(
+      mojo::TypeConverter<TransformationMatrix,
+                          device::mojom::blink::VRPosePtr>::Convert(pose));
 }
 
 }  // namespace
@@ -505,19 +516,17 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  device::mojom::blink::VRPosePtr pose_ptr =
-      device::mojom::blink::VRPose::New();
-
-  pose_ptr->orientation =
+  // TODO(https://crbug.com/929841): Remove negation in quaternion once the bug
+  // is fixed.
+  device::mojom::blink::PosePtr pose_ptr = device::mojom::blink::Pose::New(
       gfx::Quaternion(-decomposed.quaternion_x, -decomposed.quaternion_y,
-                      -decomposed.quaternion_z, decomposed.quaternion_w);
-  pose_ptr->position = blink::FloatPoint3D(
-      decomposed.translate_x, decomposed.translate_y, decomposed.translate_z);
+                      -decomposed.quaternion_z, decomposed.quaternion_w),
+      blink::FloatPoint3D(decomposed.translate_x, decomposed.translate_y,
+                          decomposed.translate_z));
 
   DVLOG(3) << __func__
-           << ": pose_ptr->orientation = " << pose_ptr->orientation->ToString()
-           << ", pose_ptr->position = [" << pose_ptr->position->X() << ", "
-           << pose_ptr->position->Y() << ", " << pose_ptr->position->Z() << "]";
+           << ": pose_ptr->orientation = " << pose_ptr->orientation.ToString()
+           << ", pose_ptr->position = " << pose_ptr->position.ToString();
 
   if (plane) {
     xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
@@ -1193,8 +1202,9 @@ void XRSession::ApplyPendingRenderState() {
 
 void XRSession::UpdatePresentationFrameState(
     double timestamp,
-    std::unique_ptr<TransformationMatrix> mojo_from_viewer,
+    const device::mojom::blink::VRPosePtr& frame_pose,
     const device::mojom::blink::XRFrameDataPtr& frame_data,
+    int16_t frame_id,
     bool emulated_position) {
   TRACE_EVENT0("gpu", __func__);
   DVLOG(2) << __func__ << " : frame_data valid? "
@@ -1203,12 +1213,33 @@ void XRSession::UpdatePresentationFrameState(
   if (ended_)
     return;
 
-  mojo_from_viewer_ = std::move(mojo_from_viewer);
+  mojo_from_viewer_ = getPoseMatrix(frame_pose);
   DVLOG(2) << __func__ << " : mojo_from_viewer_ valid? "
            << (mojo_from_viewer_ ? true : false);
 
   emulated_position_ = emulated_position;
 
+  UpdateWorldUnderstandingStateForFrame(timestamp, frame_data);
+
+  // Process XR input sources
+  if (frame_pose) {
+    base::span<const device::mojom::blink::XRInputSourceStatePtr> input_states;
+    if (frame_pose->input_state.has_value())
+      input_states = frame_pose->input_state.value();
+
+    OnInputStateChangeInternal(frame_id, input_states);
+
+    // If this session uses input eventing, XR select events are handled via
+    // OnButtonEvent, so they need to be ignored here to avoid duplicate events.
+    if (!uses_input_eventing_) {
+      ProcessInputSourceEvents(input_states);
+    }
+  }
+}
+
+void XRSession::UpdateWorldUnderstandingStateForFrame(
+    double timestamp,
+    const device::mojom::blink::XRFrameDataPtr& frame_data) {
   // Update objects that might change on per-frame basis.
   if (frame_data) {
     world_information_->ProcessPlaneInformation(
@@ -1373,21 +1404,15 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
 void XRSession::OnButtonEvent(
     device::mojom::blink::XRInputSourceStatePtr input_state) {
   DCHECK(uses_input_eventing_);
-  OnInputStateChangeInternal(last_frame_id_, base::make_span(&input_state, 1),
-                             true /* from_eventing */);
-}
-
-void XRSession::OnInputStateChange(
-    int16_t frame_id,
-    base::span<const device::mojom::blink::XRInputSourceStatePtr>
-        input_states) {
-  OnInputStateChangeInternal(frame_id, input_states, false /* from_eventing */);
+  auto input_states = base::make_span(&input_state, 1);
+  OnInputStateChangeInternal(last_frame_id_, input_states);
+  ProcessInputSourceEvents(input_states);
 }
 
 void XRSession::OnInputStateChangeInternal(
     int16_t frame_id,
-    base::span<const device::mojom::blink::XRInputSourceStatePtr> input_states,
-    bool from_eventing) {
+    base::span<const device::mojom::blink::XRInputSourceStatePtr>
+        input_states) {
   // If we're in any state other than visible, input should not be processed
   if (visibility_state_ != XRVisibilityState::VISIBLE) {
     return;
@@ -1446,20 +1471,16 @@ void XRSession::OnInputStateChangeInternal(
     DispatchEvent(*XRInputSourcesChangeEvent::Create(
         event_type_names::kInputsourceschange, this, added, removed));
   }
+}
 
-  // Now that we've fired the input sources change event (if needed), update
-  // and fire events for any select state changes.
+void XRSession::ProcessInputSourceEvents(
+    base::span<const device::mojom::blink::XRInputSourceStatePtr>
+        input_states) {
   for (const auto& input_state : input_states) {
     // If anything during the process of updating the select state caused us
     // to end our session, we should stop processing select state updates.
     if (ended_)
       break;
-
-    // If this data is not from eventing and we support it, ignore it's click
-    // states.
-    // If this data is from eventing, but we don't support it, then ignore it
-    if (from_eventing != uses_input_eventing_)
-      continue;
 
     XRInputSource* input_source =
         input_sources_->GetWithSourceId(input_state->source_id);

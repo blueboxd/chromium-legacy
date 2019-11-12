@@ -28,7 +28,7 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
   // and indices to drop any data they might have stored pertaining to the URL.
   DCHECK(history_service);
   DCHECK(match.destination_url.is_valid());
-  history_service->DeleteURL(match.destination_url);
+  history_service->DeleteURLs({match.destination_url});
 
   DeleteMatchFromMatches(match);
 }

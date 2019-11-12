@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {CloudOrigins, Destination, DestinationOrigin} from './destination.js';
+
   /**
    * Printer types for capabilities and printer list requests.
    * Must match PrinterType in printing/print_job_constants.h
    * @enum {number}
    */
-  const PrinterType = {
+  export const PrinterType = {
     PRIVET_PRINTER: 0,
     EXTENSION_PRINTER: 1,
     PDF_PRINTER: 2,
@@ -19,43 +20,42 @@ cr.define('print_preview', function() {
 
   /**
    * Converts DestinationOrigin to PrinterType.
-   * @param {!print_preview.DestinationOrigin} origin The printer's
-   *     destination origin.
-   * return {!print_preview.PrinterType} The corresponding PrinterType.
+   * @param {!DestinationOrigin} origin The printer's destination origin.
+   * return {!PrinterType} The corresponding PrinterType.
    */
-  const originToType = function(origin) {
-    if (origin === print_preview.DestinationOrigin.LOCAL ||
-        origin === print_preview.DestinationOrigin.CROS) {
-      return print_preview.PrinterType.LOCAL_PRINTER;
+  export const originToType = function(origin) {
+    if (origin === DestinationOrigin.LOCAL ||
+        origin === DestinationOrigin.CROS) {
+      return PrinterType.LOCAL_PRINTER;
     }
-    if (origin === print_preview.DestinationOrigin.PRIVET) {
-      return print_preview.PrinterType.PRIVET_PRINTER;
+    if (origin === DestinationOrigin.PRIVET) {
+      return PrinterType.PRIVET_PRINTER;
     }
-    if (origin === print_preview.DestinationOrigin.EXTENSION) {
-      return print_preview.PrinterType.EXTENSION_PRINTER;
+    if (origin === DestinationOrigin.EXTENSION) {
+      return PrinterType.EXTENSION_PRINTER;
     }
-    assert(print_preview.CloudOrigins.includes(origin));
-    return print_preview.PrinterType.CLOUD_PRINTER;
+    assert(CloudOrigins.includes(origin));
+    return PrinterType.CLOUD_PRINTER;
   };
 
   /**
-   * @param {!print_preview.Destination} destination The destination to figure
+   * @param {!Destination} destination The destination to figure
    *     out the printer type of.
-   * @return {!print_preview.PrinterType} Map the destination to a PrinterType.
+   * @return {!PrinterType} Map the destination to a PrinterType.
    */
-  function getPrinterTypeForDestination(destination) {
+  export function getPrinterTypeForDestination(destination) {
     if (destination.id ==
-        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
-      return print_preview.PrinterType.PDF_PRINTER;
+        Destination.GooglePromotedId.SAVE_AS_PDF) {
+      return PrinterType.PDF_PRINTER;
     }
-    return print_preview.originToType(destination.origin);
+    return originToType(destination.origin);
   }
 
-  class DestinationMatch {
+  export class DestinationMatch {
     /**
      * A set of key parameters describing a destination used to determine
      * if two destinations are the same.
-     * @param {!Array<!print_preview.DestinationOrigin>} origins Match
+     * @param {!Array<!DestinationOrigin>} origins Match
      *     destinations from these origins.
      * @param {RegExp} idRegExp Match destination's id.
      * @param {RegExp} displayNameRegExp Match destination's displayName.
@@ -63,7 +63,7 @@ cr.define('print_preview', function() {
      *     destinations, for example, Save as PDF.
      */
     constructor(origins, idRegExp, displayNameRegExp, skipVirtualDestinations) {
-      /** @private {!Array<!print_preview.DestinationOrigin>} */
+      /** @private {!Array<!DestinationOrigin>} */
       this.origins_ = origins;
 
       /** @private {RegExp} */
@@ -77,7 +77,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.DestinationOrigin} origin Origin to match.
+     * @param {!DestinationOrigin} origin Origin to match.
      * @return {boolean} Whether the origin is one of the {@code origins_}.
      */
     matchOrigin(origin) {
@@ -86,7 +86,7 @@ cr.define('print_preview', function() {
 
     /**
      * @param {string} id Id of the destination.
-     * @param {!print_preview.DestinationOrigin} origin Origin of the
+     * @param {!DestinationOrigin} origin Origin of the
      *     destination.
      * @return {boolean} Whether destination is the same as initial.
      */
@@ -96,7 +96,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.Destination} destination Destination to match.
+     * @param {!Destination} destination Destination to match.
      * @return {boolean} Whether {@code destination} matches the last user
      *     selected one.
      */
@@ -119,21 +119,21 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.Destination} destination Destination to check.
+     * @param {!Destination} destination Destination to check.
      * @return {boolean} Whether {@code destination} is virtual, in terms of
      *     destination selection.
      * @private
      */
     isVirtualDestination_(destination) {
-      if (destination.origin === print_preview.DestinationOrigin.LOCAL) {
+      if (destination.origin === DestinationOrigin.LOCAL) {
         return destination.id ===
-            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
+            Destination.GooglePromotedId.SAVE_AS_PDF;
       }
-      return destination.id === print_preview.Destination.GooglePromotedId.DOCS;
+      return destination.id === Destination.GooglePromotedId.DOCS;
     }
 
     /**
-     * @return {!Set<!print_preview.PrinterType>} The printer types that
+     * @return {!Set<!PrinterType>} The printer types that
      *     correspond to this destination match.
      */
     getTypes() {
@@ -141,11 +141,3 @@ cr.define('print_preview', function() {
     }
   }
 
-  // Export
-  return {
-    DestinationMatch: DestinationMatch,
-    PrinterType: PrinterType,
-    getPrinterTypeForDestination: getPrinterTypeForDestination,
-    originToType: originToType,
-  };
-});

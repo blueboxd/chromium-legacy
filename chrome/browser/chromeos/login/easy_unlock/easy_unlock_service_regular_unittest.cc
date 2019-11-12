@@ -416,14 +416,6 @@ TEST_F(EasyUnlockServiceRegularTest,
   VerifyGetRemoteDevices(true /* are_local_and_remote_devices_expected */);
 }
 
-TEST_F(EasyUnlockServiceRegularTest, GetRemoteDevices_SmartLockHostRemoved) {
-  InitializeService(true /* should_initialize_all_dependencies */);
-  VerifyGetRemoteDevices(true /* are_local_and_remote_devices_expected */);
-
-  SetSyncedDevices(multidevice::RemoteDeviceRefList() /* synced_devices */);
-  VerifyGetRemoteDevices(false /* are_local_and_remote_devices_expected */);
-}
-
 TEST_F(EasyUnlockServiceRegularTest, GetRemoteDevices_SmartLockHostChanged) {
   InitializeService(true /* should_initialize_all_dependencies */);
   SetScreenLockState(true /* is_locked */);

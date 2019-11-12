@@ -20,9 +20,19 @@ enum PaintPreviewStatus {
   // Capturing the SkPicture for the frame failed or the file provided was bad.
   kCaptureFailed,
 
-  // Serializing the proto to shared memory failed. Either the data was invalid,
-  // or the memory could not be allocated.
-  kProtoSerializationFailed,
+  // The GUID provided for the document collides with another in progress
+  // capture.
+  kGuidCollision,
+
+  // Failed to create the file for serialization of the SkPicture.
+  kFileCreationError,
+
+  // Indicates that the capture was at least partially complete but there was an
+  // error.
+  kPartialSuccess,
+
+  // Indicates that the capture failed entirely.
+  kFailed,
 };
 
 struct PaintPreviewCaptureParams {

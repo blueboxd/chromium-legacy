@@ -264,7 +264,9 @@ base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
 
   // In production code this is called from NavigationRequest in the browser
   // process right before navigation commit.
-  host->OnBeginNavigationCommit(process_id, 1 /* route_id */);
+  host->OnBeginNavigationCommit(
+      process_id, 1 /* route_id */,
+      network::mojom::CrossOriginEmbedderPolicy::kNone);
   return host;
 }
 

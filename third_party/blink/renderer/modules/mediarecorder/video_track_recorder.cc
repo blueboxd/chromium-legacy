@@ -235,7 +235,8 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
         video_frame->format() == media::PIXEL_FORMAT_ARGB ||
         video_frame->format() == media::PIXEL_FORMAT_I420A ||
-        video_frame->format() == media::PIXEL_FORMAT_NV12)) {
+        video_frame->format() == media::PIXEL_FORMAT_NV12 ||
+        video_frame->format() == media::PIXEL_FORMAT_XRGB)) {
     NOTREACHED() << media::VideoPixelFormatToString(video_frame->format());
     return;
   }
@@ -299,8 +300,13 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
   } else {
     // Accelerated decoders produce ARGB/ABGR texture-backed frames (see
     // https://crbug.com/585242), fetch them using a PaintCanvasVideoRenderer.
+    // Additionally, Macintosh accelerated decoders can produce XRGB content
+    // and are treated the same way.
+    //
+    // TODO(crbug/1023390): Add browsertest for these.
     DCHECK(video_frame->HasTextures());
-    DCHECK_EQ(media::PIXEL_FORMAT_ARGB, video_frame->format());
+    DCHECK(video_frame->format() == media::PIXEL_FORMAT_ARGB ||
+           video_frame->format() == media::PIXEL_FORMAT_XRGB);
 
     const gfx::Size& old_visible_size = video_frame->visible_rect().size();
     gfx::Size new_visible_size = old_visible_size;

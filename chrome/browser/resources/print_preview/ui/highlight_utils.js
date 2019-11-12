@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-
-cr.define('print_preview', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {highlight, highlightControlWithBubble} from 'chrome://resources/js/search_highlight_utils.m.js';
 
   /**
    * @typedef {{
@@ -13,16 +11,16 @@ cr.define('print_preview', function() {
    *   bubbles: !Array<!Node>
    * }}
    */
-  let HighlightResults;
+  export let HighlightResults;
 
   /**
    * @param {!HTMLElement} element The element to update. Element should have a
    *     shadow root.
    * @param {?RegExp} query The current search query
-   * @return {!print_preview.HighlightResults} The highlight wrappers and
+   * @return {!HighlightResults} The highlight wrappers and
    *     search bubbles that were created.
    */
-  function updateHighlights(element, query) {
+  export function updateHighlights(element, query) {
     const result = {highlights: [], bubbles: []};
     if (!query) {
       return result;
@@ -43,7 +41,7 @@ cr.define('print_preview', function() {
           // Don't highlight <select> nodes, yellow rectangles can't be
           // displayed within an <option>.
           if (node.parentNode.nodeName != 'OPTION') {
-            result.highlights.push(cr.search_highlight_utils.highlight(
+            result.highlights.push(highlight(
                 node, textContent.split(query)));
           } else {
             const selectNode = node.parentNode.parentNode;
@@ -51,7 +49,7 @@ cr.define('print_preview', function() {
             // Note: The bubble's ::after element, a yellow arrow, will not
             // appear correctly in print preview without SPv175 enabled. See
             // https://crbug.com/817058.
-            const bubble = cr.search_highlight_utils.highlightControlWithBubble(
+            const bubble = highlightControlWithBubble(
                 /** @type {!HTMLElement} */ (assert(selectNode.parentNode)),
                 textContent.match(query)[0]);
             if (bubble) {
@@ -63,9 +61,3 @@ cr.define('print_preview', function() {
     });
     return result;
   }
-
-  return {
-    HighlightResults: HighlightResults,
-    updateHighlights: updateHighlights,
-  };
-});

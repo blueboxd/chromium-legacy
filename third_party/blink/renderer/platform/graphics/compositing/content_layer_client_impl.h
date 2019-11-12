@@ -50,7 +50,6 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
       const cc::Layer*) override;
   std::string LayerDebugName(const cc::Layer*) const override;
-  void DidChangeScrollbarsHiddenIfOverlay(bool) override {}
 
   // LayerAsJSONClient implementation
   void AppendAdditionalInfoAsJSON(LayerTreeFlags,

@@ -13,7 +13,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/core/autofill_payment_app.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/payment_details.h"
@@ -315,7 +315,7 @@ TEST_F(PaymentRequestTest, CreateAndAddAutofillPaymentInstrument) {
   EXPECT_EQ(0U, payment_request.payment_methods().size());
 
   autofill::CreditCard credit_card_1 = autofill::test::GetCreditCard();
-  AutofillPaymentInstrument* added_credit_card_1 =
+  AutofillPaymentApp* added_credit_card_1 =
       payment_request.CreateAndAddAutofillPaymentInstrument(credit_card_1);
   EXPECT_EQ(credit_card_1, *added_credit_card_1->credit_card());
 
@@ -341,7 +341,7 @@ TEST_F(PaymentRequestTest, CreateAndAddAutofillPaymentInstrumentIncognito) {
   payment_request.set_is_incognito(true);
 
   autofill::CreditCard credit_card_1 = autofill::test::GetCreditCard();
-  AutofillPaymentInstrument* added_credit_card_1 =
+  AutofillPaymentApp* added_credit_card_1 =
       payment_request.CreateAndAddAutofillPaymentInstrument(credit_card_1);
   EXPECT_EQ(credit_card_1, *added_credit_card_1->credit_card());
 
@@ -752,10 +752,9 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_ExpiredCard) {
                                      chrome_browser_state_.get(), &web_state_,
                                      &test_personal_data_manager_);
   EXPECT_EQ(payment_request.selected_payment_method()->type(),
-            PaymentInstrument::Type::AUTOFILL);
-  AutofillPaymentInstrument* payment_instrument =
-      static_cast<AutofillPaymentInstrument*>(
-          payment_request.selected_payment_method());
+            PaymentApp::Type::AUTOFILL);
+  AutofillPaymentApp* payment_instrument = static_cast<AutofillPaymentApp*>(
+      payment_request.selected_payment_method());
   EXPECT_EQ(credit_card.guid(), payment_instrument->credit_card()->guid());
 }
 
@@ -780,9 +779,8 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_Complete) {
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &test_personal_data_manager_);
-  AutofillPaymentInstrument* payment_instrument =
-      static_cast<AutofillPaymentInstrument*>(
-          payment_request.selected_payment_method());
+  AutofillPaymentApp* payment_instrument = static_cast<AutofillPaymentApp*>(
+      payment_request.selected_payment_method());
   EXPECT_EQ(credit_card2.guid(), payment_instrument->credit_card()->guid());
 }
 
@@ -806,9 +804,8 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_Incomplete) {
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &test_personal_data_manager_);
-  AutofillPaymentInstrument* payment_instrument =
-      static_cast<AutofillPaymentInstrument*>(
-          payment_request.selected_payment_method());
+  AutofillPaymentApp* payment_instrument = static_cast<AutofillPaymentApp*>(
+      payment_request.selected_payment_method());
   EXPECT_EQ(credit_card.guid(), payment_instrument->credit_card()->guid());
 }
 
@@ -837,9 +834,8 @@ TEST_F(PaymentRequestTest, RecordUseStats_RequestShippingAndContactInfo) {
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
-  AutofillPaymentInstrument* payment_instrument =
-      static_cast<AutofillPaymentInstrument*>(
-          payment_request.selected_payment_method());
+  AutofillPaymentApp* payment_instrument = static_cast<AutofillPaymentApp*>(
+      payment_request.selected_payment_method());
   EXPECT_EQ(address.guid(),
             payment_request.selected_shipping_profile()->guid());
   EXPECT_EQ(contact_info.guid(),
@@ -874,9 +870,8 @@ TEST_F(PaymentRequestTest, RecordUseStats_SameShippingAndContactInfoProfile) {
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
-  AutofillPaymentInstrument* payment_instrument =
-      static_cast<AutofillPaymentInstrument*>(
-          payment_request.selected_payment_method());
+  AutofillPaymentApp* payment_instrument = static_cast<AutofillPaymentApp*>(
+      payment_request.selected_payment_method());
   EXPECT_EQ(address.guid(),
             payment_request.selected_shipping_profile()->guid());
   EXPECT_EQ(address.guid(), payment_request.selected_contact_profile()->guid());
@@ -912,9 +907,8 @@ TEST_F(PaymentRequestTest, RecordUseStats_RequestShippingOnly) {
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
-  AutofillPaymentInstrument* payment_instrument =
-      static_cast<AutofillPaymentInstrument*>(
-          payment_request.selected_payment_method());
+  AutofillPaymentApp* payment_instrument = static_cast<AutofillPaymentApp*>(
+      payment_request.selected_payment_method());
   EXPECT_EQ(address.guid(),
             payment_request.selected_shipping_profile()->guid());
   EXPECT_EQ(nullptr, payment_request.selected_contact_profile());
@@ -946,9 +940,8 @@ TEST_F(PaymentRequestTest, RecordUseStats_RequestContactInfoOnly) {
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
-  AutofillPaymentInstrument* payment_instrument =
-      static_cast<AutofillPaymentInstrument*>(
-          payment_request.selected_payment_method());
+  AutofillPaymentApp* payment_instrument = static_cast<AutofillPaymentApp*>(
+      payment_request.selected_payment_method());
   EXPECT_EQ(nullptr, payment_request.selected_shipping_profile());
   EXPECT_EQ(address.guid(), payment_request.selected_contact_profile()->guid());
   EXPECT_EQ(credit_card.guid(), payment_instrument->credit_card()->guid());
@@ -982,9 +975,8 @@ TEST_F(PaymentRequestTest, RecordUseStats_NoShippingOrContactInfoRequested) {
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
-  AutofillPaymentInstrument* payment_instrument =
-      static_cast<AutofillPaymentInstrument*>(
-          payment_request.selected_payment_method());
+  AutofillPaymentApp* payment_instrument = static_cast<AutofillPaymentApp*>(
+      payment_request.selected_payment_method());
   EXPECT_EQ(nullptr, payment_request.selected_shipping_profile());
   EXPECT_EQ(nullptr, payment_request.selected_contact_profile());
   EXPECT_EQ(credit_card.guid(), payment_instrument->credit_card()->guid());
@@ -1026,8 +1018,8 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMismatch) {
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &test_personal_data_manager_);
-  AutofillPaymentInstrument* selected_payment_method =
-      static_cast<AutofillPaymentInstrument*>(
+  AutofillPaymentApp* selected_payment_method =
+      static_cast<AutofillPaymentApp*>(
           payment_request.selected_payment_method());
   EXPECT_EQ("Total", payment_request.GetTotal(selected_payment_method).label);
   EXPECT_EQ("1.00",
@@ -1063,8 +1055,8 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMatch) {
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &test_personal_data_manager_);
-  AutofillPaymentInstrument* selected_payment_method =
-      static_cast<AutofillPaymentInstrument*>(
+  AutofillPaymentApp* selected_payment_method =
+      static_cast<AutofillPaymentApp*>(
           payment_request.selected_payment_method());
   EXPECT_EQ("Discounted Total",
             payment_request.GetTotal(selected_payment_method).label);
@@ -1112,8 +1104,8 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_TypeMismatch) {
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &test_personal_data_manager_);
-  AutofillPaymentInstrument* selected_payment_method =
-      static_cast<AutofillPaymentInstrument*>(
+  AutofillPaymentApp* selected_payment_method =
+      static_cast<AutofillPaymentApp*>(
           payment_request.selected_payment_method());
   EXPECT_EQ("Total", payment_request.GetTotal(selected_payment_method).label);
   EXPECT_EQ("1.00",
@@ -1158,8 +1150,8 @@ TEST_F(PaymentRequestTest,
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &test_personal_data_manager_);
-  AutofillPaymentInstrument* selected_payment_method =
-      static_cast<AutofillPaymentInstrument*>(
+  AutofillPaymentApp* selected_payment_method =
+      static_cast<AutofillPaymentApp*>(
           payment_request.selected_payment_method());
   EXPECT_EQ("Discounted Total",
             payment_request.GetTotal(selected_payment_method).label);

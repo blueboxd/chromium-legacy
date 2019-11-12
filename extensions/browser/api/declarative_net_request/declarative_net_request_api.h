@@ -13,14 +13,7 @@
 
 namespace extensions {
 
-namespace api {
 namespace declarative_net_request {
-struct Rule;
-}  // namespace declarative_net_request
-}  // namespace api
-
-namespace declarative_net_request {
-enum class DynamicRuleUpdateAction;
 struct ReadJSONRulesResult;
 }  // namespace declarative_net_request
 
@@ -106,54 +99,22 @@ class DeclarativeNetRequestGetAllowedPagesFunction : public ExtensionFunction {
 
 class DeclarativeNetRequestUpdateDynamicRulesFunction
     : public ExtensionFunction {
- protected:
+ public:
   DeclarativeNetRequestUpdateDynamicRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.updateDynamicRules",
+                             DECLARATIVENETREQUEST_UPDATEDYNAMICRULES)
+
+ protected:
   ~DeclarativeNetRequestUpdateDynamicRulesFunction() override;
 
-  ExtensionFunction::ResponseAction UpdateDynamicRules(
-      std::vector<api::declarative_net_request::Rule> rules,
-      declarative_net_request::DynamicRuleUpdateAction action);
-
- private:
   // ExtensionFunction override:
   bool PreRunValidation(std::string* error) override;
+  ExtensionFunction::ResponseAction Run() override;
 
+ private:
   void OnDynamicRulesUpdated(base::Optional<std::string> error);
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestUpdateDynamicRulesFunction);
-};
-
-class DeclarativeNetRequestAddDynamicRulesFunction
-    : public DeclarativeNetRequestUpdateDynamicRulesFunction {
- public:
-  DeclarativeNetRequestAddDynamicRulesFunction();
-  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.addDynamicRules",
-                             DECLARATIVENETREQUEST_ADDDYNAMICRULES)
-
- protected:
-  ~DeclarativeNetRequestAddDynamicRulesFunction() override;
-
-  ExtensionFunction::ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestAddDynamicRulesFunction);
-};
-
-class DeclarativeNetRequestRemoveDynamicRulesFunction
-    : public DeclarativeNetRequestUpdateDynamicRulesFunction {
- public:
-  DeclarativeNetRequestRemoveDynamicRulesFunction();
-  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.removeDynamicRules",
-                             DECLARATIVENETREQUEST_REMOVEDYNAMICRULES)
-
- protected:
-  ~DeclarativeNetRequestRemoveDynamicRulesFunction() override;
-
-  // ExtensionFunction override:
-  ExtensionFunction::ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestRemoveDynamicRulesFunction);
 };
 
 class DeclarativeNetRequestGetDynamicRulesFunction : public ExtensionFunction {

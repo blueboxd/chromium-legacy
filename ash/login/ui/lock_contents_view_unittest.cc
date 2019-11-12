@@ -693,10 +693,11 @@ TEST_F(LockContentsViewUnitTest, SystemInfoViewBounds) {
 
   // Verify that the system info view becomes visible and it doesn't block the
   // note action button.
-  DataDispatcher()->SetSystemInfo(true /*show*/, false /*enforced*/,
-                                  "Best version ever", "Asset ID: 6666",
-                                  "Bluetooth adapter");
+  DataDispatcher()->SetSystemInfo(
+      true /*show*/, false /*enforced*/, "Best version ever", "Asset ID: 6666",
+      "Bluetooth adapter", false /*adb_sideloading_enabled*/);
   EXPECT_TRUE(test_api.system_info()->GetVisible());
+  EXPECT_FALSE(test_api.warning_indicator()->GetVisible());
   EXPECT_TRUE(test_api.note_action()->GetVisible());
   gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
   EXPECT_GE(widget_bounds.right() -
@@ -711,6 +712,10 @@ TEST_F(LockContentsViewUnitTest, SystemInfoViewBounds) {
   EXPECT_LT(widget_bounds.right() -
                 test_api.system_info()->GetBoundsInScreen().right(),
             note_action_size.width());
+
+  // Verify that warning indicator is invisible if adb sideloading is not
+  // enabled.
+  EXPECT_FALSE(test_api.warning_indicator()->GetVisible());
 }
 
 // Alt-V toggles display of system information.
@@ -728,9 +733,9 @@ TEST_F(LockContentsViewUnitTest, AltVShowsHiddenSystemInfo) {
 
   // Verify that the system info view does not become visible when given data
   // but show is false.
-  DataDispatcher()->SetSystemInfo(false /*show*/, false /*enforced*/,
-                                  "Best version ever", "Asset ID: 6666",
-                                  "Bluetooth adapter");
+  DataDispatcher()->SetSystemInfo(
+      false /*show*/, false /*enforced*/, "Best version ever", "Asset ID: 6666",
+      "Bluetooth adapter", false /*adb_sideloading_enabled*/);
   EXPECT_FALSE(test_api.system_info()->GetVisible());
 
   // Alt-V shows hidden system info.
@@ -758,7 +763,8 @@ TEST_F(LockContentsViewUnitTest, ShowRevealsHiddenSystemInfo) {
 
   auto set_system_info = [&](bool show, bool enforced) {
     DataDispatcher()->SetSystemInfo(show, enforced, "Best version ever",
-                                    "Asset ID: 6666", "Bluetooth adapter");
+                                    "Asset ID: 6666", "Bluetooth adapter",
+                                    false /*adb_sideloading_enabled*/);
   };
 
   // Start with hidden system info.
@@ -782,6 +788,25 @@ TEST_F(LockContentsViewUnitTest, ShowRevealsHiddenSystemInfo) {
   // because the view remembers user wants to show it if possible.
   set_system_info(false, false);
   EXPECT_TRUE(test_api.system_info()->GetVisible());
+}
+
+// Show warning indicator only if adb sideloading is enabled.
+TEST_F(LockContentsViewUnitTest, ShowWarningIndicatorIfAdbSideloadingEnabled) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi test_api(contents);
+
+  // If the system starts with ADB sideloading enabled, warning_indicator should
+  // be visible.
+  DataDispatcher()->SetSystemInfo(
+      false /*show*/, false /*enforced*/, "Best version ever", "Asset ID: 6666",
+      "Bluetooth adapter", true /*adb_sideloading_enabled*/);
+  EXPECT_TRUE(test_api.warning_indicator()->GetVisible());
 }
 
 // Verifies the easy unlock tooltip is automatically displayed when requested.

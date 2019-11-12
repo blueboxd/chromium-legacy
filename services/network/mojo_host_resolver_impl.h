@@ -18,6 +18,7 @@
 
 namespace net {
 class HostResolver;
+class NetworkIsolationKey;
 }  // namespace net
 
 namespace network {
@@ -40,6 +41,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MojoHostResolverImpl {
 
   void Resolve(
       const std::string& hostname,
+      const net::NetworkIsolationKey& network_isolation_key,
       bool is_ex,
       mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
           client);

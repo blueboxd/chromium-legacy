@@ -2,16 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import {Destination} from '../data/destination.js';
+import {Settings} from '../data/model.js';
+import './advanced_settings_dialog.js';
+import './print_preview_shared_css.js';
+import './settings_section.js';
+
 Polymer({
   is: 'print-preview-advanced-options-settings',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     disabled: Boolean,
 
-    /** @type {!print_preview.Destination} */
+    /** @type {!Destination} */
     destination: Object,
 
-    /** @type {!print_preview.Settings} */
+    /** @type {!Settings} */
     settings: Object,
 
     /** @private {boolean} */

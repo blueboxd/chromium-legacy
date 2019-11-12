@@ -2,27 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('invalid_settings_browsertest', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, makeRecentDestination, NativeLayer, PluginProxy, ScalingType, setCloudPrintInterfaceForTesting, State, whenReady} from 'chrome://print/print_preview.js';
+import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
+import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
+import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
+import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js';
+import {createDestinationWithCertificateStatus, getCddTemplate, getDefaultMediaSize, getDefaultOrientation} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {isWindows} from 'chrome://resources/js/cr.m.js';
+
+  window.invalid_settings_browsertest = {};
+  invalid_settings_browsertest.suiteName = 'InvalidSettingsBrowserTest';
   /** @enum {string} */
-  const TestNames = {
+  invalid_settings_browsertest.TestNames = {
     NoPDFPluginError: 'no pdf plugin error',
     InvalidSettingsError: 'invalid settings error',
     InvalidCertificateError: 'invalid certificate error',
     InvalidCertificateErrorReselectDestination: 'invalid certificate reselect',
   };
 
-  const suiteName = 'InvalidSettingsBrowserTest';
-  suite(suiteName, function() {
+  suite(invalid_settings_browsertest.suiteName, function() {
     /** @type {?PrintPreviewAppElement} */
     let page = null;
 
-    /** @type {?print_preview.NativeLayer} */
+    /** @type {?NativeLayer} */
     let nativeLayer = null;
 
-    /** @type {?cloudprint.CloudPrintInterface} */
+    /** @type {?CloudPrintInterface} */
     let cloudPrintInterface = null;
 
-    /** @type {!print_preview.NativeInitialSettings} */
+    /** @type {!NativeInitialSettings} */
     const initialSettings = {
       isInKioskAutoPrintMode: false,
       isInAppKioskMode: false,
@@ -39,7 +48,7 @@ cr.define('invalid_settings_browsertest', function() {
       serializedDefaultDestinationSelectionRulesStr: null
     };
 
-    /** @type {!Array<!print_preview.LocalDestinationInfo>} */
+    /** @type {!Array<!LocalDestinationInfo>} */
     let localDestinationInfos = [
       {printerName: 'FooName', deviceName: 'FooDevice'},
       {printerName: 'BarName', deviceName: 'BarDevice'},
@@ -47,10 +56,10 @@ cr.define('invalid_settings_browsertest', function() {
 
     /** @override */
     setup(function() {
-      nativeLayer = new print_preview.NativeLayerStub();
-      print_preview.NativeLayer.setInstance(nativeLayer);
-      cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
-      cloudprint.setCloudPrintInterfaceForTesting(cloudPrintInterface);
+      nativeLayer = new NativeLayerStub();
+      NativeLayer.setInstance(nativeLayer);
+      cloudPrintInterface = new CloudPrintInterfaceStub();
+      setCloudPrintInterfaceForTesting(cloudPrintInterface);
       PolymerTest.clearBody();
     });
 
@@ -67,12 +76,12 @@ cr.define('invalid_settings_browsertest', function() {
       nativeLayer.setLocalDestinations(localDestinationInfos);
       if (initialSettings.printerName) {
         nativeLayer.setLocalDestinationCapabilities(
-            print_preview_test_utils.getCddTemplate(
+            getCddTemplate(
                 initialSettings.printerName));
       }
-      const pluginProxy = new print_preview.PDFPluginStub();
+      const pluginProxy = new PDFPluginStub();
       pluginProxy.setPluginCompatible(pluginCompatible);
-      print_preview.PluginProxy.setInstance(pluginProxy);
+      PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
@@ -85,15 +94,15 @@ cr.define('invalid_settings_browsertest', function() {
      * in |printers|. printers[0] will be set as the most recent destination,
      * and printers[1] will be the second most recent destination. Sets up
      * cloud print interface, user info, and runs createPage().
-     * @param {!Array<!print_preview.Destination>} printers
+     * @param {!Array<!Destination>} printers
      */
     function setupInvalidCertificateTest(printers) {
       initialSettings.printerName = '';
       initialSettings.serializedAppStateStr = JSON.stringify({
         version: 2,
         recentDestinations: [
-          print_preview.makeRecentDestination(printers[0]),
-          print_preview.makeRecentDestination(printers[1]),
+          makeRecentDestination(printers[0]),
+          makeRecentDestination(printers[1]),
         ],
       });
       initialSettings.cloudPrintURL = 'cloudprint URL';
@@ -109,14 +118,15 @@ cr.define('invalid_settings_browsertest', function() {
     // Test that error message is displayed when plugin doesn't exist.
     // TODO (rbpotter): Fix this test so that it works again with calling
     // appendChild() before setting checkPluginCompatibility.
-    test(assert(TestNames.NoPDFPluginError), function() {
+    test(assert(invalid_settings_browsertest.TestNames.NoPDFPluginError),
+        function() {
       createPage(false);
       const previewArea = page.$.previewArea;
 
       return nativeLayer.whenCalled('getInitialSettings').then(function() {
         const overlayEl = previewArea.$$('.preview-area-overlay-layer');
         const messageEl = previewArea.$$('.preview-area-message');
-        assertEquals(print_preview.State.FATAL_ERROR, page.state);
+        assertEquals(State.FATAL_ERROR, page.state);
 
         // Make sure the overlay is visible.
         assertFalse(overlayEl.classList.contains('invisible'));
@@ -136,9 +146,10 @@ cr.define('invalid_settings_browsertest', function() {
     // preview area displays an invalid printer error message and printing
     // is disabled. Verifies that the user can recover from this error by
     // selecting a different, valid printer.
-    test(assert(TestNames.InvalidSettingsError), function() {
+    test(assert(invalid_settings_browsertest.TestNames.InvalidSettingsError),
+        function() {
       createPage(true);
-      const barDevice = print_preview_test_utils.getCddTemplate('BarDevice');
+      const barDevice = getCddTemplate('BarDevice');
       nativeLayer.setLocalDestinationCapabilities(barDevice);
 
       // FooDevice is the default printer, so will be selected for the initial
@@ -159,13 +170,13 @@ cr.define('invalid_settings_browsertest', function() {
       const destinationSettings =
           sidebar.$$('print-preview-destination-settings');
 
-      return test_util.waitBeforeNextRender(page)
+      return waitBeforeNextRender(page)
           .then(() => {
             const parentElement = sidebar.$$('print-preview-button-strip');
             printButton = parentElement.$$('.action-button');
 
             return Promise.all([
-              print_preview.Model.whenReady(),
+              whenReady(),
               nativeLayer.whenCalled('getInitialSettings'),
             ]);
           })
@@ -182,7 +193,7 @@ cr.define('invalid_settings_browsertest', function() {
             // FooDevice was set as an invalid printer.
             assertFalse(overlay.classList.contains('invisible'));
             assertTrue(messageEl.textContent.includes(expectedMessage));
-            assertEquals(print_preview.State.ERROR, page.state);
+            assertEquals(State.ERROR, page.state);
 
             // Verify that the print button is disabled
             assertTrue(printButton.disabled);
@@ -211,7 +222,7 @@ cr.define('invalid_settings_browsertest', function() {
 
             // Has active print button and successfully 'prints', indicating
             assertFalse(printButton.disabled);
-            assertEquals(print_preview.State.READY, page.state);
+            assertEquals(State.READY, page.state);
             printButton.click();
             // This should result in a call to print.
             return nativeLayer.whenCalled('print');
@@ -226,12 +237,12 @@ cr.define('invalid_settings_browsertest', function() {
                 const ticket = JSON.parse(printTicket);
                 assertEquals(barDevice.printer.deviceName, ticket.deviceName);
                 assertEquals(
-                    print_preview_test_utils.getDefaultOrientation(barDevice) ==
+                    getDefaultOrientation(barDevice) ==
                         'LANDSCAPE',
                     ticket.landscape);
                 assertEquals(1, ticket.copies);
                 const mediaDefault =
-                    print_preview_test_utils.getDefaultMediaSize(barDevice);
+                    getDefaultMediaSize(barDevice);
                 assertEquals(
                     mediaDefault.width_microns, ticket.mediaSize.width_microns);
                 assertEquals(
@@ -246,12 +257,13 @@ cr.define('invalid_settings_browsertest', function() {
     // recovered by selecting a new destination. Verifies this works when the
     // invalid printer is the most recent destination and is selected by
     // default.
-    test(assert(TestNames.InvalidCertificateError), function() {
+    test(assert(invalid_settings_browsertest.TestNames.InvalidCertificateError),
+        function() {
       const invalidPrinter =
-          print_preview_test_utils.createDestinationWithCertificateStatus(
+          createDestinationWithCertificateStatus(
               'FooDevice', 'FooName', true);
       const validPrinter =
-          print_preview_test_utils.createDestinationWithCertificateStatus(
+          createDestinationWithCertificateStatus(
               'BarDevice', 'BarName', false);
       setupInvalidCertificateTest([invalidPrinter, validPrinter]);
 
@@ -273,18 +285,18 @@ cr.define('invalid_settings_browsertest', function() {
                                   .$$('print-preview-number-settings-section');
       const layoutSettings = sidebar.$$('print-preview-layout-settings');
 
-      return test_util.waitBeforeNextRender(page)
+      return waitBeforeNextRender(page)
           .then(() => {
             const parentElement = sidebar.$$('print-preview-button-strip');
             printButton = parentElement.$$('.action-button');
             return Promise.all([
-              print_preview.Model.whenReady(),
+              whenReady(),
               nativeLayer.whenCalled('getInitialSettings'),
             ]);
           })
           .then(function() {
             // Set this to enable the scaling input.
-            page.setSetting('scalingType', print_preview.ScalingType.CUSTOM);
+            page.setSetting('scalingType', ScalingType.CUSTOM);
 
             destinationSettings.destinationStore_.startLoadCloudDestinations();
 
@@ -302,7 +314,7 @@ cr.define('invalid_settings_browsertest', function() {
 
             // Verify the state is invalid and that some settings sections are
             // also disabled, so there is no way to regenerate the preview.
-            assertEquals(print_preview.State.ERROR, page.state);
+            assertEquals(State.ERROR, page.state);
             assertTrue(layoutSettings.$$('select').disabled);
             assertTrue(scalingSettings.$$('cr-input').disabled);
 
@@ -322,7 +334,7 @@ cr.define('invalid_settings_browsertest', function() {
           .then(function() {
             // Has active print button, indicating recovery from error state.
             assertFalse(printButton.disabled);
-            assertEquals(print_preview.State.READY, page.state);
+            assertEquals(State.READY, page.state);
 
             // Settings sections are now active.
             assertFalse(layoutSettings.$$('select').disabled);
@@ -343,13 +355,14 @@ cr.define('invalid_settings_browsertest', function() {
     // recovered by selecting a new destination. Tests that even if destination
     // was previously selected, the error is cleared.
     test(
-        assert(TestNames.InvalidCertificateErrorReselectDestination),
+        assert(invalid_settings_browsertest.TestNames
+              .InvalidCertificateErrorReselectDestination),
         function() {
           const invalidPrinter =
-              print_preview_test_utils.createDestinationWithCertificateStatus(
+              createDestinationWithCertificateStatus(
                   'FooDevice', 'FooName', true);
           const validPrinter =
-              print_preview_test_utils.createDestinationWithCertificateStatus(
+              createDestinationWithCertificateStatus(
                   'BarDevice', 'BarName', false);
           setupInvalidCertificateTest([validPrinter, invalidPrinter]);
 
@@ -362,12 +375,12 @@ cr.define('invalid_settings_browsertest', function() {
           const destinationSettings =
               sidebar.$$('print-preview-destination-settings');
 
-          return test_util.waitBeforeNextRender(page)
+          return waitBeforeNextRender(page)
               .then(() => {
                 const parentElement = sidebar.$$('print-preview-button-strip');
                 printButton = parentElement.$$('.action-button');
                 return Promise.all([
-                  print_preview.Model.whenReady(),
+                  whenReady(),
                   nativeLayer.whenCalled('getInitialSettings'),
                 ]);
               })
@@ -381,13 +394,13 @@ cr.define('invalid_settings_browsertest', function() {
               .then(function() {
                 // Has active print button.
                 assertFalse(printButton.disabled);
-                assertEquals(print_preview.State.READY, page.state);
+                assertEquals(State.READY, page.state);
                 // No error message.
                 assertTrue(overlayEl.classList.contains('invisible'));
 
                 // Select the invalid destination and wait for the event.
-                const whenInvalid = test_util.eventToPromise(
-                    print_preview.DestinationStore.EventType.ERROR,
+                const whenInvalid = eventToPromise(
+                    DestinationStore.EventType.ERROR,
                     destinationSettings.destinationStore_);
                 destinationSettings.destinationStore_.selectDestination(
                     invalidPrinter);
@@ -396,14 +409,14 @@ cr.define('invalid_settings_browsertest', function() {
               .then(function() {
                 // Should have error message.
                 assertFalse(overlayEl.classList.contains('invisible'));
-                assertEquals(print_preview.State.ERROR, page.state);
+                assertEquals(State.ERROR, page.state);
 
                 // Reset
                 nativeLayer.reset();
 
                 // Reselect the valid cloud destination.
-                const whenSelected = test_util.eventToPromise(
-                    print_preview.DestinationStore.EventType.DESTINATION_SELECT,
+                const whenSelected = eventToPromise(
+                    DestinationStore.EventType.DESTINATION_SELECT,
                     destinationSettings.destinationStore_);
                 destinationSettings.destinationStore_.selectDestination(
                     validPrinter);
@@ -416,9 +429,3 @@ cr.define('invalid_settings_browsertest', function() {
               });
         });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

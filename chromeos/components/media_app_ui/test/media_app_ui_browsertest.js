@@ -7,14 +7,31 @@
  */
 
 GEN('#include "chromeos/constants/chromeos_features.h"');
+GEN('#include "chromeos/components/media_app_ui/test/media_app_ui_browsertest.h"');
 
 const HOST_ORIGIN = 'chrome://media-app';
-const GUEST_SRC = 'chrome://media-app-guest/app.html';
+const GUEST_ORIGIN = 'chrome://media-app-guest';
+
+let driver = null;
 
 var MediaAppUIBrowserTest = class extends testing.Test {
   /** @override */
   get browsePreload() {
     return HOST_ORIGIN;
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return [
+      ...super.extraLibraries,
+      '//ui/webui/resources/js/assert.js',
+      '//chromeos/components/media_app_ui/test/driver.js',
+    ];
+  }
+
+  /** @override */
+  get isAsync() {
+    return true;
   }
 
   /** @override */
@@ -26,6 +43,22 @@ var MediaAppUIBrowserTest = class extends testing.Test {
   get runAccessibilityChecks() {
     return false;
   }
+
+  /** @override */
+  get typedefCppFixture() {
+    return 'MediaAppUiBrowserTest';
+  }
+
+  /** @override */
+  setUp() {
+    super.setUp();
+    driver = new GuestDriver(GUEST_ORIGIN);
+  }
+
+  /** @override */
+  tearDown() {
+    driver.tearDown();
+  }
 };
 
 // Tests that chrome://media-app is allowed to frame chrome://media-app-guest.
@@ -35,14 +68,13 @@ var MediaAppUIBrowserTest = class extends testing.Test {
 // This test also fails if the guest renderer is terminated, e.g., due to webui
 // performing bad IPC such as network requests (failure detected in
 // content/public/test/no_renderer_crashes_assertion.cc).
-TEST_F('MediaAppUIBrowserTest', 'GuestCanLoad', () => {
+TEST_F('MediaAppUIBrowserTest', 'GuestCanLoad', async () => {
   const guest = document.querySelector('iframe');
+  const app = await driver.waitForElementInGuest('backlight-app', 'tagName');
 
   assertEquals(document.location.origin, HOST_ORIGIN);
-  assertEquals(guest.src, GUEST_SRC);
-});
+  assertEquals(guest.src, GUEST_ORIGIN + '/app.html');
+  assertEquals(app, '"BACKLIGHT-APP"');
 
-// TODO(crbug/996088): Add Tests that inspect the guest itself. Until the guest
-// listens for postMessage calls, we can't test for anything interesting due to
-// CORS (i.e. "Blocked a frame with origin chrome://media-app from accessing a
-// cross-origin frame.").
+  testDone();
+});

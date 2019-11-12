@@ -223,7 +223,7 @@ public class PaymentRequestImpl
         void onCanMakePaymentReturned();
         void onHasEnrolledInstrumentCalled();
         void onHasEnrolledInstrumentReturned();
-        void onShowInstrumentsReady();
+        void onShowAppsReady();
         void onNotSupportedError();
         void onConnectionTerminated();
         void onAbortCalled();
@@ -2431,7 +2431,7 @@ public class PaymentRequestImpl
     private boolean disconnectIfNoPaymentMethodsSupported() {
         if (!isFinishedQueryingPaymentApps() || !mIsCurrentPaymentRequestShowing) return false;
         if (mNativeObserverForTest != null) {
-            mNativeObserverForTest.onShowInstrumentsReady();
+            mNativeObserverForTest.onShowAppsReady();
         }
 
         boolean foundPaymentMethods =

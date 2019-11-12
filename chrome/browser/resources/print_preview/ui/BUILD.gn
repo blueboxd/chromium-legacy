@@ -3,8 +3,15 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
 
-js_type_check("closure_compile") {
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  closure_flags =
+      default_closure_args + [
+        "js_module_root=../../chrome/browser/resources/print_preview/",
+        "js_module_root=../../chrome/browser/resources/",
+      ]
   deps = [
     ":advanced_options_settings",
     ":advanced_settings_dialog",
@@ -16,6 +23,7 @@ js_type_check("closure_compile") {
     ":destination_dialog",
     ":destination_list",
     ":destination_list_item",
+    ":destination_select",
     ":destination_settings",
     ":dpi_settings",
     ":duplex_settings",
@@ -33,6 +41,7 @@ js_type_check("closure_compile") {
     ":other_options_settings",
     ":pages_per_sheet_settings",
     ":pages_settings",
+    ":plugin_proxy",
     ":preview_area",
     ":print_preview_search_box",
     ":provisional_destination_resolver",
@@ -57,13 +66,16 @@ js_library("app") {
     "..:native_layer",
     "../data:destination",
     "../data:document_info",
+    "../data:margins",
     "../data:measurement_system",
     "../data:model",
+    "../data:printable_area",
+    "../data:size",
     "../data:state",
-    "//ui/webui/resources/js:event_tracker",
-    "//ui/webui/resources/js:util",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
-    "//ui/webui/resources/js/cr/ui:focus_outline_manager",
+    "//ui/webui/resources/js:event_tracker.m",
+    "//ui/webui/resources/js:util.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+    "//ui/webui/resources/js/cr/ui:focus_outline_manager.m",
   ]
 }
 
@@ -91,9 +103,9 @@ js_library("sidebar") {
     "..:metrics",
     "../data:destination",
     "../data:state",
-    "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",
-    "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
+    "//ui/webui/resources/cr_elements:cr_container_shadow_behavior.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
 
@@ -101,7 +113,7 @@ js_library("button_strip") {
   deps = [
     "../data:destination",
     "../data:state",
-    "//ui/webui/resources/js:cr",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 
   if (is_chromeos) {
@@ -114,7 +126,8 @@ js_library("header") {
     ":settings_behavior",
     "../data:destination",
     "../data:state",
-    "//ui/webui/resources/js:cr",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -129,9 +142,10 @@ js_library("destination_settings") {
     "../data:invitation_store",
     "../data:state",
     "../data:user_manager",
-    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
 
@@ -140,9 +154,10 @@ js_library("destination_select") {
     ":select_behavior",
     "..:print_preview_utils",
     "../data:destination",
-    "//third_party/polymer/v1_0/components-chromium/iron-iconset-svg:iron-iconset-svg-extracted",
-    "//third_party/polymer/v1_0/components-chromium/iron-meta:iron-meta-extracted",
-    "//ui/webui/resources/js:i18n_behavior",
+    "//third_party/polymer/v3_0/components-chromium/iron-iconset-svg:iron-iconset-svg",
+    "//third_party/polymer/v3_0/components-chromium/iron-meta:iron-meta",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -152,6 +167,7 @@ if (is_chromeos) {
       ":input_behavior",
       ":settings_behavior",
       "../data:state",
+      "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     ]
   }
 }
@@ -161,8 +177,9 @@ js_library("pages_settings") {
     ":input_behavior",
     ":settings_behavior",
     "..:print_preview_utils",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
-    "//ui/webui/resources/js:load_time_data",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -170,6 +187,7 @@ js_library("copies_settings") {
   deps = [
     ":number_settings_section",
     ":settings_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -177,6 +195,7 @@ js_library("layout_settings") {
   deps = [
     ":select_behavior",
     ":settings_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -184,6 +203,7 @@ js_library("color_settings") {
   deps = [
     ":select_behavior",
     ":settings_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -191,6 +211,7 @@ js_library("media_size_settings") {
   deps = [
     ":settings_behavior",
     ":settings_select",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -198,6 +219,8 @@ js_library("margins_settings") {
   deps = [
     ":select_behavior",
     ":settings_behavior",
+    "../data:margins",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -205,8 +228,9 @@ js_library("dpi_settings") {
   deps = [
     ":settings_behavior",
     ":settings_select",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:load_time_data",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
@@ -214,20 +238,26 @@ js_library("pages_per_sheet_settings") {
   deps = [
     ":select_behavior",
     ":settings_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
 js_library("scaling_settings") {
   deps = [
     ":number_settings_section",
+    ":select_behavior",
     ":settings_behavior",
     "../data:scaling",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
 }
 
 js_library("other_options_settings") {
   deps = [
     ":settings_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
@@ -236,29 +266,37 @@ js_library("duplex_settings") {
     ":select_behavior",
     ":settings_behavior",
     "..:print_preview_utils",
-    "//third_party/polymer/v1_0/components-chromium/iron-iconset-svg:iron-iconset-svg-extracted",
+    "../data:model",
+    "//third_party/polymer/v3_0/components-chromium/iron-iconset-svg:iron-iconset-svg",
+    "//third_party/polymer/v3_0/components-chromium/iron-meta:iron-meta",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
 js_library("advanced_options_settings") {
   deps = [
     ":advanced_settings_dialog",
-    ":settings_behavior",
     "../data:destination",
+    "../data:model",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
 js_library("more_settings") {
   deps = [
     "..:metrics",
-    "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button",
-    "//ui/webui/resources/js:i18n_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
 js_library("number_settings_section") {
   deps = [
     ":input_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
   ]
 }
 
@@ -267,33 +305,32 @@ js_library("settings_select") {
     ":select_behavior",
     ":settings_behavior",
     "..:print_preview_utils",
-    "//ui/webui/resources/js:cr",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
   ]
 }
 
 js_library("settings_behavior") {
   deps = [
     "../data:model",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:assert.m",
   ]
 }
 
 js_library("input_behavior") {
   deps = [
-    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:assert.m",
   ]
 }
 
 js_library("select_behavior") {
-  deps = []
 }
 
 js_library("link_container") {
   deps = [
     "../data:destination",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:cr.m",
   ]
 }
 
@@ -304,19 +341,22 @@ js_library("preview_area") {
     ":settings_behavior",
     "..:dark_mode_behavior",
     "..:native_layer",
+    "..:print_preview_utils",
     "../../pdf:pdf_scripting_api",
     "../data:coordinate2d",
     "../data:destination",
     "../data:destination_match",
     "../data:margins",
+    "../data:measurement_system",
     "../data:model",
     "../data:printable_area",
     "../data:size",
     "../data:state",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:util",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:util.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
 }
 
@@ -329,7 +369,8 @@ js_library("margin_control_container") {
     "../data:measurement_system",
     "../data:size",
     "../data:state",
-    "//ui/webui/resources/js:event_tracker",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:event_tracker.m",
   ]
   externs_list = [ "$externs_path/pending.js" ]
 }
@@ -341,13 +382,15 @@ js_library("margin_control") {
     "../data:margins",
     "../data:measurement_system",
     "../data:size",
-    "//ui/webui/resources/js:i18n_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
 }
 
 js_library("plugin_proxy") {
   deps = [
-    "//ui/webui/resources/js:cr",
+    "../../pdf:pdf_scripting_api",
+    "//ui/webui/resources/js:assert.m",
   ]
 }
 
@@ -362,20 +405,21 @@ js_library("destination_dialog") {
     "../data:destination_store",
     "../data:invitation",
     "../data:invitation_store",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/js:event_tracker",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:list_property_update_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/js:event_tracker.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:list_property_update_behavior.m",
   ]
-  externs_list = [ "$externs_path/pending_polymer.js" ]
 }
 
 js_library("destination_list") {
   deps = [
     ":destination_list_item",
     "../data:destination",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:list_property_update_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:list_property_update_behavior.m",
   ]
 }
 
@@ -383,6 +427,9 @@ js_library("destination_list_item") {
   deps = [
     ":highlight_utils",
     "../data:destination",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:search_highlight_utils.m",
   ]
 }
 
@@ -393,8 +440,10 @@ js_library("advanced_settings_dialog") {
     ":settings_behavior",
     "..:metrics",
     "../data:destination",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/js:i18n_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:search_highlight_utils.m",
   ]
 }
 
@@ -404,12 +453,15 @@ js_library("advanced_settings_item") {
     ":settings_behavior",
     "..:print_preview_utils",
     "../data:destination",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
 js_library("print_preview_search_box") {
   deps = [
-    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field_behavior.m",
   ]
 }
 
@@ -417,14 +469,288 @@ js_library("provisional_destination_resolver") {
   deps = [
     "../data:destination",
     "../data:destination_store",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:promise_resolver.m",
   ]
 }
 
 js_library("highlight_utils") {
   deps = [
-    "//ui/webui/resources/js:search_highlight_utils",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:search_highlight_utils.m",
   ]
+}
+
+group("polymer3_elements") {
+  deps = [
+    ":advanced_options_settings_module",
+    ":advanced_settings_dialog_module",
+    ":advanced_settings_item_module",
+    ":app_module",
+    ":button_strip_module",
+    ":color_settings_module",
+    ":copies_settings_module",
+    ":destination_dialog_module",
+    ":destination_list_item_module",
+    ":destination_list_module",
+    ":destination_select_module",
+    ":destination_settings_module",
+    ":dpi_settings_module",
+    ":duplex_settings_module",
+    ":header_module",
+    ":icons_module",
+    ":layout_settings_module",
+    ":link_container_module",
+    ":margin_control_container_module",
+    ":margin_control_module",
+    ":margins_settings_module",
+    ":media_size_settings_module",
+    ":more_settings_module",
+    ":number_settings_section_module",
+    ":other_options_settings_module",
+    ":pages_per_sheet_settings_module",
+    ":pages_settings_module",
+    ":pin_settings_module",
+    ":preview_area_module",
+    ":print_preview_search_box_module",
+    ":print_preview_shared_css_module",
+    ":print_preview_vars_css_module",
+    ":provisional_destination_resolver_module",
+    ":scaling_settings_module",
+    ":settings_section_module",
+    ":settings_select_module",
+    ":sidebar_module",
+    ":throbber_css_module",
+  ]
+}
+
+polymer_modulizer("advanced_options_settings") {
+  html_file = "advanced_options_settings.html"
+  js_file = "advanced_options_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("advanced_settings_dialog") {
+  html_file = "advanced_settings_dialog.html"
+  js_file = "advanced_settings_dialog.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("advanced_settings_item") {
+  html_file = "advanced_settings_item.html"
+  js_file = "advanced_settings_item.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("app") {
+  html_file = "app.html"
+  js_file = "app.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("button_strip") {
+  html_file = "button_strip.html"
+  js_file = "button_strip.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("color_settings") {
+  html_file = "color_settings.html"
+  js_file = "color_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("copies_settings") {
+  html_file = "copies_settings.html"
+  js_file = "copies_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("destination_dialog") {
+  html_file = "destination_dialog.html"
+  js_file = "destination_dialog.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("destination_list") {
+  html_file = "destination_list.html"
+  js_file = "destination_list.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("destination_list_item") {
+  html_file = "destination_list_item.html"
+  js_file = "destination_list_item.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("destination_select") {
+  html_file = "destination_select.html"
+  js_file = "destination_select.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("destination_settings") {
+  html_file = "destination_settings.html"
+  js_file = "destination_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("dpi_settings") {
+  html_file = "dpi_settings.html"
+  js_file = "dpi_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("duplex_settings") {
+  html_file = "duplex_settings.html"
+  js_file = "duplex_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("header") {
+  html_file = "header.html"
+  js_file = "header.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("layout_settings") {
+  html_file = "layout_settings.html"
+  js_file = "layout_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("link_container") {
+  html_file = "link_container.html"
+  js_file = "link_container.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("margin_control_container") {
+  html_file = "margin_control_container.html"
+  js_file = "margin_control_container.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("margin_control") {
+  html_file = "margin_control.html"
+  js_file = "margin_control.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("margins_settings") {
+  html_file = "margins_settings.html"
+  js_file = "margins_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("media_size_settings") {
+  html_file = "media_size_settings.html"
+  js_file = "media_size_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("more_settings") {
+  html_file = "more_settings.html"
+  js_file = "more_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("number_settings_section") {
+  html_file = "number_settings_section.html"
+  js_file = "number_settings_section.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("other_options_settings") {
+  html_file = "other_options_settings.html"
+  js_file = "other_options_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("pages_per_sheet_settings") {
+  html_file = "pages_per_sheet_settings.html"
+  js_file = "pages_per_sheet_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("pages_settings") {
+  html_file = "pages_settings.html"
+  js_file = "pages_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("pin_settings") {
+  html_file = "pin_settings.html"
+  js_file = "pin_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("preview_area") {
+  html_file = "preview_area.html"
+  js_file = "preview_area.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("print_preview_search_box") {
+  html_file = "print_preview_search_box.html"
+  js_file = "print_preview_search_box.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("provisional_destination_resolver") {
+  html_file = "provisional_destination_resolver.html"
+  js_file = "provisional_destination_resolver.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("scaling_settings") {
+  html_file = "scaling_settings.html"
+  js_file = "scaling_settings.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("settings_section") {
+  html_file = "settings_section.html"
+  js_file = "settings_section.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("settings_select") {
+  html_file = "settings_select.html"
+  js_file = "settings_select.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("sidebar") {
+  html_file = "sidebar.html"
+  js_file = "sidebar.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("print_preview_shared_css") {
+  html_file = "print_preview_shared_css.html"
+  js_file = "print_preview_shared_css.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("throbber_css") {
+  html_file = "throbber_css.html"
+  js_file = "throbber_css.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("print_preview_vars_css") {
+  html_file = "print_preview_vars_css.html"
+  js_file = "print_preview_vars_css.js"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("icons") {
+  html_file = "icons.html"
+  js_file = "icons.js"
+  html_type = "v3-ready"
 }

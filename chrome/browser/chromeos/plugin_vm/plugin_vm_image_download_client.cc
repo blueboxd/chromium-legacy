@@ -73,11 +73,15 @@ void PluginVmImageDownloadClient::OnDownloadUpdated(const std::string& guid,
 void PluginVmImageDownloadClient::OnDownloadFailed(
     const std::string& guid,
     const download::CompletionInfo& completion_info,
-    download::Client::FailureReason reason) {
+    download::Client::FailureReason clientReason) {
   VLOG(1) << __func__ << " called";
-  switch (reason) {
+  auto managerReason =
+      PluginVmImageManager::FailureReason::DOWNLOAD_FAILED_UNKNOWN;
+  switch (clientReason) {
     case download::Client::FailureReason::NETWORK:
       VLOG(1) << "Failure reason: NETWORK";
+      managerReason =
+          PluginVmImageManager::FailureReason::DOWNLOAD_FAILED_NETWORK;
       break;
     case download::Client::FailureReason::UPLOAD_TIMEDOUT:
       VLOG(1) << "Failure reason: UPLOAD_TIMEDOUT";
@@ -90,6 +94,8 @@ void PluginVmImageDownloadClient::OnDownloadFailed(
       break;
     case download::Client::FailureReason::ABORTED:
       VLOG(1) << "Failure reason: ABORTED";
+      managerReason =
+          PluginVmImageManager::FailureReason::DOWNLOAD_FAILED_ABORTED;
       break;
     case download::Client::FailureReason::CANCELLED:
       VLOG(1) << "Failure reason: CANCELLED";
@@ -101,10 +107,10 @@ void PluginVmImageDownloadClient::OnDownloadFailed(
   if (old_downloads_.find(guid) != old_downloads_.end())
     return;
 
-  if (reason == download::Client::FailureReason::CANCELLED)
+  if (clientReason == download::Client::FailureReason::CANCELLED)
     GetManager()->OnDownloadCancelled();
   else
-    GetManager()->OnDownloadFailed();
+    GetManager()->OnDownloadFailed(managerReason);
 }
 
 void PluginVmImageDownloadClient::OnDownloadSucceeded(

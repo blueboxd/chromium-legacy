@@ -486,7 +486,7 @@ bool ResolveLocalHostname(base::StringPiece host, AddressList* address_list) {
 // cancellation is initiated by the Job (OnJobCancelled) vs by the end user
 // (~RequestImpl).
 class HostResolverManager::RequestImpl
-    : public CancellableRequest,
+    : public CancellableResolveHostRequest,
       public base::LinkNode<HostResolverManager::RequestImpl> {
  public:
   RequestImpl(const NetLogWithSource& source_net_log,
@@ -731,6 +731,46 @@ class HostResolverManager::RequestImpl
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(RequestImpl);
+};
+
+class HostResolverManager::ProbeRequestImpl : public CancellableProbeRequest {
+ public:
+  ProbeRequestImpl(URLRequestContext* context,
+                   base::WeakPtr<HostResolverManager> resolver)
+      : context_(context), resolver_(resolver) {
+    DCHECK(context_);
+  }
+
+  ProbeRequestImpl(const ProbeRequestImpl&) = delete;
+  ProbeRequestImpl& operator=(const ProbeRequestImpl&) = delete;
+
+  ~ProbeRequestImpl() override { Cancel(); }
+
+  void Cancel() override {
+    if (!needs_cancel_ || !resolver_)
+      return;
+
+    resolver_->CancelProbesForContext(context_);
+    needs_cancel_ = false;
+    context_ = nullptr;
+  }
+
+  // TODO(crbug.com/1013350): Make this actually start the probes once the logic
+  // for startup wait and watching for config changes is moved outside DnsClient
+  // to the caller of this Request object.
+  int Start() override {
+    DCHECK(resolver_);
+    DCHECK(!needs_cancel_);
+
+    resolver_->SetRequestContextForProbes(context_);
+    needs_cancel_ = true;
+    return ERR_IO_PENDING;
+  }
+
+ private:
+  URLRequestContext* context_;
+  base::WeakPtr<HostResolverManager> resolver_;
+  bool needs_cancel_ = false;
 };
 
 //------------------------------------------------------------------------------
@@ -2659,7 +2699,7 @@ HostResolverManager::~HostResolverManager() {
     system_dns_config_notifier_->RemoveObserver(this);
 }
 
-std::unique_ptr<HostResolverManager::CancellableRequest>
+std::unique_ptr<HostResolverManager::CancellableResolveHostRequest>
 HostResolverManager::CreateRequest(
     const HostPortPair& host,
     const NetworkIsolationKey& network_isolation_key,
@@ -2678,6 +2718,14 @@ HostResolverManager::CreateRequest(
   return std::make_unique<RequestImpl>(
       net_log, host, network_isolation_key, optional_parameters,
       request_context, host_cache, weak_ptr_factory_.GetWeakPtr());
+}
+
+std::unique_ptr<HostResolverManager::CancellableProbeRequest>
+HostResolverManager::CreateDohProbeRequest(URLRequestContext* context) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  return std::make_unique<ProbeRequestImpl>(context,
+                                            weak_ptr_factory_.GetWeakPtr());
 }
 
 std::unique_ptr<HostResolver::MdnsListener>
@@ -2753,23 +2801,6 @@ void HostResolverManager::SetDnsConfigOverrides(DnsConfigOverrides overrides) {
       UpdateJobsForChangedConfig();
     }
   }
-}
-
-void HostResolverManager::SetRequestContextForProbes(
-    URLRequestContext* url_request_context) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  dns_client_->SetRequestContextForProbes(url_request_context);
-}
-
-void HostResolverManager::CancelProbesForContext(
-    URLRequestContext* url_request_context) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // If no DnsClient, there are no probes to cancel.
-  if (!dns_client_)
-    return;
-
-  dns_client_->CancelProbesForContext(url_request_context);
 }
 
 void HostResolverManager::AddHostCacheInvalidator(
@@ -3694,6 +3725,22 @@ void HostResolverManager::InvalidateCaches() {
   DCHECK(self_ptr);
   DCHECK_EQ(num_jobs, jobs_.size());
 #endif
+}
+
+void HostResolverManager::SetRequestContextForProbes(
+    URLRequestContext* url_request_context) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(dns_client_);
+
+  dns_client_->SetRequestContextForProbes(url_request_context);
+}
+
+void HostResolverManager::CancelProbesForContext(
+    URLRequestContext* url_request_context) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(dns_client_);
+
+  dns_client_->CancelProbesForContext(url_request_context);
 }
 
 void HostResolverManager::RequestImpl::Cancel() {

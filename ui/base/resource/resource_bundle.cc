@@ -436,7 +436,7 @@ std::string ResourceBundle::LoadLocaleResources(
 
   std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
   if (!data_pack->LoadFromPath(locale_file_path)) {
-    LOG(ERROR) << "failed to load locale.pak";
+    LOG(ERROR) << "failed to load locale file: " << locale_file_path;
     NOTREACHED();
     return std::string();
   }

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FEATURE_POLICY_VIOLATION_REPORT_BODY_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/frame/location_report_body.h"
 
 namespace blink {
@@ -33,6 +34,7 @@ class CORE_EXPORT FeaturePolicyViolationReportBody : public LocationReportBody {
   String featureId() const { return feature_id_; }
   String disposition() const { return disposition_; }
   String message() const { return message_; }
+  void BuildJSONValue(V8ObjectBuilder& builder) const override;
 
   ~FeaturePolicyViolationReportBody() override = default;
 

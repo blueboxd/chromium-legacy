@@ -2,19 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('cloudprint', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {CloudPrintInterface, CloudPrintInterfaceErrorEventDetail, CloudPrintInterfaceEventType} from './cloud_print_interface.js';
+import {NativeLayer} from './native_layer.js';
+import {CloudOrigins, DestinationOrigin} from './data/destination.js';
+import {Invitation} from './data/invitation.js';
+import {parseCloudDestination, parseInvitation} from './data/cloud_parsers.js';
 
-  const CloudPrintInterfaceEventType = cloudprint.CloudPrintInterfaceEventType;
 
-  /** @implements {cloudprint.CloudPrintInterface} */
-  class CloudPrintInterfaceJS {
+  /** @implements {CloudPrintInterface} */
+  export class CloudPrintInterfaceJS {
     /**
      * API to the Google Cloud Print service.
      * @param {string} baseUrl Base part of the Google Cloud Print service URL
      *     with no trailing slash. For example,
      *     'https://www.google.com/cloudprint'.
-     * @param {!print_preview.NativeLayer} nativeLayer Native layer used to get
+     * @param {!NativeLayer} nativeLayer Native layer used to get
      *     Auth2 tokens.
      * @param {boolean} isInAppKioskMode Whether the print preview is in App
      *     Kiosk mode.
@@ -29,7 +33,7 @@ cr.define('cloudprint', function() {
 
       /**
        * Used to get Auth2 tokens.
-       * @private {!print_preview.NativeLayer}
+       * @private {!NativeLayer}
        */
       this.nativeLayer_ = nativeLayer;
 
@@ -63,7 +67,7 @@ cr.define('cloudprint', function() {
 
       /**
        * Outstanding cloud destination search requests.
-       * @private {!Array<!cloudprint.CloudPrintRequest>}
+       * @private {!Array<!CloudPrintRequest>}
        */
       this.outstandingCloudSearchRequests_ = [];
 
@@ -77,8 +81,8 @@ cr.define('cloudprint', function() {
       this.accessTokenRequestPromise_ = null;
       // </if>
 
-      /** @private {!cr.EventTarget} */
-      this.eventTarget_ = new cr.EventTarget();
+      /** @private {!EventTarget} */
+      this.eventTarget_ = new EventTarget();
     }
 
     /** @override */
@@ -94,10 +98,10 @@ cr.define('cloudprint', function() {
     /** @override */
     search(opt_account, opt_origin) {
       const account = opt_account || '';
-      let origins = opt_origin ? [opt_origin] : print_preview.CloudOrigins;
+      let origins = opt_origin ? [opt_origin] : CloudOrigins;
       if (this.isInAppKioskMode_) {
         origins = origins.filter(function(origin) {
-          return origin != print_preview.DestinationOrigin.COOKIES;
+          return origin != DestinationOrigin.COOKIES;
         });
       }
       this.abortSearchRequests_(origins);
@@ -112,7 +116,7 @@ cr.define('cloudprint', function() {
      * @param {string} account Account the search is sent for. It matters for
      *     COOKIES origin only, and can be empty (sent on behalf of the primary
      *     user in this case).
-     * @param {!Array<!print_preview.DestinationOrigin>} origins Origins to
+     * @param {!Array<!DestinationOrigin>} origins Origins to
      *     search printers for.
      * @private
      */
@@ -139,7 +143,7 @@ cr.define('cloudprint', function() {
         new HttpParam('client', 'chrome'),
       ];
       this.sendOrQueueRequest_(this.buildRequest_(
-          'GET', 'invites', params, print_preview.DestinationOrigin.COOKIES,
+          'GET', 'invites', params, DestinationOrigin.COOKIES,
           account, this.onInvitesDone_.bind(this)));
     }
 
@@ -196,19 +200,19 @@ cr.define('cloudprint', function() {
      * @param {string} action Google Cloud Print action to perform.
      * @param {Array<!HttpParam>} params HTTP parameters to include in the
      *     request.
-     * @param {!print_preview.DestinationOrigin} origin Origin for destination.
+     * @param {!DestinationOrigin} origin Origin for destination.
      * @param {?string} account Account the request is sent for. Can be
      *     {@code null} or empty string if the request is not cookie bound or
      *     is sent on behalf of the primary user.
-     * @param {function(!cloudprint.CloudPrintRequest)} callback Callback to
+     * @param {function(!CloudPrintRequest)} callback Callback to
      *     invoke when request completes.
-     * @return {!cloudprint.CloudPrintRequest} Partially prepared request.
+     * @return {!CloudPrintRequest} Partially prepared request.
      * @private
      */
     buildRequest_(method, action, params, origin, account, callback) {
       const url = new URL(this.baseUrl_ + '/' + action);
       const searchParams = url.searchParams;
-      if (origin == print_preview.DestinationOrigin.COOKIES) {
+      if (origin == DestinationOrigin.COOKIES) {
         const xsrfToken = this.xsrfTokens_[account];
         if (!xsrfToken) {
           searchParams.append('xsrf', '');
@@ -254,29 +258,29 @@ cr.define('cloudprint', function() {
 
       const xhr = new XMLHttpRequest();
       xhr.open(method, url.toString(), true);
-      xhr.withCredentials = (origin == print_preview.DestinationOrigin.COOKIES);
+      xhr.withCredentials = (origin == DestinationOrigin.COOKIES);
       for (const header in headers) {
         xhr.setRequestHeader(header, headers[header]);
       }
 
-      return new cloudprint.CloudPrintRequest(
+      return new CloudPrintRequest(
           xhr, body, origin, account, callback);
     }
 
     /**
      * Sends a request to the Google Cloud Print API or queues if it needs to
      *     wait OAuth2 access token.
-     * @param {!cloudprint.CloudPrintRequest} request Request to send or queue.
+     * @param {!CloudPrintRequest} request Request to send or queue.
      * @private
      */
     sendOrQueueRequest_(request) {
-      if (request.origin == print_preview.DestinationOrigin.COOKIES) {
+      if (request.origin == DestinationOrigin.COOKIES) {
         this.sendRequest_(request);
         return;
       }
 
       // <if expr="chromeos">
-      assert(request.origin == print_preview.DestinationOrigin.DEVICE);
+      assert(request.origin == DestinationOrigin.DEVICE);
       if (this.accessTokenRequestPromise_ == null) {
         this.accessTokenRequestPromise_ = this.nativeLayer_.getAccessToken();
       }
@@ -288,7 +292,7 @@ cr.define('cloudprint', function() {
 
     /**
      * Sends a request to the Google Cloud Print API.
-     * @param {!cloudprint.CloudPrintRequest} request Request to send.
+     * @param {!CloudPrintRequest} request Request to send.
      * @private
      */
     sendRequest_(request) {
@@ -300,9 +304,9 @@ cr.define('cloudprint', function() {
     /**
      * Creates an object containing information about the error based on the
      * request.
-     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     * @param {!CloudPrintRequest} request Request that has been
      *     completed.
-     * @return {!cloudprint.CloudPrintInterfaceErrorEventDetail} Information
+     * @return {!CloudPrintInterfaceErrorEventDetail} Information
      *     about the error.
      * @private
      */
@@ -332,12 +336,12 @@ cr.define('cloudprint', function() {
 
     /**
      * Updates user info and session index from the {@code request} response.
-     * @param {!cloudprint.CloudPrintRequest} request Request to extract user
+     * @param {!CloudPrintRequest} request Request to extract user
      *     info from.
      * @private
      */
     setUsers_(request) {
-      if (request.origin == print_preview.DestinationOrigin.COOKIES) {
+      if (request.origin == DestinationOrigin.COOKIES) {
         const users = request.result['request']['users'] || [];
         this.setUsers(users);
       }
@@ -353,7 +357,7 @@ cr.define('cloudprint', function() {
 
     /**
      * Terminates search requests for requested {@code origins}.
-     * @param {!Array<print_preview.DestinationOrigin>} origins Origins
+     * @param {!Array<DestinationOrigin>} origins Origins
      *     to terminate search requests for.
      * @private
      */
@@ -372,13 +376,13 @@ cr.define('cloudprint', function() {
     /**
      * Called when a native layer receives access token. Assumes that the
      * destination type for this token is DestinationOrigin.DEVICE.
-     * @param {cloudprint.CloudPrintRequest} request The pending request that
+     * @param {CloudPrintRequest} request The pending request that
      *     requires the access token.
      * @param {string} accessToken The access token obtained.
      * @private
      */
     onAccessTokenReady_(request, accessToken) {
-      assert(request.origin == print_preview.DestinationOrigin.DEVICE);
+      assert(request.origin == DestinationOrigin.DEVICE);
       if (accessToken) {
         request.xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
         this.sendRequest_(request);
@@ -394,7 +398,7 @@ cr.define('cloudprint', function() {
     /**
      * Called when the ready-state of a XML http request changes.
      * Calls the successCallback with the result or dispatches an ERROR event.
-     * @param {!cloudprint.CloudPrintRequest} request Request that was changed.
+     * @param {!CloudPrintRequest} request Request that was changed.
      * @private
      */
     onReadyStateChange_(request) {
@@ -402,7 +406,7 @@ cr.define('cloudprint', function() {
         if (request.xhr.status == 200) {
           request.result =
               /** @type {Object} */ (JSON.parse(request.xhr.responseText));
-          if (request.origin == print_preview.DestinationOrigin.COOKIES &&
+          if (request.origin == DestinationOrigin.COOKIES &&
               request.result['success']) {
             this.xsrfTokens_[request.result['request']['user']] =
                 request.result['xsrf_token'];
@@ -416,7 +420,7 @@ cr.define('cloudprint', function() {
      * Called when the search request completes.
      * @param {boolean} isRecent Whether the search request was for recent
      *     destinations.
-     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     * @param {!CloudPrintRequest} request Request that has been
      *     completed.
      * @private
      */
@@ -430,7 +434,7 @@ cr.define('cloudprint', function() {
             return item != request;
           });
       let activeUser = '';
-      if (request.origin == print_preview.DestinationOrigin.COOKIES) {
+      if (request.origin == DestinationOrigin.COOKIES) {
         activeUser = request.result && request.result['request'] &&
             request.result['request']['user'];
       }
@@ -440,7 +444,7 @@ cr.define('cloudprint', function() {
         const printerList = [];
         printerListJson.forEach(function(printerJson) {
           try {
-            printerList.push(cloudprint.parseCloudDestination(
+            printerList.push(parseCloudDestination(
                 printerJson, request.origin, activeUser));
           } catch (err) {
             console.error('Unable to parse cloud print destination: ' + err);
@@ -473,7 +477,7 @@ cr.define('cloudprint', function() {
 
     /**
      * Called when invitations search request completes.
-     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     * @param {!CloudPrintRequest} request Request that has been
      *     completed.
      * @private
      */
@@ -488,7 +492,7 @@ cr.define('cloudprint', function() {
         invitationListJson.forEach(function(invitationJson) {
           try {
             invitationList.push(
-                cloudprint.parseInvitation(invitationJson, activeUser));
+                parseInvitation(invitationJson, activeUser));
           } catch (e) {
             console.error('Unable to parse invitation: ' + e);
           }
@@ -509,9 +513,9 @@ cr.define('cloudprint', function() {
 
     /**
      * Called when invitation processing request completes.
-     * @param {!print_preview.Invitation} invitation Processed invitation.
+     * @param {!Invitation} invitation Processed invitation.
      * @param {boolean} accept Whether this invitation was accepted or rejected.
-     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     * @param {!CloudPrintRequest} request Request that has been
      *     completed.
      * @private
      */
@@ -522,7 +526,7 @@ cr.define('cloudprint', function() {
       let printer = null;
       if (request.xhr.status == 200 && request.result['success'] && accept) {
         try {
-          printer = cloudprint.parseCloudDestination(
+          printer = parseCloudDestination(
               request.result['printer'], request.origin, activeUser);
         } catch (e) {
           console.error('Failed to parse cloud print destination: ' + e);
@@ -541,7 +545,7 @@ cr.define('cloudprint', function() {
 
     /**
      * Called when the submit request completes.
-     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     * @param {!CloudPrintRequest} request Request that has been
      *     completed.
      * @private
      */
@@ -561,14 +565,14 @@ cr.define('cloudprint', function() {
     /**
      * Called when the printer request completes.
      * @param {string} destinationId ID of the destination that was looked up.
-     * @param {!cloudprint.CloudPrintRequest} request Request that has been
+     * @param {!CloudPrintRequest} request Request that has been
      *     completed.
      * @private
      */
     onPrinterDone_(destinationId, request) {
       // Special handling of the first printer request. It does not matter at
       // this point, whether printer was found or not.
-      if (request.origin == print_preview.DestinationOrigin.COOKIES &&
+      if (request.origin == DestinationOrigin.COOKIES &&
           request.result && request.result['request']['user'] &&
           request.result['request']['users']) {
         const users = request.result['request']['users'];
@@ -590,13 +594,13 @@ cr.define('cloudprint', function() {
       // Process response.
       if (request.xhr.status == 200 && request.result['success']) {
         let activeUser = '';
-        if (request.origin == print_preview.DestinationOrigin.COOKIES) {
+        if (request.origin == DestinationOrigin.COOKIES) {
           activeUser = request.result['request']['user'];
         }
         const printerJson = request.result['printers'][0];
         let printer;
         try {
-          printer = cloudprint.parseCloudDestination(
+          printer = parseCloudDestination(
               printerJson, request.origin, activeUser);
         } catch (err) {
           console.error(
@@ -646,16 +650,16 @@ cr.define('cloudprint', function() {
    */
   const VERSION_REGEXP_ = /.*Chrome\/([\d\.]+)/i;
 
-  class CloudPrintRequest {
+  export class CloudPrintRequest {
     /**
      * Data structure that holds data for Cloud Print requests.
      * @param {!XMLHttpRequest} xhr Partially prepared http request.
      * @param {string} body Data to send with POST requests.
-     * @param {!print_preview.DestinationOrigin} origin Origin for destination.
+     * @param {!DestinationOrigin} origin Origin for destination.
      * @param {?string} account Account the request is sent for. Can be
      *     {@code null} or empty string if the request is not cookie bound or
      *     is sent on behalf of the primary user.
-     * @param {function(!cloudprint.CloudPrintRequest)} callback Callback to
+     * @param {function(!CloudPrintRequest)} callback Callback to
      *     invoke when request completes.
      */
     constructor(xhr, body, origin, account, callback) {
@@ -673,7 +677,7 @@ cr.define('cloudprint', function() {
 
       /**
        * Origin for destination.
-       * @type {!print_preview.DestinationOrigin}
+       * @type {!DestinationOrigin}
        */
       this.origin = origin;
 
@@ -685,7 +689,7 @@ cr.define('cloudprint', function() {
 
       /**
        * Callback to invoke when request completes.
-       * @type {function(!cloudprint.CloudPrintRequest)}
+       * @type {function(!CloudPrintRequest)}
        */
       this.callback = callback;
 
@@ -717,10 +721,3 @@ cr.define('cloudprint', function() {
       this.value = value;
     }
   }
-
-  // Export
-  return {
-    CloudPrintInterfaceJS: CloudPrintInterfaceJS,
-    CloudPrintRequest: CloudPrintRequest,
-  };
-});

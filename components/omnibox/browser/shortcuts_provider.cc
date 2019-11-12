@@ -157,7 +157,7 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
   // second call to DeleteShortcutsWithURL(), which is harmless.
   history::HistoryService* const history_service = client_->GetHistoryService();
   DCHECK(history_service);
-  history_service->DeleteURL(url);
+  history_service->DeleteURLs({url});
 }
 
 ShortcutsProvider::~ShortcutsProvider() {

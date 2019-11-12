@@ -25,10 +25,33 @@ public class SecurityStateModel {
         return SecurityStateModelJni.get().getSecurityLevelForWebContents(webContents);
     }
 
+    /**
+     * Returns true for a valid URL from a secure origin, e.g., http://localhost,
+     * file:///home/user/test.html, https://bobpay.com.
+     *
+     * @param url The URL to check.
+     * @return Whether the origin of the URL is secure.
+     */
+    public static boolean isOriginSecure(String url) {
+        return SecurityStateModelJni.get().isOriginSecure(url);
+    }
+
+    /**
+     * Returns true for a valid URL with a cryptographic scheme, e.g., HTTPS, WSS.
+     *
+     * @param url The URL to check.
+     * @return Whether the scheme of the URL is cryptographic.
+     */
+    public static boolean isSchemeCryptographic(String url) {
+        return SecurityStateModelJni.get().isSchemeCryptographic(url);
+    }
+
     private SecurityStateModel() {}
 
     @NativeMethods
     interface Natives {
         int getSecurityLevelForWebContents(WebContents webContents);
+        boolean isOriginSecure(String url);
+        boolean isSchemeCryptographic(String url);
     }
 }

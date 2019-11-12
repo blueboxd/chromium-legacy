@@ -281,8 +281,8 @@ bool SearchBox::GetMostVisitedItemWithID(
                                                            item);
 }
 
-const ThemeBackgroundInfo* SearchBox::GetThemeBackgroundInfo() const {
-  return base::OptionalOrNullptr(theme_info_);
+const NtpTheme* SearchBox::GetNtpTheme() const {
+  return base::OptionalOrNullptr(theme_);
 }
 
 void SearchBox::Paste(const base::string16& text) {
@@ -569,12 +569,12 @@ void SearchBox::SetInputInProgress(bool is_input_in_progress) {
   }
 }
 
-void SearchBox::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
+void SearchBox::ThemeChanged(const NtpTheme& theme) {
   // Do not send duplicate notifications.
-  if (theme_info_ == theme_info)
+  if (theme_ == theme)
     return;
 
-  theme_info_ = theme_info;
+  theme_ = theme;
   if (can_run_js_in_renderframe_)
     SearchBoxExtension::DispatchThemeChange(render_frame()->GetWebFrame());
 }

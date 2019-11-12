@@ -2,7 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview.Header');
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import {Destination} from '../data/destination.js';
+import {State, Error} from '../data/state.js';
+import './icons.js';
+import {SettingsBehavior} from './settings_behavior.js';
+import './print_preview_vars_css.js';
+import '../strings.m.js';
 
 /**
  * @typedef {{numPages: number,
@@ -10,23 +19,25 @@ cr.exportPath('print_preview.Header');
  *            pagesLabel: string,
  *            summaryLabel: string}}
  */
-print_preview.Header.LabelInfo;
+let LabelInfo;
 
 Polymer({
   is: 'print-preview-header',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SettingsBehavior],
 
   properties: {
     cloudPrintErrorMessage: String,
 
-    /** @type {!print_preview.Destination} */
+    /** @type {!Destination} */
     destination: Object,
 
-    /** @type {!print_preview.Error} */
+    /** @type {!Error} */
     error: Number,
 
-    /** @type {!print_preview.State} */
+    /** @type {!State} */
     state: Number,
 
     managed: Boolean,
@@ -50,13 +61,13 @@ Polymer({
   isPdfOrDrive_: function() {
     return this.destination &&
         (this.destination.id ==
-             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
+             Destination.GooglePromotedId.SAVE_AS_PDF ||
          this.destination.id ==
-             print_preview.Destination.GooglePromotedId.DOCS);
+             Destination.GooglePromotedId.DOCS);
   },
 
   /**
-   * @return {!print_preview.Header.LabelInfo}
+   * @return {!LabelInfo}
    * @private
    */
   computeLabelInfo_: function() {
@@ -93,15 +104,15 @@ Polymer({
   /** @private */
   update_: function() {
     switch (this.state) {
-      case (print_preview.State.PRINTING):
+      case (State.PRINTING):
         this.summary_ = loadTimeData.getString(
             this.isPdfOrDrive_() ? 'saving' : 'printing');
         break;
-      case (print_preview.State.READY):
+      case (State.READY):
         const labelInfo = this.computeLabelInfo_();
         this.summary_ = this.getSummary_(labelInfo);
         break;
-      case (print_preview.State.FATAL_ERROR):
+      case (State.FATAL_ERROR):
         this.summary_ = this.getErrorMessage_();
         break;
       default:
@@ -116,9 +127,9 @@ Polymer({
    */
   getErrorMessage_: function() {
     switch (this.error) {
-      case print_preview.Error.PRINT_FAILED:
+      case Error.PRINT_FAILED:
         return loadTimeData.getString('couldNotPrint');
-      case print_preview.Error.CLOUD_PRINT_ERROR:
+      case Error.CLOUD_PRINT_ERROR:
         return this.cloudPrintErrorMessage;
       default:
         return '';
@@ -126,7 +137,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview.Header.LabelInfo} labelInfo
+   * @param {!LabelInfo} labelInfo
    * @return {string}
    * @private
    */

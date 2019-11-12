@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {Invitation} from './invitation.js';
+import {CloudPrintInterface, CloudPrintInterfaceEventType, CloudPrintInterfaceInvitesDoneDetail, CloudPrintInterfaceProcessInviteDetail } from '../cloud_print_interface.js';
 
   /**
    * @enum {number}
@@ -15,14 +18,14 @@ cr.define('print_preview', function() {
     FAILED: 3,
   };
 
-  class InvitationStore extends cr.EventTarget {
+  export class InvitationStore extends EventTarget {
     /** Printer sharing invitations data store. */
     constructor() {
       super();
 
       /**
        * Maps user account to the list of invitations for this account.
-       * @private {!Object<!Array<!print_preview.Invitation>>}
+       * @private {!Object<!Array<!Invitation>>}
        */
       this.invitations_ = {};
 
@@ -41,20 +44,20 @@ cr.define('print_preview', function() {
 
       /**
        * Used to fetch and process invitations.
-       * @private {cloudprint.CloudPrintInterface}
+       * @private {CloudPrintInterface}
        */
       this.cloudPrintInterface_ = null;
 
       /**
        * Invitation being processed now. Only one invitation can be processed at
        * a time.
-       * @private {print_preview.Invitation}
+       * @private {Invitation}
        */
       this.invitationInProgress_ = null;
     }
 
     /**
-     * @return {print_preview.Invitation} Currently processed invitation or
+     * @return {Invitation} Currently processed invitation or
      *     {@code null}.
      */
     get invitationInProgress() {
@@ -63,7 +66,7 @@ cr.define('print_preview', function() {
 
     /**
      * @param {string} account Account to filter invitations by.
-     * @return {!Array<!print_preview.Invitation>} List of invitations for the
+     * @return {!Array<!Invitation>} List of invitations for the
      *     {@code account}.
      */
     invitations(account) {
@@ -72,7 +75,7 @@ cr.define('print_preview', function() {
 
     /**
      * Sets the invitation store's Google Cloud Print interface.
-     * @param {!cloudprint.CloudPrintInterface} cloudPrintInterface Interface
+     * @param {!CloudPrintInterface} cloudPrintInterface Interface
      *     to set.
      */
     setCloudPrintInterface(cloudPrintInterface) {
@@ -80,15 +83,15 @@ cr.define('print_preview', function() {
       this.cloudPrintInterface_ = cloudPrintInterface;
       this.tracker_.add(
           this.cloudPrintInterface_.getEventTarget(),
-          cloudprint.CloudPrintInterfaceEventType.INVITES_DONE,
+          CloudPrintInterfaceEventType.INVITES_DONE,
           this.onCloudPrintInvitesDone_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_.getEventTarget(),
-          cloudprint.CloudPrintInterfaceEventType.INVITES_FAILED,
+          CloudPrintInterfaceEventType.INVITES_FAILED,
           this.onCloudPrintInvitesFailed_.bind(this));
       this.tracker_.add(
           this.cloudPrintInterface_.getEventTarget(),
-          cloudprint.CloudPrintInterfaceEventType.PROCESS_INVITE_DONE,
+          CloudPrintInterfaceEventType.PROCESS_INVITE_DONE,
           this.onCloudPrintProcessInviteDone_.bind(this));
     }
 
@@ -120,7 +123,7 @@ cr.define('print_preview', function() {
 
     /**
      * Accepts or rejects the {@code invitation}, based on {@code accept} value.
-     * @param {!print_preview.Invitation} invitation Invitation to process.
+     * @param {!Invitation} invitation Invitation to process.
      * @param {boolean} accept Whether to accept this invitation.
      */
     processInvitation(invitation, accept) {
@@ -133,7 +136,7 @@ cr.define('print_preview', function() {
 
     /**
      * Removes processed invitation from the internal storage.
-     * @param {!print_preview.Invitation} invitation Processed invitation.
+     * @param {!Invitation} invitation Processed invitation.
      * @private
      */
     invitationProcessed_(invitation) {
@@ -150,7 +153,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when printer sharing invitations are fetched.
-     * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceInvitesDoneDetail>}
+     * @param {!CustomEvent<!CloudPrintInterfaceInvitesDoneDetail>}
      *     event Contains the list of invitations.
      * @private
      */
@@ -174,7 +177,7 @@ cr.define('print_preview', function() {
 
     /**
      * Called when printer sharing invitation was processed successfully.
-     * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceProcessInviteDetail>}
+     * @param {!CustomEvent<!CloudPrintInterfaceProcessInviteDetail>}
      *     event Contains detailed information about the invite.
      * @private
      */
@@ -190,11 +193,8 @@ cr.define('print_preview', function() {
    * @enum {string}
    */
   InvitationStore.EventType = {
-    INVITATION_PROCESSED: 'print_preview.InvitationStore.INVITATION_PROCESSED',
+    INVITATION_PROCESSED: 'InvitationStore.INVITATION_PROCESSED',
     INVITATION_SEARCH_DONE:
-        'print_preview.InvitationStore.INVITATION_SEARCH_DONE'
+        'InvitationStore.INVITATION_SEARCH_DONE'
   };
 
-  // Export
-  return {InvitationStore: InvitationStore};
-});

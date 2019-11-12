@@ -408,18 +408,18 @@ bool InstantService::ToggleShortcutsVisibility(bool do_notify) {
   return true;
 }
 
-void InstantService::UpdateThemeInfo() {
-  ApplyOrResetCustomBackgroundThemeInfo();
-  SetNtpElementsThemeInfo();
+void InstantService::UpdateNtpTheme() {
+  ApplyOrResetCustomBackgroundNtpTheme();
+  SetNtpElementsNtpTheme();
 
-  NotifyAboutThemeInfo();
+  NotifyAboutNtpTheme();
 }
 
 void InstantService::UpdateBackgroundFromSync() {
   // Any incoming change to synced background data should clear the local image.
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
   RemoveLocalBackgroundImageCopy();
-  UpdateThemeInfo();
+  UpdateNtpTheme();
 }
 
 void InstantService::UpdateMostVisitedInfo() {
@@ -483,7 +483,7 @@ void InstantService::SetCustomBackgroundInfo(
     // background saved, UpdateBackgroundFromSync will not fire. Therefore, we
     // need to force a refresh here.
     if (need_forced_refresh) {
-      UpdateThemeInfo();
+      UpdateNtpTheme();
     }
   }
 }
@@ -491,7 +491,7 @@ void InstantService::SetCustomBackgroundInfo(
 void InstantService::SetBackgroundToLocalResource() {
   background_updated_timestamp_ = base::TimeTicks::Now();
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, true);
-  UpdateThemeInfo();
+  UpdateNtpTheme();
 }
 
 void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
@@ -503,12 +503,12 @@ void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-ThemeBackgroundInfo* InstantService::GetInitializedThemeInfo() {
+NtpTheme* InstantService::GetInitializedNtpTheme() {
   RefreshBackgroundIfNeeded();
 
-  if (!theme_info_)
-    BuildThemeInfo();
-  return theme_info_.get();
+  if (!theme_)
+    BuildNtpTheme();
+  return theme_.get();
 }
 
 void InstantService::SetNativeThemeForTesting(ui::NativeTheme* theme) {
@@ -582,8 +582,8 @@ void InstantService::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
-      theme_info_ = nullptr;
-      UpdateThemeInfo();
+      theme_ = nullptr;
+      UpdateNtpTheme();
       break;
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
@@ -604,8 +604,8 @@ void InstantService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   DCHECK_EQ(observed_theme, native_theme_);
   // Force the theme information to rebuild so the correct using_dark_colors
   // value is sent to the renderer.
-  BuildThemeInfo();
-  UpdateThemeInfo();
+  BuildNtpTheme();
+  UpdateNtpTheme();
 }
 
 void InstantService::OnSearchProviderChanged() {
@@ -644,9 +644,9 @@ void InstantService::NotifyAboutMostVisitedInfo() {
     observer.MostVisitedInfoChanged(*most_visited_info_);
 }
 
-void InstantService::NotifyAboutThemeInfo() {
+void InstantService::NotifyAboutNtpTheme() {
   for (InstantServiceObserver& observer : observers_)
-    observer.ThemeInfoChanged(*theme_info_);
+    observer.NtpThemeChanged(*theme_);
 }
 
 bool InstantService::IsCustomLinksEnabled() {
@@ -654,26 +654,26 @@ bool InstantService::IsCustomLinksEnabled() {
          !pref_service_->GetBoolean(prefs::kNtpUseMostVisitedTiles);
 }
 
-void InstantService::BuildThemeInfo() {
+void InstantService::BuildNtpTheme() {
   // Get theme information from theme service.
-  theme_info_.reset(new ThemeBackgroundInfo());
+  theme_.reset(new NtpTheme());
 
   // Get if the current theme is the default theme.
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-  theme_info_->using_default_theme = theme_service->UsingDefaultTheme();
+  theme_->using_default_theme = theme_service->UsingDefaultTheme();
 
-  theme_info_->using_dark_colors = native_theme_->ShouldUseDarkColors();
+  theme_->using_dark_colors = native_theme_->ShouldUseDarkColors();
 
   // Get theme colors.
   const ui::ThemeProvider& theme_provider =
       ThemeService::GetThemeProviderForProfile(profile_);
 
   // Set colors.
-  theme_info_->background_color =
+  theme_->background_color =
       theme_provider.GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
-  theme_info_->text_color_light =
+  theme_->text_color_light =
       theme_provider.GetColor(ThemeProperties::COLOR_NTP_TEXT_LIGHT);
-  SetNtpElementsThemeInfo();
+  SetNtpElementsNtpTheme();
 
   if (theme_service->UsingExtensionTheme()) {
     const extensions::Extension* extension =
@@ -681,72 +681,66 @@ void InstantService::BuildThemeInfo() {
             ->enabled_extensions()
             .GetByID(theme_service->GetThemeID());
     if (extension) {
-      theme_info_->theme_id = theme_service->GetThemeID();
-      theme_info_->theme_name = extension->name();
+      theme_->theme_id = theme_service->GetThemeID();
+      theme_->theme_name = extension->name();
 
       if (theme_provider.HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-        theme_info_->has_theme_image = true;
+        theme_->has_theme_image = true;
 
         // Set theme background image horizontal alignment.
         int alignment = theme_provider.GetDisplayProperty(
             ThemeProperties::NTP_BACKGROUND_ALIGNMENT);
         if (alignment & ThemeProperties::ALIGN_LEFT)
-          theme_info_->image_horizontal_alignment =
-              THEME_BKGRND_IMAGE_ALIGN_LEFT;
+          theme_->image_horizontal_alignment = THEME_BKGRND_IMAGE_ALIGN_LEFT;
         else if (alignment & ThemeProperties::ALIGN_RIGHT)
-          theme_info_->image_horizontal_alignment =
-              THEME_BKGRND_IMAGE_ALIGN_RIGHT;
+          theme_->image_horizontal_alignment = THEME_BKGRND_IMAGE_ALIGN_RIGHT;
         else
-          theme_info_->image_horizontal_alignment =
-              THEME_BKGRND_IMAGE_ALIGN_CENTER;
+          theme_->image_horizontal_alignment = THEME_BKGRND_IMAGE_ALIGN_CENTER;
 
         // Set theme background image vertical alignment.
         if (alignment & ThemeProperties::ALIGN_TOP)
-          theme_info_->image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_TOP;
+          theme_->image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_TOP;
         else if (alignment & ThemeProperties::ALIGN_BOTTOM)
-          theme_info_->image_vertical_alignment =
-              THEME_BKGRND_IMAGE_ALIGN_BOTTOM;
+          theme_->image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_BOTTOM;
         else
-          theme_info_->image_vertical_alignment =
-              THEME_BKGRND_IMAGE_ALIGN_CENTER;
+          theme_->image_vertical_alignment = THEME_BKGRND_IMAGE_ALIGN_CENTER;
 
         // Set theme background image tiling.
         int tiling = theme_provider.GetDisplayProperty(
             ThemeProperties::NTP_BACKGROUND_TILING);
         switch (tiling) {
           case ThemeProperties::NO_REPEAT:
-            theme_info_->image_tiling = THEME_BKGRND_IMAGE_NO_REPEAT;
+            theme_->image_tiling = THEME_BKGRND_IMAGE_NO_REPEAT;
             break;
           case ThemeProperties::REPEAT_X:
-            theme_info_->image_tiling = THEME_BKGRND_IMAGE_REPEAT_X;
+            theme_->image_tiling = THEME_BKGRND_IMAGE_REPEAT_X;
             break;
           case ThemeProperties::REPEAT_Y:
-            theme_info_->image_tiling = THEME_BKGRND_IMAGE_REPEAT_Y;
+            theme_->image_tiling = THEME_BKGRND_IMAGE_REPEAT_Y;
             break;
           case ThemeProperties::REPEAT:
-            theme_info_->image_tiling = THEME_BKGRND_IMAGE_REPEAT;
+            theme_->image_tiling = THEME_BKGRND_IMAGE_REPEAT;
             break;
         }
 
-        theme_info_->has_attribution =
+        theme_->has_attribution =
             theme_provider.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
       }
     }
   } else if (theme_service->UsingAutogenerated()) {
-    theme_info_->color_id = chrome_colors::ChromeColorsService::GetColorId(
+    theme_->color_id = chrome_colors::ChromeColorsService::GetColorId(
         theme_service->GetThemeColor());
-    theme_info_->color_dark =
-        theme_provider.GetColor(ThemeProperties::COLOR_FRAME);
-    theme_info_->color_light =
+    theme_->color_dark = theme_provider.GetColor(ThemeProperties::COLOR_FRAME);
+    theme_->color_light =
         theme_provider.GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
-    theme_info_->color_picked = theme_service->GetThemeColor();
+    theme_->color_picked = theme_service->GetThemeColor();
   }
 }
 
-void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
+void InstantService::ApplyOrResetCustomBackgroundNtpTheme() {
   // Custom backgrounds for non-Google search providers are not supported.
   if (!search::DefaultSearchProviderIsGoogle(profile_)) {
-    ResetCustomBackgroundThemeInfo();
+    ResetCustomBackgroundNtpTheme();
     return;
   }
 
@@ -756,27 +750,26 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
     std::string time_string = std::to_string(base::Time::Now().ToTimeT());
     std::string local_string(chrome::kChromeSearchLocalNtpBackgroundUrl);
     GURL timestamped_url(local_string + "?ts=" + time_string);
-    GetInitializedThemeInfo()->custom_background_url = timestamped_url;
-    GetInitializedThemeInfo()->custom_background_attribution_line_1 =
+    GetInitializedNtpTheme()->custom_background_url = timestamped_url;
+    GetInitializedNtpTheme()->custom_background_attribution_line_1 =
         std::string();
-    GetInitializedThemeInfo()->custom_background_attribution_line_2 =
+    GetInitializedNtpTheme()->custom_background_attribution_line_2 =
         std::string();
-    GetInitializedThemeInfo()->custom_background_attribution_action_url =
-        GURL();
+    GetInitializedNtpTheme()->custom_background_attribution_action_url = GURL();
     return;
   }
 
   // Attempt to get custom background URL from preferences.
   GURL custom_background_url;
   if (!IsCustomBackgroundPrefValid(custom_background_url)) {
-    ResetCustomBackgroundThemeInfo();
+    ResetCustomBackgroundNtpTheme();
     return;
   }
 
-  ApplyCustomBackgroundThemeInfo();
+  ApplyCustomBackgroundNtpTheme();
 }
 
-void InstantService::ApplyCustomBackgroundThemeInfo() {
+void InstantService::ApplyCustomBackgroundNtpTheme() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::DictionaryValue* background_info =
       pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
@@ -797,17 +790,17 @@ void InstantService::ApplyCustomBackgroundThemeInfo() {
       background_info->FindKey(kNtpCustomBackgroundAttributionLine2);
   const base::Value* attribution_action_url =
       background_info->FindKey(kNtpCustomBackgroundAttributionActionURL);
-  ThemeBackgroundInfo* theme_info = GetInitializedThemeInfo();
-  theme_info->custom_background_url = custom_background_url;
-  theme_info->collection_id = collection_id;
+  NtpTheme* theme = GetInitializedNtpTheme();
+  theme->custom_background_url = custom_background_url;
+  theme->collection_id = collection_id;
 
   if (attribution_line_1) {
-    theme_info->custom_background_attribution_line_1 =
+    theme->custom_background_attribution_line_1 =
         background_info->FindKey(kNtpCustomBackgroundAttributionLine1)
             ->GetString();
   }
   if (attribution_line_2) {
-    theme_info->custom_background_attribution_line_2 =
+    theme->custom_background_attribution_line_2 =
         background_info->FindKey(kNtpCustomBackgroundAttributionLine2)
             ->GetString();
   }
@@ -817,28 +810,28 @@ void InstantService::ApplyCustomBackgroundThemeInfo() {
             ->GetString());
 
     if (!action_url.SchemeIsCryptographic()) {
-      theme_info->custom_background_attribution_action_url = GURL();
+      theme->custom_background_attribution_action_url = GURL();
     } else {
-      theme_info->custom_background_attribution_action_url = action_url;
+      theme->custom_background_attribution_action_url = action_url;
     }
   }
 }
 
-void InstantService::ResetCustomBackgroundThemeInfo() {
+void InstantService::ResetCustomBackgroundNtpTheme() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   pref_service_->ClearPref(prefs::kNtpCustomBackgroundDict);
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
   RemoveLocalBackgroundImageCopy();
-  FallbackToDefaultThemeInfo();
+  FallbackToDefaultNtpTheme();
 }
 
-void InstantService::FallbackToDefaultThemeInfo() {
-  ThemeBackgroundInfo* theme_info = GetInitializedThemeInfo();
-  theme_info->custom_background_url = GURL();
-  theme_info->custom_background_attribution_line_1 = std::string();
-  theme_info->custom_background_attribution_line_2 = std::string();
-  theme_info->custom_background_attribution_action_url = GURL();
-  theme_info->collection_id = std::string();
+void InstantService::FallbackToDefaultNtpTheme() {
+  NtpTheme* theme = GetInitializedNtpTheme();
+  theme->custom_background_url = GURL();
+  theme->custom_background_attribution_line_1 = std::string();
+  theme->custom_background_attribution_line_2 = std::string();
+  theme->custom_background_attribution_action_url = GURL();
+  theme->collection_id = std::string();
 }
 
 bool InstantService::IsCustomBackgroundSet() {
@@ -865,7 +858,7 @@ std::pair<bool, bool> InstantService::GetCurrentShortcutSettings() {
 
 void InstantService::ResetToDefault() {
   ResetCustomLinks();
-  ResetCustomBackgroundThemeInfo();
+  ResetCustomBackgroundNtpTheme();
   pref_service_->SetBoolean(prefs::kNtpUseMostVisitedTiles, false);
   pref_service_->SetBoolean(prefs::kNtpShortcutsVisible, true);
 }
@@ -1014,31 +1007,31 @@ void InstantService::SetClockForTesting(base::Clock* clock) {
   clock_ = clock;
 }
 
-void InstantService::SetNtpElementsThemeInfo() {
-  ThemeBackgroundInfo* theme_info = GetInitializedThemeInfo();
+void InstantService::SetNtpElementsNtpTheme() {
+  NtpTheme* theme = GetInitializedNtpTheme();
   if (IsCustomBackgroundSet()) {
-    theme_info->text_color = gfx::kGoogleGrey050;
-    theme_info->logo_alternate = true;
-    theme_info->logo_color = ThemeProperties::GetDefaultColor(
+    theme->text_color = gfx::kGoogleGrey050;
+    theme->logo_alternate = true;
+    theme->logo_color = ThemeProperties::GetDefaultColor(
         ThemeProperties::COLOR_NTP_LOGO, false);
-    theme_info->shortcut_color = ThemeProperties::GetDefaultColor(
+    theme->shortcut_color = ThemeProperties::GetDefaultColor(
         ThemeProperties::COLOR_NTP_SHORTCUT, false);
   } else {
     const ui::ThemeProvider& theme_provider =
         ThemeService::GetThemeProviderForProfile(profile_);
-    theme_info->text_color =
+    theme->text_color =
         theme_provider.GetColor(ThemeProperties::COLOR_NTP_TEXT);
-    theme_info->logo_alternate = theme_provider.GetDisplayProperty(
-                                     ThemeProperties::NTP_LOGO_ALTERNATE) == 1;
-    theme_info->logo_color =
+    theme->logo_alternate = theme_provider.GetDisplayProperty(
+                                ThemeProperties::NTP_LOGO_ALTERNATE) == 1;
+    theme->logo_color =
         theme_provider.GetColor(ThemeProperties::COLOR_NTP_LOGO);
 
     // For default theme in dark mode use dark shortcuts.
     if (native_theme_->ShouldUseDarkColors() &&
         ThemeServiceFactory::GetForProfile(profile_)->UsingDefaultTheme()) {
-      theme_info->shortcut_color = gfx::kGoogleGrey900;
+      theme->shortcut_color = gfx::kGoogleGrey900;
     } else {
-      theme_info->shortcut_color =
+      theme->shortcut_color =
           theme_provider.GetColor(ThemeProperties::COLOR_NTP_SHORTCUT);
     }
   }

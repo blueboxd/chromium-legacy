@@ -4,14 +4,13 @@
 
 #include "chrome/common/search/instant_types.h"
 
-ThemeBackgroundInfo::ThemeBackgroundInfo() = default;
+NtpTheme::NtpTheme() = default;
 
-ThemeBackgroundInfo::ThemeBackgroundInfo(const ThemeBackgroundInfo& other) =
-    default;
+NtpTheme::NtpTheme(const NtpTheme& other) = default;
 
-ThemeBackgroundInfo::~ThemeBackgroundInfo() = default;
+NtpTheme::~NtpTheme() = default;
 
-bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
+bool NtpTheme::operator==(const NtpTheme& rhs) const {
   return using_default_theme == rhs.using_default_theme &&
          using_dark_colors == rhs.using_dark_colors &&
          custom_background_url == rhs.custom_background_url &&

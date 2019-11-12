@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL An autofocus element in a dialog element should not try to get focus twice. assert_equals: Non-dialog autofocus processing should be skipped. expected Element node <body>
+<dialog open="">
+<input>
+<input autofocus="">
+</di... but got Element node <input autofocus=""></input>
+Harness: the test ran to completion.
+

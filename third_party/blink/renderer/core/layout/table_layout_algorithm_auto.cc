@@ -25,6 +25,8 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell_interface.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_interface.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 
@@ -244,7 +246,7 @@ static bool ShouldScaleColumnsForParent(LayoutTable* table) {
 }
 
 // FIXME: This needs to be adapted for vertical writing modes.
-static bool ShouldScaleColumnsForSelf(LayoutTable* table) {
+static bool ShouldScaleColumnsForSelf(LayoutNGTableInterface* table) {
   // Normally, scale all columns to satisfy this from CSS2.2:
   // "A percentage value for a column width is relative to the table width.
   // If the table has 'width: auto', a percentage represents a constraint on the
@@ -253,11 +255,12 @@ static bool ShouldScaleColumnsForSelf(LayoutTable* table) {
   // A special case.  If this table is not fixed width and contained inside
   // a cell, then don't bloat the maxwidth by examining percentage growth.
   while (true) {
-    const Length& tw = table->StyleRef().Width();
+    const LayoutObject* layout_table = table->ToLayoutObject();
+    const Length& tw = layout_table->StyleRef().Width();
     if ((!tw.IsAuto() && !tw.IsPercentOrCalc()) ||
-        table->IsOutOfFlowPositioned())
+        layout_table->IsOutOfFlowPositioned())
       return true;
-    LayoutBlock* cb = table->ContainingBlock();
+    LayoutBlock* cb = layout_table->ContainingBlock();
 
     while (!cb->IsLayoutView() && !cb->IsTableCell() &&
            cb->StyleRef().Width().IsAuto() && !cb->IsOutOfFlowPositioned())
@@ -268,9 +271,15 @@ static bool ShouldScaleColumnsForSelf(LayoutTable* table) {
                                !cb->StyleRef().Width().IsPercentOrCalc()))
       return true;
 
-    LayoutTableCell* cell = To<LayoutTableCell>(cb);
-    table = cell->Table();
-    if (cell->ColSpan() > 1 || table->IsLogicalWidthAuto())
+    LayoutNGTableCellInterface* cell =
+        ToInterface<LayoutNGTableCellInterface>(cb);
+    table = cell->TableInterface();
+    const Length& table_logical_width =
+        table->ToLayoutObject()->StyleRef().LogicalWidth();
+    bool width_is_auto = (!table_logical_width.IsSpecified() ||
+                          !table_logical_width.IsPositive()) &&
+                         !table_logical_width.IsIntrinsic();
+    if (cell->ColSpan() > 1 || width_is_auto)
       return false;
   }
   NOTREACHED();

@@ -30,18 +30,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_utils.h"
 
-class TestThemeInfoObserver : public InstantServiceObserver {
+class TestNtpThemeObserver : public InstantServiceObserver {
  public:
-  explicit TestThemeInfoObserver(InstantService* service) : service_(service) {
+  explicit TestNtpThemeObserver(InstantService* service) : service_(service) {
     service_->AddObserver(this);
   }
 
-  ~TestThemeInfoObserver() override { service_->RemoveObserver(this); }
+  ~TestNtpThemeObserver() override { service_->RemoveObserver(this); }
 
   void WaitForThemeApplied(bool theme_installed) {
     DCHECK(!quit_closure_);
     theme_installed_ = theme_installed;
-    if (hasThemeInstalled(theme_info_) == theme_installed_) {
+    if (hasThemeInstalled(theme_) == theme_installed_) {
       return;
     }
 
@@ -51,10 +51,10 @@ class TestThemeInfoObserver : public InstantServiceObserver {
   }
 
  private:
-  void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override {
-    theme_info_ = theme_info;
+  void NtpThemeChanged(const NtpTheme& theme) override {
+    theme_ = theme;
 
-    if (quit_closure_ && hasThemeInstalled(theme_info) == theme_installed_) {
+    if (quit_closure_ && hasThemeInstalled(theme) == theme_installed_) {
       std::move(quit_closure_).Run();
       quit_closure_.Reset();
     }
@@ -62,13 +62,11 @@ class TestThemeInfoObserver : public InstantServiceObserver {
 
   void MostVisitedInfoChanged(const InstantMostVisitedInfo&) override {}
 
-  bool hasThemeInstalled(const ThemeBackgroundInfo& theme_info) {
-    return theme_info.theme_id != "";
-  }
+  bool hasThemeInstalled(const NtpTheme& theme) { return theme.theme_id != ""; }
 
   InstantService* const service_;
 
-  ThemeBackgroundInfo theme_info_;
+  NtpTheme theme_;
 
   bool theme_installed_;
   base::OnceClosure quit_closure_;
@@ -174,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeAppliedToExistingTab) {
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
 
   const std::string helper_js = "document.body.style.cssText";
-  TestThemeInfoObserver observer(
+  TestNtpThemeObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   // Open new tab.
@@ -224,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeAppliedToNewTab) {
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
 
   const std::string helper_js = "document.body.style.cssText";
-  TestThemeInfoObserver observer(
+  TestNtpThemeObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
   // Open new tab.
   content::WebContents* active_tab =
@@ -271,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeChangedWhenApplyingNewTheme) {
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
 
   const std::string helper_js = "document.body.style.cssText";
-  TestThemeInfoObserver observer(
+  TestNtpThemeObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   // Open new tab.

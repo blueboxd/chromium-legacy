@@ -841,6 +841,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   }
 
   LayoutBlock* block = DynamicTo<LayoutBlock>(box_);
+  bool needs_full_invalidation = false;
   if (LIKELY(block && is_last_fragment)) {
     LayoutUnit intrinsic_block_size =
         layout_result.UnconstrainedIntrinsicBlockSize();
@@ -854,6 +855,11 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     if (UNLIKELY(flow_thread)) {
       UpdateLegacyMultiColumnFlowThread(*this, flow_thread, constraint_space,
                                         physical_fragment);
+
+      // Issue full invalidation, in case the number of column rules have
+      // changed.
+      if (Style().HasColumnRule())
+        needs_full_invalidation = true;
     }
 
     BoxLayoutExtraInput input(*block);
@@ -867,7 +873,11 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   }
 
   box_->UpdateAfterLayout();
-  box_->ClearNeedsLayout();
+
+  if (needs_full_invalidation)
+    box_->ClearNeedsLayoutWithFullPaintInvalidation();
+  else
+    box_->ClearNeedsLayout();
 
   // Overflow computation depends on this being set.
   if (LIKELY(block_flow))

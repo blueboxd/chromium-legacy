@@ -23,17 +23,17 @@ class TestInstantServiceObserver : public InstantServiceObserver {
 
   void WaitForMostVisitedItems(size_t count);
 
-  void WaitForThemeInfoUpdated(std::string background_url,
-                               std::string attribution_1,
-                               std::string attribution_2,
-                               std::string attribution_action_url);
+  void WaitForNtpThemeUpdated(std::string background_url,
+                              std::string attribution_1,
+                              std::string attribution_2,
+                              std::string attribution_action_url);
 
   void WaitForThemeApplied(bool theme_installed);
 
   bool IsUsingDefaultTheme();
 
  private:
-  void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
+  void NtpThemeChanged(const NtpTheme& theme) override;
 
   void MostVisitedInfoChanged(
       const InstantMostVisitedInfo& most_visited_info) override;
@@ -41,7 +41,7 @@ class TestInstantServiceObserver : public InstantServiceObserver {
   InstantService* const service_;
 
   std::vector<InstantMostVisitedItem> items_;
-  ThemeBackgroundInfo theme_info_;
+  NtpTheme theme_;
 
   bool theme_installed_;
 

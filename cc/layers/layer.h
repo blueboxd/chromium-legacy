@@ -393,12 +393,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // asked to prepare content with Update(), if the scroll offset for the layer
   // was changed by the InputHandlerClient, on the compositor thread (or on the
   // main thread in single-thread mode). It may be set to a null callback, in
-  // which case nothing is called.
-  void set_did_scroll_callback(
-      base::RepeatingCallback<void(const gfx::ScrollOffset&, const ElementId&)>
-          callback) {
-    inputs_.did_scroll_callback = std::move(callback);
-  }
+  // which case nothing is called. This is for layer tree mode only. Should use
+  // ScrollTree::SetScrollCallbacks() in layer list mode.
+  void SetDidScrollCallback(base::RepeatingCallback<
+                            void(const gfx::ScrollOffset&, const ElementId&)>);
 
   // Set or get if the layer and its subtree should be cached as a texture in
   // the display compositor. This is used as an optimization when it is known
@@ -602,11 +600,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // will be called for this layer during the next commit only if this method
   // was called before it.
   void SetNeedsPushProperties();
-
-  // Internal method to call the LayerClient, if there is one, to inform it when
-  // overlay scrollbars have been completely hidden (due to lack of scrolling by
-  // the user).
-  void SetScrollbarsHiddenFromImplSide(bool hidden);
 
   // Internal to property tree construction. A generation number for the
   // property trees, to verify the layer's indices are pointers into the trees
@@ -872,6 +865,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     base::WeakPtr<LayerClient> client;
     std::unique_ptr<base::trace_event::TracedValue> debug_info;
 
+    // These for for layer tree mode (ui compositor) only.
     base::RepeatingCallback<void(const gfx::ScrollOffset&, const ElementId&)>
         did_scroll_callback;
     std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;

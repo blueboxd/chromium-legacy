@@ -171,10 +171,12 @@ class DnsClientImpl : public DnsClient,
   }
 
   void CancelProbesForContext(URLRequestContext* url_request_context) override {
-    if (url_request_context_for_probes_ != url_request_context || !factory_)
+    if (url_request_context_for_probes_ != url_request_context)
       return;
 
-    factory_->CancelDohProbes();
+    if (factory_)
+      factory_->CancelDohProbes();
+
     delayed_probes_start_timer_.Stop();
     url_request_context_for_probes_ = nullptr;
   }

@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 
 import java.util.Arrays;
@@ -90,6 +89,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
             "location_access_list", // PermissionInfo.Type.GEOLOCATION
             "microphone_permission_list", // PermissionInfo.Type.MICROPHONE
             "midi_sysex_permission_list", // PermissionInfo.Type.MIDI
+            "nfc_permission_list", // PermissionInfo.Type.NFC
             "push_notifications_list", // PermissionInfo.Type.NOTIFICATION
             "protected_media_identifier_permission_list",
             // PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER
@@ -761,8 +761,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
         // In order to always show the sound permission, set it up with the default value if it
         // doesn't have a current value.
         if (currentValue == null) {
-            currentValue =
-                    PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.SOUND)
+            currentValue = WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.SOUND)
                     ? ContentSettingValues.ALLOW
                     : ContentSettingValues.BLOCK;
         }
@@ -801,7 +800,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
         // However, if the blocking is activated, we still want to show the permission, even if it
         // is in the default state.
         if (permission == null) {
-            permission = PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.ADS)
+            permission = WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.ADS)
                     ? ContentSettingValues.ALLOW
                     : ContentSettingValues.BLOCK;
         }

@@ -2,16 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {Destination} from '../data/destination.js';
+import {State} from '../data/state.js';
+import '../strings.m.js';
+
 Polymer({
   is: 'print-preview-button-strip',
 
+  _template: html`{__html_template__}`,
+
   properties: {
-    /** @type {!print_preview.Destination} */
+    /** @type {!Destination} */
     destination: Object,
 
     firstLoad: Boolean,
 
-    /** @type {!print_preview.State} */
+    /** @type {!State} */
     state: {
       type: Number,
       observer: 'updatePrintButtonEnabled_',
@@ -34,8 +44,8 @@ Polymer({
 
   observers: ['updatePrintButtonLabel_(destination.id)'],
 
-  /** @private {!print_preview.State} */
-  lastState_: print_preview.State.NOT_READY,
+  /** @private {!State} */
+  lastState_: State.NOT_READY,
 
   /** @private */
   onPrintClick_: function() {
@@ -54,9 +64,9 @@ Polymer({
   isPdfOrDrive_: function() {
     return this.destination &&
         (this.destination.id ==
-             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
+             Destination.GooglePromotedId.SAVE_AS_PDF ||
          this.destination.id ==
-             print_preview.Destination.GooglePromotedId.DOCS);
+             Destination.GooglePromotedId.DOCS);
   },
 
   /** @private */
@@ -68,10 +78,10 @@ Polymer({
   /** @private */
   updatePrintButtonEnabled_: function() {
     switch (this.state) {
-      case (print_preview.State.PRINTING):
+      case (State.PRINTING):
         this.printButtonEnabled_ = false;
         break;
-      case (print_preview.State.READY):
+      case (State.READY):
         this.printButtonEnabled_ = true;
         if (this.firstLoad) {
           this.$$('cr-button.action-button').focus();

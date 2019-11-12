@@ -977,6 +977,13 @@ void Layer::UpdateScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   property_trees.transform_tree.set_needs_update(true);
 }
 
+void Layer::SetDidScrollCallback(
+    base::RepeatingCallback<void(const gfx::ScrollOffset&, const ElementId&)>
+        callback) {
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
+  inputs_.did_scroll_callback = std::move(callback);
+}
+
 void Layer::SetScrollable(const gfx::Size& bounds) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.scrollable && inputs_.scroll_container_bounds == bounds)
@@ -1366,13 +1373,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   if (needs_show_scrollbars_)
     layer->set_needs_show_scrollbars(true);
 
-  // If the main thread commits multiple times before the impl thread actually
-  // draws, then damage tracking will become incorrect if we simply clobber the
-  // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
-  // union) any update changes that have occurred on the main thread.
-  inputs_.update_rect.Union(layer->update_rect());
-  layer->SetUpdateRect(inputs_.update_rect);
-
+  layer->UnionUpdateRect(inputs_.update_rect);
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
   layer->SetNeedsPushProperties();
 
@@ -1454,11 +1455,6 @@ void Layer::SetMayContainVideo(bool yes) {
     return;
   may_contain_video_ = yes;
   SetNeedsPushProperties();
-}
-
-void Layer::SetScrollbarsHiddenFromImplSide(bool hidden) {
-  if (inputs_.client)
-    inputs_.client->DidChangeScrollbarsHiddenIfOverlay(hidden);
 }
 
 // On<Property>Animated is called due to an ongoing accelerated animation.

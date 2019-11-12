@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -98,6 +99,12 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   // Update device bluetooth info.
   device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
       &VersionInfoUpdater::OnGetAdapter, weak_pointer_factory_.GetWeakPtr()));
+
+  // Get ADB sideloading status.
+  chromeos::SessionManagerClient* client =
+      chromeos::SessionManagerClient::Get();
+  client->QueryAdbSideload(base::Bind(&VersionInfoUpdater::OnQueryAdbSideload,
+                                      weak_pointer_factory_.GetWeakPtr()));
 }
 
 base::Optional<bool> VersionInfoUpdater::IsSystemInfoEnforced() const {
@@ -173,6 +180,17 @@ void VersionInfoUpdater::OnStoreLoaded(policy::CloudPolicyStore* store) {
 
 void VersionInfoUpdater::OnStoreError(policy::CloudPolicyStore* store) {
   UpdateEnterpriseInfo();
+}
+
+void VersionInfoUpdater::OnQueryAdbSideload(bool success, bool enabled) {
+  if (!success) {
+    LOG(ERROR) << "Failed to query adb sideload status";
+    // Pretend to be enabled to show warning at login screen conservatively.
+    enabled = true;
+  }
+
+  if (delegate_)
+    delegate_->OnAdbSideloadStatusUpdated(enabled);
 }
 
 }  // namespace chromeos

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/payment_app.h"
 #include "components/payments/core/payment_response.h"
 #include "components/payments/core/web_payment_request.h"
 
@@ -37,14 +37,14 @@ class PaymentRequest;
 
 // A helper class to facilitate creation of the PaymentResponse.
 class PaymentResponseHelper
-    : public PaymentInstrument::Delegate,
+    : public PaymentApp::Delegate,
       public base::SupportsWeakPtr<PaymentResponseHelper> {
  public:
   PaymentResponseHelper(id<PaymentResponseHelperConsumer> consumer,
                         PaymentRequest* payment_request);
   ~PaymentResponseHelper() override;
 
-  // PaymentInstrument::Delegate
+  // PaymentApp::Delegate
   void OnInstrumentDetailsReady(const std::string& method_name,
                                 const std::string& stringified_details,
                                 const PayerData& payer_data) override;

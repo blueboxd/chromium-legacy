@@ -5,6 +5,8 @@
 suite('Bookmarks policies', function() {
   let store;
   let app;
+  /** @type {?bookmarks.BrowserProxy} */
+  let testBrowserProxy;
 
   setup(function() {
     const nodes = testTree(createFolder('1', [
@@ -20,6 +22,8 @@ suite('Bookmarks policies', function() {
     store.expectAction('set-can-edit');
     store.replaceSingleton();
 
+    testBrowserProxy = new bookmarks.TestBookmarksBrowserProxy();
+    bookmarks.BrowserProxy.instance_ = testBrowserProxy;
     app = document.createElement('bookmarks-app');
     replaceBody(app);
   });
@@ -28,13 +32,18 @@ suite('Bookmarks policies', function() {
     const commandManager = bookmarks.CommandManager.getInstance();
     // Incognito is disabled during testGenPreamble(). Wait for the front-end to
     // load the config.
-    const action = await store.waitForAction('set-incognito-availability');
+    const whenIncognitoSet = await Promise.all([
+      testBrowserProxy.whenCalled('getIncognitoAvailability'),
+      store.waitForAction('set-incognito-availability')
+    ]);
+
     assertEquals(
         IncognitoAvailability.DISABLED, store.data.prefs.incognitoAvailability);
     assertFalse(
         commandManager.canExecute(Command.OPEN_INCOGNITO, new Set(['11'])));
 
-    await cr.sendWithPromise('testSetIncognito', IncognitoAvailability.ENABLED);
+    cr.webUIListenerCallback(
+        'incognito-availability-changed', IncognitoAvailability.ENABLED);
     assertEquals(
         IncognitoAvailability.ENABLED, store.data.prefs.incognitoAvailability);
     assertTrue(
@@ -43,11 +52,14 @@ suite('Bookmarks policies', function() {
 
   test('canEdit updates when changed', async function() {
     const commandManager = bookmarks.CommandManager.getInstance();
-    const action = await store.waitForAction('set-can-edit');
+    const whenCanEditSet = await Promise.all([
+      testBrowserProxy.whenCalled('getCanEditBookmarks'),
+      store.waitForAction('set-can-edit')
+    ]);
     assertFalse(store.data.prefs.canEdit);
     assertFalse(commandManager.canExecute(Command.DELETE, new Set(['11'])));
 
-    await cr.sendWithPromise('testSetCanEdit', true);
+    cr.webUIListenerCallback('can-edit-bookmarks-changed', true);
     assertTrue(store.data.prefs.canEdit);
     assertTrue(commandManager.canExecute(Command.DELETE, new Set(['11'])));
   });

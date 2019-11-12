@@ -208,6 +208,13 @@ struct VRPose {
   bool pose_reset;
 };
 
+// An entity's pose. Used by entities for which both position and orientation is
+// always known (e.g. anchors, planes).
+struct Pose {
+  gfx.mojom.Quaternion orientation;
+  gfx.mojom.Point3F position;
+};
+
 struct XRRay {
   gfx.mojom.Point3F origin;
   gfx.mojom.Vector3dF direction;
@@ -328,7 +335,7 @@ struct XRPlaneData {
   // Pose of the plane's center. Defines new coordinate space.
   // Y axis of the coordinate space describes plane's normal, the rotation of
   // X and Z around the Y axis is arbitrary.
-  VRPose pose;
+  Pose pose;
 
   // Vertices of 2D convex polygon approximating the plane.
   array<XRPlanePointData> polygon;
@@ -358,7 +365,7 @@ struct XRAnchorData {
   uint64 id;
 
   // Pose of the anchor.
-  VRPose pose;
+  Pose pose;
 };
 
 // Struct containing information about all tracked & updated anchors in a given
@@ -554,8 +561,8 @@ interface XREnvironmentIntegrationProvider {
   // Issues a request to create an anchor attached to a session.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
-  CreateAnchor(VRPose anchor_pose) => (CreateAnchorResult result,
-                                       uint64 anchor_id);
+  CreateAnchor(Pose anchor_pose) => (CreateAnchorResult result,
+                                     uint64 anchor_id);
   // TODO(https://crbug.com/657632): Switch anchor_id to nullable integer once
   // that's available. This will allow us to remove CreateAnchorResult if we're
   // not interested in obtaining detailed error information from the device.
@@ -563,7 +570,7 @@ interface XREnvironmentIntegrationProvider {
   // Issues a request to create an anchor attached to a plane.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
-  CreatePlaneAnchor(VRPose anchor_pose, uint64 plane_id) =>
+  CreatePlaneAnchor(Pose anchor_pose, uint64 plane_id) =>
     (CreateAnchorResult result, uint64 anchor_id);
   // TODO(https://crbug.com/657632): Ditto - make anchor_id a nullable integer..
 

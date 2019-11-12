@@ -17,6 +17,7 @@ import {PDFMetrics} from './metrics.js';
 import {NavigatorDelegate, PdfNavigator} from './navigator.js';
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
 import {FittingType} from './pdf_fitting_type.js';
+import {DeserializeKeyEvent, LoadState, SerializeKeyEvent} from './pdf_scripting_api.js';
 import {ToolbarManager} from './toolbar_manager.js';
 import {LayoutOptions, Point, Viewport} from './viewport.js';
 import {ViewportScroller} from './viewport_scroller.js';

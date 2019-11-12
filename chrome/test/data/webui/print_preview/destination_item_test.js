@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('destination_item_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType} from 'chrome://print/print_preview.js';
+import {createDestinationWithCertificateStatus} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
+  window.destination_item_test = {};
+  destination_item_test.suiteName = 'DestinationItemTest';
   /** @enum {string} */
-  const TestNames = {
+  destination_item_test.TestNames = {
     Online: 'online',
     Offline: 'offline',
     BadCertificate: 'bad certificate',
@@ -12,8 +17,7 @@ cr.define('destination_item_test', function() {
     QueryDescription: 'query description',
   };
 
-  const suiteName = 'DestinationItemTest';
-  suite(suiteName, function() {
+  suite(destination_item_test.suiteName, function() {
     /** @type {?PrintPreviewDestinationListItemElement} */
     let item = null;
 
@@ -29,17 +33,17 @@ cr.define('destination_item_test', function() {
       item = document.createElement('print-preview-destination-list-item');
 
       // Create destination
-      item.destination = new print_preview.Destination(
-          printerId, print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.COOKIES, printerName,
-          print_preview.DestinationConnectionStatus.ONLINE);
+      item.destination = new Destination(
+          printerId, DestinationType.GOOGLE,
+          DestinationOrigin.COOKIES, printerName,
+          DestinationConnectionStatus.ONLINE);
       item.searchQuery = null;
       document.body.appendChild(item);
     });
 
     // Test that the destination is displayed correctly for the basic case of an
     // online destination with no search query.
-    test(assert(TestNames.Online), function() {
+    test(assert(destination_item_test.TestNames.Online), function() {
       const name = item.$$('.name');
       assertEquals(printerName, name.textContent);
       assertEquals('1', window.getComputedStyle(name).opacity);
@@ -51,7 +55,7 @@ cr.define('destination_item_test', function() {
 
     // Test that the destination is opaque and the correct status shows up if
     // the destination is stale.
-    test(assert(TestNames.Offline), function() {
+    test(assert(destination_item_test.TestNames.Offline), function() {
       const now = new Date();
       const twoMonthsAgo = new Date(now.getTime());
       let month = twoMonthsAgo.getMonth() - 2;
@@ -60,10 +64,10 @@ cr.define('destination_item_test', function() {
         twoMonthsAgo.setFullYear(now.getFullYear() - 1);
       }
       twoMonthsAgo.setMonth(month);
-      item.destination = new print_preview.Destination(
-          printerId, print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.COOKIES, printerName,
-          print_preview.DestinationConnectionStatus.OFFLINE,
+      item.destination = new Destination(
+          printerId, DestinationType.GOOGLE,
+          DestinationOrigin.COOKIES, printerName,
+          DestinationConnectionStatus.OFFLINE,
           {lastAccessTime: twoMonthsAgo.getTime()});
 
       const name = item.$$('.name');
@@ -79,10 +83,10 @@ cr.define('destination_item_test', function() {
 
     // Test that the destination is opaque and the correct status shows up if
     // the destination has a bad cloud print certificate.
-    test(assert(TestNames.BadCertificate), function() {
+    test(assert(destination_item_test.TestNames.BadCertificate), function() {
       loadTimeData.overrideValues({isEnterpriseManaged: false});
       item.destination =
-          print_preview_test_utils.createDestinationWithCertificateStatus(
+          createDestinationWithCertificateStatus(
               printerId, printerName, true);
 
       const name = item.$$('.name');
@@ -98,7 +102,7 @@ cr.define('destination_item_test', function() {
 
     // Test that the destination is displayed correctly when the search query
     // matches its display name.
-    test(assert(TestNames.QueryName), function() {
+    test(assert(destination_item_test.TestNames.QueryName), function() {
       item.searchQuery = /(Foo)/i;
 
       const name = item.$$('.name');
@@ -115,15 +119,15 @@ cr.define('destination_item_test', function() {
 
     // Test that the destination is displayed correctly when the search query
     // matches its description.
-    test(assert(TestNames.QueryDescription), function() {
+    test(assert(destination_item_test.TestNames.QueryDescription), function() {
       const params = {
         description: 'ABCPrinterBrand Model 123',
         location: 'Building 789 Floor 6',
       };
-      item.destination = new print_preview.Destination(
-          printerId, print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.COOKIES, printerName,
-          print_preview.DestinationConnectionStatus.ONLINE, params);
+      item.destination = new Destination(
+          printerId, DestinationType.GOOGLE,
+          DestinationOrigin.COOKIES, printerName,
+          DestinationConnectionStatus.ONLINE, params);
       item.searchQuery = /(ABC)/i;
 
       // No highlighting on name.
@@ -140,9 +144,3 @@ cr.define('destination_item_test', function() {
       assertEquals('ABC', searchHits[0].textContent);
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

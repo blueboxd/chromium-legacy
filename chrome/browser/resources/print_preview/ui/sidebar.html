@@ -1,44 +1,4 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/load_time_data.html">
-<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
-<link rel="import" href="../metrics.html">
-<link rel="import" href="../dark_mode_behavior.html">
-<link rel="import" href="../data/destination.html">
-<link rel="import" href="../data/state.html">
-<link rel="import" href="advanced_options_settings.html">
-<link rel="import" href="button_strip.html">
-<link rel="import" href="color_settings.html">
-<link rel="import" href="copies_settings.html">
-<link rel="import" href="destination_settings.html">
-<link rel="import" href="dpi_settings.html">
-<link rel="import" href="duplex_settings.html">
-<link rel="import" href="header.html">
-<link rel="import" href="layout_settings.html">
-<link rel="import" href="media_size_settings.html">
-<link rel="import" href="margins_settings.html">
-<link rel="import" href="more_settings.html">
-<link rel="import" href="other_options_settings.html">
-<link rel="import" href="pages_per_sheet_settings.html">
-<link rel="import" href="pages_settings.html">
-<if expr="chromeos">
-  <link rel="import" href="pin_settings.html">
-</if>
-<link rel="import" href="print_preview_vars_css.html">
-<link rel="import" href="scaling_settings.html">
-<link rel="import" href="settings_behavior.html">
-<link rel="import" href="strings.html">
-
-<if expr="not chromeos">
-  <link rel="import" href="link_container.html">
-</if>
-<dom-module id="print-preview-sidebar">
-  <template>
     <style include="cr-hidden-style cr-shared-style">
       :host {
         background-color: white;
@@ -174,6 +134,3 @@
         state="[[state]]" first-load="[[firstLoad_]]"
         on-print-button-focused="onPrintButtonFocused_">
     </print-preview-button-strip>
-  </template>
-  <script src="sidebar.js"></script>
-</dom-module>

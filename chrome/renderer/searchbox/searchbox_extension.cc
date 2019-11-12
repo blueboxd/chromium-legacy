@@ -240,9 +240,8 @@ bool ArrayToSkColor(v8::Isolate* isolate,
   return true;
 }
 
-v8::Local<v8::Object> GenerateThemeBackgroundInfo(
-    v8::Isolate* isolate,
-    const ThemeBackgroundInfo& theme_info) {
+v8::Local<v8::Object> GenerateNtpTheme(v8::Isolate* isolate,
+                                       const NtpTheme& theme_info) {
   gin::DataObjectBuilder builder(isolate);
 
   // True if the theme is the system default and no custom theme has been
@@ -710,7 +709,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static bool IsInputInProgress();
   static v8::Local<v8::Value> GetMostVisited(v8::Isolate* isolate);
   static bool GetMostVisitedAvailable(v8::Isolate* isolate);
-  static v8::Local<v8::Value> GetThemeBackgroundInfo(v8::Isolate* isolate);
+  static v8::Local<v8::Value> GetNtpTheme(v8::Isolate* isolate);
   static bool GetIsCustomLinks();
   static bool GetIsUsingMostVisited();
   static bool GetAreShortcutsVisible();
@@ -790,8 +789,10 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetProperty("mostVisited", &NewTabPageBindings::GetMostVisited)
       .SetProperty("mostVisitedAvailable",
                    &NewTabPageBindings::GetMostVisitedAvailable)
-      .SetProperty("themeBackgroundInfo",
-                   &NewTabPageBindings::GetThemeBackgroundInfo)
+      .SetProperty("ntpTheme", &NewTabPageBindings::GetNtpTheme)
+      // TODO(https://crbug.com/1020450): remove "themeBackgroundInfo" legacy
+      // name when we're sure no third-party NTP needs it.
+      .SetProperty("themeBackgroundInfo", &NewTabPageBindings::GetNtpTheme)
       .SetProperty("isCustomLinks", &NewTabPageBindings::GetIsCustomLinks)
       .SetProperty("isUsingMostVisited",
                    &NewTabPageBindings::GetIsUsingMostVisited)
@@ -908,15 +909,14 @@ bool NewTabPageBindings::GetMostVisitedAvailable(v8::Isolate* isolate) {
 }
 
 // static
-v8::Local<v8::Value> NewTabPageBindings::GetThemeBackgroundInfo(
-    v8::Isolate* isolate) {
+v8::Local<v8::Value> NewTabPageBindings::GetNtpTheme(v8::Isolate* isolate) {
   const SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return v8::Null(isolate);
-  const ThemeBackgroundInfo* theme_info = search_box->GetThemeBackgroundInfo();
+  const NtpTheme* theme_info = search_box->GetNtpTheme();
   if (!theme_info)
     return v8::Null(isolate);
-  return GenerateThemeBackgroundInfo(isolate, *theme_info);
+  return GenerateNtpTheme(isolate, *theme_info);
 }
 
 // static

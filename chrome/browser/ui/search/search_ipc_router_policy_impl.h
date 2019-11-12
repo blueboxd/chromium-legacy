@@ -45,7 +45,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldSendSetInputInProgress(bool is_active_tab) override;
   bool ShouldSendOmniboxFocusChanged() override;
   bool ShouldSendMostVisitedInfo() override;
-  bool ShouldSendThemeBackgroundInfo() override;
+  bool ShouldSendNtpTheme() override;
   bool ShouldSendLocalBackgroundSelected() override;
   bool ShouldProcessSetCustomBackgroundInfo() override;
   bool ShouldProcessSelectLocalBackgroundImage() override;

@@ -77,6 +77,7 @@ crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/interface.html [ Failure
 crbug.com/626703 [ Mac ] external/wpt/webdriver/tests/interface.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/webdriver/tests/interface.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/iframe.py>>test_source_origin[cross_origin] [ Failure ]
+crbug.com/1023255 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/iframe.py>>test_source_origin[same_origin] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_screenshot/iframe.py>>test_source_origin[cross_origin] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/switch_to_frame/cross_origin.py>>test_nested_cross_origin_iframe [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/switch_to_frame/cross_origin.py>>test_cross_origin_iframe [ Failure ]

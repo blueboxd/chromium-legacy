@@ -1379,9 +1379,11 @@ PhysicalRect LayoutInline::ReferenceBoxForClipPath() const {
   // fragment in that case. We'll do the same here (but correctly with respect
   // to writing-mode - Gecko has some issues there).
   // See crbug.com/641907
-  if (const NGPaintFragment* fragment = FirstInlineFragment()) {
-    return PhysicalRect(fragment->InlineOffsetToContainerBox(),
-                        fragment->Size());
+  if (IsInLayoutNGInlineFormattingContext()) {
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    if (cursor)
+      return cursor.CurrentRect();
   }
   if (const InlineFlowBox* flow_box = FirstLineBox())
     return FlipForWritingMode(flow_box->FrameRect());

@@ -637,7 +637,7 @@ public class NotificationPlatformBridgeTest {
         Bitmap generatedIcon = generator.generateIconForUrl(mPermissionTestRule.getOrigin());
         Assert.assertNotNull(generatedIcon);
         // Starts from Android O MR1, large icon can be downscaled by Android platform code.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             Assert.assertTrue(generatedIcon.sameAs(
                     NotificationTestUtil.getLargeIconFromNotification(context, notification)));
         }

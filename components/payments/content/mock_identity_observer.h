@@ -9,21 +9,20 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/payments/content/service_worker_payment_instrument.h"
+#include "components/payments/content/service_worker_payment_app.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
 
 namespace payments {
 
-class MockIdentityObserver
-    : public ServiceWorkerPaymentInstrument::IdentityObserver {
+class MockIdentityObserver : public ServiceWorkerPaymentApp::IdentityObserver {
  public:
   MockIdentityObserver();
   ~MockIdentityObserver() override;
   MOCK_METHOD2(SetInvokedServiceWorkerIdentity,
                void(const url::Origin& origin, int64_t registration_id));
 
-  base::WeakPtr<ServiceWorkerPaymentInstrument::IdentityObserver> AsWeakPtr();
+  base::WeakPtr<ServiceWorkerPaymentApp::IdentityObserver> AsWeakPtr();
 
  private:
   base::WeakPtrFactory<MockIdentityObserver> weak_ptr_factory_{this};

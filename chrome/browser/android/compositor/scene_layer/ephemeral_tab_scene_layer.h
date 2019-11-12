@@ -67,7 +67,6 @@ class EphemeralTabSceneLayer : public SceneLayer {
               jfloat bar_height,
               jboolean bar_border_visible,
               jfloat bar_border_height,
-              jboolean bar_shadow_visible,
               jint icon_color,
               jint drag_handlebar_color,
               jfloat favicon_opacity,

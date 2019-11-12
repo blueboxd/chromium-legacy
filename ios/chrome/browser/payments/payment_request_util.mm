@@ -16,7 +16,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/payments/core/payment_address.h"
-#include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/payment_app.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/strings_util.h"
 #include "components/payments/core/web_payment_request.h"
@@ -118,7 +118,7 @@ NSString* GetAddressNotificationLabelFromAutofillProfile(
 }
 
 NSString* GetPaymentMethodNotificationLabelFromPaymentMethod(
-    const payments::PaymentInstrument& payment_method,
+    const payments::PaymentApp& payment_method,
     const std::vector<autofill::AutofillProfile*>& billing_profiles) {
   base::string16 label = payment_method.GetMissingInfoLabel();
   return !label.empty() ? base::SysUTF16ToNSString(label) : nil;

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
   /**
    * Test version of the PluginProxy.
    */
-  class PDFPluginStub extends TestBrowserProxy {
+  export class PDFPluginStub extends TestBrowserProxy {
     constructor() {
       super(['loadPreviewPage']);
 
@@ -147,6 +149,3 @@ cr.define('print_preview', function() {
       this.viewportChangedCallback_.apply(this, arguments);
     }
   }
-
-  return {PDFPluginStub: PDFPluginStub};
-});

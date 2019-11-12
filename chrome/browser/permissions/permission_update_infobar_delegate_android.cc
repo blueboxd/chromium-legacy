@@ -10,7 +10,7 @@
 #include "base/android/jni_array.h"
 #include "chrome/android/chrome_jni_headers/PermissionUpdateInfoBarDelegate_jni.h"
 #include "chrome/browser/android/android_theme_resources.h"
-#include "chrome/browser/android/preferences/pref_service_bridge.h"
+#include "chrome/browser/android/preferences/website_preference_bridge.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -38,7 +38,7 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
 
   for (ContentSettingsType content_settings_type : content_settings_types) {
     int previous_size = permissions.size();
-    PrefServiceBridge::GetAndroidPermissionsForContentSetting(
+    WebsitePreferenceBridge::GetAndroidPermissionsForContentSetting(
         content_settings_type, &permissions);
 
     bool has_all_permissions = true;
@@ -111,7 +111,7 @@ PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfoBar(
 
   for (ContentSettingsType content_settings_type : content_settings_types) {
     std::vector<std::string> android_permissions;
-    PrefServiceBridge::GetAndroidPermissionsForContentSetting(
+    WebsitePreferenceBridge::GetAndroidPermissionsForContentSetting(
         content_settings_type, &android_permissions);
 
     for (const auto& android_permission : android_permissions) {

@@ -91,17 +91,31 @@ class NET_EXPORT HostResolverManager
       public SystemDnsConfigChangeNotifier::Observer {
  public:
   using MdnsListener = HostResolver::MdnsListener;
-  using ResolveHostRequest = HostResolver::ResolveHostRequest;
   using ResolveHostParameters = HostResolver::ResolveHostParameters;
   using SecureDnsMode = DnsConfig::SecureDnsMode;
 
-  class CancellableRequest : public ResolveHostRequest {
+  // A request that allows explicit cancellation before destruction. Enables
+  // callers (e.g. ContextHostResolver) to implement cancellation of requests on
+  // the callers' destruction.
+  class CancellableRequest {
    public:
+    CancellableRequest() = default;
+    CancellableRequest(const CancellableRequest&) = delete;
+    CancellableRequest& operator=(const CancellableRequest&) = delete;
+    virtual ~CancellableRequest() = default;
+
     // If running asynchronously, silently cancels the request as if destroyed.
     // Callbacks will never be invoked. Noop if request is already complete or
     // never started.
     virtual void Cancel() = 0;
   };
+
+  // CancellableRequest versions of different request types.
+  class CancellableResolveHostRequest
+      : public CancellableRequest,
+        public HostResolver::ResolveHostRequest {};
+  class CancellableProbeRequest : public CancellableRequest,
+                                  public HostResolver::ProbeRequest {};
 
   // Creates a HostResolver as specified by |options|. Blocking tasks are run in
   // ThreadPool.
@@ -129,13 +143,17 @@ class NET_EXPORT HostResolverManager
   // specifies any cache usage other than LOCAL_ONLY, there must be a 1:1
   // correspondence between |request_context| and |host_cache|, and both should
   // come from the same ContextHostResolver.
-  std::unique_ptr<CancellableRequest> CreateRequest(
+  std::unique_ptr<CancellableResolveHostRequest> CreateRequest(
       const HostPortPair& host,
       const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters,
       URLRequestContext* request_context,
       HostCache* host_cache);
+  // |request_context| is the context to use for the probes, and it is expected
+  // to be the context of the calling ContextHostResolver.
+  std::unique_ptr<CancellableProbeRequest> CreateDohProbeRequest(
+      URLRequestContext* request_context);
   std::unique_ptr<MdnsListener> CreateMdnsListener(const HostPortPair& host,
                                                    DnsQueryType query_type);
 
@@ -154,16 +172,6 @@ class NET_EXPORT HostResolverManager
   // Sets overriding configuration that will replace or add to configuration
   // read from the system for DnsClient resolution.
   void SetDnsConfigOverrides(DnsConfigOverrides overrides);
-
-  // Sets the URLRequestContext to use for issuing DoH probes.
-  // TODO(crbug.com/1006902): Convert DoH probes to an API more consistent with
-  // normal requests with a Request or cancellation handle to control start and
-  // cancel.
-  void SetRequestContextForProbes(URLRequestContext* url_request_context);
-
-  // Iff |url_request_context| is being used for DoH probes, cancels the probes
-  // and clears the set context.
-  void CancelProbesForContext(URLRequestContext* url_request_context);
 
   // Support for invalidating HostCaches on changes to network or DNS
   // configuration. HostCaches should register/deregister invalidators here
@@ -235,6 +243,7 @@ class NET_EXPORT HostResolverManager
   class LoopbackProbeJob;
   class DnsTask;
   class RequestImpl;
+  class ProbeRequestImpl;
   using JobMap = std::map<JobKey, std::unique_ptr<Job>>;
 
   // Task types that a Job might run.
@@ -442,6 +451,9 @@ class NET_EXPORT HostResolverManager
   int GetOrCreateMdnsClient(MDnsClient** out_client);
 
   void InvalidateCaches();
+
+  void SetRequestContextForProbes(URLRequestContext* url_request_context);
+  void CancelProbesForContext(URLRequestContext* url_request_context);
 
   // Used for multicast DNS tasks. Created on first use using
   // GetOrCreateMndsClient().

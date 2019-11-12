@@ -736,21 +736,20 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     }, {
       // Serbo-Croatian (Serbian Latin)
       "sh",
-      L"Google-ova misija je da organizuje sve informacije na svetu i "
-      L"u\x010dini ih univerzal-no dostupnim i korisnim."
+      L"Guglova misija je organizirati svjetske informacije i u\x010diniti ih "
+      L"univerzalno dostupnim i korisnim."
     }, {
       // Serbian
       "sr",
-      L"\x0047\x006f\x006f\x0067\x006c\x0065\x002d\x043e\x0432\x0430 "
-      L"\x043c\x0438\x0441\x0438\x0458\x0430 \x0458\x0435 \x0434\x0430 "
-      L"\x043e\x0440\x0433\x0430\x043d\x0438\x0437\x0443\x0458\x0435 "
-      L"\x0441\x0432\x0435 "
-      L"\x0438\x043d\x0444\x043e\x0440\x043c\x0430\x0446\x0438\x0458\x0435 "
-      L"\x043d\x0430 \x0441\x0432\x0435\x0442\x0443 \x0438 "
-      L"\x0443\x0447\x0438\x043d\x0438 \x0438\x0445 "
-      L"\x0443\x043d\x0438\x0432\x0435\x0440\x0437\x0430\x043b\x043d\x043e "
-      L"\x0434\x043e\x0441\x0442\x0443\x043f\x043d\x0438\x043c \x0438 "
-      L"\x043a\x043e\x0440\x0438\x0441\x043d\x0438\x043c."
+      L"\x0413\x0443\x0433\x043B\x043E\x0432\x0430 "
+      L"\x043C\x0438\x0441\x0438\x0458\x0430 \x0458\x0435 \x0434\x0430 "
+      L"\x043E\x0440\x0433\x0430\x043D\x0438\x0437\x0443\x0458\x0435 "
+      L"\x0441\x0432\x0435\x0442\x0441\x043A\x0435 "
+      L"\x0438\x043D\x0444\x043E\x0440\x043C\x0430\x0446\x0438\x0458\x0435 "
+      L"\x0438 \x0443\x0447\x0438\x043D\x0438 \x0438\x0445 "
+      L"\x0443\x043D\x0438\x0432\x0435\x0440\x0437\x0430\x043B\x043D\x0438"
+      L"\x043C \x0434\x043E\x0441\x0442\x0443\x043F\x043D\x0438\x043C \x0438 "
+      L"\x043A\x043E\x0440\x0438\x0441\x043D\x0438\x043C."
     }, {
       // Slovak
       "sk-SK",

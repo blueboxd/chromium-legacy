@@ -2,13 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {Metrics, MetricsContext} from '../metrics.js';
+import {Destination} from '../data/destination.js';
+import './advanced_settings_item.js';
+import {SettingsBehavior} from './settings_behavior.js';
+import {removeHighlights} from 'chrome://resources/js/search_highlight_utils.m.js';
+import './print_preview_search_box.js';
+import './print_preview_shared_css.js';
+import './print_preview_vars_css.js';
+import '../strings.m.js';
+
 Polymer({
   is: 'print-preview-advanced-settings-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SettingsBehavior, I18nBehavior],
 
   properties: {
-    /** @type {!print_preview.Destination} */
+    /** @type {!Destination} */
     destination: Object,
 
     /** @private {?RegExp} */
@@ -35,12 +52,12 @@ Polymer({
   /** @private {!Array<Node>} */
   bubbles_: [],
 
-  /** @private {!print_preview.MetricsContext} */
-  metrics_: print_preview.MetricsContext.printSettingsUi(),
+  /** @private {!MetricsContext} */
+  metrics_: MetricsContext.printSettingsUi(),
 
   /** @override */
   attached: function() {
-    this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket
+    this.metrics_.record(Metrics.PrintSettingsUiBucket
                              .ADVANCED_SETTINGS_DIALOG_SHOWN);
     this.$.dialog.showModal();
   },
@@ -87,7 +104,7 @@ Polymer({
       return true;
     }
 
-    cr.search_highlight_utils.removeHighlights(this.highlights_);
+    removeHighlights(this.highlights_);
     for (const bubble of this.bubbles_) {
       bubble.remove();
     }
@@ -122,7 +139,7 @@ Polymer({
       this.$.searchBox.setValue('');
     }
     if (this.$.dialog.getNative().returnValue == 'success') {
-      this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket
+      this.metrics_.record(Metrics.PrintSettingsUiBucket
                                .ADVANCED_SETTINGS_DIALOG_CANCELED);
     }
   },

@@ -40,6 +40,9 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
 
     // Called when the device info should be updated.
     virtual void OnDeviceInfoUpdated(const std::string& bluetooth_name) = 0;
+
+    // Called when ADB sideloading status should be updated.
+    virtual void OnAdbSideloadStatusUpdated(bool enabled) = 0;
   };
 
   explicit VersionInfoUpdater(Delegate* delegate);
@@ -78,6 +81,9 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
 
   // Callback from device::BluetoothAdapterFactory::GetAdapter.
   void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
+
+  // Callback from SessionManagerClient::QueryAdbSideload.
+  void OnQueryAdbSideload(bool success, bool enabled);
 
   // Information pieces for version label.
   std::string version_text_;

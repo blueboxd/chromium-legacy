@@ -844,10 +844,6 @@ std::string GraphicsLayer::LayerDebugName(const cc::Layer* layer) const {
   return DebugName(layer).Utf8();
 }
 
-void GraphicsLayer::DidChangeScrollbarsHiddenIfOverlay(bool hidden) {
-  client_.SetOverlayScrollbarsHidden(hidden);
-}
-
 PaintController& GraphicsLayer::GetPaintController() const {
   CHECK(PaintsContentOrHitTest());
   if (!paint_controller_)

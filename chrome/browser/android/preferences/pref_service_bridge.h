@@ -5,19 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_PREFERENCES_PREF_SERVICE_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_PREFERENCES_PREF_SERVICE_BRIDGE_H_
 
-#include <string>
-#include <vector>
-
-#include "components/content_settings/core/common/content_settings.h"
-
 class PrefServiceBridge {
  public:
-  // Populate the list of corresponding Android permissions associated with the
-  // ContentSettingsType specified.
-  static void GetAndroidPermissionsForContentSetting(
-      ContentSettingsType content_type,
-      std::vector<std::string>* out);
-
   static const char* GetPrefNameExposedToJava(int pref_index);
 };
 

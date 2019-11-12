@@ -48,6 +48,11 @@ void MojoSystemInfoDispatcher::OnDeviceInfoUpdated(
   OnSystemInfoUpdated();
 }
 
+void MojoSystemInfoDispatcher::OnAdbSideloadStatusUpdated(bool enabled) {
+  adb_sideloading_enabled_ = enabled;
+  OnSystemInfoUpdated();
+}
+
 void MojoSystemInfoDispatcher::OnSystemInfoUpdated() {
   const base::Optional<bool> policy_show =
       version_info_updater_.IsSystemInfoEnforced();
@@ -61,8 +66,8 @@ void MojoSystemInfoDispatcher::OnSystemInfoUpdated() {
            channel != version_info::Channel::BETA;
   }
   ash::LoginScreen::Get()->GetModel()->SetSystemInfo(
-      show, enforced, os_version_label_text_, enterprise_info_,
-      bluetooth_name_);
+      show, enforced, os_version_label_text_, enterprise_info_, bluetooth_name_,
+      adb_sideloading_enabled_);
 }
 
 }  // namespace chromeos

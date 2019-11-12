@@ -411,7 +411,7 @@ public class CustomNotificationBuilderTest {
         Assert.assertNotNull(bigViewIcon);
 
         // Starts from Android O MR1, large icon can be downscaled by Android platform code.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             Assert.assertTrue(expectedIcon.sameAs(((BitmapDrawable) bigViewIcon).getBitmap()));
         }
     }

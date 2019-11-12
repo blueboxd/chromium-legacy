@@ -2,10 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import {InputBehavior} from './input_behavior.js';
+import './print_preview_shared_css.js';
+import './print_preview_vars_css.js';
+import './settings_section.js';
+
 Polymer({
   is: 'print-preview-number-settings-section',
 
-  behaviors: [print_preview.InputBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [InputBehavior],
 
   properties: {
     /** @private {string} */
@@ -51,7 +60,7 @@ Polymer({
 
   /** @return {!CrInputElement} The cr-input field element for InputBehavior. */
   getInput: function() {
-    return this.$.userValue;
+    return /** @type {!CrInputElement} */ (this.$.userValue);
   },
 
   /**

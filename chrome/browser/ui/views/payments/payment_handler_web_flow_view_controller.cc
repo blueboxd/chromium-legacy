@@ -120,7 +120,7 @@ class ReadOnlyOriginView : public views::View {
           adjusted_width *
           IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight /
           icon_image_skia.height();
-      // A column for the instrument icon.
+      // A column for the app icon.
       top_level_columns->AddColumn(
           views::GridLayout::LEADING, views::GridLayout::FILL,
           views::GridLayout::kFixedSize, views::GridLayout::FIXED,
@@ -132,15 +132,15 @@ class ReadOnlyOriginView : public views::View {
     top_level_layout->StartRow(views::GridLayout::kFixedSize, 0);
     top_level_layout->AddView(std::move(title_origin_container));
     if (has_icon) {
-      std::unique_ptr<views::ImageView> instrument_icon_view =
-          CreateInstrumentIconView(/*icon_id=*/0, icon_image_skia,
-                                   /*label=*/page_title);
+      std::unique_ptr<views::ImageView> app_icon_view =
+          CreateAppIconView(/*icon_id=*/0, icon_image_skia,
+                            /*label=*/page_title);
       // We should set image size in density independent pixels here, since
       // views::ImageView objects are rastered at the device scale factor.
-      instrument_icon_view->SetImageSize(gfx::Size(
+      app_icon_view->SetImageSize(gfx::Size(
           adjusted_width,
           IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight));
-      top_level_layout->AddView(std::move(instrument_icon_view));
+      top_level_layout->AddView(std::move(app_icon_view));
     }
   }
   ~ReadOnlyOriginView() override {}
@@ -233,8 +233,8 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView(
       GetHeaderBackground(header_view);
   return std::make_unique<ReadOnlyOriginView>(
       GetPaymentHandlerDialogTitle(web_contents(), https_prefix_), origin,
-      state()->selected_instrument()->icon_image_skia(),
-      background->get_color(), this);
+      state()->selected_app()->icon_image_skia(), background->get_color(),
+      this);
 }
 
 views::View*

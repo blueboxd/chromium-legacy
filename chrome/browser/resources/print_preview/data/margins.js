@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
-
   /**
    * Enumeration of the orientations of margins.
    * @enum {string}
    */
-  const CustomMarginsOrientation = {
+  export const CustomMarginsOrientation = {
     TOP: 'top',
     RIGHT: 'right',
     BOTTOM: 'bottom',
@@ -21,21 +18,12 @@ cr.define('print_preview', function() {
    * printing/print_job_constants.h.
    * @enum {number}
    */
-  const MarginsType = {
+  export const MarginsType = {
     DEFAULT: 0,
     NO_MARGINS: 1,
     MINIMUM: 2,
     CUSTOM: 3,
   };
-
-  return {
-    CustomMarginsOrientation: CustomMarginsOrientation,
-    MarginsType: MarginsType,
-  };
-});
-
-cr.define('print_preview', function() {
-  'use strict';
 
   /**
    * Keep in sync with the C++ kSettingMargin... values in
@@ -47,9 +35,9 @@ cr.define('print_preview', function() {
    *   marginLeft: number,
    * }}
    */
-  let MarginsSetting;
+  export let MarginsSetting;
 
-  class Margins {
+  export class Margins {
     /**
      * Creates a Margins object that holds four margin values in points.
      * @param {number} top The top margin in pts.
@@ -61,32 +49,32 @@ cr.define('print_preview', function() {
       /**
        * Backing store for the margin values in points.
        * @type {!Object<
-       *     !print_preview.CustomMarginsOrientation, number>}
+       *     !CustomMarginsOrientation, number>}
        * @private
        */
       this.value_ = {};
-      this.value_[print_preview.CustomMarginsOrientation.TOP] = top;
-      this.value_[print_preview.CustomMarginsOrientation.RIGHT] = right;
-      this.value_[print_preview.CustomMarginsOrientation.BOTTOM] = bottom;
-      this.value_[print_preview.CustomMarginsOrientation.LEFT] = left;
+      this.value_[CustomMarginsOrientation.TOP] = top;
+      this.value_[CustomMarginsOrientation.RIGHT] = right;
+      this.value_[CustomMarginsOrientation.BOTTOM] = bottom;
+      this.value_[CustomMarginsOrientation.LEFT] = left;
     }
 
     /**
      * Parses a margins object from the given serialized state.
      * @param {Object} state Serialized representation of the margins created by
      *     the {@code serialize} method.
-     * @return {!print_preview.Margins} New margins instance.
+     * @return {!Margins} New margins instance.
      */
     static parse(state) {
-      return new print_preview.Margins(
-          state[print_preview.CustomMarginsOrientation.TOP] || 0,
-          state[print_preview.CustomMarginsOrientation.RIGHT] || 0,
-          state[print_preview.CustomMarginsOrientation.BOTTOM] || 0,
-          state[print_preview.CustomMarginsOrientation.LEFT] || 0);
+      return new Margins(
+          state[CustomMarginsOrientation.TOP] || 0,
+          state[CustomMarginsOrientation.RIGHT] || 0,
+          state[CustomMarginsOrientation.BOTTOM] || 0,
+          state[CustomMarginsOrientation.LEFT] || 0);
     }
 
     /**
-     * @param {!print_preview.CustomMarginsOrientation}
+     * @param {!CustomMarginsOrientation}
      *     orientation Specifies the margin value to get.
      * @return {number} Value of the margin of the given orientation.
      */
@@ -95,24 +83,24 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.CustomMarginsOrientation}
+     * @param {!CustomMarginsOrientation}
      *     orientation Specifies the margin to set.
      * @param {number} value Updated value of the margin in points to modify.
-     * @return {!print_preview.Margins} A new copy of |this| with the
+     * @return {!Margins} A new copy of |this| with the
      *     modification made to the specified margin.
      */
     set(orientation, value) {
       const newValue = this.clone_();
       newValue[orientation] = value;
       return new Margins(
-          newValue[print_preview.CustomMarginsOrientation.TOP],
-          newValue[print_preview.CustomMarginsOrientation.RIGHT],
-          newValue[print_preview.CustomMarginsOrientation.BOTTOM],
-          newValue[print_preview.CustomMarginsOrientation.LEFT]);
+          newValue[CustomMarginsOrientation.TOP],
+          newValue[CustomMarginsOrientation.RIGHT],
+          newValue[CustomMarginsOrientation.BOTTOM],
+          newValue[CustomMarginsOrientation.LEFT]);
     }
 
     /**
-     * @param {print_preview.Margins} other The other margins object to compare
+     * @param {Margins} other The other margins object to compare
      *     against.
      * @return {boolean} Whether this margins object is equal to another.
      */
@@ -146,9 +134,3 @@ cr.define('print_preview', function() {
     }
   }
 
-  // Export
-  return {
-    Margins: Margins,
-    MarginsSetting: MarginsSetting,
-  };
-});

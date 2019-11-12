@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_test_api.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
@@ -69,6 +70,24 @@ class TestLayoutManager : public LayoutManagerBase {
   ProposedLayout layout_;
 };
 
+// Version of FillLayout that ignores invisible views.
+class SmartFillLayout : public FillLayout {
+ public:
+  gfx::Size GetPreferredSize(const View* host) const override {
+    if (host->children().empty())
+      return gfx::Size();
+
+    gfx::Size preferred_size;
+    for (View* child : host->children()) {
+      if (child->GetVisible())
+        preferred_size.SetToMax(child->GetPreferredSize());
+    }
+    gfx::Rect rect(preferred_size);
+    rect.Inset(-host->GetInsets());
+    return rect.size();
+  }
+};
+
 constexpr gfx::Size kChildViewSize{10, 10};
 
 }  // anonymous namespace
@@ -122,6 +141,17 @@ class AnimatingLayoutManagerSteppingTest : public testing::Test {
   }
   const ProposedLayout& layout1() const { return layout1_; }
   const ProposedLayout& layout2() const { return layout2_; }
+
+  // Replaces one of the children of |view| with a blank TestView.
+  // Because child views have e.g. preferred size set by default, in order to
+  // use non-default setup this method should be called.
+  void ReplaceChild(int index) {
+    View* const old_view = children_[index];
+    view_->RemoveChildView(old_view);
+    delete old_view;
+    children_[index] =
+        view_->AddChildViewAt(std::make_unique<TestView>(), index);
+  }
 
   void EnsureLayout(const ProposedLayout& expected) {
     for (size_t i = 0; i < expected.child_layouts.size(); ++i) {
@@ -1093,6 +1123,131 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_FadeInOnVisibilitySet) {
   EnsureLayout(expected_start);
 
   child(0)->SetVisible(true);
+
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  ProposedLayout expected =
+      ProposedLayoutBetween(0.5, expected_start, expected_end);
+  expected.child_layouts[0].visible = true;
+  expected.child_layouts[0].bounds = expected_end.child_layouts[0].bounds;
+  expected.child_layouts[0].bounds.set_width(
+      expected.child_layouts[1].bounds.x() - 10);
+  EnsureLayout(expected);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_end);
+}
+
+// Regression test for issues: crbug.com/1021332, crbug.com/1003500
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FlexLayout_AnimateOutOnDescendentVisbilitySet) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  ReplaceChild(0);
+  child(0)->SetLayoutManager(std::make_unique<SmartFillLayout>());
+  View* const grandchild = child(0)->AddChildView(std::make_unique<View>());
+  grandchild->SetPreferredSize(kChildViewSize);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
+                                              MinimumFlexSizeRule::kPreferred,
+                                              MaximumFlexSizeRule::kUnbounded));
+
+  const ProposedLayout expected_start{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout expected_end{
+      {50, 20},
+      {{child(0), false},
+       {child(1), true, {5, 5, 25, 10}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  // Set up the initial state of the host view and children.
+  SizeAndLayout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  grandchild->SetVisible(false);
+
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  ProposedLayout expected =
+      ProposedLayoutBetween(0.5, expected_start, expected_end);
+  expected.child_layouts[0].visible = true;
+  expected.child_layouts[0].bounds = expected_start.child_layouts[0].bounds;
+  expected.child_layouts[0].bounds.set_width(
+      expected.child_layouts[1].bounds.x() - 10);
+  EnsureLayout(expected);
+
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_end);
+}
+
+// Regression test for issues: crbug.com/1021332, crbug.com/1003500
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       FlexLayout_AnimateInOnDescendentVisbilitySet) {
+  constexpr gfx::Insets kChildMargins(5);
+  layout()->SetShouldAnimateBounds(false);
+  layout()->SetOrientation(LayoutOrientation::kHorizontal);
+  layout()->SetDefaultFadeMode(
+      AnimatingLayoutManager::FadeInOutMode::kScaleFromZero);
+  ReplaceChild(0);
+  child(0)->SetLayoutManager(std::make_unique<SmartFillLayout>());
+  View* const grandchild = child(0)->AddChildView(std::make_unique<View>());
+  grandchild->SetPreferredSize(kChildViewSize);
+  grandchild->SetVisible(false);
+  auto* const flex_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<FlexLayout>());
+  flex_layout->SetOrientation(LayoutOrientation::kHorizontal);
+  flex_layout->SetCollapseMargins(true);
+  flex_layout->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  flex_layout->SetDefault(kMarginsKey, kChildMargins);
+  child(1)->SetProperty(kFlexBehaviorKey, FlexSpecification::ForSizeRule(
+                                              MinimumFlexSizeRule::kPreferred,
+                                              MaximumFlexSizeRule::kUnbounded));
+
+  const ProposedLayout expected_start{
+      {50, 20},
+      {{child(0), false},
+       {child(1), true, {5, 5, 25, 10}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  const ProposedLayout expected_end{
+      {50, 20},
+      {{child(0), true, {{5, 5}, kChildViewSize}},
+       {child(1), true, {{20, 5}, kChildViewSize}},
+       {child(2), true, {{35, 5}, kChildViewSize}}}};
+
+  // Set up the initial state of the host view and children.
+  view()->SetSize(expected_end.host_size);
+  EXPECT_FALSE(layout()->is_animating());
+  EnsureLayout(expected_start);
+
+  grandchild->SetVisible(true);
 
   view()->Layout();
   EXPECT_TRUE(layout()->is_animating());

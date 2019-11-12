@@ -43,6 +43,7 @@ void ServiceWorkerNavigationHandle::OnCreatedProviderHost(
 void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
     int render_process_id,
     int render_frame_id,
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
     blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // We may have failed to pre-create the provider host.
@@ -52,16 +53,18 @@ void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
       FROM_HERE,
       base::BindOnce(
           &ServiceWorkerNavigationHandleCore::OnBeginNavigationCommit,
-          base::Unretained(core_), render_process_id, render_frame_id));
+          base::Unretained(core_), render_process_id, render_frame_id,
+          cross_origin_embedder_policy));
   *out_provider_info = std::move(provider_info_);
 }
 
-void ServiceWorkerNavigationHandle::OnBeginWorkerCommit() {
+void ServiceWorkerNavigationHandle::OnBeginWorkerCommit(
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
       FROM_HERE,
       base::BindOnce(&ServiceWorkerNavigationHandleCore::OnBeginWorkerCommit,
-                     base::Unretained(core_)));
+                     base::Unretained(core_), cross_origin_embedder_policy));
 }
 
 }  // namespace content

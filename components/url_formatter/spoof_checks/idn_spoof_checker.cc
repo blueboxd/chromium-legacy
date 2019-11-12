@@ -386,6 +386,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
             // U+2F00 (Kangxi Radical One) is similar, but it's normalized to
             // U+4E00 so it's not explicitly checked here.
             R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}])"
+            R"([\u4e00\u3127]|)"
             R"([\u4e00\u3127])"
             R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}]|)"
 

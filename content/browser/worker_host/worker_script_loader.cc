@@ -316,10 +316,11 @@ void WorkerScriptLoader::CommitCompleted(
   DCHECK(!completed_);
   completed_ = true;
 
-  if (status.error_code == net::OK) {
-    if (service_worker_handle_) {
-      service_worker_handle_->OnBeginWorkerCommit();
-    }
+  if (status.error_code == net::OK && service_worker_handle_) {
+    // TODO(https://crbug.com/999049): Parse the COEP header and pass it to
+    // the service worker handle.
+    service_worker_handle_->OnBeginWorkerCommit(
+        network::mojom::CrossOriginEmbedderPolicy::kNone);
   }
 
   client_->OnComplete(status);

@@ -25,6 +25,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -130,7 +131,9 @@ class ClientMixin : public ClientInterface {
           base::BindOnce(&DoMyIpAddressOnWorker, is_ex, std::move(client)));
     } else {
       // Request was for dnsResolve() or dnsResolveEx().
-      host_resolver_.Resolve(hostname, is_ex, std::move(client));
+      // TODO(mmenke): Pass in a NetworkIsolationKey().
+      host_resolver_.Resolve(hostname, net::NetworkIsolationKey(), is_ex,
+                             std::move(client));
     }
   }
 

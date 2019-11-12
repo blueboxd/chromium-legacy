@@ -102,8 +102,8 @@ class FileSequenceHelperTest : public ExtensionsTest {
     auto add_rules_task =
         base::BindOnce(&FileSequenceHelper::UpdateDynamicRules,
                        base::Unretained(helper_.get()), std::move(data),
-                       std::move(rules_to_add), DynamicRuleUpdateAction::kAdd,
-                       std::move(add_rules_callback));
+                       /* rule_ids_to_remove */ std::vector<int>(),
+                       std::move(rules_to_add), std::move(add_rules_callback));
 
     base::HistogramTester tester;
     GetExtensionFileTaskRunner()->PostTask(FROM_HERE,

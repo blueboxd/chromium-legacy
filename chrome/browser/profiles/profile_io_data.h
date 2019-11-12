@@ -89,8 +89,6 @@ class ProfileIOData {
     ProfileParams();
     ~ProfileParams();
 
-    base::FilePath path;
-
     scoped_refptr<content_settings::CookieSettings> cookie_settings;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -101,11 +99,6 @@ class ProfileIOData {
     std::string username_hash;
     bool user_is_affiliated = false;
 #endif
-
-    // The profile this struct was populated from. It's passed as a void* to
-    // ensure it's not accidently used on the IO thread. Before using it on the
-    // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
-    void* profile = nullptr;
   };
 
   ProfileIOData();

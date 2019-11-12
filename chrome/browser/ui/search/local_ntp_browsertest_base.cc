@@ -41,7 +41,7 @@ void TestInstantServiceObserver::WaitForMostVisitedItems(size_t count) {
   run_loop.Run();
 }
 
-void TestInstantServiceObserver::WaitForThemeInfoUpdated(
+void TestInstantServiceObserver::WaitForNtpThemeUpdated(
     std::string background_url,
     std::string attribution_1,
     std::string attribution_2,
@@ -53,10 +53,10 @@ void TestInstantServiceObserver::WaitForThemeInfoUpdated(
   expected_attribution_2_ = attribution_2;
   expected_attribution_action_url_ = attribution_action_url;
 
-  if (theme_info_.custom_background_url == background_url &&
-      theme_info_.custom_background_attribution_line_1 == attribution_1 &&
-      theme_info_.custom_background_attribution_line_2 == attribution_2 &&
-      theme_info_.custom_background_attribution_action_url ==
+  if (theme_.custom_background_url == background_url &&
+      theme_.custom_background_attribution_line_1 == attribution_1 &&
+      theme_.custom_background_attribution_line_2 == attribution_2 &&
+      theme_.custom_background_attribution_action_url ==
           attribution_action_url) {
     return;
   }
@@ -70,7 +70,7 @@ void TestInstantServiceObserver::WaitForThemeApplied(bool theme_installed) {
   DCHECK(!quit_closure_theme_);
 
   theme_installed_ = theme_installed;
-  if (!theme_info_.using_default_theme == theme_installed) {
+  if (!theme_.using_default_theme == theme_installed) {
     return;
   }
 
@@ -80,26 +80,23 @@ void TestInstantServiceObserver::WaitForThemeApplied(bool theme_installed) {
 }
 
 bool TestInstantServiceObserver::IsUsingDefaultTheme() {
-  return theme_info_.using_default_theme;
+  return theme_.using_default_theme;
 }
 
-void TestInstantServiceObserver::ThemeInfoChanged(
-    const ThemeBackgroundInfo& theme_info) {
-  theme_info_ = theme_info;
+void TestInstantServiceObserver::NtpThemeChanged(const NtpTheme& theme) {
+  theme_ = theme;
 
   if (quit_closure_custom_background_ &&
-      theme_info_.custom_background_url == expected_background_url_ &&
-      theme_info_.custom_background_attribution_line_1 ==
-          expected_attribution_1_ &&
-      theme_info_.custom_background_attribution_line_2 ==
-          expected_attribution_2_ &&
-      theme_info_.custom_background_attribution_action_url ==
+      theme_.custom_background_url == expected_background_url_ &&
+      theme_.custom_background_attribution_line_1 == expected_attribution_1_ &&
+      theme_.custom_background_attribution_line_2 == expected_attribution_2_ &&
+      theme_.custom_background_attribution_action_url ==
           expected_attribution_action_url_) {
     // Exit when the custom background was applied successfully.
     std::move(quit_closure_custom_background_).Run();
     quit_closure_custom_background_.Reset();
   } else if (quit_closure_theme_ &&
-             !theme_info_.using_default_theme == theme_installed_) {
+             !theme_.using_default_theme == theme_installed_) {
     // Exit when the theme was applied successfully.
     std::move(quit_closure_theme_).Run();
     quit_closure_theme_.Reset();

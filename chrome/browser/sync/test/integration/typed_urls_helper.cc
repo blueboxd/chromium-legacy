@@ -387,10 +387,13 @@ void ExpireHistoryBetween(int index,
 }
 
 void DeleteUrlFromHistory(int index, const GURL& url) {
-  GetHistoryServiceFromClient(index)->DeleteURL(url);
+  GetHistoryServiceFromClient(index)->DeleteURLs({url});
+
   if (test()->use_verifier())
-    HistoryServiceFactory::GetForProfile(
-        test()->verifier(), ServiceAccessType::IMPLICIT_ACCESS)->DeleteURL(url);
+    HistoryServiceFactory::GetForProfile(test()->verifier(),
+                                         ServiceAccessType::IMPLICIT_ACCESS)
+        ->DeleteURLs({url});
+
   WaitForHistoryDBThread(index);
 }
 

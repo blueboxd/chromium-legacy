@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
+#include "ui/display/util/display_util.h"
 #include "ui/display/util/edid_parser.h"
 
 namespace ui {
@@ -27,13 +28,6 @@ namespace {
 
 static const size_t kDefaultCursorWidth = 64;
 static const size_t kDefaultCursorHeight = 64;
-
-// Used in the GetColorSpaceFromEdid function to collect data on whether the
-// color space extracted from an EDID blob passed the sanity checks.
-void EmitEdidColorSpaceChecksOutcomeUma(EdidColorSpaceChecksOutcome outcome) {
-  base::UmaHistogramEnumeration("DrmUtil.GetColorSpaceFromEdid.ChecksOutcome",
-                                outcome);
-}
 
 bool IsCrtcInUse(
     uint32_t crtc,
@@ -482,7 +476,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     year_of_manufacture = edid_parser.year_of_manufacture();
     has_overscan =
         edid_parser.has_overscan_flag() && edid_parser.overscan_flag();
-    display_color_space = GetColorSpaceFromEdid(edid_parser);
+    display_color_space = display::GetColorSpaceFromEdid(edid_parser);
     base::UmaHistogramBoolean("DrmUtil.CreateDisplaySnapshot.IsHDR",
                               display_color_space.IsHDR());
     bits_per_channel = std::max(edid_parser.bits_per_channel(), 0);
@@ -651,86 +645,6 @@ std::vector<OverlayCheckReturn_Params> CreateParamsFromOverlayStatusList(
     params.push_back(p);
   }
   return params;
-}
-
-gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
-  const SkColorSpacePrimaries primaries = edid_parser.primaries();
-
-  // Sanity check: primaries should verify By <= Ry <= Gy, Bx <= Rx and Gx <=
-  // Rx, to guarantee that the R, G and B colors are each in the correct region.
-  if (!(primaries.fBX <= primaries.fRX && primaries.fGX <= primaries.fRX &&
-        primaries.fBY <= primaries.fRY && primaries.fRY <= primaries.fGY)) {
-    EmitEdidColorSpaceChecksOutcomeUma(
-        EdidColorSpaceChecksOutcome::kErrorBadCoordinates);
-    return gfx::ColorSpace();
-  }
-
-  // Sanity check: the area spawned by the primaries' triangle is too small,
-  // i.e. less than half the surface of the triangle spawned by sRGB/BT.709.
-  constexpr double kBT709PrimariesArea = 0.0954;
-  const float primaries_area_twice =
-      (primaries.fRX * primaries.fGY) + (primaries.fBX * primaries.fRY) +
-      (primaries.fGX * primaries.fBY) - (primaries.fBX * primaries.fGY) -
-      (primaries.fGX * primaries.fRY) - (primaries.fRX * primaries.fBY);
-  if (primaries_area_twice < kBT709PrimariesArea) {
-    EmitEdidColorSpaceChecksOutcomeUma(
-        EdidColorSpaceChecksOutcome::kErrorPrimariesAreaTooSmall);
-    return gfx::ColorSpace();
-  }
-
-  // Sanity check: https://crbug.com/809909, the blue primary coordinates should
-  // not be too far left/upwards of the expected location (namely [0.15, 0.06]
-  // for sRGB/ BT.709/ Adobe RGB/ DCI-P3, and [0.131, 0.046] for BT.2020).
-  constexpr float kExpectedBluePrimaryX = 0.15f;
-  constexpr float kBluePrimaryXDelta = 0.02f;
-  constexpr float kExpectedBluePrimaryY = 0.06f;
-  constexpr float kBluePrimaryYDelta = 0.031f;
-  const bool is_blue_primary_broken =
-      (std::abs(primaries.fBX - kExpectedBluePrimaryX) > kBluePrimaryXDelta) ||
-      (std::abs(primaries.fBY - kExpectedBluePrimaryY) > kBluePrimaryYDelta);
-  if (is_blue_primary_broken) {
-    EmitEdidColorSpaceChecksOutcomeUma(
-        EdidColorSpaceChecksOutcome::kErrorBluePrimaryIsBroken);
-    return gfx::ColorSpace();
-  }
-
-  skcms_Matrix3x3 color_space_as_matrix;
-  if (!primaries.toXYZD50(&color_space_as_matrix)) {
-    EmitEdidColorSpaceChecksOutcomeUma(
-        EdidColorSpaceChecksOutcome::kErrorCannotExtractToXYZD50);
-    return gfx::ColorSpace();
-  }
-
-  const double gamma = edid_parser.gamma();
-  if (gamma < 1.0) {
-    EmitEdidColorSpaceChecksOutcomeUma(
-        EdidColorSpaceChecksOutcome::kErrorBadGamma);
-    return gfx::ColorSpace();
-  }
-  EmitEdidColorSpaceChecksOutcomeUma(EdidColorSpaceChecksOutcome::kSuccess);
-
-  gfx::ColorSpace::TransferID transfer_id =
-      gfx::ColorSpace::TransferID::INVALID;
-  if (base::Contains(edid_parser.supported_color_primary_ids(),
-                     gfx::ColorSpace::PrimaryID::BT2020)) {
-    if (base::Contains(edid_parser.supported_color_transfer_ids(),
-                       gfx::ColorSpace::TransferID::SMPTEST2084)) {
-      transfer_id = gfx::ColorSpace::TransferID::SMPTEST2084;
-    } else if (base::Contains(edid_parser.supported_color_transfer_ids(),
-                              gfx::ColorSpace::TransferID::ARIB_STD_B67)) {
-      transfer_id = gfx::ColorSpace::TransferID::ARIB_STD_B67;
-    }
-  } else if (gamma == 2.2f) {
-    transfer_id = gfx::ColorSpace::TransferID::GAMMA22;
-  } else if (gamma == 2.4f) {
-    transfer_id = gfx::ColorSpace::TransferID::GAMMA24;
-  }
-
-  if (transfer_id != gfx::ColorSpace::TransferID::INVALID)
-    return gfx::ColorSpace::CreateCustom(color_space_as_matrix, transfer_id);
-
-  skcms_TransferFunction transfer = {gamma, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
-  return gfx::ColorSpace::CreateCustom(color_space_as_matrix, transfer);
 }
 
 }  // namespace ui

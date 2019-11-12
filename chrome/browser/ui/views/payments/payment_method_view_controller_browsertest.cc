@@ -33,15 +33,15 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
   OpenPaymentMethodScreen();
 
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
-  EXPECT_EQ(1U, request->state()->available_instruments().size());
+  EXPECT_EQ(1U, request->state()->available_apps().size());
 
   views::View* list_view = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
   EXPECT_TRUE(list_view);
   EXPECT_EQ(1u, list_view->children().size());
 
-  EXPECT_EQ(request->state()->available_instruments().front().get(),
-            request->state()->selected_instrument());
+  EXPECT_EQ(request->state()->available_apps().front().get(),
+            request->state()->selected_app());
   views::View* checkmark_view = list_view->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   EXPECT_TRUE(checkmark_view->GetVisible());
@@ -71,17 +71,17 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
   OpenPaymentMethodScreen();
 
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
-  EXPECT_EQ(2U, request->state()->available_instruments().size());
-  EXPECT_EQ(request->state()->available_instruments().front().get(),
-            request->state()->selected_instrument());
+  EXPECT_EQ(2U, request->state()->available_apps().size());
+  EXPECT_EQ(request->state()->available_apps().front().get(),
+            request->state()->selected_app());
 
   views::View* list_view = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
   EXPECT_TRUE(list_view);
   EXPECT_EQ(2u, list_view->children().size());
 
-  EXPECT_EQ(request->state()->available_instruments().front().get(),
-            request->state()->selected_instrument());
+  EXPECT_EQ(request->state()->available_apps().front().get(),
+            request->state()->selected_app());
   views::View* checkmark_view = list_view->children()[0]->GetViewByID(
       static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   EXPECT_TRUE(checkmark_view->GetVisible());
@@ -94,8 +94,8 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
   // Simulate selecting the second card.
   ClickOnDialogViewAndWait(list_view->children()[1]);
 
-  EXPECT_EQ(request->state()->available_instruments().back().get(),
-            request->state()->selected_instrument());
+  EXPECT_EQ(request->state()->available_apps().back().get(),
+            request->state()->selected_app());
 
   OpenPaymentMethodScreen();
   list_view = dialog_view()->GetViewByID(
@@ -106,8 +106,8 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
   // return to the main payment sheet.
   ClickOnDialogViewAndWait(list_view->children()[1]);
 
-  EXPECT_EQ(request->state()->available_instruments().back().get(),
-            request->state()->selected_instrument());
+  EXPECT_EQ(request->state()->available_apps().back().get(),
+            request->state()->selected_app());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, EditButtonOpensEditor) {

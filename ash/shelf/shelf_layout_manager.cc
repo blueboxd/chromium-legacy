@@ -150,7 +150,6 @@ WorkspaceWindowState GetShelfWorkspaceWindowState(aura::Window* shelf_window) {
   auto* controller =
       GetActiveWorkspaceController(shelf_window->GetRootWindow());
   DCHECK(controller);
-
   return controller->GetWindowState();
 }
 
@@ -332,15 +331,15 @@ bool ShelfLayoutManager::State::Equals(const State& other) const {
 
 // ShelfLayoutManager::ScopedSuspendVisibilityUpdate ---------------------------
 
-ShelfLayoutManager::ScopedSuspendVisibilityUpdate::
-    ScopedSuspendVisibilityUpdate(ShelfLayoutManager* manager)
+ShelfLayoutManager::ScopedSuspendWorkAreaUpdate::ScopedSuspendWorkAreaUpdate(
+    ShelfLayoutManager* manager)
     : manager_(manager) {
-  manager_->SuspendVisibilityUpdate();
+  manager_->SuspendWorkAreaUpdate();
 }
 
-ShelfLayoutManager::ScopedSuspendVisibilityUpdate::
-    ~ScopedSuspendVisibilityUpdate() {
-  manager_->ResumeVisiblityUpdate();
+ShelfLayoutManager::ScopedSuspendWorkAreaUpdate::
+    ~ScopedSuspendWorkAreaUpdate() {
+  manager_->ResumeWorkAreaUpdate();
 }
 
 // ShelfLayoutManager ----------------------------------------------------------
@@ -360,9 +359,9 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   // |hotseat_event_handler_| needs to be released before ShelfLayoutManager.
   hotseat_event_handler_.reset();
 
-  // Ensures that |overview_suspend_visibility_update_| is released before
+  // Ensures that |overview_suspend_work_area_update_| is released before
   // ShelfLayoutManager.
-  overview_suspend_visibility_update_.reset();
+  overview_suspend_work_area_update_.reset();
 
   for (auto& observer : observers_)
     observer.WillDeleteShelfLayoutManager();
@@ -429,7 +428,7 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
 }
 
 void ShelfLayoutManager::UpdateVisibilityState() {
-  // Bail out early after shelf is destroyed or update is suspended.
+  // Bail out early after shelf is destroyed or visibility update is suspended.
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   if (in_shutdown_ || !shelf_window || suspend_visibility_update_)
     return;
@@ -768,24 +767,8 @@ void ShelfLayoutManager::CancelDragOnShelfIfInProgress() {
   }
 }
 
-void ShelfLayoutManager::SuspendVisibilityUpdate() {
+void ShelfLayoutManager::SuspendVisibilityUpdateForShutdown() {
   ++suspend_visibility_update_;
-}
-
-void ShelfLayoutManager::ResumeVisiblityUpdate() {
-  --suspend_visibility_update_;
-  DCHECK_GE(suspend_visibility_update_, 0);
-
-  if (suspend_visibility_update_ || in_shutdown_)
-    return;
-
-  UpdateVisibilityState();
-
-  TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, hotseat_state());
-  UpdateBoundsAndOpacity(target_bounds, /*animate=*/true, nullptr);
-
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
 void ShelfLayoutManager::OnShelfItemSelected(ShelfAction action) {
@@ -845,21 +828,26 @@ void ShelfLayoutManager::OnSplitViewStateChanged(
   }
 }
 
+void ShelfLayoutManager::OnOverviewModeWillStart() {
+  overview_mode_will_start_ = true;
+}
+
 void ShelfLayoutManager::OnOverviewModeStarting() {
-  overview_suspend_visibility_update_.emplace(this);
+  overview_mode_will_start_ = false;
+  overview_suspend_work_area_update_.emplace(this);
 }
 
 void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
-  overview_suspend_visibility_update_.reset();
+  overview_suspend_work_area_update_.reset();
 }
 
 void ShelfLayoutManager::OnOverviewModeEnding(OverviewSession* session) {
-  overview_suspend_visibility_update_.emplace(this);
+  overview_suspend_work_area_update_.emplace(this);
 }
 
 void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
-  overview_suspend_visibility_update_.reset();
+  overview_suspend_work_area_update_.reset();
 }
 
 void ShelfLayoutManager::OnOverviewModeEnded() {
@@ -954,11 +942,14 @@ void ShelfLayoutManager::OnLocaleChanged() {
 }
 
 void ShelfLayoutManager::OnDeskSwitchAnimationLaunching() {
-  SuspendVisibilityUpdate();
+  ++suspend_visibility_update_;
 }
 
 void ShelfLayoutManager::OnDeskSwitchAnimationFinished() {
-  ResumeVisiblityUpdate();
+  --suspend_visibility_update_;
+  DCHECK_GE(suspend_visibility_update_, 0);
+  if (!suspend_visibility_update_)
+    UpdateVisibilityState();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -967,6 +958,25 @@ void ShelfLayoutManager::OnDeskSwitchAnimationFinished() {
 ShelfLayoutManager::TargetBounds::TargetBounds() : opacity(0.0f) {}
 
 ShelfLayoutManager::TargetBounds::~TargetBounds() = default;
+
+void ShelfLayoutManager::SuspendWorkAreaUpdate() {
+  ++suspend_work_area_update_;
+}
+
+void ShelfLayoutManager::ResumeWorkAreaUpdate() {
+  --suspend_work_area_update_;
+  DCHECK_GE(suspend_work_area_update_, 0);
+
+  if (suspend_work_area_update_ || in_shutdown_)
+    return;
+
+  UpdateVisibilityState();
+
+  TargetBounds target_bounds;
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, hotseat_state());
+  UpdateBoundsAndOpacity(target_bounds, /*animate=*/true, nullptr);
+  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+}
 
 void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   if (suspend_visibility_update_)
@@ -1071,7 +1081,8 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
   auto* app_list_controller = Shell::Get()->app_list_controller();
   const auto* overview_controller = Shell::Get()->overview_controller();
   const bool in_overview =
-      overview_controller && overview_controller->InOverviewSession() &&
+      ((overview_controller && overview_controller->InOverviewSession()) ||
+       overview_mode_will_start_) &&
       !overview_controller->IsCompletingShutdownAnimations();
   const bool app_list_visible =
       app_list_controller->IsVisible() ||
@@ -1238,10 +1249,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     const TargetBounds& target_bounds,
     bool animate,
     ui::ImplicitAnimationObserver* observer) {
-  // Do not update the work area during overview animation.
-  if (suspend_visibility_update_)
-    return;
-
   hide_animation_observer_.reset();
   if (GetLayer(shelf_widget_)->opacity() != target_bounds.opacity) {
     if (target_bounds.opacity == 0) {
@@ -1333,28 +1340,33 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     hotseat_bounds.Offset(hotseat_offset);
     hotseat_widget->SetBounds(hotseat_bounds);
 
-    // Do not update the work area when the alignment changes to BOTTOM_LOCKED
-    // to prevent window movement when the screen is locked: crbug.com/622431
-    // The work area is initialized with BOTTOM_LOCKED insets to prevent window
-    // movement on async preference initialization in tests: crbug.com/834369
-    display_ = display::Screen::GetScreen()->GetDisplayNearestWindow(
-        shelf_widget_->GetNativeWindow());
-    bool in_overview = Shell::Get()->overview_controller()->InOverviewSession();
-    if (!in_overview && !state_.IsScreenLocked() &&
-        (shelf_->alignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED ||
-         display_.work_area() == display_.bounds())) {
-      gfx::Insets insets;
-      // If user session is blocked (login to new user session or add user to
-      // the existing session - multi-profile) then give 100% of work area only
-      // if keyboard is not shown.
-      // TODO(agawronska): Could this be called from WorkAreaInsets?
-      const WorkAreaInsets* const work_area =
-          WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow());
-      if (!state_.IsAddingSecondaryUser() || work_area->IsKeyboardShown())
-        insets = work_area->user_work_area_insets();
+    // Do not update the work area during overview animation.
+    if (!suspend_work_area_update_) {
+      // Do not update the work area when the alignment changes to BOTTOM_LOCKED
+      // to prevent window movement when the screen is locked: crbug.com/622431
+      // The work area is initialized with BOTTOM_LOCKED insets to prevent
+      // window movement on async preference initialization in tests:
+      // crbug.com/834369
+      display_ = display::Screen::GetScreen()->GetDisplayNearestWindow(
+          shelf_widget_->GetNativeWindow());
+      bool in_overview =
+          Shell::Get()->overview_controller()->InOverviewSession();
+      if (!in_overview && !state_.IsScreenLocked() &&
+          (shelf_->alignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED ||
+           display_.work_area() == display_.bounds())) {
+        gfx::Insets insets;
+        // If user session is blocked (login to new user session or add user to
+        // the existing session - multi-profile) then give 100% of work area
+        // only if keyboard is not shown.
+        // TODO(agawronska): Could this be called from WorkAreaInsets?
+        const WorkAreaInsets* const work_area =
+            WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow());
+        if (!state_.IsAddingSecondaryUser() || work_area->IsKeyboardShown())
+          insets = work_area->user_work_area_insets();
 
-      Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
-                                             insets);
+        Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
+                                               insets);
+      }
     }
   }
 
@@ -1578,11 +1590,13 @@ void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(
     TargetBounds* target_bounds,
     HotseatState hotseat_target_state) {
   CalculateTargetBounds(state_, target_bounds, hotseat_target_state);
-  WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow())
-      ->SetShelfBoundsAndInsets(target_bounds->shelf_bounds,
-                                target_bounds->shelf_insets);
-  for (auto& observer : observers_)
-    observer.OnWorkAreaInsetsChanged();
+  if (!suspend_work_area_update_) {
+    WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow())
+        ->SetShelfBoundsAndInsets(target_bounds->shelf_bounds,
+                                  target_bounds->shelf_insets);
+    for (auto& observer : observers_)
+      observer.OnWorkAreaInsetsChanged();
+  }
 }
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(

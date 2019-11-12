@@ -169,6 +169,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::URLLoaderFactoryParamsPtr params,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client);
 
+  // Enables DoH probes to be sent using this context whenever the DNS
+  // configuration contains DoH servers.
+  void ActivateDohProbes();
+
   // mojom::NetworkContext implementation:
   void SetClient(
       mojo::PendingRemote<mojom::NetworkContextClient> client) override;
@@ -603,6 +607,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
            std::unique_ptr<net::HostResolver>,
            base::UniquePtrComparator>
       host_resolvers_;
+  std::unique_ptr<net::HostResolver::ProbeRequest> doh_probes_request_;
 
   NetworkServiceProxyDelegate* proxy_delegate_ = nullptr;
 

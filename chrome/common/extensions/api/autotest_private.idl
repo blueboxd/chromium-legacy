@@ -336,19 +336,42 @@ namespace autotestPrivate {
   };
 
   dictionary AppWindowInfo {
+    // The identifier of the window. This shouldn't change across the time.
     long id;
+
+    // The name of the window object -- typically internal class name of the
+    // window (like 'BrowserFrame').
     DOMString name;
+
     AppWindowType windowType;
     WindowStateType stateType;
+
+    // The bounds of the window, in the coordinate of the root window (i.e.
+    // relative to the display where this window resides).
     Bounds boundsInRoot;
-    Bounds targetBounds;
+
+    // The identifier of the display where this window resides.
     DOMString displayId;
 
-    DOMString title;
-    boolean isAnimating;
     boolean isVisible;
-    boolean targetVisibility;
     boolean canFocus;
+
+    // The title of the window; this can be seen in the window caption, or in
+    // the overview mode. Typically, this provides the title of the webpage or
+    // the title supplied by the application.
+    DOMString title;
+
+    // Whether some animation is ongoing on the window or not.
+    boolean isAnimating;
+
+    // The final bounds of the window when the animation completes. This should
+    // be same as |boundsInRoot| when |isAnimating| is false.
+    Bounds targetBounds;
+
+    // Whether or not the window is going to be visible after the animation
+    // completes. This should be same as |isVisible| when |isAnimating| is
+    // false.
+    boolean targetVisibility;
 
     // WM Releated stats
     boolean isActive;
@@ -358,7 +381,10 @@ namespace autotestPrivate {
 
     // Window frame info
     long captionHeight;
+    // The bitset of the enabled caption buttons. See
+    // ui/views/window/caption_button_types.h.
     long captionButtonEnabledStatus;
+    // The bitset of the caption buttons which are visible on the frame.
     long captionButtonVisibleStatus;
 
     DOMString? arcPackageName;

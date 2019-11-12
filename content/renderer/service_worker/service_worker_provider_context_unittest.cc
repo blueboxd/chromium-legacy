@@ -197,8 +197,9 @@ class FakeControllerServiceWorker
     if (fetch_event_callback_)
       std::move(fetch_event_callback_).Run();
   }
-  void Clone(mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
-                 receiver) override {
+  void Clone(
+      mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
+      network::mojom::CrossOriginEmbedderPolicy) override {
     receivers_.Add(this, std::move(receiver));
   }
 
@@ -450,7 +451,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   FakeControllerServiceWorker fake_controller1;
   auto controller_info1 = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller1;
-  fake_controller1.Clone(remote_controller1.BindNewPipeAndPassReceiver());
+  fake_controller1.Clone(remote_controller1.BindNewPipeAndPassReceiver(),
+                         network::mojom::CrossOriginEmbedderPolicy::kNone);
   controller_info1->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info1->object_info = std::move(object_info1);
@@ -493,7 +495,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   FakeControllerServiceWorker fake_controller2;
   auto controller_info2 = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller2;
-  fake_controller2.Clone(remote_controller2.BindNewPipeAndPassReceiver());
+  fake_controller2.Clone(remote_controller2.BindNewPipeAndPassReceiver(),
+                         network::mojom::CrossOriginEmbedderPolicy::kNone);
   controller_info2->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info2->object_info = std::move(object_info2);
@@ -582,7 +585,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   FakeControllerServiceWorker fake_controller4;
   auto controller_info4 = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller4;
-  fake_controller4.Clone(remote_controller4.BindNewPipeAndPassReceiver());
+  fake_controller4.Clone(remote_controller4.BindNewPipeAndPassReceiver(),
+                         network::mojom::CrossOriginEmbedderPolicy::kNone);
   controller_info4->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info4->object_info = std::move(object_info4);
@@ -735,7 +739,8 @@ TEST_F(ServiceWorkerProviderContextTest, OnNetworkProviderDestroyed) {
   FakeControllerServiceWorker fake_controller;
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
-  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver());
+  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver(),
+                        network::mojom::CrossOriginEmbedderPolicy::kNone);
   controller_info->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info->object_info = std::move(object_info);
@@ -782,7 +787,8 @@ TEST_F(ServiceWorkerProviderContextTest,
   FakeControllerServiceWorker fake_controller;
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
-  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver());
+  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver(),
+                        network::mojom::CrossOriginEmbedderPolicy::kNone);
   controller_info->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info->object_info = std::move(object_info);

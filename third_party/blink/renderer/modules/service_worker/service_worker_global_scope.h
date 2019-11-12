@@ -38,6 +38,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/network_context.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
@@ -373,8 +374,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
           response_callback,
       DispatchFetchEventForSubresourceCallback callback) override;
-  void Clone(mojo::PendingReceiver<mojom::blink::ControllerServiceWorker>
-                 reciever) override;
+  void Clone(
+      mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> reciever,
+      network::mojom::blink::CrossOriginEmbedderPolicy
+          cross_origin_embedder_policy) override;
 
   // Implements mojom::blink::ServiceWorker.
   void InitializeGlobalScope(
@@ -568,8 +571,13 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // the controllees. |controller_bindings_| should be destroyed before
   // |timeout_timer_| since the pipe needs to be disconnected before callbacks
   // passed by DispatchSomeEvent() get destructed, which may be stored in
-  // |timeout_timer_|
-  mojo::ReceiverSet<mojom::blink::ControllerServiceWorker>
+  // |timeout_timer_|.
+  // network::mojom::blink::CrossOriginEmbedderPolicy set as the context of
+  // mojo::ReceiverSet is the policy for the client which dispatches FetchEvents
+  // to the ControllerServiceWorker. It should be referred to before sending the
+  // response back to the client.
+  mojo::ReceiverSet<mojom::blink::ControllerServiceWorker,
+                    network::mojom::blink::CrossOriginEmbedderPolicy>
       controller_receivers_;
 };
 

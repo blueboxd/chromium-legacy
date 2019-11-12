@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_task_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -382,6 +383,67 @@ static bool ContentSecurityPolicyCodeGenerationCheck(
   return false;
 }
 
+static std::pair<bool, v8::MaybeLocal<v8::String>>
+TrustedTypesCodeGenerationCheck(v8::Local<v8::Context> context,
+                                v8::Local<v8::Value> source) {
+  v8::Isolate* isolate = context->GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
+                                 "eval", "");
+
+  // If the input is not a string or TrustedScript, pass it through.
+  if (!source->IsString() && !V8TrustedScript::HasInstance(source, isolate)) {
+    return {true, v8::MaybeLocal<v8::String>()};
+  }
+
+  StringOrTrustedScript string_or_trusted_script;
+  V8StringOrTrustedScript::ToImpl(
+      context->GetIsolate(), source, string_or_trusted_script,
+      UnionTypeConversionMode::kNotNullable, exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    // The input was a string or TrustedScript but the conversion failed.
+    // Block, just in case.
+    return {false, v8::MaybeLocal<v8::String>()};
+  }
+
+  String stringified_source = GetStringFromTrustedScript(
+      string_or_trusted_script, ToExecutionContext(context), exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    return {false, v8::MaybeLocal<v8::String>()};
+  }
+
+  return {true, V8String(context->GetIsolate(), stringified_source)};
+}
+
+static v8::ModifyCodeGenerationFromStringsResult
+CodeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> context,
+                                        v8::Local<v8::Value> source) {
+  // With Trusted Types, we always run the TT check first because of reporting,
+  // and because a default policy might want to stringify or modify the original
+  // source. When TT enforcement is disabled, codegen is always allowed, and we
+  // just use the check to stringify any trusted type source.
+  bool codegen_allowed_by_tt = false;
+  v8::MaybeLocal<v8::String> stringified_source;
+  std::tie(codegen_allowed_by_tt, stringified_source) =
+      TrustedTypesCodeGenerationCheck(context, source);
+
+  if (!codegen_allowed_by_tt) {
+    return {false, v8::MaybeLocal<v8::String>()};
+  }
+
+  if (stringified_source.IsEmpty()) {
+    return {true, v8::MaybeLocal<v8::String>()};
+  }
+
+  if (!ContentSecurityPolicyCodeGenerationCheck(
+          context, stringified_source.ToLocalChecked())) {
+    return {false, v8::MaybeLocal<v8::String>()};
+  }
+
+  return {true, std::move(stringified_source)};
+}
+
 static bool WasmCodeGenerationCheckCallbackInMainThread(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> source) {
@@ -639,8 +701,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
           v8::Isolate::kMessageLog);
   isolate->SetFailedAccessCheckCallbackFunction(
       FailedAccessCheckCallbackInMainThread);
-  isolate->SetAllowCodeGenerationFromStringsCallback(
-      ContentSecurityPolicyCodeGenerationCheck);
+  isolate->SetModifyCodeGenerationFromStringsCallback(
+      CodeGenerationCheckCallbackInMainThread);
   isolate->SetAllowWasmCodeGenerationCallback(
       WasmCodeGenerationCheckCallbackInMainThread);
   if (RuntimeEnabledFeatures::V8IdleTasksEnabled()) {

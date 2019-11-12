@@ -100,10 +100,6 @@ void ToolbarIconContainerView::OnMouseExited(const ui::MouseEvent& event) {
   UpdateHighlight();
 }
 
-void ToolbarIconContainerView::ChildPreferredSizeChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
 gfx::Insets ToolbarIconContainerView::GetInsets() const {
   // Use empty insets to have the border paint into the view instead of around
   // it. This prevents inadvertently increasing its size while the stroke is

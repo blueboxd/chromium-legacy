@@ -434,6 +434,12 @@
              "--disable-site-isolation-trials"]
   },
   {
+    "prefix": "not-split-http-cache-not-site-per-process",
+    "bases": ["http/tests/devtools/isolated-code-cache"],
+    "args": ["--disable-features=SplitCacheByNetworkIsolationKey",
+             "--disable-site-isolation-trials"]
+  },
+  {
     "prefix": "not-site-per-process",
     "bases": ["external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html",
               "external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html",
@@ -449,7 +455,6 @@
               "external/wpt/wasm/serialization/module/window-domain-success.sub.html",
               "external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html",
               "http/tests/devtools/debugger/fetch-breakpoints.js",
-              "http/tests/devtools/isolated-code-cache",
               "http/tests/devtools/oopif/oopif-storage.js",
               "http/tests/dom/EventListener-incumbent-global-1.html",
               "http/tests/dom/EventListener-incumbent-global-2.html",
@@ -629,5 +634,15 @@
     "prefix": "hdr",
     "bases": [],
     "args": ["--force-color-profile=scrgb-linear"]
+  },
+  {
+    "prefix": "split-http-cache",
+    "bases": ["external/wpt/fetch/http-cache"],
+    "args": ["--enable-features=SplitCacheByNetworkIsolationKey"]
+  },
+  {
+    "prefix": "not-split-http-cache",
+    "bases": ["external/wpt/fetch/http-cache"],
+    "args": ["--disable-features=SplitCacheByNetworkIsolationKey"]
   }
 ]

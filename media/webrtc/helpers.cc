@@ -8,9 +8,14 @@ namespace media {
 
 webrtc::StreamConfig CreateStreamConfig(const AudioParameters& parameters) {
   const int rate = parameters.sample_rate();
-  const int channels = std::min(parameters.channels(), 2);
   const bool has_keyboard = parameters.channel_layout() ==
                             media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC;
+  int channels =
+      media::ChannelLayoutToChannelCount(parameters.channel_layout());
+  // webrtc::StreamConfig requires that the keyboard mic channel is not included
+  // in the channel count. It may still be used.
+  if (has_keyboard)
+    channels -= 1;
   return webrtc::StreamConfig(rate, channels, has_keyboard);
 }
 

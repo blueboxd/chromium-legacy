@@ -1691,43 +1691,33 @@ String AXObject::AriaTextAlternative(bool recursive,
       name_sources->back().type = name_from;
     }
 
-    bool is_null = false;
-    Element* element = GetElement();
-    if (element) {
-      HeapVector<Member<Element>> attr_associated_elements =
-          element->GetElementArrayAttribute(attr, is_null);
-      const AtomicString& aria_labelledby = GetAttribute(attr);
+    const AtomicString& aria_labelledby = GetAttribute(attr);
+    if (!aria_labelledby.IsNull()) {
+      if (name_sources)
+        name_sources->back().attribute_value = aria_labelledby;
 
-      if (!aria_labelledby.IsNull()) {
-        if (name_sources)
-          name_sources->back().attribute_value = aria_labelledby;
-
-        // Operate on a copy of |visited| so that if |nameSources| is not
-        // null, the set of visited objects is preserved unmodified for future
-        // calculations.
-        AXObjectSet visited_copy = visited;
-        Vector<String> ids;
-        for (auto& element : attr_associated_elements)
-          ids.push_back(element->GetIdAttribute());
-
-        text_alternative = TextFromElements(
-            true, visited, attr_associated_elements, related_objects);
-        if (!ids.IsEmpty())
-          AXObjectCache().UpdateReverseRelations(this, ids);
-        if (!text_alternative.IsNull()) {
-          if (name_sources) {
-            NameSource& source = name_sources->back();
-            source.type = name_from;
-            source.related_objects = *related_objects;
-            source.text = text_alternative;
-            *found_text_alternative = true;
-          } else {
-            *found_text_alternative = true;
-            return text_alternative;
-          }
-        } else if (name_sources) {
-          name_sources->back().invalid = true;
+      // Operate on a copy of |visited| so that if |nameSources| is not null,
+      // the set of visited objects is preserved unmodified for future
+      // calculations.
+      AXObjectSet visited_copy = visited;
+      Vector<String> ids;
+      text_alternative =
+          TextFromAriaLabelledby(visited_copy, related_objects, ids);
+      if (!ids.IsEmpty())
+        AXObjectCache().UpdateReverseRelations(this, ids);
+      if (!text_alternative.IsNull()) {
+        if (name_sources) {
+          NameSource& source = name_sources->back();
+          source.type = name_from;
+          source.related_objects = *related_objects;
+          source.text = text_alternative;
+          *found_text_alternative = true;
+        } else {
+          *found_text_alternative = true;
+          return text_alternative;
         }
+      } else if (name_sources) {
+        name_sources->back().invalid = true;
       }
     }
   }

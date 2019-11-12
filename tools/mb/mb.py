@@ -601,7 +601,7 @@ class MetaBuildWrapper(object):
     else:
       raise MBErr('unrecognized platform string "%s"' % self.platform)
 
-    return [('pool', 'Chrome'),
+    return [('pool', 'chromium.tests'),
             ('cpu', 'x86-64'),
             os_dim]
 

@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
@@ -61,17 +62,24 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandle {
       blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info);
 
   // Called when the navigation is ready to commit.
-  // Provides |render_process_id| and |render_frame_id| to the pre-created
-  // provider host. Fills in |out_provider_info| so the caller can send it to
-  // the renderer process as part of the navigation commit IPC.
+  // Provides |render_process_id|, |render_frame_id|, and
+  // |cross_origin_embedder_policy| to the pre-created provider host. Fills in
+  // |out_provider_info| so the caller can send it to the renderer process as
+  // part of the navigation commit IPC.
   // |out_provider_info| can be filled as null if we failed to pre-create the
   // provider host for some security reasons.
   void OnBeginNavigationCommit(
       int render_process_id,
       int render_frame_id,
+      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
 
-  void OnBeginWorkerCommit();
+  // Similar to OnBeginNavigationCommit() for shared workers (and dedicated
+  // workers when PlzDedicatedWorker is on).
+  // |cross_origin_embedder_policy| is passed to the pre-created provider
+  // host.
+  void OnBeginWorkerCommit(
+      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
 
   blink::mojom::ServiceWorkerProviderInfoForClientPtr TakeProviderInfo() {
     return std::move(provider_info_);

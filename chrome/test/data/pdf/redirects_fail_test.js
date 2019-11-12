@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {PDFScriptingAPI} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_scripting_api.js';
+
 // Load a plugin with the given paramaters.
 function createPluginForUrl(streamUrl, url, headers, progressCallback) {
   const plugin = document.createElement('embed');

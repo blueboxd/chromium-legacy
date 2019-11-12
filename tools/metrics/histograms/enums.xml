@@ -14299,6 +14299,26 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Disconnected"/>
 </enum>
 
+<enum name="DiskCacheError">
+  <summary>Error codes defined in net/disk_cache/errors.h</summary>
+  <int value="0" label="OK"/>
+  <int value="1" label="Init failed"/>
+  <int value="2" label="Invalid tail (corrupt list)"/>
+  <int value="3" label="Invalid head (corrupt list)"/>
+  <int value="4" label="Invalid prev (corrupt list link)"/>
+  <int value="5" label="Invalid next (corrupt list link)"/>
+  <int value="6" label="Invalid entry (beyond dirty)"/>
+  <int value="7" label="Invalid address (single entry)"/>
+  <int value="8" label="Invalid links (single entry)"/>
+  <int value="9" label="Number of entries mistmatch"/>
+  <int value="10" label="Read failure (single entry)"/>
+  <int value="11" label="Previous crash (Destructor not called)"/>
+  <int value="12" label="Storage error (Unable to open / create main files)"/>
+  <int value="13" label="Invalid mask (corrupt header)"/>
+  <int value="14" label="Cache cleared (user request)"/>
+  <int value="15" label="Cache created (from empty files)"/>
+</enum>
+
 <enum name="DisplayLinkInstallationStatus">
   <int value="0" label="DisplayLink not installed"/>
   <int value="1" label="7.1 or earlier"/>
@@ -18688,6 +18708,7 @@ Called by update_net_error_codes.py.-->
   <int value="642" label="DnsOverHttpsTemplates"/>
   <int value="643" label="GloballyScopeHTTPAuthCacheEnabled"/>
   <int value="644" label="WebComponentsV0Enabled"/>
+  <int value="645" label="ClickToCallEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -21176,8 +21197,8 @@ Called by update_net_error_codes.py.-->
   <int value="1315" label="PASSWORDSPRIVATE_CHANGESAVEDPASSWORD"/>
   <int value="1316" label="AUTOTESTPRIVATE_SETWHITELISTEDPREF"/>
   <int value="1317" label="SAFEBROWSINGPRIVATE_GETREFERRERCHAIN"/>
-  <int value="1318" label="DECLARATIVENETREQUEST_ADDDYNAMICRULES"/>
-  <int value="1319" label="DECLARATIVENETREQUEST_REMOVEDYNAMICRULES"/>
+  <int value="1318" label="DELETED_DECLARATIVENETREQUEST_ADDDYNAMICRULES"/>
+  <int value="1319" label="DELETED_DECLARATIVENETREQUEST_REMOVEDYNAMICRULES"/>
   <int value="1320" label="DECLARATIVENETREQUEST_GETDYNAMICRULES"/>
   <int value="1321" label="AUTOTESTPRIVATE_GETARCSTATE"/>
   <int value="1322" label="AUTOTESTPRIVATE_ISTABLETMODEENABLED"/>
@@ -21266,6 +21287,7 @@ Called by update_net_error_codes.py.-->
   <int value="1404" label="TERMINALPRIVATE_GETCROSHSETTINGS"/>
   <int value="1405" label="AUTOTESTPRIVATE_ENABLEASSISTANTANDWAITFORREADY"/>
   <int value="1406" label="INPUTMETHODPRIVATE_FINISHCOMPOSINGTEXT"/>
+  <int value="1407" label="DECLARATIVENETREQUEST_UPDATEDYNAMICRULES"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -56780,6 +56802,12 @@ Called by update_net_trust_anchors.py.-->
   </summary>
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
+</enum>
+
+<enum name="ShortReportReason">
+  <int value="1" label="No create time"/>
+  <int value="2" label="Not full"/>
+  <int value="3" label="Not full and no create time"/>
 </enum>
 
 <enum name="ShouldAllowOpenURLFailureReason">

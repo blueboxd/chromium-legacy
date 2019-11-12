@@ -147,4 +147,57 @@ TEST_F(WeaknessMarkingTest, NullValueInReverseEphemeron) {
   EXPECT_EQ(1u, map->size());
 }
 
+namespace weakness_marking_test {
+
+class EphemeronCallbacksCounter
+    : public GarbageCollected<EphemeronCallbacksCounter> {
+ public:
+  EphemeronCallbacksCounter(size_t* count_holder)
+      : count_holder_(count_holder) {}
+
+  void Trace(Visitor* visitor) {
+    visitor->RegisterWeakCallbackMethod<EphemeronCallbacksCounter,
+                                        &EphemeronCallbacksCounter::Callback>(
+        this);
+  }
+
+  void Callback(const WeakCallbackInfo& info) {
+    *count_holder_ = ThreadState::Current()->Heap().ephemeron_callbacks_.size();
+  }
+
+ private:
+  size_t* count_holder_;
+};
+
+TEST_F(WeaknessMarkingTest, UntracableEphemeronIsNotRegsitered) {
+  size_t ephemeron_count;
+  Persistent<EphemeronCallbacksCounter> ephemeron_callbacks_counter =
+      MakeGarbageCollected<EphemeronCallbacksCounter>(&ephemeron_count);
+  TestSupportingGC::PreciselyCollectGarbage();
+  size_t old_ephemeron_count = ephemeron_count;
+  using Map = HeapHashMap<WeakMember<IntegerObject>, int>;
+  Persistent<Map> map = MakeGarbageCollected<Map>();
+  map->insert(MakeGarbageCollected<IntegerObject>(1), 2);
+  TestSupportingGC::PreciselyCollectGarbage();
+  // Ephemeron value is not traceable, thus the map shouldn't be treated as an
+  // ephemeron.
+  EXPECT_EQ(old_ephemeron_count, ephemeron_count);
+}
+
+TEST_F(WeaknessMarkingTest, TracableEphemeronIsRegsitered) {
+  size_t ephemeron_count;
+  Persistent<EphemeronCallbacksCounter> ephemeron_callbacks_counter =
+      MakeGarbageCollected<EphemeronCallbacksCounter>(&ephemeron_count);
+  TestSupportingGC::PreciselyCollectGarbage();
+  size_t old_ephemeron_count = ephemeron_count;
+  using Map = HeapHashMap<WeakMember<IntegerObject>, Member<IntegerObject>>;
+  Persistent<Map> map = MakeGarbageCollected<Map>();
+  map->insert(MakeGarbageCollected<IntegerObject>(1),
+              MakeGarbageCollected<IntegerObject>(2));
+  TestSupportingGC::PreciselyCollectGarbage();
+  EXPECT_NE(old_ephemeron_count, ephemeron_count);
+}
+
+}  // namespace weakness_marking_test
+
 }  // namespace blink

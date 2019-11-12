@@ -1,17 +1,4 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/list_property_update_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
-<link rel="import" href="../data/destination.html">
-<link rel="import" href="destination_list_item.html">
-<link rel="import" href="print_preview_vars_css.html">
-<link rel="import" href="strings.html">
-<link rel="import" href="throbber_css.html">
-
-<dom-module id="print-preview-destination-list">
-  <template>
     <style include="cr-hidden-style throbber">
       :host {
         display: flex;
@@ -78,7 +65,3 @@
     <div class="throbber-container" hidden$="[[throbberHidden_]]">
       <div class="throbber"></div>
     </div>
-  </template>
-  <script src="destination_list.js"></script>
-</dom-module>
-

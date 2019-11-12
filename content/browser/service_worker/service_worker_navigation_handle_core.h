@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/content_export.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
@@ -40,11 +41,14 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info);
 
-  // Called when the navigation is ready to commit, set the 2 IDs for the
-  // pre-created provider host.
-  void OnBeginNavigationCommit(int render_process_id, int render_frame_id);
-
-  void OnBeginWorkerCommit();
+  // Called by corresponding methods in ServiceWorkerNavigationHandle. See
+  // comments in the header of ServiceWorkerNavigationHandle for details.
+  void OnBeginNavigationCommit(
+      int render_process_id,
+      int render_frame_id,
+      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
+  void OnBeginWorkerCommit(
+      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
 
   ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();

@@ -44,12 +44,14 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
                                  base::TimeDelta elapsed_time) override;
   void OnDownloadCompleted() override;
   void OnDownloadCancelled() override;
-  void OnDownloadFailed() override;
+  void OnDownloadFailed(
+      plugin_vm::PluginVmImageManager::FailureReason reason) override;
   void OnImportProgressUpdated(int percent_completed,
                                base::TimeDelta elapsed_time) override;
   void OnImported() override;
   void OnImportCancelled() override;
-  void OnImportFailed() override;
+  void OnImportFailed(
+      plugin_vm::PluginVmImageManager::FailureReason reason) override;
 
   // Public for testing purposes.
   base::string16 GetBigMessage() const;

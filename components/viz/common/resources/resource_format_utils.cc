@@ -488,4 +488,40 @@ VkFormat ToVkFormat(ResourceFormat format) {
 }
 #endif
 
+#if BUILDFLAG(SKIA_USE_DAWN)
+dawn::TextureFormat ToDawnFormat(ResourceFormat format) {
+  switch (format) {
+    case RGBA_8888:
+    case RGBX_8888:
+      return dawn::TextureFormat::RGBA8Unorm;
+    case BGRA_8888:
+    case BGRX_8888:
+      return dawn::TextureFormat::BGRA8Unorm;
+    case RED_8:
+    case ALPHA_8:
+    case LUMINANCE_8:
+      return dawn::TextureFormat::R8Unorm;
+    case RG_88:
+      return dawn::TextureFormat::RG8Unorm;
+    case RGBA_F16:
+      return dawn::TextureFormat::RGBA16Float;
+    case RGBX_1010102:
+      return dawn::TextureFormat::RGB10A2Unorm;
+    case RGBA_4444:
+    case RGB_565:
+    case BGR_565:
+    case R16_EXT:
+    case BGRX_1010102:
+    case YVU_420:
+    case YUV_420_BIPLANAR:
+    case ETC1:
+    case LUMINANCE_F16:
+    case P010:
+      break;
+  }
+  NOTREACHED() << "Unsupported format " << format;
+  return dawn::TextureFormat::Undefined;
+}
+#endif
+
 }  // namespace viz

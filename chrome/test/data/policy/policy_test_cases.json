@@ -3976,6 +3976,12 @@
     "pref_mappings": [{ "pref": "browser.shared_clipboard_enabled" }]
   },
 
+  "ClickToCallEnabled" : {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "ClickToCallEnabled": false },
+    "pref_mappings": [{ "pref": "browser.click_to_call_enabled" }]
+  },
+
   "AudioSandboxEnabled": {
     "note": "This policy is used directly through the policy service instead of through a pref."
   },

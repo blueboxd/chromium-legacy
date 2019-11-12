@@ -703,10 +703,20 @@ const DnsHosts* MockDnsClient::GetHosts() const {
 }
 
 void MockDnsClient::SetRequestContextForProbes(
-    URLRequestContext* url_request_context) {}
+    URLRequestContext* url_request_context) {
+  DCHECK(!probe_context_ || probe_context_ == url_request_context);
+  probe_context_ = url_request_context;
+  factory_->StartDohProbes(probe_context_, false /* network_change */);
+}
 
 void MockDnsClient::CancelProbesForContext(
-    URLRequestContext* url_request_context) {}
+    URLRequestContext* url_request_context) {
+  if (probe_context_ != url_request_context)
+    return;
+
+  factory_->CancelDohProbes();
+  probe_context_ = nullptr;
+}
 
 DnsTransactionFactory* MockDnsClient::GetTransactionFactory() {
   return GetEffectiveConfig() ? factory_.get() : nullptr;
@@ -740,7 +750,7 @@ void MockDnsClient::SetTransactionFactoryForTesting(
 }
 
 void MockDnsClient::StartDohProbesForTesting() {
-  factory_->StartDohProbes(nullptr /* url_request_context */,
+  factory_->StartDohProbes(probe_context_ /* url_request_context */,
                            false /* network_change */);
 }
 

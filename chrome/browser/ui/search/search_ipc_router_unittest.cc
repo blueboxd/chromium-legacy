@@ -145,7 +145,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD1(ShouldSendSetInputInProgress, bool(bool));
   MOCK_METHOD0(ShouldSendOmniboxFocusChanged, bool());
   MOCK_METHOD0(ShouldSendMostVisitedInfo, bool());
-  MOCK_METHOD0(ShouldSendThemeBackgroundInfo, bool());
+  MOCK_METHOD0(ShouldSendNtpTheme, bool());
   MOCK_METHOD0(ShouldSendLocalBackgroundSelected, bool());
   MOCK_METHOD0(ShouldProcessThemeChangeMessages, bool());
   MOCK_METHOD1(ShouldProcessQueryAutocomplete, bool(bool));
@@ -836,28 +836,24 @@ TEST_F(SearchIPCRouterTest, DoNotSendMostVisitedInfoMsg) {
   GetSearchIPCRouter().SendMostVisitedInfo(InstantMostVisitedInfo());
 }
 
-TEST_F(SearchIPCRouterTest, SendThemeBackgroundInfoMsg) {
+TEST_F(SearchIPCRouterTest, SendNtpThemeMsg) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendThemeBackgroundInfo())
-      .Times(1)
-      .WillOnce(Return(true));
+  EXPECT_CALL(*policy, ShouldSendNtpTheme()).Times(1).WillOnce(Return(true));
 
   EXPECT_CALL(*mock_embedded_search_client(), ThemeChanged(_));
-  GetSearchIPCRouter().SendThemeBackgroundInfo(ThemeBackgroundInfo());
+  GetSearchIPCRouter().SendNtpTheme(NtpTheme());
 }
 
-TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
+TEST_F(SearchIPCRouterTest, DoNotSendNtpThemeMsg) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendThemeBackgroundInfo())
-      .Times(1)
-      .WillOnce(Return(false));
+  EXPECT_CALL(*policy, ShouldSendNtpTheme()).Times(1).WillOnce(Return(false));
 
   EXPECT_CALL(*mock_embedded_search_client(), ThemeChanged(_)).Times(0);
-  GetSearchIPCRouter().SendThemeBackgroundInfo(ThemeBackgroundInfo());
+  GetSearchIPCRouter().SendNtpTheme(NtpTheme());
 }
 
 TEST_F(SearchIPCRouterTest, SendLocalBackgroundSelectedMsg) {

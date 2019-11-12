@@ -508,7 +508,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
   EXPECT_FALSE(base::PathExists(model_path));
   history_service()->AddPage(GURL(url_1), base::Time::Now(),
                              history::VisitSource::SOURCE_BROWSED);
-  history_service()->DeleteURL(GURL(url_1));
+  history_service()->DeleteURLs({GURL(url_1)});
   history::BlockUntilHistoryProcessesPendingRequests(history_service());
   Wait();
   EXPECT_TRUE(base::PathExists(model_path));

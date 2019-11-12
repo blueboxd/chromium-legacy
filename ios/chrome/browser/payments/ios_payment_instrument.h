@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/payment_app.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "url/gurl.h"
 
@@ -30,7 +30,7 @@ namespace payments {
 const std::map<std::string, std::string>& GetMethodNameToSchemeName();
 
 // Represents an iOS Native App as a form of payment in Payment Request.
-class IOSPaymentInstrument : public PaymentInstrument {
+class IOSPaymentInstrument : public PaymentApp {
  public:
   // Initializes an IOSPaymentInstrument. |method_name| is the url payment
   // method identifier for this instrument. |universal_link| is the unique
@@ -48,8 +48,8 @@ class IOSPaymentInstrument : public PaymentInstrument {
 
   ~IOSPaymentInstrument() override;
 
-  // PaymentInstrument:
-  void InvokePaymentApp(PaymentInstrument::Delegate* delegate) override;
+  // PaymentApp:
+  void InvokePaymentApp(PaymentApp::Delegate* delegate) override;
   bool IsCompleteForPayment() const override;
   uint32_t GetCompletenessScore() const override;
   bool CanPreselect() const override;
@@ -72,7 +72,7 @@ class IOSPaymentInstrument : public PaymentInstrument {
   bool HandlesPayerName() const override;
   bool HandlesPayerEmail() const override;
   bool HandlesPayerPhone() const override;
-  base::WeakPtr<PaymentInstrument> AsWeakPtr() override;
+  base::WeakPtr<PaymentApp> AsWeakPtr() override;
 
   // Given that the icon for the iOS payment instrument can only be determined
   // at run-time, the icon is obtained using this UIImage object rather than

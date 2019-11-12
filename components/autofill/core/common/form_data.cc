@@ -123,28 +123,23 @@ bool FormData::DynamicallySameFormAs(const FormData& form) const {
   return true;
 }
 
-bool FormData::operator==(const FormData& form) const {
-  return name == form.name && id_attribute == form.id_attribute &&
-         name_attribute == form.name_attribute && url == form.url &&
-         action == form.action && is_action_empty == form.is_action_empty &&
-         unique_renderer_id == form.unique_renderer_id &&
-         submission_event == form.submission_event &&
-         is_form_tag == form.is_form_tag &&
-         is_formless_checkout == form.is_formless_checkout &&
-         fields == form.fields &&
-         username_predictions == form.username_predictions;
-}
-
-bool FormData::operator!=(const FormData& form) const {
-  return !(*this == form);
-}
-
-bool FormData::operator<(const FormData& form) const {
-  return std::tie(name, id_attribute, name_attribute, url, action, is_form_tag,
-                  is_formless_checkout, fields) <
-         std::tie(form.name, form.id_attribute, form.name_attribute, form.url,
-                  form.action, form.is_form_tag, form.is_formless_checkout,
-                  form.fields);
+bool FormData::IdentityComparator::operator()(const FormData& a,
+                                              const FormData& b) const {
+  // |unique_renderer_id| uniquely identifies the form, if and only if it is
+  // set; the other members compared below together uniquely identify the form
+  // as well.
+  auto tie = [](const FormData& f) {
+    return std::tie(f.unique_renderer_id, f.name, f.id_attribute,
+                    f.name_attribute, f.url, f.action, f.is_form_tag,
+                    f.is_formless_checkout);
+  };
+  if (tie(a) < tie(b))
+    return true;
+  if (tie(b) < tie(a))
+    return false;
+  return std::lexicographical_compare(a.fields.begin(), a.fields.end(),
+                                      b.fields.begin(), b.fields.end(),
+                                      FormFieldData::IdentityComparator());
 }
 
 std::ostream& operator<<(std::ostream& os, const FormData& form) {

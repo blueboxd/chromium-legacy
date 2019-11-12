@@ -285,7 +285,8 @@ void PluginVmLauncherView::OnDownloadCancelled() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void PluginVmLauncherView::OnDownloadFailed() {
+void PluginVmLauncherView::OnDownloadFailed(
+    plugin_vm::PluginVmImageManager::FailureReason reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   state_ = State::ERROR;
@@ -308,7 +309,8 @@ void PluginVmLauncherView::OnImportCancelled() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void PluginVmLauncherView::OnImportFailed() {
+void PluginVmLauncherView::OnImportFailed(
+    plugin_vm::PluginVmImageManager::FailureReason reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   state_ = State::ERROR;
@@ -396,6 +398,7 @@ void PluginVmLauncherView::AddedToWidget() {
 }
 
 void PluginVmLauncherView::OnStateUpdated() {
+  // TODO(https://crbug.com/1017511): display failure reasons.
   SetBigMessageLabel();
   SetMessageLabel();
   SetBigImage();

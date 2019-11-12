@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('number_settings_section_interactive_test', function() {
+import 'chrome://print/print_preview.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {triggerInputEvent} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
+  window.number_settings_section_interactive_test = {};
+  number_settings_section_interactive_test.suiteName =
+      'NumberSettingsSectionInteractiveTest';
   /** @enum {string} */
-  const TestNames = {
+  number_settings_section_interactive_test.TestNames = {
     BlurResetsEmptyInput: 'blur resets empty input',
   };
 
-  const suiteName = 'NumberSettingsSectionInteractiveTest';
-  suite(suiteName, function() {
+  suite(number_settings_section_interactive_test.suiteName, function() {
     /** @type {?PrintPreviewNumberSettingsSectionElement} */
     let numberSettings = null;
 
@@ -28,7 +33,8 @@ cr.define('number_settings_section_interactive_test', function() {
 
     // Verifies that blurring the input will reset it to the default if it is
     // empty, but not if it contains an invalid value.
-    test(assert(TestNames.BlurResetsEmptyInput), async () => {
+    test(assert(number_settings_section_interactive_test.TestNames
+          .BlurResetsEmptyInput), async () => {
       // Initial value is 10.
       const crInput = numberSettings.getInput();
       const input = crInput.inputElement;
@@ -36,8 +42,7 @@ cr.define('number_settings_section_interactive_test', function() {
 
       // Set something invalid in the input.
       input.focus();
-      await print_preview_test_utils.triggerInputEvent(
-          input, '0', numberSettings);
+      await triggerInputEvent(input, '0', numberSettings);
       assertEquals('0', input.value);
       assertTrue(crInput.invalid);
 
@@ -50,8 +55,7 @@ cr.define('number_settings_section_interactive_test', function() {
       // Clear the input.
       input.focus();
 
-      await print_preview_test_utils.triggerInputEvent(
-          input, '', numberSettings);
+      await triggerInputEvent(input, '', numberSettings);
       assertEquals('', input.value);
       assertFalse(crInput.invalid);
 
@@ -61,9 +65,3 @@ cr.define('number_settings_section_interactive_test', function() {
       assertFalse(crInput.invalid);
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

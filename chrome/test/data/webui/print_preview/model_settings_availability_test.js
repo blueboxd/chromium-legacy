@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('model_settings_availability_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, DuplexType, Margins, MarginsType, Size} from 'chrome://print/print_preview.js';
+import {getCddTemplate, getGoogleDriveDestination, getSaveAsPdfDestination} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
   suite('ModelSettingsAvailabilityTest', function() {
     let model = null;
 
@@ -24,17 +28,17 @@ cr.define('model_settings_availability_test', function() {
         title: 'title',
       };
 
-      model.pageSize = new print_preview.Size(612, 792);
-      model.margins = new print_preview.Margins(72, 72, 72, 72);
+      model.pageSize = new Size(612, 792);
+      model.margins = new Margins(72, 72, 72, 72);
 
       // Create a test destination.
-      model.destination = new print_preview.Destination(
-          'FooDevice', print_preview.DestinationType.LOCAL,
-          print_preview.DestinationOrigin.LOCAL, 'FooName',
-          print_preview.DestinationConnectionStatus.ONLINE);
+      model.destination = new Destination(
+          'FooDevice', DestinationType.LOCAL,
+          DestinationOrigin.LOCAL, 'FooName',
+          DestinationConnectionStatus.ONLINE);
       model.set(
           'destination.capabilities',
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities);
       model.applyStickySettings();
     });
@@ -46,7 +50,7 @@ cr.define('model_settings_availability_test', function() {
 
       // Remove copies capability.
       let capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.copies;
       model.set('destination.capabilities', capabilities);
@@ -56,7 +60,7 @@ cr.define('model_settings_availability_test', function() {
 
       // Copies is restored.
       capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       model.set('destination.capabilities', capabilities);
       assertTrue(model.settings.copies.available);
@@ -68,7 +72,7 @@ cr.define('model_settings_availability_test', function() {
 
       // Remove collate capability.
       let capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.collate;
       model.set('destination.capabilities', capabilities);
@@ -78,7 +82,7 @@ cr.define('model_settings_availability_test', function() {
 
       // Copies is restored.
       capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       model.set('destination.capabilities', capabilities);
       assertTrue(model.settings.collate.available);
@@ -96,7 +100,7 @@ cr.define('model_settings_availability_test', function() {
        {option: [{type: 'LANDSCAPE', is_default: true}]},
       ].forEach(layoutCap => {
         const capabilities =
-            print_preview_test_utils.getCddTemplate(model.destination.id)
+            getCddTemplate(model.destination.id)
                 .capabilities;
         capabilities.printer.page_orientation = layoutCap;
         // Layout section should now be hidden.
@@ -106,7 +110,7 @@ cr.define('model_settings_availability_test', function() {
 
       // Reset full capabilities
       const capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       model.set('destination.capabilities', capabilities);
       assertTrue(model.settings.layout.available);
@@ -173,7 +177,7 @@ cr.define('model_settings_availability_test', function() {
          expectedValue: true,
        }].forEach(capabilityAndValue => {
         const capabilities =
-            print_preview_test_utils.getCddTemplate(model.destination.id)
+            getCddTemplate(model.destination.id)
                 .capabilities;
         capabilities.printer.color = capabilityAndValue.colorCap;
         model.set('destination.capabilities', capabilities);
@@ -213,7 +217,7 @@ cr.define('model_settings_availability_test', function() {
          expectedValue: true,
        }].forEach(capabilityAndValue => {
         const capabilities =
-            print_preview_test_utils.getCddTemplate(model.destination.id)
+            getCddTemplate(model.destination.id)
                 .capabilities;
         capabilities.printer.color = capabilityAndValue.colorCap;
         model.set('destination.capabilities', capabilities);
@@ -224,13 +228,9 @@ cr.define('model_settings_availability_test', function() {
 
       // Google Drive always has an unavailableValue of true.
       model.set(
-          'destination',
-          print_preview_test_utils.getGoogleDriveDestination(
-              'foo@chromium.org'));
+          'destination', getGoogleDriveDestination('foo@chromium.org'));
       const capabilities =
-          print_preview_test_utils
-              .getCddTemplate(print_preview.Destination.GooglePromotedId.DOCS)
-              .capabilities;
+          getCddTemplate(Destination.GooglePromotedId.DOCS).capabilities;
       delete capabilities.printer.color;
       model.set('destination.capabilities', capabilities);
       assertFalse(model.settings.color.available);
@@ -239,9 +239,9 @@ cr.define('model_settings_availability_test', function() {
     });
 
     function setSaveAsPdfDestination() {
-      const saveAsPdf = print_preview_test_utils.getSaveAsPdfDestination();
+      const saveAsPdf = getSaveAsPdfDestination();
       saveAsPdf.capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       model.set('destination', saveAsPdf);
     }
@@ -252,7 +252,7 @@ cr.define('model_settings_availability_test', function() {
 
       // Remove capability.
       const capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.media_size;
 
@@ -311,7 +311,7 @@ cr.define('model_settings_availability_test', function() {
 
       // Remove capability.
       let capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.dpi;
 
@@ -322,7 +322,7 @@ cr.define('model_settings_availability_test', function() {
       // Does not show up for only 1 option. Unavailable value should be set to
       // the only available option.
       capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       capabilities.printer.dpi.option.pop();
       model.set('destination.capabilities', capabilities);
@@ -449,11 +449,11 @@ cr.define('model_settings_availability_test', function() {
       assertTrue(model.settings.headerFooter.available);
 
       // Set margins to NONE
-      model.set('settings.margins.value', print_preview.MarginsType.NO_MARGINS);
+      model.set('settings.margins.value', MarginsType.NO_MARGINS);
       assertFalse(model.settings.headerFooter.available);
 
       // Custom margins of 0.
-      model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
+      model.set('settings.margins.value', MarginsType.CUSTOM);
       model.set(
           'settings.customMargins.value',
           {marginTop: 0, marginLeft: 0, marginRight: 0, marginBottom: 0});
@@ -479,7 +479,7 @@ cr.define('model_settings_availability_test', function() {
 
       // Small paper sizes
       const capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       capabilities.printer.media_size = {
         'option': [
@@ -498,7 +498,7 @@ cr.define('model_settings_availability_test', function() {
         ]
       };
       model.set('destination.capabilities', capabilities);
-      model.set('settings.margins.value', print_preview.MarginsType.DEFAULT);
+      model.set('settings.margins.value', MarginsType.DEFAULT);
 
       // Header/footer should be available for default big label with
       // default margins.
@@ -549,7 +549,7 @@ cr.define('model_settings_availability_test', function() {
 
       // Remove duplex capability.
       let capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.duplex;
       model.set('destination.capabilities', capabilities);
@@ -558,11 +558,11 @@ cr.define('model_settings_availability_test', function() {
 
       // Set a duplex capability with only 1 type, no duplex.
       capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.duplex;
       capabilities.printer.duplex = {
-        option: [{type: print_preview.DuplexType.NO_DUPLEX, is_default: true}]
+        option: [{type: DuplexType.NO_DUPLEX, is_default: true}]
       };
       model.set('destination.capabilities', capabilities);
       assertFalse(model.settings.duplex.available);
@@ -570,13 +570,13 @@ cr.define('model_settings_availability_test', function() {
 
       // Set a duplex capability with 2 types, long edge and no duplex.
       capabilities =
-          print_preview_test_utils.getCddTemplate(model.destination.id)
+          getCddTemplate(model.destination.id)
               .capabilities;
       delete capabilities.printer.duplex;
       capabilities.printer.duplex = {
         option: [
-          {type: print_preview.DuplexType.NO_DUPLEX},
-          {type: print_preview.DuplexType.LONG_EDGE, is_default: true}
+          {type: DuplexType.NO_DUPLEX},
+          {type: DuplexType.LONG_EDGE, is_default: true}
         ]
       };
       model.set('destination.capabilities', capabilities);
@@ -592,7 +592,7 @@ cr.define('model_settings_availability_test', function() {
       // Available on non-Windows and Mac for PDFs.
       model.set('documentSettings.isModifiable', false);
       assertEquals(
-          !cr.isWindows && !cr.isMac, model.settings.rasterize.available);
+          !isWindows && !isMac, model.settings.rasterize.available);
       assertFalse(model.settings.rasterize.setFromUi);
 
       // Unavailable for ARC.
@@ -644,7 +644,7 @@ cr.define('model_settings_availability_test', function() {
       assertFalse(model.settings.pagesPerSheet.available);
     });
 
-    if (cr.isChromeOS) {
+    if (isChromeOS) {
       test('pin', function() {
         // Make device unmanaged.
         loadTimeData.overrideValues({isEnterpriseManaged: false});
@@ -656,13 +656,13 @@ cr.define('model_settings_availability_test', function() {
         // Set capabilities again to update pin availability.
         model.set(
             'destination.capabilities',
-            print_preview_test_utils.getCddTemplate(model.destination.id)
+            getCddTemplate(model.destination.id)
                 .capabilities);
         assertTrue(model.settings.pin.available);
 
         // Remove pin capability.
         let capabilities =
-            print_preview_test_utils.getCddTemplate(model.destination.id)
+            getCddTemplate(model.destination.id)
                 .capabilities;
         delete capabilities.printer.pin;
         model.set('destination.capabilities', capabilities);
@@ -670,7 +670,7 @@ cr.define('model_settings_availability_test', function() {
 
         // Set not supported pin capability.
         capabilities =
-            print_preview_test_utils.getCddTemplate(model.destination.id)
+            getCddTemplate(model.destination.id)
                 .capabilities;
         capabilities.printer.pin.supported = false;
         model.set('destination.capabilities', capabilities);
@@ -683,7 +683,7 @@ cr.define('model_settings_availability_test', function() {
 
         // Remove pin capability.
         let capabilities =
-            print_preview_test_utils.getCddTemplate(model.destination.id)
+            getCddTemplate(model.destination.id)
                 .capabilities;
         delete capabilities.printer.pin;
         model.set('destination.capabilities', capabilities);
@@ -691,7 +691,7 @@ cr.define('model_settings_availability_test', function() {
 
         // Set not supported pin capability.
         capabilities =
-            print_preview_test_utils.getCddTemplate(model.destination.id)
+            getCddTemplate(model.destination.id)
                 .capabilities;
         capabilities.printer.pin.supported = false;
         model.set('destination.capabilities', capabilities);
@@ -700,4 +700,3 @@ cr.define('model_settings_availability_test', function() {
       });
     }
   });
-});

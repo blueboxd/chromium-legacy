@@ -86,7 +86,8 @@ class FormCache {
   blink::WebLocalFrame* frame_;
 
   // The cached forms. Used to prevent re-extraction of forms.
-  std::set<FormData> parsed_forms_;
+  // TODO(crbug/896689) Move to std::map<unique_rederer_id, FormData>.
+  std::set<FormData, FormData::IdentityComparator> parsed_forms_;
 
   // The synthetic FormData is for all the fieldsets in the document without a
   // form owner.

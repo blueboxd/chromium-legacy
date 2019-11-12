@@ -1208,7 +1208,7 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
 void Layer::SetDidScrollCallback(
     base::RepeatingCallback<void(const gfx::ScrollOffset&,
                                  const cc::ElementId&)> callback) {
-  cc_layer_->set_did_scroll_callback(std::move(callback));
+  cc_layer_->SetDidScrollCallback(std::move(callback));
 }
 
 void Layer::SetScrollable(const gfx::Size& container_bounds) {
@@ -1295,8 +1295,6 @@ std::unique_ptr<base::trace_event::TracedValue> Layer::TakeDebugInfo(
 std::string Layer::LayerDebugName(const cc::Layer* layer) const {
   return name_;
 }
-
-void Layer::DidChangeScrollbarsHiddenIfOverlay(bool) {}
 
 void Layer::CollectAnimators(
     std::vector<scoped_refptr<LayerAnimator>>* animators) {

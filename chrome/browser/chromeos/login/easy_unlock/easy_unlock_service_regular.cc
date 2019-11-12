@@ -127,7 +127,6 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     // OnFeatureStatesChanged() will call back on this method when feature state
     // changes.
     PA_LOG(VERBOSE) << "Smart Lock is not enabled by user; aborting.";
-    SetStoredRemoteDevices(base::ListValue());
     SetProximityAuthDevices(GetAccountId(), multidevice::RemoteDeviceRefList(),
                             base::nullopt /* local_device */);
     return;
@@ -149,7 +148,6 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
   } else {
     PA_LOG(ERROR) << "Smart Lock is enabled by user, but no unlock key is "
                      "present; aborting.";
-    SetStoredRemoteDevices(base::ListValue());
     SetProximityAuthDevices(GetAccountId(), multidevice::RemoteDeviceRefList(),
                             base::nullopt /* local_device */);
 

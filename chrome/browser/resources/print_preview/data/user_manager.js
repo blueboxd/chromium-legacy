@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
-
-(function() {
-'use strict';
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {CloudPrintInterface, CloudPrintInterfaceEventType, CloudPrintInterfaceErrorEventDetail} from '../cloud_print_interface.js';
+import {DestinationOrigin} from './destination.js';
+import {DestinationStore} from './destination_store.js';
+import {InvitationStore} from './invitation_store.js';
 
 /**
  * @typedef {{ activeUser: string,
@@ -15,6 +19,8 @@ let UpdateUsersPayload;
 
 Polymer({
   is: 'print-preview-user-manager',
+
+  _template: null,
 
   behaviors: [WebUIListenerBehavior],
 
@@ -32,16 +38,16 @@ Polymer({
       notify: true,
     },
 
-    /** @type {?cloudprint.CloudPrintInterface} */
+    /** @type {?CloudPrintInterface} */
     cloudPrintInterface: {
       type: Object,
       observer: 'onCloudPrintInterfaceSet_',
     },
 
-    /** @type {?print_preview.DestinationStore} */
+    /** @type {?DestinationStore} */
     destinationStore: Object,
 
-    /** @type {?print_preview.InvitationStore} */
+    /** @type {?InvitationStore} */
     invitationStore: Object,
 
     shouldReloadCookies: Boolean,
@@ -95,7 +101,7 @@ Polymer({
       this.destinationStore.startLoadGoogleDrive();
       this.addWebUIListener('check-for-account-update', () => {
         this.destinationStore.startLoadCloudDestinations(
-            print_preview.DestinationOrigin.COOKIES);
+            DestinationOrigin.COOKIES);
       });
     }
   },
@@ -104,10 +110,10 @@ Polymer({
   onCloudPrintInterfaceSet_: function() {
     this.tracker_.add(
         this.cloudPrintInterface.getEventTarget(),
-        cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
+        CloudPrintInterfaceEventType.UPDATE_USERS,
         this.onCloudPrintUpdateUsers_.bind(this));
-    [cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
-     cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
+    [CloudPrintInterfaceEventType.SEARCH_FAILED,
+     CloudPrintInterfaceEventType.PRINTER_FAILED,
     ].forEach(eventType => {
       this.tracker_.add(
           this.cloudPrintInterface.getEventTarget(), eventType,
@@ -123,7 +129,7 @@ Polymer({
   /**
    * Updates the cloud print status to NOT_SIGNED_IN if there is an
    * authentication error.
-   * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceErrorEventDetail>}
+   * @param {!CustomEvent<!CloudPrintInterfaceErrorEventDetail>}
    *     event Contains the error status
    * @private
    */
@@ -184,4 +190,3 @@ Polymer({
     this.invitationStore.startLoadingInvitations(user);
   },
 });
-})();

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {NativeLayer} from './native_layer.js';
 
   /**
    * Object used to measure usage statistics.
    * @constructor
    */
-  function Metrics() {}
+  export function Metrics() {}
 
   /**
    * Enumeration of buckets that a user can enter while using the destination
@@ -77,7 +76,7 @@ cr.define('print_preview', function() {
   };
 
   /* A context for recording a value in a specific UMA histogram. */
-  class MetricsContext {
+  export class MetricsContext {
     /**
      * @param {string} histogram The name of the histogram to be recorded in.
      * @param {number} maxBucket The max value for the last histogram bucket.
@@ -89,8 +88,8 @@ cr.define('print_preview', function() {
       /** @private {number} */
       this.maxBucket_ = maxBucket;
 
-      /** @private {!print_preview.NativeLayer} */
-      this.nativeLayer_ = print_preview.NativeLayer.getInstance();
+      /** @private {!NativeLayer} */
+      this.nativeLayer_ = NativeLayer.getInstance();
     }
 
     /**
@@ -107,7 +106,7 @@ cr.define('print_preview', function() {
 
     /**
      * Destination Search specific usage statistics context.
-     * @return {!print_preview.MetricsContext}
+     * @return {!MetricsContext}
      */
     static destinationSearch() {
       return new MetricsContext(
@@ -117,7 +116,7 @@ cr.define('print_preview', function() {
 
     /**
      * Print settings UI specific usage statistics context
-     * @return {!print_preview.MetricsContext}
+     * @return {!MetricsContext}
      */
     static printSettingsUi() {
       return new MetricsContext(
@@ -125,10 +124,3 @@ cr.define('print_preview', function() {
           Metrics.PrintSettingsUiBucket.PRINT_SETTINGS_UI_MAX_BUCKET);
     }
   }
-
-  // Export
-  return {
-    Metrics: Metrics,
-    MetricsContext: MetricsContext,
-  };
-});

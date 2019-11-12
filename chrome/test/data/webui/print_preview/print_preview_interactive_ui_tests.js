@@ -6,6 +6,7 @@
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
+GEN('#include "services/network/public/cpp/features.h"');
 
 const PrintPreviewInteractiveUITest = class extends PolymerInteractiveUITest {
   /** @override */
@@ -16,9 +17,14 @@ const PrintPreviewInteractiveUITest = class extends PolymerInteractiveUITest {
   /** @override */
   get extraLibraries() {
     return [
-      ...super.extraLibraries,
-      '//ui/webui/resources/js/assert.js',
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
     ];
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 
   // The name of the mocha suite. Should be overridden by subclasses.
@@ -37,15 +43,7 @@ var PrintPreviewButtonStripInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/button_strip.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//chrome/test/data/webui/test_util.js',
-      'button_strip_interactive_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/button_strip_interactive_test.js';
   }
 
   /** @override */
@@ -72,19 +70,7 @@ var PrintPreviewDestinationDialogInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/destination_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//chrome/test/data/webui/test_util.js',
-      '../test_browser_proxy.js',
-      'cloud_print_interface_stub.js',
-      'native_layer_stub.js',
-      'print_preview_test_utils.js',
-      'destination_dialog_interactive_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/destination_dialog_interactive_test.js';
   }
 
   /** @override */
@@ -120,16 +106,7 @@ var PrintPreviewPagesSettingsTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/pages_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'pages_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/pages_settings_test.js';
   }
 
   /** @override */
@@ -160,16 +137,7 @@ var PrintPreviewNumberSettingsSectionInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/number_settings_section.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'number_settings_section_interactive_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/number_settings_section_interactive_test.js';
   }
 
   /** @override */
@@ -190,17 +158,7 @@ var PrintPreviewScalingSettingsInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/scaling_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//ui/webui/resources/js/util.js',
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'scaling_settings_interactive_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/scaling_settings_interactive_test.js';
   }
 
   /** @override */

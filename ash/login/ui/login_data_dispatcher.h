@@ -100,7 +100,8 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
                                      bool enforced,
                                      const std::string& os_version_label_text,
                                      const std::string& enterprise_info_text,
-                                     const std::string& bluetooth_name);
+                                     const std::string& bluetooth_name,
+                                     bool adb_sideloading_enabled);
 
     // Called when public session display name is changed for user with
     // |account_id|.
@@ -177,7 +178,8 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
                      bool enforced,
                      const std::string& os_version_label_text,
                      const std::string& enterprise_info_text,
-                     const std::string& bluetooth_name) override;
+                     const std::string& bluetooth_name,
+                     bool adb_sideloading_enabled) override;
   void SetPublicSessionDisplayName(const AccountId& account_id,
                                    const std::string& display_name) override;
   void SetPublicSessionLocales(const AccountId& account_id,

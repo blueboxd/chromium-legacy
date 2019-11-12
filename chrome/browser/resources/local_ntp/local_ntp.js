@@ -391,7 +391,7 @@ function createIframes() {
   $(IDS.TILES).appendChild(iframe);
 
   iframe.onload = function() {
-    sendThemeInfoToMostVisitedIframe();
+    sendNtpThemeToMostVisitedIframe();
     reloadTiles();
   };
 
@@ -575,9 +575,9 @@ function floatUpNotification(notification, notificationContainer) {
  * the page has notheme set, returns a fallback light-colored theme (or dark-
  * colored theme if dark mode is enabled). This is used when the doodle is
  * displayed after clicking the notifier.
- * @return {?ThemeBackgroundInfo}
+ * @return {?NtpTheme}
  */
-function getThemeBackgroundInfo() {
+function getNtpTheme() {
   if (history.state && history.state.notheme) {
     return {
       alternateLogo: false,
@@ -599,7 +599,7 @@ function getThemeBackgroundInfo() {
     };
   }
 
-  const info = window.chrome.embeddedSearch.newTabPage.themeBackgroundInfo;
+  const info = window.chrome.embeddedSearch.newTabPage.ntpTheme;
   const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
   if (preview.dataset.hasPreview === 'true') {
     info.isNtpBackgroundDark = preview.dataset.hasImage === 'true';
@@ -1397,7 +1397,7 @@ function onRestoreAll() {
 function onThemeChange() {
   renderTheme();
   renderOneGoogleBarTheme();
-  sendThemeInfoToMostVisitedIframe();
+  sendNtpThemeToMostVisitedIframe();
   if ($(IDS.PROMO)) {
     showPromoIfNotOverlapping();
   }
@@ -1618,8 +1618,8 @@ function renderOneGoogleBarTheme() {
     const oneGoogleBarPromise = oneGoogleBarApi.bf();
     oneGoogleBarPromise.then(function(oneGoogleBar) {
       const setForegroundStyle = oneGoogleBar.pc.bind(oneGoogleBar);
-      const themeInfo = getThemeBackgroundInfo();
-      setForegroundStyle(themeInfo && themeInfo.isNtpBackgroundDark ? 1 : 0);
+      const ntpTheme = getNtpTheme();
+      setForegroundStyle(ntpTheme && ntpTheme.isNtpBackgroundDark ? 1 : 0);
     });
   } catch (err) {
     console.log('Failed setting OneGoogleBar theme:\n' + err);
@@ -1628,7 +1628,7 @@ function renderOneGoogleBarTheme() {
 
 /** Updates the NTP based on the current theme. */
 function renderTheme() {
-  const info = getThemeBackgroundInfo();
+  const info = getNtpTheme();
   if (!info) {
     return;
   }
@@ -1772,8 +1772,8 @@ function selectMatchEl(elToSelect) {
 }
 
 /** Sends the current theme info to the most visited iframe. */
-function sendThemeInfoToMostVisitedIframe() {
-  const info = getThemeBackgroundInfo();
+function sendNtpThemeToMostVisitedIframe() {
+  const info = getNtpTheme();
   if (!info) {
     return;
   }
@@ -1818,15 +1818,15 @@ function setAutocompleteMatches(matches) {
 
 /**
  * Updates the NTP style according to theme.
- * @param {Object} themeInfo The information about the theme.
+ * @param {Object} ntpTheme The information about the theme.
  */
-function setCustomThemeStyle(themeInfo) {
+function setCustomThemeStyle(ntpTheme) {
   let textColor = '';
   let textColorLight = '';
   let mvxFilter = '';
-  if (!themeInfo.usingDefaultTheme) {
-    textColor = convertToRGBAColor(themeInfo.textColorRgba);
-    textColorLight = convertToRGBAColor(themeInfo.textColorLightRgba);
+  if (!ntpTheme.usingDefaultTheme) {
+    textColor = convertToRGBAColor(ntpTheme.textColorRgba);
+    textColorLight = convertToRGBAColor(ntpTheme.textColorLightRgba);
     mvxFilter = 'drop-shadow(0 0 0 ' + textColor + ')';
   }
 

@@ -45,16 +45,20 @@ void ServiceWorkerNavigationHandleCore::OnCreatedProviderHost(
 
 void ServiceWorkerNavigationHandleCore::OnBeginNavigationCommit(
     int render_process_id,
-    int render_frame_id) {
+    int render_frame_id,
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (provider_host_)
-    provider_host_->OnBeginNavigationCommit(render_process_id, render_frame_id);
+  if (provider_host_) {
+    provider_host_->OnBeginNavigationCommit(render_process_id, render_frame_id,
+                                            cross_origin_embedder_policy);
+  }
 }
 
-void ServiceWorkerNavigationHandleCore::OnBeginWorkerCommit() {
+void ServiceWorkerNavigationHandleCore::OnBeginWorkerCommit(
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (provider_host_)
-    provider_host_->CompleteWebWorkerPreparation();
+    provider_host_->CompleteWebWorkerPreparation(cross_origin_embedder_policy);
 }
 
 }  // namespace content

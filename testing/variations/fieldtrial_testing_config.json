@@ -3167,6 +3167,26 @@
             ]
         }
     ],
+    "KeepaliveRequestPriority": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20191107",
+                    "enable_features": [
+                        "SetLowPriorityForBeacon"
+                    ]
+                }
+            ]
+        }
+    ],
     "KeyboardAccessoryAddressIPH": [
         {
             "platforms": [
@@ -5744,25 +5764,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ServiceWorkerOnUI"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SetLowPriorityForBeacon": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20191107",
-                    "enable_features": [
-                        "SetLowPriorityForBeacon"
                     ]
                 }
             ]

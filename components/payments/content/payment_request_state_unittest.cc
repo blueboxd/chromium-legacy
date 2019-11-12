@@ -50,7 +50,7 @@ class PaymentRequestStateTest : public testing::Test,
   ~PaymentRequestStateTest() override {}
 
   // PaymentRequestState::Observer:
-  void OnGetAllPaymentInstrumentsFinished() override {}
+  void OnGetAllPaymentAppsFinished() override {}
   void OnSelectedInformationChanged() override {
     num_on_selected_information_changed_called_++;
   }
@@ -177,7 +177,7 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_NoEnrolledInstrument) {
       }));
 
   // CanMakePayment returns true because the requested method is supported, even
-  // though the payment instrument is not ready to pay.
+  // though the payment app is not ready to pay.
   state()->CanMakePayment(base::BindOnce(
       [](bool can_make_payment) { EXPECT_TRUE(can_make_payment); }));
 }
@@ -197,7 +197,7 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_UnsupportedPaymentMethod) {
       }));
 
   // CanMakePayment returns true because the requested method is supported, even
-  // though the payment instrument is not ready to pay.
+  // though the payment app is not ready to pay.
   state()->CanMakePayment(base::BindOnce(
       [](bool can_make_payment) { EXPECT_FALSE(can_make_payment); }));
 }
@@ -326,12 +326,12 @@ TEST_F(PaymentRequestStateTest, UnsupportedCardAreNotAvailable) {
   // Default options.
   RecreateStateWithOptions(mojom::PaymentOptions::New());
 
-  // Ready to pay because the default instrument is selected and supported.
+  // Ready to pay because the default app is selected and supported.
   EXPECT_TRUE(state()->is_ready_to_pay());
 
-  // There's only one instrument available, even though there's an Amex in
+  // There's only one app available, even though there's an Amex in
   // PersonalDataManager.
-  EXPECT_EQ(1u, state()->available_instruments().size());
+  EXPECT_EQ(1u, state()->available_apps().size());
 }
 
 // Test selecting a contact info profile will make the user ready to pay.

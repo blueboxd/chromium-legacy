@@ -65,19 +65,17 @@ void SetTransform(PaintChunk& chunk,
   chunk.properties = RefCountedPropertyTreeState(properties);
 }
 
-class FakeScrollClient {
-  DISALLOW_NEW();
-
+class MockScrollCallbacks : public CompositorScrollCallbacks {
  public:
-  FakeScrollClient() : did_scroll_count(0) {}
+  MOCK_METHOD2(DidScroll, void(CompositorElementId, const gfx::ScrollOffset&));
+  MOCK_METHOD2(DidChangeScrollbarsHidden, void(CompositorElementId, bool));
 
-  void DidScroll(const gfx::ScrollOffset& offset, const CompositorElementId&) {
-    did_scroll_count++;
-    last_scroll_offset = offset;
+  base::WeakPtr<MockScrollCallbacks> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
   }
 
-  gfx::ScrollOffset last_scroll_offset;
-  unsigned did_scroll_count;
+ private:
+  base::WeakPtrFactory<MockScrollCallbacks> weak_ptr_factory_{this};
 };
 
 class PaintArtifactCompositorTest : public testing::Test,
@@ -89,9 +87,8 @@ class PaintArtifactCompositorTest : public testing::Test,
 
   void SetUp() override {
     // Delay constructing the compositor until after the feature is set.
-    paint_artifact_compositor_ =
-        std::make_unique<PaintArtifactCompositor>(WTF::BindRepeating(
-            &FakeScrollClient::DidScroll, WTF::Unretained(&scroll_client_)));
+    paint_artifact_compositor_ = std::make_unique<PaintArtifactCompositor>(
+        scroll_callbacks_.GetWeakPtr());
     paint_artifact_compositor_->EnableExtraDataForTesting();
 
     // Uses a LayerTreeHostClient that will make a LayerTreeFrameSink to allow
@@ -178,8 +175,6 @@ class PaintArtifactCompositorTest : public testing::Test,
     layer->SetScrollable(gfx::Size(rect.Size()));
     layer->SetBounds(gfx::Size(rect.Size()));
     layer->SetElementId(scroll_node->GetCompositorElementId());
-    layer->set_did_scroll_callback(
-        paint_artifact_compositor_->scroll_callback_);
     artifact.Chunk(scroll_offset, clip, effect)
         .ForeignLayer(layer, FloatPoint(rect.Location()));
   }
@@ -276,10 +271,10 @@ class PaintArtifactCompositorTest : public testing::Test,
     return PaintArtifactCompositor::MightOverlap(a, b);
   }
 
-  FakeScrollClient& ScrollClient() { return scroll_client_; }
+  MockScrollCallbacks& ScrollCallbacks() { return scroll_callbacks_; }
 
  private:
-  FakeScrollClient scroll_client_;
+  MockScrollCallbacks scroll_callbacks_;
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -1088,10 +1083,15 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNode) {
   EXPECT_EQ(gfx::Vector2dF(3, 5), scroll_layer->offset_to_transform_parent());
   EXPECT_EQ(scroll_layer->scroll_tree_index(), scroll_node.id);
 
-  EXPECT_EQ(0u, ScrollClient().did_scroll_count);
-  scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(1, 2));
-  EXPECT_EQ(1u, ScrollClient().did_scroll_count);
-  EXPECT_EQ(gfx::ScrollOffset(1, 2), ScrollClient().last_scroll_offset);
+  EXPECT_CALL(ScrollCallbacks(),
+              DidScroll(scroll_node.element_id, gfx::ScrollOffset(1, 2)));
+  GetPropertyTrees().scroll_tree.NotifyDidScroll(scroll_node.element_id,
+                                                 gfx::ScrollOffset(1, 2));
+
+  EXPECT_CALL(ScrollCallbacks(),
+              DidChangeScrollbarsHidden(scroll_node.element_id, true));
+  GetPropertyTrees().scroll_tree.NotifyDidChangeScrollbarsHidden(
+      scroll_node.element_id, true);
 }
 
 TEST_P(PaintArtifactCompositorTest, TransformUnderScrollNode) {

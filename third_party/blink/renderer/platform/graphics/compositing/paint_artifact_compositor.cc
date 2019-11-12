@@ -43,9 +43,8 @@ namespace blink {
 static int g_s_property_tree_sequence_number = 1;
 
 PaintArtifactCompositor::PaintArtifactCompositor(
-    base::RepeatingCallback<void(const gfx::ScrollOffset&,
-                                 const cc::ElementId&)> scroll_callback)
-    : scroll_callback_(std::move(scroll_callback)),
+    base::WeakPtr<CompositorScrollCallbacks> scroll_callbacks)
+    : scroll_callbacks_(std::move(scroll_callbacks)),
       tracks_raster_invalidations_(false),
       needs_update_(true) {
   root_layer_ = cc::Layer::Create();
@@ -238,7 +237,6 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   // Set the layer's bounds equal to the container because the scroll layer
   // does not scroll.
   scroll_layer->SetBounds(static_cast<gfx::Size>(bounds));
-  scroll_layer->set_did_scroll_callback(scroll_callback_);
   return scroll_layer;
 }
 
@@ -1063,6 +1061,7 @@ void PaintArtifactCompositor::Update(
   if (extra_data_for_testing_enabled_)
     extra_data_for_testing_.reset(new ExtraDataForTesting);
 
+  host->property_trees()->scroll_tree.SetScrollCallbacks(scroll_callbacks_);
   root_layer_->set_property_tree_sequence_number(
       g_s_property_tree_sequence_number);
 

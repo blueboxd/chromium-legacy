@@ -76,12 +76,6 @@ enum class UpdateDynamicRulesStatus {
   kMaxValue = kErrorCreateMatcher_VersionMismatch,
 };
 
-// Whether dynamic rules are to be added or removed.
-enum class DynamicRuleUpdateAction {
-  kAdd,
-  kRemove,
-};
-
 // Schemes which can be used as part of url transforms.
 extern const char* const kAllowedTransformSchemes[4];
 

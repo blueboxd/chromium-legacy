@@ -101,10 +101,8 @@ void MarkingVisitorCommon::VisitBackingStoreWeakly(
     return;
   RegisterWeakCallback(weak_callback, weak_callback_parameter);
 
-  if (weak_desc.callback) {
-    weak_table_worklist_.Push(
-        {weak_desc.base_object_payload, weak_desc.callback});
-  }
+  if (weak_desc.callback)
+    weak_table_worklist_.Push(weak_desc);
 }
 
 bool MarkingVisitorCommon::VisitEphemeronKeyValuePair(

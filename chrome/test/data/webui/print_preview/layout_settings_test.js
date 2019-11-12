@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('layout_settings_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import 'chrome://print/print_preview.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
   suite('LayoutSettingsTest', function() {
     let layoutSection = null;
 
@@ -15,7 +19,7 @@ cr.define('layout_settings_test', function() {
       layoutSection = document.createElement('print-preview-layout-settings');
       layoutSection.settings = model.settings;
       layoutSection.disabled = false;
-      test_util.fakeDataBind(model, layoutSection, 'settings');
+      fakeDataBind(model, layoutSection, 'settings');
       document.body.appendChild(layoutSection);
     });
 
@@ -25,7 +29,7 @@ cr.define('layout_settings_test', function() {
       assertEquals('portrait', select.value);
 
       layoutSection.setSetting('layout', true);
-      await test_util.eventToPromise('process-select-change', layoutSection);
+      await eventToPromise('process-select-change', layoutSection);
       assertEquals('landscape', select.value);
     });
 
@@ -39,9 +43,8 @@ cr.define('layout_settings_test', function() {
       assertEquals(2, select.options.length);
 
       // Verify that selecting an new option in the dropdown sets the setting.
-      await print_preview_test_utils.selectOption(layoutSection, 'landscape');
+      await selectOption(layoutSection, 'landscape');
       assertTrue(layoutSection.getSettingValue('layout'));
       assertTrue(layoutSection.getSetting('layout').setFromUi);
     });
   });
-});

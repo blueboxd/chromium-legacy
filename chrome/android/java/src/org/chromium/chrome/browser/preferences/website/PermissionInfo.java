@@ -29,13 +29,14 @@ public class PermissionInfo implements Serializable {
         int GEOLOCATION = 2;
         int MICROPHONE = 3;
         int MIDI = 4;
-        int NOTIFICATION = 5;
-        int PROTECTED_MEDIA_IDENTIFIER = 6;
-        int SENSORS = 7;
+        int NFC = 5;
+        int NOTIFICATION = 6;
+        int PROTECTED_MEDIA_IDENTIFIER = 7;
+        int SENSORS = 8;
         /**
          * Number of handled permissions used for example inside for loops.
          */
-        int NUM_ENTRIES = 8;
+        int NUM_ENTRIES = 9;
     }
 
     private final boolean mIsIncognito;
@@ -90,6 +91,9 @@ public class PermissionInfo implements Serializable {
             case Type.MIDI:
                 return WebsitePreferenceBridgeJni.get().getMidiSettingForOrigin(
                         mOrigin, getEmbedderSafe(), mIsIncognito);
+            case Type.NFC:
+                return WebsitePreferenceBridgeJni.get().getNfcSettingForOrigin(
+                        mOrigin, getEmbedderSafe(), mIsIncognito);
             case Type.NOTIFICATION:
                 return WebsitePreferenceBridgeJni.get().getNotificationSettingForOrigin(
                         mOrigin, mIsIncognito);
@@ -130,6 +134,10 @@ public class PermissionInfo implements Serializable {
                 WebsitePreferenceBridgeJni.get().setMidiSettingForOrigin(
                         mOrigin, getEmbedderSafe(), value, mIsIncognito);
                 break;
+            case Type.NFC:
+                WebsitePreferenceBridgeJni.get().setNfcSettingForOrigin(
+                        mOrigin, getEmbedderSafe(), value, mIsIncognito);
+                break;
             case Type.NOTIFICATION:
                 WebsitePreferenceBridgeJni.get().setNotificationSettingForOrigin(
                         mOrigin, value, mIsIncognito);
@@ -159,6 +167,8 @@ public class PermissionInfo implements Serializable {
                 return ContentSettingsType.MEDIASTREAM_MIC;
             case Type.MIDI:
                 return ContentSettingsType.MIDI_SYSEX;
+            case Type.NFC:
+                return ContentSettingsType.NFC;
             case Type.NOTIFICATION:
                 return ContentSettingsType.NOTIFICATIONS;
             case Type.PROTECTED_MEDIA_IDENTIFIER:

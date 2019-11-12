@@ -1,29 +1,4 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/event_tracker.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="../cloud_print_interface.html">
-<link rel="import" href="../data/destination.html">
-<link rel="import" href="../data/destination_store.html">
-<link rel="import" href="../data/invitation_store.html">
-<link rel="import" href="../data/state.html">
-<link rel="import" href="../data/user_manager.html">
-<link rel="import" href="destination_dialog.html">
-<link rel="import" href="destination_select.html">
-<link rel="import" href="print_preview_shared_css.html">
-<link rel="import" href="print_preview_vars_css.html">
-<link rel="import" href="throbber_css.html">
-<link rel="import" href="settings_behavior.html">
-<link rel="import" href="settings_section.html">
-<link rel="import" href="strings.html">
-
-<dom-module id="print-preview-destination-settings">
-  <template>
     <style include="print-preview-shared throbber cr-hidden-style">
 <if expr="chromeos">
       :host([has-pin-setting_]) {
@@ -105,6 +80,3 @@
         </print-preview-destination-dialog>
       </template>
     </cr-lazy-render>
-  </template>
-  <script src="destination_settings.js"></script>
-</dom-module>

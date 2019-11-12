@@ -172,12 +172,13 @@ cr.define('bookmarks.ApiListener', function() {
   function init() {
     listeners.forEach((listener) => listener.api.addListener(listener.fn));
 
-    cr.sendWithPromise('getIncognitoAvailability')
-        .then(onIncognitoAvailabilityChanged);
+    const browserProxy = bookmarks.BrowserProxy.getInstance();
+    browserProxy.getIncognitoAvailability().then(
+        onIncognitoAvailabilityChanged);
     cr.addWebUIListener(
         'incognito-availability-changed', onIncognitoAvailabilityChanged);
 
-    cr.sendWithPromise('getCanEditBookmarks').then(onCanEditBookmarksChanged);
+    browserProxy.getCanEditBookmarks().then(onCanEditBookmarksChanged);
     cr.addWebUIListener(
         'can-edit-bookmarks-changed', onCanEditBookmarksChanged);
   }

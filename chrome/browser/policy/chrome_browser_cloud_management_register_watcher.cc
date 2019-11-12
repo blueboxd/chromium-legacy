@@ -42,7 +42,7 @@ RegisterResult ChromeBrowserCloudManagementRegisterWatcher::
     return RegisterResult::kNoEnrollmentNeeded;
 
   // We are already enrolled successfully.
-  if (!token_storage->RetrieveDMToken().empty())
+  if (token_storage->RetrieveBrowserDMToken().is_valid())
     return RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed;
 
   EnterpriseStartupDialog::DialogResultCallback callback = base::BindOnce(

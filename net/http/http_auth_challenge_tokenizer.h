@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/http/http_util.h"
 
@@ -32,10 +33,8 @@ class NET_EXPORT_PRIVATE HttpAuthChallengeTokenizer {
   }
 
   // Get the auth scheme of the challenge.
-  std::string::const_iterator scheme_begin() const { return scheme_begin_; }
-  std::string::const_iterator scheme_end() const { return scheme_end_; }
-  std::string scheme() const {
-    return std::string(scheme_begin_, scheme_end_);
+  base::StringPiece scheme() const {
+    return base::StringPiece(scheme_begin_, scheme_end_);
   }
 
   std::string::const_iterator params_begin() const { return params_begin_; }

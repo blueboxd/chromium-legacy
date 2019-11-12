@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
+import {Destination, PrinterType} from 'chrome://print/print_preview.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {getPdfPrinter} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
   /**
    * Test version of the native layer.
    */
-  class NativeLayerStub extends TestBrowserProxy {
+  export class NativeLayerStub extends TestBrowserProxy {
     constructor() {
       super([
         'dialogClose',
@@ -23,7 +26,7 @@ cr.define('print_preview', function() {
       ]);
 
       /**
-       * @private {!print_preview.NativeInitialSettings} The initial settings
+       * @private {!NativeInitialSettings} The initial settings
        *     to be used for the response to a |getInitialSettings| call.
        */
       this.initialSettings_ = null;
@@ -32,27 +35,27 @@ cr.define('print_preview', function() {
       this.accounts_ = null;
 
       /**
-       * @private {!Array<!print_preview.LocalDestinationInfo>} Local
+       * @private {!Array<!LocalDestinationInfo>} Local
        *     destination list to be used for the response to |getPrinters|.
        */
       this.localDestinationInfos_ = [];
 
       /**
-       * @private {!Array<!print_preview.ProvisionalDestinationInfo>} Local
+       * @private {!Array<!ProvisionalDestinationInfo>} Local
        *     destination list to be used for the response to |getPrinters|.
        */
       this.extensionDestinationInfos_ = [];
 
       /**
        * @private {!Map<string,
-       *                !Promise<!print_preview.CapabilitiesResponse>}
+       *                !Promise<!CapabilitiesResponse>}
        *     A map from destination IDs to the responses to be sent when
        *     |getPrinterCapabilities| is called for the ID.
        */
       this.localDestinationCapabilities_ = new Map();
 
       /**
-       * @private {!print_preview.PrinterSetupResponse} The response to be sent
+       * @private {!PrinterSetupResponse} The response to be sent
        *     on a |setupPrinter| call.
        */
       this.setupPrinterResponse_ = null;
@@ -71,7 +74,7 @@ cr.define('print_preview', function() {
       /** @private {number} The number of total pages in the document. */
       this.pageCount_ = 1;
 
-      /** @private {?print_preview.PageLayoutInfo} Page layout information */
+      /** @private {?PageLayoutInfo} Page layout information */
       this.pageLayoutInfo_ = null;
     }
 
@@ -94,12 +97,12 @@ cr.define('print_preview', function() {
     /** @override */
     getPrinters(type) {
       this.methodCalled('getPrinters', type);
-      if (type == print_preview.PrinterType.LOCAL_PRINTER &&
+      if (type == PrinterType.LOCAL_PRINTER &&
           this.localDestinationInfos_.length > 0) {
         cr.webUIListenerCallback(
             'printers-added', type, this.localDestinationInfos_);
       } else if (
-          type == print_preview.PrinterType.EXTENSION_PRINTER &&
+          type == PrinterType.EXTENSION_PRINTER &&
           this.extensionDestinationInfos_.length > 0) {
         cr.webUIListenerCallback(
             'printers-added', type, this.extensionDestinationInfos_);
@@ -154,13 +157,13 @@ cr.define('print_preview', function() {
       this.methodCalled(
           'getPrinterCapabilities',
           {destinationId: printerId, printerType: type});
-      if (printerId == print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+      if (printerId == Destination.GooglePromotedId.SAVE_AS_PDF) {
         return Promise.resolve({
           deviceName: 'Save as PDF',
-          capabilities: print_preview_test_utils.getPdfPrinter(),
+          capabilities: getPdfPrinter(),
         });
       }
-      if (type != print_preview.PrinterType.LOCAL_PRINTER) {
+      if (type != PrinterType.LOCAL_PRINTER) {
         return Promise.reject();
       }
       return this.localDestinationCapabilities_.get(printerId) ||
@@ -171,7 +174,7 @@ cr.define('print_preview', function() {
     print(printTicket) {
       this.methodCalled('print', printTicket);
       if (JSON.parse(printTicket).printerType ==
-          print_preview.PrinterType.CLOUD_PRINTER) {
+          PrinterType.CLOUD_PRINTER) {
         return Promise.resolve('sample data');
       }
       return Promise.resolve();
@@ -227,7 +230,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.NativeInitialSettings} settings The settings
+     * @param {!NativeInitialSettings} settings The settings
      *     to return as a response to |getInitialSettings|.
      */
     setInitialSettings(settings) {
@@ -235,7 +238,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!Array<!print_preview.LocalDestinationInfo>} localDestinations
+     * @param {!Array<!LocalDestinationInfo>} localDestinations
      *     The local destinations to return as a response to |getPrinters|.
      */
     setLocalDestinations(localDestinations) {
@@ -243,7 +246,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!Array<!print_preview.ProvisionalDestinationInfo>}
+     * @param {!Array<!ProvisionalDestinationInfo>}
      *     extensionDestinations The extension destinations to return as a
      *     response to |getPrinters|.
      */
@@ -252,7 +255,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.CapabilitiesResponse} response The
+     * @param {!CapabilitiesResponse} response The
      *     response to send for the destination whose ID is in the response.
      * @param {?boolean} opt_reject Whether to reject the callback for this
      *     destination. Defaults to false (will resolve callback) if not
@@ -265,7 +268,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.PrinterSetupResponse} The response to send when
+     * @param {!PrinterSetupResponse} The response to send when
      *     |setupPrinter| is called.
      * @param {?boolean} opt_reject Whether printSetup requests should be
      *     rejected. Defaults to false (will resolve callback) if not provided.
@@ -284,13 +287,8 @@ cr.define('print_preview', function() {
       this.badPrinterId_ = id;
     }
 
-    /** @param {!print_preview.PageLayoutInfo} pageLayoutInfo */
+    /** @param {!PageLayoutInfo} pageLayoutInfo */
     setPageLayoutInfo(pageLayoutInfo) {
       this.pageLayoutInfo_ = pageLayoutInfo;
     }
   }
-
-  return {
-    NativeLayerStub: NativeLayerStub,
-  };
-});

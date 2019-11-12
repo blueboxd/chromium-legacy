@@ -585,11 +585,25 @@ void SearchResultRanker::OverrideZeroStateResults(
     if (candidate_override_index == -1)
       continue;
 
+    // TODO(crbug.com/1011221): Remove once the bug re. zero-state drive files
+    // not being shown is resolved.
+    VLOG(1) << "Zero state files override: newtype=" << static_cast<int>(group)
+            << " newpos=" << next_modifiable_index;
     // Override the result at |next_modifiable_index| with
     // |candidate_override_index| by swapping their scores.
     std::swap(result_ptrs[candidate_override_index]->score,
               result_ptrs[next_modifiable_index]->score);
     --next_modifiable_index;
+  }
+
+  // TODO(crbug.com/1011221): Remove once the bug re. zero-state drive files not
+  // being shown is resolved.
+  VLOG(1) << "Zero state files setting result scores";
+  for (const auto* result : result_ptrs) {
+    VLOG(1) << "Zero state files result score: type="
+            << static_cast<int>(
+                   RankingItemTypeFromSearchResult(*(result->result)))
+            << " score=" << result->score;
   }
 }
 

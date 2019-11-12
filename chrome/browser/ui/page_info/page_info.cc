@@ -134,6 +134,9 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::AUTOPLAY,
     ContentSettingsType::MIDI_SYSEX,
     ContentSettingsType::CLIPBOARD_READ,
+#if defined(OS_ANDROID)
+    ContentSettingsType::NFC,
+#endif
     ContentSettingsType::USB_GUARD,
 #if !defined(OS_ANDROID)
     ContentSettingsType::SERIAL_GUARD,
@@ -210,6 +213,10 @@ bool ShouldShowPermission(
 
   // Autoplay is Android-only at the moment.
   if (info.type == ContentSettingsType::AUTOPLAY)
+    return false;
+
+  // NFC is Android-only at the moment.
+  if (info.type == ContentSettingsType::NFC)
     return false;
 
   // Display the Native File System write permission if the Native File System

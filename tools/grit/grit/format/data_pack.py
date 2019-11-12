@@ -215,7 +215,8 @@ def ReadGrdInfo(grd_file):
 
 
 def RePack(output_file, input_files, whitelist_file=None,
-           suppress_removed_key_output=False):
+           suppress_removed_key_output=False,
+           output_info_filepath=None):
   """Write a new data pack file by combining input pack files.
 
   Args:
@@ -226,6 +227,7 @@ def RePack(output_file, input_files, whitelist_file=None,
                       all resources.
       suppress_removed_key_output: allows the caller to suppress the output from
                                    RePackFromDataPackStrings.
+      output_info_file: If not None, specify the output .info filepath.
 
   Raises:
       KeyError: if there are duplicate keys or resource encoding is
@@ -243,7 +245,9 @@ def RePack(output_file, input_files, whitelist_file=None,
   resources, encoding = RePackFromDataPackStrings(
       inputs, whitelist, suppress_removed_key_output)
   WriteDataPack(resources, output_file, encoding)
-  with open(output_file + '.info', 'w') as output_info_file:
+  if output_info_filepath is None:
+    output_info_filepath = output_file + '.info'
+  with open(output_info_filepath, 'w') as output_info_file:
     for filename in input_info_files:
       with open(filename, 'r') as info_file:
         output_info_file.writelines(info_file.readlines())

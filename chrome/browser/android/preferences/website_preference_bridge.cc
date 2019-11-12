@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/android/preferences/website_preference_bridge.h"
+
 #include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
@@ -16,6 +19,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "chrome/android/chrome_jni_headers/WebsitePreferenceBridge_jni.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
@@ -36,6 +40,7 @@
 #include "chrome/browser/storage/storage_info_fetcher.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,6 +53,7 @@
 #include "url/url_constants.h"
 #include "url/url_util.h"
 
+using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
@@ -150,8 +156,8 @@ void JNI_WebsitePreferenceBridge_GetOrigins(
   content_settings_map->GetSettingsForOneType(
       ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA, std::string(),
       &embargo_settings);
-  ContentSetting default_content_setting = content_settings_map->
-      GetDefaultContentSetting(content_type, NULL);
+  ContentSetting default_content_setting =
+      content_settings_map->GetDefaultContentSetting(content_type, nullptr);
 
   // Use a vector since the overall number of origins should be small.
   std::vector<std::string> seen_origins;
@@ -284,6 +290,54 @@ std::string GetChooserObjectName(ContentSettingsType type,
 
 bool OriginMatcher(const url::Origin& origin, const GURL& other) {
   return origin == url::Origin::Create(other);
+}
+
+Profile* GetOriginalProfile() {
+  return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
+}
+
+bool GetBooleanForContentSetting(ContentSettingsType type) {
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  switch (content_settings->GetDefaultContentSetting(type, nullptr)) {
+    case CONTENT_SETTING_BLOCK:
+      return false;
+    case CONTENT_SETTING_ALLOW:
+    case CONTENT_SETTING_ASK:
+    default:
+      return true;
+  }
+}
+
+bool IsContentSettingManaged(ContentSettingsType content_settings_type) {
+  std::string source;
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  content_settings->GetDefaultContentSetting(content_settings_type, &source);
+  HostContentSettingsMap::ProviderType provider =
+      content_settings->GetProviderTypeFromSource(source);
+  return provider == HostContentSettingsMap::POLICY_PROVIDER;
+}
+
+bool IsContentSettingManagedByCustodian(
+    ContentSettingsType content_settings_type) {
+  std::string source;
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  content_settings->GetDefaultContentSetting(content_settings_type, &source);
+  HostContentSettingsMap::ProviderType provider =
+      content_settings->GetProviderTypeFromSource(source);
+  return provider == HostContentSettingsMap::SUPERVISED_PROVIDER;
+}
+
+bool IsContentSettingUserModifiable(ContentSettingsType content_settings_type) {
+  std::string source;
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  content_settings->GetDefaultContentSetting(content_settings_type, &source);
+  HostContentSettingsMap::ProviderType provider =
+      content_settings->GetProviderTypeFromSource(source);
+  return provider >= HostContentSettingsMap::PREF_PROVIDER;
 }
 
 }  // anonymous namespace
@@ -825,6 +879,34 @@ static jboolean JNI_WebsitePreferenceBridge_GetAdBlockingActivated(
       url, GURL(), ContentSettingsType::ADS_DATA, std::string(), nullptr);
 }
 
+static void JNI_WebsitePreferenceBridge_GetNfcOrigins(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& list) {
+  JNI_WebsitePreferenceBridge_GetOrigins(
+      env, ContentSettingsType::NFC,
+      &Java_WebsitePreferenceBridge_insertNfcInfoIntoList, list, false);
+}
+
+static jint JNI_WebsitePreferenceBridge_GetNfcSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& origin,
+    const JavaParamRef<jstring>& embedder,
+    jboolean is_incognito) {
+  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
+      env, ContentSettingsType::NFC, origin, embedder, is_incognito);
+}
+
+static void JNI_WebsitePreferenceBridge_SetNfcSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& origin,
+    const JavaParamRef<jstring>& embedder,
+    jint value,
+    jboolean is_incognito) {
+  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
+      env, ContentSettingsType::NFC, origin, embedder,
+      static_cast<ContentSetting>(value), is_incognito);
+}
+
 static void JNI_WebsitePreferenceBridge_GetSensorsOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
@@ -859,4 +941,343 @@ static void JNI_WebsitePreferenceBridge_ResetNotificationsSettingsForTest(
     JNIEnv* env) {
   GetHostContentSettingsMap(/*is_incognito=*/false)
       ->ClearSettingsForOneType(ContentSettingsType::NOTIFICATIONS);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_IsContentSettingManaged(
+    JNIEnv* env,
+    int content_settings_type) {
+  return IsContentSettingManaged(
+      static_cast<ContentSettingsType>(content_settings_type));
+}
+
+static jboolean JNI_WebsitePreferenceBridge_IsContentSettingEnabled(
+    JNIEnv* env,
+    int content_settings_type) {
+  ContentSettingsType type =
+      static_cast<ContentSettingsType>(content_settings_type);
+  // Before we migrate functions over to this central function, we must verify
+  // that the functionality provided below is correct.
+  DCHECK(type == ContentSettingsType::JAVASCRIPT ||
+         type == ContentSettingsType::POPUPS ||
+         type == ContentSettingsType::ADS ||
+         type == ContentSettingsType::CLIPBOARD_READ ||
+         type == ContentSettingsType::USB_GUARD ||
+         type == ContentSettingsType::BLUETOOTH_SCANNING);
+  return GetBooleanForContentSetting(type);
+}
+
+static void JNI_WebsitePreferenceBridge_SetContentSettingEnabled(
+    JNIEnv* env,
+    int content_settings_type,
+    jboolean allow) {
+  ContentSettingsType type =
+      static_cast<ContentSettingsType>(content_settings_type);
+
+  // Before we migrate functions over to this central function, we must verify
+  // that the new category supports ALLOW/BLOCK pairs and, if not, handle them.
+  DCHECK(type == ContentSettingsType::JAVASCRIPT ||
+         type == ContentSettingsType::POPUPS ||
+         type == ContentSettingsType::ADS ||
+         type == ContentSettingsType::USB_GUARD ||
+         type == ContentSettingsType::BLUETOOTH_SCANNING);
+
+  ContentSetting value = CONTENT_SETTING_BLOCK;
+  if (allow) {
+    if (type == ContentSettingsType::USB_GUARD ||
+        type == ContentSettingsType::BLUETOOTH_SCANNING) {
+      value = CONTENT_SETTING_ASK;
+    } else {
+      value = CONTENT_SETTING_ALLOW;
+    }
+  }
+
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(type, value);
+}
+
+static void JNI_WebsitePreferenceBridge_SetContentSettingForPattern(
+    JNIEnv* env,
+    int content_settings_type,
+    const JavaParamRef<jstring>& pattern,
+    int setting) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromString(ConvertJavaStringToUTF8(env, pattern)),
+      ContentSettingsPattern::Wildcard(),
+      static_cast<ContentSettingsType>(content_settings_type), std::string(),
+      static_cast<ContentSetting>(setting));
+}
+
+static void JNI_WebsitePreferenceBridge_GetContentSettingsExceptions(
+    JNIEnv* env,
+    int content_settings_type,
+    const JavaParamRef<jobject>& list) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  ContentSettingsForOneType entries;
+  host_content_settings_map->GetSettingsForOneType(
+      static_cast<ContentSettingsType>(content_settings_type), "", &entries);
+  for (size_t i = 0; i < entries.size(); ++i) {
+    Java_WebsitePreferenceBridge_addContentSettingExceptionToList(
+        env, list, content_settings_type,
+        ConvertUTF8ToJavaString(env, entries[i].primary_pattern.ToString()),
+        entries[i].GetContentSetting(),
+        ConvertUTF8ToJavaString(env, entries[i].source));
+  }
+}
+
+static jint JNI_WebsitePreferenceBridge_GetContentSetting(
+    JNIEnv* env,
+    int content_settings_type) {
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  return content_settings->GetDefaultContentSetting(
+      static_cast<ContentSettingsType>(content_settings_type), nullptr);
+}
+
+static void JNI_WebsitePreferenceBridge_SetContentSetting(
+    JNIEnv* env,
+    int content_settings_type,
+    int setting) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      static_cast<ContentSettingsType>(content_settings_type),
+      static_cast<ContentSetting>(setting));
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetAcceptCookiesEnabled(
+    JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::COOKIES);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetAcceptCookiesUserModifiable(
+    JNIEnv* env) {
+  return IsContentSettingUserModifiable(ContentSettingsType::COOKIES);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetAcceptCookiesManagedByCustodian(
+    JNIEnv* env) {
+  return IsContentSettingManagedByCustodian(ContentSettingsType::COOKIES);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetAutoplayEnabled(JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::AUTOPLAY);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetNfcEnabled(JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::NFC);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetSensorsEnabled(JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::SENSORS);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetSoundEnabled(JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::SOUND);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetBackgroundSyncEnabled(
+    JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::BACKGROUND_SYNC);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetAutomaticDownloadsEnabled(
+    JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::AUTOMATIC_DOWNLOADS);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetNotificationsEnabled(
+    JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::NOTIFICATIONS);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetAllowLocationEnabled(
+    JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::GEOLOCATION);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetLocationAllowedByPolicy(
+    JNIEnv* env) {
+  if (!IsContentSettingManaged(ContentSettingsType::GEOLOCATION))
+    return false;
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  return content_settings->GetDefaultContentSetting(
+             ContentSettingsType::GEOLOCATION, nullptr) ==
+         CONTENT_SETTING_ALLOW;
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetAllowLocationUserModifiable(
+    JNIEnv* env) {
+  return IsContentSettingUserModifiable(ContentSettingsType::GEOLOCATION);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetAllowLocationManagedByCustodian(
+    JNIEnv* env) {
+  return IsContentSettingManagedByCustodian(ContentSettingsType::GEOLOCATION);
+}
+
+static void JNI_WebsitePreferenceBridge_SetAutoplayEnabled(JNIEnv* env,
+                                                           jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::AUTOPLAY,
+      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetClipboardEnabled(JNIEnv* env,
+                                                            jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::CLIPBOARD_READ,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetNfcEnabled(JNIEnv* env,
+                                                      jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::NFC,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetSensorsEnabled(JNIEnv* env,
+                                                          jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::SENSORS,
+      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetSoundEnabled(JNIEnv* env,
+                                                        jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::SOUND,
+      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+
+  if (allow) {
+    base::RecordAction(
+        base::UserMetricsAction("SoundContentSetting.UnmuteBy.DefaultSwitch"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("SoundContentSetting.MuteBy.DefaultSwitch"));
+  }
+}
+
+static void JNI_WebsitePreferenceBridge_SetAllowCookiesEnabled(JNIEnv* env,
+                                                               jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::COOKIES,
+      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetBackgroundSyncEnabled(
+    JNIEnv* env,
+    jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::BACKGROUND_SYNC,
+      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetAutomaticDownloadsEnabled(
+    JNIEnv* env,
+    jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::AUTOMATIC_DOWNLOADS,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetAllowLocationEnabled(
+    JNIEnv* env,
+    jboolean is_enabled) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::GEOLOCATION,
+      is_enabled ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetCameraEnabled(JNIEnv* env,
+                                                         jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::MEDIASTREAM_CAMERA,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetMicEnabled(JNIEnv* env,
+                                                      jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::MEDIASTREAM_MIC,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetNotificationsEnabled(
+    JNIEnv* env,
+    jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::NOTIFICATIONS,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetCameraEnabled(JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::MEDIASTREAM_CAMERA);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetCameraUserModifiable(
+    JNIEnv* env) {
+  return IsContentSettingUserModifiable(
+      ContentSettingsType::MEDIASTREAM_CAMERA);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetCameraManagedByCustodian(
+    JNIEnv* env) {
+  return IsContentSettingManagedByCustodian(
+      ContentSettingsType::MEDIASTREAM_CAMERA);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetMicEnabled(JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::MEDIASTREAM_MIC);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetMicUserModifiable(JNIEnv* env) {
+  return IsContentSettingUserModifiable(ContentSettingsType::MEDIASTREAM_MIC);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetMicManagedByCustodian(
+    JNIEnv* env) {
+  return IsContentSettingManagedByCustodian(
+      ContentSettingsType::MEDIASTREAM_MIC);
+}
+
+// static
+void WebsitePreferenceBridge::GetAndroidPermissionsForContentSetting(
+    ContentSettingsType content_settings_type,
+    std::vector<std::string>* out) {
+  JNIEnv* env = AttachCurrentThread();
+  base::android::AppendJavaStringArrayToStringVector(
+      env,
+      Java_WebsitePreferenceBridge_getAndroidPermissionsForContentSetting(
+          env, static_cast<int>(content_settings_type)),
+      out);
 }

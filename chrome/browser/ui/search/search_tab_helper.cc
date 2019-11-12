@@ -283,8 +283,8 @@ void SearchTabHelper::NavigationEntryCommitted(
     ipc_router_.OnNavigationEntryCommitted();
 }
 
-void SearchTabHelper::ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) {
-  ipc_router_.SendThemeBackgroundInfo(theme_info);
+void SearchTabHelper::NtpThemeChanged(const NtpTheme& theme) {
+  ipc_router_.SendNtpTheme(theme);
 }
 
 void SearchTabHelper::MostVisitedInfoChanged(

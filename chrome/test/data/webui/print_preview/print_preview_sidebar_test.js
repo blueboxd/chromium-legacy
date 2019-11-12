@@ -2,21 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview_sidebar_test', function() {
+import {NativeLayer, CloudPrintInterface, setCloudPrintInterfaceForTesting} from 'chrome://print/print_preview.js';
+import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
+import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
+import {getCddTemplate} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {fakeDataBind} from 'chrome://test/test_util.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+
+  window.print_preview_sidebar_test = {};
+  print_preview_sidebar_test.suiteName = 'PrintPreviewSidebarTest';
   /** @enum {string} */
-  const TestNames = {
+  print_preview_sidebar_test.TestNames = {
     SettingsSectionsVisibilityChange: 'settings sections visibility change',
   };
 
-  const suiteName = 'PrintPreviewSidebarTest';
-  suite(suiteName, function() {
+  suite(print_preview_sidebar_test.suiteName, function() {
     /** @type {?PrintPreviewSidebarElement} */
     let sidebar = null;
 
     /** @type {?PrintPreviewModelElement} */
     let model = null;
 
-    /** @type {?print_preview.NativeLayer} */
+    /** @type {?NativeLayer} */
     let nativeLayer = null;
 
     /** @type {?cloudprint.CloudPrintInterface} */
@@ -25,11 +32,11 @@ cr.define('print_preview_sidebar_test', function() {
     /** @override */
     setup(function() {
       // Stub out the native layer and cloud print interface
-      nativeLayer = new print_preview.NativeLayerStub();
-      print_preview.NativeLayer.setInstance(nativeLayer);
+      nativeLayer = new NativeLayerStub();
+      NativeLayer.setInstance(nativeLayer);
       nativeLayer.setLocalDestinationCapabilities(
-          print_preview_test_utils.getCddTemplate('FooDevice'));
-      cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
+          getCddTemplate('FooDevice'));
+      cloudPrintInterface = new CloudPrintInterfaceStub();
 
       PolymerTest.clearBody();
       model = document.createElement('print-preview-model');
@@ -37,7 +44,7 @@ cr.define('print_preview_sidebar_test', function() {
 
       sidebar = document.createElement('print-preview-sidebar');
       sidebar.settings = model.settings;
-      test_util.fakeDataBind(model, sidebar, 'settings');
+      fakeDataBind(model, sidebar, 'settings');
       document.body.appendChild(sidebar);
       sidebar.init(false, 'FooDevice', null);
       sidebar.cloudPrintInterface = cloudPrintInterface;
@@ -45,7 +52,9 @@ cr.define('print_preview_sidebar_test', function() {
       return nativeLayer.whenCalled('getPrinterCapabilities');
     });
 
-    test(assert(TestNames.SettingsSectionsVisibilityChange), function() {
+    test(assert(
+        print_preview_sidebar_test.TestNames.SettingsSectionsVisibilityChange),
+        function() {
       const moreSettingsElement = sidebar.$$('print-preview-more-settings');
       moreSettingsElement.$.label.click();
       const camelToKebab = s => s.replace(/([A-Z])/g, '-$1').toLowerCase();
@@ -63,9 +72,3 @@ cr.define('print_preview_sidebar_test', function() {
           });
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

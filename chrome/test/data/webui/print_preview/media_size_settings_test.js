@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('media_size_settings_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import 'chrome://print/print_preview.js';
+import {fakeDataBind} from 'chrome://test/test_util.m.js';
+import {getCddTemplate} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
   suite('MediaSizeSettingsTest', function() {
     /** @type {?PrintPreviewMediaSizeSettingsElement} */
     let mediaSizeSection = null;
 
     const mediaSizeCapability =
-        print_preview_test_utils.getCddTemplate('FooPrinter')
-            .capabilities.printer.media_size;
+        getCddTemplate('FooPrinter').capabilities.printer.media_size;
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
@@ -22,7 +25,7 @@ cr.define('media_size_settings_test', function() {
       mediaSizeSection.capability = mediaSizeCapability;
       mediaSizeSection.disabled = false;
       model.set('settings.mediaSize.available', true);
-      test_util.fakeDataBind(model, mediaSizeSection, 'settings');
+      fakeDataBind(model, mediaSizeSection, 'settings');
       document.body.appendChild(mediaSizeSection);
     });
 
@@ -67,4 +70,3 @@ cr.define('media_size_settings_test', function() {
       assertDeepEquals(letterOption, JSON.parse(settingsSelect.selectedValue));
     });
   });
-});

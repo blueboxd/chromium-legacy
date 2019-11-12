@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
                   GURL(kUrl))
                   .Wait());
 
-  history_service->DeleteURL(GURL(kUrl));
+  history_service->DeleteURLs({GURL(kUrl)});
 
   EXPECT_TRUE(send_tab_to_self_helper::SendTabToSelfUrlDeletedChecker(
                   SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0)),

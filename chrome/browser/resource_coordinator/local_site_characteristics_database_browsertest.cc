@@ -614,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest, PRE_ClearHistory) {
 
   HistoryServiceFactory::GetForProfile(browser()->profile(),
                                        ServiceAccessType::IMPLICIT_ACCESS)
-      ->DeleteURL(test_url);
+      ->DeleteURLs({test_url});
   // The history gets cleared asynchronously.
   while (reader->UpdatesTitleInBackground() !=
          performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown) {

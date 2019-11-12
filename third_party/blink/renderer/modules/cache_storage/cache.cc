@@ -88,6 +88,13 @@ CodeCachePolicy GetCodeCachePolicy(const Response* response) {
   if (!RuntimeEnabledFeatures::CacheStorageCodeCacheHintEnabled())
     return CodeCachePolicy::kAuto;
 
+  // We should never see an opaque response here.  We should have bailed out
+  // from generating code cache when we failed to determine its mime type.
+  // It's important we don't look at the header hint for opaque responses since
+  // it could leak cross-origin information.
+  DCHECK_NE(response->GetResponse()->GetType(),
+            network::mojom::FetchResponseType::kOpaque);
+
   String header_name(
       features::kCacheStorageCodeCacheHintHeaderName.Get().data());
   String header_value;

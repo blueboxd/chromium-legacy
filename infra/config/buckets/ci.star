@@ -156,6 +156,7 @@ def android_builder(
 
 android_builder(
     name = 'Android ASAN (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -185,11 +186,13 @@ android_builder(
 
 android_builder(
     name = 'Android arm Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
     execution_timeout = 4 * time.hour,
 )
 
 android_builder(
     name = 'Android arm64 Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 4 * time.hour,
 )

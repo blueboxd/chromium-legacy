@@ -998,10 +998,12 @@ gpu::GpuMode GpuDataManagerImplPrivate::GetGpuMode() const {
 }
 
 void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
   // Android and Chrome OS can't switch to software compositing. If the GPU
   // process initialization fails or GPU process is too unstable then crash the
   // browser process to reset everything.
+  // On Fuchsia Vulkan must be used when it's enabled by the WebEngine embedder.
+  // Falling back to SW compositing in that case is not supported.
 #if defined(OS_ANDROID)
   FatalGpuProcessLaunchFailureOnBackground();
 #endif

@@ -78,6 +78,7 @@ template("chrome_repack_locales") {
         "//remoting/resources",
         "//ui/chromeos/strings",
       ]
+      compress = true
     }
     if (enable_extensions) {
       source_patterns +=

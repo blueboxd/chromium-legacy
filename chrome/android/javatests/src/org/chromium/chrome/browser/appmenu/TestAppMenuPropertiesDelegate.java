@@ -42,6 +42,8 @@ class TestAppMenuPropertiesDelegate implements AppMenuPropertiesDelegate {
 
     @Override
     public void prepareMenu(Menu menu, AppMenuHandler handler) {
+        menu.findItem(R.id.menu_item_two).setEnabled(false);
+
         menu.findItem(R.id.icon_row_menu_id).setVisible(enableAppIconRow);
         if (enableAppIconRow) {
             menu.findItem(R.id.icon_one)
@@ -53,6 +55,7 @@ class TestAppMenuPropertiesDelegate implements AppMenuPropertiesDelegate {
             menu.findItem(R.id.icon_three)
                     .setIcon(AppCompatResources.getDrawable(ContextUtils.getApplicationContext(),
                             R.drawable.test_ic_arrow_forward_black_24dp));
+            menu.findItem(R.id.icon_three).setEnabled(false);
         }
     }
 

@@ -189,11 +189,6 @@ class XRSession final
   void OnFrame(double timestamp,
                const base::Optional<gpu::MailboxHolder>& output_mailbox_holder);
 
-  void OnInputStateChange(
-      int16_t frame_id,
-      base::span<const device::mojom::blink::XRInputSourceStatePtr>
-          input_states);
-
   // XRInputSourceButtonListener
   void OnButtonEvent(
       device::mojom::blink::XRInputSourceStatePtr input_source) override;
@@ -263,8 +258,9 @@ class XRSession final
   // presentation frames.
   void UpdatePresentationFrameState(
       double timestamp,
-      std::unique_ptr<TransformationMatrix> mojo_from_viewer,
+      const device::mojom::blink::VRPosePtr& frame_pose,
       const device::mojom::blink::XRFrameDataPtr& frame_data,
+      int16_t frame_id,
       bool emulated_position);
 
   // Notifies immersive session that the environment integration provider has
@@ -292,8 +288,13 @@ class XRSession final
   void OnInputStateChangeInternal(
       int16_t frame_id,
       base::span<const device::mojom::blink::XRInputSourceStatePtr>
-          input_states,
-      bool from_eventing);
+          input_states);
+  void ProcessInputSourceEvents(
+      base::span<const device::mojom::blink::XRInputSourceStatePtr>
+          input_states);
+  void UpdateWorldUnderstandingStateForFrame(
+      double timestamp,
+      const device::mojom::blink::XRFrameDataPtr& frame_data);
 
   // XRSessionClient
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) override;

@@ -246,7 +246,13 @@ def FilterTests(tests, filter_str=None, annotations=None,
     if filter_av is None:
       return True
     elif isinstance(av, dict):
-      return filter_av in av['value']
+      tav_from_dict = av['value']
+      # If tav_from_dict is an int, the 'in' operator breaks, so convert
+      # filter_av and manually compare. See https://crbug.com/1019707
+      if isinstance(tav_from_dict, int):
+        return int(filter_av) == tav_from_dict
+      else:
+        return filter_av in tav_from_dict
     elif isinstance(av, list):
       return filter_av in av
     return filter_av == av

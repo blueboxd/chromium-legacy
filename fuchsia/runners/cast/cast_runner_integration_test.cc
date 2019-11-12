@@ -172,7 +172,8 @@ class CastRunnerIntegrationTest : public testing::Test {
             TestTimeouts::action_timeout(),
             base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")) {
     // Create the CastRunner, published into |outgoing_directory_|.
-    constexpr fuchsia::web::ContextFeatureFlags kFeatures = {};
+    constexpr fuchsia::web::ContextFeatureFlags kFeatures = {
+        fuchsia::web::ContextFeatureFlags::NETWORK};
     fuchsia::web::CreateContextParams create_context_params =
         WebContentRunner::BuildCreateContextParams(
             fidl::InterfaceHandle<fuchsia::io::Directory>(), kFeatures);

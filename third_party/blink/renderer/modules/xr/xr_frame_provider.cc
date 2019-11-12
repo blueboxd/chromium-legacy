@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/modules/xr/type_converters.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane_detection_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
@@ -48,16 +47,6 @@ class XRFrameProviderRequestCallback
 
   Member<XRFrameProvider> frame_provider_;
 };
-
-std::unique_ptr<TransformationMatrix> getPoseMatrix(
-    const device::mojom::blink::VRPosePtr& pose) {
-  if (!pose)
-    return nullptr;
-
-  return std::make_unique<TransformationMatrix>(
-      mojo::TypeConverter<TransformationMatrix,
-                          device::mojom::blink::VRPosePtr>::Convert(pose));
-}
 
 }  // namespace
 
@@ -400,17 +389,8 @@ void XRFrameProvider::ProcessScheduledFrame(
     // presentation frame as newly created presentation frame will get passed to
     // the input source select[/start/end] events.
     immersive_session_->UpdatePresentationFrameState(
-        high_res_now_ms, getPoseMatrix(frame_pose), frame_data,
+        high_res_now_ms, frame_pose, frame_data, frame_id_,
         is_immersive_frame_position_emulated_);
-
-    if (frame_pose) {
-      base::span<const device::mojom::blink::XRInputSourceStatePtr>
-          input_states;
-      if (frame_pose->input_state.has_value())
-        input_states = frame_pose->input_state.value();
-
-      immersive_session_->OnInputStateChange(frame_id_, input_states);
-    }
 
     // Check if immersive session is still set as OnInputStateChange may have
     // allowed a ForceEndSession to be triggered.
@@ -469,17 +449,8 @@ void XRFrameProvider::ProcessScheduledFrame(
       // presentation frame as newly created presentation frame will get passed
       // to the input source select[/start/end] events.
       session->UpdatePresentationFrameState(
-          high_res_now_ms, getPoseMatrix(frame_pose), frame_data,
+          high_res_now_ms, frame_pose, frame_data, frame_id_,
           true /* Non-immersive positions are always emulated */);
-
-      if (frame_pose) {
-        base::span<const device::mojom::blink::XRInputSourceStatePtr>
-            input_states;
-        if (frame_pose->input_state.has_value())
-          input_states = frame_pose->input_state.value();
-
-        session->OnInputStateChange(frame_id_, input_states);
-      }
 
       // If the input state change caused this session to end, we should stop
       // processing.

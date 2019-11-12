@@ -25,7 +25,8 @@ class PermissionWizard final {
   class Impl;
 
   // Callback for the Delegate to inform this class whether a permission was
-  // granted.
+  // granted. Also used to inform the caller of Start() whether the wizard
+  // was completed successfully or cancelled.
   using ResultCallback = base::OnceCallback<void(bool granted)>;
 
   // Interface to delegate the permission-checks. This will be invoked to test
@@ -53,6 +54,14 @@ class PermissionWizard final {
   PermissionWizard(const PermissionWizard&) = delete;
   PermissionWizard& operator=(const PermissionWizard&) = delete;
   ~PermissionWizard();
+
+  // Sets an optional callback to be notified when the wizard finishes. If set,
+  // the callback will be run on the ui_task_runner provided to Start(). The
+  // result will be true if all permissions were granted (even if no pages were
+  // actually shown). Result is false if the user cancelled the wizard (which
+  // should only happen if a page was shown and the associated permission was
+  // not granted).
+  void SetCompletionCallback(ResultCallback callback);
 
   void Start(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 

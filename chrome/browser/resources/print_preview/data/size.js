@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
-
-  class Size {
+  export class Size {
     /**
      * Immutable two-dimensional size.
      * @param {number} width Width of the size.
@@ -38,7 +35,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {print_preview.Size} other Other size object to compare against.
+     * @param {Size} other Other size object to compare against.
      * @return {boolean} Whether this size object is equal to another.
      */
     equals(other) {
@@ -47,6 +44,3 @@ cr.define('print_preview', function() {
     }
   }
 
-  // Export
-  return {Size: Size};
-});

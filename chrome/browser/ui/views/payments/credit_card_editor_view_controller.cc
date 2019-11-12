@@ -230,7 +230,7 @@ CreditCardEditorViewController::CreateHeaderView() {
         selected_network.empty() || selected_network == supported_network
             ? 1.0f
             : kDimmedCardIconOpacity;
-    std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
+    std::unique_ptr<views::ImageView> card_icon_view = CreateAppIconView(
         autofill::data_util::GetPaymentRequestData(autofill_card_type)
             .icon_resource_id,
         gfx::ImageSkia(), base::UTF8ToUTF16(supported_network), opacity);

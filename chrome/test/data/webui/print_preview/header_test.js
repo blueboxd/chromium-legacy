@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('header_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, Error, State} from 'chrome://print/print_preview.js';
+import {fakeDataBind} from 'chrome://test/test_util.m.js';
+
+  window.header_test = {};
+  header_test.suiteName = 'HeaderTest';
   /** @enum {string} */
-  const TestNames = {
+  header_test.TestNames = {
     HeaderPrinterTypes: 'header printer types',
     HeaderWithDuplex: 'header with duplex',
     HeaderWithCopies: 'header with copies',
@@ -13,8 +18,7 @@ cr.define('header_test', function() {
     EnterprisePolicy: 'enterprise policy',
   };
 
-  const suiteName = 'HeaderTest';
-  suite(suiteName, function() {
+  suite(header_test.suiteName, function() {
     /** @type {?PrintPreviewHeaderElement} */
     let header = null;
 
@@ -29,30 +33,30 @@ cr.define('header_test', function() {
       model.set('settings.duplex.available', true);
       model.set('settings.duplex.value', false);
 
-      header.destination = new print_preview.Destination(
-          'FooDevice', print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.COOKIES, 'FooName',
-          print_preview.DestinationConnectionStatus.ONLINE);
-      header.state = print_preview.State.READY;
+      header.destination = new Destination(
+          'FooDevice', DestinationType.GOOGLE,
+          DestinationOrigin.COOKIES, 'FooName',
+          DestinationConnectionStatus.ONLINE);
+      header.state = State.READY;
       header.managed = false;
-      test_util.fakeDataBind(model, header, 'settings');
+      fakeDataBind(model, header, 'settings');
       document.body.appendChild(header);
     });
 
     function setPdfDestination() {
       header.set(
           'destination',
-          new print_preview.Destination(
-              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-              print_preview.DestinationType.LOCAL,
-              print_preview.DestinationOrigin.LOCAL,
+          new Destination(
+              Destination.GooglePromotedId.SAVE_AS_PDF,
+              DestinationType.LOCAL,
+              DestinationOrigin.LOCAL,
               loadTimeData.getString('printToPDF'),
-              print_preview.DestinationConnectionStatus.ONLINE));
+              DestinationConnectionStatus.ONLINE));
     }
 
     // Tests that the 4 different messages (non-virtual printer singular and
     // plural, virtual printer singular and plural) all show up as expected.
-    test(assert(TestNames.HeaderPrinterTypes), function() {
+    test(assert(header_test.TestNames.HeaderPrinterTypes), function() {
       const summary = header.$$('.summary');
       assertEquals('1 sheet of paper', summary.textContent.trim());
       header.setSetting('pages', [1, 2, 3]);
@@ -68,7 +72,7 @@ cr.define('header_test', function() {
     });
 
     // Tests that the message is correctly adjusted with a duplex printer.
-    test(assert(TestNames.HeaderWithDuplex), function() {
+    test(assert(header_test.TestNames.HeaderWithDuplex), function() {
       const summary = header.$$('.summary');
       assertEquals('1 sheet of paper', summary.textContent.trim());
       header.setSetting('pages', [1, 2, 3]);
@@ -80,7 +84,7 @@ cr.define('header_test', function() {
     });
 
     // Tests that the message is correctly adjusted with multiple copies.
-    test(assert(TestNames.HeaderWithCopies), function() {
+    test(assert(header_test.TestNames.HeaderWithCopies), function() {
       const summary = header.$$('.summary');
       assertEquals('1 sheet of paper', summary.textContent.trim());
       header.setSetting('copies', 4);
@@ -95,40 +99,34 @@ cr.define('header_test', function() {
 
     // Tests that the correct message is shown for non-READY states, and that
     // the print button is disabled appropriately.
-    test(assert(TestNames.HeaderChangesForState), function() {
+    test(assert(header_test.TestNames.HeaderChangesForState), function() {
       const summary = header.$$('.summary');
       assertEquals('1 sheet of paper', summary.textContent.trim());
 
-      header.state = print_preview.State.NOT_READY;
+      header.state = State.NOT_READY;
       assertEquals('', summary.textContent.trim());
 
-      header.state = print_preview.State.PRINTING;
+      header.state = State.PRINTING;
       assertEquals(
           loadTimeData.getString('printing'), summary.textContent.trim());
       setPdfDestination();
       assertEquals(
           loadTimeData.getString('saving'), summary.textContent.trim());
 
-      header.state = print_preview.State.ERROR;
+      header.state = State.ERROR;
       assertEquals('', summary.textContent.trim());
 
       const testError = 'Error printing to cloud print';
       header.cloudPrintErrorMessage = testError;
-      header.error = print_preview.Error.CLOUD_PRINT_ERROR;
-      header.state = print_preview.State.FATAL_ERROR;
+      header.error = Error.CLOUD_PRINT_ERROR;
+      header.state = State.FATAL_ERROR;
       assertEquals(testError, summary.textContent.trim());
     });
 
     // Tests that enterprise badge shows up if any setting is managed.
-    test(assert(TestNames.EnterprisePolicy), function() {
+    test(assert(header_test.TestNames.EnterprisePolicy), function() {
       assertTrue(header.$$('iron-icon').hidden);
       header.managed = true;
       assertFalse(header.$$('iron-icon').hidden);
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

@@ -122,9 +122,9 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
 
   void UnsubscribeFromHitTest(uint64_t subscription_id) override;
 
-  void CreateAnchor(mojom::VRPosePtr anchor_pose,
+  void CreateAnchor(mojom::PosePtr anchor_pose,
                     CreateAnchorCallback callback) override;
-  void CreatePlaneAnchor(mojom::VRPosePtr anchor_pose,
+  void CreatePlaneAnchor(mojom::PosePtr anchor_pose,
                          uint64_t plane_id,
                          CreatePlaneAnchorCallback callback) override;
 

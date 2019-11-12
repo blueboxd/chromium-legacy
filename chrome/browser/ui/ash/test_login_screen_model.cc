@@ -40,7 +40,8 @@ void TestLoginScreenModel::SetSystemInfo(
     bool enforced,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
-    const std::string& bluetooth_name) {}
+    const std::string& bluetooth_name,
+    bool adb_sideloading_enabled) {}
 void TestLoginScreenModel::SetPublicSessionDisplayName(
     const AccountId& account_id,
     const std::string& display_name) {}

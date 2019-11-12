@@ -2,9 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('advanced_dialog_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType} from 'chrome://print/print_preview.js';
+import {getCddTemplateWithAdvancedSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+
+  window.advanced_dialog_test = {};
+  advanced_dialog_test.suiteName = 'AdvancedDialogTest';
   /** @enum {string} */
-  const TestNames = {
+  advanced_dialog_test.TestNames = {
     AdvancedSettings1Option: 'advanced settings 1 option',
     AdvancedSettings2Options: 'advanced settings 2 options',
     AdvancedSettingsApply: 'advanced settings apply',
@@ -13,12 +21,11 @@ cr.define('advanced_dialog_test', function() {
     AdvancedSettingsFilter: 'advanced settings filter',
   };
 
-  const suiteName = 'AdvancedDialogTest';
-  suite(suiteName, function() {
+  suite(advanced_dialog_test.suiteName, function() {
     /** @type {?PrintPreviewAdvancedSettingsDialogElement} */
     let dialog = null;
 
-    /** @type {?print_preview.Destination} */
+    /** @type {?Destination} */
     let destination = null;
 
     /** @type {string} */
@@ -30,10 +37,10 @@ cr.define('advanced_dialog_test', function() {
     /** @override */
     setup(function() {
       // Create destination
-      destination = new print_preview.Destination(
-          printerId, print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.COOKIES, printerName,
-          print_preview.DestinationConnectionStatus.ONLINE);
+      destination = new Destination(
+          printerId, DestinationType.GOOGLE,
+          DestinationOrigin.COOKIES, printerName,
+          DestinationConnectionStatus.ONLINE);
       PolymerTest.clearBody();
       const model = document.createElement('print-preview-model');
       document.body.appendChild(model);
@@ -43,7 +50,7 @@ cr.define('advanced_dialog_test', function() {
 
       // Set up settings. Only need the vendor items.
       dialog.settings = model.settings;
-      test_util.fakeDataBind(model, dialog, 'settings');
+      fakeDataBind(model, dialog, 'settings');
     });
 
     /**
@@ -52,13 +59,13 @@ cr.define('advanced_dialog_test', function() {
      */
     function setupDialog(count) {
       const template =
-          print_preview_test_utils.getCddTemplateWithAdvancedSettings(
+          getCddTemplateWithAdvancedSettings(
               count, printerId, printerName);
       destination.capabilities = template.capabilities;
       dialog.destination = destination;
 
       document.body.appendChild(dialog);
-      Polymer.dom.flush();
+      flush();
     }
 
     /**
@@ -95,28 +102,31 @@ cr.define('advanced_dialog_test', function() {
 
     // Tests that the search box does not appear when there is only one option,
     // and that the vendor item is correctly displayed.
-    test(assert(TestNames.AdvancedSettings1Option), function() {
+    test(assert(advanced_dialog_test.TestNames.AdvancedSettings1Option),
+        function() {
       setupDialog(1);
       verifyListWithItemCount(1);
     });
 
     // Tests that the search box appears when there are two options, and that
     // the items are correctly displayed.
-    test(assert(TestNames.AdvancedSettings2Options), function() {
+    test(assert(advanced_dialog_test.TestNames.AdvancedSettings2Options),
+        function() {
       setupDialog(2);
       verifyListWithItemCount(2);
     });
 
     // Tests that the advanced settings dialog correctly updates the settings
     // value for vendor items when the apply button is clicked.
-    test(assert(TestNames.AdvancedSettingsApply), function() {
+    test(assert(advanced_dialog_test.TestNames.AdvancedSettingsApply),
+        function() {
       setupDialog(3);
       setItemValues();
 
       assertFalse(dialog.getSetting('vendorItems').setFromUi);
       const buttons = dialog.shadowRoot.querySelectorAll('cr-button');
       assertEquals(2, buttons.length);
-      const whenDialogClose = test_util.eventToPromise('close', dialog);
+      const whenDialogClose = eventToPromise('close', dialog);
 
       // Click apply button.
       buttons[1].click();
@@ -132,7 +142,8 @@ cr.define('advanced_dialog_test', function() {
 
     // Tests that the advanced settings dialog updates the settings value for
     // vendor items if Enter is pressed on a cr-input.
-    test(assert(TestNames.AdvancedSettingsApplyWithEnter), function() {
+    test(assert(advanced_dialog_test.TestNames.AdvancedSettingsApplyWithEnter),
+        function() {
       setupDialog(3);
       setItemValues();
 
@@ -145,9 +156,8 @@ cr.define('advanced_dialog_test', function() {
       typedItemInput.dispatchEvent(
           new CustomEvent('input', {composed: true, bubbles: true}));
 
-      const whenDialogClose = test_util.eventToPromise('close', dialog);
-      MockInteractions.keyEventOn(
-          typedItemInput, 'keydown', 'Enter', [], 'Enter');
+      const whenDialogClose = eventToPromise('close', dialog);
+      keyEventOn(typedItemInput, 'keydown', 'Enter', [], 'Enter');
 
       return whenDialogClose.then(() => {
         // Check that the setting has been set.
@@ -160,13 +170,14 @@ cr.define('advanced_dialog_test', function() {
 
     // Tests that the advanced settings dialog does not update the settings
     // value for vendor items when the close button is clicked.
-    test(assert(TestNames.AdvancedSettingsClose), function() {
+    test(assert(advanced_dialog_test.TestNames.AdvancedSettingsClose),
+        function() {
       setupDialog(3);
       setItemValues();
 
       const buttons = dialog.shadowRoot.querySelectorAll('cr-button');
       assertEquals(2, buttons.length);
-      const whenDialogClose = test_util.eventToPromise('close', dialog);
+      const whenDialogClose = eventToPromise('close', dialog);
 
       // Click close button.
       buttons[0].click();
@@ -181,7 +192,8 @@ cr.define('advanced_dialog_test', function() {
 
     // Tests that the dialog correctly shows and hides settings based on the
     // value of the search query.
-    test(assert(TestNames.AdvancedSettingsFilter), function() {
+    test(assert(advanced_dialog_test.TestNames.AdvancedSettingsFilter),
+        function() {
       setupDialog(3);
       const searchBox = dialog.$.searchBox;
       const items = dialog.shadowRoot.querySelectorAll(
@@ -210,9 +222,3 @@ cr.define('advanced_dialog_test', function() {
       assertFalse(noMatchHint.hidden);
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

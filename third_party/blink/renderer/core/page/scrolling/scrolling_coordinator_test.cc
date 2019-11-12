@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/property_tree.h"
+#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/sticky_position_constraint.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1498,8 +1499,10 @@ TEST_P(ScrollingCoordinatorTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
 
   // Simulate 100px of scroll coming from the compositor thread during a commit.
   gfx::ScrollOffset compositor_delta(0, 100.f);
-  cc_layer->SetNeedsCommit();
-  cc_layer->SetScrollOffsetFromImplSide(compositor_delta);
+  cc::ScrollAndScaleSet scroll_and_scale_set;
+  scroll_and_scale_set.scrolls.push_back(
+      {scroller->GetCompositorElementId(), compositor_delta});
+  cc_layer->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale_set);
   EXPECT_EQ(compositor_delta.y(), scroller->GetScrollOffset().Height());
   EXPECT_EQ(compositor_delta, cc_layer->CurrentScrollOffset());
 

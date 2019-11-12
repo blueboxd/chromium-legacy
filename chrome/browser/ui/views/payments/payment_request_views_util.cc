@@ -235,7 +235,7 @@ void PopulateSheetHeaderView(bool show_back_arrow,
   layout->AddView(std::move(header_content_view));
 }
 
-std::unique_ptr<views::ImageView> CreateInstrumentIconView(
+std::unique_ptr<views::ImageView> CreateAppIconView(
     int icon_resource_id,
     gfx::ImageSkia img,
     const base::string16& tooltip_text,

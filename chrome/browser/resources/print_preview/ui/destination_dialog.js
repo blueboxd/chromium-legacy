@@ -2,19 +2,52 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html, beforeNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/js/action_link.js';
+import 'chrome://resources/cr_elements/action_link_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import './icons.js';
+import {Metrics, MetricsContext} from '../metrics.js';
+import {NativeLayer} from '../native_layer.js';
+import '../print_preview_utils.js';
+import {Destination} from '../data/destination.js';
+import {DestinationStore} from '../data/destination_store.js';
+import {Invitation} from '../data/invitation.js';
+import {InvitationStore} from '../data/invitation_store.js';
+import './destination_list.js';
+import './print_preview_search_box.js';
+import './print_preview_shared_css.js';
+import './print_preview_vars_css.js';
+import './provisional_destination_resolver.js';
+import '../strings.m.js';
+import './throbber_css.js';
+
 Polymer({
   is: 'print-preview-destination-dialog',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior, ListPropertyUpdateBehavior],
 
   properties: {
-    /** @type {?print_preview.DestinationStore} */
+    /** @type {?DestinationStore} */
     destinationStore: {
       type: Object,
       observer: 'onDestinationStoreSet_',
     },
 
-    /** @type {?print_preview.InvitationStore} */
+    /** @type {?InvitationStore} */
     invitationStore: {
       type: Object,
       observer: 'onInvitationStoreSet_',
@@ -30,7 +63,7 @@ Polymer({
     /** @type {!Array<string>} */
     users: Array,
 
-    /** @private {?print_preview.Invitation} */
+    /** @private {?Invitation} */
     invitation_: {
       type: Object,
       value: null,
@@ -44,7 +77,7 @@ Polymer({
       value: false,
     },
 
-    /** @private {!Array<!print_preview.Destination>} */
+    /** @private {!Array<!Destination>} */
     destinations_: {
       type: Array,
       value: [],
@@ -78,11 +111,11 @@ Polymer({
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
 
-  /** @private {!print_preview.MetricsContext} */
-  metrics_: print_preview.MetricsContext.destinationSearch(),
+  /** @private {!MetricsContext} */
+  metrics_: MetricsContext.destinationSearch(),
 
   // <if expr="chromeos">
-  /** @private {?print_preview.Destination} */
+  /** @private {?Destination} */
   destinationInConfiguring_: null,
   // </if>
 
@@ -134,11 +167,11 @@ Polymer({
     const destinationStore = assert(this.destinationStore);
     this.tracker_.add(
         destinationStore,
-        print_preview.DestinationStore.EventType.DESTINATIONS_INSERTED,
+        DestinationStore.EventType.DESTINATIONS_INSERTED,
         this.updateDestinations_.bind(this));
     this.tracker_.add(
         destinationStore,
-        print_preview.DestinationStore.EventType.DESTINATION_SEARCH_DONE,
+        DestinationStore.EventType.DESTINATION_SEARCH_DONE,
         this.updateDestinationsAndInvitations_.bind(this));
     this.initialized_ = true;
   },
@@ -148,11 +181,11 @@ Polymer({
     const invitationStore = assert(this.invitationStore);
     this.tracker_.add(
         invitationStore,
-        print_preview.InvitationStore.EventType.INVITATION_SEARCH_DONE,
+        InvitationStore.EventType.INVITATION_SEARCH_DONE,
         this.updateInvitations_.bind(this));
     this.tracker_.add(
         invitationStore,
-        print_preview.InvitationStore.EventType.INVITATION_PROCESSED,
+        InvitationStore.EventType.INVITATION_PROCESSED,
         this.updateInvitations_.bind(this));
   },
 
@@ -198,9 +231,9 @@ Polymer({
     }
     const cancelled = this.$.dialog.getNative().returnValue !== 'success';
     this.metrics_.record(
-        cancelled ? print_preview.Metrics.DestinationSearchBucket
+        cancelled ? Metrics.DestinationSearchBucket
                         .DESTINATION_CLOSED_UNCHANGED :
-                    print_preview.Metrics.DestinationSearchBucket
+                    Metrics.DestinationSearchBucket
                         .DESTINATION_CLOSED_CHANGED);
     if (this.currentDestinationAccount &&
         this.currentDestinationAccount !== this.activeUser) {
@@ -277,7 +310,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview.Destination} destination The destination to select.
+   * @param {!Destination} destination The destination to select.
    * @private
    */
   selectDestination_: function(destination) {
@@ -290,9 +323,9 @@ Polymer({
     this.loadingDestinations_ = this.destinationStore === undefined ||
         this.destinationStore.isPrintDestinationSearchInProgress;
     this.metrics_.record(
-        print_preview.Metrics.DestinationSearchBucket.DESTINATION_SHOWN);
+        Metrics.DestinationSearchBucket.DESTINATION_SHOWN);
     if (this.activeUser) {
-      Polymer.RenderStatus.beforeNextRender(assert(this.$$('select')), () => {
+      beforeNextRender(assert(this.$$('select')), () => {
         this.$$('select').value = this.activeUser;
       });
     }
@@ -307,8 +340,8 @@ Polymer({
   /** @private */
   onSignInClick_: function() {
     this.metrics_.record(
-        print_preview.Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
-    print_preview.NativeLayer.getInstance().signIn(false);
+        Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
+    NativeLayer.getInstance().signIn(false);
   },
 
   /** @private */
@@ -326,7 +359,7 @@ Polymer({
         [];
     if (this.invitation_ != invitations[0]) {
       this.metrics_.record(
-          print_preview.Metrics.DestinationSearchBucket.INVITATION_AVAILABLE);
+          Metrics.DestinationSearchBucket.INVITATION_AVAILABLE);
     }
     this.invitation_ = invitations.length > 0 ? invitations[0] : null;
   },
@@ -373,7 +406,7 @@ Polymer({
   /** @private */
   onInvitationAcceptClick_: function() {
     this.metrics_.record(
-        print_preview.Metrics.DestinationSearchBucket.INVITATION_ACCEPTED);
+        Metrics.DestinationSearchBucket.INVITATION_ACCEPTED);
     this.invitationStore.processInvitation(assert(this.invitation_), true);
     this.updateInvitations_();
   },
@@ -381,7 +414,7 @@ Polymer({
   /** @private */
   onInvitationRejectClick_: function() {
     this.metrics_.record(
-        print_preview.Metrics.DestinationSearchBucket.INVITATION_REJECTED);
+        Metrics.DestinationSearchBucket.INVITATION_REJECTED);
     this.invitationStore.processInvitation(assert(this.invitation_), false);
     this.updateInvitations_();
   },
@@ -394,12 +427,12 @@ Polymer({
       this.loadingDestinations_ = true;
       this.fire('account-change', account);
       this.metrics_.record(
-          print_preview.Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
+          Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
     } else {
       select.value = this.activeUser;
-      print_preview.NativeLayer.getInstance().signIn(true);
+      NativeLayer.getInstance().signIn(true);
       this.metrics_.record(
-          print_preview.Metrics.DestinationSearchBucket.ADD_ACCOUNT_SELECTED);
+          Metrics.DestinationSearchBucket.ADD_ACCOUNT_SELECTED);
     }
   },
 
@@ -416,7 +449,7 @@ Polymer({
   onShouldShowCloudPrintPromoChanged_: function() {
     if (this.shouldShowCloudPrintPromo_) {
       this.metrics_.record(
-          print_preview.Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
+          Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
     } else {
       // Since the sign in link/dismiss promo button is disappearing, focus the
       // search box.
@@ -435,7 +468,7 @@ Polymer({
   /** @private */
   onOpenSettingsPrintPage_: function() {
     this.metrics_.record(
-        print_preview.Metrics.DestinationSearchBucket.MANAGE_BUTTON_CLICKED);
-    print_preview.NativeLayer.getInstance().openSettingsPrintPage();
+        Metrics.DestinationSearchBucket.MANAGE_BUTTON_CLICKED);
+    NativeLayer.getInstance().openSettingsPrintPage();
   },
 });

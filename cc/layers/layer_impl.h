@@ -300,8 +300,11 @@ class CC_EXPORT LayerImpl {
     return wheel_event_handler_region_;
   }
 
+  // The main thread may commit multiple times before the impl thread actually
+  // draws, so we need to accumulate (i.e. union) any update changes that have
+  // occurred on the main thread until we draw.
   // Note this rect is in layer space (not content space).
-  void SetUpdateRect(const gfx::Rect& update_rect);
+  void UnionUpdateRect(const gfx::Rect& update_rect);
   const gfx::Rect& update_rect() const { return update_rect_; }
 
   // Denotes an area that is damaged and needs redraw. This is in the layer's

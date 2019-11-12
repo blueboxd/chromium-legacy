@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('color_settings_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import 'chrome://print/print_preview.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+
   suite('ColorSettingsTest', function() {
     /** @type {?PrintPreviewColorSettingsElement} */
     let colorSection = null;
@@ -19,7 +24,7 @@ cr.define('color_settings_test', function() {
       colorSection = document.createElement('print-preview-color-settings');
       colorSection.settings = model.settings;
       colorSection.disabled = false;
-      test_util.fakeDataBind(model, colorSection, 'settings');
+      fakeDataBind(model, colorSection, 'settings');
       model.set('settings.color.available', true);
       document.body.appendChild(colorSection);
     });
@@ -30,7 +35,7 @@ cr.define('color_settings_test', function() {
       assertEquals('color', select.value);
 
       colorSection.setSetting('color', false);
-      await test_util.eventToPromise('process-select-change', colorSection);
+      await eventToPromise('process-select-change', colorSection);
       assertEquals('bw', select.value);
     });
 
@@ -44,12 +49,12 @@ cr.define('color_settings_test', function() {
       assertEquals(2, select.options.length);
 
       // Verify that selecting an new option in the dropdown sets the setting.
-      await print_preview_test_utils.selectOption(colorSection, 'bw');
+      await selectOption(colorSection, 'bw');
       assertFalse(colorSection.getSettingValue('color'));
       assertTrue(colorSection.getSetting('color').setFromUi);
     });
 
-    if (cr.isChromeOS) {
+    if (isChromeOS) {
       // Tests that if the setting is enforced by enterprise policy it is
       // disabled.
       test('disabled by policy', function() {
@@ -62,4 +67,3 @@ cr.define('color_settings_test', function() {
       });
     }
   });
-});

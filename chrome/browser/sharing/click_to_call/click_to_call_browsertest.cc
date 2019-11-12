@@ -12,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
@@ -22,6 +23,9 @@
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
+#include "chrome/common/pref_names.h"
+#include "components/policy/policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -36,6 +40,13 @@ const char kTextWithPhoneNumber[] = "call 9876543210 now";
 const char kTextWithoutPhoneNumber[] = "abcde";
 
 const char kTestPageURL[] = "/sharing/tel.html";
+
+enum class ClickToCallPolicy {
+  kNotConfigured,
+  kFalse,
+  kTrue,
+};
+
 }  // namespace
 
 // Browser tests for the Click To Call feature.
@@ -415,3 +426,62 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, CloseTabWithBubble) {
   // Regression test for http://crbug.com/1000934.
   sessions_helper::CloseTab(/*browser_index=*/0, /*tab_index=*/0);
 }
+
+class ClickToCallPolicyTest
+    : public policy::PolicyTest,
+      public testing::WithParamInterface<ClickToCallPolicy> {
+ public:
+  ClickToCallPolicyTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {kClickToCallUI, kClickToCallContextMenuForSelectedText}, {});
+  }
+  ~ClickToCallPolicyTest() override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    policy::PolicyMap policies;
+
+    const ClickToCallPolicy policy = GetParam();
+    if (policy == ClickToCallPolicy::kFalse ||
+        policy == ClickToCallPolicy::kTrue) {
+      const bool policy_bool = (policy == ClickToCallPolicy::kTrue);
+      policies.Set(policy::key::kClickToCallEnabled,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                   std::make_unique<base::Value>(policy_bool), nullptr);
+    }
+
+    provider_.UpdateChromePolicy(policies);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(ClickToCallPolicyTest, RunTest) {
+  const char* kPhoneNumber = "+9876543210";
+  const char* kPhoneLink = "tel:+9876543210";
+  bool expected_enabled = GetParam() != ClickToCallPolicy::kFalse;
+  bool expected_configured = GetParam() != ClickToCallPolicy::kNotConfigured;
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_EQ(expected_enabled, prefs->GetBoolean(prefs::kClickToCallEnabled));
+  EXPECT_EQ(expected_configured,
+            prefs->IsManagedPreference(prefs::kClickToCallEnabled));
+
+  EXPECT_EQ(expected_enabled, ShouldOfferClickToCallForURL(browser()->profile(),
+                                                           GURL(kPhoneLink)));
+
+  base::Optional<std::string> extracted =
+      ExtractPhoneNumberForClickToCall(browser()->profile(), kPhoneNumber);
+  if (expected_enabled)
+    EXPECT_EQ(kPhoneNumber, extracted.value());
+  else
+    EXPECT_FALSE(extracted.has_value());
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         ClickToCallPolicyTest,
+                         ::testing::Values(ClickToCallPolicy::kNotConfigured,
+                                           ClickToCallPolicy::kFalse,
+                                           ClickToCallPolicy::kTrue));

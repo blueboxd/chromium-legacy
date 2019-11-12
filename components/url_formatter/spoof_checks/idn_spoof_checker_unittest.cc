@@ -752,8 +752,9 @@ const IDNTestCase kIdnCases[] = {
      false},
     //  Deva digit + Beng digit
     {"xn--e4b0x.co.in", L"\x0967\x09e7.co.in", false},
-    // U+4E00 (CJK Ideograph One) is not a digit
-    {"xn--d12-s18d.cn", L"d12\x4e00.cn", true},
+    // U+4E00 (CJK Ideograph One) is not a digit, but it's not allowed next to
+    // non-Kana scripts including numbers.
+    {"xn--d12-s18d.cn", L"d12\x4e00.cn", false},
     // One that's really long that will force a buffer realloc
     {"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
      "aaaaaaa",
@@ -1082,6 +1083,9 @@ const IDNTestCase kIdnCases[] = {
     // U+4E00 and U+3127 should be blocked when next to non-CJK.
     {"xn--ipaddress-w75n.com", L"ip一address.com", false},
     {"xn--ipaddress-wx5h.com", L"ipㄧaddress.com", false},
+    // U+4E00 at the beginning and end of a string.
+    {"xn--google-gg5e.com", L"googleㄧ.com", false},
+    {"xn--google-9f5e.com", L"ㄧgoogle.com", false},
     // These are allowed because 一 is not immediately next to non-CJK.
     {"xn--gamer-fg1hz05u.com", L"一生gamer.com", true},
     {"xn--gamer-kg1hy05u.com", L"gamer生一.com", true},

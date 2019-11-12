@@ -379,6 +379,8 @@ class MockDnsClient : public DnsClient {
     doh_server_available_ = available;
   }
 
+  MockDnsTransactionFactory* factory() { return factory_.get(); }
+
  private:
   base::Optional<DnsConfig> BuildEffectiveConfig();
 
@@ -387,6 +389,7 @@ class MockDnsClient : public DnsClient {
   int max_fallback_failures_ = DnsClient::kMaxInsecureFallbackFailures;
   bool ignore_system_config_changes_ = false;
   bool doh_server_available_ = true;
+  URLRequestContext* probe_context_ = nullptr;
 
   base::Optional<DnsConfig> config_;
   DnsConfigOverrides overrides_;

@@ -56,6 +56,10 @@ namespace incremental_marking_test {
 class IncrementalMarkingScopeBase;
 }  // namespace incremental_marking_test
 
+namespace weakness_marking_test {
+class EphemeronCallbacksCounter;
+}  // namespace weakness_marking_test
+
 class AddressCache;
 class ConcurrentMarkingVisitor;
 class ThreadHeapStatsCollector;
@@ -446,6 +450,7 @@ class PLATFORM_EXPORT ThreadHeap {
   template <typename T>
   friend class Member;
   friend class ThreadState;
+  friend class weakness_marking_test::EphemeronCallbacksCounter;
 };
 
 template <typename T>

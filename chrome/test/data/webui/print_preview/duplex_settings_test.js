@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('duplex_settings_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {DuplexMode} from 'chrome://print/print_preview.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
   suite('DuplexSettingsTest', function() {
     /** @type {?PrintPreviewDuplexSettingsElement} */
     let duplexSection = null;
@@ -22,9 +28,9 @@ cr.define('duplex_settings_test', function() {
       duplexSection = document.createElement('print-preview-duplex-settings');
       duplexSection.settings = model.settings;
       duplexSection.disabled = false;
-      test_util.fakeDataBind(model, duplexSection, 'settings');
+      fakeDataBind(model, duplexSection, 'settings');
       document.body.appendChild(duplexSection);
-      Polymer.dom.flush();
+      flush();
     });
 
     // Tests that making short edge unavailable prevents the collapse from
@@ -52,12 +58,12 @@ cr.define('duplex_settings_test', function() {
       assertTrue(collapse.opened);
 
       const select = duplexSection.$$('select');
-      assertEquals(print_preview.DuplexMode.LONG_EDGE.toString(), select.value);
+      assertEquals(DuplexMode.LONG_EDGE.toString(), select.value);
 
       duplexSection.setSetting('duplexShortEdge', true);
-      await test_util.eventToPromise('process-select-change', duplexSection);
+      await eventToPromise('process-select-change', duplexSection);
       assertEquals(
-          print_preview.DuplexMode.SHORT_EDGE.toString(), select.value);
+          DuplexMode.SHORT_EDGE.toString(), select.value);
     });
 
     // Tests that checking the box or selecting a new option in the dropdown
@@ -81,19 +87,19 @@ cr.define('duplex_settings_test', function() {
       assertFalse(duplexSection.getSetting('duplexShortEdge').setFromUi);
 
       const select = duplexSection.$$('select');
-      assertEquals(print_preview.DuplexMode.LONG_EDGE.toString(), select.value);
+      assertEquals(DuplexMode.LONG_EDGE.toString(), select.value);
       assertEquals(2, select.options.length);
 
       // Verify that selecting an new option in the dropdown sets the setting.
-      await print_preview_test_utils.selectOption(
-          duplexSection, print_preview.DuplexMode.SHORT_EDGE.toString());
+      await selectOption(
+          duplexSection, DuplexMode.SHORT_EDGE.toString());
       assertTrue(duplexSection.getSettingValue('duplex'));
       assertTrue(duplexSection.getSettingValue('duplexShortEdge'));
       assertTrue(duplexSection.getSetting('duplex').setFromUi);
       assertTrue(duplexSection.getSetting('duplexShortEdge').setFromUi);
     });
 
-    if (cr.isChromeOS) {
+    if (isChromeOS) {
       // Tests that if settings are enforced by enterprise policy the
       // appropriate UI is disabled.
       test('disabled by policy', function() {
@@ -114,4 +120,3 @@ cr.define('duplex_settings_test', function() {
       });
     }
   });
-});

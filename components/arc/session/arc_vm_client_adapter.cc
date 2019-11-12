@@ -41,6 +41,7 @@
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session.h"
+#include "components/arc/session/arc_vm_client_adapter_util.h"
 #include "components/version_info/version_info.h"
 
 namespace arc {
@@ -52,8 +53,11 @@ constexpr const char kBuiltinPath[] = "/opt/google/vms/android";
 constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
 constexpr const char kDlcPath[] = "/run/imageloader/arcvm-dlc/package/root";
 constexpr const char kFstab[] = "fstab";
+constexpr const char kGeneratedPropertyFilesPath[] =
+    "/run/arcvm/host_generated";
 constexpr const char kHomeDirectory[] = "/home";
 constexpr const char kKernel[] = "vmlinux";
+constexpr const char kPropertyFilesPath[] = "/usr/share/arcvm/properties";
 constexpr const char kRootFs[] = "system.raw.img";
 constexpr const char kVendorImage[] = "vendor.raw.img";
 
@@ -72,12 +76,17 @@ class FileSystemStatus {
   const base::FilePath& vendor_image_path() const { return vendor_image_path_; }
   const base::FilePath& guest_kernel_path() const { return guest_kernel_path_; }
   const base::FilePath& fstab_path() const { return fstab_path_; }
+  bool property_files_expanded() const { return property_files_expanded_; }
 
   static FileSystemStatus GetFileSystemStatusBlocking() {
     return FileSystemStatus();
   }
   static bool IsAndroidDebuggableForTesting(const base::FilePath& json_path) {
     return IsAndroidDebuggable(json_path);
+  }
+  static bool ExpandPropertyFilesForTesting(const base::FilePath& source_path,
+                                            const base::FilePath& dest_path) {
+    return ExpandPropertyFiles(source_path, dest_path);
   }
 
  private:
@@ -88,7 +97,10 @@ class FileSystemStatus {
         system_image_path_(SelectDlcOrBuiltin(base::FilePath(kRootFs))),
         vendor_image_path_(SelectDlcOrBuiltin(base::FilePath(kVendorImage))),
         guest_kernel_path_(SelectDlcOrBuiltin(base::FilePath(kKernel))),
-        fstab_path_(SelectDlcOrBuiltin(base::FilePath(kFstab))) {}
+        fstab_path_(SelectDlcOrBuiltin(base::FilePath(kFstab))),
+        property_files_expanded_(
+            ExpandPropertyFiles(base::FilePath(kPropertyFilesPath),
+                                base::FilePath(kGeneratedPropertyFilesPath))) {}
 
   // Parse a JSON file which is like the following and returns a result:
   //   {
@@ -148,12 +160,29 @@ class FileSystemStatus {
     return base::FilePath(kBuiltinPath).Append(file);
   }
 
+  // Copies two prop files in /usr/share/arcvm to /run/arcvm/host_generated with
+  // or without modifications (depending on whether the board is unibuild).
+  // Returns true if the copy is successful.
+  static bool ExpandPropertyFiles(const base::FilePath& source_path,
+                                  const base::FilePath& dest_path) {
+    CrosConfig config;
+    for (const char* file : {"default.prop", "build.prop"}) {
+      if (!ExpandPropertyFile(source_path.Append(file), dest_path.Append(file),
+                              &config)) {
+        LOG(ERROR) << "Failed to expand " << source_path.Append(file);
+        return false;
+      }
+    }
+    return true;
+  }
+
   bool is_android_debuggable_;
   bool is_host_rootfs_writable_;
   base::FilePath system_image_path_;
   base::FilePath vendor_image_path_;
   base::FilePath guest_kernel_path_;
   base::FilePath fstab_path_;
+  bool property_files_expanded_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemStatus);
 };
@@ -557,6 +586,11 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                           const base::FilePath& data_disk_path,
                           FileSystemStatus file_system_status) {
     VLOG(2) << "Got file system status";
+    if (!file_system_status.property_files_expanded()) {
+      // TODO(yusukes): Once build_image and push_to_device.py are updated, run
+      // the |callback| with false here and return.
+    }
+
     if (serial_number_.empty()) {
       LOG(ERROR) << "Serial number is not set";
       std::move(callback).Run(false);
@@ -665,6 +699,12 @@ std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter(
 
 bool IsAndroidDebuggableForTesting(const base::FilePath& json_path) {
   return FileSystemStatus::IsAndroidDebuggableForTesting(json_path);
+}
+
+bool ExpandPropertyFilesForTesting(const base::FilePath& source_path,
+                                   const base::FilePath& dest_path) {
+  return FileSystemStatus::ExpandPropertyFilesForTesting(source_path,
+                                                         dest_path);
 }
 
 }  // namespace arc

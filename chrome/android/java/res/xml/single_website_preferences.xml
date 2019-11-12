@@ -73,6 +73,8 @@
     <ListPreference
         android:key="clipboard_permission_list" />
     <ListPreference
+        android:key="nfc_permission_list" />
+    <ListPreference
         android:key="bluetooth_scanning_permission_list" />
 
     <org.chromium.chrome.browser.preferences.ButtonPreference

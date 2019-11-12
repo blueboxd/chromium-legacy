@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('custom_margins_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {CustomMarginsOrientation, Margins, MarginsType, MeasurementSystem, MeasurementSystemUnitType, Size, State} from 'chrome://print/print_preview.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+  window.custom_margins_test = {};
+  custom_margins_test.suiteName = 'CustomMarginsTest';
   /** @enum {string} */
-  const TestNames = {
+  custom_margins_test.TestNames = {
     ControlsCheck: 'controls check',
     SetFromStickySettings: 'set from sticky settings',
     DragControls: 'drag controls',
@@ -20,18 +26,17 @@ cr.define('custom_margins_test', function() {
     ControlsDisabledOnError: 'controls disabled on error',
   };
 
-  const suiteName = 'CustomMarginsTest';
-  suite(suiteName, function() {
+  suite(custom_margins_test.suiteName, function() {
     /** @type {?PrintPreviewMarginControlContainerElement} */
     let container = null;
 
     /** @type {?PrintPreviewModelElement} */
     let model = null;
 
-    /** @type {!Array<!print_preview.CustomMarginsOrientation>} */
+    /** @type {!Array<!CustomMarginsOrientation>} */
     let sides = [];
 
-    /** @type {!print_preview.MeasurementSystem} */
+    /** @type {!MeasurementSystem} */
     let measurementSystem = null;
 
     /** @type {number} */
@@ -49,28 +54,28 @@ cr.define('custom_margins_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
-      measurementSystem = new print_preview.MeasurementSystem(
-          ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL);
+      measurementSystem = new MeasurementSystem(
+          ',', '.', MeasurementSystemUnitType.IMPERIAL);
       model = document.createElement('print-preview-model');
       document.body.appendChild(model);
       model.set('settings.mediaSize.available', true);
 
       sides = [
-        print_preview.CustomMarginsOrientation.TOP,
-        print_preview.CustomMarginsOrientation.RIGHT,
-        print_preview.CustomMarginsOrientation.BOTTOM,
-        print_preview.CustomMarginsOrientation.LEFT
+        CustomMarginsOrientation.TOP,
+        CustomMarginsOrientation.RIGHT,
+        CustomMarginsOrientation.BOTTOM,
+        CustomMarginsOrientation.LEFT
       ];
 
       container =
           document.createElement('print-preview-margin-control-container');
       container.previewLoaded = false;
       // 8.5 x 11, in points
-      container.pageSize = new print_preview.Size(612, 794);
-      container.documentMargins = new print_preview.Margins(
+      container.pageSize = new Size(612, 794);
+      container.documentMargins = new Margins(
           defaultMarginPts, defaultMarginPts, defaultMarginPts,
           defaultMarginPts);
-      container.state = print_preview.State.NOT_READY;
+      container.state = State.NOT_READY;
     });
 
     /** @return {!Array<!PrintPreviewMarginControlElement>} */
@@ -89,19 +94,19 @@ cr.define('custom_margins_test', function() {
       // Wait for the control elements to be created before updating the state.
       container.measurementSystem = measurementSystem;
       document.body.appendChild(container);
-      const controlsAdded = test_util.eventToPromise('dom-change', container);
+      const controlsAdded = eventToPromise('dom-change', container);
       return controlsAdded.then(() => {
         // 8.5 x 11, in pixels
         const controls = getControls();
         assertEquals(4, controls.length);
         container.settings = model.settings;
-        test_util.fakeDataBind(model, container, 'settings');
+        fakeDataBind(model, container, 'settings');
 
-        container.state = print_preview.State.READY;
-        container.updateClippingMask(new print_preview.Size(850, 1100));
+        container.state = State.READY;
+        container.updateClippingMask(new Size(850, 1100));
         container.updateScaleTransform(pixelsPerInch / pointsPerInch);
         container.previewLoaded = true;
-        Polymer.dom.flush();
+        flush();
       });
     }
 
@@ -112,7 +117,7 @@ cr.define('custom_margins_test', function() {
      */
     function getAllTransitions(controls) {
       return Promise.all(Array.from(controls).map(
-          control => test_util.eventToPromise('transitionend', control)));
+          control => eventToPromise('transitionend', control)));
     }
 
     /**
@@ -131,19 +136,19 @@ cr.define('custom_margins_test', function() {
       let xEnd = 0;
       let yEnd = 0;
       switch (control.side) {
-        case print_preview.CustomMarginsOrientation.TOP:
+        case CustomMarginsOrientation.TOP:
           yStart = start;
           yEnd = end;
           break;
-        case print_preview.CustomMarginsOrientation.RIGHT:
+        case CustomMarginsOrientation.RIGHT:
           xStart = control.clipSize.width - start;
           xEnd = control.clipSize.width - end;
           break;
-        case print_preview.CustomMarginsOrientation.BOTTOM:
+        case CustomMarginsOrientation.BOTTOM:
           yStart = control.clipSize.height - start;
           yEnd = control.clipSize.height - end;
           break;
-        case print_preview.CustomMarginsOrientation.LEFT:
+        case CustomMarginsOrientation.LEFT:
           xStart = start;
           xEnd = end;
           break;
@@ -181,19 +186,19 @@ cr.define('custom_margins_test', function() {
       }
       assertEquals(
           currentValuePts, container.getSettingValue('customMargins')[key]);
-      controlTextbox = control.$.input;
+      const controlTextbox = control.$.input;
       controlTextbox.value = input;
       controlTextbox.dispatchEvent(
           new CustomEvent('input', {composed: true, bubbles: true}));
 
       if (!invalid) {
-        return test_util.eventToPromise('text-change', control).then(() => {
+        return eventToPromise('text-change', control).then(() => {
           assertEquals(
               newValuePts, container.getSettingValue('customMargins')[key]);
           assertFalse(control.invalid);
         });
       } else {
-        return test_util.eventToPromise('input-change', control).then(() => {
+        return eventToPromise('input-change', control).then(() => {
           assertTrue(control.invalid);
         });
       }
@@ -202,11 +207,11 @@ cr.define('custom_margins_test', function() {
     /*
      * Initializes the settings custom margins to some test values, and returns
      * a map with the values.
-     * @return {!Map<!print_preview.CustomMarginsOrientation,
+     * @return {!Map<!CustomMarginsOrientation,
      *               number>}
      */
     function setupCustomMargins() {
-      const orientationEnum = print_preview.CustomMarginsOrientation;
+      const orientationEnum = CustomMarginsOrientation;
       const marginValues = new Map([
         [orientationEnum.TOP, 72], [orientationEnum.RIGHT, 36],
         [orientationEnum.BOTTOM, 108], [orientationEnum.LEFT, 18]
@@ -231,7 +236,7 @@ cr.define('custom_margins_test', function() {
       const marginValues = setupCustomMargins();
       return finishSetup().then(() => {
         // Simulate setting custom margins.
-        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
+        model.set('settings.margins.value', MarginsType.CUSTOM);
 
         // Validate control positions are set based on the custom values.
         const controls = getControls();
@@ -248,7 +253,7 @@ cr.define('custom_margins_test', function() {
         // Margins should be reset to default and custom margins values should
         // be cleared.
         expectEquals(
-            print_preview.MarginsType.DEFAULT,
+            MarginsType.DEFAULT,
             container.getSettingValue('margins'));
         expectEquals(
             '{}', JSON.stringify(container.getSettingValue('customMargins')));
@@ -264,7 +269,7 @@ cr.define('custom_margins_test', function() {
 
     // Test that controls correctly appear when custom margins are selected and
     // disappear when the preview is loading.
-    test(assert(TestNames.ControlsCheck), function() {
+    test(assert(custom_margins_test.TestNames.ControlsCheck), function() {
       return finishSetup()
           .then(() => {
             const controls = getControls();
@@ -278,7 +283,7 @@ cr.define('custom_margins_test', function() {
             const onTransitionEnd = getAllTransitions(controls);
             // Controls become visible when margin type CUSTOM is selected.
             model.set(
-                'settings.margins.value', print_preview.MarginsType.CUSTOM);
+                'settings.margins.value', MarginsType.CUSTOM);
 
             // Wait for the opacity transitions to finish.
             return onTransitionEnd;
@@ -329,15 +334,15 @@ cr.define('custom_margins_test', function() {
 
     // Tests that the margin controls can be correctly set from the sticky
     // settings.
-    test(assert(TestNames.SetFromStickySettings), function() {
+    test(assert(custom_margins_test.TestNames.SetFromStickySettings), function() {
       return finishSetup().then(() => {
         const controls = getControls();
 
         // Simulate setting custom margins from sticky settings.
-        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
+        model.set('settings.margins.value', MarginsType.CUSTOM);
         const marginValues = setupCustomMargins();
         model.notifyPath('settings.customMargins.value');
-        Polymer.dom.flush();
+        flush();
 
         // Validate control positions have been updated.
         controls.forEach((control, index) => {
@@ -349,7 +354,7 @@ cr.define('custom_margins_test', function() {
     });
 
     // Test that dragging margin controls updates the custom margins setting.
-    test(assert(TestNames.DragControls), function() {
+    test(assert(custom_margins_test.TestNames.DragControls), function() {
       /**
        * Tests that the control can be moved from its current position (assumed
        * to be the default margins) to newPositionInPts by dragging it.
@@ -369,7 +374,7 @@ cr.define('custom_margins_test', function() {
             newPositionInPts * pixelsPerInch / pointsPerInch;
 
         const whenDragChanged =
-            test_util.eventToPromise('margin-drag-changed', container);
+            eventToPromise('margin-drag-changed', container);
         dragControl(control, oldPositionInPixels, newPositionInPixels);
         return whenDragChanged.then(function() {
           const newValue = container.getSettingValue('customMargins');
@@ -379,8 +384,8 @@ cr.define('custom_margins_test', function() {
 
       return finishSetup().then(() => {
         const controls = getControls();
-        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
-        Polymer.dom.flush();
+        model.set('settings.margins.value', MarginsType.CUSTOM);
+        flush();
 
 
         // Wait for an animation frame. The position of the controls is set in
@@ -429,7 +434,7 @@ cr.define('custom_margins_test', function() {
 
     // Test that setting the margin controls with their textbox inputs updates
     // the custom margins setting.
-    test(assert(TestNames.SetControlsWithTextbox), function() {
+    test(assert(custom_margins_test.TestNames.SetControlsWithTextbox), function() {
       return finishSetup().then(() => {
         const controls = getControls();
         // Set a shorter delay for testing so the test doesn't take too
@@ -437,8 +442,8 @@ cr.define('custom_margins_test', function() {
         controls.forEach(c => {
           c.getInput().setAttribute('data-timeout-delay', 1);
         });
-        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
-        Polymer.dom.flush();
+        model.set('settings.margins.value', MarginsType.CUSTOM);
+        flush();
 
         // Verify entering a new value updates the settings.
         // Then verify entering an invalid value invalidates the control
@@ -472,9 +477,10 @@ cr.define('custom_margins_test', function() {
     // the custom margins setting, using a metric measurement system with a ','
     // as the decimal delimiter and '.' as the thousands delimiter. Regression
     // test for https://crbug.com/1005816.
-    test(assert(TestNames.SetControlsWithTextboxMetric), function() {
-      measurementSystem = new print_preview.MeasurementSystem(
-          '.', ',', print_preview.MeasurementSystemUnitType.METRIC);
+    test(assert(custom_margins_test.TestNames.SetControlsWithTextboxMetric),
+        function() {
+      measurementSystem = new MeasurementSystem(
+          '.', ',', MeasurementSystemUnitType.METRIC);
       return finishSetup().then(() => {
         const controls = getControls();
         // Set a shorter delay for testing so the test doesn't take too
@@ -482,8 +488,8 @@ cr.define('custom_margins_test', function() {
         controls.forEach(c => {
           c.getInput().setAttribute('data-timeout-delay', 1);
         });
-        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
-        Polymer.dom.flush();
+        model.set('settings.margins.value', MarginsType.CUSTOM);
+        flush();
 
         // Verify entering a new value updates the settings.
         // Then verify entering an invalid value invalidates the control
@@ -527,12 +533,13 @@ cr.define('custom_margins_test', function() {
 
     // Test that if there is a custom margins sticky setting, it is restored
     // when margin setting changes.
-    test(assert(TestNames.RestoreStickyMarginsAfterDefault), function() {
+    test(assert(custom_margins_test.TestNames.RestoreStickyMarginsAfterDefault),
+        function() {
       const marginValues = setupCustomMargins();
       return finishSetup().then(() => {
         // Simulate setting custom margins.
         const controls = getControls();
-        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
+        model.set('settings.margins.value', MarginsType.CUSTOM);
 
         // Validate control positions are set based on the custom values.
         controls.forEach((control, index) => {
@@ -542,7 +549,7 @@ cr.define('custom_margins_test', function() {
         });
 
         // Simulate setting minimum margins.
-        model.set('settings.margins.value', print_preview.MarginsType.MINIMUM);
+        model.set('settings.margins.value', MarginsType.MINIMUM);
 
         // Validate control positions still reflect the custom values.
         controls.forEach((control, index) => {
@@ -554,13 +561,14 @@ cr.define('custom_margins_test', function() {
     });
 
     // Test that if the media size changes, the custom margins are cleared.
-    test(assert(TestNames.MediaSizeClearsCustomMargins), function() {
+    test(assert(custom_margins_test.TestNames.MediaSizeClearsCustomMargins),
+        function() {
       return validateMarginsClearedForSetting(
                  'mediaSize', {height_microns: 200000, width_microns: 200000})
           .then(() => {
             // Simulate setting custom margins again.
             model.set(
-                'settings.margins.value', print_preview.MarginsType.CUSTOM);
+                'settings.margins.value', MarginsType.CUSTOM);
 
             // Validate control positions are initialized based on the default
             // values.
@@ -574,10 +582,11 @@ cr.define('custom_margins_test', function() {
     });
 
     // Test that if the orientation changes, the custom margins are cleared.
-    test(assert(TestNames.LayoutClearsCustomMargins), function() {
+    test(assert(custom_margins_test.TestNames.LayoutClearsCustomMargins),
+        function() {
       return validateMarginsClearedForSetting('layout', true).then(() => {
         // Simulate setting custom margins again
-        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
+        model.set('settings.margins.value', MarginsType.CUSTOM);
 
         // Validate control positions are initialized based on the default
         // values.
@@ -593,7 +602,8 @@ cr.define('custom_margins_test', function() {
     // Test that if the margins are not available, the custom margins setting is
     // not updated based on the document margins - i.e. PDFs do not change the
     // custom margins state.
-    test(assert(TestNames.IgnoreDocumentMarginsFromPDF), function() {
+    test(assert(custom_margins_test.TestNames.IgnoreDocumentMarginsFromPDF),
+        function() {
       model.set('settings.margins.available', false);
       return finishSetup().then(() => {
         assertEquals(
@@ -603,7 +613,8 @@ cr.define('custom_margins_test', function() {
 
     // Test that if margins are not available but the user changes the media
     // size, the custom margins are cleared.
-    test(assert(TestNames.MediaSizeClearsCustomMarginsPDF), function() {
+    test(assert(custom_margins_test.TestNames.MediaSizeClearsCustomMarginsPDF),
+        function() {
       model.set('settings.margins.available', false);
       return validateMarginsClearedForSetting(
           'mediaSize', {height_microns: 200000, width_microns: 200000});
@@ -615,7 +626,9 @@ cr.define('custom_margins_test', function() {
 
     // Test that if the user focuses a textbox that is not visible, the
     // text-focus event is fired with the correct values to scroll by.
-    test(assert(TestNames.RequestScrollToOutOfBoundsTextbox), function() {
+    test(assert(
+        custom_margins_test.TestNames.RequestScrollToOutOfBoundsTextbox),
+        function() {
       return finishSetup()
           .then(() => {
             // Wait for the controls to be set up, which occurs in an
@@ -627,15 +640,15 @@ cr.define('custom_margins_test', function() {
 
             // Controls become visible when margin type CUSTOM is selected.
             model.set(
-                'settings.margins.value', print_preview.MarginsType.CUSTOM);
+                'settings.margins.value', MarginsType.CUSTOM);
             container.notifyPath('settings.customMargins.value');
-            Polymer.dom.flush();
+            flush();
             return onTransitionEnd;
           })
           .then(() => {
             // Zoom in by 2x, so that some margin controls will not be visible.
             container.updateScaleTransform(pixelsPerInch * 2 / pointsPerInch);
-            Polymer.dom.flush();
+            flush();
             return whenAnimationFrameDone();
           })
           .then(() => {
@@ -646,7 +659,7 @@ cr.define('custom_margins_test', function() {
             // the viewer is showing only the top left quarter of the page.
             const bottomControl = controls[2];
             const whenEventFired =
-                test_util.eventToPromise('text-focus-position', container);
+                eventToPromise('text-focus-position', container);
             bottomControl.$.input.focus();
             // Workaround for mac so that this does not need to be an
             // interactive test: manually fire the focus event from the control.
@@ -669,27 +682,22 @@ cr.define('custom_margins_test', function() {
 
     // Tests that the margin controls can be correctly set from the sticky
     // settings.
-    test(assert(TestNames.ControlsDisabledOnError), function() {
+    test(assert(custom_margins_test.TestNames.ControlsDisabledOnError),
+        function() {
       return finishSetup().then(() => {
         // Simulate setting custom margins.
-        model.set('settings.margins.value', print_preview.MarginsType.CUSTOM);
+        model.set('settings.margins.value', MarginsType.CUSTOM);
 
         const controls = getControls();
         controls.forEach(control => assertFalse(control.disabled));
 
-        container.state = print_preview.State.ERROR;
+        container.state = State.ERROR;
         // Validate controls are disabled.
         controls.forEach(control => assertTrue(control.disabled));
 
-        container.state = print_preview.State.READY;
+        container.state = State.READY;
         controls.forEach(control => assertFalse(control.disabled));
       });
     });
 
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

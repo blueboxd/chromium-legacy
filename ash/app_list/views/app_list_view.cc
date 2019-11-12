@@ -1063,7 +1063,6 @@ void AppListView::EndDrag(const gfx::Point& location) {
       }
     }
   }
-  UpdateChildViewsYPositionAndOpacity();
   initial_drag_point_ = gfx::Point();
 }
 

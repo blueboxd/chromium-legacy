@@ -2746,12 +2746,8 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
     return;
 
   if (!paint_artifact_compositor_) {
-    paint_artifact_compositor_ =
-        std::make_unique<PaintArtifactCompositor>(WTF::BindRepeating(
-            &ScrollingCoordinator::DidScroll,
-            // The layer being scrolled is destroyed before the
-            // ScrollingCoordinator.
-            WrapWeakPersistent(page->GetScrollingCoordinator())));
+    paint_artifact_compositor_ = std::make_unique<PaintArtifactCompositor>(
+        page->GetScrollingCoordinator()->GetWeakPtr());
     page->GetChromeClient().AttachRootLayer(
         paint_artifact_compositor_->RootLayer(), &GetFrame());
   }

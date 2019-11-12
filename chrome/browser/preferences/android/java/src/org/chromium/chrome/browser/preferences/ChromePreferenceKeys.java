@@ -262,8 +262,10 @@ public final class ChromePreferenceKeys {
     /**
      * Key for whether it allows to start in service manager only mode.
      * Default value is false.
+     * Deprecated in M77.
      */
-    public static final String ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY =
+    @Deprecated
+    private static final String ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY =
             "allow_starting_service_manager_only";
 
     /**

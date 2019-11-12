@@ -139,6 +139,12 @@ public class FeatureUtilities {
     private static final String START_SURFACE_ENABLED_KEY = "start_surface_enabled";
 
     /**
+     * Whether or not grey triangle icon on non-secure connections feature is enabled.
+     * Default value is false.
+     */
+    private static final String MARK_HTTP_AS_DANGER_WARNING = "mark_http_as_danger_warning";
+
+    /**
      * Whether or not the grid tab switcher is enabled.
      * Default value is false.
      */
@@ -242,6 +248,7 @@ public class FeatureUtilities {
         cacheReachedCodeProfilerTrialGroup();
         cacheStartSurfaceEnabled();
         cacheClickToCallOpenDialerDirectlyEnabled();
+        cacheMarkHttpAsDangerWarningEnabled();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
         if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
@@ -686,6 +693,35 @@ public class FeatureUtilities {
     public static void setIsClickToCallOpenDialerDirectlyEnabledForTesting(
             @Nullable Boolean isEnabled) {
         sFlags.put(CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY, isEnabled);
+    }
+
+    /**
+     * Cache the value of the flag of whether to use the grey triangle security indicator on
+     * insecure pages.
+     */
+    public static void cacheMarkHttpAsDangerWarningEnabled() {
+        String featureParam = "danger-warning";
+        String enabledFeature = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.MARK_HTTP_AS, "treatment");
+        SharedPreferencesManager.getInstance().writeBoolean(
+                MARK_HTTP_AS_DANGER_WARNING, enabledFeature.equals(featureParam));
+    }
+
+    /**
+     * @return Whether a grey triangle icon should be used in the omnibox instead of the info icon
+     *         on insecure pages.
+     */
+    public static boolean isMarkHttpAsDangerWarningEnabled() {
+        return isFlagEnabled(MARK_HTTP_AS_DANGER_WARNING, false);
+    }
+
+    /**
+     * Toggles whether experiment for marking insecure connections with a grey triangle
+     * icon is enabled for testing. Should be reset back to null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setMarkHttpAsDangerWarningEnabledForTesting(@Nullable Boolean isEnabled) {
+        sFlags.put(MARK_HTTP_AS_DANGER_WARNING, isEnabled);
     }
 
     /**

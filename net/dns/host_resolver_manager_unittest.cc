@@ -262,13 +262,15 @@ class ResolveHostResponseHelper {
 
   ResolveHostResponseHelper() = default;
   explicit ResolveHostResponseHelper(
-      std::unique_ptr<HostResolverManager::CancellableRequest> request)
+      std::unique_ptr<HostResolverManager::CancellableResolveHostRequest>
+          request)
       : request_(std::move(request)) {
     result_error_ = request_->Start(base::BindOnce(
         &ResolveHostResponseHelper::OnComplete, base::Unretained(this)));
   }
   ResolveHostResponseHelper(
-      std::unique_ptr<HostResolverManager::CancellableRequest> request,
+      std::unique_ptr<HostResolverManager::CancellableResolveHostRequest>
+          request,
       Callback custom_callback)
       : request_(std::move(request)) {
     result_error_ = request_->Start(
@@ -283,7 +285,9 @@ class ResolveHostResponseHelper {
     return result_error_;
   }
 
-  HostResolverManager::CancellableRequest* request() { return request_.get(); }
+  HostResolverManager::CancellableResolveHostRequest* request() {
+    return request_.get();
+  }
 
   void CancelRequest() {
     DCHECK(request_);
@@ -309,7 +313,7 @@ class ResolveHostResponseHelper {
     DCHECK(complete());
   }
 
-  std::unique_ptr<HostResolverManager::CancellableRequest> request_;
+  std::unique_ptr<HostResolverManager::CancellableResolveHostRequest> request_;
   int result_error_ = ERR_IO_PENDING;
   base::RunLoop run_loop_;
 
@@ -5036,6 +5040,17 @@ TEST_F(HostResolverManagerDnsTest, ExplicitCancel) {
   EXPECT_FALSE(response.complete());
 }
 
+TEST_F(HostResolverManagerDnsTest, ExplicitCancel_AfterManagerDestruction) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("4slow_4ok", 80), NetworkIsolationKey(), NetLogWithSource(),
+      base::nullopt, request_context_.get(), host_cache_.get()));
+
+  DestroyResolver();
+  response.request()->Cancel();
+}
+
 TEST_F(HostResolverManagerDnsTest, ExplicitCancel_Completed) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
@@ -8301,6 +8316,59 @@ TEST_F(HostResolverManagerDnsTest, SrvDnsQuery) {
   EXPECT_THAT(priority5,
               testing::UnorderedElementsAre(HostPortPair("bar.com", 80),
                                             HostPortPair("google.com", 5)));
+}
+
+TEST_F(HostResolverManagerDnsTest, DohProbeRequest) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+  EXPECT_THAT(request->Start(), IsError(ERR_IO_PENDING));
+
+  EXPECT_TRUE(dns_client_->factory()->doh_probes_running());
+
+  request.reset();
+
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+}
+
+TEST_F(HostResolverManagerDnsTest, DohProbeRequest_ExplicitCancel) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+  EXPECT_THAT(request->Start(), IsError(ERR_IO_PENDING));
+  ASSERT_TRUE(dns_client_->factory()->doh_probes_running());
+
+  request->Cancel();
+
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+}
+
+TEST_F(HostResolverManagerDnsTest, DohProbeRequest_ExplicitCancel_NotStarted) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+
+  request->Cancel();
+
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+}
+
+TEST_F(HostResolverManagerDnsTest,
+       DohProbeRequest_ExplicitCancel_AfterManagerDestruction) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+  EXPECT_THAT(request->Start(), IsError(ERR_IO_PENDING));
+  ASSERT_TRUE(dns_client_->factory()->doh_probes_running());
+
+  DestroyResolver();
+  request->Cancel();
 }
 
 TEST_F(HostResolverManagerDnsTest, EsniQuery) {

@@ -18,6 +18,7 @@ import android.widget.ListView;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -299,7 +300,8 @@ class AppMenuDragHelper {
     /**
      * @return Visible rect in screen coordinates for the given View.
      */
-    private Rect getScreenVisibleRect(View view) {
+    @VisibleForTesting
+    Rect getScreenVisibleRect(View view) {
         view.getLocalVisibleRect(mScreenVisibleRect);
         view.getLocationOnScreen(mScreenVisiblePoint);
         mScreenVisibleRect.offset(mScreenVisiblePoint[0], mScreenVisiblePoint[1]);

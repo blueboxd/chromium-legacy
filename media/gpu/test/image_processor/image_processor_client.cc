@@ -32,6 +32,15 @@
 namespace media {
 namespace test {
 namespace {
+
+#define ASSERT_TRUE_OR_RETURN_NULLPTR(predicate) \
+  do {                                           \
+    if (!(predicate)) {                          \
+      ADD_FAILURE();                             \
+      return nullptr;                            \
+    }                                            \
+  } while (0)
+
 base::Optional<VideoFrameLayout> CreateLayout(
     const ImageProcessor::PortConfig& config) {
   const VideoPixelFormat pixel_format = config.fourcc.ToVideoPixelFormat();
@@ -127,15 +136,15 @@ void ImageProcessorClient::CreateImageProcessorTask(
 scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
     const Image& input_image) const {
   DCHECK_CALLED_ON_VALID_THREAD(test_main_thread_checker_);
-  LOG_ASSERT(image_processor_);
-  LOG_ASSERT(input_image.IsLoaded());
+  ASSERT_TRUE_OR_RETURN_NULLPTR(image_processor_);
+  ASSERT_TRUE_OR_RETURN_NULLPTR(input_image.IsLoaded());
 
   const ImageProcessor::PortConfig& input_config =
       image_processor_->input_config();
   const VideoFrame::StorageType input_storage_type =
       input_config.storage_type();
   base::Optional<VideoFrameLayout> input_layout = CreateLayout(input_config);
-  LOG_ASSERT(input_layout);
+  ASSERT_TRUE_OR_RETURN_NULLPTR(input_layout);
 
   if (VideoFrame::IsStorageTypeMappable(input_storage_type)) {
     return CloneVideoFrame(gpu_memory_buffer_factory_.get(),
@@ -143,8 +152,9 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
                            *input_layout, VideoFrame::STORAGE_OWNED_MEMORY);
   } else {
 #if defined(OS_CHROMEOS)
-    LOG_ASSERT(input_storage_type == VideoFrame::STORAGE_DMABUFS ||
-               input_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+    ASSERT_TRUE_OR_RETURN_NULLPTR(
+        input_storage_type == VideoFrame::STORAGE_DMABUFS ||
+        input_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
     // NV12 and YV12 are the only formats that can be allocated with
     // gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE. So
     // gfx::BufferUsage::GPU_READ_CPU_READ_WRITE is specified for RGB formats.
@@ -163,23 +173,24 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
 scoped_refptr<VideoFrame> ImageProcessorClient::CreateOutputFrame(
     const Image& output_image) const {
   DCHECK_CALLED_ON_VALID_THREAD(test_main_thread_checker_);
-  LOG_ASSERT(output_image.IsMetadataLoaded());
-  LOG_ASSERT(image_processor_);
+  ASSERT_TRUE_OR_RETURN_NULLPTR(output_image.IsMetadataLoaded());
+  ASSERT_TRUE_OR_RETURN_NULLPTR(image_processor_);
 
   const ImageProcessor::PortConfig& output_config =
       image_processor_->output_config();
   const VideoFrame::StorageType output_storage_type =
       output_config.storage_type();
   base::Optional<VideoFrameLayout> output_layout = CreateLayout(output_config);
-  LOG_ASSERT(output_layout);
+  ASSERT_TRUE_OR_RETURN_NULLPTR(output_layout);
   if (VideoFrame::IsStorageTypeMappable(output_storage_type)) {
     return VideoFrame::CreateFrameWithLayout(
         *output_layout, gfx::Rect(output_image.Size()), output_image.Size(),
         base::TimeDelta(), false /* zero_initialize_memory*/);
   } else {
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    LOG_ASSERT(output_storage_type == VideoFrame::STORAGE_DMABUFS ||
-               output_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+    ASSERT_TRUE_OR_RETURN_NULLPTR(
+        output_storage_type == VideoFrame::STORAGE_DMABUFS ||
+        output_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
     scoped_refptr<VideoFrame> output_frame = CreatePlatformVideoFrame(
         gpu_memory_buffer_factory_.get(), output_layout->format(),
         output_layout->coded_size(), gfx::Rect(output_image.Size()),

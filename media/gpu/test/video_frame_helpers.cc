@@ -32,19 +32,19 @@ namespace test {
 
 namespace {
 
-#define ASSERT_TRUE_AND_RETURN(predicate, return_value) \
-  do {                                                  \
-    if (!(predicate)) {                                 \
-      ADD_FAILURE();                                    \
-      return (return_value);                            \
-    }                                                   \
+#define ASSERT_TRUE_OR_RETURN(predicate, return_value) \
+  do {                                                 \
+    if (!(predicate)) {                                \
+      ADD_FAILURE();                                   \
+      return (return_value);                           \
+    }                                                  \
   } while (0)
 
 bool ConvertVideoFrameToI420(const VideoFrame* src_frame,
                              VideoFrame* dst_frame) {
-  ASSERT_TRUE_AND_RETURN(src_frame->visible_rect() == dst_frame->visible_rect(),
-                         false);
-  ASSERT_TRUE_AND_RETURN(dst_frame->format() == PIXEL_FORMAT_I420, false);
+  ASSERT_TRUE_OR_RETURN(src_frame->visible_rect() == dst_frame->visible_rect(),
+                        false);
+  ASSERT_TRUE_OR_RETURN(dst_frame->format() == PIXEL_FORMAT_I420, false);
 
   const auto& visible_rect = src_frame->visible_rect();
   const int width = visible_rect.width();
@@ -91,9 +91,9 @@ bool ConvertVideoFrameToI420(const VideoFrame* src_frame,
 
 bool ConvertVideoFrameToARGB(const VideoFrame* src_frame,
                              VideoFrame* dst_frame) {
-  ASSERT_TRUE_AND_RETURN(src_frame->visible_rect() == dst_frame->visible_rect(),
-                         false);
-  ASSERT_TRUE_AND_RETURN(dst_frame->format() == PIXEL_FORMAT_ARGB, false);
+  ASSERT_TRUE_OR_RETURN(src_frame->visible_rect() == dst_frame->visible_rect(),
+                        false);
+  ASSERT_TRUE_OR_RETURN(dst_frame->format() == PIXEL_FORMAT_ARGB, false);
 
   const auto& visible_rect = src_frame->visible_rect();
   const int width = visible_rect.width();
@@ -137,7 +137,7 @@ bool ConvertVideoFrameToARGB(const VideoFrame* src_frame,
 // Copy memory based |src_frame| buffer to |dst_frame| buffer.
 bool CopyVideoFrame(const VideoFrame* src_frame,
                     scoped_refptr<VideoFrame> dst_frame) {
-  ASSERT_TRUE_AND_RETURN(src_frame->IsMappable(), false);
+  ASSERT_TRUE_OR_RETURN(src_frame->IsMappable(), false);
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   // If |dst_frame| is a Dmabuf-backed VideoFrame, we need to map its underlying
   // buffer into memory. We use a VideoFrameMapper to create a memory-based
@@ -145,7 +145,7 @@ bool CopyVideoFrame(const VideoFrame* src_frame,
   if (dst_frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
     auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper(
         dst_frame->format(), VideoFrame::STORAGE_DMABUFS, true);
-    ASSERT_TRUE_AND_RETURN(video_frame_mapper, false);
+    ASSERT_TRUE_OR_RETURN(video_frame_mapper, false);
     dst_frame = video_frame_mapper->Map(std::move(dst_frame));
     if (!dst_frame) {
       LOG(ERROR) << "Failed to map DMABuf video frame.";
@@ -153,15 +153,15 @@ bool CopyVideoFrame(const VideoFrame* src_frame,
     }
   }
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  ASSERT_TRUE_AND_RETURN(dst_frame->IsMappable(), false);
-  ASSERT_TRUE_AND_RETURN(src_frame->format() == dst_frame->format(), false);
+  ASSERT_TRUE_OR_RETURN(dst_frame->IsMappable(), false);
+  ASSERT_TRUE_OR_RETURN(src_frame->format() == dst_frame->format(), false);
 
   // Copy every plane's content from |src_frame| to |dst_frame|.
   const size_t num_planes = VideoFrame::NumPlanes(dst_frame->format());
-  ASSERT_TRUE_AND_RETURN(dst_frame->layout().planes().size() == num_planes,
-                         false);
-  ASSERT_TRUE_AND_RETURN(src_frame->layout().planes().size() == num_planes,
-                         false);
+  ASSERT_TRUE_OR_RETURN(dst_frame->layout().planes().size() == num_planes,
+                        false);
+  ASSERT_TRUE_OR_RETURN(src_frame->layout().planes().size() == num_planes,
+                        false);
   for (size_t i = 0; i < num_planes; ++i) {
     // |width| in libyuv::CopyPlane() is in bytes, not pixels.
     gfx::Size plane_size = VideoFrame::PlaneSize(dst_frame->format(), i,
@@ -177,10 +177,10 @@ bool CopyVideoFrame(const VideoFrame* src_frame,
 }  // namespace
 
 bool ConvertVideoFrame(const VideoFrame* src_frame, VideoFrame* dst_frame) {
-  ASSERT_TRUE_AND_RETURN(src_frame->visible_rect() == dst_frame->visible_rect(),
-                         false);
-  ASSERT_TRUE_AND_RETURN(src_frame->IsMappable() && dst_frame->IsMappable(),
-                         false);
+  ASSERT_TRUE_OR_RETURN(src_frame->visible_rect() == dst_frame->visible_rect(),
+                        false);
+  ASSERT_TRUE_OR_RETURN(src_frame->IsMappable() && dst_frame->IsMappable(),
+                        false);
 
   // Writing into non-owned memory might produce some unexpected side effects.
   if (dst_frame->storage_type() != VideoFrame::STORAGE_OWNED_MEMORY)
@@ -362,14 +362,14 @@ base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
 size_t CompareFramesWithErrorDiff(const VideoFrame& frame1,
                                   const VideoFrame& frame2,
                                   uint8_t tolerance) {
-  ASSERT_TRUE_AND_RETURN(frame1.format() == frame2.format(),
-                         std::numeric_limits<std::size_t>::max());
-  ASSERT_TRUE_AND_RETURN(frame1.visible_rect() == frame2.visible_rect(),
-                         std::numeric_limits<std::size_t>::max());
-  ASSERT_TRUE_AND_RETURN(frame1.visible_rect().origin() == gfx::Point(0, 0),
-                         std::numeric_limits<std::size_t>::max());
-  ASSERT_TRUE_AND_RETURN(frame1.IsMappable() && frame2.IsMappable(),
-                         std::numeric_limits<std::size_t>::max());
+  ASSERT_TRUE_OR_RETURN(frame1.format() == frame2.format(),
+                        std::numeric_limits<std::size_t>::max());
+  ASSERT_TRUE_OR_RETURN(frame1.visible_rect() == frame2.visible_rect(),
+                        std::numeric_limits<std::size_t>::max());
+  ASSERT_TRUE_OR_RETURN(frame1.visible_rect().origin() == gfx::Point(0, 0),
+                        std::numeric_limits<std::size_t>::max());
+  ASSERT_TRUE_OR_RETURN(frame1.IsMappable() && frame2.IsMappable(),
+                        std::numeric_limits<std::size_t>::max());
   size_t diff_cnt = 0;
 
   const VideoPixelFormat format = frame1.format();

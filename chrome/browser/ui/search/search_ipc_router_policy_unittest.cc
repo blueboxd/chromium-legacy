@@ -140,7 +140,7 @@ TEST_F(SearchIPCRouterPolicyTest,
   SetIncognitoProfile();
 
   SearchIPCRouter::Policy* router_policy = GetSearchIPCRouterPolicy();
-  EXPECT_FALSE(router_policy->ShouldSendThemeBackgroundInfo());
+  EXPECT_FALSE(router_policy->ShouldSendNtpTheme());
   EXPECT_FALSE(router_policy->ShouldSendMostVisitedInfo());
   EXPECT_FALSE(router_policy->ShouldSendSetInputInProgress(true));
   EXPECT_FALSE(router_policy->ShouldSendOmniboxFocusChanged());
@@ -157,14 +157,14 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotSendMostVisitedInfo) {
   EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldSendMostVisitedInfo());
 }
 
-TEST_F(SearchIPCRouterPolicyTest, SendThemeBackgroundInfo) {
+TEST_F(SearchIPCRouterPolicyTest, SendNtpTheme) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSendThemeBackgroundInfo());
+  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSendNtpTheme());
 }
 
-TEST_F(SearchIPCRouterPolicyTest, DoNotSendThemeBackgroundInfo) {
+TEST_F(SearchIPCRouterPolicyTest, DoNotSendNtpTheme) {
   // Send theme background information only if the current tab is an
   // Instant NTP.
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldSendThemeBackgroundInfo());
+  EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldSendNtpTheme());
 }

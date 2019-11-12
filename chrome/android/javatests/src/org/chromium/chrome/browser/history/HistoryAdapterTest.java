@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.widget.MoreProgressButton;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
  * Tests for the {@link HistoryAdapter}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/1023426")
 public class HistoryAdapterTest {
     private StubbedHistoryProvider mHistoryProvider;
     private HistoryAdapter mAdapter;

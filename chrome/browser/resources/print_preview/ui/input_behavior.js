@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+
   /**
    * Helper functions for an input with timeout.
    * @polymerBehavior
    */
-  const InputBehavior = {
+  export const InputBehavior = {
     properties: {
-      /** @private */
+      /** @private {?string} */
       lastValue_: {
         type: String,
         value: '',
@@ -42,7 +45,9 @@ cr.define('print_preview', function() {
      * @private
      */
     getTimeoutDelayMs_: function() {
-      const delay = parseInt(this.getInput().dataset.timeoutDelay, 10);
+      const delay = parseInt(
+          /** @type {{timeoutDelay: number}} */ (this.getInput().dataset)
+          .timeoutDelay, 10);
       assert(!Number.isNaN(delay));
       return delay;
     },
@@ -99,6 +104,3 @@ cr.define('print_preview', function() {
       this.onTimeout_();
     },
   };
-
-  return {InputBehavior: InputBehavior};
-});

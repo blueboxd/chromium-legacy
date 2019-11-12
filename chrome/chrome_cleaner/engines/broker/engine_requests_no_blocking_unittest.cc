@@ -273,10 +273,12 @@ class TestEngineRequestInvoker {
                    BindOnce(&NtChangeRegistryValueCallback,
                             std::move(result_closure))));
     } else if (request_name == "DeleteService") {
+      // The broker should reject the empty string so we won't risk deleting a
+      // real service.
+      const base::string16 empty_service_name;
       cleaner_requests_proxy_->task_runner()->PostTask(
           FROM_HERE, BindOnce(IgnoreResult(&CleanerProxy::SandboxDeleteService),
-                              cleaner_requests_proxy_,
-                              RandomUnusedServiceNameForTesting().c_str(),
+                              cleaner_requests_proxy_, empty_service_name,
                               BindOnce(&DeleteServiceCallback,
                                        std::move(result_closure))));
     } else if (request_name == "DeleteTask") {
@@ -597,10 +599,7 @@ INSTANTIATE_TEST_CASE_P(All,
                                         "NtDeleteRegistryKey",
                                         "NtDeleteRegistryValue",
                                         "NtChangeRegistryValue",
-#if 0
-                                        // TODO(https://crbug.com/945432): Disabled due to flake.
                                         "DeleteService",
-#endif
                                         "DeleteTask",
                                         "TerminateProcess"),
                         GetParamNameForTest());

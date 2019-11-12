@@ -122,6 +122,19 @@ class NET_EXPORT HostResolver {
     virtual void ChangeRequestPriority(RequestPriority priority) {}
   };
 
+  // Handler for an activation of probes controlled by a HostResolver. Created
+  // by HostResolver::CreateDohProbeRequest().
+  class ProbeRequest {
+   public:
+    // Destruction cancels the request and all probes.
+    virtual ~ProbeRequest() {}
+
+    // Activates async running of probes. Always returns ERR_IO_PENDING or an
+    // error from activating probes. No callback as probes will never "complete"
+    // until cancellation.
+    virtual int Start() = 0;
+  };
+
   // Parameter-grouping struct for additional optional parameters for creation
   // of HostResolverManagers and stand-alone HostResolvers.
   struct NET_EXPORT ManagerOptions {
@@ -303,6 +316,10 @@ class NET_EXPORT HostResolver {
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters);
 
+  // Creates a request to probe configured DoH servers to find which can be used
+  // successfully.
+  virtual std::unique_ptr<ProbeRequest> CreateDohProbeRequest();
+
   // Create a listener to watch for updates to an MDNS result.
   virtual std::unique_ptr<MdnsListener> CreateMdnsListener(
       const HostPortPair& host,
@@ -362,6 +379,7 @@ class NET_EXPORT HostResolver {
   // Utility to create a request implementation that always fails with |error|
   // immediately on start.
   static std::unique_ptr<ResolveHostRequest> CreateFailingRequest(int error);
+  static std::unique_ptr<ProbeRequest> CreateFailingProbeRequest(int error);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostResolver);

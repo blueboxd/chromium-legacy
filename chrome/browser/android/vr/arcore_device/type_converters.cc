@@ -36,4 +36,16 @@ gfx::Transform TypeConverter<gfx::Transform, device::mojom::VRPosePtr>::Convert(
   return gfx::ComposeTransform(decomposed);
 }
 
+gfx::Transform TypeConverter<gfx::Transform, device::mojom::PosePtr>::Convert(
+    const device::mojom::PosePtr& pose) {
+  gfx::DecomposedTransform decomposed;
+  decomposed.quaternion = pose->orientation;
+
+  decomposed.translate[0] = pose->position.x();
+  decomposed.translate[1] = pose->position.y();
+  decomposed.translate[2] = pose->position.z();
+
+  return gfx::ComposeTransform(decomposed);
+}
+
 }  // namespace mojo

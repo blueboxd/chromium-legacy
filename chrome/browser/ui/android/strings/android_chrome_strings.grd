@@ -916,6 +916,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_POPUP_PERMISSION_TITLE" desc="Title of the permission to display pop-up windows and redirects [CHAR-LIMIT=32]">
         Pop-ups and redirects
       </message>
+      <message name="IDS_NFC_PERMISSION_TITLE" desc="Title of the permission to use NFC [CHAR-LIMIT=32]">
+        NFC devices
+      </message>
       <message name="IDS_PUSH_NOTIFICATIONS_PERMISSION_TITLE" desc="Title for the permission for showing push notifications [CHAR-LIMIT=32]">
         Notifications
       </message>
@@ -1068,6 +1071,12 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_CONTENT_BLOCKED" desc="Summary text explaining that sites are blocked from playing protected content.">
         Block sites from playing protected content
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NFC_ASK" desc="Summary text explaining that sites need to ask for permission before using NFC and that it is the recommended setting.">
+        Ask before allowing sites to send and receive info when you tap NFC devices (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NFC_BLOCKED" desc="Summary text explaining that sites are blocked from using NFC.">
+        Block sites from sending and receiving info when you tap NFC devices
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_SENSORS_ALLOWED" desc="Summary text explaining that sites are allowed to use device's sensors and that it is the recommended setting.">
         Allow sites to access sensors (recommended)

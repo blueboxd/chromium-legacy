@@ -279,7 +279,6 @@ class CORE_EXPORT VisualViewport final
   void EnqueueResizeEvent();
 
   // cc::LayerClient implementation.
-  void DidChangeScrollbarsHiddenIfOverlay(bool) override;
   std::string LayerDebugName(const cc::Layer* layer) const override;
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
       const cc::Layer* layer) override;

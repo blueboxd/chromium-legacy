@@ -63,6 +63,8 @@ component("gin") {
     "v8_isolate_memory_dump_provider.cc",
     "v8_isolate_memory_dump_provider.h",
     "v8_platform.cc",
+    "v8_shared_memory_dump_provider.cc",
+    "v8_shared_memory_dump_provider.h",
     "wrappable.cc",
     "wrappable.h",
     "wrapper_info.cc",
@@ -138,6 +140,7 @@ test("gin_unittests") {
     "test/run_all_unittests.cc",
     "v8_isolate_memory_dump_provider_unittest.cc",
     "v8_platform_unittest.cc",
+    "v8_shared_memory_dump_provider_unittest.cc",
     "wrappable_unittest.cc",
   ]
 

@@ -200,7 +200,7 @@ int HttpAuthHandlerRegistryFactory::CreateAuthHandler(
     const NetLogWithSource& net_log,
     HostResolver* host_resolver,
     std::unique_ptr<HttpAuthHandler>* handler) {
-  std::string scheme = challenge->scheme();
+  auto scheme = challenge->scheme();
   if (scheme.empty()) {
     handler->reset();
     return ERR_INVALID_RESPONSE;

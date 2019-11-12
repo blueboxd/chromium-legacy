@@ -90,6 +90,7 @@ extern "C" {
 #undef Bool           // Defined by X11/Xlib.h to int
 #undef RootWindow     // Defined by X11/Xlib.h
 #undef DestroyAll     // Defined by X11/X.h to 0
+#undef Always         // Defined by X11/X.h to 2
 #undef AddToList      // Defined by X11/extensions/XI.h to 0
 #undef COUNT          // Defined by X11/extensions/XI.h to 0
 #undef CREATE         // Defined by X11/extensions/XI.h to 1

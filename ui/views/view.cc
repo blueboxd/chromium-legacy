@@ -429,12 +429,6 @@ bool View::GetVisible() const {
 }
 
 void View::SetVisible(bool visible) {
-  if (parent_) {
-    LayoutManager* const layout_manager = parent_->GetLayoutManager();
-    if (layout_manager && layout_manager->view_setting_visibility_on_ != this)
-      layout_manager->ViewVisibilitySet(parent_, this, visible);
-  }
-
   if (visible_ != visible) {
     // If the View is currently visible, schedule paint to refresh parent.
     // TODO(beng): not sure we should be doing this if we have a layer.
@@ -457,6 +451,12 @@ void View::SetVisible(bool visible) {
 
     // Notify all other subscriptions of the change.
     OnPropertyChanged(&visible_, kPropertyEffectsPaint);
+  }
+
+  if (parent_) {
+    LayoutManager* const layout_manager = parent_->GetLayoutManager();
+    if (layout_manager && layout_manager->view_setting_visibility_on_ != this)
+      layout_manager->ViewVisibilitySet(parent_, this, visible);
   }
 }
 

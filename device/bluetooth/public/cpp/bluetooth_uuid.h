@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_PUBLIC_CPP_BLUETOOTH_UUID_H_
 
 #include <string>
+#include <vector>
 
 #include "build/build_config.h"
 

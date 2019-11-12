@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
@@ -344,9 +345,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   // For service worker window clients. Called when the navigation is ready to
-  // commit in the browser process to complete the initialization for the
-  // pre-created instance.
-  void OnBeginNavigationCommit(int render_process_id, int render_frame_id);
+  // commit. Updates this host with information about the frame committed to.
+  // After this is called, is_response_committed() and is_execution_ready()
+  // return true.
+  void OnBeginNavigationCommit(
+      int render_process_id,
+      int render_frame_id,
+      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
 
   // For service worker execution contexts. Completes initialization of this
   // provider host. It is called once a renderer process has been found to host
@@ -358,10 +363,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver);
 
+  // For service worker clients that are shared workers or dedicated workers.
   // Called when the web worker main script resource has finished loading.
+  // Updates this host with information about the worker.
   // After this is called, is_response_committed() and is_execution_ready()
   // return true.
-  void CompleteWebWorkerPreparation();
+  void CompleteWebWorkerPreparation(
+      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
 
   // For service worker clients. The host keeps track of all the prospective
   // longest-matching registrations, in order to resolve .ready or respond to
@@ -766,6 +774,19 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // updated "soon". See AddServiceWorkerToUpdate() documentation.
   class PendingUpdateVersion;
   base::flat_set<PendingUpdateVersion> versions_to_update_;
+
+  // Mojo endpoint which will be be sent to the service worker just before
+  // the response is committed, where |cross_origin_embedder_policy_| is ready.
+  // We need to store this here because navigation code depends on having a
+  // mojo::Remote<ControllerServiceWorker> for making a SubresourceLoaderParams,
+  // which is created before the response header is ready.
+  mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
+      pending_controller_receiver_;
+
+  // For service worker clients. The embedder policy of the client. Set on
+  // response commit.
+  base::Optional<network::mojom::CrossOriginEmbedderPolicy>
+      cross_origin_embedder_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };

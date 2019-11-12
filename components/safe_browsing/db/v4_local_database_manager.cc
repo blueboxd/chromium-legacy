@@ -400,8 +400,10 @@ AsyncMatch V4LocalDatabaseManager::CheckUrlForHighConfidenceAllowlist(
   if (!enabled_ || !CanCheckUrl(url) ||
       !AreAllStoresAvailableNow(stores_to_check)) {
     // NOTE(vakh): If Safe Browsing isn't enabled yet, or if the URL isn't a
-    // navigation URL, or if the allowlist isn't ready yet, return NO_MATCH.
-    return AsyncMatch::NO_MATCH;
+    // navigation URL, or if the allowlist isn't ready yet, return MATCH.
+    // The full URL check won't be performed, but hash-based check will still
+    // be done.
+    return AsyncMatch::MATCH;
   }
 
   std::unique_ptr<PendingCheck> check = std::make_unique<PendingCheck>(

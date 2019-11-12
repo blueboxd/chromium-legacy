@@ -13,7 +13,7 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/payment_app.h"
 #include "components/payments/core/web_payment_request.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
@@ -31,7 +31,7 @@ namespace payments {
 
 namespace {
 
-class FakePaymentInstrumentDelegate : public PaymentInstrument::Delegate {
+class FakePaymentInstrumentDelegate : public PaymentApp::Delegate {
  public:
   FakePaymentInstrumentDelegate() {}
 

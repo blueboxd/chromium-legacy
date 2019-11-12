@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
-#include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 namespace blink {
@@ -74,16 +73,6 @@ class ObjectAttributeSetter : public AXSparseAttributeSetter {
 
  private:
   AXObjectAttribute attribute_;
-  QualifiedName GetAttributeQualifiedName() {
-    if (attribute_ == AXObjectAttribute::kAriaActiveDescendant)
-      return html_names::kAriaActivedescendantAttr;
-    if (attribute_ == AXObjectAttribute::kAriaDetails)
-      return html_names::kAriaDetailsAttr;
-    if (attribute_ == AXObjectAttribute::kAriaErrorMessage)
-      return html_names::kAriaErrormessageAttr;
-    NOTREACHED();
-    return g_null_name;
-  }
 
   void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
@@ -94,8 +83,7 @@ class ObjectAttributeSetter : public AXSparseAttributeSetter {
     auto* element = DynamicTo<Element>(obj.GetNode());
     if (!element)
       return;
-    const QualifiedName& q_name = GetAttributeQualifiedName();
-    Element* target = element->GetElementAttribute(q_name);
+    Element* target = element->GetTreeScope().getElementById(value);
     if (!target)
       return;
     AXObject* ax_target = obj.AXObjectCache().GetOrCreate(target);
@@ -112,37 +100,36 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
  private:
   AXObjectVectorAttribute attribute_;
 
-  QualifiedName GetAttributeQualifiedName() {
-    if (attribute_ == AXObjectVectorAttribute::kAriaControls)
-      return html_names::kAriaControlsAttr;
-    if (attribute_ == AXObjectVectorAttribute::kAriaFlowTo)
-      return html_names::kAriaFlowtoAttr;
-    NOTREACHED();
-    return g_null_name;
-  }
-
   void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
            const AtomicString& value) override {
-    Element* element = DynamicTo<Element>(obj.GetNode());
-    if (!element)
+    Node* node = obj.GetNode();
+    if (!node || !node->IsElementNode())
       return;
 
-    bool is_null = false;
-    HeapVector<Member<Element>> attr_associated_elements =
-        element->GetElementArrayAttribute(GetAttributeQualifiedName(), is_null);
-    if (is_null)
+    String attribute_value = value.GetString();
+    if (attribute_value.IsEmpty())
       return;
+
+    Vector<String> ids;
+    attribute_value.Split(' ', ids);
+    if (ids.IsEmpty())
+      return;
+
     HeapVector<Member<AXObject>> objects;
-    for (const auto& reflected_element : attr_associated_elements) {
-      AXObject* ax_element = obj.AXObjectCache().GetOrCreate(reflected_element);
-      if (!ax_element)
-        continue;
-      if (AXObject* parent = ax_element->ParentObject())
-        parent->UpdateChildrenIfNecessary();
-      if (!ax_element->AccessibilityIsIgnored())
-        objects.push_back(ax_element);
+    TreeScope& scope = node->GetTreeScope();
+    for (const auto& id : ids) {
+      if (Element* id_element = scope.getElementById(AtomicString(id))) {
+        AXObject* ax_id_element = obj.AXObjectCache().GetOrCreate(id_element);
+        if (!ax_id_element)
+          continue;
+        if (AXObject* parent = ax_id_element->ParentObject())
+          parent->UpdateChildrenIfNecessary();
+        if (!ax_id_element->AccessibilityIsIgnored())
+          objects.push_back(ax_id_element);
+      }
     }
+
     attribute_map.AddObjectVectorAttribute(attribute_, objects);
   }
 };

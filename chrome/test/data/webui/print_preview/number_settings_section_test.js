@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('number_settings_section_test', function() {
+import 'chrome://print/print_preview.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+
+  window.number_settings_section_test = {};
+  number_settings_section_test.suiteName = 'NumberSettingsSectionTest';
   /** @enum {string} */
-  const TestNames = {
+  number_settings_section_test.TestNames = {
     BlocksInvalidKeys: 'blocks invalid keys',
   };
 
-  const suiteName = 'NumberSettingsSectionTest';
-  suite(suiteName, function() {
+  suite(number_settings_section_test.suiteName, function() {
     let numberSettings = null;
     let parentElement = null;
 
@@ -29,7 +34,8 @@ cr.define('number_settings_section_test', function() {
     });
 
     // Test that key events that would result in invalid values are blocked.
-    test(assert(TestNames.BlocksInvalidKeys), function() {
+    test(assert(number_settings_section_test.TestNames.BlocksInvalidKeys),
+        function() {
       const input = numberSettings.$.userValue;
       /**
        * @param {number} code Code for the keyboard event that will be fired.
@@ -38,9 +44,8 @@ cr.define('number_settings_section_test', function() {
        *     is received by |parentElement|.
        */
       const sendKeyDownAndReturnPromise = (code, key) => {
-        const whenKeyDown = test_util.eventToPromise('keydown', parentElement);
-        MockInteractions.keyEventOn(
-            input.inputElement, 'keydown', code, undefined, key);
+        const whenKeyDown = eventToPromise('keydown', parentElement);
+        keyEventOn(input.inputElement, 'keydown', code, undefined, key);
         return whenKeyDown;
       };
 
@@ -71,9 +76,3 @@ cr.define('number_settings_section_test', function() {
           });
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

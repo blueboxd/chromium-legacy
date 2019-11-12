@@ -46,6 +46,16 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   const LegalMessageLines& legal_message_lines() const {
     return legal_message_lines_;
   }
+  const base::string16& card_last_four_digits() const {
+    return card_last_four_digits_;
+  }
+  const base::string16& cardholder_name() const { return cardholder_name_; }
+  const base::string16& expiration_date_month() const {
+    return expiration_date_month_;
+  }
+  const base::string16& expiration_date_year() const {
+    return expiration_date_year_;
+  }
 
   // Called when a link in the legal message text was clicked.
   void OnLegalMessageLinkClicked(GURL url);
@@ -110,6 +120,15 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
 
   // The last four digits of the card for which save is being offered.
   base::string16 card_last_four_digits_;
+
+  // The card holder name of the card for which save is being offered.
+  base::string16 cardholder_name_;
+
+  // The expiration month of the card for which save is being offered.
+  base::string16 expiration_date_month_;
+
+  // The expiration year of the card for which save is being offered.
+  base::string16 expiration_date_year_;
 
   // The legal message lines to show in the content of the infobar.
   const LegalMessageLines& legal_message_lines_;

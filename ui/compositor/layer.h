@@ -467,7 +467,6 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
       const cc::Layer* layer) override;
   std::string LayerDebugName(const cc::Layer* layer) const override;
-  void DidChangeScrollbarsHiddenIfOverlay(bool) override;
 
   // Triggers a call to SwitchToLayer.
   void SwitchCCLayerForTest();

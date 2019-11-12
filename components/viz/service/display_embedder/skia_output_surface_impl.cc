@@ -99,41 +99,6 @@ OutputSurface::Type GetOutputSurfaceType(SkiaOutputSurfaceDependency* deps) {
                                : OutputSurface::Type::kOpenGL;
 }
 
-#if BUILDFLAG(SKIA_USE_DAWN)
-// TODO(sgilhuly): Resolve conflicts with X11/X.h so that this can be moved to
-// resource_format_utils.cc.
-dawn::TextureFormat ToDawnFormat(ResourceFormat format) {
-  switch (format) {
-    case RGBA_8888:
-    case RGBX_8888:
-      return dawn::TextureFormat::RGBA8Unorm;
-    case BGRA_8888:
-    case BGRX_8888:
-      return dawn::TextureFormat::BGRA8Unorm;
-    case RED_8:
-    case ALPHA_8:
-    case LUMINANCE_8:
-      return dawn::TextureFormat::R8Unorm;
-    case RGBA_4444:
-    case RGB_565:
-    case BGR_565:
-    case RG_88:
-    case RGBA_F16:
-    case R16_EXT:
-    case RGBX_1010102:
-    case BGRX_1010102:
-    case YVU_420:
-    case YUV_420_BIPLANAR:
-    case ETC1:
-    case LUMINANCE_F16:
-    case P010:
-      break;
-  }
-  NOTREACHED() << "Unsupported format " << format;
-  return dawn::TextureFormat::Undefined;
-}
-#endif
-
 }  // namespace
 
 SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(

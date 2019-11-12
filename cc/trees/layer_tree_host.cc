@@ -882,6 +882,13 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
           inner_scroll_layer->CurrentScrollOffset() +
           inner_viewport_scroll_delta);
     }
+    if (IsUsingLayerLists()) {
+      auto& scroll_tree = property_trees()->scroll_tree;
+      scroll_tree.NotifyDidScroll(
+          inner_scroll->element_id,
+          scroll_tree.current_scroll_offset(inner_scroll->element_id) +
+              inner_viewport_scroll_delta);
+    }
   }
 
   ApplyPageScaleDeltaFromImplSide(info.page_scale_delta);
@@ -926,19 +933,23 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   }
 
   if (root_layer_) {
-    for (size_t i = 0; i < info->scrolls.size(); ++i) {
-      Layer* layer = LayerByElementId(info->scrolls[i].element_id);
-      if (!layer)
-        continue;
-      layer->SetScrollOffsetFromImplSide(layer->CurrentScrollOffset() +
-                                         info->scrolls[i].scroll_delta);
-      SetNeedsUpdateLayers();
+    auto& scroll_tree = property_trees()->scroll_tree;
+    for (auto& scroll : info->scrolls) {
+      if (Layer* layer = LayerByElementId(scroll.element_id)) {
+        layer->SetScrollOffsetFromImplSide(layer->CurrentScrollOffset() +
+                                           scroll.scroll_delta);
+        SetNeedsUpdateLayers();
+      }
+      if (IsUsingLayerLists()) {
+        scroll_tree.NotifyDidScroll(
+            scroll.element_id,
+            scroll_tree.current_scroll_offset(scroll.element_id) +
+                scroll.scroll_delta);
+      }
     }
-    for (size_t i = 0; i < info->scrollbars.size(); ++i) {
-      Layer* layer = LayerByElementId(info->scrollbars[i].element_id);
-      if (!layer)
-        continue;
-      layer->SetScrollbarsHiddenFromImplSide(info->scrollbars[i].hidden);
+    for (auto& scrollbar : info->scrollbars) {
+      scroll_tree.NotifyDidChangeScrollbarsHidden(scrollbar.element_id,
+                                                  scrollbar.hidden);
     }
   }
 

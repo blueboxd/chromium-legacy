@@ -39,7 +39,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
-#include "chrome/browser/android/preferences/pref_service_bridge.h"
+#include "chrome/browser/android/preferences/website_preference_bridge.h"
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "ui/android/window_android.h"
@@ -569,7 +569,7 @@ bool MediaStreamDevicesController::IsUserAcceptAllowed(
     return false;
 
   std::vector<std::string> android_permissions;
-  PrefServiceBridge::GetAndroidPermissionsForContentSetting(
+  WebsitePreferenceBridge::GetAndroidPermissionsForContentSetting(
       content_type, &android_permissions);
   for (const auto& android_permission : android_permissions) {
     if (!window_android->HasPermission(android_permission) &&

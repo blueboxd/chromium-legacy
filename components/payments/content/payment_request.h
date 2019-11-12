@@ -15,7 +15,7 @@
 #include "components/payments/content/payment_request_display_manager.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
-#include "components/payments/content/service_worker_payment_instrument.h"
+#include "components/payments/content/service_worker_payment_app.h"
 #include "components/payments/core/journey_logger.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -42,7 +42,7 @@ class PaymentRequest : public mojom::PaymentRequest,
                        public PaymentHandlerHost::Delegate,
                        public PaymentRequestSpec::Observer,
                        public PaymentRequestState::Delegate,
-                       public ServiceWorkerPaymentInstrument::IdentityObserver {
+                       public ServiceWorkerPaymentApp::IdentityObserver {
  public:
   class ObserverForTest {
    public:
@@ -50,7 +50,7 @@ class PaymentRequest : public mojom::PaymentRequest,
     virtual void OnCanMakePaymentReturned() = 0;
     virtual void OnHasEnrolledInstrumentCalled() = 0;
     virtual void OnHasEnrolledInstrumentReturned() = 0;
-    virtual void OnShowInstrumentsReady() {}
+    virtual void OnShowAppsReady() {}
     virtual void OnNotSupportedError() = 0;
     virtual void OnConnectionTerminated() = 0;
     virtual void OnAbortCalled() = 0;
@@ -99,7 +99,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override;
   void OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) override;
 
-  // ServiceWorkerPaymentInstrument::IdentityObserver:
+  // ServiceWorkerPaymentApp::IdentityObserver:
   void SetInvokedServiceWorkerIdentity(const url::Origin& origin,
                                        int64_t registration_id) override;
 

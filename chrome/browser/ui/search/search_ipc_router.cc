@@ -131,12 +131,11 @@ void SearchIPCRouter::SendMostVisitedInfo(
   embedded_search_client()->MostVisitedInfoChanged(most_visited_info);
 }
 
-void SearchIPCRouter::SendThemeBackgroundInfo(
-    const ThemeBackgroundInfo& theme_info) {
-  if (!policy_->ShouldSendThemeBackgroundInfo())
+void SearchIPCRouter::SendNtpTheme(const NtpTheme& theme) {
+  if (!policy_->ShouldSendNtpTheme())
     return;
 
-  embedded_search_client()->ThemeChanged(theme_info);
+  embedded_search_client()->ThemeChanged(theme);
 }
 
 void SearchIPCRouter::SendLocalBackgroundSelected() {

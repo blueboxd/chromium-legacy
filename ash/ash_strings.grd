@@ -1823,6 +1823,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_SMART_CARD_SIGN_IN_FAILURE_MESSAGE" desc="Message shown in the user pod when the sign in attempt via a smart card fails.">
         Couldn’t recognize your smart card. Try again.
       </message>
+      <message name="IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING" desc="Message shown in the user pod when the device has ran or is capable to run unverified code.">
+        This device may contain apps that haven't been verified by Google.
+      </message>
 
       <!-- Multi-profiles intro dialog -->
       <message name="IDS_ASH_MULTIPROFILES_INTRO_HEADLINE" desc="Describes which feature multi-profiles intro dialog presents.">

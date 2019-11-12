@@ -333,10 +333,10 @@ window.chrome.embeddedSearch.newTabPage.setBackgroundInfo;
  *   usingDefaultTheme: boolean,
  * }}
  */
-let ThemeBackgroundInfo;
+let NtpTheme;
 
-/** @type {?ThemeBackgroundInfo} */
-window.chrome.embeddedSearch.newTabPage.themeBackgroundInfo;
+/** @type {?NtpTheme} */
+window.chrome.embeddedSearch.newTabPage.ntpTheme;
 
 /**
  * No params.

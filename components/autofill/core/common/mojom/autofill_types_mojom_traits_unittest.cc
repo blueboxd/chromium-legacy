@@ -28,6 +28,12 @@ const std::vector<const char*> kOptions = {"Option1", "Option2", "Option3",
                                            "Option4"};
 namespace {
 
+template <typename T>
+bool EquivalentData(const T& a, const T& b) {
+  typename T::IdentityComparator less;
+  return !less(a, b) && !less(b, a);
+}
+
 void CreateTestFieldDataPredictions(const std::string& signature,
                                     FormFieldDataPredictions* field_predict) {
   test::CreateTestSelectField("TestLabel", "TestName", "TestValue", kOptions,
@@ -129,8 +135,8 @@ void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
   EXPECT_EQ(expected.form_renderer_id, actual.form_renderer_id);
   EXPECT_EQ(expected.origin, actual.origin);
   EXPECT_EQ(expected.action, actual.action);
-  EXPECT_EQ(expected.username_field, actual.username_field);
-  EXPECT_EQ(expected.password_field, actual.password_field);
+  EXPECT_TRUE(EquivalentData(expected.username_field, actual.username_field));
+  EXPECT_TRUE(EquivalentData(expected.password_field, actual.password_field));
   EXPECT_EQ(expected.preferred_realm, actual.preferred_realm);
   EXPECT_EQ(expected.uses_account_store, actual.uses_account_store);
 
@@ -234,7 +240,7 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
 void ExpectFormFieldData(const FormFieldData& expected,
                          base::OnceClosure closure,
                          const FormFieldData& passed) {
-  EXPECT_EQ(expected, passed);
+  EXPECT_TRUE(EquivalentData(expected, passed));
   EXPECT_EQ(expected.value, passed.value);
   EXPECT_EQ(expected.typed_value, passed.typed_value);
   std::move(closure).Run();
@@ -243,7 +249,7 @@ void ExpectFormFieldData(const FormFieldData& expected,
 void ExpectFormData(const FormData& expected,
                     base::OnceClosure closure,
                     const FormData& passed) {
-  EXPECT_EQ(expected, passed);
+  EXPECT_TRUE(EquivalentData(expected, passed));
   std::move(closure).Run();
 }
 

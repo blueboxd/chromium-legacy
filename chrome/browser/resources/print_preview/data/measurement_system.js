@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
 
   /**
    * Enumeration of measurement unit types.
    * @enum {number}
    */
-  const MeasurementSystemUnitType = {
+  export const MeasurementSystemUnitType = {
     METRIC: 0,   // millimeters
     IMPERIAL: 1  // inches
   };
@@ -22,14 +21,14 @@ cr.define('print_preview', function() {
    */
   let MeasurementSystemPrefs;
 
-  class MeasurementSystem {
+  export class MeasurementSystem {
     /**
      * Measurement system of the print preview. Used to parse and serialize
      * point measurements into the system's local units (e.g. millimeters,
      * inches).
      * @param {string} thousandsDelimiter Delimiter between thousands digits.
      * @param {string} decimalDelimiter Delimiter between integers and decimals.
-     * @param {!print_preview.MeasurementSystemUnitType} unitType Measurement
+     * @param {!MeasurementSystemUnitType} unitType Measurement
      *     unit type of the system.
      */
     constructor(thousandsDelimiter, decimalDelimiter, unitType) {
@@ -105,7 +104,7 @@ cr.define('print_preview', function() {
 
   /**
    * Maximum resolution and number of decimal places for local unit values.
-   * @private {!Map<!print_preview.MeasurementSystemUnitType,
+   * @private {!Map<!MeasurementSystemUnitType,
    *                !MeasurementSystemPrefs>}
    */
   const measurementSystemPrefs = new Map([
@@ -123,9 +122,3 @@ cr.define('print_preview', function() {
     ]
   ]);
 
-  // Export
-  return {
-    MeasurementSystem: MeasurementSystem,
-    MeasurementSystemUnitType: MeasurementSystemUnitType,
-  };
-});

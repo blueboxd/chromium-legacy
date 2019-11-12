@@ -79,6 +79,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
                                             const PhysicalRect&,
                                             const DisplayItemClient&);
+  void PaintColumnRules(const PaintInfo&, const PhysicalOffset& paint_offset);
   bool BackgroundIsKnownToBeOpaque(const PaintInfo&);
 
   void PaintInternal(const PaintInfo&);

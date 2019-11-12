@@ -37,6 +37,10 @@ class Navigation {
 
   virtual NavigationState GetState() = 0;
 
+  // Returns the status code of the navigation. Returns 0 if the navigation
+  // hasn't completed yet or if a response wasn't received.
+  virtual int GetHttpStatusCode() = 0;
+
   // Whether the navigation happened without changing document. Examples of
   // same document navigations are:
   // * reference fragment navigations

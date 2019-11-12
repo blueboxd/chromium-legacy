@@ -392,22 +392,14 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer->set_is_scrollbar(is_scrollbar_);
 
-  // If the main thread commits multiple times before the impl thread actually
-  // draws, then damage tracking will become incorrect if we simply clobber the
-  // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
-  // union) any update changes that have occurred on the main thread.
-  update_rect_.Union(layer->update_rect());
-  layer->SetUpdateRect(update_rect_);
+  layer->UnionUpdateRect(update_rect_);
 
   if (owned_debug_info_)
     layer->SetDebugInfo(std::move(owned_debug_info_));
 
   // Reset any state that should be cleared for the next update.
   needs_show_scrollbars_ = false;
-  layer_property_changed_not_from_property_trees_ = false;
-  layer_property_changed_from_property_trees_ = false;
-  needs_push_properties_ = false;
-  update_rect_ = gfx::Rect();
+  ResetChangeTracking();
 }
 
 bool LayerImpl::IsAffectedByPageScale() const {
@@ -641,8 +633,8 @@ void LayerImpl::SetMirrorCount(int mirror_count) {
   mirror_count_ = mirror_count;
 }
 
-void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
-  update_rect_ = update_rect;
+void LayerImpl::UnionUpdateRect(const gfx::Rect& update_rect) {
+  update_rect_.Union(update_rect);
 }
 
 gfx::Rect LayerImpl::GetDamageRect() const {

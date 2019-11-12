@@ -220,7 +220,9 @@ base::Optional<uint64_t> FakeArCore::SubscribeToHitTest(
 
 mojom::XRHitTestSubscriptionResultsDataPtr
 FakeArCore::GetHitTestSubscriptionResults(
-    const device::mojom::VRPosePtr& pose) {
+    const gfx::Transform& mojo_from_viewer,
+    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+        maybe_input_state) {
   return nullptr;
 }
 
@@ -232,7 +234,7 @@ mojom::XRPlaneDetectionDataPtr FakeArCore::GetDetectedPlanesData() {
   std::vector<mojom::XRPlaneDataPtr> result;
 
   // 1m ahead of the origin, neutral orientation facing forward.
-  mojom::VRPosePtr pose = mojom::VRPose::New();
+  mojom::PosePtr pose = mojom::Pose::New();
   pose->position = gfx::Point3F(0.0, 0.0, -1.0);
   pose->orientation = gfx::Quaternion();
 
@@ -255,7 +257,7 @@ mojom::XRAnchorsDataPtr FakeArCore::GetAnchorsData() {
   std::vector<uint64_t> result_ids;
 
   for (auto& anchor_id_and_data : anchors_) {
-    mojom::VRPosePtr pose = mojom::VRPose::New();
+    mojom::PosePtr pose = mojom::Pose::New();
     pose->position = anchor_id_and_data.second.position;
     pose->orientation = anchor_id_and_data.second.orientation;
 
@@ -267,28 +269,16 @@ mojom::XRAnchorsDataPtr FakeArCore::GetAnchorsData() {
   return mojom::XRAnchorsData::New(std::move(result_ids), std::move(result));
 }
 
-base::Optional<uint64_t> FakeArCore::CreateAnchor(const mojom::VRPosePtr& pose,
+base::Optional<uint64_t> FakeArCore::CreateAnchor(const mojom::PosePtr& pose,
                                                   uint64_t plane_id) {
   // TODO(992035): Fix this when implementing tests.
   return CreateAnchor(pose);
 }
 
-base::Optional<uint64_t> FakeArCore::CreateAnchor(
-    const mojom::VRPosePtr& pose) {
+base::Optional<uint64_t> FakeArCore::CreateAnchor(const mojom::PosePtr& pose) {
   DCHECK(pose);
 
-  gfx::Point3F position =
-      pose->position ? gfx::Point3F(pose->position->x(), pose->position->y(),
-                                    pose->position->z())
-                     : gfx::Point3F();
-
-  gfx::Quaternion orientation =
-      pose->orientation
-          ? gfx::Quaternion(pose->orientation->x(), pose->orientation->y(),
-                            pose->orientation->z(), pose->orientation->w())
-          : gfx::Quaternion(0, 0, 0, 1);
-
-  anchors_[next_id_] = {position, orientation};
+  anchors_[next_id_] = {pose->position, pose->orientation};
   int32_t anchor_id = next_id_;
 
   next_id_++;

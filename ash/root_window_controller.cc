@@ -663,7 +663,7 @@ void RootWindowController::MoveWindowsTo(aura::Window* dst) {
   // Suspend unnecessary updates of the shelf visibility indefinitely since it
   // is going away.
   if (GetShelfLayoutManager())
-    GetShelfLayoutManager()->SuspendVisibilityUpdate();
+    GetShelfLayoutManager()->SuspendVisibilityUpdateForShutdown();
 
   // Clear the workspace controller to avoid a lot of unnecessary operations
   // when window are removed.

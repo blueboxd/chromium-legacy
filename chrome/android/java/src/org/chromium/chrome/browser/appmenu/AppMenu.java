@@ -267,8 +267,10 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
 
         int popupHeight = setMenuHeight(menuItems.size(), visibleDisplayFrame, screenHeight,
                 sizingPadding, footerHeight, headerHeight, anchorView);
-        int[] popupPosition = getPopupPosition(mCurrentScreenRotation, visibleDisplayFrame,
-                sizingPadding, anchorView, popupWidth, popupHeight, showFromBottom);
+        int[] popupPosition = getPopupPosition(mTempLocation, mIsByPermanentButton,
+                mNegativeSoftwareVerticalOffset, mNegativeVerticalOffsetNotTopAnchored,
+                mCurrentScreenRotation, visibleDisplayFrame, sizingPadding, anchorView, popupWidth,
+                popupHeight, showFromBottom, anchorView.getRootView().getLayoutDirection());
 
         mPopup.setContentView(contentView);
         mPopup.showAtLocation(
@@ -298,16 +300,19 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
         }
     }
 
-    private int[] getPopupPosition(int screenRotation, Rect appRect, Rect padding, View anchorView,
-            int popupWidth, int popupHeight, boolean isAnchorAtBottom) {
-        anchorView.getLocationInWindow(mTempLocation);
-        int anchorViewX = mTempLocation[0];
-        int anchorViewY = mTempLocation[1];
+    @VisibleForTesting
+    static int[] getPopupPosition(int[] tempLocation, boolean isByPermanentButton,
+            int negativeSoftwareVerticalOffset, int negativeVerticalOffsetNotTopAnchored,
+            int screenRotation, Rect appRect, Rect padding, View anchorView, int popupWidth,
+            int popupHeight, boolean isAnchorAtBottom, int viewLayoutDirection) {
+        anchorView.getLocationInWindow(tempLocation);
+        int anchorViewX = tempLocation[0];
+        int anchorViewY = tempLocation[1];
 
         int[] offsets = new int[2];
         // If we have a hardware menu button, locate the app menu closer to the estimated
         // hardware menu button location.
-        if (mIsByPermanentButton) {
+        if (isByPermanentButton) {
             int horizontalOffset = -anchorViewX;
             switch (screenRotation) {
                 case Surface.ROTATION_0:
@@ -328,21 +333,21 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
             // padding of the background.
             offsets[1] = -padding.bottom;
         } else {
-            offsets[1] = -mNegativeSoftwareVerticalOffset;
+            offsets[1] = -negativeSoftwareVerticalOffset;
 
             // If the anchor is at the bottom of the screen, align the popup with the bottom of the
             // anchor. The anchor may not be fully visible, so
             // (appRect.bottom - anchorViewLocationOnScreenY) is used to determine the visible
             // bottom edge of the anchor view.
             if (isAnchorAtBottom) {
-                anchorView.getLocationOnScreen(mTempLocation);
-                int anchorViewLocationOnScreenY = mTempLocation[1];
+                anchorView.getLocationOnScreen(tempLocation);
+                int anchorViewLocationOnScreenY = tempLocation[1];
                 offsets[1] += appRect.bottom - anchorViewLocationOnScreenY - popupHeight;
-                offsets[1] -= mNegativeVerticalOffsetNotTopAnchored;
-                if (!mIsByPermanentButton) offsets[1] += padding.bottom;
+                offsets[1] -= negativeVerticalOffsetNotTopAnchored;
+                offsets[1] += padding.bottom;
             }
 
-            if (anchorView.getRootView().getLayoutDirection() != View.LAYOUT_DIRECTION_RTL) {
+            if (viewLayoutDirection != View.LAYOUT_DIRECTION_RTL) {
                 offsets[0] = anchorView.getWidth() - popupWidth;
             }
         }
@@ -364,10 +369,15 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
     @Override
     public boolean onItemLongClick(MenuItem menuItem, View view) {
         if (!menuItem.isEnabled()) return false;
-        Context context = ContextUtils.getApplicationContext();
         CharSequence titleCondensed = menuItem.getTitleCondensed();
         CharSequence message =
                 TextUtils.isEmpty(titleCondensed) ? menuItem.getTitle() : titleCondensed;
+        return showToastForItem(message, view);
+    }
+
+    @VisibleForTesting
+    boolean showToastForItem(CharSequence message, View view) {
+        Context context = ContextUtils.getApplicationContext();
         return Toast.showAnchoredToast(context, view, message);
     }
 
@@ -544,5 +554,10 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
     @VisibleForTesting
     void finishAnimationsForTests() {
         if (mMenuItemEnterAnimator != null) mMenuItemEnterAnimator.end();
+    }
+
+    @VisibleForTesting
+    AppMenuAdapter getAdapterForTests() {
+        return mAdapter;
     }
 }

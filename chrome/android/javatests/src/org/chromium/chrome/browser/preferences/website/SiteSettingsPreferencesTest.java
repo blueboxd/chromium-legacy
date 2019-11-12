@@ -169,8 +169,7 @@ public class SiteSettingsPreferencesTest {
             }
 
             private boolean doesAcceptCookies() {
-                return PrefServiceBridge.getInstance().isCategoryEnabled(
-                        ContentSettingsType.COOKIES);
+                return WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES);
             }
         });
     }
@@ -212,7 +211,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"), enabled,
-                    PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.POPUPS));
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.POPUPS));
         });
     }
 
@@ -221,7 +220,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"), enabled,
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
+                    WebsitePreferenceBridge.isCategoryEnabled(
                             ContentSettingsType.MEDIASTREAM_CAMERA));
         });
     }
@@ -470,7 +469,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testOnlyExpectedPreferencesShown() {
         // If you add a category in the SiteSettings UI, please add a test for it below.
-        Assert.assertEquals(19, SiteSettingsCategory.Type.NUM_ENTRIES);
+        Assert.assertEquals(20, SiteSettingsCategory.Type.NUM_ENTRIES);
 
         String[] nullArray = new String[0];
         String[] binaryToggle = new String[] {"binary_toggle"};
@@ -497,6 +496,7 @@ public class SiteSettingsPreferencesTest {
         testCases.put(SiteSettingsCategory.Type.JAVASCRIPT,
                 new Pair<>(binaryToggleWithException, binaryToggleWithException));
         testCases.put(SiteSettingsCategory.Type.MICROPHONE, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.NFC, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.NOTIFICATIONS,
                 new Pair<>(binaryToggleWithAllowed, binaryToggleWithAllowed));
         testCases.put(SiteSettingsCategory.Type.POPUPS, new Pair<>(binaryToggle, binaryToggle));
@@ -585,8 +585,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse("Mic should be blocked",
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.MEDIASTREAM_MIC));
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.MEDIASTREAM_MIC));
         });
 
         // Test that the microphone permission doesn't get requested.
@@ -658,8 +657,7 @@ public class SiteSettingsPreferencesTest {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.BACKGROUND_SYNC, enabled);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Background Sync should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.BACKGROUND_SYNC),
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.BACKGROUND_SYNC),
                     enabled);
         });
     }
@@ -686,8 +684,7 @@ public class SiteSettingsPreferencesTest {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.USB, enabled);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("USB should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.USB_GUARD),
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.USB_GUARD),
                     enabled);
         });
     }
@@ -716,7 +713,7 @@ public class SiteSettingsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     "Automatic Downloads should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
+                    WebsitePreferenceBridge.isCategoryEnabled(
                             ContentSettingsType.AUTOMATIC_DOWNLOADS),
                     enabled);
         });
@@ -746,7 +743,7 @@ public class SiteSettingsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     "Bluetooth scanning should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
+                    WebsitePreferenceBridge.isCategoryEnabled(
                             ContentSettingsType.BLUETOOTH_SCANNING),
                     enabled);
         });
@@ -764,6 +761,33 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testBlockBluetoothScanning() {
         doTestBluetoothScanningPermission(false);
+    }
+
+    /**
+     * Helper function to test allowing and blocking NFC feature.
+     * @param enabled true to test enabling NFC feature, false to test disabling the
+     *         feature.
+     */
+    private void doTestNfcPermission(final boolean enabled) {
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.NFC, enabled);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals("NFC should be " + (enabled ? "enabled" : "disabled"),
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.NFC), enabled);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowNfc() {
+        doTestNfcPermission(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockNfc() {
+        doTestNfcPermission(false);
     }
 
     private int getTabCount() {

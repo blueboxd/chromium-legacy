@@ -263,10 +263,6 @@ void PageActionIconContainerView::ChildPreferredSizeChanged(
   PreferredSizeChanged();
 }
 
-void PageActionIconContainerView::ChildVisibilityChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
 void PageActionIconContainerView::OnDefaultZoomLevelChanged() {
   ZoomChangedForActiveTab(false);
 }

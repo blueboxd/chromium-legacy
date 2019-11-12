@@ -70,6 +70,24 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   void UpdateControlVisibility(ash::AppListViewState app_list_state,
                                bool is_in_drag);
 
+  // Animates the container opacity from the opacity for the current app list
+  // transition progress to the opacity for |target_view_state|.
+  // |current_progress| - the current app list transition progress.
+  // |animator| - callback that when run starts the opacity animation.
+  using OpacityAnimator =
+      base::RepeatingCallback<void(views::View*, bool target_visibility)>;
+  void AnimateOpacity(float current_progress,
+                      ash::AppListViewState target_view_state,
+                      const OpacityAnimator& animator);
+
+  // Sets the expected y position for apps container children, and runs
+  // |animator| for each of them to run transform animation from current bounds.
+  // (This assumes that animator knows the offset between current apps container
+  // bounds and target apps container bounds).
+  using TransformAnimator = base::RepeatingCallback<void(views::View*)>;
+  void AnimateYPosition(ash::AppListViewState target_view_state,
+                        const TransformAnimator& animator);
+
   // Updates y position and opacity of the items in this view during dragging.
   void UpdateYPositionAndOpacity(float progress, bool restore_opacity);
 

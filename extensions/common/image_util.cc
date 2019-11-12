@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -65,9 +64,9 @@ bool ParseHexColorString(const std::string& color_string, SkColor* result) {
       formatted_color += color_string[i];
     }
   } else if (color_string.length() == 7) {
-    formatted_color = color_string.substr(1, 6);
+    formatted_color.assign(color_string, 1, 6);
   } else if (color_string.length() == 9) {
-    formatted_color = color_string.substr(1, 8);
+    formatted_color.assign(color_string, 1, 8);
   } else {
     return false;
   }
@@ -77,10 +76,9 @@ bool ParseHexColorString(const std::string& color_string, SkColor* result) {
     formatted_color += "FF";
   }
 
-  // Convert the string to an integer and make sure it is in the correct value
-  // range.
-  std::vector<uint8_t> color_bytes;
-  if (!base::HexStringToBytes(formatted_color, &color_bytes))
+  // Convert the hex string to an integer.
+  std::array<uint8_t, 4> color_bytes;
+  if (!base::HexStringToSpan(formatted_color, color_bytes))
     return false;
 
   *result = SkColorSetARGB(color_bytes[3], color_bytes[0], color_bytes[1],

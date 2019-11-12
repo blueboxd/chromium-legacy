@@ -174,7 +174,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   }
 
   // Delets a url.
-  void DeleteURL(const GURL& url) { history_service()->DeleteURL(url); }
+  void DeleteURL(const GURL& url) { history_service()->DeleteURLs({url}); }
 
   // Recreates top sites. This forces top sites to reread from the db.
   void RecreateTopSitesAndBlock() {

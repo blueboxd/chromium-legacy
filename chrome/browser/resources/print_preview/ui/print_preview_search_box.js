@@ -2,14 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import {CrSearchFieldBehavior} from 'chrome://resources/cr_elements/cr_search_field/cr_search_field_behavior.m.js';
+import './print_preview_shared_css.js';
 
 /** @type {!RegExp} */
 const SANITIZE_REGEX = /[-[\]{}()*+?.,\\^$|#\s]/g;
 
 Polymer({
   is: 'print-preview-search-box',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [CrSearchFieldBehavior],
 
@@ -33,9 +40,9 @@ Polymer({
    */
   lastString_: '',
 
-  /** @return {!HTMLInputElement} */
+  /** @return {!CrInputElement} */
   getSearchInput: function() {
-    return this.$.searchInput;
+    return /** @type {!CrInputElement} */ (this.$.searchInput);
   },
 
   focus: function() {
@@ -64,4 +71,3 @@ Polymer({
     this.$.searchInput.focus();
   },
 });
-})();

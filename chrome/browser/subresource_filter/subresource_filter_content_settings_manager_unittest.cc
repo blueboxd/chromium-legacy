@@ -194,7 +194,7 @@ TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
 
   // Deleting a URL from history while there are still other urls for the
   // same origin should not delete the setting.
-  history_service->DeleteURL(url1);
+  history_service->DeleteURLs({url1});
   history::BlockUntilHistoryProcessesPendingRequests(history_service);
   EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url1));
   EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url2));
@@ -202,7 +202,7 @@ TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
   // Deleting all URLs of an origin from history should clear the setting for
   // this URL. Note that since there is another URL in the history this won't
   // clear all items.
-  history_service->DeleteURL(url2);
+  history_service->DeleteURLs({url2});
   history::BlockUntilHistoryProcessesPendingRequests(history_service);
 
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url1));

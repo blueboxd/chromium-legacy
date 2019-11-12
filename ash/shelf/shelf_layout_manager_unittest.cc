@@ -3992,6 +3992,7 @@ TEST_F(HotseatShelfLayoutManagerTest,
               GetShelfLayoutManager()->hotseat_state());
   }
 }
+
 // Tests that popups don't activate the hotseat. (crbug.com/1018266)
 TEST_F(HotseatShelfLayoutManagerTest, HotseatRemainsHiddenIfPopupLaunched) {
   // Go to in-app shelf and extend the hotseat.
@@ -4017,6 +4018,213 @@ TEST_F(HotseatShelfLayoutManagerTest, HotseatRemainsHiddenIfPopupLaunched) {
   window_2->Show();
   GetAppListTestHelper()->WaitUntilIdle();
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+}
+
+// Counts the number of times the work area changes.
+class DisplayWorkAreaChangeCounter : public display::DisplayObserver {
+ public:
+  DisplayWorkAreaChangeCounter() {
+    Shell::Get()->display_manager()->AddObserver(this);
+  }
+  ~DisplayWorkAreaChangeCounter() override {
+    Shell::Get()->display_manager()->RemoveObserver(this);
+  }
+
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t metrics) override {
+    if (metrics & display::DisplayObserver::DISPLAY_METRIC_WORK_AREA)
+      work_area_change_count_++;
+  }
+
+  int count() const { return work_area_change_count_; }
+
+ private:
+  int work_area_change_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayWorkAreaChangeCounter);
+};
+
+// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
+// exhibits the desired behavior.
+// Tests that the work area does not update after going to/from tablet mode with
+// no windows open.
+TEST_F(HotseatShelfLayoutManagerTest,
+       DISABLED_WorkAreaDoesNotUpdateClamshellToFromHomeLauncherNoWindows) {
+  DisplayWorkAreaChangeCounter counter;
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  EXPECT_EQ(0, counter.count());
+
+  TabletModeControllerTestApi().LeaveTabletMode();
+
+  EXPECT_EQ(0, counter.count());
+}
+
+// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
+// exhibits the desired behavior.
+// Tests that opening a window in tablet mode changes the work area.
+TEST_F(HotseatShelfLayoutManagerTest,
+       DISABLED_OpenWindowInTabletModeChangesWorkArea) {
+  DisplayWorkAreaChangeCounter counter;
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  EXPECT_EQ(1, counter.count());
+}
+
+// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
+// exhibits the desired behavior.
+// Tests that going to and from tablet mode with an open window results in a
+// work area change.
+TEST_F(HotseatShelfLayoutManagerTest,
+       DISABLED_ToFromTabletModeWithWindowChangesWorkArea) {
+  DisplayWorkAreaChangeCounter counter;
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_EQ(1, counter.count());
+
+  TabletModeControllerTestApi().LeaveTabletMode();
+  EXPECT_EQ(2, counter.count());
+}
+
+// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
+// exhibits the desired behavior.
+// Tests that going between Applist and overview in tablet mode with no windows
+// results in no work area change.
+TEST_F(HotseatShelfLayoutManagerTest,
+       DISABLED_WorkAreaDoesNotUpdateAppListToFromOverviewWithNoWindow) {
+  DisplayWorkAreaChangeCounter counter;
+  TabletModeControllerTestApi().EnterTabletMode();
+  {
+    OverviewAnimationWaiter waiter;
+    Shell::Get()->overview_controller()->StartOverview();
+    waiter.Wait();
+  }
+
+  EXPECT_EQ(0, counter.count());
+
+  {
+    OverviewAnimationWaiter waiter;
+    Shell::Get()->overview_controller()->EndOverview();
+    waiter.Wait();
+  }
+
+  EXPECT_EQ(0, counter.count());
+}
+
+// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
+// exhibits the desired behavior.
+// Tests that switching between AppList and overview with a window results in no
+// work area change.
+TEST_F(HotseatShelfLayoutManagerTest,
+       DISABLED_WorkAreaDoesNotUpdateAppListToFromOverviewWithWindow) {
+  DisplayWorkAreaChangeCounter counter;
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  ASSERT_EQ(1, counter.count());
+  views::View* home_button = GetPrimaryShelf()->shelf_widget()->GetHomeButton();
+  GetEventGenerator()->GestureTapAt(
+      home_button->GetBoundsInScreen().CenterPoint());
+
+  {
+    OverviewAnimationWaiter waiter;
+    gfx::Point overview_button_center = GetPrimaryShelf()
+                                            ->shelf_widget()
+                                            ->status_area_widget()
+                                            ->overview_button_tray()
+                                            ->GetBoundsInScreen()
+                                            .CenterPoint();
+    GetEventGenerator()->GestureTapAt(overview_button_center);
+    waiter.Wait();
+  }
+
+  EXPECT_EQ(1, counter.count());
+
+  {
+    OverviewAnimationWaiter waiter;
+    // Overview button has moved a bit now that the shelf is in-app.
+    gfx::Point overview_button_center = GetPrimaryShelf()
+                                            ->shelf_widget()
+                                            ->status_area_widget()
+                                            ->overview_button_tray()
+                                            ->GetBoundsInScreen()
+                                            .CenterPoint();
+    GetEventGenerator()->GestureTapAt(overview_button_center);
+    waiter.Wait();
+  }
+
+  EXPECT_EQ(1, counter.count());
+}
+
+// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
+// exhibits the desired behavior.
+// Tests that switching between AppList and an active window does not update the
+// work area.
+TEST_F(HotseatShelfLayoutManagerTest,
+       DISABLED_WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  ASSERT_TRUE(ShelfConfig::Get()->is_in_app());
+
+  // Go to the home launcher, work area should not udpate.
+  DisplayWorkAreaChangeCounter counter;
+  views::View* home_button = GetPrimaryShelf()->shelf_widget()->GetHomeButton();
+  GetEventGenerator()->GestureTapAt(
+      home_button->GetBoundsInScreen().CenterPoint());
+
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(0, counter.count());
+
+  // Go back to the window, work area should not update.
+  wm::ActivateWindow(window.get());
+
+  EXPECT_TRUE(ShelfConfig::Get()->is_in_app());
+  EXPECT_EQ(0, counter.count());
+}
+
+// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
+// exhibits the desired behavior.
+// Tests that switching between overview and an active window does not update
+// the work area.
+TEST_F(HotseatShelfLayoutManagerTest,
+       DISABLED_WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  ASSERT_TRUE(ShelfConfig::Get()->is_in_app());
+
+  // Go to overview, there should not be a work area update.
+  DisplayWorkAreaChangeCounter counter;
+  {
+    OverviewAnimationWaiter waiter;
+    gfx::Point overview_button_center = GetPrimaryShelf()
+                                            ->shelf_widget()
+                                            ->status_area_widget()
+                                            ->overview_button_tray()
+                                            ->GetBoundsInScreen()
+                                            .CenterPoint();
+    GetEventGenerator()->GestureTapAt(overview_button_center);
+    waiter.Wait();
+  }
+
+  EXPECT_EQ(0, counter.count());
+
+  // Go back to the app, there should not be a work area update.
+  wm::ActivateWindow(window.get());
+
+  EXPECT_TRUE(ShelfConfig::Get()->is_in_app());
+  EXPECT_EQ(0, counter.count());
 }
 
 class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {

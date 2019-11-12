@@ -1,39 +1,4 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<!-- The imports below are needed as an action-link is added to the promo-text
-  div to create the cloud print "Sign in" link when this element is
-  attached. -->
-<link rel="import" href="chrome://resources/html/action_link.html">
-<link rel="import" href="chrome://resources/cr_elements/action_link_css.html">
-<link rel="import" href="chrome://resources/html/event_tracker.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/html/list_property_update_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="icons.html">
-<link rel="import" href="../metrics.html">
-<link rel="import" href="../native_layer.html">
-<link rel="import" href="../print_preview_utils.html">
-<link rel="import" href="../data/destination.html">
-<link rel="import" href="../data/destination_store.html">
-<link rel="import" href="../data/invitation.html">
-<link rel="import" href="../data/invitation_store.html">
-<link rel="import" href="destination_list.html">
-<link rel="import" href="print_preview_search_box.html">
-<link rel="import" href="print_preview_shared_css.html">
-<link rel="import" href="print_preview_vars_css.html">
-<link rel="import" href="provisional_destination_resolver.html">
-<link rel="import" href="strings.html">
-<link rel="import" href="throbber_css.html">
-
-<dom-module id="print-preview-destination-dialog">
-  <template>
     <style include="print-preview-shared action-link md-select cr-hidden-style
         throbber">
       #dialog::part(dialog) {
@@ -216,6 +181,3 @@
         </div>
       </div>
     </cr-dialog>
-  </template>
-  <script src="destination_dialog.js"></script>
-</dom-module>

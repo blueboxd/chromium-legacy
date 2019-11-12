@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/task_environment.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -21,12 +22,9 @@ const char PrefetchRequestTestBase::kExperimentValueSetInFieldTrial[] =
     "Test Experiment";
 
 PrefetchRequestTestBase::PrefetchRequestTestBase()
-    : task_runner_(new base::TestMockTimeTaskRunner),
-      test_shared_url_loader_factory_(
+    : test_shared_url_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory_)) {
-  message_loop_.SetTaskRunner(task_runner_);
-}
+              &test_url_loader_factory_)) {}
 
 PrefetchRequestTestBase::~PrefetchRequestTestBase() {}
 
@@ -100,11 +98,15 @@ std::string PrefetchRequestTestBase::GetExperiementHeaderValue(
 }
 
 void PrefetchRequestTestBase::RunUntilIdle() {
-  task_runner_->RunUntilIdle();
+  task_environment_.RunUntilIdle();
+}
+
+void PrefetchRequestTestBase::FastForwardBy(base::TimeDelta delta) {
+  task_environment_.FastForwardBy(delta);
 }
 
 void PrefetchRequestTestBase::FastForwardUntilNoTasksRemain() {
-  task_runner_->FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace offline_pages

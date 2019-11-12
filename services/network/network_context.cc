@@ -472,6 +472,16 @@ void NetworkContext::CreateURLLoaderFactory(
       std::move(receiver), &cors_origin_access_list_, nullptr));
 }
 
+void NetworkContext::ActivateDohProbes() {
+  DCHECK(IsPrimaryNetworkContext());
+  DCHECK(url_request_context_->host_resolver());
+
+  doh_probes_request_.reset();
+  doh_probes_request_ =
+      url_request_context_->host_resolver()->CreateDohProbeRequest();
+  doh_probes_request_->Start();
+}
+
 void NetworkContext::SetClient(
     mojo::PendingRemote<mojom::NetworkContextClient> client) {
   client_.reset();

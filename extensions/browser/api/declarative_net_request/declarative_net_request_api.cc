@@ -176,9 +176,14 @@ DeclarativeNetRequestUpdateDynamicRulesFunction::
     ~DeclarativeNetRequestUpdateDynamicRulesFunction() = default;
 
 ExtensionFunction::ResponseAction
-DeclarativeNetRequestUpdateDynamicRulesFunction::UpdateDynamicRules(
-    std::vector<api::declarative_net_request::Rule> rules,
-    declarative_net_request::DynamicRuleUpdateAction action) {
+DeclarativeNetRequestUpdateDynamicRulesFunction::Run() {
+  using Params = dnr_api::UpdateDynamicRules::Params;
+
+  base::string16 error;
+  std::unique_ptr<Params> params(Params::Create(*args_, &error));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  EXTENSION_FUNCTION_VALIDATE(error.empty());
+
   auto* rules_monitor_service =
       declarative_net_request::RulesMonitorService::Get(browser_context());
   DCHECK(rules_monitor_service);
@@ -188,8 +193,9 @@ DeclarativeNetRequestUpdateDynamicRulesFunction::UpdateDynamicRules(
       &DeclarativeNetRequestUpdateDynamicRulesFunction::OnDynamicRulesUpdated,
       this);
 
-  rules_monitor_service->UpdateDynamicRules(*extension(), std::move(rules),
-                                            action, std::move(callback));
+  rules_monitor_service->UpdateDynamicRules(
+      *extension(), std::move(params->rule_ids_to_remove),
+      std::move(params->rules_to_add), std::move(callback));
   return RespondLater();
 }
 
@@ -207,52 +213,6 @@ void DeclarativeNetRequestUpdateDynamicRulesFunction::OnDynamicRulesUpdated(
     Respond(Error(*error));
   else
     Respond(NoArguments());
-}
-
-DeclarativeNetRequestAddDynamicRulesFunction::
-    DeclarativeNetRequestAddDynamicRulesFunction() = default;
-DeclarativeNetRequestAddDynamicRulesFunction::
-    ~DeclarativeNetRequestAddDynamicRulesFunction() = default;
-
-ExtensionFunction::ResponseAction
-DeclarativeNetRequestAddDynamicRulesFunction::Run() {
-  // Note: If need be, we should throttle calls to these extension functions.
-  using Params = dnr_api::AddDynamicRules::Params;
-
-  base::string16 error;
-  std::unique_ptr<Params> params(Params::Create(*args_, &error));
-  EXTENSION_FUNCTION_VALIDATE(params);
-  EXTENSION_FUNCTION_VALIDATE(error.empty());
-
-  return UpdateDynamicRules(
-      std::move(params->rules),
-      declarative_net_request::DynamicRuleUpdateAction::kAdd);
-}
-
-DeclarativeNetRequestRemoveDynamicRulesFunction::
-    DeclarativeNetRequestRemoveDynamicRulesFunction() = default;
-DeclarativeNetRequestRemoveDynamicRulesFunction::
-    ~DeclarativeNetRequestRemoveDynamicRulesFunction() = default;
-
-ExtensionFunction::ResponseAction
-DeclarativeNetRequestRemoveDynamicRulesFunction::Run() {
-  using Params = dnr_api::RemoveDynamicRules::Params;
-
-  base::string16 error;
-  std::unique_ptr<Params> params(Params::Create(*args_, &error));
-  EXTENSION_FUNCTION_VALIDATE(params);
-  EXTENSION_FUNCTION_VALIDATE(error.empty());
-
-  std::vector<dnr_api::Rule> rules;
-  for (int id : params->rule_ids) {
-    dnr_api::Rule rule;
-    rule.id = id;
-    rules.push_back(std::move(rule));
-  }
-
-  return UpdateDynamicRules(
-      std::move(rules),
-      declarative_net_request::DynamicRuleUpdateAction::kRemove);
 }
 
 DeclarativeNetRequestGetDynamicRulesFunction::

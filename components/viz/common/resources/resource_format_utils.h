@@ -8,12 +8,17 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/viz_resource_format_export.h"
 #include "gpu/vulkan/buildflags.h"
+#include "skia/buildflags.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/buffer_types.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "third_party/vulkan/include/vulkan/vulkan.h"
+#endif
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+#include "third_party/dawn/src/include/dawn/dawncpp.h"  // nogncheck
 #endif
 
 namespace viz {
@@ -60,6 +65,11 @@ VIZ_RESOURCE_FORMAT_EXPORT bool GLSupportsFormat(ResourceFormat format);
 
 #if BUILDFLAG(ENABLE_VULKAN)
 VIZ_RESOURCE_FORMAT_EXPORT VkFormat ToVkFormat(ResourceFormat format);
+#endif
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+VIZ_RESOURCE_FORMAT_EXPORT dawn::TextureFormat ToDawnFormat(
+    ResourceFormat format);
 #endif
 
 }  // namespace viz

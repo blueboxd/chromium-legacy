@@ -3597,7 +3597,7 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
 
   // This won't actually delete the URL, rather it'll empty out the visits.
   // This triggers blocking on the BookmarkModel.
-  service->DeleteURL(url);
+  service->DeleteURLs({url});
 }
 
 // Test DeleteFTSIndexDatabases deletes expected files.

@@ -1638,10 +1638,12 @@ int AXPlatformNodeBase::FindTextBoundary(
     int offset,
     AXTextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {
-  base::Optional<int> boundary_offset =
-      GetDelegate()->FindTextBoundary(boundary, offset, direction, affinity);
-  if (boundary_offset.has_value())
-    return *boundary_offset;
+  if (boundary != AXTextBoundary::kSentenceStart) {
+    base::Optional<int> boundary_offset =
+        GetDelegate()->FindTextBoundary(boundary, offset, direction, affinity);
+    if (boundary_offset.has_value())
+      return *boundary_offset;
+  }
 
   std::vector<int32_t> unused_line_start_offsets;
   return static_cast<int>(

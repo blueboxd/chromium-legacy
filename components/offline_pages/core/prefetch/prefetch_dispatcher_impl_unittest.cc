@@ -12,8 +12,13 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop_current.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "components/image_fetcher/core/mock_image_fetcher.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -330,7 +335,7 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
     offline_model_ = model.get();
     taco_->SetOfflinePageModel(std::move(model));
     taco_->SetPrefetchImporter(std::make_unique<PrefetchImporterImpl>(
-        dispatcher_, offline_model_, task_runner()));
+        dispatcher_, offline_model_, base::ThreadTaskRunnerHandle::Get()));
 
     taco_->CreatePrefetchService();
 
@@ -389,7 +394,7 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
         .WillOnce([&, thumbnail_data](
                       const ClientId& client_id,
                       ThumbnailFetcher::ImageDataFetchedCallback callback) {
-          task_runner()->PostTask(
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE, base::BindOnce(std::move(callback), thumbnail_data));
         });
   }
@@ -445,7 +450,7 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
   MockThumbnailFetcher* thumbnail_fetcher_;
   image_fetcher::MockImageFetcher* thumbnail_image_fetcher_;
 
-  PrefetchStoreTestUtil store_util_{task_runner()};
+  PrefetchStoreTestUtil store_util_;
   MockPrefetchItemGenerator item_generator_;
   base::ScopedTempDir archive_directory_;
   std::unique_ptr<FakeSuggestionsProvider> suggestions_provider_;
@@ -652,10 +657,26 @@ TEST_F(PrefetchDispatcherTest, DispatcherReleasesBackgroundTask) {
   EXPECT_THAT(*network_request_factory()->GetAllUrlsRequested(),
               Contains(prefetch_url.url.spec()));
 
-  // When the network request finishes, the dispatcher should still hold the
-  // ScopedBackgroundTask because it needs to process the results of the
-  // request.
-  RespondWithHttpError(net::HTTP_INTERNAL_SERVER_ERROR);
+  // We want to make sure the response is received before the dispatcher goes
+  // for the next task. For that we need to make sure that only file handle
+  // events (and no regular tasks) get processed by the RunLoop().RunUntilIdle()
+  // call done inside of RespondWithNetError. This can be acomplished by turning
+  // that RunLoop into a nested one (which would only run system tasks). By
+  // posting a task that makes the RespondWithNetError call we will already be
+  // running a RunLoop when the call happens thus turning the
+  // RespondWithNetError RunLoop into a nested one.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        // When the network request finishes, the dispatcher should still hold
+        // the ScopedBackgroundTask because it needs to process the results of
+        // the request
+        RespondWithHttpError(net::HTTP_INTERNAL_SERVER_ERROR);
+        // Stop right after the error is processed, so that we can check
+        // GetBackgroundTask()
+        run_loop.Quit();
+      }));
+  run_loop.Run();
   EXPECT_NE(nullptr, GetBackgroundTask());
   RunUntilIdle();
 
@@ -747,8 +768,19 @@ TEST_F(PrefetchDispatcherTest, SuspendAfterFailedNetworkRequest) {
 
   EXPECT_FALSE(dispatcher_suspended());
 
-  // This should trigger suspend.
-  RespondWithNetError(net::ERR_BLOCKED_BY_ADMINISTRATOR);
+  // We want to make sure the response is received before the dispatcher goes
+  // for the next task. For that we need to make sure that only file handle
+  // events (and no regular tasks) get processed by the RunLoop().RunUntilIdle()
+  // call done inside of RespondWithNetError. This can be acomplished by turning
+  // that RunLoop into a nested one (which would only run system tasks). By
+  // posting a task that makes the RespondWithNetError call we will already be
+  // running a RunLoop when the call happens thus turning the
+  // RespondWithNetError RunLoop into a nested one.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([this]() {
+        // This should trigger suspend.
+        RespondWithNetError(net::ERR_BLOCKED_BY_ADMINISTRATOR);
+      }));
   RunUntilIdle();
 
   EXPECT_TRUE(reschedule_called());

@@ -472,9 +472,21 @@ ServiceWorkerProviderHost::GetRemoteControllerServiceWorker() {
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
     return mojo::Remote<blink::mojom::ControllerServiceWorker>();
   }
+
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
-  controller_->controller()->Clone(
-      remote_controller.BindNewPipeAndPassReceiver());
+  if (!is_response_committed()) {
+    // The receiver will be connected to the controller in
+    // OnBeginNavigationCommit() or CompleteWebWorkerPreparation(). The pair of
+    // Mojo endpoints is created on each main resource response including
+    // redirect. The final Mojo endpoint which is corresponding to the OK
+    // response will be sent to the service worker.
+    pending_controller_receiver_ =
+        remote_controller.BindNewPipeAndPassReceiver();
+  } else {
+    controller_->controller()->Clone(
+        remote_controller.BindNewPipeAndPassReceiver(),
+        cross_origin_embedder_policy_.value());
+  }
   return remote_controller;
 }
 
@@ -769,8 +781,10 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
   SetControllerRegistration(registration, true /* notify_controllerchange */);
 }
 
-void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
-                                                        int render_frame_id) {
+void ServiceWorkerProviderHost::OnBeginNavigationCommit(
+    int render_process_id,
+    int render_frame_id,
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, type_);
 
@@ -781,6 +795,15 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
   DCHECK_EQ(MSG_ROUTING_NONE, frame_id_);
   DCHECK_NE(MSG_ROUTING_NONE, render_frame_id);
   frame_id_ = render_frame_id;
+
+  DCHECK(!cross_origin_embedder_policy_.has_value());
+  cross_origin_embedder_policy_ = cross_origin_embedder_policy;
+  if (controller_ && controller_->fetch_handler_existence() ==
+                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
+    DCHECK(pending_controller_receiver_);
+    controller_->controller()->Clone(std::move(pending_controller_receiver_),
+                                     cross_origin_embedder_policy_.value());
+  }
 
   if (IsBackForwardCacheEnabled() &&
       ServiceWorkerContext::IsServiceWorkerOnUIEnabled() &&
@@ -813,10 +836,21 @@ void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   broker_receiver_.Bind(std::move(broker_receiver));
 }
 
-void ServiceWorkerProviderHost::CompleteWebWorkerPreparation() {
+void ServiceWorkerProviderHost::CompleteWebWorkerPreparation(
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
   DCHECK(provider_type() == ServiceWorkerProviderType::kForDedicatedWorker ||
          provider_type() == ServiceWorkerProviderType::kForSharedWorker);
+
+  DCHECK(!cross_origin_embedder_policy_.has_value());
+  cross_origin_embedder_policy_ = cross_origin_embedder_policy;
+  if (controller_ && controller_->fetch_handler_existence() ==
+                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
+    DCHECK(pending_controller_receiver_);
+    controller_->controller()->Clone(std::move(pending_controller_receiver_),
+                                     cross_origin_embedder_policy_.value());
+  }
+
   TransitionToClientPhase(ClientPhase::kResponseCommitted);
   SetExecutionReady();
 }
@@ -1290,8 +1324,11 @@ void ServiceWorkerProviderHost::GetRegistrationForReady(
 void ServiceWorkerProviderHost::StartControllerComplete(
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
     blink::ServiceWorkerStatusCode status) {
-  if (status == blink::ServiceWorkerStatusCode::kOk)
-    controller_->controller()->Clone(std::move(receiver));
+  if (status == blink::ServiceWorkerStatusCode::kOk) {
+    DCHECK(is_response_committed());
+    controller_->controller()->Clone(std::move(receiver),
+                                     cross_origin_embedder_policy_.value());
+  }
 }
 
 void ServiceWorkerProviderHost::EnsureControllerServiceWorker(

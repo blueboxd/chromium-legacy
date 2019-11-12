@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.ui.widget.MoreProgressButton;
 import org.chromium.chrome.browser.ui.widget.MoreProgressButton.State;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -30,6 +31,7 @@ import java.util.concurrent.TimeUnit;
  * turned on (HistoryManager::isScrollToLoadDisabled() == true).
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/1023426")
 public class HistoryAdapterAccessibilityTest {
     public static final int PAGING = 2;
 

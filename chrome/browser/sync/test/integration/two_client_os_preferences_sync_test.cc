@@ -4,17 +4,13 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shelf_prefs.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/sync/test/integration/os_sync_test.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/base/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using preferences_helper::ChangeStringPref;
@@ -24,33 +20,13 @@ using preferences_helper::GetRegistry;
 
 namespace {
 
-class TwoClientOsPreferencesSyncTest : public SyncTest {
+class TwoClientOsPreferencesSyncTest : public OsSyncTest {
  public:
-  TwoClientOsPreferencesSyncTest() : SyncTest(TWO_CLIENT) {
-    settings_feature_list_.InitAndEnableFeature(
-        chromeos::features::kSplitSettingsSync);
-  }
-
+  TwoClientOsPreferencesSyncTest() : OsSyncTest(TWO_CLIENT) {}
   ~TwoClientOsPreferencesSyncTest() override = default;
 
   // Needed for AwaitQuiescence().
   bool TestUsesSelfNotifications() override { return true; }
-
-  bool SetupClients() override {
-    bool result = SyncTest::SetupClients();
-    for (Profile* profile : GetAllProfiles()) {
-      profile->GetPrefs()->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled,
-                                      true);
-    }
-    return result;
-  }
-
- private:
-  // The names |scoped_feature_list_| and |feature_list_| are both used in
-  // superclasses.
-  base::test::ScopedFeatureList settings_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(TwoClientOsPreferencesSyncTest);
 };
 
 IN_PROC_BROWSER_TEST_F(TwoClientOsPreferencesSyncTest, E2E_ENABLED(Sanity)) {

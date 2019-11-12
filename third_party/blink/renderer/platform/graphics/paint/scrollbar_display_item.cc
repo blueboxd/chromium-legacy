@@ -31,7 +31,6 @@ class LayerClientForFixedDebugName : public cc::LayerClient {
     return traced_value;
   }
   std::string LayerDebugName(const cc::Layer*) const override { return name_; }
-  void DidChangeScrollbarsHiddenIfOverlay(bool) override {}
 
   base::WeakPtr<cc::LayerClient> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();

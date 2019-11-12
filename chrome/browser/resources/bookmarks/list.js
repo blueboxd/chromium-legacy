@@ -119,8 +119,8 @@ Polymer({
     // Trigger a layout of the iron list. Otherwise some elements may render
     // as blank entries. See https://crbug.com/848683
     this.$.list.fire('iron-resize');
-    const label = await cr.sendWithPromise(
-        'getPluralString', 'listChanged', this.displayedList_.length);
+    const label = await bookmarks.BrowserProxy.getInstance().getPluralString(
+        'listChanged', this.displayedList_.length);
     this.fire('iron-announce', {text: label});
 
     if (!skipFocus && selectIndex > -1) {

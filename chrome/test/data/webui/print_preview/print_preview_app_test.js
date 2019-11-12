@@ -2,28 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview_app_test', function() {
+import {NativeLayer, CloudPrintInterface, setCloudPrintInterfaceForTesting, PluginProxy, Destination, DuplexMode } from 'chrome://print/print_preview.js';
+import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
+import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
+import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
+import {getCddTemplate, getGoogleDriveDestination} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+
+  window.print_preview_app_test = {};
+  print_preview_app_test.suiteName = 'PrintPreviewAppTest';
   /** @enum {string} */
-  const TestNames = {
+  print_preview_app_test.TestNames = {
     PrintToGoogleDrive: 'print to google drive',
     PrintPresets: 'print presets',
   };
 
-  const suiteName = 'PrintPreviewAppTest';
-  suite(suiteName, function() {
+  suite(print_preview_app_test.suiteName, function() {
     /** @type {?PrintPreviewAppElement} */
     let page = null;
 
-    /** @type {?print_preview.NativeLayer} */
+    /** @type {?NativeLayer} */
     let nativeLayer = null;
 
-    /** @type {?cloudprint.CloudPrintInterface} */
+    /** @type {?CloudPrintInterface} */
     let cloudPrintInterface = null;
 
-    /** @type {?print_preview.PluginProxy} */
+    /** @type {?PluginProxy} */
     let pluginProxy = null;
 
-    /** @type {!print_preview.NativeInitialSettings} */
+    /** @type {!NativeInitialSettings} */
     const initialSettings = {
       isInKioskAutoPrintMode: false,
       isInAppKioskMode: false,
@@ -45,15 +52,15 @@ cr.define('print_preview_app_test', function() {
     setup(function() {
       // Stub out the native layer, the cloud print interface, and the plugin.
       PolymerTest.clearBody();
-      nativeLayer = new print_preview.NativeLayerStub();
-      print_preview.NativeLayer.setInstance(nativeLayer);
+      nativeLayer = new NativeLayerStub();
+      NativeLayer.setInstance(nativeLayer);
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinationCapabilities(
-          print_preview_test_utils.getCddTemplate(initialSettings.printerName));
-      cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
-      cloudprint.setCloudPrintInterfaceForTesting(cloudPrintInterface);
-      pluginProxy = new print_preview.PDFPluginStub();
-      print_preview.PluginProxy.setInstance(pluginProxy);
+          getCddTemplate(initialSettings.printerName));
+      cloudPrintInterface = new CloudPrintInterfaceStub();
+      setCloudPrintInterfaceForTesting(cloudPrintInterface);
+      pluginProxy = new PDFPluginStub();
+      PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
@@ -62,12 +69,13 @@ cr.define('print_preview_app_test', function() {
     });
 
     // Regression test for https://crbug.com/936029
-    test(assert(TestNames.PrintToGoogleDrive), async () => {
+    test(assert(print_preview_app_test.TestNames.PrintToGoogleDrive),
+        async () => {
       // Set up the UI to have Google Drive as the printer.
-      page.destination_ = print_preview_test_utils.getGoogleDriveDestination(
+      page.destination_ = getGoogleDriveDestination(
           'foo@chromium.org');
       page.destination_.capabilities =
-          print_preview_test_utils.getCddTemplate(page.destination_.id);
+          getCddTemplate(page.destination_.id);
 
       // Trigger print.
       const sidebar = page.$$('print-preview-sidebar');
@@ -79,27 +87,22 @@ cr.define('print_preview_app_test', function() {
       assertEquals('sample data', args.data);
       assertEquals('DocumentABC123', args.documentTitle);
       assertEquals(
-          print_preview.Destination.GooglePromotedId.DOCS, args.destination.id);
+          Destination.GooglePromotedId.DOCS, args.destination.id);
       assertEquals('1.0', JSON.parse(args.printTicket).version);
     });
 
-    test(assert(TestNames.PrintPresets), function() {
+    test(assert(print_preview_app_test.TestNames.PrintPresets), function() {
       assertEquals(1, page.settings.copies.value);
       assertFalse(page.settings.duplex.value);
 
       // Send preset values of duplex LONG_EDGE and 2 copies.
       const copies = 2;
-      const duplex = print_preview.DuplexMode.LONG_EDGE;
-      cr.webUIListenerCallback('print-preset-options', true, copies, duplex);
+      const duplex = DuplexMode.LONG_EDGE;
+      window.cr.webUIListenerCallback(
+          'print-preset-options', true, copies, duplex);
       assertEquals(copies, page.getSettingValue('copies'));
       assertTrue(page.getSettingValue('duplex'));
       assertFalse(page.getSetting('duplex').setFromUi);
       assertFalse(page.getSetting('copies').setFromUi);
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

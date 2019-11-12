@@ -75,7 +75,6 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      bool search_caption_visible,
                      bool search_bar_border_visible,
                      float search_bar_border_height,
-                     bool search_bar_shadow_visible,
                      bool quick_action_icon_visible,
                      bool thumbnail_visible,
                      float custom_image_visibility_percentage,

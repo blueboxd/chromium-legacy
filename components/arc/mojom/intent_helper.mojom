@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 32
+// Next MinVersion: 33
 
 module arc.mojom;
 
@@ -274,7 +274,7 @@ interface IntentHelperInstance {
   // user preference. The |intent_info| is used to generate the components set
   // and match for setting the preferred activity.
   // This is used to sync the preferred app setting from Chrome OS.
-  [MinVersion=31] AddPreferredApp@17(string package_name,
+  [MinVersion=32] AddPreferredApp@17(string package_name,
                                      IntentFilter intent_filter,
                                      IntentInfo intent_info);
 

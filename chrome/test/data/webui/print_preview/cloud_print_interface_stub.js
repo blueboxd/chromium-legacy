@@ -2,22 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {getCddTemplate} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {CloudPrintInterfaceEventType, createDestinationKey, DestinationOrigin} from 'chrome://print/print_preview.js';
+
   /**
    * Test version of the cloud print interface.
-   * @implements {cloudprint.CloudPrintInterface}
+   * @implements {CloudPrintInterface}
    */
-  class CloudPrintInterfaceStub extends TestBrowserProxy {
+  export class CloudPrintInterfaceStub extends TestBrowserProxy {
     constructor() {
       super(['printer', 'search', 'submit']);
 
-      /** @private {!cr.EventTarget} */
-      this.eventTarget_ = new cr.EventTarget();
+      /** @private {!EventTarget} */
+      this.eventTarget_ = new EventTarget();
 
       /** @private {boolean} */
       this.searchInProgress_ = false;
 
-      /** @private {!Map<string, !print_preview.Destination>} */
+      /** @private {!Map<string, !Destination>} */
       this.cloudPrintersMap_ = new Map();
 
       /** @private {boolean} */
@@ -43,7 +47,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.Destination} printer The destination to return
+     * @param {!Destination} printer The destination to return
      *     when the printer is requested.
      */
     setPrinter(printer) {
@@ -79,7 +83,7 @@ cr.define('print_preview', function() {
           this.users_.includes(account) ? account : (this.users_[0] || '');
       if (activeUser) {
         this.eventTarget_.dispatchEvent(new CustomEvent(
-            cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
+            CloudPrintInterfaceEventType.UPDATE_USERS,
             {detail: {users: this.users_, activeUser: activeUser}}));
         this.initialized_ = true;
       }
@@ -92,9 +96,9 @@ cr.define('print_preview', function() {
       });
 
       const searchDoneEvent =
-          new CustomEvent(cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE, {
+          new CustomEvent(CloudPrintInterfaceEventType.SEARCH_DONE, {
             detail: {
-              origin: print_preview.DestinationOrigin.COOKIES,
+              origin: DestinationOrigin.COOKIES,
               printers: printers,
               isRecent: true,
               user: account,
@@ -117,27 +121,27 @@ cr.define('print_preview', function() {
       this.methodCalled(
           'printer', {id: printerId, origin: origin, account: account});
       const printer = this.cloudPrintersMap_.get(
-          print_preview.createDestinationKey(printerId, origin, account));
+          createDestinationKey(printerId, origin, account));
 
       if (!this.initialized_) {
         const activeUser =
             this.users_.includes(account) ? account : (this.users_[0] || '');
         if (activeUser) {
           this.eventTarget_.dispatchEvent(new CustomEvent(
-              cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
+              CloudPrintInterfaceEventType.UPDATE_USERS,
               {detail: {users: this.users_, activeUser: activeUser}}));
           this.initialized_ = true;
         }
       }
       if (printer) {
         printer.capabilities =
-            print_preview_test_utils.getCddTemplate(printerId);
+            getCddTemplate(printerId);
         this.eventTarget_.dispatchEvent(new CustomEvent(
-            cloudprint.CloudPrintInterfaceEventType.PRINTER_DONE,
+            CloudPrintInterfaceEventType.PRINTER_DONE,
             {detail: printer}));
       } else {
         this.eventTarget_.dispatchEvent(new CustomEvent(
-            cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED, {
+            CloudPrintInterfaceEventType.PRINTER_FAILED, {
               detail: {
                 origin: origin,
                 destinationId: printerId,
@@ -157,8 +161,3 @@ cr.define('print_preview', function() {
       });
     }
   }
-
-  return {
-    CloudPrintInterfaceStub: CloudPrintInterfaceStub,
-  };
-});

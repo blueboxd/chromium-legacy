@@ -1464,6 +1464,27 @@ TEST_F(DnsTransactionTest, HttpsPostLookupAsync) {
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
 }
 
+URLRequestJob* DohJobMakerCallbackFailLookup(URLRequest* request,
+                                             NetworkDelegate* network_delegate,
+                                             SocketDataProvider* data) {
+  URLRequestMockDohJob::MatchQueryData(request, data);
+  return new URLRequestFailedJob(request, network_delegate,
+                                 URLRequestFailedJob::START,
+                                 ERR_NAME_NOT_RESOLVED);
+}
+
+TEST_F(DnsTransactionTest, HttpsPostLookupFailDohServerLookup) {
+  ConfigureDohServers(true /* use_post */);
+  AddQueryAndResponse(0, kT0HostName, kT0Qtype, kT0ResponseDatagram,
+                      base::size(kT0ResponseDatagram), SYNCHRONOUS,
+                      Transport::HTTPS, nullptr /* opt_rdata */,
+                      DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  TransactionHelper helper0(kT0HostName, kT0Qtype, true /* secure */,
+                            ERR_DNS_SECURE_RESOLVER_HOSTNAME_RESOLUTION_FAILED);
+  SetDohJobMakerCallback(base::BindRepeating(DohJobMakerCallbackFailLookup));
+  EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+}
+
 URLRequestJob* DohJobMakerCallbackFailStart(URLRequest* request,
                                             NetworkDelegate* network_delegate,
                                             SocketDataProvider* data) {

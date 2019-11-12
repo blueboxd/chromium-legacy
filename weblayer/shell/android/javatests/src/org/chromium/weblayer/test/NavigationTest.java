@@ -52,12 +52,14 @@ public class NavigationTest {
         public static class NavigationCallbackHelper extends CallbackHelper {
             private Uri mUri;
             private boolean mIsSameDocument;
+            private int mHttpStatusCode;
             private List<Uri> mRedirectChain;
             private @LoadError int mLoadError;
 
             public void notifyCalled(Navigation navigation) {
                 mUri = navigation.getUri();
                 mIsSameDocument = navigation.isSameDocument();
+                mHttpStatusCode = navigation.getHttpStatusCode();
                 mRedirectChain = navigation.getRedirectChain();
                 mLoadError = navigation.getLoadError();
                 notifyCalled();
@@ -86,6 +88,10 @@ public class NavigationTest {
                 waitForCallback(currentCallCount);
                 assertEquals(mUri.toString(), uri);
                 assertEquals(mLoadError, loadError);
+            }
+
+            public int getHttpStatusCode() {
+                return mHttpStatusCode;
             }
         }
 
@@ -188,6 +194,7 @@ public class NavigationTest {
         mCallback.onReadyToCommitCallback.assertCalledWith(curCommittedCount, URL2);
         mCallback.onCompletedCallback.assertCalledWith(curCompletedCount, URL2);
         mCallback.onFirstContentfulPaintCallback.waitForCallback(curOnFirstContentfulPaintCount);
+        assertEquals(mCallback.onCompletedCallback.getHttpStatusCode(), 200);
     }
 
     @Test
@@ -365,6 +372,7 @@ public class NavigationTest {
 
         mCallback.onCompletedCallback.assertCalledWith(
                 curCompletedCount, url, LoadError.HTTP_CLIENT_ERROR);
+        assertEquals(mCallback.onCompletedCallback.getHttpStatusCode(), 404);
     }
 
     private void setNavigationCallback(InstrumentationActivity activity) {

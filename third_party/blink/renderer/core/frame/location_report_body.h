@@ -9,11 +9,12 @@
 #include <utility>
 
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/frame/report_body.h"
 
 namespace blink {
 
-class LocationReportBody : public ReportBody {
+class CORE_EXPORT LocationReportBody : public ReportBody {
  public:
   explicit LocationReportBody(std::unique_ptr<SourceLocation> location)
       : source_file_(location->Url()),
@@ -46,6 +47,8 @@ class LocationReportBody : public ReportBody {
     is_null = !column_number_.has_value();
     return column_number_.value_or(0);
   }
+
+  void BuildJSONValue(V8ObjectBuilder& builder) const override;
 
  protected:
   const String source_file_;

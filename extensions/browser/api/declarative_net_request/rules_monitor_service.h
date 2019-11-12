@@ -69,10 +69,11 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // |callback| with an optional error.
   using DynamicRuleUpdateUICallback =
       base::OnceCallback<void(base::Optional<std::string> error)>;
-  void UpdateDynamicRules(const Extension& extension,
-                          std::vector<api::declarative_net_request::Rule> rules,
-                          DynamicRuleUpdateAction action,
-                          DynamicRuleUpdateUICallback callback);
+  void UpdateDynamicRules(
+      const Extension& extension,
+      std::vector<int> rule_ids_to_remove,
+      std::vector<api::declarative_net_request::Rule> rules_to_add,
+      DynamicRuleUpdateUICallback callback);
 
   RulesetManager* ruleset_manager() { return &ruleset_manager_; }
 

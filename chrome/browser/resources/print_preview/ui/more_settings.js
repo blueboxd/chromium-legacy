@@ -2,8 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {Metrics, MetricsContext} from '../metrics.js';
+import '../strings.m.js';
+
 Polymer({
   is: 'print-preview-more-settings',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [I18nBehavior],
 
@@ -19,8 +30,8 @@ Polymer({
     },
   },
 
-  /** @private {!print_preview.MetricsContext} */
-  metrics_: print_preview.MetricsContext.printSettingsUi(),
+  /** @private {!MetricsContext} */
+  metrics_: MetricsContext.printSettingsUi(),
 
   /**
    * Toggles the expand button within the element being listened to.
@@ -44,7 +55,7 @@ Polymer({
     expandButton.expanded = !expandButton.expanded;
     this.metrics_.record(
         this.settingsExpandedByUser ?
-            print_preview.Metrics.PrintSettingsUiBucket.MORE_SETTINGS_CLICKED :
-            print_preview.Metrics.PrintSettingsUiBucket.LESS_SETTINGS_CLICKED);
+            Metrics.PrintSettingsUiBucket.MORE_SETTINGS_CLICKED :
+            Metrics.PrintSettingsUiBucket.LESS_SETTINGS_CLICKED);
   },
 });

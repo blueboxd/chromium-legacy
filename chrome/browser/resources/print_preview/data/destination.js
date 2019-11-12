@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import '../strings.m.js';
+// <if expr="chromeos">
+import {BackgroundGraphicsModeRestriction, ColorModeRestriction, DuplexModeRestriction, PinModeRestriction, Policies} from './destination_policies.js';
+// </if>
 
   /**
    * Enumeration of the types of destinations.
    * @enum {string}
    */
-  const DestinationType = {
+  export const DestinationType = {
     GOOGLE: 'google',
     GOOGLE_PROMOTED: 'google_promoted',
     LOCAL: 'local',
@@ -20,7 +25,7 @@ cr.define('print_preview', function() {
    * Enumeration of the origin types for cloud destinations.
    * @enum {string}
    */
-  const DestinationOrigin = {
+  export const DestinationOrigin = {
     LOCAL: 'local',
     COOKIES: 'cookies',
     // <if expr="chromeos">
@@ -33,9 +38,9 @@ cr.define('print_preview', function() {
 
   /**
    * Cloud Print origins.
-   * @const {!Array<!print_preview.DestinationOrigin>}
+   * @const {!Array<!DestinationOrigin>}
    */
-  const CloudOrigins = [
+  export const CloudOrigins = [
     DestinationOrigin.COOKIES,
     // <if expr="chromeos">
     DestinationOrigin.DEVICE,
@@ -46,7 +51,7 @@ cr.define('print_preview', function() {
    * Enumeration of the connection statuses of printer destinations.
    * @enum {string}
    */
-  const DestinationConnectionStatus = {
+  export const DestinationConnectionStatus = {
     DORMANT: 'DORMANT',
     OFFLINE: 'OFFLINE',
     ONLINE: 'ONLINE',
@@ -59,7 +64,7 @@ cr.define('print_preview', function() {
    * the destination is provisional.
    * @enum {string}
    */
-  const DestinationProvisionalType = {
+  export const DestinationProvisionalType = {
     // Destination is not provisional.
     NONE: 'NONE',
     // User has to grant USB access for the destination to its provider.
@@ -72,7 +77,7 @@ cr.define('print_preview', function() {
    * Values UNKNOWN and YES are returned directly by the GCP server.
    * @enum {string}
    */
-  const DestinationCertificateStatus = {
+  export const DestinationCertificateStatus = {
     // Destination is not a cloud printer or no status was retrieved.
     NONE: 'NONE',
     // Printer does not have a valid 2018 certificate. Currently unused, to be
@@ -92,13 +97,13 @@ cr.define('print_preview', function() {
    *   is_default: (boolean | undefined),
    * }}
    */
-  let VendorCapabilitySelectOption;
+  export let VendorCapabilitySelectOption;
 
   /**
    * Same as cloud_devices::printer::TypedValueVendorCapability::ValueType.
    * @enum {string}
    */
-  const VendorCapabilityValueType = {
+  export const VendorCapabilityValueType = {
     BOOLEAN: 'BOOLEAN',
     FLOAT: 'FLOAT',
     INTEGER: 'INTEGER',
@@ -113,18 +118,18 @@ cr.define('print_preview', function() {
    *   localized_display_name: (string | undefined),
    *   type: (string),
    *   select_cap: ({
-   *     option: (Array<!print_preview.VendorCapabilitySelectOption>|undefined),
+   *     option: (Array<!VendorCapabilitySelectOption>|undefined),
    *   }|undefined),
    *   typed_value_cap: ({
    *     default: (number | string | boolean | undefined),
-   *     value_type: (print_preview.VendorCapabilityValueType | undefined),
+   *     value_type: (VendorCapabilityValueType | undefined),
    *   }|undefined),
    *   range_cap: ({
    *     default: (number),
    *   }),
    * }}
    */
-  let VendorCapability;
+  export let VendorCapability;
 
   /**
    * Capabilities of a print destination represented in a CDD.
@@ -132,7 +137,7 @@ cr.define('print_preview', function() {
    * only on Chrome OS.
    *
    * @typedef {{
-   *   vendor_capability: !Array<!print_preview.VendorCapability>,
+   *   vendor_capability: !Array<!VendorCapability>,
    *   collate: ({default: (boolean|undefined)}|undefined),
    *   color: ({
    *     option: !Array<{
@@ -169,7 +174,7 @@ cr.define('print_preview', function() {
    *   pin: ({supported: (boolean|undefined)}|undefined)
    * }}
    */
-  let CddCapabilities;
+  export let CddCapabilities;
 
   /**
    * The CDD (Cloud Device Description) describes the capabilities of a print
@@ -177,110 +182,40 @@ cr.define('print_preview', function() {
    *
    * @typedef {{
    *   version: string,
-   *   printer: !print_preview.CddCapabilities,
+   *   printer: !CddCapabilities,
    * }}
    */
-  let Cdd;
+  export let Cdd;
 
   /**
    * Enumeration of color modes used by Chromium.
    * @enum {number}
    */
-  const ColorMode = {
+  export const ColorMode = {
     GRAY: 1,
     COLOR: 2,
   };
 
-  // <if expr="chromeos">
-  /**
-   * Enumeration of color mode restrictions used by Chromium.
-   * This has to coincide with |printing::ColorModeRestriction| as defined in
-   * printing/backend/printing_restrictions.h
-   * @enum {number}
-   */
-  const ColorModeRestriction = {
-    UNSET: 0x0,
-    MONOCHROME: 0x1,
-    COLOR: 0x2,
-  };
-
-  /**
-   * Enumeration of duplex mode restrictions used by Chromium.
-   * This has to coincide with |printing::DuplexModeRestriction| as defined in
-   * printing/backend/printing_restrictions.h
-   * @enum {number}
-   */
-  const DuplexModeRestriction = {
-    UNSET: 0x0,
-    SIMPLEX: 0x1,
-    LONG_EDGE: 0x2,
-    SHORT_EDGE: 0x4,
-    DUPLEX: 0x6,
-  };
-
-  /**
-   * Enumeration of PIN printing mode restrictions used by Chromium.
-   * This has to coincide with |printing::PinModeRestriction| as defined in
-   * printing/backend/printing_restrictions.h
-   * @enum {number}
-   */
-  const PinModeRestriction = {
-    UNSET: 0,
-    PIN: 1,
-    NO_PIN: 2,
-  };
-
-  /**
-   * Enumeration of background graphics printing mode restrictions used by
-   * Chromium.
-   * This has to coincide with |printing::BackgroundGraphicsModeRestriction| as
-   * defined in printing/backend/printing_restrictions.h
-   * @enum {number}
-   */
-  const BackgroundGraphicsModeRestriction = {
-    UNSET: 0,
-    ENABLED: 1,
-    DISABLED: 2,
-  };
-
-  /**
-   * Policies affecting a destination.
-   * @typedef {{
-   *   allowedColorModes: ?print_preview.ColorModeRestriction,
-   *   allowedDuplexModes: ?print_preview.DuplexModeRestriction,
-   *   allowedPinMode: ?print_preview.PinModeRestriction,
-   *   allowedBackgroundGraphicsMode:
-   *       ?print_preview.BackgroundGraphicsModeRestriction,
-   *   defaultColorMode: ?print_preview.ColorModeRestriction,
-   *   defaultDuplexMode: ?print_preview.DuplexModeRestriction,
-   *   defaultPinMode: ?print_preview.PinModeRestriction,
-   *   defaultBackgroundGraphicsMode:
-   *       ?print_preview.BackgroundGraphicsModeRestriction,
-   * }}
-   */
-  let Policies;
-  // </if>
-
   /**
    * @typedef {{id: string,
-   *            origin: print_preview.DestinationOrigin,
+   *            origin: DestinationOrigin,
    *            account: string,
-   *            capabilities: ?print_preview.Cdd,
+   *            capabilities: ?Cdd,
    *            displayName: string,
    *            extensionId: string,
    *            extensionName: string,
    *            icon: (string | undefined)
    *          }}
    */
-  let RecentDestination;
+  export let RecentDestination;
 
   /**
    * Creates a |RecentDestination| to represent |destination| in the app
    * state.
-   * @param {!print_preview.Destination} destination The destination to store.
-   * @return {!print_preview.RecentDestination}
+   * @param {!Destination} destination The destination to store.
+   * @return {!RecentDestination}
    */
-  function makeRecentDestination(destination) {
+  export function makeRecentDestination(destination) {
     return {
       id: destination.id,
       origin: destination.origin,
@@ -295,36 +230,36 @@ cr.define('print_preview', function() {
 
   /**
    * @param {string} id Destination id.
-   * @param {!print_preview.DestinationOrigin} origin Destination origin.
+   * @param {!DestinationOrigin} origin Destination origin.
    * @param {string} account User account destination is registered for.
    * @return {string} A key that maps to a destination with the selected |id|,
    *     |origin|, and |account|.
    */
-  function createDestinationKey(id, origin, account) {
+  export function createDestinationKey(id, origin, account) {
     return `${id}/${origin}/${account}`;
   }
 
   /**
-   * @param {!print_preview.RecentDestination} recentDestination
+   * @param {!RecentDestination} recentDestination
    * @return {string} A key that maps to a destination with parameters matching
    *     |recentDestination|.
    */
-  function createRecentDestinationKey(recentDestination) {
-    return print_preview.createDestinationKey(
+  export function createRecentDestinationKey(recentDestination) {
+    return createDestinationKey(
         recentDestination.id, recentDestination.origin,
         recentDestination.account);
   }
 
-  class Destination {
+  export class Destination {
     /**
      * Print destination data object that holds data for both local and cloud
      * destinations.
      * @param {string} id ID of the destination.
-     * @param {!print_preview.DestinationType} type Type of the destination.
-     * @param {!print_preview.DestinationOrigin} origin Origin of the
+     * @param {!DestinationType} type Type of the destination.
+     * @param {!DestinationOrigin} origin Origin of the
      *     destination.
      * @param {string} displayName Display name of the destination.
-     * @param {!print_preview.DestinationConnectionStatus} connectionStatus
+     * @param {!DestinationConnectionStatus} connectionStatus
      *     Connection status of the print destination.
      * @param {{tags: (Array<string>|undefined),
      *          isOwned: (boolean|undefined),
@@ -333,13 +268,13 @@ cr.define('print_preview', function() {
      *          lastAccessTime: (number|undefined),
      *          cloudID: (string|undefined),
      *          provisionalType:
-     *              (print_preview.DestinationProvisionalType|undefined),
+     *              (DestinationProvisionalType|undefined),
      *          extensionId: (string|undefined),
      *          extensionName: (string|undefined),
      *          description: (string|undefined),
      *          certificateStatus:
-     *              (print_preview.DestinationCertificateStatus|undefined),
-     *          policies: (print_preview.Policies|undefined),
+     *              (DestinationCertificateStatus|undefined),
+     *          policies: (Policies|undefined),
      *         }=} opt_params Optional
      *     parameters for the destination.
      */
@@ -352,13 +287,13 @@ cr.define('print_preview', function() {
 
       /**
        * Type of the destination.
-       * @private {!print_preview.DestinationType}
+       * @private {!DestinationType}
        */
       this.type_ = type;
 
       /**
        * Origin of the destination.
-       * @private {!print_preview.DestinationOrigin}
+       * @private {!DestinationOrigin}
        */
       this.origin_ = origin;
 
@@ -376,13 +311,13 @@ cr.define('print_preview', function() {
 
       /**
        * Print capabilities of the destination.
-       * @private {?print_preview.Cdd}
+       * @private {?Cdd}
        */
       this.capabilities_ = null;
 
       /**
        * Policies affecting the destination.
-       * @private {?print_preview.Policies}
+       * @private {?Policies}
        */
       this.policies_ = (opt_params && opt_params.policies) || null;
 
@@ -419,7 +354,7 @@ cr.define('print_preview', function() {
 
       /**
        * Connection status of the destination.
-       * @private {!print_preview.DestinationConnectionStatus}
+       * @private {!DestinationConnectionStatus}
        */
       this.connectionStatus_ = connectionStatus;
 
@@ -450,24 +385,24 @@ cr.define('print_preview', function() {
       this.extensionName_ = (opt_params && opt_params.extensionName) || '';
 
       /**
-       * Different from {@code print_preview.DestinationProvisionalType.NONE} if
+       * Different from  DestinationProvisionalType.NONE if
        * the destination is provisional. Provisional destinations cannot be
        * selected as they are, but have to be resolved first (i.e. extra steps
        * have to be taken to get actual destination properties, which should
        * replace the provisional ones). Provisional destination resolvment flow
        * will be started when the user attempts to select the destination in
        * search UI.
-       * @private {print_preview.DestinationProvisionalType}
+       * @private {DestinationProvisionalType}
        */
       this.provisionalType_ = (opt_params && opt_params.provisionalType) ||
           DestinationProvisionalType.NONE;
 
       /**
        * Printer 2018 certificate status
-       * @private {print_preview.DestinationCertificateStatus}
+       * @private {DestinationCertificateStatus}
        */
       this.certificateStatus_ = opt_params && opt_params.certificateStatus ||
-          print_preview.DestinationCertificateStatus.NONE;
+          DestinationCertificateStatus.NONE;
 
       assert(
           this.provisionalType_ !=
@@ -494,13 +429,13 @@ cr.define('print_preview', function() {
       return this.id_;
     }
 
-    /** @return {!print_preview.DestinationType} Type of the destination. */
+    /** @return {!DestinationType} Type of the destination. */
     get type() {
       return this.type_;
     }
 
     /**
-     * @return {!print_preview.DestinationOrigin} Origin of the destination.
+     * @return {!DestinationOrigin} Origin of the destination.
      */
     get origin() {
       return this.origin_;
@@ -612,13 +547,13 @@ cr.define('print_preview', function() {
       return this.extensionName_;
     }
 
-    /** @return {?print_preview.Cdd} Print capabilities of the destination. */
+    /** @return {?Cdd} Print capabilities of the destination. */
     get capabilities() {
       return this.capabilities_;
     }
 
     /**
-     * @param {?print_preview.Cdd} capabilities Print capabilities of the
+     * @param {?Cdd} capabilities Print capabilities of the
      *     destination.
      */
     set capabilities(capabilities) {
@@ -629,7 +564,7 @@ cr.define('print_preview', function() {
 
     // <if expr="chromeos">
     /**
-     * @return {?print_preview.Policies} Print policies affecting the
+     * @return {?Policies} Print policies affecting the
      *     destination.
      */
     get policies() {
@@ -637,7 +572,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {?print_preview.Policies} policies Print policies affecting the
+     * @param {?Policies} policies Print policies affecting the
      *     destination.
      */
     set policies(policies) {
@@ -646,7 +581,7 @@ cr.define('print_preview', function() {
     // </if>
 
     /**
-     * @return {!print_preview.DestinationConnectionStatus} Connection status
+     * @return {!DestinationConnectionStatus} Connection status
      *     of the print destination.
      */
     get connectionStatus() {
@@ -654,7 +589,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.DestinationConnectionStatus} status Connection
+     * @param {!DestinationConnectionStatus} status Connection
      *     status of the print destination.
      */
     set connectionStatus(status) {
@@ -667,7 +602,7 @@ cr.define('print_preview', function() {
      */
     get hasInvalidCertificate() {
       return this.certificateStatus_ ==
-          print_preview.DestinationCertificateStatus.NO;
+          DestinationCertificateStatus.NO;
     }
 
     /**
@@ -677,15 +612,15 @@ cr.define('print_preview', function() {
      */
     get shouldShowInvalidCertificateError() {
       return this.certificateStatus_ ==
-          print_preview.DestinationCertificateStatus.NO &&
+          DestinationCertificateStatus.NO &&
           !loadTimeData.getBoolean('isEnterpriseManaged');
     }
 
     /** @return {boolean} Whether the destination is considered offline. */
     get isOffline() {
       return [
-        print_preview.DestinationConnectionStatus.OFFLINE,
-        print_preview.DestinationConnectionStatus.DORMANT
+        DestinationConnectionStatus.OFFLINE,
+        DestinationConnectionStatus.DORMANT
       ].includes(this.connectionStatus_);
     }
 
@@ -699,7 +634,7 @@ cr.define('print_preview', function() {
 
     /** @return {boolean} Whether the destination is ready to be selected. */
     get readyForSelection() {
-      return (!cr.isChromeOS || this.origin_ != DestinationOrigin.CROS ||
+      return (!isChromeOS || this.origin_ != DestinationOrigin.CROS ||
               this.capabilities_ != null) &&
           !this.isProvisional;
     }
@@ -750,10 +685,10 @@ cr.define('print_preview', function() {
       if (this.isLocal) {
         return 'print-preview:print';
       }
-      if (this.type_ == print_preview.DestinationType.MOBILE && this.isOwned_) {
+      if (this.type_ == DestinationType.MOBILE && this.isOwned_) {
         return 'print-preview:smartphone';
       }
-      if (this.type_ == print_preview.DestinationType.MOBILE) {
+      if (this.type_ == DestinationType.MOBILE) {
         return 'print-preview:smartphone';
       }
       if (this.isOwned_) {
@@ -784,7 +719,7 @@ cr.define('print_preview', function() {
 
     /**
      * Gets the destination's provisional type.
-     * @return {print_preview.DestinationProvisionalType}
+     * @return {DestinationProvisionalType}
      */
     get provisionalType() {
       return this.provisionalType_;
@@ -792,7 +727,7 @@ cr.define('print_preview', function() {
 
     /**
      * Gets the destination's certificate status.
-     * @return {print_preview.DestinationCertificateStatus}
+     * @return {DestinationCertificateStatus}
      */
     get certificateStatus() {
       return this.certificateStatus_;
@@ -827,7 +762,7 @@ cr.define('print_preview', function() {
 
     // <if expr="chromeos">
     /**
-     * @return {?print_preview.ColorModeRestriction} Color mode set by policy.
+     * @return {?ColorModeRestriction} Color mode set by policy.
      */
     get colorPolicy() {
       return this.policies && this.policies.allowedColorModes ?
@@ -836,7 +771,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {?print_preview.DuplexModeRestriction} Duplex modes allowed by
+     * @return {?DuplexModeRestriction} Duplex modes allowed by
      *     policy.
      */
     get duplexPolicy() {
@@ -846,7 +781,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {?print_preview.PinModeRestriction} Pin mode allowed by policy.
+     * @return {?PinModeRestriction} Pin mode allowed by policy.
      */
     get pinPolicy() {
       return this.policies && this.policies.allowedPinModes ?
@@ -855,7 +790,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {?print_preview.BackgroundGraphicsModeRestriction} Background
+     * @return {?BackgroundGraphicsModeRestriction} Background
      *     graphics mode allowed by policy.
      */
     get backgroundGraphicsPolicy() {
@@ -887,7 +822,7 @@ cr.define('print_preview', function() {
 
     // <if expr="chromeos">
     /**
-     * @return {?print_preview.ColorModeRestriction} Value of default color
+     * @return {?ColorModeRestriction} Value of default color
      *     setting given by policy.
      */
     get defaultColorPolicy() {
@@ -895,7 +830,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {?print_preview.DuplexModeRestriction} Value of default duplex
+     * @return {?DuplexModeRestriction} Value of default duplex
      *     setting given by policy.
      */
     get defaultDuplexPolicy() {
@@ -903,7 +838,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {?print_preview.PinModeRestriction} Value of default pin setting
+     * @return {?PinModeRestriction} Value of default pin setting
      *     given by policy.
      */
     get defaultPinPolicy() {
@@ -911,7 +846,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {?print_preview.BackgroundGraphicsModeRestriction} Value of
+     * @return {?BackgroundGraphicsModeRestriction} Value of
      *     default background graphics setting given by policy.
      */
     get defaultBackgroundGraphicsPolicy() {
@@ -950,14 +885,14 @@ cr.define('print_preview', function() {
       // model is ignored.
       const capability = this.colorCapability_();
       if (!capability || !capability.option || !this.isLocal) {
-        return isColor ? print_preview.ColorMode.COLOR :
-                         print_preview.ColorMode.GRAY;
+        return isColor ? ColorMode.COLOR :
+                         ColorMode.GRAY;
       }
       const selected = this.getSelectedColorOption(isColor);
       const mode = parseInt(selected ? selected.vendor_id : null, 10);
       if (isNaN(mode)) {
-        return isColor ? print_preview.ColorMode.COLOR :
-                         print_preview.ColorMode.GRAY;
+        return isColor ? ColorMode.COLOR :
+                         ColorMode.GRAY;
       }
       return mode;
     }
@@ -999,32 +934,3 @@ cr.define('print_preview', function() {
     SAVE_AS_PDF: 'Save as PDF'
   };
 
-  // Export
-  return {
-    CddCapabilities: CddCapabilities,
-    Cdd: Cdd,
-    CloudOrigins: CloudOrigins,
-    ColorMode: ColorMode,
-    createDestinationKey: createDestinationKey,
-    createRecentDestinationKey: createRecentDestinationKey,
-    DestinationCertificateStatus: DestinationCertificateStatus,
-    DestinationConnectionStatus: DestinationConnectionStatus,
-    Destination: Destination,
-    DestinationOrigin: DestinationOrigin,
-    DestinationProvisionalType: DestinationProvisionalType,
-    DestinationType: DestinationType,
-    makeRecentDestination: makeRecentDestination,
-    RecentDestination: RecentDestination,
-    VendorCapabilitySelectOption: VendorCapabilitySelectOption,
-    VendorCapabilityValueType: VendorCapabilityValueType,
-    VendorCapability: VendorCapability,
-
-    // <if expr="chromeos">
-    BackgroundGraphicsModeRestriction: BackgroundGraphicsModeRestriction,
-    ColorModeRestriction: ColorModeRestriction,
-    DuplexModeRestriction: DuplexModeRestriction,
-    PinModeRestriction: PinModeRestriction,
-    Policies: Policies,
-    // </if>
-  };
-});

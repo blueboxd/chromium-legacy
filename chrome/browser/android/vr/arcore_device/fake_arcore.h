@@ -45,7 +45,9 @@ class FakeArCore : public ArCore {
       mojom::XRRayPtr ray) override;
 
   mojom::XRHitTestSubscriptionResultsDataPtr GetHitTestSubscriptionResults(
-      const device::mojom::VRPosePtr& pose) override;
+      const gfx::Transform& mojo_from_viewer,
+      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+          maybe_input_state) override;
 
   void UnsubscribeFromHitTest(uint64_t subscription_id) override;
 
@@ -53,8 +55,8 @@ class FakeArCore : public ArCore {
   mojom::XRAnchorsDataPtr GetAnchorsData() override;
 
   base::Optional<uint64_t> CreateAnchor(
-      const device::mojom::VRPosePtr& pose) override;
-  base::Optional<uint64_t> CreateAnchor(const device::mojom::VRPosePtr& pose,
+      const device::mojom::PosePtr& pose) override;
+  base::Optional<uint64_t> CreateAnchor(const device::mojom::PosePtr& pose,
                                         uint64_t plane_id) override;
   void DetachAnchor(uint64_t anchor_id) override;
 

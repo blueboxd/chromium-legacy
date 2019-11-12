@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchPrefs;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -155,13 +156,11 @@ public class NotificationsPreferencesTest {
                 fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setCategoryEnabled(
-                    ContentSettingsType.NOTIFICATIONS, false);
+            WebsitePreferenceBridge.setCategoryEnabled(ContentSettingsType.NOTIFICATIONS, false);
             fragment.onResume();
             Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(false));
 
-            PrefServiceBridge.getInstance().setCategoryEnabled(
-                    ContentSettingsType.NOTIFICATIONS, true);
+            WebsitePreferenceBridge.setCategoryEnabled(ContentSettingsType.NOTIFICATIONS, true);
             fragment.onResume();
             Assert.assertEquals(fromWebsites.getSummary(), getNotificationsSummary(true));
         });

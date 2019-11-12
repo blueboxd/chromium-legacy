@@ -1,19 +1,4 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
-<link rel="import" href="../data/document_info.html">
-<link rel="import" href="../print_preview_utils.html">
-<link rel="import" href="input_behavior.html">
-<link rel="import" href="print_preview_shared_css.html">
-<link rel="import" href="select_behavior.html">
-<link rel="import" href="settings_behavior.html">
-<link rel="import" href="settings_section.html">
-<link rel="import" href="strings.html">
-
-<dom-module id="print-preview-pages-settings">
-  <template>
     <style include="print-preview-shared md-select">
       :host([error-state_='0']) #pageSettingsCustomInput,
       :host([error-state_='3']) #pageSettingsCustomInput {
@@ -65,6 +50,3 @@
         </div>
       </print-preview-settings-section>
     </iron-collapse>
-  </template>
-  <script src="pages_settings.js"></script>
-</dom-module>

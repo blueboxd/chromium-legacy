@@ -142,13 +142,15 @@ class ArCoreImpl : public ArCore {
       mojom::XRRayPtr ray) override;
 
   mojom::XRHitTestSubscriptionResultsDataPtr GetHitTestSubscriptionResults(
-      const device::mojom::VRPosePtr& pose) override;
+      const gfx::Transform& mojo_from_viewer,
+      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+          maybe_input_state) override;
 
   void UnsubscribeFromHitTest(uint64_t subscription_id) override;
 
   base::Optional<uint64_t> CreateAnchor(
-      const device::mojom::VRPosePtr& pose) override;
-  base::Optional<uint64_t> CreateAnchor(const device::mojom::VRPosePtr& pose,
+      const device::mojom::PosePtr& pose) override;
+  base::Optional<uint64_t> CreateAnchor(const device::mojom::PosePtr& pose,
                                         uint64_t plane_id) override;
 
   void DetachAnchor(uint64_t anchor_id) override;
@@ -231,11 +233,13 @@ class ArCoreImpl : public ArCore {
 
   base::Optional<gfx::Transform> GetMojoFromNativeOrigin(
       const mojom::XRNativeOriginInformationPtr& native_origin_information,
-      const device::mojom::VRPosePtr& pose);
+      const gfx::Transform& mojo_from_viewer,
+      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+          maybe_input_state);
 
   base::Optional<gfx::Transform> GetMojoFromReferenceSpace(
       device::mojom::XRReferenceSpaceCategory category,
-      const device::mojom::VRPosePtr& pose);
+      const gfx::Transform& mojo_from_viewer);
 
   // Executes |fn| for each still tracked, non-subsumed plane present in
   // |arcore_planes_|.

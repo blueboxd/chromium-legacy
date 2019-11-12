@@ -23,6 +23,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "url/origin.h"
 
@@ -126,6 +127,8 @@ void PageInfoControllerAndroid::SetPermissionInfo(
       ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER);
   permissions_to_display.push_back(ContentSettingsType::AUTOPLAY);
   permissions_to_display.push_back(ContentSettingsType::SOUND);
+  if (base::FeatureList::IsEnabled(features::kWebNfc))
+    permissions_to_display.push_back(ContentSettingsType::NFC);
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   if (cmd->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
     permissions_to_display.push_back(ContentSettingsType::BLUETOOTH_SCANNING);

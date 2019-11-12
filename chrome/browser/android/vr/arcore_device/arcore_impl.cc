@@ -22,41 +22,55 @@ using base::android::JavaRef;
 
 namespace {
 
-device::mojom::VRPosePtr GetMojomPoseFromArPose(
-    ArSession* session,
-    device::internal::ScopedArCoreObject<ArPose*> pose) {
-  float pose_raw[7];  // 7 = orientation(4) + position(3).
-  ArPose_getPoseRaw(session, pose.get(), pose_raw);
+std::pair<gfx::Quaternion, gfx::Point3F> GetPositionAndOrientationFromArPose(
+    const ArSession* session,
+    const device::internal::ScopedArCoreObject<ArPose*>& pose) {
+  std::array<float, 7> pose_raw;  // 7 = orientation(4) + position(3).
+  ArPose_getPoseRaw(session, pose.get(), pose_raw.data());
 
+  return {gfx::Quaternion(pose_raw[0], pose_raw[1], pose_raw[2], pose_raw[3]),
+          gfx::Point3F(pose_raw[4], pose_raw[5], pose_raw[6])};
+}
+
+// Helper, returns new VRPosePtr with position and orientation set to match the
+// position and orientation of passed in |pose|.
+device::mojom::VRPosePtr GetMojomVRPoseFromArPose(
+    const ArSession* session,
+    const device::internal::ScopedArCoreObject<ArPose*>& pose) {
   device::mojom::VRPosePtr result = device::mojom::VRPose::New();
-
-  result->orientation =
-      gfx::Quaternion(pose_raw[0], pose_raw[1], pose_raw[2], pose_raw[3]);
-  result->position = gfx::Point3F(pose_raw[4], pose_raw[5], pose_raw[6]);
+  std::tie(result->orientation, result->position) =
+      GetPositionAndOrientationFromArPose(session, pose);
 
   return result;
 }
 
+// Helper, returns new PosePtr with position and orientation set to match the
+// position and orientation of passed in |pose|.
+device::mojom::PosePtr GetMojomPoseFromArPose(
+    const ArSession* session,
+    const device::internal::ScopedArCoreObject<ArPose*>& pose) {
+  device::mojom::PosePtr result = device::mojom::Pose::New();
+  std::tie(result->orientation, result->position) =
+      GetPositionAndOrientationFromArPose(session, pose);
+
+  return result;
+}
+
+// Helper, creates new ArPose* with position and orientation set to match the
+// position and orientation of passed in |pose|.
 device::internal::ScopedArCoreObject<ArPose*> GetArPoseFromMojomPose(
     ArSession* session,
-    const device::mojom::VRPosePtr& pose) {
+    const device::mojom::PosePtr& pose) {
   float pose_raw[7] = {};  // 7 = orientation(4) + position(3).
 
-  if (pose->orientation) {
-    pose_raw[0] = pose->orientation->x();
-    pose_raw[1] = pose->orientation->y();
-    pose_raw[2] = pose->orientation->z();
-    pose_raw[3] = pose->orientation->w();
-  } else {
-    // Only need to set the .w to 1.
-    pose_raw[3] = 1;
-  }
+  pose_raw[0] = pose->orientation.x();
+  pose_raw[1] = pose->orientation.y();
+  pose_raw[2] = pose->orientation.z();
+  pose_raw[3] = pose->orientation.w();
 
-  if (pose->position) {
-    pose_raw[4] = pose->position->x();
-    pose_raw[5] = pose->position->y();
-    pose_raw[6] = pose->position->z();
-  }
+  pose_raw[4] = pose->position.x();
+  pose_raw[5] = pose->position.y();
+  pose_raw[6] = pose->position.z();
 
   device::internal::ScopedArCoreObject<ArPose*> result;
 
@@ -230,7 +244,8 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
   ArCamera_getDisplayOrientedPose(arcore_session_.get(), arcore_camera.get(),
                                   arcore_pose.get());
 
-  return GetMojomPoseFromArPose(arcore_session_.get(), std::move(arcore_pose));
+  return GetMojomVRPoseFromArPose(arcore_session_.get(),
+                                  std::move(arcore_pose));
 }
 
 void ArCoreImpl::EnsureArCorePlanesList() {
@@ -320,7 +335,7 @@ std::vector<mojom::XRAnchorDataPtr> ArCoreImpl::GetUpdatedAnchorsData() {
         arcore_session_.get(), nullptr,
         internal::ScopedArCoreObject<ArPose*>::Receiver(anchor_pose).get());
     ArAnchor_getPose(arcore_session_.get(), ar_anchor, anchor_pose.get());
-    mojom::VRPosePtr pose =
+    mojom::PosePtr pose =
         GetMojomPoseFromArPose(arcore_session_.get(), std::move(anchor_pose));
 
     // ID
@@ -411,7 +426,7 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
         arcore_session_.get(), nullptr,
         internal::ScopedArCoreObject<ArPose*>::Receiver(plane_pose).get());
     ArPlane_getCenterPose(arcore_session_.get(), ar_plane, plane_pose.get());
-    mojom::VRPosePtr pose =
+    mojom::PosePtr pose =
         GetMojomPoseFromArPose(arcore_session_.get(), std::move(plane_pose));
 
     // polygon
@@ -615,7 +630,9 @@ base::Optional<uint64_t> ArCoreImpl::SubscribeToHitTest(
 
 mojom::XRHitTestSubscriptionResultsDataPtr
 ArCoreImpl::GetHitTestSubscriptionResults(
-    const device::mojom::VRPosePtr& pose) {
+    const gfx::Transform& mojo_from_viewer,
+    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+        maybe_input_state) {
   mojom::XRHitTestSubscriptionResultsDataPtr result =
       mojom::XRHitTestSubscriptionResultsData::New();
 
@@ -623,7 +640,8 @@ ArCoreImpl::GetHitTestSubscriptionResults(
     // First, check if we can find the current transformation for a ray. If not,
     // skip processing this subscription.
     auto maybe_mojo_from_native_origin = GetMojoFromNativeOrigin(
-        subscription_id_and_data.second.native_origin_information, pose);
+        subscription_id_and_data.second.native_origin_information,
+        mojo_from_viewer, maybe_input_state);
 
     if (!maybe_mojo_from_native_origin) {
       continue;
@@ -661,7 +679,7 @@ ArCoreImpl::GetHitTestSubscriptionResult(
 
 base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromReferenceSpace(
     device::mojom::XRReferenceSpaceCategory category,
-    const device::mojom::VRPosePtr& mojo_from_viewer) {
+    const gfx::Transform& mojo_from_viewer) {
   switch (category) {
     case device::mojom::XRReferenceSpaceCategory::LOCAL:
       return gfx::Transform{};
@@ -671,7 +689,7 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromReferenceSpace(
       return result;
     }
     case device::mojom::XRReferenceSpaceCategory::VIEWER:
-      return mojo::ConvertTo<gfx::Transform>(mojo_from_viewer);
+      return mojo_from_viewer;
     case device::mojom::XRReferenceSpaceCategory::BOUNDED_FLOOR:
       return base::nullopt;
     case device::mojom::XRReferenceSpaceCategory::UNBOUNDED:
@@ -681,27 +699,27 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromReferenceSpace(
 
 base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
     const mojom::XRNativeOriginInformationPtr& native_origin_information,
-    const device::mojom::VRPosePtr& mojo_from_viewer) {
+    const gfx::Transform& mojo_from_viewer,
+    const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+        maybe_input_state) {
   if (native_origin_information->is_input_source_id()) {
-    if (!mojo_from_viewer->input_state) {
+    if (!maybe_input_state) {
       return base::nullopt;
     }
 
     // Linear search should be fine for ARCore device as it only has one input
     // source (for now).
-    for (auto& input_source_state : *mojo_from_viewer->input_state) {
+    for (auto& input_source_state : *maybe_input_state) {
       if (input_source_state->source_id ==
           native_origin_information->get_input_source_id()) {
         if (!input_source_state->description->input_from_pointer) {
           return base::nullopt;
         }
 
-        auto view_from_pointer =
+        auto viewer_from_pointer =
             *input_source_state->description->input_from_pointer;
 
-        auto mojo_from_view = mojo::ConvertTo<gfx::Transform>(mojo_from_viewer);
-
-        return mojo_from_view * view_from_pointer;
+        return mojo_from_viewer * viewer_from_pointer;
       }
     }
 
@@ -726,7 +744,7 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
         arcore_session_.get(), nullptr,
         internal::ScopedArCoreObject<ArPose*>::Receiver(ar_pose).get());
     ArPlane_getCenterPose(arcore_session_.get(), plane, ar_pose.get());
-    mojom::VRPosePtr mojo_pose =
+    mojom::PosePtr mojo_pose =
         GetMojomPoseFromArPose(arcore_session_.get(), std::move(ar_pose));
 
     return mojo::ConvertTo<gfx::Transform>(mojo_pose);
@@ -744,7 +762,7 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
 
     ArAnchor_getPose(arcore_session_.get(), anchor_it->second.get(),
                      ar_pose.get());
-    mojom::VRPosePtr mojo_pose =
+    mojom::PosePtr mojo_pose =
         GetMojomPoseFromArPose(arcore_session_.get(), std::move(ar_pose));
 
     return mojo::ConvertTo<gfx::Transform>(mojo_pose);
@@ -911,7 +929,7 @@ bool ArCoreImpl::RequestHitTest(
 }
 
 base::Optional<uint64_t> ArCoreImpl::CreateAnchor(
-    const device::mojom::VRPosePtr& pose) {
+    const device::mojom::PosePtr& pose) {
   DCHECK(pose);
 
   auto ar_pose = GetArPoseFromMojomPose(arcore_session_.get(), pose);
@@ -935,7 +953,7 @@ base::Optional<uint64_t> ArCoreImpl::CreateAnchor(
 }
 
 base::Optional<uint64_t> ArCoreImpl::CreateAnchor(
-    const device::mojom::VRPosePtr& pose,
+    const device::mojom::PosePtr& pose,
     uint64_t plane_id) {
   DCHECK(pose);
 

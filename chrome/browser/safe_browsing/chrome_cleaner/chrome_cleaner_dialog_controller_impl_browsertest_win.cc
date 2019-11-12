@@ -100,16 +100,23 @@ IN_PROC_BROWSER_TEST_P(ChromeCleanerPromptUserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(ChromeCleanerPromptUserTest,
-                       DISABLED_OnInfectedBrowserNotAvailable) {
+                       OnInfectedBrowserNotAvailable) {
   browser()->window()->Minimize();
   base::RunLoop().RunUntilIdle();
-  dialog_controller_->OnInfected(false, ChromeCleanerScannerResults());
 
+  // We try to not show the prompt while minimized, but there will always be
+  // race conditions because the window manager can restore a window outside
+  // the test's control. So a prompt might show up even while minimized. That's
+  // not critical. The really important test is that a prompt always shows up
+  // after restoring.
+  //
+  // Install the expectation here so that we'll detect when the prompt shows
+  // up, even if it's too early.
   base::RunLoop run_loop;
-  // We only set the expectation here because we want to make sure that the
-  // prompt is shown only when the window is restored.
   EXPECT_CALL(mock_delegate_, ShowChromeCleanerPrompt(_, _, _))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+
+  dialog_controller_->OnInfected(false, ChromeCleanerScannerResults());
 
   browser()->window()->Restore();
   run_loop.Run();

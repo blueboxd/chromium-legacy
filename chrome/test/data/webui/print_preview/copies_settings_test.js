@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('copies_settings_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import 'chrome://print/print_preview.js';
+import {fakeDataBind} from 'chrome://test/test_util.m.js';
+import {triggerInputEvent} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
   suite('CopiesSettingsTest', function() {
     /** @type {?PrintPreviewCopiesSettingsElement} */
     let copiesSection = null;
@@ -16,7 +20,7 @@ cr.define('copies_settings_test', function() {
       copiesSection = document.createElement('print-preview-copies-settings');
       copiesSection.settings = model.settings;
       copiesSection.disabled = false;
-      test_util.fakeDataBind(model, copiesSection, 'settings');
+      fakeDataBind(model, copiesSection, 'settings');
       document.body.appendChild(copiesSection);
     });
 
@@ -30,17 +34,17 @@ cr.define('copies_settings_test', function() {
       // Set copies empty.
       const copiesInput =
           copiesSection.$$('print-preview-number-settings-section').getInput();
-      await print_preview_test_utils.triggerInputEvent(
+      await triggerInputEvent(
           copiesInput, '', copiesSection);
       assertTrue(collateSection.hidden);
 
       // Set copies valid again.
-      await print_preview_test_utils.triggerInputEvent(
+      await triggerInputEvent(
           copiesInput, '3', copiesSection);
       assertFalse(collateSection.hidden);
 
       // Set copies invalid.
-      await print_preview_test_utils.triggerInputEvent(
+      await triggerInputEvent(
           copiesInput, '0', copiesSection);
       assertTrue(collateSection.hidden);
     });
@@ -53,20 +57,20 @@ cr.define('copies_settings_test', function() {
       assertEquals('1', copiesInput.value);
       assertFalse(copiesSection.getSetting('copies').setFromUi);
 
-      await print_preview_test_utils.triggerInputEvent(
+      await triggerInputEvent(
           copiesInput, '2', copiesSection);
       assertEquals(2, copiesSection.getSettingValue('copies'));
       assertTrue(copiesSection.getSetting('copies').valid);
       assertTrue(copiesSection.getSetting('copies').setFromUi);
 
       // Empty entry.
-      await print_preview_test_utils.triggerInputEvent(
+      await triggerInputEvent(
           copiesInput, '', copiesSection);
       assertEquals(2, copiesSection.getSettingValue('copies'));
       assertTrue(copiesSection.getSetting('copies').valid);
 
       // Invalid entry.
-      await print_preview_test_utils.triggerInputEvent(
+      await triggerInputEvent(
           copiesInput, '0', copiesSection);
       assertEquals(1, copiesSection.getSettingValue('copies'));
       assertFalse(copiesSection.getSetting('copies').valid);
@@ -80,7 +84,7 @@ cr.define('copies_settings_test', function() {
       assertTrue(collateCheckbox.checked);
       assertFalse(copiesSection.getSetting('collate').setFromUi);
 
-      MockInteractions.tap(collateCheckbox);
+      collateCheckbox.click();
       assertFalse(collateCheckbox.checked);
       collateCheckbox.dispatchEvent(new CustomEvent('change'));
       assertFalse(copiesSection.getSettingValue('collate'));
@@ -102,4 +106,3 @@ cr.define('copies_settings_test', function() {
       assertFalse(collateCheckbox.checked);
     });
   });
-});

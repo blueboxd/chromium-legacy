@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('destination_select_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground} from 'chrome://print/print_preview.js';
+import {getGoogleDriveDestination, selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
+  window.destination_select_test = {};
+  destination_select_test.suiteName = 'DestinationSelectTest';
   /** @enum {string} */
-  const TestNames = {
+  destination_select_test.TestNames = {
     ChangeIcon: 'change icon',
   };
 
-  const suiteName = 'DestinationSelectTest';
-  suite(suiteName, function() {
+  suite(destination_select_test.suiteName, function() {
     /** @type {?PrintPreviewDestinationSelectElement} */
     let destinationSelect = null;
 
@@ -29,7 +33,7 @@ cr.define('destination_select_test', function() {
         // Local printer without stickied icon
         {
           id: 'ID1',
-          origin: print_preview.DestinationOrigin.LOCAL,
+          origin: DestinationOrigin.LOCAL,
           account: '',
           capabilities: null,
           displayName: 'One',
@@ -39,7 +43,7 @@ cr.define('destination_select_test', function() {
         // Shared cloud printer with stickied icon
         {
           id: 'ID2',
-          origin: print_preview.DestinationOrigin.COOKIES,
+          origin: DestinationOrigin.COOKIES,
           account: account,
           capabilities: null,
           displayName: 'Two',
@@ -50,7 +54,7 @@ cr.define('destination_select_test', function() {
         // Shared cloud printer without stickied icon
         {
           id: 'ID3',
-          origin: print_preview.DestinationOrigin.COOKIES,
+          origin: DestinationOrigin.COOKIES,
           account: account,
           capabilities: null,
           displayName: 'Three',
@@ -70,20 +74,19 @@ cr.define('destination_select_test', function() {
       assertEquals(expected, icon);
     }
 
-    test(assert(TestNames.ChangeIcon), function() {
-      const destination = new print_preview.Destination(
-          'ID1', print_preview.DestinationType.LOCAL,
-          print_preview.DestinationOrigin.LOCAL, 'One',
-          print_preview.DestinationConnectionStatus.ONLINE);
+    test(assert(destination_select_test.TestNames.ChangeIcon), function() {
+      const destination = new Destination(
+          'ID1', DestinationType.LOCAL,
+          DestinationOrigin.LOCAL, 'One',
+          DestinationConnectionStatus.ONLINE);
       destinationSelect.destination = destination;
       destinationSelect.updateDestination();
       const selectEl = destinationSelect.$$('.md-select');
       compareIcon(selectEl, 'print');
-      const driveId = print_preview.Destination.GooglePromotedId.DOCS;
-      const cookieOrigin = print_preview.DestinationOrigin.COOKIES;
+      const driveId = Destination.GooglePromotedId.DOCS;
+      const cookieOrigin = DestinationOrigin.COOKIES;
 
-      return print_preview_test_utils
-          .selectOption(
+      return selectOption(
               destinationSelect, `${driveId}/${cookieOrigin}/${account}`)
           .then(() => {
             // Icon updates early based on the ID.
@@ -91,13 +94,13 @@ cr.define('destination_select_test', function() {
 
             // Update the destination.
             destinationSelect.destination =
-                print_preview_test_utils.getGoogleDriveDestination(account);
+                getGoogleDriveDestination(account);
 
             // Still Save to Drive icon.
             compareIcon(selectEl, 'save-to-drive');
 
             // Select a destination that has a sticky icon value.
-            return print_preview_test_utils.selectOption(
+            return selectOption(
                 destinationSelect, `ID2/${cookieOrigin}/${account}`);
           })
           .then(() => {
@@ -105,15 +108,15 @@ cr.define('destination_select_test', function() {
             compareIcon(selectEl, 'printer-shared');
 
             // Update destination.
-            destinationSelect.destination = new print_preview.Destination(
-                'ID2', print_preview.DestinationType.GOOGLE,
-                print_preview.DestinationOrigin.COOKIES, 'Two',
-                print_preview.DestinationConnectionStatus.ONLINE,
+            destinationSelect.destination = new Destination(
+                'ID2', DestinationType.GOOGLE,
+                DestinationOrigin.COOKIES, 'Two',
+                DestinationConnectionStatus.ONLINE,
                 {account: account});
             compareIcon(selectEl, 'printer-shared');
 
             // Select a destination that doesn't have a sticky icon value.
-            return print_preview_test_utils.selectOption(
+            return selectOption(
                 destinationSelect, `ID3/${cookieOrigin}/${account}`);
           })
           .then(() => {
@@ -121,10 +124,10 @@ cr.define('destination_select_test', function() {
             compareIcon(selectEl, 'print');
 
             // Update destination.
-            destinationSelect.destination = new print_preview.Destination(
-                'ID3', print_preview.DestinationType.GOOGLE,
-                print_preview.DestinationOrigin.COOKIES, 'Three',
-                print_preview.DestinationConnectionStatus.ONLINE,
+            destinationSelect.destination = new Destination(
+                'ID3', DestinationType.GOOGLE,
+                DestinationOrigin.COOKIES, 'Three',
+                DestinationConnectionStatus.ONLINE,
                 {account: account});
 
             // Icon updates based on full destination information.
@@ -132,9 +135,3 @@ cr.define('destination_select_test', function() {
           });
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

@@ -506,15 +506,23 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
   const std::string kServer3 = "https://grapefruit/resolver/query{?dns}";
   const bool kServer3UsePost = false;
 
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->primary_network_context = true;
+  mojo::Remote<mojom::NetworkContext> network_context;
+  service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
+                                  std::move(context_params));
+
   // Create valid DnsConfig.
   net::DnsConfig config;
   config.nameservers.push_back(net::IPEndPoint());
   auto dns_client = std::make_unique<net::MockDnsClient>(
       std::move(config), net::MockDnsClientRuleList());
   dns_client->set_ignore_system_config_changes(true);
-  net::DnsClient* dns_client_ptr = dns_client.get();
+  net::MockDnsClient* dns_client_ptr = dns_client.get();
   service()->host_resolver_manager()->SetDnsClientForTesting(
       std::move(dns_client));
+
+  ASSERT_FALSE(dns_client_ptr->factory()->doh_probes_running());
 
   // Enable DNS over HTTPS for one server.
 
@@ -535,6 +543,7 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
   ASSERT_EQ(1u, dns_over_https_servers.size());
   EXPECT_EQ(kServer1, dns_over_https_servers[0].server_template);
   EXPECT_EQ(kServer1UsePost, dns_over_https_servers[0].use_post);
+  EXPECT_TRUE(dns_client_ptr->factory()->doh_probes_running());
 
   // Enable DNS over HTTPS for two servers.
 
@@ -560,6 +569,7 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
   EXPECT_EQ(kServer2UsePost, dns_over_https_servers[0].use_post);
   EXPECT_EQ(kServer3, dns_over_https_servers[1].server_template);
   EXPECT_EQ(kServer3UsePost, dns_over_https_servers[1].use_post);
+  EXPECT_TRUE(dns_client_ptr->factory()->doh_probes_running());
 }
 
 TEST_F(NetworkServiceTest, DisableDohUpgradeProviders) {

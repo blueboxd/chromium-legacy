@@ -162,8 +162,6 @@ abstract class OverlayPanelBase {
                 ApiCompatibilityUtils.getColor(resources, R.color.drag_handlebar_color);
         mButtonPaddingDps =
                 (int) (mPxToDp * resources.getDimension(R.dimen.overlay_panel_button_padding));
-        mBarShadowVisible = true;
-        mPanelShadowVisible = true;
     }
 
     // ============================================================================================
@@ -412,8 +410,6 @@ abstract class OverlayPanelBase {
     // --------------------------------------------------------------------------------------------
     private final float mBarMarginSide;
     private final float mBarMarginTop;
-    private final boolean mBarShadowVisible;
-    private final boolean mPanelShadowVisible;
 
     private float mBarHeight;
     private boolean mIsBarBorderVisible;
@@ -462,24 +458,10 @@ abstract class OverlayPanelBase {
     }
 
     /**
-     * @return Whether the Bar shadow is visible (between the Bar and content).
-     */
-    public boolean getBarShadowVisible() {
-        return mBarShadowVisible;
-    }
-
-    /**
      * @return The background color of the Bar.
      */
     public int getBarBackgroundColor() {
         return mBarBackgroundColor;
-    }
-
-    /**
-     * @return Whether the shadow for the entire Panel & Bar is visible.
-     */
-    public boolean getPanelShadowVisible() {
-        return mPanelShadowVisible;
     }
 
     /**

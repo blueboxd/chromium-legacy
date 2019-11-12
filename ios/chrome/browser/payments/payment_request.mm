@@ -18,7 +18,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
-#include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/core/autofill_payment_app.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
@@ -189,7 +189,7 @@ PrefService* PaymentRequest::GetPrefService() {
 }
 
 const PaymentItem& PaymentRequest::GetTotal(
-    PaymentInstrument* selected_instrument) const {
+    PaymentApp* selected_instrument) const {
   const PaymentDetailsModifier* modifier =
       GetApplicableModifier(selected_instrument);
   if (modifier && modifier->total) {
@@ -201,7 +201,7 @@ const PaymentItem& PaymentRequest::GetTotal(
 }
 
 std::vector<PaymentItem> PaymentRequest::GetDisplayItems(
-    PaymentInstrument* selected_instrument) const {
+    PaymentApp* selected_instrument) const {
   std::vector<PaymentItem> display_items =
       web_payment_request_.details.display_items;
 
@@ -294,7 +294,7 @@ void PaymentRequest::UpdateAutofillProfile(
 }
 
 const PaymentDetailsModifier* PaymentRequest::GetApplicableModifier(
-    PaymentInstrument* selected_instrument) const {
+    PaymentApp* selected_instrument) const {
   if (!selected_instrument ||
       !base::FeatureList::IsEnabled(features::kWebPaymentsModifiers)) {
     return nullptr;
@@ -362,15 +362,13 @@ void PaymentRequest::PopulateAvailableProfiles() {
       profile_comparator_.FilterProfilesForShipping(raw_profiles_for_filtering);
 }
 
-AutofillPaymentInstrument*
-PaymentRequest::CreateAndAddAutofillPaymentInstrument(
+AutofillPaymentApp* PaymentRequest::CreateAndAddAutofillPaymentInstrument(
     const autofill::CreditCard& credit_card) {
   return CreateAndAddAutofillPaymentInstrument(
       credit_card, /*may_update_personal_data_manager=*/true);
 }
 
-AutofillPaymentInstrument*
-PaymentRequest::CreateAndAddAutofillPaymentInstrument(
+AutofillPaymentApp* PaymentRequest::CreateAndAddAutofillPaymentInstrument(
     const autofill::CreditCard& credit_card,
     bool may_update_personal_data_manager) {
   std::string basic_card_issuer_network =
@@ -400,9 +398,9 @@ PaymentRequest::CreateAndAddAutofillPaymentInstrument(
       credit_card.card_type() != autofill::CreditCard::CARD_TYPE_UNKNOWN ||
       supported_card_types_set_.size() == kTotalNumberOfCardTypes;
 
-  // AutofillPaymentInstrument makes a copy of |credit_card| so it is
+  // AutofillPaymentApp makes a copy of |credit_card| so it is
   // effectively owned by this object.
-  payment_method_cache_.push_back(std::make_unique<AutofillPaymentInstrument>(
+  payment_method_cache_.push_back(std::make_unique<AutofillPaymentApp>(
       method_name, credit_card, matches_merchant_card_type_exactly,
       billing_profiles(), GetApplicationLocale(), this));
 
@@ -411,8 +409,7 @@ PaymentRequest::CreateAndAddAutofillPaymentInstrument(
   if (may_update_personal_data_manager && !IsIncognito())
     personal_data_manager_->AddCreditCard(credit_card);
 
-  return static_cast<AutofillPaymentInstrument*>(
-      payment_method_cache_.back().get());
+  return static_cast<AutofillPaymentApp*>(payment_method_cache_.back().get());
 }
 
 void PaymentRequest::UpdateAutofillPaymentInstrument(
@@ -437,7 +434,7 @@ const PaymentsProfileComparator* PaymentRequest::profile_comparator() const {
 }
 
 bool PaymentRequest::CanMakePayment() const {
-  for (PaymentInstrument* payment_method : payment_methods_) {
+  for (PaymentApp* payment_method : payment_methods_) {
     if (payment_method->IsValidForCanMakePayment()) {
       return true;
     }
@@ -542,14 +539,15 @@ void PaymentRequest::PopulatePaymentMethodCache(
     // We only want to add the credit cards read from the PersonalDataManager to
     // the list of payment instrument. Don't re-add them to PersonalDataManager.
     CreateAndAddAutofillPaymentInstrument(
-        *credit_card, /*may_update_personal_data_manager=*/false);
+        *credit_card,
+        /*may_update_personal_data_manager=*/false);
   }
 
   PopulateAvailablePaymentMethods();
 
   const auto first_complete_payment_method =
       std::find_if(payment_methods_.begin(), payment_methods_.end(),
-                   [](PaymentInstrument* payment_method) {
+                   [](PaymentApp* payment_method) {
                      return payment_method->IsCompleteForPayment() &&
                             payment_method->IsExactlyMatchingMerchantRequest();
                    });

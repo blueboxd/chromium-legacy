@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import './print_preview_shared_css.js';
+import {SettingsBehavior} from './settings_behavior.js';
+import './settings_section.js';
+import {SelectOption} from './settings_select.js';
+import '../strings.m.js';
 
 /**
  * @typedef {{
@@ -10,7 +17,7 @@ cr.exportPath('print_preview');
  *   vertical_dpi: (number | undefined),
  *   vendor_id: (number | undefined)}}
  */
-print_preview.DpiOption;
+let DpiOption;
 
 /**
  * @typedef {{
@@ -19,20 +26,22 @@ print_preview.DpiOption;
  *   vertical_dpi: (number | undefined),
  *   vendor_id: (number | undefined)}}
  */
-print_preview.LabelledDpiOption;
+let LabelledDpiOption;
+
 
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'print-preview-dpi-settings',
 
   behaviors: [SettingsBehavior],
 
   properties: {
-    /** @type {{ option: Array<!print_preview.SelectOption> }} */
+    /** @type {{ option: Array<!SelectOption> }} */
     capability: Object,
 
     disabled: Boolean,
 
-    /** @private {{ option: Array<!print_preview.SelectOption> }} */
+    /** @private {{ option: Array<!SelectOption> }} */
     capabilityWithLabels_: {
       type: Object,
       computed: 'computeCapabilityWithLabels_(capability)',
@@ -45,7 +54,7 @@ Polymer({
 
   /**
    * Adds default labels for each option.
-   * @return {?{option: Array<!print_preview.SelectOption>}}
+   * @return {?{option: Array<!SelectOption>}}
    * @private
    */
   computeCapabilityWithLabels_: function() {
@@ -54,10 +63,10 @@ Polymer({
     }
 
     const result =
-        /** @type {{option: Array<!print_preview.SelectOption>}} */ (
+        /** @type {{option: Array<!SelectOption>}} */ (
             JSON.parse(JSON.stringify(this.capability)));
     this.capability.option.forEach((option, index) => {
-      const dpiOption = /** @type {print_preview.DpiOption} */ (option);
+      const dpiOption = /** @type {DpiOption} */ (option);
       const hDpi = dpiOption.horizontal_dpi || 0;
       const vDpi = dpiOption.vertical_dpi || 0;
       if (hDpi > 0 && vDpi > 0 && hDpi != vDpi) {
@@ -80,10 +89,10 @@ Polymer({
     }
 
     const dpiValue =
-        /** @type {print_preview.DpiOption} */ (this.getSettingValue('dpi'));
+        /** @type {DpiOption} */ (this.getSettingValue('dpi'));
     for (const option of assert(this.capabilityWithLabels_.option)) {
       const dpiOption =
-          /** @type {print_preview.LabelledDpiOption} */ (option);
+          /** @type {LabelledDpiOption} */ (option);
       if (dpiValue.horizontal_dpi == dpiOption.horizontal_dpi &&
           dpiValue.vertical_dpi == dpiOption.vertical_dpi &&
           dpiValue.vendor_id == dpiOption.vendor_id) {

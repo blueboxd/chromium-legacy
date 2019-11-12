@@ -52,8 +52,7 @@ so on. The waterfalls we’re interested in are:
 [Chromium GPU]: https://ci.chromium.org/p/chromium/g/chromium.gpu/console?reload=120
 [Chromium GPU FYI]: https://ci.chromium.org/p/chromium/g/chromium.gpu.fyi/console?reload=120
 [ANGLE tryservers]: https://build.chromium.org/p/tryserver.chromium.angle/waterfall
-<!-- TODO(kainino): update link when the page is migrated -->
-[ANGLE Wrangler]: https://sites.google.com/a/chromium.org/dev/developers/how-tos/angle-wrangling
+[ANGLE Wrangler]: https://chromium.googlesource.com/angle/angle/+/master/infra/ANGLEWrangling.md
 
 ## Test Suites
 

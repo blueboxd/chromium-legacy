@@ -222,6 +222,33 @@ class MockHostResolverBase::RequestImpl
   DISALLOW_COPY_AND_ASSIGN(RequestImpl);
 };
 
+class MockHostResolverBase::ProbeRequestImpl
+    : public HostResolver::ProbeRequest {
+ public:
+  explicit ProbeRequestImpl(base::WeakPtr<MockHostResolverBase> resolver)
+      : resolver_(std::move(resolver)) {}
+
+  ProbeRequestImpl(const ProbeRequestImpl&) = delete;
+  ProbeRequestImpl& operator=(const ProbeRequestImpl&) = delete;
+
+  ~ProbeRequestImpl() override {
+    if (resolver_ && resolver_->doh_probe_request_ == this)
+      resolver_->doh_probe_request_ = nullptr;
+  }
+
+  int Start() override {
+    DCHECK(resolver_);
+    DCHECK(!resolver_->doh_probe_request_);
+
+    resolver_->doh_probe_request_ = this;
+
+    return ERR_IO_PENDING;
+  }
+
+ private:
+  base::WeakPtr<MockHostResolverBase> resolver_;
+};
+
 class MockHostResolverBase::MdnsListenerImpl
     : public HostResolver::MdnsListener {
  public:
@@ -305,6 +332,8 @@ void MockHostResolverBase::OnShutdown() {
   // Prevent future requests by clearing resolution rules and the cache.
   rules_map_.clear();
   cache_ = nullptr;
+
+  doh_probe_request_ = nullptr;
 }
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
@@ -315,6 +344,11 @@ MockHostResolverBase::CreateRequest(
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   return std::make_unique<RequestImpl>(host, network_isolation_key,
                                        optional_parameters, AsWeakPtr());
+}
+
+std::unique_ptr<HostResolver::ProbeRequest>
+MockHostResolverBase::CreateDohProbeRequest() {
+  return std::make_unique<ProbeRequestImpl>(AsWeakPtr());
 }
 
 std::unique_ptr<HostResolver::MdnsListener>
@@ -921,7 +955,8 @@ RuleBasedHostResolverProc* CreateCatchAllHostResolverProc() {
 // Implementation of ResolveHostRequest that tracks cancellations when the
 // request is destroyed after being started.
 class HangingHostResolver::RequestImpl
-    : public HostResolver::ResolveHostRequest {
+    : public HostResolver::ResolveHostRequest,
+      public HostResolver::ProbeRequest {
  public:
   explicit RequestImpl(base::WeakPtr<HangingHostResolver> resolver)
       : resolver_(resolver) {}
@@ -931,7 +966,9 @@ class HangingHostResolver::RequestImpl
       resolver_->num_cancellations_++;
   }
 
-  int Start(CompletionOnceCallback callback) override {
+  int Start(CompletionOnceCallback callback) override { return Start(); }
+
+  int Start() override {
     DCHECK(resolver_);
     is_running_ = true;
     return ERR_IO_PENDING;
@@ -992,6 +1029,14 @@ HangingHostResolver::CreateRequest(
       optional_parameters.value().source == HostResolverSource::LOCAL_ONLY) {
     return CreateFailingRequest(ERR_DNS_CACHE_MISS);
   }
+
+  return std::make_unique<RequestImpl>(weak_ptr_factory_.GetWeakPtr());
+}
+
+std::unique_ptr<HostResolver::ProbeRequest>
+HangingHostResolver::CreateDohProbeRequest() {
+  if (shutting_down_)
+    return CreateFailingProbeRequest(ERR_CONTEXT_SHUT_DOWN);
 
   return std::make_unique<RequestImpl>(weak_ptr_factory_.GetWeakPtr());
 }

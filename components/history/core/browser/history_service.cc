@@ -1027,15 +1027,6 @@ void HistoryService::NotifyProfileError(sql::InitStatus init_status,
     history_client_->NotifyProfileError(init_status, diagnostics);
 }
 
-void HistoryService::DeleteURL(const GURL& url) {
-  TRACE_EVENT0("browser", "HistoryService::DeleteURL");
-  DCHECK(backend_task_runner_) << "History service being called after cleanup";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // We will update the visited links when we observe the delete notifications.
-  ScheduleTask(PRIORITY_NORMAL, base::BindOnce(&HistoryBackend::DeleteURL,
-                                               history_backend_, url));
-}
-
 void HistoryService::DeleteURLs(const std::vector<GURL>& urls) {
   TRACE_EVENT0("browser", "HistoryService::DeleteURLs");
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
@@ -1170,7 +1161,7 @@ void HistoryService::DeleteLocalAndRemoteUrl(WebHistoryService* web_history,
         /*restrict_urls=*/{url}, base::Time(), base::Time::Max(),
         base::DoNothing(), partial_traffic_annotation);
   }
-  DeleteURL(url);
+  DeleteURLs({url});
 }
 
 void HistoryService::OnDBLoaded() {

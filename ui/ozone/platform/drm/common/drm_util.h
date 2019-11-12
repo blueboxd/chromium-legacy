@@ -22,7 +22,6 @@ typedef struct _drmModeModeInfo drmModeModeInfo;
 
 namespace display {
 class DisplayMode;
-class EdidParser;
 }  // namespace display
 
 namespace gfx {
@@ -30,18 +29,6 @@ class Point;
 }
 
 namespace ui {
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class EdidColorSpaceChecksOutcome {
-  kSuccess = 0,
-  kErrorBadCoordinates = 1,
-  kErrorPrimariesAreaTooSmall = 2,
-  kErrorBluePrimaryIsBroken = 3,
-  kErrorCannotExtractToXYZD50 = 4,
-  kErrorBadGamma = 5,
-  kMaxValue = kErrorBadGamma
-};
 
 // Representation of the information required to initialize and configure a
 // native display. |index| is the position of the connection and will be
@@ -135,10 +122,6 @@ OverlayStatusList CreateOverlayStatusListFrom(
 
 std::vector<OverlayCheckReturn_Params> CreateParamsFromOverlayStatusList(
     const OverlayStatusList& returns);
-
-// Uses |edid_parser| to extract a gfx::ColorSpace which will be IsValid() if
-// both gamma and the color primaries were correctly found.
-gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser);
 
 }  // namespace ui
 

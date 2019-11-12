@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
-
-  class Coordinate2d {
+  export class Coordinate2d {
     /**
      * Immutable two dimensional point in space. The units of the dimensions are
      * undefined.
@@ -39,7 +36,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {print_preview.Coordinate2d} other The point to compare against.
+     * @param {Coordinate2d} other The point to compare against.
      * @return {boolean} Whether another point is equal to this one.
      */
     equals(other) {
@@ -47,6 +44,3 @@ cr.define('print_preview', function() {
     }
   }
 
-  // Export
-  return {Coordinate2d: Coordinate2d};
-});

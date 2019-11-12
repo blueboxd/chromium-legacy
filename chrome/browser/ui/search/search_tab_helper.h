@@ -150,7 +150,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   void BlocklistPromo(const std::string& promo_id) override;
 
   // Overridden from InstantServiceObserver:
-  void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
+  void NtpThemeChanged(const NtpTheme& theme) override;
   void MostVisitedInfoChanged(
       const InstantMostVisitedInfo& most_visited_info) override;
 

@@ -10,9 +10,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/url_constants.h"
@@ -34,6 +37,11 @@ const char kPhoneNumberRegexPattern[] =
     R"((?:^|\p{Z})((?:\(?\+[0-9]+\)?)?(?:[.\p{Z}\-(]?[0-9][\p{Z}\-)]?){8,}))";
 
 bool IsClickToCallEnabled(content::BrowserContext* browser_context) {
+  // Check Chrome enterprise policy for Click to Call.
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (profile && !profile->GetPrefs()->GetBoolean(prefs::kClickToCallEnabled))
+    return false;
+
   SharingService* sharing_service =
       SharingServiceFactory::GetForBrowserContext(browser_context);
   return sharing_service && base::FeatureList::IsEnabled(kClickToCallUI);

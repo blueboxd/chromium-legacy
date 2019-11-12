@@ -29,9 +29,9 @@
 #include "components/payments/core/features.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_app.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_details_validation.h"
-#include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
@@ -1033,8 +1033,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
 - (void)paymentInstrument:(payments::IOSPaymentInstrument*)paymentInstrument
     launchAppWithUniversalLink:(GURL)universalLink
-            instrumentDelegate:
-                (payments::PaymentInstrument::Delegate*)delegate {
+            instrumentDelegate:(payments::PaymentApp::Delegate*)delegate {
   DCHECK(_pendingPaymentRequest);
   DCHECK(_activeWebState);
 
@@ -1062,7 +1061,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
       payments::JourneyLogger::EVENT_PAY_CLICKED);
   coordinator.paymentRequest->journey_logger().SetEventOccurred(
       coordinator.paymentRequest->selected_payment_method()->type() ==
-              payments::PaymentInstrument::Type::AUTOFILL
+              payments::PaymentApp::Type::AUTOFILL
           ? payments::JourneyLogger::EVENT_SELECTED_CREDIT_CARD
           : payments::JourneyLogger::EVENT_SELECTED_OTHER);
 

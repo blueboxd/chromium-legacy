@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('pages_per_sheet_settings_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {MarginsType} from 'chrome://print/print_preview.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
+
   suite('PagesPerSheetSettingsTest', function() {
     let pagesPerSheetSection = null;
 
@@ -16,7 +20,7 @@ cr.define('pages_per_sheet_settings_test', function() {
           document.createElement('print-preview-pages-per-sheet-settings');
       pagesPerSheetSection.settings = model.settings;
       pagesPerSheetSection.disabled = false;
-      test_util.fakeDataBind(model, pagesPerSheetSection, 'settings');
+      fakeDataBind(model, pagesPerSheetSection, 'settings');
       document.body.appendChild(pagesPerSheetSection);
     });
 
@@ -26,7 +30,7 @@ cr.define('pages_per_sheet_settings_test', function() {
       assertEquals('1', select.value);
 
       pagesPerSheetSection.setSetting('pagesPerSheet', 4);
-      await test_util.eventToPromise(
+      await eventToPromise(
           'process-select-change', pagesPerSheetSection);
       assertEquals('4', select.value);
     });
@@ -34,14 +38,14 @@ cr.define('pages_per_sheet_settings_test', function() {
     // Tests that setting the pages per sheet setting resets margins to DEFAULT.
     test('resets margins setting', async () => {
       pagesPerSheetSection.setSetting(
-          'margins', print_preview.MarginsType.NO_MARGINS);
+          'margins', MarginsType.NO_MARGINS);
       assertEquals(1, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
       pagesPerSheetSection.setSetting('pagesPerSheet', 4);
-      await test_util.eventToPromise(
+      await eventToPromise(
           'process-select-change', pagesPerSheetSection);
       assertEquals(4, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
       assertEquals(
-          print_preview.MarginsType.DEFAULT,
+          MarginsType.DEFAULT,
           pagesPerSheetSection.getSettingValue('margins'));
     });
 
@@ -55,9 +59,8 @@ cr.define('pages_per_sheet_settings_test', function() {
       assertEquals(6, select.options.length);
 
       // Verify that selecting an new option in the dropdown sets the setting.
-      await print_preview_test_utils.selectOption(pagesPerSheetSection, '2');
+      await selectOption(pagesPerSheetSection, '2');
       assertEquals(2, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
       assertTrue(pagesPerSheetSection.getSetting('pagesPerSheet').setFromUi);
     });
   });
-});

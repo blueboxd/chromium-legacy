@@ -16,7 +16,9 @@
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,6 +124,14 @@ TEST_F(ClickToCallUtilsTest, NoSharingService_DoNotOfferAnyMenu) {
 TEST_F(ClickToCallUtilsTest, UIFlagDisabled_DoNotOfferAnyMenu) {
   scoped_feature_list_.InitWithFeatures(
       {kClickToCallContextMenuForSelectedText}, {kClickToCallUI});
+  EXPECT_FALSE(ShouldOfferClickToCallForURL(&profile_, GURL(kTelUrl)));
+  ExpectClickToCallDisabledForSelectionText(kSelectionTextWithNumber);
+}
+
+TEST_F(ClickToCallUtilsTest, PolicyDisabled_DoNotOfferAnyMenu) {
+  scoped_feature_list_.InitWithFeatures(
+      {kClickToCallContextMenuForSelectedText, kClickToCallUI}, {});
+  profile_.GetPrefs()->SetBoolean(prefs::kClickToCallEnabled, false);
   EXPECT_FALSE(ShouldOfferClickToCallForURL(&profile_, GURL(kTelUrl)));
   ExpectClickToCallDisabledForSelectionText(kSelectionTextWithNumber);
 }

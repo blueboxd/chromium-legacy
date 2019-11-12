@@ -232,7 +232,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnShellDestroying() override;
 
   // OverviewObserver:
-  void OnOverviewModeWillStart() override;
+  void OnOverviewModeStarting() override;
   void OnOverviewModeStartingAnimationComplete(bool canceled) override;
   void OnOverviewModeEnding(OverviewSession* session) override;
   void OnOverviewModeEnded() override;
@@ -432,11 +432,6 @@ class ASH_EXPORT AppListControllerImpl
   // A callback that can be registered by a test to wait for the home launcher
   // visibility animation to finish. Should only be used in tablet mode.
   HomeLauncherAnimationCallback home_launcher_animation_callback_;
-
-  // Used to prevent ShelfLayoutManager updating visibility state when overview
-  // is showing over the AppList.
-  std::unique_ptr<ShelfLayoutManager::ScopedSuspendVisibilityUpdate>
-      scoped_suspend_visibility_update_;
 
   base::ObserverList<AppListControllerObserver> observers_;
 

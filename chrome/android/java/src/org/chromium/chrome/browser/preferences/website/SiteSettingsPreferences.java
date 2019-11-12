@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory.Type;
+import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.common.ContentSwitches;
 
 import java.util.ArrayList;
@@ -91,12 +92,13 @@ public class SiteSettingsPreferences
             if (!commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
                 getPreferenceScreen().removePreference(findPreference(Type.BLUETOOTH_SCANNING));
             }
+            if (!ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
+                getPreferenceScreen().removePreference(findPreference(Type.NFC));
+            }
         }
     }
 
     private void updatePreferenceStates() {
-        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
-
         // Preferences that navigate to Website Settings.
         List<Integer> websitePrefs = new ArrayList<Integer>();
         if (mMediaSubMenu) {
@@ -118,6 +120,9 @@ public class SiteSettingsPreferences
             websitePrefs.add(Type.JAVASCRIPT);
             websitePrefs.add(Type.DEVICE_LOCATION);
             websitePrefs.add(Type.MICROPHONE);
+            if (ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
+                websitePrefs.add(Type.NFC);
+            }
             websitePrefs.add(Type.NOTIFICATIONS);
             websitePrefs.add(Type.POPUPS);
             websitePrefs.add(Type.SENSORS);
@@ -131,7 +136,7 @@ public class SiteSettingsPreferences
             Preference p = findPreference(prefCategory);
             int contentType = SiteSettingsCategory.contentSettingsType(prefCategory);
             boolean requiresTriStateSetting =
-                    prefServiceBridge.requiresTriStateContentSetting(contentType);
+                    WebsitePreferenceBridge.requiresTriStateContentSetting(contentType);
 
             boolean checked = false;
             @ContentSettingValues
@@ -140,9 +145,9 @@ public class SiteSettingsPreferences
             if (prefCategory == Type.DEVICE_LOCATION) {
                 checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
             } else if (requiresTriStateSetting) {
-                setting = prefServiceBridge.getContentSetting(contentType);
+                setting = WebsitePreferenceBridge.getContentSetting(contentType);
             } else {
-                checked = prefServiceBridge.isCategoryEnabled(contentType);
+                checked = WebsitePreferenceBridge.isCategoryEnabled(contentType);
             }
 
             p.setTitle(ContentSettingsResources.getTitle(contentType));
@@ -155,10 +160,10 @@ public class SiteSettingsPreferences
                 // Show 'disabled' message when permission is not granted in Android.
                 p.setSummary(ContentSettingsResources.getCategorySummary(contentType, false));
             } else if (Type.COOKIES == prefCategory && checked
-                    && prefServiceBridge.getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)) {
+                    && PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)) {
                 p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());
             } else if (Type.DEVICE_LOCATION == prefCategory && checked
-                    && prefServiceBridge.isLocationAllowedByPolicy()) {
+                    && WebsitePreferenceBridge.isLocationAllowedByPolicy()) {
                 p.setSummary(ContentSettingsResources.getGeolocationAllowedSummary());
             } else if (Type.CLIPBOARD == prefCategory && !checked) {
                 p.setSummary(ContentSettingsResources.getClipboardBlockedListSummary());

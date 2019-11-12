@@ -1126,6 +1126,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   for (auto& iter : visual_state_callbacks_)
     std::move(iter.second).Run(false);
 
+  // Delete this before destroying the widget, to guard against reentrancy
+  // by in-process screen readers such as JAWS.
+  browser_accessibility_manager_.reset();
+
   // Note: The RenderWidgetHost of the main frame is owned by the RenderViewHost
   // instead. In this case the RenderViewHost is responsible for shutting down
   // its RenderViewHost.

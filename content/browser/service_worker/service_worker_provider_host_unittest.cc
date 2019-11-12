@@ -193,8 +193,9 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 
     // In production code this is called from NavigationRequest in the browser
     // process right before navigation commit.
-    host->OnBeginNavigationCommit(helper_->mock_render_process_id(),
-                                  1 /* route_id */);
+    host->OnBeginNavigationCommit(
+        helper_->mock_render_process_id(), 1 /* route_id */,
+        network::mojom::CrossOriginEmbedderPolicy::kNone);
   }
 
   blink::mojom::ServiceWorkerErrorType Register(
@@ -953,7 +954,8 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
             provider_type, std::move(host_receiver), std::move(client_remote));
     host->UpdateUrls(url, url, url::Origin::Create(url));
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
-    host->CompleteWebWorkerPreparation();
+    host->CompleteWebWorkerPreparation(
+        network::mojom::CrossOriginEmbedderPolicy::kNone);
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
   }
 
@@ -1038,7 +1040,8 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
   EXPECT_FALSE(host->is_execution_ready());
 
   host->UpdateUrls(url, url, url::Origin::Create(url));
-  host->CompleteWebWorkerPreparation();
+  host->CompleteWebWorkerPreparation(
+      network::mojom::CrossOriginEmbedderPolicy::kNone);
 
   EXPECT_TRUE(host->is_response_committed());
   EXPECT_TRUE(host->is_execution_ready());

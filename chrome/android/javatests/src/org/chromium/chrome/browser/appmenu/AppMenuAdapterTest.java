@@ -310,6 +310,28 @@ public class AppMenuAdapterTest extends DummyUiActivityTestCase {
                 view5.getTag(R.id.menu_item_enter_anim_id));
     }
 
+    @Test
+    @MediumTest
+    public void testTitleMenuItem_ToggleCheckbox() {
+        List<MenuItem> items = new ArrayList<>();
+        items.add(buildTitleMenuItem(1, 2, TITLE_1, 3, TITLE_2));
+
+        AppMenuAdapter adapter = new AppMenuAdapter(
+                mClickHandler, items, getActivity().getLayoutInflater(), 0, null);
+
+        ViewGroup parentView = getActivity().findViewById(android.R.id.content);
+        View view = adapter.getView(0, null, parentView);
+        AppMenuItemIcon checkbox = view.findViewById(R.id.checkbox);
+
+        Assert.assertFalse("Checkbox should be unchecked", checkbox.isChecked());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> checkbox.toggle());
+        Assert.assertTrue("Checkbox should be checked", checkbox.isChecked());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> checkbox.toggle());
+        Assert.assertFalse("Checkbox should be unchecked again", checkbox.isChecked());
+    }
+
     static MenuItem buildMenuItem(int id, CharSequence title) {
         return buildMenuItem(id, title, true);
     }

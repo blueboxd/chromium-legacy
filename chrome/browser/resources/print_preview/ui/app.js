@@ -2,8 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {hasKeyModifiers} from 'chrome://resources/js/util.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {CloudPrintInterface, CloudPrintInterfaceErrorEventDetail, CloudPrintInterfaceEventType} from '../cloud_print_interface.js';
+import {getCloudPrintInterface} from '../cloud_print_interface_manager.js';
+import {NativeInitialSettings, NativeLayer} from '../native_layer.js';
+import {Destination} from '../data/destination.js';
+import {DocumentSettings} from '../data/document_info.js';
+import {Margins} from '../data/margins.js';
+import {MeasurementSystem} from '../data/measurement_system.js';
+import {PrintableArea} from '../data/printable_area.js';
+import {Size} from '../data/size.js';
+import {DuplexMode, whenReady} from '../data/model.js';
+import {Error, State} from '../data/state.js';
+import './print_preview_vars_css.js';
+import '../strings.m.js';
+import {DestinationState} from './destination_settings.js';
+import {SettingsBehavior} from './settings_behavior.js';
+import {PreviewAreaState} from './preview_area.js';
+import './sidebar.js';
+
 Polymer({
   is: 'print-preview-app',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [
     SettingsBehavior,
@@ -11,7 +40,7 @@ Polymer({
   ],
 
   properties: {
-    /** @type {!print_preview.State} */
+    /** @type {!State} */
     state: {
       type: Number,
       observer: 'onStateChanged_',
@@ -20,43 +49,43 @@ Polymer({
     /** @private {string} */
     cloudPrintErrorMessage_: String,
 
-    /** @private {!cloudprint.CloudPrintInterface} */
+    /** @private {!CloudPrintInterface} */
     cloudPrintInterface_: Object,
 
     /** @private {boolean} */
     controlsManaged_: Boolean,
 
-    /** @private {print_preview.Destination} */
+    /** @private {Destination} */
     destination_: Object,
 
-    /** @private {!print_preview.DestinationState} */
+    /** @private {!DestinationState} */
     destinationState_: {
       type: Number,
       observer: 'onDestinationStateChange_',
     },
 
-    /** @private {print_preview.DocumentSettings} */
+    /** @private {DocumentSettings} */
     documentSettings_: Object,
 
-    /** @private {!print_preview.Error} */
+    /** @private {!Error} */
     error_: Number,
 
-    /** @private {print_preview.Margins} */
+    /** @private {Margins} */
     margins_: Object,
 
-    /** @private {!print_preview.Size} */
+    /** @private {!Size} */
     pageSize_: Object,
 
-    /** @private {!print_preview.PreviewAreaState} */
+    /** @private {!PreviewAreaState} */
     previewState_: {
       type: String,
       observer: 'onPreviewStateChange_',
     },
 
-    /** @private {!print_preview.PrintableArea} */
+    /** @private {!PrintableArea} */
     printableArea_: Object,
 
-    /** @private {?print_preview.MeasurementSystem} */
+    /** @private {?MeasurementSystem} */
     measurementSystem_: {
       type: Object,
       value: null,
@@ -68,7 +97,7 @@ Polymer({
     'close': 'onCrDialogClose_',
   },
 
-  /** @private {?print_preview.NativeLayer} */
+  /** @private {?NativeLayer} */
   nativeLayer_: null,
 
   /** @private {!EventTracker} */
@@ -111,19 +140,19 @@ Polymer({
 
   /** @override */
   ready: function() {
-    cr.ui.FocusOutlineManager.forDocument(document);
+    FocusOutlineManager.forDocument(document);
   },
 
   /** @override */
   attached: function() {
     document.documentElement.classList.remove('loading');
-    this.nativeLayer_ = print_preview.NativeLayer.getInstance();
+    this.nativeLayer_ = NativeLayer.getInstance();
     this.addWebUIListener('print-failed', this.onPrintFailed_.bind(this));
     this.addWebUIListener(
         'print-preset-options', this.onPrintPresetOptions_.bind(this));
     this.tracker_.add(window, 'keydown', this.onKeyDown_.bind(this));
     this.$.previewArea.setPluginKeyEventCallback(this.onKeyDown_.bind(this));
-    this.whenReady_ = print_preview.Model.whenReady();
+    this.whenReady_ = whenReady();
     this.nativeLayer_.getInitialSettings().then(
         this.onInitialSettingsSet_.bind(this));
   },
@@ -162,7 +191,7 @@ Polymer({
 
       // On non-mac with toolkit-views, ESC key is handled by C++-side instead
       // of JS-side.
-      if (cr.isMac) {
+      if (isMac) {
         this.close_();
         e.preventDefault();
       }
@@ -170,7 +199,7 @@ Polymer({
     }
 
     // On Mac, Cmd+Period should close the print dialog.
-    if (cr.isMac && e.code == 'Period' && e.metaKey) {
+    if (isMac && e.code == 'Period' && e.metaKey) {
       this.close_();
       e.preventDefault();
       return;
@@ -178,8 +207,8 @@ Polymer({
 
     // Ctrl + Shift + p / Mac equivalent.
     if (e.code == 'KeyP') {
-      if ((cr.isMac && e.metaKey && e.altKey && !e.shiftKey && !e.ctrlKey) ||
-          (!cr.isMac && e.shiftKey && e.ctrlKey && !e.altKey && !e.metaKey)) {
+      if ((isMac && e.metaKey && e.altKey && !e.shiftKey && !e.ctrlKey) ||
+          (!isMac && e.shiftKey && e.ctrlKey && !e.altKey && !e.metaKey)) {
         // Don't use system dialog if the link isn't available.
         if (!this.$.sidebar.systemDialogLinkAvailable()) {
           return;
@@ -188,7 +217,7 @@ Polymer({
         // Don't try to print with system dialog on Windows if the document is
         // not ready, because we send the preview document to the printer on
         // Windows.
-        if (!cr.isWindows || this.state == print_preview.State.READY) {
+        if (!isWindows || this.state == State.READY) {
           this.onPrintWithSystemDialog_();
         }
         e.preventDefault();
@@ -197,7 +226,7 @@ Polymer({
     }
 
     if ((e.code === 'Enter' || e.code === 'NumpadEnter') &&
-        this.state === print_preview.State.READY &&
+        this.state === State.READY &&
         this.openDialogs_.length === 0) {
       const activeElementTag = e.path[0].tagName;
       if (['CR-BUTTON', 'BUTTON', 'SELECT', 'A', 'CR-CHECKBOX'].includes(
@@ -239,7 +268,7 @@ Polymer({
   },
 
   /**
-   * @param {!print_preview.NativeInitialSettings} settings
+   * @param {!NativeInitialSettings} settings
    * @private
    */
   onInitialSettingsSet_: function(settings) {
@@ -263,7 +292,7 @@ Polymer({
       this.$.model.setStickySettings(settings.serializedAppStateStr);
       this.$.model.setPolicySettings(
           settings.headerFooter, settings.isHeaderFooterManaged);
-      this.measurementSystem_ = new print_preview.MeasurementSystem(
+      this.measurementSystem_ = new MeasurementSystem(
           settings.thousandsDelimiter, settings.decimalDelimiter,
           settings.unitType);
       this.setSetting('selectionOnly', settings.shouldPrintSelectionOnly);
@@ -292,28 +321,28 @@ Polymer({
    */
   initializeCloudPrint_: function(cloudPrintUrl, appKioskMode, uiLocale) {
     assert(!this.cloudPrintInterface_);
-    this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
+    this.cloudPrintInterface_ = getCloudPrintInterface(
         cloudPrintUrl, assert(this.nativeLayer_), appKioskMode, uiLocale);
     this.tracker_.add(
         assert(this.cloudPrintInterface_).getEventTarget(),
-        cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
+        CloudPrintInterfaceEventType.SUBMIT_DONE,
         this.close_.bind(this));
     this.tracker_.add(
         assert(this.cloudPrintInterface_).getEventTarget(),
-        cloudprint.CloudPrintInterfaceEventType.SUBMIT_FAILED,
+        CloudPrintInterfaceEventType.SUBMIT_FAILED,
         this.onCloudPrintError_.bind(this, appKioskMode));
   },
 
   /** @private */
   onDestinationStateChange_: function() {
     switch (this.destinationState_) {
-      case print_preview.DestinationState.SELECTED:
-      case print_preview.DestinationState.SET:
-        if (this.state !== print_preview.State.NOT_READY) {
-          this.$.state.transitTo(print_preview.State.NOT_READY);
+      case DestinationState.SELECTED:
+      case DestinationState.SET:
+        if (this.state !== State.NOT_READY) {
+          this.$.state.transitTo(State.NOT_READY);
         }
         break;
-      case print_preview.DestinationState.UPDATED:
+      case DestinationState.UPDATED:
         if (!this.$.model.initialized()) {
           this.$.model.applyStickySettings();
         }
@@ -323,13 +352,13 @@ Polymer({
         // </if>
 
         this.startPreviewWhenReady_ = true;
-        this.$.state.transitTo(print_preview.State.READY);
+        this.$.state.transitTo(State.READY);
         break;
-      case print_preview.DestinationState.ERROR:
-        let newState = print_preview.State.ERROR;
+      case DestinationState.ERROR:
+        let newState = State.ERROR;
         // <if expr="chromeos">
-        if (this.error_ === print_preview.Error.NO_DESTINATIONS) {
-          newState = print_preview.State.FATAL_ERROR;
+        if (this.error_ === Error.NO_DESTINATIONS) {
+          newState = State.FATAL_ERROR;
         }
         // </if>
         this.$.state.transitTo(newState);
@@ -349,7 +378,7 @@ Polymer({
 
   /** @private */
   onPreviewSettingChanged_: function() {
-    if (this.state === print_preview.State.READY) {
+    if (this.state === State.READY) {
       this.$.previewArea.startPreview(false);
       this.startPreviewWhenReady_ = false;
     } else {
@@ -359,7 +388,7 @@ Polymer({
 
   /** @private */
   onStateChanged_: function() {
-    if (this.state == print_preview.State.READY) {
+    if (this.state == State.READY) {
       if (this.startPreviewWhenReady_) {
         this.$.previewArea.startPreview(false);
         this.startPreviewWhenReady_ = false;
@@ -369,17 +398,17 @@ Polymer({
         // Reset in case printing fails.
         this.printRequested_ = false;
       }
-    } else if (this.state == print_preview.State.CLOSING) {
+    } else if (this.state == State.CLOSING) {
       this.remove();
       this.nativeLayer_.dialogClose(this.cancelled_);
-    } else if (this.state == print_preview.State.HIDDEN) {
+    } else if (this.state == State.HIDDEN) {
       if (this.destination_.isLocal &&
           this.destination_.id !==
-              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+              Destination.GooglePromotedId.SAVE_AS_PDF) {
         // Only hide the preview for local, non PDF destinations.
         this.nativeLayer_.hidePreview();
       }
-    } else if (this.state == print_preview.State.PRINTING) {
+    } else if (this.state == State.PRINTING) {
       const destination = assert(this.destination_);
       const whenPrintDone =
           this.nativeLayer_.print(this.$.model.createPrintTicket(
@@ -387,7 +416,7 @@ Polymer({
               this.showSystemDialogBeforePrint_));
       if (destination.isLocal) {
         const onError = destination.id ==
-                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
+                Destination.GooglePromotedId.SAVE_AS_PDF ?
             this.onFileSelectionCancel_.bind(this) :
             this.onPrintFailed_.bind(this);
         whenPrintDone.then(this.close_.bind(this), onError);
@@ -403,19 +432,19 @@ Polymer({
 
   /** @private */
   onPrintRequested_: function() {
-    if (this.state === print_preview.State.NOT_READY) {
+    if (this.state === State.NOT_READY) {
       this.printRequested_ = true;
       return;
     }
     this.$.state.transitTo(
-        this.$.previewArea.previewLoaded() ? print_preview.State.PRINTING :
-                                             print_preview.State.HIDDEN);
+        this.$.previewArea.previewLoaded() ? State.PRINTING :
+                                             State.HIDDEN);
   },
 
   /** @private */
   onCancelRequested_: function() {
     this.cancelled_ = true;
-    this.$.state.transitTo(print_preview.State.CLOSING);
+    this.$.state.transitTo(State.CLOSING);
   },
 
   /**
@@ -424,16 +453,16 @@ Polymer({
    */
   onSettingValidChanged_: function(e) {
     if (e.detail) {
-      this.$.state.transitTo(print_preview.State.READY);
+      this.$.state.transitTo(State.READY);
     } else {
-      this.error_ = print_preview.Error.INVALID_TICKET;
-      this.$.state.transitTo(print_preview.State.ERROR);
+      this.error_ = Error.INVALID_TICKET;
+      this.$.state.transitTo(State.ERROR);
     }
   },
 
   /** @private */
   onFileSelectionCancel_: function() {
-    this.$.state.transitTo(print_preview.State.READY);
+    this.$.state.transitTo(State.READY);
   },
 
   /**
@@ -460,7 +489,7 @@ Polymer({
     // </if>
     // <if expr="not is_win">
     this.nativeLayer_.showSystemDialog();
-    this.$.state.transitTo(print_preview.State.SYSTEM_DIALOG);
+    this.$.state.transitTo(State.SYSTEM_DIALOG);
     // </if>
   },
   // </if>
@@ -482,26 +511,26 @@ Polymer({
    */
   onPrintFailed_: function(httpError) {
     console.error('Printing failed with error code ' + httpError);
-    this.error_ = print_preview.Error.PRINT_FAILED;
-    this.$.state.transitTo(print_preview.State.FATAL_ERROR);
+    this.error_ = Error.PRINT_FAILED;
+    this.$.state.transitTo(State.FATAL_ERROR);
   },
 
   /** @private */
   onPreviewStateChange_: function() {
     switch (this.previewState_) {
-      case print_preview.PreviewAreaState.DISPLAY_PREVIEW:
-      case print_preview.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
-        if (this.state === print_preview.State.HIDDEN) {
-          this.$.state.transitTo(print_preview.State.PRINTING);
+      case PreviewAreaState.DISPLAY_PREVIEW:
+      case PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
+        if (this.state === State.HIDDEN) {
+          this.$.state.transitTo(State.PRINTING);
         }
         break;
-      case print_preview.PreviewAreaState.ERROR:
-        if (this.state !== print_preview.State.ERROR &&
-            this.state !== print_preview.State.FATAL_ERROR) {
+      case PreviewAreaState.ERROR:
+        if (this.state !== State.ERROR &&
+            this.state !== State.FATAL_ERROR) {
           this.$.state.transitTo(
-              this.error_ === print_preview.Error.INVALID_PRINTER ?
-                  print_preview.State.ERROR :
-                  print_preview.State.FATAL_ERROR);
+              this.error_ === Error.INVALID_PRINTER ?
+                  State.ERROR :
+                  State.FATAL_ERROR);
         }
         break;
       default:
@@ -513,7 +542,7 @@ Polymer({
    * Called when there was an error communicating with Google Cloud print.
    * Displays an error message in the print header.
    * @param {boolean} appKioskMode
-   * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceErrorEventDetail>}
+   * @param {!CustomEvent<!CloudPrintInterfaceErrorEventDetail>}
    *     event Contains the error message.
    * @private
    */
@@ -523,8 +552,8 @@ Polymer({
       return;  // No internet connectivity or not signed in.
     }
     this.cloudPrintErrorMessage_ = event.detail.message;
-    this.error_ = print_preview.Error.CLOUD_PRINT_ERROR;
-    this.$.state.transitTo(print_preview.State.FATAL_ERROR);
+    this.error_ = Error.CLOUD_PRINT_ERROR;
+    this.$.state.transitTo(State.FATAL_ERROR);
     if (event.detail.status == 200) {
       console.error(
           'Google Cloud Print Error: ' +
@@ -540,7 +569,7 @@ Polymer({
    * Updates printing options according to source document presets.
    * @param {boolean} disableScaling Whether the document disables scaling.
    * @param {number} copies The default number of copies from the document.
-   * @param {!print_preview.DuplexMode} duplex The default duplex setting
+   * @param {!DuplexMode} duplex The default duplex setting
    *     from the document.
    * @private
    */
@@ -553,22 +582,22 @@ Polymer({
       this.setSetting('copies', copies, true);
     }
 
-    if (duplex === print_preview.DuplexMode.UNKNOWN_DUPLEX_MODE) {
+    if (duplex === DuplexMode.UNKNOWN_DUPLEX_MODE) {
       return;
     }
 
     if (this.getSetting('duplex').available) {
       this.setSetting(
           'duplex',
-          duplex === print_preview.DuplexMode.LONG_EDGE ||
-              duplex === print_preview.DuplexMode.SHORT_EDGE,
+          duplex === DuplexMode.LONG_EDGE ||
+              duplex === DuplexMode.SHORT_EDGE,
           true);
     }
 
-    if (duplex !== print_preview.DuplexMode.SIMPLEX &&
+    if (duplex !== DuplexMode.SIMPLEX &&
         this.getSetting('duplexShortEdge').available) {
       this.setSetting(
-          'duplexShortEdge', duplex === print_preview.DuplexMode.SHORT_EDGE,
+          'duplexShortEdge', duplex === DuplexMode.SHORT_EDGE,
           true);
     }
   },
@@ -583,6 +612,6 @@ Polymer({
 
   /** @private */
   close_: function() {
-    this.$.state.transitTo(print_preview.State.CLOSING);
+    this.$.state.transitTo(State.CLOSING);
   },
 });

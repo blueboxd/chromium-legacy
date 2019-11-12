@@ -40,7 +40,8 @@ class TestLoginScreenModel : public ash::LoginScreenModel {
                      bool enforced,
                      const std::string& os_version_label_text,
                      const std::string& enterprise_info_text,
-                     const std::string& bluetooth_name) override;
+                     const std::string& bluetooth_name,
+                     bool adb_sideloading_enabled) override;
   void SetPublicSessionLocales(const AccountId& account_id,
                                const std::vector<ash::LocaleItem>& locales,
                                const std::string& default_locale,

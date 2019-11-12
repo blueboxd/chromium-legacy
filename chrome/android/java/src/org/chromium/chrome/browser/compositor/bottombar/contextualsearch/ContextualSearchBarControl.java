@@ -569,32 +569,34 @@ public class ContextualSearchBarControl {
         assert ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT);
 
         // There are 3 cases:
-        // 1) The whole Bar minus icon (when the icon is present)
-        // 2) The icon
-        // 3) The whole Bar (without any icons)
-        boolean wereIconsVisibleOnTouch = !mContextualSearchPanel.isPeeking();
+        // 1) The whole Bar (without any icons)
+        // 2) The Bar minus icon (when the icon is present)
+        // 3) The icon
         int panelWidth = mContextualSearchPanel.getContentViewWidthPx();
-        if (wereIconsVisibleOnTouch) {
-            float iconOffsetPx = (mContextualSearchPanel.getOpenTabIconX()
-                                         - mContextualSearchPanel.getButtonPaddingDps())
-                    * mDpToPx;
-            if (xPx < iconOffsetPx) {
-                // Case 1 - whole Bar minus icon.
-                mTouchHighlightXOffsetPx = 0;
-                mTouchHighlightWidthPx = iconOffsetPx;
-            } else {
-                // Case 2 - the icon.
-                mTouchHighlightXOffsetPx = iconOffsetPx;
-                mTouchHighlightWidthPx = panelWidth - iconOffsetPx;
-            }
-        } else {
-            // Case 3 - whole Bar.
+        if (mContextualSearchPanel.isPeeking()) {
+            // Case 1 - whole Bar.
             mTouchHighlightXOffsetPx = 0;
             mTouchHighlightWidthPx = panelWidth;
-        }
-        // If RTL then width is correct, just move offset to the other side of the panel.
-        if (LocalizationUtils.isLayoutRtl()) {
-            mTouchHighlightXOffsetPx = panelWidth - mTouchHighlightXOffsetPx;
+        } else {
+            // The open-tab-icon is on the right (on the left in RTL).
+            boolean isRtl = LocalizationUtils.isLayoutRtl();
+            float paddedIconWithMarginWidth =
+                    (mContextualSearchPanel.getBarMarginSide()
+                            + mContextualSearchPanel.getOpenTabIconDimension()
+                            + mContextualSearchPanel.getButtonPaddingDps())
+                    * mDpToPx;
+            float contentWidth = panelWidth - paddedIconWithMarginWidth;
+            // Adjust the touch point to panel coordinates.
+            xPx -= mContextualSearchPanel.getOffsetX() * mDpToPx;
+            if (isRtl && xPx > paddedIconWithMarginWidth || !isRtl && xPx < contentWidth) {
+                // Case 2 - Bar minus icon.
+                mTouchHighlightXOffsetPx = isRtl ? paddedIconWithMarginWidth : 0;
+                mTouchHighlightWidthPx = contentWidth;
+            } else {
+                // Case 3 - the icon.
+                mTouchHighlightXOffsetPx = isRtl ? 0 : contentWidth;
+                mTouchHighlightWidthPx = paddedIconWithMarginWidth;
+            }
         }
     }
 

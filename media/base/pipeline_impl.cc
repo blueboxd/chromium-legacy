@@ -1148,6 +1148,7 @@ void PipelineImpl::Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) {
 
   if (!IsRunning()) {
     DLOG(ERROR) << "Media pipeline isn't running. Ignoring Seek().";
+    seek_cb.Run(PIPELINE_ERROR_INVALID_STATE);
     return;
   }
 
@@ -1212,8 +1213,12 @@ void PipelineImpl::SetPlaybackRate(double playback_rate) {
   DVLOG(2) << __func__ << "(" << playback_rate << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (playback_rate < 0.0)
+  // Not checking IsRunning() so we can set the playback rate before Start().
+
+  if (playback_rate < 0.0) {
+    DVLOG(1) << __func__ << ": Invalid playback rate " << playback_rate;
     return;
+  }
 
   playback_rate_ = playback_rate;
   media_task_runner_->PostTask(
@@ -1231,8 +1236,12 @@ void PipelineImpl::SetVolume(float volume) {
   DVLOG(2) << __func__ << "(" << volume << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (volume < 0.0f)
+  // Not checking IsRunning() so we can set the volume before Start().
+
+  if (volume < 0.0f) {
+    DVLOG(1) << __func__ << ": Invalid volume " << volume;
     return;
+  }
 
   volume_ = volume;
   media_task_runner_->PostTask(
@@ -1297,6 +1306,8 @@ void PipelineImpl::SetCdm(CdmContext* cdm_context,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(cdm_context);
   DCHECK(cdm_attached_cb);
+
+  // Not checking IsRunning() so we can set the CDM before Start().
 
   media_task_runner_->PostTask(
       FROM_HERE,

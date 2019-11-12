@@ -1206,11 +1206,16 @@ TEST_F(ServiceWorkerVersionTest,
       1,
       helper_->mock_render_process_host()->foreground_service_worker_count());
 
+  // This is necessary to make OnBeginNavigationCommit() work.
+  auto remote_controller = host->GetRemoteControllerServiceWorker();
+
   // Now begin the navigation commit with the same process id used by the
   // worker. This should cause the worker to stop being considered foreground
   // priority.
-  host->OnBeginNavigationCommit(version_->embedded_worker()->process_id(),
-                                /* render_frame_id = */ 1);
+  host->OnBeginNavigationCommit(
+      version_->embedded_worker()->process_id(),
+      /* render_frame_id = */ 1,
+      network::mojom::CrossOriginEmbedderPolicy::kNone);
 
   // RenderProcessHost should be notified of foreground worker.
   base::RunLoop().RunUntilIdle();

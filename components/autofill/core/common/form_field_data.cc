@@ -4,7 +4,11 @@
 
 #include "components/autofill/core/common/form_field_data.h"
 
+#include <algorithm>
+#include <tuple>
+
 #include "base/pickle.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -126,18 +130,71 @@ bool DeserializeSection11(base::PickleIterator* iter,
   return iter->ReadString16(&field_data->name_attribute);
 }
 
-bool HaveSameLabel(const FormFieldData& field1, const FormFieldData& field2) {
-  if (field1.label == field2.label)
-    return true;
+// LabelInfo is used to implement that "a.label == b.label" can be weakened to
+// "a.label == b.label OR a certain feature is enabled and {a,b}.label_source !=
+// kLabelTag and a.label_source == b.label_source".
+// Beware of the StringPiece member and resulting lifetime issues. Deleted copy
+// and move ctors/operators to reduce risk potential.
+struct LabelInfo {
+  explicit LabelInfo(const FormFieldData& f)
+      : label(f.label), source(f.label_source) {}
+  LabelInfo(const LabelInfo&) = delete;
+  LabelInfo& operator=(const LabelInfo&) = delete;
+  LabelInfo(LabelInfo&&) = default;
+  LabelInfo& operator=(LabelInfo&&) = default;
 
-  // Assume the labels same if they come from same source but not LABEL tag
-  // when kAutofillSkipComparingInferredLabels is enabled.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillSkipComparingInferredLabels)) {
-    return field1.label_source == field2.label_source &&
-           field1.label_source != FormFieldData::LabelSource::kLabelTag;
+  bool operator==(const LabelInfo& that) const {
+    if (label == that.label)
+      return true;
+
+    // Feature |kAutofillSkipComparingInferredLabels| weakens equivalence of
+    // labels: two labels are equivalent if they were inferred from the same
+    // type of tag other than a LABEL tag.
+    return base::FeatureList::IsEnabled(
+               features::kAutofillSkipComparingInferredLabels) &&
+           source != FormFieldData::LabelSource::kLabelTag &&
+           source == that.source;
   }
-  return false;
+
+  bool operator<(const LabelInfo& that) const { return label < that.label; }
+
+  base::StringPiece16 label;
+  FormFieldData::LabelSource source = FormFieldData::LabelSource::kLabelTag;
+};
+
+// CommonTuple(), SimilarityTuple(), DynamicIdentityTuple(), IdentityTuple()
+// return values should be used as temporaries only because they include a
+// StringPiece.
+
+auto CommonTuple(const FormFieldData& f) {
+  return std::tuple_cat(
+      std::make_tuple(LabelInfo(f)),
+      std::tie(f.name, f.name_attribute, f.id_attribute, f.form_control_type));
+}
+
+auto SimilarityTuple(const FormFieldData& f) {
+  return std::tuple_cat(CommonTuple(f),
+                        std::make_tuple(IsCheckable(f.check_status)));
+}
+
+auto DynamicIdentityTuple(const FormFieldData& f) {
+  return std::tuple_cat(CommonTuple(f), std::make_tuple(f.IsVisible()));
+}
+
+auto IdentityTuple(const FormFieldData& f) {
+  // |unique_renderer_id| uniquely identifies the field, if and only if it is
+  // set; the other members compared below (excluding label_source) together
+  // uniquely identify the field as well.
+  return std::tuple_cat(
+      SimilarityTuple(f),
+      std::tie(
+// TODO(crbug.com/896689): On iOS the unique_id member uniquely addresses
+// this field in the DOM.
+#if defined(OS_IOS)
+          f.unique_id,
+#endif
+          f.autocomplete_attribute, f.placeholder, f.max_length, f.css_classes,
+          f.is_focusable, f.should_autocomplete, f.role, f.text_direction));
 }
 
 }  // namespace
@@ -155,55 +212,21 @@ FormFieldData& FormFieldData::operator=(FormFieldData&&) = default;
 FormFieldData::~FormFieldData() = default;
 
 bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
-// TODO(crbug.com/896689): On iOS the unique_id member uniquely addresses
-// this field in the DOM.
-#if defined(OS_IOS)
-  if (unique_id != field.unique_id)
-    return false;
-#endif
-
-  // A FormFieldData stores a value, but the value is not part of the identity
-  // of the field, so we don't want to compare the values.
-  // Similarly, flags like is_enabled, which are only used for parsing but are
-  // not stored persistently, are not used for comparison.
-  // is_autofilled and section are also secondary properties of a field. Two
-  // fields could be the same, and have different sections, because the section
-  // is updated for one, but not for the other.
-  return name == field.name && id_attribute == field.id_attribute &&
-         name_attribute == field.name_attribute &&
-         form_control_type == field.form_control_type &&
-         autocomplete_attribute == field.autocomplete_attribute &&
-         placeholder == field.placeholder && max_length == field.max_length &&
-         css_classes == field.css_classes &&
-         // is_checked and is_autofilled counts as "value" since these change
-         // when we fill things in.
-         IsCheckable(check_status) == IsCheckable(field.check_status) &&
-         is_focusable == field.is_focusable &&
-         should_autocomplete == field.should_autocomplete &&
-         role == field.role && text_direction == field.text_direction &&
-         HaveSameLabel(*this, field);
-  // The option values/contents which are the list of items in the list
-  // of a drop-down are currently not considered part of the identity of
-  // a form element. This is debatable, since one might base heuristics
-  // on the types of elements that are available. Alternatively, one
-  // could imagine some forms that dynamically change the element
-  // contents (say, insert years starting from the current year) that
-  // should not be considered changes in the structure of the form.
+  return IdentityTuple(*this) == IdentityTuple(field);
 }
 
 bool FormFieldData::SimilarFieldAs(const FormFieldData& field) const {
-  return HaveSameLabel(*this, field) && name == field.name &&
-         id_attribute == field.id_attribute &&
-         name_attribute == field.name_attribute &&
-         form_control_type == field.form_control_type &&
-         IsCheckable(check_status) == IsCheckable(field.check_status);
+  return SimilarityTuple(*this) == SimilarityTuple(field);
 }
 
 bool FormFieldData::DynamicallySameFieldAs(const FormFieldData& field) const {
-  return name == field.name && id_attribute == field.id_attribute &&
-         name_attribute == field.name_attribute &&
-         HaveSameLabel(*this, field) && IsVisible() == field.IsVisible() &&
-         form_control_type == field.form_control_type;
+  return DynamicIdentityTuple(*this) == DynamicIdentityTuple(field);
+}
+
+bool FormFieldData::IdentityComparator::operator()(
+    const FormFieldData& a,
+    const FormFieldData& b) const {
+  return IdentityTuple(a) < IdentityTuple(b);
 }
 
 bool FormFieldData::IsTextInputElement() const {
@@ -226,99 +249,6 @@ bool FormFieldData::HadFocus() const {
 
 bool FormFieldData::WasAutofilled() const {
   return properties_mask & AUTOFILLED;
-}
-
-bool FormFieldData::operator==(const FormFieldData& field) const {
-  return SameFieldAs(field) && unique_renderer_id == field.unique_renderer_id &&
-         form_control_ax_id == field.form_control_ax_id &&
-         is_autofilled == field.is_autofilled &&
-         check_status == field.check_status &&
-         option_values == field.option_values &&
-         option_contents == field.option_contents &&
-         properties_mask == field.properties_mask;
-}
-
-bool FormFieldData::operator!=(const FormFieldData& field) const {
-  return !(*this == field);
-}
-
-bool FormFieldData::operator<(const FormFieldData& field) const {
-  // This does not use std::tie() as that generates more implicit variables
-  // than the max-vartrack-size for var-tracking-assignments when compiling
-  // for Android, producing build warnings. (See https://crbug.com/555171 for
-  // context.)
-
-  // Like SameFieldAs this ignores the value.
-  if (label < field.label)
-    return true;
-  if (label > field.label)
-    return false;
-  if (name < field.name)
-    return true;
-  if (name > field.name)
-    return false;
-
-// TODO(crbug.com/896689): On iOS the unique_id member uniquely addresses
-// this field in the DOM.
-#if defined(OS_IOS)
-  if (unique_id < field.unique_id)
-    return true;
-  if (unique_id < field.unique_id)
-    return false;
-#endif
-
-  if (id_attribute < field.id_attribute)
-    return true;
-  if (id_attribute > field.id_attribute)
-    return false;
-  if (name_attribute < field.name_attribute)
-    return true;
-  if (name_attribute > field.name_attribute)
-    return false;
-  if (form_control_type < field.form_control_type)
-    return true;
-  if (form_control_type > field.form_control_type)
-    return false;
-  if (autocomplete_attribute < field.autocomplete_attribute)
-    return true;
-  if (autocomplete_attribute > field.autocomplete_attribute)
-    return false;
-  if (placeholder < field.placeholder)
-    return true;
-  if (placeholder > field.placeholder)
-    return false;
-  if (max_length < field.max_length)
-    return true;
-  if (max_length > field.max_length)
-    return false;
-  if (css_classes < field.css_classes)
-    return true;
-  if (css_classes > field.css_classes)
-    return false;
-  // Skip |is_checked| and |is_autofilled| as in SameFieldAs.
-  if (IsCheckable(check_status) < IsCheckable(field.check_status))
-    return true;
-  if (IsCheckable(check_status) > IsCheckable(field.check_status))
-    return false;
-  if (is_focusable < field.is_focusable)
-    return true;
-  if (is_focusable > field.is_focusable)
-    return false;
-  if (should_autocomplete < field.should_autocomplete)
-    return true;
-  if (should_autocomplete > field.should_autocomplete)
-    return false;
-  if (role < field.role)
-    return true;
-  if (role > field.role)
-    return false;
-  if (text_direction < field.text_direction)
-    return true;
-  if (text_direction > field.text_direction)
-    return false;
-  // See SameFieldAs above for why we don't check option_values/contents and
-  // flags like is_enabled.
-  return false;
 }
 
 void SerializeFormFieldData(const FormFieldData& field_data,

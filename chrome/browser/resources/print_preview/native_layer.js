@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {Cdd, Destination} from'./data/destination.js';
+// <if expr="chromeos">
+import {Policies} from'./data/destination_policies.js';
+// </if>
+import {PrinterType} from './data/destination_match.js';
+import {MeasurementSystemUnitType} from './data/measurement_system.js';
 
   /**
    * @typedef {{selectSaveAsPdfDestination: boolean,
@@ -14,7 +20,7 @@ cr.define('print_preview', function() {
    *            margins: number}}
    * @see chrome/browser/printing/print_preview_pdf_generated_browsertest.cc
    */
-  let PreviewSettings;
+  export let PreviewSettings;
 
   /**
    * @typedef {{
@@ -23,10 +29,10 @@ cr.define('print_preview', function() {
    *   printerDescription: (string | undefined),
    *   cupsEnterprisePrinter: (boolean | undefined),
    *   printerOptions: (Object | undefined),
-   *   policies: (print_preview.Policies | undefined),
+   *   policies: (Policies | undefined),
    * }}
    */
-  let LocalDestinationInfo;
+  export let LocalDestinationInfo;
 
   /**
    * @typedef {{
@@ -35,7 +41,7 @@ cr.define('print_preview', function() {
    *   uiLocale: string,
    *   thousandsDelimiter: string,
    *   decimalDelimiter: string,
-   *   unitType: !print_preview.MeasurementSystemUnitType,
+   *   unitType: !MeasurementSystemUnitType,
    *   previewModifiable: boolean,
    *   previewIsFromArc: boolean,
    *   previewIsPdf: boolean,
@@ -53,7 +59,7 @@ cr.define('print_preview', function() {
    * }}
    * @see corresponding field name definitions in print_preview_handler.cc
    */
-  let NativeInitialSettings;
+  export let NativeInitialSettings;
 
   /**
    * @typedef {{
@@ -66,27 +72,27 @@ cr.define('print_preview', function() {
    * @see PrintPreviewHandler::FillPrinterDescription in
    * print_preview_handler.cc
    */
-  let PrivetPrinterDescription;
+  export let PrivetPrinterDescription;
 
   /**
    * @typedef {{
-   *   printer:(print_preview.PrivetPrinterDescription |
-   *            print_preview.LocalDestinationInfo |
+   *   printer:(PrivetPrinterDescription |
+   *            LocalDestinationInfo |
    *            undefined),
-   *   capabilities: !print_preview.Cdd,
+   *   capabilities: !Cdd,
    * }}
    */
-  let CapabilitiesResponse;
+  export let CapabilitiesResponse;
 
   /**
    * @typedef {{
    *   printerId: string,
    *   success: boolean,
-   *   capabilities: !print_preview.Cdd,
-   *   policies: (print_preview.Policies | undefined),
+   *   capabilities: !Cdd,
+   *   policies: (Policies | undefined),
    * }}
    */
-  let PrinterSetupResponse;
+  export let PrinterSetupResponse;
 
   /**
    * @typedef {{
@@ -97,15 +103,15 @@ cr.define('print_preview', function() {
    *   description: (string|undefined),
    * }}
    */
-  let ProvisionalDestinationInfo;
+  export let ProvisionalDestinationInfo;
 
   /**
    * An interface to the native Chromium printing system layer.
    */
-  class NativeLayer {
+  export class NativeLayer {
     /**
      * Creates a new NativeLayer if the current instance is not set.
-     * @return {!print_preview.NativeLayer} The singleton instance.
+     * @return {!NativeLayer} The singleton instance.
      */
     static getInstance() {
       if (currentInstance == null) {
@@ -115,7 +121,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.NativeLayer} instance The NativeLayer instance
+     * @param {!NativeLayer} instance The NativeLayer instance
      *     to set for print preview construction.
      */
     static setInstance(instance) {
@@ -128,43 +134,43 @@ cr.define('print_preview', function() {
      * @return {!Promise<string>}
      */
     getAccessToken() {
-      return cr.sendWithPromise('getAccessToken');
+      return sendWithPromise('getAccessToken');
     }
     // </if>
 
     /**
      * Gets the initial settings to initialize the print preview with.
-     * @return {!Promise<!print_preview.NativeInitialSettings>}
+     * @return {!Promise<!NativeInitialSettings>}
      */
     getInitialSettings() {
-      return cr.sendWithPromise('getInitialSettings');
+      return sendWithPromise('getInitialSettings');
     }
 
     /**
      * Requests the system's print destinations. The promise will be resolved
      * when all destinations of that type have been retrieved. One or more
      * 'printers-added' events may be fired in response before resolution.
-     * @param {!print_preview.PrinterType} type The type of destinations to
+     * @param {!PrinterType} type The type of destinations to
      *     request.
      * @return {!Promise}
      */
     getPrinters(type) {
-      return cr.sendWithPromise('getPrinters', type);
+      return sendWithPromise('getPrinters', type);
     }
 
     /**
      * Requests the destination's printing capabilities. Returns a promise that
      * will be resolved with the capabilities if they are obtained successfully.
      * @param {string} destinationId ID of the destination.
-     * @param {!print_preview.PrinterType} type The destination's printer type.
-     * @return {!Promise<!print_preview.CapabilitiesResponse>}
+     * @param {!PrinterType} type The destination's printer type.
+     * @return {!Promise<!CapabilitiesResponse>}
      */
     getPrinterCapabilities(destinationId, type) {
-      return cr.sendWithPromise(
+      return sendWithPromise(
           'getPrinterCapabilities', destinationId,
           destinationId ==
-                  print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
-              print_preview.PrinterType.PDF_PRINTER :
+                  Destination.GooglePromotedId.SAVE_AS_PDF ?
+              PrinterType.PDF_PRINTER :
               type);
     }
 
@@ -173,20 +179,20 @@ cr.define('print_preview', function() {
      * Requests Chrome to resolve provisional extension destination by granting
      * the provider extension access to the printer.
      * @param {string} provisionalDestinationId
-     * @return {!Promise<!print_preview.ProvisionalDestinationInfo>}
+     * @return {!Promise<!ProvisionalDestinationInfo>}
      */
     grantExtensionPrinterAccess(provisionalDestinationId) {
-      return cr.sendWithPromise('grantExtensionPrinterAccess',
+      return sendWithPromise('grantExtensionPrinterAccess',
                                 provisionalDestinationId);
     }
 
     /**
      * Requests that Chrome peform printer setup for the given printer.
      * @param {string} printerId
-     * @return {!Promise<!print_preview.PrinterSetupResponse>}
+     * @return {!Promise<!PrinterSetupResponse>}
      */
     setupPrinter(printerId) {
-      return cr.sendWithPromise('setupPrinter', printerId);
+      return sendWithPromise('setupPrinter', printerId);
     }
     // </if>
 
@@ -202,7 +208,7 @@ cr.define('print_preview', function() {
      *     the preview UI when the preview has been generated.
      */
     getPreview(printTicket) {
-      return cr.sendWithPromise('getPreview', printTicket);
+      return sendWithPromise('getPreview', printTicket);
     }
 
     /**
@@ -226,7 +232,7 @@ cr.define('print_preview', function() {
      *     finished or rejected.
      */
     print(printTicket) {
-      return cr.sendWithPromise('print', printTicket);
+      return sendWithPromise('print', printTicket);
     }
 
     /** Requests that the current pending print request be cancelled. */
@@ -307,18 +313,5 @@ cr.define('print_preview', function() {
     }
   }
 
-  /** @private {?print_preview.NativeLayer} */
+  /** @private {?NativeLayer} */
   let currentInstance = null;
-
-  // Export
-  return {
-    CapabilitiesResponse: CapabilitiesResponse,
-    LocalDestinationInfo: LocalDestinationInfo,
-    NativeInitialSettings: NativeInitialSettings,
-    NativeLayer: NativeLayer,
-    PreviewSettings: PreviewSettings,
-    PrinterSetupResponse: PrinterSetupResponse,
-    PrivetPrinterDescription: PrivetPrinterDescription,
-    ProvisionalDestinationInfo: ProvisionalDestinationInfo,
-  };
-});

@@ -368,24 +368,28 @@ class PipelineImplTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PipelineImplTest);
 };
 
-// Test that playback controls methods no-op when the pipeline hasn't been
+// Test that playback controls methods can be set even before the pipeline is
 // started.
-TEST_F(PipelineImplTest, NotStarted) {
+TEST_F(PipelineImplTest, ControlMethods) {
   const base::TimeDelta kZero;
 
   EXPECT_FALSE(pipeline_->IsRunning());
 
-  // Setting should still work.
+  // Initial value.
   EXPECT_EQ(0.0f, pipeline_->GetPlaybackRate());
+  // Invalid values cannot be set.
   pipeline_->SetPlaybackRate(-1.0);
   EXPECT_EQ(0.0f, pipeline_->GetPlaybackRate());
+  // Valid settings should work.
   pipeline_->SetPlaybackRate(1.0);
   EXPECT_EQ(1.0f, pipeline_->GetPlaybackRate());
 
-  // Setting should still work.
+  // Initial value.
   EXPECT_EQ(1.0f, pipeline_->GetVolume());
+  // Invalid values cannot be set.
   pipeline_->SetVolume(-1.0f);
   EXPECT_EQ(1.0f, pipeline_->GetVolume());
+  // Valid settings should work.
   pipeline_->SetVolume(0.0f);
   EXPECT_EQ(0.0f, pipeline_->GetVolume());
 
@@ -575,6 +579,7 @@ TEST_F(PipelineImplTest, SeekAfterError) {
   OnDemuxerError();
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_INVALID_STATE));
   pipeline_->Seek(
       base::TimeDelta::FromMilliseconds(100),
       base::Bind(&CallbackHelper::OnSeek, base::Unretained(&callbacks_)));
@@ -687,54 +692,6 @@ TEST_F(PipelineImplTest, ErrorDuringSeek) {
 
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
-  EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
-
-  EXPECT_CALL(*demuxer_, AbortPendingReads());
-  EXPECT_CALL(*demuxer_, OnSeek(seek_time, _))
-      .WillOnce(RunOnceCallback<1>(PIPELINE_ERROR_READ));
-  EXPECT_CALL(*demuxer_, Stop());
-
-  pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
-                                        base::Unretained(&callbacks_)));
-  EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ))
-      .WillOnce(Stop(pipeline_.get()));
-  base::RunLoop().RunUntilIdle();
-}
-
-// Invoked function OnError. This asserts that the pipeline does not enqueue
-// non-teardown related tasks while tearing down.
-static void TestNoCallsAfterError(
-    PipelineImpl* pipeline,
-    base::test::SingleThreadTaskEnvironment* task_environment,
-    PipelineStatus /* status */) {
-  CHECK(pipeline);
-  CHECK(task_environment);
-
-  // When we get to this stage, there should be no pending tasks.
-  EXPECT_EQ(0u, task_environment->GetPendingMainThreadTaskCount());
-
-  // Make calls on pipeline after error has occurred.
-  pipeline->SetPlaybackRate(0.5);
-  pipeline->SetVolume(0.5f);
-
-  // No additional tasks should be queued as a result of these calls.
-  EXPECT_EQ(0u, task_environment->GetPendingMainThreadTaskCount());
-}
-
-TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
-  CreateAudioStream();
-  SetDemuxerExpectations();
-  StartPipelineAndExpect(PIPELINE_OK);
-
-  // Trigger additional requests on the pipeline during tear down from error.
-  ON_CALL(callbacks_, OnError(_))
-      .WillByDefault(Invoke([=](PipelineStatus status) {
-        TestNoCallsAfterError(pipeline_.get(), &task_environment_, status);
-      }));
-
-  base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
-
-  // Seek() isn't called as the demuxer errors out first.
   EXPECT_CALL(*renderer_, OnFlush(_)).WillOnce(RunOnceClosure<0>());
 
   EXPECT_CALL(*demuxer_, AbortPendingReads());

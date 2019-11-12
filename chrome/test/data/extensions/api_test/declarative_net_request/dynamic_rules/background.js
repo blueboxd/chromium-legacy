@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var addDynamicRules = chrome.declarativeNetRequest.addDynamicRules;
-var removeDynamicRules = chrome.declarativeNetRequest.removeDynamicRules;
+var updateDynamicRules = chrome.declarativeNetRequest.updateDynamicRules;
 var getDynamicRules = chrome.declarativeNetRequest.getDynamicRules;
 var ruleLimit = chrome.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES;
 
@@ -43,26 +42,26 @@ chrome.test.runTests([
   },
 
   function addRulesEmpty() {
-    addDynamicRules(currentRules, verifyCurrentRulesCallback);
+    updateDynamicRules([], currentRules, verifyCurrentRulesCallback);
   },
 
   function addRules() {
     currentRules =
         [createRuleWithID(1), createRuleWithID(2), createRuleWithID(3)];
-    addDynamicRules(currentRules, verifyCurrentRulesCallback);
+    updateDynamicRules([], currentRules, verifyCurrentRulesCallback);
   },
 
   function removeRules() {
     // Remove rule with id 1, 2.
     // Also ensure rule ids which are not present are ignored.
     currentRules = currentRules.filter(rule => rule.id === 3);
-    removeDynamicRules([4, 5, 2, 1], verifyCurrentRulesCallback);
+    updateDynamicRules([4, 5, 2, 1], [], verifyCurrentRulesCallback);
   },
 
   // Ensure we fail on adding a rule with a duplicate ID.
   function duplicateID() {
-    addDynamicRules(
-        currentRules,
+    updateDynamicRules(
+        [], currentRules,
         chrome.test.callbackFail('Rule with id 3 does not have a unique ID.'));
   },
 
@@ -76,13 +75,13 @@ chrome.test.runTests([
 
     currentRules = newRules.concat(currentRules);
     chrome.test.assertEq(ruleLimit, currentRules.length);
-    addDynamicRules(newRules, verifyCurrentRulesCallback);
+    updateDynamicRules([], newRules, verifyCurrentRulesCallback);
   },
 
   // Ensure we can't add more than |ruleLimit| rules.
   function ruleLimitError() {
-    addDynamicRules(
-        [createRuleWithID(1)],
+    updateDynamicRules(
+        [], [createRuleWithID(1)],
         chrome.test.callbackFail('Dynamic rule count exceeded.'));
   }
 ]);

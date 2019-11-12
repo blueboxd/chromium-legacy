@@ -27,7 +27,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -39,37 +38,39 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class SiteSettingsCategory {
     @IntDef({Type.ALL_SITES, Type.ADS, Type.AUTOMATIC_DOWNLOADS, Type.AUTOPLAY,
-            Type.BACKGROUND_SYNC, Type.CAMERA, Type.CLIPBOARD, Type.COOKIES, Type.DEVICE_LOCATION,
-            Type.JAVASCRIPT, Type.MICROPHONE, Type.NOTIFICATIONS, Type.POPUPS, Type.PROTECTED_MEDIA,
-            Type.SENSORS, Type.SOUND, Type.USE_STORAGE, Type.USB, Type.BLUETOOTH_SCANNING})
+            Type.BACKGROUND_SYNC, Type.BLUETOOTH_SCANNING, Type.CAMERA, Type.CLIPBOARD,
+            Type.COOKIES, Type.DEVICE_LOCATION, Type.JAVASCRIPT, Type.MICROPHONE, Type.NFC,
+            Type.NOTIFICATIONS, Type.POPUPS, Type.PROTECTED_MEDIA, Type.SENSORS, Type.SOUND,
+            Type.USB, Type.USE_STORAGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
         // Values used to address array index - should be enumerated from 0 and can't have gaps.
         // All updates here must also be reflected in {@link #preferenceKey(int)
         // preferenceKey} and {@link #contentSettingsType(int) contentSettingsType}.
-        int ALL_SITES = 0;
+        int ALL_SITES = 0; // Always first as it should appear in the UI at the top.
         int ADS = 1;
-        int AUTOPLAY = 2;
-        int BACKGROUND_SYNC = 3;
-        int CAMERA = 4;
-        int CLIPBOARD = 5;
-        int COOKIES = 6;
-        int DEVICE_LOCATION = 7;
-        int JAVASCRIPT = 8;
-        int MICROPHONE = 9;
-        int NOTIFICATIONS = 10;
-        int POPUPS = 11;
-        int PROTECTED_MEDIA = 12;
-        int SENSORS = 13;
-        int SOUND = 14;
-        int USE_STORAGE = 15;
-        int USB = 16;
-        int AUTOMATIC_DOWNLOADS = 17;
-        int BLUETOOTH_SCANNING = 18;
+        int AUTOMATIC_DOWNLOADS = 2;
+        int AUTOPLAY = 3;
+        int BACKGROUND_SYNC = 4;
+        int BLUETOOTH_SCANNING = 5;
+        int CAMERA = 6;
+        int CLIPBOARD = 7;
+        int COOKIES = 8;
+        int DEVICE_LOCATION = 9;
+        int JAVASCRIPT = 10;
+        int MICROPHONE = 11;
+        int NFC = 12;
+        int NOTIFICATIONS = 13;
+        int POPUPS = 14;
+        int PROTECTED_MEDIA = 15;
+        int SENSORS = 16;
+        int SOUND = 17;
+        int USB = 18;
+        int USE_STORAGE = 19; // Always last as it should appear in the UI at the bottom.
         /**
          * Number of handled categories used for calculating array sizes.
          */
-        int NUM_ENTRIES = 19;
+        int NUM_ENTRIES = 20;
     }
 
     // The id of this category.
@@ -153,6 +154,8 @@ public class SiteSettingsCategory {
                 return ContentSettingsType.JAVASCRIPT;
             case Type.MICROPHONE:
                 return ContentSettingsType.MEDIASTREAM_MIC;
+            case Type.NFC:
+                return ContentSettingsType.NFC;
             case Type.NOTIFICATIONS:
                 return ContentSettingsType.NOTIFICATIONS;
             case Type.POPUPS:
@@ -214,6 +217,8 @@ public class SiteSettingsCategory {
                 return "javascript";
             case Type.MICROPHONE:
                 return "microphone";
+            case Type.NFC:
+                return "nfc";
             case Type.NOTIFICATIONS:
                 return "notifications";
             case Type.POPUPS:
@@ -268,23 +273,22 @@ public class SiteSettingsCategory {
      * custodian of a supervised account.
      */
     public boolean isManaged() {
-        PrefServiceBridge prefs = PrefServiceBridge.getInstance();
         if (showSites(Type.AUTOMATIC_DOWNLOADS)) {
-            return prefs.isAutomaticDownloadsManaged();
+            return WebsitePreferenceBridge.isAutomaticDownloadsManaged();
         } else if (showSites(Type.BACKGROUND_SYNC)) {
-            return prefs.isBackgroundSyncManaged();
+            return WebsitePreferenceBridge.isBackgroundSyncManaged();
         } else if (showSites(Type.COOKIES)) {
-            return !prefs.isAcceptCookiesUserModifiable();
+            return !WebsitePreferenceBridge.isAcceptCookiesUserModifiable();
         } else if (showSites(Type.DEVICE_LOCATION)) {
-            return !prefs.isAllowLocationUserModifiable();
+            return !WebsitePreferenceBridge.isAllowLocationUserModifiable();
         } else if (showSites(Type.JAVASCRIPT)) {
-            return prefs.javaScriptManaged();
+            return WebsitePreferenceBridge.javaScriptManaged();
         } else if (showSites(Type.CAMERA)) {
-            return !prefs.isCameraUserModifiable();
+            return !WebsitePreferenceBridge.isCameraUserModifiable();
         } else if (showSites(Type.MICROPHONE)) {
-            return !prefs.isMicUserModifiable();
+            return !WebsitePreferenceBridge.isMicUserModifiable();
         } else if (showSites(Type.POPUPS)) {
-            return prefs.isPopupsManaged();
+            return WebsitePreferenceBridge.isPopupsManaged();
         }
         return false;
     }
@@ -294,15 +298,14 @@ public class SiteSettingsCategory {
      * enterprise admin) of the account if the account is supervised.
      */
     public boolean isManagedByCustodian() {
-        PrefServiceBridge prefs = PrefServiceBridge.getInstance();
         if (showSites(Type.COOKIES)) {
-            return prefs.isAcceptCookiesManagedByCustodian();
+            return WebsitePreferenceBridge.isAcceptCookiesManagedByCustodian();
         } else if (showSites(Type.DEVICE_LOCATION)) {
-            return prefs.isAllowLocationManagedByCustodian();
+            return WebsitePreferenceBridge.isAllowLocationManagedByCustodian();
         } else if (showSites(Type.CAMERA)) {
-            return prefs.isCameraManagedByCustodian();
+            return WebsitePreferenceBridge.isCameraManagedByCustodian();
         } else if (showSites(Type.MICROPHONE)) {
-            return prefs.isMicManagedByCustodian();
+            return WebsitePreferenceBridge.isMicManagedByCustodian();
         }
         return false;
     }

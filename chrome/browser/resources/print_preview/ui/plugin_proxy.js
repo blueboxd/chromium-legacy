@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {PDFCreateOutOfProcessPlugin} from '../pdf/pdf_scripting_api.js';
 
   /**
    * @typedef {{accessibility: Function,
@@ -34,15 +34,15 @@ cr.define('print_preview', function() {
    *            zoomIn: Function,
    *            zoomOut: Function}}
    */
-  let PDFPlugin;
+  export let PDFPlugin;
 
   /**
    * An interface to the PDF plugin.
    */
-  class PluginProxy {
+  export class PluginProxy {
     /**
      * Creates a new PluginProxy if the current instance is not set.
-     * @return {!print_preview.PluginProxy} The singleton instance.
+     * @return {!PluginProxy} The singleton instance.
      */
     static getInstance() {
       if (instance == null) {
@@ -52,7 +52,7 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.PluginProxy} newInstance The PluginProxy
+     * @param {!PluginProxy} newInstance The PluginProxy
      *     instance to set for print preview construction.
      */
     static setInstance(newInstance) {
@@ -60,7 +60,7 @@ cr.define('print_preview', function() {
     }
 
     constructor() {
-      /** @private {?print_preview.PDFPlugin} */
+      /** @private {?PDFPlugin} */
       this.plugin_ = null;
     }
 
@@ -84,12 +84,12 @@ cr.define('print_preview', function() {
      * Creates the PDF plugin.
      * @param {number} previewUid The unique ID of the preview UI.
      * @param {number} index The preview index to load.
-     * @return {!print_preview.PDFPlugin} The created plugin.
+     * @return {!PDFPlugin} The created plugin.
      */
     createPlugin(previewUid, index) {
       assert(!this.plugin_);
       const srcUrl = this.getPreviewUrl_(previewUid, index);
-      this.plugin_ = /** @type {print_preview.PDFPlugin} */ (
+      this.plugin_ = /** @type {PDFPlugin} */ (
           PDFCreateOutOfProcessPlugin(srcUrl, 'chrome://print/pdf'));
       this.plugin_.classList.add('preview-area-plugin');
       this.plugin_.setAttribute('aria-live', 'polite');
@@ -180,12 +180,5 @@ cr.define('print_preview', function() {
     }
   }
 
-  /** @type {?print_preview.PluginProxy} */
+  /** @type {?PluginProxy} */
   let instance = null;
-
-  // Export
-  return {
-    PDFPlugin: PDFPlugin,
-    PluginProxy: PluginProxy,
-  };
-});

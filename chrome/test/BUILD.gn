@@ -1497,6 +1497,7 @@ if (!is_android) {
     if (!is_android && !is_chromeos) {
       sources += [
         "../browser/external_protocol/external_protocol_handler_browsertest.cc",
+        "../browser/lifetime/application_lifetime_browsertest.cc",
       ]
     }
 
@@ -2015,7 +2016,6 @@ if (!is_android) {
     }
 
     if (is_chromeos) {
-      assert(enable_app_list)
       sources += [
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.h",
@@ -2313,7 +2313,9 @@ if (!is_android) {
         "../browser/notifications/notification_platform_bridge_chromeos_browsertest.cc",
         "../browser/resources/chromeos/zip_archiver/test/zip_archiver_jstest.cc",
         "../browser/signin/chromeos_mirror_account_consistency_browsertest.cc",
+        "../browser/ui/app_list/app_list_client_impl_browsertest.cc",
         "../browser/ui/app_list/arc/arc_usb_host_permission_browsertest.cc",
+        "../browser/ui/app_list/chrome_app_list_model_updater_browsertest.cc",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
         "../browser/ui/ash/assistant/assistant_context_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
@@ -2350,6 +2352,7 @@ if (!is_android) {
         "../browser/ui/views/frame/browser_frame_ash_browsertest.cc",
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
         "../browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc",
+        "../browser/ui/views/frame/system_menu_model_builder_browsertest_chromeos.cc",
         "../browser/ui/views/frame/top_controls_slide_controller_chromeos_browsertest.cc",
         "../browser/ui/views/plugin_vm/plugin_vm_launcher_view_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_ash_interactive_ui_test.cc",
@@ -2565,12 +2568,6 @@ if (!is_android) {
     if (is_desktop_linux || is_mac) {
       sources +=
           [ "../browser/first_run/first_run_internal_posix_browsertest.cc" ]
-    }
-    if (enable_app_list) {
-      sources += [
-        "../browser/ui/app_list/app_list_client_impl_browsertest.cc",
-        "../browser/ui/app_list/chrome_app_list_model_updater_browsertest.cc",
-      ]
     }
     if (enable_service_discovery) {
       sources += [ "../browser/extensions/api/mdns/mdns_apitest.cc" ]
@@ -4131,6 +4128,58 @@ test("unit_tests") {
       "../browser/signin/signin_error_notifier_ash_unittest.cc",
       "../browser/speech/tts_chromeos_unittest.cc",
       "../browser/sync/sync_error_notifier_ash_unittest.cc",
+      "../browser/ui/app_list/app_context_menu_unittest.cc",
+      "../browser/ui/app_list/app_list_syncable_service_unittest.cc",
+      "../browser/ui/app_list/app_list_test_util.cc",
+      "../browser/ui/app_list/app_list_test_util.h",
+      "../browser/ui/app_list/arc/arc_app_test.cc",
+      "../browser/ui/app_list/arc/arc_app_test.h",
+      "../browser/ui/app_list/arc/arc_app_unittest.cc",
+      "../browser/ui/app_list/arc/arc_app_utils_unittest.cc",
+      "../browser/ui/app_list/arc/arc_vpn_provider_unittest.cc",
+      "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.cc",
+      "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.h",
+      "../browser/ui/app_list/crostini/crostini_app_model_builder_unittest.cc",
+      "../browser/ui/app_list/extension_app_model_builder_unittest.cc",
+      "../browser/ui/app_list/internal_app/internal_app_model_builder_unittest.cc",
+      "../browser/ui/app_list/md_icon_normalizer_unittest.cc",
+      "../browser/ui/app_list/search/answer_card/answer_card_result_unittest.cc",
+      "../browser/ui/app_list/search/answer_card/answer_card_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/arc/arc_app_data_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/arc/arc_app_reinstall_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/arc/arc_playstore_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/common/file_icon_util_unittest.cc",
+      "../browser/ui/app_list/search/cros_action_history/cros_action_recorder_unittest.cc",
+      "../browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/app_launch_predictor_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/app_search_result_ranker_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/frecency_store_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/histogram_util_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/ml_app_rank_provider_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/ranking_item_util_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/recurrence_predictor_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/search_ranking_event_logger_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/search_result_ranker_unittest.cc",
+      "../browser/ui/app_list/search/search_utils/fuzzy_tokenized_string_match_unittest.cc",
+      "../browser/ui/app_list/search/search_utils/sequence_matcher_unittest.cc",
+      "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider_unittest.cc",
+      "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_result_unittest.cc",
+      "../browser/ui/app_list/search/tests/app_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/tests/mixer_unittest.cc",
+      "../browser/ui/app_list/search/tests/omnibox_result_unittest.cc",
+      "../browser/ui/app_list/search/tests/term_break_iterator_unittest.cc",
+      "../browser/ui/app_list/search/tests/tokenized_string_char_iterator_unittest.cc",
+      "../browser/ui/app_list/search/tests/tokenized_string_match_unittest.cc",
+      "../browser/ui/app_list/search/tests/tokenized_string_unittest.cc",
+      "../browser/ui/app_list/search/tests/zero_state_file_provider_unittest.cc",
+      "../browser/ui/app_list/search/tests/zero_state_file_result_unittest.cc",
+      "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
+      "../browser/ui/app_list/test/fake_app_list_model_updater.h",
       "../browser/ui/ash/accessibility/accessibility_controller_client_unittest.cc",
       "../browser/ui/ash/accessibility/ax_tree_source_aura_unittest.cc",
       "../browser/ui/ash/assistant/assistant_state_client_unittest.cc",
@@ -4158,10 +4207,13 @@ test("unit_tests") {
     ]
     deps += [
       "//ash:test_support",
+      "//ash/app_list:test_support",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
+      "//ash/resources/vector_icons",
       "//ash/strings",
       "//chrome/browser/chromeos:test_support",
       "//chrome/browser/resources/chromeos/zip_archiver/cpp:ziparchiver_unittests",
+      "//chromeos/services/machine_learning/public/cpp:test_support",
       "//components/arc:arc_test_support",
     ]
   }
@@ -5119,70 +5171,6 @@ test("unit_tests") {
   if (safe_browsing_mode == 1 && enable_extensions) {
     sources += [ "../browser/extensions/blacklist_unittest.cc" ]
   }
-  if (enable_app_list) {
-    sources += [
-      "../browser/ui/app_list/app_context_menu_unittest.cc",
-      "../browser/ui/app_list/app_list_syncable_service_unittest.cc",
-      "../browser/ui/app_list/app_list_test_util.cc",
-      "../browser/ui/app_list/app_list_test_util.h",
-      "../browser/ui/app_list/arc/arc_app_test.cc",
-      "../browser/ui/app_list/arc/arc_app_test.h",
-      "../browser/ui/app_list/arc/arc_app_unittest.cc",
-      "../browser/ui/app_list/arc/arc_app_utils_unittest.cc",
-      "../browser/ui/app_list/arc/arc_vpn_provider_unittest.cc",
-      "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.cc",
-      "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.h",
-      "../browser/ui/app_list/crostini/crostini_app_model_builder_unittest.cc",
-      "../browser/ui/app_list/extension_app_model_builder_unittest.cc",
-      "../browser/ui/app_list/internal_app/internal_app_model_builder_unittest.cc",
-      "../browser/ui/app_list/md_icon_normalizer_unittest.cc",
-      "../browser/ui/app_list/search/answer_card/answer_card_result_unittest.cc",
-      "../browser/ui/app_list/search/answer_card/answer_card_search_provider_unittest.cc",
-      "../browser/ui/app_list/search/arc/arc_app_data_search_provider_unittest.cc",
-      "../browser/ui/app_list/search/arc/arc_app_reinstall_search_provider_unittest.cc",
-      "../browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider_unittest.cc",
-      "../browser/ui/app_list/search/arc/arc_playstore_search_provider_unittest.cc",
-      "../browser/ui/app_list/search/common/file_icon_util_unittest.cc",
-      "../browser/ui/app_list/search/cros_action_history/cros_action_recorder_unittest.cc",
-      "../browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/app_launch_predictor_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/app_search_result_ranker_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/frecency_store_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/histogram_util_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/ml_app_rank_provider_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/ranking_item_util_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/recurrence_predictor_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/search_ranking_event_logger_unittest.cc",
-      "../browser/ui/app_list/search/search_result_ranker/search_result_ranker_unittest.cc",
-      "../browser/ui/app_list/search/search_utils/fuzzy_tokenized_string_match_unittest.cc",
-      "../browser/ui/app_list/search/search_utils/sequence_matcher_unittest.cc",
-      "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider_unittest.cc",
-      "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_result_unittest.cc",
-      "../browser/ui/app_list/search/tests/app_search_provider_unittest.cc",
-      "../browser/ui/app_list/search/tests/mixer_unittest.cc",
-      "../browser/ui/app_list/search/tests/omnibox_result_unittest.cc",
-      "../browser/ui/app_list/search/tests/term_break_iterator_unittest.cc",
-      "../browser/ui/app_list/search/tests/tokenized_string_char_iterator_unittest.cc",
-      "../browser/ui/app_list/search/tests/tokenized_string_match_unittest.cc",
-      "../browser/ui/app_list/search/tests/tokenized_string_unittest.cc",
-      "../browser/ui/app_list/search/tests/zero_state_file_provider_unittest.cc",
-      "../browser/ui/app_list/search/tests/zero_state_file_result_unittest.cc",
-      "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
-      "../browser/ui/app_list/test/fake_app_list_model_updater.h",
-    ]
-    deps += [
-      # TODO(wutao): Put new icons resources to ash/public/cpp/vector_icons/
-      # when UX provides them.
-      "//ash/app_list:test_support",
-      "//ash/resources/vector_icons",
-      "//chromeos/services/machine_learning/public/cpp:test_support",
-      "//components/arc:arc_test_support",
-    ]
-  }
 
   if (is_win || is_mac || (is_linux && !is_chromeos)) {
     sources += [
@@ -5334,7 +5322,6 @@ if (!is_android) {
   }
 
   if (is_chromeos) {
-    assert(enable_app_list)
     assert(enable_extensions)
 
     # These tests are only meant to run on an FYI bot because they
@@ -5693,6 +5680,7 @@ if (!is_android) {
         "../browser/ui/views/test/view_event_test_platform_part_default.cc",
       ]
       sources += [
+        "../browser/ui/app_list/app_list_client_interactive_uitest.cc",
         "../browser/ui/ash/drag_to_overview_interactive_uitest.cc",
         "../browser/ui/ash/launcher_animations_interactive_uitest.cc",
         "../browser/ui/ash/launcher_drag_interactive_uitest.cc",
@@ -5772,11 +5760,6 @@ if (!is_android) {
 
     if (use_x11) {
       configs += [ "//build/config/linux:xtst" ]
-    }
-
-    if (enable_app_list) {
-      sources +=
-          [ "../browser/ui/app_list/app_list_client_interactive_uitest.cc" ]
     }
 
     if (enable_extensions) {
@@ -5911,8 +5894,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/passwords_helper.h",
       "../browser/sync/test/integration/preferences_helper.cc",
       "../browser/sync/test/integration/preferences_helper.h",
-      "../browser/sync/test/integration/printers_helper.cc",
-      "../browser/sync/test/integration/printers_helper.h",
       "../browser/sync/test/integration/profile_sync_service_harness.cc",
       "../browser/sync/test/integration/profile_sync_service_harness.h",
       "../browser/sync/test/integration/quiesce_status_change_checker.cc",
@@ -5935,10 +5916,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/status_change_checker.h",
       "../browser/sync/test/integration/sync_app_helper.cc",
       "../browser/sync/test/integration/sync_app_helper.h",
-      "../browser/sync/test/integration/sync_app_list_helper.cc",
-      "../browser/sync/test/integration/sync_app_list_helper.h",
-      "../browser/sync/test/integration/sync_arc_package_helper.cc",
-      "../browser/sync/test/integration/sync_arc_package_helper.h",
       "../browser/sync/test/integration/sync_datatype_helper.cc",
       "../browser/sync/test/integration/sync_datatype_helper.h",
       "../browser/sync/test/integration/sync_extension_helper.cc",
@@ -5985,29 +5962,23 @@ if (!is_android && !is_fuchsia) {
         "../browser/sync/test/integration/dictionary_load_observer.h",
       ]
     }
-    if (enable_app_list) {
+    if (is_chromeos) {
       sources += [
+        "../browser/sync/test/integration/os_sync_test.cc",
+        "../browser/sync/test/integration/os_sync_test.h",
+        "../browser/sync/test/integration/printers_helper.cc",
+        "../browser/sync/test/integration/printers_helper.h",
+        "../browser/sync/test/integration/sync_app_list_helper.cc",
+        "../browser/sync/test/integration/sync_app_list_helper.h",
+        "../browser/sync/test/integration/sync_arc_package_helper.cc",
+        "../browser/sync/test/integration/sync_arc_package_helper.h",
         "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
         "../browser/ui/app_list/test/fake_app_list_model_updater.h",
       ]
-      deps += [ "//ash/app_list:test_support" ]
-    } else {
-      sources -= [
-        "../browser/sync/test/integration/sync_app_list_helper.cc",
-        "../browser/sync/test/integration/sync_app_list_helper.h",
-      ]
-    }
-    if (is_chromeos) {
       deps += [
+        "//ash/app_list:test_support",
         "//components/arc:arc_test_support",
         "//components/user_manager:test_support",
-      ]
-    } else {
-      sources -= [
-        "../browser/sync/test/integration/printers_helper.cc",
-        "../browser/sync/test/integration/printers_helper.h",
-        "../browser/sync/test/integration/sync_arc_package_helper.cc",
-        "../browser/sync/test/integration/sync_arc_package_helper.h",
       ]
     }
   }
@@ -6017,7 +5988,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/enable_disable_test.cc",
       "../browser/sync/test/integration/local_sync_test.cc",
       "../browser/sync/test/integration/migration_test.cc",
-      "../browser/sync/test/integration/single_client_app_list_sync_test.cc",
       "../browser/sync/test/integration/single_client_apps_sync_test.cc",
       "../browser/sync/test/integration/single_client_autofill_profile_sync_test.cc",
       "../browser/sync/test/integration/single_client_bookmarks_sync_test.cc",
@@ -6044,7 +6014,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/sync_auth_test.cc",
       "../browser/sync/test/integration/sync_errors_test.cc",
       "../browser/sync/test/integration/sync_exponential_backoff_test.cc",
-      "../browser/sync/test/integration/two_client_app_list_sync_test.cc",
       "../browser/sync/test/integration/two_client_autocomplete_sync_test.cc",
       "../browser/sync/test/integration/two_client_autofill_sync_test.cc",
       "../browser/sync/test/integration/two_client_bookmarks_sync_test.cc",
@@ -6137,9 +6106,11 @@ if (!is_android && !is_fuchsia) {
     }
     if (is_chromeos) {
       sources += [
+        "../browser/sync/test/integration/single_client_app_list_sync_test.cc",
         "../browser/sync/test/integration/single_client_arc_package_sync_test.cc",
         "../browser/sync/test/integration/single_client_os_preferences_sync_test.cc",
         "../browser/sync/test/integration/single_client_printers_sync_test.cc",
+        "../browser/sync/test/integration/two_client_app_list_sync_test.cc",
         "../browser/sync/test/integration/two_client_arc_package_sync_test.cc",
         "../browser/sync/test/integration/two_client_os_preferences_sync_test.cc",
         "../browser/sync/test/integration/two_client_printers_sync_test.cc",
@@ -6151,12 +6122,6 @@ if (!is_android && !is_fuchsia) {
     }
     if (enable_basic_printing) {
       deps += [ "//printing" ]
-    }
-    if (!enable_app_list) {
-      sources -= [
-        "../browser/sync/test/integration/single_client_app_list_sync_test.cc",
-        "../browser/sync/test/integration/two_client_app_list_sync_test.cc",
-      ]
     }
   }
 

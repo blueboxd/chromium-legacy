@@ -52,24 +52,24 @@ void InvalidatorRegistrarWithMemory::RegisterProfilePrefs(
 // static
 void InvalidatorRegistrarWithMemory::RegisterPrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kTopicsToHandlerDeprecated);
-  registry->RegisterDictionaryPref(kTopicsToHandler);
+  // For local state, we want to register exactly the same prefs as for profile
+  // prefs; see comment in the header.
+  RegisterProfilePrefs(registry);
 }
 
 InvalidatorRegistrarWithMemory::InvalidatorRegistrarWithMemory(
-    PrefService* local_state,
+    PrefService* prefs,
     const std::string& sender_id,
     bool migrate_old_prefs)
-    : state_(DEFAULT_INVALIDATION_ERROR),
-      local_state_(local_state),
-      sender_id_(sender_id) {
+    : state_(DEFAULT_INVALIDATION_ERROR), prefs_(prefs), sender_id_(sender_id) {
+  DCHECK(!sender_id_.empty());
   if (migrate_old_prefs) {
-    MigratePrefs(local_state_, sender_id_);
+    MigratePrefs(prefs_, sender_id_);
   }
   const base::Value* pref_data =
-      local_state_->Get(kTopicsToHandler)->FindDictKey(sender_id_);
+      prefs_->Get(kTopicsToHandler)->FindDictKey(sender_id_);
   if (!pref_data) {
-    DictionaryPrefUpdate update(local_state_, kTopicsToHandler);
+    DictionaryPrefUpdate update(prefs_, kTopicsToHandler);
     update->SetKey(sender_id_, base::DictionaryValue());
     return;
   }
@@ -114,14 +114,9 @@ void InvalidatorRegistrarWithMemory::UnregisterHandler(
   handlers_.RemoveObserver(handler);
   registered_handler_to_topics_map_.erase(handler);
   // Note: Do *not* remove the entry from
-  // |handler_name_to_subscribed_topics_map_| so that GetAllSubscribedTopics()
-  // still returns the registered topics.
-}
-
-bool InvalidatorRegistrarWithMemory::IsHandlerRegistered(
-    const InvalidationHandler* handler) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return handlers_.HasObserver(handler);
+  // |handler_name_to_subscribed_topics_map_| - we haven't actually unsubscribed
+  // from any of the topics on the server, so GetAllSubscribedTopics() should
+  // still return the topics.
 }
 
 bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
@@ -143,19 +138,14 @@ bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
     }
   }
 
-  // TODO(treib): This is unreachable, |handler| couldn't have been removed
-  // from |handlers_|. What was the intention behind this check?
-  if (!IsHandlerRegistered(handler)) {
-    NOTREACHED();
-    return success;
-  }
-
   // TODO(treib): This seems inconsistent - if there's a duplicate, we don't
   // update |registered_handler_to_topics_map_| but we *do* still update
   // |handler_name_to_subscribed_topics_map_| and the prefs?!
 
-  DictionaryPrefUpdate update(local_state_, kTopicsToHandler);
+  DictionaryPrefUpdate update(prefs_, kTopicsToHandler);
   base::Value* pref_data = update->FindDictKey(sender_id_);
+  // TODO(treib): This does *not* remove subscribed topics which were not
+  // registered. Bug or feature?
   auto to_unregister = FindRemovedTopics(old_topics, topics);
   for (const auto& topic : to_unregister) {
     pref_data->RemoveKey(topic);

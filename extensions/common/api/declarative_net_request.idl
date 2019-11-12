@@ -219,7 +219,7 @@ namespace declarativeNetRequest {
     // The rule is specified in a JSON file within the extension's package.
     manifest,
     // The rule is a dynamic rule added by the extension using
-    // $(ref:declarativeNetRequest.addDynamicRules).
+    // $(ref:declarativeNetRequest.updateDynamicRules).
     dynamic
   };
 
@@ -268,28 +268,27 @@ namespace declarativeNetRequest {
 
   interface Functions {
 
-    // Adds <code>rules</code> to the current set of dynamic rules for the
-    // extension. These rules are persisted across browser sessions.
+    // Modify the current set of dynamic rules for the extension. The rules
+    // with IDs listed in <code>rule_ids_to_remove</code> are first removed,
+    // and then the rules given in <code>rules_to_add</code> are added. This
+    // update happens as a single atomic operation: either all specified rules
+    // are added and removed, or an error is returned.
+    // These rules are persisted across browser sessions.
+    // Any ids in <code>rule_ids_to_remove</code> that are not present will be
+    // ignored.
+    // Note that static rules specified as part of the extension package can
+    // not be removed using this function.
     // Note: <a href="#property-MAX_NUMBER_OF_DYNAMIC_RULES">
     // MAX_NUMBER_OF_DYNAMIC_RULES</a> is the maximum number of dynamic rules an
     // extension can add.
-    // |rules|: The rules to add.
-    // |callback|: Called once the given <code>rules</code> are added. In case
-    // of an error, $(ref:runtime.lastError) will be set to denote the error
-    // message and no rules will be added. This can happen for multiple reasons,
-    // such as invalid rule format, duplicate rule ID, rule count limit
-    // exceeded, internal errors, and others.
-    static void addDynamicRules(Rule[] rules, optional EmptyCallback callback);
-
-    // Removes rules corresponding to <code>rule_ids</code> from the current set
-    // of dynamic rules for the extension. Any <code>rule_ids</code> not already
-    // present are ignored. Note that static rules specified as part of the
-    // extension package can not be removed using this function.
-    // |rule_ids|: The IDs of dynamic rules to remove.
-    // |callback|: Called once the rules are removed. In case of an error,
-    // $(ref:runtime.lastError) will be set to denote the error message and no
-    // rules will be removed. This may happen due to internal errors.
-    static void removeDynamicRules(long[] rule_ids,
+    // |rule_ids_to_remove|: The IDs of rules to remove.
+    // |rules_to_add|: The rules to add.
+    // |callback|: Called once the update is complete or has failed. In case of
+    // an error, $(ref:runtime.lastError) will be set to denote the error
+    // message and no change will be made to the rule set. This can happen for
+    // multiple reasons, such as invalid rule format, duplicate rule ID, rule
+    // count limit exceeded, internal errors, and others.
+    static void updateDynamicRules(long[] rule_ids_to_remove, Rule[] rules_to_add,
         optional EmptyCallback callback);
 
     // Returns the current set of dynamic rules for the extension.

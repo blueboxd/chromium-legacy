@@ -534,7 +534,6 @@ html[dir='rtl'] .top-header-contents .more-options {
 }
 
 #centering-options {
-  display: flex;
   padding: 0;
 }
 

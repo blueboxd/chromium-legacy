@@ -161,6 +161,11 @@ public class ContentSettingsResources {
             localMap.put(ContentSettingsType.MIDI_SYSEX,
                     new ResourceItem(R.drawable.permission_midi, 0,
                             R.string.midi_sysex_permission_title, null, null, 0, 0));
+            localMap.put(ContentSettingsType.NFC,
+                    new ResourceItem(R.drawable.ic_settings_nfc, R.string.nfc_permission_title,
+                            R.string.nfc_permission_title, ContentSettingValues.ASK,
+                            ContentSettingValues.BLOCK, R.string.website_settings_category_nfc_ask,
+                            R.string.website_settings_category_nfc_blocked));
             localMap.put(ContentSettingsType.NOTIFICATIONS,
                     new ResourceItem(R.drawable.permission_push_notification,
                             R.string.push_notifications_permission_title,

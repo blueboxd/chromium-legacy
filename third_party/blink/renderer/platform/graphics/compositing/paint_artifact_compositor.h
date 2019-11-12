@@ -7,13 +7,13 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/property_tree.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/layers_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
@@ -21,15 +21,8 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-namespace cc {
-struct ElementId;
-class EffectTree;
-class Layer;
-}
-
 namespace gfx {
 class Vector2dF;
-class ScrollOffset;
 }
 
 namespace blink {
@@ -39,6 +32,8 @@ class JSONObject;
 class PaintArtifact;
 class SynthesizedClip;
 struct PaintChunk;
+
+using CompositorScrollCallbacks = cc::ScrollCallbacks;
 
 class LayerListBuilder {
  public:
@@ -115,8 +110,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
  public:
   PaintArtifactCompositor(
-      base::RepeatingCallback<void(const gfx::ScrollOffset&,
-                                   const cc::ElementId&)> scroll_callback);
+      base::WeakPtr<CompositorScrollCallbacks> scroll_callbacks);
   ~PaintArtifactCompositor();
 
   struct ViewportProperties {
@@ -326,9 +320,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   cc::PropertyTrees* GetPropertyTreesForDirectUpdate();
 
-  // Provides a callback for notifying blink of composited scrolling.
-  base::RepeatingCallback<void(const gfx::ScrollOffset&, const cc::ElementId&)>
-      scroll_callback_;
+  // For notifying blink of composited scrolling.
+  base::WeakPtr<CompositorScrollCallbacks> scroll_callbacks_;
 
   bool tracks_raster_invalidations_;
   bool needs_update_;

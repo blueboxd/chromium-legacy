@@ -98,8 +98,8 @@ ScrollingCoordinator::ScrollableAreaWithElementIdInAllLocalFrames(
   return nullptr;
 }
 
-void ScrollingCoordinator::DidScroll(const gfx::ScrollOffset& offset,
-                                     const CompositorElementId& element_id) {
+void ScrollingCoordinator::DidScroll(CompositorElementId element_id,
+                                     const gfx::ScrollOffset& offset) {
   // Find the associated scrollable area using the element id and notify it of
   // the compositor-side scroll. We explicitly do not check the VisualViewport
   // which handles scroll offset differently (see: VisualViewport::didScroll).
@@ -109,6 +109,16 @@ void ScrollingCoordinator::DidScroll(const gfx::ScrollOffset& offset,
   if (auto* scrollable =
           ScrollableAreaWithElementIdInAllLocalFrames(element_id)) {
     scrollable->DidScroll(FloatPoint(offset.x(), offset.y()));
+  }
+}
+
+void ScrollingCoordinator::DidChangeScrollbarsHidden(
+    CompositorElementId element_id,
+    bool hidden) {
+  // See the above function for the case of null scrollable area.
+  if (auto* scrollable =
+          ScrollableAreaWithElementIdInAllLocalFrames(element_id)) {
+    scrollable->SetScrollbarsHiddenIfOverlay(hidden);
   }
 }
 
@@ -418,9 +428,6 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     // the layout viewport which is sized based on the minimum allowed page
     // scale so it actually can be smaller than its clip.
     scroll_contents_size = scroll_contents_size.ExpandedTo(container_size);
-
-    cc_layer->set_did_scroll_callback(WTF::BindRepeating(
-        &ScrollingCoordinator::DidScroll, WrapWeakPersistent(this)));
 
     // This call has to go through the GraphicsLayer method to preserve
     // invalidation code there.

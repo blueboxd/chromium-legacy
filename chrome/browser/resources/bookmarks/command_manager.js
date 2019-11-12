@@ -56,6 +56,9 @@ cr.define('bookmarks', function() {
       assert(CommandManager.instance_ == null);
       CommandManager.instance_ = this;
 
+      /** @private {!bookmarks.BrowserProxy} */
+      this.browserProxy_ = bookmarks.BrowserProxy.getInstance();
+
       this.watch('globalCanEdit_', state => state.prefs.canEdit);
       this.updateFromStore();
 
@@ -318,8 +321,8 @@ cr.define('bookmarks', function() {
               labelPromise =
                   Promise.resolve(loadTimeData.getString('toastItemCopied'));
             } else {
-              labelPromise = cr.sendWithPromise(
-                  'getPluralString', 'toastItemsCopied', idList.length);
+              labelPromise = this.browserProxy_.getPluralString(
+                  'toastItemsCopied', idList.length);
             }
 
             this.showTitleToast_(
@@ -344,8 +347,8 @@ cr.define('bookmarks', function() {
             labelPromise =
                 Promise.resolve(loadTimeData.getString('toastItemDeleted'));
           } else {
-            labelPromise = cr.sendWithPromise(
-                'getPluralString', 'toastItemsDeleted', idList.length);
+            labelPromise = this.browserProxy_.getPluralString(
+                'toastItemsDeleted', idList.length);
           }
 
           chrome.bookmarkManagerPrivate.removeTrees(idList, () => {
@@ -778,7 +781,8 @@ cr.define('bookmarks', function() {
                                             Command.OPEN_BOOKMARK;
       }
 
-      bookmarks.util.recordEnumHistogram(histogram, command, Command.MAX_VALUE);
+      this.browserProxy_.recordInHistogram(
+          histogram, command, Command.MAX_VALUE);
     },
 
     /**
@@ -829,7 +833,7 @@ cr.define('bookmarks', function() {
       } else {
         this.openCommandMenuAtPosition(e.detail.x, e.detail.y, e.detail.source);
       }
-      bookmarks.util.recordEnumHistogram(
+      this.browserProxy_.recordInHistogram(
           'BookmarkManager.CommandMenuOpened', e.detail.source,
           MenuSource.NUM_VALUES);
     },

@@ -2424,12 +2424,7 @@ bool AXNodeObject::NameFromLabelElement() const {
     return false;
 
   // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
-  bool is_null = false;
-  HeapVector<Member<Element>> elements = GetElement()->GetElementArrayAttribute(
-      html_names::kAriaLabelledbyAttr, is_null);
-  if (!is_null && elements.size() > 1)
-    return false;
-
+  HeapVector<Member<Element>> elements;
   Vector<String> ids;
   AriaLabelledbyElementVector(elements, ids);
   if (ids.size() > 0)
@@ -3033,17 +3028,6 @@ void AXNodeObject::ComputeAriaOwnsChildren(
     return;
   }
 
-  Element* element = GetElement();
-  if (element && element->HasExplicitlySetAttrAssociatedElements(
-                     html_names::kAriaOwnsAttr)) {
-    bool is_null = false;
-    AXObjectCache().UpdateAriaOwnsFromAttrAssociatedElements(
-        this,
-        element->GetElementArrayAttribute(html_names::kAriaOwnsAttr, is_null),
-        owned_children);
-    return;
-  }
-
   if (!HasAttribute(html_names::kAriaOwnsAttr))
     return;
 
@@ -3614,43 +3598,28 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
 
   // aria-describedby overrides any other accessible description, from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  bool is_null = false;
-  Element* element = GetElement();
-  if (element) {
-    HeapVector<Member<Element>> attr_associated_elements =
-        GetElement()->GetElementArrayAttribute(html_names::kAriaDescribedbyAttr,
-                                               is_null);
-    if (!is_null) {
-      // TODO(meredithl): Determine description sources when |aria_describedby|
-      // is the empty string.
+  const AtomicString& aria_describedby =
+      GetAttribute(html_names::kAriaDescribedbyAttr);
+  if (!aria_describedby.IsNull()) {
+    if (description_sources)
+      description_sources->back().attribute_value = aria_describedby;
+
+    Vector<String> ids;
+    description = TextFromAriaDescribedby(related_objects, ids);
+    AXObjectCache().UpdateReverseRelations(this, ids);
+
+    if (!description.IsNull()) {
       if (description_sources) {
-        description_sources->back().attribute_value =
-            GetAttribute(html_names::kAriaDescribedbyAttr);
+        DescriptionSource& source = description_sources->back();
+        source.type = description_from;
+        source.related_objects = *related_objects;
+        source.text = description;
+        found_description = true;
+      } else {
+        return description;
       }
-      AXObjectSet visited;
-      description = TextFromElements(true, visited, attr_associated_elements,
-                                     related_objects);
-
-      Vector<String> ids;
-      for (auto& element : attr_associated_elements)
-        ids.push_back(element->GetIdAttribute());
-
-      TokenVectorFromAttribute(ids, html_names::kAriaDescribedbyAttr);
-      AXObjectCache().UpdateReverseRelations(this, ids);
-
-      if (!description.IsNull()) {
-        if (description_sources) {
-          DescriptionSource& source = description_sources->back();
-          source.type = description_from;
-          source.related_objects = *related_objects;
-          source.text = description;
-          found_description = true;
-        } else {
-          return description;
-        }
-      } else if (description_sources) {
-        description_sources->back().invalid = true;
-      }
+    } else if (description_sources) {
+      description_sources->back().invalid = true;
     }
   }
 

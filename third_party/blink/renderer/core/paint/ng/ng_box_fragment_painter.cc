@@ -383,6 +383,12 @@ void NGBoxFragmentPainter::PaintObject(
       (!physical_box_fragment.Children().empty() ||
        physical_box_fragment.HasItems()) &&
       !paint_info.DescendantPaintingBlocked()) {
+    if (RuntimeEnabledFeatures::LayoutNGFragmentPaintEnabled()) {
+      if (UNLIKELY(paint_phase == PaintPhase::kForeground &&
+                   box_fragment_.Style().HasColumnRule()))
+        PaintColumnRules(paint_info, paint_offset);
+    }
+
     if (paint_phase != PaintPhase::kFloat) {
       if (physical_box_fragment.ChildrenInline()) {
         DCHECK(paint_fragment_ || PhysicalFragment().HasItems());
@@ -842,6 +848,106 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
 
   if (needs_end_layer)
     paint_info.context.EndLayer();
+}
+
+void NGBoxFragmentPainter::PaintColumnRules(
+    const PaintInfo& paint_info,
+    const PhysicalOffset& paint_offset) {
+  const ComputedStyle& style = box_fragment_.Style();
+  DCHECK(style.HasColumnRule());
+
+  // TODO(crbug.com/792437): Certain rule styles should be converted.
+  EBorderStyle rule_style = style.ColumnRuleStyle();
+
+  if (DrawingRecorder::UseCachedDrawingIfPossible(paint_info.context,
+                                                  GetDisplayItemClient(),
+                                                  DisplayItem::kColumnRules))
+    return;
+
+  DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
+                           DisplayItem::kColumnRules);
+
+  const Color& rule_color =
+      LayoutObject::ResolveColor(style, GetCSSPropertyColumnRuleColor());
+  LayoutUnit rule_thickness(style.ColumnRuleWidth());
+  PhysicalRect previous_column;
+  bool past_first_column_in_row = false;
+  for (const NGLink& child : box_fragment_.Children()) {
+    if (!child->IsColumnBox()) {
+      // Column spanner. Continue in the next row, if there are 2 columns or
+      // more there.
+      past_first_column_in_row = false;
+      previous_column = PhysicalRect();
+      continue;
+    }
+
+    PhysicalRect current_column(child.offset, child->Size());
+    if (!past_first_column_in_row) {
+      // Rules are painted *between* columns. Need to see if we have a second
+      // one before painting anything.
+      past_first_column_in_row = true;
+      previous_column = current_column;
+      continue;
+    }
+
+    PhysicalRect rule;
+    BoxSide box_side;
+    if (previous_column.Y() == current_column.Y() ||
+        previous_column.Bottom() == current_column.Bottom()) {
+      // Horizontal writing-mode.
+      DCHECK(style.IsHorizontalWritingMode());
+      LayoutUnit center;
+      if (previous_column.X() < current_column.X()) {
+        // Left to right.
+        center = (previous_column.X() + current_column.Right()) / 2;
+        box_side = BoxSide::kLeft;
+      } else {
+        // Right to left.
+        center = (current_column.X() + previous_column.Right()) / 2;
+        box_side = BoxSide::kRight;
+      }
+      // The last column may be shorter than the previous ones, but otherwise
+      // they should be the same.
+      LayoutUnit rule_length = previous_column.Height();
+      DCHECK_GE(rule_length, current_column.Height());
+      rule.offset.top = previous_column.offset.top;
+      rule.size.height = rule_length;
+      rule.offset.left = center - rule_thickness / 2;
+      rule.size.width = rule_thickness;
+    } else {
+      // Vertical writing-mode.
+      LayoutUnit center;
+      if (previous_column.Y() < current_column.Y()) {
+        // Top to bottom.
+        center = (previous_column.Y() + current_column.Bottom()) / 2;
+        box_side = BoxSide::kTop;
+      } else {
+        // Bottom to top.
+        center = (current_column.Y() + previous_column.Bottom()) / 2;
+        box_side = BoxSide::kBottom;
+      }
+      // The last column may be shorter than the previous ones, but otherwise
+      // they should be the same.
+      LayoutUnit rule_length = previous_column.Width();
+      DCHECK_GE(rule_length, current_column.Width());
+      rule.offset.left = previous_column.offset.left;
+      rule.size.width = rule_length;
+      rule.offset.top = center - rule_thickness / 2;
+      rule.size.height = rule_thickness;
+    }
+
+    // TODO(crbug.com/792435): The spec actually kind of says that the rules
+    // should be as tall as the entire multicol container, not just as tall as
+    // the column fragments (this difference matters when block-size is
+    // specified and columns are balanced).
+
+    rule.Move(paint_offset);
+    ObjectPainter::DrawLineForBoxSide(paint_info.context, rule.X(), rule.Y(),
+                                      rule.Right(), rule.Bottom(), box_side,
+                                      rule_color, rule_style, 0, 0, true);
+
+    previous_column = current_column;
+  }
 }
 
 // TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to

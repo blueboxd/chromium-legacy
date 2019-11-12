@@ -306,6 +306,12 @@ public class TabUiTestHelper {
                 () -> rule.getActivity().getTabContentManager().getPendingReadbacksForTesting()));
     }
 
+    public static void verifyAllTabsHaveThumbnail(TabModel tabModel) {
+        for (int i = 0; i < tabModel.getCount(); i++) {
+            checkThumbnailsExist(tabModel.getTabAt(i));
+        }
+    }
+
     public static void checkThumbnailsExist(Tab tab) {
         File etc1File = TabContentManager.getTabThumbnailFileEtc1(tab);
         CriteriaHelper.pollInstrumentationThread(etc1File::exists,

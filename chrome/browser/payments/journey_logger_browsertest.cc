@@ -48,7 +48,7 @@ class JourneyLoggerTest : public PlatformBrowserTest,
  public:
   // PaymentRequestTestObserver events that can be waited on by the EventWaiter.
   enum TestEvent : int {
-    SHOW_INSTRUMENTS_READY,
+    SHOW_APPS_READY,
   };
 
   JourneyLoggerTest()
@@ -103,9 +103,9 @@ class JourneyLoggerTest : public PlatformBrowserTest,
   }
 
   // PaymentRequestTestObserver implementation.
-  void OnShowInstrumentsReady() override {
+  void OnShowAppsReady() override {
     if (event_waiter_)
-      event_waiter_->OnEvent(TestEvent::SHOW_INSTRUMENTS_READY);
+      event_waiter_->OnEvent(TestEvent::SHOW_APPS_READY);
   }
 
   void ResetEventWaiterForSequence(std::list<TestEvent> event_sequence) {
@@ -129,7 +129,7 @@ class JourneyLoggerTest : public PlatformBrowserTest,
 IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, NoPaymentMethodSupported) {
   base::HistogramTester histogram_tester;
 
-  ResetEventWaiterForSequence({TestEvent::SHOW_INSTRUMENTS_READY});
+  ResetEventWaiterForSequence({TestEvent::SHOW_APPS_READY});
   EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "testBasicCard()"));
   WaitForObservedEvent();
 
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(JourneyLoggerTest, BasicCardOnly) {
 
   base::HistogramTester histogram_tester;
 
-  ResetEventWaiterForSequence({TestEvent::SHOW_INSTRUMENTS_READY});
+  ResetEventWaiterForSequence({TestEvent::SHOW_APPS_READY});
   EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), "testBasicCard()"));
   WaitForObservedEvent();
 

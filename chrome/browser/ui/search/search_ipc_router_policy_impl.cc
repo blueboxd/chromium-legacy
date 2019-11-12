@@ -95,7 +95,7 @@ bool SearchIPCRouterPolicyImpl::ShouldSendMostVisitedInfo() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
-bool SearchIPCRouterPolicyImpl::ShouldSendThemeBackgroundInfo() {
+bool SearchIPCRouterPolicyImpl::ShouldSendNtpTheme() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 

@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/http/http_auth_multi_round_parse.h"
+
 #include "base/base64.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
-#include "net/http/http_auth_multi_round_parse.h"
 
 namespace net {
 
 namespace {
 
 // Check that the scheme in the challenge matches the expected scheme
-bool SchemeIsValid(const std::string& scheme,
+bool SchemeIsValid(base::StringPiece scheme,
                    HttpAuthChallengeTokenizer* challenge) {
   // There is no guarantee that challenge->scheme() is valid ASCII, but
   // LowerCaseEqualsASCII will do the right thing even if it isn't.
@@ -23,7 +25,7 @@ bool SchemeIsValid(const std::string& scheme,
 }  // namespace
 
 HttpAuth::AuthorizationResult ParseFirstRoundChallenge(
-    const std::string& scheme,
+    base::StringPiece scheme,
     HttpAuthChallengeTokenizer* challenge) {
   // Verify the challenge's auth-scheme.
   if (!SchemeIsValid(scheme, challenge))
@@ -37,7 +39,7 @@ HttpAuth::AuthorizationResult ParseFirstRoundChallenge(
 }
 
 HttpAuth::AuthorizationResult ParseLaterRoundChallenge(
-    const std::string& scheme,
+    base::StringPiece scheme,
     HttpAuthChallengeTokenizer* challenge,
     std::string* encoded_token,
     std::string* decoded_token) {

@@ -95,7 +95,7 @@ class SearchBox : public content::RenderFrameObserver,
   void Paste(const base::string16& text);
 
   // Will return null if the theme info hasn't been set yet.
-  const ThemeBackgroundInfo* GetThemeBackgroundInfo() const;
+  const NtpTheme* GetNtpTheme() const;
 
   // Sends FocusOmnibox(OMNIBOX_FOCUS_INVISIBLE) to the browser.
   void StartCapturingKeyStrokes();
@@ -220,7 +220,7 @@ class SearchBox : public content::RenderFrameObserver,
   void MostVisitedInfoChanged(
       const InstantMostVisitedInfo& most_visited_info) override;
   void SetInputInProgress(bool input_in_progress) override;
-  void ThemeChanged(const ThemeBackgroundInfo& theme_info) override;
+  void ThemeChanged(const NtpTheme& theme) override;
   void LocalBackgroundSelected() override;
 
   void AddCustomLinkResult(bool success);
@@ -264,7 +264,7 @@ class SearchBox : public content::RenderFrameObserver,
   // comparing most visited items.
   InstantMostVisitedInfo most_visited_info_;
   bool has_received_most_visited_;
-  base::Optional<ThemeBackgroundInfo> theme_info_;
+  base::Optional<NtpTheme> theme_;
 
   base::WeakPtrFactory<SearchBox> weak_ptr_factory_{this};
 

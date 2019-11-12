@@ -335,9 +335,6 @@ class HistoryService : public KeyedService {
 
   // Database management operations --------------------------------------------
 
-  // Delete all the information related to a single url.
-  void DeleteURL(const GURL& url);
-
   // Delete all the information related to a list of urls.  (Deleting
   // URLs one by one is slow as it has to flush to disk each time.)
   void DeleteURLs(const std::vector<GURL>& urls);

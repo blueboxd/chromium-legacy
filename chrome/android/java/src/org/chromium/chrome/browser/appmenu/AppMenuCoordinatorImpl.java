@@ -13,6 +13,8 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 
 /** A UI coordinator the app menu. */
 class AppMenuCoordinatorImpl implements AppMenuCoordinator {
+    private static Boolean sHasPermanentMenuKeyForTesting;
+
     /**
      * Factory which creates the AppMenuHandlerImpl.
      */
@@ -79,7 +81,9 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
     public void showAppMenuForKeyboardEvent() {
         if (mAppMenuHandler == null || !mAppMenuHandler.shouldShowAppMenu()) return;
 
-        boolean hasPermanentMenuKey = ViewConfiguration.get(mContext).hasPermanentMenuKey();
+        boolean hasPermanentMenuKey = sHasPermanentMenuKeyForTesting != null
+                ? sHasPermanentMenuKeyForTesting.booleanValue()
+                : ViewConfiguration.get(mContext).hasPermanentMenuKey();
         mAppMenuHandler.showAppMenu(
                 hasPermanentMenuKey ? null : mButtonDelegate.getMenuButtonView(), false,
                 mButtonDelegate.isMenuFromBottom());
@@ -110,5 +114,14 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
     @VisibleForTesting
     AppMenuHandlerImpl getAppMenuHandlerImplForTesting() {
         return mAppMenuHandler;
+    }
+
+    /**
+     * @param hasPermanentMenuKey Overrides {@link ViewConfiguration#hasPermanentMenuKey()} for
+     *         testing. Pass null to reset.
+     */
+    @VisibleForTesting
+    static void setHasPermanentMenuKeyForTesting(Boolean hasPermanentMenuKey) {
+        sHasPermanentMenuKeyForTesting = hasPermanentMenuKey;
     }
 }

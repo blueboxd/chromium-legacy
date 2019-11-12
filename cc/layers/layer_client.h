@@ -34,8 +34,6 @@ class CC_EXPORT LayerClient {
 
   virtual std::string LayerDebugName(const Layer* layer) const = 0;
 
-  virtual void DidChangeScrollbarsHiddenIfOverlay(bool) = 0;
-
  protected:
   virtual ~LayerClient() {}
 };

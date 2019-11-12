@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -28,6 +29,7 @@ import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.ui.styles.ChromeColors;
@@ -388,14 +390,30 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
             return R.drawable.ic_offline_pin_24dp;
         }
 
+        boolean featureIsEnabled = FeatureUtilities.isMarkHttpAsDangerWarningEnabled();
+        String url = getCurrentUrl();
+
         switch (securityLevel) {
             case ConnectionSecurityLevel.NONE:
+                // For HTTPS sites with passive mixed content, ConnectionSecurityLevel
+                // is NONE, but the security indicator should be shown on all devices.
+                if (mNativeLocationBarModelAndroid != 0
+                        && SecurityStateModel.isSchemeCryptographic(url)) {
+                    return featureIsEnabled ? R.drawable.omnibox_not_secure_warning
+                                            : R.drawable.omnibox_info;
+                }
                 return isSmallDevice
                                 && (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
                                         || getNewTabPageForCurrentTab() != null)
                         ? 0
                         : R.drawable.omnibox_info;
             case ConnectionSecurityLevel.WARNING:
+                if (mNativeLocationBarModelAndroid == 0) {
+                    return R.drawable.omnibox_info;
+                }
+                if (featureIsEnabled && !SecurityStateModel.isOriginSecure(url)) {
+                    return R.drawable.omnibox_not_secure_warning;
+                }
                 return R.drawable.omnibox_info;
             case ConnectionSecurityLevel.DANGEROUS:
                 return R.drawable.omnibox_not_secure_warning;

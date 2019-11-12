@@ -99,7 +99,6 @@ class PageActionIconContainerView : public views::View,
  private:
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
-  void ChildVisibilityChanged(views::View* child) override;
 
   // ZoomEventManagerObserver:
   // Updates the view for the zoom icon when default zoom levels change.

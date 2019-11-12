@@ -2,9 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('advanced_item_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import 'chrome://print/print_preview.js';
+import {getCddTemplateWithAdvancedSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {fakeDataBind} from 'chrome://test/test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+  window.advanced_item_test = {};
+  advanced_item_test.suiteName = 'AdvancedItemTest';
   /** @enum {string} */
-  const TestNames = {
+  advanced_item_test.TestNames = {
     DisplaySelect: 'display select',
     DisplayInput: 'display input',
     DisplayCheckbox: 'display checkbox',
@@ -15,8 +22,7 @@ cr.define('advanced_item_test', function() {
     QueryOption: 'query option',
   };
 
-  const suiteName = 'AdvancedItemTest';
-  suite(suiteName, function() {
+  suite(advanced_item_test.suiteName, function() {
     /** @type {?PrintPreviewAdvancedSettingsItemElement} */
     let item = null;
 
@@ -29,19 +35,18 @@ cr.define('advanced_item_test', function() {
       item = document.createElement('print-preview-advanced-settings-item');
 
       // Create capability.
-      item.capability = print_preview_test_utils
-                            .getCddTemplateWithAdvancedSettings(2, 'FooDevice')
+      item.capability = getCddTemplateWithAdvancedSettings(2, 'FooDevice')
                             .capabilities.printer.vendor_capability[1];
       item.settings = model.settings;
-      test_util.fakeDataBind(model, item, 'settings');
+      fakeDataBind(model, item, 'settings');
       model.set('settings.vendorItems.available', true);
 
       document.body.appendChild(item);
-      Polymer.dom.flush();
+      flush();
     });
 
     // Test that a select capability is displayed correctly.
-    test(assert(TestNames.DisplaySelect), function() {
+    test(assert(advanced_item_test.TestNames.DisplaySelect), function() {
       const label = item.$$('.label');
       assertEquals('Paper Type', label.textContent);
 
@@ -57,12 +62,11 @@ cr.define('advanced_item_test', function() {
       assertTrue(item.$$('cr-checkbox').parentElement.hidden);
     });
 
-    test(assert(TestNames.DisplayInput), function() {
+    test(assert(advanced_item_test.TestNames.DisplayInput), function() {
       // Create capability
-      item.capability = print_preview_test_utils
-                            .getCddTemplateWithAdvancedSettings(3, 'FooDevice')
+      item.capability = getCddTemplateWithAdvancedSettings(3, 'FooDevice')
                             .capabilities.printer.vendor_capability[2];
-      Polymer.dom.flush();
+      flush();
 
       const label = item.$$('.label');
       assertEquals('Watermark', label.textContent);
@@ -77,12 +81,11 @@ cr.define('advanced_item_test', function() {
       assertTrue(item.$$('cr-checkbox').parentElement.hidden);
     });
 
-    test(assert(TestNames.DisplayCheckbox), function() {
+    test(assert(advanced_item_test.TestNames.DisplayCheckbox), function() {
       // Create capability
-      item.capability = print_preview_test_utils
-                            .getCddTemplateWithAdvancedSettings(4, 'FooDevice')
+      item.capability = getCddTemplateWithAdvancedSettings(4, 'FooDevice')
                             .capabilities.printer.vendor_capability[3];
-      Polymer.dom.flush();
+      flush();
 
       const label = item.$$('.label');
       assertEquals('Staple', label.textContent);
@@ -99,7 +102,7 @@ cr.define('advanced_item_test', function() {
 
     // Test that a select capability updates correctly when the setting is
     // updated (e.g. when sticky settings are set).
-    test(assert(TestNames.UpdateSelect), function() {
+    test(assert(advanced_item_test.TestNames.UpdateSelect), function() {
       // Check that the default option is selected.
       const select = item.$$('select');
       assertEquals(0, select.selectedIndex);
@@ -111,12 +114,11 @@ cr.define('advanced_item_test', function() {
 
     // Test that an input capability updates correctly when the setting is
     // updated (e.g. when sticky settings are set).
-    test(assert(TestNames.UpdateInput), function() {
+    test(assert(advanced_item_test.TestNames.UpdateInput), function() {
       // Create capability
-      item.capability = print_preview_test_utils
-                            .getCddTemplateWithAdvancedSettings(3, 'FooDevice')
+      item.capability = getCddTemplateWithAdvancedSettings(3, 'FooDevice')
                             .capabilities.printer.vendor_capability[2];
-      Polymer.dom.flush();
+      flush();
 
       // Check that the default value is set.
       const input = item.$$('cr-input');
@@ -129,12 +131,11 @@ cr.define('advanced_item_test', function() {
 
     // Test that an checkbox capability updates correctly when the setting is
     // updated (e.g. when sticky settings are set).
-    test(assert(TestNames.UpdateCheckbox), function() {
+    test(assert(advanced_item_test.TestNames.UpdateCheckbox), function() {
       // Create capability
-      item.capability = print_preview_test_utils
-                            .getCddTemplateWithAdvancedSettings(4, 'FooDevice')
+      item.capability = getCddTemplateWithAdvancedSettings(4, 'FooDevice')
                             .capabilities.printer.vendor_capability[3];
-      Polymer.dom.flush();
+      flush();
 
       // Check that checkbox is unset.
       const checkbox = item.$$('cr-checkbox');
@@ -147,7 +148,7 @@ cr.define('advanced_item_test', function() {
 
     // Test that the setting is displayed correctly when the search query
     // matches its display name.
-    test(assert(TestNames.QueryName), function() {
+    test(assert(advanced_item_test.TestNames.QueryName), function() {
       const query = /(Type)/i;
       assertTrue(item.hasMatch(query));
       item.updateHighlighting(query);
@@ -170,7 +171,7 @@ cr.define('advanced_item_test', function() {
 
     // Test that the setting is displayed correctly when the search query
     // matches one of the select options.
-    test(assert(TestNames.QueryOption), function() {
+    test(assert(advanced_item_test.TestNames.QueryOption), function() {
       const query = /(cycle)/i;
       assertTrue(item.hasMatch(query));
       item.updateHighlighting(query);
@@ -189,9 +190,3 @@ cr.define('advanced_item_test', function() {
       assertEquals('cycle', searchBubbleHits[0].textContent);
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

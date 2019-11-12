@@ -1261,6 +1261,12 @@ class ComputedStyle : public ComputedStyleBase,
            !ColumnRuleColorInternal().Alpha();
   }
   bool ColumnRuleEquivalent(const ComputedStyle& other_style) const;
+  bool HasColumnRule() const {
+    if (LIKELY(!SpecifiesColumns()))
+      return false;
+    return ColumnRuleWidth() && !ColumnRuleIsTransparent() &&
+           BorderStyleIsVisible(ColumnRuleStyle());
+  }
 
   // Flex utility functions.
   bool ResolvedIsColumnFlexDirection() const {

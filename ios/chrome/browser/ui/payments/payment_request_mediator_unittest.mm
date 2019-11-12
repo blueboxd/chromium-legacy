@@ -11,7 +11,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/payment_app.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_shipping_option.h"
 #include "components/payments/core/strings_util.h"
@@ -129,7 +129,7 @@ TEST_F(PaymentRequestMediatorTest, TestCanPay) {
   EXPECT_TRUE([mediator() canPay]);
 
   // Payment cannot be completed if there is no selected payment method.
-  payments::PaymentInstrument* selected_payment_method =
+  payments::PaymentApp* selected_payment_method =
       payment_request()->selected_payment_method();
   payment_request()->set_selected_payment_method(nullptr);
   EXPECT_FALSE([mediator() canPay]);

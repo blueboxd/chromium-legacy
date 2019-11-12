@@ -22,6 +22,7 @@
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_impl.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_session_utils.h"
+#include "chrome/browser/android/vr/arcore_device/type_converters.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
@@ -697,7 +698,7 @@ void ArCoreGl::UnsubscribeFromHitTest(uint64_t subscription_id) {
   arcore_->UnsubscribeFromHitTest(subscription_id);
 }
 
-void ArCoreGl::CreateAnchor(mojom::VRPosePtr anchor_pose,
+void ArCoreGl::CreateAnchor(mojom::PosePtr anchor_pose,
                             CreateAnchorCallback callback) {
   DVLOG(2) << __func__;
 
@@ -711,7 +712,7 @@ void ArCoreGl::CreateAnchor(mojom::VRPosePtr anchor_pose,
   }
 }
 
-void ArCoreGl::CreatePlaneAnchor(mojom::VRPosePtr anchor_pose,
+void ArCoreGl::CreatePlaneAnchor(mojom::PosePtr anchor_pose,
                                  uint64_t plane_id,
                                  CreatePlaneAnchorCallback callback) {
   DVLOG(2) << __func__;
@@ -763,7 +764,9 @@ void ArCoreGl::ProcessFrame(
 
     // Get results for hit test subscriptions.
     frame_data->hit_test_subscription_results =
-        arcore_->GetHitTestSubscriptionResults(frame_data->pose);
+        arcore_->GetHitTestSubscriptionResults(
+            mojo::ConvertTo<gfx::Transform>(frame_data->pose),
+            frame_data->pose->input_state);
   }
 
   // Get anchors data, including anchors created this frame.

@@ -60,7 +60,8 @@ void LoginDataDispatcher::Observer::OnSystemInfoChanged(
     bool enforced,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
-    const std::string& bluetooth_name) {}
+    const std::string& bluetooth_name,
+    bool adb_sideloading_enabled) {}
 
 void LoginDataDispatcher::Observer::OnPublicSessionDisplayNameChanged(
     const AccountId& account_id,
@@ -186,10 +187,12 @@ void LoginDataDispatcher::SetSystemInfo(
     bool enforced,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
-    const std::string& bluetooth_name) {
+    const std::string& bluetooth_name,
+    bool adb_sideloading_enabled) {
   for (auto& observer : observers_) {
     observer.OnSystemInfoChanged(show, enforced, os_version_label_text,
-                                 enterprise_info_text, bluetooth_name);
+                                 enterprise_info_text, bluetooth_name,
+                                 adb_sideloading_enabled);
   }
 }
 

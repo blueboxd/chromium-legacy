@@ -543,7 +543,7 @@ TEST_F(BrowsingHistoryServiceTest, QueryHistoryFullLocalPending) {
       /*reached_beginning*/ false, /*has_synced_results*/ true,
       {{kUrl3, 3, kRemote}}, QueryHistory(1));
 
-  local_history()->DeleteURL(GURL(kUrl1));
+  local_history()->DeleteURLs({GURL(kUrl1)});
   VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
                     {{kUrl2, 2, kRemote}, {kUrl1, 1, kLocal}}, ContinueQuery());
 }

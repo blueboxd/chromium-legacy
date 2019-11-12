@@ -613,12 +613,8 @@ void AppListControllerImpl::OnShellDestroying() {
   Shutdown();
 }
 
-void AppListControllerImpl::OnOverviewModeWillStart() {
+void AppListControllerImpl::OnOverviewModeStarting() {
   if (IsTabletMode()) {
-    scoped_suspend_visibility_update_ =
-        std::make_unique<ShelfLayoutManager::ScopedSuspendVisibilityUpdate>(
-            RootWindowController::ForWindow(presenter_.GetWindow())
-                ->GetShelfLayoutManager());
     const int64_t display_id = last_visible_display_id_;
     OnHomeLauncherTargetPositionChanged(false /* showing */, display_id);
     OnVisibilityWillChange(false /* visible */, display_id);
@@ -631,8 +627,6 @@ void AppListControllerImpl::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
   if (!IsTabletMode())
     return;
-  if (scoped_suspend_visibility_update_)
-    scoped_suspend_visibility_update_.reset();
   OnHomeLauncherAnimationComplete(false /* shown */, last_visible_display_id_);
 }
 

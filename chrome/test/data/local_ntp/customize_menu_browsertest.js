@@ -126,10 +126,10 @@ test.customizeMenu.timesCustomBackgroundWasSet = 0;
 
 /**
  * Themed properties for testing to be used instead of
- * chrome.embeddedSearch.newTabPage.themeBackgroundInfo.
+ * chrome.embeddedSearch.newTabPage.ntpTheme.
  * @type {?Object}
  */
-test.customizeMenu.mockThemeBackgroundInfo = {};
+test.customizeMenu.mockNtpTheme = {};
 
 /**
  * Sets up the page for each individual test.
@@ -156,7 +156,7 @@ test.customizeMenu.setUp = function() {
   test.customizeMenu.toggleMostVisitedOrCustomLinksCount = 0;
   test.customizeMenu.toggleShortcutsVisibilityCount = 0;
   test.customizeMenu.timesCustomBackgroundWasSet = 0;
-  test.customizeMenu.mockThemeBackgroundInfo = {};
+  test.customizeMenu.mockNtpTheme = {};
 };
 
 // ******************************* SIMPLE TESTS *******************************
@@ -724,8 +724,8 @@ test.customizeMenu.testColors_ColorTilesLoaded = function() {
 /**
  * Test that at theme info is not visible when no theme id is available.
  */
-test.customizeMenu.testColors_ThemeInfo_NoThemeID = function() {
-  test.customizeMenu.mockThemeBackgroundInfo = {themeName: 'test theme name'};
+test.customizeMenu.testColors_NtpTheme_NoThemeID = function() {
+  test.customizeMenu.mockNtpTheme = {themeName: 'test theme name'};
   init();
   $(test.customizeMenu.IDS.EDIT_BG).click();
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
@@ -735,8 +735,8 @@ test.customizeMenu.testColors_ThemeInfo_NoThemeID = function() {
 /**
  * Test that at theme info is not visible when no theme name is available.
  */
-test.customizeMenu.testColors_ThemeInfo_NoThemeName = function() {
-  test.customizeMenu.mockThemeBackgroundInfo = {themeId: 'test theme id'};
+test.customizeMenu.testColors_NtpTheme_NoThemeName = function() {
+  test.customizeMenu.mockNtpTheme = {themeId: 'test theme id'};
   init();
   $(test.customizeMenu.IDS.EDIT_BG).click();
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
@@ -746,8 +746,8 @@ test.customizeMenu.testColors_ThemeInfo_NoThemeName = function() {
 /**
  * Test that at theme info is visible.
  */
-test.customizeMenu.testColors_ThemeInfo_Visible = function() {
-  test.customizeMenu.mockThemeBackgroundInfo = {
+test.customizeMenu.testColors_NtpTheme_Visible = function() {
+  test.customizeMenu.mockNtpTheme = {
     themeId: 'test theme id',
     themeName: 'test theme name'
   };
@@ -760,8 +760,8 @@ test.customizeMenu.testColors_ThemeInfo_Visible = function() {
 /**
  * Test that at theme uninstall triggers correct calls.
  */
-test.customizeMenu.testColors_ThemeInfo_Uninstall = function() {
-  test.customizeMenu.mockThemeBackgroundInfo = {
+test.customizeMenu.testColors_NtpTheme_Uninstall = function() {
+  test.customizeMenu.mockNtpTheme = {
     themeId: 'test theme id',
     themeName: 'test theme name'
   };
@@ -779,7 +779,7 @@ test.customizeMenu.testColors_ThemeInfo_Uninstall = function() {
  * Test preselect default tile.
  */
 test.customizeMenu.testColors_PreselectDefault = function() {
-  test.customizeMenu.mockThemeBackgroundInfo = {usingDefaultTheme: true};
+  test.customizeMenu.mockNtpTheme = {usingDefaultTheme: true};
   init();
   $(test.customizeMenu.IDS.EDIT_BG).click();
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
@@ -796,10 +796,7 @@ test.customizeMenu.testColors_PreselectDefault = function() {
  * Test preselect color tile.
  */
 test.customizeMenu.testColors_PreselectColor = function() {
-  test.customizeMenu.mockThemeBackgroundInfo = {
-    usingDefaultTheme: false,
-    colorId: 1
-  };
+  test.customizeMenu.mockNtpTheme = {usingDefaultTheme: false, colorId: 1};
   init();
   $(test.customizeMenu.IDS.EDIT_BG).click();
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
@@ -812,18 +809,14 @@ test.customizeMenu.testColors_PreselectColor = function() {
                    .getElementsByClassName('selected')[0]
                    .firstChild;
   assertTrue(
-      parseInt(tile.dataset.id) ===
-      test.customizeMenu.mockThemeBackgroundInfo.colorId);
+      parseInt(tile.dataset.id) === test.customizeMenu.mockNtpTheme.colorId);
 };
 
 /**
  * Test no preselect when color id is invalid.
  */
 test.customizeMenu.testColors_NoPreselectInvalidColorId = function() {
-  test.customizeMenu.mockThemeBackgroundInfo = {
-    usingDefaultTheme: false,
-    colorId: -1
-  };
+  test.customizeMenu.mockNtpTheme = {usingDefaultTheme: false, colorId: -1};
   init();
   $(test.customizeMenu.IDS.EDIT_BG).click();
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
@@ -838,7 +831,7 @@ test.customizeMenu.testColors_NoPreselectInvalidColorId = function() {
  * Test no preselect when color id not specified.
  */
 test.customizeMenu.testColors_NoPreselectNoColorId = function() {
-  test.customizeMenu.mockThemeBackgroundInfo = {usingDefaultTheme: false};
+  test.customizeMenu.mockNtpTheme = {usingDefaultTheme: false};
   init();
   $(test.customizeMenu.IDS.EDIT_BG).click();
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
@@ -854,7 +847,7 @@ test.customizeMenu.testColors_NoPreselectNoColorId = function() {
  */
 test.customizeMenu.testColors_PreselectColorPicker = function() {
   configData.chromeColorsCustomColorPicker = true;
-  test.customizeMenu.mockThemeBackgroundInfo = {
+  test.customizeMenu.mockNtpTheme = {
     usingDefaultTheme: false,
     colorId: 0,
     colorDark: [100, 100, 100],
@@ -1110,12 +1103,10 @@ init = function() {
   // We want to keep some EmbeddedSearchAPI functions, so save and add them to
   // our mock API.
   const getColorsInfo = chrome.embeddedSearch.newTabPage.getColorsInfo;
-  let themeBackgroundInfo =
-      chrome.embeddedSearch.newTabPage.themeBackgroundInfo;
+  let ntpTheme = chrome.embeddedSearch.newTabPage.ntpTheme;
   // Override theme background properties with testing values.
-  for (const property in test.customizeMenu.mockThemeBackgroundInfo) {
-    themeBackgroundInfo[property] =
-        test.customizeMenu.mockThemeBackgroundInfo[property];
+  for (const property in test.customizeMenu.mockNtpTheme) {
+    ntpTheme[property] = test.customizeMenu.mockNtpTheme[property];
   };
 
   test.customizeMenu.stubs.replace(chrome.embeddedSearch, 'newTabPage', {
@@ -1131,7 +1122,7 @@ init = function() {
     selectLocalBackgroundImage: () => {},
     setBackgroundURL: timesCustomBackgroundWasSet,
     setBackgroundInfo: timesCustomBackgroundWasSet,
-    themeBackgroundInfo: themeBackgroundInfo,
+    ntpTheme: ntpTheme,
     toggleMostVisitedOrCustomLinks: toggleMostVisitedOrCustomLinks,
     toggleShortcutsVisibility: toggleShortcutsVisibility,
     useDefaultTheme: useDefaultTheme,

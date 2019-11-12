@@ -120,29 +120,22 @@ std::string BrowserDMTokenStorage::RetrieveEnrollmentToken() {
 
 void BrowserDMTokenStorage::StoreDMToken(const std::string& dm_token,
                                          StoreCallback callback) {
-  if (dm_token.empty())
-    StoreDMToken(BrowserDMToken::CreateEmptyToken(), std::move(callback));
-  else if (dm_token == kInvalidTokenValue)
-    StoreDMToken(BrowserDMToken::CreateInvalidToken(), std::move(callback));
-  else
-    StoreDMToken(BrowserDMToken::CreateValidToken(dm_token),
-                 std::move(callback));
-}
-
-void BrowserDMTokenStorage::StoreDMToken(const BrowserDMToken& dm_token,
-                                         StoreCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!store_callback_);
   InitIfNeeded();
 
-  dm_token_ = dm_token;
-
   store_callback_ = std::move(callback);
 
-  if (dm_token_.is_invalid())
+  if (dm_token.empty()) {
+    dm_token_ = BrowserDMToken::CreateEmptyToken();
+    SaveDMToken("");
+  } else if (dm_token == kInvalidTokenValue) {
+    dm_token_ = BrowserDMToken::CreateInvalidToken();
     SaveDMToken(kInvalidTokenValue);
-  else
+  } else {
+    dm_token_ = BrowserDMToken::CreateValidToken(dm_token);
     SaveDMToken(dm_token_.value());
+  }
 }
 
 std::string BrowserDMTokenStorage::RetrieveDMToken() {

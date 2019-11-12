@@ -58,10 +58,12 @@ template("chrome_repack_percent") {
     }
     if (is_chromeos) {
       sources += [
+        "$root_gen_dir/ash/app_list/resources/app_list_resources_${percent}_percent.pak",
         "$root_gen_dir/ash/login/resources/login_resources_${percent}_percent.pak",
         "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak",
       ]
       deps += [
+        "//ash/app_list/resources",
         "//ash/login/resources",
         "//ui/chromeos/resources",
       ]
@@ -69,10 +71,6 @@ template("chrome_repack_percent") {
     if (enable_extensions) {
       sources += [ "$root_gen_dir/extensions/extensions_browser_resources_${percent}_percent.pak" ]
       deps += [ "//extensions:extensions_browser_resources" ]
-    }
-    if (enable_app_list) {
-      sources += [ "$root_gen_dir/ash/app_list/resources/app_list_resources_${percent}_percent.pak" ]
-      deps += [ "//ash/app_list/resources" ]
     }
 
     output = "${invoker.output_dir}/chrome_${percent}_percent.pak"

@@ -80,8 +80,6 @@ class PLATFORM_EXPORT GraphicsLayerClient {
 
   virtual bool IsTrackingRasterInvalidations() const { return false; }
 
-  virtual void SetOverlayScrollbarsHidden(bool) {}
-
   virtual void GraphicsLayersDidChange() {}
 
   virtual String DebugName(const GraphicsLayer*) const = 0;

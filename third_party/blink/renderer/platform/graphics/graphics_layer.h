@@ -220,7 +220,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
       const cc::Layer*) override;
   std::string LayerDebugName(const cc::Layer*) const override;
-  void DidChangeScrollbarsHiddenIfOverlay(bool) override;
 
   PaintController& GetPaintController() const;
 

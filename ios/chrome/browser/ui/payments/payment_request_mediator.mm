@@ -12,7 +12,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/core/autofill_payment_app.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_item.h"
 #include "components/payments/core/payment_prefs.h"
@@ -191,7 +191,7 @@ using ::payment_request_util::GetShippingSectionTitle;
 }
 
 - (CollectionViewItem*)paymentMethodItem {
-  payments::PaymentInstrument* paymentMethod =
+  payments::PaymentApp* paymentMethod =
       self.paymentRequest->selected_payment_method();
   if (paymentMethod) {
     PaymentMethodItem* item = [[PaymentMethodItem alloc] init];
@@ -199,17 +199,17 @@ using ::payment_request_util::GetShippingSectionTitle;
     item.methodDetail = base::SysUTF16ToNSString(paymentMethod->GetSublabel());
 
     switch (paymentMethod->type()) {
-      case payments::PaymentInstrument::Type::AUTOFILL: {
+      case payments::PaymentApp::Type::AUTOFILL: {
         item.methodTypeIcon = NativeImage(paymentMethod->icon_resource_id());
         break;
       }
-      case payments::PaymentInstrument::Type::NATIVE_MOBILE_APP: {
+      case payments::PaymentApp::Type::NATIVE_MOBILE_APP: {
         payments::IOSPaymentInstrument* mobileApp =
             static_cast<payments::IOSPaymentInstrument*>(paymentMethod);
         item.methodTypeIcon = mobileApp->icon_image();
         break;
       }
-      case payments::PaymentInstrument::Type::SERVICE_WORKER_APP: {
+      case payments::PaymentApp::Type::SERVICE_WORKER_APP: {
         NOTIMPLEMENTED();
         break;
       }

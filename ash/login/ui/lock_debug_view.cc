@@ -432,10 +432,11 @@ class LockDebugView::DebugDataDispatcherTransformer
 
   void AddSystemInfo(const std::string& os_version,
                      const std::string& enterprise_info,
-                     const std::string& bluetooth_name) {
+                     const std::string& bluetooth_name,
+                     bool adb_sideloading_enabled) {
     debug_dispatcher_.SetSystemInfo(true /*show*/, false /*enforced*/,
-                                    os_version, enterprise_info,
-                                    bluetooth_name);
+                                    os_version, enterprise_info, bluetooth_name,
+                                    adb_sideloading_enabled);
   }
 
   void UpdateWarningMessage(const base::string16& message) {
@@ -877,8 +878,9 @@ void LockDebugView::ButtonPressed(views::Button* sender,
         (num_system_info_clicks_ % 4) / 2 ? kDebugEnterpriseInfo : "";
     std::string bluetooth_name =
         num_system_info_clicks_ % 2 ? kDebugBluetoothName : "";
-    debug_data_dispatcher_->AddSystemInfo(os_version, enterprise_info,
-                                          bluetooth_name);
+    bool adb_sideloading_enabled = num_system_info_clicks_ % 3;
+    debug_data_dispatcher_->AddSystemInfo(
+        os_version, enterprise_info, bluetooth_name, adb_sideloading_enabled);
     return;
   }
 

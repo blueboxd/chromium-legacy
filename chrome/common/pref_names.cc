@@ -1622,6 +1622,12 @@ const char kDefaultTasksBySuffix[] =
 // send text across devices.
 const char kSharedClipboardEnabled[] = "browser.shared_clipboard_enabled";
 
+#if BUILDFLAG(ENABLE_CLICK_TO_CALL)
+// A flag to enable/disable the Click to Call feature which enables users to
+// send phone numbers from desktop to Android phones.
+const char kClickToCallEnabled[] = "browser.click_to_call_enabled";
+#endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
+
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 

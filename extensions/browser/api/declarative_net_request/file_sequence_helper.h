@@ -123,10 +123,11 @@ class FileSequenceHelper {
   // string.
   using UpdateDynamicRulesUICallback =
       base::OnceCallback<void(LoadRequestData, base::Optional<std::string>)>;
-  void UpdateDynamicRules(LoadRequestData load_data,
-                          std::vector<api::declarative_net_request::Rule> rules,
-                          DynamicRuleUpdateAction action,
-                          UpdateDynamicRulesUICallback ui_callback) const;
+  void UpdateDynamicRules(
+      LoadRequestData load_data,
+      std::vector<int> rule_ids_to_remove,
+      std::vector<api::declarative_net_request::Rule> rules_to_add,
+      UpdateDynamicRulesUICallback ui_callback) const;
 
  private:
   // Callback invoked when the JSON rulesets are reindexed.

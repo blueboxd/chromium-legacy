@@ -70,6 +70,11 @@ NavigationState NavigationImpl::GetState() {
   return NavigationState::kWaitingResponse;
 }
 
+int NavigationImpl::GetHttpStatusCode() {
+  auto* response_headers = navigation_handle_->GetResponseHeaders();
+  return response_headers ? response_headers->response_code() : 0;
+}
+
 bool NavigationImpl::IsSameDocument() {
   return navigation_handle_->IsSameDocument();
 }

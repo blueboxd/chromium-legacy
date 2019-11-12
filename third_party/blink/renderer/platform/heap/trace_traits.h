@@ -241,8 +241,12 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
 
     template <typename KeyType,
               typename ValueType,
-              bool ephemeron_semantics =
-                  WTF::IsWeak<KeyType>::value != WTF::IsWeak<ValueType>::value>
+              bool ephemeron_semantics = (WTF::IsWeak<KeyType>::value &&
+                                          !WTF::IsWeak<ValueType>::value &&
+                                          WTF::IsTraceable<ValueType>::value) ||
+                                         (WTF::IsWeak<ValueType>::value &&
+                                          !WTF::IsWeak<KeyType>::value &&
+                                          WTF::IsTraceable<KeyType>::value)>
     struct GetWeakTraceDescriptorKVPImpl {
       static TraceDescriptor GetWeakTraceDescriptor(void* backing) {
         return {backing, nullptr};

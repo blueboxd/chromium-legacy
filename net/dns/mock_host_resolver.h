@@ -83,6 +83,7 @@ class MockHostResolverBase
       public base::SupportsWeakPtr<MockHostResolverBase> {
  private:
   class RequestImpl;
+  class ProbeRequestImpl;
   class MdnsListenerImpl;
 
  public:
@@ -120,6 +121,7 @@ class MockHostResolverBase
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;
+  std::unique_ptr<ProbeRequest> CreateDohProbeRequest() override;
   std::unique_ptr<MdnsListener> CreateMdnsListener(
       const HostPortPair& host,
       DnsQueryType query_type) override;
@@ -202,6 +204,8 @@ class MockHostResolverBase
     return last_secure_dns_mode_override_;
   }
 
+  bool IsDohProbeRunning() const { return !!doh_probe_request_; }
+
   void TriggerMdnsListeners(const HostPortPair& host,
                             DnsQueryType query_type,
                             MdnsListener::Delegate::UpdateType update_type,
@@ -281,6 +285,7 @@ class MockHostResolverBase
   // RemoveCancelledListener().
   RequestMap requests_;
   size_t next_request_id_;
+  ProbeRequestImpl* doh_probe_request_ = nullptr;
   std::set<MdnsListenerImpl*> listeners_;
 
   size_t num_resolve_;
@@ -474,12 +479,15 @@ class HangingHostResolver : public HostResolver {
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;
 
+  std::unique_ptr<ProbeRequest> CreateDohProbeRequest() override;
+
   // Use to detect cancellations since there's otherwise no externally-visible
   // differentiation between a cancelled and a hung task.
   int num_cancellations() const { return num_cancellations_; }
 
  private:
   class RequestImpl;
+  class ProbeRequestImpl;
 
   int num_cancellations_ = 0;
   bool shutting_down_ = false;

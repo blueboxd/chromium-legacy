@@ -285,7 +285,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
 
         int contentType = mCategory.getContentSettingsType();
         mRequiresTriStateSetting =
-                PrefServiceBridge.getInstance().requiresTriStateContentSetting(contentType);
+                WebsitePreferenceBridge.requiresTriStateContentSetting(contentType);
 
         ViewGroup view = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
 
@@ -459,8 +459,6 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
     // OnPreferenceChangeListener:
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
-
         if (BINARY_TOGGLE_KEY.equals(preference.getKey())) {
             assert !mCategory.isManaged();
 
@@ -472,7 +470,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                     continue;
                 }
 
-                prefServiceBridge.setCategoryEnabled(
+                WebsitePreferenceBridge.setCategoryEnabled(
                         SiteSettingsCategory.contentSettingsType(type), (boolean) newValue);
 
                 if (type == SiteSettingsCategory.Type.COOKIES) {
@@ -514,12 +512,14 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         } else if (TRI_STATE_TOGGLE_KEY.equals(preference.getKey())) {
             @ContentSettingValues
             int setting = (int) newValue;
-            prefServiceBridge.setContentSetting(mCategory.getContentSettingsType(), setting);
+            WebsitePreferenceBridge.setContentSetting(mCategory.getContentSettingsType(), setting);
             getInfoForOrigins();
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
-            prefServiceBridge.setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, ((boolean) newValue));
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.BLOCK_THIRD_PARTY_COOKIES, ((boolean) newValue));
         } else if (NOTIFICATIONS_VIBRATE_TOGGLE_KEY.equals(preference.getKey())) {
-            prefServiceBridge.setBoolean(Pref.NOTIFICATIONS_VIBRATE_ENABLED, (boolean) newValue);
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.NOTIFICATIONS_VIBRATE_ENABLED, (boolean) newValue);
         }
         return true;
     }
@@ -533,17 +533,15 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)) {
             resource = R.string.website_settings_add_site_description_background_sync;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)) {
-            resource = PrefServiceBridge.getInstance().isCategoryEnabled(
-                               ContentSettingsType.JAVASCRIPT)
+            resource = WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.JAVASCRIPT)
                     ? R.string.website_settings_add_site_description_javascript_block
                     : R.string.website_settings_add_site_description_javascript_allow;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
-            resource = PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.SOUND)
+            resource = WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.SOUND)
                     ? R.string.website_settings_add_site_description_sound_block
                     : R.string.website_settings_add_site_description_sound_allow;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
-            resource =
-                    PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.COOKIES)
+            resource = WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES)
                     ? R.string.website_settings_add_site_description_cookies_block
                     : R.string.website_settings_add_site_description_cookies_allow;
         }
@@ -580,12 +578,12 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
     // AddExceptionPreference.SiteAddedCallback:
     @Override
     public void onAddSite(String hostname) {
-        int setting = (PrefServiceBridge.getInstance().isCategoryEnabled(
-                              mCategory.getContentSettingsType()))
+        int setting =
+                (WebsitePreferenceBridge.isCategoryEnabled(mCategory.getContentSettingsType()))
                 ? ContentSettingValues.BLOCK
                 : ContentSettingValues.ALLOW;
 
-        PrefServiceBridge.getInstance().setContentSettingForPattern(
+        WebsitePreferenceBridge.setContentSettingForPattern(
                 mCategory.getContentSettingsType(), hostname, setting);
         Toast.makeText(getActivity(),
                 String.format(getActivity().getString(
@@ -619,12 +617,11 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOPLAY)
-                && !PrefServiceBridge.getInstance().isCategoryEnabled(
-                        ContentSettingsType.AUTOPLAY)) {
+                && !WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.AUTOPLAY)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)
                 && (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)
-                        || !PrefServiceBridge.getInstance().isCategoryEnabled(
+                        || !WebsitePreferenceBridge.isCategoryEnabled(
                                 ContentSettingsType.JAVASCRIPT))) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
@@ -632,11 +629,11 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                         ChromeFeatureList.ANDROID_SITE_SETTINGS_UI_REFRESH)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
-                && !PrefServiceBridge.getInstance().isCategoryEnabled(
+                && !WebsitePreferenceBridge.isCategoryEnabled(
                         ContentSettingsType.BACKGROUND_SYNC)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)
-                && !PrefServiceBridge.getInstance().isCategoryEnabled(
+                && !WebsitePreferenceBridge.isCategoryEnabled(
                         ContentSettingsType.AUTOMATIC_DOWNLOADS)) {
             exception = true;
         }
@@ -821,7 +818,6 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
     }
 
     private void configureGlobalToggles() {
-        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
         int contentType = mCategory.getContentSettingsType();
         PreferenceScreen screen = getPreferenceScreen();
 
@@ -939,7 +935,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
             TriStateSiteSettingsPreference triStateToggle, int contentType) {
         triStateToggle.setOnPreferenceChangeListener(this);
         @ContentSettingValues
-        int setting = PrefServiceBridge.getInstance().getContentSetting(contentType);
+        int setting = WebsitePreferenceBridge.getContentSetting(contentType);
         int[] descriptionIds =
                 ContentSettingsResources.getTriStateSettingDescriptionIDs(contentType);
         triStateToggle.initialize(setting, descriptionIds);
@@ -951,7 +947,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
 
         // Set summary on or off.
         if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)
-                && PrefServiceBridge.getInstance().isLocationAllowedByPolicy()) {
+                && WebsitePreferenceBridge.isLocationAllowedByPolicy()) {
             binaryToggle.setSummaryOn(ContentSettingsResources.getGeolocationAllowedSummary());
         } else {
             binaryToggle.setSummaryOn(ContentSettingsResources.getEnabledSummary(contentType));
@@ -977,7 +973,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
             binaryToggle.setChecked(
                     LocationSettings.getInstance().isChromeLocationSettingEnabled());
         } else {
-            binaryToggle.setChecked(PrefServiceBridge.getInstance().isCategoryEnabled(contentType));
+            binaryToggle.setChecked(WebsitePreferenceBridge.isCategoryEnabled(contentType));
         }
     }
 
@@ -988,7 +984,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         thirdPartyCookiesPref.setChecked(
                 PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES));
         thirdPartyCookiesPref.setEnabled(
-                PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.COOKIES));
+                WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES));
         thirdPartyCookiesPref.setManagedPreferenceDelegate(preference
                 -> PrefServiceBridge.getInstance().isManagedPreference(
                         Pref.BLOCK_THIRD_PARTY_COOKIES));
@@ -999,8 +995,8 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                 (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
         if (preference != null) {
-            preference.setEnabled(PrefServiceBridge.getInstance().isCategoryEnabled(
-                    ContentSettingsType.NOTIFICATIONS));
+            preference.setEnabled(
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.NOTIFICATIONS));
         }
     }
 

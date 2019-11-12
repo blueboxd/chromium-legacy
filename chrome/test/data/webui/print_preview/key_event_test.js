@@ -2,9 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('key_event_test', function() {
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {NativeLayer, PluginProxy} from 'chrome://print/print_preview.js';
+import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
+import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
+import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
+import {getCddTemplateWithAdvancedSettings, getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {isChromeOS, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+
+  window.key_event_test = {};
+  key_event_test.suiteName = 'KeyEventTest';
   /** @enum {string} */
-  const TestNames = {
+  key_event_test.TestNames = {
     EnterTriggersPrint: 'enter triggers print',
     NumpadEnterTriggersPrint: 'numpad enter triggers print',
     EnterOnInputTriggersPrint: 'enter on input triggers print',
@@ -16,8 +27,7 @@ cr.define('key_event_test', function() {
     CtrlShiftPOpensSystemDialog: 'ctrl shift p opens system dialog',
   };
 
-  const suiteName = 'KeyEventTest';
-  suite(suiteName, function() {
+  suite(key_event_test.suiteName, function() {
     /** @type {?PrintPreviewAppElement} */
     let page = null;
 
@@ -27,17 +37,17 @@ cr.define('key_event_test', function() {
     /** @override */
     setup(function() {
       const initialSettings =
-          print_preview_test_utils.getDefaultInitialSettings();
-      nativeLayer = new print_preview.NativeLayerStub();
+          getDefaultInitialSettings();
+      nativeLayer = new NativeLayerStub();
       nativeLayer.setInitialSettings(initialSettings);
       // Use advanced settings so that we can test with the cr-button.
       nativeLayer.setLocalDestinationCapabilities(
-          print_preview_test_utils.getCddTemplateWithAdvancedSettings(
+          getCddTemplateWithAdvancedSettings(
               1, initialSettings.printerName));
       nativeLayer.setPageCount(3);
-      print_preview.NativeLayer.setInstance(nativeLayer);
-      const pluginProxy = new print_preview.PDFPluginStub();
-      print_preview.PluginProxy.setInstance(pluginProxy);
+      NativeLayer.setInstance(nativeLayer);
+      const pluginProxy = new PDFPluginStub();
+      PluginProxy.setInstance(pluginProxy);
 
       PolymerTest.clearBody();
       page = document.createElement('print-preview-app');
@@ -51,29 +61,30 @@ cr.define('key_event_test', function() {
             nativeLayer.whenCalled('getPrinterCapabilities')
           ])
           .then(function() {
-            Polymer.dom.flush();
+            flush();
           });
     });
 
     // Tests that the enter key triggers a call to print.
-    test(assert(TestNames.EnterTriggersPrint), function() {
+    test(assert(key_event_test.TestNames.EnterTriggersPrint), function() {
       const whenPrintCalled = nativeLayer.whenCalled('print');
-      MockInteractions.keyEventOn(page, 'keydown', 'Enter', [], 'Enter');
+      keyEventOn(page, 'keydown', 'Enter', [], 'Enter');
       return whenPrintCalled;
     });
 
     // Tests that the numpad enter key triggers a call to print.
-    test(assert(TestNames.NumpadEnterTriggersPrint), function() {
+    test(assert(key_event_test.TestNames.NumpadEnterTriggersPrint), function() {
       const whenPrintCalled = nativeLayer.whenCalled('print');
-      MockInteractions.keyEventOn(page, 'keydown', 'NumpadEnter', [], 'Enter');
+      keyEventOn(page, 'keydown', 'NumpadEnter', [], 'Enter');
       return whenPrintCalled;
     });
 
     // Tests that the enter key triggers a call to print if an input is the
     // source of the event.
-    test(assert(TestNames.EnterOnInputTriggersPrint), function() {
+    test(assert(key_event_test.TestNames.EnterOnInputTriggersPrint),
+        function() {
       const whenPrintCalled = nativeLayer.whenCalled('print');
-      MockInteractions.keyEventOn(
+      keyEventOn(
           page.$$('print-preview-sidebar')
               .$$('print-preview-copies-settings')
               .$$('print-preview-number-settings-section')
@@ -85,9 +96,10 @@ cr.define('key_event_test', function() {
 
     // Tests that the enter key does not trigger a call to print if the event
     // comes from a dropdown.
-    test(assert(TestNames.EnterOnDropdownDoesNotPrint), function() {
-      const whenKeyEventFired = test_util.eventToPromise('keydown', page);
-      MockInteractions.keyEventOn(
+    test(assert(key_event_test.TestNames.EnterOnDropdownDoesNotPrint),
+        function() {
+      const whenKeyEventFired = eventToPromise('keydown', page);
+      keyEventOn(
           page.$$('print-preview-sidebar')
               .$$('print-preview-layout-settings')
               .$$('.md-select'),
@@ -98,28 +110,30 @@ cr.define('key_event_test', function() {
 
     // Tests that the enter key does not trigger a call to print if the event
     // comes from a button.
-    test(assert(TestNames.EnterOnButtonDoesNotPrint), async () => {
+    test(assert(key_event_test.TestNames.EnterOnButtonDoesNotPrint),
+        async () => {
       const moreSettingsElement =
           page.$$('print-preview-sidebar').$$('print-preview-more-settings');
       moreSettingsElement.$.label.click();
       const button = page.$$('print-preview-sidebar')
                          .$$('print-preview-advanced-options-settings')
                          .$$('cr-button');
-      const whenKeyEventFired = test_util.eventToPromise('keydown', button);
-      MockInteractions.keyEventOn(button, 'keydown', 'Enter', [], 'Enter');
+      const whenKeyEventFired = eventToPromise('keydown', button);
+      keyEventOn(button, 'keydown', 'Enter', [], 'Enter');
       await whenKeyEventFired;
-      await test_util.flushTasks();
+      await flushTasks();
       assertEquals(0, nativeLayer.getCallCount('print'));
     });
 
     // Tests that the enter key does not trigger a call to print if the event
     // comes from a checkbox.
-    test(assert(TestNames.EnterOnCheckboxDoesNotPrint), function() {
+    test(assert(key_event_test.TestNames.EnterOnCheckboxDoesNotPrint),
+        function() {
       const moreSettingsElement =
           page.$$('print-preview-sidebar').$$('print-preview-more-settings');
       moreSettingsElement.$.label.click();
-      const whenKeyEventFired = test_util.eventToPromise('keydown', page);
-      MockInteractions.keyEventOn(
+      const whenKeyEventFired = eventToPromise('keydown', page);
+      keyEventOn(
           page.$$('print-preview-sidebar')
               .$$('print-preview-other-options-settings')
               .$$('cr-checkbox'),
@@ -129,50 +143,47 @@ cr.define('key_event_test', function() {
     });
 
     // Tests that escape closes the dialog only on Mac.
-    test(assert(TestNames.EscapeClosesDialogOnMacOnly), function() {
-      const promise = cr.isMac ?
+    test(assert(key_event_test.TestNames.EscapeClosesDialogOnMacOnly),
+        function() {
+      const promise = isMac ?
           nativeLayer.whenCalled('dialogClose') :
-          test_util.eventToPromise('keydown', page).then(() => {
+          eventToPromise('keydown', page).then(() => {
             assertEquals(0, nativeLayer.getCallCount('dialogClose'));
           });
-      MockInteractions.keyEventOn(page, 'keydown', 'Escape', [], 'Escape');
+      keyEventOn(page, 'keydown', 'Escape', [], 'Escape');
       return promise;
     });
 
     // Tests that Cmd + Period closes the dialog only on Mac
-    test(assert(TestNames.CmdPeriodClosesDialogOnMacOnly), function() {
-      const promise = cr.isMac ?
+    test(assert(key_event_test.TestNames.CmdPeriodClosesDialogOnMacOnly),
+        function() {
+      const promise = isMac ?
           nativeLayer.whenCalled('dialogClose') :
-          test_util.eventToPromise('keydown', page).then(() => {
+          eventToPromise('keydown', page).then(() => {
             assertEquals(0, nativeLayer.getCallCount('dialogClose'));
           });
-      MockInteractions.keyEventOn(
+      keyEventOn(
           page, 'keydown', 'Period', ['meta'], 'Period');
       return promise;
     });
 
     // Tests that Ctrl+Shift+P opens the system dialog.
-    test(assert(TestNames.CtrlShiftPOpensSystemDialog), function() {
+    test(assert(key_event_test.TestNames.CtrlShiftPOpensSystemDialog),
+        function() {
       let promise = null;
-      if (cr.isChromeOS) {
+      if (isChromeOS) {
         // Chrome OS doesn't have a system dialog. Just make sure the key event
         // does not trigger a crash.
         promise = Promise.resolve();
-      } else if (cr.isWindows) {
+      } else if (isWindows) {
         promise = nativeLayer.whenCalled('print').then((printTicket) => {
           assertTrue(JSON.parse(printTicket).showSystemDialog);
         });
       } else {
         promise = nativeLayer.whenCalled('showSystemDialog');
       }
-      const modifiers = cr.isMac ? ['meta', 'alt'] : ['ctrl', 'shift'];
-      MockInteractions.keyEventOn(page, 'keydown', 'KeyP', modifiers, 'KeyP');
+      const modifiers = isMac ? ['meta', 'alt'] : ['ctrl', 'shift'];
+      keyEventOn(page, 'keydown', 'KeyP', modifiers, 'KeyP');
       return promise;
     });
   });
-
-  return {
-    suiteName: suiteName,
-    TestNames: TestNames,
-  };
-});

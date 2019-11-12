@@ -6,6 +6,7 @@
 #define COMPONENTS_INVALIDATION_IMPL_INVALIDATOR_REGISTRAR_WITH_MEMORY_H_
 
 #include <map>
+#include <string>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -22,14 +23,11 @@ class PrefService;
 
 namespace syncer {
 
-
-// A helper class for implementations of the Invalidator interface.  It helps
-// keep track of registered handlers and which object ID registrations are
-// associated with which handlers, so implementors can just reuse the logic
-// here to dispatch invalidations and other interesting notifications.
+// A helper class for FCMInvalidationService.  It helps keep track of registered
+// handlers and which topic registrations are associated with each handler.
 class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory {
  public:
-  InvalidatorRegistrarWithMemory(PrefService* local_state,
+  InvalidatorRegistrarWithMemory(PrefService* prefs,
                                  const std::string& sender_id,
                                  bool migrate_old_prefs);
 
@@ -54,15 +52,16 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory {
   // topics associated with |handler| from the server.
   void UnregisterHandler(InvalidationHandler* handler);
 
-  bool IsHandlerRegistered(const InvalidationHandler* handler) const;
-
   // Updates the set of topics associated with |handler|.  |handler| must
   // not be nullptr, and must already be registered.  A topic must be registered
   // for at most one handler. If any of the |topics| is already registered
   // to a different handler, returns false.
+  // Note that this also updates the *subscribed* topics - assuming that whoever
+  // called this will also send (un)subscription requests to the server.
   bool UpdateRegisteredTopics(InvalidationHandler* handler,
                               const Topics& topics) WARN_UNUSED_RESULT;
 
+  // Returns all topics currently registered to |handler|.
   Topics GetRegisteredTopics(InvalidationHandler* handler) const;
 
   // Returns the set of all topics that (we think) we are subscribed to on the
@@ -125,9 +124,9 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory {
 
   // This can be either a regular (Profile-attached) PrefService or the local
   // state PrefService.
-  PrefService* const local_state_;
+  PrefService* const prefs_;
 
-  // The FCM sender ID. May be empty.
+  // The FCM sender ID.
   const std::string sender_id_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidatorRegistrarWithMemory);

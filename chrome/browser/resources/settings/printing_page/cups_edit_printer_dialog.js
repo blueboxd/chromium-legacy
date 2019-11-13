@@ -117,6 +117,26 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /**
+     * Indicates whether the value in the Manufacturer dropdown is a valid
+     * printer manufacturer.
+     * @private
+     */
+    isManufacturerInvalid_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Indicates whether the value in the Model dropdown is a valid printer
+     * model.
+     * @private
+     */
+    isModelInvalid_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   observers: [
@@ -303,7 +323,8 @@ Polymer({
    */
   canSavePrinter_: function() {
     return this.printerInfoChanged_ &&
-        (this.isPrinterConfigured_() || !this.isOnline_);
+        (this.isPrinterConfigured_() || !this.isOnline_) &&
+        !this.isManufacturerInvalid_ && !this.isModelInvalid_;
   },
 
   /**

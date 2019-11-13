@@ -102,7 +102,8 @@ class AssociatedUserValidator {
     NOT_ENFORCED = 0,
     NOT_ENROLLED_WITH_MDM,
     MISSING_PASSWORD_RECOVERY_INFO,
-    INVALID_TOKEN_HANDLE
+    INVALID_TOKEN_HANDLE,
+    ONLINE_LOGIN_STALE
   };
 
   // Returns the reason for enforcing authentication for the provided |sid|.
@@ -143,6 +144,10 @@ class AssociatedUserValidator {
   bool IsDenyAccessUpdateBlocked() const;
 
   bool HasInternetConnection() const;
+
+  // Checks for the staleness of the last successful GCPW login for the input
+  // user.
+  bool IsOnlineLoginStale(const base::string16& sid) const;
 
  protected:
   // Returns the storage used for the instance pointer.

@@ -181,6 +181,10 @@ int ShelfConfig::home_button_edge_spacing() const {
   return (shelf_size() - control_size()) / 2;
 }
 
+base::TimeDelta ShelfConfig::hotseat_background_animation_duration() const {
+  return base::TimeDelta::FromMilliseconds(350);
+}
+
 int ShelfConfig::status_area_hit_region_padding() const {
   return is_dense_ ? shelf_status_area_hit_region_padding_dense_
                    : shelf_status_area_hit_region_padding_;

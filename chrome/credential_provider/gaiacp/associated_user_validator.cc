@@ -10,12 +10,15 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/win_util.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
@@ -34,6 +37,8 @@ const base::TimeDelta AssociatedUserValidator::kTokenHandleValidityLifetime =
 
 const char AssociatedUserValidator::kTokenInfoUrl[] =
     "https://www.googleapis.com/oauth2/v2/tokeninfo";
+
+constexpr long kDayInMillis = 86400000;
 
 namespace {
 
@@ -185,6 +190,42 @@ AssociatedUserValidator::AssociatedUserValidator(
 
 AssociatedUserValidator::~AssociatedUserValidator() = default;
 
+bool AssociatedUserValidator::IsOnlineLoginStale(
+    const base::string16& sid) const {
+  wchar_t last_login_millis[512];
+  ULONG last_login_size = base::size(last_login_millis);
+  HRESULT hr = GetUserProperty(
+      sid, base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
+      last_login_millis, &last_login_size);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GetUserProperty for "
+                 << kKeyLastSuccessfulOnlineLoginMillis
+                 << " failed. hr=" << putHR(hr);
+    // Fallback to the less obstructive option to not enforce login via google
+    // when fetching the registry entry fails.
+    return false;
+  }
+  int64_t last_login_millis_int64;
+  base::StringToInt64(last_login_millis, &last_login_millis_int64);
+
+  DWORD validity_period_days;
+  hr = GetGlobalFlag(base::UTF8ToUTF16(kKeyValidityPeriodInDays),
+                     &validity_period_days);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GetGlobalFlag for " << kKeyValidityPeriodInDays
+                 << " failed. hr=" << putHR(hr);
+    // Fallback to the less obstructive option to not enforce login via google
+    // when fetching the registry entry fails.
+    return false;
+  }
+
+  long validity_period_in_millis = kDayInMillis * validity_period_days;
+  long time_delta_from_last_login =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds() -
+      last_login_millis_int64;
+  return time_delta_from_last_login >= validity_period_in_millis;
+}
+
 bool AssociatedUserValidator::HasInternetConnection() const {
   return InternetAvailabilityChecker::Get()->HasInternetConnection();
 }
@@ -244,9 +285,6 @@ bool AssociatedUserValidator::IsUserAccessBlockingEnforced(
   if (!CGaiaCredentialProvider::IsUsageScenarioSupported(cpus))
     return false;
 
-  if (!HasInternetConnection())
-    return false;
-
   return true;
 }
 
@@ -259,8 +297,10 @@ bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
     return false;
   }
 
-  if (!IsUserAccessBlockingEnforced(cpus))
+  if (!IsUserAccessBlockingEnforced(cpus)) {
+    LOGFN(INFO) << "User Access Blocking not enforced.";
     return false;
+  }
 
   HRESULT hr = UpdateAssociatedSids(nullptr);
   if (FAILED(hr)) {
@@ -447,6 +487,10 @@ bool AssociatedUserValidator::IsTokenHandleValidForUser(
 
 AssociatedUserValidator::EnforceAuthReason
 AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
+  // Enforce online login if the last GCPW login was stale.
+  if (IsOnlineLoginStale(sid))
+    return AssociatedUserValidator::EnforceAuthReason::ONLINE_LOGIN_STALE;
+
   // All token handles are valid when no internet connection is available.
   if (!HasInternetConnection())
     return AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED;

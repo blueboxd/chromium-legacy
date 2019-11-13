@@ -7,12 +7,16 @@
 #include <sddl.h>  // For ConvertSidToStringSid()
 #include <wrl/client.h>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time_override.h"
+
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/password_recovery_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
@@ -794,6 +798,111 @@ TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
 
   // No new user should be created.
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+}
+
+class BaseTimeClockOverrideValue {
+ public:
+  static base::Time NowOverride() { return current_time_; }
+  static base::Time current_time_;
+};
+
+base::Time BaseTimeClockOverrideValue::current_time_;
+TEST_F(GcpGaiaCredentialBaseTest,
+       DenySigninBlockedDuringSignin_StaleOnlineLogin) {
+  USES_CONVERSION;
+
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 1));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+
+  // Create a fake user that has the same gaia id as the test gaia id.
+  CComBSTR first_sid;
+  base::string16 username(L"foo");
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      username, L"password", L"name", L"comment",
+                      base::UTF8ToUTF16(kDefaultGaiaId), base::string16(),
+                      &first_sid));
+  ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  // Move the current time beyond staleness time period.
+  base::Time last_online_login = base::Time::Now();
+  base::string16 last_online_login_millis = base::NumberToString16(
+      last_online_login.ToDeltaSinceWindowsEpoch().InMilliseconds());
+  int validity_period_in_days = 10;
+  DWORD validity_period_in_days_dword =
+      static_cast<DWORD>(validity_period_in_days);
+  ASSERT_EQ(S_OK, SetUserProperty((BSTR)first_sid,
+                                  base::UTF8ToUTF16(std::string(
+                                      kKeyLastSuccessfulOnlineLoginMillis)),
+                                  last_online_login_millis));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(
+                      base::UTF8ToUTF16(std::string(kKeyValidityPeriodInDays)),
+                      validity_period_in_days_dword));
+
+  GoogleMdmEnrolledStatusForTesting force_success(true);
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  // Create with valid token handle response and sign in the anonymous
+  // credential with the user that should still be valid.
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  // User access shouldn't be blocked before login starts.
+  EXPECT_FALSE(fake_associated_user_validator()
+                   ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
+      OLE2W(first_sid)));
+
+  // Advance the time that is more than the offline validity period.
+  BaseTimeClockOverrideValue::current_time_ =
+      last_online_login + base::TimeDelta::FromDays(validity_period_in_days) +
+      base::TimeDelta::FromMilliseconds(1);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &BaseTimeClockOverrideValue::NowOverride, nullptr, nullptr);
+
+  // User access should be blocked now that the time has been moved.
+  ASSERT_TRUE(fake_associated_user_validator()
+                  ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_TRUE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
+      OLE2W(first_sid)));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  // Now finish the logon.
+  ASSERT_EQ(S_OK, FinishLogonProcessWithCred(true, true, 0, cred));
+
+  // User should have been associated.
+  EXPECT_EQ(test->GetFinalUsername(), username);
+  // Email should be the same as the default one.
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  ReportLogonProcessResult(cred);
+
+  // User access shouldn't be blocked after login completes.
+  EXPECT_FALSE(fake_associated_user_validator()
+                   ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
+      OLE2W(first_sid)));
+
+  wchar_t latest_online_login_millis[512];
+  ULONG latest_online_login_size = base::size(latest_online_login_millis);
+  ASSERT_EQ(S_OK, GetUserProperty(
+                      OLE2W(first_sid),
+                      base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
+                      latest_online_login_millis, &latest_online_login_size));
+  int64_t latest_online_login_millis_int64;
+  base::StringToInt64(latest_online_login_millis,
+                      &latest_online_login_millis_int64);
+
+  long difference =
+      latest_online_login_millis_int64 -
+      BaseTimeClockOverrideValue::current_time_.ToDeltaSinceWindowsEpoch()
+          .InMilliseconds();
+  ASSERT_EQ(0, difference);
 }
 
 TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD_Gmail) {

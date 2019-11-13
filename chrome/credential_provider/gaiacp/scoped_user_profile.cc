@@ -22,6 +22,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,6 +30,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
@@ -428,11 +430,13 @@ HRESULT ScopedUserProfile::ExtractAssociationInformation(
     base::string16* sid,
     base::string16* id,
     base::string16* email,
-    base::string16* token_handle) {
+    base::string16* token_handle,
+    base::string16* last_online_login_millis) {
   DCHECK(sid);
   DCHECK(id);
   DCHECK(email);
   DCHECK(token_handle);
+  DCHECK(last_online_login_millis);
 
   *sid = GetDictString(properties, kKeySID);
   if (sid->empty()) {
@@ -458,6 +462,15 @@ HRESULT ScopedUserProfile::ExtractAssociationInformation(
     return E_INVALIDARG;
   }
 
+  *last_online_login_millis =
+      GetDictString(properties, kKeyLastSuccessfulOnlineLoginMillis);
+  if (last_online_login_millis->empty()) {
+    // This may return empty when there exists no successful login attempt.
+    // Need not fail the call and instead fallback to returning S_OK.
+    LOGFN(INFO) << "LastSuccessfulOnlineLoginMillis is empty";
+    *last_online_login_millis = L"0";
+  }
+
   return S_OK;
 }
 
@@ -465,7 +478,8 @@ HRESULT ScopedUserProfile::RegisterAssociation(
     const base::string16& sid,
     const base::string16& id,
     const base::string16& email,
-    const base::string16& token_handle) {
+    const base::string16& token_handle,
+    const base::string16& last_online_login_millis) {
   // Save token handle.  This handle will be used later to determine if the
   // the user has changed their password since the account was created.
   HRESULT hr = SetUserProperty(sid, kUserTokenHandle, token_handle);
@@ -486,6 +500,15 @@ HRESULT ScopedUserProfile::RegisterAssociation(
     return hr;
   }
 
+  hr = SetUserProperty(sid,
+                       base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
+                       last_online_login_millis);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "SetUserProperty(last_online_login_millis) hr="
+                 << putHR(hr);
+    return hr;
+  }
+
   return S_OK;
 }
 
@@ -496,13 +519,15 @@ HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
   base::string16 id;
   base::string16 email;
   base::string16 token_handle;
+  base::string16 last_online_login_millis;
 
-  HRESULT hr = ExtractAssociationInformation(properties, &sid, &id, &email,
-                                             &token_handle);
+  HRESULT hr = ExtractAssociationInformation(
+      properties, &sid, &id, &email, &token_handle, &last_online_login_millis);
   if (FAILED(hr))
     return hr;
 
-  hr = RegisterAssociation(sid, id, email, token_handle);
+  hr = RegisterAssociation(sid, id, email, token_handle,
+                           last_online_login_millis);
   if (FAILED(hr))
     return hr;
 

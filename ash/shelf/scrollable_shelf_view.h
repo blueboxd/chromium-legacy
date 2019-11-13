@@ -74,7 +74,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   views::View* GetDefaultFocusableChild() override;
 
   // Returns the |available_space_|.
-  gfx::Rect GetHotseatBackgroundBounds();
+  gfx::Rect GetHotseatBackgroundBounds() const;
 
   views::View* GetShelfContainerViewForTest();
   bool ShouldAdjustForTest() const;

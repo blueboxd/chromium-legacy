@@ -18,6 +18,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/home_button.h"
+#include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/overflow_bubble.h"
@@ -84,7 +85,8 @@ bool IsInTabletMode() {
 // session, this also contains the login shelf view.
 class ShelfWidget::DelegateView : public views::WidgetDelegate,
                                   public views::AccessiblePaneView,
-                                  public ShelfBackgroundAnimatorObserver {
+                                  public ShelfBackgroundAnimatorObserver,
+                                  public HotseatTransitionAnimator::Observer {
  public:
   explicit DelegateView(ShelfWidget* shelf);
   ~DelegateView() override;
@@ -100,6 +102,12 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void set_default_last_focusable_child(bool default_last_focusable_child) {
     default_last_focusable_child_ = default_last_focusable_child;
   }
+
+  // Immediately hides the layer used to draw the shelf background.
+  void HideOpaqueBackground();
+
+  // Immediately shows the layer used to draw the shelf background.
+  void ShowOpaqueBackground();
 
   // views::WidgetDelegate:
   void DeleteDelegate() override { delete this; }
@@ -123,14 +131,30 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfBackground(SkColor color) override;
 
+  // HotseatBackgroundAnimator::Observer:
+  void OnHotseatTransitionAnimationStarted(HotseatState from_state,
+                                           HotseatState to_state) override;
+  void OnHotseatTransitionAnimationEnded(HotseatState from_state,
+                                         HotseatState to_state) override;
+
   SkColor GetShelfBackgroundColor() const;
 
+  ui::Layer* opaque_background() { return &opaque_background_; }
+  ui::Layer* animating_background() { return &animating_background_; }
+
  private:
+  // Whether |opaque_background_| is explicitly hidden during an animation.
+  // Prevents calls to UpdateOpaqueBackground from inadvertently showing
+  // |opaque_background_| during animations.
+  bool hide_background_for_transitions_ = false;
   ShelfWidget* shelf_widget_;
   FocusCycler* focus_cycler_;
   // A background layer that may be visible depending on a
   // ShelfBackgroundAnimator.
   ui::Layer opaque_background_;
+
+  // A background layer used to animate hotseat transitions.
+  ui::Layer animating_background_;
 
   // A drag handle shown in tablet mode when we are not on the home screen.
   // Owned by the view hierarchy.
@@ -149,12 +173,20 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
     : shelf_widget_(shelf_widget),
       focus_cycler_(nullptr),
-      opaque_background_(ui::LAYER_SOLID_COLOR) {
+      opaque_background_(ui::LAYER_SOLID_COLOR),
+      animating_background_(ui::LAYER_SOLID_COLOR) {
   DCHECK(shelf_widget_);
   set_owned_by_client();  // Deleted by DeleteDelegate().
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_allow_deactivate_on_esc(true);
+
+  // |animating_background_| will be made visible during hotseat animations.
+  animating_background_.SetVisible(false);
+  if (features::IsBackgroundBlurEnabled()) {
+    animating_background_.SetBackgroundBlur(30);
+    animating_background_.SetBackdropFilterQuality(0.33f);
+  }
 
   std::unique_ptr<views::View> drag_handle_ptr =
       std::make_unique<views::View>();
@@ -195,7 +227,19 @@ bool ShelfWidget::IsUsingViewsShelf() {
 
 void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
   layer->Add(&opaque_background_);
+  layer->Add(&animating_background_);
   ReorderLayers();
+}
+
+void ShelfWidget::DelegateView::HideOpaqueBackground() {
+  hide_background_for_transitions_ = true;
+  opaque_background_.SetVisible(false);
+}
+
+void ShelfWidget::DelegateView::ShowOpaqueBackground() {
+  hide_background_for_transitions_ = false;
+  UpdateOpaqueBackground();
+  UpdateBackgroundBlur();
 }
 
 bool ShelfWidget::DelegateView::CanActivate() const {
@@ -209,6 +253,7 @@ bool ShelfWidget::DelegateView::CanActivate() const {
 void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
   views::View::ReorderChildLayers(parent_layer);
   parent_layer->StackAtBottom(&opaque_background_);
+  parent_layer->StackAtBottom(&animating_background_);
 }
 
 void ShelfWidget::DelegateView::OnWidgetInitialized() {
@@ -216,6 +261,8 @@ void ShelfWidget::DelegateView::OnWidgetInitialized() {
 }
 
 void ShelfWidget::DelegateView::UpdateBackgroundBlur() {
+  if (hide_background_for_transitions_)
+    return;
   // Blur only if the background is visible.
   const bool should_blur_background =
       opaque_background_.visible() &&
@@ -231,6 +278,8 @@ void ShelfWidget::DelegateView::UpdateBackgroundBlur() {
 }
 
 void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
+  if (hide_background_for_transitions_)
+    return;
   // Shell could be destroying.
   if (!Shell::Get()->tablet_mode_controller())
     return;
@@ -324,6 +373,25 @@ void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
   UpdateOpaqueBackground();
 }
 
+void ShelfWidget::DelegateView::OnHotseatTransitionAnimationStarted(
+    HotseatState from_state,
+    HotseatState to_state) {
+  animating_background_.SetVisible(true);
+  // If animating from a kShown hotseat, the animating background will
+  // animate from the hotseat background into the in-app shelf, so hide the
+  // real shelf background until the animation is complete.
+  if (from_state == HotseatState::kShown)
+    HideOpaqueBackground();
+}
+
+void ShelfWidget::DelegateView::OnHotseatTransitionAnimationEnded(
+    HotseatState from_state,
+    HotseatState to_state) {
+  animating_background_.SetVisible(false);
+  if (from_state == HotseatState::kShown)
+    ShowOpaqueBackground();
+}
+
 SkColor ShelfWidget::DelegateView::GetShelfBackgroundColor() const {
   return opaque_background_.background_color();
 }
@@ -354,6 +422,14 @@ void ShelfWidget::ForceToShowHotseat() {
 
   is_hotseat_forced_to_show_ = true;
   shelf_layout_manager_->UpdateVisibilityState();
+}
+
+ui::Layer* ShelfWidget::GetOpaqueBackground() {
+  return delegate_view_->opaque_background();
+}
+
+ui::Layer* ShelfWidget::GetAnimatingBackground() {
+  return delegate_view_->animating_background();
 }
 
 ShelfWidget::ShelfWidget(Shelf* shelf)
@@ -415,6 +491,9 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
 }
 
 void ShelfWidget::Shutdown() {
+  hotseat_transition_animator_->RemoveObserver(delegate_view_);
+  hotseat_transition_animator_->RemoveObserver(hotseat_widget_.get());
+  hotseat_transition_animator_.reset();
   // Shutting down the status area widget may cause some widgets (e.g. bubbles)
   // to close, so uninstall the ShelfLayoutManager event filters first. Don't
   // reset the pointer until later because other widgets (e.g. app list) may
@@ -437,6 +516,7 @@ void ShelfWidget::Shutdown() {
   // The contents view of |hotseat_widget_| may rely on |status_area_widget_|.
   // So do explicit destruction here.
   hotseat_widget_.reset();
+
   status_area_widget_.reset();
 }
 
@@ -457,6 +537,9 @@ void ShelfWidget::CreateHotseatWidget(aura::Window* container) {
 
   // Show a context menu for right clicks anywhere on the shelf widget.
   delegate_view_->set_context_menu_controller(hotseat_widget_->GetShelfView());
+  hotseat_transition_animator_.reset(new HotseatTransitionAnimator(this));
+  hotseat_transition_animator_->AddObserver(delegate_view_);
+  hotseat_transition_animator_->AddObserver(hotseat_widget_.get());
 }
 
 void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {
@@ -572,6 +655,15 @@ bool ShelfWidget::OnNativeWidgetActivationChanged(bool active) {
 void ShelfWidget::WillDeleteShelfLayoutManager() {
   shelf_layout_manager_->RemoveObserver(this);
   shelf_layout_manager_ = nullptr;
+}
+
+void ShelfWidget::OnHotseatStateChanged(HotseatState old_state,
+                                        HotseatState new_state) {
+  // |hotseat_transition_animator_| could be released when this is
+  // called during shutdown.
+  if (!hotseat_transition_animator_)
+    return;
+  hotseat_transition_animator_->OnHotseatStateChanged(old_state, new_state);
 }
 
 void ShelfWidget::OnBackgroundTypeChanged(ShelfBackgroundType background_type,

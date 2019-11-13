@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
+#include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf_background_animator.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -115,6 +116,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
+  void OnHotseatStateChanged(HotseatState old_state,
+                             HotseatState new_state) override;
 
   // ShelfObserver:
   void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
@@ -132,6 +135,13 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void ForceToShowHotseat();
 
   bool is_hotseat_forced_to_show() const { return is_hotseat_forced_to_show_; }
+
+  // Gets the layer used to draw the shelf background.
+  ui::Layer* GetOpaqueBackground();
+
+  // Gets the layer used to animate transitions between in-app and hotseat
+  // background.
+  ui::Layer* GetAnimatingBackground();
 
   // Internal implementation detail. Do not expose outside of tests.
   ShelfView* shelf_view_for_testing() const {
@@ -173,6 +183,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.
   DelegateView* delegate_view_;
+
+  // Animates the shelf background to/from the hotseat background during hotseat
+  // transitions.
+  std::unique_ptr<HotseatTransitionAnimator> hotseat_transition_animator_;
 
   // View containing the shelf items for Login/Lock/OOBE/Add User screens.
   // Owned by the views hierarchy.

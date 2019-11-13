@@ -31,7 +31,8 @@ class ASH_EXPORT ShelfLayoutManagerObserver {
                                    AnimationChangeType change_type) {}
 
   // Called when the hotseat state changes.
-  virtual void OnHotseatStateChanged(HotseatState state) {}
+  virtual void OnHotseatStateChanged(HotseatState old_state,
+                                     HotseatState new_state) {}
 
   // Called when ShelfLayoutManager has updated Shelf insets in work area
   // insets.

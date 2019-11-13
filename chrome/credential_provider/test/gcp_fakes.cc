@@ -557,13 +557,16 @@ HRESULT FakeScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
   base::string16 id;
   base::string16 email;
   base::string16 token_handle;
+  base::string16 last_successful_online_login_millis;
 
-  HRESULT hr = ExtractAssociationInformation(properties, &sid, &id, &email,
-                                             &token_handle);
+  HRESULT hr = ExtractAssociationInformation(
+      properties, &sid, &id, &email, &token_handle,
+      &last_successful_online_login_millis);
   if (FAILED(hr))
     return hr;
 
-  hr = RegisterAssociation(sid, id, email, token_handle);
+  hr = RegisterAssociation(sid, id, email, token_handle,
+                           last_successful_online_login_millis);
 
   if (FAILED(hr))
     return hr;

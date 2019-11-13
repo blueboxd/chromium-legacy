@@ -23,6 +23,8 @@ source_set("common") {
     "gcp_crash_reporting_utils.h",
     "gcp_utils.cc",
     "gcp_utils.h",
+    "gcpw_strings.cc",
+    "gcpw_strings.h",
     "logging.cc",
     "logging.h",
     "mdm_utils.cc",

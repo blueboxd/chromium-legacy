@@ -235,6 +235,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
     is_auto_hide_state_locked_ = lock_auto_hide_state;
   }
 
+  // Calculates the hotseat y position for |hotseat_target_state| in shelf
+  // coordinates.
+  int CalculateHotseatYInShelf(HotseatState hotseat_target_state) const;
+
   bool updating_bounds() const { return updating_bounds_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
   HotseatState hotseat_state() const {

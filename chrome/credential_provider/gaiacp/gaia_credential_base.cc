@@ -26,6 +26,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "base/win/current_module.h"
 #include "base/win/registry.h"
@@ -39,6 +40,7 @@
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
@@ -2143,6 +2145,13 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     base::string16 sid = OLE2CW(user_sid_);
     authentication_results_->SetBoolKey(
         kKeyIsAdJoinedUser, OSUserManager::Get()->IsUserDomainJoined(sid));
+    // Update the time at which the login attempt happened. This would help
+    // track the last time an online login happened via GCPW.
+    int64_t current_time = static_cast<int64_t>(
+        base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
+    authentication_results_->SetKey(
+        kKeyLastSuccessfulOnlineLoginMillis,
+        base::Value(base::NumberToString(current_time)));
   }
 
   base::string16 local_password =

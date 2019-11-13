@@ -871,6 +871,11 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   scoped_refptr<ppapi::TrackedCallback> lock_mouse_callback_;
 
+  // Last mouse position from mouse event, used for calculating movements. Null
+  // means no mouse event received yet. This value is updated by
+  // |CreateInputEventData|.
+  std::unique_ptr<gfx::PointF> last_mouse_position_;
+
   // We store the arguments so we can re-send them if we are reset to talk to
   // NaCl via the IPC NaCl proxy.
   std::vector<std::string> argn_;

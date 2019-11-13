@@ -91,6 +91,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The distance between the edge of the shelf and the home and back button.
   int home_button_edge_spacing() const;
 
+  // The duration of the hotseat background animations in ms.
+  base::TimeDelta hotseat_background_animation_duration() const;
+
   // The extra padding added to status area tray buttons on the shelf.
   int status_area_hit_region_padding() const;
 

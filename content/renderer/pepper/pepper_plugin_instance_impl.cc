@@ -1166,9 +1166,10 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       std::unique_ptr<const WebInputEvent> event_in_dip(
           ui::ScaleWebInputEvent(event, viewport_to_dip_scale_));
       if (event_in_dip)
-        CreateInputEventData(*event_in_dip.get(), &events);
+        CreateInputEventData(*event_in_dip.get(), &last_mouse_position_,
+                             &events);
       else
-        CreateInputEventData(event, &events);
+        CreateInputEventData(event, &last_mouse_position_, &events);
 
       // Each input event may generate more than one PP_InputEvent.
       for (size_t i = 0; i < events.size(); i++) {

@@ -578,6 +578,8 @@ component("ash") {
     "shelf/home_button.h",
     "shelf/home_button_controller.cc",
     "shelf/home_button_controller.h",
+    "shelf/hotseat_transition_animator.cc",
+    "shelf/hotseat_transition_animator.h",
     "shelf/hotseat_widget.cc",
     "shelf/hotseat_widget.h",
     "shelf/login_shelf_view.cc",

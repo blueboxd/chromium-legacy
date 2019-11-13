@@ -6,12 +6,16 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/time/time_override.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
@@ -353,10 +357,14 @@ TEST_F(AssociatedUserValidatorTest,
 // 3. bool - Mdm url is set.
 // 4. bool - Mdm enrollment is already done.
 // 5. bool - Internet is available.
+// 6. bool - Password Recovery is enabled.
+// 7. bool - Contains stored password.
+// 8. bool - Last online login is stale.
 class AssociatedUserValidatorUserAccessBlockingTest
     : public AssociatedUserValidatorTest,
       public ::testing::WithParamInterface<
           std::tuple<CREDENTIAL_PROVIDER_USAGE_SCENARIO,
+                     bool,
                      bool,
                      bool,
                      bool,
@@ -367,6 +375,14 @@ class AssociatedUserValidatorUserAccessBlockingTest
   FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
 };
 
+class TimeClockOverrideValue {
+ public:
+  static base::Time NowOverride() { return current_time_; }
+  static base::Time current_time_;
+};
+
+base::Time TimeClockOverrideValue::current_time_;
+
 TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<0>(GetParam());
   const bool token_handle_valid = std::get<1>(GetParam());
@@ -375,6 +391,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   const bool internet_available = std::get<4>(GetParam());
   const bool password_recovery_enabled = std::get<5>(GetParam());
   const bool contains_stored_password = std::get<6>(GetParam());
+  const bool is_last_login_stale = std::get<7>(GetParam());
   GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
 
   GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
@@ -384,8 +401,9 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
       internet_available ? FakeInternetAvailabilityChecker::kHicForceYes
                          : FakeInternetAvailabilityChecker::kHicForceNo);
 
-  if (mdm_url_set)
+  if (mdm_url_set) {
     ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  }
 
   if (password_recovery_enabled) {
     ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
@@ -393,8 +411,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   }
 
   bool should_user_locking_be_enabled =
-      internet_available && mdm_url_set &&
-      CGaiaCredentialProvider::IsUsageScenarioSupported(cpus);
+      CGaiaCredentialProvider::IsUsageScenarioSupported(cpus) && mdm_url_set;
 
   EXPECT_EQ(should_user_locking_be_enabled,
             validator.IsUserAccessBlockingEnforced(cpus));
@@ -404,6 +421,32 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       username, L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
+
+  // Save the current time and then override the time clock to return a fake
+  // time.
+  TimeClockOverrideValue::current_time_ = base::Time::Now();
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &TimeClockOverrideValue::NowOverride, nullptr, nullptr);
+  if (is_last_login_stale) {
+    base::Time last_online_login = base::Time::Now();
+    base::string16 last_online_login_millis = base::NumberToString16(
+        last_online_login.ToDeltaSinceWindowsEpoch().InMilliseconds());
+    int validity_period_in_days = 10;
+    DWORD validity_period_in_days_dword =
+        static_cast<DWORD>(validity_period_in_days);
+    ASSERT_EQ(S_OK, SetUserProperty(
+                        (BSTR)sid,
+                        base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
+                        last_online_login_millis));
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(
+                        base::UTF8ToUTF16(kKeyValidityPeriodInDays),
+                        validity_period_in_days_dword));
+
+    // Advance the time that is more than the offline validity period.
+    TimeClockOverrideValue::current_time_ =
+        last_online_login + base::TimeDelta::FromDays(validity_period_in_days) +
+        base::TimeDelta::FromMilliseconds(1);
+  }
 
   if (contains_stored_password) {
     base::string16 store_key = GetUserPasswordLsaStoreKey(OLE2W(sid));
@@ -424,18 +467,20 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
 
   DWORD reg_value = 0;
 
-  bool should_user_be_blocked =
-      should_user_locking_be_enabled &&
-      (!mdm_enrolled || !token_handle_valid ||
-       (password_recovery_enabled && !contains_stored_password));
+  bool is_get_auth_enforced =
+      is_last_login_stale ||
+      (internet_available &&
+       ((mdm_url_set && !mdm_enrolled) || !token_handle_valid ||
+        (mdm_url_set && password_recovery_enabled &&
+         !contains_stored_password)));
 
-  EXPECT_EQ(!internet_available || (!mdm_url_set && token_handle_valid) ||
-                (mdm_url_set && mdm_enrolled && token_handle_valid &&
-                 (!password_recovery_enabled ||
-                  password_recovery_enabled && contains_stored_password)),
-            validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  bool should_user_be_blocked =
+      should_user_locking_be_enabled && is_get_auth_enforced;
+
   EXPECT_EQ(should_user_be_blocked,
             validator.IsUserAccessBlockedForTesting(OLE2W(sid)));
+  EXPECT_EQ(!is_get_auth_enforced,
+            validator.IsTokenHandleValidForUser(OLE2W(sid)));
 
   // Unlock the user.
   validator.AllowSigninForUsersWithInvalidTokenHandles();
@@ -458,15 +503,8 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Bool(),
                        ::testing::Bool(),
                        ::testing::Bool(),
+                       ::testing::Bool(),
                        ::testing::Bool()));
-
-class TimeClockOverrideValue {
- public:
-  static base::Time NowOverride() { return current_time_; }
-  static base::Time current_time_;
-};
-
-base::Time TimeClockOverrideValue::current_time_;
 
 TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_Refresh) {
   // Save the current time and then override the time clock to return a fake

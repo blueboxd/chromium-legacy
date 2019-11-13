@@ -237,8 +237,9 @@ class HotseatEventHandler : public ui::EventHandler,
   }
 
   // ShelfLayoutManagerObserver:
-  void OnHotseatStateChanged(HotseatState state) override {
-    should_forward_event_ = state == HotseatState::kExtended;
+  void OnHotseatStateChanged(HotseatState old_state,
+                             HotseatState new_state) override {
+    should_forward_event_ = new_state == HotseatState::kExtended;
   }
 
   // ui::EventHandler:
@@ -952,6 +953,40 @@ void ShelfLayoutManager::OnDeskSwitchAnimationFinished() {
     UpdateVisibilityState();
 }
 
+int ShelfLayoutManager::CalculateHotseatYInShelf(
+    HotseatState hotseat_target_state) const {
+  DCHECK(shelf_->IsHorizontalAlignment());
+  int hotseat_distance_from_bottom_of_display;
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  switch (hotseat_target_state) {
+    case HotseatState::kShown: {
+      // When the hotseat state is HotseatState::kShown in tablet mode, the
+      // home launcher is showing. Elevate the hotseat a few px to match the
+      // navigation and status area.
+      const bool use_padding = IsHotseatEnabled();
+      hotseat_distance_from_bottom_of_display =
+          hotseat_size +
+          (use_padding ? ShelfConfig::Get()->hotseat_bottom_padding() : 0);
+    } break;
+    case HotseatState::kHidden:
+      // Show the hotseat offscreen.
+      hotseat_distance_from_bottom_of_display = 0;
+      break;
+    case HotseatState::kExtended:
+      // Show the hotseat at its extended position.
+      hotseat_distance_from_bottom_of_display =
+          ShelfConfig::Get()->in_app_shelf_size() +
+          ShelfConfig::Get()->hotseat_bottom_padding() + hotseat_size;
+      break;
+  }
+  const int target_shelf_size = hotseat_target_state == HotseatState::kShown
+                                    ? ShelfConfig::Get()->system_shelf_size()
+                                    : ShelfConfig::Get()->in_app_shelf_size();
+  const int hotseat_y_in_shelf =
+      -(hotseat_distance_from_bottom_of_display - target_shelf_size);
+  return hotseat_y_in_shelf;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
 
@@ -988,8 +1023,8 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
   state.window_state =
       GetShelfWorkspaceWindowState(shelf_widget_->GetNativeWindow());
-  shelf_widget_->hotseat_widget()->set_state(
-      CalculateHotseatState(state.visibility_state, state.auto_hide_state));
+  HotseatState new_hotseat_state =
+      CalculateHotseatState(state.visibility_state, state.auto_hide_state);
   // Preserve the log in screen states.
   state.session_state = state_.session_state;
   state.pre_lock_screen_animation_active =
@@ -1001,7 +1036,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
                        drag_status_ == kDragCompleteInProgress);
 
   if (!force_update && state_.Equals(state) &&
-      previous_hotseat_state == hotseat_state()) {
+      previous_hotseat_state == new_hotseat_state) {
     return;  // Nothing changed.
   }
 
@@ -1047,7 +1082,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   }
 
   TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, hotseat_state());
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds, new_hotseat_state);
   UpdateBoundsAndOpacity(
       target_bounds, true /* animate */,
       delay_background_change ? update_shelf_observer_ : nullptr);
@@ -1062,13 +1097,16 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
       observer.OnAutoHideStateChanged(state_.auto_hide_state);
   }
 
+  // Do not set the hotseat state until after bounds have been set because
+  // observers rely on final bounds.
+  shelf_widget_->hotseat_widget()->SetState(new_hotseat_state);
   if (previous_hotseat_state != hotseat_state()) {
     if (hotseat_state() == HotseatState::kExtended)
       hotseat_event_handler_ = std::make_unique<HotseatEventHandler>(this);
     else
       hotseat_event_handler_.reset();
     for (auto& observer : observers_)
-      observer.OnHotseatStateChanged(hotseat_state());
+      observer.OnHotseatStateChanged(previous_hotseat_state, hotseat_state());
   }
 }
 
@@ -1495,30 +1533,6 @@ void ShelfLayoutManager::CalculateTargetBounds(
   int hotseat_width;
   int hotseat_height;
   if (shelf_->IsHorizontalAlignment()) {
-    int hotseat_distance_from_bottom_of_display;
-    const int hotseat_size = ShelfConfig::Get()->hotseat_size();
-    switch (hotseat_target_state) {
-      case HotseatState::kShown: {
-        // When the hotseat state is HotseatState::kShown in tablet mode, the
-        // home launcher is showing. Elevate the hotseat a few px to match the
-        // navigation and status area.
-        const bool use_padding = IsHotseatEnabled();
-        hotseat_distance_from_bottom_of_display =
-            hotseat_size +
-            (use_padding ? ShelfConfig::Get()->hotseat_bottom_padding() : 0);
-      } break;
-      case HotseatState::kHidden:
-        // Show the hotseat offscreen.
-        hotseat_distance_from_bottom_of_display = 0;
-        break;
-      case HotseatState::kExtended:
-        // Show the hotseat at its extended position.
-        hotseat_distance_from_bottom_of_display =
-            ShelfConfig::Get()->in_app_shelf_size() +
-            ShelfConfig::Get()->hotseat_bottom_padding() + hotseat_size;
-        break;
-    }
-
     hotseat_width =
         shelf_width - target_bounds->nav_bounds_in_shelf.size().width() -
         home_button_edge_spacing - ShelfConfig::Get()->app_icon_group_margin() -
@@ -1533,10 +1547,9 @@ void ShelfLayoutManager::CalculateTargetBounds(
       hotseat_width = available_bounds.width();
       hotseat_x = 0;
     }
-    const int hotseat_y =
-        -(hotseat_distance_from_bottom_of_display - shelf_size);
-    hotseat_origin = gfx::Point(hotseat_x, hotseat_y);
-    hotseat_height = hotseat_size;
+    hotseat_origin =
+        gfx::Point(hotseat_x, CalculateHotseatYInShelf(hotseat_target_state));
+    hotseat_height = ShelfConfig::Get()->hotseat_size();
   } else {
     hotseat_origin = gfx::Point(0, target_bounds->nav_bounds_in_shelf.bottom() +
                                        home_button_edge_spacing);

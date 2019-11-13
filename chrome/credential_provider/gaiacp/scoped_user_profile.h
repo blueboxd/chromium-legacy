@@ -37,15 +37,18 @@ class ScopedUserProfile {
   // tests are not running elevated.
   ScopedUserProfile();
 
-  HRESULT ExtractAssociationInformation(const base::Value& properties,
-                                        base::string16* sid,
-                                        base::string16* id,
-                                        base::string16* email,
-                                        base::string16* token_handle);
+  HRESULT ExtractAssociationInformation(
+      const base::Value& properties,
+      base::string16* sid,
+      base::string16* id,
+      base::string16* email,
+      base::string16* token_handle,
+      base::string16* last_online_login_millis);
   HRESULT RegisterAssociation(const base::string16& sid,
                               const base::string16& id,
                               const base::string16& email,
-                              const base::string16& token_handle);
+                              const base::string16& token_handle,
+                              const base::string16& last_online_login_millis);
 
  private:
   friend class FakeScopedUserProfileFactory;

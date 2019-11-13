@@ -3243,9 +3243,10 @@ class HotseatStateWatcher : public ShelfLayoutManagerObserver {
     shelf_layout_manager_->RemoveObserver(this);
   }
 
-  void OnHotseatStateChanged(HotseatState state) override {
+  void OnHotseatStateChanged(HotseatState old_state,
+                             HotseatState new_state) override {
     run_loop_.QuitWhenIdle();
-    state_changes_.push_back(state);
+    state_changes_.push_back(new_state);
   }
 
   void CheckEqual(std::vector<HotseatState> state_changes) {

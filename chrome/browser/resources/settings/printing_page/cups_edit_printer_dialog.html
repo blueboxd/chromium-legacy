@@ -106,7 +106,8 @@
                 id="printerPPDManufacturer"
                 label="$i18n{printerManufacturer}"
                 value="{{pendingPrinter_.ppdManufacturer}}"
-                readonly="[[!isOnline_]]">
+                readonly="[[!isOnline_]]"
+                invalid="{{isManufacturerInvalid_}}">
             </cr-searchable-drop-down>
           </div>
           <div class="settings-box two-line">
@@ -114,7 +115,8 @@
                 id="printerPPDModel"
                 label="$i18n{printerModel}"
                 value="{{pendingPrinter_.ppdModel}}"
-                readonly="[[!isOnline_]]">
+                readonly="[[!isOnline_]]"
+                invalid="{{isModelInvalid_}}">
             </cr-searchable-drop-down>
           </div>
           <div id="ppdLabel" class="cr-form-field-label">
@@ -145,8 +147,8 @@
           $i18n{cancel}
         </cr-button>
         <cr-button class="action-button" on-click="onSaveTap_"
-            disabled="[[!canSavePrinter_(pendingPrinter_.*,
-                printerInfoChanged_, isOnline_)]]">
+            disabled="[[!canSavePrinter_(pendingPrinter_.*, printerInfoChanged_,
+               isOnline_, isManufacturerInvalid_, isModelInvalid_)]]">
           $i18n{editPrinterButtonText}
         </cr-button>
       </div>

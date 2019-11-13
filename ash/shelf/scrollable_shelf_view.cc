@@ -476,7 +476,7 @@ views::View* ScrollableShelfView::GetDefaultFocusableChild() {
   }
 }
 
-gfx::Rect ScrollableShelfView::GetHotseatBackgroundBounds() {
+gfx::Rect ScrollableShelfView::GetHotseatBackgroundBounds() const {
   return available_space_;
 }
 
